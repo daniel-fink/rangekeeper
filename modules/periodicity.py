@@ -1,10 +1,9 @@
-from aenum import Enum
+import aenum
 import pandas as pd
-import enum
 
 
 class Periodicity:
-    class Type(Enum):
+    class Type(aenum.Enum):
         _init_ = 'value __doc__'
 
         year = 'A-DEC', 'Anchored on end of December'
@@ -43,17 +42,17 @@ class Periodicity:
     def date_offset(
             date: pd.Timestamp,
             period_type: Type,
-            number: int):
+            num_periods: int):
         if period_type is Periodicity.Type.year:
-            return date + pd.DateOffset(years=number)
+            return date + pd.DateOffset(years=num_periods)
         elif period_type is Periodicity.Type.quarter:
-            return date + pd.DateOffset(months=3*number)
+            return date + pd.DateOffset(months=3*num_periods)
         elif period_type is Periodicity.Type.month:
-            return date + pd.DateOffset(months=number)
+            return date + pd.DateOffset(months=num_periods)
         elif period_type is Periodicity.Type.week:
-            return date + pd.DateOffset(weeks=number)
+            return date + pd.DateOffset(weeks=num_periods)
         elif period_type is Periodicity.Type.day:
-            return date + pd.DateOffset(days=number)
+            return date + pd.DateOffset(days=num_periods)
 
 
 
