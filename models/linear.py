@@ -6,7 +6,7 @@ import aenum
 
 import modules.distribution
 import modules.flux
-from modules.apartment import Apartment
+from modules.space import Apartment
 from modules.units import Units
 from modules.periodicity import Periodicity
 from modules.distribution import DistributionType
@@ -54,7 +54,7 @@ def compose_apartments(unit_mix: Dict, project_params: Dict):
     apartments = []
     for key, value in unit_mix.items():
         if value > 0:
-            apartment = modules.apartment.Apartment.from_type(apartment_type=key)
+            apartment = modules.space.Apartment.from_type(apartment_type=key)
             for i in range(0, value):
                 gfa.append(apartment.gfa)
                 cfa_amenities.append(apartment.cfa_amenities)
