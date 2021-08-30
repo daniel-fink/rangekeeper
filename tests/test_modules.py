@@ -1,0 +1,181 @@
+import pytest
+import pandas as pd
+import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
+
+import modules.distribution
+import modules.flux
+import modules.phase
+from modules.units import Units
+from modules.periodicity import Periodicity
+
+# Pytests file.
+# Note: gathers tests according to a naming convention.
+# By default any file that is to contain tests must be named starting with 'test_',
+# classes that hold tests must be named starting with 'Test',
+# and any function in a file that should be treated as a test must also start with 'test_'.
+
+matplotlib.use('TkAgg')
+plt.style.use('seaborn')  # pretty matplotlib plots
+plt.rcParams['figure.figsize'] = (12, 8)
+
+
+class TestDistribution:
+    num_periods = 100
+    parameters = np.linspace(0, 1, num=num_periods)
+    #print(len(parameters))
+
+    def test_correct_distributions(self):
+        uniform_dist = modules.distribution.Uniform()
+        uniform_densities = uniform_dist.interval_density(parameters=TestDistribution.parameters)
+        #plt.plot(TestDistribution.parameters, uniform_densities)
+        assert sum(uniform_densities) == 1.0
+
+        exp_dist = modules.distribution.Exponential(rate=0.02, num_periods=12)
+        # exp_factors = exp_dist.factor(parameters=parameters)
+        exp_densities = exp_dist.density(parameters=TestDistribution.parameters)
+        exp_cumulative = exp_dist.cumulative_density(parameters=TestDistribution.parameters)
+
+        #plt.plot(parameters, exp_factors)
+        plt.plot(TestDistribution.parameters, exp_densities)
+        plt.plot(TestDistribution.parameters, exp_cumulative)
+        # assert exp_factors[100 - 1] == math.pow((1 + 0.02), 100)
+
+    def test_correct_PERT_dist(self):
+        pert_dist = modules.distribution.PERT(peak=0.75, weighting=4)
+        pert_values = pert_dist.interval_density(parameters=TestDistribution.parameters)
+        #plt.plot(TestDistribution.parameters, pert_values)
+        #print("PERT CDF: " + str(pert_values))
+        assert sum(pert_values) == 1.0
+
+        # print(pert_value)
+
+        #plt.show(block=True)
+        #plt.interactive(True)
+
+
+class TestPeriod:
+    def test_correct_periods(self):
+        date = pd.Timestamp(2020, 2, 28)
+        period = Periodicity.include_date(date=date, duration=Periodicity.Type.month)
+        assert period.day == 29  # end date of Period
+        assert period.month == 2
+
+        sequence = Periodicity.period_sequence(date, pd.Timestamp(2020, 12, 31), Periodicity.Type.quarter)
+        assert sequence.size == 4
+
+        end_date = Periodicity.date_offset(date, Periodicity.Type.month, 4)
+        assert end_date == pd.Timestamp(2020, 6, 28)
+
+
+class TestFlow:
+    date1 = pd.Timestamp(2000, 1, 2)
+    date2 = pd.Timestamp(2000, 2, 29)
+    date3 = pd.Timestamp(2000, 12, 31)
+
+    dates = [date1, date2, date3]
+    values = [1, 2.3, 456]
+
+    series = pd.Series(data=values, index=dates, name="foo", dtype=float)
+    flow_from_series = modules.flux.Flow(movements=series, units=Units.Type.USD)
+
+    dict = {date1: values[0], date2: values[1], date3: values[2]}
+    flow_from_dict = modules.flux.Flow.from_dict(movements=dict, name="foo", units=Units.Type.USD)
+
+    def test_correct_flow(self):
+        date = pd.Timestamp(2000, 2, 29)
+        assert TestFlow.flow_from_series.movements[date] == 2.3
+        assert TestFlow.flow_from_series.movements.size == 3
+        assert TestFlow.flow_from_series.movements.loc[date] == 2.3
+        assert TestFlow.flow_from_series.movements.equals(TestFlow.flow_from_dict.movements)
+        assert isinstance(TestFlow.flow_from_series.movements.index, pd.DatetimeIndex)
+
+    periods = Periodicity.period_sequence(include_start=pd.Timestamp(2020, 1, 31),
+                                          include_end=pd.Timestamp(2022, 1, 1),
+                                          periodicity=Periodicity.Type.month)
+
+    sum_flow = modules.flux.Flow.from_total(name="bar",
+                                            total=100.0,
+                                            index=periods,
+                                            distribution=modules.distribution.Uniform(),
+                                            units=Units.Type.USD)
+    # print(sum_flow.movements)
+
+    invert_flow = sum_flow.invert()
+
+    def test_correct_sumflow(self):
+        assert TestFlow.sum_flow.movements.size == 25
+        assert TestFlow.sum_flow.movements.array.sum() == 100.0
+        assert TestFlow.sum_flow.movements.index.array[1] == pd.Timestamp(2020, 2, 29)
+        assert TestFlow.sum_flow.movements.array[1] == 4
+        assert TestFlow.sum_flow.movements.name == "bar"
+        assert TestFlow.sum_flow.units == Units.Type.USD
+
+    def test_correct_invert(self):
+        assert TestFlow.invert_flow.movements.size == 25
+        assert TestFlow.invert_flow.movements.array.sum() == -100.0
+        assert TestFlow.invert_flow.movements.index.array[2] == pd.Timestamp(2020, 3, 31)
+        assert TestFlow.invert_flow.movements.array[2] == -4
+        assert TestFlow.invert_flow.movements.name == "bar"
+        assert TestFlow.invert_flow.units == Units.Type.USD
+
+    resample_flow = invert_flow.resample(periodicity_type=Periodicity.Type.year)
+
+    def test_correct_resample(self):
+        assert TestFlow.resample_flow.movements.size == 3
+        assert TestFlow.resample_flow.movements[0] == -48
+        assert TestFlow.resample_flow.movements[1] == -48
+        assert TestFlow.resample_flow.movements[2] == -4
+
+
+class TestConfluence:
+    flow1 = modules.flux.Flow.from_total(name="yearly_flow",
+                                         total=100.0,
+                                         index=Periodicity.period_sequence(
+                                             include_start=pd.Timestamp(2020, 1, 31),
+                                             include_end=pd.Timestamp(2022, 1, 1),
+                                             periodicity=Periodicity.Type.year),
+                                         distribution=modules.distribution.Uniform(),
+                                         units=Units.Type.USD)
+
+    flow2 = modules.flux.Flow.from_total(name="weekly_flow",
+                                         total=-50.0,
+                                         index=Periodicity.period_sequence(include_start=pd.Timestamp(2020, 3, 1),
+                                                                           include_end=pd.Timestamp(2021, 2, 28),
+                                                                           periodicity=Periodicity.Type.week),
+                                         distribution=modules.distribution.Uniform(),
+                                         units=Units.Type.USD)
+
+    confluence = modules.flux.Confluence(name="confluence",
+                                         affluents=[flow1, flow2],
+                                         periodicity_type=Periodicity.Type.month)
+
+    def test_correct_confluence(self):
+        assert TestConfluence.confluence.name == "confluence"
+        assert len(TestConfluence.confluence._affluents) == 2
+        assert TestConfluence.confluence.start_date == pd.Timestamp(2020, 3, 1)
+        assert TestConfluence.confluence.end_date == pd.Timestamp(2022, 12, 31)
+        assert TestConfluence.confluence.sum().movements.index.size == 24 + 10  # Two full years plus March-Dec inclusive
+        assert TestConfluence.confluence.confluence['weekly_flow'].sum() == -50
+        assert TestConfluence.confluence.confluence.index.freq == 'M'
+
+
+class TestPhase:
+    def test_correct_phase(self):
+        phase = modules.phase.Phase(name='test_phase', start_date=pd.Timestamp(2020, 3, 1), end_date=pd.Timestamp(2021, 2, 28))
+        assert phase.start_date < phase.end_date
+        assert phase.length == pd.Timedelta('364 days')
+
+    def test_correct_phases(self):
+        dates = [pd.Timestamp(2020, 2, 29), pd.Timestamp(2020, 1, 1), pd.Timestamp(2021, 2, 28), pd.Timestamp(2021, 12, 31), pd.Timestamp(2024, 2, 29)]
+        names = ['Phase1', 'Phase2', 'Phase3', 'Phase4']
+        phases = modules.phase.Phase.from_date_sequence(names=names, dates=dates)
+
+        assert len(phases) == 4
+        assert phases[0].name == 'Phase1'
+        assert phases[0].end_date == pd.Timestamp(2020, 2, 29)
+        assert phases[0].length == pd.Timedelta('0 days')
+
+        assert phases[1].start_date == pd.Timestamp(2020, 3, 1)
+        assert phases[1].end_date == pd.Timestamp(2021,2, 27)
