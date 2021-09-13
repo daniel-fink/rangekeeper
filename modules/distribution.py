@@ -1,9 +1,12 @@
 import enum
+
+import scipy.stats
 import scipy.stats as ss
 import numpy as np
+from typing import Union, Optional
 
 
-class DistributionType(enum.Enum):
+class Type(enum.Enum):
     uniform = 1
     triangular = 2
     normal = 3
@@ -13,7 +16,17 @@ class DistributionType(enum.Enum):
 
 
 class Distribution:
-    pass
+    def __init__(self,
+                 generator: Optional[np.random.Generator] = None):
+        self.generator = generator
+        self.dist = ss.rv_continuous()
+
+    def sample(self, size: int):
+        if self.generator is None:
+            generator = np.random.default_rng()
+        else:
+            generator = self.generator
+        return self.dist.rvs(size=size, random_state=generator)
 
 
 class Uniform(Distribution):
@@ -22,7 +35,9 @@ class Uniform(Distribution):
     such the cumulative distribution reaches 1. (For uniform distribution, this means the density is continuously 1).
     """
 
-    def __init__(self):
+    def __init__(self,
+                 generator: Optional[np.random.Generator] = None):
+        super().__init__(generator=generator)
         self.dist = ss.uniform(loc=0, scale=1)
 
     def interval_density(self, parameters: [float]):
@@ -51,7 +66,7 @@ class Uniform(Distribution):
             raise ValueError("Error: Parameter must be between 0 and 1 inclusive")
 
 
-class Exponential:
+class Exponential(Distribution):
     """
     A continuous exponentially growing (or decaying) distribution between 0 and 1.
     To calculate the density at any point, the distribution is scaled such that the cumulative distribution reaches 1.
@@ -62,7 +77,9 @@ class Exponential:
 
     def __init__(self,
                  rate: float,
-                 num_periods: int):
+                 num_periods: int,
+                 generator: Optional[np.random.Generator] = None):
+        super().__init__(generator=generator)
         self.rate = rate
         self.num_periods = num_periods
 
@@ -109,12 +126,13 @@ class Exponential:
         Returns the multiplicative factor of the distribution's initial value at the given parameters
         """
         if (all(parameters) >= 0) & (all(parameters) <= 1):
+            raise Exception("This isnt working for some reason...")
             return [np.power((1 + self.rate), (self.num_periods - 1) * parameter) for parameter in parameters]
         else:
             raise ValueError("Error: Parameter must be between 0 and 1 inclusive")
 
 
-class PERT:
+class PERT(Distribution):
     """
     A continuous distribution that is controlled by the placement and weighting of the mode (peak) value.
     It produces similar distributions to the Normal (Gaussian) distribution within a specified domain.
@@ -132,14 +150,19 @@ class PERT:
     """
 
     def __init__(self,
-                 peak: float,
-                 weighting: float = 4.0):
+                 peak: float = 0.5,
+                 weighting: float = 4.0,
+                 minimum: float = 0.0,
+                 maximum: float = 1.0,
+                 generator: Optional[np.random.Generator] = None):
+        super().__init__(generator=generator)
         self.peak = peak
         self.weighting = weighting
-        if (self.weighting >= 0) & (self.peak >= 0) & (self.peak <= 1):
-            a = (1. + self.weighting * (self.peak) / 1)
-            b = (1. + self.weighting * (1 - self.peak) / 1)
-            self.dist = ss.beta(loc=0, scale=1, a=a, b=b)
+        self.scale = maximum - minimum
+        if (self.weighting >= 0) & (self.peak >= minimum) & (self.peak <= maximum):
+            a = (1. + self.weighting * (self.peak - minimum) / (maximum - minimum))
+            b = (1. + self.weighting * (maximum - self.peak) / (maximum - minimum))
+            self.dist = ss.beta(loc=minimum, scale=self.scale, a=a, b=b)
         else:
             raise ValueError("Error: Weighting must be greater than 0 and Peak must be between 0 and 1 inclusive")
 

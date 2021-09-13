@@ -1,6 +1,7 @@
 import itertools
 import pandas as pd
 import numpy as np
+from dateutil.relativedelta import relativedelta
 import numpy_financial as npf
 import pyxirr
 from typing import Dict, Type
@@ -26,7 +27,6 @@ class Phase:
         self._interval = pd.Interval(left=start_date, right=end_date)
         self.start_date = self._interval.left
         self.end_date = self._interval.right
-        self.length = self._interval.length
 
     def to_index(self, periodicity: Periodicity.Type):
         index = Periodicity.period_sequence(
@@ -35,11 +35,21 @@ class Phase:
             periodicity=periodicity)
         return index
 
+    def duration(self,
+                 period_type=Periodicity.Type):
+        return modules.periodicity.Periodicity.duration(start_date=self.start_date,
+                                                        end_date=self.end_date,
+                                                        period_type=period_type)
+
+
     @staticmethod
     def from_num_periods(name: str,
                          start_date: pd.Timestamp,
                          period_type: Periodicity.Type,
                          num_periods: int):
+        """
+
+        """
         if num_periods < 0:
             end_date = start_date
             new_start_date = Periodicity.date_offset(date=start_date,
@@ -55,6 +65,9 @@ class Phase:
     @staticmethod
     def from_date_sequence(names: [str],
                            dates: [pd.Timestamp]):
+        """
+
+        """
         if len(names) != len(dates) - 1:
             raise Exception('Error: number of Phase names must equal number of Phases created (i.e. one less than number of dates)')
 
@@ -65,6 +78,23 @@ class Phase:
         for i in range(len(names)):
             phases.append(Phase(name=names[i], start_date=date_pairs[i][0], end_date=date_pairs[i][1]))
         return phases
+
+    @staticmethod
+    def from_num_periods_sequence(names: [str],
+                                  period_type: Periodicity.Type,
+                                  durations: [int],
+                                  start_date: pd.Timestamp):
+        if len(names) != len(durations):
+            raise Exception('Error: number of Phase names must equal number of Phases')
+
+        dates = []
+        cumulative_durations = np.cumsum(durations)
+        for duration in cumulative_durations:
+            dates.append(Periodicity.date_offset(date=start_date, period_type=period_type, num_periods=duration))
+
+        return Phase.from_date_sequence(names=names, dates=dates)
+
+
 
 
 
