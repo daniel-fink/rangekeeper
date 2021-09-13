@@ -4,7 +4,7 @@ import aenum
 
 class Units:
     class Type(aenum.Enum):
-        _init_ = 'value __doc__'
+        _init_ = 'value', '__doc__'
 
         USD = 'USD$', "United States' Dollars"
         AUD = 'AUD$' "Australian Dollars"

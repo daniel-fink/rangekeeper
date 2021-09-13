@@ -128,7 +128,7 @@ class TestFlow:
         assert TestFlow.resample_flow.movements[2] == -4
 
 
-class TestConfluence:
+class TestAggregation:
     flow1 = modules.flux.Flow.from_total(name="yearly_flow",
                                          total=100.0,
                                          index=Periodicity.period_sequence(
@@ -146,18 +146,18 @@ class TestConfluence:
                                          distribution=modules.distribution.Uniform(),
                                          units=Units.Type.USD)
 
-    confluence = modules.flux.Confluence(name="confluence",
+    aggregation = modules.flux.Aggregation(name="aggregation",
                                          affluents=[flow1, flow2],
                                          periodicity_type=Periodicity.Type.month)
 
-    def test_correct_confluence(self):
-        assert TestConfluence.confluence.name == "confluence"
-        assert len(TestConfluence.confluence._affluents) == 2
-        assert TestConfluence.confluence.start_date == pd.Timestamp(2020, 3, 1)
-        assert TestConfluence.confluence.end_date == pd.Timestamp(2022, 12, 31)
-        assert TestConfluence.confluence.sum().movements.index.size == 24 + 10  # Two full years plus March-Dec inclusive
-        assert TestConfluence.confluence.confluence['weekly_flow'].sum() == -50
-        assert TestConfluence.confluence.confluence.index.freq == 'M'
+    def test_correct_aggregation(self):
+        assert TestAggregation.aggregation.name == "aggregation"
+        assert len(TestAggregation.aggregation._affluents) == 2
+        assert TestAggregation.aggregation.start_date == pd.Timestamp(2020, 3, 1)
+        assert TestAggregation.aggregation.end_date == pd.Timestamp(2022, 12, 31)
+        assert TestAggregation.aggregation.sum().movements.index.size == 24 + 10  # Two full years plus March-Dec inclusive
+        assert TestAggregation.aggregation.aggregation['weekly_flow'].sum() == -50
+        assert TestAggregation.aggregation.aggregation.index.freq == 'M'
 
 
 class TestBaselineProforma:
@@ -184,14 +184,14 @@ class TestBaselineProforma:
                                              units=Units.Type.USD)
     pgi_esc = modules.flux.Flow(pgi_esc.movements - (gfa * initial_rent_psf_pa), units=Units.Type.USD,
                                 name='pgi_unesc')
-    pgi = modules.flux.Confluence(name='pgi', affluents=[pgi_unesc, pgi_esc], periodicity_type=Periodicity.Type.year)
+    pgi = modules.flux.Aggregation(name='pgi', affluents=[pgi_unesc, pgi_esc], periodicity_type=Periodicity.Type.year)
 
     # Vacancy:
     vacancy = modules.flux.Flow(pgi.sum().movements * 0.05, units=Units.Type.USD, name='vacancy').invert()
     print(vacancy.movements)
 
     # Effective Gross Income
-    egi = modules.flux.Confluence('egi', [pgi.sum(), vacancy], Periodicity.Type.year)
+    egi = modules.flux.Aggregation('egi', [pgi.sum(), vacancy], Periodicity.Type.year)
     print(egi.sum().movements)
 
     # pgi_esc = modules.flow.Flow.

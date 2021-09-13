@@ -1,5 +1,6 @@
 import aenum
 import pandas as pd
+import numpy as np
 
 
 class Periodicity:
@@ -23,7 +24,7 @@ class Periodicity:
     def period_sequence(include_start: pd.Timestamp,
                         include_end: pd.Timestamp,
                         periodicity: Type):
-        """Returns a pd PeriodIndex that encompasses start & end dates with periods of given duration"""
+        """Returns a pd.PeriodIndex that encompasses start & end dates with periods of given duration"""
 
         return pd.period_range(start=include_start, end=include_end, freq=periodicity.value)
 
@@ -54,5 +55,22 @@ class Periodicity:
         elif period_type is Periodicity.Type.day:
             return date + pd.DateOffset(days=num_periods)
 
+    @staticmethod
+    def duration(start_date: pd.Timestamp,
+                 end_date: pd.Timestamp,
+                 period_type: Type):
+        delta = start_date - end_date
 
+        if period_type is Periodicity.Type.year:
+            return delta / np.timedelta64(1, 'Y')
+        if period_type is Periodicity.Type.quarter:
+            return (delta / np.timedelta64(1, 'Y')) * 4
+        if period_type is Periodicity.Type.month:
+            return delta / np.timedelta64(1, 'M')
+        if period_type is Periodicity.Type.semimonth:
+            return (delta / np.timedelta64(1, 'M')) * 2
+        if period_type is Periodicity.Type.week:
+            return delta / np.timedelta64(1, 'W')
+        if period_type is Periodicity.Type.day:
+            return delta / np.timedelta64(1, 'D')
 
