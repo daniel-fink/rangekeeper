@@ -121,15 +121,11 @@ class Exponential(Distribution):
         else:
             raise ValueError("Error: Parameter must be between 0 and 1 inclusive")
 
-    def factor(self, parameters: [float]):
+    def factor(self):
         """
-        Returns the multiplicative factor of the distribution's initial value at the given parameters
+        Returns the multiplicative factor of the distribution's initial value at extract period
         """
-        if (all(parameters) >= 0) & (all(parameters) <= 1):
-            raise Exception("This isnt working for some reason...")
-            return [np.power((1 + self.rate), (self.num_periods - 1) * parameter) for parameter in parameters]
-        else:
-            raise ValueError("Error: Parameter must be between 0 and 1 inclusive")
+        return [np.power((1 + self.rate), period_index) for period_index in range(self.num_periods)]
 
 
 class PERT(Distribution):

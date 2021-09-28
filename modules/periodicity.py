@@ -1,9 +1,13 @@
+import math
+from typing import Optional, Union
 import aenum
+import dateutil.relativedelta
 import pandas as pd
 import numpy as np
 
 
 class Periodicity:
+
     class Type(aenum.Enum):
         _init_ = 'value __doc__'
 
@@ -15,6 +19,23 @@ class Periodicity:
         day = 'D', 'Daily'
 
     @staticmethod
+    def from_value(value: str):
+        if value == 'A-DEC':
+            return Periodicity.Type.year
+        if value == 'Q-DEC':
+            return Periodicity.Type.quarter
+        if value == 'M':
+            return Periodicity.Type.month
+        if value == 'SM':
+            return Periodicity.Type.semimonth
+        if value == 'W':
+            return Periodicity.Type.week
+        if value == 'D':
+            return Periodicity.Type.day
+
+
+
+    @staticmethod
     def include_date(date: pd.Timestamp, duration: Type):
         """Returns a pd Period that encompasses the given date"""
 
@@ -22,11 +43,26 @@ class Periodicity:
 
     @staticmethod
     def period_sequence(include_start: pd.Timestamp,
-                        include_end: pd.Timestamp,
-                        periodicity: Type):
-        """Returns a pd.PeriodIndex that encompasses start & end dates with periods of given duration"""
+                        periodicity: Type,
+                        bound: Union[pd.Timestamp, int] = None):
+        """
+        Returns a pd.PeriodIndex from a start date with periods of given duration.
+        Either an end date, or number of periods must be given to bound the sequence.
 
-        return pd.period_range(start=include_start, end=include_end, freq=periodicity.value)
+        :param include_start: pd.Timestamp start date
+        :param periodicity: Period frequency
+        :param bound: A terminating condition; either a pd.Timestamp end date or a (integer) number of periods
+        """
+        if isinstance(bound, pd.Timestamp):
+            return pd.period_range(start=include_start,
+                                   end=bound,
+                                   freq=periodicity.value,
+                                   name='dates')
+        elif isinstance(bound, int):
+            return pd.period_range(start=include_start,
+                                   periods=bound,
+                                   freq=periodicity.value,
+                                   name='dates')
 
     @staticmethod
     def periods_per_year(period_type: Type):
@@ -59,18 +95,22 @@ class Periodicity:
     def duration(start_date: pd.Timestamp,
                  end_date: pd.Timestamp,
                  period_type: Type):
-        delta = start_date - end_date
+        """
+        Returns the whole integer (i.e. no remainder)
+        number of periods between given dates.
+        """
+        delta = dateutil.relativedelta.relativedelta(end_date, start_date)
 
         if period_type is Periodicity.Type.year:
-            return delta / np.timedelta64(1, 'Y')
+            return delta.years
         if period_type is Periodicity.Type.quarter:
-            return (delta / np.timedelta64(1, 'Y')) * 4
+            return (delta.years * 4) + math.floor(delta.months / 3)
         if period_type is Periodicity.Type.month:
-            return delta / np.timedelta64(1, 'M')
+            return (delta.years * 12) + delta.months
         if period_type is Periodicity.Type.semimonth:
-            return (delta / np.timedelta64(1, 'M')) * 2
+            return (delta.years * 24) + delta.months * 2
         if period_type is Periodicity.Type.week:
-            return delta / np.timedelta64(1, 'W')
+            return math.floor((end_date - start_date).days / 7)
         if period_type is Periodicity.Type.day:
-            return delta / np.timedelta64(1, 'D')
+            return (end_date - start_date).days
 

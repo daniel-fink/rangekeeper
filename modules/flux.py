@@ -46,7 +46,10 @@ class Flow:
         if periods.size != len(data):
             raise ValueError("Error: count of periods and data must match")
         dates = [pd.Timestamp(period.to_timestamp(how='end').date()) for period in periods]
-        series = pd.Series(data=data, index=dates, name=name, dtype=float)
+        series = pd.Series(data=data,
+                           index=pd.Series(data=dates, name='dates'),
+                           name=name,
+                           dtype=float)
         return Flow(movements=series, units=units)
 
     @staticmethod
@@ -54,7 +57,7 @@ class Flow:
                   movements: Dict[pd.Timestamp, float],
                   units: Units.Type):
         dates = movements.keys()
-        series = pd.Series(data=list(movements.values()), index=dates, name=name, dtype=float)
+        series = pd.Series(data=list(movements.values()), index=pd.Series(dates, name='dates'), name=name, dtype=float)
         return Flow(movements=series, units=units)
 
     @staticmethod
@@ -119,10 +122,7 @@ class Flow:
             movements = [initial for i in range(len(index))]
             return Flow.from_periods(name=name, periods=index, data=movements, units=units)
         elif isinstance(distribution, modules.distribution.Exponential):
-            # parameters = [x / (index.size - 1) for x in range(index.size)]
-            parameters = np.linspace(0, 1, num=index.size + 1)
-            movements = [initial * factor for factor in
-                         distribution.factor(parameters=np.delete(parameters, -1))]
+            movements = [initial * factor for factor in distribution.factor()]
             return Flow.from_periods(name=name, periods=index, data=movements, units=units)
 
     def invert(self):
@@ -167,57 +167,74 @@ class Flow:
         return self.movements.index.freq
 
     def to_aggregation(self,
-                      periodicity_type: Periodicity.Type,
-                      name: str = None):
-        return modules.flux.Aggregation(
-            name=name if name is not None else self.name,
-            affluents=[self],
-            periodicity_type=periodicity_type)
+                       periodicity_type: Periodicity.Type,
+                       name: str = None):
+        return modules.flux.Aggregation(name=name if name is not None else self.name,
+                                        aggregands=[self],
+                                        periodicity_type=periodicity_type)
 
 
 class Aggregation:
     """
-    A `Aggregation` collects affluent (tributary/upstream) Flows
+    A `Aggregation` collects aggregand (constituent) Flows
     and resamples them with a specified periodicity.
     """
 
     def __init__(self,
                  name: str,
-                 affluents: [Flow],
+                 aggregands: [Flow],
                  periodicity_type: Periodicity.Type):
 
         # Name:
         self.name = name
 
         # Units:
-        if all(flow.units == affluents[0].units for flow in affluents):
-            self.units = affluents[0].units
+        if all(flow.units == aggregands[0].units for flow in aggregands):
+            self.units = aggregands[0].units
         else:
             raise Exception("Input Flows have dissimilar units. Cannot aggregate into Aggregation.")
 
         # Affluents:
-        self._affluents = affluents
+        self._aggregands = aggregands
         """The set of input Flows that are aggregated in this Aggregation"""
 
         # Periodicity Type:
         self.periodicity_type = periodicity_type
 
         # Aggregation:
-        affluents_dates = list(
-            itertools.chain.from_iterable(list(affluent.movements.index.array) for affluent in self._affluents))
-        self.start_date = min(affluents_dates)
-        self.end_date = max(affluents_dates)
-        resampled_affluents = [affluent.resample(periodicity_type=self.periodicity_type) for affluent in
-                               self._affluents]
+        aggregands_dates = list(
+            itertools.chain.from_iterable(list(aggregand.movements.index.array) for aggregand in self._aggregands))
+        self.start_date = min(aggregands_dates)
+        self.end_date = max(aggregands_dates)
+        resampled_aggregands = [aggregand.resample(periodicity_type=self.periodicity_type) for aggregand in
+                                self._aggregands]
 
-        self.aggregation = pd.concat([resampled.movements for resampled in resampled_affluents], axis=1).fillna(0)
+        self.aggregation = pd.concat([resampled.movements for resampled in resampled_aggregands], axis=1).fillna(0)
         """
-        A pd DataFrame of the Aggregation's affluent Flows resampled into the Aggregation's periodicity
+        A pd DataFrame of the Aggregation's aggregand Flows resampled into the Aggregation's periodicity
         """
+
+    @staticmethod
+    def from_DataFrame(name: str,
+                       data: pd.DataFrame,
+                       units: Units.Type):
+        aggregands = []
+        for column in data.columns:
+            series = data[column]
+            aggregands.append(Flow(movements=series, units=units, name=series.name))
+        return Aggregation(name=name,
+                           aggregands=aggregands,
+                           periodicity_type=Periodicity.from_value(data.index.freqstr))
+
+    def display(self):
+        print('Name: ' + self.name)
+        print('Units: ' + self.units.__doc__)
+        print('Flows: ')
+        print(self.aggregation.to_markdown())
 
     def extract(self, flow_name: str):
         """
-        Extract a Aggregation's resampled affluent as a Flow
+        Extract a Aggregation's resampled aggregand as a Flow
         :param flow_name:
         :return:
         """
@@ -229,7 +246,7 @@ class Aggregation:
 
     def sum(self, name: str = None):
         """
-        Returns a Flow whose movements are the sum of the Aggregation's affluents by period
+        Returns a Flow whose movements are the sum of the Aggregation's aggregands by period
         :return: Flow
         """
         return modules.flux.Flow.from_periods(
@@ -243,34 +260,34 @@ class Aggregation:
         Returns a Aggregation with Flows' movements collapsed (summed) to the Aggregation's final period
         :return: Aggregation
         """
-        affluents = [self.extract(flow_name=flow_name) for flow_name in list(self.aggregation.columns)]
+        aggregands = [self.extract(flow_name=flow_name) for flow_name in list(self.aggregation.columns)]
         return modules.flux.Aggregation(
             name=self.name,
-            affluents=[affluent.sum() for affluent in affluents],
+            aggregands=[aggregand.collapse() for aggregand in aggregands],
             periodicity_type=self.periodicity_type)
 
-    def append(self, affluents: [Flow]):
+    def append(self, aggregands: [Flow]):
         # Check Units:
-        if any(flow.units != self.units for flow in affluents):
+        if any(flow.units != self.units for flow in aggregands):
             raise Exception("Input Flows have dissimilar units. Cannot aggregate into Aggregation.")
 
         # Append Affluents:
-        self._affluents.extend(affluents)
+        self._aggregands.extend(aggregands)
 
         # Aggregation:
-        affluents_dates = list(
-            itertools.chain.from_iterable(list(flow.movements.index.array) for flow in self._affluents))
-        self.start_date = min(affluents_dates)
-        self.end_date = max(affluents_dates)
-        resampled_affluents = [affluent.resample(periodicity_type=self.periodicity_type) for affluent in
-                               self._affluents]
+        aggregands_dates = list(
+            itertools.chain.from_iterable(list(flow.movements.index.array) for flow in self._aggregands))
+        self.start_date = min(aggregands_dates)
+        self.end_date = max(aggregands_dates)
+        resampled_aggregands = [aggregand.resample(periodicity_type=self.periodicity_type) for aggregand in
+                                self._aggregands]
 
-        self.aggregation = pd.concat([resampled.movements for resampled in resampled_affluents], axis=1).fillna(0)
+        self.aggregation = pd.concat([resampled.movements for resampled in resampled_aggregands], axis=1).fillna(0)
 
     def resample(self, periodicity_type: Periodicity.Type):
         return modules.flux.Aggregation(
             name=self.name,
-            affluents=self._affluents,
+            aggregands=self._aggregands,
             periodicity_type=periodicity_type)
 
     @classmethod
@@ -282,10 +299,10 @@ class Aggregation:
         if any(aggregation.units != aggregations[0].units for aggregation in aggregations):
             raise Exception("Input Aggregations have dissimilar units. Cannot merge into Aggregation.")
 
-        # Affluents:
-        affluents = [affluent for aggregation in aggregations for affluent in aggregation._affluents]
+        # Aggregands:
+        aggregands = [aggregand for aggregation in aggregations for aggregand in aggregation._aggregands]
 
         return Aggregation(
             name=name,
-            affluents=affluents,
+            aggregands=aggregands,
             periodicity_type=periodicity_type)
