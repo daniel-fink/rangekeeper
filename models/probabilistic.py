@@ -12,6 +12,10 @@ from modules.periodicity import Periodicity
 from modules.distribution import DistributionType
 
 
+def
+
+
+
 # Phasing:
 def compose_phases(project_params: Dict):
     """
@@ -108,7 +112,7 @@ def compose_prelim_costs(
         periodicity_type: Periodicity.Type,
         units: Units.Type,
 
-        :return: A Confluence of preliminary cost Flows
+        :return: A Aggregation of preliminary cost Flows
         """
 
     designplanningengineering_flow = modules.flux.Flow.from_total(
@@ -153,7 +157,7 @@ def compose_prelim_costs(
         distribution=modules.distribution.Uniform(),
         units=project_params['units'])
 
-    preliminaries_costs = modules.flux.Confluence(
+    preliminaries_costs = modules.flux.Aggregation(
         name='preliminaries_costs',
         affluents=[designplanningengineering_flow,
                    surveygeotech_flow,
@@ -231,7 +235,7 @@ def compose_build_costs(
         distribution=modules.distribution.Uniform(),
         units=project_params['units'])
 
-    build_costs = modules.flux.Confluence(
+    build_costs = modules.flux.Aggregation(
         name='build_costs',
         affluents=[construction_shell_flow,
                    construction_cores_flow,
@@ -246,8 +250,8 @@ def compose_build_costs(
 # Financing Costs:
 def compose_finance_costs(  # TODO: Add fees and remove loan_drawdown, loan_balance...
         project_params: Dict,
-        preliminaries_costs: modules.flux.Confluence,
-        build_costs: modules.flux.Confluence):
+        preliminaries_costs: modules.flux.Aggregation,
+        build_costs: modules.flux.Aggregation):
     """
 
     :param project_params:
@@ -256,13 +260,13 @@ def compose_finance_costs(  # TODO: Add fees and remove loan_drawdown, loan_bala
     :return:
     """
 
-    loan_confluence = modules.flux.Confluence(
+    loan_aggregation = modules.flux.Aggregation(
         name='loan',
         affluents=[preliminaries_costs.sum(), build_costs.sum()],
         periodicity_type=project_params['periodicity_type'])
 
     interest_rate_per_period = project_params['construction_interest_rate_pa'] / Periodicity.periods_per_year(project_params['periodicity_type'])
-    loan_drawdown = loan_confluence.sum(name='loan_drawdown')
+    loan_drawdown = loan_aggregation.sum(name='loan_drawdown')
 
     interest = []
     loan_balance = []
@@ -277,22 +281,22 @@ def compose_finance_costs(  # TODO: Add fees and remove loan_drawdown, loan_bala
 
     interest = modules.flux.Flow.from_periods(
         name='interest',
-        periods=loan_confluence.confluence.index.to_period(),
+        periods=loan_aggregation.aggregation.index.to_period(),
         data=interest,
         units=project_params['units'])
 
     loan_balance = modules.flux.Flow.from_periods(
         name='loan_balance',
-        periods=loan_confluence.confluence.index.to_period(),
+        periods=loan_aggregation.aggregation.index.to_period(),
         data=loan_balance,
         units=project_params['units'])
 
-    construction_finance_confluence = modules.flux.Confluence(
+    construction_finance_aggregation = modules.flux.Aggregation(
         name='construction_financing',
         affluents=[loan_drawdown, loan_balance, interest],
         periodicity_type=project_params['periodicity_type'])
 
-    return construction_finance_confluence
+    return construction_finance_aggregation
 
 
 # Revenues:
@@ -320,7 +324,7 @@ def compose_revenues(
         movements=revenues_flow.movements.multiply(project_params['sales_fee_rate']),
         units=project_params['units'])
 
-    revenues = modules.flux.Confluence(
+    revenues = modules.flux.Aggregation(
         name='revenues',
         affluents=[revenues_flow, sales_fee_flow.invert()],
         periodicity_type=project_params['periodicity_type'])
@@ -371,11 +375,11 @@ def calculate_development_metrics(
     interest_costs = finance_costs.extract('interest')
 
     # Net Development Cost:
-    net_development_costs = modules.flux.Confluence.merge(
-        confluences=[
+    net_development_costs = modules.flux.Aggregation.merge(
+        aggregations=[
             preliminaries,
             build_costs,
-            interest_costs.to_confluence(periodicity_type=project_params['periodicity_type'])
+            interest_costs.to_aggregation(periodicity_type=project_params['periodicity_type'])
             ],
         name='net_development_costs',
         periodicity_type=project_params['periodicity_type'])
@@ -386,11 +390,11 @@ def calculate_development_metrics(
         property_params=property_params)
 
     # Net Development Revenue:
-    ndr_confluence = modules.flux.Confluence(
+    ndr_aggregation = modules.flux.Aggregation(
         name='net_development_revenue',
         affluents=[net_development_costs.sum().invert(), revenues.sum()],
         periodicity_type=project_params['periodicity_type'])
-    net_development_revenue = ndr_confluence.sum()
+    net_development_revenue = ndr_aggregation.sum()
 
     # Metrics:
     margin = (project_params['margin_on_cost_reqd'] * net_development_costs.collapse().sum().movements)[0]
@@ -400,9 +404,9 @@ def calculate_development_metrics(
         name='investment',
         movements={project_params['start_date']: (-1) * residual_land_value},
         units=project_params['units'])
-    ndr_confluence.append(affluents=[investment_flow])
+    ndr_aggregation.append(affluents=[investment_flow])
 
-    net_development_flow = ndr_confluence.sum()
+    net_development_flow = ndr_aggregation.sum()
     irr = net_development_flow.xirr()
 
     return pd.Series(
