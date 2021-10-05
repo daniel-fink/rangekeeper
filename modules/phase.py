@@ -48,16 +48,15 @@ class Phase:
 
     def to_index(self, periodicity: Periodicity.Type):
         return Periodicity.period_sequence(
-                            include_start=self.start_date,
-                            periodicity=periodicity,
-                            bound=self.end_date)
+            include_start=self.start_date,
+            periodicity=periodicity,
+            bound=self.end_date)
 
-    def duration(self, period_type=Periodicity.Type):
+    def duration(self, period_type: Periodicity.Type, inclusive: bool = False):
         return modules.periodicity.Periodicity.duration(start_date=self.start_date,
-                                                        end_date=Periodicity.date_offset(date=self.end_date,
-                                                                                         period_type=Periodicity.Type.day,
-                                                                                         num_periods=1),
-                                                        period_type=period_type)
+                                                        end_date=self.end_date,
+                                                        period_type=period_type,
+                                                        inclusive=inclusive)
 
     @staticmethod
     def from_num_periods(name: str,
@@ -110,9 +109,3 @@ class Phase:
             dates.append(Periodicity.date_offset(date=start_date, period_type=period_type, num_periods=duration))
 
         return Phase.from_date_sequence(names=names, dates=dates)
-
-
-
-
-
-

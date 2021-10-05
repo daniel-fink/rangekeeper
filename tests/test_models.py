@@ -34,7 +34,7 @@ class TestLinear:
         # models.linear.reversion.display()
         # models.linear.ncf.display()
         # models.linear.ncf_operating.display()
-        # models.linear.ncf_operating.display()
+        models.linear.ncf_operating.display()
         print(models.linear.pv_ncf_operating['Discounted Net Cashflows'].sum())
 
         # size = models.linear.pgi.movements.index.size
