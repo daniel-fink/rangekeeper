@@ -29,7 +29,7 @@ class TestDistribution:
     # print(len(parameters))
 
     def test_uniform_distribution_has_density_of_1(self):
-        uniform_dist = modules.distribution.Uniform(rng=None)
+        uniform_dist = modules.distribution.Uniform(generator=None)
         uniform_densities = uniform_dist.interval_density(parameters=TestDistribution.parameters)
         # plt.plot(TestDistribution.parameters, uniform_densities)
         assert sum(uniform_densities) == 1.0
@@ -62,7 +62,9 @@ class TestPeriod:
         assert period.day == 29  # end date of Period
         assert period.month == 2
 
-        sequence = Periodicity.period_sequence(date, pd.Timestamp(2020, 12, 31), Periodicity.Type.quarter)
+        sequence = Periodicity.period_sequence(include_start=date,
+                                               bound=pd.Timestamp(2020, 12, 31),
+                                               periodicity=Periodicity.Type.quarter)
         assert sequence.size == 4
 
         end_date = Periodicity.date_offset(date, Periodicity.Type.month, 4)
@@ -94,8 +96,8 @@ class TestFlow:
         assert isinstance(TestFlow.flow_from_series.movements.index, pd.DatetimeIndex)
 
     periods = Periodicity.period_sequence(include_start=pd.Timestamp(2020, 1, 31),
-                                          include_end=pd.Timestamp(2022, 1, 1),
-                                          periodicity=Periodicity.Type.month)
+                                          periodicity=Periodicity.Type.month,
+                                          bound=pd.Timestamp(2022, 1, 1))
 
     sum_flow = modules.flux.Flow.from_total(name="bar",
                                             total=100.0,
@@ -134,8 +136,8 @@ class TestFlow:
 
     def test_distribution_as_input(self):
         periods = Periodicity.period_sequence(include_start=pd.Timestamp(2020, 1, 31),
-                                              include_end=pd.Timestamp(2022, 1, 1),
-                                              periodicity=Periodicity.Type.month)
+                                              periodicity=Periodicity.Type.month,
+                                              bound=pd.Timestamp(2022, 1, 1))
 
         dist = modules.distribution.PERT(peak=5, weighting=4, minimum=2, maximum=8)
         assert isinstance(dist, modules.distribution.Distribution)
@@ -156,8 +158,7 @@ class TestFlow:
         x = np.linspace(2, 8, 100)
         pdf = ss.beta.pdf(x, *params)
 
-
-        #plt.hist(sums, bins=20)
+        # plt.hist(sums, bins=20)
         # plot
         fig, ax = plt.subplots(1, 1)
         ax.hist(sums, bins=20)
@@ -165,12 +166,11 @@ class TestFlow:
         plt.show(block=True)
 
 
-
 class TestAggregation:
     flow1 = modules.flux.Flow.from_total(name="yearly_flow",
                                          total=100.0,
                                          index=Periodicity.period_sequence(include_start=pd.Timestamp(2020, 1, 31),
-                                                                           include_end=pd.Timestamp(2022, 1, 1),
+                                                                           bound=pd.Timestamp(2022, 1, 1),
                                                                            periodicity=Periodicity.Type.year),
                                          distribution=modules.distribution.Uniform(),
                                          units=Units.Type.USD)
@@ -178,18 +178,18 @@ class TestAggregation:
     flow2 = modules.flux.Flow.from_total(name="weekly_flow",
                                          total=-50.0,
                                          index=Periodicity.period_sequence(include_start=pd.Timestamp(2020, 3, 1),
-                                                                           include_end=pd.Timestamp(2021, 2, 28),
+                                                                           bound=pd.Timestamp(2021, 2, 28),
                                                                            periodicity=Periodicity.Type.week),
                                          distribution=modules.distribution.Uniform(),
                                          units=Units.Type.USD)
 
     aggregation = modules.flux.Aggregation(name="aggregation",
-                                         affluents=[flow1, flow2],
-                                         periodicity_type=Periodicity.Type.month)
+                                           aggregands=[flow1, flow2],
+                                           periodicity_type=Periodicity.Type.month)
 
     def test_correct_aggregation(self):
         assert TestAggregation.aggregation.name == "aggregation"
-        assert len(TestAggregation.aggregation._affluents) == 2
+        assert len(TestAggregation.aggregation._aggregands) == 2
         assert TestAggregation.aggregation.start_date == pd.Timestamp(2020, 3, 1)
         assert TestAggregation.aggregation.end_date == pd.Timestamp(2022, 12, 31)
         assert TestAggregation.aggregation.sum().movements.index.size == 24 + 10  # Two full years plus March-Dec inclusive
@@ -202,7 +202,7 @@ class TestPhase:
         phase = modules.phase.Phase(name='test_phase', start_date=pd.Timestamp(2020, 3, 1),
                                     end_date=pd.Timestamp(2021, 2, 28))
         assert phase.start_date < phase.end_date
-        assert phase.length == pd.Timedelta('364 days')
+        assert phase.duration(Periodicity.Type.day) == 364
 
     def test_correct_phases(self):
         dates = [pd.Timestamp(2020, 2, 29), pd.Timestamp(2020, 3, 1), pd.Timestamp(2021, 2, 28),
@@ -213,11 +213,11 @@ class TestPhase:
         assert len(phases) == 4
         assert phases[0].name == 'Phase1'
         assert phases[0].end_date == pd.Timestamp(2020, 2, 29)
-        assert phases[0].length == pd.Timedelta('0 days')
+        assert phases[0].duration(Periodicity.Type.day) == 0
 
         assert phases[1].start_date == pd.Timestamp(2020, 3, 1)
         assert phases[1].end_date == pd.Timestamp(2021, 2, 27)
 
 
-plt.show(block=True)
-plt.interactive(True)
+# plt.show(block=True)
+# plt.interactive(True)

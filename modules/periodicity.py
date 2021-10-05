@@ -7,7 +7,6 @@ import numpy as np
 
 
 class Periodicity:
-
     class Type(aenum.Enum):
         _init_ = 'value __doc__'
 
@@ -32,8 +31,6 @@ class Periodicity:
             return Periodicity.Type.week
         if value == 'D':
             return Periodicity.Type.day
-
-
 
     @staticmethod
     def include_date(date: pd.Timestamp, duration: Type):
@@ -83,7 +80,7 @@ class Periodicity:
         if period_type is Periodicity.Type.year:
             return date + pd.DateOffset(years=num_periods)
         elif period_type is Periodicity.Type.quarter:
-            return date + pd.DateOffset(months=3*num_periods)
+            return date + pd.DateOffset(months=3 * num_periods)
         elif period_type is Periodicity.Type.month:
             return date + pd.DateOffset(months=num_periods)
         elif period_type is Periodicity.Type.week:
@@ -94,12 +91,20 @@ class Periodicity:
     @staticmethod
     def duration(start_date: pd.Timestamp,
                  end_date: pd.Timestamp,
-                 period_type: Type):
+                 period_type: Type,
+                 inclusive: bool = False):
         """
         Returns the whole integer (i.e. no remainder)
         number of periods between given dates.
+        If inclusive is True, the end_date is included in the calculation.
         """
-        delta = dateutil.relativedelta.relativedelta(end_date, start_date)
+        calc_end_date = end_date
+        if inclusive:
+            calc_end_date = Periodicity.date_offset(date=end_date,
+                                                    period_type=Periodicity.Type.day,
+                                                    num_periods=1)
+
+        delta = dateutil.relativedelta.relativedelta(calc_end_date, start_date)
 
         if period_type is Periodicity.Type.year:
             return delta.years
@@ -110,7 +115,6 @@ class Periodicity:
         if period_type is Periodicity.Type.semimonth:
             return (delta.years * 24) + delta.months * 2
         if period_type is Periodicity.Type.week:
-            return math.floor((end_date - start_date).days / 7)
+            return math.floor((calc_end_date - start_date).days / 7)
         if period_type is Periodicity.Type.day:
-            return (end_date - start_date).days
-
+            return (calc_end_date - start_date).days

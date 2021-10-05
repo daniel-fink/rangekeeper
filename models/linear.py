@@ -32,7 +32,8 @@ projection_phase = Phase.from_num_periods(name='Projection',
                                           period_type=Periodicity.Type.year,
                                           num_periods=1)
 
-noi_calc_phase = Phase.merge(name='NOI Calculation Phase', phases=[operation_phase, projection_phase])
+noi_calc_phase = Phase.merge(name='NOI Calculation Phase',
+                             phases=[operation_phase, projection_phase])
 
 reversion_phase = Phase.from_num_periods(name='Reversion',
                                          start_date=pd.Timestamp(2030, 1, 1),
@@ -43,14 +44,16 @@ reversion_phase = Phase.from_num_periods(name='Reversion',
 period_type = Periodicity.Type.year
 growth_rate = 0.02
 distribution = modules.distribution.Exponential(rate=growth_rate,
-                                                num_periods=noi_calc_phase.duration(period_type=period_type))
+                                                num_periods=noi_calc_phase.duration(period_type=period_type,
+                                                                                    inclusive=True))
 
 # Potential Gross Income
 pgi = Flow.from_initial(name='Potential Gross Income',
                         initial=100.,
                         index=noi_calc_phase.to_index(periodicity=period_type),
                         distribution=Exponential(rate=growth_rate,
-                                                 num_periods=noi_calc_phase.duration(period_type=period_type)),
+                                                 num_periods=noi_calc_phase.duration(period_type=period_type,
+                                                                                     inclusive=True)),
                         units=units)
 
 # Vacancy Allowance
@@ -107,7 +110,8 @@ ncf_operating = Aggregation.from_DataFrame(name='Operating Net Cashflows',
 discount_rate = 0.07
 
 pv_ncf_operating = ncf_operating.sum().movements.to_frame()
-pv_ncf_operating.insert(0, 'index', range(1, ncf_operating.aggregation.index.size + 1))
+pv_ncf_operating.insert(0, 'index', range(ncf_operating.aggregation.index.size))
 pv_ncf_operating['Discounted Net Cashflows'] = pv_ncf_operating.apply(
-    lambda movement: movement['Operating Net Cashflows'] / math.pow((1 + discount_rate), movement['index']), axis=1)
+    lambda movement: movement['Operating Net Cashflows'] / math.pow((1 + discount_rate), movement['index'] + 1), axis=1)
 pv_ncf_operating.drop(columns=['index'], inplace=True)
+# npv_ncf_operating = npf.npv(discount_rate, ncf_operating.sum().movements)
