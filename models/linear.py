@@ -82,7 +82,7 @@ noi = Aggregation(name='Net Operating Income',
 
 # Capital Expenses:
 capex_pgi_ratio = 0.10
-capex = Flow.from_periods(name='Capital Expenses',
+capex = Flow.from_periods(name='Capital Expenditures',
                           periods=noi_calc_phase.to_index(periodicity=period_type),
                           data=pgi.movements * capex_pgi_ratio,
                           units=units).invert()
@@ -114,4 +114,3 @@ pv_ncf_operating.insert(0, 'index', range(ncf_operating.aggregation.index.size))
 pv_ncf_operating['Discounted Net Cashflows'] = pv_ncf_operating.apply(
     lambda movement: movement['Operating Net Cashflows'] / math.pow((1 + discount_rate), movement['index'] + 1), axis=1)
 pv_ncf_operating.drop(columns=['index'], inplace=True)
-# npv_ncf_operating = npf.npv(discount_rate, ncf_operating.sum().movements)

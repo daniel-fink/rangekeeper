@@ -1,4 +1,6 @@
 import itertools
+import math
+
 import pandas as pd
 import numpy as np
 import numpy_financial as npf
@@ -143,6 +145,24 @@ class Flow:
             name=self.name,
             movements={self.movements.index[-1]: self.movements.sum()},
             units=self.units)
+
+    def pv(self,
+           periodicity: Periodicity.Type,
+           discount_rate: float,
+           name: str = None):
+        """
+        Returns a Flow with values discounted to the present (i.e. before its first period) by a specified rate
+        """
+        resampled = self.resample(periodicity)
+        frame = resampled.movements.to_frame()
+        frame.insert(0, 'index', range(resampled.movements.index.size))
+        frame['Discounted Flow'] = frame.apply(
+                    lambda movement: movement[self.name] / math.pow((1 + discount_rate), movement['index'] + 1), axis=1)
+        if name is None:
+            name = 'Discounted ' + self.name
+        return Flow(movements=frame['Discounted Flow'],
+                    units=self.units,
+                    name=name)
 
     def xirr(self):
         return pyxirr.xirr(
