@@ -12,29 +12,30 @@ from modules.units import Units
 from modules.periodicity import Periodicity
 
 
-class Flow:
+class Flow(pd.Series):
     """
     A `Flow` is a pd Series of 'movements' of material (funds, energy, mass, etc) that occur at specified dates.
     Note: the flow.movements Series index is a pd.DatetimeIndex, and its values are floats.
     """
 
     def __init__(self,
-                 movements: pd.Series,
+                 data=None,
+                 name: str = None,
+                 *args,
                  units: Units.Type,
-                 name: str = None):
-        self.movements = movements
+                 **kwargs,):
+        super().__init__(data, *args, **kwargs)
         if name:
             self.name = name
-            movements.name = name
         else:
-            self.name = str(self.movements.name)
+            self.name = str(data.name)
         self.units = units
 
     def display(self):
-        print('Name: ' + self.name)
+        print('Name: ' + str(self.name))
         print('Units: ' + self.units.__doc__)
         print('Movements: ')
-        print(self.movements.to_markdown())
+        print(self.to_markdown())
 
     @staticmethod
     def from_periods(periods: pd.PeriodIndex,
@@ -48,19 +49,24 @@ class Flow:
         if periods.size != len(data):
             raise ValueError("Error: count of periods and data must match")
         dates = [pd.Timestamp(period.to_timestamp(how='end').date()) for period in periods]
-        series = pd.Series(data=data,
-                           index=pd.Series(data=dates, name='dates'),
-                           name=name,
-                           dtype=float)
-        return Flow(movements=series, units=units)
+        return Flow(data=data,
+                    index=pd.Series(data=dates, name='dates'),
+                    name=name,
+                    dtype=float,
+                    units=units)
+        # return Flow(data=series, units=units)
 
     @staticmethod
-    def from_dict(movements: Dict[pd.Timestamp, float],
+    def from_dict(data: Dict[pd.Timestamp, float],
                   units: Units.Type,
                   name: str = None):
-        dates = movements.keys()
-        series = pd.Series(data=list(movements.values()), index=pd.Series(dates, name='dates'), name=name, dtype=float)
-        return Flow(movements=series, units=units, name=name)
+        dates = data.keys()
+        return Flow(data=list(data.values()),
+                    index=pd.Series(dates, name='dates'),
+                    name=name,
+                    dtype=float,
+                    units=units)
+        # return Flow(movements=series, units=units, name=name)
 
     @staticmethod
     def from_total(total: Union[float, modules.distribution.Distribution],
@@ -131,18 +137,18 @@ class Flow:
         """
         Returns a Flow with movement values inverted (multiplied by -1)
         """
-        return Flow(movements=self.movements.copy(deep=True).multiply(-1),
+        return Flow(data=self.copy(deep=True).multiply(-1),
                     units=self.units,
-                    name=self.name)
+                    name=str(self.name))
 
     def collapse(self):
         """
         Returns a Flow whose movements collapse (are summed) to the last period
         :return:
         """
-        return modules.flux.Flow.from_dict(name=self.name,
-                                           movements={self.movements.index[-1]: self.movements.sum()},
-                                           units=self.units)
+        return modules.flux.Flow.from_dict(data={self.index[-1]: self.sum()},
+                                           units=self.units,
+                                           name=str(self.name))
 
     def pv(self,
            periodicity: Periodicity.Type,
@@ -152,35 +158,37 @@ class Flow:
         Returns a Flow with values discounted to the present (i.e. before its first period) by a specified rate
         """
         resampled = self.resample(periodicity)
-        frame = resampled.movements.to_frame()
-        frame.insert(0, 'index', range(resampled.movements.index.size))
+        frame = resampled.to_frame()
+        frame.insert(0, 'index', range(resampled.index.size))
         frame['Discounted Flow'] = frame.apply(
             lambda movement: movement[self.name] / math.pow((1 + discount_rate), movement['index'] + 1), axis=1)
         if name is None:
-            name = 'Discounted ' + self.name
-        return Flow(movements=frame['Discounted Flow'],
+            name = 'Discounted ' + str(self.name)
+        return Flow(data=frame['Discounted Flow'],
                     units=self.units,
                     name=name)
 
     def xirr(self):
-        return pyxirr.xirr(dates=[datetime.date() for datetime in list(self.movements.index.array)],
-                           amounts=self.movements.to_list())
+        return pyxirr.xirr(dates=[datetime.date() for datetime in list(self.index.array)],
+                           amounts=self.to_list())
 
     def xnpv(self, rate: float):
         return pyxirr.xnpv(rate=rate,
-                           dates=[datetime.date() for datetime in list(self.movements.index.array)],
-                           amounts=self.movements.to_list())
+                           dates=[datetime.date() for datetime in list(self.index.array)],
+                           amounts=self.to_list())
 
-    def resample(self, periodicity_type: Periodicity.Type):
+    def resample(self, periodicity_type: Periodicity.Type, *args):
         """
         Returns a Flow with movements redistributed across specified frequency
         """
 
-        movements = self.movements.copy(deep=True).resample(rule=periodicity_type.value).sum()
-        return Flow(movements, self.units)
+        resampled = super().resample(rule=periodicity_type.value).sum()
+        return Flow(data=resampled,
+                    units=self.units,
+                    name=str(self.name))
 
     def periodicity(self):
-        return self.movements.index.freq
+        return self.index.freq
 
     def to_aggregation(self,
                        periodicity_type: Periodicity.Type,
@@ -219,13 +227,13 @@ class Aggregation:
 
         # Aggregation:
         aggregands_dates = list(
-            itertools.chain.from_iterable(list(aggregand.movements.index.array) for aggregand in self._aggregands))
+            itertools.chain.from_iterable(list(aggregand.index.array) for aggregand in self._aggregands))
         self.start_date = min(aggregands_dates)
         self.end_date = max(aggregands_dates)
         resampled_aggregands = [aggregand.resample(periodicity_type=self.periodicity_type) for aggregand in
                                 self._aggregands]
 
-        self.aggregation = pd.concat([resampled.movements for resampled in resampled_aggregands], axis=1).fillna(0)
+        self.aggregation = pd.concat([resampled for resampled in resampled_aggregands], axis=1).fillna(0)
         """
         A pd DataFrame of the Aggregation's aggregand Flows resampled into the Aggregation's periodicity
         """
@@ -292,13 +300,13 @@ class Aggregation:
 
         # Aggregation:
         aggregands_dates = list(
-            itertools.chain.from_iterable(list(flow.movements.index.array) for flow in self._aggregands))
+            itertools.chain.from_iterable(list(flow.index.array) for flow in self._aggregands))
         self.start_date = min(aggregands_dates)
         self.end_date = max(aggregands_dates)
         resampled_aggregands = [aggregand.resample(periodicity_type=self.periodicity_type) for aggregand in
                                 self._aggregands]
 
-        self.aggregation = pd.concat([resampled.movements for resampled in resampled_aggregands], axis=1).fillna(0)
+        self.aggregation = pd.concat([resampled for resampled in resampled_aggregands], axis=1).fillna(0)
 
     def resample(self, periodicity_type: Periodicity.Type):
         return modules.flux.Aggregation(
