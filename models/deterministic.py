@@ -41,14 +41,6 @@ class Model:
         self.noi_calc_phase = Phase.merge(name='NOI Calculation Phase',
                                           phases=[self.operation_phase, self.projection_phase])
 
-        # self.reversion_phase = Phase.from_num_periods(name='Reversion',
-        #                                               start_date=Periodicity.date_offset(
-        #                                                   date=self.operation_phase.end_date,
-        #                                                   period_type=Periodicity.Type.day,
-        #                                                   num_periods=1),
-        #                                               period_type=Periodicity.Type.year,
-        #                                               num_periods=1)
-
         # Cashflows:
         self.distribution = modules.distribution.Exponential(rate=params['growth_rate'],
                                                              num_periods=self.noi_calc_phase.duration(
@@ -57,13 +49,24 @@ class Model:
 
         # Potential Gross Income
         self.pgi = Flow.from_initial(name='Potential Gross Income',
-                                     initial=100.,
+                                     initial=params['initial_pgi'],
                                      index=self.noi_calc_phase.to_index(periodicity=params['period_type']),
                                      distribution=Exponential(rate=params['growth_rate'],
                                                               num_periods=self.noi_calc_phase.duration(
                                                                   period_type=params['period_type'],
                                                                   inclusive=True)),
                                      units=params['units'])
+
+        self.addl_pgi = Flow(movements=pd.Series(data=range(self.pgi.movements.size),
+                                                 index=self.pgi.movements.index,
+                                                 dtype=float),
+                             units=params['units'],
+                             name='Additional PGI')
+
+        self.addl_pgi.movements = self.addl_pgi.movements * params['addl_pgi_per_period']
+        self.pgi = Flow(movements=self.pgi.movements + self.addl_pgi.movements,
+                        units=params['units'],
+                        name=self.pgi.name)
 
         # Vacancy Allowance
         self.vacancy = Flow.from_periods(name='Vacancy Allowance',
@@ -99,7 +102,6 @@ class Model:
                                periodicity_type=params['period_type'])
 
         # Reversion:
-
         # We require each next period's NCF as the numerator:
         sale_values = list(self.ncf.sum().movements.iloc[1:] / params['cap_rate'])
         self.reversion = Flow.from_periods(name='Reversion',
@@ -120,9 +122,12 @@ class Model:
         pv_ncf_cumsum = Flow(movements=self.pv_ncf.movements.cumsum(),
                              name='Discounted Net Cashflow Cumulative Sums',
                              units=params['units'])
-        pv_ncf_agg = Aggregation(name='Discounted Net Cashflow Sums',
-                                         aggregands=[pv_ncf_cumsum, self.pv_reversion],
-                                         periodicity_type=params['period_type'])
+        self.pv_ncf_agg = Aggregation(name='Discounted Net Cashflow Sums',
+                                      aggregands=[pv_ncf_cumsum, self.pv_reversion],
+                                      periodicity_type=params['period_type'])
 
-        self.pv_sums = pv_ncf_agg.sum()
+        self.pv_sums = self.pv_ncf_agg.sum()
         self.pv_sums.movements = self.pv_sums.movements[:-1]
+
+
+

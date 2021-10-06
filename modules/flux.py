@@ -37,10 +37,10 @@ class Flow:
         print(self.movements.to_markdown())
 
     @staticmethod
-    def from_periods(name: str,
-                     periods: pd.PeriodIndex,
+    def from_periods(periods: pd.PeriodIndex,
                      data: [float],
-                     units: Units.Type):
+                     units: Units.Type,
+                     name: str = None):
         """
         Returns a Flow where movement dates are defined by the end-dates of the specified periods
         """
@@ -55,19 +55,19 @@ class Flow:
         return Flow(movements=series, units=units)
 
     @staticmethod
-    def from_dict(name: str,
-                  movements: Dict[pd.Timestamp, float],
-                  units: Units.Type):
+    def from_dict(movements: Dict[pd.Timestamp, float],
+                  units: Units.Type,
+                  name: str = None):
         dates = movements.keys()
         series = pd.Series(data=list(movements.values()), index=pd.Series(dates, name='dates'), name=name, dtype=float)
-        return Flow(movements=series, units=units)
+        return Flow(movements=series, units=units, name=name)
 
     @staticmethod
-    def from_total(name: str,
-                   total: Union[float, modules.distribution.Distribution],
+    def from_total(total: Union[float, modules.distribution.Distribution],
                    index: pd.PeriodIndex,
                    distribution: modules.distribution.Distribution,
-                   units: Units.Type):
+                   units: Units.Type,
+                   name: str = None):
         """
         Generate a Flow from a total amount, distributed over the period index
         according to a specified distribution curve.
@@ -97,11 +97,11 @@ class Flow:
             raise NotImplementedError('Other types of distribution have not yet been implemented.')
 
     @staticmethod
-    def from_initial(name: str,
-                     initial: Union[float, modules.distribution.Distribution],
+    def from_initial(initial: Union[float, modules.distribution.Distribution],
                      index: pd.PeriodIndex,
                      distribution: modules.distribution.Distribution,
-                     units: Units.Type):
+                     units: Units.Type,
+                     name: str = None):
         """
         Generate a Flow from an initial amount, distributed over the period index
         according to the factor of the specified Distribution (where initial factor = 1).
@@ -131,20 +131,18 @@ class Flow:
         """
         Returns a Flow with movement values inverted (multiplied by -1)
         """
-        return Flow(
-            movements=self.movements.copy(deep=True).multiply(-1),
-            units=self.units,
-            name=self.name)
+        return Flow(movements=self.movements.copy(deep=True).multiply(-1),
+                    units=self.units,
+                    name=self.name)
 
     def collapse(self):
         """
         Returns a Flow whose movements collapse (are summed) to the last period
         :return:
         """
-        return modules.flux.Flow.from_dict(
-            name=self.name,
-            movements={self.movements.index[-1]: self.movements.sum()},
-            units=self.units)
+        return modules.flux.Flow.from_dict(name=self.name,
+                                           movements={self.movements.index[-1]: self.movements.sum()},
+                                           units=self.units)
 
     def pv(self,
            periodicity: Periodicity.Type,
@@ -157,7 +155,7 @@ class Flow:
         frame = resampled.movements.to_frame()
         frame.insert(0, 'index', range(resampled.movements.index.size))
         frame['Discounted Flow'] = frame.apply(
-                    lambda movement: movement[self.name] / math.pow((1 + discount_rate), movement['index'] + 1), axis=1)
+            lambda movement: movement[self.name] / math.pow((1 + discount_rate), movement['index'] + 1), axis=1)
         if name is None:
             name = 'Discounted ' + self.name
         return Flow(movements=frame['Discounted Flow'],
@@ -165,15 +163,13 @@ class Flow:
                     name=name)
 
     def xirr(self):
-        return pyxirr.xirr(
-            dates=[datetime.date() for datetime in list(self.movements.index.array)],
-            amounts=self.movements.to_list())
+        return pyxirr.xirr(dates=[datetime.date() for datetime in list(self.movements.index.array)],
+                           amounts=self.movements.to_list())
 
     def xnpv(self, rate: float):
-        return pyxirr.xnpv(
-            rate=rate,
-            dates=[datetime.date() for datetime in list(self.movements.index.array)],
-            amounts=self.movements.to_list())
+        return pyxirr.xnpv(rate=rate,
+                           dates=[datetime.date() for datetime in list(self.movements.index.array)],
+                           amounts=self.movements.to_list())
 
     def resample(self, periodicity_type: Periodicity.Type):
         """
