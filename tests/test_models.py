@@ -15,7 +15,7 @@ import modules.flux
 from modules.units import Units
 from modules.periodicity import Periodicity
 
-import models.linear, models.deterministic
+import models.linear, models.deterministic, models.probabilistic
 
 matplotlib.use('TkAgg')
 plt.style.use('seaborn')  # pretty matplotlib plots
@@ -86,3 +86,30 @@ class TestDeterministic:
         # Calculate the expected value with flexibility:
         exp_flex = pessimistic.pv_sums.movements[0] * .5 + optimistic.pv_sums.movements[9] * .5
         assert math.isclose(a=exp_flex, b=1083., rel_tol=.1)
+
+
+class TestProbabilistic:
+    def test_probabilistic_model(self):
+        base_params = {
+            'units': Units.Type.USD,
+            'start_date': pd.Timestamp(2020, 1, 1),
+            'num_periods': 10,
+            'acquisition_price': 1000,
+            'period_type': Periodicity.Type.year,
+            'growth_rate': 0.02,
+            'initial_pgi': 100.,
+            'space_market_dist': modules.distribution.PERT(peak=1., weighting=4.0, minimum=0.75, maximum=1.25),
+            'vacancy_rate': 0.05,
+            'opex_pgi_ratio': 0.35,
+            'capex_pgi_ratio': 0.10,
+            'cap_rate': 0.05,
+            'discount_rate': 0.07
+            }
+
+        prob = models.probabilistic.Model(base_params)
+        prob.pv_sums.display()
+        prob.investment_cashflows.display()
+        prob.investment_cashflows.sum().display()
+        print("IRR: " + str(prob.irr))
+        print("Average annual NCF: " + str(prob.ncf.sum().movements.mean()))
+
