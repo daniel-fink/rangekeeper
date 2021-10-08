@@ -60,7 +60,7 @@ pgi = Flow.from_initial(name='Potential Gross Income',
 vacancy_rate = 0.05
 vacancy = Flow.from_periods(name='Vacancy Allowance',
                             periods=noi_calc_phase.to_index(periodicity=period_type),
-                            data=pgi.movements * vacancy_rate,
+                            data=pgi * vacancy_rate,
                             units=units).invert()
 
 # Effective Gross Income:
@@ -72,7 +72,7 @@ egi = Aggregation(name='Effective Gross Income',
 opex_pgi_ratio = 0.35
 opex = Flow.from_periods(name='Operating Expenses',
                          periods=noi_calc_phase.to_index(periodicity=period_type),
-                         data=pgi.movements * opex_pgi_ratio,
+                         data=pgi * opex_pgi_ratio,
                          units=units).invert()
 
 # Net Operating Income:
@@ -84,7 +84,7 @@ noi = Aggregation(name='Net Operating Income',
 capex_pgi_ratio = 0.10
 capex = Flow.from_periods(name='Capital Expenditures',
                           periods=noi_calc_phase.to_index(periodicity=period_type),
-                          data=pgi.movements * capex_pgi_ratio,
+                          data=pgi * capex_pgi_ratio,
                           units=units).invert()
 
 # Net Cashflows:
@@ -94,7 +94,7 @@ ncf = Aggregation(name='Net Cashflows',
 
 # Reversion:
 cap_rate = 0.05
-sale_value = ncf.sum().movements.tail(1).item() / cap_rate
+sale_value = ncf.sum().tail(1).item() / cap_rate
 reversion = Flow.from_periods(name='Reversion',
                               periods=reversion_phase.to_index(periodicity=period_type),
                               data=[sale_value],
@@ -109,7 +109,7 @@ ncf_operating = Aggregation.from_DataFrame(name='Operating Net Cashflows',
 # Calculate the Present Value of the NCFs
 discount_rate = 0.07
 
-pv_ncf_operating = ncf_operating.sum().movements.to_frame()
+pv_ncf_operating = ncf_operating.sum().to_frame()
 pv_ncf_operating.insert(0, 'index', range(ncf_operating.aggregation.index.size))
 pv_ncf_operating['Discounted Net Cashflows'] = pv_ncf_operating.apply(
     lambda movement: movement['Operating Net Cashflows'] / math.pow((1 + discount_rate), movement['index'] + 1), axis=1)

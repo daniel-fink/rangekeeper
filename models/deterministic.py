@@ -10,9 +10,6 @@ from modules.distribution import Type, Uniform, Exponential
 from modules.phase import Phase
 
 
-# Setup:
-
-
 # Base Model:
 class Model:
     def __init__(self, params: dict):
@@ -57,21 +54,21 @@ class Model:
                                                                   inclusive=True)),
                                      units=params['units'])
 
-        self.addl_pgi = Flow(movements=pd.Series(data=range(self.pgi.movements.size),
-                                                 index=self.pgi.movements.index,
-                                                 dtype=float),
+        self.addl_pgi = Flow(data=pd.Series(data=range(self.pgi.size),
+                                            index=self.pgi.index,
+                                            dtype=float),
                              units=params['units'],
                              name='Additional PGI')
 
-        self.addl_pgi.movements = self.addl_pgi.movements * params['addl_pgi_per_period']
-        self.pgi = Flow(movements=self.pgi.movements + self.addl_pgi.movements,
+        self.addl_pgi = self.addl_pgi * params['addl_pgi_per_period']
+        self.pgi = Flow(data=self.pgi + self.addl_pgi,
                         units=params['units'],
                         name=self.pgi.name)
 
         # Vacancy Allowance
         self.vacancy = Flow.from_periods(name='Vacancy Allowance',
                                          periods=self.noi_calc_phase.to_index(periodicity=params['period_type']),
-                                         data=self.pgi.movements * params['vacancy_rate'],
+                                         data=self.pgi * params['vacancy_rate'],
                                          units=params['units']).invert()
 
         # Effective Gross Income:
@@ -82,7 +79,7 @@ class Model:
         # Operating Expenses:
         self.opex = Flow.from_periods(name='Operating Expenses',
                                       periods=self.noi_calc_phase.to_index(periodicity=params['period_type']),
-                                      data=self.pgi.movements * params['opex_pgi_ratio'],
+                                      data=self.pgi * params['opex_pgi_ratio'],
                                       units=params['units']).invert()
 
         # Net Operating Income:
@@ -93,7 +90,7 @@ class Model:
         # Capital Expenses:
         self.capex = Flow.from_periods(name='Capital Expenditures',
                                        periods=self.noi_calc_phase.to_index(periodicity=params['period_type']),
-                                       data=self.pgi.movements * params['capex_pgi_ratio'],
+                                       data=self.pgi * params['capex_pgi_ratio'],
                                        units=params['units']).invert()
 
         # Net Cashflows:
@@ -103,7 +100,7 @@ class Model:
 
         # Reversion:
         # We require each next period's NCF as the numerator:
-        sale_values = list(self.ncf.sum().movements.iloc[1:] / params['cap_rate'])
+        sale_values = list(self.ncf.sum().iloc[1:] / params['cap_rate'])
         self.reversion = Flow.from_periods(name='Reversion',
                                            # We no longer need the noi_calc_phase:
                                            periods=self.operation_phase.to_index(periodicity=params['period_type']),
@@ -119,7 +116,7 @@ class Model:
                                               discount_rate=params['discount_rate'])
 
         # Add Cumulative Sum of Discounted Net Cashflows to each period's Discounted Reversion:
-        pv_ncf_cumsum = Flow(movements=self.pv_ncf.movements.cumsum(),
+        pv_ncf_cumsum = Flow(data=self.pv_ncf.cumsum(),
                              name='Discounted Net Cashflow Cumulative Sums',
                              units=params['units'])
         self.pv_ncf_agg = Aggregation(name='Discounted Net Cashflow Sums',
@@ -127,7 +124,7 @@ class Model:
                                       periodicity_type=params['period_type'])
 
         self.pv_sums = self.pv_ncf_agg.sum()
-        self.pv_sums.movements = self.pv_sums.movements[:-1]
+        self.pv_sums = Flow(data=self.pv_sums[:-1], units=self.pv_sums.name)
 
 
 

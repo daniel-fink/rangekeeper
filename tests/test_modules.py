@@ -125,14 +125,14 @@ class TestFlow:
         assert TestFlow.invert_flow.name == "bar"
         assert TestFlow.invert_flow.units == Units.Type.USD
 
-    resample_flow = invert_flow.resample(periodicity_type=Periodicity.Type.year)
+    redistributed_flow = invert_flow.redistribute(periodicity_type=Periodicity.Type.year)
 
-    def test_correct_resample(self):
-        # TestFlow.resample_flow.display()
-        assert TestFlow.resample_flow.size == 3
-        assert TestFlow.resample_flow[0] == -48
-        assert TestFlow.resample_flow[1] == -48
-        assert TestFlow.resample_flow[2] == -4
+    def test_correct_redistributed(self):
+        # TestFlow.redistribute_flow.display()
+        assert TestFlow.redistributed_flow.size == 3
+        assert TestFlow.redistributed_flow[0] == -48
+        assert TestFlow.redistributed_flow[1] == -48
+        assert TestFlow.redistributed_flow[2] == -4
 
     def test_distribution_as_input(self):
         periods = Periodicity.period_sequence(include_start=pd.Timestamp(2020, 1, 31),
