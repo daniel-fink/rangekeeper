@@ -18,17 +18,40 @@ class Flow(pd.Series):
     Note: the flow.movements Series index is a pd.DatetimeIndex, and its values are floats.
     """
 
+    @property
+    def _constructor(self):
+        return Flow._internal_ctor
+
+    _metadata = ['units']
+
+    @classmethod
+    def _internal_ctor(cls, *args, **kwargs):
+        kwargs['units'] = None
+        return cls(*args, **kwargs)
+
+    @property
+    def _constructor_sliced(self):
+        return Flow
+
+    @property
+    def _constructor_expanddim(self):
+        return Flow
+
     def __init__(self,
-                 data=None,
-                 name: str = None,
-                 *args,
                  units: Units.Type,
-                 **kwargs,):
-        super().__init__(data, *args, **kwargs)
-        if name:
-            self.name = name
-        else:
-            self.name = str(data.name)
+                 data=None,
+                 index=None,
+                 dtype=float,
+                 name: str = None,
+                 copy: bool = False,
+                 fastpath: bool = False,
+                 ):
+        super(Flow, self).__init__(data=data,
+                                   index=index,
+                                   dtype=dtype,
+                                   name=name,
+                                   copy=copy,
+                                   fastpath=fastpath)
         self.units = units
 
     def display(self):
@@ -157,9 +180,9 @@ class Flow(pd.Series):
         """
         Returns a Flow with values discounted to the present (i.e. before its first period) by a specified rate
         """
-        resampled = self.resample(periodicity)
-        frame = resampled.to_frame()
-        frame.insert(0, 'index', range(resampled.index.size))
+        redistributed = self.redistribute(periodicity)
+        frame = redistributed.to_frame()
+        frame.insert(0, 'index', range(redistributed.index.size))
         frame['Discounted Flow'] = frame.apply(
             lambda movement: movement[self.name] / math.pow((1 + discount_rate), movement['index'] + 1), axis=1)
         if name is None:
@@ -177,13 +200,12 @@ class Flow(pd.Series):
                            dates=[datetime.date() for datetime in list(self.index.array)],
                            amounts=self.to_list())
 
-    def resample(self, periodicity_type: Periodicity.Type, *args):
+    def redistribute(self, periodicity_type: Periodicity.Type, *args):
         """
         Returns a Flow with movements redistributed across specified frequency
         """
-
-        resampled = super().resample(rule=periodicity_type.value).sum()
-        return Flow(data=resampled,
+        redistributed = self.resample(rule=periodicity_type.value).sum()
+        return Flow(data=redistributed,
                     units=self.units,
                     name=str(self.name))
 
@@ -201,7 +223,7 @@ class Flow(pd.Series):
 class Aggregation:
     """
     A `Aggregation` collects aggregand (constituent) Flows
-    and resamples them with a specified periodicity.
+    and redistributes them with a specified periodicity.
     """
 
     def __init__(self,
@@ -230,12 +252,12 @@ class Aggregation:
             itertools.chain.from_iterable(list(aggregand.index.array) for aggregand in self._aggregands))
         self.start_date = min(aggregands_dates)
         self.end_date = max(aggregands_dates)
-        resampled_aggregands = [aggregand.resample(periodicity_type=self.periodicity_type) for aggregand in
-                                self._aggregands]
+        redistributed_aggregands = [aggregand.redistribute(periodicity_type=self.periodicity_type) for aggregand in
+                                    self._aggregands]
 
-        self.aggregation = pd.concat([resampled for resampled in resampled_aggregands], axis=1).fillna(0)
+        self.aggregation = pd.concat(redistributed_aggregands, axis=1).fillna(0)
         """
-        A pd DataFrame of the Aggregation's aggregand Flows resampled into the Aggregation's periodicity
+        A pd DataFrame of the Aggregation's aggregand Flows redistributed into the Aggregation's periodicity
         """
 
     @staticmethod
@@ -245,7 +267,7 @@ class Aggregation:
         aggregands = []
         for column in data.columns:
             series = data[column]
-            aggregands.append(Flow(movements=series, units=units, name=series.name))
+            aggregands.append(Flow(data=series, units=units, name=series.name))
         return Aggregation(name=name,
                            aggregands=aggregands,
                            periodicity_type=Periodicity.from_value(data.index.freqstr))
@@ -258,7 +280,7 @@ class Aggregation:
 
     def extract(self, flow_name: str):
         """
-        Extract a Aggregation's resampled aggregand as a Flow
+        Extract a Aggregation's redistributed aggregand as a Flow
         :param flow_name:
         :return:
         """
@@ -303,12 +325,12 @@ class Aggregation:
             itertools.chain.from_iterable(list(flow.index.array) for flow in self._aggregands))
         self.start_date = min(aggregands_dates)
         self.end_date = max(aggregands_dates)
-        resampled_aggregands = [aggregand.resample(periodicity_type=self.periodicity_type) for aggregand in
-                                self._aggregands]
+        redistributed_aggregands = [aggregand.redistribute(periodicity_type=self.periodicity_type) for aggregand in
+                                    self._aggregands]
 
-        self.aggregation = pd.concat([resampled for resampled in resampled_aggregands], axis=1).fillna(0)
+        self.aggregation = pd.concat(redistributed_aggregands, axis=1).fillna(0)
 
-    def resample(self, periodicity_type: Periodicity.Type):
+    def redistribute(self, periodicity_type: Periodicity.Type):
         return modules.flux.Aggregation(
             name=self.name,
             aggregands=self._aggregands,
