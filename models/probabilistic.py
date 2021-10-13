@@ -123,11 +123,11 @@ class Model:
                                               discount_rate=params['discount_rate'])
 
         # Add Cumulative Sum of Discounted Net Cashflows to each period's Discounted Reversion:
-        pv_ncf_cumsum = Flow(movements=self.pv_ncf.movements.cumsum(),
-                             name='Discounted Net Cashflow Cumulative Sums',
-                             units=params['units'])
-        self.pv_ncf_agg = Aggregation(name='Discounted Net Cashflow Sums',
-                                      aggregands=[pv_ncf_cumsum, self.pv_reversion],
+        # pv_ncf_cumsum = Flow(movements=self.pv_ncf.movements.cumsum(),
+        #                      name='Discounted Net Cashflow Cumulative Sums',
+        #                      units=params['units'])
+        self.pv_ncf_agg = Aggregation(name='Discounted Net Cashflows',
+                                      aggregands=[self.pv_ncf, self.pv_reversion],
                                       periodicity_type=params['period_type'])
 
         self.pv_sums = self.pv_ncf_agg.sum()

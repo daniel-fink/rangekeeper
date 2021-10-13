@@ -15,7 +15,7 @@ import modules.flux
 from modules.units import Units
 from modules.periodicity import Periodicity
 
-import models.linear, models.deterministic, models.probabilistic
+import models.linear, models.deterministic, models.probabilistic, models.flexible
 
 matplotlib.use('TkAgg')
 plt.style.use('seaborn')  # pretty matplotlib plots
@@ -112,4 +112,38 @@ class TestProbabilistic:
         prob.investment_cashflows.sum().display()
         print("IRR: " + str(prob.irr))
         print("Average annual NCF: " + str(prob.ncf.sum().movements.mean()))
+
+
+class TestFlexible:
+    def test_flexible_model(self):
+        base_params = {
+            'units': Units.Type.USD,
+            'start_date': pd.Timestamp(2020, 1, 1),
+            'num_periods': 24,
+            'acquisition_price': 1000,
+            'period_type': Periodicity.Type.year,
+            'growth_rate': 0.02,
+            'initial_pgi': 100.,
+            'space_market_dist': modules.distribution.PERT(peak=1., weighting=4.0, minimum=0.5, maximum=1.75),
+            'asset_market_dist': modules.distribution.PERT(peak=0.06, weighting=4.0, minimum=0.03, maximum=0.09),
+            'vacancy_rate': 0.05,
+            'opex_pgi_ratio': 0.35,
+            'capex_pgi_ratio': 0.10,
+            'cap_rate': 0.05,
+            'discount_rate': 0.07
+            }
+
+        flex = models.flexible.Model(base_params)
+        flex.pgi_factor.display()
+        flex.reversion.display()
+        flex.pv_ncf_agg.display()
+
+        flex.pv_sums.display()
+
+        print("Reversion Date: " + str(flex.reversion_date))
+        flex.investment_cashflows.display()
+        flex.investment_cashflows.sum().display()
+        print("IRR: " + str(flex.irr))
+        print("NPV: " + str(flex.npv))
+        print("Average annual NCF: " + str(flex.ncf.sum().movements.mean()))
 
