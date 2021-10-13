@@ -63,7 +63,6 @@ class Model:
                                      units=params['units'])
 
         factors = params['space_market_dist'].sample(size=self.pgi.movements.size)
-
         self.pgi_factor = Flow(movements=pd.Series(data=factors,
                                                    index=self.pgi.movements.index,
                                                    dtype=float),
@@ -108,11 +107,30 @@ class Model:
                                periodicity_type=params['period_type'])
 
         # Reversion:
-        sale_value = self.ncf.sum().movements.tail(1).item() / params['cap_rate']
-        self.reversion = Flow.from_periods(name='Reversion',
-                                      periods=self.reversion_phase.to_index(periodicity=params['period_type']),
-                                      data=[sale_value],
-                                      units=params['units'])
+        # We no longer need the noi_calc_phase:
+        operation_periods = self.operation_phase.to_index(periodicity=params['period_type'])
+        self.cap_rates = params['asset_market_dist'].sample(size=operation_periods.size)
+        self.sale_values = Flow.from_periods(name='Sale Values',
+                                             # We no longer need the noi_calc_phase:
+                                             periods=operation_periods,
+                                             data=list(self.ncf.sum().movements[:self.operation_phase.end_date] / self.cap_rates),
+                                             units=params['units'])
+
+        # Flexibility Rules:
+        reversion_flags = []
+        for i in range(self.sale_values.movements.size):
+            flag = False
+            if i > 1:
+                if not any(reversion_flags):
+                    if self.pgi_factor.movements[i] > 1.2:
+                        self.reversion_date = self.sale_values.movements.index[i]
+                        flag = True
+            reversion_flags.append(flag)
+
+        self.reversion = Flow(name="Reversion",
+                              movements=pd.Series(data=self.sale_values.movements * reversion_flags,
+                                                  index=self.sale_values.movements.index),
+                              units=params['units'])
 
         # Calculate the Present Value of the NCFs:
         self.pv_ncf = self.ncf.sum().pv(periodicity=params['period_type'],
@@ -122,16 +140,13 @@ class Model:
         self.pv_reversion = self.reversion.pv(periodicity=params['period_type'],
                                               discount_rate=params['discount_rate'])
 
-        # Add Cumulative Sum of Discounted Net Cashflows to each period's Discounted Reversion:
-        # pv_ncf_cumsum = Flow(movements=self.pv_ncf.movements.cumsum(),
-        #                      name='Discounted Net Cashflow Cumulative Sums',
-        #                      units=params['units'])
-        self.pv_ncf_agg = Aggregation(name='Discounted Net Cashflows',
+        self.pv_ncf_agg = Aggregation(name='Discounted Net Cashflow Sums',
                                       aggregands=[self.pv_ncf, self.pv_reversion],
                                       periodicity_type=params['period_type'])
 
         self.pv_sums = self.pv_ncf_agg.sum()
-        self.pv_sums.movements = self.pv_sums.movements[:-1]
+
+        self.pv_sums.movements = self.pv_sums.movements[:self.reversion_date]
 
         self.acquisition = Flow.from_periods(periods=self.acquisition_phase.to_index(Periodicity.Type.year),
                                              data=[-abs(params['acquisition_price'])],
@@ -142,8 +157,6 @@ class Model:
                                                 aggregands=[self.ncf.sum(), self.reversion, self.acquisition],
                                                 periodicity_type=params['period_type'])
 
-        self.investment_cashflows.aggregation = self.investment_cashflows.aggregation[:-1]
+        self.investment_cashflows.aggregation = self.investment_cashflows.aggregation[:self.reversion_date]
         self.irr = self.investment_cashflows.sum().xirr()
-
-
-
+        self.npv = self.investment_cashflows.sum().xnpv(params['discount_rate'])
