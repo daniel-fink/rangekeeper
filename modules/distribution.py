@@ -21,12 +21,17 @@ class Distribution:
         self.generator = generator
         self.dist = ss.rv_continuous()
 
-    def sample(self, size: int):
+    def sample(self, size: int = 1):
         if self.generator is None:
             generator = np.random.default_rng()
         else:
             generator = self.generator
-        return self.dist.rvs(size=size, random_state=generator)
+        variates = self.dist.rvs(size=size, random_state=generator)
+
+        if size == 1:
+            return variates[0]
+        else:
+            return variates
 
 
 class Uniform(Distribution):
