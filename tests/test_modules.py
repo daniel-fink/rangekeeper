@@ -5,11 +5,11 @@ import scipy.stats as ss
 import matplotlib
 import matplotlib.pyplot as plt
 
-import modules.distribution
-import modules.flux
-import modules.phase
-from modules.units import Units
-from modules.periodicity import Periodicity
+import distribution
+import flux
+import phase
+from units import Units
+from periodicity import Periodicity
 
 # Pytests file.
 # Note: gathers tests according to a naming convention.
@@ -29,13 +29,13 @@ class TestDistribution:
     # print(len(parameters))
 
     def test_uniform_distribution_has_density_of_1(self):
-        uniform_dist = modules.distribution.Uniform(generator=None)
+        uniform_dist = distribution.Uniform(generator=None)
         uniform_densities = uniform_dist.interval_density(parameters=TestDistribution.parameters)
         # plt.plot(TestDistribution.parameters, uniform_densities)
         assert sum(uniform_densities) == 1.0
 
     def test_exponential_distribution_total_and_initial_match(self):
-        exp_dist = modules.distribution.Exponential(rate=0.02, num_periods=12)
+        exp_dist = distribution.Exponential(rate=0.02, num_periods=12)
         # exp_factors = exp_dist.factor(parameters=parameters)
         exp_densities = exp_dist.density(parameters=TestDistribution.parameters)
         exp_cumulative = exp_dist.cumulative_density(parameters=TestDistribution.parameters)
@@ -46,7 +46,7 @@ class TestDistribution:
         # assert exp_factors[100 - 1] == math.pow((1 + 0.02), 100)
 
     def test_PERT_distribution_sums_to_1(self):
-        pert_dist = modules.distribution.PERT(peak=0.75, weighting=4)
+        pert_dist = distribution.PERT(peak=0.75, weighting=4)
         pert_values = pert_dist.interval_density(parameters=TestDistribution.parameters)
         # plt.plot(TestDistribution.parameters, pert_values)
         # print("PERT CDF: " + str(pert_values))
@@ -80,10 +80,10 @@ class TestFlow:
     values = [1, 2.3, 456]
 
     series = pd.Series(data=values, index=dates, name="foo", dtype=float)
-    flow_from_series = modules.flux.Flow(movements=series, units=Units.Type.USD)
+    flow_from_series = flux.Flow(movements=series, units=Units.Type.USD)
 
     dict = {date1: values[0], date2: values[1], date3: values[2]}
-    flow_from_dict = modules.flux.Flow.from_dict(movements=dict, name="foo", units=Units.Type.USD)
+    flow_from_dict = flux.Flow.from_dict(movements=dict, name="foo", units=Units.Type.USD)
 
     def test_correct_flow(self):
         # TestFlow.flow_from_series.display()
@@ -99,11 +99,11 @@ class TestFlow:
                                           periodicity=Periodicity.Type.month,
                                           bound=pd.Timestamp(2022, 1, 1))
 
-    sum_flow = modules.flux.Flow.from_total(name="bar",
-                                            total=100.0,
-                                            index=periods,
-                                            distribution=modules.distribution.Uniform(),
-                                            units=Units.Type.USD)
+    sum_flow = flux.Flow.from_total(name="bar",
+                                    total=100.0,
+                                    index=periods,
+                                    dist=distribution.Uniform(),
+                                    units=Units.Type.USD)
 
     invert_flow = sum_flow.invert()
 
@@ -139,16 +139,16 @@ class TestFlow:
                                               periodicity=Periodicity.Type.month,
                                               bound=pd.Timestamp(2022, 1, 1))
 
-        dist = modules.distribution.PERT(peak=5, weighting=4, minimum=2, maximum=8)
-        assert isinstance(dist, modules.distribution.Distribution)
+        dist = distribution.PERT(peak=5, weighting=4, minimum=2, maximum=8)
+        assert isinstance(dist, distribution.Distribution)
 
         sums = []
         for i in range(1000):
-            flow = modules.flux.Flow.from_total(name='foo',
-                                                total=dist,
-                                                index=periods,
-                                                distribution=modules.distribution.Uniform(),
-                                                units=Units.Type.AUD)
+            flow = flux.Flow.from_total(name='foo',
+                                        total=dist,
+                                        index=periods,
+                                        dist=distribution.Uniform(),
+                                        units=Units.Type.AUD)
             sums.append(flow.collapse().movements[0])
 
         # estimate distribution parameters, in this case (a, b, loc, scale)
@@ -167,25 +167,25 @@ class TestFlow:
 
 
 class TestAggregation:
-    flow1 = modules.flux.Flow.from_total(name="yearly_flow",
-                                         total=100.0,
-                                         index=Periodicity.period_sequence(include_start=pd.Timestamp(2020, 1, 31),
-                                                                           bound=pd.Timestamp(2022, 1, 1),
-                                                                           periodicity=Periodicity.Type.year),
-                                         distribution=modules.distribution.Uniform(),
-                                         units=Units.Type.USD)
+    flow1 = flux.Flow.from_total(name="yearly_flow",
+                                 total=100.0,
+                                 index=Periodicity.period_sequence(include_start=pd.Timestamp(2020, 1, 31),
+                                                                   bound=pd.Timestamp(2022, 1, 1),
+                                                                   periodicity=Periodicity.Type.year),
+                                 dist=distribution.Uniform(),
+                                 units=Units.Type.USD)
 
-    flow2 = modules.flux.Flow.from_total(name="weekly_flow",
-                                         total=-50.0,
-                                         index=Periodicity.period_sequence(include_start=pd.Timestamp(2020, 3, 1),
-                                                                           bound=pd.Timestamp(2021, 2, 28),
-                                                                           periodicity=Periodicity.Type.week),
-                                         distribution=modules.distribution.Uniform(),
-                                         units=Units.Type.USD)
+    flow2 = flux.Flow.from_total(name="weekly_flow",
+                                 total=-50.0,
+                                 index=Periodicity.period_sequence(include_start=pd.Timestamp(2020, 3, 1),
+                                                                   bound=pd.Timestamp(2021, 2, 28),
+                                                                   periodicity=Periodicity.Type.week),
+                                 dist=distribution.Uniform(),
+                                 units=Units.Type.USD)
 
-    aggregation = modules.flux.Aggregation(name="aggregation",
-                                           aggregands=[flow1, flow2],
-                                           periodicity_type=Periodicity.Type.month)
+    aggregation = flux.Aggregation(name="aggregation",
+                                   aggregands=[flow1, flow2],
+                                   periodicity_type=Periodicity.Type.month)
 
     def test_correct_aggregation(self):
         assert TestAggregation.aggregation.name == "aggregation"
@@ -199,16 +199,20 @@ class TestAggregation:
 
 class TestPhase:
     def test_correct_phase(self):
-        phase = modules.phase.Phase(name='test_phase', start_date=pd.Timestamp(2020, 3, 1),
-                                    end_date=pd.Timestamp(2021, 2, 28))
-        assert phase.start_date < phase.end_date
-        assert phase.duration(Periodicity.Type.day) == 364
+        test_phase = phase.Phase(name='test_phase',
+                                 start_date=pd.Timestamp(2020, 3, 1),
+                                 end_date=pd.Timestamp(2021, 2, 28))
+        assert test_phase.start_date < test_phase.end_date
+        assert test_phase.duration(Periodicity.Type.day) == 364
 
     def test_correct_phases(self):
-        dates = [pd.Timestamp(2020, 2, 29), pd.Timestamp(2020, 3, 1), pd.Timestamp(2021, 2, 28),
-                 pd.Timestamp(2021, 12, 31), pd.Timestamp(2024, 2, 29)]
+        dates = [pd.Timestamp(2020, 2, 29),
+                 pd.Timestamp(2020, 3, 1),
+                 pd.Timestamp(2021, 2, 28),
+                 pd.Timestamp(2021, 12, 31),
+                 pd.Timestamp(2024, 2, 29)]
         names = ['Phase1', 'Phase2', 'Phase3', 'Phase4']
-        phases = modules.phase.Phase.from_date_sequence(names=names, dates=dates)
+        phases = phase.Phase.from_date_sequence(names=names, dates=dates)
 
         assert len(phases) == 4
         assert phases[0].name == 'Phase1'

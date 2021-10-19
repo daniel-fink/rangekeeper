@@ -2,12 +2,12 @@ import math
 import pandas as pd
 import numpy_financial as npf
 
-import modules.distribution
-from modules.flux import Flow, Aggregation
-from modules.units import Units
-from modules.periodicity import Periodicity
-from modules.distribution import Type, Uniform, Exponential
-from modules.phase import Phase
+import distribution
+from flux import Flow, Aggregation
+from units import Units
+from periodicity import Periodicity
+from distribution import Type, Uniform, Exponential
+from phase import Phase
 
 # Setup:
 units = Units.Type.USD
@@ -43,17 +43,17 @@ reversion_phase = Phase.from_num_periods(name='Reversion',
 # Cashflows:
 period_type = Periodicity.Type.year
 growth_rate = 0.02
-distribution = modules.distribution.Exponential(rate=growth_rate,
-                                                num_periods=noi_calc_phase.duration(period_type=period_type,
-                                                                                    inclusive=True))
+distribution = distribution.Exponential(rate=growth_rate,
+                                        num_periods=noi_calc_phase.duration(period_type=period_type,
+                                                                            inclusive=True))
 
 # Potential Gross Income
 pgi = Flow.from_initial(name='Potential Gross Income',
                         initial=100.,
                         index=noi_calc_phase.to_index(periodicity=period_type),
-                        distribution=Exponential(rate=growth_rate,
-                                                 num_periods=noi_calc_phase.duration(period_type=period_type,
-                                                                                     inclusive=True)),
+                        dist=Exponential(rate=growth_rate,
+                                         num_periods=noi_calc_phase.duration(period_type=period_type,
+                                                                             inclusive=True)),
                         units=units)
 
 # Vacancy Allowance

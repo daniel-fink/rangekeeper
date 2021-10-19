@@ -7,9 +7,9 @@ import numpy_financial as npf
 import pyxirr
 from typing import Dict, Union
 
-import modules.distribution
-from modules.units import Units
-from modules.periodicity import Periodicity
+import distribution
+from units import Units
+from periodicity import Periodicity
 
 
 class Flow:
@@ -63,9 +63,9 @@ class Flow:
         return Flow(movements=series, units=units, name=name)
 
     @staticmethod
-    def from_total(total: Union[float, modules.distribution.Distribution],
+    def from_total(total: Union[float, distribution.Distribution],
                    index: pd.PeriodIndex,
-                   distribution: modules.distribution.Distribution,
+                   dist: distribution.Distribution,
                    units: Units.Type,
                    name: str = None):
         """
@@ -77,29 +77,29 @@ class Flow:
         :param name: The name of the Flow
         :param total: An amount (or Distribution to be sampled)
         :param index: A pd.PeriodIndex of dates
-        :param distribution: A Distribution guiding how to distribute the amount over the index
+        :param dist: A Distribution guiding how to distribute the amount over the index
         :param units: The Units of the Flow
         """
 
         if isinstance(total, float):
             total = total
-        elif isinstance(total, modules.distribution.Distribution):
-            total = total.sample(size=1)[0]
+        elif isinstance(total, distribution.Distribution):
+            total = total.sample()
 
-        if isinstance(distribution, modules.distribution.Uniform):
+        if isinstance(dist, distribution.Uniform):
             movements = [total / index.size for i in range(index.size)]
             return Flow.from_periods(name=name, periods=index, data=movements, units=units)
-        elif isinstance(distribution, modules.distribution.PERT):
+        elif isinstance(dist, distribution.PERT):
             parameters = np.linspace(0, 1, num=(index.size + 1))
-            movements = [(total * density) for density in distribution.interval_density(parameters)]
+            movements = [(total * density) for density in dist.interval_density(parameters)]
             return Flow.from_periods(name=name, periods=index, data=movements, units=units)
         else:
             raise NotImplementedError('Other types of distribution have not yet been implemented.')
 
     @staticmethod
-    def from_initial(initial: Union[float, modules.distribution.Distribution],
+    def from_initial(initial: Union[float, distribution.Distribution],
                      index: pd.PeriodIndex,
-                     distribution: modules.distribution.Distribution,
+                     dist: distribution.Distribution,
                      units: Units.Type,
                      name: str = None):
         """
@@ -111,20 +111,20 @@ class Flow:
         :param name: The name of the Flow
         :param initial: An amount (or Distribution to be sampled)
         :param index: A pd.PeriodIndex of dates
-        :param distribution: A Distribution guiding how to distribute the amount over the index
+        :param dist: A Distribution guiding how to distribute the amount over the index
         :param units: The Units of the Flow
         """
 
         if isinstance(initial, float):
             initial = initial
-        elif isinstance(initial, modules.distribution.Distribution):
+        elif isinstance(initial, distribution.Distribution):
             initial = initial.sample()
 
-        if isinstance(distribution, modules.distribution.Uniform):
+        if isinstance(dist, distribution.Uniform):
             movements = [initial for i in range(len(index))]
             return Flow.from_periods(name=name, periods=index, data=movements, units=units)
-        elif isinstance(distribution, modules.distribution.Exponential):
-            movements = [initial * factor for factor in distribution.factor()]
+        elif isinstance(dist, distribution.Exponential):
+            movements = [initial * factor for factor in dist.factor()]
             return Flow.from_periods(name=name, periods=index, data=movements, units=units)
 
     def invert(self):
@@ -140,9 +140,9 @@ class Flow:
         Returns a Flow whose movements collapse (are summed) to the last period
         :return:
         """
-        return modules.flux.Flow.from_dict(name=self.name,
-                                           movements={self.movements.index[-1]: self.movements.sum()},
-                                           units=self.units)
+        return Flow.from_dict(name=self.name,
+                              movements={self.movements.index[-1]: self.movements.sum()},
+                              units=self.units)
 
     def pv(self,
            periodicity: Periodicity.Type,
@@ -185,9 +185,9 @@ class Flow:
     def to_aggregation(self,
                        periodicity_type: Periodicity.Type,
                        name: str = None):
-        return modules.flux.Aggregation(name=name if name is not None else self.name,
-                                        aggregands=[self],
-                                        periodicity_type=periodicity_type)
+        return Aggregation(name=name if name is not None else self.name,
+                           aggregands=[self],
+                           periodicity_type=periodicity_type)
 
 
 class Aggregation:
@@ -265,11 +265,10 @@ class Aggregation:
         Returns a Flow whose movements are the sum of the Aggregation's aggregands by period
         :return: Flow
         """
-        return modules.flux.Flow.from_periods(
-            name=name if name is not None else self.name,
-            periods=self.aggregation.index.to_period(),
-            data=self.aggregation.sum(axis=1).to_list(),
-            units=self.units)
+        return Flow.from_periods(name=name if name is not None else self.name,
+                                 periods=self.aggregation.index.to_period(),
+                                 data=self.aggregation.sum(axis=1).to_list(),
+                                 units=self.units)
 
     def collapse(self):
         """
@@ -277,7 +276,7 @@ class Aggregation:
         :return: Aggregation
         """
         aggregands = [self.extract(flow_name=flow_name) for flow_name in list(self.aggregation.columns)]
-        return modules.flux.Aggregation(
+        return Aggregation(
             name=self.name,
             aggregands=[aggregand.collapse() for aggregand in aggregands],
             periodicity_type=self.periodicity_type)
@@ -301,7 +300,7 @@ class Aggregation:
         self.aggregation = pd.concat([resampled.movements for resampled in resampled_aggregands], axis=1).fillna(0)
 
     def resample(self, periodicity_type: Periodicity.Type):
-        return modules.flux.Aggregation(
+        return Aggregation(
             name=self.name,
             aggregands=self._aggregands,
             periodicity_type=periodicity_type)
