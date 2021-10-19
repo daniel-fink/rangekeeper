@@ -14,7 +14,7 @@ from modules.periodicity import Periodicity
 
 class Flow:
     """
-    A `Flow` is a pd Series of 'movements' of material (funds, energy, mass, etc) that occur at specified dates.
+    A `Flow` is a pd.Series of 'movements' of material (funds, energy, mass, etc) that occur at specified dates.
     Note: the flow.movements Series index is a pd.DatetimeIndex, and its values are floats.
     """
 
@@ -118,7 +118,7 @@ class Flow:
         if isinstance(initial, float):
             initial = initial
         elif isinstance(initial, modules.distribution.Distribution):
-            total = initial.sample(size=1)[0]
+            initial = initial.sample()
 
         if isinstance(distribution, modules.distribution.Uniform):
             movements = [initial for i in range(len(index))]
