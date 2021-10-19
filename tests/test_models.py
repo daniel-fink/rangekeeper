@@ -10,10 +10,10 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
-import modules.distribution
-import modules.flux
-from modules.units import Units
-from modules.periodicity import Periodicity
+import distribution
+import flux
+from units import Units
+from periodicity import Periodicity
 
 import models.linear, models.deterministic, models.probabilistic, models.flexible
 
@@ -79,7 +79,7 @@ class TestDeterministic:
         assert math.isclose(a=pessimistic.pv_sums.movements[9], b=705.92, rel_tol=.01)
 
         # Calculate expected value of the property at any period:
-        exp = modules.flux.Flow(movements=pessimistic.pv_sums.movements * .5 + optimistic.pv_sums.movements * .5,
+        exp = flux.Flow(movements=pessimistic.pv_sums.movements * .5 + optimistic.pv_sums.movements * .5,
                                 units=base_params['units'])
         assert math.isclose(exp.movements[6], 1000.)
 
@@ -98,7 +98,7 @@ class TestProbabilistic:
             'period_type': Periodicity.Type.year,
             'growth_rate': 0.02,
             'initial_pgi': 100.,
-            'space_market_dist': modules.distribution.PERT(peak=1., weighting=4.0, minimum=0.75, maximum=1.25),
+            'space_market_dist': distribution.PERT(peak=1., weighting=4.0, minimum=0.75, maximum=1.25),
             'vacancy_rate': 0.05,
             'opex_pgi_ratio': 0.35,
             'capex_pgi_ratio': 0.10,
@@ -124,8 +124,8 @@ class TestFlexible:
             'period_type': Periodicity.Type.year,
             'growth_rate': 0.02,
             'initial_pgi': 100.,
-            'space_market_dist': modules.distribution.PERT(peak=1., weighting=4.0, minimum=0.5, maximum=1.75),
-            'asset_market_dist': modules.distribution.PERT(peak=0.06, weighting=4.0, minimum=0.03, maximum=0.09),
+            'space_market_dist': distribution.PERT(peak=1., weighting=4.0, minimum=0.5, maximum=1.75),
+            'asset_market_dist': distribution.PERT(peak=0.06, weighting=4.0, minimum=0.03, maximum=0.09),
             'vacancy_rate': 0.05,
             'opex_pgi_ratio': 0.35,
             'capex_pgi_ratio': 0.10,

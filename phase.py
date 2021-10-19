@@ -8,9 +8,9 @@ import numpy_financial as npf
 import pyxirr
 from typing import Dict, Type
 
-import modules.distribution
-from modules.units import Units
-from modules.periodicity import Periodicity
+import distribution
+from units import Units
+from periodicity import Periodicity
 
 
 class Phase:
@@ -53,10 +53,10 @@ class Phase:
             bound=self.end_date)
 
     def duration(self, period_type: Periodicity.Type, inclusive: bool = False):
-        return modules.periodicity.Periodicity.duration(start_date=self.start_date,
-                                                        end_date=self.end_date,
-                                                        period_type=period_type,
-                                                        inclusive=inclusive)
+        return Periodicity.duration(start_date=self.start_date,
+                                    end_date=self.end_date,
+                                    period_type=period_type,
+                                    inclusive=inclusive)
 
     @staticmethod
     def from_num_periods(name: str,

@@ -166,7 +166,7 @@ dmypy.json
 # .idea/artifacts
 # .idea/compiler.xml
 # .idea/jarRepositories.xml
-# .idea/modules.xml
+# .idea/xml
 # .idea/*.iml
 # .idea/modules
 # *.iml
@@ -185,7 +185,7 @@ cmake-build-*/
 out/
 
 # mpeltonen/sbt-idea plugin
-.idea_modules/
+.idea_
 
 # JIRA plugin
 atlassian-ide-plugin.xml

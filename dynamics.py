@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-from modules import distribution, flux, phase, periodicity, units
+import distribution, flux, phase, periodicity, units
 
 phase = phase.Phase.from_num_periods(name="Phase",
                                      start_date=pd.Timestamp(2020, 1, 1),
@@ -81,9 +81,9 @@ trend = -0.0041725610227779
 trend = flux.Flow.from_initial(name='Trend',
                                initial=initial_rent,
                                index=phase.to_index(periodicity.Periodicity.Type.year),
-                               distribution=distribution.Exponential(rate=trend,
-                                                                     num_periods=phase.duration(period_type=periodicity.Periodicity.Type.year,
-                                                                                                inclusive=True)),
+                               dist=distribution.Exponential(rate=trend,
+                                                             num_periods=phase.duration(period_type=periodicity.Periodicity.Type.year,
+                                                                                        inclusive=True)),
                                units=units.Units.Type.scalar)
 
 

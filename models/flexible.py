@@ -2,12 +2,12 @@ import math
 import pandas as pd
 import numpy_financial as npf
 
-import modules.distribution
-from modules.flux import Flow, Aggregation
-from modules.units import Units
-from modules.periodicity import Periodicity
-from modules.distribution import Type, Uniform, Exponential
-from modules.phase import Phase
+import distribution
+from flux import Flow, Aggregation
+from units import Units
+from periodicity import Periodicity
+from distribution import Type, Uniform, Exponential
+from phase import Phase
 
 
 # Base Model:
@@ -20,26 +20,23 @@ class Model:
                                                         num_periods=1)
 
         self.operation_phase = Phase.from_num_periods(name='Operation',
-                                                      start_date=Periodicity.date_offset(
-                                                          date=self.acquisition_phase.end_date,
-                                                          period_type=Periodicity.Type.day,
-                                                          num_periods=1),
+                                                      start_date=Periodicity.date_offset(date=self.acquisition_phase.end_date,
+                                                                                         period_type=Periodicity.Type.day,
+                                                                                         num_periods=1),
                                                       period_type=Periodicity.Type.year,
                                                       num_periods=params['num_periods'])
 
         self.reversion_phase = Phase.from_num_periods(name='Reversion',
-                                                      start_date=Periodicity.date_offset(
-                                                          date=self.acquisition_phase.start_date,
-                                                          period_type=Periodicity.Type.year,
-                                                          num_periods=params['num_periods']),
+                                                      start_date=Periodicity.date_offset(date=self.acquisition_phase.start_date,
+                                                                                         period_type=Periodicity.Type.year,
+                                                                                         num_periods=params['num_periods']),
                                                       period_type=Periodicity.Type.year,
                                                       num_periods=1)
 
         self.projection_phase = Phase.from_num_periods(name='Projection',
-                                                       start_date=Periodicity.date_offset(
-                                                           date=self.operation_phase.end_date,
-                                                           period_type=Periodicity.Type.day,
-                                                           num_periods=1),
+                                                       start_date=Periodicity.date_offset(date=self.operation_phase.end_date,
+                                                                                          period_type=Periodicity.Type.day,
+                                                                                          num_periods=1),
                                                        period_type=Periodicity.Type.year,
                                                        num_periods=1)
 
@@ -47,19 +44,17 @@ class Model:
                                           phases=[self.operation_phase, self.projection_phase])
 
         # Cashflows:
-        self.distribution = modules.distribution.Exponential(rate=params['growth_rate'],
-                                                             num_periods=self.noi_calc_phase.duration(
-                                                                 period_type=params['period_type'],
-                                                                 inclusive=True))
+        self.distribution = distribution.Exponential(rate=params['growth_rate'],
+                                                     num_periods=self.noi_calc_phase.duration(period_type=params['period_type'],
+                                                                                              inclusive=True))
 
         # Potential Gross Income
         self.pgi = Flow.from_initial(name='Potential Gross Income',
                                      initial=params['initial_pgi'],
                                      index=self.noi_calc_phase.to_index(periodicity=params['period_type']),
-                                     distribution=Exponential(rate=params['growth_rate'],
-                                                              num_periods=self.noi_calc_phase.duration(
-                                                                  period_type=params['period_type'],
-                                                                  inclusive=True)),
+                                     dist=Exponential(rate=params['growth_rate'],
+                                                      num_periods=self.noi_calc_phase.duration(period_type=params['period_type'],
+                                                                                               inclusive=True)),
                                      units=params['units'])
 
         factors = params['space_market_dist'].sample(size=self.pgi.movements.size)
