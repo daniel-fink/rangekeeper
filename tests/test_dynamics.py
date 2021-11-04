@@ -4,6 +4,9 @@
 # classes that hold tests must be named starting with 'Test',
 # and any function in a file that should be treated as a test must also start with 'test_'.
 
+# In addition, in order to enable pytest to find all modules,
+# run tests via a 'python -m pytest tests/<test_file>.py' command from the root directory of this project
+
 import math
 import pandas as pd
 import numpy as np
@@ -20,3 +23,4 @@ plt.rcParams['figure.figsize'] = (12, 8)
 class TestDynamics:
     def test_dynamics(self):
         dynamics.trend.display()
+        dynamics.volatility.display()
