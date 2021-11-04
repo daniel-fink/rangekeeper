@@ -1,12 +1,15 @@
 import pandas as pd
+import scipy as sp
 import numpy as np
 
 import distribution, flux, phase, periodicity, units
 
+
+period_type = periodicity.Periodicity.Type.year
 phase = phase.Phase.from_num_periods(name="Phase",
                                      start_date=pd.Timestamp(2020, 1, 1),
-                                     period_type=periodicity.Periodicity.Type.year,
-                                     num_periods=24)
+                                     period_type=period_type,
+                                     num_periods=26)
 
 # Initial Price Factor:
 #
@@ -37,7 +40,7 @@ initial_rent_dist = distribution.PERT(peak=current_rent,
                                       minimum=current_rent - rent_error,
                                       maximum=current_rent + rent_error)
 initial_rent = initial_rent_dist.sample()
-initial_rent = .051633489630302
+initial_rent = .04888252496410490
 
 # Growth Trend Relative to Proforma:
 #
@@ -72,7 +75,7 @@ trend_dist = distribution.PERT(peak=trend_delta,
                                minimum=trend_delta-trend_error,
                                maximum=trend_delta + trend_error)
 trend = trend_dist.sample()
-trend = -0.0041725610227779
+trend = 0.0008597333364944
 # Trend:
 #
 # Note that the trend is geometric.
@@ -80,12 +83,40 @@ trend = -0.0041725610227779
 # as asset values cannot be negative.
 trend = flux.Flow.from_initial(name='Trend',
                                initial=initial_rent,
-                               index=phase.to_index(periodicity.Periodicity.Type.year),
+                               index=phase.to_index(period_type),
                                dist=distribution.Exponential(rate=trend,
-                                                             num_periods=phase.duration(period_type=periodicity.Periodicity.Type.year,
+                                                             num_periods=phase.duration(period_type=period_type,
                                                                                         inclusive=True)),
                                units=units.Units.Type.scalar)
 
+# Volatility
+#
+# "Volatility" refers to the standard deviation across time (longitudinal dispersion),
+# in the changes or returns (differences from one period to the next).
+# Volatility "accumulates" in the sense that the realization of the change in one period
+# becomes embedded in the level (of rents) going forward into the next period,
+# whose change is then added on top of the previous level (of rents).
+# The volatility realizations tracked in this column apply only to the "innovations" in the rent level.
+# If there is autoregression (next columns) then that will also affect
+# the annual volatility in the rent changes.
+#
+# "Innovations" refers to the component of changes or returns that is completely "new" each period,
+# the component that could not have been predicted at all.
 
+# This is a normal (Gaussian) distribution.
+# Note that volatility is realized (new random increment is generated) in EACH period,
+# so that this "risk" outcome accumulates in the history of rent levels.
+# But this is just the volatility in the innovations. If there is autoregression then that will also affect the annual volatility.
+# Cycles well also affect the average volatility observed empirically across the scenario.
+
+volatility_per_period = .08
+volatilities = pd.Series(data=[sp.special.ndtri(distribution.Uniform().sample()) * volatility_per_period
+                               for x in range(phase.duration(period_type=period_type,
+                                                             inclusive=True)
+                                              )],
+                         index=phase.to_index(period_type))
+volatility = flux.Flow(movements=volatilities,
+                       units=units.Units.Type.scalar,
+                       name='Volatility')
 
 
