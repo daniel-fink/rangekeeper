@@ -1,9 +1,10 @@
 import pandas as pd
 import scipy as sp
 import numpy as np
+from numba import jit
+import typing
 
 import distribution, flux, phase, periodicity, units
-
 
 period_type = periodicity.Periodicity.Type.year
 phase = phase.Phase.from_num_periods(name="Phase",
@@ -72,10 +73,10 @@ trend_error = 0.005
 # This is so for all of the random number generators in this workbook.
 trend_dist = distribution.PERT(peak=trend_delta,
                                weighting=4.,
-                               minimum=trend_delta-trend_error,
+                               minimum=trend_delta - trend_error,
                                maximum=trend_delta + trend_error)
-trend = trend_dist.sample()
-trend = 0.0008597333364944
+trend_rate = trend_dist.sample()
+trend_rate = 0.0008597333364944
 # Trend:
 #
 # Note that the trend is geometric.
@@ -84,7 +85,7 @@ trend = 0.0008597333364944
 trend = flux.Flow.from_initial(name='Trend',
                                initial=initial_rent,
                                index=phase.to_index(period_type),
-                               dist=distribution.Exponential(rate=trend,
+                               dist=distribution.Exponential(rate=trend_rate,
                                                              num_periods=phase.duration(period_type=period_type,
                                                                                         inclusive=True)),
                                units=units.Units.Type.scalar)
@@ -106,11 +107,11 @@ trend = flux.Flow.from_initial(name='Trend',
 # This is a normal (Gaussian) distribution.
 # Note that volatility is realized (new random increment is generated) in EACH period,
 # so that this "risk" outcome accumulates in the history of rent levels.
-# But this is just the volatility in the innovations. If there is autoregression then that will also affect the annual volatility.
-# Cycles well also affect the average volatility observed empirically across the scenario.
-
+# But this is just the volatility in the innovations; if there is autoregression then that will also affect the annual volatility.
+# Cycles will also affect the average volatility observed empirically across the scenario.
 volatility_per_period = .08
 volatilities = pd.Series(data=[sp.special.ndtri(distribution.Uniform().sample()) * volatility_per_period
+                               # the ndtri() function replicates excel's NORMSINV(). See https://stackoverflow.com/questions/20626994/how-to-calculate-the-inverse-of-the-normal-cumulative-distribution-function-in-p/20627638
                                for x in range(phase.duration(period_type=period_type,
                                                              inclusive=True)
                                               )],
@@ -120,3 +121,95 @@ volatility = flux.Flow(movements=volatilities,
                        name='Volatility')
 
 
+# Autoregressive Returns
+#
+# This reflects the inertia in the price movements.
+# This value indicates the degree of inertia for the relevant market.
+# This is the autoregression parameter,
+# which indicates what proportion of the previous period's return (price change)
+# will automatically become a component of the current period's return (price change).
+# In most real estate markets this would typically be a positive fraction,
+# perhaps in the range +0.1 to +0.5.
+# In more liquid and informationally efficient asset markets such as stock markets
+# you might leave this at zero (no inertia).
+# A "noisy" market would have a negative autoregression parameter,
+# however, we deal with noise separately.
+
+@jit(nopython=True)
+def calculate_autoregression(autoregression: float,
+                             volatility: [float]):
+    ar_returns = []
+    for i in range(len(volatility)):
+        if i == 0:
+            ar_returns.append(volatility[0])
+        else:
+            ar_returns.append(volatility[i] + (autoregression * ar_returns[i - 1]))
+    return ar_returns
+
+
+autoregression = .2
+autoregressive_returns = flux.Flow(movements=pd.Series(data=calculate_autoregression(autoregression=autoregression,
+                                                                                     volatility=volatility.movements.to_list()),
+                                                       index=volatility.movements.index),
+                                   units=units.Units.Type.scalar,
+                                   name='Autoregressive Returns')
+
+
+# Mean Reversion
+# This parameter determines the strength (or speed) of the mean reversion tendency in the price levels.
+# It is the proportion of the previous period's difference of the price level
+# from the long-term trend price level that will be eliminated in the current price level.
+# This parameter should be between zero and 1, probably not very close to 1.
+# For example, if the previous price level were 1.0, and the long-term trend price level for that period were 1.2,
+# and if the mean reversion parameter were 0.5,
+# then 0.5*(1.2-1.0) = 0.10 will be added to this period's price level.
+
+@jit(nopython=True)
+def calculate_mean_reversion(mean_reversion_param: float,
+                             trend: [float]):
+    mr_returns = []
+    for i in range(len(trend)):
+        if i == 0:
+            mr_returns.append(trend[0])
+        else:
+            mr_returns.append(mean_reversion_param * (trend[i] - mr_returns[i - 1]))
+    return mr_returns
+
+
+mean_reversion_param = .3
+mean_reversion_returns = flux.Flow(
+    movements=pd.Series(data=calculate_mean_reversion(mean_reversion_param=mean_reversion_param,
+                                                      trend=trend.movements.to_list()),
+                        index=trend.movements.index),
+    units=units.Units.Type.scalar,
+    name='Mean Reversion Returns')
+
+
+# Cumulative Volatility:
+# Accumulate the volatility generated in the previous column, also reflecting the mean reversion tendency.
+
+@jit(nopython=True)
+def calculate_volatility_accumulation(trend_rate: float,
+                                      trend: [float],
+                                      ar_returns: [float],
+                                      mr_returns: [float]):
+    accumulated_volatility = []
+    for i in range(len(trend)):
+        if i == 0:
+            accumulated_volatility.append(trend[0])
+        else:
+            accumulated_volatility.append(accumulated_volatility[i - 1] * (1 + trend_rate + ar_returns[i]) + mr_returns[i])
+    return accumulated_volatility
+
+
+cumulative_volatility = flux.Flow(movements=pd.Series(data=calculate_volatility_accumulation(trend_rate=trend_rate,
+                                                                                             trend=trend.movements.to_list(),
+                                                                                             ar_returns=autoregressive_returns.movements.to_list(),
+                                                                                             mr_returns=mean_reversion_returns.movements.to_list()),
+                                                      index=trend.movements.index),
+                                  units=units.Units.Type.scalar,
+                                  name='Cumulative')
+
+volatility_frame = flux.Aggregation(name="Volatility",
+                                    aggregands=[trend, volatility, autoregressive_returns, mean_reversion_returns, cumulative_volatility],
+                                    periodicity_type=period_type)
