@@ -22,5 +22,16 @@ plt.rcParams['figure.figsize'] = (12, 8)
 
 class TestDynamics:
     def test_dynamics(self):
-        dynamics.trend.display()
-        dynamics.volatility.display()
+        # dynamics.trend.display()
+        # dynamics.volatility.display()
+        # dynamics.autoregressive_returns.display()
+        # dynamics.mean_reversion_returns.display()
+        # dynamics.cumulative_volatility.display()
+        # dynamics.cumulative_volatility.movements.plot()
+
+        dynamics.volatility_frame.display()
+
+        print(dynamics.trend.movements.to_list())
+        plt.show(block=True)
+
+
