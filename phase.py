@@ -47,14 +47,17 @@ class Phase:
                      end_date=end_date)
 
     def to_index(self, periodicity: Periodicity.Type) -> pd.PeriodIndex:
-        return Periodicity.period_sequence(
+        """
+        Return a pd.PeriodIndex of the Phase at the specified periodicity
+        """
+        return Periodicity.period_index(
             include_start=self.start_date,
             periodicity=periodicity,
             bound=self.end_date)
 
-    
-
-    def duration(self, period_type: Periodicity.Type, inclusive: bool = False):
+    def duration(self,
+                 period_type: Periodicity.Type,
+                 inclusive: bool = False):
         return Periodicity.duration(start_date=self.start_date,
                                     end_date=self.end_date,
                                     period_type=period_type,

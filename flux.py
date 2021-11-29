@@ -22,6 +22,10 @@ class Flow:
                  movements: pd.Series,
                  units: Units.Type,
                  name: str = None):
+
+        if not isinstance(movements.index, pd.DatetimeIndex):
+            raise Exception("Error: Flow's movements' Index is not a pd.DatetimeIndex")
+
         self.movements = movements
         if name:
             self.name = name
@@ -58,13 +62,17 @@ class Flow:
     def from_dict(movements: Dict[pd.Timestamp, float],
                   units: Units.Type,
                   name: str = None):
+        """
+        Returns a Flow where movements are defined by key-value pairs of pd.Timestamps and amounts.
+        """
+
         dates = movements.keys()
         series = pd.Series(data=list(movements.values()), index=pd.Series(dates, name='dates'), name=name, dtype=float)
         return Flow(movements=series, units=units, name=name)
 
     @staticmethod
     def from_total(total: Union[float, distribution.Distribution],
-                   index: pd.PeriodIndex,
+                   index: pd.DatetimeIndex,
                    dist: distribution.Distribution,
                    units: Units.Type,
                    name: str = None):
@@ -76,7 +84,7 @@ class Flow:
 
         :param name: The name of the Flow
         :param total: An amount (or Distribution to be sampled)
-        :param index: A pd.PeriodIndex of dates
+        :param index: A pd.DateTimeIndex of dates
         :param dist: A Distribution guiding how to distribute the amount over the index
         :param units: The Units of the Flow
         """
@@ -88,11 +96,21 @@ class Flow:
 
         if isinstance(dist, distribution.Uniform):
             movements = [total / index.size for i in range(index.size)]
-            return Flow.from_periods(name=name, periods=index, data=movements, units=units)
+            return Flow(name=name,
+                        movements=pd.Series(data=movements,
+                                            index=index,
+                                            name=name,
+                                            dtype=float),
+                        units=units)
         elif isinstance(dist, distribution.PERT):
             parameters = np.linspace(0, 1, num=(index.size + 1))
             movements = [(total * density) for density in dist.interval_density(parameters)]
-            return Flow.from_periods(name=name, periods=index, data=movements, units=units)
+            return Flow(name=name,
+                        movements=pd.Series(data=movements,
+                                            index=index,
+                                            name=name,
+                                            dtype=float),
+                        units=units)
         else:
             raise NotImplementedError('Other types of distribution have not yet been implemented.')
 
@@ -171,23 +189,33 @@ class Flow:
                            dates=[datetime.date() for datetime in list(self.movements.index.array)],
                            amounts=self.movements.to_list())
 
-    def resample(self, periodicity_type: Periodicity.Type):
+    def resample(self, periodicity: Periodicity.Type):
         """
-        Returns a Flow with movements redistributed across specified frequency
+        Returns a Flow with movements summed to specified frequency of dates
         """
+        return Flow(movements=self.movements.copy(deep=True).resample(rule=periodicity.value).sum(),
+                    units=self.units,
+                    name=self.name)
 
-        movements = self.movements.copy(deep=True).resample(rule=periodicity_type.value).sum()
-        return Flow(movements, self.units)
+    def to_periods(self, periodicity: Periodicity.Type):
+        """
+        Returns a pd.Series (of index pd.PeriodIndex) with movements summed to specified periodicity
+        """
+        return self.resample(periodicity=periodicity).movements\
+            .to_period(freq=periodicity.value, copy=True)\
+            .rename_axis('periods')\
+            .groupby(level='periods')\
+            .sum()
 
     def periodicity(self):
         return self.movements.index.freq
 
     def to_aggregation(self,
-                       periodicity_type: Periodicity.Type,
+                       periodicity: Periodicity.Type,
                        name: str = None):
         return Aggregation(name=name if name is not None else self.name,
                            aggregands=[self],
-                           periodicity_type=periodicity_type)
+                           periodicity=periodicity)
 
 
 class Aggregation:
@@ -199,7 +227,7 @@ class Aggregation:
     def __init__(self,
                  name: str,
                  aggregands: [Flow],
-                 periodicity_type: Periodicity.Type):
+                 periodicity: Periodicity.Type):
 
         # Name:
         self.name = name
@@ -215,19 +243,24 @@ class Aggregation:
         """The set of input Flows that are aggregated in this Aggregation"""
 
         # Periodicity Type:
-        self.periodicity_type = periodicity_type
+        self.periodicity = periodicity
 
         # Aggregation:
         aggregands_dates = list(
             itertools.chain.from_iterable(list(aggregand.movements.index.array) for aggregand in self._aggregands))
         self.start_date = min(aggregands_dates)
         self.end_date = max(aggregands_dates)
-        resampled_aggregands = [aggregand.resample(periodicity_type=self.periodicity_type) for aggregand in
-                                self._aggregands]
 
-        self.aggregation = pd.concat([resampled.movements for resampled in resampled_aggregands], axis=1).fillna(0)
+        # self.resampled_aggregands = [aggregand.resample(periodicity=self.periodicity) for aggregand in self._aggregands]
+        # self.aggregation = pd.concat([resampled.movements for resampled in self.resampled_aggregands], axis=1).fillna(0)
+
+        index = Periodicity.period_index(include_start=self.start_date,
+                                         periodicity=self.periodicity,
+                                         bound=self.end_date)
+        _resampled_aggregands = [aggregand.to_periods(periodicity=self.periodicity) for aggregand in self._aggregands]
+        self.aggregation = pd.concat(_resampled_aggregands, axis=1).fillna(0)
         """
-        A pd DataFrame of the Aggregation's aggregand Flows resampled into the Aggregation's periodicity
+        A pd DataFrame of the Aggregation's aggregand Flows accumulated into the Aggregation's periodicity
         """
 
     @staticmethod
@@ -240,7 +273,7 @@ class Aggregation:
             aggregands.append(Flow(movements=series, units=units, name=series.name))
         return Aggregation(name=name,
                            aggregands=aggregands,
-                           periodicity_type=Periodicity.from_value(data.index.freqstr))
+                           periodicity=Periodicity.from_value(data.index.freqstr))
 
     def display(self):
         print('Name: ' + self.name)
@@ -266,7 +299,7 @@ class Aggregation:
         :return: Flow
         """
         return Flow.from_periods(name=name if name is not None else self.name,
-                                 periods=self.aggregation.index.to_period(),
+                                 periods=self.aggregation.index,  # .to_period(),
                                  data=self.aggregation.sum(axis=1).to_list(),
                                  units=self.units)
 
@@ -279,7 +312,7 @@ class Aggregation:
         return Aggregation(
             name=self.name,
             aggregands=[aggregand.collapse() for aggregand in aggregands],
-            periodicity_type=self.periodicity_type)
+            periodicity=self.periodicity)
 
     def append(self, aggregands: [Flow]):
         # Check Units:
@@ -294,22 +327,22 @@ class Aggregation:
             itertools.chain.from_iterable(list(flow.movements.index.array) for flow in self._aggregands))
         self.start_date = min(aggregands_dates)
         self.end_date = max(aggregands_dates)
-        resampled_aggregands = [aggregand.resample(periodicity_type=self.periodicity_type) for aggregand in
+        resampled_aggregands = [aggregand.resample(periodicity=self.periodicity) for aggregand in
                                 self._aggregands]
 
         self.aggregation = pd.concat([resampled.movements for resampled in resampled_aggregands], axis=1).fillna(0)
 
-    def resample(self, periodicity_type: Periodicity.Type):
+    def resample(self, periodicity: Periodicity.Type):
         return Aggregation(
             name=self.name,
             aggregands=self._aggregands,
-            periodicity_type=periodicity_type)
+            periodicity=periodicity)
 
     @classmethod
     def merge(cls,
               aggregations,
               name: str,
-              periodicity_type: Periodicity.Type):
+              periodicity: Periodicity.Type):
         # Check Units:
         if any(aggregation.units != aggregations[0].units for aggregation in aggregations):
             raise Exception("Input Aggregations have dissimilar units. Cannot merge into Aggregation.")
@@ -320,4 +353,4 @@ class Aggregation:
         return Aggregation(
             name=name,
             aggregands=aggregands,
-            periodicity_type=periodicity_type)
+            periodicity=periodicity)

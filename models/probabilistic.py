@@ -12,7 +12,8 @@ from phase import Phase
 
 # Base Model:
 class Model:
-    def __init__(self, params: dict):
+    def __init__(self,
+                 params: dict):
         # Phasing:
         self.acquisition_phase = Phase.from_num_periods(name='Acquisition',
                                                         start_date=params['start_date'],
@@ -78,7 +79,7 @@ class Model:
         # Effective Gross Income:
         self.egi = Aggregation(name='Effective Gross Income',
                                aggregands=[self.pgi, self.vacancy],
-                               periodicity_type=params['period_type'])
+                               periodicity=params['period_type'])
 
         # Operating Expenses:
         self.opex = Flow.from_periods(name='Operating Expenses',
@@ -89,7 +90,7 @@ class Model:
         # Net Operating Income:
         self.noi = Aggregation(name='Net Operating Income',
                                aggregands=[self.egi.sum('Effective Gross Income'), self.opex],
-                               periodicity_type=params['period_type'])
+                               periodicity=params['period_type'])
 
         # Capital Expenses:
         self.capex = Flow.from_periods(name='Capital Expenditures',
@@ -100,7 +101,7 @@ class Model:
         # Net Cashflows:
         self.ncf = Aggregation(name='Net Cashflows',
                                aggregands=[self.noi.sum(), self.capex],
-                               periodicity_type=params['period_type'])
+                               periodicity=params['period_type'])
 
         # Reversion:
         sale_value = self.ncf.sum().movements.tail(1).item() / params['cap_rate']
@@ -123,7 +124,7 @@ class Model:
         #                      units=params['units'])
         self.pv_ncf_agg = Aggregation(name='Discounted Net Cashflows',
                                       aggregands=[self.pv_ncf, self.pv_reversion],
-                                      periodicity_type=params['period_type'])
+                                      periodicity=params['period_type'])
 
         self.pv_sums = self.pv_ncf_agg.sum()
         self.pv_sums.movements = self.pv_sums.movements[:-1]
@@ -135,7 +136,7 @@ class Model:
 
         self.investment_cashflows = Aggregation(name='Investment Cashflows',
                                                 aggregands=[self.ncf.sum(), self.reversion, self.acquisition],
-                                                periodicity_type=params['period_type'])
+                                                periodicity=params['period_type'])
 
         self.investment_cashflows.aggregation = self.investment_cashflows.aggregation[:-1]
         self.irr = self.investment_cashflows.sum().xirr()

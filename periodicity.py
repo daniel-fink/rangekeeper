@@ -34,14 +34,16 @@ class Periodicity:
 
     @staticmethod
     def include_date(date: pd.Timestamp, duration: Type):
-        """Returns a pd Period that encompasses the given date"""
+        """
+        Returns a pd.Period that encompasses the given date
+        """
 
         return pd.Period(year=date.year, month=date.month, day=date.day, freq=duration.value)
 
     @staticmethod
-    def period_sequence(include_start: pd.Timestamp,
-                        periodicity: Type,
-                        bound: Union[pd.Timestamp, int] = None):
+    def period_index(include_start: pd.Timestamp,
+                     periodicity: Type,
+                     bound: Union[pd.Timestamp, int] = None):
         """
         Returns a pd.PeriodIndex from a start date with periods of given duration.
         Either an end date, or number of periods must be given to bound the sequence.
@@ -54,12 +56,18 @@ class Periodicity:
             return pd.period_range(start=include_start,
                                    end=bound,
                                    freq=periodicity.value,
-                                   name='dates')
+                                   name='periods')
         elif isinstance(bound, int):
             return pd.period_range(start=include_start,
                                    periods=bound,
                                    freq=periodicity.value,
-                                   name='dates')
+                                   name='periods')
+
+    @staticmethod
+    def to_datestamps(period_index: pd.PeriodIndex):
+        timestamps = period_index.to_timestamp(how='end')
+        datestamps = timestamps.date
+        return pd.DatetimeIndex(datestamps)
 
     @staticmethod
     def periods_per_year(period_type: Type):

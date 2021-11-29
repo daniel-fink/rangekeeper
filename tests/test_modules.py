@@ -56,15 +56,15 @@ class TestDistribution:
 
 
 class TestPeriod:
-    def test_correct_periods(self):
+    def test_period_index_validity(self):
         date = pd.Timestamp(2020, 2, 28)
         period = Periodicity.include_date(date=date, duration=Periodicity.Type.month)
         assert period.day == 29  # end date of Period
         assert period.month == 2
 
-        sequence = Periodicity.period_sequence(include_start=date,
-                                               bound=pd.Timestamp(2020, 12, 31),
-                                               periodicity=Periodicity.Type.quarter)
+        sequence = Periodicity.period_index(include_start=date,
+                                            bound=pd.Timestamp(2020, 12, 31),
+                                            periodicity=Periodicity.Type.quarter)
         assert sequence.size == 4
 
         end_date = Periodicity.date_offset(date, Periodicity.Type.month, 4)
@@ -85,7 +85,7 @@ class TestFlow:
     dict = {date1: values[0], date2: values[1], date3: values[2]}
     flow_from_dict = flux.Flow.from_dict(movements=dict, name="foo", units=Units.Type.USD)
 
-    def test_correct_flow(self):
+    def test_flow_validity(self):
         # TestFlow.flow_from_series.display()
         # TestFlow.flow_from_dict.display()
         date = pd.Timestamp(2000, 2, 29)
@@ -95,28 +95,28 @@ class TestFlow:
         assert TestFlow.flow_from_series.movements.equals(TestFlow.flow_from_dict.movements)
         assert isinstance(TestFlow.flow_from_series.movements.index, pd.DatetimeIndex)
 
-    periods = Periodicity.period_sequence(include_start=pd.Timestamp(2020, 1, 31),
-                                          periodicity=Periodicity.Type.month,
-                                          bound=pd.Timestamp(2022, 1, 1))
+    periods = Periodicity.period_index(include_start=pd.Timestamp(2020, 1, 31),
+                                       periodicity=Periodicity.Type.month,
+                                       bound=pd.Timestamp(2022, 1, 1))
 
-    sum_flow = flux.Flow.from_total(name="bar",
-                                    total=100.0,
-                                    index=periods,
-                                    dist=distribution.Uniform(),
-                                    units=Units.Type.USD)
+    flow = flux.Flow.from_total(name="bar",
+                                total=100.0,
+                                index=Periodicity.to_datestamps(periods),
+                                dist=distribution.Uniform(),
+                                units=Units.Type.USD)
 
-    invert_flow = sum_flow.invert()
-
-    def test_correct_sumflow(self):
+    def test_flow_summation(self):
         # TestFlow.sum_flow.display()
-        assert TestFlow.sum_flow.movements.size == 25
-        assert TestFlow.sum_flow.movements.array.sum() == 100.0
-        assert TestFlow.sum_flow.movements.index.array[1] == pd.Timestamp(2020, 2, 29)
-        assert TestFlow.sum_flow.movements.array[1] == 4
-        assert TestFlow.sum_flow.movements.name == "bar"
-        assert TestFlow.sum_flow.units == Units.Type.USD
+        assert TestFlow.flow.movements.size == 25
+        assert TestFlow.flow.movements.array.sum() == 100.0
+        assert TestFlow.flow.movements.index.array[1] == pd.Timestamp(2020, 2, 29)
+        assert TestFlow.flow.movements.array[1] == 4
+        assert TestFlow.flow.movements.name == "bar"
+        assert TestFlow.flow.units == Units.Type.USD
 
-    def test_correct_invert(self):
+    invert_flow = flow.invert()
+
+    def test_flow_inversion(self):
         # TestFlow.invert_flow.display()
         assert TestFlow.invert_flow.movements.size == 25
         assert TestFlow.invert_flow.movements.array.sum() == -100.0
@@ -125,19 +125,25 @@ class TestFlow:
         assert TestFlow.invert_flow.movements.name == "bar"
         assert TestFlow.invert_flow.units == Units.Type.USD
 
-    resample_flow = invert_flow.resample(periodicity_type=Periodicity.Type.year)
+    resample_flow = invert_flow.resample(periodicity=Periodicity.Type.year)
 
-    def test_correct_resample(self):
+    def test_resampling(self):
         # TestFlow.resample_flow.display()
         assert TestFlow.resample_flow.movements.size == 3
         assert TestFlow.resample_flow.movements[0] == -48
         assert TestFlow.resample_flow.movements[1] == -48
         assert TestFlow.resample_flow.movements[2] == -4
 
+    to_periods = flow.to_periods(periodicity=Periodicity.Type.year)
+
+    def test_conversion_to_period_index(self):
+        print(TestFlow.to_periods)
+        # assert TestFlow.to_periods
+
     def test_distribution_as_input(self):
-        periods = Periodicity.period_sequence(include_start=pd.Timestamp(2020, 1, 31),
-                                              periodicity=Periodicity.Type.month,
-                                              bound=pd.Timestamp(2022, 1, 1))
+        periods = Periodicity.period_index(include_start=pd.Timestamp(2020, 1, 31),
+                                           periodicity=Periodicity.Type.month,
+                                           bound=pd.Timestamp(2022, 1, 1))
 
         dist = distribution.PERT(peak=5, weighting=4, minimum=2, maximum=8)
         assert isinstance(dist, distribution.Distribution)
@@ -146,7 +152,7 @@ class TestFlow:
         for i in range(1000):
             flow = flux.Flow.from_total(name='foo',
                                         total=dist,
-                                        index=periods,
+                                        index=Periodicity.to_datestamps(periods),
                                         dist=distribution.Uniform(),
                                         units=Units.Type.AUD)
             sums.append(flow.collapse().movements[0])
@@ -169,29 +175,34 @@ class TestFlow:
 class TestAggregation:
     flow1 = flux.Flow.from_total(name="yearly_flow",
                                  total=100.0,
-                                 index=Periodicity.period_sequence(include_start=pd.Timestamp(2020, 1, 31),
-                                                                   bound=pd.Timestamp(2022, 1, 1),
-                                                                   periodicity=Periodicity.Type.year),
+                                 index=Periodicity.to_datestamps(Periodicity.period_index(include_start=pd.Timestamp(2020, 1, 31),
+                                                                                          bound=pd.Timestamp(2022, 1, 1),
+                                                                                          periodicity=Periodicity.Type.year)),
                                  dist=distribution.Uniform(),
                                  units=Units.Type.USD)
 
     flow2 = flux.Flow.from_total(name="weekly_flow",
                                  total=-50.0,
-                                 index=Periodicity.period_sequence(include_start=pd.Timestamp(2020, 3, 1),
-                                                                   bound=pd.Timestamp(2021, 2, 28),
-                                                                   periodicity=Periodicity.Type.week),
+                                 index=Periodicity.to_datestamps(Periodicity.period_index(include_start=pd.Timestamp(2020, 3, 1),
+                                                                                          bound=pd.Timestamp(2021, 2, 28),
+                                                                                          periodicity=Periodicity.Type.week)),
                                  dist=distribution.Uniform(),
                                  units=Units.Type.USD)
 
     aggregation = flux.Aggregation(name="aggregation",
                                    aggregands=[flow1, flow2],
-                                   periodicity_type=Periodicity.Type.month)
+                                   periodicity=Periodicity.Type.month)
+
+    aggregation.display()
 
     def test_correct_aggregation(self):
         assert TestAggregation.aggregation.name == "aggregation"
         assert len(TestAggregation.aggregation._aggregands) == 2
         assert TestAggregation.aggregation.start_date == pd.Timestamp(2020, 3, 1)
         assert TestAggregation.aggregation.end_date == pd.Timestamp(2022, 12, 31)
+
+        TestAggregation.aggregation.display()
+
         assert TestAggregation.aggregation.sum().movements.index.size == 24 + 10  # Two full years plus March-Dec inclusive
         assert TestAggregation.aggregation.aggregation['weekly_flow'].sum() == -50
         assert TestAggregation.aggregation.aggregation.index.freq == 'M'
@@ -221,9 +232,6 @@ class TestPhase:
 
         assert phases[1].start_date == pd.Timestamp(2020, 3, 1)
         assert phases[1].end_date == pd.Timestamp(2021, 2, 27)
-
-
-
 
 # plt.show(block=True)
 # plt.interactive(True)
