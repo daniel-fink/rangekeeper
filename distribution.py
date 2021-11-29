@@ -8,11 +8,12 @@ from typing import Union, Optional
 
 class Type(enum.Enum):
     uniform = 1
-    triangular = 2
-    normal = 3
-    log_uniform = 4
-    beta = 5
-    exponential = 6
+    linear = 2
+    triangular = 3
+    normal = 4
+    log_uniform = 5
+    PERT = 6
+    exponential = 7
 
 
 class Distribution:
@@ -41,9 +42,11 @@ class Uniform(Distribution):
     """
 
     def __init__(self,
+                 mean: float = 0.5,
+                 scale: float = 1.0,
                  generator: Optional[np.random.Generator] = None):
         super().__init__(generator=generator)
-        self.dist = ss.uniform(loc=0, scale=1)
+        self.dist = ss.uniform(loc=mean, scale=scale)
 
     def interval_density(self, parameters: [float]):
         """
@@ -70,6 +73,7 @@ class Uniform(Distribution):
         else:
             raise ValueError("Error: Parameter must be between 0 and 1 inclusive")
 
+
 class Linear(Distribution):
     """
     A continuous linearly growing (or decaying) distribution between 0 and 1.
@@ -91,7 +95,8 @@ class Linear(Distribution):
             """
             Returns the multiplicative factor of the distribution's initial value at each period
             """
-            return [np.power((1 + self.rate), period_index) for period_index in range(self.num_periods)]
+            # TODO: Check if this is correct
+            # return [np.power((1 + self.rate), period_index) for period_index in range(self.num_periods)]
 
 
 class Exponential(Distribution):
@@ -133,7 +138,8 @@ class Exponential(Distribution):
         else:
             raise ValueError("Error: Parameter must be between 0 and 1 inclusive")
 
-    def cumulative_density(self, parameters: [float]):  # #TODO: This is giving incorrect answers for low values of num_periods...
+    def cumulative_density(self, parameters: [
+        float]):  # #TODO: This is giving incorrect answers for low values of num_periods...
         """
         Returns the cumulative distribution at parameters between 0 and 1.
 
@@ -189,6 +195,14 @@ class PERT(Distribution):
             self.dist = ss.beta(loc=minimum, scale=self.scale, a=a, b=b)
         else:
             raise ValueError("Error: Weighting must be greater than 0 and Peak must be between 0 and 1 inclusive")
+
+    @staticmethod
+    def standard_symmetric(peak: float,
+                           residual: float):
+        return PERT(peak=peak,
+                    weighting=4.,
+                    minimum=peak - residual,
+                    maximum=peak + residual)
 
     def interval_density(self, parameters: [float]):
         """

@@ -8,7 +8,7 @@ import distribution, flux, phase, periodicity, units
 
 period_type = periodicity.Periodicity.Type.year
 phase = phase.Phase.from_num_periods(name="Phase",
-                                     start_date=pd.Timestamp(2020, 1, 1),
+                                     start_date=pd.Timestamp(2021, 1, 1),
                                      period_type=period_type,
                                      num_periods=26)
 
@@ -41,7 +41,7 @@ initial_rent_dist = distribution.PERT(peak=current_rent,
                                       minimum=current_rent - rent_error,
                                       maximum=current_rent + rent_error)
 initial_rent = initial_rent_dist.sample()
-initial_rent = .04888252496410490
+initial_rent = 0.05204020452
 
 # Growth Trend Relative to Proforma:
 #
@@ -76,7 +76,7 @@ trend_dist = distribution.PERT(peak=trend_delta,
                                minimum=trend_delta - trend_error,
                                maximum=trend_delta + trend_error)
 trend_rate = trend_dist.sample()
-trend_rate = 0.0008597333364944
+trend_rate = 0.00777040968
 # Trend:
 #
 # Note that the trend is geometric.
@@ -89,6 +89,7 @@ trend = flux.Flow.from_initial(name='Trend',
                                                              num_periods=phase.duration(period_type=period_type,
                                                                                         inclusive=True)),
                                units=units.Units.Type.scalar)
+
 
 # Volatility
 #
@@ -115,7 +116,7 @@ volatilities = pd.Series(data=[sp.special.ndtri(distribution.Uniform().sample())
                                for x in range(phase.duration(period_type=period_type,
                                                              inclusive=True)
                                               )],
-                         index=phase.to_index(period_type))
+                         index=phase.to_index(period_type).to_timestamp(how='end'))
 volatility = flux.Flow(movements=volatilities,
                        units=units.Units.Type.scalar,
                        name='Volatility')
@@ -212,4 +213,4 @@ cumulative_volatility = flux.Flow(movements=pd.Series(data=calculate_volatility_
 
 volatility_frame = flux.Aggregation(name="Volatility",
                                     aggregands=[trend, volatility, autoregressive_returns, mean_reversion_returns, cumulative_volatility],
-                                    periodicity_type=period_type)
+                                    periodicity=period_type)
