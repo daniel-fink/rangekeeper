@@ -73,7 +73,7 @@ class Model:
         # Effective Gross Income:
         self.egi = Aggregation(name='Effective Gross Income',
                                aggregands=[self.pgi, self.vacancy],
-                               periodicity_type=params['period_type'])
+                               periodicity=params['period_type'])
 
         # Operating Expenses:
         self.opex = Flow.from_periods(name='Operating Expenses',
@@ -84,7 +84,7 @@ class Model:
         # Net Operating Income:
         self.noi = Aggregation(name='Net Operating Income',
                                aggregands=[self.egi.sum('Effective Gross Income'), self.opex],
-                               periodicity_type=params['period_type'])
+                               periodicity=params['period_type'])
 
         # Capital Expenses:
         self.capex = Flow.from_periods(name='Capital Expenditures',
@@ -95,7 +95,7 @@ class Model:
         # Net Cashflows:
         self.ncf = Aggregation(name='Net Cashflows',
                                aggregands=[self.noi.sum(), self.capex],
-                               periodicity_type=params['period_type'])
+                               periodicity=params['period_type'])
 
         # Reversion:
         # We require each next period's NCF as the numerator:
@@ -120,7 +120,7 @@ class Model:
                              units=params['units'])
         self.pv_ncf_agg = Aggregation(name='Discounted Net Cashflow Sums',
                                       aggregands=[pv_ncf_cumsum, self.pv_reversion],
-                                      periodicity_type=params['period_type'])
+                                      periodicity=params['period_type'])
 
         self.pv_sums = self.pv_ncf_agg.sum()
         self.pv_sums.movements = self.pv_sums.movements[:-1]

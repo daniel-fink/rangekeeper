@@ -66,7 +66,7 @@ vacancy = Flow.from_periods(name='Vacancy Allowance',
 # Effective Gross Income:
 egi = Aggregation(name='Effective Gross Income',
                   aggregands=[pgi, vacancy],
-                  periodicity_type=period_type)
+                  periodicity=period_type)
 
 # Operating Expenses:
 opex_pgi_ratio = 0.35
@@ -78,7 +78,7 @@ opex = Flow.from_periods(name='Operating Expenses',
 # Net Operating Income:
 noi = Aggregation(name='Net Operating Income',
                   aggregands=[egi.sum('Effective Gross Income'), opex],
-                  periodicity_type=period_type)
+                  periodicity=period_type)
 
 # Capital Expenses:
 capex_pgi_ratio = 0.10
@@ -90,7 +90,7 @@ capex = Flow.from_periods(name='Capital Expenditures',
 # Net Cashflows:
 ncf = Aggregation(name='Net Cashflows',
                   aggregands=[noi.sum(), capex],
-                  periodicity_type=period_type)
+                  periodicity=period_type)
 
 # Reversion:
 cap_rate = 0.05

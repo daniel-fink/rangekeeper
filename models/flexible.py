@@ -77,7 +77,7 @@ class Model:
         # Effective Gross Income:
         self.egi = Aggregation(name='Effective Gross Income',
                                aggregands=[self.pgi, self.vacancy],
-                               periodicity_type=params['period_type'])
+                               periodicity=params['period_type'])
 
         # Operating Expenses:
         self.opex = Flow.from_periods(name='Operating Expenses',
@@ -88,7 +88,7 @@ class Model:
         # Net Operating Income:
         self.noi = Aggregation(name='Net Operating Income',
                                aggregands=[self.egi.sum('Effective Gross Income'), self.opex],
-                               periodicity_type=params['period_type'])
+                               periodicity=params['period_type'])
 
         # Capital Expenses:
         self.capex = Flow.from_periods(name='Capital Expenditures',
@@ -99,7 +99,7 @@ class Model:
         # Net Cashflows:
         self.ncf = Aggregation(name='Net Cashflows',
                                aggregands=[self.noi.sum(), self.capex],
-                               periodicity_type=params['period_type'])
+                               periodicity=params['period_type'])
 
         # Reversion:
         # We no longer need the noi_calc_phase:
@@ -137,7 +137,7 @@ class Model:
 
         self.pv_ncf_agg = Aggregation(name='Discounted Net Cashflow Sums',
                                       aggregands=[self.pv_ncf, self.pv_reversion],
-                                      periodicity_type=params['period_type'])
+                                      periodicity=params['period_type'])
 
         self.pv_sums = self.pv_ncf_agg.sum()
 
@@ -150,7 +150,7 @@ class Model:
 
         self.investment_cashflows = Aggregation(name='Investment Cashflows',
                                                 aggregands=[self.ncf.sum(), self.reversion, self.acquisition],
-                                                periodicity_type=params['period_type'])
+                                                periodicity=params['period_type'])
 
         self.investment_cashflows.aggregation = self.investment_cashflows.aggregation[:self.reversion_date]
         self.irr = self.investment_cashflows.sum().xirr()
