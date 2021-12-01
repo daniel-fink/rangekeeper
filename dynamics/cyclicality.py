@@ -21,7 +21,8 @@ class DistributionParams:
         """
         self.mean = mean
         self.residual = residual
-        if distribution_type == distribution.Type.uniform | distribution_type == distribution.Type.PERT:
+        print(distribution_type)
+        if distribution_type is distribution.Type.uniform or distribution_type is distribution.Type.PERT:
             self.distribution_type = distribution_type
         else:
             raise ValueError("Distribution type must be symmetrical about its mean")
@@ -37,6 +38,55 @@ class DistributionParams:
                                                         residual=self.residual)
 
 
+class Enumerate:
+    @jit(nopython=True)
+    def sine(period: float,
+             phase: float,
+             amplitude: float,
+             num_periods: int):
+        """
+        Generate a sine wave from the parameters.
+        The conventional, symmetric cycle is a simple sine function, parameterized:
+        y = amplitude * sin((t - phase) * (2 * pi / period))
+        """
+        data = []
+        for i in range(num_periods):
+            data.append(amplitude *
+                        np.sin(
+                            (i - phase) *
+                            (2 * np.pi / period)
+                            )
+                        )
+        return data
+
+    @jit(nopython=True)
+    def compound_sine(period: float,
+                      phase: float,
+                      amplitude: float,
+                      offset: float,
+                      num_periods: int):
+        """
+        Generate a compound (asymmetrically offset) sine wave from the parameters.
+        The asymmetry is introduced to the cycle by compounding the sine function:
+        y = amplitude * sin((t - phase) - (a * period) * sin((t - phase) * 2 * pi / period)) * 2 * pi / period),
+        where a is a small fraction 0 < a < 1.
+        e.g. a = 0.1 will produce a downturn approx. 0.5 * duration of the up-swing.
+        """
+        data = []
+        for i in range(num_periods):
+            data.append(amplitude *
+                        np.sin(
+                            (i - phase) - (offset * period) *
+                            np.sin(
+                                (i - phase) *
+                                (2 * np.pi / period)
+                                ) *
+                            (2 * np.pi / period)
+                            )
+                        )
+        return data
+
+
 class Cycle:
     def __init__(self,
                  period: float,
@@ -49,56 +99,35 @@ class Cycle:
         self.phase = phase
         self.amplitude = amplitude
 
-    @jit(nopython=True)
-    def sine(self,
-             index: pd.PeriodIndex):
-        """
-        Generate a sine wave from the parameters.
-        The conventional, symmetric cycle is a simple sine function, parameterized:
-        y = amplitude * sin((t - phase) * (2 * pi / period))
-        """
-        data = []
-        for i in range(index.size):
-            data.append(self.amplitude *
-                        np.sin(
-                            (i - self.phase) *
-                            (2 * np.pi / self.period)
-                            )
-                        )
-        return pd.Series(data=data, index=index)
+    def sine_flow(self,
+                  index: pd.PeriodIndex):
+        data = Enumerate.sine(period=self.period,
+                              phase=self.phase,
+                              amplitude=self.amplitude,
+                              num_periods=index.size)
+        return flux.Flow(movements=pd.Series(data=data, index=index),
+                         units=units.Units.Type.scalar,
+                         name="sine_cycle")
 
-    @jit(nopython=True)
-    def compound_sine(self,
-                      offset: float,
-                      index: pd.PeriodIndex):
-        """
-        Generate a compound (asymmetrically offset) sine wave from the parameters.
-        The asymmetry is introduced to the cycle by compounding the sine function:
-        y = amplitude * sin((t - phase) - (a * period) * sin((t - phase) * 2 * pi / period)) * 2 * pi / period),
-        where a is a small fraction 0 < a < 1.
-        e.g. a = 0.1 will produce a downturn approx. 0.5 * duration of the up-swing.
-        """
-        data = []
-        for i in range(index.size):
-            data.append(self.amplitude *
-                        np.sin(
-                            (i - self.phase) - (offset * self.period) *
-                            np.sin(
-                                (i - self.phase) *
-                                (2 * np.pi / self.period)
-                                ) *
-                            (2 * np.pi / self.period)
-                            )
-                        )
-        return pd.Series(data=data, index=index)
+    def compound_sine_flow(self,
+                           offset: float,
+                           index: pd.PeriodIndex):
+        data = Enumerate.compound_sine(period=self.period,
+                                       phase=self.phase,
+                                       amplitude=self.amplitude,
+                                       num_periods=index.size,
+                                       offset=offset)
+        return flux.Flow(movements=pd.Series(data=data, index=index),
+                         units=units.Units.Type.scalar,
+                         name="compound_sine_cycle")
 
 
 class Market:
     def __init__(self,
                  params: dict):
-        rent_period = DistributionParams(params['rent_cycle_period_mean'],
-                                         params['rent_cycle_period_residual'],
-                                         params['rent_cycle_period_dist']).distribution().sample()
+        space_period = DistributionParams(mean=params['space_cycle_period_mean'],
+                                          residual=params['space_cycle_period_residual'],
+                                          distribution_type=params['space_cycle_period_dist']).distribution().sample()
         """
         In the U.S. the real estate market cycle seems to be in the range of 10 to 20 years. 
         E.g.:
@@ -107,9 +136,10 @@ class Market:
         future history to be between 10 and 20 years.
         """
 
-        rent_phase = (DistributionParams(params['rent_cycle_phase_offset'],
-                                        params['rent_cycle_phase_residual'],
-                                        params['rent_cycle_phase_dist']).distribution().sample() + .65) * rent_period
+        space_phase = (DistributionParams(mean=params['space_cycle_phase_offset'],
+                                          residual=params['space_cycle_phase_residual'],
+                                          distribution_type=params[
+                                              'space_cycle_phase_dist']).distribution().sample() + .65) * space_period
         """
         If you make this equal to a uniform RV times the rent cycle period 
         then the phase will range from starting anywhere from peak to trough with equal likelihood.
@@ -136,17 +166,19 @@ class Market:
         you would enter:
         =(.175*RAND()+.65)*J10, if Period is in J10.
         """
-        rent_amplitude = DistributionParams(params['rent_cycle_ampltiude_mean'],
-                                            params['rent_cycle_ampltiude_residual'],
-                                            params['rent_cycle_ampltiude_dist']).distribution().sample()
+        space_amplitude = DistributionParams(mean=params['space_cycle_amplitude_mean'],
+                                             residual=params['space_cycle_amplitude_residual'],
+                                             distribution_type=params[
+                                                 'space_cycle_amplitude_dist']).distribution().sample()
 
-        self.rent_cycle = Cycle(period=rent_period,
-                                phase=rent_phase,
-                                amplitude=rent_amplitude)
+        self.space_cycle = Cycle(period=space_period,
+                                 phase=space_phase,
+                                 amplitude=space_amplitude)
 
-        caprate_period = DistributionParams(params['caprate_cycle_period_offset'],
-                                            params['caprate_cycle_period_residual'],
-                                            params['caprate_cycle_period_dist']).distribution().sample() + rent_period
+        asset_period = DistributionParams(mean=params['asset_cycle_period_offset'],
+                                          residual=params['asset_cycle_period_residual'],
+                                          distribution_type=params[
+                                              'asset_cycle_period_dist']).distribution().sample() + space_period
         """
         This  can be randomly different from rent cycle period, 
         but probably not too different, maybe +/- 1 year.
@@ -154,9 +186,10 @@ class Market:
         =J10+(RAND()*2-1)
         """
 
-        caprate_phase = DistributionParams(params['caprate_cycle_phase_offset'],
-                                           params['caprate_cycle_phase_residual'],
-                                           params['caprate_cycle_phase_dist']).distribution().sample() * caprate_period + rent_phase
+        asset_phase = DistributionParams(mean=params['asset_cycle_phase_offset'],
+                                         residual=params['asset_cycle_phase_residual'],
+                                         distribution_type=params[
+                                             'asset_cycle_phase_dist']).distribution().sample() * asset_period + space_phase
         """
         Since we input this cycle as the negative of the actual cap rate cycle, 
         you can think of the phase in the same way as the space market phase. 
@@ -170,9 +203,10 @@ class Market:
         (here, a fifth of the asset cycle period).
         """
 
-        caprate_amplitude = DistributionParams(params['caprate_cycle_ampltiude_mean'],
-                                               params['caprate_cycle_ampltiude_residual'],
-                                               params['caprate_cycle_ampltiude_dist']).distribution().sample()
+        asset_amplitude = DistributionParams(mean=params['asset_cycle_amplitude_mean'],
+                                             residual=params['asset_cycle_amplitude_residual'],
+                                             distribution_type=params[
+                                                 'asset_cycle_amplitude_dist']).distribution().sample()
         """
         This is in cap rate units, so keep in mind the magnitude of the initial cap rate 
         entered on the MktDynamicsInputs sheet. 
@@ -186,6 +220,6 @@ class Market:
         relative to the proforma expected cash flows.
         """
 
-        self.caprate_cycle = Cycle(period=caprate_period,
-                                   phase=caprate_phase,
-                                   amplitude=caprate_amplitude)
+        self.asset_cycle = Cycle(period=asset_period,
+                                 phase=asset_phase,
+                                 amplitude=asset_amplitude)
