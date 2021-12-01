@@ -49,7 +49,7 @@ class Periodicity:
         Either an end date, or number of periods must be given to bound the sequence.
 
         :param include_start: pd.Timestamp start date
-        :param periodicity: Period frequency
+        :param period_type: Period frequency
         :param bound: A terminating condition; either a pd.Timestamp end date or a (integer) number of periods
         """
         if isinstance(bound, pd.Timestamp):

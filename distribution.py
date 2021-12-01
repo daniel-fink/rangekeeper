@@ -1,4 +1,4 @@
-import enum
+import aenum
 
 import scipy.stats
 import scipy.stats as ss
@@ -6,7 +6,9 @@ import numpy as np
 from typing import Union, Optional
 
 
-class Type(enum.Enum):
+class Type(aenum.Enum):
+    _init_ = 'value __doc__'
+
     uniform = 1
     linear = 2
     triangular = 3
