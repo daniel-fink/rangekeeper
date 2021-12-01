@@ -43,7 +43,7 @@ class Uniform(Distribution):
 
     def __init__(self,
                  mean: float = 0.5,
-                 scale: float = 1.0,
+                 scale: float = 0.5,
                  generator: Optional[np.random.Generator] = None):
         super().__init__(generator=generator)
         self.dist = ss.uniform(loc=mean, scale=scale)
