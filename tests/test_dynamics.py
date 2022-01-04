@@ -6,14 +6,14 @@
 
 # In addition, in order to enable pytest to find all modules,
 # run tests via a 'python -m pytest tests/<test_file>.py' command from the root directory of this project
-
+import json
 import math
 import pandas as pd
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
-import periodicity, phase, distribution, flux
+import periodicity, phase, distribution, flux, units
 from dynamics import trend, volatility, cyclicality
 
 matplotlib.use('TkAgg')
@@ -42,19 +42,25 @@ class TestDynamics:
 
         # Growth Trend Relative to Proforma:
         # Normally this should be zero.
-        # But to adjust for convexity effects on average cash flow levels for comparison across different price dynamics inputs assumptions,
+        # But to adjust for convexity effects on average cash flow levels
+        # for comparison across different price dynamics inputs assumptions,
         # you may need to adjust this trend.
-        # For example, a symmetric cap rate cycle will impart a positive bias into the simulated future cash flows relative to the proforma,
+        # For example, a symmetric cap rate cycle will impart a positive bias
+        # into the simulated future cash flows relative to the proforma,
         # while Black Swans and cycle phase or other inputs may impart a negative bias.
-        # Enter a relative trend rate here to counteract such bias (under the assumption that the proforma is unbiased).
-        # Check the t-stat in column K to see if the resulting comparison of NPV (without flexibility) relative to the proforma is statistically insignificant.
+        # Enter a relative trend rate here to counteract such bias
+        # (under the assumption that the proforma is unbiased).
+        # Check the t-stat in column K to see if the resulting comparison
+        # of NPV (without flexibility) relative to the proforma is statistically insignificant.
         # If you're not comparing across different price dynamics, then you can just leave this input at zero.
         # That is, if you're just comparing flexible vs inflexible, any bias will cancel out.
 
-        # This will govern the central tendency of the long-run growth rate trend that will apply over the entire scenario.
-        # As Pricing Factors are only RELATIVE TO the Base Case pro-forma which should contain any realistic expected growth,
-        # the default value input here should normally be zero.
-        # However, you should check to see if there is a convexity bias that needs to be corrected with this trend input.
+        # This will govern the central tendency of the long-run growth rate
+        # trend that will apply over the entire scenario.
+        # As Pricing Factors are only RELATIVE TO the Base Case pro-forma
+        # which should contain any realistic expected growth, the default value
+        # input here should normally be zero. However, you should check to
+        # see if there is a convexity bias that needs to be corrected with this trend input.
         'trend_delta': 0.,
         'trend_residual': .005,
         }
@@ -104,6 +110,13 @@ class TestDynamics:
     market_volatility = volatility.Volatility(trend=market_trend,
                                               params=volatility_params)
 
+    volatility_frame = flux.Aggregation(name="Volatility",
+                                        aggregands=[market_trend.trend,
+                                                    market_volatility.volatility,
+                                                    market_volatility.autoregressive_returns,
+                                                    market_volatility.cumulative_volatility],
+                                        periodicity=period_type)
+
     def test_volatility(self):
         # # dynamics.volatility.display()
         # # dynamics.autoregressive_returns.display()
@@ -114,19 +127,17 @@ class TestDynamics:
         # dynamics.autoregressive_returns.display()
         # dynamics.cumulative_volatility.display()
         # dynamics.cumulative_volatility.movements.plot()
-        #TestDynamics.market_volatility.volatility.display()# dynamics.cumulative_volatility.movements.plot(kind='bar')
-        volatility_frame = flux.Aggregation(name="Volatility",
-                                            aggregands=[TestDynamics.market_trend.trend,
-                                                        TestDynamics.market_volatility.volatility,
-                                                        TestDynamics.market_volatility.autoregressive_returns,
-                                                        TestDynamics.market_volatility.cumulative_volatility],
-                                            periodicity=TestDynamics.period_type)
-        print(volatility_frame.start_date)
-        print(volatility_frame.end_date)
-        # print(dynamics.volatility_frame.aggregation)
-        volatility_frame.display()
+        # TestDynamics.market_volatility.volatility.display()# dynamics.cumulative_volatility.movements.plot(kind='bar')
+        print(TestDynamics.volatility_frame.start_date)
+        print(TestDynamics.volatility_frame.end_date)
 
-        plt.show(block=True)
+        plot = flux.Aggregation(name='Plot',
+                                aggregands=[TestDynamics.market_volatility.cumulative_volatility,
+                                            TestDynamics.market_trend.trend],
+                                periodicity=TestDynamics.period_type).plot(normalize=True)
+
+        # print(dynamics.volatility_frame.aggregation)
+        TestDynamics.volatility_frame.display()
 
     cyclicality_params = {
         # In the U.S. the real estate market cycle seems to be in the range of 10 to 20 years.
@@ -158,7 +169,6 @@ class TestDynamics:
         'space_cycle_phase_offset': .175,
         'space_cycle_phase_residual': .05,
         'space_cycle_phase_dist': distribution.Type.PERT,
-
 
         'space_cycle_amplitude_mean': .15,
         'space_cycle_amplitude_residual': .025,
@@ -194,18 +204,52 @@ class TestDynamics:
         # relative to the proforma expected cash flows.
         'asset_cycle_amplitude_mean': .01,
         'asset_cycle_amplitude_residual': .0015,
-        'asset_cycle_amplitude_dist': distribution.Type.PERT
+        'asset_cycle_amplitude_dist': distribution.Type.PERT,
+
+        'space_cycle_asymmetric_parameter': .5,
+        'asset_cycle_asymmetric_parameter': .5
         }
 
-    def test_cyclicality(self):
-        market_cyclicality = cyclicality.Market(params=TestDynamics.cyclicality_params)
-        sine = market_cyclicality.space_cycle.sine_flow(index=TestDynamics.market_trend.trend.movements.index)
-        sine.display()
-        compound_sine = market_cyclicality.space_cycle.compound_sine_flow(index=TestDynamics.market_trend.trend.movements.index, offset=.1)
-        compound_sine.display()
+    market_cyclicality = cyclicality.Cyclicality(params=cyclicality_params,
+                                                 volatility=market_volatility,
+                                                 cap_rate=trend_params['cap_rate'],
+                                                 index=market_trend.trend.movements.index)
 
-        sine.movements.plot()
-        compound_sine.movements.plot()
+    def test_cyclicality(self):
+        print("\nSpace Cycle: \n")
+        print(TestDynamics.market_cyclicality.space_cycle)
+
+        print("\nAsset Cycle: \n")
+        print(TestDynamics.market_cyclicality.asset_cycle)
+
+        #TestDynamics.market_cyclicality.space_sine.plot(normalize=True)
+        #TestDynamics.market_cyclicality.asset_sine.plot()
+
+        plot = flux.Aggregation(name="Plot",
+                                aggregands=[TestDynamics.market_cyclicality.space_sine,
+                                            TestDynamics.market_cyclicality.asset_sine,
+                                            TestDynamics.market_cyclicality.space_market,
+                                            TestDynamics.market_cyclicality.asset_market],
+                                periodicity=TestDynamics.period_type).plot()
+
+        # foo = plot.aggregation['space_sine']
+        # foo.plot()
+        # plot.aggregation.plot(y='space_sine',
+        #                       use_index=True,
+        #                       legend=None,
+        #                       color='black')
+
+        # print(json.dumps(obj=TestDynamics.cyclicality_params, indent=4))
+        # print(type(TestDynamics.cyclicality_params))
+        # TestDynamics.market_cyclicality.space_market.display()
+        # TestDynamics.market_cyclicality.asset_market.display()
+        #
+        # pure_space_sine = 1 + TestDynamics.market_cyclicality.space_sine.movements
+        # pure_space_sine.plot()
+        # TestDynamics.market_cyclicality.asset_sine.movements.plot()
+
+        # TestDynamics.market_cyclicality.space_market.plot()
+
         plt.show(block=True)
 
 
