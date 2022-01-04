@@ -6,39 +6,11 @@ import numpy as np
 from numba import jit
 import typing
 
-import distribution, flux, phase, periodicity, units
-
-
-class DistributionParams:
-    def __init__(self,
-                 distribution_type: distribution.Type,
-                 mean: float,
-                 residual: float = 0.,
-                 generator: typing.Optional[np.random.Generator] = None):
-        """
-        Parameters that define the mean and residual (maximum deviation)
-        of a symmetric distribution
-        """
-        self.mean = mean
-        self.residual = residual
-        print(distribution_type)
-        if distribution_type is distribution.Type.uniform or distribution_type is distribution.Type.PERT:
-            self.distribution_type = distribution_type
-        else:
-            raise ValueError("Distribution type must be symmetrical about its mean")
-        self.generator = generator
-
-    def distribution(self):
-        if self.distribution_type == distribution.Type.uniform:
-            return distribution.Uniform(mean=self.mean,
-                                        scale=self.residual * 2,
-                                        generator=self.generator)
-        elif self.distribution_type == distribution.Type.PERT:
-            return distribution.PERT.standard_symmetric(peak=self.mean,
-                                                        residual=self.residual)
+import distribution, flux, phase, periodicity, units, dynamics.volatility
 
 
 class Enumerate:
+    @staticmethod
     @jit(nopython=True)
     def sine(period: float,
              phase: float,
@@ -59,32 +31,38 @@ class Enumerate:
                         )
         return data
 
-    @jit(nopython=True)
-    def compound_sine(period: float,
-                      phase: float,
-                      amplitude: float,
-                      offset: float,
-                      num_periods: int):
+    @staticmethod
+    def asymmetric_sine(period: float,
+                        phase: float,
+                        amplitude: float,
+                        parameter: float,
+                        num_periods: int,
+                        precision: float = 1e-10,
+                        bound: float = 1e-1):
         """
-        Generate a compound (asymmetrically offset) sine wave from the parameters.
-        The asymmetry is introduced to the cycle by compounding the sine function:
-        y = amplitude * sin((t - phase) - (a * period) * sin((t - phase) * 2 * pi / period)) * 2 * pi / period),
-        where a is a small fraction 0 < a < 1.
-        e.g. a = 0.1 will produce a downturn approx. 0.5 * duration of the up-swing.
+        Generate a smoothed sinusoid asymmetric (sawtooth) wave.
+        Based on the solution to the expression: f(x) = sin(x - f(x)),
+        with additional parameterization of period, phase, amplitude, and shear,
+        where shear is defined as a parameter between 0 and 1 (1 being most asymmetric)
+
+        Because the formula is recursive, we approximate the solution by
+        solving sin(x + c) - x = 0, for x, as in this answer https://math.stackexchange.com/a/2645080
+        to https://math.stackexchange.com/q/2644982/999815
         """
-        data = []
-        for i in range(num_periods):
-            data.append(amplitude *
-                        np.sin(
-                            (i - phase) - (offset * period) *
-                            np.sin(
-                                (i - phase) *
-                                (2 * np.pi / period)
-                                ) *
-                            (2 * np.pi / period)
-                            )
-                        )
-        return data
+
+        @jit(nopython=True)
+        def f(x):
+            upper = 1 + bound
+            lower = -upper
+            while upper - lower > precision:
+                mid = (lower + upper) / 2
+                if -math.sin((x - phase) * (2 * np.pi / period) + mid) - ((1 / parameter) * mid) > 0:
+                    lower = mid
+                else:
+                    upper = mid
+            return (lower + upper) / 2 * (amplitude * (1 / -parameter))
+
+        return list(map(f, range(num_periods)))
 
 
 class Cycle:
@@ -99,35 +77,63 @@ class Cycle:
         self.phase = phase
         self.amplitude = amplitude
 
-    def sine_flow(self,
-                  index: pd.PeriodIndex):
+    def __str__(self):
+        string = ""
+        string += "Period: " + str(self.period) + "\n"
+        string += "Phase: " + str(self.phase) + "\n"
+        string += "Amplitude: " + str(self.amplitude) + "\n"
+        return string
+
+    def sine(self,
+             index: pd.PeriodIndex,
+             name: str = "sine_cycle"):
         data = Enumerate.sine(period=self.period,
                               phase=self.phase,
                               amplitude=self.amplitude,
                               num_periods=index.size)
         return flux.Flow(movements=pd.Series(data=data, index=index),
                          units=units.Units.Type.scalar,
-                         name="sine_cycle")
+                         name=name)
 
-    def compound_sine_flow(self,
-                           offset: float,
-                           index: pd.PeriodIndex):
-        data = Enumerate.compound_sine(period=self.period,
-                                       phase=self.phase,
-                                       amplitude=self.amplitude,
-                                       num_periods=index.size,
-                                       offset=offset)
-        return flux.Flow(movements=pd.Series(data=data, index=index),
+    def asymmetric_sine(self,
+                        parameter: float,
+                        index: pd.PeriodIndex,
+                        precision: float = 1e-10,
+                        bound: float = 1e-1,
+                        name: str = "asymmetric_sine_cycle"):
+        data = Enumerate.asymmetric_sine(period=self.period,
+                                         phase=self.phase,
+                                         amplitude=self.amplitude,
+                                         parameter=parameter,
+                                         num_periods=index.size,
+                                         precision=precision,
+                                         bound=bound)
+        return flux.Flow(movements=pd.Series(data=data,
+                                             index=index),
                          units=units.Units.Type.scalar,
-                         name="compound_sine_cycle")
+                         name=name)
 
 
-class Market:
+class Cyclicality:
     def __init__(self,
-                 params: dict):
-        space_period = DistributionParams(mean=params['space_cycle_period_mean'],
-                                          residual=params['space_cycle_period_residual'],
-                                          distribution_type=params['space_cycle_period_dist']).distribution().sample()
+                 params: dict,
+                 volatility: dynamics.volatility.Volatility,
+                 cap_rate: float,
+                 index: pd.PeriodIndex):
+        """
+        This models a (possibly somewhat) predictable long-term cycle in the
+        pricing. In fact, there are two cycles, not necessarily in sync,
+        one for the space market (rents) and another separate cycle for the
+        asset market (capital flows), the latter reflected by the cap rate.
+
+        Cycles are modeled by generalized sine functions governed by the given
+        input period, amplitude, and phase.
+
+        """
+        space_period = distribution.Symmetric(mean=params['space_cycle_period_mean'],
+                                              residual=params['space_cycle_period_residual'],
+                                              distribution_type=params['space_cycle_period_dist']
+                                              ).distribution().sample()
         """
         In the U.S. the real estate market cycle seems to be in the range of 10 to 20 years. 
         E.g.:
@@ -136,10 +142,10 @@ class Market:
         future history to be between 10 and 20 years.
         """
 
-        space_phase = (DistributionParams(mean=params['space_cycle_phase_offset'],
-                                          residual=params['space_cycle_phase_residual'],
-                                          distribution_type=params[
-                                              'space_cycle_phase_dist']).distribution().sample() + .65) * space_period
+        space_phase = distribution.Symmetric(mean=params['space_cycle_phase_offset'],
+                                             residual=params['space_cycle_phase_residual'],
+                                             distribution_type=params['space_cycle_phase_dist']
+                                             ).distribution().sample() * space_period
         """
         If you make this equal to a uniform RV times the rent cycle period 
         then the phase will range from starting anywhere from peak to trough with equal likelihood.
@@ -157,7 +163,10 @@ class Market:
         Example, if you enter 20 in cycle period, and you enter 5 in cycle phase, 
         then the cycle will be starting out in the first year at the bottom of the cycle, 
         heading up from there.
-        
+
+        NOTE: FOLLOWING IS TO BE UPDATED WITH NEW SAWTOOTH ALGO:
+        TODO: FIX.
+                
         Please note that with the compound-sine asymetric cycle formula, 
         the peak parameter is slightly off from the above. 
         0.65*Period seems to start the cycle closer to the peak. 
@@ -166,19 +175,19 @@ class Market:
         you would enter:
         =(.175*RAND()+.65)*J10, if Period is in J10.
         """
-        space_amplitude = DistributionParams(mean=params['space_cycle_amplitude_mean'],
-                                             residual=params['space_cycle_amplitude_residual'],
-                                             distribution_type=params[
-                                                 'space_cycle_amplitude_dist']).distribution().sample()
+        space_amplitude = distribution.Symmetric(mean=params['space_cycle_amplitude_mean'],
+                                                 residual=params['space_cycle_amplitude_residual'],
+                                                 distribution_type=params['space_cycle_amplitude_dist']
+                                                 ).distribution().sample()
 
         self.space_cycle = Cycle(period=space_period,
                                  phase=space_phase,
                                  amplitude=space_amplitude)
 
-        asset_period = DistributionParams(mean=params['asset_cycle_period_offset'],
-                                          residual=params['asset_cycle_period_residual'],
-                                          distribution_type=params[
-                                              'asset_cycle_period_dist']).distribution().sample() + space_period
+        asset_period = distribution.Symmetric(mean=params['asset_cycle_period_offset'],
+                                              residual=params['asset_cycle_period_residual'],
+                                              distribution_type=params['asset_cycle_period_dist']
+                                              ).distribution().sample() + space_period
         """
         This  can be randomly different from rent cycle period, 
         but probably not too different, maybe +/- 1 year.
@@ -186,10 +195,10 @@ class Market:
         =J10+(RAND()*2-1)
         """
 
-        asset_phase = DistributionParams(mean=params['asset_cycle_phase_offset'],
-                                         residual=params['asset_cycle_phase_residual'],
-                                         distribution_type=params[
-                                             'asset_cycle_phase_dist']).distribution().sample() * asset_period + space_phase
+        asset_phase = distribution.Symmetric(mean=params['asset_cycle_phase_offset'],
+                                             residual=params['asset_cycle_phase_residual'],
+                                             distribution_type=params['asset_cycle_phase_dist']
+                                             ).distribution().sample() * asset_period + space_phase
         """
         Since we input this cycle as the negative of the actual cap rate cycle, 
         you can think of the phase in the same way as the space market phase. 
@@ -203,10 +212,10 @@ class Market:
         (here, a fifth of the asset cycle period).
         """
 
-        asset_amplitude = DistributionParams(mean=params['asset_cycle_amplitude_mean'],
-                                             residual=params['asset_cycle_amplitude_residual'],
-                                             distribution_type=params[
-                                                 'asset_cycle_amplitude_dist']).distribution().sample()
+        asset_amplitude = distribution.Symmetric(mean=params['asset_cycle_amplitude_mean'],
+                                                 residual=params['asset_cycle_amplitude_residual'],
+                                                 distribution_type=params['asset_cycle_amplitude_dist']
+                                                 ).distribution().sample()
         """
         This is in cap rate units, so keep in mind the magnitude of the initial cap rate 
         entered on the MktDynamicsInputs sheet. 
@@ -223,3 +232,48 @@ class Market:
         self.asset_cycle = Cycle(period=asset_period,
                                  phase=asset_phase,
                                  amplitude=asset_amplitude)
+
+        space_sine = self.space_cycle.asymmetric_sine(index=index,
+                                                      name='space_sine',
+                                                      parameter=params['space_cycle_asymmetric_parameter'])
+        self.space_sine = flux.Flow(name=space_sine.name,
+                                    movements=(1 + space_sine.movements),
+                                    units=space_sine.units)
+        """
+        This models a (possibly somewhat) predictable long-term cycle in the 
+        pricing. In fact, there are two cycles, not necessarily in sync, one
+        for the space market (rents) and another separate cycle for the asset 
+        market (capital flows), the latter reflected by the cap rate. 
+        We model each separately, the space market cycle in this column and 
+        the asset market cycle in a column to the right. Cycles are modeled 
+        by generalized sine functions governed by the given input period, 
+        amplitude, and phase.
+        """
+
+        self.asset_sine = self.asset_cycle.asymmetric_sine(index=index,
+                                                           name='asset_sine',
+                                                           parameter=params['asset_cycle_asymmetric_parameter'])
+        """
+        Negative of actual cap rate cycle. This makes this cycle directly
+        reflect the asset pricing, as prices are an inverse function of the 
+        cap rate. By taking the negative of the actual cap rate, we therefore 
+        make it easier to envision the effect on prices.
+        """
+
+        self.space_market = flux.Flow(movements=(self.space_sine.movements * volatility.cumulative_volatility.movements),
+                                      units=units.Units.Type.scalar,
+                                      name='Space Market Cycle')
+
+        self.asset_market = flux.Flow(movements=cap_rate - self.asset_sine.movements,
+                                      units=units.Units.Type.scalar,
+                                      name='Asset Market Cycle')
+        """
+        We're subtracting the cap rate cycle from the long-term mean cap rate, 
+        rather than adding it, because we're entering the cap rate cycle 
+        negative to the actual cap rate cycle, so that the cycle is up when 
+        prices are up and down when prices are down. Recall that the actual 
+        cap rate is inversely related to prices 
+        (high cap rates ==> low prices & vice versa). 
+        
+        It's easier to think about cycles positively.
+        """

@@ -22,7 +22,7 @@ class Volatility:
 
         volatilities_duration = trend.trend.movements.index.size
         volatilities = pd.Series(
-            data=[sp.special.ndtri(distribution.Uniform(mean=0., scale=1.).sample()) * params['volatility_per_period']
+            data=[sp.special.ndtri(distribution.Uniform(lower=0, range=1).sample()) * params['volatility_per_period']
                   for x in range(volatilities_duration)],
             # the ndtri() function replicates excel's NORMSINV().
             # See https://stackoverflow.com/questions/20626994/how-to-calculate-the-inverse-of-the-normal-cumulative-distribution-function-in-p/20627638

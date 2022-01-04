@@ -37,18 +37,51 @@ class Distribution:
             return variates
 
 
+class Symmetric(Distribution):
+    def __init__(self,
+                 distribution_type: Type,
+                 mean: float,
+                 residual: float = 0.,
+                 generator: Optional[np.random.Generator] = None):
+        """
+        Parameters that define the mean and residual (maximum deviation)
+        of a symmetric distribution
+        """
+        super().__init__(generator)
+
+        self.mean = mean
+        self.residual = residual
+        print(distribution_type)
+        if distribution_type is Type.uniform or distribution_type is Type.PERT:
+            self.distribution_type = distribution_type
+        else:
+            raise ValueError("Distribution type must be symmetrical about its mean")
+        self.generator = generator
+
+    def distribution(self):
+        if self.distribution_type == Type.uniform:
+            return Uniform(lower=self.mean - self.residual,
+                           range=self.residual * 2,
+                           generator=self.generator)
+        elif self.distribution_type == Type.PERT:
+            return PERT.standard_symmetric(peak=self.mean,
+                                           residual=self.residual)
+
+
 class Uniform(Distribution):
     """
-    A continuous, uniform distribution between 0 and 1,
+    For default arguments, this is a continuous, uniform distribution between 0 and 1,
     such the cumulative distribution reaches 1. (For uniform distribution, this means the density is continuously 1).
+
+    For specified arguments, this distribution is constant between lower, and lower + range.
     """
 
     def __init__(self,
-                 mean: float = 0.5,
-                 scale: float = 0.5,
+                 lower: float = 0.,
+                 range: float = 1.,
                  generator: Optional[np.random.Generator] = None):
         super().__init__(generator=generator)
-        self.dist = ss.uniform(loc=mean, scale=scale)
+        self.dist = ss.uniform(loc=lower, scale=range)
 
     def interval_density(self, parameters: [float]):
         """
