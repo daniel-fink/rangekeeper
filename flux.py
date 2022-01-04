@@ -4,6 +4,7 @@ import math
 import pandas as pd
 import numpy as np
 import numpy_financial as npf
+import matplotlib.pyplot as plt
 import pyxirr
 from typing import Dict, Union
 
@@ -39,6 +40,15 @@ class Flow:
         print('Units: ' + self.units.__doc__)
         print('Movements: ')
         print(self.movements.to_markdown())
+
+    def plot(self, normalize: bool = False, *args, **kwargs):
+        self.movements.plot(*args, **kwargs)
+        plt.legend(loc='best')
+        plt.xlabel('Date')
+        plt.ylabel(self.units.__doc__)
+        if normalize:
+            plt.ylim(bottom=0)
+        plt.show(block=True)
 
     @staticmethod
     def from_periods(periods: pd.PeriodIndex,
@@ -201,10 +211,10 @@ class Flow:
         """
         Returns a pd.Series (of index pd.PeriodIndex) with movements summed to specified periodicity
         """
-        return self.resample(periodicity=periodicity).movements\
-            .to_period(freq=periodicity.value, copy=True)\
-            .rename_axis('periods')\
-            .groupby(level='periods')\
+        return self.resample(periodicity=periodicity).movements \
+            .to_period(freq=periodicity.value, copy=True) \
+            .rename_axis('periods') \
+            .groupby(level='periods') \
             .sum()
 
     def periodicity(self):
@@ -280,6 +290,90 @@ class Aggregation:
         print('Units: ' + self.units.__doc__)
         print('Flows: ')
         print(self.aggregation.to_markdown())
+
+    def plot(self,
+             columns: [str] = None):
+        if columns is None:
+            columns = list(self.aggregation.columns.values)
+
+        dates = list(self.aggregation.index.astype(str))
+
+        fig, host = plt.subplots(nrows=1, ncols=1)
+        tkw = dict(size=4, width=1.5)
+
+        lns = []
+
+        left, = host.plot(dates,
+                          self.aggregation[columns[0]].to_list(),
+                          color=plt.cm.viridis(0),
+                          label=columns[0])
+        host.set_xlabel('Date')
+        host.set_ylabel(columns[0])
+        host.set_xticklabels(host.get_xticks(), rotation=45)
+        host.tick_params(axis='y', colors=left.get_color(), **tkw)
+        host.set_facecolor('white')
+        host.yaxis.label.set_color(left.get_color())
+        plt.setp(host.spines.values(), visible=True)
+
+        host.grid(axis='x',
+                  color='grey',
+                  which='major',
+                  linewidth=1)
+        host.grid(axis='x',
+                  color='grey',
+                  which='minor',
+                  linestyle='--',
+                  linewidth=1)
+        host.grid(axis='y',
+                  color='grey',
+                  which='major',
+                  linewidth=0.5)
+        lns.append(left)
+
+        if len(columns) > 1:
+            right = host.twinx()
+            secondary, = right.plot(dates,
+                                    self.aggregation[columns[1]].to_list(),
+                                    color=plt.cm.viridis(1 / (len(columns) + 1)),
+                                    label=columns[1])
+            right.set_ylabel(columns[1])
+            right.spines.right.set_visible(True)
+            right.grid(False)
+            right.set_frame_on(True)
+            right.patch.set_visible(False)
+            right.yaxis.label.set_color(secondary.get_color())
+            right.spines.right.set_edgecolor(secondary.get_color())
+            right.spines.right.set_color(secondary.get_color())
+            right.tick_params(axis='y', colors=secondary.get_color(), **tkw)
+            plt.setp(right.spines.values(), visible=True)
+
+            lns.append(secondary)
+
+            if len(columns) > 2:
+                for i in range(2, len(columns)):
+                    supplementary = host.twinx()
+                    additional, = supplementary.plot(dates,
+                                                     self.aggregation[columns[i]].to_list(),
+                                                     color=plt.cm.viridis(1 / i),
+                                                     label=columns[i])
+                    supplementary.spines.right.set_position(('axes', 1 + (i - 1) / 5))
+                    supplementary.spines.right.set_visible(True)
+                    supplementary.spines.right.set_linewidth(1)
+                    supplementary.set_ylabel(columns[i])
+                    supplementary.grid(False)
+                    # supplementary.set_frame_on(True)
+                    supplementary.patch.set_visible(False)
+                    supplementary.yaxis.label.set_color(additional.get_color())
+                    supplementary.spines.right.set_edgecolor(additional.get_color())
+                    supplementary.spines.right.set_color(additional.get_color())
+                    supplementary.tick_params(axis='y', colors=additional.get_color(), **tkw)
+                    plt.setp(supplementary.spines.values(), visible=True)
+
+                    lns.append(additional)
+
+        host.legend(handles=lns, loc='best')
+        # plt.setp([a.get_xticklabels() for a in fig.axes[:-1]], visible=True)
+        plt.tight_layout()
 
     def extract(self, flow_name: str):
         """
