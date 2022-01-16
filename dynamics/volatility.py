@@ -20,21 +20,22 @@ class Volatility:
         volatility_per_period = .08
         """
 
-        volatilities_duration = trend.trend.movements.index.size
         volatilities = pd.Series(
             data=[sp.special.ndtri(distribution.Uniform(lower=0, range=1).sample()) * params['volatility_per_period']
-                  for x in range(volatilities_duration)],
+                  for x in range(trend.trend.movements.index.size)],
             # the ndtri() function replicates excel's NORMSINV().
             # See https://stackoverflow.com/questions/20626994/how-to-calculate-the-inverse-of-the-normal-cumulative-distribution-function-in-p/20627638
             index=trend.trend.movements.index)
 
-        self.volatility = flux.Flow(movements=volatilities,
-                                    units=units.Units.Type.scalar,
-                                    name='Volatility')
+        self.volatility = flux.Flow(
+            movements=volatilities,
+            units=units.Units.Type.scalar,
+            name='Volatility')
 
         @jit(nopython=True)
-        def calculate_autoregression(parameter: float,
-                                     volatility: [float]):
+        def calculate_autoregression(
+                parameter: float,
+                volatility: [float]):
             ar_returns = []
             for i in range(len(volatility)):
                 if i == 0:
@@ -43,12 +44,15 @@ class Volatility:
                     ar_returns.append(volatility[i] + (parameter * ar_returns[i - 1]))
             return ar_returns
 
-        autoregression_return_data = calculate_autoregression(parameter=params['autoregression_param'],
-                                                              volatility=self.volatility.movements.to_list())
-        self.autoregressive_returns = flux.Flow(movements=pd.Series(data=autoregression_return_data,
-                                                                    index=self.volatility.movements.index),
-                                                units=units.Units.Type.scalar,
-                                                name='Autoregressive Returns')
+        autoregression_return_data = calculate_autoregression(
+            parameter=params['autoregression_param'],
+            volatility=self.volatility.movements.to_list())
+        self.autoregressive_returns = flux.Flow(
+            movements=pd.Series(
+                data=autoregression_return_data,
+                index=self.volatility.movements.index),
+            units=units.Units.Type.scalar,
+            name='Autoregressive Returns')
 
         """
         Cumulative Volatility:
@@ -56,11 +60,12 @@ class Volatility:
         """
 
         @jit(nopython=True)
-        def calculate_volatility_accumulation(trend_rate: float,
-                                              trend: [float],
-                                              mr_parameter: float,
-                                              ar_returns: [float],
-                                              ):
+        def calculate_volatility_accumulation(
+                trend_rate: float,
+                trend: [float],
+                mr_parameter: float,
+                ar_returns: [float],
+                ):
             accumulated_volatility = []
             for i in range(len(trend)):
                 if i == 0:
@@ -72,11 +77,14 @@ class Volatility:
                         )
             return accumulated_volatility
 
-        cumulative_volatility_data = calculate_volatility_accumulation(trend_rate=trend.trend_rate,
-                                                                       trend=trend.trend.movements.to_list(),
-                                                                       mr_parameter=params['mean_reversion_param'],
-                                                                       ar_returns=self.autoregressive_returns.movements.to_list())
-        self.cumulative_volatility = flux.Flow(movements=pd.Series(data=cumulative_volatility_data,
-                                                                   index=trend.trend.movements.index),
-                                               units=units.Units.Type.scalar,
-                                               name='Cumulative')
+        cumulative_volatility_data = calculate_volatility_accumulation(
+            trend_rate=trend.trend_rate,
+            trend=trend.trend.movements.to_list(),
+            mr_parameter=params['mean_reversion_param'],
+            ar_returns=self.autoregressive_returns.movements.to_list())
+        self.cumulative_volatility = flux.Flow(
+            movements=pd.Series(
+                data=cumulative_volatility_data,
+                index=trend.trend.movements.index),
+            units=units.Units.Type.scalar,
+            name='Cumulative')

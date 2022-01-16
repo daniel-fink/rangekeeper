@@ -14,7 +14,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 import periodicity, phase, distribution, flux, units
-from dynamics import trend, volatility, cyclicality
+from dynamics import trend, volatility, cyclicality, market
 
 matplotlib.use('TkAgg')
 plt.style.use('seaborn')  # pretty matplotlib plots
@@ -23,10 +23,11 @@ plt.rcParams['figure.figsize'] = (12, 8)
 
 class TestDynamics:
     period_type = periodicity.Periodicity.Type.year
-    phase = phase.Phase.from_num_periods(name="Phase",
-                                         start_date=pd.Timestamp(2021, 1, 1),
-                                         period_type=period_type,
-                                         num_periods=25)
+    phase = phase.Phase.from_num_periods(
+        name="Phase",
+        start_date=pd.Timestamp(2021, 1, 1),
+        period_type=period_type,
+        num_periods=25)
     trend_params = {
         # Rent Yield:
         # This governs the base rental (net income) value as a fraction of asset value.
@@ -64,9 +65,10 @@ class TestDynamics:
         'trend_delta': 0.,
         'trend_residual': .005,
         }
-    market_trend = trend.Trend(phase=phase,
-                               period_type=period_type,
-                               params=trend_params)
+    market_trend = trend.Trend(
+        phase=phase,
+        period_type=period_type,
+        params=trend_params)
 
     def test_trend(self):
         TestDynamics.market_trend.trend.display()
@@ -107,15 +109,17 @@ class TestDynamics:
         # then 0.5*(1.2-1.0) = 0.10 will be added to this period's price level.
         'mean_reversion_param': .3,
         }
-    market_volatility = volatility.Volatility(trend=market_trend,
-                                              params=volatility_params)
+    market_volatility = volatility.Volatility(
+        trend=market_trend,
+        params=volatility_params)
 
-    volatility_frame = flux.Aggregation(name="Volatility",
-                                        aggregands=[market_trend.trend,
-                                                    market_volatility.volatility,
-                                                    market_volatility.autoregressive_returns,
-                                                    market_volatility.cumulative_volatility],
-                                        periodicity=period_type)
+    volatility_frame = flux.Aggregation(
+        name="Volatility",
+        aggregands=[market_trend.trend,
+                    market_volatility.volatility,
+                    market_volatility.autoregressive_returns,
+                    market_volatility.cumulative_volatility],
+        periodicity=period_type)
 
     def test_volatility(self):
         # # dynamics.volatility.display()
@@ -131,17 +135,20 @@ class TestDynamics:
         print(TestDynamics.volatility_frame.start_date)
         print(TestDynamics.volatility_frame.end_date)
 
-        plot = flux.Aggregation(name='Plot',
-                                aggregands=[TestDynamics.market_volatility.cumulative_volatility,
-                                            TestDynamics.market_trend.trend],
-                                periodicity=TestDynamics.period_type).plot(normalize=True)
+        plot = flux.Aggregation(
+            name='Plot',
+            aggregands=[TestDynamics.market_volatility.cumulative_volatility,
+                        TestDynamics.market_trend.trend],
+            periodicity=TestDynamics.period_type).plot()
 
         # print(dynamics.volatility_frame.aggregation)
         TestDynamics.volatility_frame.display()
 
     cyclicality_params = {
-        # In the U.S. the real estate market cycle seems to be in the range of 10 to 20 years.
-        # This will randomly generate the cycle period governing each future history to be between 10 and 20 years.
+        # In the U.S. the real estate market cycle seems to
+        # be in the range of 10 to 20 years.
+        # This will randomly generate the cycle period governing
+        # each future history to be between 10 and 20 years.
         'space_cycle_period_mean': 15.,
         'space_cycle_period_residual': 5.,
         'space_cycle_period_dist': distribution.Type.uniform,
@@ -210,46 +217,77 @@ class TestDynamics:
         'asset_cycle_asymmetric_parameter': .5
         }
 
-    market_cyclicality = cyclicality.Cyclicality(params=cyclicality_params,
-                                                 volatility=market_volatility,
-                                                 cap_rate=trend_params['cap_rate'],
-                                                 index=market_trend.trend.movements.index)
+    market_cyclicality = cyclicality.Cyclicality(
+        params=cyclicality_params,
+        index=market_trend.trend.movements.index)
 
     def test_cyclicality(self):
-        print("\nSpace Cycle: \n")
+        test_cycle = cyclicality.Cycle(
+            period=25,
+            phase=12.5,
+            amplitude=1.)
+
+        cycles = []
+        lim = 25
+        for i in range(1, lim):
+            param = i / lim
+            asymmetric_cycle = test_cycle.asymmetric_sine(
+                parameter=param,
+                index=self.market_trend.trend.movements.index,
+                name='parameter_' + str(param))
+            cycles.append(asymmetric_cycle)
+
+        asymmetric_cycle_plot = flux.Aggregation(
+            name='asymmetric_cycle_plot',
+            aggregands=cycles,
+            periodicity=TestDynamics.period_type)
+        asymmetric_cycle_plot.plot()
+
+        print("\nSpace Cycle:")
         print(TestDynamics.market_cyclicality.space_cycle)
 
-        print("\nAsset Cycle: \n")
+        print("\nAsset Cycle:")
         print(TestDynamics.market_cyclicality.asset_cycle)
 
-        #TestDynamics.market_cyclicality.space_sine.plot(normalize=True)
-        #TestDynamics.market_cyclicality.asset_sine.plot()
+        flux.Aggregation(
+            name="Plot",
+            aggregands=[TestDynamics.market_cyclicality.space_waveform,
+                        TestDynamics.market_cyclicality.asset_waveform],
+            periodicity=TestDynamics.period_type).plot(
+            aggregands={
+                'space_waveform': (0., 1.4),
+                'asset_waveform': (-0.015, 0.015)
+                })
 
-        plot = flux.Aggregation(name="Plot",
-                                aggregands=[TestDynamics.market_cyclicality.space_sine,
-                                            TestDynamics.market_cyclicality.asset_sine,
-                                            TestDynamics.market_cyclicality.space_market,
-                                            TestDynamics.market_cyclicality.asset_market],
-                                periodicity=TestDynamics.period_type).plot()
+        plt.show(block=True)
 
-        # foo = plot.aggregation['space_sine']
-        # foo.plot()
-        # plot.aggregation.plot(y='space_sine',
-        #                       use_index=True,
-        #                       legend=None,
-        #                       color='black')
+    market_params={
+        'noise_residual': .01,
+        'cap_rate': trend_params['cap_rate'],
+        'black_swan_likelihood': .05,
+        'black_swan_dissipation_rate': volatility_params['mean_reversion_param'],
+        'black_swan_impact': distribution.PERT(
+            peak=-.3,
+            weighting=4.,
+            minimum=-.4,
+            maximum=-.2).sample()
+        }
+    market_dynamics = market.Market(
+        params=market_params,
+        trend=market_trend,
+        volatility=market_volatility,
+        cyclicality=market_cyclicality)
 
-        # print(json.dumps(obj=TestDynamics.cyclicality_params, indent=4))
-        # print(type(TestDynamics.cyclicality_params))
-        # TestDynamics.market_cyclicality.space_market.display()
-        # TestDynamics.market_cyclicality.asset_market.display()
-        #
-        # pure_space_sine = 1 + TestDynamics.market_cyclicality.space_sine.movements
-        # pure_space_sine.plot()
-        # TestDynamics.market_cyclicality.asset_sine.movements.plot()
-
-        # TestDynamics.market_cyclicality.space_market.plot()
-
+    def test_market(self):
+        flux.Aggregation(
+            name="Plot",
+            aggregands=[TestDynamics.market_dynamics.space_market,
+                        TestDynamics.market_dynamics.asset_market],
+            periodicity=TestDynamics.period_type).plot(
+            aggregands={
+                'space_market': (0., .08),
+                'asset_market': (0., .08)
+                })
         plt.show(block=True)
 
 

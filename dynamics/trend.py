@@ -26,7 +26,7 @@ class Trend:
                                               minimum=self.current_rent - params['rent_residual'],
                                               maximum=self.current_rent + params['rent_residual'])
         self.initial_rent = initial_rent_dist.sample()
-        self.initial_rent = 0.0511437
+        #self.initial_rent = 0.0511437
 
         """
         Uncertainty Distribution
@@ -44,7 +44,7 @@ class Trend:
                                        minimum=params['trend_delta'] - params['trend_residual'],
                                        maximum=params['trend_delta'] + params['trend_residual'])
         self.trend_rate = trend_dist.sample()
-        self.trend_rate = 0.00698263624
+        #self.trend_rate = 0.00698263624
 
         trend_dist = distribution.Exponential(rate=self.trend_rate,
                                               num_periods=phase.duration(period_type=period_type,
