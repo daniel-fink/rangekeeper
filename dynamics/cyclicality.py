@@ -12,10 +12,11 @@ import distribution, flux, phase, periodicity, units, dynamics.volatility
 class Enumerate:
     @staticmethod
     @jit(nopython=True)
-    def sine(period: float,
-             phase: float,
-             amplitude: float,
-             num_periods: int):
+    def sine(
+            period: float,
+            phase: float,
+            amplitude: float,
+            num_periods: int):
         """
         Generate a sine wave from the parameters.
         The conventional, symmetric cycle is a simple sine function, parameterized:
@@ -32,13 +33,14 @@ class Enumerate:
         return data
 
     @staticmethod
-    def asymmetric_sine(period: float,
-                        phase: float,
-                        amplitude: float,
-                        parameter: float,
-                        num_periods: int,
-                        precision: float = 1e-10,
-                        bound: float = 1e-1):
+    def asymmetric_sine(
+            period: float,
+            phase: float,
+            amplitude: float,
+            parameter: float,
+            num_periods: int,
+            precision: float = 1e-10,
+            bound: float = 1e-1):
         """
         Generate a smoothed sinusoid asymmetric (sawtooth) wave.
         Based on the solution to the expression: f(x) = sin(x - f(x)),
@@ -66,10 +68,11 @@ class Enumerate:
 
 
 class Cycle:
-    def __init__(self,
-                 period: float,
-                 phase: float,
-                 amplitude: float):
+    def __init__(
+            self,
+            period: float,
+            phase: float,
+            amplitude: float):
         """
         Parameters that define a cyclical time series
         """
@@ -84,9 +87,10 @@ class Cycle:
         string += "Amplitude: " + str(self.amplitude) + "\n"
         return string
 
-    def sine(self,
-             index: pd.PeriodIndex,
-             name: str = "sine_cycle"):
+    def sine(
+            self,
+            index: pd.PeriodIndex,
+            name: str = "sine_cycle"):
         data = Enumerate.sine(period=self.period,
                               phase=self.phase,
                               amplitude=self.amplitude,
@@ -95,31 +99,34 @@ class Cycle:
                          units=units.Units.Type.scalar,
                          name=name)
 
-    def asymmetric_sine(self,
-                        parameter: float,
-                        index: pd.PeriodIndex,
-                        precision: float = 1e-10,
-                        bound: float = 1e-1,
-                        name: str = "asymmetric_sine_cycle"):
-        data = Enumerate.asymmetric_sine(period=self.period,
-                                         phase=self.phase,
-                                         amplitude=self.amplitude,
-                                         parameter=parameter,
-                                         num_periods=index.size,
-                                         precision=precision,
-                                         bound=bound)
-        return flux.Flow(movements=pd.Series(data=data,
-                                             index=index),
-                         units=units.Units.Type.scalar,
-                         name=name)
+    def asymmetric_sine(
+            self,
+            parameter: float,
+            index: pd.PeriodIndex,
+            precision: float = 1e-10,
+            bound: float = 1e-1,
+            name: str = "asymmetric_sine_cycle") -> flux.Flow:
+        data = Enumerate.asymmetric_sine(
+            period=self.period,
+            phase=self.phase,
+            amplitude=self.amplitude,
+            parameter=parameter,
+            num_periods=index.size,
+            precision=precision,
+            bound=bound)
+        return flux.Flow(
+            movements=pd.Series(
+                data=data,
+                index=index),
+            units=units.Units.Type.scalar,
+            name=name)
 
 
 class Cyclicality:
-    def __init__(self,
-                 params: dict,
-                 volatility: dynamics.volatility.Volatility,
-                 cap_rate: float,
-                 index: pd.PeriodIndex):
+    def __init__(
+            self,
+            params: dict,
+            index: pd.PeriodIndex):
         """
         This models a (possibly somewhat) predictable long-term cycle in the
         pricing. In fact, there are two cycles, not necessarily in sync,
@@ -130,10 +137,11 @@ class Cyclicality:
         input period, amplitude, and phase.
 
         """
-        space_period = distribution.Symmetric(mean=params['space_cycle_period_mean'],
-                                              residual=params['space_cycle_period_residual'],
-                                              distribution_type=params['space_cycle_period_dist']
-                                              ).distribution().sample()
+        space_period = distribution.Symmetric(
+            mean=params['space_cycle_period_mean'],
+            residual=params['space_cycle_period_residual'],
+            distribution_type=params['space_cycle_period_dist']
+            ).distribution().sample()
         """
         In the U.S. the real estate market cycle seems to be in the range of 10 to 20 years. 
         E.g.:
@@ -142,10 +150,11 @@ class Cyclicality:
         future history to be between 10 and 20 years.
         """
 
-        space_phase = distribution.Symmetric(mean=params['space_cycle_phase_offset'],
-                                             residual=params['space_cycle_phase_residual'],
-                                             distribution_type=params['space_cycle_phase_dist']
-                                             ).distribution().sample() * space_period
+        space_phase = distribution.Symmetric(
+            mean=params['space_cycle_phase_offset'],
+            residual=params['space_cycle_phase_residual'],
+            distribution_type=params['space_cycle_phase_dist']
+            ).distribution().sample() * space_period
         """
         If you make this equal to a uniform RV times the rent cycle period 
         then the phase will range from starting anywhere from peak to trough with equal likelihood.
@@ -175,19 +184,22 @@ class Cyclicality:
         you would enter:
         =(.175*RAND()+.65)*J10, if Period is in J10.
         """
-        space_amplitude = distribution.Symmetric(mean=params['space_cycle_amplitude_mean'],
-                                                 residual=params['space_cycle_amplitude_residual'],
-                                                 distribution_type=params['space_cycle_amplitude_dist']
-                                                 ).distribution().sample()
+        space_amplitude = distribution.Symmetric(
+            mean=params['space_cycle_amplitude_mean'],
+            residual=params['space_cycle_amplitude_residual'],
+            distribution_type=params['space_cycle_amplitude_dist']
+            ).distribution().sample()
 
-        self.space_cycle = Cycle(period=space_period,
-                                 phase=space_phase,
-                                 amplitude=space_amplitude)
+        self.space_cycle = Cycle(
+            period=space_period,
+            phase=space_phase,
+            amplitude=space_amplitude)
 
-        asset_period = distribution.Symmetric(mean=params['asset_cycle_period_offset'],
-                                              residual=params['asset_cycle_period_residual'],
-                                              distribution_type=params['asset_cycle_period_dist']
-                                              ).distribution().sample() + space_period
+        asset_period = distribution.Symmetric(
+            mean=params['asset_cycle_period_offset'],
+            residual=params['asset_cycle_period_residual'],
+            distribution_type=params['asset_cycle_period_dist']
+            ).distribution().sample() + space_period
         """
         This  can be randomly different from rent cycle period, 
         but probably not too different, maybe +/- 1 year.
@@ -195,10 +207,11 @@ class Cyclicality:
         =J10+(RAND()*2-1)
         """
 
-        asset_phase = distribution.Symmetric(mean=params['asset_cycle_phase_offset'],
-                                             residual=params['asset_cycle_phase_residual'],
-                                             distribution_type=params['asset_cycle_phase_dist']
-                                             ).distribution().sample() * asset_period + space_phase
+        asset_phase = distribution.Symmetric(
+            mean=params['asset_cycle_phase_offset'],
+            residual=params['asset_cycle_phase_residual'],
+            distribution_type=params['asset_cycle_phase_dist']
+            ).distribution().sample() * asset_period + space_phase
         """
         Since we input this cycle as the negative of the actual cap rate cycle, 
         you can think of the phase in the same way as the space market phase. 
@@ -212,10 +225,11 @@ class Cyclicality:
         (here, a fifth of the asset cycle period).
         """
 
-        asset_amplitude = distribution.Symmetric(mean=params['asset_cycle_amplitude_mean'],
-                                                 residual=params['asset_cycle_amplitude_residual'],
-                                                 distribution_type=params['asset_cycle_amplitude_dist']
-                                                 ).distribution().sample()
+        asset_amplitude = distribution.Symmetric(
+            mean=params['asset_cycle_amplitude_mean'],
+            residual=params['asset_cycle_amplitude_residual'],
+            distribution_type=params['asset_cycle_amplitude_dist']
+            ).distribution().sample()
         """
         This is in cap rate units, so keep in mind the magnitude of the initial cap rate 
         entered on the MktDynamicsInputs sheet. 
@@ -229,16 +243,19 @@ class Cyclicality:
         relative to the proforma expected cash flows.
         """
 
-        self.asset_cycle = Cycle(period=asset_period,
-                                 phase=asset_phase,
-                                 amplitude=asset_amplitude)
+        self.asset_cycle = Cycle(
+            period=asset_period,
+            phase=asset_phase,
+            amplitude=asset_amplitude)
 
-        space_sine = self.space_cycle.asymmetric_sine(index=index,
-                                                      name='space_sine',
-                                                      parameter=params['space_cycle_asymmetric_parameter'])
-        self.space_sine = flux.Flow(name=space_sine.name,
-                                    movements=(1 + space_sine.movements),
-                                    units=space_sine.units)
+        space_waveform = self.space_cycle.asymmetric_sine(
+            index=index,
+            name='space_waveform',
+            parameter=params['space_cycle_asymmetric_parameter'])
+        self.space_waveform = flux.Flow(
+            name=space_waveform.name,
+            movements=(1 + space_waveform.movements),
+            units=space_waveform.units)
         """
         This models a (possibly somewhat) predictable long-term cycle in the 
         pricing. In fact, there are two cycles, not necessarily in sync, one
@@ -250,30 +267,13 @@ class Cyclicality:
         amplitude, and phase.
         """
 
-        self.asset_sine = self.asset_cycle.asymmetric_sine(index=index,
-                                                           name='asset_sine',
-                                                           parameter=params['asset_cycle_asymmetric_parameter'])
+        self.asset_waveform = self.asset_cycle.asymmetric_sine(
+            index=index,
+            name='asset_waveform',
+            parameter=params['asset_cycle_asymmetric_parameter'])
         """
         Negative of actual cap rate cycle. This makes this cycle directly
         reflect the asset pricing, as prices are an inverse function of the 
         cap rate. By taking the negative of the actual cap rate, we therefore 
         make it easier to envision the effect on prices.
-        """
-
-        self.space_market = flux.Flow(movements=(self.space_sine.movements * volatility.cumulative_volatility.movements),
-                                      units=units.Units.Type.scalar,
-                                      name='Space Market Cycle')
-
-        self.asset_market = flux.Flow(movements=cap_rate - self.asset_sine.movements,
-                                      units=units.Units.Type.scalar,
-                                      name='Asset Market Cycle')
-        """
-        We're subtracting the cap rate cycle from the long-term mean cap rate, 
-        rather than adding it, because we're entering the cap rate cycle 
-        negative to the actual cap rate cycle, so that the cycle is up when 
-        prices are up and down when prices are down. Recall that the actual 
-        cap rate is inversely related to prices 
-        (high cap rates ==> low prices & vice versa). 
-        
-        It's easier to think about cycles positively.
         """

@@ -292,87 +292,110 @@ class Aggregation:
         print(self.aggregation.to_markdown())
 
     def plot(self,
-             columns: [str] = None):
-        if columns is None:
-            columns = list(self.aggregation.columns.values)
+             aggregands: Dict[str, tuple] = None):
+        """
+        Plots the specified aggregands against each respective value range (min-max)
 
+        :param aggregands: A dictionary of aggregands to plot, by name and value range (as a tuple)
+        """
+        if aggregands is None:
+            aggregands = {aggregand.name: None for aggregand in self._aggregands}
         dates = list(self.aggregation.index.astype(str))
 
         fig, host = plt.subplots(nrows=1, ncols=1)
-        tkw = dict(size=4, width=1.5)
+        tkw = dict(size=4, width=1)
 
-        lns = []
+        datums = []
+        axes = []
 
-        left, = host.plot(dates,
-                          self.aggregation[columns[0]].to_list(),
-                          color=plt.cm.viridis(0),
-                          label=columns[0])
         host.set_xlabel('Date')
-        host.set_ylabel(columns[0])
-        host.set_xticklabels(host.get_xticks(), rotation=45)
-        host.tick_params(axis='y', colors=left.get_color(), **tkw)
+        host.set_xticklabels(host.get_xticks(), rotation=90)
         host.set_facecolor('white')
-        host.yaxis.label.set_color(left.get_color())
-        plt.setp(host.spines.values(), visible=True)
-
         host.grid(axis='x',
-                  color='grey',
+                  color='gainsboro',
                   which='major',
-                  linewidth=1)
-        host.grid(axis='x',
-                  color='grey',
-                  which='minor',
-                  linestyle='--',
                   linewidth=1)
         host.grid(axis='y',
-                  color='grey',
+                  color='gainsboro',
                   which='major',
+                  linewidth=1)
+        host.grid(axis='y',
+                  color='whitesmoke',
+                  which='minor',
+                  linestyle='-.',
                   linewidth=0.5)
-        lns.append(left)
 
-        if len(columns) > 1:
+        primary_aggregand = list(aggregands.keys())[0]
+        primary, = host.plot(dates,
+                             self.aggregation[primary_aggregand],
+                             color=plt.cm.viridis(0),
+                             label=primary_aggregand)
+        host.spines.left.set_linewidth(1)
+        host.set_ylabel(primary_aggregand)
+        host.yaxis.label.set_color(primary.get_color())
+        host.spines.left.set_color(primary.get_color())
+        host.tick_params(axis='y', colors=primary.get_color(), **tkw)
+        host.minorticks_on()
+
+        if aggregands[primary_aggregand] is not None:
+            host.set_ylim([aggregands[primary_aggregand][0], aggregands[primary_aggregand][1]])
+
+        datums.append(primary)
+        axes.append(host)
+
+        if len(aggregands) > 1:
+            secondary_aggregand = list(aggregands.keys())[1]
             right = host.twinx()
             secondary, = right.plot(dates,
-                                    self.aggregation[columns[1]].to_list(),
-                                    color=plt.cm.viridis(1 / (len(columns) + 1)),
-                                    label=columns[1])
-            right.set_ylabel(columns[1])
+                                    self.aggregation[secondary_aggregand],
+                                    color=plt.cm.viridis(1 / (len(aggregands) + 1)),
+                                    label=secondary_aggregand)
             right.spines.right.set_visible(True)
+            right.spines.right.set_linewidth(1)
+            right.set_ylabel(secondary_aggregand)
             right.grid(False)
-            right.set_frame_on(True)
-            right.patch.set_visible(False)
             right.yaxis.label.set_color(secondary.get_color())
-            right.spines.right.set_edgecolor(secondary.get_color())
             right.spines.right.set_color(secondary.get_color())
             right.tick_params(axis='y', colors=secondary.get_color(), **tkw)
-            plt.setp(right.spines.values(), visible=True)
+            if aggregands[secondary_aggregand] is not None:
+                right.set_ylim([aggregands[secondary_aggregand][0], aggregands[secondary_aggregand][1]])
 
-            lns.append(secondary)
+            datums.append(secondary)
+            axes.append(right)
 
-            if len(columns) > 2:
-                for i in range(2, len(columns)):
+            if len(aggregands) > 2:
+                for i in range(2, len(aggregands)):
+                    additional_aggregand = list(aggregands.keys())[i]
                     supplementary = host.twinx()
                     additional, = supplementary.plot(dates,
-                                                     self.aggregation[columns[i]].to_list(),
-                                                     color=plt.cm.viridis(1 / i),
-                                                     label=columns[i])
+                                                     self.aggregation[additional_aggregand],
+                                                     color=plt.cm.viridis(i / (len(aggregands) + 1)),
+                                                     label=additional_aggregand)
                     supplementary.spines.right.set_position(('axes', 1 + (i - 1) / 5))
                     supplementary.spines.right.set_visible(True)
                     supplementary.spines.right.set_linewidth(1)
-                    supplementary.set_ylabel(columns[i])
+                    supplementary.set_ylabel(additional_aggregand)
                     supplementary.grid(False)
-                    # supplementary.set_frame_on(True)
-                    supplementary.patch.set_visible(False)
                     supplementary.yaxis.label.set_color(additional.get_color())
-                    supplementary.spines.right.set_edgecolor(additional.get_color())
                     supplementary.spines.right.set_color(additional.get_color())
                     supplementary.tick_params(axis='y', colors=additional.get_color(), **tkw)
-                    plt.setp(supplementary.spines.values(), visible=True)
+                    if aggregands[additional_aggregand] is not None:
+                        supplementary.set_ylim([aggregands[additional_aggregand][0], aggregands[additional_aggregand][1]])
 
-                    lns.append(additional)
+                    datums.append(additional)
+                    axes.append(supplementary)
 
-        host.legend(handles=lns, loc='best')
-        # plt.setp([a.get_xticklabels() for a in fig.axes[:-1]], visible=True)
+        labels = [datum.get_label() for datum in datums]
+        legend = axes[-1].legend(datums,
+                                 labels,
+                                 loc='best',
+                                 title=self.name,
+                                 facecolor="white",
+                                 frameon=True,
+                                 framealpha=1,
+                                 borderpad=.75,
+                                 edgecolor='grey')
+        plt.minorticks_on()
         plt.tight_layout()
 
     def extract(self, flow_name: str):
