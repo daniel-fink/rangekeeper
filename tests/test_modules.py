@@ -105,6 +105,12 @@ class TestFlow:
                                 dist=distribution.Uniform(),
                                 units=Units.Type.USD)
 
+    def test_flow_duplication(self):
+        duplicate = TestFlow.flow.duplicate()
+        assert duplicate.movements.equals(TestFlow.flow.movements)
+        assert duplicate.movements.size == TestFlow.flow.movements.size
+        assert duplicate.movements.index.equals(TestFlow.flow.movements.index)
+
     def test_flow_summation(self):
         # TestFlow.sum_flow.display()
         assert TestFlow.flow.movements.size == 25
@@ -195,7 +201,7 @@ class TestAggregation:
 
     aggregation.display()
 
-    def test_correct_aggregation(self):
+    def test_aggregation_validity(self):
         assert TestAggregation.aggregation.name == "aggregation"
         assert len(TestAggregation.aggregation._aggregands) == 2
         assert TestAggregation.aggregation.start_date == pd.Timestamp(2020, 3, 1)
@@ -206,6 +212,13 @@ class TestAggregation:
         assert TestAggregation.aggregation.sum().movements.index.size == 24 + 10  # Two full years plus March-Dec inclusive
         assert TestAggregation.aggregation.aggregation['weekly_flow'].sum() == -50
         assert TestAggregation.aggregation.aggregation.index.freq == 'M'
+
+    def test_aggregation_duplication(self):
+        duplicate = TestAggregation.aggregation.duplicate()
+        assert duplicate.name == "aggregation"
+        assert len(duplicate._aggregands) == 2
+        assert duplicate.aggregation.index.freq == 'M'
+
 
 
 class TestPhase:
