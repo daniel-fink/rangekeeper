@@ -10,9 +10,6 @@ from distribution import Type, Uniform, Exponential
 from phase import Phase
 
 
-# Setup:
-
-
 # Base Model:
 class Model:
     def __init__(self, params: dict):
