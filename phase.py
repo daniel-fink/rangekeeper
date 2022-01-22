@@ -18,10 +18,11 @@ class Phase:
     A `Phase` is a pd.Interval of pd.Timestamps that bound its start and end dates
     """
 
-    def __init__(self,
-                 name: str,
-                 start_date: pd.Timestamp,
-                 end_date: pd.Timestamp):
+    def __init__(
+            self,
+            name: str,
+            start_date: pd.Timestamp,
+            end_date: pd.Timestamp):
         if end_date < start_date:
             raise Exception('Error: end_date cannot be before start_date')
         self.name = name
@@ -30,8 +31,15 @@ class Phase:
         self.start_date = self._interval.left
         self.end_date = self._interval.right
 
+    def __str__(self):
+        return 'Phase: {}\n' \
+               'Start Date: {}\n' \
+               'End Date: {}'.format(self.name, self.start_date, self.end_date)
+
     @staticmethod
-    def merge(name: str, phases: [Phase]):
+    def merge(
+            name: str,
+            phases: [Phase]):
         """
         Merge a set of Phases into a single Phase
         """
@@ -46,7 +54,9 @@ class Phase:
                      start_date=start_date,
                      end_date=end_date)
 
-    def to_index(self, periodicity: Periodicity.Type) -> pd.PeriodIndex:
+    def to_index(
+            self,
+            periodicity: Periodicity.Type) -> pd.PeriodIndex:
         """
         Return a pd.PeriodIndex of the Phase at the specified periodicity
         """
@@ -55,19 +65,21 @@ class Phase:
             periodicity=periodicity,
             bound=self.end_date)
 
-    def duration(self,
-                 period_type: Periodicity.Type,
-                 inclusive: bool = False):
+    def duration(
+            self,
+            period_type: Periodicity.Type,
+            inclusive: bool = False):
         return Periodicity.duration(start_date=self.start_date,
                                     end_date=self.end_date,
                                     period_type=period_type,
                                     inclusive=inclusive)
 
     @staticmethod
-    def from_num_periods(name: str,
-                         start_date: pd.Timestamp,
-                         period_type: Periodicity.Type,
-                         num_periods: int):
+    def from_num_periods(
+            name: str,
+            start_date: pd.Timestamp,
+            period_type: Periodicity.Type,
+            num_periods: int):
         """
         Create a Phase from a start_date with a set number of periods of specified type.
         """

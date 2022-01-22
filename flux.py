@@ -1,3 +1,4 @@
+from __future__ import annotations
 import itertools
 import math
 
@@ -8,7 +9,8 @@ import matplotlib.pyplot as plt
 import pyxirr
 from typing import Dict, Union
 
-import distribution
+from distribution import Distribution, Uniform, PERT, Exponential
+from phase import Phase
 from units import Units
 from periodicity import Periodicity
 
@@ -19,10 +21,11 @@ class Flow:
     Note: the flow.movements Series index is a pd.DatetimeIndex, and its values are floats.
     """
 
-    def __init__(self,
-                 movements: pd.Series,
-                 units: Units.Type,
-                 name: str = None):
+    def __init__(
+            self,
+            movements: pd.Series,
+            units: Units.Type,
+            name: str = None):
 
         if not isinstance(movements.index, pd.DatetimeIndex):
             raise Exception("Error: Flow's movements' Index is not a pd.DatetimeIndex")
@@ -35,13 +38,25 @@ class Flow:
             self.name = str(self.movements.name)
         self.units = units
 
+    def __str__(self):
+        return self.display()
+
+    def duplicate(self) -> Flow:
+        return self.__class__(
+            movements=self.movements.copy(deep=True),
+            units=self.units,
+            name=self.name)
+
     def display(self):
         print('Name: ' + self.name)
         print('Units: ' + self.units.__doc__)
         print('Movements: ')
         print(self.movements.to_markdown())
 
-    def plot(self, normalize: bool = False, *args, **kwargs):
+    def plot(
+            self,
+            normalize: bool = False,
+            *args, **kwargs):
         self.movements.plot(*args, **kwargs)
         plt.legend(loc='best')
         plt.xlabel('Date')
@@ -50,11 +65,13 @@ class Flow:
             plt.ylim(bottom=0)
         plt.show(block=True)
 
-    @staticmethod
-    def from_periods(periods: pd.PeriodIndex,
-                     data: [float],
-                     units: Units.Type,
-                     name: str = None):
+    @classmethod
+    def from_periods(
+            cls,
+            periods: pd.PeriodIndex,
+            data: [float],
+            units: Units.Type,
+            name: str = None) -> Flow:
         """
         Returns a Flow where movement dates are defined by the end-dates of the specified periods
         """
@@ -66,26 +83,39 @@ class Flow:
                            index=pd.Series(data=dates, name='dates'),
                            name=name,
                            dtype=float)
-        return Flow(movements=series, units=units)
+        return cls(movements=series,
+                   units=units,
+                   name=name)
 
-    @staticmethod
-    def from_dict(movements: Dict[pd.Timestamp, float],
-                  units: Units.Type,
-                  name: str = None):
+    @classmethod
+    def from_dict(
+            cls,
+            movements: Dict[pd.Timestamp, float],
+            units: Units.Type,
+            name: str = None) -> Flow:
         """
         Returns a Flow where movements are defined by key-value pairs of pd.Timestamps and amounts.
         """
 
         dates = movements.keys()
-        series = pd.Series(data=list(movements.values()), index=pd.Series(dates, name='dates'), name=name, dtype=float)
-        return Flow(movements=series, units=units, name=name)
+        series = pd.Series(
+            data=list(movements.values()),
+            index=pd.Series(dates, name='dates'),
+            name=name,
+            dtype=float)
+        return cls(
+            movements=series,
+            units=units,
+            name=name)
 
-    @staticmethod
-    def from_total(total: Union[float, distribution.Distribution],
-                   index: pd.DatetimeIndex,
-                   dist: distribution.Distribution,
-                   units: Units.Type,
-                   name: str = None):
+    @classmethod
+    def from_total(
+            cls,
+            total: Union[float, Distribution],
+            index: pd.DatetimeIndex,
+            dist: Distribution,
+            units: Units.Type,
+            name: str = None) -> Flow:
         """
         Generate a Flow from a total amount, distributed over the period index
         according to a specified distribution curve.
@@ -101,35 +131,41 @@ class Flow:
 
         if isinstance(total, float):
             total = total
-        elif isinstance(total, distribution.Distribution):
+        elif isinstance(total, Distribution):
             total = total.sample()
 
-        if isinstance(dist, distribution.Uniform):
+        if isinstance(dist, Uniform):
             movements = [total / index.size for i in range(index.size)]
-            return Flow(name=name,
-                        movements=pd.Series(data=movements,
-                                            index=index,
-                                            name=name,
-                                            dtype=float),
-                        units=units)
-        elif isinstance(dist, distribution.PERT):
+            return cls(
+                name=name,
+                movements=pd.Series(
+                    data=movements,
+                    index=index,
+                    name=name,
+                    dtype=float),
+                units=units)
+        elif isinstance(dist, PERT):
             parameters = np.linspace(0, 1, num=(index.size + 1))
             movements = [(total * density) for density in dist.interval_density(parameters)]
-            return Flow(name=name,
-                        movements=pd.Series(data=movements,
-                                            index=index,
-                                            name=name,
-                                            dtype=float),
-                        units=units)
+            return cls(
+                name=name,
+                movements=pd.Series(
+                    data=movements,
+                    index=index,
+                    name=name,
+                    dtype=float),
+                units=units)
         else:
             raise NotImplementedError('Other types of distribution have not yet been implemented.')
 
-    @staticmethod
-    def from_initial(initial: Union[float, distribution.Distribution],
-                     index: pd.PeriodIndex,
-                     dist: distribution.Distribution,
-                     units: Units.Type,
-                     name: str = None):
+    @classmethod
+    def from_initial(
+            cls,
+            initial: Union[float, Distribution],
+            index: pd.PeriodIndex,
+            dist: Distribution,
+            units: Units.Type,
+            name: str = None) -> Flow:
         """
         Generate a Flow from an initial amount, distributed over the period index
         according to the factor of the specified Distribution (where initial factor = 1).
@@ -145,37 +181,48 @@ class Flow:
 
         if isinstance(initial, float):
             initial = initial
-        elif isinstance(initial, distribution.Distribution):
+        elif isinstance(initial, Distribution):
             initial = initial.sample()
 
-        if isinstance(dist, distribution.Uniform):
+        if isinstance(dist, Uniform):
             movements = [initial for i in range(len(index))]
-            return Flow.from_periods(name=name, periods=index, data=movements, units=units)
-        elif isinstance(dist, distribution.Exponential):
+            return cls.from_periods(
+                name=name,
+                periods=index,
+                data=movements,
+                units=units)
+        elif isinstance(dist, Exponential):
             movements = [initial * factor for factor in dist.factor()]
-            return Flow.from_periods(name=name, periods=index, data=movements, units=units)
+            return cls.from_periods(
+                name=name,
+                periods=index,
+                data=movements,
+                units=units)
 
-    def invert(self):
+    def invert(self) -> Flow:
         """
         Returns a Flow with movement values inverted (multiplied by -1)
         """
-        return Flow(movements=self.movements.copy(deep=True).multiply(-1),
-                    units=self.units,
-                    name=self.name)
+        return self.__class__(
+            movements=self.movements.copy(deep=True).multiply(-1),
+            units=self.units,
+            name=self.name)
 
-    def collapse(self):
+    def collapse(self) -> Flow:
         """
         Returns a Flow whose movements collapse (are summed) to the last period
         :return:
         """
-        return Flow.from_dict(name=self.name,
-                              movements={self.movements.index[-1]: self.movements.sum()},
-                              units=self.units)
+        return self.__class__.from_dict(
+            name=self.name,
+            movements={self.movements.index[-1]: self.movements.sum()},
+            units=self.units)
 
-    def pv(self,
-           periodicity: Periodicity.Type,
-           discount_rate: float,
-           name: str = None):
+    def pv(
+            self,
+            periodicity: Periodicity.Type,
+            discount_rate: float,
+            name: str = None) -> Flow:
         """
         Returns a Flow with values discounted to the present (i.e. before its first period) by a specified rate
         """
@@ -186,46 +233,77 @@ class Flow:
             lambda movement: movement[self.name] / math.pow((1 + discount_rate), movement['index'] + 1), axis=1)
         if name is None:
             name = 'Discounted ' + self.name
-        return Flow(movements=frame['Discounted Flow'],
-                    units=self.units,
-                    name=name)
+        return self.__class__(
+            movements=frame['Discounted Flow'],
+            units=self.units,
+            name=name)
 
-    def xirr(self):
-        return pyxirr.xirr(dates=[datetime.date() for datetime in list(self.movements.index.array)],
-                           amounts=self.movements.to_list())
+    def xirr(self) -> float:
+        return pyxirr.xirr(
+            dates=[datetime.date() for datetime in list(self.movements.index.array)],
+            amounts=self.movements.to_list())
 
-    def xnpv(self, rate: float):
-        return pyxirr.xnpv(rate=rate,
-                           dates=[datetime.date() for datetime in list(self.movements.index.array)],
-                           amounts=self.movements.to_list())
+    def xnpv(
+            self,
+            rate: float) -> float:
+        return pyxirr.xnpv(
+            rate=rate,
+            dates=[datetime.date() for datetime in list(self.movements.index.array)],
+            amounts=self.movements.to_list())
 
-    def resample(self, periodicity: Periodicity.Type):
+    def resample(
+            self,
+            periodicity: Periodicity.Type) -> Flow:
         """
         Returns a Flow with movements summed to specified frequency of dates
         """
-        return Flow(movements=self.movements.copy(deep=True).resample(rule=periodicity.value).sum(),
-                    units=self.units,
-                    name=self.name)
+        return self.__class__(
+            movements=self.movements.copy(deep=True).resample(rule=periodicity.value).sum(),
+            units=self.units,
+            name=self.name)
 
-    def to_periods(self, periodicity: Periodicity.Type):
+    def to_periods(
+            self,
+            periodicity: Periodicity.Type) -> pd.Series:
         """
         Returns a pd.Series (of index pd.PeriodIndex) with movements summed to specified periodicity
         """
-        return self.resample(periodicity=periodicity).movements \
-            .to_period(freq=periodicity.value, copy=True) \
+        return self \
+            .resample(periodicity=periodicity) \
+            .movements.to_period(freq=periodicity.value, copy=True) \
             .rename_axis('periods') \
             .groupby(level='periods') \
             .sum()
 
-    def periodicity(self):
+    def periodicity(self) -> str:
         return self.movements.index.freq
 
-    def to_aggregation(self,
-                       periodicity: Periodicity.Type,
-                       name: str = None):
-        return Aggregation(name=name if name is not None else self.name,
-                           aggregands=[self],
-                           periodicity=periodicity)
+    def trim_to_phase(self,
+                      phase: Phase) -> Flow:
+        """
+        Returns a Flow with movements trimmed to the specified phase
+        """
+        return self.__class__(
+            movements=self.movements.copy(deep=True).truncate(
+                before=phase.start_date,
+                after=phase.end_date),
+            units=self.units,
+            name=self.name)
+
+    def to_aggregation(
+            self,
+            periodicity: Periodicity.Type,
+            name: str = None) -> Aggregation:
+        """
+        Returns an Aggregation with the flow as aggregand
+        resampled at the specified periodicity
+        :param periodicity:
+        :param name:
+        """
+        return Aggregation(
+            name=name if name is not None else self.name,
+            aggregands=[self],
+            periodicity=periodicity)
 
 
 class Aggregation:
@@ -234,10 +312,11 @@ class Aggregation:
     and resamples them with a specified periodicity.
     """
 
-    def __init__(self,
-                 name: str,
-                 aggregands: [Flow],
-                 periodicity: Periodicity.Type):
+    def __init__(
+            self,
+            name: str,
+            aggregands: [Flow],
+            periodicity: Periodicity.Type):
 
         # Name:
         self.name = name
@@ -248,7 +327,7 @@ class Aggregation:
         else:
             raise Exception("Input Flows have dissimilar units. Cannot aggregate into Aggregation.")
 
-        # Affluents:
+        # Aggregands:
         self._aggregands = aggregands
         """The set of input Flows that are aggregated in this Aggregation"""
 
@@ -261,29 +340,43 @@ class Aggregation:
         self.start_date = min(aggregands_dates)
         self.end_date = max(aggregands_dates)
 
-        # self.resampled_aggregands = [aggregand.resample(periodicity=self.periodicity) for aggregand in self._aggregands]
-        # self.aggregation = pd.concat([resampled.movements for resampled in self.resampled_aggregands], axis=1).fillna(0)
-
-        index = Periodicity.period_index(include_start=self.start_date,
-                                         periodicity=self.periodicity,
-                                         bound=self.end_date)
+        index = Periodicity.period_index(
+            include_start=self.start_date,
+            periodicity=self.periodicity,
+            bound=self.end_date)
         _resampled_aggregands = [aggregand.to_periods(periodicity=self.periodicity) for aggregand in self._aggregands]
         self.aggregation = pd.concat(_resampled_aggregands, axis=1).fillna(0)
         """
-        A pd DataFrame of the Aggregation's aggregand Flows accumulated into the Aggregation's periodicity
+        A pd.DataFrame of the Aggregation's aggregand Flows accumulated into the Aggregation's periodicity
         """
 
-    @staticmethod
-    def from_DataFrame(name: str,
-                       data: pd.DataFrame,
-                       units: Units.Type):
+    def __str__(self):
+        return self.display()
+
+    def duplicate(self):
+        return self.__class__(
+            name=self.name,
+            aggregands=[aggregand.duplicate() for aggregand in self._aggregands],
+            periodicity=self.periodicity)
+
+    @classmethod
+    def from_DataFrame(
+            cls,
+            name: str,
+            data: pd.DataFrame,
+            units: Units.Type):
         aggregands = []
         for column in data.columns:
             series = data[column]
-            aggregands.append(Flow(movements=series, units=units, name=series.name))
-        return Aggregation(name=name,
-                           aggregands=aggregands,
-                           periodicity=Periodicity.from_value(data.index.freqstr))
+            aggregands.append(
+                Flow(
+                    movements=series,
+                    units=units,
+                    name=series.name))
+        return cls(
+            name=name,
+            aggregands=aggregands,
+            periodicity=Periodicity.from_value(data.index.freqstr))
 
     def display(self):
         print('Name: ' + self.name)
@@ -291,8 +384,9 @@ class Aggregation:
         print('Flows: ')
         print(self.aggregation.to_markdown())
 
-    def plot(self,
-             aggregands: Dict[str, tuple] = None):
+    def plot(
+            self,
+            aggregands: Dict[str, tuple] = None):
         """
         Plots the specified aggregands against each respective value range (min-max)
 
@@ -380,7 +474,8 @@ class Aggregation:
                     supplementary.spines.right.set_color(additional.get_color())
                     supplementary.tick_params(axis='y', colors=additional.get_color(), **tkw)
                     if aggregands[additional_aggregand] is not None:
-                        supplementary.set_ylim([aggregands[additional_aggregand][0], aggregands[additional_aggregand][1]])
+                        supplementary.set_ylim(
+                            [aggregands[additional_aggregand][0], aggregands[additional_aggregand][1]])
 
                     datums.append(additional)
                     axes.append(supplementary)
@@ -410,15 +505,18 @@ class Aggregation:
             name=flow_name
             )
 
-    def sum(self, name: str = None):
+    def sum(
+            self,
+            name: str = None):
         """
         Returns a Flow whose movements are the sum of the Aggregation's aggregands by period
         :return: Flow
         """
-        return Flow.from_periods(name=name if name is not None else self.name,
-                                 periods=self.aggregation.index,  # .to_period(),
-                                 data=self.aggregation.sum(axis=1).to_list(),
-                                 units=self.units)
+        return Flow.from_periods(
+            name=name if name is not None else self.name,
+            periods=self.aggregation.index,  # .to_period(),
+            data=self.aggregation.sum(axis=1).to_list(),
+            units=self.units)
 
     def collapse(self):
         """
@@ -426,12 +524,14 @@ class Aggregation:
         :return: Aggregation
         """
         aggregands = [self.extract(flow_name=flow_name) for flow_name in list(self.aggregation.columns)]
-        return Aggregation(
+        return self.__class__(
             name=self.name,
             aggregands=[aggregand.collapse() for aggregand in aggregands],
             periodicity=self.periodicity)
 
-    def append(self, aggregands: [Flow]):
+    def append(
+            self,
+            aggregands: [Flow]):
         # Check Units:
         if any(flow.units != self.units for flow in aggregands):
             raise Exception("Input Flows have dissimilar units. Cannot aggregate into Aggregation.")
@@ -441,19 +541,33 @@ class Aggregation:
 
         # Aggregation:
         aggregands_dates = list(
-            itertools.chain.from_iterable(list(flow.movements.index.array) for flow in self._aggregands))
+            itertools.chain.from_iterable(list(aggregand.movements.index.array) for aggregand in self._aggregands))
         self.start_date = min(aggregands_dates)
         self.end_date = max(aggregands_dates)
-        resampled_aggregands = [aggregand.resample(periodicity=self.periodicity) for aggregand in
-                                self._aggregands]
 
-        self.aggregation = pd.concat([resampled.movements for resampled in resampled_aggregands], axis=1).fillna(0)
+        index = Periodicity.period_index(include_start=self.start_date,
+                                         periodicity=self.periodicity,
+                                         bound=self.end_date)
+        _resampled_aggregands = [aggregand.to_periods(periodicity=self.periodicity) for aggregand in self._aggregands]
+        self.aggregation = pd.concat(_resampled_aggregands, axis=1).fillna(0)
 
     def resample(self, periodicity: Periodicity.Type):
         return Aggregation(
             name=self.name,
             aggregands=self._aggregands,
             periodicity=periodicity)
+
+    def trim_to_phase(self,
+                      phase: Phase) -> Aggregation:
+        """
+        Returns an Aggregation with all aggregands trimmed to the specified Phase
+        :param phase:
+        :return:
+        """
+        return self.__class__(
+            name=self.name,
+            aggregands=[aggregand.duplicate().trim_to_phase(phase) for aggregand in self._aggregands],
+            periodicity=self.periodicity)
 
     @classmethod
     def merge(cls,
@@ -467,7 +581,7 @@ class Aggregation:
         # Aggregands:
         aggregands = [aggregand for aggregation in aggregations for aggregand in aggregation._aggregands]
 
-        return Aggregation(
+        return cls(
             name=name,
             aggregands=aggregands,
             periodicity=periodicity)
