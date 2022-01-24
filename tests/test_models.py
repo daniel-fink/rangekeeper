@@ -5,17 +5,19 @@
 # and any function in a file that should be treated as a test must also start with 'test_'.
 
 import math
-import pandas as pd
-import numpy as np
+
 import matplotlib
 import matplotlib.pyplot as plt
+import pandas as pd
 
 import distribution
 import flux
-from units import Units
+import models.deterministic
+import models.flexible
+import models.linear
+import models.probabilistic
 from periodicity import Periodicity
-
-import models.linear, models.deterministic, models.probabilistic, models.flexible
+from units import Units
 
 matplotlib.use('TkAgg')
 plt.style.use('seaborn')  # pretty matplotlib plots

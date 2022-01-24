@@ -1,9 +1,9 @@
 import math
-from typing import Optional, Union
+from typing import Union
+
 import aenum
 import dateutil.relativedelta
 import pandas as pd
-import numpy as np
 
 
 class Periodicity:

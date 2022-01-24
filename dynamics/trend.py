@@ -1,10 +1,8 @@
-import pandas as pd
-import scipy as sp
-import numpy as np
-from numba import jit
-import typing
-
-import distribution, flux, phase, periodicity, units
+import distribution
+import flux
+import periodicity
+import phase
+import units
 
 
 class Trend:
