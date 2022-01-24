@@ -1,15 +1,14 @@
-import pytest
-import pandas as pd
-import numpy as np
-import scipy.stats as ss
 import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import scipy.stats as ss
 
 import distribution
 import flux
 import phase
-from units import Units
 from periodicity import Periodicity
+from units import Units
 
 # Pytests file.
 # Note: gathers tests according to a naming convention.

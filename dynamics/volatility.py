@@ -1,10 +1,11 @@
 import pandas as pd
 import scipy as sp
-import numpy as np
 from numba import jit
-import typing
 
-import distribution, flux, phase, periodicity, units, dynamics.trend
+import distribution
+import dynamics.trend
+import flux
+import units
 
 
 class Volatility:

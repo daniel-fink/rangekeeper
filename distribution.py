@@ -1,9 +1,8 @@
-import aenum
+from typing import Optional
 
-import scipy.stats
-import scipy.stats as ss
+import aenum
 import numpy as np
-from typing import Union, Optional
+import scipy.stats as ss
 
 
 class Type(aenum.Enum):
@@ -19,12 +18,15 @@ class Type(aenum.Enum):
 
 
 class Distribution:
-    def __init__(self,
-                 generator: Optional[np.random.Generator] = None):
+    def __init__(
+            self,
+            generator: Optional[np.random.Generator] = None):
         self.generator = generator
         self.dist = ss.rv_continuous()
 
-    def sample(self, size: int = 1):
+    def sample(
+            self,
+            size: int = 1):
         if self.generator is None:
             generator = np.random.default_rng()
         else:
@@ -38,11 +40,12 @@ class Distribution:
 
 
 class Symmetric(Distribution):
-    def __init__(self,
-                 distribution_type: Type,
-                 mean: float,
-                 residual: float = 0.,
-                 generator: Optional[np.random.Generator] = None):
+    def __init__(
+            self,
+            distribution_type: Type,
+            mean: float,
+            residual: float = 0.,
+            generator: Optional[np.random.Generator] = None):
         """
         Parameters that define the mean and residual (maximum deviation)
         of a symmetric distribution
@@ -76,14 +79,17 @@ class Uniform(Distribution):
     For specified arguments, this distribution is constant between lower, and lower + range.
     """
 
-    def __init__(self,
-                 lower: float = 0.,
-                 range: float = 1.,
-                 generator: Optional[np.random.Generator] = None):
+    def __init__(
+            self,
+            lower: float = 0.,
+            range: float = 1.,
+            generator: Optional[np.random.Generator] = None):
         super().__init__(generator=generator)
         self.dist = ss.uniform(loc=lower, scale=range)
 
-    def interval_density(self, parameters: [float]):
+    def interval_density(
+            self,
+            parameters: [float]):
         """
         Returns the cumulative density (integral of the distribution curve, or effectively probability)
         between n parameter pairs as intervals (i.e. returns n-1 results)
@@ -99,7 +105,9 @@ class Uniform(Distribution):
         else:
             raise ValueError("Error: Parameter must be between 0 and 1 inclusive")
 
-    def cumulative_density(self, parameters: [float]):
+    def cumulative_density(
+            self,
+            parameters: [float]):
         """
         Returns the cumulative distribution at parameters between 0 and 1.
         """
@@ -118,10 +126,11 @@ class Linear(Distribution):
     Requires inputs of linear rate of change per period and number of periods.
     """
 
-    def __init__(self,
-                 rate: float,
-                 num_periods: int,
-                 generator: Optional[np.random.Generator] = None):
+    def __init__(
+            self,
+            rate: float,
+            num_periods: int,
+            generator: Optional[np.random.Generator] = None):
         super().__init__(generator=generator)
         self.rate = rate
         self.num_periods = num_periods
@@ -143,15 +152,18 @@ class Exponential(Distribution):
     Requires inputs of rate of change per period and number of periods.
     """
 
-    def __init__(self,
-                 rate: float,
-                 num_periods: int,
-                 generator: Optional[np.random.Generator] = None):
+    def __init__(
+            self,
+            rate: float,
+            num_periods: int,
+            generator: Optional[np.random.Generator] = None):
         super().__init__(generator=generator)
         self.rate = rate
         self.num_periods = num_periods
 
-    def density(self, parameters: [float]):
+    def density(
+            self,
+            parameters: [float]):
         """
         Returns the value of the density function at a parameter between 0 and 1.
         The form of the function is k*(1+r)^((n-1)x),
@@ -173,8 +185,10 @@ class Exponential(Distribution):
         else:
             raise ValueError("Error: Parameter must be between 0 and 1 inclusive")
 
-    def cumulative_density(self, parameters: [
-        float]):  # #TODO: This is giving incorrect answers for low values of num_periods...
+    def cumulative_density(
+            self,
+            parameters: [
+                float]):  # #TODO: This is giving incorrect answers for low values of num_periods...
         """
         Returns the cumulative distribution at parameters between 0 and 1.
 
@@ -214,12 +228,13 @@ class PERT(Distribution):
     https://github.com/tensorflow/probability/blob/master/tensorflow_probability/python/distributions/pert.py
     """
 
-    def __init__(self,
-                 peak: float = 0.5,
-                 weighting: float = 4.0,
-                 minimum: float = 0.0,
-                 maximum: float = 1.0,
-                 generator: Optional[np.random.Generator] = None):
+    def __init__(
+            self,
+            peak: float = 0.5,
+            weighting: float = 4.0,
+            minimum: float = 0.0,
+            maximum: float = 1.0,
+            generator: Optional[np.random.Generator] = None):
         super().__init__(generator=generator)
         self.peak = peak
         self.weighting = weighting
@@ -227,19 +242,26 @@ class PERT(Distribution):
         if (self.weighting >= 0) & (self.peak >= minimum) & (self.peak <= maximum):
             a = (1. + self.weighting * (self.peak - minimum) / (maximum - minimum))
             b = (1. + self.weighting * (maximum - self.peak) / (maximum - minimum))
-            self.dist = ss.beta(loc=minimum, scale=self.scale, a=a, b=b)
+            self.dist = ss.beta(
+                loc=minimum,
+                scale=self.scale,
+                a=a,
+                b=b)
         else:
             raise ValueError("Error: Weighting must be greater than 0 and Peak must be between 0 and 1 inclusive")
 
     @staticmethod
-    def standard_symmetric(peak: float,
-                           residual: float):
+    def standard_symmetric(
+            peak: float,
+            residual: float):
         return PERT(peak=peak,
                     weighting=4.,
                     minimum=peak - residual,
                     maximum=peak + residual)
 
-    def interval_density(self, parameters: [float]):
+    def interval_density(
+            self,
+            parameters: [float]):
         """
         Returns the cumulative density (integral of the distribution curve, or effectively probability)
         between n parameter pairs as intervals (i.e. returns n-1 results)

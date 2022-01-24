@@ -1,18 +1,18 @@
 from __future__ import annotations
+
 import itertools
 import math
-
-import pandas as pd
-import numpy as np
-import numpy_financial as npf
-import matplotlib.pyplot as plt
-import pyxirr
 from typing import Dict, Union
 
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import pyxirr
+
 from distribution import Distribution, Uniform, PERT, Exponential
+from periodicity import Periodicity
 from phase import Phase
 from units import Units
-from periodicity import Periodicity
 
 
 class Flow:
