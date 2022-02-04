@@ -1,116 +1,149 @@
-import math
-import pandas as pd
-import numpy_financial as npf
+import distribution
+from flux import Flow, Aggregation
+from periodicity import Periodicity
+from phase import Phase
 
-import modules.distribution
-from modules.flux import Flow, Aggregation
-from modules.units import Units
-from modules.periodicity import Periodicity
-from modules.distribution import Type, Uniform, Exponential
-from modules.phase import Phase
 
-# Setup:
-units = Units.Type.USD
+# Base Model:
+class Model:
+    def __init__(self,
+                 params: dict):
+        # Phasing:
+        self.acquisition_phase = Phase.from_num_periods(
+            name='Acquisition',
+            start_date=params['start_date'],
+            period_type=Periodicity.Type.year,
+            num_periods=1)
 
-# Phasing:
-acquisition_phase = Phase.from_num_periods(name='Acquisition',
-                                           start_date=pd.Timestamp(2020, 1, 1),
-                                           period_type=Periodicity.Type.year,
-                                           num_periods=1)
+        self.operation_phase = Phase.from_num_periods(
+            name='Operation',
+            start_date=Periodicity.date_offset(
+                date=self.acquisition_phase.end_date,
+                period_type=Periodicity.Type.day,
+                num_periods=1),
+            period_type=Periodicity.Type.year,
+            num_periods=params['num_periods'])
 
-operation_phase = Phase.from_num_periods(name='Operation',
-                                         start_date=Periodicity.date_offset(date=acquisition_phase.end_date,
-                                                                            period_type=Periodicity.Type.day,
-                                                                            num_periods=1),
-                                         period_type=Periodicity.Type.year,
-                                         num_periods=10)
+        self.disposition_phase = Phase.from_num_periods(
+            name='Disposition',
+            start_date=Periodicity.date_offset(
+                date=self.acquisition_phase.start_date,
+                period_type=Periodicity.Type.year,
+                num_periods=params['num_periods']),
+            period_type=Periodicity.Type.year,
+            num_periods=1)
 
-projection_phase = Phase.from_num_periods(name='Projection',
-                                          start_date=Periodicity.date_offset(date=operation_phase.end_date,
-                                                                             period_type=Periodicity.Type.day,
-                                                                             num_periods=1),
-                                          period_type=Periodicity.Type.year,
-                                          num_periods=1)
+        self.projection_phase = Phase.from_num_periods(
+            name='Projection',
+            start_date=Periodicity.date_offset(
+                date=self.operation_phase.end_date,
+                period_type=Periodicity.Type.day,
+                num_periods=1),
+            period_type=Periodicity.Type.year,
+            num_periods=1)
 
-noi_calc_phase = Phase.merge(name='NOI Calculation Phase',
-                             phases=[operation_phase, projection_phase])
+        self.noi_calc_phase = Phase.merge(
+            name='NOI Calculation Phase',
+            phases=[self.operation_phase, self.projection_phase])
 
-reversion_phase = Phase.from_num_periods(name='Reversion',
-                                         start_date=pd.Timestamp(2030, 1, 1),
-                                         period_type=Periodicity.Type.year,
-                                         num_periods=1)
+        # Factors:
+        self.distribution = distribution.Exponential(
+            rate=params['growth_rate'],
+            num_periods=self.noi_calc_phase.duration(
+                period_type=params['period_type'],
+                inclusive=True))
 
-# Cashflows:
-period_type = Periodicity.Type.year
-growth_rate = 0.02
-distribution = modules.distribution.Exponential(rate=growth_rate,
-                                                num_periods=noi_calc_phase.duration(period_type=period_type,
-                                                                                    inclusive=True))
+        # Cashflows:
+        # Potential Gross Income
+        self.pgi = Flow.from_initial(
+            name='Potential Gross Income',
+            initial=params['initial_pgi'],
+            index=self.noi_calc_phase.to_index(periodicity=params['period_type']),
+            dist=self.distribution,
+            units=params['units'])
 
-# Potential Gross Income
-pgi = Flow.from_initial(name='Potential Gross Income',
-                        initial=100.,
-                        index=noi_calc_phase.to_index(periodicity=period_type),
-                        distribution=Exponential(rate=growth_rate,
-                                                 num_periods=noi_calc_phase.duration(period_type=period_type,
-                                                                                     inclusive=True)),
-                        units=units)
+        # Vacancy Allowance
+        # This should be displayed as a row in a table with xxxx, xxx,....
+        self.vacancy = Flow.from_periods(
+            name='Vacancy Allowance',
+            periods=self.noi_calc_phase.to_index(periodicity=params['period_type']),
+            data=self.pgi.movements * params['vacancy_rate'],
+            units=params['units']).invert()
 
-# Vacancy Allowance
-vacancy_rate = 0.05
-vacancy = Flow.from_periods(name='Vacancy Allowance',
-                            periods=noi_calc_phase.to_index(periodicity=period_type),
-                            data=pgi.movements * vacancy_rate,
-                            units=units).invert()
+        # Effective Gross Income:
+        self.egi = Aggregation(
+            name='Effective Gross Income',
+            aggregands=[self.pgi, self.vacancy],
+            periodicity=params['period_type'])
 
-# Effective Gross Income:
-egi = Aggregation(name='Effective Gross Income',
-                  aggregands=[pgi, vacancy],
-                  periodicity_type=period_type)
+        # Operating Expenses:
+        self.opex = Flow.from_periods(
+            name='Operating Expenses',
+            periods=self.noi_calc_phase.to_index(periodicity=params['period_type']),
+            data=self.pgi.movements * params['opex_pgi_ratio'],
+            units=params['units']).invert()
 
-# Operating Expenses:
-opex_pgi_ratio = 0.35
-opex = Flow.from_periods(name='Operating Expenses',
-                         periods=noi_calc_phase.to_index(periodicity=period_type),
-                         data=pgi.movements * opex_pgi_ratio,
-                         units=units).invert()
+        # Net Operating Income:
+        self.noi = Aggregation(
+            name='Net Operating Income',
+            aggregands=[self.egi.sum('Effective Gross Income'), self.opex],
+            periodicity=params['period_type'])
 
-# Net Operating Income:
-noi = Aggregation(name='Net Operating Income',
-                  aggregands=[egi.sum('Effective Gross Income'), opex],
-                  periodicity_type=period_type)
+        # Capital Expenses:
+        self.capex = Flow.from_periods(
+            name='Capital Expenditures',
+            periods=self.noi_calc_phase.to_index(periodicity=params['period_type']),
+            data=self.pgi.movements * params['capex_pgi_ratio'],
+            units=params['units']).invert()
 
-# Capital Expenses:
-capex_pgi_ratio = 0.10
-capex = Flow.from_periods(name='Capital Expenditures',
-                          periods=noi_calc_phase.to_index(periodicity=period_type),
-                          data=pgi.movements * capex_pgi_ratio,
-                          units=units).invert()
+        # Net Cashflows:
+        self.ncf = Aggregation(
+            name='Net Cashflows',
+            aggregands=[self.noi.sum(), self.capex],
+            periodicity=params['period_type'])
 
-# Net Cashflows:
-ncf = Aggregation(name='Net Cashflows',
-                  aggregands=[noi.sum(), capex],
-                  periodicity_type=period_type)
+        # Disposition (Reversion):
+        sale_value = self.ncf.sum().movements.tail(1).item() / params['cap_rate']
+        self.disposition = Flow.from_periods(
+            name='Disposition',
+            periods=self.disposition_phase.to_index(periodicity=params['period_type']),
+            data=[sale_value],
+            units=params['units'])
 
-# Reversion:
-cap_rate = 0.05
-sale_value = ncf.sum().movements.tail(1).item() / cap_rate
-reversion = Flow.from_periods(name='Reversion',
-                              periods=reversion_phase.to_index(periodicity=period_type),
-                              data=[sale_value],
-                              units=units)
+        # Net Cash Flows with Disposition:
+        self.ncf_disposition = self.ncf.duplicate().trim_to_phase(self.operation_phase)
+        self.ncf_disposition.append(aggregands=[self.disposition])
 
-# Add Reversion to NCFs
-ncf.append(aggregands=[reversion])
-ncf_operating = Aggregation.from_DataFrame(name='Operating Net Cashflows',
-                                           data=ncf.aggregation.truncate(after=operation_phase.end_date, copy=True),
-                                           units=units)
+        # Calculate the Present Value of the NCFs:
+        self.pv_ncf = self.ncf.sum().pv(
+            periodicity=params['period_type'],
+            discount_rate=params['discount_rate'])
 
-# Calculate the Present Value of the NCFs
-discount_rate = 0.07
+        # Calculate the Present Value of Disposition CFs:
+        self.pv_disposition = self.disposition.pv(
+            periodicity=params['period_type'],
+            discount_rate=params['discount_rate'])
 
-pv_ncf_operating = ncf_operating.sum().movements.to_frame()
-pv_ncf_operating.insert(0, 'index', range(ncf_operating.aggregation.index.size))
-pv_ncf_operating['Discounted Net Cashflows'] = pv_ncf_operating.apply(
-    lambda movement: movement['Operating Net Cashflows'] / math.pow((1 + discount_rate), movement['index'] + 1), axis=1)
-pv_ncf_operating.drop(columns=['index'], inplace=True)
+        self.pv_ncf_agg = Aggregation(
+            name='Discounted Net Cashflows',
+            aggregands=[self.pv_ncf, self.pv_disposition],
+            periodicity=params['period_type'])
+
+        self.pv_sums = self.pv_ncf_agg.sum()
+        self.pv_sums.movements = self.pv_sums.movements[:-1]
+
+        self.acquisition = Flow.from_periods(
+            periods=self.acquisition_phase.to_index(Periodicity.Type.year),
+            data=[-abs(params['acquisition_price'])],
+            units=params['units'],
+            name='Acquisition Price')
+
+        self.investment_cashflows = Aggregation(
+            name='Investment Cashflows',
+            aggregands=[self.ncf.sum(), self.disposition, self.acquisition],
+            periodicity=params['period_type'])
+
+        self.investment_cashflows.aggregation = self.investment_cashflows.aggregation[:-1]
+
+        # IRR is displayed in the right hand panel...
+        self.irr = self.investment_cashflows.sum().xirr()

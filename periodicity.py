@@ -1,14 +1,16 @@
+from __future__ import annotations
+
 import math
-from typing import Optional, Union
+from typing import Union
+
 import aenum
 import dateutil.relativedelta
 import pandas as pd
-import numpy as np
 
 
 class Periodicity:
     class Type(aenum.Enum):
-        _init_ = 'value __doc__'
+        _init_ = 'value', '__doc__'
 
         year = 'A-DEC', 'Anchored on end of December'
         quarter = 'Q-DEC', 'Anchored on end of March, June, September, & December'
@@ -33,15 +35,20 @@ class Periodicity:
             return Periodicity.Type.day
 
     @staticmethod
-    def include_date(date: pd.Timestamp, duration: Type):
-        """Returns a pd Period that encompasses the given date"""
+    def include_date(
+            date: pd.Timestamp,
+            duration: Type) -> pd.Period:
+        """
+        Returns a pd.Period that encompasses the given date
+        """
 
         return pd.Period(year=date.year, month=date.month, day=date.day, freq=duration.value)
 
     @staticmethod
-    def period_sequence(include_start: pd.Timestamp,
-                        periodicity: Type,
-                        bound: Union[pd.Timestamp, int] = None):
+    def period_index(
+            include_start: pd.Timestamp,
+            periodicity: Type,
+            bound: Union[pd.Timestamp, int] = None) -> pd.PeriodIndex:
         """
         Returns a pd.PeriodIndex from a start date with periods of given duration.
         Either an end date, or number of periods must be given to bound the sequence.
@@ -54,15 +61,31 @@ class Periodicity:
             return pd.period_range(start=include_start,
                                    end=bound,
                                    freq=periodicity.value,
-                                   name='dates')
+                                   name='periods')
         elif isinstance(bound, int):
             return pd.period_range(start=include_start,
                                    periods=bound,
                                    freq=periodicity.value,
-                                   name='dates')
+                                   name='periods')
 
     @staticmethod
-    def periods_per_year(period_type: Type):
+    def to_datestamps(
+            period_index: pd.PeriodIndex,
+            end: bool = True) -> pd.DatetimeIndex:
+        """
+        Returns a pd.DatetimeIndex from a pd.PeriodIndex with Datetimes being Dates
+        :param end:
+        :param period_index:
+        """
+        if end:
+            timestamps = period_index.to_timestamp(how='end')
+        else:
+            timestamps = period_index.to_timestamp(how='start')
+        datestamps = timestamps.date
+        return pd.DatetimeIndex(datestamps)
+
+    @staticmethod
+    def periods_per_year(period_type: Type) -> int:
         return {
             Periodicity.Type.year: 1,
             Periodicity.Type.quarter: 4,
@@ -76,7 +99,18 @@ class Periodicity:
     def date_offset(
             date: pd.Timestamp,
             period_type: Type,
-            num_periods: int):
+            num_periods: int) -> pd.Timestamp:
+        """
+        Offsets a date by a given number of periods
+        :param date:
+        :type date:
+        :param period_type:
+        :type period_type:
+        :param num_periods:
+        :type num_periods:
+        :return:
+        :rtype:
+        """
         if period_type is Periodicity.Type.year:
             return date + pd.DateOffset(years=num_periods)
         elif period_type is Periodicity.Type.quarter:
@@ -92,7 +126,7 @@ class Periodicity:
     def duration(start_date: pd.Timestamp,
                  end_date: pd.Timestamp,
                  period_type: Type,
-                 inclusive: bool = False):
+                 inclusive: bool = False) -> int:
         """
         Returns the whole integer (i.e. no remainder)
         number of periods between given dates.
@@ -100,9 +134,10 @@ class Periodicity:
         """
         calc_end_date = end_date
         if inclusive:
-            calc_end_date = Periodicity.date_offset(date=end_date,
-                                                    period_type=Periodicity.Type.day,
-                                                    num_periods=1)
+            calc_end_date = Periodicity.date_offset(
+                date=end_date,
+                period_type=Periodicity.Type.day,
+                num_periods=1)
 
         delta = dateutil.relativedelta.relativedelta(calc_end_date, start_date)
 

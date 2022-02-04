@@ -1,4 +1,3 @@
-import enum
 import aenum
 
 
@@ -6,6 +5,7 @@ class Units:
     class Type(aenum.Enum):
         _init_ = 'value', '__doc__'
 
+        scalar = '(1)', "Scalar Quantity; unitless"
         USD = 'USD$', "United States' Dollars"
         AUD = 'AUD$' "Australian Dollars"
         kJ = 'kJ', "kilojoules; SI derived unit of Energy"
@@ -13,3 +13,5 @@ class Units:
         sqm = 'm2', "square metres; SI unit of Area"
         ft = 'ft', "feet; US/Imperial unit of Length"
         sqft = 'ft2', "square feet; US/Imperial unit of Area"
+
+
