@@ -24,7 +24,7 @@ class Model:
             period_type=Periodicity.Type.year,
             num_periods=params['num_periods'])
 
-        self.reversion_phase = Phase.from_num_periods(
+        self.disposition_phase = Phase.from_num_periods(
             name='Disposition',
             start_date=Periodicity.date_offset(
                 date=self.acquisition_phase.start_date,
@@ -102,38 +102,31 @@ class Model:
             aggregands=[self.noi.sum(), self.capex],
             periodicity=params['period_type'])
 
-        # Reversion:
+        # Disposition (Reversion):
         sale_value = self.ncf.sum().movements.tail(1).item() / params['cap_rate']
-        self.reversion = Flow.from_periods(
-            name='Reversion',
-            periods=self.reversion_phase.to_index(periodicity=params['period_type']),
+        self.disposition = Flow.from_periods(
+            name='Disposition',
+            periods=self.disposition_phase.to_index(periodicity=params['period_type']),
             data=[sale_value],
             units=params['units'])
 
-        # Net Cash Flows with Reversion:
-        self.ncf_reversion = self.ncf.duplicate().trim_to_phase(self.operation_phase)
-        self.ncf_reversion.append(aggregands=[self.reversion])
-        # self.ncf_reversion = self.ncf_reversion.sum()
-
-        #self.npv = self.ncf_reversion.sum().xnpv(params['discount_rate'])
+        # Net Cash Flows with Disposition:
+        self.ncf_disposition = self.ncf.duplicate().trim_to_phase(self.operation_phase)
+        self.ncf_disposition.append(aggregands=[self.disposition])
 
         # Calculate the Present Value of the NCFs:
         self.pv_ncf = self.ncf.sum().pv(
             periodicity=params['period_type'],
             discount_rate=params['discount_rate'])
 
-        # Calculate the Present Value of Reversion CFs:
-        self.pv_reversion = self.reversion.pv(
+        # Calculate the Present Value of Disposition CFs:
+        self.pv_disposition = self.disposition.pv(
             periodicity=params['period_type'],
             discount_rate=params['discount_rate'])
 
-        # Add Cumulative Sum of Discounted Net Cashflows to each period's Discounted Reversion:
-        # pv_ncf_cumsum = Flow(movements=self.pv_ncf.movements.cumsum(),
-        #                      name='Discounted Net Cashflow Cumulative Sums',
-        #                      units=params['units'])
         self.pv_ncf_agg = Aggregation(
             name='Discounted Net Cashflows',
-            aggregands=[self.pv_ncf, self.pv_reversion],
+            aggregands=[self.pv_ncf, self.pv_disposition],
             periodicity=params['period_type'])
 
         self.pv_sums = self.pv_ncf_agg.sum()
@@ -147,7 +140,7 @@ class Model:
 
         self.investment_cashflows = Aggregation(
             name='Investment Cashflows',
-            aggregands=[self.ncf.sum(), self.reversion, self.acquisition],
+            aggregands=[self.ncf.sum(), self.disposition, self.acquisition],
             periodicity=params['period_type'])
 
         self.investment_cashflows.aggregation = self.investment_cashflows.aggregation[:-1]
