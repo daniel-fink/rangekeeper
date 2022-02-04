@@ -16,6 +16,9 @@ from units import Units
 
 
 class Flow:
+    name: str
+    movements: pd.Series
+    units: Units.Type
     """
     A `Flow` is a pd.Series of 'movements' of material (funds, energy, mass, etc) that occur at specified dates.
     Note: the flow.movements Series index is a pd.DatetimeIndex, and its values are floats.
@@ -307,6 +310,9 @@ class Flow:
 
 
 class Aggregation:
+    name: str
+    aggregands: [Flow]
+    periodicity: Periodicity.Type
     """
     A `Aggregation` collects aggregand (constituent) Flows
     and resamples them with a specified periodicity.
@@ -353,7 +359,7 @@ class Aggregation:
     def __str__(self):
         return self.display()
 
-    def duplicate(self):
+    def duplicate(self) -> Aggregation:
         return self.__class__(
             name=self.name,
             aggregands=[aggregand.duplicate() for aggregand in self._aggregands],
@@ -364,7 +370,7 @@ class Aggregation:
             cls,
             name: str,
             data: pd.DataFrame,
-            units: Units.Type):
+            units: Units.Type) -> Aggregation:
         aggregands = []
         for column in data.columns:
             series = data[column]
@@ -493,7 +499,7 @@ class Aggregation:
         plt.minorticks_on()
         plt.tight_layout()
 
-    def extract(self, flow_name: str):
+    def extract(self, flow_name: str) -> Flow:
         """
         Extract a Aggregation's resampled aggregand as a Flow
         :param flow_name:
@@ -502,12 +508,10 @@ class Aggregation:
         return Flow(
             movements=self.aggregation[flow_name],
             units=self.units,
-            name=flow_name
-            )
-
+            name=flow_name)
     def sum(
             self,
-            name: str = None):
+            name: str = None) -> Flow:
         """
         Returns a Flow whose movements are the sum of the Aggregation's aggregands by period
         :return: Flow
@@ -518,7 +522,7 @@ class Aggregation:
             data=self.aggregation.sum(axis=1).to_list(),
             units=self.units)
 
-    def collapse(self):
+    def collapse(self) -> Aggregation:
         """
         Returns a Aggregation with Flows' movements collapsed (summed) to the Aggregation's final period
         :return: Aggregation
@@ -531,7 +535,14 @@ class Aggregation:
 
     def append(
             self,
-            aggregands: [Flow]):
+            aggregands: [Flow]) -> None:
+        """
+        Appends a list of Flows to the Aggregation
+        :param aggregands:
+        :type aggregands:
+        :return:
+        :rtype:
+        """
         # Check Units:
         if any(flow.units != self.units for flow in aggregands):
             raise Exception("Input Flows have dissimilar units. Cannot aggregate into Aggregation.")
@@ -551,7 +562,8 @@ class Aggregation:
         _resampled_aggregands = [aggregand.to_periods(periodicity=self.periodicity) for aggregand in self._aggregands]
         self.aggregation = pd.concat(_resampled_aggregands, axis=1).fillna(0)
 
-    def resample(self, periodicity: Periodicity.Type):
+    def resample(self,
+                 periodicity: Periodicity.Type) -> Aggregation:
         return Aggregation(
             name=self.name,
             aggregands=self._aggregands,
@@ -573,7 +585,7 @@ class Aggregation:
     def merge(cls,
               aggregations,
               name: str,
-              periodicity: Periodicity.Type):
+              periodicity: Periodicity.Type) -> Aggregation:
         # Check Units:
         if any(aggregation.units != aggregations[0].units for aggregation in aggregations):
             raise Exception("Input Aggregations have dissimilar units. Cannot merge into Aggregation.")
