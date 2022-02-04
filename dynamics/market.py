@@ -166,4 +166,16 @@ class Market:
         takes effect.
         """
 
+        self.implied_cap_rate = flux.Flow(
+            movements=pd.Series(
+                data=self.space_market.movements[1:] / self.historical_value.movements[:-1],
+                index=trend.trend.movements.index[1:]),
+            units=units.Units.Type.scalar,
+            name='Implied Cap Rate')
+        """
+        These are the forward-looking cap rates implied for each year of the 
+        scenario. These will govern the reversion (resale) cash flows in the 
+        DCF model of PV.
+        """
+
 
