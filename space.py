@@ -1,4 +1,66 @@
+from __future__ import annotations
+from typing import Dict, List, Union
+
 import aenum
+
+
+class Type:
+    name: str
+    category: str
+    parent: Type
+    children: [Type]
+
+    def __init__(self,
+                 name: str,
+                 category: str,
+                 parent: Type = None,
+                 children: List[Type] = None):
+        self.name = name
+        self.category = category
+        self.parent = parent
+        self.children = children
+
+    def __str__(self):
+        return self.category + " " + self.name
+
+    # @classmethod
+    # def from_dict(
+    #         cls,
+    #         dict: Dict[(str, str), List[(str, str)]]):
+    #     types = []
+    #     for type, children in dict.items():
+    #         type = next((type.category == type[1] for type in types), None)
+    #         if type is None:
+    #             for child_name in children_names:
+    #
+    #             type = Type(
+    #                 name=type_name,
+    #
+    #         if any(type.name == type_name for type in types):
+
+
+class Space:
+    name: str
+    type: Type
+    attributes: Dict
+
+    def __init__(
+            self,
+            name: str,
+            type: Type,
+            attributes: Dict = None):
+        self.name = name
+        self.type = type
+        self.attributes = attributes
+
+
+class Apartment(Space):
+    def __init__(self,
+                 name: str,
+                 type: Type,
+                 attributes: Dict = None):
+        super().__init__(name, type, attributes)
+
 
 
 class Apartment:
