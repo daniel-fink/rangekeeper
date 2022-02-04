@@ -161,48 +161,48 @@ class Exponential(Distribution):
         self.rate = rate
         self.num_periods = num_periods
 
-    def density(
-            self,
-            parameters: [float]):
-        """
-        Returns the value of the density function at a parameter between 0 and 1.
-        The form of the function is k*(1+r)^((n-1)x),
-        where k is a scaling constant that constrains the cumulative distribution to 1,
-        r is the rate, n is the number of periods, and x the parameter.
+    # def density(
+    #         self,
+    #         parameters: [float]):
+    #     """
+    #     Returns the value of the density function at a parameter between 0 and 1.
+    #     The form of the function is k*(1+r)^((n-1)x),
+    #     where k is a scaling constant that constrains the cumulative distribution to 1,
+    #     r is the rate, n is the number of periods, and x the parameter.
+    #
+    #     In this case, k = ((n - 1)*(1 + r)*log(1 + r))/((1 + r)^n - (1 + r)); see https://www.wolframalpha.com/input/?i=integrate+%28%28%28n+-+1%29*%281+%2B+r%29*log%281+%2B+r%29%29%2F%28%281+%2B+r%29%5En+-+%281+%2B+r%29%29%29*%281+%2B+r%29%5E%28%28n-1%29*x%29+dx+from+0+to+1
+    #     """
+    #     if (all(parameters) >= 0) & (all(parameters) <= 1):
+    #         def f(parameter):
+    #             k_num = (self.num_periods - 1) * (1 + self.rate) * np.log(1 + self.rate)
+    #             k_denom = np.power((1 + self.rate), self.num_periods) - (1 + self.rate)
+    #             k = np.divide(k_num, k_denom)
+    #             return k * np.power((1 + self.rate), (self.num_periods - 1) * parameter)
+    #             # return ((self.num_periods * math.log(1 + self.rate)) * math.pow((1 + self.rate), self.num_periods * parameter)) \
+    #             #      / (math.pow((1 + self.rate), self.num_periods) - 1)
+    #
+    #         return [f(parameter) for parameter in parameters]
+    #     else:
+    #         raise ValueError("Error: Parameter must be between 0 and 1 inclusive")
 
-        In this case, k = ((n - 1)*(1 + r)*log(1 + r))/((1 + r)^n - (1 + r)); see https://www.wolframalpha.com/input/?i=integrate+%28%28%28n+-+1%29*%281+%2B+r%29*log%281+%2B+r%29%29%2F%28%281+%2B+r%29%5En+-+%281+%2B+r%29%29%29*%281+%2B+r%29%5E%28%28n-1%29*x%29+dx+from+0+to+1
-        """
-        if (all(parameters) >= 0) & (all(parameters) <= 1):
-            def f(parameter):
-                k_num = (self.num_periods - 1) * (1 + self.rate) * np.log(1 + self.rate)
-                k_denom = np.power((1 + self.rate), self.num_periods) - (1 + self.rate)
-                k = np.divide(k_num, k_denom)
-                return k * np.power((1 + self.rate), (self.num_periods - 1) * parameter)
-                # return ((self.num_periods * math.log(1 + self.rate)) * math.pow((1 + self.rate), self.num_periods * parameter)) \
-                #      / (math.pow((1 + self.rate), self.num_periods) - 1)
-
-            return [f(parameter) for parameter in parameters]
-        else:
-            raise ValueError("Error: Parameter must be between 0 and 1 inclusive")
-
-    def cumulative_density(
-            self,
-            parameters: [
-                float]):  # #TODO: This is giving incorrect answers for low values of num_periods...
-        """
-        Returns the cumulative distribution at parameters between 0 and 1.
-
-        See https://www.wolframalpha.com/input/?i=integrate+%28%28%28n+-+1%29*%281+%2B+r%29*log%281+%2B+r%29%29%2F%28%281+%2B+r%29%5En+-+%281+%2B+r%29%29%29+*+%28%281+%2B+r%29%5E%28%28n+-+1%29*x%29%29++dx
-        """
-        if (all(parameters) >= 0) & (all(parameters) <= 1):
-            def f(parameter):
-                num = np.power((1 + self.rate), (parameter * (self.num_periods - 1)) + 1)
-                denom = np.power((1 + self.rate), self.num_periods) - self.rate - 1
-                return np.divide(num, denom)
-
-            return [f(parameter) for parameter in parameters]
-        else:
-            raise ValueError("Error: Parameter must be between 0 and 1 inclusive")
+    # def cumulative_density(
+    #         self,
+    #         parameters: [
+    #             float]):  # #TODO: This is giving incorrect answers for low values of num_periods...
+    #     """
+    #     Returns the cumulative distribution at parameters between 0 and 1.
+    #
+    #     See https://www.wolframalpha.com/input/?i=integrate+%28%28%28n+-+1%29*%281+%2B+r%29*log%281+%2B+r%29%29%2F%28%281+%2B+r%29%5En+-+%281+%2B+r%29%29%29+*+%28%281+%2B+r%29%5E%28%28n+-+1%29*x%29%29++dx
+    #     """
+    #     if (all(parameters) >= 0) & (all(parameters) <= 1):
+    #         def f(parameter):
+    #             num = np.power((1 + self.rate), (parameter * (self.num_periods - 1)) + 1)
+    #             denom = np.power((1 + self.rate), self.num_periods) - self.rate - 1
+    #             return np.divide(num, denom)
+    #
+    #         return [f(parameter) for parameter in parameters]
+    #     else:
+    #         raise ValueError("Error: Parameter must be between 0 and 1 inclusive")
 
     def factor(self):
         """
