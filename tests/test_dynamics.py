@@ -4,16 +4,16 @@
 # classes that hold tests must be named starting with 'Test',
 # and any function in a file that should be treated as a test must also start with 'test_'.
 
-# In addition, in order to enable pytest to find all modules,
-# run tests via a 'python -m pytest tests/<test_file>.py' command from the root directory of this project
-import json
-import math
-import pandas as pd
-import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
+# In addition, in order to enable pytest to find all modules,
+# run tests via a 'python -m pytest tests/<test_file>.py' command from the root directory of this project
+import pandas as pd
 
-import periodicity, phase, distribution, flux, units
+import distribution
+import flux
+import periodicity
+import phase
 from dynamics import trend, volatility, cyclicality, market
 
 matplotlib.use('TkAgg')
@@ -261,8 +261,8 @@ class TestDynamics:
 
         plt.show(block=True)
 
-    market_params={
-        'noise_residual': .01,
+    market_params = {
+        'noise_residual': .015,
         'cap_rate': trend_params['cap_rate'],
         'black_swan_likelihood': .05,
         'black_swan_dissipation_rate': volatility_params['mean_reversion_param'],
@@ -270,7 +270,8 @@ class TestDynamics:
             peak=-.3,
             weighting=4.,
             minimum=-.4,
-            maximum=-.2).sample()
+            maximum=-.2).sample(),
+        'black_swan_prob_dist': distribution.Uniform()
         }
     market_dynamics = market.Market(
         params=market_params,
@@ -279,15 +280,25 @@ class TestDynamics:
         cyclicality=market_cyclicality)
 
     def test_market(self):
-        flux.Aggregation(
-            name="Plot",
+        market = flux.Aggregation(
+            name="Market",
             aggregands=[TestDynamics.market_dynamics.space_market,
-                        TestDynamics.market_dynamics.asset_market],
-            periodicity=TestDynamics.period_type).plot(
+                        TestDynamics.market_dynamics.asset_market,
+                        TestDynamics.market_dynamics.asset_true_value,
+                        TestDynamics.market_dynamics.noisy_value,
+                        TestDynamics.market_dynamics.black_swan_effect,
+                        TestDynamics.market_dynamics.historical_value],
+            periodicity=TestDynamics.period_type)
+        market.plot(
             aggregands={
                 'space_market': (0., .08),
                 'asset_market': (0., .08)
                 })
+
+
+
+        TestDynamics.market_dynamics.asset_true_value.display()
+        TestDynamics.market_dynamics.noisy_value.display()
+        TestDynamics.market_dynamics.implied_cap_rate.display()
+
         plt.show(block=True)
-
-
