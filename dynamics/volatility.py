@@ -88,4 +88,4 @@ class Volatility:
                 data=cumulative_volatility_data,
                 index=trend.trend.movements.index),
             units=units.Units.Type.scalar,
-            name='Cumulative')
+            name='Cumulative Volatility')

@@ -27,12 +27,12 @@ class Market:
         self.space_market = flux.Flow(
             movements=(cyclicality.space_waveform.movements * volatility.cumulative_volatility.movements),
             units=units.Units.Type.scalar,
-            name='space_market')
+            name='Space Market')
 
         self.asset_market = flux.Flow(
             movements=params['cap_rate'] - cyclicality.asset_waveform.movements,
             units=units.Units.Type.scalar,
-            name='asset_market')
+            name='Asset Market')
         """
         Negative of actual cap rate cycle. 
         This makes this cycle directly reflect the asset pricing, as prices 
@@ -145,13 +145,13 @@ class Market:
             units=units.Units.Type.scalar,
             name='Black Swan Effect')
         """
-        This random variable will determine whether a "black swan" event
-        occurs in any given year. We ensure that no more than one black
-        swan will occur in the 24-yr history, as black swans are by definition
+        This random variable will determine whether a "black swan" event 
+        occurs in any given year. We ensure that no more than one black 
+        swan will occur in the 24-yr history, as black swans are by definition 
         rare events.
 
-        This column causes the effect of the Black Swan event to dissipate
-        over time, geometrically, at the same mean reversion rate as is
+        This column causes the effect of the Black Swan event to dissipate 
+        over time, geometrically, at the same mean reversion rate as is 
         applied in general to the rents (entered in co.F).
         """
 
@@ -161,15 +161,17 @@ class Market:
             name='Historical Value')
         """
         This is another source or type of uncertainty in real estate pricing.
-        This column will apply the given "black swan" result, but then reduces
-        the subsequent impact of the event gradually as mean-reversion
+        This column will apply the given "black swan" result, but then reduces 
+        the subsequent impact of the event gradually as mean-reversion 
         takes effect.
         """
 
+        implied_cap_rate_data = self.space_market.movements[1:].reset_index(drop=True) / self.historical_value.movements[:-1].reset_index(drop=True)
+        implied_cap_rate_data = implied_cap_rate_data.append(pd.Series(np.nan))
         self.implied_cap_rate = flux.Flow(
             movements=pd.Series(
-                data=self.space_market.movements[1:] / self.historical_value.movements[:-1],
-                index=trend.trend.movements.index[1:]),
+                data=implied_cap_rate_data.values,
+                index=trend.trend.movements.index),
             units=units.Units.Type.scalar,
             name='Implied Cap Rate')
         """
@@ -178,4 +180,17 @@ class Market:
         DCF model of PV.
         """
 
+        returns_data = (self.historical_value.movements[1:].reset_index(drop=True) / self.historical_value.movements[:-1].reset_index(drop=True)) - 1
+        returns_data = returns_data.append(pd.Series(np.nan))
+        self.returns = flux.Flow(
+            movements=pd.Series(
+                data=returns_data.values,
+                index=trend.trend.movements.index),
+            units=units.Units.Type.scalar,
+            name='Returns')
 
+        """
+        This is the implied capital returns series for the scenario. It reflects
+        the overall pricing dynamics and uncertainty in the property value over 
+        time.        
+        """
