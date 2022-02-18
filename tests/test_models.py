@@ -44,9 +44,9 @@ class TestLinear:
 
         linear = models.linear.Model(base_params)
 
-        linear.ncf_reversion.display()
+        linear.ncf_disposition.display()
         print(linear.operation_phase)
-        # linear.pv_sums.display()
+        linear.pv_sums.display()
         # linear.investment_cashflows.display()
         # linear.investment_cashflows.sum().display()
         # print("IRR: " + str(linear.irr))
