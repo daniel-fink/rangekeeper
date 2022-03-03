@@ -499,7 +499,9 @@ class Aggregation:
         plt.minorticks_on()
         plt.tight_layout()
 
-    def extract(self, flow_name: str) -> Flow:
+    def extract(
+            self,
+            flow_name: str) -> Flow:
         """
         Extract a Aggregation's resampled aggregand as a Flow
         :param flow_name:
@@ -509,6 +511,7 @@ class Aggregation:
             movements=self.aggregation[flow_name],
             units=self.units,
             name=flow_name)
+
     def sum(
             self,
             name: str = None) -> Flow:
@@ -562,15 +565,17 @@ class Aggregation:
         _resampled_aggregands = [aggregand.to_periods(periodicity=self.periodicity) for aggregand in self._aggregands]
         self.aggregation = pd.concat(_resampled_aggregands, axis=1).fillna(0)
 
-    def resample(self,
-                 periodicity: Periodicity.Type) -> Aggregation:
+    def resample(
+            self,
+            periodicity: Periodicity.Type) -> Aggregation:
         return Aggregation(
             name=self.name,
             aggregands=self._aggregands,
             periodicity=periodicity)
 
-    def trim_to_phase(self,
-                      phase: Phase) -> Aggregation:
+    def trim_to_phase(
+            self,
+            phase: Phase) -> Aggregation:
         """
         Returns an Aggregation with all aggregands trimmed to the specified Phase
         :param phase:
@@ -582,10 +587,11 @@ class Aggregation:
             periodicity=self.periodicity)
 
     @classmethod
-    def merge(cls,
-              aggregations,
-              name: str,
-              periodicity: Periodicity.Type) -> Aggregation:
+    def merge(
+            cls,
+            aggregations,
+            name: str,
+            periodicity: Periodicity.Type) -> Aggregation:
         # Check Units:
         if any(aggregation.units != aggregations[0].units for aggregation in aggregations):
             raise Exception("Input Aggregations have dissimilar units. Cannot merge into Aggregation.")
