@@ -42,10 +42,9 @@ class TestDynamics:
         'rent_residual': .005,
 
         # Growth Trend Relative to Proforma:
-        # Normally this should be zero.
-        # But to adjust for convexity effects on average cash flow levels
-        # for comparison across different price dynamics inputs assumptions,
-        # you may need to adjust this trend.
+        # Normally this should be zero. But to adjust for convexity effects on
+        # average cash flow levels for comparison across different price
+        # dynamics inputs assumptions, you may need to adjust this trend.
         # For example, a symmetric cap rate cycle will impart a positive bias
         # into the simulated future cash flows relative to the proforma,
         # while Black Swans and cycle phase or other inputs may impart a negative bias.
@@ -282,23 +281,29 @@ class TestDynamics:
     def test_market(self):
         market = flux.Aggregation(
             name="Market",
-            aggregands=[TestDynamics.market_dynamics.space_market,
-                        TestDynamics.market_dynamics.asset_market,
+            aggregands=[TestDynamics.market_trend.trend,
+                        TestDynamics.market_volatility.cumulative_volatility,
+                        TestDynamics.market_dynamics.space_market,
                         TestDynamics.market_dynamics.asset_true_value,
                         TestDynamics.market_dynamics.noisy_value,
-                        TestDynamics.market_dynamics.black_swan_effect,
                         TestDynamics.market_dynamics.historical_value],
             periodicity=TestDynamics.period_type)
         market.plot(
             aggregands={
-                'space_market': (0., .08),
-                'asset_market': (0., .08)
+                'Trend': (0., .08),
+                'Cumulative Volatility': (0., .08),
+                'Space Market': (0., .08),
+                'Asset True Value': (0., 2.),
+                'Noisy Value': (0., 2.),
+                'Historical Value': (0., 2.)
                 })
 
-
-
-        TestDynamics.market_dynamics.asset_true_value.display()
-        TestDynamics.market_dynamics.noisy_value.display()
+        # TestDynamics.market_dynamics.asset_true_value.display()
+        # TestDynamics.market_dynamics.noisy_value.display()
+        market.display()
         TestDynamics.market_dynamics.implied_cap_rate.display()
+        # foo = TestDynamics.market_dynamics.space_market.movements[1:].reset_index()
+        # bar = TestDynamics.market_dynamics.historical_value.movements[:-1].reset_index()
+        # market.display()
 
         plt.show(block=True)
