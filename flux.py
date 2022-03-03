@@ -12,13 +12,13 @@ import pyxirr
 from distribution import Distribution, Uniform, PERT, Exponential
 from periodicity import Periodicity
 from phase import Phase
-from units import Units
+from measurements import Measurement
 
 
 class Flow:
     name: str
     movements: pd.Series
-    units: Units.Type
+    units: Measurement
     """
     A `Flow` is a pd.Series of 'movements' of material (funds, energy, mass, etc) that occur at specified dates.
     Note: the flow.movements Series index is a pd.DatetimeIndex, and its values are floats.
@@ -27,8 +27,18 @@ class Flow:
     def __init__(
             self,
             movements: pd.Series,
-            units: Units.Type,
+            units: Measurement = None,
             name: str = None):
+        """
+        Initializes a Flow. If units are not provided, a scalar (dimensionless) unit is assumed.
+
+        :param movements:
+        :type movements:
+        :param units:
+        :type units:
+        :param name:
+        :type name:
+        """
 
         if not isinstance(movements.index, pd.DatetimeIndex):
             raise Exception("Error: Flow's movements' Index is not a pd.DatetimeIndex")
@@ -39,7 +49,11 @@ class Flow:
             movements.name = name
         else:
             self.name = str(self.movements.name)
-        self.units = units
+
+        if units is None:
+            self.units = Measurement.Scalar()
+        else:
+            self.units = units
 
     def __str__(self):
         return self.display()
@@ -52,7 +66,7 @@ class Flow:
 
     def display(self):
         print('Name: ' + self.name)
-        print('Units: ' + self.units.__doc__)
+        print('Units: ' + self.units.name)
         print('Movements: ')
         print(self.movements.to_markdown())
 
@@ -73,7 +87,7 @@ class Flow:
             cls,
             periods: pd.PeriodIndex,
             data: [float],
-            units: Units.Type,
+            units: Measurement,
             name: str = None) -> Flow:
         """
         Returns a Flow where movement dates are defined by the end-dates of the specified periods
@@ -94,7 +108,7 @@ class Flow:
     def from_dict(
             cls,
             movements: Dict[pd.Timestamp, float],
-            units: Units.Type,
+            units: Measurement,
             name: str = None) -> Flow:
         """
         Returns a Flow where movements are defined by key-value pairs of pd.Timestamps and amounts.
@@ -117,7 +131,7 @@ class Flow:
             total: Union[float, Distribution],
             index: pd.DatetimeIndex,
             dist: Distribution,
-            units: Units.Type,
+            units: Measurement,
             name: str = None) -> Flow:
         """
         Generate a Flow from a total amount, distributed over the period index
@@ -167,7 +181,7 @@ class Flow:
             initial: Union[float, Distribution],
             index: pd.PeriodIndex,
             dist: Distribution,
-            units: Units.Type,
+            units: Measurement,
             name: str = None) -> Flow:
         """
         Generate a Flow from an initial amount, distributed over the period index
@@ -370,7 +384,7 @@ class Aggregation:
             cls,
             name: str,
             data: pd.DataFrame,
-            units: Units.Type) -> Aggregation:
+            units: Measurement) -> Aggregation:
         aggregands = []
         for column in data.columns:
             series = data[column]
@@ -386,7 +400,7 @@ class Aggregation:
 
     def display(self):
         print('Name: ' + self.name)
-        print('Units: ' + self.units.__doc__)
+        print('Units: ' + self.units.name)
         print('Flows: ')
         print(self.aggregation.to_markdown())
 

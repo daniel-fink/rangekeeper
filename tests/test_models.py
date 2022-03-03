@@ -17,7 +17,7 @@ import models.flexible
 import models.linear
 import models.probabilistic
 from periodicity import Periodicity
-from units import Units
+from measurements import Measurement
 
 matplotlib.use('TkAgg')
 plt.style.use('seaborn')  # pretty matplotlib plots
@@ -27,7 +27,7 @@ plt.rcParams['figure.figsize'] = (12, 8)
 class TestLinear:
     def test_linear_model(self):
         base_params = {
-            'units': Units.Type.USD,
+            'units': Measurement.currency_from_country_code('USD'),
             'start_date': pd.Timestamp(2020, 1, 1),
             'num_periods': 10,
             'acquisition_price': 1000,
@@ -41,24 +41,23 @@ class TestLinear:
             'discount_rate': 0.07
             }
 
-
         linear = models.linear.Model(base_params)
 
-        linear.ncf_reversion.display()
+        linear.ncf_disposition.display()
         print(linear.operation_phase)
-        # linear.pv_sums.display()
-        # linear.investment_cashflows.display()
-        # linear.investment_cashflows.sum().display()
-        # print("IRR: " + str(linear.irr))
-        # print("NPV @ Discount Rate: " + str(linear.npv))
+        linear.pv_sums.display()
+        linear.investment_cashflows.display()
+        linear.investment_cashflows.sum().display()
+        print("IRR: " + str(linear.irr))
+        # print("NPV @ Discount Rate: " + str(linear.))
 
-        # assert math.isclose(a=linear.reversion.movements.iloc[-1], b=1218.99, rel_tol=.01)
+        assert math.isclose(a=linear.disposition.movements.iloc[-1], b=1218.99, rel_tol=.01)
 
 
 class TestDeterministic:
     def test_deterministic_model(self):
         base_params = {
-            'units': Units.Type.USD,
+            'units': Measurement.currency_from_country_code('USD'),
             'start_date': pd.Timestamp(2020, 1, 1),
             'num_periods': 10,
             'period_type': Periodicity.Type.year,
@@ -107,7 +106,7 @@ class TestDeterministic:
 class TestProbabilistic:
     def test_probabilistic_model(self):
         base_params = {
-            'units': Units.Type.USD,
+            'units': Measurement.currency_from_country_code('USD'),
             'start_date': pd.Timestamp(2020, 1, 1),
             'num_periods': 10,
             'acquisition_price': 1000,
@@ -133,7 +132,7 @@ class TestProbabilistic:
 class TestFlexible:
     def test_flexible_model(self):
         base_params = {
-            'units': Units.Type.USD,
+            'units': Measurement.currency_from_country_code('USD'),
             'start_date': pd.Timestamp(2020, 1, 1),
             'num_periods': 24,
             'acquisition_price': 1000,

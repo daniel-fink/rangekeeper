@@ -5,13 +5,14 @@ from numba import jit
 import distribution
 import dynamics.trend
 import flux
-import units
+from measurements import Measurement
 
 
 class Volatility:
-    def __init__(self,
-                 trend: dynamics.trend.Trend,
-                 params: dict):
+    def __init__(
+            self,
+            trend: dynamics.trend.Trend,
+            params: dict):
         """
         This is a normal (Gaussian) distribution.
         Note that volatility is realized (new random increment is generated) in EACH period,
@@ -30,7 +31,6 @@ class Volatility:
 
         self.volatility = flux.Flow(
             movements=volatilities,
-            units=units.Units.Type.scalar,
             name='Volatility')
 
         @jit(nopython=True)
@@ -52,7 +52,6 @@ class Volatility:
             movements=pd.Series(
                 data=autoregression_return_data,
                 index=self.volatility.movements.index),
-            units=units.Units.Type.scalar,
             name='Autoregressive Returns')
 
         """
@@ -65,8 +64,7 @@ class Volatility:
                 trend_rate: float,
                 trend: [float],
                 mr_parameter: float,
-                ar_returns: [float],
-                ):
+                ar_returns: [float]):
             accumulated_volatility = []
             for i in range(len(trend)):
                 if i == 0:
@@ -87,5 +85,4 @@ class Volatility:
             movements=pd.Series(
                 data=cumulative_volatility_data,
                 index=trend.trend.movements.index),
-            units=units.Units.Type.scalar,
             name='Cumulative Volatility')
