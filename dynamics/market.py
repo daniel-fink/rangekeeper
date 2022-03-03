@@ -4,16 +4,17 @@ from numba import jit
 
 import distribution
 import flux
-import units
+from measurements import Measurement
 from dynamics import trend, volatility, cyclicality
 
 
 class Market:
-    def __init__(self,
-                 params: dict,
-                 trend: trend.Trend,
-                 volatility: volatility.Volatility,
-                 cyclicality: cyclicality.Cyclicality):
+    def __init__(
+            self,
+            params: dict,
+            trend: trend.Trend,
+            volatility: volatility.Volatility,
+            cyclicality: cyclicality.Cyclicality):
         """
 
         :param params:
@@ -26,12 +27,10 @@ class Market:
 
         self.space_market = flux.Flow(
             movements=(cyclicality.space_waveform.movements * volatility.cumulative_volatility.movements),
-            units=units.Units.Type.scalar,
             name='Space Market')
 
         self.asset_market = flux.Flow(
             movements=params['cap_rate'] - cyclicality.asset_waveform.movements,
-            units=units.Units.Type.scalar,
             name='Asset Market')
         """
         Negative of actual cap rate cycle. 
@@ -52,7 +51,6 @@ class Market:
 
         self.asset_true_value = flux.Flow(
             movements=self.space_market.movements / self.asset_market.movements,
-            units=units.Units.Type.scalar,
             name='Asset True Value')
         """
         This applies the capital market cycle to the rent history to obtain 
@@ -63,7 +61,6 @@ class Market:
 
         self.space_market_price_factors = flux.Flow(
             movements=self.space_market.movements / trend.current_rent,
-            units=units.Units.Type.scalar,
             name='Space Market Price Factors')
         """
         This is the "true value" pricing factor for just the space market, 
@@ -82,7 +79,6 @@ class Market:
             movements=pd.Series(
                 data=self.noise_values,
                 index=trend.trend.movements.index),
-            units=units.Units.Type.scalar,
             name='Noise')
         """
         This is a symmetric PERT distribution. Note that a random realization
@@ -96,7 +92,6 @@ class Market:
 
         self.noisy_value = flux.Flow(
             movements=(1 + self.noise.movements) * self.asset_true_value.movements,
-            units=units.Units.Type.scalar,
             name='Noisy Value')
         """
         In this column the noise we generated in the previous column is
@@ -142,7 +137,6 @@ class Market:
             index=trend.trend.movements.index)
         self.black_swan_effect = flux.Flow(
             movements=black_swan_effect_data,
-            units=units.Units.Type.scalar,
             name='Black Swan Effect')
         """
         This random variable will determine whether a "black swan" event 
@@ -157,7 +151,6 @@ class Market:
 
         self.historical_value = flux.Flow(
             movements=self.noisy_value.movements * (1 + params['black_swan_impact'] * self.black_swan_effect.movements),
-            units=units.Units.Type.scalar,
             name='Historical Value')
         """
         This is another source or type of uncertainty in real estate pricing.
@@ -166,13 +159,13 @@ class Market:
         takes effect.
         """
 
-        implied_cap_rate_data = self.space_market.movements[1:].reset_index(drop=True) / self.historical_value.movements[:-1].reset_index(drop=True)
+        implied_cap_rate_data = self.space_market.movements[1:].reset_index(
+            drop=True) / self.historical_value.movements[:-1].reset_index(drop=True)
         implied_cap_rate_data = implied_cap_rate_data.append(pd.Series(np.nan))
         self.implied_cap_rate = flux.Flow(
             movements=pd.Series(
                 data=implied_cap_rate_data.values,
                 index=trend.trend.movements.index),
-            units=units.Units.Type.scalar,
             name='Implied Cap Rate')
         """
         These are the forward-looking cap rates implied for each year of the 
@@ -180,13 +173,13 @@ class Market:
         DCF model of PV.
         """
 
-        returns_data = (self.historical_value.movements[1:].reset_index(drop=True) / self.historical_value.movements[:-1].reset_index(drop=True)) - 1
+        returns_data = (self.historical_value.movements[1:].reset_index(drop=True) /
+                        self.historical_value.movements[:-1].reset_index(drop=True)) - 1
         returns_data = returns_data.append(pd.Series(np.nan))
         self.returns = flux.Flow(
             movements=pd.Series(
                 data=returns_data.values,
                 index=trend.trend.movements.index),
-            units=units.Units.Type.scalar,
             name='Returns')
 
         """

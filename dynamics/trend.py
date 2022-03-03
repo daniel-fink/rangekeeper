@@ -2,7 +2,7 @@ import distribution
 import flux
 import periodicity
 import phase
-import units
+from measurements import Measurement
 
 
 class Trend:
@@ -51,7 +51,7 @@ class Trend:
                                             initial=self.initial_rent,
                                             index=phase.to_index(periodicity=period_type),
                                             dist=trend_dist,
-                                            units=units.Units.Type.scalar)
+                                            units=Measurement())
         """
         Trend:
         Note that the trend is geometric.

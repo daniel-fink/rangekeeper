@@ -1,7 +1,8 @@
 from __future__ import annotations
 from typing import Dict, List, Union
-import pint
-import decimal
+from decimal import Decimal
+
+from measurements import Measurement
 
 
 class Type:
@@ -47,35 +48,17 @@ class Type:
             child.set_parent(self)
 
 
-class Measurement:
-    name: str
-    definition: str
-    value: Union[int, float]
-    units: pint.Unit
-
-    def __init__(
-            self,
-            name: str,
-            value: Union[int, float],
-            units: pint.Unit,
-            definition: str = None):
-        self.name = name
-        self.value = value
-        self.units = units
-        self.definition = definition
-
-
 class Space:
     name: str
     type: Type
     attributes: Dict
-    measurements: List[Measurement]
+    measurements: Dict[Measurement, Union[int, Decimal, float]]
 
     def __init__(
             self,
             name: str,
             type: Type,
-            measurements: List[Measurement] = None,
+            measurements: Dict[Measurement, Union[int, Decimal, float]] = None,
             attributes: Dict = None):
         self.name = name
         self.type = type
@@ -85,17 +68,16 @@ class Space:
 
 class Apartment(Space):
     num_bed: int
-    num_bathrooms: decimal.Decimal
+    num_bathrooms: Decimal
     num_balcony: int
-    measurements: List[Measurement]
 
     def __init__(self,
                  name: str,
                  type: Type,
                  num_bed: int,
-                 num_bath: decimal.Decimal,
+                 num_bath: Decimal,
                  num_balcony: int,
-                 measurements: List[Measurement] = None,
+                 measurements: Dict[Measurement, Union[int, Decimal, float]] = None,
                  attributes: Dict = None):
         super().__init__(name, type, measurements, attributes)
         self.num_bed = num_bed

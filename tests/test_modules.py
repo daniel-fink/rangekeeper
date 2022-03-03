@@ -8,7 +8,7 @@ import distribution
 import flux
 import phase
 from periodicity import Periodicity
-from units import Units
+from measurements import Measurement
 import space
 
 # Pytests file.
@@ -20,6 +20,8 @@ import space
 matplotlib.use('TkAgg')
 plt.style.use('seaborn')  # pretty matplotlib plots
 plt.rcParams['figure.figsize'] = (12, 8)
+
+currency = Measurement.currency_from_country_code('USD')
 
 
 class TestDistribution:
@@ -36,9 +38,9 @@ class TestDistribution:
 
     def test_exponential_distribution_total_and_initial_match(self):
         exp_dist = distribution.Exponential(rate=0.02, num_periods=12)
-        # exp_factors = exp_dist.factor(parameters=parameters)
-        exp_densities = exp_dist.density(parameters=TestDistribution.parameters)
-        exp_cumulative = exp_dist.cumulative_density(parameters=TestDistribution.parameters)
+        exp_factors = exp_dist.factor()
+        # exp_densities = exp_dist.density(parameters=TestDistribution.parameters)
+        # exp_cumulative = exp_dist.cumulative_density(parameters=TestDistribution.parameters)
 
         # plt.plot(parameters, exp_factors)
         # plt.plot(TestDistribution.parameters, exp_densities)
@@ -80,10 +82,10 @@ class TestFlow:
     values = [1, 2.3, 456]
 
     series = pd.Series(data=values, index=dates, name="foo", dtype=float)
-    flow_from_series = flux.Flow(movements=series, units=Units.Type.USD)
+    flow_from_series = flux.Flow(movements=series, units=currency)
 
     dict = {date1: values[0], date2: values[1], date3: values[2]}
-    flow_from_dict = flux.Flow.from_dict(movements=dict, name="foo", units=Units.Type.USD)
+    flow_from_dict = flux.Flow.from_dict(movements=dict, name="foo", units=currency)
 
     def test_flow_validity(self):
         # TestFlow.flow_from_series.display()
@@ -103,7 +105,7 @@ class TestFlow:
                                 total=100.0,
                                 index=Periodicity.to_datestamps(periods),
                                 dist=distribution.Uniform(),
-                                units=Units.Type.USD)
+                                units=currency)
 
     def test_flow_duplication(self):
         duplicate = TestFlow.flow.duplicate()
@@ -118,7 +120,7 @@ class TestFlow:
         assert TestFlow.flow.movements.index.array[1] == pd.Timestamp(2020, 2, 29)
         assert TestFlow.flow.movements.array[1] == 4
         assert TestFlow.flow.movements.name == "bar"
-        assert TestFlow.flow.units == Units.Type.USD
+        assert TestFlow.flow.units == currency
 
     invert_flow = flow.invert()
 
@@ -129,7 +131,7 @@ class TestFlow:
         assert TestFlow.invert_flow.movements.index.array[2] == pd.Timestamp(2020, 3, 31)
         assert TestFlow.invert_flow.movements.array[2] == -4
         assert TestFlow.invert_flow.movements.name == "bar"
-        assert TestFlow.invert_flow.units == Units.Type.USD
+        assert TestFlow.invert_flow.units == currency
 
     resample_flow = invert_flow.resample(periodicity=Periodicity.Type.year)
 
@@ -160,7 +162,7 @@ class TestFlow:
                                         total=dist,
                                         index=Periodicity.to_datestamps(periods),
                                         dist=distribution.Uniform(),
-                                        units=Units.Type.AUD)
+                                        units=currency)
             sums.append(flow.collapse().movements[0])
 
         # estimate distribution parameters, in this case (a, b, loc, scale)
@@ -181,19 +183,21 @@ class TestFlow:
 class TestAggregation:
     flow1 = flux.Flow.from_total(name="yearly_flow",
                                  total=100.0,
-                                 index=Periodicity.to_datestamps(Periodicity.period_index(include_start=pd.Timestamp(2020, 1, 31),
-                                                                                          bound=pd.Timestamp(2022, 1, 1),
-                                                                                          periodicity=Periodicity.Type.year)),
+                                 index=Periodicity.to_datestamps(
+                                     Periodicity.period_index(include_start=pd.Timestamp(2020, 1, 31),
+                                                              bound=pd.Timestamp(2022, 1, 1),
+                                                              periodicity=Periodicity.Type.year)),
                                  dist=distribution.Uniform(),
-                                 units=Units.Type.USD)
+                                 units=currency)
 
     flow2 = flux.Flow.from_total(name="weekly_flow",
                                  total=-50.0,
-                                 index=Periodicity.to_datestamps(Periodicity.period_index(include_start=pd.Timestamp(2020, 3, 1),
-                                                                                          bound=pd.Timestamp(2021, 2, 28),
-                                                                                          periodicity=Periodicity.Type.week)),
+                                 index=Periodicity.to_datestamps(
+                                     Periodicity.period_index(include_start=pd.Timestamp(2020, 3, 1),
+                                                              bound=pd.Timestamp(2021, 2, 28),
+                                                              periodicity=Periodicity.Type.week)),
                                  dist=distribution.Uniform(),
-                                 units=Units.Type.USD)
+                                 units=currency)
 
     aggregation = flux.Aggregation(name="aggregation",
                                    aggregands=[flow1, flow2],
@@ -262,7 +266,6 @@ class TestSpace:
         assert child.children == [grandchild]
         assert grandchild.__str__() == 'Parent.Child.Grandchild'
         print(grandchild)
-
 
 # plt.show(block=True)
 # plt.interactive(True)
