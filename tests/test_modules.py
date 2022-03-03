@@ -9,6 +9,7 @@ import flux
 import phase
 from periodicity import Periodicity
 from units import Units
+import space
 
 # Pytests file.
 # Note: gathers tests according to a naming convention.
@@ -219,7 +220,6 @@ class TestAggregation:
         assert duplicate.aggregation.index.freq == 'M'
 
 
-
 class TestPhase:
     def test_correct_phase(self):
         test_phase = phase.Phase(name='test_phase',
@@ -244,6 +244,25 @@ class TestPhase:
 
         assert phases[1].start_date == pd.Timestamp(2020, 3, 1)
         assert phases[1].end_date == pd.Timestamp(2021, 2, 27)
+
+
+class TestSpace:
+    def test_type_hierarchy(self):
+        parent = space.Type(
+            name='Parent')
+        child = space.Type(
+            name='Child',
+            parent=parent)
+        grandchild = space.Type(
+            name='Grandchild')
+        grandchild.set_parent(child)
+        parent.set_children([child])
+
+        assert parent.children == [child]
+        assert child.children == [grandchild]
+        assert grandchild.__str__() == 'Parent.Child.Grandchild'
+        print(grandchild)
+
 
 # plt.show(block=True)
 # plt.interactive(True)
