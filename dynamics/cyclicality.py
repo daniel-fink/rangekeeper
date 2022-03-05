@@ -6,8 +6,7 @@ from numba import jit
 
 import distribution
 import flux
-from measurements import Measurement
-
+import measure
 
 class Enumerate:
     @staticmethod
@@ -98,7 +97,7 @@ class Cycle:
             num_periods=index.size)
         return flux.Flow(
             movements=pd.Series(data=data, index=index),
-            units=Measurement.Scalar(),
+            units=measure.scalar,
             name=name)
 
     def asymmetric_sine(
@@ -120,7 +119,7 @@ class Cycle:
             movements=pd.Series(
                 data=data,
                 index=index),
-            units=Measurement.Scalar(),
+            units=measure.scalar,
             name=name)
 
 

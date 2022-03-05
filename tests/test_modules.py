@@ -2,13 +2,15 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import pint
+from pint import definitions
 import scipy.stats as ss
 
 import distribution
 import flux
 import phase
 from periodicity import Periodicity
-from measurements import Measurement
+import measure
 import space
 
 # Pytests file.
@@ -21,7 +23,10 @@ matplotlib.use('TkAgg')
 plt.style.use('seaborn')  # pretty matplotlib plots
 plt.rcParams['figure.figsize'] = (12, 8)
 
-currency = Measurement.currency_from_country_code('USD')
+units = pint.UnitRegistry()
+currency = measure.add_currency(
+    country_code='USD',
+    unit_registry=units)
 
 
 class TestDistribution:
@@ -250,22 +255,68 @@ class TestPhase:
         assert phases[1].end_date == pd.Timestamp(2021, 2, 27)
 
 
-class TestSpace:
-    def test_type_hierarchy(self):
-        parent = space.Type(
-            name='Parent')
-        child = space.Type(
-            name='Child',
-            parent=parent)
-        grandchild = space.Type(
-            name='Grandchild')
-        grandchild.set_parent(child)
-        parent.set_children([child])
+class TestMeasures:
+    aud = measure.add_currency(
+        country_code='AUD',
+        unit_registry=units)
 
-        assert parent.children == [child]
-        assert child.children == [grandchild]
-        assert grandchild.__str__() == 'Parent.Child.Grandchild'
-        print(grandchild)
+    def test_currency(self):
+        assert TestMeasures.aud.name == 'Australian Dollar'
+        assert TestMeasures.aud.units == 'AUD'
+        assert TestMeasures.aud.units.dimensionality == '[currency]'
+
+    gfa = measure.Measure(
+        name='Gross Floor Area',
+        units=units.meter ** 2)
+
+    nsa = measure.Measure(
+        name='Net Sellable Area',
+        units=units.meter ** 2)
+
+    rent = measure.Measure(
+        name='Rent',
+        units=aud.units)
+
+    rent_per_nsa = measure.Measure(
+        name='Rent per m2 of NSA',
+        units=rent.units / nsa.units)
+
+    def test_custom_derivative(self):
+        assert TestMeasures.rent_per_nsa.units == 'AUD / meter ** 2'
+
+
+class TestSpace:
+    parent_type = space.Type(
+        name='ParentType')
+    child_type = space.Type(
+        name='ChildType',
+        parent=parent_type)
+    grandchild01_type = space.Type(
+        name='Grandchild01Type')
+    grandchild02_type = space.Type(
+        name='Grandchild02Type')
+    grandchild01_type.set_parent(child_type)
+    grandchild02_type.set_parent(child_type)
+    parent_type.set_children([child_type])
+
+    def test_type_hierarchy(self):
+        assert TestSpace.parent_type.children == [TestSpace.child_type]
+        assert TestSpace.child_type.children == [TestSpace.grandchild01_type,
+                                                 TestSpace.grandchild02_type]
+        assert TestSpace.grandchild01_type.__str__() == 'ParentType.ChildType.Grandchild01Type'
+        print(TestSpace.grandchild02_type)
+
+    def test_space_init(self):
+        parent_space = space.Space(
+            name='Parent',
+            type=TestSpace.parent_type,
+            measurements={TestMeasures.gfa: 12.3 * TestMeasures.gfa.units,
+                          TestMeasures.nsa: 4.56 * TestMeasures.nsa.units})
+
+        assert parent_space.measurements[TestMeasures.gfa].units.dimensionality == '[length] ** 2'
+
+        parent_space.measurements[TestMeasures.rent] = 9.81 * TestMeasures.rent_per_nsa.units * parent_space.measurements[TestMeasures.nsa]
+        assert parent_space.measurements[TestMeasures.rent].units == 'AUD'
 
 # plt.show(block=True)
 # plt.interactive(True)

@@ -5,8 +5,7 @@ from numba import jit
 import distribution
 import dynamics.trend
 import flux
-from measurements import Measurement
-
+import measure
 
 class Volatility:
     def __init__(
