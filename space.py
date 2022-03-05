@@ -1,8 +1,8 @@
 from __future__ import annotations
 from typing import Dict, List, Union
 from decimal import Decimal
-
-from measurements import Measurement
+from pint import Quantity
+from measure import Measure
 
 
 class Type:
@@ -52,13 +52,13 @@ class Space:
     name: str
     type: Type
     attributes: Dict
-    measurements: Dict[Measurement, Union[int, Decimal, float]]
+    measurements: Dict[Measure, Quantity]
 
     def __init__(
             self,
             name: str,
             type: Type,
-            measurements: Dict[Measurement, Union[int, Decimal, float]] = None,
+            measurements: Dict[Measure, Quantity] = None,
             attributes: Dict = None):
         self.name = name
         self.type = type
@@ -68,7 +68,7 @@ class Space:
 
 class Apartment(Space):
     num_bed: int
-    num_bathrooms: Decimal
+    num_bath: Decimal
     num_balcony: int
 
     def __init__(self,
@@ -77,7 +77,7 @@ class Apartment(Space):
                  num_bed: int,
                  num_bath: Decimal,
                  num_balcony: int,
-                 measurements: Dict[Measurement, Union[int, Decimal, float]] = None,
+                 measurements: Dict[Measure, Quantity] = None,
                  attributes: Dict = None):
         super().__init__(name, type, measurements, attributes)
         self.num_bed = num_bed

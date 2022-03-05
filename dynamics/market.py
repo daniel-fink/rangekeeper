@@ -4,7 +4,7 @@ from numba import jit
 
 import distribution
 import flux
-from measurements import Measurement
+import measure
 from dynamics import trend, volatility, cyclicality
 
 

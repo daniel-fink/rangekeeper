@@ -12,13 +12,14 @@ import pyxirr
 from distribution import Distribution, Uniform, PERT, Exponential
 from periodicity import Periodicity
 from phase import Phase
-from measurements import Measurement
+from measure import Measure
+import measure
 
 
 class Flow:
     name: str
     movements: pd.Series
-    units: Measurement
+    units: Measure
     """
     A `Flow` is a pd.Series of 'movements' of material (funds, energy, mass, etc) that occur at specified dates.
     Note: the flow.movements Series index is a pd.DatetimeIndex, and its values are floats.
@@ -27,7 +28,7 @@ class Flow:
     def __init__(
             self,
             movements: pd.Series,
-            units: Measurement = None,
+            units: Measure = None,
             name: str = None):
         """
         Initializes a Flow. If units are not provided, a scalar (dimensionless) unit is assumed.
@@ -51,7 +52,7 @@ class Flow:
             self.name = str(self.movements.name)
 
         if units is None:
-            self.units = Measurement.Scalar()
+            self.units = measure.scalar
         else:
             self.units = units
 
@@ -87,7 +88,7 @@ class Flow:
             cls,
             periods: pd.PeriodIndex,
             data: [float],
-            units: Measurement,
+            units: Measure,
             name: str = None) -> Flow:
         """
         Returns a Flow where movement dates are defined by the end-dates of the specified periods
@@ -108,7 +109,7 @@ class Flow:
     def from_dict(
             cls,
             movements: Dict[pd.Timestamp, float],
-            units: Measurement,
+            units: Measure,
             name: str = None) -> Flow:
         """
         Returns a Flow where movements are defined by key-value pairs of pd.Timestamps and amounts.
@@ -131,7 +132,7 @@ class Flow:
             total: Union[float, Distribution],
             index: pd.DatetimeIndex,
             dist: Distribution,
-            units: Measurement,
+            units: Measure,
             name: str = None) -> Flow:
         """
         Generate a Flow from a total amount, distributed over the period index
@@ -181,7 +182,7 @@ class Flow:
             initial: Union[float, Distribution],
             index: pd.PeriodIndex,
             dist: Distribution,
-            units: Measurement,
+            units: Measure,
             name: str = None) -> Flow:
         """
         Generate a Flow from an initial amount, distributed over the period index
@@ -384,7 +385,7 @@ class Aggregation:
             cls,
             name: str,
             data: pd.DataFrame,
-            units: Measurement) -> Aggregation:
+            units: Measure) -> Aggregation:
         aggregands = []
         for column in data.columns:
             series = data[column]

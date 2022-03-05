@@ -9,6 +9,7 @@ import math
 import matplotlib
 import matplotlib.pyplot as plt
 import pandas as pd
+import pint
 
 import distribution
 import flux
@@ -17,17 +18,22 @@ import models.flexible
 import models.linear
 import models.probabilistic
 from periodicity import Periodicity
-from measurements import Measurement
+import measure
 
 matplotlib.use('TkAgg')
 plt.style.use('seaborn')  # pretty matplotlib plots
 plt.rcParams['figure.figsize'] = (12, 8)
 
+units = pint.UnitRegistry()
+currency = measure.add_currency(
+    country_code='USD',
+    unit_registry=units)
+
 
 class TestLinear:
     def test_linear_model(self):
         base_params = {
-            'units': Measurement.currency_from_country_code('USD'),
+            'units': currency,
             'start_date': pd.Timestamp(2020, 1, 1),
             'num_periods': 10,
             'acquisition_price': 1000,
@@ -57,7 +63,7 @@ class TestLinear:
 class TestDeterministic:
     def test_deterministic_model(self):
         base_params = {
-            'units': Measurement.currency_from_country_code('USD'),
+            'units': currency,
             'start_date': pd.Timestamp(2020, 1, 1),
             'num_periods': 10,
             'period_type': Periodicity.Type.year,
@@ -106,7 +112,7 @@ class TestDeterministic:
 class TestProbabilistic:
     def test_probabilistic_model(self):
         base_params = {
-            'units': Measurement.currency_from_country_code('USD'),
+            'units': currency,
             'start_date': pd.Timestamp(2020, 1, 1),
             'num_periods': 10,
             'acquisition_price': 1000,
@@ -132,7 +138,7 @@ class TestProbabilistic:
 class TestFlexible:
     def test_flexible_model(self):
         base_params = {
-            'units': Measurement.currency_from_country_code('USD'),
+            'units': currency,
             'start_date': pd.Timestamp(2020, 1, 1),
             'num_periods': 24,
             'acquisition_price': 1000,
