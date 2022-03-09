@@ -1,9 +1,15 @@
 import pandas as pd
 
-import distribution
-from flux import Flow, Aggregation
-from periodicity import Periodicity
-from phase import Phase
+try:
+    import distribution
+    from flux import Flow, Aggregation
+    from periodicity import Periodicity
+    from phase import Phase
+except:
+    import modules.rangekeeper.distribution
+    from modules.rangekeeper.flux import Flow, Aggregation
+    from modules.rangekeeper.periodicity import Periodicity
+    from modules.rangekeeper.phase import Phase
 
 
 # Base Model:
