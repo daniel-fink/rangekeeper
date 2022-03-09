@@ -9,11 +9,16 @@ import numpy as np
 import pandas as pd
 import pyxirr
 
-from distribution import Distribution, Uniform, PERT, Exponential
-from periodicity import Periodicity
-from phase import Phase
-from units import Units
-
+try:
+    from distribution import Distribution, Uniform, PERT, Exponential
+    from periodicity import Periodicity
+    from phase import Phase
+    from units import Units
+except:
+    from modules.rangekeeper.distribution import Distribution, Uniform, PERT, Exponential
+    from modules.rangekeeper.periodicity import Periodicity
+    from modules.rangekeeper.phase import Phase
+    from modules.rangekeeper.units import Units
 
 class Flow:
     name: str

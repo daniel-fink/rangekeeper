@@ -10,14 +10,24 @@ import matplotlib
 import matplotlib.pyplot as plt
 import pandas as pd
 
-import distribution
-import flux
-import models.deterministic
-import models.flexible
-import models.linear
-import models.probabilistic
-from periodicity import Periodicity
-from units import Units
+try:
+    import distribution
+    import flux
+    import models.deterministic
+    import models.flexible
+    import models.linear
+    import models.probabilistic
+    from periodicity import Periodicity
+    from units import Units
+except:
+    import modules.rangekeeper.distribution
+    import modules.rangekeeper.flux
+    import modules.rangekeeper.models.deterministic
+    import modules.rangekeeper.models.flexible
+    import modules.rangekeeper.models.linear
+    import modules.rangekeeper.models.probabilistic
+    from modules.rangekeeper.periodicity import Periodicity
+    from modules.rangekeeper.units import Units
 
 matplotlib.use('TkAgg')
 plt.style.use('seaborn')  # pretty matplotlib plots
