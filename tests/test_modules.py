@@ -4,11 +4,18 @@ import numpy as np
 import pandas as pd
 import scipy.stats as ss
 
-import distribution
-import flux
-import phase
-from periodicity import Periodicity
-from units import Units
+try:
+    import distribution
+    import flux
+    import phase
+    from periodicity import Periodicity
+    from units import Units
+except:
+    import modules.rangekeeper.distribution
+    import modules.rangekeeper.flux
+    import modules.rangekeeper.phase
+    from modules.rangekeeper.periodicity import Periodicity
+    from modules.rangekeeper.units import Units
 
 # Pytests file.
 # Note: gathers tests according to a naming convention.
