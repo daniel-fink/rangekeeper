@@ -2,6 +2,8 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import pint
+from pint import definitions
 import scipy.stats as ss
 
 try:
@@ -17,6 +19,7 @@ except:
     from modules.rangekeeper.periodicity import Periodicity
     from modules.rangekeeper.units import Units
 
+
 # Pytests file.
 # Note: gathers tests according to a naming convention.
 # By default any file that is to contain tests must be named starting with 'test_',
@@ -26,6 +29,11 @@ except:
 matplotlib.use('TkAgg')
 plt.style.use('seaborn')  # pretty matplotlib plots
 plt.rcParams['figure.figsize'] = (12, 8)
+
+units = pint.UnitRegistry()
+currency = measure.add_currency(
+    country_code='USD',
+    unit_registry=units)
 
 
 class TestDistribution:
@@ -42,9 +50,9 @@ class TestDistribution:
 
     def test_exponential_distribution_total_and_initial_match(self):
         exp_dist = distribution.Exponential(rate=0.02, num_periods=12)
-        # exp_factors = exp_dist.factor(parameters=parameters)
-        exp_densities = exp_dist.density(parameters=TestDistribution.parameters)
-        exp_cumulative = exp_dist.cumulative_density(parameters=TestDistribution.parameters)
+        exp_factors = exp_dist.factor()
+        # exp_densities = exp_dist.density(parameters=TestDistribution.parameters)
+        # exp_cumulative = exp_dist.cumulative_density(parameters=TestDistribution.parameters)
 
         # plt.plot(parameters, exp_factors)
         # plt.plot(TestDistribution.parameters, exp_densities)
@@ -86,10 +94,10 @@ class TestFlow:
     values = [1, 2.3, 456]
 
     series = pd.Series(data=values, index=dates, name="foo", dtype=float)
-    flow_from_series = flux.Flow(movements=series, units=Units.Type.USD)
+    flow_from_series = flux.Flow(movements=series, units=currency)
 
     dict = {date1: values[0], date2: values[1], date3: values[2]}
-    flow_from_dict = flux.Flow.from_dict(movements=dict, name="foo", units=Units.Type.USD)
+    flow_from_dict = flux.Flow.from_dict(movements=dict, name="foo", units=currency)
 
     def test_flow_validity(self):
         # TestFlow.flow_from_series.display()
@@ -109,7 +117,7 @@ class TestFlow:
                                 total=100.0,
                                 index=Periodicity.to_datestamps(periods),
                                 dist=distribution.Uniform(),
-                                units=Units.Type.USD)
+                                units=currency)
 
     def test_flow_duplication(self):
         duplicate = TestFlow.flow.duplicate()
@@ -124,7 +132,7 @@ class TestFlow:
         assert TestFlow.flow.movements.index.array[1] == pd.Timestamp(2020, 2, 29)
         assert TestFlow.flow.movements.array[1] == 4
         assert TestFlow.flow.movements.name == "bar"
-        assert TestFlow.flow.units == Units.Type.USD
+        assert TestFlow.flow.units == currency
 
     invert_flow = flow.invert()
 
@@ -135,7 +143,7 @@ class TestFlow:
         assert TestFlow.invert_flow.movements.index.array[2] == pd.Timestamp(2020, 3, 31)
         assert TestFlow.invert_flow.movements.array[2] == -4
         assert TestFlow.invert_flow.movements.name == "bar"
-        assert TestFlow.invert_flow.units == Units.Type.USD
+        assert TestFlow.invert_flow.units == currency
 
     resample_flow = invert_flow.resample(periodicity=Periodicity.Type.year)
 
@@ -166,7 +174,7 @@ class TestFlow:
                                         total=dist,
                                         index=Periodicity.to_datestamps(periods),
                                         dist=distribution.Uniform(),
-                                        units=Units.Type.AUD)
+                                        units=currency)
             sums.append(flow.collapse().movements[0])
 
         # estimate distribution parameters, in this case (a, b, loc, scale)
@@ -187,19 +195,21 @@ class TestFlow:
 class TestAggregation:
     flow1 = flux.Flow.from_total(name="yearly_flow",
                                  total=100.0,
-                                 index=Periodicity.to_datestamps(Periodicity.period_index(include_start=pd.Timestamp(2020, 1, 31),
-                                                                                          bound=pd.Timestamp(2022, 1, 1),
-                                                                                          periodicity=Periodicity.Type.year)),
+                                 index=Periodicity.to_datestamps(
+                                     Periodicity.period_index(include_start=pd.Timestamp(2020, 1, 31),
+                                                              bound=pd.Timestamp(2022, 1, 1),
+                                                              periodicity=Periodicity.Type.year)),
                                  dist=distribution.Uniform(),
-                                 units=Units.Type.USD)
+                                 units=currency)
 
     flow2 = flux.Flow.from_total(name="weekly_flow",
                                  total=-50.0,
-                                 index=Periodicity.to_datestamps(Periodicity.period_index(include_start=pd.Timestamp(2020, 3, 1),
-                                                                                          bound=pd.Timestamp(2021, 2, 28),
-                                                                                          periodicity=Periodicity.Type.week)),
+                                 index=Periodicity.to_datestamps(
+                                     Periodicity.period_index(include_start=pd.Timestamp(2020, 3, 1),
+                                                              bound=pd.Timestamp(2021, 2, 28),
+                                                              periodicity=Periodicity.Type.week)),
                                  dist=distribution.Uniform(),
-                                 units=Units.Type.USD)
+                                 units=currency)
 
     aggregation = flux.Aggregation(name="aggregation",
                                    aggregands=[flow1, flow2],
@@ -226,7 +236,6 @@ class TestAggregation:
         assert duplicate.aggregation.index.freq == 'M'
 
 
-
 class TestPhase:
     def test_correct_phase(self):
         test_phase = phase.Phase(name='test_phase',
@@ -251,6 +260,70 @@ class TestPhase:
 
         assert phases[1].start_date == pd.Timestamp(2020, 3, 1)
         assert phases[1].end_date == pd.Timestamp(2021, 2, 27)
+
+
+class TestMeasures:
+    aud = measure.add_currency(
+        country_code='AUD',
+        unit_registry=units)
+
+    def test_currency(self):
+        assert TestMeasures.aud.name == 'Australian Dollar'
+        assert TestMeasures.aud.units == 'AUD'
+        assert TestMeasures.aud.units.dimensionality == '[currency]'
+
+    gfa = measure.Measure(
+        name='Gross Floor Area',
+        units=units.meter ** 2)
+
+    nsa = measure.Measure(
+        name='Net Sellable Area',
+        units=units.meter ** 2)
+
+    rent = measure.Measure(
+        name='Rent',
+        units=aud.units)
+
+    rent_per_nsa = measure.Measure(
+        name='Rent per m2 of NSA',
+        units=rent.units / nsa.units)
+
+    def test_custom_derivative(self):
+        assert TestMeasures.rent_per_nsa.units == 'AUD / meter ** 2'
+
+
+class TestSpace:
+    parent_type = space.Type(
+        name='ParentType')
+    child_type = space.Type(
+        name='ChildType',
+        parent=parent_type)
+    grandchild01_type = space.Type(
+        name='Grandchild01Type')
+    grandchild02_type = space.Type(
+        name='Grandchild02Type')
+    grandchild01_type.set_parent(child_type)
+    grandchild02_type.set_parent(child_type)
+    parent_type.set_children([child_type])
+
+    def test_type_hierarchy(self):
+        assert TestSpace.parent_type.children == [TestSpace.child_type]
+        assert TestSpace.child_type.children == [TestSpace.grandchild01_type,
+                                                 TestSpace.grandchild02_type]
+        assert TestSpace.grandchild01_type.__str__() == 'ParentType.ChildType.Grandchild01Type'
+        print(TestSpace.grandchild02_type)
+
+    def test_space_init(self):
+        parent_space = space.Space(
+            name='Parent',
+            type=TestSpace.parent_type,
+            measurements={TestMeasures.gfa: 12.3 * TestMeasures.gfa.units,
+                          TestMeasures.nsa: 4.56 * TestMeasures.nsa.units})
+
+        assert parent_space.measurements[TestMeasures.gfa].units.dimensionality == '[length] ** 2'
+
+        parent_space.measurements[TestMeasures.rent] = 9.81 * TestMeasures.rent_per_nsa.units * parent_space.measurements[TestMeasures.nsa]
+        assert parent_space.measurements[TestMeasures.rent].units == 'AUD'
 
 # plt.show(block=True)
 # plt.interactive(True)

@@ -20,10 +20,11 @@ except:
     from modules.rangekeeper.phase import Phase
     from modules.rangekeeper.units import Units
 
+
 class Flow:
     name: str
     movements: pd.Series
-    units: Units.Type
+    units: Measure
     """
     A `Flow` is a pd.Series of 'movements' of material (funds, energy, mass, etc) that occur at specified dates.
     Note: the flow.movements Series index is a pd.DatetimeIndex, and its values are floats.
@@ -32,8 +33,18 @@ class Flow:
     def __init__(
             self,
             movements: pd.Series,
-            units: Units.Type,
+            units: Measure = None,
             name: str = None):
+        """
+        Initializes a Flow. If units are not provided, a scalar (dimensionless) unit is assumed.
+
+        :param movements:
+        :type movements:
+        :param units:
+        :type units:
+        :param name:
+        :type name:
+        """
 
         if not isinstance(movements.index, pd.DatetimeIndex):
             raise Exception("Error: Flow's movements' Index is not a pd.DatetimeIndex")
@@ -44,7 +55,11 @@ class Flow:
             movements.name = name
         else:
             self.name = str(self.movements.name)
-        self.units = units
+
+        if units is None:
+            self.units = measure.scalar
+        else:
+            self.units = units
 
     def __str__(self):
         return self.display()
@@ -57,7 +72,7 @@ class Flow:
 
     def display(self):
         print('Name: ' + self.name)
-        print('Units: ' + self.units.__doc__)
+        print('Units: ' + self.units.name)
         print('Movements: ')
         print(self.movements.to_markdown())
 
@@ -78,7 +93,7 @@ class Flow:
             cls,
             periods: pd.PeriodIndex,
             data: [float],
-            units: Units.Type,
+            units: Measure,
             name: str = None) -> Flow:
         """
         Returns a Flow where movement dates are defined by the end-dates of the specified periods
@@ -99,7 +114,7 @@ class Flow:
     def from_dict(
             cls,
             movements: Dict[pd.Timestamp, float],
-            units: Units.Type,
+            units: Measure,
             name: str = None) -> Flow:
         """
         Returns a Flow where movements are defined by key-value pairs of pd.Timestamps and amounts.
@@ -122,7 +137,7 @@ class Flow:
             total: Union[float, Distribution],
             index: pd.DatetimeIndex,
             dist: Distribution,
-            units: Units.Type,
+            units: Measure,
             name: str = None) -> Flow:
         """
         Generate a Flow from a total amount, distributed over the period index
@@ -172,7 +187,7 @@ class Flow:
             initial: Union[float, Distribution],
             index: pd.PeriodIndex,
             dist: Distribution,
-            units: Units.Type,
+            units: Measure,
             name: str = None) -> Flow:
         """
         Generate a Flow from an initial amount, distributed over the period index
@@ -375,7 +390,7 @@ class Aggregation:
             cls,
             name: str,
             data: pd.DataFrame,
-            units: Units.Type) -> Aggregation:
+            units: Measure) -> Aggregation:
         aggregands = []
         for column in data.columns:
             series = data[column]
@@ -391,7 +406,7 @@ class Aggregation:
 
     def display(self):
         print('Name: ' + self.name)
-        print('Units: ' + self.units.__doc__)
+        print('Units: ' + self.units.name)
         print('Flows: ')
         print(self.aggregation.to_markdown())
 
@@ -504,7 +519,9 @@ class Aggregation:
         plt.minorticks_on()
         plt.tight_layout()
 
-    def extract(self, flow_name: str) -> Flow:
+    def extract(
+            self,
+            flow_name: str) -> Flow:
         """
         Extract a Aggregation's resampled aggregand as a Flow
         :param flow_name:
@@ -514,6 +531,7 @@ class Aggregation:
             movements=self.aggregation[flow_name],
             units=self.units,
             name=flow_name)
+
     def sum(
             self,
             name: str = None) -> Flow:
@@ -567,15 +585,17 @@ class Aggregation:
         _resampled_aggregands = [aggregand.to_periods(periodicity=self.periodicity) for aggregand in self._aggregands]
         self.aggregation = pd.concat(_resampled_aggregands, axis=1).fillna(0)
 
-    def resample(self,
-                 periodicity: Periodicity.Type) -> Aggregation:
+    def resample(
+            self,
+            periodicity: Periodicity.Type) -> Aggregation:
         return Aggregation(
             name=self.name,
             aggregands=self._aggregands,
             periodicity=periodicity)
 
-    def trim_to_phase(self,
-                      phase: Phase) -> Aggregation:
+    def trim_to_phase(
+            self,
+            phase: Phase) -> Aggregation:
         """
         Returns an Aggregation with all aggregands trimmed to the specified Phase
         :param phase:
@@ -587,10 +607,11 @@ class Aggregation:
             periodicity=self.periodicity)
 
     @classmethod
-    def merge(cls,
-              aggregations,
-              name: str,
-              periodicity: Periodicity.Type) -> Aggregation:
+    def merge(
+            cls,
+            aggregations,
+            name: str,
+            periodicity: Periodicity.Type) -> Aggregation:
         # Check Units:
         if any(aggregation.units != aggregations[0].units for aggregation in aggregations):
             raise Exception("Input Aggregations have dissimilar units. Cannot merge into Aggregation.")

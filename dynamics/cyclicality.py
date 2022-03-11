@@ -13,6 +13,7 @@ except:
     import modules.rangekeeper.flux
     import modules.rangekeeper.units
 
+
 class Enumerate:
     @staticmethod
     @jit(nopython=True)
@@ -95,13 +96,15 @@ class Cycle:
             self,
             index: pd.PeriodIndex,
             name: str = "sine_cycle"):
-        data = Enumerate.sine(period=self.period,
-                              phase=self.phase,
-                              amplitude=self.amplitude,
-                              num_periods=index.size)
-        return flux.Flow(movements=pd.Series(data=data, index=index),
-                         units=units.Units.Type.scalar,
-                         name=name)
+        data = Enumerate.sine(
+            period=self.period,
+            phase=self.phase,
+            amplitude=self.amplitude,
+            num_periods=index.size)
+        return flux.Flow(
+            movements=pd.Series(data=data, index=index),
+            units=measure.scalar,
+            name=name)
 
     def asymmetric_sine(
             self,
@@ -122,7 +125,7 @@ class Cycle:
             movements=pd.Series(
                 data=data,
                 index=index),
-            units=units.Units.Type.scalar,
+            units=measure.scalar,
             name=name)
 
 
