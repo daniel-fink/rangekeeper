@@ -3,13 +3,13 @@ try:
     import flux
     import periodicity
     import phase
-    import units
+    import measure
 except:
     import modules.rangekeeper.distribution
     import modules.rangekeeper.flux
     import modules.rangekeeper.periodicity
     import modules.rangekeeper.phase
-    import modules.rangekeeper.units
+    import modules.rangekeeper.measure
 
 
 class Trend:

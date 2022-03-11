@@ -10,14 +10,16 @@ try:
     import distribution
     import flux
     import phase
+    import measure
+    import space
     from periodicity import Periodicity
-    from units import Units
 except:
     import modules.rangekeeper.distribution
     import modules.rangekeeper.flux
     import modules.rangekeeper.phase
+    import modules.rangekeeper.measure
+    import modules.rangekeeper.space
     from modules.rangekeeper.periodicity import Periodicity
-    from modules.rangekeeper.units import Units
 
 
 # Pytests file.

@@ -13,12 +13,13 @@ try:
     from distribution import Distribution, Uniform, PERT, Exponential
     from periodicity import Periodicity
     from phase import Phase
-    from units import Units
+    from measure import Measure
+    import measure
 except:
     from modules.rangekeeper.distribution import Distribution, Uniform, PERT, Exponential
     from modules.rangekeeper.periodicity import Periodicity
     from modules.rangekeeper.phase import Phase
-    from modules.rangekeeper.units import Units
+    import modules.rangekeeper.measure
 
 
 class Flow:
