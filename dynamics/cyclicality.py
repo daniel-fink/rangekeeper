@@ -7,11 +7,11 @@ from numba import jit
 try:
     import distribution
     import flux
-    import units
+    import measure
 except:
     import modules.rangekeeper.distribution
     import modules.rangekeeper.flux
-    import modules.rangekeeper.units
+    import modules.rangekeeper.measure
 
 
 class Enumerate:

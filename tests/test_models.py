@@ -14,12 +14,12 @@ import pint
 try:
     import distribution
     import flux
+    import measure
     import models.deterministic
     import models.flexible
     import models.linear
     import models.probabilistic
     from periodicity import Periodicity
-    from units import Units
 except:
     import modules.rangekeeper.distribution
     import modules.rangekeeper.flux
@@ -27,8 +27,8 @@ except:
     import modules.rangekeeper.models.flexible
     import modules.rangekeeper.models.linear
     import modules.rangekeeper.models.probabilistic
+    import modules.rangekeeper.measure
     from modules.rangekeeper.periodicity import Periodicity
-    from modules.rangekeeper.units import Units
 
 
 matplotlib.use('TkAgg')
@@ -168,12 +168,12 @@ class TestFlexible:
 
         flex = models.flexible.Model(base_params)
         flex.pgi_factor.display()
-        flex.reversion.display()
+        flex.disposition.display()
         flex.pv_ncf_agg.display()
 
         flex.pv_sums.display()
 
-        print("Reversion Date: " + str(flex.reversion_date))
+        print("Reversion Date: " + str(flex.disposition_date))
         flex.investment_cashflows.display()
         flex.investment_cashflows.sum().display()
         print("IRR: " + str(flex.irr))
