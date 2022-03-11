@@ -5,7 +5,6 @@ from numba import jit
 try:
     import distribution
     import flux
-    import units
     from dynamics import trend, volatility, cyclicality
 except:
     import modules.rangekeeper.distribution
