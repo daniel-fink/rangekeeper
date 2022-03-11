@@ -14,12 +14,14 @@ except:
     from modules.rangekeeper.dynamics import trend, volatility, cyclicality
 
 
+
 class Market:
-    def __init__(self,
-                 params: dict,
-                 trend: trend.Trend,
-                 volatility: volatility.Volatility,
-                 cyclicality: cyclicality.Cyclicality):
+    def __init__(
+            self,
+            params: dict,
+            trend: trend.Trend,
+            volatility: volatility.Volatility,
+            cyclicality: cyclicality.Cyclicality):
         """
 
         :param params:
@@ -32,13 +34,11 @@ class Market:
 
         self.space_market = flux.Flow(
             movements=(cyclicality.space_waveform.movements * volatility.cumulative_volatility.movements),
-            units=units.Units.Type.scalar,
-            name='space_market')
+            name='Space Market')
 
         self.asset_market = flux.Flow(
             movements=params['cap_rate'] - cyclicality.asset_waveform.movements,
-            units=units.Units.Type.scalar,
-            name='asset_market')
+            name='Asset Market')
         """
         Negative of actual cap rate cycle. 
         This makes this cycle directly reflect the asset pricing, as prices 
@@ -58,7 +58,6 @@ class Market:
 
         self.asset_true_value = flux.Flow(
             movements=self.space_market.movements / self.asset_market.movements,
-            units=units.Units.Type.scalar,
             name='Asset True Value')
         """
         This applies the capital market cycle to the rent history to obtain 
@@ -69,7 +68,6 @@ class Market:
 
         self.space_market_price_factors = flux.Flow(
             movements=self.space_market.movements / trend.current_rent,
-            units=units.Units.Type.scalar,
             name='Space Market Price Factors')
         """
         This is the "true value" pricing factor for just the space market, 
@@ -88,7 +86,6 @@ class Market:
             movements=pd.Series(
                 data=self.noise_values,
                 index=trend.trend.movements.index),
-            units=units.Units.Type.scalar,
             name='Noise')
         """
         This is a symmetric PERT distribution. Note that a random realization
@@ -102,7 +99,6 @@ class Market:
 
         self.noisy_value = flux.Flow(
             movements=(1 + self.noise.movements) * self.asset_true_value.movements,
-            units=units.Units.Type.scalar,
             name='Noisy Value')
         """
         In this column the noise we generated in the previous column is
@@ -148,35 +144,35 @@ class Market:
             index=trend.trend.movements.index)
         self.black_swan_effect = flux.Flow(
             movements=black_swan_effect_data,
-            units=units.Units.Type.scalar,
             name='Black Swan Effect')
         """
-        This random variable will determine whether a "black swan" event
-        occurs in any given year. We ensure that no more than one black
-        swan will occur in the 24-yr history, as black swans are by definition
+        This random variable will determine whether a "black swan" event 
+        occurs in any given year. We ensure that no more than one black 
+        swan will occur in the 24-yr history, as black swans are by definition 
         rare events.
 
-        This column causes the effect of the Black Swan event to dissipate
-        over time, geometrically, at the same mean reversion rate as is
+        This column causes the effect of the Black Swan event to dissipate 
+        over time, geometrically, at the same mean reversion rate as is 
         applied in general to the rents (entered in co.F).
         """
 
         self.historical_value = flux.Flow(
             movements=self.noisy_value.movements * (1 + params['black_swan_impact'] * self.black_swan_effect.movements),
-            units=units.Units.Type.scalar,
             name='Historical Value')
         """
         This is another source or type of uncertainty in real estate pricing.
-        This column will apply the given "black swan" result, but then reduces
-        the subsequent impact of the event gradually as mean-reversion
+        This column will apply the given "black swan" result, but then reduces 
+        the subsequent impact of the event gradually as mean-reversion 
         takes effect.
         """
 
+        implied_cap_rate_data = self.space_market.movements[1:].reset_index(
+            drop=True) / self.historical_value.movements[:-1].reset_index(drop=True)
+        implied_cap_rate_data = implied_cap_rate_data.append(pd.Series(np.nan))
         self.implied_cap_rate = flux.Flow(
             movements=pd.Series(
-                data=self.space_market.movements[1:] / self.historical_value.movements[:-1],
-                index=trend.trend.movements.index[1:]),
-            units=units.Units.Type.scalar,
+                data=implied_cap_rate_data.values,
+                index=trend.trend.movements.index),
             name='Implied Cap Rate')
         """
         These are the forward-looking cap rates implied for each year of the 
@@ -184,4 +180,17 @@ class Market:
         DCF model of PV.
         """
 
+        returns_data = (self.historical_value.movements[1:].reset_index(drop=True) /
+                        self.historical_value.movements[:-1].reset_index(drop=True)) - 1
+        returns_data = returns_data.append(pd.Series(np.nan))
+        self.returns = flux.Flow(
+            movements=pd.Series(
+                data=returns_data.values,
+                index=trend.trend.movements.index),
+            name='Returns')
 
+        """
+        This is the implied capital returns series for the scenario. It reflects
+        the overall pricing dynamics and uncertainty in the property value over 
+        time.        
+        """
