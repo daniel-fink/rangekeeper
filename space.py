@@ -2,7 +2,11 @@ from __future__ import annotations
 from typing import Dict, List, Union
 from decimal import Decimal
 from pint import Quantity
-from measure import Measure
+
+try:
+    from measure import Measure
+except:
+    from modules.rangekeeper.measure import Measure
 
 
 class Type:

@@ -6,12 +6,10 @@ try:
     import distribution
     import dynamics.trend
     import flux
-    import units
 except:
     import modules.rangekeeper.distribution
     import modules.rangekeeper.dynamics.trend
     import modules.rangekeeper.flux
-    import modules.rangekeeper.units
 
 
 class Volatility:
