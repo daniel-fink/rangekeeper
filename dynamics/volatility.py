@@ -2,10 +2,17 @@ import pandas as pd
 import scipy as sp
 from numba import jit
 
-import distribution
-import dynamics.trend
-import flux
-import measure
+try:
+    import distribution
+    import dynamics.trend
+    import flux
+    import units
+except:
+    import modules.rangekeeper.distribution
+    import modules.rangekeeper.dynamics.trend
+    import modules.rangekeeper.flux
+    import modules.rangekeeper.units
+
 
 class Volatility:
     def __init__(

@@ -1,10 +1,15 @@
 import pandas as pd
 
-import distribution
-from flux import Flow, Aggregation
-from periodicity import Periodicity
-from phase import Phase
-
+try:
+    import distribution
+    from flux import Flow, Aggregation
+    from periodicity import Periodicity
+    from phase import Phase
+except:
+    import modules.rangekeeper.distribution
+    from modules.rangekeeper.flux import Flow, Aggregation
+    from modules.rangekeeper.periodicity import Periodicity
+    from modules.rangekeeper.phase import Phase
 
 # Base Model:
 class Model:
@@ -48,11 +53,7 @@ class Model:
             name='Potential Gross Income',
             initial=params['initial_pgi'],
             index=self.noi_calc_phase.to_index(periodicity=params['period_type']),
-            dist=distribution.Exponential(
-                rate=params['growth_rate'],
-                num_periods=self.noi_calc_phase.duration(
-                    period_type=params['period_type'],
-                    inclusive=True)),
+            dist=self.distribution,
             units=params['units'])
 
         self.addl_pgi = Flow(
@@ -107,11 +108,11 @@ class Model:
             aggregands=[self.noi.sum(), self.capex],
             periodicity=params['period_type'])
 
-        # Reversion:
+        # Disposition
         # We require each next period's NCF as the numerator:
         sale_values = list(self.ncf.sum().movements.iloc[1:] / params['cap_rate'])
-        self.reversion = Flow.from_periods(
-            name='Reversion',
+        self.disposition = Flow.from_periods(
+            name='Disposition',
             # We no longer need the noi_calc_phase:
             periods=self.operation_phase.to_index(periodicity=params['period_type']),
             data=sale_values,
@@ -123,18 +124,18 @@ class Model:
             discount_rate=params['discount_rate'])
 
         # Calculate the Present Value of Reversion CFs:
-        self.pv_reversion = self.reversion.pv(
+        self.pv_disposition = self.disposition.pv(
             periodicity=params['period_type'],
             discount_rate=params['discount_rate'])
 
-        # Add Cumulative Sum of Discounted Net Cashflows to each period's Discounted Reversion:
+        # Add Cumulative Sum of Discounted Net Cashflows to each period's Discounted Disposition
         pv_ncf_cumsum = Flow(
             movements=self.pv_ncf.movements.cumsum(),
             name='Discounted Net Cashflow Cumulative Sums',
             units=params['units'])
         self.pv_ncf_agg = Aggregation(
             name='Discounted Net Cashflow Sums',
-            aggregands=[pv_ncf_cumsum, self.pv_reversion],
+            aggregands=[pv_ncf_cumsum, self.pv_disposition],
             periodicity=params['period_type'])
 
         self.pv_sums = self.pv_ncf_agg.sum()

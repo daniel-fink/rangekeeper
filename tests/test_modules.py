@@ -6,12 +6,19 @@ import pint
 from pint import definitions
 import scipy.stats as ss
 
-import distribution
-import flux
-import phase
-from periodicity import Periodicity
-import measure
-import space
+try:
+    import distribution
+    import flux
+    import phase
+    from periodicity import Periodicity
+    from units import Units
+except:
+    import modules.rangekeeper.distribution
+    import modules.rangekeeper.flux
+    import modules.rangekeeper.phase
+    from modules.rangekeeper.periodicity import Periodicity
+    from modules.rangekeeper.units import Units
+
 
 # Pytests file.
 # Note: gathers tests according to a naming convention.

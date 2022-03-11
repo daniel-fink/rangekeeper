@@ -10,11 +10,18 @@ import matplotlib.pyplot as plt
 # run tests via a 'python -m pytest tests/<test_file>.py' command from the root directory of this project
 import pandas as pd
 
-import distribution
-import flux
-import periodicity
-import phase
-from dynamics import trend, volatility, cyclicality, market
+try:
+    import distribution
+    import flux
+    import periodicity
+    import phase
+    from dynamics import trend, volatility, cyclicality, market
+except:
+    import modules.rangekeeper.distribution
+    import modules.rangekeeper.flux
+    import modules.rangekeeper.periodicity
+    import modules.rangekeeper.phase
+    from modules.rangekeeper.dynamics import trend, volatility, cyclicality, market
 
 matplotlib.use('TkAgg')
 plt.style.use('seaborn')  # pretty matplotlib plots

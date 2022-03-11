@@ -1,9 +1,15 @@
 import pandas as pd
 
-import distribution
-from flux import Flow, Aggregation
-from periodicity import Periodicity
-from phase import Phase
+try:
+    import distribution
+    from flux import Flow, Aggregation
+    from periodicity import Periodicity
+    from phase import Phase
+except:
+    import modules.rangekeeper.distribution
+    from modules.rangekeeper.flux import Flow, Aggregation
+    from modules.rangekeeper.periodicity import Periodicity
+    from modules.rangekeeper.phase import Phase
 
 
 # Base Model:
@@ -24,8 +30,8 @@ class Model:
             period_type=Periodicity.Type.year,
             num_periods=params['num_periods'])
 
-        self.reversion_phase = Phase.from_num_periods(
-            name='Reversion',
+        self.disposition_phase = Phase.from_num_periods(
+            name='Disposition',
             start_date=Periodicity.date_offset(date=self.acquisition_phase.start_date,
                                                period_type=Periodicity.Type.year,
                                                num_periods=params['num_periods']),
@@ -56,11 +62,7 @@ class Model:
             name='Potential Gross Income',
             initial=params['initial_pgi'],
             index=self.noi_calc_phase.to_index(periodicity=params['period_type']),
-            dist=distribution.Exponential(
-                rate=params['growth_rate'],
-                num_periods=self.noi_calc_phase.duration(
-                    period_type=params['period_type'],
-                    inclusive=True)),
+            dist=self.distribution,
             units=params['units'])
 
         factors = params['space_market_dist'].sample(size=self.pgi.movements.size)
@@ -129,19 +131,19 @@ class Model:
             units=params['units'])
 
         # Flexibility Rules:
-        reversion_flags = []
+        disposition_flags = []
         for i in range(self.sale_values.movements.size):
             flag = False
             if i > 1:
-                if not any(reversion_flags):
+                if not any(disposition_flags):
                     if self.pgi_factor.movements[i] > 1.2:
-                        self.reversion_date = self.sale_values.movements.index[i]
+                        self.disposition_date = self.sale_values.movements.index[i]
                         flag = True
-            reversion_flags.append(flag)
+            disposition_flags.append(flag)
 
-        self.reversion = Flow(
-            name="Reversion",
-            movements=pd.Series(data=self.sale_values.movements * reversion_flags,
+        self.disposition = Flow(
+            name="Disposition",
+            movements=pd.Series(data=self.sale_values.movements * disposition_flags,
                                 index=self.sale_values.movements.index),
             units=params['units'])
 
@@ -150,19 +152,19 @@ class Model:
             periodicity=params['period_type'],
             discount_rate=params['discount_rate'])
 
-        # Calculate the Present Value of Reversion CFs:
-        self.pv_reversion = self.reversion.pv(
+        # Calculate the Present Value of Disposition CFs:
+        self.pv_disposition = self.disposition.pv(
             periodicity=params['period_type'],
             discount_rate=params['discount_rate'])
 
         self.pv_ncf_agg = Aggregation(
             name='Discounted Net Cashflow Sums',
-            aggregands=[self.pv_ncf, self.pv_reversion],
+            aggregands=[self.pv_ncf, self.pv_disposition],
             periodicity=params['period_type'])
 
         self.pv_sums = self.pv_ncf_agg.sum()
 
-        self.pv_sums.movements = self.pv_sums.movements[:self.reversion_date]
+        self.pv_sums.movements = self.pv_sums.movements[:self.disposition_date]
 
         self.acquisition = Flow.from_periods(
             periods=self.acquisition_phase.to_index(Periodicity.Type.year),
@@ -172,9 +174,9 @@ class Model:
 
         self.investment_cashflows = Aggregation(
             name='Investment Cashflows',
-            aggregands=[self.ncf.sum(), self.reversion, self.acquisition],
+            aggregands=[self.ncf.sum(), self.disposition, self.acquisition],
             periodicity=params['period_type'])
 
-        self.investment_cashflows.aggregation = self.investment_cashflows.aggregation[:self.reversion_date]
+        self.investment_cashflows.aggregation = self.investment_cashflows.aggregation[:self.disposition_date]
         self.irr = self.investment_cashflows.sum().xirr()
         self.npv = self.investment_cashflows.sum().xnpv(params['discount_rate'])

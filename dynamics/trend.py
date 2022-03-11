@@ -1,8 +1,16 @@
-import distribution
-import flux
-import periodicity
-import phase
-import measure
+try:
+    import distribution
+    import flux
+    import periodicity
+    import phase
+    import units
+except:
+    import modules.rangekeeper.distribution
+    import modules.rangekeeper.flux
+    import modules.rangekeeper.periodicity
+    import modules.rangekeeper.phase
+    import modules.rangekeeper.units
+
 
 class Trend:
     def __init__(self,
