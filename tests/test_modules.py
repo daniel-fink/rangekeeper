@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pint
-from pint import definitions
+import pynq
 import scipy.stats as ss
 
 try:
@@ -12,6 +12,7 @@ try:
     import phase
     import measure
     import space
+    import graph
     from periodicity import Periodicity
 except:
     import modules.rangekeeper.distribution
@@ -19,8 +20,8 @@ except:
     import modules.rangekeeper.phase
     import modules.rangekeeper.measure
     import modules.rangekeeper.space
+    import modules.rangekeeper.element
     from modules.rangekeeper.periodicity import Periodicity
-
 
 # Pytests file.
 # Note: gathers tests according to a naming convention.
@@ -295,14 +296,14 @@ class TestMeasures:
 
 
 class TestSpace:
-    parent_type = space.Type(
+    parent_type = graph.Type(
         name='ParentType')
-    child_type = space.Type(
+    child_type = graph.Type(
         name='ChildType',
         parent=parent_type)
-    grandchild01_type = space.Type(
+    grandchild01_type = graph.Type(
         name='Grandchild01Type')
-    grandchild02_type = space.Type(
+    grandchild02_type = graph.Type(
         name='Grandchild02Type')
     grandchild01_type.set_parent(child_type)
     grandchild02_type.set_parent(child_type)
@@ -319,13 +320,56 @@ class TestSpace:
         parent_space = space.Space(
             name='Parent',
             type=TestSpace.parent_type,
-            measurements={TestMeasures.gfa: 12.3 * TestMeasures.gfa.units,
-                          TestMeasures.nsa: 4.56 * TestMeasures.nsa.units})
+            measurements={
+                TestMeasures.gfa: 12.3 * TestMeasures.gfa.units,
+                TestMeasures.nsa: 4.56 * TestMeasures.nsa.units
+                })
 
         assert parent_space.measurements[TestMeasures.gfa].units.dimensionality == '[length] ** 2'
 
-        parent_space.measurements[TestMeasures.rent] = 9.81 * TestMeasures.rent_per_nsa.units * parent_space.measurements[TestMeasures.nsa]
+        parent_space.measurements[TestMeasures.rent] = 9.81 * TestMeasures.rent_per_nsa.units * \
+                                                       parent_space.measurements[TestMeasures.nsa]
         assert parent_space.measurements[TestMeasures.rent].units == 'AUD'
+
+
+class TestGraph:
+    element_type = graph.Type(
+        name='element_type')
+    relation_type = graph.Type(
+        name='relation_type')
+
+    element_root = graph.Element(
+        name='element_root',
+        type=element_type)
+    element_child = graph.Element(
+        name='element_child',
+        type=element_type)
+    element_grandchild01 = graph.Element(
+        name='element_grandchild01',
+        type=element_type)
+    element_grandchild02 = graph.Element(
+        name='element_grandchild02',
+        type=element_type)
+
+    assembly = graph.Assembly(
+        name='assembly',
+        type=element_type,
+        elements=[
+            element_root,
+            element_child,
+            element_grandchild01,
+            element_grandchild02],
+        relations=[
+            (element_root, element_child, relation_type),
+            (element_child, element_grandchild01, relation_type),
+            (element_child, element_grandchild02, relation_type)])
+
+    def test_assembly(self):
+        assert TestGraph.assembly.size() == 3
+        assert TestGraph.assembly.has_predecessor(TestGraph.element_child, TestGraph.element_root)
+
+        print(TestGraph.assembly.elements.data('element_root'))
+
 
 # plt.show(block=True)
 # plt.interactive(True)
