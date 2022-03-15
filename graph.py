@@ -3,7 +3,7 @@ from typing import List, Dict
 
 import networkx as nx
 from pint import Quantity
-import aenum
+import py_linq
 
 try:
     import measure
@@ -99,8 +99,8 @@ class Element:
 
 
 class Assembly(nx.DiGraph, Element):
-    elements: nx.reportviews.NodeView
-    relations: nx.reportviews.OutEdgeView
+    elements: Enumerable
+    relations: Enumerable
 
     def __init__(
             self,
@@ -131,10 +131,11 @@ class Assembly(nx.DiGraph, Element):
             self.measurements = measurements
         else:
             self.measurements = {}
+
         self.add_nodes_from(elements)
         for relation in relations:
             self.add_edge(relation[0], relation[1], type=relation[2])
 
-        self.elements = self.nodes
-        self.relations = self.edges
+        self.elements = py_linq.Enumerable(self.nodes)
+        self.relations = py_linq.Enumerable(self.edges)
 

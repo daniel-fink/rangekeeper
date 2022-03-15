@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pint
-import pynq
+import py_linq
+from py_linq import Enumerable
 import scipy.stats as ss
 
 try:
@@ -367,8 +368,7 @@ class TestGraph:
     def test_assembly(self):
         assert TestGraph.assembly.size() == 3
         assert TestGraph.assembly.has_predecessor(TestGraph.element_child, TestGraph.element_root)
-
-        print(TestGraph.assembly.elements.data('element_root'))
+        assert TestGraph.assembly.elements.first(lambda x: x.name == 'element_grandchild01').type.name == 'element_type'
 
 
 # plt.show(block=True)
