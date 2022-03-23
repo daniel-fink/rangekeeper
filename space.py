@@ -4,10 +4,10 @@ from decimal import Decimal
 from pint import Quantity
 
 try:
-    from graph import Element, Type
+    from graph import Element, Event
     from measure import Measure
 except:
-    from modules.rangekeeper.element import Element, Type
+    from modules.rangekeeper.element import Element, Event
     from modules.rangekeeper.measure import Measure
 
 
@@ -15,10 +15,16 @@ class Space(Element):
     def __init__(
             self,
             name: str,
-            type: Type,
+            type: str,
             measurements: Dict[Measure, Quantity] = None,
+            events: List[Event] = None,
             attributes: Dict = None):
-        super().__init__(name, type, attributes, measurements)
+        super().__init__(
+            name=name,
+            type=type,
+            measurements=measurements,
+            events=events,
+            attributes=attributes)
 
 
 class Apartment(Space):
@@ -29,7 +35,7 @@ class Apartment(Space):
     def __init__(
             self,
             name: str,
-            type: Type,
+            type: str,
             num_bed: int,
             num_bath: Decimal,
             num_balcony: int,
