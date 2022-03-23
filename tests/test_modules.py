@@ -3,8 +3,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pint
-import py_linq
-from py_linq import Enumerable
 import scipy.stats as ss
 
 try:
@@ -22,7 +20,7 @@ except:
     import modules.rangekeeper.measure
     import modules.rangekeeper.space
     import modules.rangekeeper.element
-    from modules.rangekeeper.periodicity import Periodicity
+    # from modules.rangekeeper.periodicity import Periodicity
 
 # Pytests file.
 # Note: gathers tests according to a naming convention.
@@ -297,34 +295,35 @@ class TestMeasures:
 
 
 class TestSpace:
-    parent_type = graph.Type(
-        name='ParentType')
-    child_type = graph.Type(
-        name='ChildType',
-        parent=parent_type)
-    grandchild01_type = graph.Type(
-        name='Grandchild01Type')
-    grandchild02_type = graph.Type(
-        name='Grandchild02Type')
-    grandchild01_type.set_parent(child_type)
-    grandchild02_type.set_parent(child_type)
-    parent_type.set_children([child_type])
-
-    def test_type_hierarchy(self):
-        assert TestSpace.parent_type.children == [TestSpace.child_type]
-        assert TestSpace.child_type.children == [TestSpace.grandchild01_type,
-                                                 TestSpace.grandchild02_type]
-        assert TestSpace.grandchild01_type.__str__() == 'ParentType.ChildType.Grandchild01Type'
-        print(TestSpace.grandchild02_type)
+    # parent_type = graph.Type(
+    #     name='ParentType')
+    # child_type = graph.Type(
+    #     name='ChildType',
+    #     parent=parent_type)
+    # grandchild01_type = graph.Type(
+    #     name='Grandchild01Type')
+    # grandchild02_type = graph.Type(
+    #     name='Grandchild02Type')
+    # grandchild01_type.set_parent(child_type)
+    # grandchild02_type.set_parent(child_type)
+    # parent_type.set_children([child_type])
+    #
+    # def test_type_hierarchy(self):
+    #     assert TestSpace.parent_type.children == [TestSpace.child_type]
+    #     assert TestSpace.child_type.children == [TestSpace.grandchild01_type,
+    #                                              TestSpace.grandchild02_type]
+    #     assert TestSpace.grandchild01_type.__str__() == 'ParentType.ChildType.Grandchild01Type'
+    #     print(TestSpace.grandchild02_type)
 
     def test_space_init(self):
+        measurements = {
+            TestMeasures.gfa: 12.3 * TestMeasures.gfa.units,
+            TestMeasures.nsa: 4.56 * TestMeasures.nsa.units
+            }
         parent_space = space.Space(
             name='Parent',
-            type=TestSpace.parent_type,
-            measurements={
-                TestMeasures.gfa: 12.3 * TestMeasures.gfa.units,
-                TestMeasures.nsa: 4.56 * TestMeasures.nsa.units
-                })
+            type='parent_type',
+            measurements=measurements)
 
         assert parent_space.measurements[TestMeasures.gfa].units.dimensionality == '[length] ** 2'
 
@@ -334,42 +333,55 @@ class TestSpace:
 
 
 class TestGraph:
-    element_type = graph.Type(
-        name='element_type')
-    relation_type = graph.Type(
-        name='relation_type')
+    def test_graph(self):
+        element_root = graph.Element(
+            name='root',
+            type='root_type')
+        element_child = graph.Element(
+            name='child',
+            type='child_type')
+        element_grandchild01 = graph.Element(
+            name='grandchild01',
+            type='grandchild_type')
+        element_grandchild02 = graph.Element(
+            name='grandchild02',
+            type='grandchild_type')
 
-    element_root = graph.Element(
-        name='element_root',
-        type=element_type)
-    element_child = graph.Element(
-        name='element_child',
-        type=element_type)
-    element_grandchild01 = graph.Element(
-        name='element_grandchild01',
-        type=element_type)
-    element_grandchild02 = graph.Element(
-        name='element_grandchild02',
-        type=element_type)
+        assembly = graph.Assembly(
+            name='assembly',
+            type='assembly_type',
+            elements=[
+                element_root,
+                element_child,
+                element_grandchild01,
+                element_grandchild02],
+            relationships=[
+                (element_root, element_child, 'is_parent_of'),
+                (element_child, element_grandchild01, 'is_parent_of'),
+                (element_child, element_grandchild02, 'is_parent_of')])
 
-    assembly = graph.Assembly(
-        name='assembly',
-        type=element_type,
-        elements=[
-            element_root,
-            element_child,
-            element_grandchild01,
-            element_grandchild02],
-        relations=[
-            (element_root, element_child, relation_type),
-            (element_child, element_grandchild01, relation_type),
-            (element_child, element_grandchild02, relation_type)])
+        assert assembly.size() == 3
+        assert assembly.has_predecessor(element_child, element_root)
 
-    def test_assembly(self):
-        assert TestGraph.assembly.size() == 3
-        assert TestGraph.assembly.has_predecessor(TestGraph.element_child, TestGraph.element_root)
-        assert TestGraph.assembly.elements.first(lambda x: x.name == 'element_grandchild01').type.name == 'element_type'
+        # Test Querying:
+        # Check retrieval of first Element in query:
+        assert assembly.elements.first(
+            lambda x: x.name == 'grandchild01').type == 'grandchild_type'
 
+        # Check count of query response:
+        assert assembly.elements.count(lambda element: element.type == 'grandchild_type') == 2
 
-# plt.show(block=True)
-# plt.interactive(True)
+        # Check retrieval of Element Relatives:
+        assert [element.name for element in element_root.get_relatives(
+            assembly=assembly,
+            relationship_type='is_parent_of')] == ['child']
+
+        # Check retrieval of Element Relatives in chained query:
+        assert [element.name for element in assembly.elements.where(
+            lambda element: element.type == 'grandchild_type').select(
+            lambda element: element.get_relatives(
+                assembly=assembly,
+                relationship_type='is_parent_of',
+                outgoing=False)
+            ).flatten().distinct(
+            lambda element: element.id)] == ['child']
