@@ -378,10 +378,10 @@ class TestGraph:
 
         # Check retrieval of Element Relatives in chained query:
         assert [element.name for element in assembly.elements.where(
-            lambda element: element.type == 'grandchild_type').select(
+            lambda element: element.type == 'grandchild_type').select_many(
             lambda element: element.get_relatives(
                 assembly=assembly,
                 relationship_type='is_parent_of',
                 outgoing=False)
-            ).flatten().distinct(
+            ).distinct(
             lambda element: element.id)] == ['child']
