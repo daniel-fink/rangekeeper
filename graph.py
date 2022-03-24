@@ -7,7 +7,7 @@ from typing import List, Dict
 
 import networkx as nx
 from pint import Quantity
-from linq import Query
+from py_linq import Enumerable
 
 try:
     import measure
@@ -115,7 +115,7 @@ class Element:
             outgoing: bool = True) -> List[Element]:
 
         if outgoing:
-            edges = Query(
+            edges = Enumerable(
                 assembly.edges(
                     nbunch=[self],
                     data='type')
@@ -124,7 +124,7 @@ class Element:
             return [edge[1] for edge in edges]
 
         else:
-            edges = Query(
+            edges = Enumerable(
                 assembly.in_edges(
                     nbunch=[self],
                     data='type')
@@ -134,8 +134,8 @@ class Element:
 
 
 class Assembly(nx.MultiDiGraph, Element):
-    elements: Query
-    relations: Query
+    elements: Enumerable
+    relations: Enumerable
 
     def __init__(
             self,
@@ -173,5 +173,5 @@ class Assembly(nx.MultiDiGraph, Element):
         for relationship in relationships:
             self.add_edge(relationship[0], relationship[1], type=relationship[2])
 
-        self.elements = Query(self.nodes)
-        self.relations = Query(self.edges)
+        self.elements = Enumerable(self.nodes)
+        self.relations = Enumerable(self.edges)
