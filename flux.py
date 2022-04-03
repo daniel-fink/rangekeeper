@@ -133,22 +133,22 @@ class Flow:
             name=name)
 
     @classmethod
-    def from_total(
+    def from_distributed_total(
             cls,
             total: Union[float, Distribution],
-            index: pd.DatetimeIndex,
+            index: pd.PeriodIndex,
             dist: Distribution,
             units: Measure,
             name: str = None) -> Flow:
         """
         Generate a Flow from a total amount, distributed over the period index
         according to a specified distribution curve.
-        Also accepts a Distribution as a total amount input;
-        which will be sampled in order to generate the Flow.
+        Also accepts a Distribution as a total input which will be sampled
+        in order to generate the Flow.
 
         :param name: The name of the Flow
         :param total: An amount (or Distribution to be sampled)
-        :param index: A pd.DateTimeIndex of dates
+        :param index: A pd.PeriodIndex of periods
         :param dist: A Distribution guiding how to distribute the amount over the index
         :param units: The Units of the Flow
         """
@@ -158,13 +158,17 @@ class Flow:
         elif isinstance(total, Distribution):
             total = total.sample()
 
+        date_index = Periodicity.to_datestamps(
+            period_index=index,
+            end=True),
+
         if isinstance(dist, Uniform):
             movements = [total / index.size for i in range(index.size)]
             return cls(
                 name=name,
                 movements=pd.Series(
                     data=movements,
-                    index=index,
+                    index=date_index,
                     name=name,
                     dtype=float),
                 units=units)
@@ -175,7 +179,7 @@ class Flow:
                 name=name,
                 movements=pd.Series(
                     data=movements,
-                    index=index,
+                    index=date_index,
                     name=name,
                     dtype=float),
                 units=units)
@@ -183,7 +187,7 @@ class Flow:
             raise NotImplementedError('Other types of distribution have not yet been implemented.')
 
     @classmethod
-    def from_initial(
+    def from_extrapolated_initial(
             cls,
             initial: Union[float, Distribution],
             index: pd.PeriodIndex,
@@ -191,7 +195,7 @@ class Flow:
             units: Measure,
             name: str = None) -> Flow:
         """
-        Generate a Flow from an initial amount, distributed over the period index
+        Generate a Flow from an initial amount, extrapolated over the period index
         according to the factor of the specified Distribution (where initial factor = 1).
         Also accepts a Distribution as an initial amount input;
         which will be sampled in order to generate the first amount.
