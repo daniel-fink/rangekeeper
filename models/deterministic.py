@@ -11,6 +11,7 @@ except:
     from modules.rangekeeper.periodicity import Periodicity
     from modules.rangekeeper.phase import Phase
 
+
 # Base Model:
 class Model:
     def __init__(self, params: dict):

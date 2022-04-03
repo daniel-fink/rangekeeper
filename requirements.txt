@@ -9,4 +9,4 @@ scipy
 networkx
 py-moneyed
 python-dateutil
-linq
+py-linq
