@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import pint
 import scipy.stats as ss
+from pytest import approx
 
 try:
     import distribution
@@ -13,6 +14,8 @@ try:
     import space
     import graph
     from periodicity import Periodicity
+    import segmentation
+    from segmentation import Characteristic
 except:
     import modules.rangekeeper.distribution
     import modules.rangekeeper.flux
@@ -20,7 +23,8 @@ except:
     import modules.rangekeeper.measure
     import modules.rangekeeper.space
     import modules.rangekeeper.element
-    # from modules.rangekeeper.periodicity import Periodicity
+    from modules.rangekeeper.periodicity import Periodicity
+    import modules.rangekeeper.segmentation
 
 # Pytests file.
 # Note: gathers tests according to a naming convention.
@@ -78,9 +82,10 @@ class TestPeriod:
         assert period.day == 29  # end date of Period
         assert period.month == 2
 
-        sequence = Periodicity.period_index(include_start=date,
-                                            bound=pd.Timestamp(2020, 12, 31),
-                                            periodicity=Periodicity.Type.quarter)
+        sequence = Periodicity.period_index(
+            include_start=date,
+            bound=pd.Timestamp(2020, 12, 31),
+            periodicity=Periodicity.Type.quarter)
         assert sequence.size == 4
 
         end_date = Periodicity.date_offset(date, Periodicity.Type.month, 4)
@@ -95,11 +100,18 @@ class TestFlow:
     dates = [date1, date2, date3]
     values = [1, 2.3, 456]
 
-    series = pd.Series(data=values, index=dates, name="foo", dtype=float)
+    series = pd.Series(
+        data=values,
+        index=dates,
+        name="foo",
+        dtype=float)
     flow_from_series = flux.Flow(movements=series, units=currency)
 
     dict = {date1: values[0], date2: values[1], date3: values[2]}
-    flow_from_dict = flux.Flow.from_dict(movements=dict, name="foo", units=currency)
+    flow_from_dict = flux.Flow.from_dict(
+        movements=dict,
+        name="foo",
+        units=currency)
 
     def test_flow_validity(self):
         # TestFlow.flow_from_series.display()
@@ -111,15 +123,17 @@ class TestFlow:
         assert TestFlow.flow_from_series.movements.equals(TestFlow.flow_from_dict.movements)
         assert isinstance(TestFlow.flow_from_series.movements.index, pd.DatetimeIndex)
 
-    periods = Periodicity.period_index(include_start=pd.Timestamp(2020, 1, 31),
-                                       periodicity=Periodicity.Type.month,
-                                       bound=pd.Timestamp(2022, 1, 1))
+    periods = Periodicity.period_index(
+        include_start=pd.Timestamp(2020, 1, 31),
+        periodicity=Periodicity.Type.month,
+        bound=pd.Timestamp(2022, 1, 1))
 
-    flow = flux.Flow.from_total(name="bar",
-                                total=100.0,
-                                index=Periodicity.to_datestamps(periods),
-                                dist=distribution.Uniform(),
-                                units=currency)
+    flow = flux.Flow.from_total(
+        name="bar",
+        total=100.0,
+        index=Periodicity.to_datestamps(periods),
+        dist=distribution.Uniform(),
+        units=currency)
 
     def test_flow_duplication(self):
         duplicate = TestFlow.flow.duplicate()
@@ -163,20 +177,22 @@ class TestFlow:
         # assert TestFlow.to_periods
 
     def test_distribution_as_input(self):
-        periods = Periodicity.period_index(include_start=pd.Timestamp(2020, 1, 31),
-                                           periodicity=Periodicity.Type.month,
-                                           bound=pd.Timestamp(2022, 1, 1))
+        periods = Periodicity.period_index(
+            include_start=pd.Timestamp(2020, 1, 31),
+            periodicity=Periodicity.Type.month,
+            bound=pd.Timestamp(2022, 1, 1))
 
         dist = distribution.PERT(peak=5, weighting=4, minimum=2, maximum=8)
         assert isinstance(dist, distribution.Distribution)
 
         sums = []
         for i in range(1000):
-            flow = flux.Flow.from_total(name='foo',
-                                        total=dist,
-                                        index=Periodicity.to_datestamps(periods),
-                                        dist=distribution.Uniform(),
-                                        units=currency)
+            flow = flux.Flow.from_total(
+                name='foo',
+                total=dist,
+                index=Periodicity.to_datestamps(periods),
+                dist=distribution.Uniform(),
+                units=currency)
             sums.append(flow.collapse().movements[0])
 
         # estimate distribution parameters, in this case (a, b, loc, scale)
@@ -195,27 +211,32 @@ class TestFlow:
 
 
 class TestAggregation:
-    flow1 = flux.Flow.from_total(name="yearly_flow",
-                                 total=100.0,
-                                 index=Periodicity.to_datestamps(
-                                     Periodicity.period_index(include_start=pd.Timestamp(2020, 1, 31),
-                                                              bound=pd.Timestamp(2022, 1, 1),
-                                                              periodicity=Periodicity.Type.year)),
-                                 dist=distribution.Uniform(),
-                                 units=currency)
+    flow1 = flux.Flow.from_total(
+        name="yearly_flow",
+        total=100.0,
+        index=Periodicity.to_datestamps(
+            Periodicity.period_index(
+                include_start=pd.Timestamp(2020, 1, 31),
+                bound=pd.Timestamp(2022, 1, 1),
+                periodicity=Periodicity.Type.year)),
+        dist=distribution.Uniform(),
+        units=currency)
 
-    flow2 = flux.Flow.from_total(name="weekly_flow",
-                                 total=-50.0,
-                                 index=Periodicity.to_datestamps(
-                                     Periodicity.period_index(include_start=pd.Timestamp(2020, 3, 1),
-                                                              bound=pd.Timestamp(2021, 2, 28),
-                                                              periodicity=Periodicity.Type.week)),
-                                 dist=distribution.Uniform(),
-                                 units=currency)
+    flow2 = flux.Flow.from_total(
+        name="weekly_flow",
+        total=-50.0,
+        index=Periodicity.to_datestamps(
+            Periodicity.period_index(
+                include_start=pd.Timestamp(2020, 3, 1),
+                bound=pd.Timestamp(2021, 2, 28),
+                periodicity=Periodicity.Type.week)),
+        dist=distribution.Uniform(),
+        units=currency)
 
-    aggregation = flux.Aggregation(name="aggregation",
-                                   aggregands=[flow1, flow2],
-                                   periodicity=Periodicity.Type.month)
+    aggregation = flux.Aggregation(
+        name="aggregation",
+        aggregands=[flow1, flow2],
+        periodicity=Periodicity.Type.month)
 
     aggregation.display()
 
@@ -240,9 +261,10 @@ class TestAggregation:
 
 class TestPhase:
     def test_correct_phase(self):
-        test_phase = phase.Phase(name='test_phase',
-                                 start_date=pd.Timestamp(2020, 3, 1),
-                                 end_date=pd.Timestamp(2021, 2, 28))
+        test_phase = phase.Phase(
+            name='test_phase',
+            start_date=pd.Timestamp(2020, 3, 1),
+            end_date=pd.Timestamp(2021, 2, 28))
         assert test_phase.start_date < test_phase.end_date
         assert test_phase.duration(Periodicity.Type.day) == 364
 
@@ -385,3 +407,41 @@ class TestGraph:
                 outgoing=False)
             ).distinct(
             lambda element: element.id)] == ['child']
+
+
+class TestSegmentation:
+    interval = segmentation.Interval(
+        upper=9.6,
+        lower=2.4)
+
+    def test_interval(self):
+        assert TestSegmentation.interval.midpoint() == approx(6.0)
+        assert TestSegmentation.interval.length() == approx(7.2)
+
+        child = TestSegmentation.interval.split(proportion=(1 / 3)).upper
+        assert child.upper == approx(9.6)
+        assert child.lower == approx(4.8)
+        assert child.length() == approx(4.8)
+        assert child.midpoint() == approx(7.2)
+
+        children = TestSegmentation.interval.subdivide(divisors=4)
+        assert children[0].lower == 2.4
+        assert children[3].upper == approx(9.6)
+        assert children[2].length() == approx(1.8)
+
+    def test_segment(self):
+        gross = segmentation.Segment(
+            bounds=segmentation.Interval(upper=100),
+            characteristics={Characteristic.use: 'mixed'})
+        residential, podium = gross.split(proportion=.65)
+
+        residential.characteristics[Characteristic.use] = 'residential'
+        podium.characteristics[Characteristic.use] = 'mixed'
+
+        assert residential.bounds.upper == approx(65)
+        assert podium.aggregate_ancestor_characteristics() == {
+            Characteristic.use: 'mixed'
+            }
+        assert residential.aggregate_ancestor_characteristics() == {
+            Characteristic.use: 'residential'
+            }
