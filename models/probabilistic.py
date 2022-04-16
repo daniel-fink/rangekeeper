@@ -1,7 +1,7 @@
 import pandas as pd
 
 try:
-    import distribution
+    import escalation
     from flux import Flow, Aggregation
     from periodicity import Periodicity
     from phase import Phase

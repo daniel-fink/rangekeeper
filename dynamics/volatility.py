@@ -3,7 +3,7 @@ import scipy as sp
 from numba import jit
 
 try:
-    import distribution
+    import escalation
     import dynamics.trend
     import flux
 except:

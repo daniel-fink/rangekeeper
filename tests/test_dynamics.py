@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 try:
-    import distribution
+    import escalation
     import flux
     import periodicity
     import phase

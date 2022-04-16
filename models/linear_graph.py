@@ -1,3 +1,7 @@
+from __future__ import annotations
+from typing import List
+
+
 try:
     import escalation
     from flux import Flow, Aggregation
@@ -10,10 +14,22 @@ except:
     from modules.rangekeeper.phase import Phase
 
 
+class Graph:
+    def __init__(
+            self,
+            params: dict):
+        if 'podium' in params:
+
+
+
+
+
 # Base Model:
 class Model:
-    def __init__(self,
-                 params: dict):
+    def __init__(
+            self,
+            params: dict):
+
         # Phasing:
         self.acquisition_phase = Phase.from_num_periods(
             name='Acquisition',
