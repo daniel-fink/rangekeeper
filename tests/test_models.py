@@ -13,13 +13,12 @@ import pint
 
 try:
     import escalation
+    import distribution
     import flux
     import measure
-    import models.deterministic
-    import models.flexible
-    import models.linear
-    import models.probabilistic
-    from periodicity import Periodicity
+    import periodicity
+    import models
+    from models import flexible, linear, probabilistic, deterministic
 except:
     import modules.rangekeeper.distribution
     import modules.rangekeeper.flux
@@ -48,7 +47,7 @@ class TestLinear:
             'start_date': pd.Timestamp(2020, 1, 1),
             'num_periods': 10,
             'acquisition_price': 1000,
-            'period_type': Periodicity.Type.year,
+            'period_type': periodicity.Type.year,
             'growth_rate': 0.02,
             'initial_pgi': 100.,
             'vacancy_rate': 0.05,
@@ -78,7 +77,7 @@ class TestDeterministic:
             'units': currency,
             'start_date': pd.Timestamp(2020, 1, 1),
             'num_periods': 10,
-            'period_type': Periodicity.Type.year,
+            'period_type': periodicity.Type.year,
             'growth_rate': 0.02,
             'initial_pgi': 100.,
             'addl_pgi_per_period': 0.,
@@ -128,7 +127,7 @@ class TestProbabilistic:
             'start_date': pd.Timestamp(2020, 1, 1),
             'num_periods': 10,
             'acquisition_price': 1000,
-            'period_type': Periodicity.Type.year,
+            'period_type': periodicity.Type.year,
             'growth_rate': 0.02,
             'initial_pgi': 100.,
             'space_market_dist': distribution.PERT(peak=1., weighting=4.0, minimum=0.75, maximum=1.25),
@@ -154,7 +153,7 @@ class TestFlexible:
             'start_date': pd.Timestamp(2020, 1, 1),
             'num_periods': 24,
             'acquisition_price': 1000,
-            'period_type': Periodicity.Type.year,
+            'period_type': periodicity.Type.year,
             'growth_rate': 0.02,
             'initial_pgi': 100.,
             'space_market_dist': distribution.PERT(peak=1., weighting=4.0, minimum=0.5, maximum=1.75),

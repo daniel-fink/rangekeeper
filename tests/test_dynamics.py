@@ -12,6 +12,7 @@ import pandas as pd
 
 try:
     import escalation
+    import distribution
     import flux
     import periodicity
     import phase
@@ -29,7 +30,7 @@ plt.rcParams['figure.figsize'] = (12, 8)
 
 
 class TestDynamics:
-    period_type = periodicity.Periodicity.Type.year
+    period_type = periodicity.Type.year
     phase = phase.Phase.from_num_periods(
         name="Phase",
         start_date=pd.Timestamp(2021, 1, 1),
@@ -125,7 +126,7 @@ class TestDynamics:
                     market_volatility.volatility,
                     market_volatility.autoregressive_returns,
                     market_volatility.cumulative_volatility],
-        periodicity=period_type)
+        period_type=period_type)
 
     def test_volatility(self):
         # # dynamics.volatility.display()
@@ -145,7 +146,7 @@ class TestDynamics:
             name='Plot',
             aggregands=[TestDynamics.market_volatility.cumulative_volatility,
                         TestDynamics.market_trend.trend],
-            periodicity=TestDynamics.period_type).plot()
+            period_type=TestDynamics.period_type).plot()
 
         # print(dynamics.volatility_frame.aggregation)
         TestDynamics.volatility_frame.display()
@@ -246,7 +247,7 @@ class TestDynamics:
         asymmetric_cycle_plot = flux.Aggregation(
             name='asymmetric_cycle_plot',
             aggregands=cycles,
-            periodicity=TestDynamics.period_type)
+            period_type=TestDynamics.period_type)
         asymmetric_cycle_plot.plot()
 
         print("\nSpace Cycle:")
@@ -259,7 +260,7 @@ class TestDynamics:
             name="Plot",
             aggregands=[TestDynamics.market_cyclicality.space_waveform,
                         TestDynamics.market_cyclicality.asset_waveform],
-            periodicity=TestDynamics.period_type).plot(
+            period_type=TestDynamics.period_type).plot(
             aggregands={
                 'space_waveform': (0., 1.4),
                 'asset_waveform': (-0.015, 0.015)
@@ -294,7 +295,7 @@ class TestDynamics:
                         TestDynamics.market_dynamics.asset_true_value,
                         TestDynamics.market_dynamics.noisy_value,
                         TestDynamics.market_dynamics.historical_value],
-            periodicity=TestDynamics.period_type)
+            period_type=TestDynamics.period_type)
         market.plot(
             aggregands={
                 'Trend': (0., .08),

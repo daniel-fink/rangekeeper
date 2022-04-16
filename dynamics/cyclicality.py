@@ -5,7 +5,7 @@ import pandas as pd
 from numba import jit
 
 try:
-    import escalation
+    import distribution
     import flux
     import measure
 except:
