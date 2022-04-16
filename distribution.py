@@ -5,15 +5,15 @@ import numpy as np
 import scipy.stats as ss
 
 
+class Type(aenum.Enum):
+    uniform = 'Uniform distribution', 'Continuous uniform distribution or rectangular distribution'
+    linear = 'Linear distribution', 'Linearly increasing or decreasing distribution between minimum and maximum values'
+    triangular = 'Triangular distribution', 'Continuous linear distribution with lower limit a, upper limit b and mode c, where a < b and a ≤ c ≤ b.'
+    normal = 'Normal distribution', 'Continuous probability distribution defined as the limiting case of a discrete binomial distribution.'
+    PERT = 'PERT distribution',
+
+
 class Distribution:
-    class Type(aenum.Enum):
-
-        uniform = 'Uniform distribution', 'Continuous uniform distribution or rectangular distribution'
-        linear = 'Linear distribution', 'Linearly increasing or decreasing distribution between minimum and maximum values'
-        triangular = 'Triangular distribution', 'Continuous linear distribution with lower limit a, upper limit b and mode c, where a < b and a ≤ c ≤ b.'
-        normal = 'Normal distribution', 'Continuous probability distribution defined as the limiting case of a discrete binomial distribution.'
-        PERT = 'PERT distribution',
-
     type: str
 
     def __init__(
@@ -40,7 +40,7 @@ class Distribution:
 class Symmetric(Distribution):
     def __init__(
             self,
-            distribution_type: Distribution.Type,
+            distribution_type: Type,
             mean: float,
             residual: float = 0.,
             generator: Optional[np.random.Generator] = None):
@@ -52,20 +52,19 @@ class Symmetric(Distribution):
 
         self.mean = mean
         self.residual = residual
-        print(distribution_type)
-        if distribution_type is Distribution.Type.uniform or distribution_type is Distribution.Type.PERT:
+        if distribution_type is Type.uniform or distribution_type is Type.PERT:
             self.distribution_type = distribution_type
         else:
             raise ValueError("Distribution type must be symmetrical about its mean")
         self.generator = generator
 
     def distribution(self):
-        if self.distribution_type == Distribution.Type.uniform:
+        if self.distribution_type == Type.uniform:
             return Uniform(
                 lower=self.mean - self.residual,
                 range=self.residual * 2,
                 generator=self.generator)
-        elif self.distribution_type == Distribution.Type.PERT:
+        elif self.distribution_type == Type.PERT:
             return PERT.standard_symmetric(
                 peak=self.mean,
                 residual=self.residual)

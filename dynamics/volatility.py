@@ -4,6 +4,7 @@ from numba import jit
 
 try:
     import escalation
+    import distribution
     import dynamics.trend
     import flux
 except:
