@@ -1,5 +1,5 @@
 try:
-    import distribution
+    import escalation
     import flux
     import periodicity
     import phase

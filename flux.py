@@ -10,16 +10,20 @@ import pandas as pd
 import pyxirr
 
 try:
-    from distribution import Distribution, Uniform, PERT, Exponential
-    from periodicity import Periodicity
+    import escalation
+    import distribution
+    import periodicity
     from phase import Phase
-    from measure import Measure
     import measure
+    from measure import Measure
+
 except:
-    from modules.rangekeeper.distribution import Distribution, Uniform, PERT, Exponential
-    from modules.rangekeeper.periodicity import Periodicity
+    import modules.rangekeeper.distribution
+    import modules.rangekeeper.escalation
+    import modules.rangekeeper.periodicity
     from modules.rangekeeper.phase import Phase
     import modules.rangekeeper.measure
+    from modules.rangekeeper.measure import Measure
 
 
 class Flow:
@@ -92,7 +96,7 @@ class Flow:
     @classmethod
     def from_periods(
             cls,
-            periods: pd.PeriodIndex,
+            index: pd.PeriodIndex,
             data: [float],
             units: Measure,
             name: str = None) -> Flow:
@@ -100,16 +104,18 @@ class Flow:
         Returns a Flow where movement dates are defined by the end-dates of the specified periods
         """
 
-        if periods.size != len(data):
+        if index.size != len(data):
             raise ValueError("Error: count of periods and data must match")
-        dates = [pd.Timestamp(period.to_timestamp(how='end').date()) for period in periods]
-        series = pd.Series(data=data,
-                           index=pd.Series(data=dates, name='dates'),
-                           name=name,
-                           dtype=float)
-        return cls(movements=series,
-                   units=units,
-                   name=name)
+        dates = [pd.Timestamp(period.to_timestamp(how='end').date()) for period in index]
+        series = pd.Series(
+            data=data,
+            index=pd.Series(data=dates, name='dates'),
+            name=name,
+            dtype=float)
+        return cls(
+            movements=series,
+            units=units,
+            name=name)
 
     @classmethod
     def from_dict(
@@ -135,9 +141,9 @@ class Flow:
     @classmethod
     def from_distributed_total(
             cls,
-            total: Union[float, Distribution],
+            total: Union[float, distribution.Distribution],
             index: pd.PeriodIndex,
-            dist: Distribution,
+            dist: distribution.Distribution,
             units: Measure,
             name: str = None) -> Flow:
         """
@@ -155,14 +161,14 @@ class Flow:
 
         if isinstance(total, float):
             total = total
-        elif isinstance(total, Distribution):
+        elif isinstance(total, distribution.Distribution):
             total = total.sample()
 
-        date_index = Periodicity.to_datestamps(
+        date_index = periodicity.to_datestamps(
             period_index=index,
-            end=True),
+            end=True)
 
-        if isinstance(dist, Uniform):
+        if isinstance(dist, distribution.Uniform):
             movements = [total / index.size for i in range(index.size)]
             return cls(
                 name=name,
@@ -172,7 +178,7 @@ class Flow:
                     name=name,
                     dtype=float),
                 units=units)
-        elif isinstance(dist, PERT):
+        elif isinstance(dist, distribution.PERT):
             parameters = np.linspace(0, 1, num=(index.size + 1))
             movements = [(total * density) for density in dist.interval_density(parameters)]
             return cls(
@@ -184,46 +190,46 @@ class Flow:
                     dtype=float),
                 units=units)
         else:
-            raise NotImplementedError('Other types of distribution have not yet been implemented.')
+            raise NotImplementedError('Other types of escalations have not yet been implemented.')
 
     @classmethod
     def from_extrapolated_initial(
             cls,
-            initial: Union[float, Distribution],
+            initial: Union[float, distribution.Distribution],
             index: pd.PeriodIndex,
-            dist: Distribution,
+            extrapolation: escalation.Extrapolation,
             units: Measure,
             name: str = None) -> Flow:
         """
         Generate a Flow from an initial amount, extrapolated over the period index
         according to the factor of the specified Distribution (where initial factor = 1).
-        Also accepts a Distribution as an initial amount input;
-        which will be sampled in order to generate the first amount.
+        Also accepts a Distribution as an initial amount input which will be
+        sampled in order to generate the first amount.
 
         :param name: The name of the Flow
         :param initial: An amount (or Distribution to be sampled)
         :param index: A pd.PeriodIndex of dates
-        :param dist: A Distribution guiding how to distribute the amount over the index
+        :param extrapolation: An Extrapolation guiding how to project the initial over the index
         :param units: The Units of the Flow
         """
 
         if isinstance(initial, float):
             initial = initial
-        elif isinstance(initial, Distribution):
+        elif isinstance(initial, distribution.Distribution):
             initial = initial.sample()
 
-        if isinstance(dist, Uniform):
-            movements = [initial for i in range(len(index))]
+        if isinstance(extrapolation, escalation.Linear):
+            movements = [initial * factor for factor in extrapolation.factor()]
             return cls.from_periods(
                 name=name,
-                periods=index,
+                index=index,
                 data=movements,
                 units=units)
-        elif isinstance(dist, Exponential):
-            movements = [initial * factor for factor in dist.factor()]
+        elif isinstance(extrapolation, escalation.Exponential):
+            movements = [initial * factor for factor in extrapolation.factor()]
             return cls.from_periods(
                 name=name,
-                periods=index,
+                index=index,
                 data=movements,
                 units=units)
 
@@ -248,13 +254,13 @@ class Flow:
 
     def pv(
             self,
-            periodicity: Periodicity.Type,
+            period_type: periodicity.Type,
             discount_rate: float,
             name: str = None) -> Flow:
         """
         Returns a Flow with values discounted to the present (i.e. before its first period) by a specified rate
         """
-        resampled = self.resample(periodicity)
+        resampled = self.resample(period_type)
         frame = resampled.movements.to_frame()
         frame.insert(0, 'index', range(resampled.movements.index.size))
         frame['Discounted Flow'] = frame.apply(
@@ -281,24 +287,24 @@ class Flow:
 
     def resample(
             self,
-            periodicity: Periodicity.Type) -> Flow:
+            period_type: periodicity.Type) -> Flow:
         """
         Returns a Flow with movements summed to specified frequency of dates
         """
         return self.__class__(
-            movements=self.movements.copy(deep=True).resample(rule=periodicity.value).sum(),
+            movements=self.movements.copy(deep=True).resample(rule=period_type.value).sum(),
             units=self.units,
             name=self.name)
 
     def to_periods(
             self,
-            periodicity: Periodicity.Type) -> pd.Series:
+            period_type: periodicity.Type) -> pd.Series:
         """
         Returns a pd.Series (of index pd.PeriodIndex) with movements summed to specified periodicity
         """
         return self \
-            .resample(periodicity=periodicity) \
-            .movements.to_period(freq=periodicity.value, copy=True) \
+            .resample(period_type=period_type) \
+            .movements.to_period(freq=period_type.value, copy=True) \
             .rename_axis('periods') \
             .groupby(level='periods') \
             .sum()
@@ -306,8 +312,9 @@ class Flow:
     def periodicity(self) -> str:
         return self.movements.index.freq
 
-    def trim_to_phase(self,
-                      phase: Phase) -> Flow:
+    def trim_to_phase(
+            self,
+            phase: Phase) -> Flow:
         """
         Returns a Flow with movements trimmed to the specified phase
         """
@@ -320,12 +327,12 @@ class Flow:
 
     def to_aggregation(
             self,
-            periodicity: Periodicity.Type,
+            period_type: periodicity.Type,
             name: str = None) -> Aggregation:
         """
         Returns an Aggregation with the flow as aggregand
         resampled at the specified periodicity
-        :param periodicity:
+        :param period_type:
         :param name:
         """
         return Aggregation(
@@ -337,7 +344,7 @@ class Flow:
 class Aggregation:
     name: str
     aggregands: [Flow]
-    periodicity: Periodicity.Type
+    period_type: periodicity.Type
     """
     A `Aggregation` collects aggregand (constituent) Flows
     and resamples them with a specified periodicity.
@@ -347,7 +354,7 @@ class Aggregation:
             self,
             name: str,
             aggregands: [Flow],
-            periodicity: Periodicity.Type):
+            period_type: periodicity.Type):
 
         # Name:
         self.name = name
@@ -363,7 +370,7 @@ class Aggregation:
         """The set of input Flows that are aggregated in this Aggregation"""
 
         # Periodicity Type:
-        self.periodicity = periodicity
+        self.period_type = period_type
 
         # Aggregation:
         aggregands_dates = list(
@@ -371,11 +378,11 @@ class Aggregation:
         self.start_date = min(aggregands_dates)
         self.end_date = max(aggregands_dates)
 
-        index = Periodicity.period_index(
+        index = periodicity.period_index(
             include_start=self.start_date,
-            periodicity=self.periodicity,
+            period_type=self.period_type,
             bound=self.end_date)
-        _resampled_aggregands = [aggregand.to_periods(periodicity=self.periodicity) for aggregand in self._aggregands]
+        _resampled_aggregands = [aggregand.to_periods(period_type=self.period_type) for aggregand in self._aggregands]
         self.aggregation = pd.concat(_resampled_aggregands, axis=1).fillna(0)
         """
         A pd.DataFrame of the Aggregation's aggregand Flows accumulated into the Aggregation's periodicity
@@ -388,7 +395,7 @@ class Aggregation:
         return self.__class__(
             name=self.name,
             aggregands=[aggregand.duplicate() for aggregand in self._aggregands],
-            periodicity=self.periodicity)
+            period_type=self.period_type)
 
     @classmethod
     def from_DataFrame(
@@ -407,7 +414,7 @@ class Aggregation:
         return cls(
             name=name,
             aggregands=aggregands,
-            periodicity=Periodicity.from_value(data.index.freqstr))
+            period_type=periodicity.from_value(data.index.freqstr))
 
     def display(self):
         print('Name: ' + self.name)
@@ -546,7 +553,7 @@ class Aggregation:
         """
         return Flow.from_periods(
             name=name if name is not None else self.name,
-            periods=self.aggregation.index,  # .to_period(),
+            index=self.aggregation.index,  # .to_period(),
             data=self.aggregation.sum(axis=1).to_list(),
             units=self.units)
 
@@ -559,7 +566,7 @@ class Aggregation:
         return self.__class__(
             name=self.name,
             aggregands=[aggregand.collapse() for aggregand in aggregands],
-            periodicity=self.periodicity)
+            period_type=self.period_type)
 
     def append(
             self,
@@ -584,19 +591,20 @@ class Aggregation:
         self.start_date = min(aggregands_dates)
         self.end_date = max(aggregands_dates)
 
-        index = Periodicity.period_index(include_start=self.start_date,
-                                         periodicity=self.periodicity,
-                                         bound=self.end_date)
-        _resampled_aggregands = [aggregand.to_periods(periodicity=self.periodicity) for aggregand in self._aggregands]
+        index = periodicity.period_index(
+            include_start=self.start_date,
+            period_type=self.period_type,
+            bound=self.end_date)
+        _resampled_aggregands = [aggregand.to_periods(period_type=self.period_type) for aggregand in self._aggregands]
         self.aggregation = pd.concat(_resampled_aggregands, axis=1).fillna(0)
 
     def resample(
             self,
-            periodicity: Periodicity.Type) -> Aggregation:
+            period_type: periodicity.Type) -> Aggregation:
         return Aggregation(
             name=self.name,
             aggregands=self._aggregands,
-            periodicity=periodicity)
+            period_type=period_type)
 
     def trim_to_phase(
             self,
@@ -609,14 +617,14 @@ class Aggregation:
         return self.__class__(
             name=self.name,
             aggregands=[aggregand.duplicate().trim_to_phase(phase) for aggregand in self._aggregands],
-            periodicity=self.periodicity)
+            period_type=self.period_type)
 
     @classmethod
     def merge(
             cls,
             aggregations,
             name: str,
-            periodicity: Periodicity.Type) -> Aggregation:
+            period_type: periodicity.Type) -> Aggregation:
         # Check Units:
         if any(aggregation.units != aggregations[0].units for aggregation in aggregations):
             raise Exception("Input Aggregations have dissimilar units. Cannot merge into Aggregation.")
@@ -627,4 +635,4 @@ class Aggregation:
         return cls(
             name=name,
             aggregands=aggregands,
-            periodicity=periodicity)
+            period_type=period_type)

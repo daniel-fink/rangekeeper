@@ -3,7 +3,7 @@ import pandas as pd
 from numba import jit
 
 try:
-    import distribution
+    import escalation
     import flux
     from dynamics import trend, volatility, cyclicality
 except:
