@@ -10,7 +10,7 @@ class Type(aenum.Enum):
     linear = 'Linear distribution', 'Linearly increasing or decreasing distribution between minimum and maximum values'
     triangular = 'Triangular distribution', 'Continuous linear distribution with lower limit a, upper limit b and mode c, where a < b and a ≤ c ≤ b.'
     normal = 'Normal distribution', 'Continuous probability distribution defined as the limiting case of a discrete binomial distribution.'
-    PERT = 'PERT distribution',
+    PERT = 'PERT distribution', 'Transformation of the four-parameter Beta distribution defined by the minimum, most likely, and maximum values.'
 
 
 class Distribution:
