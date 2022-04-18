@@ -12,7 +12,7 @@ import pandas as pd
 import pint
 
 try:
-    import escalation
+    import projection
     import distribution
     import flux
     import measure
@@ -27,8 +27,7 @@ except:
     import modules.rangekeeper.models.linear
     import modules.rangekeeper.models.probabilistic
     import modules.rangekeeper.measure
-    from modules.rangekeeper.periodicity import Periodicity
-
+    import modules.rangekeeper.periodicity
 
 matplotlib.use('TkAgg')
 plt.style.use('seaborn')  # pretty matplotlib plots
@@ -111,8 +110,9 @@ class TestDeterministic:
         assert math.isclose(a=pessimistic.pv_sums.movements[9], b=705.92, rel_tol=.01)
 
         # Calculate expected value of the property at any period:
-        exp = flux.Flow(movements=pessimistic.pv_sums.movements * .5 + optimistic.pv_sums.movements * .5,
-                        units=base_params['units'])
+        exp = flux.Flow(
+            movements=pessimistic.pv_sums.movements * .5 + optimistic.pv_sums.movements * .5,
+            units=base_params['units'])
         assert math.isclose(exp.movements[6], 1000.)
 
         # Calculate the expected value with flexibility:

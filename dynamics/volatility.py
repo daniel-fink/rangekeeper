@@ -3,7 +3,7 @@ import scipy as sp
 from numba import jit
 
 try:
-    import escalation
+    import projection
     import distribution
     import dynamics.trend
     import flux

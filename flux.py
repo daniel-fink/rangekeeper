@@ -10,7 +10,7 @@ import pandas as pd
 import pyxirr
 
 try:
-    import escalation
+    import projection
     import distribution
     import periodicity
     from phase import Phase
@@ -139,99 +139,148 @@ class Flow:
             name=name)
 
     @classmethod
-    def from_distributed_total(
+    def from_projection(
             cls,
-            total: Union[float, distribution.Distribution],
+            value: Union[float, distribution.Distribution],
+            proj: projection,
             index: pd.PeriodIndex,
-            dist: distribution.Distribution,
             units: Measure,
             name: str = None) -> Flow:
         """
-        Generate a Flow from a total amount, distributed over the period index
-        according to a specified distribution curve.
-        Also accepts a Distribution as a total input which will be sampled
-        in order to generate the Flow.
-
-        :param name: The name of the Flow
-        :param total: An amount (or Distribution to be sampled)
-        :param index: A pd.PeriodIndex of periods
-        :param dist: A Distribution guiding how to distribute the amount over the index
-        :param units: The Units of the Flow
+        Generate a Flow from a projection of a value.
+        Also accepts a Distribution as a total input which will be sampled in
+        order to generate the Flow.
+        :param value:
+        :type value:
+        :param proj:
+        :type proj:
+        :param index:
+        :type index:
+        :param units:
+        :type units:
+        :param name:
+        :type name:
+        :return:
+        :rtype:
         """
 
-        if isinstance(total, float):
-            total = total
-        elif isinstance(total, distribution.Distribution):
-            total = total.sample()
+        if isinstance(value, float):
+            value = value
+        elif isinstance(value, distribution.Distribution):
+            value = value.sample()
 
         date_index = periodicity.to_datestamps(
             period_index=index,
             end=True)
 
-        if isinstance(dist, distribution.Uniform):
-            movements = [total / index.size for i in range(index.size)]
-            return cls(
-                name=name,
-                movements=pd.Series(
-                    data=movements,
-                    index=date_index,
-                    name=name,
-                    dtype=float),
-                units=units)
-        elif isinstance(dist, distribution.PERT):
+        if isinstance(proj, projection.Extrapolation):
+            movements = [(value * factor) for factor in proj.factor(index.size)]
+        elif isinstance(proj, projection.Distribution):
             parameters = np.linspace(0, 1, num=(index.size + 1))
-            movements = [(total * density) for density in dist.interval_density(parameters)]
-            return cls(
-                name=name,
-                movements=pd.Series(
-                    data=movements,
-                    index=date_index,
-                    name=name,
-                    dtype=float),
-                units=units)
+            movements = [(value * density) for density in proj.interval_density(parameters)]
         else:
-            raise NotImplementedError('Other types of escalations have not yet been implemented.')
+            raise ValueError("Unsupported projection type")
 
-    @classmethod
-    def from_extrapolated_initial(
-            cls,
-            initial: Union[float, distribution.Distribution],
-            index: pd.PeriodIndex,
-            extrapolation: escalation.Extrapolation,
-            units: Measure,
-            name: str = None) -> Flow:
-        """
-        Generate a Flow from an initial amount, extrapolated over the period index
-        according to the factor of the specified Distribution (where initial factor = 1).
-        Also accepts a Distribution as an initial amount input which will be
-        sampled in order to generate the first amount.
+        return cls.from_periods(
+            name=name,
+            index=index,
+            data=movements,
+            units=units)
 
-        :param name: The name of the Flow
-        :param initial: An amount (or Distribution to be sampled)
-        :param index: A pd.PeriodIndex of dates
-        :param extrapolation: An Extrapolation guiding how to project the initial over the index
-        :param units: The Units of the Flow
-        """
-
-        if isinstance(initial, float):
-            initial = initial
-        elif isinstance(initial, distribution.Distribution):
-            initial = initial.sample()
-
-        if isinstance(extrapolation, escalation.Linear):
-            movements = [initial * factor for factor in extrapolation.factor()]
-            return cls.from_periods(
-                name=name,
-                index=index,
-                data=movements,
-                units=units)
-        elif isinstance(extrapolation, escalation.Exponential):
-            movements = [initial * factor for factor in extrapolation.factor()]
-            return cls.from_periods(
-                name=name,
-                index=index,
-                data=movements,
-                units=units)
+    # @classmethod
+    # def from_distributed_total(
+    #         cls,
+    #         total: Union[float, distribution.Distribution],
+    #         index: pd.PeriodIndex,
+    #         dist: distribution.Distribution,
+    #         units: Measure,
+    #         name: str = None) -> Flow:
+    #     """
+    #     Generate a Flow from a total amount, distributed over the period index
+    #     according to a specified distribution curve.
+    #     Also accepts a Distribution as a total input which will be sampled
+    #     in order to generate the Flow.
+    #
+    #     :param name: The name of the Flow
+    #     :param total: An amount (or Distribution to be sampled)
+    #     :param index: A pd.PeriodIndex of periods
+    #     :param dist: A Distribution guiding how to distribute the amount over the index
+    #     :param units: The Units of the Flow
+    #     """
+    #
+    #     if isinstance(total, float):
+    #         total = total
+    #     elif isinstance(total, distribution.Distribution):
+    #         total = total.sample()
+    #
+    #     date_index = periodicity.to_datestamps(
+    #         period_index=index,
+    #         end=True)
+    #
+    #     if isinstance(dist, distribution.Uniform):
+    #         movements = [total / index.size for i in range(index.size)]
+    #         return cls.(
+    #             name=name,
+    #             movements=pd.Series(
+    #                 data=movements,
+    #                 index=date_index,
+    #                 name=name,
+    #                 dtype=float),
+    #             units=units)
+    #     elif isinstance(dist, distribution.PERT):
+    #         parameters = np.linspace(0, 1, num=(index.size + 1))
+    #         movements = [(total * density) for density in dist.interval_density(parameters)]
+    #         return cls(
+    #             name=name,
+    #             movements=pd.Series(
+    #                 data=movements,
+    #                 index=date_index,
+    #                 name=name,
+    #                 dtype=float),
+    #             units=units)
+    #     else:
+    #         raise NotImplementedError('Other types of escalations have not yet been implemented.')
+    #
+    # @classmethod
+    # def from_extrapolated_initial(
+    #         cls,
+    #         initial: Union[float, distribution.Distribution],
+    #         index: pd.PeriodIndex,
+    #         extrapolation: projection.Extrapolation,
+    #         units: Measure,
+    #         name: str = None) -> Flow:
+    #     """
+    #     Generate a Flow from an initial amount, extrapolated over the period index
+    #     according to the factor of the specified Distribution (where initial factor = 1).
+    #     Also accepts a Distribution as an initial amount input which will be
+    #     sampled in order to generate the first amount.
+    #
+    #     :param name: The name of the Flow
+    #     :param initial: An amount (or Distribution to be sampled)
+    #     :param index: A pd.PeriodIndex of dates
+    #     :param extrapolation: An Extrapolation guiding how to project the initial over the index
+    #     :param units: The Units of the Flow
+    #     """
+    #
+    #     if isinstance(initial, float):
+    #         initial = initial
+    #     elif isinstance(initial, distribution.Distribution):
+    #         initial = initial.sample()
+    #
+    #     if isinstance(extrapolation, projection.Linear):
+    #         movements = [initial * factor for factor in extrapolation.factor()]
+    #         return cls.from_periods(
+    #             name=name,
+    #             index=index,
+    #             data=movements,
+    #             units=units)
+    #     elif isinstance(extrapolation, projection.Exponential):
+    #         movements = [initial * factor for factor in extrapolation.factor()]
+    #         return cls.from_periods(
+    #             name=name,
+    #             index=index,
+    #             data=movements,
+    #             units=units)
 
     def invert(self) -> Flow:
         """
