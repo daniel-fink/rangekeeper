@@ -3,6 +3,7 @@ from typing import Optional
 import aenum
 import numpy as np
 import scipy.stats as ss
+from abc import ABC, abstractmethod
 
 
 class Type(aenum.Enum):
@@ -35,6 +36,36 @@ class Distribution:
             return variates[0]
         else:
             return variates
+
+    @abstractmethod
+    def interval_density(
+            self,
+            parameters: [float]):
+        """
+        Returns the cumulative density (integral of the interpolated curve)
+        between n parameter pairs as intervals (i.e. returns n-1 results)
+
+        :param parameters: Any set of floats between 0 and 1
+        :return: List of floats representing the cumulative density of that interval.
+        If the input parameters span 0 to 1, the sum of the interval densities will reach 1.
+        """
+        if (all(parameters) >= 0) & (all(parameters) <= 1):
+            return [(self.dist.cdf(parameters[i + 1]) - self.dist.cdf(parameters[i]))
+                    for i in (range(0, len(parameters) - 1))]
+        else:
+            raise ValueError("Error: Parameter must be between 0 and 1 inclusive")
+
+    @abstractmethod
+    def cumulative_density(
+            self,
+            parameters: [float]):
+        """
+        Returns the cumulative distribution at parameters between 0 and 1.
+        """
+        if (all(parameters) >= 0) & (all(parameters) <= 1):
+            return [self.dist.cdf(parameter) for parameter in parameters]
+        else:
+            raise ValueError("Error: Parameter must be between 0 and 1 inclusive")
 
 
 class Symmetric(Distribution):
@@ -69,6 +100,16 @@ class Symmetric(Distribution):
                 peak=self.mean,
                 residual=self.residual)
 
+    def interval_density(
+            self,
+            parameters: [float]) -> [float]:
+        return self.distribution().interval_density(parameters)
+
+    def cumulative_density(
+            self,
+            parameters: [float]) -> [float]:
+        return self.distribution().cumulative_density(parameters)
+
 
 class Uniform(Distribution):
     """
@@ -88,32 +129,13 @@ class Uniform(Distribution):
 
     def interval_density(
             self,
-            parameters: [float]):
-        """
-        Returns the cumulative density (integral of the distribution curve, or effectively probability)
-        between n parameter pairs as intervals (i.e. returns n-1 results)
-
-        :param parameters: Any set of floats between 0 and 1
-        :return: List of floats representing the cumulative density of that interval.
-        If the input parameters span 0 to 1, the sum of the interval densities will reach 1.
-        """
-
-        if (all(parameters) >= 0) & (all(parameters) <= 1):
-            return [(self.dist.cdf(parameters[i + 1]) - self.dist.cdf(parameters[i]))
-                    for i in (range(0, len(parameters) - 1))]
-        else:
-            raise ValueError("Error: Parameter must be between 0 and 1 inclusive")
+            parameters: [float]) -> [float]:
+        return super().interval_density(parameters)
 
     def cumulative_density(
             self,
-            parameters: [float]):
-        """
-        Returns the cumulative distribution at parameters between 0 and 1.
-        """
-        if (all(parameters) >= 0) & (all(parameters) <= 1):
-            return [self.dist.cdf(parameter) for parameter in parameters]
-        else:
-            raise ValueError("Error: Parameter must be between 0 and 1 inclusive")
+            parameters: [float]) -> [float]:
+        return super().cumulative_density(parameters)
 
 
 class PERT(Distribution):
@@ -168,18 +190,10 @@ class PERT(Distribution):
 
     def interval_density(
             self,
-            parameters: [float]):
-        """
-        Returns the cumulative density (integral of the distribution curve, or effectively probability)
-        between n parameter pairs as intervals (i.e. returns n-1 results)
+            parameters: [float]) -> [float]:
+        return super().interval_density(parameters)
 
-        :param parameters: Any set of floats between 0 and 1
-        :return: List of floats representing the cumulative density of that interval.
-        If the input parameters span 0 to 1, the sum of the interval densities will reach 1.
-        """
-
-        if (all(parameters) >= 0) & (all(parameters) <= 1):
-            return [(self.dist.cdf(parameters[i + 1]) - self.dist.cdf(parameters[i]))
-                    for i in (range(0, len(parameters) - 1))]
-        else:
-            raise ValueError("Error: Parameter must be between 0 and 1 inclusive")
+    def cumulative_density(
+            self,
+            parameters: [float]) -> [float]:
+        return super().cumulative_density(parameters)

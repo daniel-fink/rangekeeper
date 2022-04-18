@@ -1,5 +1,5 @@
 try:
-    import escalation
+    import projection
     import distribution
     import flux
     import periodicity
@@ -54,17 +54,14 @@ class Trend:
         self.trend_rate = trend_dist.sample()
         # self.trend_rate = 0.00698263624
 
-        trend_esc = escalation.Exponential(
-            rate=self.trend_rate,
-            num_periods=phase.duration(
-                period_type=period_type,
-                inclusive=True))
+        trend_esc = projection.Exponential(
+            rate=self.trend_rate)
 
-        self.trend = flux.Flow.from_extrapolated_initial(
+        self.trend = flux.Flow.from_projection(
             name='Trend',
-            initial=self.initial_rent,
+            value=self.initial_rent,
             index=phase.to_index(period_type=period_type),
-            extrapolation=trend_esc,
+            proj=trend_esc,
             units=measure.scalar)
         """
         Trend:

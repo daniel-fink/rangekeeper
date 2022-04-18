@@ -1,5 +1,5 @@
 try:
-    import escalation
+    import projection
     import periodicity
     from flux import Flow, Aggregation
     from phase import Phase
@@ -12,8 +12,10 @@ except:
 
 # Base Model:
 class Model:
-    def __init__(self,
-                 params: dict):
+    def __init__(
+            self,
+            params: dict):
+
         # Phasing:
         self.acquisition_phase = Phase.from_num_periods(
             name='Acquisition',
@@ -53,19 +55,15 @@ class Model:
             phases=[self.operation_phase, self.projection_phase])
 
         # Factors:
-        self.escalation = escalation.Exponential(
-            rate=params['growth_rate'],
-            num_periods=self.noi_calc_phase.duration(
-                period_type=params['period_type'],
-                inclusive=True))
+        self.escalation = projection.Exponential(rate=params['growth_rate'])
 
         # Cashflows:
         # Potential Gross Income
-        self.pgi = Flow.from_extrapolated_initial(
+        self.pgi = Flow.from_projection(
             name='Potential Gross Income',
-            initial=params['initial_pgi'],
+            value=params['initial_pgi'],
             index=self.noi_calc_phase.to_index(period_type=params['period_type']),
-            extrapolation=self.escalation,
+            proj=self.escalation,
             units=params['units'])
 
         # Vacancy Allowance

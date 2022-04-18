@@ -3,11 +3,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pint
+import pytest
 import scipy.stats as ss
 from pytest import approx
 
 # try:
-import escalation
+import projection
 import distribution
 import flux
 import phase
@@ -57,8 +58,8 @@ class TestDistribution:
         assert sum(uniform_densities) == 1.0
 
     def test_exponential_distribution_total_and_initial_match(self):
-        exp_dist = escalation.Exponential(rate=0.02, num_periods=12)
-        exp_factors = exp_dist.factor()
+        exp_dist = projection.Exponential(rate=0.02)
+        exp_factors = exp_dist.factor(num_periods=12)
         # exp_densities = exp_dist.density(parameters=TestDistribution.parameters)
         # exp_cumulative = exp_dist.cumulative_density(parameters=TestDistribution.parameters)
 
@@ -138,11 +139,11 @@ class TestFlow:
         bound=pd.Timestamp(2022, 1, 1))
 
     print(periods.size)
-    flow = flux.Flow.from_distributed_total(
+    flow = flux.Flow.from_projection(
         name="bar",
-        total=100.0,
+        value=100.0,
         index=periods,
-        dist=distribution.Uniform(),
+        proj=projection.Distribution(distribution.Uniform()),
         units=currency)
 
     def test_flow_duplication(self):
@@ -167,7 +168,7 @@ class TestFlow:
         assert TestFlow.invert_flow.movements.size == 25
         assert TestFlow.invert_flow.movements.array.sum() == -100.0
         assert TestFlow.invert_flow.movements.index.array[2] == pd.Timestamp(2020, 3, 31)
-        assert TestFlow.invert_flow.movements.array[2] == -4
+        assert TestFlow.invert_flow.movements.array[2] == pytest.approx(-4)
         assert TestFlow.invert_flow.movements.name == "bar"
         assert TestFlow.invert_flow.units == currency
 
@@ -178,7 +179,7 @@ class TestFlow:
         assert TestFlow.resample_flow.movements.size == 3
         assert TestFlow.resample_flow.movements[0] == -48
         assert TestFlow.resample_flow.movements[1] == -48
-        assert TestFlow.resample_flow.movements[2] == -4
+        assert TestFlow.resample_flow.movements[2] == pytest.approx(-4)
 
     to_periods = flow.to_periods(period_type=periodicity.Type.year)
 
@@ -201,11 +202,11 @@ class TestFlow:
 
         sums = []
         for i in range(1000):
-            flow = flux.Flow.from_distributed_total(
+            flow = flux.Flow.from_projection(
                 name='foo',
-                total=dist,
+                value=dist,
                 index=periods,
-                dist=distribution.Uniform(),
+                proj=projection.Distribution(distribution.Uniform()),
                 units=currency)
             sums.append(flow.collapse().movements[0])
 
@@ -225,24 +226,24 @@ class TestFlow:
 
 
 class TestAggregation:
-    flow1 = flux.Flow.from_distributed_total(
+    flow1 = flux.Flow.from_projection(
         name="yearly_flow",
-        total=100.0,
+        value=100.0,
         index=periodicity.period_index(
                 include_start=pd.Timestamp(2020, 1, 31),
                 bound=pd.Timestamp(2022, 1, 1),
                 period_type=periodicity.Type.year),
-        dist=distribution.Uniform(),
+        proj=projection.Distribution(distribution.Uniform()),
         units=currency)
 
-    flow2 = flux.Flow.from_distributed_total(
+    flow2 = flux.Flow.from_projection(
         name="weekly_flow",
-        total=-50.0,
+        value=-50.0,
         index=periodicity.period_index(
                 include_start=pd.Timestamp(2020, 3, 1),
                 bound=pd.Timestamp(2021, 2, 28),
                 period_type=periodicity.Type.week),
-        dist=distribution.Uniform(),
+        proj=projection.Distribution(distribution.Uniform()),
         units=currency)
 
     aggregation = flux.Aggregation(
