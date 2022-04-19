@@ -58,7 +58,7 @@ class TestDistribution:
         assert sum(uniform_densities) == 1.0
 
     def test_exponential_distribution_total_and_initial_match(self):
-        exp_dist = projection.Exponential(rate=0.02)
+        exp_dist = projection.ExponentialExtrapolation(rate=0.02)
         exp_factors = exp_dist.factor(num_periods=12)
         # exp_densities = exp_dist.density(parameters=TestDistribution.parameters)
         # exp_cumulative = exp_dist.cumulative_density(parameters=TestDistribution.parameters)
@@ -143,7 +143,7 @@ class TestFlow:
         name="bar",
         value=100.0,
         index=periods,
-        proj=projection.Distribution(distribution.Uniform()),
+        proj=projection.DistributiveInterpolation(distribution.Uniform()),
         units=currency)
 
     def test_flow_duplication(self):
@@ -206,7 +206,7 @@ class TestFlow:
                 name='foo',
                 value=dist,
                 index=periods,
-                proj=projection.Distribution(distribution.Uniform()),
+                proj=projection.DistributiveInterpolation(distribution.Uniform()),
                 units=currency)
             sums.append(flow.collapse().movements[0])
 
@@ -233,7 +233,7 @@ class TestAggregation:
                 include_start=pd.Timestamp(2020, 1, 31),
                 bound=pd.Timestamp(2022, 1, 1),
                 period_type=periodicity.Type.year),
-        proj=projection.Distribution(distribution.Uniform()),
+        proj=projection.DistributiveInterpolation(distribution.Uniform()),
         units=currency)
 
     flow2 = flux.Flow.from_projection(
@@ -243,7 +243,7 @@ class TestAggregation:
                 include_start=pd.Timestamp(2020, 3, 1),
                 bound=pd.Timestamp(2021, 2, 28),
                 period_type=periodicity.Type.week),
-        proj=projection.Distribution(distribution.Uniform()),
+        proj=projection.DistributiveInterpolation(distribution.Uniform()),
         units=currency)
 
     aggregation = flux.Aggregation(

@@ -54,7 +54,7 @@ class Trend:
         self.trend_rate = trend_dist.sample()
         # self.trend_rate = 0.00698263624
 
-        trend_esc = projection.Exponential(
+        trend_esc = projection.ExponentialExtrapolation(
             rate=self.trend_rate)
 
         self.trend = flux.Flow.from_projection(
