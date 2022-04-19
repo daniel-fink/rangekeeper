@@ -58,7 +58,7 @@ class Model:
             phases=[self.operation_phase, self.projection_phase])
 
         # Cashflows:
-        self.escalation = projection.Exponential(rate=params['growth_rate'])
+        self.escalation = projection.ExponentialExtrapolation(rate=params['growth_rate'])
 
         # Potential Gross Income
         self.pgi = Flow.from_projection(

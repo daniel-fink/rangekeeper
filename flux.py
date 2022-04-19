@@ -175,7 +175,7 @@ class Flow:
 
         if isinstance(proj, projection.Extrapolation):
             movements = [(value * factor) for factor in proj.factor(index.size)]
-        elif isinstance(proj, projection.Distribution):
+        elif isinstance(proj, projection.Interpolation):
             parameters = np.linspace(0, 1, num=(index.size + 1))
             movements = [(value * density) for density in proj.interval_density(parameters)]
         else:
