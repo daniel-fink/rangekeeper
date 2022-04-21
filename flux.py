@@ -18,11 +18,11 @@ try:
     from measure import Measure
 
 except:
-    import modules.rangekeeper.distribution
-    import modules.rangekeeper.escalation
-    import modules.rangekeeper.periodicity
+    import modules.rangekeeper.distribution as distribution
+    import modules.rangekeeper.escalation as escalation
+    import modules.rangekeeper.periodicity as periodicity
     from modules.rangekeeper.phase import Phase
-    import modules.rangekeeper.measure
+    import modules.rangekeeper.measure as measure
     from modules.rangekeeper.measure import Measure
 
 

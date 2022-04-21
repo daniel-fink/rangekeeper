@@ -7,7 +7,7 @@ try:
     from graph import Element, Event
     from measure import Measure
 except:
-    from modules.rangekeeper.element import Element, Event
+    from modules.rangekeeper.graph import Element, Event
     from modules.rangekeeper.measure import Measure
 
 

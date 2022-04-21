@@ -6,7 +6,7 @@ import pandas as pd
 try:
     import periodicity
 except:
-    import modules.rangekeeper.periodicity
+    import modules.rangekeeper.periodicity as periodicity
 
 
 class Phase:
