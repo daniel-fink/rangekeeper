@@ -6,7 +6,10 @@ import numpy as np
 import scipy.stats as ss
 from abc import ABC, abstractmethod
 
-import distribution
+try:
+    import distribution
+except:
+    import modules.rangekeeper.distribution as distribution
 
 
 class Extrapolation(ABC):

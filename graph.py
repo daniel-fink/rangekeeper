@@ -12,7 +12,7 @@ from py_linq import Enumerable
 try:
     import measure
 except:
-    import modules.rangekeeper.measure
+    import modules.rangekeeper.measure as measure
 
 
 #
