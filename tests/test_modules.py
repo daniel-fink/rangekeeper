@@ -279,7 +279,7 @@ class TestPhase:
             start_date=pd.Timestamp(2020, 3, 1),
             end_date=pd.Timestamp(2021, 2, 28))
         assert test_phase.start_date < test_phase.end_date
-        assert test_phase.duration(periodicity.Type.day) == 364
+        assert test_phase.duration(period_type=periodicity.Type.day) == 364
 
     def test_correct_phases(self):
         dates = [pd.Timestamp(2020, 2, 29),

@@ -81,6 +81,7 @@ class Interpolation(ABC):
             parameters: [float]) -> [float]:
         pass
 
+
 class DistributiveInterpolation(Interpolation):
     dist: distribution.Distribution
 

@@ -10,9 +10,9 @@ except:
 
 
 class Phase:
-    name: str
     start_date: pd.Timestamp
     end_date: pd.Timestamp
+    name: str = None
     """
     A `Phase` is a pd.Interval of pd.Timestamps that bound its start and end dates
     """
@@ -24,7 +24,10 @@ class Phase:
             end_date: pd.Timestamp):
         if end_date < start_date:
             raise Exception('Error: end_date cannot be before start_date')
-        self.name = name
+        if name is None:
+            self.name = ''
+        else:
+            self.name = name
 
         self._interval = pd.Interval(left=start_date, right=end_date)
         self.start_date = self._interval.left
@@ -70,34 +73,41 @@ class Phase:
             period_type: periodicity.Type,
             inclusive: bool = False) -> int:
         """
-        Return the duration of the Phase in the specified period_type
-        :param period_type:
-        :type period_type:
-        :param inclusive:
-        :type inclusive:
-        :return:
-        :rtype:
+        Return the whole-period duration of the Phase in the specified period_type
         """
-        return periodicity.duration(start_date=self.start_date,
-                                    end_date=self.end_date,
-                                    period_type=period_type,
-                                    inclusive=inclusive)
+        return periodicity.duration(
+            start_date=self.start_date,
+            end_date=self.end_date,
+            period_type=period_type,
+            inclusive=inclusive)
 
     @classmethod
     def from_num_periods(
             cls,
             name: str,
-            start_date: pd.Timestamp,
+            date: pd.Timestamp,
             period_type: periodicity.Type,
             num_periods: int) -> Phase:
         """
-        Create a Phase from a start_date with a set number of periods of specified type.
+        Create a Phase from a date with a set number of periods of specified type.
+        If the number of periods is negative, the Phase will end on the date specified.
+        If the number of periods is positive, the Phase will start on the date specified.
         """
         if num_periods < 0:
-            raise Exception('Error: Number of periods must be greater than 0')
-        else:
-            end_date = periodicity.date_offset(
+            end_date = date
+            start_date = periodicity.date_offset(
+                date=date,
+                period_type=period_type,
+                num_periods=num_periods)
+            start_date = periodicity.date_offset(
                 date=start_date,
+                period_type=periodicity.Type.day,
+                num_periods=1)
+            return cls(name=name, start_date=start_date, end_date=end_date)
+        else:
+            start_date = date
+            end_date = periodicity.date_offset(
+                date=date,
                 period_type=period_type,
                 num_periods=num_periods)
             end_date = periodicity.date_offset(
