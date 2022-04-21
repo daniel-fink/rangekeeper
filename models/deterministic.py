@@ -24,13 +24,13 @@ class Model:
         # Phasing:
         self.acquisition_phase = Phase.from_num_periods(
             name='Acquisition',
-            start_date=params['start_date'],
+            date=params['start_date'],
             period_type=periodicity.Type.year,
             num_periods=1)
 
         self.operation_phase = Phase.from_num_periods(
             name='Operation',
-            start_date=periodicity.date_offset(
+            date=periodicity.date_offset(
                 date=self.acquisition_phase.end_date,
                 period_type=periodicity.Type.day,
                 num_periods=1),
@@ -39,7 +39,7 @@ class Model:
 
         self.projection_phase = Phase.from_num_periods(
             name='Projection',
-            start_date=periodicity.date_offset(
+            date=periodicity.date_offset(
                 date=self.operation_phase.end_date,
                 period_type=periodicity.Type.day,
                 num_periods=1),

@@ -33,7 +33,7 @@ class TestDynamics:
     period_type = periodicity.Type.year
     phase = phase.Phase.from_num_periods(
         name="Phase",
-        start_date=pd.Timestamp(2021, 1, 1),
+        date=pd.Timestamp(2021, 1, 1),
         period_type=period_type,
         num_periods=25)
     trend_params = {
