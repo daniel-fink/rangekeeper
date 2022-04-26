@@ -265,6 +265,21 @@ class TestAggregation:
         assert TestAggregation.aggregation.aggregation['weekly_flow'].sum() == -50
         assert TestAggregation.aggregation.aggregation.index.freq == 'M'
 
+        product = TestAggregation.aggregation.product(name="product")
+        datetime = pd.Timestamp(2020, 12, 31)
+        print(TestAggregation.aggregation.aggregation['yearly_flow'][datetime])
+        print(TestAggregation.aggregation.aggregation['weekly_flow'][datetime])
+        assert product.movements[pd.Timestamp(2020, 12, 31)] == approx(-125.786163522)
+
+        cumsum = TestAggregation.flow1.movements.cumsum()
+        print(cumsum)
+
+        cumsum_flow = flux.Flow(
+            name="cumsum_flow",
+            movements=TestAggregation.flow1.movements.cumsum(),
+            units=currency)
+        cumsum_flow.display()
+
     def test_aggregation_duplication(self):
         duplicate = TestAggregation.aggregation.duplicate()
         assert duplicate.name == "aggregation"

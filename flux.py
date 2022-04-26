@@ -606,6 +606,19 @@ class Aggregation:
             data=self.aggregation.sum(axis=1).to_list(),
             units=self.units)
 
+    def product(
+            self,
+            name: str = None) -> Flow:
+        """
+        Returns a Flow whose movements are the product of the Aggregation's aggregands by period
+        :return: Flow
+        """
+        return Flow.from_periods(
+            name=name if name is not None else self.name,
+            index=self.aggregation.index,  # .to_period(),
+            data=self.aggregation.prod(axis=1).to_list(),
+            units=self.units)
+
     def collapse(self) -> Aggregation:
         """
         Returns a Aggregation with Flows' movements collapsed (summed) to the Aggregation's final period
