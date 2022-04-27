@@ -13,7 +13,6 @@ except:
 
 
 class Extrapolation(ABC):
-
     @abstractmethod
     def factor(
             self,
@@ -40,12 +39,12 @@ class LinearExtrapolation(Extrapolation):
         """
         Returns the multiplicative factor of the distribution's initial value at each period
         """
-        return [(self.slope * period_index) for period_index in range(num_periods)]
+        return [(self.slope * period_index) + 1 for period_index in range(num_periods)]
 
 
 class UniformExtrapolation(LinearExtrapolation):
     def __init__(self):
-        super().__init__(slope=1)
+        super().__init__(slope=0)
 
 
 class ExponentialExtrapolation(Extrapolation):
@@ -73,7 +72,6 @@ class ExponentialExtrapolation(Extrapolation):
 
 
 class Interpolation(ABC):
-
     def interval_density(
             self,
             parameters: [float]) -> [float]:
