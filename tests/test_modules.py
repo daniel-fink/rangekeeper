@@ -133,6 +133,8 @@ class TestFlow:
         assert TestFlow.flow_from_series.movements.equals(TestFlow.flow_from_dict.movements)
         assert isinstance(TestFlow.flow_from_series.movements.index, pd.DatetimeIndex)
 
+        TestFlow.flow_from_series.display()
+
     periods = periodicity.period_index(
         include_start=pd.Timestamp(2020, 1, 31),
         period_type=periodicity.Type.month,
@@ -160,6 +162,12 @@ class TestFlow:
         assert TestFlow.flow.movements.array[1] == 4
         assert TestFlow.flow.movements.name == "bar"
         assert TestFlow.flow.units == currency
+
+        TestFlow.flow.display()
+        collapse = TestFlow.flow.collapse()
+        collapse.display()
+        assert collapse.movements.size == 1
+        assert collapse.movements.array[0] == 100.0
 
     invert_flow = flow.invert()
 
@@ -230,9 +238,9 @@ class TestAggregation:
         name="yearly_flow",
         value=100.0,
         index=periodicity.period_index(
-                include_start=pd.Timestamp(2020, 1, 31),
-                bound=pd.Timestamp(2022, 1, 1),
-                period_type=periodicity.Type.year),
+            include_start=pd.Timestamp(2020, 1, 31),
+            bound=pd.Timestamp(2022, 1, 1),
+            period_type=periodicity.Type.year),
         proj=projection.DistributiveInterpolation(distribution.Uniform()),
         units=currency)
 
@@ -240,9 +248,9 @@ class TestAggregation:
         name="weekly_flow",
         value=-50.0,
         index=periodicity.period_index(
-                include_start=pd.Timestamp(2020, 3, 1),
-                bound=pd.Timestamp(2021, 2, 28),
-                period_type=periodicity.Type.week),
+            include_start=pd.Timestamp(2020, 3, 1),
+            bound=pd.Timestamp(2021, 2, 28),
+            period_type=periodicity.Type.week),
         proj=projection.DistributiveInterpolation(distribution.Uniform()),
         units=currency)
 
@@ -269,7 +277,7 @@ class TestAggregation:
         datetime = pd.Timestamp(2020, 12, 31)
         print(TestAggregation.aggregation.aggregation['yearly_flow'][datetime])
         print(TestAggregation.aggregation.aggregation['weekly_flow'][datetime])
-        assert product.movements[pd.Timestamp(2020, 12, 31)] == approx(-125.786163522)
+        assert product.movements[datetime] == approx(-125.786163522)
 
         cumsum = TestAggregation.flow1.movements.cumsum()
         print(cumsum)
@@ -285,6 +293,14 @@ class TestAggregation:
         assert duplicate.name == "aggregation"
         assert len(duplicate._aggregands) == 2
         assert duplicate.aggregation.index.freq == 'M'
+
+    def test_aggregation_aggregation(self):
+        collapse = TestAggregation.aggregation.collapse()
+        assert collapse.aggregation['yearly_flow'][0] == 100.0
+
+        datetime = pd.Timestamp(2020, 12, 31)
+        sum = TestAggregation.aggregation.sum()
+        assert sum.movements[datetime] == approx(29.5597484277)
 
 
 class TestPhase:

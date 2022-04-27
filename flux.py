@@ -608,7 +608,7 @@ class Aggregation:
         """
         return Flow.from_periods(
             name=flow_name,
-            data=self.aggregation[flow_name],
+            data=list(self.aggregation[flow_name]),
             index=self.aggregation.index,
             units=self.units)
 
