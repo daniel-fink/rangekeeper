@@ -75,11 +75,20 @@ class Flow:
             units=self.units,
             name=self.name)
 
-    def display(self):
+    def display(
+            self,
+            decimals: int = 2):
+
+        print('\n')
         print('Name: ' + self.name)
         print('Units: ' + self.units.name)
         print('Movements: ')
-        print(self.movements.to_markdown())
+
+        floatfmt = "." + str(decimals) + "f"
+
+        print(self.movements.to_markdown(
+            tablefmt='github',
+            floatfmt=floatfmt))
 
     def plot(
             self,
@@ -465,11 +474,20 @@ class Aggregation:
             aggregands=aggregands,
             period_type=periodicity.from_value(data.index.freqstr))
 
-    def display(self):
+    def display(
+            self,
+            decimals: int = 2):
+
+        print('\n')
         print('Name: ' + self.name)
         print('Units: ' + self.units.name)
         print('Flows: ')
-        print(self.aggregation.to_markdown())
+
+        floatfmt = "." + str(decimals) + "f"
+
+        print(self.aggregation.to_markdown(
+            tablefmt='github',
+            floatfmt=floatfmt))
 
     def plot(
             self,
