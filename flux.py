@@ -602,14 +602,15 @@ class Aggregation:
             self,
             flow_name: str) -> Flow:
         """
-        Extract a Aggregation's resampled aggregand as a Flow
+        Extract an Aggregation's resampled aggregand as a Flow
         :param flow_name:
         :return:
         """
-        return Flow(
-            movements=self.aggregation[flow_name],
-            units=self.units,
-            name=flow_name)
+        return Flow.from_periods(
+            name=flow_name,
+            data=self.aggregation[flow_name],
+            index=self.aggregation.index,
+            units=self.units)
 
     def sum(
             self,
@@ -639,7 +640,7 @@ class Aggregation:
 
     def collapse(self) -> Aggregation:
         """
-        Returns a Aggregation with Flows' movements collapsed (summed) to the Aggregation's final period
+        Returns an Aggregation with Flows' movements collapsed (summed) to the Aggregation's final period
         :return: Aggregation
         """
         aggregands = [self.extract(flow_name=flow_name) for flow_name in list(self.aggregation.columns)]
