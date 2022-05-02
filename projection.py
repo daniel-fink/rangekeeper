@@ -21,10 +21,8 @@ class Extrapolation(ABC):
 
 class LinearExtrapolation(Extrapolation):
     """
-    A continuous linearly growing (or decaying) projection from an initial value.
-    To calculate the factor, the distribution is initialized with value 1.
-
-    Requires inputs of linear rate of change per period and number of periods.
+    A linearly growing (or decaying) projection from an initial value.
+    To calculate the factor, the projection is modelled as a linear function of (slope * period) + 1
     """
 
     def __init__(
@@ -37,7 +35,7 @@ class LinearExtrapolation(Extrapolation):
             self,
             num_periods: int) -> [float]:
         """
-        Returns the multiplicative factor of the distribution's initial value at each period
+        Returns the multiplicative factor of the projection at each period
         """
         return [(self.slope * period_index) + 1 for period_index in range(num_periods)]
 
@@ -49,11 +47,8 @@ class UniformExtrapolation(LinearExtrapolation):
 
 class ExponentialExtrapolation(Extrapolation):
     """
-    A continuous exponentially growing (or decaying) distribution between 0 and 1.
-    To calculate the density at any point, the distribution is scaled such that the cumulative distribution reaches 1.
-    To calculate the factor, the distribution is initialized with value 1.
-
-    Requires inputs of rate of change per period and number of periods.
+    An exponentially growing (compounding) or decaying projection at a specified rate per period.
+    To calculate the factor, the projection is modelled as an exponential function of (1 + rate) ** period
     """
 
     def __init__(
@@ -66,7 +61,7 @@ class ExponentialExtrapolation(Extrapolation):
             self,
             num_periods: int) -> [float]:
         """
-        Returns the multiplicative factor of the distribution's initial value at each period
+        Returns the multiplicative factor of the projection at each period
         """
         return [np.power((1 + self.rate), period_index) for period_index in range(num_periods)]
 
@@ -84,6 +79,10 @@ class Interpolation(ABC):
 
 
 class DistributiveInterpolation(Interpolation):
+    """
+    A projection that apportions values over a range, according to a specified
+    distribution type.
+    """
     dist: distribution.Distribution
 
     def __init__(
@@ -95,9 +94,20 @@ class DistributiveInterpolation(Interpolation):
     def interval_density(
             self,
             parameters: [float]) -> [float]:
+        """
+        Returns the cumulative density (integral of the interpolated curve)
+        between n parameter pairs as intervals (i.e. returns n-1 results)
+
+        :param parameters: Any set of floats between 0 and 1
+        :return: List of floats representing the cumulative density of that interval.
+        If the input parameters span 0 to 1, the sum of the interval densities will reach 1.
+        """
         return self.dist.interval_density(parameters)
 
     def cumulative_density(
             self,
             parameters: [float]) -> [float]:
+        """
+        Returns the cumulative distribution at any parameter between 0 and 1.
+        """
         return self.dist.cumulative_density(parameters)

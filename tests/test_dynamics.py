@@ -120,9 +120,9 @@ class TestDynamics:
         trend=market_trend,
         params=volatility_params)
 
-    volatility_frame = flux.Aggregation(
+    volatility_frame = flux.Confluence(
         name="Volatility",
-        aggregands=[market_trend.trend,
+        affluents=[market_trend.trend,
                     market_volatility.volatility,
                     market_volatility.autoregressive_returns,
                     market_volatility.cumulative_volatility],
@@ -142,13 +142,13 @@ class TestDynamics:
         print(TestDynamics.volatility_frame.start_date)
         print(TestDynamics.volatility_frame.end_date)
 
-        plot = flux.Aggregation(
+        plot = flux.Confluence(
             name='Plot',
-            aggregands=[TestDynamics.market_volatility.cumulative_volatility,
+            affluents=[TestDynamics.market_volatility.cumulative_volatility,
                         TestDynamics.market_trend.trend],
             period_type=TestDynamics.period_type).plot()
 
-        # print(dynamics.volatility_frame.aggregation)
+        # print(dynamics.volatility_frame.current)
         TestDynamics.volatility_frame.display()
 
     cyclicality_params = {
@@ -244,9 +244,9 @@ class TestDynamics:
                 name='parameter_' + str(param))
             cycles.append(asymmetric_cycle)
 
-        asymmetric_cycle_plot = flux.Aggregation(
+        asymmetric_cycle_plot = flux.Confluence(
             name='asymmetric_cycle_plot',
-            aggregands=cycles,
+            affluents=cycles,
             period_type=TestDynamics.period_type)
         asymmetric_cycle_plot.plot()
 
@@ -256,12 +256,12 @@ class TestDynamics:
         print("\nAsset Cycle:")
         print(TestDynamics.market_cyclicality.asset_cycle)
 
-        flux.Aggregation(
+        flux.Confluence(
             name="Plot",
-            aggregands=[TestDynamics.market_cyclicality.space_waveform,
+            affluents=[TestDynamics.market_cyclicality.space_waveform,
                         TestDynamics.market_cyclicality.asset_waveform],
             period_type=TestDynamics.period_type).plot(
-            aggregands={
+            affluents={
                 'space_waveform': (0., 1.4),
                 'asset_waveform': (-0.015, 0.015)
                 })
@@ -287,9 +287,9 @@ class TestDynamics:
         cyclicality=market_cyclicality)
 
     def test_market(self):
-        market = flux.Aggregation(
+        market = flux.Confluence(
             name="Market",
-            aggregands=[TestDynamics.market_trend.trend,
+            affluents=[TestDynamics.market_trend.trend,
                         TestDynamics.market_volatility.cumulative_volatility,
                         TestDynamics.market_dynamics.space_market,
                         TestDynamics.market_dynamics.asset_true_value,
@@ -297,7 +297,7 @@ class TestDynamics:
                         TestDynamics.market_dynamics.historical_value],
             period_type=TestDynamics.period_type)
         market.plot(
-            aggregands={
+            affluents={
                 'Trend': (0., .08),
                 'Cumulative Volatility': (0., .08),
                 'Space Market': (0., .08),

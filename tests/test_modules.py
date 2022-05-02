@@ -233,7 +233,7 @@ class TestFlow:
         plt.show(block=True)
 
 
-class TestAggregation:
+class TestConfluence:
     flow1 = flux.Flow.from_projection(
         name="yearly_flow",
         value=100.0,
@@ -254,52 +254,52 @@ class TestAggregation:
         proj=projection.DistributiveInterpolation(distribution.Uniform()),
         units=currency)
 
-    aggregation = flux.Aggregation(
-        name="aggregation",
-        aggregands=[flow1, flow2],
+    confluence = flux.Confluence(
+        name="confluence",
+        affluents=[flow1, flow2],
         period_type=periodicity.Type.month)
 
-    aggregation.display()
+    confluence.display()
 
-    def test_aggregation_validity(self):
-        assert TestAggregation.aggregation.name == "aggregation"
-        assert len(TestAggregation.aggregation._aggregands) == 2
-        assert TestAggregation.aggregation.start_date == pd.Timestamp(2020, 3, 1)
-        assert TestAggregation.aggregation.end_date == pd.Timestamp(2022, 12, 31)
+    def test_confluence_validity(self):
+        assert TestConfluence.confluence.name == "confluence"
+        assert len(TestConfluence.confluence._affluents) == 2
+        assert TestConfluence.confluence.start_date == pd.Timestamp(2020, 3, 1)
+        assert TestConfluence.confluence.end_date == pd.Timestamp(2022, 12, 31)
 
-        TestAggregation.aggregation.display()
+        TestConfluence.confluence.display()
 
-        assert TestAggregation.aggregation.sum().movements.index.size == 24 + 10  # Two full years plus March-Dec inclusive
-        assert TestAggregation.aggregation.aggregation['weekly_flow'].sum() == -50
-        assert TestAggregation.aggregation.aggregation.index.freq == 'M'
+        assert TestConfluence.confluence.sum().movements.index.size == 24 + 10  # Two full years plus March-Dec inclusive
+        assert TestConfluence.confluence.current['weekly_flow'].sum() == -50
+        assert TestConfluence.confluence.current.index.freq == 'M'
 
-        product = TestAggregation.aggregation.product(name="product")
+        product = TestConfluence.confluence.product(name="product")
         datetime = pd.Timestamp(2020, 12, 31)
-        print(TestAggregation.aggregation.aggregation['yearly_flow'][datetime])
-        print(TestAggregation.aggregation.aggregation['weekly_flow'][datetime])
+        print(TestConfluence.confluence.current['yearly_flow'][datetime])
+        print(TestConfluence.confluence.current['weekly_flow'][datetime])
         assert product.movements[datetime] == approx(-125.786163522)
 
-        cumsum = TestAggregation.flow1.movements.cumsum()
+        cumsum = TestConfluence.flow1.movements.cumsum()
         print(cumsum)
 
         cumsum_flow = flux.Flow(
             name="cumsum_flow",
-            movements=TestAggregation.flow1.movements.cumsum(),
+            movements=TestConfluence.flow1.movements.cumsum(),
             units=currency)
         cumsum_flow.display()
 
-    def test_aggregation_duplication(self):
-        duplicate = TestAggregation.aggregation.duplicate()
-        assert duplicate.name == "aggregation"
-        assert len(duplicate._aggregands) == 2
-        assert duplicate.aggregation.index.freq == 'M'
+    def test_confluence_duplication(self):
+        duplicate = TestConfluence.confluence.duplicate()
+        assert duplicate.name == "confluence"
+        assert len(duplicate._affluents) == 2
+        assert duplicate.current.index.freq == 'M'
 
-    def test_aggregation_aggregation(self):
-        collapse = TestAggregation.aggregation.collapse()
-        assert collapse.aggregation['yearly_flow'][0] == 100.0
+    def test_confluence_confluence(self):
+        collapse = TestConfluence.confluence.collapse()
+        assert collapse.current['yearly_flow'][0] == 100.0
 
         datetime = pd.Timestamp(2020, 12, 31)
-        sum = TestAggregation.aggregation.sum()
+        sum = TestConfluence.confluence.sum()
         assert sum.movements[datetime] == approx(29.5597484277)
 
 

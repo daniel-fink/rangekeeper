@@ -367,7 +367,7 @@ class Flow:
             .groupby(level='periods') \
             .sum()
 
-    def periodicity(self) -> str:
+    def get_frequency(self) -> str:
         return self.movements.index.freq
 
     def trim_to_phase(
@@ -383,76 +383,80 @@ class Flow:
             units=self.units,
             name=self.name)
 
-    def to_aggregation(
+    def to_confluence(
             self,
             period_type: periodicity.Type,
-            name: str = None) -> Aggregation:
+            name: str = None) -> Confluence:
         """
-        Returns an Aggregation with the flow as aggregand
+        Returns a Confluence with the flow as affluent
         resampled at the specified periodicity
         :param period_type:
         :param name:
         """
-        return Aggregation(
+        return Confluence(
             name=name if name is not None else self.name,
-            aggregands=[self],
-            periodicity=periodicity)
+            affluents=[self],
+            period_type=period_type)
 
 
-class Aggregation:
+class Confluence:
     name: str
-    aggregands: [Flow]
+    _affluents: [Flow]
     period_type: periodicity.Type
+    start_date: pd.Timestamp
+    end_date: pd.Timestamp
+    current: pd.DataFrame
+
     """
-    A `Aggregation` collects aggregand (constituent) Flows
+    A `Confluence` collects affluent (constituent) Flows
     and resamples them with a specified periodicity.
     """
 
     def __init__(
             self,
             name: str,
-            aggregands: [Flow],
+            affluents: [Flow],
             period_type: periodicity.Type):
 
         # Name:
         self.name = name
 
         # Units:
-        if all(flow.units == aggregands[0].units for flow in aggregands):
-            self.units = aggregands[0].units
+        if all(flow.units == affluents[0].units for flow in affluents):
+            self.units = affluents[0].units
         else:
-            raise Exception("Input Flows have dissimilar units. Cannot aggregate into Aggregation.")
+            raise Exception("Input Flows have dissimilar units. Cannot aggregate into Confluence.")
 
         # Aggregands:
-        self._aggregands = aggregands
-        """The set of input Flows that are aggregated in this Aggregation"""
+        self._affluents = affluents
+        """The set of input Flows that are aggregated in this Confluence"""
 
         # Periodicity Type:
         self.period_type = period_type
 
-        # Aggregation:
-        aggregands_dates = list(
-            itertools.chain.from_iterable(list(aggregand.movements.index.array) for aggregand in self._aggregands))
-        self.start_date = min(aggregands_dates)
-        self.end_date = max(aggregands_dates)
+        # Confluence:
+        affluents_dates = list(
+            itertools.chain.from_iterable(list(affluent.movements.index.array) for affluent in self._affluents))
+        self.start_date = min(affluents_dates)
+        self.end_date = max(affluents_dates)
 
         index = periodicity.period_index(
             include_start=self.start_date,
             period_type=self.period_type,
             bound=self.end_date)
-        _resampled_aggregands = [aggregand.to_periods(period_type=self.period_type) for aggregand in self._aggregands]
-        self.aggregation = pd.concat(_resampled_aggregands, axis=1).fillna(0)
+        _resampled_affluents = [affluent.to_periods(period_type=self.period_type) for affluent in self._affluents]
+        self.current = pd.concat(_resampled_affluents, axis=1).fillna(0)
         """
-        A pd.DataFrame of the Aggregation's aggregand Flows accumulated into the Aggregation's periodicity
+        A pd.DataFrame of the Confluence's affluent Flows accumulated into the Confluence's periodicity
         """
 
     def __str__(self):
         return self.display()
 
-    def duplicate(self) -> Aggregation:
+    def duplicate(self) -> Confluence:
         return self.__class__(
             name=self.name,
-            aggregands=[aggregand.duplicate() for aggregand in self._aggregands],
+            affluents=[affluent.duplicate() for affluent in self._affluents],
             period_type=self.period_type)
 
     @classmethod
@@ -460,18 +464,18 @@ class Aggregation:
             cls,
             name: str,
             data: pd.DataFrame,
-            units: Measure) -> Aggregation:
-        aggregands = []
+            units: Measure) -> Confluence:
+        affluents = []
         for column in data.columns:
             series = data[column]
-            aggregands.append(
+            affluents.append(
                 Flow(
                     movements=series,
                     units=units,
                     name=series.name))
         return cls(
             name=name,
-            aggregands=aggregands,
+            affluents=affluents,
             period_type=periodicity.from_value(data.index.freqstr))
 
     def display(
@@ -485,21 +489,21 @@ class Aggregation:
 
         floatfmt = "." + str(decimals) + "f"
 
-        print(self.aggregation.to_markdown(
+        print(self.current.to_markdown(
             tablefmt='github',
             floatfmt=floatfmt))
 
     def plot(
             self,
-            aggregands: Dict[str, tuple] = None):
+            affluents: Dict[str, tuple] = None):
         """
-        Plots the specified aggregands against each respective value range (min-max)
+        Plots the specified affluents against each respective value range (min-max)
 
-        :param aggregands: A dictionary of aggregands to plot, by name and value range (as a tuple)
+        :param affluents: A dictionary of affluents to plot, by name and value range (as a tuple)
         """
-        if aggregands is None:
-            aggregands = {aggregand.name: None for aggregand in self._aggregands}
-        dates = list(self.aggregation.index.astype(str))
+        if affluents is None:
+            affluents = {affluent.name: None for affluent in self._affluents}
+        dates = list(self.current.index.astype(str))
 
         fig, host = plt.subplots(nrows=1, ncols=1)
         tkw = dict(size=4, width=1)
@@ -524,63 +528,63 @@ class Aggregation:
                   linestyle='-.',
                   linewidth=0.5)
 
-        primary_aggregand = list(aggregands.keys())[0]
+        primary_affluent = list(affluents.keys())[0]
         primary, = host.plot(dates,
-                             self.aggregation[primary_aggregand],
+                             self.current[primary_affluent],
                              color=plt.cm.viridis(0),
-                             label=primary_aggregand)
+                             label=primary_affluent)
         host.spines.left.set_linewidth(1)
-        host.set_ylabel(primary_aggregand)
+        host.set_ylabel(primary_affluent)
         host.yaxis.label.set_color(primary.get_color())
         host.spines.left.set_color(primary.get_color())
         host.tick_params(axis='y', colors=primary.get_color(), **tkw)
         host.minorticks_on()
 
-        if aggregands[primary_aggregand] is not None:
-            host.set_ylim([aggregands[primary_aggregand][0], aggregands[primary_aggregand][1]])
+        if affluents[primary_affluent] is not None:
+            host.set_ylim([affluents[primary_affluent][0], affluents[primary_affluent][1]])
 
         datums.append(primary)
         axes.append(host)
 
-        if len(aggregands) > 1:
-            secondary_aggregand = list(aggregands.keys())[1]
+        if len(affluents) > 1:
+            secondary_affluent = list(affluents.keys())[1]
             right = host.twinx()
             secondary, = right.plot(dates,
-                                    self.aggregation[secondary_aggregand],
-                                    color=plt.cm.viridis(1 / (len(aggregands) + 1)),
-                                    label=secondary_aggregand)
+                                    self.current[secondary_affluent],
+                                    color=plt.cm.viridis(1 / (len(affluents) + 1)),
+                                    label=secondary_affluent)
             right.spines.right.set_visible(True)
             right.spines.right.set_linewidth(1)
-            right.set_ylabel(secondary_aggregand)
+            right.set_ylabel(secondary_affluent)
             right.grid(False)
             right.yaxis.label.set_color(secondary.get_color())
             right.spines.right.set_color(secondary.get_color())
             right.tick_params(axis='y', colors=secondary.get_color(), **tkw)
-            if aggregands[secondary_aggregand] is not None:
-                right.set_ylim([aggregands[secondary_aggregand][0], aggregands[secondary_aggregand][1]])
+            if affluents[secondary_affluent] is not None:
+                right.set_ylim([affluents[secondary_affluent][0], affluents[secondary_affluent][1]])
 
             datums.append(secondary)
             axes.append(right)
 
-            if len(aggregands) > 2:
-                for i in range(2, len(aggregands)):
-                    additional_aggregand = list(aggregands.keys())[i]
+            if len(affluents) > 2:
+                for i in range(2, len(affluents)):
+                    additional_affluent = list(affluents.keys())[i]
                     supplementary = host.twinx()
                     additional, = supplementary.plot(dates,
-                                                     self.aggregation[additional_aggregand],
-                                                     color=plt.cm.viridis(i / (len(aggregands) + 1)),
-                                                     label=additional_aggregand)
+                                                     self.current[additional_affluent],
+                                                     color=plt.cm.viridis(i / (len(affluents) + 1)),
+                                                     label=additional_affluent)
                     supplementary.spines.right.set_position(('axes', 1 + (i - 1) / 5))
                     supplementary.spines.right.set_visible(True)
                     supplementary.spines.right.set_linewidth(1)
-                    supplementary.set_ylabel(additional_aggregand)
+                    supplementary.set_ylabel(additional_affluent)
                     supplementary.grid(False)
                     supplementary.yaxis.label.set_color(additional.get_color())
                     supplementary.spines.right.set_color(additional.get_color())
                     supplementary.tick_params(axis='y', colors=additional.get_color(), **tkw)
-                    if aggregands[additional_aggregand] is not None:
+                    if affluents[additional_affluent] is not None:
                         supplementary.set_ylim(
-                            [aggregands[additional_aggregand][0], aggregands[additional_aggregand][1]])
+                            [affluents[additional_affluent][0], affluents[additional_affluent][1]])
 
                     datums.append(additional)
                     axes.append(supplementary)
@@ -602,118 +606,118 @@ class Aggregation:
             self,
             flow_name: str) -> Flow:
         """
-        Extract an Aggregation's resampled aggregand as a Flow
+        Extract an Confluence's resampled affluent as a Flow
         :param flow_name:
         :return:
         """
         return Flow.from_periods(
             name=flow_name,
-            data=list(self.aggregation[flow_name]),
-            index=self.aggregation.index,
+            data=list(self.current[flow_name]),
+            index=self.current.index,
             units=self.units)
 
     def sum(
             self,
             name: str = None) -> Flow:
         """
-        Returns a Flow whose movements are the sum of the Aggregation's aggregands by period
+        Returns a Flow whose movements are the sum of the Confluence's affluents by period
         :return: Flow
         """
         return Flow.from_periods(
             name=name if name is not None else self.name,
-            index=self.aggregation.index,  # .to_period(),
-            data=self.aggregation.sum(axis=1).to_list(),
+            index=self.current.index,  # .to_period(),
+            data=self.current.sum(axis=1).to_list(),
             units=self.units)
 
     def product(
             self,
             name: str = None) -> Flow:
         """
-        Returns a Flow whose movements are the product of the Aggregation's aggregands by period
+        Returns a Flow whose movements are the product of the Confluence's affluents by period
         :return: Flow
         """
         return Flow.from_periods(
             name=name if name is not None else self.name,
-            index=self.aggregation.index,  # .to_period(),
-            data=self.aggregation.prod(axis=1).to_list(),
+            index=self.current.index,  # .to_period(),
+            data=self.current.prod(axis=1).to_list(),
             units=self.units)
 
-    def collapse(self) -> Aggregation:
+    def collapse(self) -> Confluence:
         """
-        Returns an Aggregation with Flows' movements collapsed (summed) to the Aggregation's final period
-        :return: Aggregation
+        Returns an Confluence with Flows' movements collapsed (summed) to the Confluence's final period
+        :return: Confluence
         """
-        aggregands = [self.extract(flow_name=flow_name) for flow_name in list(self.aggregation.columns)]
+        affluents = [self.extract(flow_name=flow_name) for flow_name in list(self.current.columns)]
         return self.__class__(
             name=self.name,
-            aggregands=[aggregand.collapse() for aggregand in aggregands],
+            affluents=[affluent.collapse() for affluent in affluents],
             period_type=self.period_type)
 
     def append(
             self,
-            aggregands: [Flow]) -> None:
+            affluents: [Flow]) -> None:
         """
-        Appends a list of Flows to the Aggregation
-        :param aggregands:
-        :type aggregands:
+        Appends a list of Flows to the Confluence
+        :param affluents:
+        :type affluents:
         :return:
         :rtype:
         """
         # Check Units:
-        if any(flow.units != self.units for flow in aggregands):
-            raise Exception("Input Flows have dissimilar units. Cannot aggregate into Aggregation.")
+        if any(flow.units != self.units for flow in affluents):
+            raise Exception("Input Flows have dissimilar units. Cannot aggregate into Confluence.")
 
         # Append Affluents:
-        self._aggregands.extend(aggregands)
+        self._affluents.extend(affluents)
 
-        # Aggregation:
-        aggregands_dates = list(
-            itertools.chain.from_iterable(list(aggregand.movements.index.array) for aggregand in self._aggregands))
-        self.start_date = min(aggregands_dates)
-        self.end_date = max(aggregands_dates)
+        # Confluence:
+        affluents_dates = list(
+            itertools.chain.from_iterable(list(affluent.movements.index.array) for affluent in self._affluents))
+        self.start_date = min(affluents_dates)
+        self.end_date = max(affluents_dates)
 
         index = periodicity.period_index(
             include_start=self.start_date,
             period_type=self.period_type,
             bound=self.end_date)
-        _resampled_aggregands = [aggregand.to_periods(period_type=self.period_type) for aggregand in self._aggregands]
-        self.aggregation = pd.concat(_resampled_aggregands, axis=1).fillna(0)
+        _resampled_affluents = [affluent.to_periods(period_type=self.period_type) for affluent in self._affluents]
+        self.current = pd.concat(_resampled_affluents, axis=1).fillna(0)
 
     def resample(
             self,
-            period_type: periodicity.Type) -> Aggregation:
-        return Aggregation(
+            period_type: periodicity.Type) -> Confluence:
+        return Confluence(
             name=self.name,
-            aggregands=self._aggregands,
+            affluents=self._affluents,
             period_type=period_type)
 
     def trim_to_phase(
             self,
-            phase: Phase) -> Aggregation:
+            phase: Phase) -> Confluence:
         """
-        Returns an Aggregation with all aggregands trimmed to the specified Phase
+        Returns an Confluence with all affluents trimmed to the specified Phase
         :param phase:
         :return:
         """
         return self.__class__(
             name=self.name,
-            aggregands=[aggregand.duplicate().trim_to_phase(phase) for aggregand in self._aggregands],
+            affluents=[affluent.duplicate().trim_to_phase(phase) for affluent in self._affluents],
             period_type=self.period_type)
 
     @classmethod
     def merge(
             cls,
-            aggregations,
+            confluences,
             name: str,
-            period_type: periodicity.Type) -> Aggregation:
+            period_type: periodicity.Type) -> Confluence:
         # Check Units:
-        if any(aggregation.units != aggregations[0].units for aggregation in aggregations):
-            raise Exception("Input Aggregations have dissimilar units. Cannot merge into Aggregation.")
+        if any(confluence.units != confluences[0].units for confluence in confluences):
+            raise Exception("Input Confluences have dissimilar units. Cannot merge into Confluence.")
 
         # Aggregands:
-        aggregands = [aggregand for aggregation in aggregations for aggregand in aggregation._aggregands]
+        affluents = [affluent for confluence in confluences for affluent in confluence._affluents]
 
         return cls(
             name=name,
-            aggregands=aggregands,
+            affluents=affluents,
             period_type=period_type)
