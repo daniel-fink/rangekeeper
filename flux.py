@@ -404,8 +404,8 @@ class Confluence:
     _affluents: [Flow]
     period_type: periodicity.Type
     start_date: pd.Timestamp
-    end_date: pd.Timestamp
-    current: pd.DataFrame
+    end_date: pd.Timestamp  
+    frame: pd.DataFrame
 
     """
     A `Confluence` collects affluent (constituent) Flows
@@ -445,7 +445,7 @@ class Confluence:
             period_type=self.period_type,
             bound=self.end_date)
         _resampled_affluents = [affluent.to_periods(period_type=self.period_type) for affluent in self._affluents]
-        self.current = pd.concat(_resampled_affluents, axis=1).fillna(0)
+        self.frame = pd.concat(_resampled_affluents, axis=1).fillna(0)
         """
         A pd.DataFrame of the Confluence's affluent Flows accumulated into the Confluence's periodicity
         """
@@ -489,7 +489,7 @@ class Confluence:
 
         floatfmt = "." + str(decimals) + "f"
 
-        print(self.current.to_markdown(
+        print(self.frame.to_markdown(
             tablefmt='github',
             floatfmt=floatfmt))
 
@@ -503,7 +503,7 @@ class Confluence:
         """
         if affluents is None:
             affluents = {affluent.name: None for affluent in self._affluents}
-        dates = list(self.current.index.astype(str))
+        dates = list(self.frame.index.astype(str))
 
         fig, host = plt.subplots(nrows=1, ncols=1)
         tkw = dict(size=4, width=1)
@@ -530,7 +530,7 @@ class Confluence:
 
         primary_affluent = list(affluents.keys())[0]
         primary, = host.plot(dates,
-                             self.current[primary_affluent],
+                             self.frame[primary_affluent],
                              color=plt.cm.viridis(0),
                              label=primary_affluent)
         host.spines.left.set_linewidth(1)
@@ -550,7 +550,7 @@ class Confluence:
             secondary_affluent = list(affluents.keys())[1]
             right = host.twinx()
             secondary, = right.plot(dates,
-                                    self.current[secondary_affluent],
+                                    self.frame[secondary_affluent],
                                     color=plt.cm.viridis(1 / (len(affluents) + 1)),
                                     label=secondary_affluent)
             right.spines.right.set_visible(True)
@@ -571,7 +571,7 @@ class Confluence:
                     additional_affluent = list(affluents.keys())[i]
                     supplementary = host.twinx()
                     additional, = supplementary.plot(dates,
-                                                     self.current[additional_affluent],
+                                                     self.frame[additional_affluent],
                                                      color=plt.cm.viridis(i / (len(affluents) + 1)),
                                                      label=additional_affluent)
                     supplementary.spines.right.set_position(('axes', 1 + (i - 1) / 5))
@@ -612,8 +612,8 @@ class Confluence:
         """
         return Flow.from_periods(
             name=flow_name,
-            data=list(self.current[flow_name]),
-            index=self.current.index,
+            data=list(self.frame[flow_name]),
+            index=self.frame.index,
             units=self.units)
 
     def sum(
@@ -625,8 +625,8 @@ class Confluence:
         """
         return Flow.from_periods(
             name=name if name is not None else self.name,
-            index=self.current.index,  # .to_period(),
-            data=self.current.sum(axis=1).to_list(),
+            index=self.frame.index,  # .to_period(),
+            data=self.frame.sum(axis=1).to_list(),
             units=self.units)
 
     def product(
@@ -638,8 +638,8 @@ class Confluence:
         """
         return Flow.from_periods(
             name=name if name is not None else self.name,
-            index=self.current.index,  # .to_period(),
-            data=self.current.prod(axis=1).to_list(),
+            index=self.frame.index,  # .to_period(),
+            data=self.frame.prod(axis=1).to_list(),
             units=self.units)
 
     def collapse(self) -> Confluence:
@@ -647,7 +647,7 @@ class Confluence:
         Returns an Confluence with Flows' movements collapsed (summed) to the Confluence's final period
         :return: Confluence
         """
-        affluents = [self.extract(flow_name=flow_name) for flow_name in list(self.current.columns)]
+        affluents = [self.extract(flow_name=flow_name) for flow_name in list(self.frame.columns)]
         return self.__class__(
             name=self.name,
             affluents=[affluent.collapse() for affluent in affluents],
@@ -681,7 +681,7 @@ class Confluence:
             period_type=self.period_type,
             bound=self.end_date)
         _resampled_affluents = [affluent.to_periods(period_type=self.period_type) for affluent in self._affluents]
-        self.current = pd.concat(_resampled_affluents, axis=1).fillna(0)
+        self.frame = pd.concat(_resampled_affluents, axis=1).fillna(0)
 
     def resample(
             self,

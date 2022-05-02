@@ -165,7 +165,7 @@
 #             affluents=[self.ncf.sum(), self.disposition, self.acquisition],
 #             periodicity=params['period_type'])
 #
-#         self.investment_cashflows.current = self.investment_cashflows.current[:-1]
+#         self.investment_cashflows.frame = self.investment_cashflows.frame[:-1]
 #
 #         # IRR is displayed in the right hand panel...
 #         self.irr = self.investment_cashflows.sum().xirr()

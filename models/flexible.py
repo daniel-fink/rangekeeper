@@ -181,6 +181,6 @@ class Model:
             affluents=[self.ncf.sum(), self.disposition, self.acquisition],
             period_type=params['period_type'])
 
-        self.investment_cashflows.current = self.investment_cashflows.current[:self.disposition_date]
+        self.investment_cashflows.frame = self.investment_cashflows.frame[:self.disposition_date]
         self.irr = self.investment_cashflows.sum().xirr()
         self.npv = self.investment_cashflows.sum().xnpv(params['discount_rate'])

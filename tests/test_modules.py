@@ -270,13 +270,13 @@ class TestConfluence:
         TestConfluence.confluence.display()
 
         assert TestConfluence.confluence.sum().movements.index.size == 24 + 10  # Two full years plus March-Dec inclusive
-        assert TestConfluence.confluence.current['weekly_flow'].sum() == -50
-        assert TestConfluence.confluence.current.index.freq == 'M'
+        assert TestConfluence.confluence.frame['weekly_flow'].sum() == -50
+        assert TestConfluence.confluence.frame.index.freq == 'M'
 
         product = TestConfluence.confluence.product(name="product")
         datetime = pd.Timestamp(2020, 12, 31)
-        print(TestConfluence.confluence.current['yearly_flow'][datetime])
-        print(TestConfluence.confluence.current['weekly_flow'][datetime])
+        print(TestConfluence.confluence.frame['yearly_flow'][datetime])
+        print(TestConfluence.confluence.frame['weekly_flow'][datetime])
         assert product.movements[datetime] == approx(-125.786163522)
 
         cumsum = TestConfluence.flow1.movements.cumsum()
@@ -292,11 +292,11 @@ class TestConfluence:
         duplicate = TestConfluence.confluence.duplicate()
         assert duplicate.name == "confluence"
         assert len(duplicate._affluents) == 2
-        assert duplicate.current.index.freq == 'M'
+        assert duplicate.frame.index.freq == 'M'
 
     def test_confluence_confluence(self):
         collapse = TestConfluence.confluence.collapse()
-        assert collapse.current['yearly_flow'][0] == 100.0
+        assert collapse.frame['yearly_flow'][0] == 100.0
 
         datetime = pd.Timestamp(2020, 12, 31)
         sum = TestConfluence.confluence.sum()
