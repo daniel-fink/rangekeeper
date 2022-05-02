@@ -148,7 +148,7 @@ class TestDynamics:
                         TestDynamics.market_trend.trend],
             period_type=TestDynamics.period_type).plot()
 
-        # print(dynamics.volatility_frame.current)
+        # print(dynamics.volatility_frame.frame)
         TestDynamics.volatility_frame.display()
 
     cyclicality_params = {
