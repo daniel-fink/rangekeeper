@@ -1,11 +1,11 @@
 try:
     import projection
     import periodicity
-    from flux import Flow, Aggregation
+    from flux import Flow, Confluence
     from phase import Phase
 except:
     import modules.rangekeeper.distribution
-    from modules.rangekeeper.flux import Flow, Aggregation
+    from modules.rangekeeper.flux import Flow, Confluence
     from modules.rangekeeper.periodicity import periodicity
     from modules.rangekeeper.phase import Phase
 
@@ -75,9 +75,9 @@ class Model:
             units=params['units']).invert()
 
         # Effective Gross Income:
-        self.egi = Aggregation(
+        self.egi = Confluence(
             name='Effective Gross Income',
-            aggregands=[self.pgi, self.vacancy],
+            affluents=[self.pgi, self.vacancy],
             period_type=params['period_type'])
 
         # Operating Expenses:
@@ -88,9 +88,9 @@ class Model:
             units=params['units']).invert()
 
         # Net Operating Income:
-        self.noi = Aggregation(
+        self.noi = Confluence(
             name='Net Operating Income',
-            aggregands=[self.egi.sum('Effective Gross Income'), self.opex],
+            affluents=[self.egi.sum('Effective Gross Income'), self.opex],
             period_type=params['period_type'])
 
         # Capital Expenses:
@@ -101,9 +101,9 @@ class Model:
             units=params['units']).invert()
 
         # Net Cashflows:
-        self.ncf = Aggregation(
+        self.ncf = Confluence(
             name='Net Cashflows',
-            aggregands=[self.noi.sum(), self.capex],
+            affluents=[self.noi.sum(), self.capex],
             period_type=params['period_type'])
 
         # Disposition (Reversion):
@@ -116,7 +116,7 @@ class Model:
 
         # Net Cash Flows with Disposition:
         self.ncf_disposition = self.ncf.duplicate().trim_to_phase(self.operation_phase)
-        self.ncf_disposition.append(aggregands=[self.disposition])
+        self.ncf_disposition.append(affluents=[self.disposition])
 
         # Calculate the Present Value of the NCFs:
         self.pv_ncf = self.ncf.sum().pv(
@@ -128,9 +128,9 @@ class Model:
             period_type=params['period_type'],
             discount_rate=params['discount_rate'])
 
-        self.pv_ncf_agg = Aggregation(
+        self.pv_ncf_agg = Confluence(
             name='Discounted Net Cashflows',
-            aggregands=[self.pv_ncf, self.pv_disposition],
+            affluents=[self.pv_ncf, self.pv_disposition],
             period_type=params['period_type'])
 
         self.pv_sums = self.pv_ncf_agg.sum()
@@ -142,12 +142,12 @@ class Model:
             units=params['units'],
             name='Acquisition Price')
 
-        self.investment_cashflows = Aggregation(
+        self.investment_cashflows = Confluence(
             name='Investment Cashflows',
-            aggregands=[self.ncf.sum(), self.disposition, self.acquisition],
+            affluents=[self.ncf.sum(), self.disposition, self.acquisition],
             period_type=params['period_type'])
 
-        self.investment_cashflows.aggregation = self.investment_cashflows.aggregation[:-1]
+        self.investment_cashflows.current = self.investment_cashflows.current[:-1]
 
         # IRR is displayed in the right hand panel...
         self.irr = self.investment_cashflows.sum().xirr()

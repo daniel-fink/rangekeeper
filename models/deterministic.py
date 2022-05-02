@@ -3,14 +3,14 @@ import pandas as pd
 # try:
 import projection
 import distribution
-from flux import Flow, Aggregation
+from flux import Flow, Confluence
 import periodicity
 from phase import Phase
 
 
 # except:
 #     import modules.rangekeeper.distribution
-#     from modules.rangekeeper.flux import Flow, Aggregation
+#     from modules.rangekeeper.flux import Flow, Confluence
 #     from modules.rangekeeper.periodicity import Periodicity
 #     from modules.rangekeeper.phase import Phase
 
@@ -83,9 +83,9 @@ class Model:
             units=params['units']).invert()
 
         # Effective Gross Income:
-        self.egi = Aggregation(
+        self.egi = Confluence(
             name='Effective Gross Income',
-            aggregands=[self.pgi, self.vacancy],
+            affluents=[self.pgi, self.vacancy],
             period_type=params['period_type'])
 
         # Operating Expenses:
@@ -96,9 +96,9 @@ class Model:
             units=params['units']).invert()
 
         # Net Operating Income:
-        self.noi = Aggregation(
+        self.noi = Confluence(
             name='Net Operating Income',
-            aggregands=[self.egi.sum('Effective Gross Income'), self.opex],
+            affluents=[self.egi.sum('Effective Gross Income'), self.opex],
             period_type=params['period_type'])
 
         # Capital Expenses:
@@ -109,9 +109,9 @@ class Model:
             units=params['units']).invert()
 
         # Net Cashflows:
-        self.ncf = Aggregation(
+        self.ncf = Confluence(
             name='Net Cashflows',
-            aggregands=[self.noi.sum(), self.capex],
+            affluents=[self.noi.sum(), self.capex],
             period_type=params['period_type'])
 
         # Disposition
@@ -139,9 +139,9 @@ class Model:
             movements=self.pv_ncf.movements.cumsum(),
             name='Discounted Net Cashflow Cumulative Sums',
             units=params['units'])
-        self.pv_ncf_agg = Aggregation(
+        self.pv_ncf_agg = Confluence(
             name='Discounted Net Cashflow Sums',
-            aggregands=[pv_ncf_cumsum, self.pv_disposition],
+            affluents=[pv_ncf_cumsum, self.pv_disposition],
             period_type=params['period_type'])
 
         self.pv_sums = self.pv_ncf_agg.sum()

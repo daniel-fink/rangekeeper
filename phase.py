@@ -19,9 +19,9 @@ class Phase:
 
     def __init__(
             self,
-            name: str,
             start_date: pd.Timestamp,
-            end_date: pd.Timestamp):
+            end_date: pd.Timestamp,
+            name: str = None):
         if end_date < start_date:
             raise Exception('Error: end_date cannot be before start_date')
         if name is None:
