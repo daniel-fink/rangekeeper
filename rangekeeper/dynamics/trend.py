@@ -1,16 +1,4 @@
-try:
-    import projection
-    import distribution
-    import flux
-    import periodicity
-    import phase
-    import measure
-except:
-    import modules.rangekeeper.distribution
-    import modules.rangekeeper.flux
-    import modules.rangekeeper.periodicity
-    import modules.rangekeeper.phase
-    import modules.rangekeeper.measure
+from .. import distribution, phase, periodicity, projection, measure, flux
 
 
 class Trend:
@@ -54,14 +42,14 @@ class Trend:
         self.trend_rate = trend_dist.sample()
         # self.trend_rate = 0.00698263624
 
-        trend_esc = projection.ExponentialExtrapolation(
-            rate=self.trend_rate)
+        trend_esc = projection.Extrapolation.Compounding(rate=self.trend_rate)
 
         self.trend = flux.Flow.from_projection(
             name='Trend',
             value=self.initial_rent,
-            index=phase.to_index(period_type=period_type),
-            proj=trend_esc,
+            proj=projection.Extrapolation(
+                form=trend_esc,
+                sequence=phase.to_index(period_type=period_type)),
             units=measure.scalar)
         """
         Trend:

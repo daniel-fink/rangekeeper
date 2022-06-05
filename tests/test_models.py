@@ -11,30 +11,14 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import pint
 
-try:
-    import projection
-    import distribution
-    import flux
-    import measure
-    import periodicity
-    import models
-    from models import flexible, linear, probabilistic, deterministic
-except:
-    import modules.rangekeeper.distribution
-    import modules.rangekeeper.flux
-    import modules.rangekeeper.models.deterministic
-    import modules.rangekeeper.models.flexible
-    import modules.rangekeeper.models.linear
-    import modules.rangekeeper.models.probabilistic
-    import modules.rangekeeper.measure
-    import modules.rangekeeper.periodicity
+import rangekeeper as rk
 
 matplotlib.use('TkAgg')
 plt.style.use('seaborn')  # pretty matplotlib plots
 plt.rcParams['figure.figsize'] = (12, 8)
 
 units = pint.UnitRegistry()
-currency = measure.add_currency(
+currency = rk.measure.add_currency(
     country_code='USD',
     unit_registry=units)
 
@@ -46,7 +30,7 @@ class TestLinear:
             'start_date': pd.Timestamp(2020, 1, 1),
             'num_periods': 10,
             'acquisition_price': 1000,
-            'period_type': periodicity.Type.year,
+            'period_type': rk.periodicity.Type.year,
             'growth_rate': 0.02,
             'initial_pgi': 100.,
             'vacancy_rate': 0.05,
@@ -56,7 +40,7 @@ class TestLinear:
             'discount_rate': 0.07
             }
 
-        linear = models.linear.Model(base_params)
+        linear = rk.models.linear.Model(base_params)
 
         linear.ncf_disposition.display()
         print(linear.operation_phase)
@@ -76,7 +60,7 @@ class TestDeterministic:
             'units': currency,
             'start_date': pd.Timestamp(2020, 1, 1),
             'num_periods': 10,
-            'period_type': periodicity.Type.year,
+            'period_type': rk.periodicity.Type.year,
             'growth_rate': 0.02,
             'initial_pgi': 100.,
             'addl_pgi_per_period': 0.,
@@ -88,7 +72,7 @@ class TestDeterministic:
             }
 
         # Run model with base parameters:
-        base = models.deterministic.Model(base_params)
+        base = rk.models.deterministic.Model(base_params)
 
         base.pv_sums.display()
         assert base.pv_sums.movements[0] == 1000
@@ -98,19 +82,19 @@ class TestDeterministic:
         optimistic_params = base_params.copy()
         optimistic_params['initial_pgi'] = 110.
         optimistic_params['addl_pgi_per_period'] = 3.
-        optimistic = models.deterministic.Model(optimistic_params)
+        optimistic = rk.models.deterministic.Model(optimistic_params)
         assert math.isclose(a=optimistic.pv_sums.movements[9], b=1294.08, rel_tol=.01)
 
         # Adjust the model to pessimistic parameters:
         pessimistic_params = base_params.copy()
         pessimistic_params['initial_pgi'] = 90.
         pessimistic_params['addl_pgi_per_period'] = -3.
-        pessimistic = models.deterministic.Model(pessimistic_params)
+        pessimistic = rk.models.deterministic.Model(pessimistic_params)
         pessimistic.pv_sums.display()
         assert math.isclose(a=pessimistic.pv_sums.movements[9], b=705.92, rel_tol=.01)
 
         # Calculate expected value of the property at any period:
-        exp = flux.Flow(
+        exp = rk.flux.Flow(
             movements=pessimistic.pv_sums.movements * .5 + optimistic.pv_sums.movements * .5,
             units=base_params['units'])
         assert math.isclose(exp.movements[6], 1000.)
@@ -127,10 +111,10 @@ class TestProbabilistic:
             'start_date': pd.Timestamp(2020, 1, 1),
             'num_periods': 10,
             'acquisition_price': 1000,
-            'period_type': periodicity.Type.year,
+            'period_type': rk.periodicity.Type.year,
             'growth_rate': 0.02,
             'initial_pgi': 100.,
-            'space_market_dist': distribution.PERT(peak=1., weighting=4.0, minimum=0.75, maximum=1.25),
+            'space_market_dist': rk.distribution.PERT(peak=1., weighting=4.0, minimum=0.75, maximum=1.25),
             'vacancy_rate': 0.05,
             'opex_pgi_ratio': 0.35,
             'capex_pgi_ratio': 0.10,
@@ -138,7 +122,7 @@ class TestProbabilistic:
             'discount_rate': 0.07
             }
 
-        prob = models.probabilistic.Model(base_params)
+        prob = rk.models.probabilistic.Model(base_params)
         prob.pv_sums.display()
         prob.investment_cashflows.display()
         prob.investment_cashflows.sum().display()
@@ -153,11 +137,11 @@ class TestFlexible:
             'start_date': pd.Timestamp(2020, 1, 1),
             'num_periods': 24,
             'acquisition_price': 1000,
-            'period_type': periodicity.Type.year,
+            'period_type': rk.periodicity.Type.year,
             'growth_rate': 0.02,
             'initial_pgi': 100.,
-            'space_market_dist': distribution.PERT(peak=1., weighting=4.0, minimum=0.5, maximum=1.75),
-            'asset_market_dist': distribution.PERT(peak=0.06, weighting=4.0, minimum=0.03, maximum=0.09),
+            'space_market_dist': rk.distribution.PERT(peak=1., weighting=4.0, minimum=0.5, maximum=1.75),
+            'asset_market_dist': rk.distribution.PERT(peak=0.06, weighting=4.0, minimum=0.03, maximum=0.09),
             'vacancy_rate': 0.05,
             'opex_pgi_ratio': 0.35,
             'capex_pgi_ratio': 0.10,
@@ -165,7 +149,7 @@ class TestFlexible:
             'discount_rate': 0.07
             }
 
-        flex = models.flexible.Model(base_params)
+        flex = rk.models.flexible.Model(base_params)
         flex.pgi_factor.display()
         flex.disposition.display()
         flex.pv_ncf_agg.display()

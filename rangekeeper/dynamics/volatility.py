@@ -2,21 +2,14 @@ import pandas as pd
 import scipy as sp
 from numba import jit
 
-try:
-    import projection
-    import distribution
-    import dynamics.trend
-    import flux
-except:
-    import modules.rangekeeper.distribution
-    import modules.rangekeeper.dynamics.trend
-    import modules.rangekeeper.flux
+from .trend import Trend
+from .. import distribution, flux
 
 
 class Volatility:
     def __init__(
             self,
-            trend: dynamics.trend.Trend,
+            trend: Trend,
             params: dict):
         """
         This is a normal (Gaussian) distribution.

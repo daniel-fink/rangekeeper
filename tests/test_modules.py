@@ -1,3 +1,4 @@
+import math
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
@@ -7,27 +8,7 @@ import pytest
 import scipy.stats as ss
 from pytest import approx
 
-# try:
-import projection
-import distribution
-import flux
-import phase
-import measure
-import space
-import graph
-import periodicity
-import segmentation
-from segmentation import Characteristic
-
-# except:
-#     import modules.rangekeeper.distribution
-#     import modules.rangekeeper.flux
-#     import modules.rangekeeper.phase
-#     import modules.rangekeeper.measure
-#     import modules.rangekeeper.space
-#     import modules.rangekeeper.element
-#     from modules.rangekeeper.periodicity import Periodicity
-#     import modules.rangekeeper.segmentation
+import rangekeeper as rk
 
 # Pytests file.
 # Note: gathers tests according to a naming convention.
@@ -40,7 +21,7 @@ plt.style.use('seaborn')  # pretty matplotlib plots
 plt.rcParams['figure.figsize'] = (12, 8)
 
 units = pint.UnitRegistry()
-currency = measure.add_currency(
+currency = rk.measure.add_currency(
     country_code='USD',
     unit_registry=units)
 
@@ -52,24 +33,28 @@ class TestDistribution:
     # print(len(parameters))
 
     def test_uniform_distribution_has_density_of_1(self):
-        uniform_dist = distribution.Uniform(generator=None)
+        uniform_dist = rk.distribution.Uniform(generator=None)
         uniform_densities = uniform_dist.interval_density(parameters=TestDistribution.parameters)
         # plt.plot(TestDistribution.parameters, uniform_densities)
         assert sum(uniform_densities) == 1.0
 
     def test_exponential_distribution_total_and_initial_match(self):
-        exp_dist = projection.ExponentialExtrapolation(rate=0.02)
-        exp_factors = exp_dist.factor(num_periods=12)
+        exp_dist = rk.projection.Extrapolation.Compounding(rate=0.02)
+        exp_factors = exp_dist.factors(sequence=pd.RangeIndex(
+            start=0,
+            stop=12,
+            step=1
+            ))
         # exp_densities = exp_dist.density(parameters=TestDistribution.parameters)
         # exp_cumulative = exp_dist.cumulative_density(parameters=TestDistribution.parameters)
 
         # plt.plot(parameters, exp_factors)
         # plt.plot(TestDistribution.parameters, exp_densities)
         # plt.plot(TestDistribution.parameters, exp_cumulative)
-        # assert exp_factors[100 - 1] == math.pow((1 + 0.02), 100)
+        assert exp_factors[11] == math.pow((1 + 0.02), 11)
 
     def test_PERT_distribution_sums_to_1(self):
-        pert_dist = distribution.PERT(peak=0.75, weighting=4)
+        pert_dist = rk.distribution.PERT(peak=0.75, weighting=4)
         pert_values = pert_dist.interval_density(parameters=TestDistribution.parameters)
         # plt.plot(TestDistribution.parameters, pert_values)
         # print("PERT CDF: " + str(pert_values))
@@ -81,21 +66,21 @@ class TestDistribution:
 class TestPeriod:
     def test_period_index_validity(self):
         date = pd.Timestamp(2020, 2, 28)
-        period = periodicity.include_date(
+        period = rk.periodicity.include_date(
             date=date,
-            duration=periodicity.Type.month)
+            duration=rk.periodicity.Type.month)
         assert period.day == 29  # end date of Period
         assert period.month == 2
 
-        sequence = periodicity.period_index(
+        sequence = rk.periodicity.period_index(
             include_start=date,
             bound=pd.Timestamp(2020, 12, 31),
-            period_type=periodicity.Type.quarter)
+            period_type=rk.periodicity.Type.quarter)
         assert sequence.size == 4
 
-        end_date = periodicity.date_offset(
+        end_date = rk.periodicity.date_offset(
             date=date,
-            period_type=periodicity.Type.month,
+            period_type=rk.periodicity.Type.month,
             num_periods=4)
         assert end_date == pd.Timestamp(2020, 6, 28)
 
@@ -113,12 +98,12 @@ class TestFlow:
         index=dates,
         name="foo",
         dtype=float)
-    flow_from_series = flux.Flow(
+    flow_from_series = rk.flux.Flow(
         movements=series,
         units=currency)
 
     dict = {date1: values[0], date2: values[1], date3: values[2]}
-    flow_from_dict = flux.Flow.from_dict(
+    flow_from_dict = rk.flux.Flow.from_dict(
         movements=dict,
         name="foo",
         units=currency)
@@ -135,17 +120,18 @@ class TestFlow:
 
         TestFlow.flow_from_series.display()
 
-    periods = periodicity.period_index(
+    periods = rk.periodicity.period_index(
         include_start=pd.Timestamp(2020, 1, 31),
-        period_type=periodicity.Type.month,
+        period_type=rk.periodicity.Type.month,
         bound=pd.Timestamp(2022, 1, 1))
 
     print(periods.size)
-    flow = flux.Flow.from_projection(
+    flow = rk.flux.Flow.from_projection(
         name="bar",
         value=100.0,
-        index=periods,
-        proj=projection.DistributiveInterpolation(distribution.Uniform()),
+        proj=rk.projection.Distribution(
+            dist=rk.distribution.Uniform(),
+            sequence=periods),
         units=currency)
 
     def test_flow_duplication(self):
@@ -180,7 +166,7 @@ class TestFlow:
         assert TestFlow.invert_flow.movements.name == "bar"
         assert TestFlow.invert_flow.units == currency
 
-    resample_flow = invert_flow.resample(period_type=periodicity.Type.year)
+    resample_flow = invert_flow.resample(period_type=rk.periodicity.Type.year)
 
     def test_resampling(self):
         # TestFlow.resample_flow.display()
@@ -189,32 +175,33 @@ class TestFlow:
         assert TestFlow.resample_flow.movements[1] == -48
         assert TestFlow.resample_flow.movements[2] == pytest.approx(-4)
 
-    to_periods = flow.to_periods(period_type=periodicity.Type.year)
+    to_periods = flow.to_periods(period_type=rk.periodicity.Type.year)
 
     def test_conversion_to_period_index(self):
         print(TestFlow.to_periods)
         # assert TestFlow.to_periods
 
     def test_distribution_as_input(self):
-        periods = periodicity.period_index(
+        periods = rk.periodicity.period_index(
             include_start=pd.Timestamp(2020, 1, 31),
-            period_type=periodicity.Type.month,
+            period_type=rk.periodicity.Type.month,
             bound=pd.Timestamp(2022, 1, 1))
 
-        dist = distribution.PERT(
+        dist = rk.distribution.PERT(
             peak=5,
             weighting=4,
             minimum=2,
             maximum=8)
-        assert isinstance(dist, distribution.Distribution)
+        assert isinstance(dist, rk.distribution.Distribution)
 
         sums = []
         for i in range(1000):
-            flow = flux.Flow.from_projection(
+            flow = rk.flux.Flow.from_projection(
                 name='foo',
                 value=dist,
-                index=periods,
-                proj=projection.DistributiveInterpolation(distribution.Uniform()),
+                proj=rk.projection.Distribution(
+                    dist=rk.distribution.Uniform(),
+                    sequence=periods),
                 units=currency)
             sums.append(flow.collapse().movements[0])
 
@@ -234,30 +221,32 @@ class TestFlow:
 
 
 class TestConfluence:
-    flow1 = flux.Flow.from_projection(
+    flow1 = rk.flux.Flow.from_projection(
         name="yearly_flow",
         value=100.0,
-        index=periodicity.period_index(
-            include_start=pd.Timestamp(2020, 1, 31),
-            bound=pd.Timestamp(2022, 1, 1),
-            period_type=periodicity.Type.year),
-        proj=projection.DistributiveInterpolation(distribution.Uniform()),
+        proj=rk.projection.Distribution(
+            dist=rk.distribution.Uniform(),
+            sequence=rk.periodicity.period_index(
+                include_start=pd.Timestamp(2020, 1, 31),
+                bound=pd.Timestamp(2022, 1, 1),
+                period_type=rk.periodicity.Type.year), ),
         units=currency)
 
-    flow2 = flux.Flow.from_projection(
+    flow2 = rk.flux.Flow.from_projection(
         name="weekly_flow",
         value=-50.0,
-        index=periodicity.period_index(
-            include_start=pd.Timestamp(2020, 3, 1),
-            bound=pd.Timestamp(2021, 2, 28),
-            period_type=periodicity.Type.week),
-        proj=projection.DistributiveInterpolation(distribution.Uniform()),
+        proj=rk.projection.Distribution(
+            dist=rk.distribution.Uniform(),
+            sequence=rk.periodicity.period_index(
+                include_start=pd.Timestamp(2020, 3, 1),
+                bound=pd.Timestamp(2021, 2, 28),
+                period_type=rk.periodicity.Type.week)),
         units=currency)
 
-    confluence = flux.Confluence(
+    confluence = rk.flux.Confluence(
         name="confluence",
         affluents=[flow1, flow2],
-        period_type=periodicity.Type.month)
+        period_type=rk.periodicity.Type.month)
 
     confluence.display()
 
@@ -282,7 +271,7 @@ class TestConfluence:
         cumsum = TestConfluence.flow1.movements.cumsum()
         print(cumsum)
 
-        cumsum_flow = flux.Flow(
+        cumsum_flow = rk.flux.Flow(
             name="cumsum_flow",
             movements=TestConfluence.flow1.movements.cumsum(),
             units=currency)
@@ -296,7 +285,7 @@ class TestConfluence:
 
     def test_confluence_confluence(self):
         collapse = TestConfluence.confluence.collapse()
-        assert collapse.frame['yearly_flow'][0] == 100.0
+        assert collapse.frame['yearly_flow'][0] == approx(100.0)
 
         datetime = pd.Timestamp(2020, 12, 31)
         sum = TestConfluence.confluence.sum()
@@ -305,12 +294,12 @@ class TestConfluence:
 
 class TestPhase:
     def test_correct_phase(self):
-        test_phase = phase.Phase(
+        test_phase = rk.phase.Phase(
             name='test_phase',
             start_date=pd.Timestamp(2020, 3, 1),
             end_date=pd.Timestamp(2021, 2, 28))
         assert test_phase.start_date < test_phase.end_date
-        assert test_phase.duration(period_type=periodicity.Type.day) == 364
+        assert test_phase.duration(period_type=rk.periodicity.Type.day) == 364
 
     def test_correct_phases(self):
         dates = [pd.Timestamp(2020, 2, 29),
@@ -319,19 +308,19 @@ class TestPhase:
                  pd.Timestamp(2021, 12, 31),
                  pd.Timestamp(2024, 2, 29)]
         names = ['Phase1', 'Phase2', 'Phase3', 'Phase4']
-        phases = phase.Phase.from_date_sequence(names=names, dates=dates)
+        phases = rk.phase.Phase.from_date_sequence(names=names, dates=dates)
 
         assert len(phases) == 4
         assert phases[0].name == 'Phase1'
         assert phases[0].end_date == pd.Timestamp(2020, 2, 29)
-        assert phases[0].duration(periodicity.Type.day) == 0
+        assert phases[0].duration(rk.periodicity.Type.day) == 0
 
         assert phases[1].start_date == pd.Timestamp(2020, 3, 1)
         assert phases[1].end_date == pd.Timestamp(2021, 2, 27)
 
 
 class TestMeasures:
-    aud = measure.add_currency(
+    aud = rk.measure.add_currency(
         country_code='AUD',
         unit_registry=units)
 
@@ -340,19 +329,19 @@ class TestMeasures:
         assert TestMeasures.aud.units == 'AUD'
         assert TestMeasures.aud.units.dimensionality == '[currency]'
 
-    gfa = measure.Measure(
+    gfa = rk.measure.Measure(
         name='Gross Floor Area',
         units=units.meter ** 2)
 
-    nsa = measure.Measure(
+    nsa = rk.measure.Measure(
         name='Net Sellable Area',
         units=units.meter ** 2)
 
-    rent = measure.Measure(
+    rent = rk.measure.Measure(
         name='Rent',
         units=aud.units)
 
-    rent_per_nsa = measure.Measure(
+    rent_per_nsa = rk.measure.Measure(
         name='Rent per m2 of NSA',
         units=rent.units / nsa.units)
 
@@ -386,7 +375,7 @@ class TestSpace:
             TestMeasures.gfa: 12.3 * TestMeasures.gfa.units,
             TestMeasures.nsa: 4.56 * TestMeasures.nsa.units
             }
-        parent_space = space.Space(
+        parent_space = rk.space.Space(
             name='Parent',
             type='parent_type',
             measurements=measurements)
@@ -400,20 +389,20 @@ class TestSpace:
 
 class TestGraph:
     def test_graph(self):
-        element_root = graph.Element(
+        element_root = rk.graph.Element(
             name='root',
             type='root_type')
-        element_child = graph.Element(
+        element_child = rk.graph.Element(
             name='child',
             type='child_type')
-        element_grandchild01 = graph.Element(
+        element_grandchild01 = rk.graph.Element(
             name='grandchild01',
             type='grandchild_type')
-        element_grandchild02 = graph.Element(
+        element_grandchild02 = rk.graph.Element(
             name='grandchild02',
             type='grandchild_type')
 
-        assembly = graph.Assembly(
+        assembly = rk.graph.Assembly(
             name='assembly',
             type='assembly_type',
             elements=[
@@ -454,7 +443,7 @@ class TestGraph:
 
 
 class TestSegmentation:
-    interval = segmentation.Interval(
+    interval = rk.segmentation.Interval(
         upper=9.6,
         lower=2.4)
 
@@ -474,18 +463,18 @@ class TestSegmentation:
         assert children[2].length() == approx(1.8)
 
     def test_segment(self):
-        gross = segmentation.Segment(
-            bounds=segmentation.Interval(upper=100),
-            characteristics={Characteristic.use: 'mixed'})
+        gross = rk.segmentation.Segment(
+            bounds=rk.segmentation.Interval(upper=100),
+            characteristics={rk.segmentation.Characteristic.use: 'mixed'})
         residential, podium = gross.split(proportion=.65)
 
-        residential.characteristics[Characteristic.use] = 'residential'
-        podium.characteristics[Characteristic.use] = 'mixed'
+        residential.characteristics[rk.segmentation.Characteristic.use] = 'residential'
+        podium.characteristics[rk.segmentation.Characteristic.use] = 'mixed'
 
-        assert residential.bounds.upper == approx(65)
-        assert podium.aggregate_ancestor_characteristics() == {
-            Characteristic.use: 'mixed'
-            }
-        assert residential.aggregate_ancestor_characteristics() == {
-            Characteristic.use: 'residential'
-            }
+        # assert residential.bounds.upper == approx(65)
+        # assert podium.aggregate_ancestor_characteristics() == {
+        #     rk.segmentation.Characteristic.use: 'mixed'
+        #     }
+        # assert residential.aggregate_ancestor_characteristics() == {
+        #     rk.segmentation.Characteristic.use: 'residential'
+        #     }
