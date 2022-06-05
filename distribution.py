@@ -3,21 +3,20 @@ from typing import Optional
 import aenum
 import numpy as np
 import scipy.stats as ss
+from abc import ABC, abstractmethod
 
 
 class Type(aenum.Enum):
-    _init_ = 'value __doc__'
-
-    uniform = 1
-    linear = 2
-    triangular = 3
-    normal = 4
-    log_uniform = 5
-    PERT = 6
-    exponential = 7
+    uniform = 'Uniform distribution', 'Continuous uniform distribution or rectangular distribution'
+    linear = 'Linear distribution', 'Linearly increasing or decreasing distribution between minimum and maximum values'
+    triangular = 'Triangular distribution', 'Continuous linear distribution with lower limit a, upper limit b and mode c, where a < b and a ≤ c ≤ b.'
+    normal = 'Normal distribution', 'Continuous probability distribution defined as the limiting case of a discrete binomial distribution.'
+    PERT = 'PERT distribution', 'Transformation of the four-parameter Beta distribution defined by the minimum, most likely, and maximum values.'
 
 
 class Distribution:
+    type: str
+
     def __init__(
             self,
             generator: Optional[np.random.Generator] = None):
@@ -38,6 +37,36 @@ class Distribution:
         else:
             return variates
 
+    @abstractmethod
+    def interval_density(
+            self,
+            parameters: [float]):
+        """
+        Returns the cumulative density (integral of the interpolated curve)
+        between n parameter pairs as intervals (i.e. returns n-1 results)
+
+        :param parameters: Any set of floats between 0 and 1
+        :return: List of floats representing the cumulative density of that interval.
+        If the input parameters span 0 to 1, the sum of the interval densities will reach 1.
+        """
+        if (all(parameters) >= 0) & (all(parameters) <= 1):
+            return [(self.dist.cdf(parameters[i + 1]) - self.dist.cdf(parameters[i]))
+                    for i in (range(0, len(parameters) - 1))]
+        else:
+            raise ValueError("Error: Parameter must be between 0 and 1 inclusive")
+
+    @abstractmethod
+    def cumulative_density(
+            self,
+            parameters: [float]):
+        """
+        Returns the cumulative distribution at parameters between 0 and 1.
+        """
+        if (all(parameters) >= 0) & (all(parameters) <= 1):
+            return [self.dist.cdf(parameter) for parameter in parameters]
+        else:
+            raise ValueError("Error: Parameter must be between 0 and 1 inclusive")
+
 
 class Symmetric(Distribution):
     def __init__(
@@ -54,7 +83,6 @@ class Symmetric(Distribution):
 
         self.mean = mean
         self.residual = residual
-        print(distribution_type)
         if distribution_type is Type.uniform or distribution_type is Type.PERT:
             self.distribution_type = distribution_type
         else:
@@ -63,12 +91,24 @@ class Symmetric(Distribution):
 
     def distribution(self):
         if self.distribution_type == Type.uniform:
-            return Uniform(lower=self.mean - self.residual,
-                           range=self.residual * 2,
-                           generator=self.generator)
+            return Uniform(
+                lower=self.mean - self.residual,
+                range=self.residual * 2,
+                generator=self.generator)
         elif self.distribution_type == Type.PERT:
-            return PERT.standard_symmetric(peak=self.mean,
-                                           residual=self.residual)
+            return PERT.standard_symmetric(
+                peak=self.mean,
+                residual=self.residual)
+
+    def interval_density(
+            self,
+            parameters: [float]) -> [float]:
+        return self.distribution().interval_density(parameters)
+
+    def cumulative_density(
+            self,
+            parameters: [float]) -> [float]:
+        return self.distribution().cumulative_density(parameters)
 
 
 class Uniform(Distribution):
@@ -89,126 +129,13 @@ class Uniform(Distribution):
 
     def interval_density(
             self,
-            parameters: [float]):
-        """
-        Returns the cumulative density (integral of the distribution curve, or effectively probability)
-        between n parameter pairs as intervals (i.e. returns n-1 results)
-
-        :param parameters: Any set of floats between 0 and 1
-        :return: List of floats representing the cumulative density of that interval.
-        If the input parameters span 0 to 1, the sum of the interval densities will reach 1.
-        """
-
-        if (all(parameters) >= 0) & (all(parameters) <= 1):
-            return [(self.dist.cdf(parameters[i + 1]) - self.dist.cdf(parameters[i]))
-                    for i in (range(0, len(parameters) - 1))]
-        else:
-            raise ValueError("Error: Parameter must be between 0 and 1 inclusive")
+            parameters: [float]) -> [float]:
+        return super().interval_density(parameters)
 
     def cumulative_density(
             self,
-            parameters: [float]):
-        """
-        Returns the cumulative distribution at parameters between 0 and 1.
-        """
-        if (all(parameters) >= 0) & (all(parameters) <= 1):
-            return [self.dist.cdf(parameter) for parameter in parameters]
-        else:
-            raise ValueError("Error: Parameter must be between 0 and 1 inclusive")
-
-
-class Linear(Distribution):
-    """
-    A continuous linearly growing (or decaying) distribution between 0 and 1.
-    To calculate the density at any point, the distribution is scaled such that the cumulative distribution reaches 1.
-    To calculate the factor, the distribution is initialized with value 1.
-
-    Requires inputs of linear rate of change per period and number of periods.
-    """
-
-    def __init__(
-            self,
-            rate: float,
-            num_periods: int,
-            generator: Optional[np.random.Generator] = None):
-        super().__init__(generator=generator)
-        self.rate = rate
-        self.num_periods = num_periods
-
-        def factor(self):
-            """
-            Returns the multiplicative factor of the distribution's initial value at each period
-            """
-            # TODO: Check if this is correct
-            # return [np.power((1 + self.rate), period_index) for period_index in range(self.num_periods)]
-
-
-class Exponential(Distribution):
-    """
-    A continuous exponentially growing (or decaying) distribution between 0 and 1.
-    To calculate the density at any point, the distribution is scaled such that the cumulative distribution reaches 1.
-    To calculate the factor, the distribution is initialized with value 1.
-
-    Requires inputs of rate of change per period and number of periods.
-    """
-
-    def __init__(
-            self,
-            rate: float,
-            num_periods: int,
-            generator: Optional[np.random.Generator] = None):
-        super().__init__(generator=generator)
-        self.rate = rate
-        self.num_periods = num_periods
-
-    # def density(
-    #         self,
-    #         parameters: [float]):
-    #     """
-    #     Returns the value of the density function at a parameter between 0 and 1.
-    #     The form of the function is k*(1+r)^((n-1)x),
-    #     where k is a scaling constant that constrains the cumulative distribution to 1,
-    #     r is the rate, n is the number of periods, and x the parameter.
-    #
-    #     In this case, k = ((n - 1)*(1 + r)*log(1 + r))/((1 + r)^n - (1 + r)); see https://www.wolframalpha.com/input/?i=integrate+%28%28%28n+-+1%29*%281+%2B+r%29*log%281+%2B+r%29%29%2F%28%281+%2B+r%29%5En+-+%281+%2B+r%29%29%29*%281+%2B+r%29%5E%28%28n-1%29*x%29+dx+from+0+to+1
-    #     """
-    #     if (all(parameters) >= 0) & (all(parameters) <= 1):
-    #         def f(parameter):
-    #             k_num = (self.num_periods - 1) * (1 + self.rate) * np.log(1 + self.rate)
-    #             k_denom = np.power((1 + self.rate), self.num_periods) - (1 + self.rate)
-    #             k = np.divide(k_num, k_denom)
-    #             return k * np.power((1 + self.rate), (self.num_periods - 1) * parameter)
-    #             # return ((self.num_periods * math.log(1 + self.rate)) * math.pow((1 + self.rate), self.num_periods * parameter)) \
-    #             #      / (math.pow((1 + self.rate), self.num_periods) - 1)
-    #
-    #         return [f(parameter) for parameter in parameters]
-    #     else:
-    #         raise ValueError("Error: Parameter must be between 0 and 1 inclusive")
-
-    # def cumulative_density(
-    #         self,
-    #         parameters: [
-    #             float]):  # #TODO: This is giving incorrect answers for low values of num_periods...
-    #     """
-    #     Returns the cumulative distribution at parameters between 0 and 1.
-    #
-    #     See https://www.wolframalpha.com/input/?i=integrate+%28%28%28n+-+1%29*%281+%2B+r%29*log%281+%2B+r%29%29%2F%28%281+%2B+r%29%5En+-+%281+%2B+r%29%29%29+*+%28%281+%2B+r%29%5E%28%28n+-+1%29*x%29%29++dx
-    #     """
-    #     if (all(parameters) >= 0) & (all(parameters) <= 1):
-    #         def f(parameter):
-    #             num = np.power((1 + self.rate), (parameter * (self.num_periods - 1)) + 1)
-    #             denom = np.power((1 + self.rate), self.num_periods) - self.rate - 1
-    #             return np.divide(num, denom)
-    #
-    #         return [f(parameter) for parameter in parameters]
-    #     else:
-    #         raise ValueError("Error: Parameter must be between 0 and 1 inclusive")
-
-    def factor(self):
-        """
-        Returns the multiplicative factor of the distribution's initial value at each period
-        """
-        return [np.power((1 + self.rate), period_index) for period_index in range(self.num_periods)]
+            parameters: [float]) -> [float]:
+        return super().cumulative_density(parameters)
 
 
 class PERT(Distribution):
@@ -250,29 +177,23 @@ class PERT(Distribution):
         else:
             raise ValueError("Error: Weighting must be greater than 0 and Peak must be between 0 and 1 inclusive")
 
-    @staticmethod
+    @classmethod
     def standard_symmetric(
+            cls,
             peak: float,
             residual: float):
-        return PERT(peak=peak,
-                    weighting=4.,
-                    minimum=peak - residual,
-                    maximum=peak + residual)
+        return cls(
+            peak=peak,
+            weighting=4.,
+            minimum=peak - residual,
+            maximum=peak + residual)
 
     def interval_density(
             self,
-            parameters: [float]):
-        """
-        Returns the cumulative density (integral of the distribution curve, or effectively probability)
-        between n parameter pairs as intervals (i.e. returns n-1 results)
+            parameters: [float]) -> [float]:
+        return super().interval_density(parameters)
 
-        :param parameters: Any set of floats between 0 and 1
-        :return: List of floats representing the cumulative density of that interval.
-        If the input parameters span 0 to 1, the sum of the interval densities will reach 1.
-        """
-
-        if (all(parameters) >= 0) & (all(parameters) <= 1):
-            return [(self.dist.cdf(parameters[i + 1]) - self.dist.cdf(parameters[i]))
-                    for i in (range(0, len(parameters) - 1))]
-        else:
-            raise ValueError("Error: Parameter must be between 0 and 1 inclusive")
+    def cumulative_density(
+            self,
+            parameters: [float]) -> [float]:
+        return super().cumulative_density(parameters)

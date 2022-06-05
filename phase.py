@@ -4,26 +4,30 @@ import numpy as np
 import pandas as pd
 
 try:
-    from periodicity import Periodicity
+    import periodicity
 except:
-    from modules.rangekeeper.periodicity import Periodicity
+    import modules.rangekeeper.periodicity as periodicity
+
 
 class Phase:
-    name: str
     start_date: pd.Timestamp
     end_date: pd.Timestamp
+    name: str = None
     """
     A `Phase` is a pd.Interval of pd.Timestamps that bound its start and end dates
     """
 
     def __init__(
             self,
-            name: str,
             start_date: pd.Timestamp,
-            end_date: pd.Timestamp):
+            end_date: pd.Timestamp,
+            name: str = None):
         if end_date < start_date:
             raise Exception('Error: end_date cannot be before start_date')
-        self.name = name
+        if name is None:
+            self.name = ''
+        else:
+            self.name = name
 
         self._interval = pd.Interval(left=start_date, right=end_date)
         self.start_date = self._interval.left
@@ -55,53 +59,60 @@ class Phase:
 
     def to_index(
             self,
-            periodicity: Periodicity.Type) -> pd.PeriodIndex:
+            period_type: periodicity.Type) -> pd.PeriodIndex:
         """
         Return a pd.PeriodIndex of the Phase at the specified periodicity
         """
-        return Periodicity.period_index(
+        return periodicity.period_index(
             include_start=self.start_date,
-            periodicity=periodicity,
+            period_type=period_type,
             bound=self.end_date)
 
     def duration(
             self,
-            period_type: Periodicity.Type,
+            period_type: periodicity.Type,
             inclusive: bool = False) -> int:
         """
-        Return the duration of the Phase in the specified period_type
-        :param period_type:
-        :type period_type:
-        :param inclusive:
-        :type inclusive:
-        :return:
-        :rtype:
+        Return the whole-period duration of the Phase in the specified period_type
         """
-        return Periodicity.duration(start_date=self.start_date,
-                                    end_date=self.end_date,
-                                    period_type=period_type,
-                                    inclusive=inclusive)
+        return periodicity.duration(
+            start_date=self.start_date,
+            end_date=self.end_date,
+            period_type=period_type,
+            inclusive=inclusive)
 
     @classmethod
     def from_num_periods(
             cls,
             name: str,
-            start_date: pd.Timestamp,
-            period_type: Periodicity.Type,
+            date: pd.Timestamp,
+            period_type: periodicity.Type,
             num_periods: int) -> Phase:
         """
-        Create a Phase from a start_date with a set number of periods of specified type.
+        Create a Phase from a date with a set number of periods of specified type.
+        If the number of periods is negative, the Phase will end on the date specified.
+        If the number of periods is positive, the Phase will start on the date specified.
         """
         if num_periods < 0:
-            raise Exception('Error: Number of periods must be greater than 0')
-        else:
-            end_date = Periodicity.date_offset(
-                date=start_date,
+            end_date = date
+            start_date = periodicity.date_offset(
+                date=date,
                 period_type=period_type,
                 num_periods=num_periods)
-            end_date = Periodicity.date_offset(
+            start_date = periodicity.date_offset(
+                date=start_date,
+                period_type=periodicity.Type.day,
+                num_periods=1)
+            return cls(name=name, start_date=start_date, end_date=end_date)
+        else:
+            start_date = date
+            end_date = periodicity.date_offset(
+                date=date,
+                period_type=period_type,
+                num_periods=num_periods)
+            end_date = periodicity.date_offset(
                 date=end_date,
-                period_type=Periodicity.Type.day,
+                period_type=periodicity.Type.day,
                 num_periods=-1)
             return cls(name=name, start_date=start_date, end_date=end_date)
 
@@ -125,7 +136,7 @@ class Phase:
                             ' (i.e. one less than number of dates)')
 
         date_pairs = list(zip(dates, dates[1:]))
-        date_pairs = [(start, Periodicity.date_offset(end, Periodicity.Type.day, -1)) for (start, end) in date_pairs]
+        date_pairs = [(start, periodicity.date_offset(end, periodicity.Type.day, -1)) for (start, end) in date_pairs]
 
         phases = []
         for i in range(len(names)):
@@ -136,7 +147,7 @@ class Phase:
     def from_num_periods_sequence(
             cls,
             names: [str],
-            period_type: Periodicity.Type,
+            period_type: periodicity.Type,
             durations: [int],
             start_date: pd.Timestamp) -> [Phase]:
         """
@@ -158,6 +169,6 @@ class Phase:
         dates = []
         cumulative_durations = np.cumsum(durations)
         for duration in cumulative_durations:
-            dates.append(Periodicity.date_offset(date=start_date, period_type=period_type, num_periods=duration))
+            dates.append(periodicity.date_offset(date=start_date, period_type=period_type, num_periods=duration))
 
         return cls.from_date_sequence(names=names, dates=dates)

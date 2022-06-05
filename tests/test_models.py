@@ -12,14 +12,13 @@ import pandas as pd
 import pint
 
 try:
+    import projection
     import distribution
     import flux
     import measure
-    import models.deterministic
-    import models.flexible
-    import models.linear
-    import models.probabilistic
-    from periodicity import Periodicity
+    import periodicity
+    import models
+    from models import flexible, linear, probabilistic, deterministic
 except:
     import modules.rangekeeper.distribution
     import modules.rangekeeper.flux
@@ -28,8 +27,7 @@ except:
     import modules.rangekeeper.models.linear
     import modules.rangekeeper.models.probabilistic
     import modules.rangekeeper.measure
-    from modules.rangekeeper.periodicity import Periodicity
-
+    import modules.rangekeeper.periodicity
 
 matplotlib.use('TkAgg')
 plt.style.use('seaborn')  # pretty matplotlib plots
@@ -48,7 +46,7 @@ class TestLinear:
             'start_date': pd.Timestamp(2020, 1, 1),
             'num_periods': 10,
             'acquisition_price': 1000,
-            'period_type': Periodicity.Type.year,
+            'period_type': periodicity.Type.year,
             'growth_rate': 0.02,
             'initial_pgi': 100.,
             'vacancy_rate': 0.05,
@@ -78,7 +76,7 @@ class TestDeterministic:
             'units': currency,
             'start_date': pd.Timestamp(2020, 1, 1),
             'num_periods': 10,
-            'period_type': Periodicity.Type.year,
+            'period_type': periodicity.Type.year,
             'growth_rate': 0.02,
             'initial_pgi': 100.,
             'addl_pgi_per_period': 0.,
@@ -112,8 +110,9 @@ class TestDeterministic:
         assert math.isclose(a=pessimistic.pv_sums.movements[9], b=705.92, rel_tol=.01)
 
         # Calculate expected value of the property at any period:
-        exp = flux.Flow(movements=pessimistic.pv_sums.movements * .5 + optimistic.pv_sums.movements * .5,
-                        units=base_params['units'])
+        exp = flux.Flow(
+            movements=pessimistic.pv_sums.movements * .5 + optimistic.pv_sums.movements * .5,
+            units=base_params['units'])
         assert math.isclose(exp.movements[6], 1000.)
 
         # Calculate the expected value with flexibility:
@@ -128,7 +127,7 @@ class TestProbabilistic:
             'start_date': pd.Timestamp(2020, 1, 1),
             'num_periods': 10,
             'acquisition_price': 1000,
-            'period_type': Periodicity.Type.year,
+            'period_type': periodicity.Type.year,
             'growth_rate': 0.02,
             'initial_pgi': 100.,
             'space_market_dist': distribution.PERT(peak=1., weighting=4.0, minimum=0.75, maximum=1.25),
@@ -154,7 +153,7 @@ class TestFlexible:
             'start_date': pd.Timestamp(2020, 1, 1),
             'num_periods': 24,
             'acquisition_price': 1000,
-            'period_type': Periodicity.Type.year,
+            'period_type': periodicity.Type.year,
             'growth_rate': 0.02,
             'initial_pgi': 100.,
             'space_market_dist': distribution.PERT(peak=1., weighting=4.0, minimum=0.5, maximum=1.75),

@@ -1,40 +1,49 @@
 import pandas as pd
 
-try:
-    import distribution
-    from flux import Flow, Aggregation
-    from periodicity import Periodicity
-    from phase import Phase
-except:
-    import modules.rangekeeper.distribution
-    from modules.rangekeeper.flux import Flow, Aggregation
-    from modules.rangekeeper.periodicity import Periodicity
-    from modules.rangekeeper.phase import Phase
+# try:
+import projection
+import distribution
+from flux import Flow, Confluence
+import periodicity
+from phase import Phase
+
+
+# except:
+#     import modules.rangekeeper.distribution
+#     from modules.rangekeeper.flux import Flow, Confluence
+#     from modules.rangekeeper.periodicity import Periodicity
+#     from modules.rangekeeper.phase import Phase
+
 
 # Base Model:
 class Model:
-    def __init__(self, params: dict):
+    def __init__(
+            self,
+            params: dict):
+
         # Phasing:
         self.acquisition_phase = Phase.from_num_periods(
             name='Acquisition',
-            start_date=params['start_date'],
-            period_type=Periodicity.Type.year,
+            date=params['start_date'],
+            period_type=periodicity.Type.year,
             num_periods=1)
 
         self.operation_phase = Phase.from_num_periods(
             name='Operation',
-            start_date=Periodicity.date_offset(date=self.acquisition_phase.end_date,
-                                               period_type=Periodicity.Type.day,
-                                               num_periods=1),
-            period_type=Periodicity.Type.year,
+            date=periodicity.date_offset(
+                date=self.acquisition_phase.end_date,
+                period_type=periodicity.Type.day,
+                num_periods=1),
+            period_type=periodicity.Type.year,
             num_periods=params['num_periods'])
 
         self.projection_phase = Phase.from_num_periods(
             name='Projection',
-            start_date=Periodicity.date_offset(date=self.operation_phase.end_date,
-                                               period_type=Periodicity.Type.day,
-                                               num_periods=1),
-            period_type=Periodicity.Type.year,
+            date=periodicity.date_offset(
+                date=self.operation_phase.end_date,
+                period_type=periodicity.Type.day,
+                num_periods=1),
+            period_type=periodicity.Type.year,
             num_periods=1)
 
         self.noi_calc_phase = Phase.merge(
@@ -42,24 +51,21 @@ class Model:
             phases=[self.operation_phase, self.projection_phase])
 
         # Cashflows:
-        self.distribution = distribution.Exponential(
-            rate=params['growth_rate'],
-            num_periods=self.noi_calc_phase.duration(
-                period_type=params['period_type'],
-                inclusive=True))
+        self.escalation = projection.ExponentialExtrapolation(rate=params['growth_rate'])
 
         # Potential Gross Income
-        self.pgi = Flow.from_initial(
+        self.pgi = Flow.from_projection(
             name='Potential Gross Income',
-            initial=params['initial_pgi'],
-            index=self.noi_calc_phase.to_index(periodicity=params['period_type']),
-            dist=self.distribution,
+            value=params['initial_pgi'],
+            index=self.noi_calc_phase.to_index(period_type=params['period_type']),
+            proj=self.escalation,
             units=params['units'])
 
         self.addl_pgi = Flow(
-            movements=pd.Series(data=range(self.pgi.movements.size),
-                                index=self.pgi.movements.index,
-                                dtype=float),
+            movements=pd.Series(
+                data=range(self.pgi.movements.size),
+                index=self.pgi.movements.index,
+                dtype=float),
             units=params['units'],
             name='Additional PGI')
 
@@ -72,41 +78,41 @@ class Model:
         # Vacancy Allowance
         self.vacancy = Flow.from_periods(
             name='Vacancy Allowance',
-            periods=self.noi_calc_phase.to_index(periodicity=params['period_type']),
+            index=self.noi_calc_phase.to_index(period_type=params['period_type']),
             data=self.pgi.movements * params['vacancy_rate'],
             units=params['units']).invert()
 
         # Effective Gross Income:
-        self.egi = Aggregation(
+        self.egi = Confluence(
             name='Effective Gross Income',
-            aggregands=[self.pgi, self.vacancy],
-            periodicity=params['period_type'])
+            affluents=[self.pgi, self.vacancy],
+            period_type=params['period_type'])
 
         # Operating Expenses:
         self.opex = Flow.from_periods(
             name='Operating Expenses',
-            periods=self.noi_calc_phase.to_index(periodicity=params['period_type']),
+            index=self.noi_calc_phase.to_index(period_type=params['period_type']),
             data=self.pgi.movements * params['opex_pgi_ratio'],
             units=params['units']).invert()
 
         # Net Operating Income:
-        self.noi = Aggregation(
+        self.noi = Confluence(
             name='Net Operating Income',
-            aggregands=[self.egi.sum('Effective Gross Income'), self.opex],
-            periodicity=params['period_type'])
+            affluents=[self.egi.sum('Effective Gross Income'), self.opex],
+            period_type=params['period_type'])
 
         # Capital Expenses:
         self.capex = Flow.from_periods(
             name='Capital Expenditures',
-            periods=self.noi_calc_phase.to_index(periodicity=params['period_type']),
+            index=self.noi_calc_phase.to_index(period_type=params['period_type']),
             data=self.pgi.movements * params['capex_pgi_ratio'],
             units=params['units']).invert()
 
         # Net Cashflows:
-        self.ncf = Aggregation(
+        self.ncf = Confluence(
             name='Net Cashflows',
-            aggregands=[self.noi.sum(), self.capex],
-            periodicity=params['period_type'])
+            affluents=[self.noi.sum(), self.capex],
+            period_type=params['period_type'])
 
         # Disposition
         # We require each next period's NCF as the numerator:
@@ -114,18 +120,18 @@ class Model:
         self.disposition = Flow.from_periods(
             name='Disposition',
             # We no longer need the noi_calc_phase:
-            periods=self.operation_phase.to_index(periodicity=params['period_type']),
+            index=self.operation_phase.to_index(period_type=params['period_type']),
             data=sale_values,
             units=params['units'])
 
         # Calculate the Present Value of the NCFs:
         self.pv_ncf = self.ncf.sum().pv(
-            periodicity=params['period_type'],
+            period_type=params['period_type'],
             discount_rate=params['discount_rate'])
 
         # Calculate the Present Value of Reversion CFs:
         self.pv_disposition = self.disposition.pv(
-            periodicity=params['period_type'],
+            period_type=params['period_type'],
             discount_rate=params['discount_rate'])
 
         # Add Cumulative Sum of Discounted Net Cashflows to each period's Discounted Disposition
@@ -133,10 +139,10 @@ class Model:
             movements=self.pv_ncf.movements.cumsum(),
             name='Discounted Net Cashflow Cumulative Sums',
             units=params['units'])
-        self.pv_ncf_agg = Aggregation(
+        self.pv_ncf_agg = Confluence(
             name='Discounted Net Cashflow Sums',
-            aggregands=[pv_ncf_cumsum, self.pv_disposition],
-            periodicity=params['period_type'])
+            affluents=[pv_ncf_cumsum, self.pv_disposition],
+            period_type=params['period_type'])
 
         self.pv_sums = self.pv_ncf_agg.sum()
         self.pv_sums.movements = self.pv_sums.movements[:-1]
