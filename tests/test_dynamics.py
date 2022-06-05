@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 try:
+    import projection
     import distribution
     import flux
     import periodicity
@@ -29,10 +30,10 @@ plt.rcParams['figure.figsize'] = (12, 8)
 
 
 class TestDynamics:
-    period_type = periodicity.Periodicity.Type.year
+    period_type = periodicity.Type.year
     phase = phase.Phase.from_num_periods(
         name="Phase",
-        start_date=pd.Timestamp(2021, 1, 1),
+        date=pd.Timestamp(2021, 1, 1),
         period_type=period_type,
         num_periods=25)
     trend_params = {
@@ -119,13 +120,13 @@ class TestDynamics:
         trend=market_trend,
         params=volatility_params)
 
-    volatility_frame = flux.Aggregation(
+    volatility_frame = flux.Confluence(
         name="Volatility",
-        aggregands=[market_trend.trend,
+        affluents=[market_trend.trend,
                     market_volatility.volatility,
                     market_volatility.autoregressive_returns,
                     market_volatility.cumulative_volatility],
-        periodicity=period_type)
+        period_type=period_type)
 
     def test_volatility(self):
         # # dynamics.volatility.display()
@@ -141,13 +142,13 @@ class TestDynamics:
         print(TestDynamics.volatility_frame.start_date)
         print(TestDynamics.volatility_frame.end_date)
 
-        plot = flux.Aggregation(
+        plot = flux.Confluence(
             name='Plot',
-            aggregands=[TestDynamics.market_volatility.cumulative_volatility,
+            affluents=[TestDynamics.market_volatility.cumulative_volatility,
                         TestDynamics.market_trend.trend],
-            periodicity=TestDynamics.period_type).plot()
+            period_type=TestDynamics.period_type).plot()
 
-        # print(dynamics.volatility_frame.aggregation)
+        # print(dynamics.volatility_frame.frame)
         TestDynamics.volatility_frame.display()
 
     cyclicality_params = {
@@ -243,10 +244,10 @@ class TestDynamics:
                 name='parameter_' + str(param))
             cycles.append(asymmetric_cycle)
 
-        asymmetric_cycle_plot = flux.Aggregation(
+        asymmetric_cycle_plot = flux.Confluence(
             name='asymmetric_cycle_plot',
-            aggregands=cycles,
-            periodicity=TestDynamics.period_type)
+            affluents=cycles,
+            period_type=TestDynamics.period_type)
         asymmetric_cycle_plot.plot()
 
         print("\nSpace Cycle:")
@@ -255,12 +256,12 @@ class TestDynamics:
         print("\nAsset Cycle:")
         print(TestDynamics.market_cyclicality.asset_cycle)
 
-        flux.Aggregation(
+        flux.Confluence(
             name="Plot",
-            aggregands=[TestDynamics.market_cyclicality.space_waveform,
+            affluents=[TestDynamics.market_cyclicality.space_waveform,
                         TestDynamics.market_cyclicality.asset_waveform],
-            periodicity=TestDynamics.period_type).plot(
-            aggregands={
+            period_type=TestDynamics.period_type).plot(
+            affluents={
                 'space_waveform': (0., 1.4),
                 'asset_waveform': (-0.015, 0.015)
                 })
@@ -286,17 +287,17 @@ class TestDynamics:
         cyclicality=market_cyclicality)
 
     def test_market(self):
-        market = flux.Aggregation(
+        market = flux.Confluence(
             name="Market",
-            aggregands=[TestDynamics.market_trend.trend,
+            affluents=[TestDynamics.market_trend.trend,
                         TestDynamics.market_volatility.cumulative_volatility,
                         TestDynamics.market_dynamics.space_market,
                         TestDynamics.market_dynamics.asset_true_value,
                         TestDynamics.market_dynamics.noisy_value,
                         TestDynamics.market_dynamics.historical_value],
-            periodicity=TestDynamics.period_type)
+            period_type=TestDynamics.period_type)
         market.plot(
-            aggregands={
+            affluents={
                 'Trend': (0., .08),
                 'Cumulative Volatility': (0., .08),
                 'Space Market': (0., .08),
