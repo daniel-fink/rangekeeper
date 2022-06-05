@@ -7,6 +7,8 @@ from abc import ABC, abstractmethod
 
 
 class Type(aenum.Enum):
+    _init_ = 'value', '__doc__'
+
     uniform = 'Uniform distribution', 'Continuous uniform distribution or rectangular distribution'
     linear = 'Linear distribution', 'Linearly increasing or decreasing distribution between minimum and maximum values'
     triangular = 'Triangular distribution', 'Continuous linear distribution with lower limit a, upper limit b and mode c, where a < b and a ≤ c ≤ b.'
@@ -49,6 +51,7 @@ class Distribution:
         :return: List of floats representing the cumulative density of that interval.
         If the input parameters span 0 to 1, the sum of the interval densities will reach 1.
         """
+
         if (all(parameters) >= 0) & (all(parameters) <= 1):
             return [(self.dist.cdf(parameters[i + 1]) - self.dist.cdf(parameters[i]))
                     for i in (range(0, len(parameters) - 1))]
