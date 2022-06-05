@@ -3,10 +3,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-try:
-    import periodicity
-except:
-    import modules.rangekeeper.periodicity as periodicity
+from . import periodicity
 
 
 class Phase:
