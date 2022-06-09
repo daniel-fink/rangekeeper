@@ -263,7 +263,7 @@ class Flow:
 
     def trim_to_phase(
             self,
-            phase: Phase) -> Flow:
+            phase: phase.Phase) -> Flow:
         """
         Returns a Flow with movements trimmed to the specified phase
         """
@@ -355,7 +355,7 @@ class Confluence:
             cls,
             name: str,
             data: pd.DataFrame,
-            units: Measure) -> Confluence:
+            units: measure.Measure) -> Confluence:
         affluents = []
         for column in data.columns:
             series = data[column]
@@ -584,7 +584,7 @@ class Confluence:
 
     def trim_to_phase(
             self,
-            phase: Phase) -> Confluence:
+            phase: phase.Phase) -> Confluence:
         """
         Returns an Confluence with all affluents trimmed to the specified Phase
         :param phase:
