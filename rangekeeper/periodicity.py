@@ -69,6 +69,12 @@ def period_index(
                                name='periods')
 
 
+def single_period_index(period: pd.Period) -> pd.PeriodIndex:
+    return pd.period_range(
+        start=period,
+        periods=1)
+
+
 def to_datestamps(
         period_index: pd.PeriodIndex,
         end: bool = True) -> pd.DatetimeIndex:
