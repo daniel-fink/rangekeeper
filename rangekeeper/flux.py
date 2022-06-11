@@ -2,11 +2,14 @@ from __future__ import annotations
 
 import itertools
 import math
-from typing import Dict, Union
+from typing import Dict, Union, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import pint
+import rich
+import yaml
 import pyxirr
 
 from . import projection, distribution, periodicity, phase, measure
@@ -15,7 +18,7 @@ from . import projection, distribution, periodicity, phase, measure
 class Flow:
     name: str
     movements: pd.Series
-    units: measure.Measure
+    units: pint.Unit
     """
     A `Flow` is a pd.Series of 'movements' of material (funds, energy, mass, etc) that occur at specified dates.
     Note: the flow.movements Series index is a pd.DatetimeIndex, and its values are floats.
@@ -24,7 +27,7 @@ class Flow:
     def __init__(
             self,
             movements: pd.Series,
-            units: measure.Measure = None,
+            units: pint.Unit = None,
             name: str = None):
         """
         Initializes a Flow. If units are not provided, a scalar (dimensionless) unit is assumed.
@@ -48,9 +51,11 @@ class Flow:
             self.name = str(self.movements.name)
 
         if units is None:
-            self.units = measure.scalar
-        else:
+            self.units = measure.Index.registry.dimensionless
+        elif isinstance(units, pint.Unit):
             self.units = units
+        else:
+            raise ValueError('Error: Units must be of type pint.Unit')
 
     def __str__(self):
         return self.display()
@@ -67,7 +72,7 @@ class Flow:
 
         print('\n')
         print('Name: ' + self.name)
-        print('Units: ' + self.units.name)
+        print('Units: ' + str(self.units))
         print('Movements: ')
 
         floatfmt = "." + str(decimals) + "f"
@@ -93,7 +98,7 @@ class Flow:
             cls,
             index: pd.PeriodIndex,
             data: [float],
-            units: measure.Measure,
+            units: pint.Unit,
             name: str = None) -> Flow:
         """
         Returns a Flow where movement dates are defined by the end-dates of the specified periods
@@ -116,7 +121,7 @@ class Flow:
     def from_dict(
             cls,
             movements: Dict[pd.Timestamp, float],
-            units: measure.Measure,
+            units: pint.Unit,
             name: str = None) -> Flow:
         """
         Returns a Flow where movements are defined by key-value pairs of pd.Timestamps and amounts.
@@ -138,7 +143,7 @@ class Flow:
             cls,
             value: Union[float, distribution.Distribution],
             proj: projection,
-            units: measure.Measure,
+            units: pint.Unit = None,
             name: str = None) -> Flow:
         """
         Generate a Flow from a projection of a value, with an optional timing
@@ -153,21 +158,6 @@ class Flow:
             value = value
         elif isinstance(value, distribution.Distribution):
             value = value.sample()
-
-        # if offset is None:
-        #     num_periods = index.size
-        # else:
-        #     if isinstance(offset, int):
-        #         num_periods = -offset + index.size
-        #     elif isinstance(offset, pd.Timestamp):
-        #         duration = periodicity.duration(
-        #             start_date=index[0],
-        #             end_date=offset,
-        #             period_type=periodicity.from_value(index.freq),
-        #             inclusive=True)
-        #         num_periods = duration + index.size
-        #     else:
-        #         raise ValueError("Error: offset must be an int or a pd.Timestamp")
 
         if isinstance(proj, projection.Extrapolation):
             movements = value * proj.factors()
@@ -295,7 +285,7 @@ class Confluence:
     _affluents: [Flow]
     period_type: periodicity.Type
     start_date: pd.Timestamp
-    end_date: pd.Timestamp  
+    end_date: pd.Timestamp
     frame: pd.DataFrame
 
     """
@@ -313,14 +303,16 @@ class Confluence:
         self.name = name
 
         # Units:
-        if all(flow.units == affluents[0].units for flow in affluents):
-            self.units = affluents[0].units
-        else:
-            raise Exception("Input Flows have dissimilar units. Cannot aggregate into Confluence.")
+        # if all(flow.units == affluents[0].units for flow in affluents):
+        #     self.units = affluents[0].units
+        # else:
+        #     raise Exception("Input Flows have dissimilar units. Cannot aggregate into Confluence.")
 
-        # Aggregands:
+        # Affluents:
         self._affluents = affluents
         """The set of input Flows that are aggregated in this Confluence"""
+
+        self.units = {affluent.name: affluent.units for affluent in self._affluents}
 
         # Periodicity Type:
         self.period_type = period_type
@@ -355,7 +347,7 @@ class Confluence:
             cls,
             name: str,
             data: pd.DataFrame,
-            units: measure.Measure) -> Confluence:
+            units: pint.Unit) -> Confluence:
         affluents = []
         for column in data.columns:
             series = data[column]
@@ -375,7 +367,8 @@ class Confluence:
 
         print('\n')
         print('Name: ' + self.name)
-        print('Units: ' + self.units.name)
+        print('Units: ')
+        rich.print(self.units)
         print('Flows: ')
 
         floatfmt = "." + str(decimals) + "f"
@@ -505,7 +498,7 @@ class Confluence:
             name=flow_name,
             data=list(self.frame[flow_name]),
             index=self.frame.index,
-            units=self.units)
+            units=self.units[flow_name])
 
     def sum(
             self,
@@ -514,24 +507,37 @@ class Confluence:
         Returns a Flow whose movements are the sum of the Confluence's affluents by period
         :return: Flow
         """
+        # Check if all units are the same:
+        if not len(list(set(list(self.units.values())))) == 1:
+            raise ValueError("Error: summation requires all affluents' units to be the same.")
+
         return Flow.from_periods(
             name=name if name is not None else self.name,
             index=self.frame.index,  # .to_period(),
             data=self.frame.sum(axis=1).to_list(),
-            units=self.units)
+            units=next(iter(self.units.values())))
 
     def product(
             self,
-            name: str = None) -> Flow:
+            name: str = None,
+            scope: Optional[dict] = None) -> Flow:
         """
         Returns a Flow whose movements are the product of the Confluence's affluents by period
         :return: Flow
         """
+
+        if scope is None:
+            scope = dict(globals(), **locals())
+
+        # Produce resultant units:
+        singleton = ['1 * units.' + str(value) for value in self.units.values()]
+        singleton = eval(' * '.join(singleton), scope)
+
         return Flow.from_periods(
             name=name if name is not None else self.name,
             index=self.frame.index,  # .to_period(),
             data=self.frame.prod(axis=1).to_list(),
-            units=self.units)
+            units=singleton.units)
 
     def collapse(self) -> Confluence:
         """
@@ -554,12 +560,14 @@ class Confluence:
         :return:
         :rtype:
         """
-        # Check Units:
-        if any(flow.units != self.units for flow in affluents):
-            raise Exception("Input Flows have dissimilar units. Cannot aggregate into Confluence.")
+        # if any(flow.units != self.units for flow in affluents):
+        #     raise Exception("Input Flows have dissimilar units. Cannot aggregate into Confluence.")
 
         # Append Affluents:
         self._affluents.extend(affluents)
+
+        # Append Units:
+        self.units.update({affluent.name: affluent.units for affluent in affluents})
 
         # Confluence:
         affluents_dates = list(

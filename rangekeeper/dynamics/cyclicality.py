@@ -118,7 +118,7 @@ class Cycle:
             movements=pd.Series(
                 data=data,
                 index=index),
-            units=measure.scalar,
+            # units=measure.scalar,
             name=name)
 
 
