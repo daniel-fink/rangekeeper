@@ -49,8 +49,9 @@ class Trend:
             value=self.initial_rent,
             proj=projection.Extrapolation(
                 form=trend_esc,
-                sequence=phase.to_index(period_type=period_type)),
-            units=measure.scalar)
+                sequence=phase.to_index(period_type=period_type))
+            )
+            # units=measure.scalar)
         """
         Trend:
         Note that the trend is geometric.
