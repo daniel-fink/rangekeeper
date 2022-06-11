@@ -17,16 +17,16 @@ matplotlib.use('TkAgg')
 plt.style.use('seaborn')  # pretty matplotlib plots
 plt.rcParams['figure.figsize'] = (12, 8)
 
-units = pint.UnitRegistry()
-currency = rk.measure.add_currency(
+units = rk.measure.Index.registry
+currency = rk.measure.register_currency(
     country_code='USD',
-    unit_registry=units)
+    registry=units)
 
 
 class TestLinear:
     def test_linear_model(self):
         base_params = {
-            'units': currency,
+            'units': currency.units,
             'start_date': pd.Timestamp(2020, 1, 1),
             'num_periods': 10,
             'acquisition_price': 1000,
@@ -57,7 +57,7 @@ class TestLinear:
 class TestDeterministic:
     def test_deterministic_model(self):
         base_params = {
-            'units': currency,
+            'units': currency.units,
             'start_date': pd.Timestamp(2020, 1, 1),
             'num_periods': 10,
             'period_type': rk.periodicity.Type.year,
@@ -107,7 +107,7 @@ class TestDeterministic:
 class TestProbabilistic:
     def test_probabilistic_model(self):
         base_params = {
-            'units': currency,
+            'units': currency.units,
             'start_date': pd.Timestamp(2020, 1, 1),
             'num_periods': 10,
             'acquisition_price': 1000,
@@ -133,7 +133,7 @@ class TestProbabilistic:
 class TestFlexible:
     def test_flexible_model(self):
         base_params = {
-            'units': currency,
+            'units': currency.units,
             'start_date': pd.Timestamp(2020, 1, 1),
             'num_periods': 24,
             'acquisition_price': 1000,

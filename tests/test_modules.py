@@ -20,10 +20,11 @@ matplotlib.use('TkAgg')
 plt.style.use('seaborn')  # pretty matplotlib plots
 plt.rcParams['figure.figsize'] = (12, 8)
 
-units = pint.UnitRegistry()
-currency = rk.measure.add_currency(
+units = rk.measure.Index.registry
+currency = rk.measure.register_currency(
     country_code='USD',
-    unit_registry=units)
+    registry=units)
+scope = dict(globals(), **locals())
 
 
 class TestDistribution:
@@ -85,6 +86,22 @@ class TestPeriod:
         assert end_date == pd.Timestamp(2020, 6, 28)
 
 
+class TestUnits:
+    def test_series_units(self):
+        date1 = pd.Timestamp(2000, 1, 2)
+        date2 = pd.Timestamp(2000, 2, 29)
+        date3 = pd.Timestamp(2000, 12, 31)
+
+        dates = [date1, date2, date3]
+        values = [1 * units.meter, 2.3 * units.second, 456 * units.meter]
+
+        series = pd.Series(
+            data=values,
+            index=dates,
+            name="foo")
+        print(series)
+
+
 class TestFlow:
     date1 = pd.Timestamp(2000, 1, 2)
     date2 = pd.Timestamp(2000, 2, 29)
@@ -98,15 +115,16 @@ class TestFlow:
         index=dates,
         name="foo",
         dtype=float)
+
     flow_from_series = rk.flux.Flow(
         movements=series,
-        units=currency)
+        units=currency.units)
 
     dict = {date1: values[0], date2: values[1], date3: values[2]}
     flow_from_dict = rk.flux.Flow.from_dict(
         movements=dict,
         name="foo",
-        units=currency)
+        units=currency.units)
 
     def test_flow_validity(self):
         # TestFlow.flow_from_series.display()
@@ -132,7 +150,7 @@ class TestFlow:
         proj=rk.projection.Distribution(
             dist=rk.distribution.Uniform(),
             sequence=periods),
-        units=currency)
+        units=currency.units)
 
     def test_flow_duplication(self):
         duplicate = TestFlow.flow.duplicate()
@@ -147,7 +165,7 @@ class TestFlow:
         assert TestFlow.flow.movements.index.array[1] == pd.Timestamp(2020, 2, 29)
         assert TestFlow.flow.movements.array[1] == 4
         assert TestFlow.flow.movements.name == "bar"
-        assert TestFlow.flow.units == currency
+        assert TestFlow.flow.units == currency.units
 
         TestFlow.flow.display()
         collapse = TestFlow.flow.collapse()
@@ -164,7 +182,7 @@ class TestFlow:
         assert TestFlow.invert_flow.movements.index.array[2] == pd.Timestamp(2020, 3, 31)
         assert TestFlow.invert_flow.movements.array[2] == pytest.approx(-4)
         assert TestFlow.invert_flow.movements.name == "bar"
-        assert TestFlow.invert_flow.units == currency
+        assert TestFlow.invert_flow.units == currency.units
 
     resample_flow = invert_flow.resample(period_type=rk.periodicity.Type.year)
 
@@ -202,7 +220,7 @@ class TestFlow:
                 proj=rk.projection.Distribution(
                     dist=rk.distribution.Uniform(),
                     sequence=periods),
-                units=currency)
+                units=currency.units)
             sums.append(flow.collapse().movements[0])
 
         # estimate distribution parameters, in this case (a, b, loc, scale)
@@ -230,7 +248,7 @@ class TestConfluence:
                 include_start=pd.Timestamp(2020, 1, 31),
                 bound=pd.Timestamp(2022, 1, 1),
                 period_type=rk.periodicity.Type.year), ),
-        units=currency)
+        units=currency.units)
 
     flow2 = rk.flux.Flow.from_projection(
         name="weekly_flow",
@@ -241,7 +259,7 @@ class TestConfluence:
                 include_start=pd.Timestamp(2020, 3, 1),
                 bound=pd.Timestamp(2021, 2, 28),
                 period_type=rk.periodicity.Type.week)),
-        units=currency)
+        units=currency.units)
 
     confluence = rk.flux.Confluence(
         name="confluence",
@@ -262,20 +280,22 @@ class TestConfluence:
         assert TestConfluence.confluence.frame['weekly_flow'].sum() == -50
         assert TestConfluence.confluence.frame.index.freq == 'M'
 
-        product = TestConfluence.confluence.product(name="product")
+        product = TestConfluence.confluence.product(
+            name="product",
+            scope=dict(globals(), **locals()))
+        product.display()
+
         datetime = pd.Timestamp(2020, 12, 31)
         print(TestConfluence.confluence.frame['yearly_flow'][datetime])
         print(TestConfluence.confluence.frame['weekly_flow'][datetime])
         assert product.movements[datetime] == approx(-125.786163522)
 
-        cumsum = TestConfluence.flow1.movements.cumsum()
-        print(cumsum)
-
         cumsum_flow = rk.flux.Flow(
             name="cumsum_flow",
             movements=TestConfluence.flow1.movements.cumsum(),
-            units=currency)
+            units=currency.units)
         cumsum_flow.display()
+        assert cumsum_flow.movements.iloc[-1] == 100
 
     def test_confluence_duplication(self):
         duplicate = TestConfluence.confluence.duplicate()
@@ -320,9 +340,9 @@ class TestPhase:
 
 
 class TestMeasures:
-    aud = rk.measure.add_currency(
+    aud = rk.measure.register_currency(
         country_code='AUD',
-        unit_registry=units)
+        registry=units)
 
     def test_currency(self):
         assert TestMeasures.aud.name == 'Australian Dollar'
@@ -335,18 +355,37 @@ class TestMeasures:
 
     nsa = rk.measure.Measure(
         name='Net Sellable Area',
-        units=units.meter ** 2)
+        units=units.sqm)
 
     rent = rk.measure.Measure(
         name='Rent',
         units=aud.units)
 
     rent_per_nsa = rk.measure.Measure(
-        name='Rent per m2 of NSA',
+        name='Rent per sqm of NSA',
         units=rent.units / nsa.units)
 
     def test_custom_derivative(self):
-        assert TestMeasures.rent_per_nsa.units == 'AUD / meter ** 2'
+        assert (1 * TestMeasures.gfa.units).to('sqm') == units.Quantity('1 * sqm')
+        assert TestMeasures.rent_per_nsa.units == 'AUD / sqm'
+
+    def test_eval_units(self):
+        area = 100 * units.sqm
+        value = 5 * (units.USD / units.sqm)
+        assert area * value == units.Quantity('500 USD')
+
+        result = eval('100 * units.sqm * 5 * (units.USD / units.sqm)')
+        assert result == area * value
+        assert result.units == 'USD'
+        area_check = area.to('km ** 2')
+        print(area.to('km ** 2'))
+        assert area_check.magnitude == approx(0.0001)
+
+        quantity_check = 100 * rk.measure.Index.registry.dimensionless
+        print(quantity_check)
+        assert quantity_check.units == units.dimensionless
+
+        print((value / (5 * units.hour)).units)
 
 
 class TestSpace:
