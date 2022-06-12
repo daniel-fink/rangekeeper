@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import enum
-from typing import List, Dict
+import math
+from typing import List, Dict, Union, Tuple
 from collections import namedtuple
 from aenum import Enum
+import rich
 
 
 class Characteristic(Enum):
@@ -13,6 +15,50 @@ class Characteristic(Enum):
     tenure = 'Tenure'
     phase = 'Phase'
     type = 'Type'
+
+class Type:
+    name: str
+    code: str
+    supertype: Type
+    subtypes: [Type]
+
+    def __init__(
+            self,
+            name: str,
+            code: str = None,
+            supertype: Type = None):
+        self.name = name
+        self.code = code
+        self.supertype = supertype
+        self.subtypes = []
+
+        if supertype is not None:
+            supertype.subtypes.append(self)
+
+    def __str__(self):
+        code = ' :' + self.code if self.code is not None else ''
+        return self.name + code
+
+    def add_subtypes(
+            self,
+            subtypes: [Type]):
+        for subtype in subtypes:
+            self.subtypes.append(subtype)
+            subtype.supertype = self
+
+    def ancestors(self) -> [Type]:
+        ancestors = []
+        supertype = self.supertype
+        while supertype is not None:
+            ancestors.append(supertype)
+            supertype = supertype.supertype
+        return ancestors
+
+    def primogenitor(self) -> Type:
+        return self.ancestors()[-1]
+
+    def display(self):
+        print(' > '.join([ancestor.__str__() for ancestor in self.ancestors()]))
 
 
 class Interval:
@@ -48,26 +94,32 @@ class Interval:
         upper_interval = self.__class__(
             upper=self.upper,
             lower=split_point)
-        Split = namedtuple('Split', 'lower upper')
-        return Split(lower_interval, upper_interval)
+        return lower_interval, upper_interval
 
     def subdivide(
             self,
-            divisors: int) -> List[Interval]:
-        if divisors < 0:
-            raise ValueError('Error: divisors must be greater than 0')
+            values: Union[int, List[float]]) -> List[Interval]:
+        if isinstance(values, int):
+            if values < 0:
+                raise ValueError('Error: divisors must be greater than 0')
+            lengths = [self.length() / values for i in range(values)]
+        elif all(isinstance(fraction, float) for fraction in values):
+            if math.isclose(sum(values), 1) and all(0 < fraction < 1 for fraction in values):
+                lengths = [self.length() * fraction for fraction in values]
+            else:
+                raise ValueError('Error: Sum of divisors must complete unit interval')
+        else:
+            raise TypeError('Error: values must be either number of divisors or split proportions')
 
-        length = self.length() / divisors
-
-        result = []
-        for i in range(divisors):
-            lower = self.lower + (i * length)
-            upper = lower + length
-
-            result.append(self.__class__(
-                upper=upper,
-                lower=lower))
-        return result
+        uppers = [self.lower + sum(lengths[:i]) for i in range(1, len(lengths) + 1)]
+        uppers.insert(0, self.lower)
+        results = []
+        for i in range(len(uppers) - 1):
+            results.append(
+                self.__class__(
+                    lower=uppers[i],
+                    upper=uppers[i + 1]))
+        return results
 
 
 class Segment:
@@ -82,32 +134,37 @@ class Segment:
             characteristics: Dict[Characteristic, str] = None,
             parent: Segment = None):
         self.bounds = bounds
-        if characteristics is None:
-            self.characteristics = {}
-        else:
-            self.characteristics = characteristics
+        self.characteristics = {} if characteristics is None else characteristics
         self.parent = parent
         self.children = []
 
         if parent is not None:
             parent.children.append(self)
 
+    def display(self):
+        print('\n')
+        print('Characteristics: ')
+        rich.print(self.characteristics)
+        print('Bounds: ' + self.bounds.__str__())
+
     def split(self, proportion: float) -> tuple[Segment, Segment]:
-        split = self.bounds.split(proportion)
+        split_lower, split_upper = self.bounds.split(proportion)
         lower = Segment(
-            bounds=split.lower,
+            bounds=split_lower,
             parent=self)
         upper = Segment(
-            bounds=split.upper,
+            bounds=split_upper,
             parent=self)
-        Split = namedtuple('Split', 'lower upper')
-        return Split(lower, upper)
+        return (lower, upper)
 
-    def aggregate_ancestor_characteristics(self) -> Dict[Characteristic, str]:
-        parent = self.parent
-        characteristics = {}
-        while parent is not None:
-            for characteristic, value in parent.characteristics.items():
-                characteristics[characteristic] = value
-            parent = parent.parent
-        return characteristics
+    def subdivide(
+            self,
+            divisions: Dict[List[Tuple[Characteristic, str]], float]) -> List[Segment]:
+        result = []
+        intervals = self.bounds.subdivide()
+        for division, interval in zip(divisions.keys(), intervals):
+            result.append(Segment(
+                bounds=interval,
+                characteristics=division,
+                parent=self))
+        return result
