@@ -509,6 +509,7 @@ class Confluence:
         """
         # Check if all units are the same:
         if not len(list(set(list(self.units.values())))) == 1:
+            rich.print(self.units)
             raise ValueError("Error: summation requires all affluents' units to be the same.")
 
         return Flow.from_periods(
