@@ -490,30 +490,54 @@ class TestSegmentation:
         assert TestSegmentation.interval.midpoint() == approx(6.0)
         assert TestSegmentation.interval.length() == approx(7.2)
 
-        child = TestSegmentation.interval.split(proportion=(1 / 3)).upper
-        assert child.upper == approx(9.6)
-        assert child.lower == approx(4.8)
-        assert child.length() == approx(4.8)
-        assert child.midpoint() == approx(7.2)
+        (lower_child, upper_child) = TestSegmentation.interval.split(proportion=(1 / 3))
+        assert upper_child.upper == approx(9.6)
+        assert upper_child.lower == approx(4.8)
+        assert upper_child.length() == approx(4.8)
+        assert upper_child.midpoint() == approx(7.2)
 
-        children = TestSegmentation.interval.subdivide(divisors=4)
+        children = TestSegmentation.interval.subdivide(values=4)
+        print(children)
         assert children[0].lower == 2.4
+        assert children[0].upper == approx(4.2)
         assert children[3].upper == approx(9.6)
         assert children[2].length() == approx(1.8)
 
-    def test_segment(self):
+        grandchildren = children[0].subdivide(values=[0.1, 0.2, 0.7])
+        assert grandchildren[0].lower == 2.4
+        assert grandchildren[0].upper == 2.58
+
+    def test_division(self):
         gross = rk.segmentation.Segment(
             bounds=rk.segmentation.Interval(upper=100),
-            characteristics={rk.segmentation.Characteristic.use: 'mixed'})
-        residential, podium = gross.split(proportion=.65)
+            characteristics=[(rk.segmentation.Characteristic.use, 'mixed')])
+        (residential, podium) = gross.split(proportion=.65)
 
         residential.characteristics[rk.segmentation.Characteristic.use] = 'residential'
         podium.characteristics[rk.segmentation.Characteristic.use] = 'mixed'
 
-        # assert residential.bounds.upper == approx(65)
-        # assert podium.aggregate_ancestor_characteristics() == {
-        #     rk.segmentation.Characteristic.use: 'mixed'
-        #     }
-        # assert residential.aggregate_ancestor_characteristics() == {
-        #     rk.segmentation.Characteristic.use: 'residential'
-        #     }
+        assert residential.bounds.upper == approx(65)
+
+        podium_subdivs = podium.subdivide(divisions={
+            [(rk.segmentation.Characteristic.use, 'parking')]: 0.5,
+            [(rk.segmentation.Characteristic.use, 'retail')]: 0.25,
+            [(rk.segmentation.Characteristic.use, 'boh')]: 0.25
+            })
+        assert podium_subdivs[2].bounds.upper == 100
+
+
+class TestType:
+    parent = rk.segmentation.Type(name='parent')
+    child = rk.segmentation.Type(name='child')
+    parent.add_subtypes([child])
+    child.add_subtypes(
+        [rk.segmentation.Type(name='grandchild01'),
+         rk.segmentation.Type(name='grandchild02')]
+        )
+    grandparent = rk.segmentation.Type(name='grandparent')
+    grandparent.add_subtypes([parent])
+
+    def test_heritage(self):
+        assert len(TestType.grandparent.subtypes[0].subtypes[0].subtypes) == 2
+        TestType.child.subtypes[0].display()
+        print([ancestor.name for ancestor in TestType.child.subtypes[0].ancestors()])
