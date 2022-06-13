@@ -5,11 +5,9 @@ import math
 from typing import Dict, Union, Optional
 
 import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
+import polars as pl
 import pint
 import rich
-import yaml
 import pyxirr
 
 from . import projection, distribution, periodicity, phase, measure
@@ -17,30 +15,23 @@ from . import projection, distribution, periodicity, phase, measure
 
 class Flow:
     name: str
-    movements: pd.Series
+    movements: pl.DataFrame
     units: pint.Unit
     """
-    A `Flow` is a pd.Series of 'movements' of material (funds, energy, mass, etc) that occur at specified dates.
+    A `Flow` is a pl.Series of 'movements' of material (funds, energy, mass, etc) that occur at specified dates.
     Note: the flow.movements Series index is a pd.DatetimeIndex, and its values are floats.
     """
 
     def __init__(
             self,
-            movements: pd.Series,
+            movements: pl.DataFrame,
             units: pint.Unit = None,
             name: str = None):
         """
         Initializes a Flow. If units are not provided, a scalar (dimensionless) unit is assumed.
-
-        :param movements:
-        :type movements:
-        :param units:
-        :type units:
-        :param name:
-        :type name:
         """
 
-        if not isinstance(movements.index, pd.DatetimeIndex):
+        if not isinstance(movements['dates'], pl.datatypes.date):
             raise Exception("Error: Flow's movements' Index is not a pd.DatetimeIndex")
 
         self.movements = movements

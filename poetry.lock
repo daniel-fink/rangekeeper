@@ -244,6 +244,25 @@ dev = ["pre-commit", "tox"]
 testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
+name = "polars"
+version = "0.13.45"
+description = "Blazingly fast DataFrame library"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+numpy = ">=1.16.0"
+typing_extensions = {version = ">=4.0.0", markers = "python_version < \"3.10\""}
+
+[package.extras]
+xlsx2csv = ["xlsx2csv"]
+pandas = ["pyarrow (>=4.0)", "pandas"]
+pyarrow = ["pyarrow (>=4.0)"]
+fsspec = ["fsspec"]
+connectorx = ["connectorx"]
+
+[[package]]
 name = "py"
 version = "1.11.0"
 description = "library with cross-python path, ini-parsing, io, code, log facilities"
@@ -433,7 +452,7 @@ python-versions = ">=3.7"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9, <3.11"
-content-hash = "1f70d41ba79dd67ac3946f4d3aa4b65145f08b85a46bf642d0021459c05ca519"
+content-hash = "9e617ead741f6ddcc30702645af3dc1adbe8f0e925e087927e98e6527e3d00ac"
 
 [metadata.files]
 aenum = [
@@ -719,6 +738,14 @@ pint = [
 pluggy = [
     {file = "pluggy-1.0.0-py2.py3-none-any.whl", hash = "sha256:74134bbf457f031a36d68416e1509f34bd5ccc019f0bcc952c7b909d06b37bd3"},
     {file = "pluggy-1.0.0.tar.gz", hash = "sha256:4224373bacce55f955a878bf9cfa763c1e360858e330072059e10bad68531159"},
+]
+polars = [
+    {file = "polars-0.13.45-cp37-abi3-macosx_10_7_x86_64.whl", hash = "sha256:af5680ef86ba57c62f55d71b5629ad45e76c6b31520b5fd15d53c5a172a6127e"},
+    {file = "polars-0.13.45-cp37-abi3-macosx_11_0_arm64.whl", hash = "sha256:71ce797d3c880382cd2cc25c5842e413b0213ddcd13e8579f510e6c28a15e6bf"},
+    {file = "polars-0.13.45-cp37-abi3-manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:4c62312504dd757a086a8c939573247627a6b556997515e6a18fed33a0116b3a"},
+    {file = "polars-0.13.45-cp37-abi3-manylinux_2_24_aarch64.whl", hash = "sha256:7f712a456e62cc0f1f4024d418dbbd496daa70658617a2632a0ed5c4263c7f44"},
+    {file = "polars-0.13.45-cp37-abi3-win_amd64.whl", hash = "sha256:54041ec570c3f0a9c5c3d91a8a3e1999e9bc7db6a8da60a99008775810b54509"},
+    {file = "polars-0.13.45.tar.gz", hash = "sha256:041970be1f70ca6d1873fd699395274690cd96f63cef8ae1f7d0e0bd15ffb47a"},
 ]
 py = [
     {file = "py-1.11.0-py2.py3-none-any.whl", hash = "sha256:607c53218732647dff4acdfcd50cb62615cedf612e72d1724fb1a0cc6405b378"},
