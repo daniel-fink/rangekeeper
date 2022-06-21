@@ -4,6 +4,7 @@ import math
 from typing import Union
 
 import aenum
+from datetime import datetime
 import dateutil.relativedelta
 import pandas as pd
 
@@ -68,6 +69,12 @@ def period_index(
                                name='periods')
 
 
+def single_period_index(period: pd.Period) -> pd.PeriodIndex:
+    return pd.period_range(
+        start=period,
+        periods=1)
+
+
 def to_datestamps(
         period_index: pd.PeriodIndex,
         end: bool = True) -> pd.DatetimeIndex:
@@ -122,13 +129,14 @@ def date_offset(
         return date + pd.DateOffset(days=num_periods)
 
 
-def duration(start_date: pd.Timestamp,
-             end_date: pd.Timestamp,
-             period_type: Type,
-             inclusive: bool = False) -> int:
+def duration(
+        start_date: pd.Timestamp,
+        end_date: pd.Timestamp,
+        period_type: Type,
+        inclusive: bool = False) -> int:
     """
-    Returns the whole integer (i.e. no remainder)
-    number of periods between given dates.
+    Returns the whole integer (i.e. no remainder) number of periods between
+    given dates.
     If inclusive is True, the end_date is included in the calculation.
     """
     calc_end_date = end_date
@@ -140,15 +148,56 @@ def duration(start_date: pd.Timestamp,
 
     delta = dateutil.relativedelta.relativedelta(calc_end_date, start_date)
 
+    result = 0
     if period_type is Type.year:
-        return delta.years
+        result = delta.years
     if period_type is Type.quarter:
-        return (delta.years * 4) + math.floor(delta.months / 3)
+        result = (delta.years * 4) + math.floor(delta.months / 3)
     if period_type is Type.month:
-        return (delta.years * 12) + delta.months
+        result = (delta.years * 12) + delta.months
     if period_type is Type.semimonth:
-        return (delta.years * 24) + delta.months * 2
+        result = (delta.years * 24) + delta.months * 2
     if period_type is Type.week:
-        return math.floor((calc_end_date - start_date).days / 7)
+        result = math.floor((calc_end_date - start_date).days / 7)
     if period_type is Type.day:
-        return (calc_end_date - start_date).days
+        result = (calc_end_date - start_date).days
+
+    def direction(rd: dateutil.relativedelta.relativedelta) -> int:
+        """
+        Check whether a relativedelta object is negative
+        From https://stackoverflow.com/a/57906103/10964780
+        """
+        try:
+            datetime.min + rd
+            return 1
+        except OverflowError:
+            return -1
+
+    return result * direction(delta)
+
+
+def to_range_index(
+        period_index: pd.PeriodIndex,
+        start_period: pd.Period = None,
+        end_period: pd.Period = None) -> pd.RangeIndex:
+    """
+    Returns a RangeIndex that maps a PeriodIndex to a range of integers.
+    """
+
+    index_offset = None
+    if start_period is None:
+        start_period = period_index[0]
+    if end_period is None:
+        end_period = period_index[-1]
+    bounds_index = pd.period_range(
+        start=start_period,
+        end=end_period,
+        freq=period_index.freq)
+
+    for i in range(bounds_index.size):
+        if period_index.__contains__(bounds_index[i]):
+            index_offset = i
+            break
+        else:
+            continue
+    return pd.RangeIndex(start=index_offset, stop=period_index.size + index_offset, step=1)
