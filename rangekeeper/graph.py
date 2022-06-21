@@ -9,10 +9,7 @@ import networkx as nx
 from pint import Quantity
 from py_linq import Enumerable
 
-try:
-    import measure
-except:
-    import modules.rangekeeper.measure as measure
+from . import measure
 
 
 #

@@ -2,34 +2,23 @@ from __future__ import annotations
 
 import itertools
 import math
-from typing import Dict, Union
+from typing import Dict, Union, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import pint
+import rich
+import yaml
 import pyxirr
 
-try:
-    import projection
-    import distribution
-    import periodicity
-    from phase import Phase
-    import measure
-    from measure import Measure
-
-except:
-    import modules.rangekeeper.projection as projection
-    import modules.rangekeeper.distribution as distribution
-    import modules.rangekeeper.periodicity as periodicity
-    from modules.rangekeeper.phase import Phase
-    import modules.rangekeeper.measure as measure
-    from modules.rangekeeper.measure import Measure
+from . import projection, distribution, periodicity, phase, measure
 
 
 class Flow:
     name: str
     movements: pd.Series
-    units: Measure
+    units: pint.Unit
     """
     A `Flow` is a pd.Series of 'movements' of material (funds, energy, mass, etc) that occur at specified dates.
     Note: the flow.movements Series index is a pd.DatetimeIndex, and its values are floats.
@@ -38,7 +27,7 @@ class Flow:
     def __init__(
             self,
             movements: pd.Series,
-            units: Measure = None,
+            units: pint.Unit = None,
             name: str = None):
         """
         Initializes a Flow. If units are not provided, a scalar (dimensionless) unit is assumed.
@@ -62,9 +51,11 @@ class Flow:
             self.name = str(self.movements.name)
 
         if units is None:
-            self.units = measure.scalar
-        else:
+            self.units = measure.Index.registry.dimensionless
+        elif isinstance(units, pint.Unit):
             self.units = units
+        else:
+            raise ValueError('Error: Units must be of type pint.Unit')
 
     def __str__(self):
         return self.display()
@@ -81,7 +72,7 @@ class Flow:
 
         print('\n')
         print('Name: ' + self.name)
-        print('Units: ' + self.units.name)
+        print('Units: ' + str(self.units))
         print('Movements: ')
 
         floatfmt = "." + str(decimals) + "f"
@@ -107,7 +98,7 @@ class Flow:
             cls,
             index: pd.PeriodIndex,
             data: [float],
-            units: Measure,
+            units: pint.Unit,
             name: str = None) -> Flow:
         """
         Returns a Flow where movement dates are defined by the end-dates of the specified periods
@@ -130,7 +121,7 @@ class Flow:
     def from_dict(
             cls,
             movements: Dict[pd.Timestamp, float],
-            units: Measure,
+            units: pint.Unit,
             name: str = None) -> Flow:
         """
         Returns a Flow where movements are defined by key-value pairs of pd.Timestamps and amounts.
@@ -152,25 +143,15 @@ class Flow:
             cls,
             value: Union[float, distribution.Distribution],
             proj: projection,
-            index: pd.PeriodIndex,
-            units: Measure,
+            units: pint.Unit = None,
             name: str = None) -> Flow:
         """
-        Generate a Flow from a projection of a value.
-        Also accepts a Distribution as a total input which will be sampled in
-        order to generate the Flow.
-        :param value:
-        :type value:
-        :param proj:
-        :type proj:
-        :param index:
-        :type index:
-        :param units:
-        :type units:
-        :param name:
-        :type name:
-        :return:
-        :rtype:
+        Generate a Flow from a projection of a value, with an optional timing
+        offset in the application of the projection to the value. (i.e., the
+        projection factors/densities begin before or after the index does)
+
+        Also accepts a Distribution as a value input, which will be randomly
+        sampled.
         """
 
         if isinstance(value, float):
@@ -178,118 +159,18 @@ class Flow:
         elif isinstance(value, distribution.Distribution):
             value = value.sample()
 
-        date_index = periodicity.to_datestamps(
-            period_index=index,
-            end=True)
-
         if isinstance(proj, projection.Extrapolation):
-            movements = [(value * factor) for factor in proj.factor(index.size)]
-        elif isinstance(proj, projection.Interpolation):
-            parameters = np.linspace(0, 1, num=(index.size + 1))
-            movements = [(value * density) for density in proj.interval_density(parameters)]
+            movements = value * proj.factors()
+
+        elif isinstance(proj, projection.Distribution):
+            movements = value * proj.interval_density()
         else:
             raise ValueError("Unsupported projection type")
 
-        return cls.from_periods(
-            name=name,
-            index=index,
-            data=movements,
-            units=units)
-
-    # @classmethod
-    # def from_distributed_total(
-    #         cls,
-    #         total: Union[float, distribution.Distribution],
-    #         index: pd.PeriodIndex,
-    #         dist: distribution.Distribution,
-    #         units: Measure,
-    #         name: str = None) -> Flow:
-    #     """
-    #     Generate a Flow from a total amount, distributed over the period index
-    #     according to a specified distribution curve.
-    #     Also accepts a Distribution as a total input which will be sampled
-    #     in order to generate the Flow.
-    #
-    #     :param name: The name of the Flow
-    #     :param total: An amount (or Distribution to be sampled)
-    #     :param index: A pd.PeriodIndex of periods
-    #     :param dist: A Distribution guiding how to distribute the amount over the index
-    #     :param units: The Units of the Flow
-    #     """
-    #
-    #     if isinstance(total, float):
-    #         total = total
-    #     elif isinstance(total, distribution.Distribution):
-    #         total = total.sample()
-    #
-    #     date_index = periodicity.to_datestamps(
-    #         period_index=index,
-    #         end=True)
-    #
-    #     if isinstance(dist, distribution.Uniform):
-    #         movements = [total / index.size for i in range(index.size)]
-    #         return cls.(
-    #             name=name,
-    #             movements=pd.Series(
-    #                 data=movements,
-    #                 index=date_index,
-    #                 name=name,
-    #                 dtype=float),
-    #             units=units)
-    #     elif isinstance(dist, distribution.PERT):
-    #         parameters = np.linspace(0, 1, num=(index.size + 1))
-    #         movements = [(total * density) for density in dist.interval_density(parameters)]
-    #         return cls(
-    #             name=name,
-    #             movements=pd.Series(
-    #                 data=movements,
-    #                 index=date_index,
-    #                 name=name,
-    #                 dtype=float),
-    #             units=units)
-    #     else:
-    #         raise NotImplementedError('Other types of escalations have not yet been implemented.')
-    #
-    # @classmethod
-    # def from_extrapolated_initial(
-    #         cls,
-    #         initial: Union[float, distribution.Distribution],
-    #         index: pd.PeriodIndex,
-    #         extrapolation: projection.Extrapolation,
-    #         units: Measure,
-    #         name: str = None) -> Flow:
-    #     """
-    #     Generate a Flow from an initial amount, extrapolated over the period index
-    #     according to the factor of the specified Distribution (where initial factor = 1).
-    #     Also accepts a Distribution as an initial amount input which will be
-    #     sampled in order to generate the first amount.
-    #
-    #     :param name: The name of the Flow
-    #     :param initial: An amount (or Distribution to be sampled)
-    #     :param index: A pd.PeriodIndex of dates
-    #     :param extrapolation: An Extrapolation guiding how to project the initial over the index
-    #     :param units: The Units of the Flow
-    #     """
-    #
-    #     if isinstance(initial, float):
-    #         initial = initial
-    #     elif isinstance(initial, distribution.Distribution):
-    #         initial = initial.sample()
-    #
-    #     if isinstance(extrapolation, projection.Linear):
-    #         movements = [initial * factor for factor in extrapolation.factor()]
-    #         return cls.from_periods(
-    #             name=name,
-    #             index=index,
-    #             data=movements,
-    #             units=units)
-    #     elif isinstance(extrapolation, projection.Exponential):
-    #         movements = [initial * factor for factor in extrapolation.factor()]
-    #         return cls.from_periods(
-    #             name=name,
-    #             index=index,
-    #             data=movements,
-    #             units=units)
+        return cls(
+            movements=movements,
+            units=units,
+            name=name)
 
     def invert(self) -> Flow:
         """
@@ -372,7 +253,7 @@ class Flow:
 
     def trim_to_phase(
             self,
-            phase: Phase) -> Flow:
+            phase: phase.Phase) -> Flow:
         """
         Returns a Flow with movements trimmed to the specified phase
         """
@@ -404,7 +285,7 @@ class Confluence:
     _affluents: [Flow]
     period_type: periodicity.Type
     start_date: pd.Timestamp
-    end_date: pd.Timestamp  
+    end_date: pd.Timestamp
     frame: pd.DataFrame
 
     """
@@ -422,14 +303,16 @@ class Confluence:
         self.name = name
 
         # Units:
-        if all(flow.units == affluents[0].units for flow in affluents):
-            self.units = affluents[0].units
-        else:
-            raise Exception("Input Flows have dissimilar units. Cannot aggregate into Confluence.")
+        # if all(flow.units == affluents[0].units for flow in affluents):
+        #     self.units = affluents[0].units
+        # else:
+        #     raise Exception("Input Flows have dissimilar units. Cannot aggregate into Confluence.")
 
-        # Aggregands:
+        # Affluents:
         self._affluents = affluents
         """The set of input Flows that are aggregated in this Confluence"""
+
+        self.units = {affluent.name: affluent.units for affluent in self._affluents}
 
         # Periodicity Type:
         self.period_type = period_type
@@ -445,7 +328,7 @@ class Confluence:
             period_type=self.period_type,
             bound=self.end_date)
         _resampled_affluents = [affluent.to_periods(period_type=self.period_type) for affluent in self._affluents]
-        self.frame = pd.concat(_resampled_affluents, axis=1).fillna(0)
+        self.frame = pd.concat(_resampled_affluents, axis=1).fillna(0).sort_index()
         """
         A pd.DataFrame of the Confluence's affluent Flows accumulated into the Confluence's periodicity
         """
@@ -464,7 +347,7 @@ class Confluence:
             cls,
             name: str,
             data: pd.DataFrame,
-            units: Measure) -> Confluence:
+            units: pint.Unit) -> Confluence:
         affluents = []
         for column in data.columns:
             series = data[column]
@@ -484,7 +367,8 @@ class Confluence:
 
         print('\n')
         print('Name: ' + self.name)
-        print('Units: ' + self.units.name)
+        print('Units: ')
+        rich.print(self.units)
         print('Flows: ')
 
         floatfmt = "." + str(decimals) + "f"
@@ -614,7 +498,7 @@ class Confluence:
             name=flow_name,
             data=list(self.frame[flow_name]),
             index=self.frame.index,
-            units=self.units)
+            units=self.units[flow_name])
 
     def sum(
             self,
@@ -623,24 +507,35 @@ class Confluence:
         Returns a Flow whose movements are the sum of the Confluence's affluents by period
         :return: Flow
         """
+        # Check if all units are the same:
+        if not len(list(set(list(self.units.values())))) == 1:
+            rich.print(self.units)
+            raise ValueError("Error: summation requires all affluents' units to be the same.")
+
         return Flow.from_periods(
             name=name if name is not None else self.name,
             index=self.frame.index,  # .to_period(),
             data=self.frame.sum(axis=1).to_list(),
-            units=self.units)
+            units=next(iter(self.units.values())))
 
     def product(
             self,
-            name: str = None) -> Flow:
+            name: str = None,
+            scope: Optional[dict] = None) -> Flow:
         """
         Returns a Flow whose movements are the product of the Confluence's affluents by period
         :return: Flow
         """
+
+        # Produce resultant units:
+        singleton = ['1 * units.' + str(value) for value in self.units.values()]
+        singleton = eval(' * '.join(singleton), scope)
+
         return Flow.from_periods(
             name=name if name is not None else self.name,
             index=self.frame.index,  # .to_period(),
             data=self.frame.prod(axis=1).to_list(),
-            units=self.units)
+            units=singleton.units)
 
     def collapse(self) -> Confluence:
         """
@@ -663,12 +558,14 @@ class Confluence:
         :return:
         :rtype:
         """
-        # Check Units:
-        if any(flow.units != self.units for flow in affluents):
-            raise Exception("Input Flows have dissimilar units. Cannot aggregate into Confluence.")
+        # if any(flow.units != self.units for flow in affluents):
+        #     raise Exception("Input Flows have dissimilar units. Cannot aggregate into Confluence.")
 
         # Append Affluents:
         self._affluents.extend(affluents)
+
+        # Append Units:
+        self.units.update({affluent.name: affluent.units for affluent in affluents})
 
         # Confluence:
         affluents_dates = list(
@@ -693,7 +590,7 @@ class Confluence:
 
     def trim_to_phase(
             self,
-            phase: Phase) -> Confluence:
+            phase: phase.Phase) -> Confluence:
         """
         Returns an Confluence with all affluents trimmed to the specified Phase
         :param phase:

@@ -4,14 +4,7 @@ import numpy as np
 import pandas as pd
 from numba import jit
 
-try:
-    import distribution
-    import flux
-    import measure
-except:
-    import modules.rangekeeper.distribution
-    import modules.rangekeeper.flux
-    import modules.rangekeeper.measure
+from .. import distribution, flux, measure
 
 
 class Enumerate:
@@ -125,7 +118,7 @@ class Cycle:
             movements=pd.Series(
                 data=data,
                 index=index),
-            units=measure.scalar,
+            # units=measure.scalar,
             name=name)
 
 

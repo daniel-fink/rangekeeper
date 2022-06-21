@@ -2,17 +2,8 @@ import numpy as np
 import pandas as pd
 from numba import jit
 
-try:
-    import distribution
-    import flux
-    from dynamics import trend, volatility, cyclicality
-except:
-    import modules.rangekeeper.distribution
-    import modules.rangekeeper.flux
-    import modules.rangekeeper.units
-    from modules.rangekeeper.dynamics import trend, volatility, cyclicality
-
-
+from . import trend, volatility, cyclicality
+from .. import flux, distribution
 
 class Market:
     def __init__(
