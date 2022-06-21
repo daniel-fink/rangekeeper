@@ -527,9 +527,6 @@ class Confluence:
         :return: Flow
         """
 
-        if scope is None:
-            scope = dict(globals(), **locals())
-
         # Produce resultant units:
         singleton = ['1 * units.' + str(value) for value in self.units.values()]
         singleton = eval(' * '.join(singleton), scope)

@@ -4,6 +4,8 @@ import enum
 import math
 from typing import List, Dict, Union, Tuple
 from collections import namedtuple
+
+import pandas as pd
 from aenum import Enum
 import rich
 
@@ -15,6 +17,7 @@ class Characteristic(Enum):
     tenure = 'Tenure'
     phase = 'Phase'
     type = 'Type'
+
 
 class Type:
     name: str
@@ -61,25 +64,17 @@ class Type:
         print(' > '.join([ancestor.__str__() for ancestor in self.ancestors()]))
 
 
-class Interval:
-    lower: float
-    upper: float
-
-    def __str__(self):
-        return f'({self.lower}, {self.upper})'
-
+class Interval(pd.Interval):
     def __init__(
             self,
-            upper: float,
-            lower: float = 0.):
-        self.lower = lower
-        self.upper = upper
+            right: float,
+            left: float = 0.):
+        super().__init__(
+            left=left,
+            right=right)
 
-    def length(self) -> float:
-        return self.upper - self.lower
-
-    def midpoint(self):
-        return (self.length() / 2) + self.lower
+    def __str__(self):
+        return f'({self.left}, {self.right})'
 
     def split(
             self,
@@ -87,14 +82,14 @@ class Interval:
         if proportion < 0 or proportion > 1:
             raise ValueError('Error: proportion must be between 0 and 1')
 
-        split_point = self.lower + (proportion * self.length())
-        lower_interval = self.__class__(
-            upper=split_point,
-            lower=self.lower)
-        upper_interval = self.__class__(
-            upper=self.upper,
-            lower=split_point)
-        return lower_interval, upper_interval
+        split_point = self.left + (proportion * self.length)
+        left_interval = self.__class__(
+            right=split_point,
+            left=self.left)
+        right_interval = self.__class__(
+            right=self.right,
+            left=split_point)
+        return left_interval, right_interval
 
     def subdivide(
             self,
@@ -102,23 +97,23 @@ class Interval:
         if isinstance(values, int):
             if values < 0:
                 raise ValueError('Error: divisors must be greater than 0')
-            lengths = [self.length() / values for i in range(values)]
+            lengths = [self.length / values for i in range(values)]
         elif all(isinstance(fraction, float) for fraction in values):
             if math.isclose(sum(values), 1) and all(0 < fraction < 1 for fraction in values):
-                lengths = [self.length() * fraction for fraction in values]
+                lengths = [self.length * fraction for fraction in values]
             else:
                 raise ValueError('Error: Sum of divisors must complete unit interval')
         else:
             raise TypeError('Error: values must be either number of divisors or split proportions')
 
-        uppers = [self.lower + sum(lengths[:i]) for i in range(1, len(lengths) + 1)]
-        uppers.insert(0, self.lower)
+        parameters = [self.left + sum(lengths[:i]) for i in range(1, len(lengths) + 1)]
+        parameters.insert(0, self.left)
         results = []
-        for i in range(len(uppers) - 1):
+        for i in range(len(parameters) - 1):
             results.append(
                 self.__class__(
-                    lower=uppers[i],
-                    upper=uppers[i + 1]))
+                    left=parameters[i],
+                    right=parameters[i + 1]))
         return results
 
 
@@ -141,11 +136,50 @@ class Segment:
         if parent is not None:
             parent.children.append(self)
 
+    def to_frame(self):
+        frame = pd.DataFrame(
+            data=[list(self.characteristics.values())],
+            index=pd.IntervalIndex(data=[self.bounds]),
+            columns=[characteristic.value for characteristic in self.characteristics.keys()])
+        frame['Amount'] = self.bounds.length
+        frame['Proportion(Parent)'] = "{:.0%}".format(self.bounds.length / self.parent.bounds.length)
+
+        return frame
+
     def display(self):
         print('\n')
-        print('Characteristics: ')
-        rich.print(self.characteristics)
-        print('Bounds: ' + self.bounds.__str__())
+        floatfmt = "." + str(2) + "f"
+        print(self.to_frame().to_markdown(
+            tablefmt='github',
+            floatfmt=floatfmt))
+
+    def display_children(
+            self,
+            pivot: Characteristic = None,
+            decimals: int = 2,
+            ):
+        if len(self.children) == 0:
+            raise ValueError("Error: Segment has no children")
+
+        frame = pd.concat([child.to_frame() for child in self.children])
+        if pivot is not None:
+            frame = frame.pivot_table(
+                index=pivot.value,
+                columns=['Amount', 'Use', 'Proportion(Parent)'])
+
+        floatfmt = "." + str(decimals) + "f"
+
+        print('\n Children')
+        print(frame.to_markdown(
+            tablefmt='github',
+            floatfmt=floatfmt))
+
+        print('\n Total')
+        print(self.to_frame().to_markdown(
+            tablefmt='github',
+            floatfmt=floatfmt))
+
+    # def display_hierarchy(self):
 
     def split(self, proportion: float) -> tuple[Segment, Segment]:
         split_lower, split_upper = self.bounds.split(proportion)
@@ -159,10 +193,10 @@ class Segment:
 
     def subdivide(
             self,
-            divisions: Dict[List[Tuple[Characteristic, str]], float]) -> List[Segment]:
+            divisions: List[Tuple[Dict[Characteristic, str], float]]) -> List[Segment]:
         result = []
-        intervals = self.bounds.subdivide()
-        for division, interval in zip(divisions.keys(), intervals):
+        intervals = self.bounds.subdivide([division[1] for division in divisions])
+        for division, interval in zip([division[0] for division in divisions], intervals):
             result.append(Segment(
                 bounds=interval,
                 characteristics=division,
