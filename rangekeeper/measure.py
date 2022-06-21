@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import pint
+from pint.definitions import UnitDefinition
+from pint.converters import ScaleConverter
 import moneyed
 
 
@@ -10,18 +12,21 @@ class Index:
     # def __init__(self):
 
     # Define Fractions:
-    registry = pint.UnitRegistry(
-        preprocessors=[lambda s: s.replace('%', ' percent ')]
-        )
-    registry.define('percent = 0.01 = %')
+    registry = pint.UnitRegistry()
+    #     preprocessors=[lambda s: s.replace('%', ' percent ')]
+    #     )
+    # # registry.define('percent = 0.01 * dimensionless = %')
+    # registry.define(UnitDefinition('percent', '%', (), ScaleConverter(1 / 100.0)))
 
     # Add Additional Terms:
-    registry.define('sqm = 1 * meter ** 2')
-    registry.define('sqft = 1 * foot ** 2')
+    registry.define('squaremeter = 1 m**2 = m2 = sqm')
+    registry.define('squarefoot = 1 foot**2 = ft2 = sqft')
 
     # Define Domain Units:
     registry.define('zone = [space]')
     registry.define('parking_stall = 1 * zone')
+
+
 
     # self.registry = registry
 
