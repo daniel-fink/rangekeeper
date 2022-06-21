@@ -18,6 +18,50 @@ class Characteristic(Enum):
     phase = 'Phase'
     type = 'Type'
 
+class Type:
+    name: str
+    code: str
+    supertype: Type
+    subtypes: [Type]
+
+    def __init__(
+            self,
+            name: str,
+            code: str = None,
+            supertype: Type = None):
+        self.name = name
+        self.code = code
+        self.supertype = supertype
+        self.subtypes = []
+
+        if supertype is not None:
+            supertype.subtypes.append(self)
+
+    def __str__(self):
+        code = ' :' + self.code if self.code is not None else ''
+        return self.name + code
+
+    def add_subtypes(
+            self,
+            subtypes: [Type]):
+        for subtype in subtypes:
+            self.subtypes.append(subtype)
+            subtype.supertype = self
+
+    def ancestors(self) -> [Type]:
+        ancestors = []
+        supertype = self.supertype
+        while supertype is not None:
+            ancestors.append(supertype)
+            supertype = supertype.supertype
+        return ancestors
+
+    def primogenitor(self) -> Type:
+        return self.ancestors()[-1]
+
+    def display(self):
+        print(' > '.join([ancestor.__str__() for ancestor in self.ancestors()]))
+
 
 class Type:
     name: str
