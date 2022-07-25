@@ -16,13 +16,13 @@ import rangekeeper as rk
 #     import distribution
 #     import flux
 #     import periodicity
-#     import phase
+#     import span
 #     from dynamics import trend, volatility, cyclicality, market
 # except:
 #     import modules.rangekeeper.distribution
 #     import modules.rangekeeper.flux
 #     import modules.rangekeeper.periodicity
-#     import modules.rangekeeper.phase
+#     import modules.rangekeeper.span
 #     from modules.rangekeeper.dynamics import trend, volatility, cyclicality, market
 
 matplotlib.use('TkAgg')
@@ -32,8 +32,8 @@ plt.rcParams['figure.figsize'] = (12, 8)
 
 class TestDynamics:
     period_type = rk.periodicity.Type.year
-    phase = rk.phase.Phase.from_num_periods(
-        name="Phase",
+    span = rk.span.Span.from_num_periods(
+        name="Span",
         date=pd.Timestamp(2021, 1, 1),
         period_type=period_type,
         num_periods=25)
@@ -56,7 +56,7 @@ class TestDynamics:
         # dynamics inputs assumptions, you may need to adjust this trend.
         # For example, a symmetric cap rate cycle will impart a positive bias
         # into the simulated future cash flows relative to the proforma,
-        # while Black Swans and cycle phase or other inputs may impart a negative bias.
+        # while Black Swans and cycle span or other inputs may impart a negative bias.
         # Enter a relative trend rate here to counteract such bias
         # (under the assumption that the proforma is unbiased).
         # Check the t-stat in column K to see if the resulting comparison
@@ -74,7 +74,7 @@ class TestDynamics:
         'trend_residual': .005,
         }
     market_trend = rk.dynamics.trend.Trend(
-        phase=phase,
+        span=span,
         period_type=period_type,
         params=trend_params)
 
@@ -121,9 +121,9 @@ class TestDynamics:
         trend=market_trend,
         params=volatility_params)
 
-    volatility_frame = rk.flux.Confluence(
+    volatility_frame = rk.flux.Stream(
         name="Volatility",
-        affluents=[market_trend.trend,
+        flows=[market_trend.trend,
                    market_volatility.volatility,
                    market_volatility.autoregressive_returns,
                    market_volatility.cumulative_volatility],
@@ -143,9 +143,9 @@ class TestDynamics:
         print(TestDynamics.volatility_frame.start_date)
         print(TestDynamics.volatility_frame.end_date)
 
-        plot = rk.flux.Confluence(
+        plot = rk.flux.Stream(
             name='Plot',
-            affluents=[TestDynamics.market_volatility.cumulative_volatility,
+            flows=[TestDynamics.market_volatility.cumulative_volatility,
                        TestDynamics.market_trend.trend],
             period_type=TestDynamics.period_type).plot()
 
@@ -162,28 +162,28 @@ class TestDynamics:
         'space_cycle_period_dist': rk.distribution.Type.uniform,
 
         # If you make this equal to a uniform random variable times the rent cycle period
-        # then the phase will range from starting anywhere from peak to trough with equal likelihood.
+        # then the span will range from starting anywhere from peak to trough with equal likelihood.
         # E.g.:
-        # 'rent_cycle_phase_mean' = distribution.Uniform().sample() * rent_cycle_period_avg,
+        # 'rent_cycle_span_mean' = distribution.Uniform().sample() * rent_cycle_period_avg,
         #
-        # If you think you know where you are in the cycle, then use this relationship of Phase to Cycle Period:
-        # Phase=:             Cycle:
+        # If you think you know where you are in the cycle, then use this relationship of Span to Cycle Period:
+        # Span=:             Cycle:
         # (1/4)Period   = Bottom of cycle, headed up.
         # (1/2)Period   = Mid-cycle, headed down.
         # (3/4)Period   = Top of cycle, headed down.
         # (1/1)Period   = Mid-cycle, headed up.
         #
-        # Example, if you enter 20 in cycle period, and you enter 5 in cycle phase,
+        # Example, if you enter 20 in cycle period, and you enter 5 in cycle span,
         # then the cycle will be starting out in the first year at the bottom of the cycle, heading up from there.
         #
         # Please note that with the compound-sine asymetric cycle formula,
         # the peak parameter is slightly off from the above; 0.65*Period seems to start the cycle closer to the peak.
-        # For example, if you want the phase to vary randomly and uniformly over the 1/8 of the cycle
+        # For example, if you want the span to vary randomly and uniformly over the 1/8 of the cycle
         # that is the top of the upswing (late boom just before downturn),
         # you would enter: .175 * distribution.Uniform().sample() +.65 * rent_cycle_period_avg
-        'space_cycle_phase_offset': .175,
-        'space_cycle_phase_residual': .05,
-        'space_cycle_phase_dist': rk.distribution.Type.PERT,
+        'space_cycle_span_offset': .175,
+        'space_cycle_span_residual': .05,
+        'space_cycle_span_dist': rk.distribution.Type.PERT,
 
         'space_cycle_amplitude_mean': .15,
         'space_cycle_amplitude_residual': .025,
@@ -196,16 +196,16 @@ class TestDynamics:
         'asset_cycle_period_dist': rk.distribution.Type.uniform,
 
         # This cap rate cycle input is the negative of the actual cap rate cycle,
-        # you can think of the phase in the same way as the space market phase.
+        # you can think of the span in the same way as the space market span.
         # These two cycles are not generally exactly in sync, but the usually are not too far off.
-        # Hence, probably makes sense to set this asset market phase equal to the space market phase
+        # Hence, probably makes sense to set this asset market span equal to the space market span
         # +/- some random difference that is a pretty small fraction of the cycle period.
         # Remember that peak-to-trough is half period, LR mean to either peak or trough is quarter period.
-        # E.g.: rent_cycle_phase + (distribution.Uniform().sample() * cap_rate_cycle_period/5) - cap_rate_cycle_period/10
-        # Above would let asset phase differ from space phase by +/- a bit less than a quarter-period (here, a fifth of the asset cycle period).
-        'asset_cycle_phase_offset': 0.,
-        'asset_cycle_phase_residual': .2,
-        'asset_cycle_phase_dist': rk.distribution.Type.uniform,
+        # E.g.: rent_cycle_span + (distribution.Uniform().sample() * cap_rate_cycle_period/5) - cap_rate_cycle_period/10
+        # Above would let asset span differ from space span by +/- a bit less than a quarter-period (here, a fifth of the asset cycle period).
+        'asset_cycle_span_offset': 0.,
+        'asset_cycle_span_residual': .2,
+        'asset_cycle_span_dist': rk.distribution.Type.uniform,
 
         # This is in cap rate units, so keep in mind the magnitude of the initial cap rate
         # entered on the MktDynamicsInputs sheet.
@@ -232,7 +232,7 @@ class TestDynamics:
     def test_cyclicality(self):
         test_cycle = rk.dynamics.cyclicality.Cycle(
             period=25,
-            phase=12.5,
+            span=12.5,
             amplitude=1.)
 
         cycles = []
@@ -245,9 +245,9 @@ class TestDynamics:
                 name='parameter_' + str(param))
             cycles.append(asymmetric_cycle)
 
-        asymmetric_cycle_plot = rk.flux.Confluence(
+        asymmetric_cycle_plot = rk.flux.Stream(
             name='asymmetric_cycle_plot',
-            affluents=cycles,
+            flows=cycles,
             period_type=TestDynamics.period_type)
         asymmetric_cycle_plot.plot()
 
@@ -257,12 +257,12 @@ class TestDynamics:
         print("\nAsset Cycle:")
         print(TestDynamics.market_cyclicality.asset_cycle)
 
-        rk.flux.Confluence(
+        rk.flux.Stream(
             name="Plot",
-            affluents=[TestDynamics.market_cyclicality.space_waveform,
+            flows=[TestDynamics.market_cyclicality.space_waveform,
                        TestDynamics.market_cyclicality.asset_waveform],
             period_type=TestDynamics.period_type).plot(
-            affluents={
+            flows={
                 'space_waveform': (0., 1.4),
                 'asset_waveform': (-0.015, 0.015)
                 })
@@ -288,9 +288,9 @@ class TestDynamics:
         cyclicality=market_cyclicality)
 
     def test_market(self):
-        market = rk.flux.Confluence(
+        market = rk.flux.Stream(
             name="Market",
-            affluents=[TestDynamics.market_trend.trend,
+            flows=[TestDynamics.market_trend.trend,
                        TestDynamics.market_volatility.cumulative_volatility,
                        TestDynamics.market_dynamics.space_market,
                        TestDynamics.market_dynamics.asset_true_value,
@@ -298,7 +298,7 @@ class TestDynamics:
                        TestDynamics.market_dynamics.historical_value],
             period_type=TestDynamics.period_type)
         market.plot(
-            affluents={
+            flows={
                 'Trend': (0., .08),
                 'Cumulative Volatility': (0., .08),
                 'Space Market': (0., .08),

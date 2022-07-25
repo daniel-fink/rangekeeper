@@ -1,9 +1,9 @@
-from .. import distribution, phase, periodicity, projection, measure, flux
+from .. import distribution, span, periodicity, projection, measure, flux
 
 
 class Trend:
     def __init__(self,
-                 phase: phase.Phase,
+                 span: span.Span,
                  period_type: periodicity.Type,
                  params: dict):
         self.current_rent = params['initial_price_factor'] * params['cap_rate']
@@ -49,7 +49,7 @@ class Trend:
             value=self.initial_rent,
             proj=projection.Extrapolation(
                 form=trend_esc,
-                sequence=phase.to_index(period_type=period_type))
+                sequence=span.to_index(period_type=period_type))
             )
             # units=measure.scalar)
         """

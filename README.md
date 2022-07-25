@@ -18,3 +18,5 @@ Development of the library follows the rigorous methodology established by Profs
 2. Clone this repo.
 
 3. Use a terminal to install poetry packages from the repo's directory: `<path_to_repo>$ poetry install`
+
+4. Currently, this library is not yet available on Python Package Index (PyPI). If you wish to use this repo with other projects locally, you may install the Rangekeeper library via `<path_to_repo>$ poetry run pip install -e <path_to_rangekeeper_repo>`, replacing `<path_to_rangekeeper_repo>` with its location on your system.
