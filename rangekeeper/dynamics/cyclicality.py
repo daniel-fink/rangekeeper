@@ -12,19 +12,19 @@ class Enumerate:
     @jit(nopython=True)
     def sine(
             period: float,
-            phase: float,
+            span: float,
             amplitude: float,
             num_periods: int):
         """
         Generate a sine wave from the parameters.
         The conventional, symmetric cycle is a simple sine function, parameterized:
-        y = amplitude * sin((t - phase) * (2 * pi / period))
+        y = amplitude * sin((t - span) * (2 * pi / period))
         """
         data = []
         for i in range(num_periods):
             data.append(amplitude *
                         np.sin(
-                            (i - phase) *
+                            (i - span) *
                             (2 * np.pi / period)
                             )
                         )
@@ -33,7 +33,7 @@ class Enumerate:
     @staticmethod
     def asymmetric_sine(
             period: float,
-            phase: float,
+            span: float,
             amplitude: float,
             parameter: float,
             num_periods: int,
@@ -42,7 +42,7 @@ class Enumerate:
         """
         Generate a smoothed sinusoid asymmetric (sawtooth) wave.
         Based on the solution to the expression: f(x) = sin(x - f(x)),
-        with additional parameterization of period, phase, amplitude, and shear,
+        with additional parameterization of period, span, amplitude, and shear,
         where shear is defined as a parameter between 0 and 1 (1 being most asymmetric)
 
         Because the formula is recursive, we approximate the solution by
@@ -56,7 +56,7 @@ class Enumerate:
             lower = -upper
             while upper - lower > precision:
                 mid = (lower + upper) / 2
-                if -math.sin((x - phase) * (2 * np.pi / period) + mid) - ((1 / parameter) * mid) > 0:
+                if -math.sin((x - span) * (2 * np.pi / period) + mid) - ((1 / parameter) * mid) > 0:
                     lower = mid
                 else:
                     upper = mid
@@ -69,19 +69,19 @@ class Cycle:
     def __init__(
             self,
             period: float,
-            phase: float,
+            span: float,
             amplitude: float):
         """
         Parameters that define a cyclical time series
         """
         self.period = period
-        self.phase = phase
+        self.span = span
         self.amplitude = amplitude
 
     def __str__(self):
         string = ""
         string += "Period: " + str(self.period) + "\n"
-        string += "Phase: " + str(self.phase) + "\n"
+        string += "Span: " + str(self.span) + "\n"
         string += "Amplitude: " + str(self.amplitude) + "\n"
         return string
 
@@ -91,7 +91,7 @@ class Cycle:
             name: str = "sine_cycle"):
         data = Enumerate.sine(
             period=self.period,
-            phase=self.phase,
+            span=self.span,
             amplitude=self.amplitude,
             num_periods=index.size)
         return flux.Flow(
@@ -108,7 +108,7 @@ class Cycle:
             name: str = "asymmetric_sine_cycle") -> flux.Flow:
         data = Enumerate.asymmetric_sine(
             period=self.period,
-            phase=self.phase,
+            span=self.span,
             amplitude=self.amplitude,
             parameter=parameter,
             num_periods=index.size,
@@ -134,7 +134,7 @@ class Cyclicality:
         asset market (capital flows), the latter reflected by the cap rate.
 
         Cycles are modeled by generalized sine functions governed by the given
-        input period, amplitude, and phase.
+        input period, amplitude, and span.
 
         """
         space_period = distribution.Symmetric(
@@ -150,26 +150,26 @@ class Cyclicality:
         future history to be between 10 and 20 years.
         """
 
-        space_phase = distribution.Symmetric(
-            mean=params['space_cycle_phase_offset'],
-            residual=params['space_cycle_phase_residual'],
-            distribution_type=params['space_cycle_phase_dist']
+        space_span = distribution.Symmetric(
+            mean=params['space_cycle_span_offset'],
+            residual=params['space_cycle_span_residual'],
+            distribution_type=params['space_cycle_span_dist']
             ).distribution().sample() * space_period
         """
         If you make this equal to a uniform RV times the rent cycle period 
-        then the phase will range from starting anywhere from peak to trough with equal likelihood.
+        then the span will range from starting anywhere from peak to trough with equal likelihood.
         E.g.:
         =RAND()*J10, if the Period is in J10.
         
         If you think you know where you are in the cycle, 
-        then use this relationship of Phase to Cycle Period:
-        Phase=:             Cycle:
+        then use this relationship of Span to Cycle Period:
+        Span=:             Cycle:
         (1/4)Period   = Bottom of cycle, headed up.
         (1/2)Period   = Mid-cycle, headed down.
         (3/4)Period   = Top of cycle, headed down.
         (1/1)Period   = Mid-cycle, headed up.
         
-        Example, if you enter 20 in cycle period, and you enter 5 in cycle phase, 
+        Example, if you enter 20 in cycle period, and you enter 5 in cycle span, 
         then the cycle will be starting out in the first year at the bottom of the cycle, 
         heading up from there.
 
@@ -179,7 +179,7 @@ class Cyclicality:
         Please note that with the compound-sine asymetric cycle formula, 
         the peak parameter is slightly off from the above. 
         0.65*Period seems to start the cycle closer to the peak. 
-        For example, if you want the phase to vary randomly and 
+        For example, if you want the span to vary randomly and 
         uniformly over the 1/8 of the cycle that is the top of the upswing (late boom just before downturn),
         you would enter:
         =(.175*RAND()+.65)*J10, if Period is in J10.
@@ -192,7 +192,7 @@ class Cyclicality:
 
         self.space_cycle = Cycle(
             period=space_period,
-            phase=space_phase,
+            span=space_span,
             amplitude=space_amplitude)
 
         asset_period = distribution.Symmetric(
@@ -207,21 +207,21 @@ class Cyclicality:
         =J10+(RAND()*2-1)
         """
 
-        asset_phase = distribution.Symmetric(
-            mean=params['asset_cycle_phase_offset'],
-            residual=params['asset_cycle_phase_residual'],
-            distribution_type=params['asset_cycle_phase_dist']
-            ).distribution().sample() * asset_period + space_phase
+        asset_span = distribution.Symmetric(
+            mean=params['asset_cycle_span_offset'],
+            residual=params['asset_cycle_span_residual'],
+            distribution_type=params['asset_cycle_span_dist']
+            ).distribution().sample() * asset_period + space_span
         """
         Since we input this cycle as the negative of the actual cap rate cycle, 
-        you can think of the phase in the same way as the space market phase. 
+        you can think of the span in the same way as the space market span. 
         These two cycles are not generally exactly in sync, but the usually are not too far off.
-        Hence, probably makes sense to set this asset market phase 
-        equal to the space market phase +/- some random difference 
+        Hence, probably makes sense to set this asset market span 
+        equal to the space market span +/- some random difference 
         that is a pretty small fraction of the cycle period. 
         Remember that peak-to-trough is half period, LR mean to either peak or trough is quarter period. 
         E.g.: =J8+(RAND()*J11/5-J11/10)
-        Above would let asset phase differ from space phase by +/- a bit less than a quarter-period 
+        Above would let asset span differ from space span by +/- a bit less than a quarter-period 
         (here, a fifth of the asset cycle period).
         """
 
@@ -245,7 +245,7 @@ class Cyclicality:
 
         self.asset_cycle = Cycle(
             period=asset_period,
-            phase=asset_phase,
+            span=asset_span,
             amplitude=asset_amplitude)
 
         space_waveform = self.space_cycle.asymmetric_sine(
@@ -264,7 +264,7 @@ class Cyclicality:
         We model each separately, the space market cycle in this column and 
         the asset market cycle in a column to the right. Cycles are modeled 
         by generalized sine functions governed by the given input period, 
-        amplitude, and phase.
+        amplitude, and span.
         """
 
         self.asset_waveform = self.asset_cycle.asymmetric_sine(
