@@ -69,7 +69,6 @@ class Element:
     attributes: dict
     events: List[Event]
     measurements: Dict[measure.Measure, Quantity]
-    # relationships: List[tuple[Element, str]]
 
     def __str__(self):
         return 'Element: ' + self.name + '. Type: ' + self.type
