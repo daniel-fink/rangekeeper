@@ -12,11 +12,12 @@ import rich
 import yaml
 import pyxirr
 
-from . import projection, distribution, periodicity, span, measure
+from . import projection, distribution, periodicity, span, measure, graph
 
 
-class Flow:
+class Flow(graph.Event):
     name: str
+    type: str
     movements: pd.Series
     units: pint.Unit
     """
@@ -40,15 +41,18 @@ class Flow:
         :type name:
         """
 
+        name = name if name is not None else str(self.movements.name)
+        movements.name = name
+
+        super().__init__(
+            name=name,
+            type='flow',
+            )
+
         if not isinstance(movements.index, pd.DatetimeIndex):
             raise Exception("Error: Flow's movements' Index is not a pd.DatetimeIndex")
 
         self.movements = movements
-        if name:
-            self.name = name
-            movements.name = name
-        else:
-            self.name = str(self.movements.name)
 
         if units is None:
             self.units = measure.Index.registry.dimensionless
@@ -280,8 +284,9 @@ class Flow:
             period_type=period_type)
 
 
-class Stream:
+class Stream(graph.Event):
     name: str
+    type: str
     flows: [Flow]
     period_type: periodicity.Type
     start_date: pd.Timestamp
@@ -295,12 +300,14 @@ class Stream:
 
     def __init__(
             self,
-            name: str,
             flows: [Flow],
-            period_type: periodicity.Type):
+            period_type: periodicity.Type,
+            name: str):
 
-        # Name:
-        self.name = name
+        super().__init__(
+            name=name,
+            type='flow',
+            )
 
         # Units:
         # if all(flow.units == flows[0].units for flow in flows):

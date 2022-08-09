@@ -57,10 +57,6 @@ from . import measure
 #             child.set_parent(self)
 #
 
-class Event:
-    name: str
-    type: str
-
 
 class Element:
     id: str
@@ -142,3 +138,15 @@ class Assembly(nx.MultiDiGraph, Element):
 
         self.elements = Enumerable(self.nodes)
         self.relationships = Enumerable(self.edges)
+
+
+class Event:
+    name: str
+    type: str
+
+    def __init__(
+            self,
+            name: str,
+            type: str):
+        self.name = name
+        self.type = type
