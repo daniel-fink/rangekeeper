@@ -6,12 +6,12 @@ import pandas as pd
 from . import periodicity
 
 
-class Phase:
+class Span:
     start_date: pd.Timestamp
     end_date: pd.Timestamp
     name: str = None
     """
-    A `Phase` is a pd.Interval of pd.Timestamps that bound its start and end dates
+    A `Span` is a pd.Interval of pd.Timestamps that bound its start and end dates
     """
 
     def __init__(
@@ -31,7 +31,7 @@ class Phase:
         self.end_date = self._interval.right
 
     def __str__(self):
-        return 'Phase: {}\n' \
+        return 'Span: {}\n' \
                'Start Date: {}\n' \
                'End Date: {}'.format(self.name, self.start_date, self.end_date)
 
@@ -39,17 +39,17 @@ class Phase:
     def merge(
             cls,
             name: str,
-            phases: [Phase]) -> Phase:
+            spans: [Span]) -> Span:
         """
-        Merge a set of Phases into a single Phase
+        Merge a set of Spans into a single Span
         """
-        start_date = phases[0].start_date
-        end_date = phases[0].end_date
-        for phase in phases:
-            if phase.start_date < start_date:
-                start_date = phase.start_date
-            if phase.end_date > end_date:
-                end_date = phase.end_date
+        start_date = spans[0].start_date
+        end_date = spans[0].end_date
+        for span in spans:
+            if span.start_date < start_date:
+                start_date = span.start_date
+            if span.end_date > end_date:
+                end_date = span.end_date
         return cls(name=name,
                    start_date=start_date,
                    end_date=end_date)
@@ -58,7 +58,7 @@ class Phase:
             self,
             period_type: periodicity.Type) -> pd.PeriodIndex:
         """
-        Return a pd.PeriodIndex of the Phase at the specified periodicity
+        Return a pd.PeriodIndex of the Span at the specified periodicity
         """
         return periodicity.period_index(
             include_start=self.start_date,
@@ -70,7 +70,7 @@ class Phase:
             period_type: periodicity.Type,
             inclusive: bool = False) -> int:
         """
-        Return the whole-period duration of the Phase in the specified period_type
+        Return the whole-period duration of the Span in the specified period_type
         """
         return periodicity.duration(
             start_date=self.start_date,
@@ -84,11 +84,11 @@ class Phase:
             name: str,
             date: pd.Timestamp,
             period_type: periodicity.Type,
-            num_periods: int) -> Phase:
+            num_periods: int) -> Span:
         """
-        Create a Phase from a date with a set number of periods of specified type.
-        If the number of periods is negative, the Phase will end on the date specified.
-        If the number of periods is positive, the Phase will start on the date specified.
+        Create a Span from a date with a set number of periods of specified type.
+        If the number of periods is negative, the Span will end on the date specified.
+        If the number of periods is positive, the Span will start on the date specified.
         """
         if num_periods < 0:
             end_date = date
@@ -117,9 +117,9 @@ class Phase:
     def from_date_sequence(
             cls,
             names: [str],
-            dates: [pd.Timestamp]) -> [Phase]:
+            dates: [pd.Timestamp]) -> [Span]:
         """
-        Create a set of Phases from a sequence of dates.
+        Create a set of Spans from a sequence of dates.
         Note: dates list length must be 1 longer than names
         :param names:
         :type names:
@@ -129,16 +129,16 @@ class Phase:
         :rtype:
         """
         if len(names) != len(dates) - 1:
-            raise Exception('Error: number of Phase names must equal number of Phases created'
+            raise Exception('Error: number of Span names must equal number of Spans created'
                             ' (i.e. one less than number of dates)')
 
         date_pairs = list(zip(dates, dates[1:]))
         date_pairs = [(start, periodicity.date_offset(end, periodicity.Type.day, -1)) for (start, end) in date_pairs]
 
-        phases = []
+        spans = []
         for i in range(len(names)):
-            phases.append(cls(name=names[i], start_date=date_pairs[i][0], end_date=date_pairs[i][1]))
-        return phases
+            spans.append(cls(name=names[i], start_date=date_pairs[i][0], end_date=date_pairs[i][1]))
+        return spans
 
     @classmethod
     def from_num_periods_sequence(
@@ -146,9 +146,9 @@ class Phase:
             names: [str],
             period_type: periodicity.Type,
             durations: [int],
-            start_date: pd.Timestamp) -> [Phase]:
+            start_date: pd.Timestamp) -> [Span]:
         """
-        Create a set of Phases from a sequence of durations of specified period type
+        Create a set of Spans from a sequence of durations of specified period type
         :param names:
         :type names:
         :param period_type:
@@ -161,7 +161,7 @@ class Phase:
         :rtype:
         """
         if len(names) != len(durations):
-            raise Exception('Error: number of Phase names must equal number of Phases')
+            raise Exception('Error: number of Span names must equal number of Spans')
 
         dates = []
         cumulative_durations = np.cumsum(durations)

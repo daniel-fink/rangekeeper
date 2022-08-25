@@ -4,9 +4,9 @@ import rangekeeper as rk
 
 # except:
 #     import modules.rangekeeper.distribution
-#     from modules.rangekeeper.flux import Flow, Confluence
+#     from modules.rangekeeper.flux import Flow, Stream
 #     from modules.rangekeeper.periodicity import Periodicity
-#     from modules.rangekeeper.phase import Phase
+#     from modules.rangekeeper.span import Span
 
 
 # Base Model:
@@ -16,33 +16,33 @@ class Model:
             params: dict):
 
         # Phasing:
-        self.acquisition_phase = rk.phase.Phase.from_num_periods(
+        self.acquisition_span = rk.span.Span.from_num_periods(
             name='Acquisition',
             date=params['start_date'],
             period_type=rk.periodicity.Type.year,
             num_periods=1)
 
-        self.operation_phase = rk.phase.Phase.from_num_periods(
+        self.operation_span = rk.span.Span.from_num_periods(
             name='Operation',
             date=rk.periodicity.date_offset(
-                date=self.acquisition_phase.end_date,
+                date=self.acquisition_span.end_date,
                 period_type=rk.periodicity.Type.day,
                 num_periods=1),
             period_type=rk.periodicity.Type.year,
             num_periods=params['num_periods'])
 
-        self.projection_phase = rk.phase.Phase.from_num_periods(
+        self.projection_span = rk.span.Span.from_num_periods(
             name='Projection',
             date=rk.periodicity.date_offset(
-                date=self.operation_phase.end_date,
+                date=self.operation_span.end_date,
                 period_type=rk.periodicity.Type.day,
                 num_periods=1),
             period_type=rk.periodicity.Type.year,
             num_periods=1)
 
-        self.noi_calc_phase = rk.phase.Phase.merge(
-            name='NOI Calculation Phase',
-            phases=[self.operation_phase, self.projection_phase])
+        self.noi_calc_span = rk.span.Span.merge(
+            name='NOI Calculation Span',
+            spans=[self.operation_span, self.projection_span])
 
         # Cashflows:
         self.escalation = rk.projection.Extrapolation.Compounding(rate=params['growth_rate'])
@@ -53,7 +53,7 @@ class Model:
             value=params['initial_pgi'],
             proj=rk.projection.Extrapolation(
                 form=self.escalation,
-                sequence=self.noi_calc_phase.to_index(period_type=params['period_type'])),
+                sequence=self.noi_calc_span.to_index(period_type=params['period_type'])),
             units=params['units'])
 
         self.addl_pgi = rk.flux.Flow(
@@ -73,40 +73,40 @@ class Model:
         # Vacancy Allowance
         self.vacancy = rk.flux.Flow.from_periods(
             name='Vacancy Allowance',
-            index=self.noi_calc_phase.to_index(period_type=params['period_type']),
+            index=self.noi_calc_span.to_index(period_type=params['period_type']),
             data=self.pgi.movements * params['vacancy_rate'],
             units=params['units']).invert()
 
         # Effective Gross Income:
-        self.egi = rk.flux.Confluence(
+        self.egi = rk.flux.Stream(
             name='Effective Gross Income',
-            affluents=[self.pgi, self.vacancy],
+            flows=[self.pgi, self.vacancy],
             period_type=params['period_type'])
 
         # Operating Expenses:
         self.opex = rk.flux.Flow.from_periods(
             name='Operating Expenses',
-            index=self.noi_calc_phase.to_index(period_type=params['period_type']),
+            index=self.noi_calc_span.to_index(period_type=params['period_type']),
             data=self.pgi.movements * params['opex_pgi_ratio'],
             units=params['units']).invert()
 
         # Net Operating Income:
-        self.noi = rk.flux.Confluence(
+        self.noi = rk.flux.Stream(
             name='Net Operating Income',
-            affluents=[self.egi.sum('Effective Gross Income'), self.opex],
+            flows=[self.egi.sum('Effective Gross Income'), self.opex],
             period_type=params['period_type'])
 
         # Capital Expenses:
         self.capex = rk.flux.Flow.from_periods(
             name='Capital Expenditures',
-            index=self.noi_calc_phase.to_index(period_type=params['period_type']),
+            index=self.noi_calc_span.to_index(period_type=params['period_type']),
             data=self.pgi.movements * params['capex_pgi_ratio'],
             units=params['units']).invert()
 
         # Net Cashflows:
-        self.ncf = rk.flux.Confluence(
+        self.ncf = rk.flux.Stream(
             name='Net Cashflows',
-            affluents=[self.noi.sum(), self.capex],
+            flows=[self.noi.sum(), self.capex],
             period_type=params['period_type'])
 
         # Disposition
@@ -114,8 +114,8 @@ class Model:
         sale_values = list(self.ncf.sum().movements.iloc[1:] / params['cap_rate'])
         self.disposition = rk.flux.Flow.from_periods(
             name='Disposition',
-            # We no longer need the noi_calc_phase:
-            index=self.operation_phase.to_index(period_type=params['period_type']),
+            # We no longer need the noi_calc_span:
+            index=self.operation_span.to_index(period_type=params['period_type']),
             data=sale_values,
             units=params['units'])
 
@@ -134,9 +134,9 @@ class Model:
             movements=self.pv_ncf.movements.cumsum(),
             name='Discounted Net Cashflow Cumulative Sums',
             units=params['units'])
-        self.pv_ncf_agg = rk.flux.Confluence(
+        self.pv_ncf_agg = rk.flux.Stream(
             name='Discounted Net Cashflow Sums',
-            affluents=[pv_ncf_cumsum, self.pv_disposition],
+            flows=[pv_ncf_cumsum, self.pv_disposition],
             period_type=params['period_type'])
 
         self.pv_sums = self.pv_ncf_agg.sum()

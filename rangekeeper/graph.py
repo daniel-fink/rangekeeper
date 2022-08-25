@@ -69,7 +69,6 @@ class Element:
     attributes: dict
     events: List[Event]
     measurements: Dict[measure.Measure, Quantity]
-    relationships: List[tuple[Element, str]]
 
     def __str__(self):
         return 'Element: ' + self.name + '. Type: ' + self.type
@@ -84,26 +83,10 @@ class Element:
             measurements: Dict[measure.Measure, Quantity] = None):
         self.name = name
         self.type = type
-
-        if id is None:
-            self.id = str(uuid.uuid4())
-        else:
-            self.id = id
-
-        if attributes is not None:
-            self.attributes = attributes
-        else:
-            self.attributes = {}
-
-        if events is not None:
-            self.events = events
-        else:
-            self.events = []
-
-        if measurements is None:
-            self.measurements = {}
-        else:
-            self.measurements = measurements
+        self.id = str(uuid.uuid4()) if id is None else id
+        self.attributes = {} if attributes is None else attributes
+        self.events = [] if events is None else events
+        self.measurements = {} if measurements is None else measurements
 
     def get_relatives(
             self,
@@ -132,7 +115,7 @@ class Element:
 
 class Assembly(nx.MultiDiGraph, Element):
     elements: Enumerable
-    relations: Enumerable
+    relationships: Enumerable
 
     def __init__(
             self,
@@ -146,29 +129,16 @@ class Assembly(nx.MultiDiGraph, Element):
             measurements: Dict[measure.Measure, Quantity] = None):
         super().__init__(
             name=name)
-        if id is None:
-            self.id = str(uuid.uuid4())
-        else:
-            self.id = id
-
-        if attributes is not None:
-            self.attributes = attributes
-        else:
-            self.attributes = {}
-
-        if events is not None:
-            self.events = events
-        else:
-            self.events = []
-
-        if measurements is not None:
-            self.measurements = measurements
-        else:
-            self.measurements = {}
+        self.name = name
+        self.type = type
+        self.id = str(uuid.uuid4()) if id is None else id
+        self.attributes = {} if attributes is None else attributes
+        self.events = [] if events is None else events
+        self.measurements = {} if measurements is None else measurements
 
         self.add_nodes_from(elements)
         for relationship in relationships:
             self.add_edge(relationship[0], relationship[1], type=relationship[2])
 
         self.elements = Enumerable(self.nodes)
-        self.relations = Enumerable(self.edges)
+        self.relationships = Enumerable(self.edges)

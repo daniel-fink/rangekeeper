@@ -238,7 +238,7 @@ class TestFlow:
         plt.show(block=True)
 
 
-class TestConfluence:
+class TestStream:
     flow1 = rk.flux.Flow.from_projection(
         name="yearly_flow",
         value=100.0,
@@ -261,82 +261,82 @@ class TestConfluence:
                 period_type=rk.periodicity.Type.week)),
         units=currency.units)
 
-    confluence = rk.flux.Confluence(
-        name="confluence",
-        affluents=[flow1, flow2],
+    stream = rk.flux.Stream(
+        name="stream",
+        flows=[flow1, flow2],
         period_type=rk.periodicity.Type.month)
 
-    confluence.display()
+    stream.display()
 
-    def test_confluence_validity(self):
-        assert TestConfluence.confluence.name == "confluence"
-        assert len(TestConfluence.confluence._affluents) == 2
-        assert TestConfluence.confluence.start_date == pd.Timestamp(2020, 3, 1)
-        assert TestConfluence.confluence.end_date == pd.Timestamp(2022, 12, 31)
+    def test_stream_validity(self):
+        assert TestStream.stream.name == "stream"
+        assert len(TestStream.stream.flows) == 2
+        assert TestStream.stream.start_date == pd.Timestamp(2020, 3, 1)
+        assert TestStream.stream.end_date == pd.Timestamp(2022, 12, 31)
 
-        TestConfluence.confluence.display()
+        TestStream.stream.display()
 
-        assert TestConfluence.confluence.sum().movements.index.size == 24 + 10  # Two full years plus March-Dec inclusive
-        assert TestConfluence.confluence.frame['weekly_flow'].sum() == -50
-        assert TestConfluence.confluence.frame.index.freq == 'M'
+        assert TestStream.stream.sum().movements.index.size == 24 + 10  # Two full years plus March-Dec inclusive
+        assert TestStream.stream.frame['weekly_flow'].sum() == -50
+        assert TestStream.stream.frame.index.freq == 'M'
 
-        product = TestConfluence.confluence.product(
+        product = TestStream.stream.product(
             name="product",
             scope=dict(globals(), **locals()))
         product.display()
 
         datetime = pd.Timestamp(2020, 12, 31)
-        print(TestConfluence.confluence.frame['yearly_flow'][datetime])
-        print(TestConfluence.confluence.frame['weekly_flow'][datetime])
+        print(TestStream.stream.frame['yearly_flow'][datetime])
+        print(TestStream.stream.frame['weekly_flow'][datetime])
         assert product.movements[datetime] == approx(-125.786163522)
 
         cumsum_flow = rk.flux.Flow(
             name="cumsum_flow",
-            movements=TestConfluence.flow1.movements.cumsum(),
+            movements=TestStream.flow1.movements.cumsum(),
             units=currency.units)
         cumsum_flow.display()
         assert cumsum_flow.movements.iloc[-1] == 100
 
-    def test_confluence_duplication(self):
-        duplicate = TestConfluence.confluence.duplicate()
-        assert duplicate.name == "confluence"
-        assert len(duplicate._affluents) == 2
+    def test_stream_duplication(self):
+        duplicate = TestStream.stream.duplicate()
+        assert duplicate.name == "stream"
+        assert len(duplicate.flows) == 2
         assert duplicate.frame.index.freq == 'M'
 
-    def test_confluence_confluence(self):
-        collapse = TestConfluence.confluence.collapse()
+    def test_stream_stream(self):
+        collapse = TestStream.stream.collapse()
         assert collapse.frame['yearly_flow'][0] == approx(100.0)
 
         datetime = pd.Timestamp(2020, 12, 31)
-        sum = TestConfluence.confluence.sum()
+        sum = TestStream.stream.sum()
         assert sum.movements[datetime] == approx(29.5597484277)
 
 
-class TestPhase:
-    def test_correct_phase(self):
-        test_phase = rk.phase.Phase(
-            name='test_phase',
+class TestSpan:
+    def test_correct_span(self):
+        test_span = rk.span.Span(
+            name='test_span',
             start_date=pd.Timestamp(2020, 3, 1),
             end_date=pd.Timestamp(2021, 2, 28))
-        assert test_phase.start_date < test_phase.end_date
-        assert test_phase.duration(period_type=rk.periodicity.Type.day) == 364
+        assert test_span.start_date < test_span.end_date
+        assert test_span.duration(period_type=rk.periodicity.Type.day) == 364
 
-    def test_correct_phases(self):
+    def test_correct_spans(self):
         dates = [pd.Timestamp(2020, 2, 29),
                  pd.Timestamp(2020, 3, 1),
                  pd.Timestamp(2021, 2, 28),
                  pd.Timestamp(2021, 12, 31),
                  pd.Timestamp(2024, 2, 29)]
-        names = ['Phase1', 'Phase2', 'Phase3', 'Phase4']
-        phases = rk.phase.Phase.from_date_sequence(names=names, dates=dates)
+        names = ['Span1', 'Span2', 'Span3', 'Span4']
+        spans = rk.span.Span.from_date_sequence(names=names, dates=dates)
 
-        assert len(phases) == 4
-        assert phases[0].name == 'Phase1'
-        assert phases[0].end_date == pd.Timestamp(2020, 2, 29)
-        assert phases[0].duration(rk.periodicity.Type.day) == 0
+        assert len(spans) == 4
+        assert spans[0].name == 'Span1'
+        assert spans[0].end_date == pd.Timestamp(2020, 2, 29)
+        assert spans[0].duration(rk.periodicity.Type.day) == 0
 
-        assert phases[1].start_date == pd.Timestamp(2020, 3, 1)
-        assert phases[1].end_date == pd.Timestamp(2021, 2, 27)
+        assert spans[1].start_date == pd.Timestamp(2020, 3, 1)
+        assert spans[1].end_date == pd.Timestamp(2021, 2, 27)
 
 
 class TestMeasures:
@@ -367,7 +367,7 @@ class TestMeasures:
 
     def test_custom_derivative(self):
         assert (1 * TestMeasures.gfa.units).to('sqm') == units.Quantity('1 * sqm')
-        assert TestMeasures.rent_per_nsa.units == 'AUD / sqm'
+        assert TestMeasures.rent_per_nsa.units == 'AUD / squaremeter'
 
     def test_eval_units(self):
         area = 100 * units.sqm
@@ -521,21 +521,21 @@ class TestSegmentation:
         podium_subdivs = podium.subdivide(divisions=[
             ({
                  rk.segmentation.Characteristic.use: 'parking',
-                 rk.segmentation.Characteristic.phase: 1
+                 rk.segmentation.Characteristic.span: 1
                  }, 0.5),
             ({
                  rk.segmentation.Characteristic.use: 'retail',
-                 rk.segmentation.Characteristic.phase: 2
+                 rk.segmentation.Characteristic.span: 2
                  }, 0.25),
             ({
                  rk.segmentation.Characteristic.use: 'boh',
-                 rk.segmentation.Characteristic.phase: 2
+                 rk.segmentation.Characteristic.span: 2
                  }, 0.25)
             ])
 
         podium.display_children()
 
-        podium.display_children(pivot=rk.segmentation.Characteristic.phase)
+        podium.display_children(pivot=rk.segmentation.Characteristic.span)
 
         assert podium_subdivs[2].bounds.right == 100
 
@@ -555,3 +555,16 @@ class TestType:
         assert len(TestType.grandparent.subtypes[0].subtypes[0].subtypes) == 2
         TestType.child.subtypes[0].display()
         print([ancestor.name for ancestor in TestType.child.subtypes[0].ancestors()])
+
+
+class TestIO:
+    def test_speckle(self):
+        speckle = rk.io.Speckle.query(
+            stream_id='1dd7d041b5',
+            commit_id='a29679079f')
+        print(speckle)
+
+    def test_query(self):
+        query = rk.io.Speckle.query2('https://speckle.xyz/streams/1dd7d041b5/objects/33cfc8f0cdfc980b783f00cc35167fc6')
+        print(query)
+
