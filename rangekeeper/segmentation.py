@@ -117,8 +117,12 @@ class Interval(pd.Interval):
                     right=parameters[i + 1]))
         return results
 
+    def interval_value(self):
+        return self.right - self.left
+
 
 class Segment:
+    name: str
     bounds: Interval
     parent: Segment
     children: List[Segment]
@@ -128,14 +132,21 @@ class Segment:
             self,
             bounds: Interval,
             characteristics: Dict[Characteristic, str] = None,
-            parent: Segment = None):
+            parent: Segment = None,
+            children: List[Segment] = None,
+            name: str = None):
+        self.name = name
         self.bounds = bounds
         self.characteristics = {} if characteristics is None else characteristics
-        self.parent = parent
-        self.children = []
 
         if parent is not None:
             parent.children.append(self)
+        self.parent = parent
+
+        if children is not None: # Need to run tests on this to check this works.
+            for child in children:
+                child.parent = self
+        self.children = [] if children is None else children
 
     def to_frame(self):
         frame = pd.DataFrame(
@@ -144,7 +155,8 @@ class Segment:
             columns=[characteristic.value for characteristic in self.characteristics.keys()])
         frame['Amount'] = self.bounds.length
 
-        frame['Proportion (of Parent)'] = "{:.0%}".format(self.bounds.length / self.parent.bounds.length)
+        if self.parent is not None:
+            frame['Proportion (of Parent)'] = "{:.0%}".format(self.bounds.length / self.parent.bounds.length)
 
         return frame
 
@@ -178,11 +190,6 @@ class Segment:
 
         floatfmt = "." + str(decimals) + "f"
 
-        print('\n')
-        print(self.to_frame().to_markdown(
-            tablefmt='github',
-            floatfmt=floatfmt))
-
         print('Children' + pivot_name)
         print(frame.to_markdown(
             tablefmt='github',
@@ -202,11 +209,12 @@ class Segment:
 
     def subdivide(
             self,
-            divisions: List[Tuple[Dict[Characteristic, str], float]]) -> List[Segment]:
+            divisions: List[Tuple[str, Dict[Characteristic, str], float]]) -> List[Segment]:
         result = []
-        intervals = self.bounds.subdivide([division[1] for division in divisions])
-        for division, interval in zip([division[0] for division in divisions], intervals):
+        intervals = self.bounds.subdivide([division[2] for division in divisions])
+        for name, division, interval in zip([division[0] for division in divisions],[division[1] for division in divisions], intervals):
             result.append(Segment(
+                name=name,
                 bounds=interval,
                 characteristics=division,
                 parent=self))
