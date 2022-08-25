@@ -6,6 +6,7 @@ from typing import List, Dict, Union, Tuple
 from collections import namedtuple
 
 import pandas as pd
+import numpy as np
 from aenum import Enum
 import rich
 
@@ -15,52 +16,8 @@ class Characteristic(Enum):
 
     use = 'Use'
     tenure = 'Tenure'
-    phase = 'Phase'
+    span = 'Span'
     type = 'Type'
-
-class Type:
-    name: str
-    code: str
-    supertype: Type
-    subtypes: [Type]
-
-    def __init__(
-            self,
-            name: str,
-            code: str = None,
-            supertype: Type = None):
-        self.name = name
-        self.code = code
-        self.supertype = supertype
-        self.subtypes = []
-
-        if supertype is not None:
-            supertype.subtypes.append(self)
-
-    def __str__(self):
-        code = ' :' + self.code if self.code is not None else ''
-        return self.name + code
-
-    def add_subtypes(
-            self,
-            subtypes: [Type]):
-        for subtype in subtypes:
-            self.subtypes.append(subtype)
-            subtype.supertype = self
-
-    def ancestors(self) -> [Type]:
-        ancestors = []
-        supertype = self.supertype
-        while supertype is not None:
-            ancestors.append(supertype)
-            supertype = supertype.supertype
-        return ancestors
-
-    def primogenitor(self) -> Type:
-        return self.ancestors()[-1]
-
-    def display(self):
-        print(' > '.join([ancestor.__str__() for ancestor in self.ancestors()]))
 
 
 class Type:
@@ -186,7 +143,8 @@ class Segment:
             index=pd.IntervalIndex(data=[self.bounds]),
             columns=[characteristic.value for characteristic in self.characteristics.keys()])
         frame['Amount'] = self.bounds.length
-        frame['Proportion(Parent)'] = "{:.0%}".format(self.bounds.length / self.parent.bounds.length)
+
+        frame['Proportion (of Parent)'] = "{:.0%}".format(self.bounds.length / self.parent.bounds.length)
 
         return frame
 
@@ -206,20 +164,27 @@ class Segment:
             raise ValueError("Error: Segment has no children")
 
         frame = pd.concat([child.to_frame() for child in self.children])
+        pivot_name = ''
         if pivot is not None:
-            frame = frame.pivot_table(
-                index=pivot.value,
-                columns=['Amount', 'Use', 'Proportion(Parent)'])
+            frame = pd.pivot_table(
+                data=frame,
+                index=[pivot.value],
+                aggfunc=np.sum
+                # columns=['Amount', 'Use', 'Proportion (of Parent)']
+                )
+            frame['Proportion (of Parent)'] = frame['Amount'] / self.bounds.length
+            frame['Proportion (of Parent)'] = frame['Proportion (of Parent)'].map("{:.0%}".format)
+            pivot_name = ' by ' + pivot.value
 
         floatfmt = "." + str(decimals) + "f"
 
-        print('\n Children')
-        print(frame.to_markdown(
+        print('\n')
+        print(self.to_frame().to_markdown(
             tablefmt='github',
             floatfmt=floatfmt))
 
-        print('\n Total')
-        print(self.to_frame().to_markdown(
+        print('Children' + pivot_name)
+        print(frame.to_markdown(
             tablefmt='github',
             floatfmt=floatfmt))
 
