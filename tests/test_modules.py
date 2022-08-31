@@ -297,6 +297,21 @@ class TestStream:
         cumsum_flow.display()
         assert cumsum_flow.movements.iloc[-1] == 100
 
+    def test_stream_aggregation(self):
+        flow2_sqm = TestStream.flow2.duplicate()
+        flow2_sqm.units = units.squaremeter
+
+        stream_sqm = rk.flux.Stream(
+            name="stream_sqm",
+            flows=[TestStream.flow1, flow2_sqm],
+            period_type=rk.periodicity.Type.month)
+
+        stream_sqm_agg = stream_sqm.product(
+            name="stream_sqm_agg",
+            scope=scope)
+
+        assert stream_sqm_agg.units == 'USD * squaremeter'
+
     def test_stream_duplication(self):
         duplicate = TestStream.stream.duplicate()
         assert duplicate.name == "stream"
