@@ -521,6 +521,7 @@ class Stream:
     def product(
             self,
             name: str = None,
+            registry: pint.UnitRegistry = None,
             scope: Optional[dict] = None) -> Flow:
         """
         Returns a Flow whose movements are the product of the Stream's flows by period
@@ -528,14 +529,22 @@ class Stream:
         """
 
         # Produce resultant units:
-        singleton = ['1 * units.' + str(value) for value in self.units.values()]
-        singleton = eval(' * '.join(singleton), scope)
+        # singleton = ['1 * units.' + str(value) for value in self.units.values()]
+        # singleton = eval(' * '.join(singleton), scope)
+        registry = registry if registry is not None else pint.UnitRegistry()
+        units = measure.multiply_units(
+            units=list(self.units.values()),
+            registry=registry)
+        reduced_units = measure.remove_dimension(
+            quantity=registry.Quantity(1, units),
+            dimension='[time]',
+            registry=registry)
 
         return Flow.from_periods(
             name=name if name is not None else self.name,
             index=self.frame.index,  # .to_period(),
             data=self.frame.prod(axis=1).to_list(),
-            units=singleton.units)
+            units=reduced_units.units)
 
     def collapse(self) -> Stream:
         """

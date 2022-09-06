@@ -101,6 +101,25 @@ class TestUnits:
             name="foo")
         print(series)
 
+    def test_remove_dim(self):
+        quantity = math.pi * currency.units / units.squaremeter / units.month
+        reduced_quantity = rk.measure.remove_dimension(
+            quantity=quantity,
+            dimension='[time]',
+            registry=units)
+        assert reduced_quantity == math.pi * currency.units / units.squaremeter
+
+    def test_multiply_units(self):
+        q1 = math.pi * currency.units / units.squaremeter / units.month
+        q2 = math.e * units.meter / units.year
+        q3 = math.tau * units.dimensionless
+
+        quantities = [q1, q2, q3]
+        product = rk.measure.multiply_units(
+            units=[quantity.units for quantity in quantities],
+            registry=units)
+        assert product == 'USD * meter / month / squaremeter / year'
+
 
 class TestFlow:
     date1 = pd.Timestamp(2000, 1, 2)
@@ -299,7 +318,7 @@ class TestStream:
 
     def test_stream_aggregation(self):
         flow2_sqm = TestStream.flow2.duplicate()
-        flow2_sqm.units = units.squaremeter
+        flow2_sqm.units = units.squaremeter / units.month
 
         stream_sqm = rk.flux.Stream(
             name="stream_sqm",
@@ -308,7 +327,8 @@ class TestStream:
 
         stream_sqm_agg = stream_sqm.product(
             name="stream_sqm_agg",
-            scope=scope)
+            scope=scope,
+            registry=units)
 
         assert stream_sqm_agg.units == 'USD * squaremeter'
 
@@ -582,4 +602,3 @@ class TestIO:
     def test_query(self):
         query = rk.io.Speckle.query2('https://speckle.xyz/streams/1dd7d041b5/objects/33cfc8f0cdfc980b783f00cc35167fc6')
         print(query)
-
