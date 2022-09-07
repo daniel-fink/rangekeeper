@@ -301,6 +301,7 @@ class TestStream:
 
         product = TestStream.stream.product(
             name="product",
+            registry=units,
             scope=dict(globals(), **locals()))
         product.display()
 
@@ -554,16 +555,25 @@ class TestSegmentation:
         assert residential.bounds.right == approx(65)
 
         podium_subdivs = podium.subdivide(divisions=[
-            ({
-                 rk.segmentation.Characteristic.use: 'parking',
+            ('Parking',
+             {
+                 rk.segmentation.Characteristic.type: 'Podium',
+                 rk.segmentation.Characteristic.tenure: 'Mixed',
+                 rk.segmentation.Characteristic.use: 'Parking',
                  rk.segmentation.Characteristic.span: 1
                  }, 0.5),
-            ({
-                 rk.segmentation.Characteristic.use: 'retail',
+            ('Retail',
+             {
+                 rk.segmentation.Characteristic.type: 'Podium',
+                 rk.segmentation.Characteristic.tenure: 'Mixed',
+                 rk.segmentation.Characteristic.use: 'Retail',
                  rk.segmentation.Characteristic.span: 2
                  }, 0.25),
-            ({
-                 rk.segmentation.Characteristic.use: 'boh',
+            ('boh',
+             {
+                 rk.segmentation.Characteristic.type: 'Podium',
+                 rk.segmentation.Characteristic.tenure: 'Mixed',
+                 rk.segmentation.Characteristic.use: 'BOH',
                  rk.segmentation.Characteristic.span: 2
                  }, 0.25)
             ])

@@ -55,6 +55,8 @@ def remove_dimension(
                 else:
                     raise NotImplementedError(
                         'Error: Dimension reduction currently only works for single-order (^1 or ^-1) dimensions.')
+    else:
+        return quantity
 
 
 def multiply_units(
