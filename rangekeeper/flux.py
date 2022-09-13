@@ -141,7 +141,7 @@ class Flow:
     @classmethod
     def from_projection(
             cls,
-            value: Union[float, distribution.Distribution],
+            value: Union[float, distribution.Form],
             proj: projection,
             units: pint.Unit = None,
             name: str = None) -> Flow:
@@ -156,7 +156,7 @@ class Flow:
 
         if isinstance(value, float):
             value = value
-        elif isinstance(value, distribution.Distribution):
+        elif isinstance(value, distribution.Form):
             value = value.sample()
 
         if isinstance(proj, projection.Extrapolation):
