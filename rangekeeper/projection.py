@@ -198,11 +198,11 @@ class Extrapolation(Projection):
 
 
 class Distribution(Projection):
-    dist: distribution.Distribution
+    dist: distribution.Form
 
     def __init__(
             self,
-            dist: distribution.Distribution,
+            dist: distribution.Form,
             sequence: pd.PeriodIndex,
             bounds: Tuple[pd.Period, pd.Period] = None):
         super().__init__(
@@ -276,11 +276,11 @@ class Distribution(Projection):
 #     A projection that apportions values over a range, according to a specified
 #     distribution type.
 #     """
-#     dist: distribution.Distribution
+#     dist: distribution.Form
 #
 #     def __init__(
 #             self,
-#             dist: distribution.Distribution,
+#             dist: distribution.Form,
 #             sequence: Union[pd.RangeIndex, pd.PeriodIndex],
 #             bounds: Union[Tuple[int, int], Tuple[pd.Period, pd.Period]]):
 #         super().__init__(

@@ -229,7 +229,7 @@ class TestFlow:
             weighting=4,
             minimum=2,
             maximum=8)
-        assert isinstance(dist, rk.distribution.Distribution)
+        assert isinstance(dist, rk.distribution.Form)
 
         sums = []
         for i in range(1000):

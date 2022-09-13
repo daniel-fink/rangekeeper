@@ -16,7 +16,7 @@ class Type(aenum.Enum):
     PERT = 'PERT distribution', 'Transformation of the four-parameter Beta distribution defined by the minimum, most likely, and maximum values.'
 
 
-class Distribution:
+class Form:
     type: str
 
     def __init__(
@@ -71,7 +71,7 @@ class Distribution:
             raise ValueError("Error: Parameter must be between 0 and 1 inclusive")
 
 
-class Symmetric(Distribution):
+class Symmetric(Form):
     def __init__(
             self,
             distribution_type: Type,
@@ -114,7 +114,7 @@ class Symmetric(Distribution):
         return self.distribution().cumulative_density(parameters)
 
 
-class Uniform(Distribution):
+class Uniform(Form):
     """
     For default arguments, this is a continuous, uniform distribution between 0 and 1,
     such the cumulative distribution reaches 1. (For uniform distribution, this means the density is continuously 1).
@@ -141,7 +141,7 @@ class Uniform(Distribution):
         return super().cumulative_density(parameters)
 
 
-class PERT(Distribution):
+class PERT(Form):
     """
     A continuous distribution that is controlled by the placement and weighting of the mode (peak) value.
     It produces similar distributions to the Normal (Gaussian) distribution within a specified domain.
@@ -168,6 +168,8 @@ class PERT(Distribution):
         super().__init__(generator=generator)
         self.peak = peak
         self.weighting = weighting
+        self.minimum = minimum
+        self.maximum = maximum
         self.scale = maximum - minimum
         if (self.weighting >= 0) & (self.peak >= minimum) & (self.peak <= maximum):
             a = (1. + self.weighting * (self.peak - minimum) / (maximum - minimum))
