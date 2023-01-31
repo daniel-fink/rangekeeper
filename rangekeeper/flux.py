@@ -1,14 +1,15 @@
 from __future__ import annotations
+import os
 
 import itertools
 import math
+import pprint
 from typing import Dict, Union, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pint
-import rich
 import yaml
 import pyxirr
 
@@ -58,7 +59,7 @@ class Flow:
             raise ValueError('Error: Units must be of type pint.Unit')
 
     def __str__(self):
-        return self.display()
+        return str(self._format())
 
     def duplicate(self) -> Flow:
         return self.__class__(
@@ -66,20 +67,28 @@ class Flow:
             units=self.units,
             name=self.name)
 
-    def display(
+    def _format(
             self,
             decimals: int = 2):
 
-        print('\n')
-        print('Name: ' + self.name)
-        print('Units: ' + str(self.units))
-        print('Movements: ')
+        linebreak = os.linesep
+        name = 'Name: ' + self.name
+        units = 'Units: ' + str(self.units)
+        movements = 'Movements: '
 
         floatfmt = "." + str(decimals) + "f"
 
-        print(self.movements.to_markdown(
+        data = self.movements.to_markdown(
             tablefmt='github',
-            floatfmt=floatfmt))
+            floatfmt=floatfmt)
+
+        return linebreak.join([linebreak, name, units, movements, data])
+
+    def display(
+            self,
+            decimals: int = 2):
+        format = self._format(decimals=decimals)
+        print(format)
 
     def plot(
             self,
@@ -368,7 +377,7 @@ class Stream:
         print('\n')
         print('Name: ' + self.name)
         print('Units: ')
-        rich.print(self.units)
+        pprint.pprint(self.units)
         print('Flows: ')
 
         floatfmt = "." + str(decimals) + "f"
