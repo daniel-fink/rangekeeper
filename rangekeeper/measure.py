@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import pint
-from pint.definitions import UnitDefinition
-from pint.converters import ScaleConverter
+#from pint.definitions import UnitDefinition
+#from pint.converters import ScaleConverter
 import moneyed
 
 
@@ -85,13 +85,13 @@ def register_currency(
         registry.define('money = [currency]')
         registry.define(
             '{0} = nan money = {0} = {1}'.format(
-                currency.code,
-                currency.name))
+                ''.join(currency.code.split()),
+                ''.join(currency.name.split())))
     else:
         registry.define(
             '{0} = nan money = {0} = {1}'.format(
-                currency.code,
-                currency.name))
+                ''.join(currency.code.split()),
+                ''.join(currency.name.split())))
 
     return Measure(
         name=currency.name,

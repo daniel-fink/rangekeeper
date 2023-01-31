@@ -122,7 +122,7 @@ class Assembly(nx.MultiDiGraph, Element):
             name: str,
             type: str,
             elements: List[Element],
-            relationships: List[tuple[Element, Element, str]],
+            relationships: List[tuple[Element, Element, str]],  # A list of tuples of the form [From, To, Type]
             id: str = None,
             attributes: dict = None,
             events: List[Event] = None,

@@ -5,7 +5,7 @@ packages = \
 ['rangekeeper', 'rangekeeper.dynamics', 'rangekeeper.models']
 
 package_data = \
-{'': ['*'], 'rangekeeper': ['notebooks/*']}
+{'': ['*'], 'rangekeeper': ['book/*']}
 
 install_requires = \
 ['Pint>=0.19.2,<0.20.0',

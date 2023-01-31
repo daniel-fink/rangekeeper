@@ -17,10 +17,19 @@ class Span:
     def __init__(
             self,
             start_date: pd.Timestamp,
-            end_date: pd.Timestamp,
+            end_date: pd.Timestamp = None,
             name: str = None):
+        """
+        Define a Span using dates and a name. If no end date is provided, it is
+        assumed to be a one-day Span (ie, the start and end dates are the same)
+        :param start_date:
+        :param end_date:
+        :param name:
+        """
         if end_date < start_date:
             raise Exception('Error: end_date cannot be before start_date')
+        if end_date is None:
+            end_date = start_date
         if name is None:
             self.name = ''
         else:

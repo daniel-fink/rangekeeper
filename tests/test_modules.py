@@ -604,10 +604,13 @@ class TestType:
 
 class TestIO:
     def test_speckle(self):
-        speckle = rk.io.Speckle.query(
+        speckle = rk.io.Speckle(token='52c9b20071b2854f98ad91af10c154ad5e232b88a7')
+        item = speckle.get_item(
             stream_id='1dd7d041b5',
             commit_id='a29679079f')
-        print(speckle)
+        print(item)
+        print(item.Data)
+
 
     def test_query(self):
         query = rk.io.Speckle.query2('https://speckle.xyz/streams/1dd7d041b5/objects/33cfc8f0cdfc980b783f00cc35167fc6')

@@ -8,7 +8,6 @@ from collections import namedtuple
 import pandas as pd
 import numpy as np
 from aenum import Enum
-import rich
 
 
 class Characteristic(Enum):
