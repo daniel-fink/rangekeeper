@@ -11,13 +11,13 @@ execute:
 bibtex_bibfiles:
   - references.bib
 
-# Information about where the book exists on the web
+# Information about where the docs exists on the web
 repository:
-  # url: https://github.com/executablebooks/jupyter-book  # Online location of your book
-  path_to_book: docs  # Optional path to your book, relative to the repository root
+  # url: https://github.com/executablebooks/jupyter-book  # Online location of your docs
+  path_to_book: docs  # Optional path to your docs, relative to the repository root
   branch: gh-pages  # Which branch of the repository should be used when creating links (optional)
 
-# Add GitHub buttons to your book
+# Add GitHub buttons to your docs
 # See https://jupyterbook.org/customize/config.html#add-a-link-to-your-repository
 html:
   use_issues_button: true
