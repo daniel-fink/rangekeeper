@@ -1,18 +1,19 @@
 from __future__ import annotations
+import os
 
 import itertools
 import math
+import pprint
 from typing import Dict, Union, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pint
-import rich
 import yaml
 import pyxirr
 
-from . import projection, distribution, periodicity, phase, measure
+from . import projection, distribution, periodicity, span, measure
 
 
 class Flow:
@@ -58,7 +59,7 @@ class Flow:
             raise ValueError('Error: Units must be of type pint.Unit')
 
     def __str__(self):
-        return self.display()
+        return str(self._format())
 
     def duplicate(self) -> Flow:
         return self.__class__(
@@ -66,20 +67,28 @@ class Flow:
             units=self.units,
             name=self.name)
 
-    def display(
+    def _format(
             self,
             decimals: int = 2):
 
-        print('\n')
-        print('Name: ' + self.name)
-        print('Units: ' + str(self.units))
-        print('Movements: ')
+        linebreak = os.linesep
+        name = 'Name: ' + self.name
+        units = 'Units: ' + str(self.units)
+        movements = 'Movements: '
 
         floatfmt = "." + str(decimals) + "f"
 
-        print(self.movements.to_markdown(
+        data = self.movements.to_markdown(
             tablefmt='github',
-            floatfmt=floatfmt))
+            floatfmt=floatfmt)
+
+        return linebreak.join([linebreak, name, units, movements, data])
+
+    def display(
+            self,
+            decimals: int = 2):
+        format = self._format(decimals=decimals)
+        print(format)
 
     def plot(
             self,
@@ -141,7 +150,7 @@ class Flow:
     @classmethod
     def from_projection(
             cls,
-            value: Union[float, distribution.Distribution],
+            value: Union[float, distribution.Form],
             proj: projection,
             units: pint.Unit = None,
             name: str = None) -> Flow:
@@ -156,7 +165,7 @@ class Flow:
 
         if isinstance(value, float):
             value = value
-        elif isinstance(value, distribution.Distribution):
+        elif isinstance(value, distribution.Form):
             value = value.sample()
 
         if isinstance(proj, projection.Extrapolation):
@@ -251,95 +260,95 @@ class Flow:
     def get_frequency(self) -> str:
         return self.movements.index.freq
 
-    def trim_to_phase(
+    def trim_to_span(
             self,
-            phase: phase.Phase) -> Flow:
+            span: span.Span) -> Flow:
         """
-        Returns a Flow with movements trimmed to the specified phase
+        Returns a Flow with movements trimmed to the specified span
         """
         return self.__class__(
             movements=self.movements.copy(deep=True).truncate(
-                before=phase.start_date,
-                after=phase.end_date),
+                before=span.start_date,
+                after=span.end_date),
             units=self.units,
             name=self.name)
 
-    def to_confluence(
+    def to_stream(
             self,
             period_type: periodicity.Type,
-            name: str = None) -> Confluence:
+            name: str = None) -> Stream:
         """
-        Returns a Confluence with the flow as affluent
+        Returns a Stream with the flow as flow
         resampled at the specified periodicity
         :param period_type:
         :param name:
         """
-        return Confluence(
+        return Stream(
             name=name if name is not None else self.name,
-            affluents=[self],
+            flows=[self],
             period_type=period_type)
 
 
-class Confluence:
+class Stream:
     name: str
-    _affluents: [Flow]
+    flows: [Flow]
     period_type: periodicity.Type
     start_date: pd.Timestamp
     end_date: pd.Timestamp
     frame: pd.DataFrame
 
     """
-    A `Confluence` collects affluent (constituent) Flows
+    A `Stream` collects flow (constituent) Flows
     and resamples them with a specified periodicity.
     """
 
     def __init__(
             self,
             name: str,
-            affluents: [Flow],
+            flows: [Flow],
             period_type: periodicity.Type):
 
         # Name:
         self.name = name
 
         # Units:
-        # if all(flow.units == affluents[0].units for flow in affluents):
-        #     self.units = affluents[0].units
+        # if all(flow.units == flows[0].units for flow in flows):
+        #     self.units = flows[0].units
         # else:
-        #     raise Exception("Input Flows have dissimilar units. Cannot aggregate into Confluence.")
+        #     raise Exception("Input Flows have dissimilar units. Cannot aggregate into Stream.")
 
-        # Affluents:
-        self._affluents = affluents
-        """The set of input Flows that are aggregated in this Confluence"""
+        # Flows:
+        self.flows = flows
+        """The set of input Flows that are aggregated in this Stream"""
 
-        self.units = {affluent.name: affluent.units for affluent in self._affluents}
+        self.units = {flow.name: flow.units for flow in self.flows}
 
         # Periodicity Type:
         self.period_type = period_type
 
-        # Confluence:
-        affluents_dates = list(
-            itertools.chain.from_iterable(list(affluent.movements.index.array) for affluent in self._affluents))
-        self.start_date = min(affluents_dates)
-        self.end_date = max(affluents_dates)
+        # Stream:
+        flows_dates = list(
+            itertools.chain.from_iterable(list(flow.movements.index.array) for flow in self.flows))
+        self.start_date = min(flows_dates)
+        self.end_date = max(flows_dates)
 
         index = periodicity.period_index(
             include_start=self.start_date,
             period_type=self.period_type,
             bound=self.end_date)
-        _resampled_affluents = [affluent.to_periods(period_type=self.period_type) for affluent in self._affluents]
-        self.frame = pd.concat(_resampled_affluents, axis=1).fillna(0).sort_index()
+        _resampled_flows = [flow.to_periods(period_type=self.period_type) for flow in self.flows]
+        self.frame = pd.concat(_resampled_flows, axis=1).fillna(0).sort_index()
         """
-        A pd.DataFrame of the Confluence's affluent Flows accumulated into the Confluence's periodicity
+        A pd.DataFrame of the Stream's flow Flows accumulated into the Stream's periodicity
         """
 
     def __str__(self):
         return self.display()
 
-    def duplicate(self) -> Confluence:
+    def duplicate(self) -> Stream:
         return self.__class__(
             name=self.name,
-            affluents=[affluent.duplicate() for affluent in self._affluents],
+            flows=[flow.duplicate() for flow in self.flows],
             period_type=self.period_type)
 
     @classmethod
@@ -347,18 +356,18 @@ class Confluence:
             cls,
             name: str,
             data: pd.DataFrame,
-            units: pint.Unit) -> Confluence:
-        affluents = []
+            units: pint.Unit) -> Stream:
+        flows = []
         for column in data.columns:
             series = data[column]
-            affluents.append(
+            flows.append(
                 Flow(
                     movements=series,
                     units=units,
                     name=series.name))
         return cls(
             name=name,
-            affluents=affluents,
+            flows=flows,
             period_type=periodicity.from_value(data.index.freqstr))
 
     def display(
@@ -368,7 +377,7 @@ class Confluence:
         print('\n')
         print('Name: ' + self.name)
         print('Units: ')
-        rich.print(self.units)
+        pprint.pprint(self.units)
         print('Flows: ')
 
         floatfmt = "." + str(decimals) + "f"
@@ -379,14 +388,14 @@ class Confluence:
 
     def plot(
             self,
-            affluents: Dict[str, tuple] = None):
+            flows: Dict[str, tuple] = None):
         """
-        Plots the specified affluents against each respective value range (min-max)
+        Plots the specified flows against each respective value range (min-max)
 
-        :param affluents: A dictionary of affluents to plot, by name and value range (as a tuple)
+        :param flows: A dictionary of flows to plot, by name and value range (as a tuple)
         """
-        if affluents is None:
-            affluents = {affluent.name: None for affluent in self._affluents}
+        if flows is None:
+            flows = {flow.name: None for flow in self.flows}
         dates = list(self.frame.index.astype(str))
 
         fig, host = plt.subplots(nrows=1, ncols=1)
@@ -412,63 +421,63 @@ class Confluence:
                   linestyle='-.',
                   linewidth=0.5)
 
-        primary_affluent = list(affluents.keys())[0]
+        primary_flow = list(flows.keys())[0]
         primary, = host.plot(dates,
-                             self.frame[primary_affluent],
+                             self.frame[primary_flow],
                              color=plt.cm.viridis(0),
-                             label=primary_affluent)
+                             label=primary_flow)
         host.spines.left.set_linewidth(1)
-        host.set_ylabel(primary_affluent)
+        host.set_ylabel(primary_flow)
         host.yaxis.label.set_color(primary.get_color())
         host.spines.left.set_color(primary.get_color())
         host.tick_params(axis='y', colors=primary.get_color(), **tkw)
         host.minorticks_on()
 
-        if affluents[primary_affluent] is not None:
-            host.set_ylim([affluents[primary_affluent][0], affluents[primary_affluent][1]])
+        if flows[primary_flow] is not None:
+            host.set_ylim([flows[primary_flow][0], flows[primary_flow][1]])
 
         datums.append(primary)
         axes.append(host)
 
-        if len(affluents) > 1:
-            secondary_affluent = list(affluents.keys())[1]
+        if len(flows) > 1:
+            secondary_flow = list(flows.keys())[1]
             right = host.twinx()
             secondary, = right.plot(dates,
-                                    self.frame[secondary_affluent],
-                                    color=plt.cm.viridis(1 / (len(affluents) + 1)),
-                                    label=secondary_affluent)
+                                    self.frame[secondary_flow],
+                                    color=plt.cm.viridis(1 / (len(flows) + 1)),
+                                    label=secondary_flow)
             right.spines.right.set_visible(True)
             right.spines.right.set_linewidth(1)
-            right.set_ylabel(secondary_affluent)
+            right.set_ylabel(secondary_flow)
             right.grid(False)
             right.yaxis.label.set_color(secondary.get_color())
             right.spines.right.set_color(secondary.get_color())
             right.tick_params(axis='y', colors=secondary.get_color(), **tkw)
-            if affluents[secondary_affluent] is not None:
-                right.set_ylim([affluents[secondary_affluent][0], affluents[secondary_affluent][1]])
+            if flows[secondary_flow] is not None:
+                right.set_ylim([flows[secondary_flow][0], flows[secondary_flow][1]])
 
             datums.append(secondary)
             axes.append(right)
 
-            if len(affluents) > 2:
-                for i in range(2, len(affluents)):
-                    additional_affluent = list(affluents.keys())[i]
+            if len(flows) > 2:
+                for i in range(2, len(flows)):
+                    additional_flow = list(flows.keys())[i]
                     supplementary = host.twinx()
                     additional, = supplementary.plot(dates,
-                                                     self.frame[additional_affluent],
-                                                     color=plt.cm.viridis(i / (len(affluents) + 1)),
-                                                     label=additional_affluent)
+                                                     self.frame[additional_flow],
+                                                     color=plt.cm.viridis(i / (len(flows) + 1)),
+                                                     label=additional_flow)
                     supplementary.spines.right.set_position(('axes', 1 + (i - 1) / 5))
                     supplementary.spines.right.set_visible(True)
                     supplementary.spines.right.set_linewidth(1)
-                    supplementary.set_ylabel(additional_affluent)
+                    supplementary.set_ylabel(additional_flow)
                     supplementary.grid(False)
                     supplementary.yaxis.label.set_color(additional.get_color())
                     supplementary.spines.right.set_color(additional.get_color())
                     supplementary.tick_params(axis='y', colors=additional.get_color(), **tkw)
-                    if affluents[additional_affluent] is not None:
+                    if flows[additional_flow] is not None:
                         supplementary.set_ylim(
-                            [affluents[additional_affluent][0], affluents[additional_affluent][1]])
+                            [flows[additional_flow][0], flows[additional_flow][1]])
 
                     datums.append(additional)
                     axes.append(supplementary)
@@ -490,7 +499,7 @@ class Confluence:
             self,
             flow_name: str) -> Flow:
         """
-        Extract an Confluence's resampled affluent as a Flow
+        Extract an Stream's resampled flow as a Flow
         :param flow_name:
         :return:
         """
@@ -504,13 +513,13 @@ class Confluence:
             self,
             name: str = None) -> Flow:
         """
-        Returns a Flow whose movements are the sum of the Confluence's affluents by period
+        Returns a Flow whose movements are the sum of the Stream's flows by period
         :return: Flow
         """
         # Check if all units are the same:
         if not len(list(set(list(self.units.values())))) == 1:
             rich.print(self.units)
-            raise ValueError("Error: summation requires all affluents' units to be the same.")
+            raise ValueError("Error: summation requires all flows' units to be the same.")
 
         return Flow.from_periods(
             name=name if name is not None else self.name,
@@ -521,100 +530,109 @@ class Confluence:
     def product(
             self,
             name: str = None,
+            registry: pint.UnitRegistry = None,
             scope: Optional[dict] = None) -> Flow:
         """
-        Returns a Flow whose movements are the product of the Confluence's affluents by period
+        Returns a Flow whose movements are the product of the Stream's flows by period
         :return: Flow
         """
 
         # Produce resultant units:
-        singleton = ['1 * units.' + str(value) for value in self.units.values()]
-        singleton = eval(' * '.join(singleton), scope)
+        # singleton = ['1 * units.' + str(value) for value in self.units.values()]
+        # singleton = eval(' * '.join(singleton), scope)
+        registry = registry if registry is not None else pint.UnitRegistry()
+        units = measure.multiply_units(
+            units=list(self.units.values()),
+            registry=registry)
+        reduced_units = measure.remove_dimension(
+            quantity=registry.Quantity(1, units),
+            dimension='[time]',
+            registry=registry)
 
         return Flow.from_periods(
             name=name if name is not None else self.name,
             index=self.frame.index,  # .to_period(),
             data=self.frame.prod(axis=1).to_list(),
-            units=singleton.units)
+            units=reduced_units.units)
 
-    def collapse(self) -> Confluence:
+    def collapse(self) -> Stream:
         """
-        Returns an Confluence with Flows' movements collapsed (summed) to the Confluence's final period
-        :return: Confluence
+        Returns an Stream with Flows' movements collapsed (summed) to the Stream's final period
+        :return: Stream
         """
-        affluents = [self.extract(flow_name=flow_name) for flow_name in list(self.frame.columns)]
+        flows = [self.extract(flow_name=flow_name) for flow_name in list(self.frame.columns)]
         return self.__class__(
             name=self.name,
-            affluents=[affluent.collapse() for affluent in affluents],
+            flows=[flow.collapse() for flow in flows],
             period_type=self.period_type)
 
     def append(
             self,
-            affluents: [Flow]) -> None:
+            flows: [Flow]) -> None:
         """
-        Appends a list of Flows to the Confluence
-        :param affluents:
-        :type affluents:
+        Appends a list of Flows to the Stream
+        :param flows:
+        :type flows:
         :return:
         :rtype:
         """
-        # if any(flow.units != self.units for flow in affluents):
-        #     raise Exception("Input Flows have dissimilar units. Cannot aggregate into Confluence.")
+        # if any(flow.units != self.units for flow in flows):
+        #     raise Exception("Input Flows have dissimilar units. Cannot aggregate into Stream.")
 
-        # Append Affluents:
-        self._affluents.extend(affluents)
+        # Append Flows:
+        self.flows.extend(flows)
 
         # Append Units:
-        self.units.update({affluent.name: affluent.units for affluent in affluents})
+        self.units.update({flow.name: flow.units for flow in flows})
 
-        # Confluence:
-        affluents_dates = list(
-            itertools.chain.from_iterable(list(affluent.movements.index.array) for affluent in self._affluents))
-        self.start_date = min(affluents_dates)
-        self.end_date = max(affluents_dates)
+        # Stream:
+        flows_dates = list(
+            itertools.chain.from_iterable(list(flow.movements.index.array) for flow in self.flows))
+        self.start_date = min(flows_dates)
+        self.end_date = max(flows_dates)
 
         index = periodicity.period_index(
             include_start=self.start_date,
             period_type=self.period_type,
             bound=self.end_date)
-        _resampled_affluents = [affluent.to_periods(period_type=self.period_type) for affluent in self._affluents]
-        self.frame = pd.concat(_resampled_affluents, axis=1).fillna(0)
+        _resampled_flows = [flow.to_periods(period_type=self.period_type) for flow in self.flows]
+        self.frame = pd.concat(_resampled_flows, axis=1).fillna(0)
 
     def resample(
             self,
-            period_type: periodicity.Type) -> Confluence:
-        return Confluence(
+            period_type: periodicity.Type) -> Stream:
+        return Stream(
             name=self.name,
-            affluents=self._affluents,
+            flows=self.flows,
             period_type=period_type)
 
-    def trim_to_phase(
+    def trim_to_span(
             self,
-            phase: phase.Phase) -> Confluence:
+            span: span.Span) -> Stream:
         """
-        Returns an Confluence with all affluents trimmed to the specified Phase
-        :param phase:
+        Returns an Stream with all flows trimmed to the specified Span
+        :param span:
         :return:
         """
         return self.__class__(
             name=self.name,
-            affluents=[affluent.duplicate().trim_to_phase(phase) for affluent in self._affluents],
+            flows=[flow.duplicate().trim_to_span(span) for flow in self.flows],
             period_type=self.period_type)
 
     @classmethod
     def merge(
             cls,
-            confluences,
+            streams,
             name: str,
-            period_type: periodicity.Type) -> Confluence:
+            period_type: periodicity.Type) -> Stream:
         # Check Units:
-        if any(confluence.units != confluences[0].units for confluence in confluences):
-            raise Exception("Input Confluences have dissimilar units. Cannot merge into Confluence.")
+        if any(stream.units != streams[0].units for stream in streams):
+            raise Exception("Input Streams have dissimilar units. Cannot merge into Stream.")
 
         # Aggregands:
-        affluents = [affluent for confluence in confluences for affluent in confluence._affluents]
+        flows = [flow for stream in streams for flow in stream.flows]
 
         return cls(
             name=name,
-            affluents=affluents,
+            flows=flows,
             period_type=period_type)

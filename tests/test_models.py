@@ -43,7 +43,7 @@ class TestLinear:
         linear = rk.models.linear.Model(base_params)
 
         linear.ncf_disposition.display()
-        print(linear.operation_phase)
+        print(linear.operation_span)
         linear.pv_sums.display()
 
         linear.investment_cashflows.display()
