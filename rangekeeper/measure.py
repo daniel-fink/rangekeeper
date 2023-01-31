@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import pint
-from pint.definitions import UnitDefinition
-from pint.converters import ScaleConverter
+#from pint.definitions import UnitDefinition
+#from pint.converters import ScaleConverter
 import moneyed
 
 
@@ -26,8 +26,6 @@ class Index:
     registry.define('zone = [space]')
     registry.define('parking_stall = 1 * zone')
 
-
-
     # self.registry = registry
 
     # # Define Scalar:
@@ -37,6 +35,42 @@ class Index:
     #     units=pint.UnitRegistry().dimensionless)
 
     # @staticmethod
+
+
+def remove_dimension(
+        quantity: pint.Quantity,
+        dimension: str,
+        registry: pint.UnitRegistry = None) -> pint.Quantity:
+    """
+    Remove a dimension from a unit. Specify the dimension as a string wrapped in square brackets (['']).
+    """
+    if dimension in quantity.dimensionality:
+        for unit_str in quantity.units._units:
+            units = registry.Unit(unit_str) if registry is not None else pint.Unit(unit_str)
+            if units.dimensionality == dimension:
+                if quantity.dimensionality[dimension] == -1:
+                    return quantity * units
+                elif quantity.dimensionality[dimension] == 1:
+                    return quantity / units
+                else:
+                    raise NotImplementedError(
+                        'Error: Dimension reduction currently only works for single-order (^1 or ^-1) dimensions.')
+    else:
+        return quantity
+
+
+def multiply_units(
+        units: [pint.Unit],
+        registry: pint.UnitRegistry = None) -> pint.Unit:
+    """
+    Multiply units together.
+    """
+    registry = registry if registry is not None else pint.UnitRegistry()
+    quantities = [registry.Quantity(1, unit) for unit in units]
+    result = 1 * registry.dimensionless
+    for quantity in quantities:
+        result *= quantity
+    return result.units
 
 
 def register_currency(
@@ -51,18 +85,19 @@ def register_currency(
         registry.define('money = [currency]')
         registry.define(
             '{0} = nan money = {0} = {1}'.format(
-                currency.code,
-                currency.name))
+                ''.join(currency.code.split()),
+                ''.join(currency.name.split())))
     else:
         registry.define(
             '{0} = nan money = {0} = {1}'.format(
-                currency.code,
-                currency.name))
+                ''.join(currency.code.split()),
+                ''.join(currency.name.split())))
 
     return Measure(
         name=currency.name,
         definition='Currency of {0}'.format(currency.countries),
         units=registry[currency.code].units)
+
 
 #
 # class Quantity(pint.Quantity):
