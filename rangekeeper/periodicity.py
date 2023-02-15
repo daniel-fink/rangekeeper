@@ -104,8 +104,8 @@ def periods_per_year(period_type: Type) -> int:
 
 def date_offset(
         date: pd.Timestamp,
-        period_type: Type,
-        num_periods: int) -> pd.Timestamp:
+        period_type: Type = Type.day,
+        num_periods: int = 1) -> pd.Timestamp:
     """
     Offsets a date by a given number of periods
     :param date:
