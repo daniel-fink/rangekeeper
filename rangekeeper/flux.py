@@ -494,6 +494,7 @@ class Stream:
                                  edgecolor='grey')
         plt.minorticks_on()
         plt.tight_layout()
+        plt.show(block=True)
 
     def extract(
             self,

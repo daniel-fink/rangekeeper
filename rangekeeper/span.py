@@ -26,10 +26,11 @@ class Span:
         :param end_date:
         :param name:
         """
-        if end_date < start_date:
-            raise Exception('Error: end_date cannot be before start_date')
         if end_date is None:
             end_date = start_date
+        elif end_date < start_date:
+            raise Exception('Error: end_date cannot be before start_date')
+
         if name is None:
             self.name = ''
         else:
