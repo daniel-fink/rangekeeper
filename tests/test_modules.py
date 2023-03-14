@@ -40,8 +40,8 @@ class TestDistribution:
         assert sum(uniform_densities) == 1.0
 
     def test_exponential_distribution_total_and_initial_match(self):
-        exp_dist = rk.projection.Extrapolation.Compounding(rate=0.02)
-        exp_factors = exp_dist.factors(sequence=pd.RangeIndex(
+        exp_form = rk.extrapolation.Compounding(rate=0.02)
+        exp_factors = exp_form.terms(sequence=pd.RangeIndex(
             start=0,
             stop=12,
             step=1
@@ -69,19 +69,19 @@ class TestPeriod:
         date = pd.Timestamp(2020, 2, 28)
         period = rk.periodicity.include_date(
             date=date,
-            duration=rk.periodicity.Type.month)
+            duration=rk.periodicity.Type.MONTH)
         assert period.day == 29  # end date of Period
         assert period.month == 2
 
         sequence = rk.periodicity.period_index(
             include_start=date,
             bound=pd.Timestamp(2020, 12, 31),
-            period_type=rk.periodicity.Type.quarter)
+            period_type=rk.periodicity.Type.QUARTER)
         assert sequence.size == 4
 
         end_date = rk.periodicity.date_offset(
             date=date,
-            period_type=rk.periodicity.Type.month,
+            period_type=rk.periodicity.Type.MONTH,
             num_periods=4)
         assert end_date == pd.Timestamp(2020, 6, 28)
 
@@ -159,7 +159,7 @@ class TestFlow:
 
     periods = rk.periodicity.period_index(
         include_start=pd.Timestamp(2020, 1, 31),
-        period_type=rk.periodicity.Type.month,
+        period_type=rk.periodicity.Type.MONTH,
         bound=pd.Timestamp(2022, 1, 1))
 
     print(periods.size)
@@ -167,7 +167,7 @@ class TestFlow:
         name="bar",
         value=100.0,
         proj=rk.projection.Distribution(
-            dist=rk.distribution.Uniform(),
+            form=rk.distribution.Uniform(),
             sequence=periods),
         units=currency.units)
 
@@ -203,7 +203,7 @@ class TestFlow:
         assert TestFlow.invert_flow.movements.name == "bar"
         assert TestFlow.invert_flow.units == currency.units
 
-    resample_flow = invert_flow.resample(period_type=rk.periodicity.Type.year)
+    resample_flow = invert_flow.resample(period_type=rk.periodicity.Type.YEAR)
 
     def test_resampling(self):
         # TestFlow.resample_flow.display()
@@ -212,7 +212,7 @@ class TestFlow:
         assert TestFlow.resample_flow.movements[1] == -48
         assert TestFlow.resample_flow.movements[2] == pytest.approx(-4)
 
-    to_periods = flow.to_periods(period_type=rk.periodicity.Type.year)
+    to_periods = flow.to_periods(period_type=rk.periodicity.Type.YEAR)
 
     def test_conversion_to_period_index(self):
         print(TestFlow.to_periods)
@@ -221,7 +221,7 @@ class TestFlow:
     def test_distribution_as_input(self):
         periods = rk.periodicity.period_index(
             include_start=pd.Timestamp(2020, 1, 31),
-            period_type=rk.periodicity.Type.month,
+            period_type=rk.periodicity.Type.MONTH,
             bound=pd.Timestamp(2022, 1, 1))
 
         dist = rk.distribution.PERT(
@@ -237,7 +237,7 @@ class TestFlow:
                 name='foo',
                 value=dist,
                 proj=rk.projection.Distribution(
-                    dist=rk.distribution.Uniform(),
+                    form=rk.distribution.Uniform(),
                     sequence=periods),
                 units=currency.units)
             sums.append(flow.collapse().movements[0])
@@ -262,28 +262,28 @@ class TestStream:
         name="yearly_flow",
         value=100.0,
         proj=rk.projection.Distribution(
-            dist=rk.distribution.Uniform(),
+            form=rk.distribution.Uniform(),
             sequence=rk.periodicity.period_index(
                 include_start=pd.Timestamp(2020, 1, 31),
                 bound=pd.Timestamp(2022, 1, 1),
-                period_type=rk.periodicity.Type.year), ),
+                period_type=rk.periodicity.Type.YEAR), ),
         units=currency.units)
 
     flow2 = rk.flux.Flow.from_projection(
         name="weekly_flow",
         value=-50.0,
         proj=rk.projection.Distribution(
-            dist=rk.distribution.Uniform(),
+            form=rk.distribution.Uniform(),
             sequence=rk.periodicity.period_index(
                 include_start=pd.Timestamp(2020, 3, 1),
                 bound=pd.Timestamp(2021, 2, 28),
-                period_type=rk.periodicity.Type.week)),
+                period_type=rk.periodicity.Type.WEEK)),
         units=currency.units)
 
     stream = rk.flux.Stream(
         name="stream",
         flows=[flow1, flow2],
-        period_type=rk.periodicity.Type.month)
+        period_type=rk.periodicity.Type.MONTH)
 
     stream.display()
 
@@ -324,7 +324,7 @@ class TestStream:
         stream_sqm = rk.flux.Stream(
             name="stream_sqm",
             flows=[TestStream.flow1, flow2_sqm],
-            period_type=rk.periodicity.Type.month)
+            period_type=rk.periodicity.Type.MONTH)
 
         stream_sqm_agg = stream_sqm.product(
             name="stream_sqm_agg",
@@ -355,7 +355,9 @@ class TestSpan:
             start_date=pd.Timestamp(2020, 3, 1),
             end_date=pd.Timestamp(2021, 2, 28))
         assert test_span.start_date < test_span.end_date
-        assert test_span.duration(period_type=rk.periodicity.Type.day) == 364
+        assert test_span.duration(
+            period_type=rk.periodicity.Type.DAY,
+            inclusive=False) == 364
 
     def test_correct_spans(self):
         dates = [pd.Timestamp(2020, 2, 29),
@@ -369,7 +371,7 @@ class TestSpan:
         assert len(spans) == 4
         assert spans[0].name == 'Span1'
         assert spans[0].end_date == pd.Timestamp(2020, 2, 29)
-        assert spans[0].duration(rk.periodicity.Type.day) == 0
+        assert spans[0].duration(rk.periodicity.Type.DAY) == 0
 
         assert spans[1].start_date == pd.Timestamp(2020, 3, 1)
         assert spans[1].end_date == pd.Timestamp(2021, 2, 27)
@@ -602,16 +604,16 @@ class TestType:
         print([ancestor.name for ancestor in TestType.child.subtypes[0].ancestors()])
 
 
-class TestAPI:
-    def test_speckle(self):
-        speckle = rk.api.Speckle(token='52c9b20071b2854f98ad91af10c154ad5e232b88a7')
-        item = speckle.get_item(
-            stream_id='1dd7d041b5',
-            commit_id='a29679079f')
-        print(item)
-        print(item.Data)
-
-
-    def test_query(self):
-        query = rk.api.Speckle.query2('https://speckle.xyz/streams/1dd7d041b5/objects/33cfc8f0cdfc980b783f00cc35167fc6')
-        print(query)
+# class TestAPI:
+    # def test_speckle(self):
+    #     speckle = rk.api.Speckle(token='52c9b20071b2854f98ad91af10c154ad5e232b88a7')
+    #     item = speckle.get_item(
+    #         stream_id='1dd7d041b5',
+    #         commit_id='a29679079f')
+    #     print(item)
+    #     print(item.Data)
+    #
+    #
+    # def test_query(self):
+    #     query = rk.api.Speckle.query2('https://speckle.xyz/streams/1dd7d041b5/objects/33cfc8f0cdfc980b783f00cc35167fc6')
+    #     print(query)

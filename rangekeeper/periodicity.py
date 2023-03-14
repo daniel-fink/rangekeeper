@@ -4,35 +4,34 @@ import math
 from typing import Union
 
 import aenum
+import enum
 from datetime import datetime
 import dateutil.relativedelta
 import pandas as pd
 
 
-class Type(aenum.Enum):
-    _init_ = 'value', '__doc__'
-
-    year = 'A-DEC', 'Anchored on end of December'
-    quarter = 'Q-DEC', 'Anchored on end of March, June, September, & December'
-    month = 'M', 'Anchored on end-of-month'
-    semimonth = 'SM', 'Twice-monthly periods anchored on mid-month and end-of-month dates'
-    week = 'W', 'Anchored on Sundays'
-    day = 'D', 'Daily'
+class Type(enum.Enum):
+    YEAR = 'A-DEC'  # Anchored on end of December
+    QUARTER = 'Q-DEC'  # Anchored on end of March, June, September, & December
+    MONTH = 'M'  # Anchored on end-of-month
+    SEMIMONTH = 'SM'  # Twice-monthly periods anchored on mid-month and end-of-month dates
+    WEEK = 'W'  # Anchored on Sundays
+    DAY = 'D'  # Daily
 
 
 def from_value(value: str):
     if value == 'A-DEC':
-        return Type.year
+        return Type.YEAR
     if value == 'Q-DEC':
-        return Type.quarter
+        return Type.QUARTER
     if value == 'M':
-        return Type.month
+        return Type.MONTH
     if value == 'SM':
-        return Type.semimonth
+        return Type.SEMIMONTH
     if value == 'W':
-        return Type.week
+        return Type.WEEK
     if value == 'D':
-        return Type.day
+        return Type.DAY
 
 
 def include_date(
@@ -58,15 +57,17 @@ def period_index(
     :param bound: A terminating condition; either a pd.Timestamp end date or a (integer) number of periods
     """
     if isinstance(bound, pd.Timestamp):
-        return pd.period_range(start=include_start,
-                               end=bound,
-                               freq=period_type.value,
-                               name='periods')
+        return pd.period_range(
+            start=include_start,
+            end=bound,
+            freq=period_type.value,
+            name='periods')
     elif isinstance(bound, int):
-        return pd.period_range(start=include_start,
-                               periods=bound,
-                               freq=period_type.value,
-                               name='periods')
+        return pd.period_range(
+            start=include_start,
+            periods=bound,
+            freq=period_type.value,
+            name='periods')
 
 
 def single_period_index(period: pd.Period) -> pd.PeriodIndex:
@@ -80,8 +81,7 @@ def to_datestamps(
         end: bool = True) -> pd.DatetimeIndex:
     """
     Returns a pd.DatetimeIndex from a pd.PeriodIndex with Datetimes being Dates
-    :param end:
-    :param period_index:
+    :param end: If True, the end of the period is used. If False, the start of the period is used.
     """
     if end:
         timestamps = period_index.to_timestamp(how='end')
@@ -93,18 +93,18 @@ def to_datestamps(
 
 def periods_per_year(period_type: Type) -> int:
     return {
-        Type.year: 1,
-        Type.quarter: 4,
-        Type.month: 12,
-        Type.semimonth: 24,
-        Type.week: 52,
-        Type.day: 365
+        Type.YEAR: 1,
+        Type.QUARTER: 4,
+        Type.MONTH: 12,
+        Type.SEMIMONTH: 24,
+        Type.WEEK: 52,
+        Type.DAY: 365
         }.get(period_type, None)
 
 
 def date_offset(
         date: pd.Timestamp,
-        period_type: Type = Type.day,
+        period_type: Type = Type.DAY,
         num_periods: int = 1) -> pd.Timestamp:
     """
     Offsets a date by a given number of periods
@@ -117,15 +117,15 @@ def date_offset(
     :return:
     :rtype:
     """
-    if period_type is Type.year:
+    if period_type.value == Type.YEAR.value:
         return date + pd.DateOffset(years=num_periods)
-    elif period_type is Type.quarter:
+    elif period_type.value == Type.QUARTER.value:
         return date + pd.DateOffset(months=3 * num_periods)
-    elif period_type is Type.month:
+    elif period_type.value == Type.MONTH.value:
         return date + pd.DateOffset(months=num_periods)
-    elif period_type is Type.week:
+    elif period_type.value == Type.WEEK.value:
         return date + pd.DateOffset(weeks=num_periods)
-    elif period_type is Type.day:
+    elif period_type.value == Type.DAY.value:
         return date + pd.DateOffset(days=num_periods)
 
 
@@ -143,24 +143,25 @@ def duration(
     if inclusive:
         calc_end_date = date_offset(
             date=end_date,
-            period_type=Type.day,
+            period_type=Type.DAY,
             num_periods=1)
 
     delta = dateutil.relativedelta.relativedelta(calc_end_date, start_date)
 
-    result = 0
-    if period_type is Type.year:
+    if period_type.value == Type.YEAR.value:
         result = delta.years
-    if period_type is Type.quarter:
+    elif period_type.value == Type.QUARTER.value:
         result = (delta.years * 4) + math.floor(delta.months / 3)
-    if period_type is Type.month:
+    elif period_type.value == Type.MONTH.value:
         result = (delta.years * 12) + delta.months
-    if period_type is Type.semimonth:
+    elif period_type.value == Type.SEMIMONTH.value:
         result = (delta.years * 24) + delta.months * 2
-    if period_type is Type.week:
+    elif period_type.value == Type.WEEK.value:
         result = math.floor((calc_end_date - start_date).days / 7)
-    if period_type is Type.day:
+    elif period_type.value == Type.DAY.value:
         result = (calc_end_date - start_date).days
+    else:
+        raise ValueError('Unsupported period type: {0}'.format(period_type))
 
     def direction(rd: dateutil.relativedelta.relativedelta) -> int:
         """

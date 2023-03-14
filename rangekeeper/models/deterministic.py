@@ -19,25 +19,25 @@ class Model:
         self.acquisition_span = rk.span.Span.from_num_periods(
             name='Acquisition',
             date=params['start_date'],
-            period_type=rk.periodicity.Type.year,
+            period_type=rk.periodicity.Type.YEAR,
             num_periods=1)
 
         self.operation_span = rk.span.Span.from_num_periods(
             name='Operation',
             date=rk.periodicity.date_offset(
                 date=self.acquisition_span.end_date,
-                period_type=rk.periodicity.Type.day,
+                period_type=rk.periodicity.Type.DAY,
                 num_periods=1),
-            period_type=rk.periodicity.Type.year,
+            period_type=rk.periodicity.Type.YEAR,
             num_periods=params['num_periods'])
 
         self.projection_span = rk.span.Span.from_num_periods(
             name='Projection',
             date=rk.periodicity.date_offset(
                 date=self.operation_span.end_date,
-                period_type=rk.periodicity.Type.day,
+                period_type=rk.periodicity.Type.DAY,
                 num_periods=1),
-            period_type=rk.periodicity.Type.year,
+            period_type=rk.periodicity.Type.YEAR,
             num_periods=1)
 
         self.noi_calc_span = rk.span.Span.merge(
@@ -45,7 +45,7 @@ class Model:
             spans=[self.operation_span, self.projection_span])
 
         # Cashflows:
-        self.escalation = rk.projection.Extrapolation.Compounding(rate=params['growth_rate'])
+        self.escalation = rk.extrapolation.Compounding(rate=params['growth_rate'])
 
         # Potential Gross Income
         self.pgi = rk.flux.Flow.from_projection(

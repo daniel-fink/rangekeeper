@@ -3,17 +3,17 @@ import os
 
 import itertools
 import math
-import pprint
 from typing import Dict, Union, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pint
-import yaml
+import json
 import pyxirr
 
-from . import projection, distribution, periodicity, span, measure
+import rangekeeper as rk
+# import projection, distribution, extrapolation, periodicity, span, measure
 
 
 class Flow:
@@ -44,6 +44,11 @@ class Flow:
         if not isinstance(movements.index, pd.DatetimeIndex):
             raise Exception("Error: Flow's movements' Index is not a pd.DatetimeIndex")
 
+        if movements.dtype != float:
+            try:
+                movements = movements.astype(float)
+            except Exception as e:
+                raise Exception("Error: Flow's movements' dtype cannot be cast to float: {0}".format(str(e)))
         self.movements = movements
         if name:
             self.name = name
@@ -52,7 +57,7 @@ class Flow:
             self.name = str(self.movements.name)
 
         if units is None:
-            self.units = measure.Index.registry.dimensionless
+            self.units = rk.measure.Index.registry.dimensionless
         elif isinstance(units, pint.Unit):
             self.units = units
         else:
@@ -60,6 +65,10 @@ class Flow:
 
     def __str__(self):
         return str(self._format())
+
+    def _repr_html_(self):
+        return self.movements.to_markdown(
+            tablefmt='html')
 
     def duplicate(self) -> Flow:
         return self.__class__(
@@ -69,26 +78,25 @@ class Flow:
 
     def _format(
             self,
+            tablefmt: str = 'github',
             decimals: int = 2):
+
+        floatfmt = "." + str(decimals) + "f"
 
         linebreak = os.linesep
         name = 'Name: ' + self.name
         units = 'Units: ' + str(self.units)
-        movements = 'Movements: '
-
-        floatfmt = "." + str(decimals) + "f"
-
-        data = self.movements.to_markdown(
-            tablefmt='github',
+        movements = 'Movements: ' + linebreak + self.movements.to_markdown(
+            tablefmt=tablefmt,
             floatfmt=floatfmt)
 
-        return linebreak.join([linebreak, name, units, movements, data])
+        return linebreak.join([name, units, movements])
 
     def display(
             self,
             decimals: int = 2):
         format = self._format(decimals=decimals)
-        print(format)
+        print(format + os.linesep)
 
     def plot(
             self,
@@ -150,8 +158,8 @@ class Flow:
     @classmethod
     def from_projection(
             cls,
-            value: Union[float, distribution.Form],
-            proj: projection,
+            value: Union[float, rk.distribution.Form],
+            proj: rk.projection,
             units: pint.Unit = None,
             name: str = None) -> Flow:
         """
@@ -165,16 +173,21 @@ class Flow:
 
         if isinstance(value, float):
             value = value
-        elif isinstance(value, distribution.Form):
+        elif isinstance(value, rk.distribution.Form):
             value = value.sample()
 
-        if isinstance(proj, projection.Extrapolation):
-            movements = value * proj.factors()
+        if isinstance(proj, rk.projection.Extrapolation):
+            if proj.form.type == rk.extrapolation.Type.STRAIGHT_LINE or proj.form.type == rk.extrapolation.Type.RECURRING:
+                movements = value + proj.terms()
+            elif proj.form.type == rk.extrapolation.Type.COMPOUNDING:
+                movements = value * proj.terms()
+            else:
+                raise ValueError("Unsupported extrapolation form")
 
-        elif isinstance(proj, projection.Distribution):
+        elif isinstance(proj, rk.projection.Distribution):
             movements = value * proj.interval_density()
         else:
-            raise ValueError("Unsupported projection type")
+            raise ValueError("Unsupported projection type: {0}".format(type(proj)))
 
         return cls(
             movements=movements,
@@ -202,7 +215,7 @@ class Flow:
 
     def pv(
             self,
-            period_type: periodicity.Type,
+            period_type: rk.periodicity.Type,
             discount_rate: float,
             name: str = None) -> Flow:
         """
@@ -235,7 +248,7 @@ class Flow:
 
     def resample(
             self,
-            period_type: periodicity.Type) -> Flow:
+            period_type: rk.periodicity.Type) -> Flow:
         """
         Returns a Flow with movements summed to specified frequency of dates
         """
@@ -246,7 +259,7 @@ class Flow:
 
     def to_periods(
             self,
-            period_type: periodicity.Type) -> pd.Series:
+            period_type: rk.periodicity.Type) -> pd.Series:
         """
         Returns a pd.Series (of index pd.PeriodIndex) with movements summed to specified periodicity
         """
@@ -262,7 +275,7 @@ class Flow:
 
     def trim_to_span(
             self,
-            span: span.Span) -> Flow:
+            span: rk.span.Span) -> Flow:
         """
         Returns a Flow with movements trimmed to the specified span
         """
@@ -275,7 +288,7 @@ class Flow:
 
     def to_stream(
             self,
-            period_type: periodicity.Type,
+            period_type: rk.periodicity.Type,
             name: str = None) -> Stream:
         """
         Returns a Stream with the flow as flow
@@ -292,7 +305,7 @@ class Flow:
 class Stream:
     name: str
     flows: [Flow]
-    period_type: periodicity.Type
+    period_type: rk.periodicity.Type
     start_date: pd.Timestamp
     end_date: pd.Timestamp
     frame: pd.DataFrame
@@ -306,7 +319,7 @@ class Stream:
             self,
             name: str,
             flows: [Flow],
-            period_type: periodicity.Type):
+            period_type: rk.periodicity.Type):
 
         # Name:
         self.name = name
@@ -332,18 +345,45 @@ class Stream:
         self.start_date = min(flows_dates)
         self.end_date = max(flows_dates)
 
-        index = periodicity.period_index(
+        index = rk.periodicity.period_index(
             include_start=self.start_date,
             period_type=self.period_type,
             bound=self.end_date)
-        _resampled_flows = [flow.to_periods(period_type=self.period_type) for flow in self.flows]
-        self.frame = pd.concat(_resampled_flows, axis=1).fillna(0).sort_index()
+        self._resampled_flows = [flow.to_periods(period_type=self.period_type) for flow in self.flows]
+        self.frame = pd.concat(self._resampled_flows, axis=1).fillna(0).sort_index()
         """
         A pd.DataFrame of the Stream's flow Flows accumulated into the Stream's periodicity
         """
 
     def __str__(self):
-        return self.display()
+        return str(self._format())
+
+    def _repr_html_(self):
+        return self.frame.to_markdown(
+            tablefmt='html',
+            floatfmt=".2f")
+
+    def _format(
+            self,
+            tablefmt: str = 'github',
+            decimals: int = 2):
+
+        floatfmt = "." + str(decimals) + "f"
+
+        linebreak = os.linesep
+        name = 'Name: ' + self.name
+        units = 'Units: ' + json.dumps({flow.name: flow.units.__str__() for flow in self.flows}, indent=2)
+        flows = 'Flows: ' + linebreak + self.frame.to_markdown(
+            tablefmt=tablefmt,
+            floatfmt=floatfmt)
+
+        return linebreak.join([name, units, flows])
+
+    def display(
+            self,
+            decimals: int = 2):
+        format = self._format(decimals=decimals)
+        print(format + os.linesep)
 
     def duplicate(self) -> Stream:
         return self.__class__(
@@ -368,34 +408,22 @@ class Stream:
         return cls(
             name=name,
             flows=flows,
-            period_type=periodicity.from_value(data.index.freqstr))
+            period_type=rk.periodicity.from_value(data.index.freqstr))
 
-    def display(
-            self,
-            decimals: int = 2):
 
-        print('\n')
-        print('Name: ' + self.name)
-        print('Units: ')
-        pprint.pprint(self.units)
-        print('Flows: ')
-
-        floatfmt = "." + str(decimals) + "f"
-
-        print(self.frame.to_markdown(
-            tablefmt='github',
-            floatfmt=floatfmt))
 
     def plot(
             self,
-            flows: Dict[str, tuple] = None):
+            flows: Dict[str, tuple] = None,
+            normalize: bool = False,
+            ):
         """
         Plots the specified flows against each respective value range (min-max)
 
         :param flows: A dictionary of flows to plot, by name and value range (as a tuple)
         """
-        if flows is None:
-            flows = {flow.name: None for flow in self.flows}
+
+        flows = flows if flows is not None else {flow.name: (flow.min(), flow.max()) for flow in self._resampled_flows}
         dates = list(self.frame.index.astype(str))
 
         fig, host = plt.subplots(nrows=1, ncols=1)
@@ -405,7 +433,7 @@ class Stream:
         axes = []
 
         host.set_xlabel('Date')
-        host.set_xticklabels(host.get_xticks(), rotation=90)
+        # host.set_xticklabels(host.get_xticks(), rotation=90)
         host.set_facecolor('white')
         host.grid(axis='x',
                   color='gainsboro',
@@ -421,79 +449,103 @@ class Stream:
                   linestyle='-.',
                   linewidth=0.5)
 
-        primary_flow = list(flows.keys())[0]
+        primary_flow_name = list(flows.keys())[0]
         primary, = host.plot(dates,
-                             self.frame[primary_flow],
+                             self.frame[primary_flow_name],
                              color=plt.cm.viridis(0),
-                             label=primary_flow)
+                             label=primary_flow_name)
         host.spines.left.set_linewidth(1)
-        host.set_ylabel(primary_flow)
+        host.set_ylabel(primary_flow_name)
         host.yaxis.label.set_color(primary.get_color())
         host.spines.left.set_color(primary.get_color())
         host.tick_params(axis='y', colors=primary.get_color(), **tkw)
-        host.minorticks_on()
-
-        if flows[primary_flow] is not None:
-            host.set_ylim([flows[primary_flow][0], flows[primary_flow][1]])
 
         datums.append(primary)
         axes.append(host)
+        # host.minorticks_on()
 
-        if len(flows) > 1:
-            secondary_flow = list(flows.keys())[1]
-            right = host.twinx()
-            secondary, = right.plot(dates,
-                                    self.frame[secondary_flow],
-                                    color=plt.cm.viridis(1 / (len(flows) + 1)),
-                                    label=secondary_flow)
-            right.spines.right.set_visible(True)
-            right.spines.right.set_linewidth(1)
-            right.set_ylabel(secondary_flow)
-            right.grid(False)
-            right.yaxis.label.set_color(secondary.get_color())
-            right.spines.right.set_color(secondary.get_color())
-            right.tick_params(axis='y', colors=secondary.get_color(), **tkw)
-            if flows[secondary_flow] is not None:
-                right.set_ylim([flows[secondary_flow][0], flows[secondary_flow][1]])
+        if normalize:
+            for i in range(1, len(flows)):
+                additional_flow_name = list(flows.keys())[i]
+                additional, = host.plot(
+                    dates,
+                    self.frame[additional_flow_name],
+                    color=plt.cm.viridis(1 / (len(flows) + 1)),
+                    label=additional_flow_name)
+                datums.append(additional)
 
-            datums.append(secondary)
-            axes.append(right)
+        else:
+            # if flows[primary_flow] is not None:
+            host.set_ylim([flows[primary_flow_name][0], flows[primary_flow_name][1]])
 
-            if len(flows) > 2:
-                for i in range(2, len(flows)):
-                    additional_flow = list(flows.keys())[i]
-                    supplementary = host.twinx()
-                    additional, = supplementary.plot(dates,
-                                                     self.frame[additional_flow],
-                                                     color=plt.cm.viridis(i / (len(flows) + 1)),
-                                                     label=additional_flow)
-                    supplementary.spines.right.set_position(('axes', 1 + (i - 1) / 5))
-                    supplementary.spines.right.set_visible(True)
-                    supplementary.spines.right.set_linewidth(1)
-                    supplementary.set_ylabel(additional_flow)
-                    supplementary.grid(False)
-                    supplementary.yaxis.label.set_color(additional.get_color())
-                    supplementary.spines.right.set_color(additional.get_color())
-                    supplementary.tick_params(axis='y', colors=additional.get_color(), **tkw)
-                    if flows[additional_flow] is not None:
-                        supplementary.set_ylim(
-                            [flows[additional_flow][0], flows[additional_flow][1]])
+            if len(flows) > 1:
+                secondary_flow_name = list(flows.keys())[1]
+                right = host.twinx()
+                secondary, = right.plot(dates,
+                                        self.frame[secondary_flow_name],
+                                        color=plt.cm.viridis(1 / (len(flows) + 1)),
+                                        label=secondary_flow_name)
+                right.spines.right.set_visible(True)
+                right.spines.right.set_linewidth(1)
+                right.set_ylabel(secondary_flow_name)
+                right.grid(False)
+                right.yaxis.label.set_color(secondary.get_color())
+                right.spines.right.set_color(secondary.get_color())
+                right.tick_params(axis='y', colors=secondary.get_color(), **tkw)
+                # if flows[secondary_flow] is not None:
+                right.set_ylim(bottom=flows[secondary_flow_name][0], top=flows[secondary_flow_name][1])
 
-                    datums.append(additional)
-                    axes.append(supplementary)
+                datums.append(secondary)
+                axes.append(right)
+
+                if len(flows) > 2:
+                    for i in range(2, len(flows)):
+                        additional_flow_name = list(flows.keys())[i]
+                        supplementary = host.twinx()
+                        additional, = supplementary.plot(dates,
+                                                         self.frame[additional_flow_name],
+                                                         color=plt.cm.viridis(i / (len(flows) + 1)),
+                                                         label=additional_flow_name)
+                        supplementary.spines.right.set_position(('axes', 1 + (i - 1)/10))
+                        supplementary.spines.right.set_visible(True)
+                        supplementary.spines.right.set_linewidth(1)
+                        supplementary.set_ylabel(additional_flow_name)
+                        supplementary.grid(False)
+                        supplementary.yaxis.label.set_color(additional.get_color())
+                        supplementary.spines.right.set_color(additional.get_color())
+                        supplementary.tick_params(axis='y', colors=additional.get_color(), **tkw)
+                        if flows[additional_flow_name] is not None:
+                            supplementary.set_ylim(
+                                [flows[additional_flow_name][0], flows[additional_flow_name][1]])
+
+                        datums.append(additional)
+                        axes.append(supplementary)
 
         labels = [datum.get_label() for datum in datums]
-        legend = axes[-1].legend(datums,
-                                 labels,
-                                 loc='best',
-                                 title=self.name,
-                                 facecolor="white",
-                                 frameon=True,
-                                 framealpha=1,
-                                 borderpad=.75,
-                                 edgecolor='grey')
+        # if normalize:
+        #     legend = axes[0].legend(datums,
+        #                              labels,
+        #                              loc='best',
+        #                              title=self.name,
+        #                              facecolor="white",
+        #                              frameon=True,
+        #                              framealpha=1,
+        #                              borderpad=.75,
+        #                              edgecolor='grey')
+        # else:
+        legend = axes[-1].legend(
+            datums,
+            labels,
+            loc='best',
+            title=self.name,
+            facecolor="white",
+            frameon=True,
+            framealpha=1,
+            borderpad=.75,
+            edgecolor='grey')
+        fig.autofmt_xdate(rotation=90)
         plt.minorticks_on()
-        plt.tight_layout()
+        # plt.tight_layout()
         plt.show(block=True)
 
     def extract(
@@ -519,8 +571,7 @@ class Stream:
         """
         # Check if all units are the same:
         if not len(list(set(list(self.units.values())))) == 1:
-            rich.print(self.units)
-            raise ValueError("Error: summation requires all flows' units to be the same.")
+            raise ValueError("Error: summation requires all flows' units to be the same. Units: {0}".format(json.dumps(self.units, indent=2)))
 
         return Flow.from_periods(
             name=name if name is not None else self.name,
@@ -542,10 +593,10 @@ class Stream:
         # singleton = ['1 * units.' + str(value) for value in self.units.values()]
         # singleton = eval(' * '.join(singleton), scope)
         registry = registry if registry is not None else pint.UnitRegistry()
-        units = measure.multiply_units(
+        units = rk.measure.multiply_units(
             units=list(self.units.values()),
             registry=registry)
-        reduced_units = measure.remove_dimension(
+        reduced_units = rk.measure.remove_dimension(
             quantity=registry.Quantity(1, units),
             dimension='[time]',
             registry=registry)
@@ -592,7 +643,7 @@ class Stream:
         self.start_date = min(flows_dates)
         self.end_date = max(flows_dates)
 
-        index = periodicity.period_index(
+        index = rk.periodicity.period_index(
             include_start=self.start_date,
             period_type=self.period_type,
             bound=self.end_date)
@@ -601,7 +652,7 @@ class Stream:
 
     def resample(
             self,
-            period_type: periodicity.Type) -> Stream:
+            period_type: rk.periodicity.Type) -> Stream:
         return Stream(
             name=self.name,
             flows=self.flows,
@@ -609,7 +660,7 @@ class Stream:
 
     def trim_to_span(
             self,
-            span: span.Span) -> Stream:
+            span: rk.span.Span) -> Stream:
         """
         Returns an Stream with all flows trimmed to the specified Span
         :param span:
@@ -625,7 +676,7 @@ class Stream:
             cls,
             streams,
             name: str,
-            period_type: periodicity.Type) -> Stream:
+            period_type: rk.periodicity.Type) -> Stream:
         # Check Units:
         if any(stream.units != streams[0].units for stream in streams):
             raise Exception("Input Streams have dissimilar units. Cannot merge into Stream.")

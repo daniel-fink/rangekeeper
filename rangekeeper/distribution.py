@@ -1,19 +1,17 @@
 from typing import Optional
 
-import aenum
+import enum
 import numpy as np
 import scipy.stats as ss
 from abc import ABC, abstractmethod
 
 
-class Type(aenum.Enum):
-    _init_ = 'value', '__doc__'
-
-    uniform = 'Uniform distribution', 'Continuous uniform distribution or rectangular distribution'
-    linear = 'Linear distribution', 'Linearly increasing or decreasing distribution between minimum and maximum values'
-    triangular = 'Triangular distribution', 'Continuous linear distribution with lower limit a, upper limit b and mode c, where a < b and a ≤ c ≤ b.'
-    normal = 'Normal distribution', 'Continuous probability distribution defined as the limiting case of a discrete binomial distribution.'
-    PERT = 'PERT distribution', 'Transformation of the four-parameter Beta distribution defined by the minimum, most likely, and maximum values.'
+class Type(enum.Enum):
+    UNIFORM = 'Uniform'  # Continuous uniform distribution or rectangular distribution
+    LINEAR = 'Linear'  # Linearly increasing or decreasing distribution between minimum and maximum values
+    TRIANGULAR = 'Triangular' #  Continuous linear distribution with lower limit a, upper limit b and mode c, where a < b and a ≤ c ≤ b.
+    NORMAL = 'Normal'  # Continuous probability distribution defined as the limiting case of a discrete binomial distribution.
+    PERT = 'PERT'  # Transformation of the four-parameter Beta distribution defined by the minimum, most likely, and maximum values.
 
 
 class Form:
@@ -86,14 +84,14 @@ class Symmetric(Form):
 
         self.mean = mean
         self.residual = residual
-        if distribution_type is Type.uniform or distribution_type is Type.PERT:
+        if distribution_type is Type.UNIFORM or distribution_type is Type.PERT:
             self.distribution_type = distribution_type
         else:
             raise ValueError("Distribution type must be symmetrical about its mean")
         self.generator = generator
 
     def distribution(self):
-        if self.distribution_type == Type.uniform:
+        if self.distribution_type == Type.UNIFORM:
             return Uniform(
                 lower=self.mean - self.residual,
                 range=self.residual * 2,

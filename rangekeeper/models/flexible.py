@@ -13,34 +13,34 @@ class Model:
         self.acquisition_span = rk.span.Span.from_num_periods(
             name='Acquisition',
             date=params['start_date'],
-            period_type=rk.periodicity.Type.year,
+            period_type=rk.periodicity.Type.YEAR,
             num_periods=1)
 
         self.operation_span = rk.span.Span.from_num_periods(
             name='Operation',
             date=rk.periodicity.date_offset(
                 date=self.acquisition_span.end_date,
-                period_type=rk.periodicity.Type.day,
+                period_type=rk.periodicity.Type.DAY,
                 num_periods=1),
-            period_type=rk.periodicity.Type.year,
+            period_type=rk.periodicity.Type.YEAR,
             num_periods=params['num_periods'])
 
         self.disposition_span = rk.span.Span.from_num_periods(
             name='Disposition',
             date=rk.periodicity.date_offset(
                 date=self.acquisition_span.start_date,
-                period_type=rk.periodicity.Type.year,
+                period_type=rk.periodicity.Type.YEAR,
                 num_periods=params['num_periods']),
-            period_type=rk.periodicity.Type.year,
+            period_type=rk.periodicity.Type.YEAR,
             num_periods=1)
 
         self.projection_span = rk.span.Span.from_num_periods(
             name='Projection',
             date=rk.periodicity.date_offset(
                 date=self.operation_span.end_date,
-                period_type=rk.periodicity.Type.day,
+                period_type=rk.periodicity.Type.DAY,
                 num_periods=1),
-            period_type=rk.periodicity.Type.year,
+            period_type=rk.periodicity.Type.YEAR,
             num_periods=1)
 
         self.noi_calc_span = rk.span.Span.merge(
@@ -48,7 +48,7 @@ class Model:
             spans=[self.operation_span, self.projection_span])
 
         # Cashflows:
-        self.escalation = rk.projection.Extrapolation.Compounding(rate=params['growth_rate'])
+        self.escalation = rk.extrapolation.Compounding(rate=params['growth_rate'])
 
         # Potential Gross Income
         self.pgi = rk.flux.Flow.from_projection(
@@ -162,7 +162,7 @@ class Model:
         self.pv_sums.movements = self.pv_sums.movements[:self.disposition_date]
 
         self.acquisition = rk.flux.Flow.from_periods(
-            index=self.acquisition_span.to_index(rk.periodicity.Type.year),
+            index=self.acquisition_span.to_index(rk.periodicity.Type.YEAR),
             data=[-abs(params['acquisition_price'])],
             units=params['units'],
             name='Acquisition Price')

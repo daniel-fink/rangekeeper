@@ -15,7 +15,7 @@ class TestProjection:
     def test_rangeindex(self):
         index = rk.periodicity.period_index(
             include_start=pd.Timestamp(2000, 1, 1),
-            period_type=rk.periodicity.Type.month,
+            period_type=rk.periodicity.Type.MONTH,
             bound=12)
         range_index = rk.periodicity.to_range_index(
             period_index=index,
@@ -26,26 +26,26 @@ class TestProjection:
 
     def test_form(self):
         sequence = pd.RangeIndex(start=0, stop=10, step=1)
-        straightline = rk.projection.Extrapolation.StraightLine(slope=1)
-        straightline_factors = straightline.factors(sequence)
+        straightline = rk.extrapolation.StraightLine(slope=1)
+        straightline_factors = straightline.terms(sequence)
         assert len(straightline_factors) == 10
-        assert straightline_factors[0] == 1
-        assert straightline_factors[9] == 10
+        assert straightline_factors[0] == 0
+        assert straightline_factors[9] == 9
 
-        recurring = rk.projection.Extrapolation.Recurring()
-        recurring_factors = recurring.factors(sequence)
-        assert recurring_factors[0] == 1
-        assert recurring_factors[9] == 1
+        recurring = rk.extrapolation.Recurring()
+        recurring_factors = recurring.terms(sequence)
+        assert recurring_factors[0] == 0
+        assert recurring_factors[9] == 0
 
-        compounding = rk.projection.Extrapolation.Compounding(rate=0.1)
-        compounding_factors = compounding.factors(sequence)
+        compounding = rk.extrapolation.Compounding(rate=0.1)
+        compounding_factors = compounding.terms(sequence)
         assert compounding_factors[0] == 1
         assert compounding_factors[9] == approx(2.357947691)
 
     def test_extrapolation(self):
         sequence = rk.periodicity.period_index(
             include_start=pd.Timestamp(2000, 1, 1),
-            period_type=rk.periodicity.Type.month,
+            period_type=rk.periodicity.Type.MONTH,
             bound=12)
 
         generic = rk.projection.Projection(sequence=sequence)
@@ -53,18 +53,18 @@ class TestProjection:
         assert generic.bounds[1].month == 12
 
         extrapolation = rk.projection.Extrapolation(
-            form=rk.projection.Extrapolation.StraightLine(slope=1),
+            form=rk.extrapolation.StraightLine(slope=1),
             sequence=sequence)
-        assert extrapolation.factors()[0] == 1
-        assert extrapolation.factors()[9] == 10
+        assert extrapolation.terms()[0] == 0
+        assert extrapolation.terms()[9] == 9
 
         extrapolation_padding = rk.projection.Extrapolation(
-            form=rk.projection.Extrapolation.Compounding(rate=0.05),
+            form=rk.extrapolation.Compounding(rate=0.05),
             sequence=sequence,
             bounds=(pd.Period(value='1999-01'), pd.Period(value='2003-01')),
             padding=(rk.projection.Padding.unitize, rk.projection.Padding.extend))
 
-        factors = extrapolation_padding.factors()
+        factors = extrapolation_padding.terms()
 
         assert factors[0] == 1
         assert factors[-1] == approx(1.710339358)
@@ -72,12 +72,12 @@ class TestProjection:
     def test_distribution(self):
         sequence = rk.periodicity.period_index(
             include_start=pd.Timestamp(2000, 1, 1),
-            period_type=rk.periodicity.Type.month,
+            period_type=rk.periodicity.Type.MONTH,
             bound=12)
         bounds = (pd.Period(value='1999-01'), pd.Period(value='2003-01'))
 
         uniform = rk.projection.Distribution(
-            dist=rk.distribution.PERT(),
+            form=rk.distribution.PERT(),
             sequence=sequence,
             bounds=bounds)
 
