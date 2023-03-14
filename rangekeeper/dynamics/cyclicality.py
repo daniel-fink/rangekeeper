@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 from numba import jit
 
-import periodicity
 import rangekeeper as rk
 
 
