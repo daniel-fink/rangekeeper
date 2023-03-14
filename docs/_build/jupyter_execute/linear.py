@@ -16,8 +16,9 @@
 
 
 # Import standard libraries:
-import pandas as pd
 import os
+import math
+import pandas as pd
 from dateutil import parser
 
 # Import Rangekeeper:
@@ -42,27 +43,40 @@ import rangekeeper as rk
 # Note: the `Flow`'s movements Series index is pandas `DatetimeIndex`, and its
 # values are `float`s.
 
+# First we initialize the currency used in our Proforma:
+
 # In[2]:
 
 
-currency = rk.measure.register_currency('USD', registry=rk.measure.Index.registry)
+currency = rk.measure.register_currency('AUD', registry=rk.measure.Index.registry)
+print(currency)
 
-transaction_dates = ['2020-01-01', '2020-01-02', '2019-01-01', '2020-01-01', '2020-12-31']
-transaction_amounts = [100, 200, 300, 400, 500]
 
-movements = pd.Series(data=dict(zip([parser.parse(date) for date in transaction_dates], transaction_amounts)))
+# Next we define a `Flow` object from a list of dates and amounts:
+
+# In[3]:
+
+
+transactions = {
+    pd.Timestamp('2020-01-01'): 100,
+    pd.Timestamp('2020-01-02'): 200,
+    pd.Timestamp('2019-01-01'): 300,
+    pd.Timestamp('2020-12-31'): -100
+    }
+
+movements = pd.Series(data=transactions)
 
 cash_flow = rk.flux.Flow(
     name='Operational Expenses',
     movements=movements,
     units=currency.units)
 
-print(cash_flow)
-print(os.linesep)
-print('Cash Flow Index: ' + str(cash_flow.movements.index))
-print(os.linesep)
-
-print(cash_flow.movements.info())
+print('Flow:{0}{1}{0}{0}Flow Index:{0}{2}{0}'.format(
+    os.linesep,
+    cash_flow,
+    cash_flow.movements.index,
+    ))
+cash_flow.movements.info()
 
 
 # As you can see, a `Flow` has three properties:
@@ -70,276 +84,218 @@ print(cash_flow.movements.info())
 # 2. a Pandas Series of date-stamped amounts ('Movements'), and
 # 3. the units of the movement's amounts
 # 
-# * Note that the movements can be in any (temporal) order
+# * Note the following:
+#     1. The movements can be in any (temporal) order,
+#     2. The movements can be positive or negative,
+#     3. The movements will be (or converted to) `float`s
+#     4. The pd.Series index is a pd.DatetimeIndex
 
 # ### Structuring a Table of Cash Flows
-# Given a simple example of such a DCF valuation for a stylized commercial rental
-# property, Rangekeeper provides enhanced functionality for constructing and structuring
-# the proforma:
+# Given a simple example of such a DCF valuation for a stylized commercial rental property, Rangekeeper provides enhanced functionality for constructing and structuring the proforma:
+
+# ```{figure} resources/FaREVuU-table1.1.jpg
+# ---
+# width: 100%
+# name: FaREVuU-table1.1
+# ---
+# Table 1.1 From {cite}`farevuu2018`
+# ```
 # 
-# ![Table 1.1 From Geltner & De Neufville, 2018](resources/FaREVuU-table1.1.jpg)
 # 
 # ### A 'Span'
-# A Span is a pd.Interval of pd.Timestamps that bound its start and end dates.
-# Spans are used to define intervals of time that encompass the movements of a Flow.
+# `Span`s are used to define intervals of time that encompass the movements of a Flow.
+# 
+# A `Span` is a pd.Interval of pd.Timestamps that bound its start and end dates.
 # 
 
-# In[3]:
+# In[4]:
 
 
-s# Define a Span:
-start_date = pd.Timestamp('2000-01-01')
-num_periods = 10
-operation_span = rk.span.Span.from_num_periods(
+# Define a Span:
+start_date = pd.Timestamp('2001-01-01')
+num_periods = 11
+span = rk.span.Span.from_num_periods(
     name='Operation',
     date=start_date,
-    period_type=rk.periodicity.Type.year,
+    period_type=rk.periodicity.Type.YEAR,
     num_periods=num_periods)
-print(operation_span)
+print(span)
 
 
 # ### A 'Projection'
-# A projection takes a value and casts it over a sequence of periods according to a
-# specified logic. There are two classes of logic:
-# 1. Extrapolation, which takes a starting value and generates a sequence
-# of values from that initial one, and
-# 2. Distribution, which takes a total value and subdivides it over a range
+# A `Projection` takes a value and casts it over a sequence of periods according to a specified logic. There are two classes of the form of the logic:
+# 1. Extrapolation, which takes a starting value and from it generates a sequence of values over a sequence of dates, and
+# 2. Distribution, which takes a total value and subdivides it over a sequence of dates.
+# 
+# To match the logic of line 4, 'Potential Gross Income', in Table 1.1 above, we will use a 'Compounding' Extrapolation:
 
-# In[ ]:
+# In[5]:
 
 
-# Define a Projection:
+# Define a Compounding Projection:
 compounding_rate = 0.02
 projection = rk.projection.Extrapolation(
-    form=rk.projection.Extrapolation.Compounding(rate=compounding_rate),
-    sequence=operation_span.to_index(period_type=rk.periodicity.Type.year))
+    form=rk.extrapolation.Compounding(rate=compounding_rate),
+    sequence=span.to_index(period_type=rk.periodicity.Type.YEAR))
 
 
-# Projections are used in the construction of Flows:
+# Let's now use the previous definitions of `Flow`s and `Projection`s to construct the 'Potential Gross Income' line item:
 # 
 
-# In[ ]:
+# In[6]:
 
 
 # Define a compounding Cash Flow:
-initial_income = 100
+initial_income = 100 * currency.units
 potential_gross_income = rk.flux.Flow.from_projection(
+    name='Potential Gross Income',
     value=initial_income,
     proj=projection,
     units=currency.units)
-print(potential_gross_income)
+potential_gross_income
 
 
-# 2.1 Initiate Project Parameters:
+# Similarly, we define the 'Vacancy' line item by multiplying the movements of the 'Potential Gross Income' `Flow` by a vacancy rate:
 
-# In[ ]:
-
-
-# # 2.1.1: Unit Mix:
-# unit_mix = {
-#     Apartment.Type.B1B1B0: 0,
-#     Apartment.Type.B1B1B1: 1,
-#     Apartment.Type.B2B1B1: 0,
-#     Apartment.Type.B2B1B2: 0,
-#     Apartment.Type.B2B2B0: 0,
-#     Apartment.Type.B2B2B1: 2,
-#     Apartment.Type.B3B2B0: 0,
-#     Apartment.Type.B3B2B1: 1
-#     }
-#
-# property_params = {
-#     'gla': 750.0,
-#     'sales_price_per_gfa': 6875,
-#     }
-#
-# project_params = {
-#     'start_date': pd.Timestamp('2021-01-01'),
-#     'periodicity': Periodicity.Type.month,
-#     'preliminaries_duration': 2,
-#     'construction_duration': 4,
-#     'sales_duration': 3,
-#     'sales_fee_rate': 0.02,
-#     'construction_interest_rate_pa': 0.03,
-#     'parking_ratio': 1,
-#     'units': Units.Type.AUD,
-#     'margin_on_cost_reqd': 0.20
-#     }
-# models.linear.compose_spans(project_params)
-# models.linear.compose_apartments(unit_mix=unit_mix, project_params=project_params)
+# In[7]:
 
 
-# In[ ]:
+vacancy_rate = 0.05
+vacancy = rk.flux.Flow(
+    name='Vacancy Allowance',
+    movements=potential_gross_income.movements * -vacancy_rate,
+    units=currency.units)
+vacancy
 
 
-# # Display Project Params in a DataFrame:
-# project_params_df = pd.DataFrame.from_dict(
-#     data={key: [str(value)] for key, value in project_params.items()},
-#     orient='index',
-#     columns=['project_params'])
-# display(project_params_df)
-#
+# ```{note}
+# Note the sign of the movements of the 'Vacancy Allowance' `Flow` -- it is negative, because it is an *outflow*.
+# ```
+
+# ## A 'Stream'
+# A `Stream` is a collection of constituent `Flow`s into a table, such that their movements (transactions) are resampled with a specified periodicity.
+# 
+# Let's use the 'Effective Gross Income' line item in Table 1.1 to illustrate the concept of a `Stream`:
+
+# In[8]:
 
 
-# 2.2 Compose Preliminaries:
-
-# In[ ]:
-
-
-# # Prelims:
-# preliminary_costs_index = {
-#     'design_planning_engineering_cost': 20000.0,
-#     'survey_geotech_cost': 5000.0,
-#     'permitting_inspections_certifications_cost': 10000.0,
-#     'legal_title_appraisal_cost': 3500.0,
-#     'taxes_insurance_cost': 1500.0,
-#     'developer_project_management_cost': 50000.0
-#     }
-#
-# preliminaries = models.linear.compose_prelim_costs(
-#     preliminaries_costs_index=preliminary_costs_index,
-#     project_params=project_params
-# )
-# display("Preliminaries: ")
-# display(preliminaries.frame.transpose())
-#
-# display("Preliminaries Subtotals: ")
-# display(preliminaries.collapse().frame.transpose())
-#
-# display("Preliminaries Totals: ")
-# display(preliminaries.collapse().sum(name='preliminaries_total').to_stream(periodicity=project_params['periodicity']).frame.transpose())
+effective_gross_income_stream = rk.flux.Stream(
+    name='Effective Gross Income',
+    flows=[potential_gross_income, vacancy],
+    period_type=rk.periodicity.Type.YEAR)
+effective_gross_income_stream
 
 
-# 2.3 Compose Build Costs:
+# As you can see, the `Stream` has a name, a table of constituent `Flow`s (each with their own units), with their movements resampled to the specified periodicity.
+# 
+# In order to aggregate the constituent `Flow`s, we can sum them into a resultant `Flow`:
 
-# In[ ]:
-
-
-# # Build Costs:
-# build_costs_index = {
-#     'construction_cost_shell_pergfa': 1250.0,
-#     'construction_cost_cores_pergfa': 3000.0,
-#     'siteworks_cost_pergla': 35.0,
-#     'parking_cost_per_stall': 15000.0,
-#     'utilities_cost': 10000.0
-# }
-#
-# build_costs = models.linear.compose_build_costs(
-#     build_costs_index=build_costs_index,
-#     property_params=property_params,
-#     project_params=project_params
-# )
-#
-# display("Build Costs: ")
-# display(build_costs.frame.transpose())
-#
-# display("Build Costs Subtotals: ")
-# display(build_costs.collapse().frame.transpose())
-#
-# display("Build Costs Totals: ")
-# display(build_costs.collapse().sum(name='build_costs_total').to_stream(periodicity=project_params['periodicity']).frame.transpose())
+# In[9]:
 
 
-# 2.4 Compose Financing Costs:
+effective_gross_income_flow = effective_gross_income_stream.sum()
+effective_gross_income_flow
+
+
+# Note the `Flow`'s index is back to a `pd.DatetimeIndex`, with movements occuring at the *end* date of each period.
+
+# With this in mind, we can complete Table 1.1
+
+# In[10]:
+
+
+opex_pgi_ratio = .35
+operating_expenses = rk.flux.Flow(
+    name='Operating Expenses',
+    movements=potential_gross_income.movements * opex_pgi_ratio,
+    units=currency.units).invert()
+
+net_operating_income = rk.flux.Stream(
+    name='Net Operating Income',
+    flows=[effective_gross_income_flow, operating_expenses],
+    period_type=rk.periodicity.Type.YEAR)
+
+net_operating_income
+
+
+# In[11]:
+
+
+capex_pgi_ratio = .1
+capital_expenditures = rk.flux.Flow(
+    name='Capital Expenditures',
+    movements=potential_gross_income.movements * capex_pgi_ratio,
+    units=currency.units).invert()
+
+net_annual_cashflows = rk.flux.Stream(
+    name='Net Annual Cashflows',
+    flows=[net_operating_income.sum(), capital_expenditures],
+    period_type=rk.periodicity.Type.YEAR)
+
+net_annual_cashflows
+
+
+# To calculate the reversion cashflow, we set up a period that spans the 10th year of the project:
+
+# In[12]:
+
+
+reversion_span = rk.span.Span.from_num_periods(
+    name='Reversion',
+    date=start_date + pd.DateOffset(years=9),
+    period_type=rk.periodicity.Type.YEAR,
+    num_periods=1)
+
+exit_caprate = 0.05
+reversion_flow = rk.flux.Flow.from_projection(
+    name='Reversion',
+    value=net_annual_cashflows.sum().movements.values[-1] / exit_caprate,
+    proj=rk.projection.Distribution(
+        form=rk.distribution.Uniform(),
+        sequence=reversion_span.to_index(period_type=rk.periodicity.Type.YEAR)),
+    units=currency.units)
+reversion_flow
+
+
+# Finally, we can aggregate the net and reversion cashflows in order to calculate the project's complete cashflows:
 
 # In[ ]:
 
 
-# # Finance Costs:
-# finance_costs = models.linear.compose_finance_costs(
-#     project_params=project_params,
-#     preliminaries_costs=preliminaries,
-#     build_costs=build_costs
-# )
-#
-# display("Financing Costs Calculation: ")
-# display(finance_costs.frame.transpose())#_year.frame.transpose())
-#
-# interest_costs = finance_costs.extract('interest').to_stream(periodicity=project_params['periodicity'])
-#
-# display("Interest Costs: ")
-# display(interest_costs.frame.transpose())
-#
-# display("Interest Cost Total: ")
-# display(interest_costs.collapse().frame.transpose())
+net_cashflows_with_reversion = rk.flux.Stream(
+    name='Net Cashflow with Reversion',
+    flows=[net_annual_cashflows.sum(), reversion_flow],
+    period_type=rk.periodicity.Type.YEAR).trim_to_span(
+    rk.span.Span(
+        start_date=start_date,
+        end_date=reversion_span.end_date)
+    )
+net_cashflows_with_reversion
 
 
-# 2.5 Compose Net Development Costs:
+# Given that the discount rate is specified as 7%, we can calculate the project's Present Value (PV):
 
 # In[ ]:
 
 
-# net_development_costs = flux.Stream.merge(
-#     streams=[preliminaries, build_costs, interest_costs],
-#     name='net_development_costs',
-#     periodicity=project_params['periodicity'])
-#
-# display("Net Development Costs: ")
-# display(net_development_costs.frame.transpose())
-#
-# display("Net Development Costs Subtotals: ")
-# display(net_development_costs.collapse().frame.transpose())
-#
-# display("Net Development Costs Total: ")
-# display(net_development_costs.collapse().sum(name='net_development_costs_total').to_stream(periodicity=project_params['periodicity']).frame.transpose())
-#
+discount_rate = 0.07
+pvs = net_cashflows_with_reversion.sum().pv(
+    name='Present Value',
+    period_type=rk.periodicity.Type.YEAR,
+    discount_rate=discount_rate)
+pvs
 
-
-# 3 Compose Revenues:
 
 # In[ ]:
 
 
-# revenues = models.linear.compose_revenues(
-#     property_params=property_params,
-#     project_params=project_params)
-#
-# display("Revenues: ")
-# display(revenues.frame.transpose())
-#
-# display("Revenues Subtotals: ")
-# display(revenues.collapse().frame.transpose())
-#
-# display("Revenues Totals: ")
-# display(revenues.collapse().sum(name='revenues_total').to_stream(periodicity=project_params['periodicity']).frame.transpose())
+project_pv = pvs.collapse().movements.item()
+round(project_pv, 2)
 
-
-# 4 Net Development Revenue:
 
 # In[ ]:
 
 
-# ndr_stream = flux.Stream(
-#     name='net_development_revenue',
-#     flows=[net_development_costs.sum().invert(), revenues.sum()],
-#     periodicity=project_params['periodicity'])
-#
-# display("Net Development Revenue: ")
-# display(ndr_stream.frame.transpose())
-#
-# net_development_revenue = ndr_stream.sum()
-# display(net_development_revenue.to_stream(periodicity=project_params['periodicity']).frame.transpose())
-# display(net_development_revenue.sum().to_stream(periodicity=project_params['periodicity']).frame.transpose())
-
-
-# 5 Project-level Returns:
-
-# In[ ]:
-
-
-# margin = (project_params['margin_on_cost_reqd'] * net_development_costs.collapse().sum().movements)[0]
-# residual_land_value = net_development_revenue.sum().movements[0] - margin
-# display("Residual Land Value: " + str(residual_land_value))
-#
-# investment_flow = flux.Flow.from_dict(
-#     name='investment',
-#     movements={project_params['start_date']: (-1) * residual_land_value },
-#     units=project_params['units'])
-# ndr_stream.append(flows=[investment_flow])
-#
-# net_development_flow = ndr_stream.sum()
-# display(net_development_flow.to_stream(periodicity=project_params['periodicity']).frame.transpose())
-#
-# irr = net_development_flow.xirr()
-# display("Project IRR: " + str(irr))
 
 

@@ -5,3 +5,6 @@ format: jb-book
 root: intro
 chapters:
 - file: linear
+- file: deterministic_scenarios
+- file: market_dynamics
+- file: flexibility_intro
