@@ -112,6 +112,16 @@ const thebe_selector_output = ".output, .cell_output"
    A Basic Discounted Cash Flow Valuation
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="deterministic_scenarios.html">
+   Deterministic Scenario Analysis
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="probabilistic_scenarios.html">
+   Probabilistic Scenario Analysis
+  </a>
+ </li>
 </ul>
 
     </div>
@@ -398,7 +408,14 @@ The <code class="docutils literal notranslate"><span class="pre">{bibliography}<
 render properly.
 For example, if the references for your book are stored in <code class="docutils literal notranslate"><span class="pre">references.bib</span></code>,
 then the bibliography is inserted with:</p>
-<span class="target" id="id2"></span></section>
+<div class="docutils container" id="id2">
+<dl class="citation">
+<dt class="label" id="id3"><span class="brackets">dNG18</span></dt>
+<dd><p>R. de Neufville and D. Geltner. <em>Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers</em>. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: <a class="reference external" href="https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470">https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470</a>, <a class="reference external" href="https://arxiv.org/abs/https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470">arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470</a>, <a class="reference external" href="https://doi.org/https://doi.org/10.1002/9781119106470">doi:https://doi.org/10.1002/9781119106470</a>.</p>
+</dd>
+</dl>
+</div>
+</section>
 <section id="learn-more">
 <h2>Learn more<a class="headerlink" href="#learn-more" title="Permalink to this headline">#</a></h2>
 <p>This is just a simple starter to get you started.
@@ -418,7 +435,7 @@ You can learn a lot more at <a class="reference external" href="https://jupyterb
             mode: "python"
         },
         kernelOptions: {
-            kernelName: "python3",
+            name: "python3",
             path: "./."
         },
         predefinedOutput: true

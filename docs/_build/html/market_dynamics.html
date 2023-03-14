@@ -1,0 +1,955 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Probabilistic Scenario Analysis &#8212; Rangekeeper</title>
+    
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+
+    
+  <link rel="stylesheet"
+    href="_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=5115cc725059bd94278eecd172e13a965bf8f5a9" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="_static/design-style.b7bb847fb20b106c3d81b95245e65545.min.css" />
+    
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?digest=9c920249402e914e316237a7dbc6769907cce411"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="_static/sphinx-thebe.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Introduction to Modeling Flexibility" href="flexibility_intro.html" />
+    <link rel="prev" title="Deterministic Scenario Analysis" href="deterministic_scenarios.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="None">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="60">
+<!-- Checkboxes to toggle the left sidebar -->
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle navigation sidebar">
+<label class="overlay overlay-navbar" for="__navigation">
+    <div class="visually-hidden">Toggle navigation sidebar</div>
+</label>
+<!-- Checkboxes to toggle the in-page toc -->
+<input type="checkbox" class="sidebar-toggle" name="__page-toc" id="__page-toc" aria-label="Toggle in-page Table of Contents">
+<label class="overlay overlay-pagetoc" for="__page-toc">
+    <div class="visually-hidden">Toggle in-page Table of Contents</div>
+</label>
+<!-- Headers at the top -->
+<div class="announcement header-item noprint"></div>
+<div class="header header-item noprint"></div>
+
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<!-- Sidebar -->
+<div class="bd-sidebar noprint" id="site-navigation">
+    <div class="bd-sidebar__content">
+        <div class="bd-sidebar__top"><div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="index.html">
+      
+      
+      
+      <h1 class="site-logo" id="site-title">Rangekeeper</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="intro.html">
+                    Exposition
+                </a>
+            </li>
+        </ul>
+        <ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="linear.html">
+   A Basic Discounted Cash Flow Valuation
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="deterministic_scenarios.html">
+   Deterministic Scenario Analysis
+  </a>
+ </li>
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   Probabilistic Scenario Analysis
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="flexibility_intro.html">
+   Introduction to Modeling Flexibility
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav></div>
+        <div class="bd-sidebar__bottom">
+             <!-- To handle the deprecated key -->
+            
+            <div class="navbar_extra_footer">
+            Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+            </div>
+            
+        </div>
+    </div>
+    <div id="rtd-footer-container"></div>
+</div>
+
+
+          
+
+
+          
+<!-- A tiny helper pixel to detect if we've scrolled -->
+<div class="sbt-scroll-pixel-helper"></div>
+<!-- Main content -->
+<div class="col py-0 content-container">
+    
+    <div class="header-article row sticky-top noprint">
+        
+
+
+
+<div class="col py-1 d-flex header-article-main">
+    <div class="header-article__left">
+        
+        <label for="__navigation"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="right"
+title="Toggle navigation"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-bars"></i>
+  </span>
+
+</label>
+
+        
+    </div>
+    <div class="header-article__right">
+<div class="menu-dropdown menu-dropdown-launch-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Launch interactive content">
+      <i class="fas fa-rocket"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="https://mybinder.org/v2/gh/executablebooks/jupyter-book/master?urlpath=tree/docs/market_dynamics.ipynb"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Launch on Binder"
+>
+  
+
+<span class="headerbtn__icon-container">
+  
+    <img src="_static/images/logo_binder.svg">
+  </span>
+<span class="headerbtn__text-container">Binder</span>
+</a>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+<button onclick="toggleFullScreen()"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="bottom"
+title="Fullscreen mode"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+<div class="menu-dropdown menu-dropdown-repository-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Source repositories">
+      <i class="fab fa-github"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="https://github.com/executablebooks/jupyter-book"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Source repository"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="headerbtn__text-container">repository</span>
+</a>
+
+      </li>
+      
+      <li>
+        <a href="https://github.com/executablebooks/jupyter-book/issues/new?title=Issue%20on%20page%20%2Fmarket_dynamics.html&body=Your%20issue%20content%20here."
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Open an issue"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="headerbtn__text-container">open issue</span>
+</a>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+
+<div class="menu-dropdown menu-dropdown-download-buttons">
+  <button class="headerbtn menu-dropdown__trigger"
+      aria-label="Download this page">
+      <i class="fas fa-download"></i>
+  </button>
+  <div class="menu-dropdown__content">
+    <ul>
+      <li>
+        <a href="_sources/market_dynamics.ipynb"
+   class="headerbtn"
+   data-toggle="tooltip"
+data-placement="left"
+title="Download source file"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="headerbtn__text-container">.ipynb</span>
+</a>
+
+      </li>
+      
+      <li>
+        
+<button onclick="printPdf(this)"
+  class="headerbtn"
+  data-toggle="tooltip"
+data-placement="left"
+title="Print to PDF"
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="headerbtn__text-container">.pdf</span>
+</button>
+
+      </li>
+      
+    </ul>
+  </div>
+</div>
+<label for="__page-toc"
+  class="headerbtn headerbtn-page-toc"
+  
+>
+  
+
+<span class="headerbtn__icon-container">
+  <i class="fas fa-list"></i>
+  </span>
+
+</label>
+
+    </div>
+</div>
+
+<!-- Table of contents -->
+<div class="col-md-3 bd-toc show noprint">
+    <div class="tocsection onthispage pt-5 pb-3">
+        <i class="fas fa-list"></i> Contents
+    </div>
+    <nav id="bd-toc-nav" aria-label="Page">
+        <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#real-estate-pricing-factor-dynamics">
+   Real Estate Pricing Factor Dynamics
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#overall-trend">
+     Overall Trend
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#cyclicality">
+     Cyclicality
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+    </nav>
+</div>
+    </div>
+    <div class="article row">
+        <div class="col pl-md-3 pl-lg-5 content-container">
+            <!-- Table of contents that is only displayed when printing the page -->
+            <div id="jb-print-docs-body" class="onlyprint">
+                <h1>Probabilistic Scenario Analysis</h1>
+                <!-- Table of contents -->
+                <div id="print-main-content">
+                    <div id="jb-print-toc">
+                        
+                        <div>
+                            <h2> Contents </h2>
+                        </div>
+                        <nav aria-label="Page">
+                            <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#real-estate-pricing-factor-dynamics">
+   Real Estate Pricing Factor Dynamics
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#overall-trend">
+     Overall Trend
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#cyclicality">
+     Cyclicality
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            <main id="main-content" role="main">
+                
+              <div>
+                
+  <section class="tex2jax_ignore mathjax_ignore" id="probabilistic-scenario-analysis">
+<h1>Probabilistic Scenario Analysis<a class="headerlink" href="#probabilistic-scenario-analysis" title="Permalink to this headline">#</a></h1>
+<p>Geltner &amp; de Neufville (2018) continue in Chapter 5 to outline how scenario outcomes are based on the probability of certain situations or circumstances occuring. In Chapter 7, the qualities of real estate market dynamics are described, which are implemented in the Rangekeeper ‘Dyanamics’ module:</p>
+<section id="real-estate-pricing-factor-dynamics">
+<h2>Real Estate Pricing Factor Dynamics<a class="headerlink" href="#real-estate-pricing-factor-dynamics" title="Permalink to this headline">#</a></h2>
+<p>Geltner &amp; de Neufville (2018) document the following characteristics of real estate markets:</p>
+<ol class="simple">
+<li><p>Non-substitutability and non-fungibility of real estate assets.</p></li>
+<li><p>Inefficiency of information processing in real estate markets.</p></li>
+<li><p>Autoregression in real estate pricing</p></li>
+<li><p>Cyclicality in real estate pricing</p></li>
+<li><p>Mean reversion in real estate pricing</p></li>
+</ol>
+<p>Because of these, the real estate pricing dynamics that are input into simulations should include autoregression, cyclicality, and mean‐reversion, in addition to random-walk process.</p>
+<p>The methodology to produce a simulation of a real estate market is by using ‘pricing factors’; a ratio that multiplies the original, single‐stream pro forma cash flow expectation to arrive at a future cash flow outcome for a given scenario. The use of pricing factors as a way to develop representative
+scenarios based on available data on the historical variations in market prices for real estate. In this methodology, the pricing factors substantially enhance the traditional random walk process, by recognizing the special features of the dynamics of real estate markets. The resulting output simulation distributions offer a much richer and fuller picture of the future than the traditional, single‐stream DCF.</p>
+<figure class="align-default" id="farevuu-figure7-2">
+<a class="reference internal image-reference" href="_images/FaREVuU-figure7.2.png"><img alt="_images/FaREVuU-figure7.2.png" src="_images/FaREVuU-figure7.2.png" style="width: 100%;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 3 </span><span class="caption-text">Figure 7.2 From Geltner &amp; De Neufville, 2018</span><a class="headerlink" href="#farevuu-figure7-2" title="Permalink to this image">#</a></p>
+</figcaption>
+</figure>
+<p>The following demonstrates Rangekeeper’s implementation of the ‘MktDynamicsInputs’ tab(s) used in the accompanying Excel spreadsheets to Geltner &amp; de Neufville (2018).</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">import</span> <span class="nn">rangekeeper</span> <span class="k">as</span> <span class="nn">rk</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
+<span class="ne">ModuleNotFoundError</span><span class="g g-Whitespace">                       </span>Traceback (most recent call last)
+<span class="n">Cell</span> <span class="n">In</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">line</span> <span class="mi">3</span>
+<span class="g g-Whitespace">      </span><span class="mi">1</span> <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="ne">----&gt; </span><span class="mi">3</span> <span class="kn">import</span> <span class="nn">rangekeeper</span> <span class="k">as</span> <span class="nn">rk</span>
+
+<span class="n">File</span> <span class="o">/</span><span class="n">Volumes</span><span class="o">/</span><span class="n">Data</span><span class="o">/</span><span class="n">Projects</span><span class="o">/</span><span class="n">Rangekeeper</span><span class="o">/</span><span class="n">rangekeeper</span><span class="o">/</span><span class="fm">__init__</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">13</span>
+<span class="g g-Whitespace">     </span><span class="mi">10</span> <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">segmentation</span> <span class="k">as</span> <span class="n">segmentation</span>
+<span class="g g-Whitespace">     </span><span class="mi">11</span> <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">space</span> <span class="k">as</span> <span class="n">space</span>
+<span class="ne">---&gt; </span><span class="mi">13</span> <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">dynamics</span> <span class="k">as</span> <span class="n">dynamics</span>
+<span class="g g-Whitespace">     </span><span class="mi">15</span> <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">models</span> <span class="k">as</span> <span class="n">models</span>
+
+<span class="n">File</span> <span class="o">/</span><span class="n">Volumes</span><span class="o">/</span><span class="n">Data</span><span class="o">/</span><span class="n">Projects</span><span class="o">/</span><span class="n">Rangekeeper</span><span class="o">/</span><span class="n">rangekeeper</span><span class="o">/</span><span class="n">dynamics</span><span class="o">/</span><span class="fm">__init__</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1</span>
+<span class="ne">----&gt; </span><span class="mi">1</span> <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">cyclicality</span> <span class="k">as</span> <span class="n">cyclicality</span>
+<span class="g g-Whitespace">      </span><span class="mi">2</span> <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">market</span> <span class="k">as</span> <span class="n">market</span>
+<span class="g g-Whitespace">      </span><span class="mi">3</span> <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">trend</span> <span class="k">as</span> <span class="n">trend</span>
+
+<span class="n">File</span> <span class="o">/</span><span class="n">Volumes</span><span class="o">/</span><span class="n">Data</span><span class="o">/</span><span class="n">Projects</span><span class="o">/</span><span class="n">Rangekeeper</span><span class="o">/</span><span class="n">rangekeeper</span><span class="o">/</span><span class="n">dynamics</span><span class="o">/</span><span class="n">cyclicality</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">7</span>
+<span class="g g-Whitespace">      </span><span class="mi">4</span> <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="g g-Whitespace">      </span><span class="mi">5</span> <span class="kn">from</span> <span class="nn">numba</span> <span class="kn">import</span> <span class="n">jit</span>
+<span class="ne">----&gt; </span><span class="mi">7</span> <span class="kn">import</span> <span class="nn">periodicity</span>
+<span class="g g-Whitespace">      </span><span class="mi">8</span> <span class="kn">import</span> <span class="nn">rangekeeper</span> <span class="k">as</span> <span class="nn">rk</span>
+<span class="g g-Whitespace">     </span><span class="mi">11</span> <span class="k">class</span> <span class="nc">Enumerate</span><span class="p">:</span>
+
+<span class="ne">ModuleNotFoundError</span>: No module named &#39;periodicity&#39;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">period_type</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">periodicity</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span>
+<span class="n">span</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">span</span><span class="o">.</span><span class="n">Span</span><span class="o">.</span><span class="n">from_num_periods</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Span&quot;</span><span class="p">,</span>
+    <span class="n">date</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="mi">2001</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="n">period_type</span><span class="o">=</span><span class="n">period_type</span><span class="p">,</span>
+    <span class="n">num_periods</span><span class="o">=</span><span class="mi">25</span><span class="p">)</span>
+<span class="n">span</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Span: Span
+Start Date: 2001-01-01
+End Date: 2025-12-31
+</pre></div>
+</div>
+</div>
+</div>
+<section id="overall-trend">
+<h3>Overall Trend<a class="headerlink" href="#overall-trend" title="Permalink to this headline">#</a></h3>
+<p>First, we set up the general (rental) market trend (excluding volatility), which requires the following parameters:</p>
+<aside class="margin sidebar">
+<p class="sidebar-title"></p>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+Initial Price Factor<div class="sd-summary-down docutils">
+<svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-down" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M5.22 8.72a.75.75 0 000 1.06l6.25 6.25a.75.75 0 001.06 0l6.25-6.25a.75.75 0 00-1.06-1.06L12 14.44 6.28 8.72a.75.75 0 00-1.06 0z"></path></svg></div>
+<div class="sd-summary-up docutils">
+<svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-up" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M18.78 15.28a.75.75 0 000-1.06l-6.25-6.25a.75.75 0 00-1.06 0l-6.25 6.25a.75.75 0 101.06 1.06L12 9.56l5.72 5.72a.75.75 0 001.06 0z"></path></svg></div>
+</summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">This governs the base rental (net income) value as a fraction of asset value. To normalize the values by giving them a “base” value of 1.00, we have set this equal to the cap rate (net income yield). This will make the resulting rental market price factor 1.00 in Year 0, such that subsequent price factors will be ratios of the pro-forma cash flow expectations.</p>
+<p class="sd-card-text">(From <span id="id1">[<a class="reference internal" href="markdown.html#id3" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span>, accompanying Excel spreadsheets)</p>
+</div>
+</details></aside>
+<aside class="margin sidebar">
+<p class="sidebar-title"></p>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+Cap Rate<div class="sd-summary-down docutils">
+<svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-down" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M5.22 8.72a.75.75 0 000 1.06l6.25 6.25a.75.75 0 001.06 0l6.25-6.25a.75.75 0 00-1.06-1.06L12 14.44 6.28 8.72a.75.75 0 00-1.06 0z"></path></svg></div>
+<div class="sd-summary-up docutils">
+<svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-up" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M18.78 15.28a.75.75 0 000-1.06l-6.25-6.25a.75.75 0 00-1.06 0l-6.25 6.25a.75.75 0 101.06 1.06L12 9.56l5.72 5.72a.75.75 0 001.06 0z"></path></svg></div>
+</summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">This is the long-run mean cap rate around which the capital market cycle varies, that is, this is the cap rate toward which the market reverts over the cycle. This relates to the reversion (going-out) cap rate that will be applied upon resale.</p>
+<p class="sd-card-text">You can set this so that the inflexible (10yr) reversion will exactly match a pro-forma reversion amount in the Base Case. Just set this as the ratio of the pro-forma Yr11 NOI divided by the pro-forma reversion (gross of selling expenses).</p>
+<p class="sd-card-text">Note that if this long-run cap rate is set to a value much above (below) the going-in cap rate implied by the initial price, then the result will be to tend to favor flexible resale timing later (earlier), so as to mitigate (maximize) the unfavorable (favorable) effect of the yield change between the buy and the sell.</p>
+<p class="sd-card-text">A plausible value for this input would equal the discount rate minus the pro-forma growth rate, plus 100 to 200 basis-points for capital improvements expenditures.</p>
+<p class="sd-card-text">(From <span id="id2">[<a class="reference internal" href="markdown.html#id3" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span>, accompanying Excel spreadsheets)</p>
+</div>
+</details></aside>
+<aside class="margin sidebar">
+<p class="sidebar-title"></p>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+Rent Residual<div class="sd-summary-down docutils">
+<svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-down" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M5.22 8.72a.75.75 0 000 1.06l6.25 6.25a.75.75 0 001.06 0l6.25-6.25a.75.75 0 00-1.06-1.06L12 14.44 6.28 8.72a.75.75 0 00-1.06 0z"></path></svg></div>
+<div class="sd-summary-up docutils">
+<svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-up" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M18.78 15.28a.75.75 0 000-1.06l-6.25-6.25a.75.75 0 00-1.06 0l-6.25 6.25a.75.75 0 101.06 1.06L12 9.56l5.72 5.72a.75.75 0 001.06 0z"></path></svg></div>
+</summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">The residual is used to model the uncertainty in the initial rent estimated in the pro-forma. In <span id="id3">[<a class="reference internal" href="markdown.html#id3" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span>, this is the half-range of a triangular distribution as a proportion of Initial Rent Price Factor (entered above). Using Rangekeeper, additional distribution forms are also available, if wanted. Typically you wouldn’t enter more than 0.05 or 0.1 here, at most. Initial rents should be able to be estimated pretty accurately in the realistic pro-forma, especially for existing buildings.</p>
+<p class="sd-card-text">(From <span id="id4">[<a class="reference internal" href="markdown.html#id3" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span>, accompanying Excel spreadsheets)</p>
+</div>
+</details></aside>
+<aside class="margin sidebar">
+<p class="sidebar-title"></p>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+Long-run Trend Mean<div class="sd-summary-down docutils">
+<svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-down" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M5.22 8.72a.75.75 0 000 1.06l6.25 6.25a.75.75 0 001.06 0l6.25-6.25a.75.75 0 00-1.06-1.06L12 14.44 6.28 8.72a.75.75 0 00-1.06 0z"></path></svg></div>
+<div class="sd-summary-up docutils">
+<svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-up" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M18.78 15.28a.75.75 0 000-1.06l-6.25-6.25a.75.75 0 00-1.06 0l-6.25 6.25a.75.75 0 101.06 1.06L12 9.56l5.72 5.72a.75.75 0 001.06 0z"></path></svg></div>
+</summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">This will govern the central tendency of the long-run growth rate trend that will apply over the entire scenario. As Pricing Factors are only RELATIVE TO the traditional pro-forma which should contain any realistic expected growth, the default value input here should normally be zero in principle. However, in the Base Case we make this incremental trend slightly negative to counteract the effect of some minor inconsistencies. (The pro forma does not recognize any Black Swan probability, and has zero selling expenses. The cap rate cycle is symmetric in the cap rate, but that gives resulting capital value levels an upward bias. These factors may interact with other elements of the price dynamics.) Ideally for a more representative sample and better “apples-to-apples” comparisons, you want to set this input so that the t-statistic of the InflxPV-ProFormaPV (cell K13) is generally near zero (and almost always &lt; 1.96 in absolute value). You may need to change the LR Trend Mean input as you change other price dynamics input parameter assumptions away from the Base Case assumptions.</p>
+<p class="sd-card-text">(From <span id="id5">[<a class="reference internal" href="markdown.html#id3" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span>, accompanying Excel spreadsheets)</p>
+</div>
+</details></aside>
+<aside class="margin sidebar">
+<p class="sidebar-title"></p>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+Long Run Trend Residual<div class="sd-summary-down docutils">
+<svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-down" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M5.22 8.72a.75.75 0 000 1.06l6.25 6.25a.75.75 0 001.06 0l6.25-6.25a.75.75 0 00-1.06-1.06L12 14.44 6.28 8.72a.75.75 0 00-1.06 0z"></path></svg></div>
+<div class="sd-summary-up docutils">
+<svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-up" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M18.78 15.28a.75.75 0 000-1.06l-6.25-6.25a.75.75 0 00-1.06 0l-6.25 6.25a.75.75 0 101.06 1.06L12 9.56l5.72 5.72a.75.75 0 001.06 0z"></path></svg></div>
+</summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">This is to model uncertainty in the long-run trend growth rate (that applies throughout the entire scenario. In <span id="id6">[<a class="reference internal" href="markdown.html#id3" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span>, this is modeled as a triangular distribution (again Rangekeeper provides other distributions easily), and the half-range should typically be a small value, at most .01 or .02, unless there is great uncertainty in the long-run average growth rate in the economy (such as perhaps in some emerging market countries), or if one is modeling nominal values and there is great uncertainty about what the future rate of inflation will be (but in such cases it is better to model real values, net of inflation anyway).</p>
+<p class="sd-card-text">(From <span id="id7">[<a class="reference internal" href="markdown.html#id3" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span>, accompanying Excel spreadsheets)</p>
+</div>
+</details></aside>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">trend_params</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;initial_price_factor&#39;</span><span class="p">:</span> <span class="mf">1.</span><span class="p">,</span>
+    <span class="s1">&#39;cap_rate&#39;</span><span class="p">:</span> <span class="mf">.05</span><span class="p">,</span>
+    <span class="s1">&#39;rent_residual&#39;</span><span class="p">:</span> <span class="mf">.005</span><span class="p">,</span>
+    <span class="s1">&#39;trend_mean&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.0005</span><span class="p">,</span>
+    <span class="s1">&#39;trend_residual&#39;</span><span class="p">:</span> <span class="mf">.005</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="n">trend_params</span><span class="p">[</span><span class="s1">&#39;rent_mean&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">trend_params</span><span class="p">[</span><span class="s1">&#39;cap_rate&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">trend_params</span><span class="p">[</span><span class="s1">&#39;initial_price_factor&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Rangekeeper can now produce the trend for the rental market:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">market_trend</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">trend</span><span class="o">.</span><span class="n">Trend</span><span class="p">(</span>
+    <span class="n">span</span><span class="o">=</span><span class="n">span</span><span class="p">,</span>
+    <span class="n">period_type</span><span class="o">=</span><span class="n">period_type</span><span class="p">,</span>
+    <span class="n">params</span><span class="o">=</span><span class="n">trend_params</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Trend Specification:</span><span class="se">\n</span><span class="s1">Initial Rent: </span><span class="si">{0}</span><span class="se">\n</span><span class="s1">Growth Rate: </span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">market_trend</span><span class="o">.</span><span class="n">initial_rent</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="nb">round</span><span class="p">(</span><span class="n">market_trend</span><span class="o">.</span><span class="n">trend_rate</span><span class="p">,</span> <span class="mi">4</span><span class="p">)))</span>
+<span class="n">market_trend</span><span class="o">.</span><span class="n">trend</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Trend Specification:
+Initial Rent: 0.0488
+Growth Rate: -0.0005
+</pre></div>
+</div>
+<img alt="_images/market_dynamics_15_1.png" src="_images/market_dynamics_15_1.png" />
+</div>
+</div>
+<p>To introduce volatility, we require the following parameters:</p>
+<aside class="margin sidebar">
+<p class="sidebar-title"></p>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+Volatility:<div class="sd-summary-down docutils">
+<svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-down" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M5.22 8.72a.75.75 0 000 1.06l6.25 6.25a.75.75 0 001.06 0l6.25-6.25a.75.75 0 00-1.06-1.06L12 14.44 6.28 8.72a.75.75 0 00-1.06 0z"></path></svg></div>
+<div class="sd-summary-up docutils">
+<svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-up" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M18.78 15.28a.75.75 0 000-1.06l-6.25-6.25a.75.75 0 00-1.06 0l-6.25 6.25a.75.75 0 101.06 1.06L12 9.56l5.72 5.72a.75.75 0 001.06 0z"></path></svg></div>
+</summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">“Volatility” refers to the standard deviation across time (longitudinal dispersion), in the changes or returns (differences from one period to the next). Volatility “accumulates” in the sense that the realization of the change in one period becomes embedded in the level (of rents) going forward into the next period, whose change is then added on top of the previous level (of rents). The volatility realizations tracked in this column apply only to the “innovations” in the rent level. If there is autoregression (next columns) then that will also affect the annual volatility in the rent changes.</p>
+<p class="sd-card-text">Evidence indicates that in mature markets such as the U.S., real estate market volatility (not including individual building idiosyncratic risk) is on the order of 10%. However, this includes the effect of long-term cycles as well as annual accumulating volatility. If you are modeling an individual stabilized building, then you should probably set this in the range of 10% to 15% (which would reflect some idiosyncratic risk as well as market risk).</p>
+<p class="sd-card-text">This is a normal (Gaussian) distribution. Note that volatility is realized (new random increment is generated) in EACH period, so that this “risk” outcome accumulates in the history of rent levels. But this is just the volatility in the innovations. If there is autoregression then that will also affect the annual volatility. Cycles well also affect the average volatility observed  empirically across the scenario.</p>
+<p class="sd-card-text">(From <span id="id8">[<a class="reference internal" href="markdown.html#id3" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span>, accompanying Excel spreadsheets)</p>
+</div>
+</details></aside>
+<aside class="margin sidebar">
+<p class="sidebar-title"></p>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+Autoregression:<div class="sd-summary-down docutils">
+<svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-down" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M5.22 8.72a.75.75 0 000 1.06l6.25 6.25a.75.75 0 001.06 0l6.25-6.25a.75.75 0 00-1.06-1.06L12 14.44 6.28 8.72a.75.75 0 00-1.06 0z"></path></svg></div>
+<div class="sd-summary-up docutils">
+<svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-up" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M18.78 15.28a.75.75 0 000-1.06l-6.25-6.25a.75.75 0 00-1.06 0l-6.25 6.25a.75.75 0 101.06 1.06L12 9.56l5.72 5.72a.75.75 0 001.06 0z"></path></svg></div>
+</summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">This reflects the inertia in the price movements.</p>
+<p class="sd-card-text">Unless overriden by input on the Dashboard, enter here a value which for the relevant market indicates the degree of inertia. This is the autoregression parameter, which indicates what proportion of the previous period’s return (price change) will automatically become a component of the current period’s return (price change). In most real estate markets this would typically be a positive fraction, perhaps in the range +0.1 to +0.5. In more liquid and informationally efficient asset markets such as stock markets you might leave this at zero (no inertia). A “noisy” market would have a negative autoregression parameter, however, we deal with noise separately in a column farther to the right.</p>
+<p class="sd-card-text">This is the proportion of the current period’s return that will be “baked in” reflecting the previous period’s return. The greater this parameter (which must be &gt;0 &amp; &lt; 1), the more inertia or momentum the real estate prices will have. Empirical evidence indicates that this should probably be a small positive fraction, perhaps in the neighborhood of 0.2.</p>
+</div>
+</details></aside>
+<aside class="margin sidebar">
+<p class="sidebar-title"></p>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+Mean Reversion:<div class="sd-summary-down docutils">
+<svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-down" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M5.22 8.72a.75.75 0 000 1.06l6.25 6.25a.75.75 0 001.06 0l6.25-6.25a.75.75 0 00-1.06-1.06L12 14.44 6.28 8.72a.75.75 0 00-1.06 0z"></path></svg></div>
+<div class="sd-summary-up docutils">
+<svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-up" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M18.78 15.28a.75.75 0 000-1.06l-6.25-6.25a.75.75 0 00-1.06 0l-6.25 6.25a.75.75 0 101.06 1.06L12 9.56l5.72 5.72a.75.75 0 001.06 0z"></path></svg></div>
+</summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">This is the mean reversion parameter. It determines the strength (or speed) of the mean reversion tendency in the price levels. It is the proportion of the previous period’s difference of the price level from the long-term trend price level that will be eliminated in the current price level. This parameter should be between zero and 1, probably not very close to 1. For example, if the previous price level were 1.0, and the long-term trend price level for that period were 1.2, and if the mean reversion parameter were 0.5, then 0.5*(1.2-1.0) = 0.10 will be added to this period’s price level.  Input here may be overriden by input on the Dashboard sheet.</p>
+<p class="sd-card-text">This parameter will also impart inertia or momentum into the real estate prices, but in a special way, pulling the prices back towards the long-run trend level (not including any cycle that is in the price dynamics). This parameter is the proportion of the deviation between the current price level and the long-run trend level that will be reduced in each year. Evidence suggests that a mean reversion rate on the order of 0.1 to 0.4 is probably appropriate, especially for individual properties (as distinct from total market aggregates).</p>
+</div>
+</details></aside>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">volatility_params</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;volatility_per_period&#39;</span><span class="p">:</span> <span class="mf">.1</span><span class="p">,</span>
+    <span class="s1">&#39;autoregression_param&#39;</span><span class="p">:</span> <span class="mf">.2</span><span class="p">,</span>
+    <span class="s1">&#39;mean_reversion_param&#39;</span><span class="p">:</span> <span class="mf">.3</span><span class="p">,</span>
+    <span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">market_volatility</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">volatility</span><span class="o">.</span><span class="n">Volatility</span><span class="p">(</span>
+    <span class="n">trend</span><span class="o">=</span><span class="n">market_trend</span><span class="p">,</span>
+    <span class="n">params</span><span class="o">=</span><span class="n">volatility_params</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>We can now see the volatility with respect to the trend:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">rent_market</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Rent Market&#39;</span><span class="p">,</span>
+    <span class="n">flows</span><span class="o">=</span><span class="p">[</span><span class="n">market_volatility</span><span class="o">.</span><span class="n">cumulative_volatility</span><span class="p">,</span> <span class="n">market_trend</span><span class="o">.</span><span class="n">trend</span><span class="p">],</span>
+    <span class="n">period_type</span><span class="o">=</span><span class="n">period_type</span><span class="p">)</span>
+<span class="n">rent_market</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/market_dynamics_23_0.png" src="_images/market_dynamics_23_0.png" />
+</div>
+</div>
+</section>
+<section id="cyclicality">
+<h3>Cyclicality<a class="headerlink" href="#cyclicality" title="Permalink to this headline">#</a></h3>
+<p>This models a (possibly somewhat) predictable long-term cycle in the pricing. In fact, there are two cycles, not necessarily in sync, one for the space market (rents) and another separate cycle for the asset market (capital flows), the latter reflected by the cap rate. We model each separately, the space market cycle in this column and the asset market cycle in a column to the right. Cycles are modeled by generalized sine functions governed by the given input period, amplitude, and phase.</p>
+<aside class="margin sidebar">
+<p class="sidebar-title"></p>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+Space Cycle Period:<div class="sd-summary-down docutils">
+<svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-down" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M5.22 8.72a.75.75 0 000 1.06l6.25 6.25a.75.75 0 001.06 0l6.25-6.25a.75.75 0 00-1.06-1.06L12 14.44 6.28 8.72a.75.75 0 00-1.06 0z"></path></svg></div>
+<div class="sd-summary-up docutils">
+<svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-up" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M18.78 15.28a.75.75 0 000-1.06l-6.25-6.25a.75.75 0 00-1.06 0l-6.25 6.25a.75.75 0 101.06 1.06L12 9.56l5.72 5.72a.75.75 0 001.06 0z"></path></svg></div>
+</summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">In the U.S. the real estate market cycle seems to be in the range of 10 to 20 years. This will randomly generate the cycle period governing each future history to be between 10 and 20 years.</p>
+</div>
+</details></aside>
+<aside class="margin sidebar">
+<p class="sidebar-title"></p>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+Space Cycle Span:<div class="sd-summary-down docutils">
+<svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-down" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M5.22 8.72a.75.75 0 000 1.06l6.25 6.25a.75.75 0 001.06 0l6.25-6.25a.75.75 0 00-1.06-1.06L12 14.44 6.28 8.72a.75.75 0 00-1.06 0z"></path></svg></div>
+<div class="sd-summary-up docutils">
+<svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-up" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M18.78 15.28a.75.75 0 000-1.06l-6.25-6.25a.75.75 0 00-1.06 0l-6.25 6.25a.75.75 0 101.06 1.06L12 9.56l5.72 5.72a.75.75 0 001.06 0z"></path></svg></div>
+</summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">If you make this equal to a uniform random variable times the rent cycle period then the span will range from starting anywhere from peak to trough with equal likelihood.
+E.g.:
+‘rent_cycle_span_mean’ = distribution.Uniform().sample() * rent_cycle_period_avg,</p>
+<p class="sd-card-text">If you think you know where you are in the cycle, then use this relationship of Span to Cycle Period:
+Span:         Cycle:
+(1/4)Period = Bottom of cycle, headed up.
+(1/2)Period = Mid-cycle, headed down.
+(3/4)Period = Top of cycle, headed down.
+(1/1)Period = Mid-cycle, headed up.</p>
+<p class="sd-card-text">Example, if you enter 20 in cycle period, and you enter 5 in cycle span, then the cycle will be starting out in the first year at the bottom of the cycle, heading up from there.</p>
+<p class="sd-card-text">Please note that with the compound-sine asymetric cycle formula, the peak parameter is slightly off from the above; 0.65*Period seems to start the cycle closer to the peak.
+For example, if you want the span to vary randomly and uniformly over the 1/8 of the cycle that is the top of the upswing (late boom just before downturn), you would enter:
+.175 * distribution.Uniform().sample() +.65 * rent_cycle_period_avg</p>
+</div>
+</details></aside>
+<aside class="margin sidebar">
+<p class="sidebar-title"></p>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+Space Cycle Amplitude:<div class="sd-summary-down docutils">
+<svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-down" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M5.22 8.72a.75.75 0 000 1.06l6.25 6.25a.75.75 0 001.06 0l6.25-6.25a.75.75 0 00-1.06-1.06L12 14.44 6.28 8.72a.75.75 0 00-1.06 0z"></path></svg></div>
+<div class="sd-summary-up docutils">
+<svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-up" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M18.78 15.28a.75.75 0 000-1.06l-6.25-6.25a.75.75 0 00-1.06 0l-6.25 6.25a.75.75 0 101.06 1.06L12 9.56l5.72 5.72a.75.75 0 001.06 0z"></path></svg></div>
+</summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">This is the peak-to-trough full cycle amplitude as a fraction of the mid-cycle level. Historically in the U.S. such cycles in investment property have been as much as 50% or more in some markets in the rental market (including both rent prices &amp; occupancy effect and considering the leverage that fixed operating expenses have on the bottom-line net cash flow). The Pricing Factors in this model apply to net cash flows, not just top-line potential gross rental revenue.</p>
+</div>
+</details></aside>
+<aside class="margin sidebar">
+<p class="sidebar-title"></p>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+Asset Cycle Span:<div class="sd-summary-down docutils">
+<svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-down" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M5.22 8.72a.75.75 0 000 1.06l6.25 6.25a.75.75 0 001.06 0l6.25-6.25a.75.75 0 00-1.06-1.06L12 14.44 6.28 8.72a.75.75 0 00-1.06 0z"></path></svg></div>
+<div class="sd-summary-up docutils">
+<svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-up" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M18.78 15.28a.75.75 0 000-1.06l-6.25-6.25a.75.75 0 00-1.06 0l-6.25 6.25a.75.75 0 101.06 1.06L12 9.56l5.72 5.72a.75.75 0 001.06 0z"></path></svg></div>
+</summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">This cap rate cycle input is the negative of the actual cap rate cycle, you can think of the span in the same way as the space market span. These two cycles are not generally exactly in sync, but the usually are not too far off. Hence, probably makes sense to set this asset market span equal to the space market span +/- some random difference that is a pretty small fraction of the cycle period.</p>
+<p class="sd-card-text">Remember that peak-to-trough is half period, LR mean to either peak or trough is quarter period.
+E.g.: rent_cycle_span + (distribution.Uniform().sample() * cap_rate_cycle_period/5) - cap_rate_cycle_period/10
+Above would let asset span differ from space span by +/- a bit less than a quarter-period (here, a fifth of the asset cycle period).</p>
+</div>
+</details></aside>
+<aside class="margin sidebar">
+<p class="sidebar-title"></p>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+Asset Cycle Amplitude:<div class="sd-summary-down docutils">
+<svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-down" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M5.22 8.72a.75.75 0 000 1.06l6.25 6.25a.75.75 0 001.06 0l6.25-6.25a.75.75 0 00-1.06-1.06L12 14.44 6.28 8.72a.75.75 0 00-1.06 0z"></path></svg></div>
+<div class="sd-summary-up docutils">
+<svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-up" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M18.78 15.28a.75.75 0 000-1.06l-6.25-6.25a.75.75 0 00-1.06 0l-6.25 6.25a.75.75 0 101.06 1.06L12 9.56l5.72 5.72a.75.75 0 001.06 0z"></path></svg></div>
+</summary><div class="sd-summary-content sd-card-body docutils">
+<p class="sd-card-text">This is in cap rate units, so keep in mind the magnitude of the initial cap rate entered previously. For example, if the initial (base) cap rate entered there is 5.00%, and you enter 2.00% here, then this will mean a cap rate cycle swinging between 4.00% &amp; 6.00%, which corresponds roughly to a property value swing of +/-20% (other things equal).</p>
+<p class="sd-card-text">Note also that because this cycle is symmetric but operates in the denominator of the pricing factors governing the simulated future cash flows,
+this cycle imparts a positive bias into the project ex post cash flows relative to the proforma expected cash flows.</p>
+</div>
+</details></aside>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cyclicality_params</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;space_cycle_period_mean&#39;</span><span class="p">:</span> <span class="mf">15.</span><span class="p">,</span>
+        <span class="s1">&#39;space_cycle_period_residual&#39;</span><span class="p">:</span> <span class="mf">5.</span><span class="p">,</span>
+        <span class="s1">&#39;space_cycle_period_dist&#39;</span><span class="p">:</span> <span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">uniform</span><span class="p">,</span>
+
+        <span class="s1">&#39;space_cycle_span_offset&#39;</span><span class="p">:</span> <span class="mf">.175</span><span class="p">,</span>
+        <span class="s1">&#39;space_cycle_span_residual&#39;</span><span class="p">:</span> <span class="mf">.05</span><span class="p">,</span>
+        <span class="s1">&#39;space_cycle_span_dist&#39;</span><span class="p">:</span> <span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">PERT</span><span class="p">,</span>
+
+        <span class="s1">&#39;space_cycle_amplitude_mean&#39;</span><span class="p">:</span> <span class="mf">.15</span><span class="p">,</span>
+        <span class="s1">&#39;space_cycle_amplitude_residual&#39;</span><span class="p">:</span> <span class="mf">.025</span><span class="p">,</span>
+        <span class="s1">&#39;space_cycle_amplitude_dist&#39;</span><span class="p">:</span> <span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">uniform</span><span class="p">,</span>
+
+        <span class="s1">&#39;asset_cycle_period_offset&#39;</span><span class="p">:</span> <span class="mf">0.</span><span class="p">,</span>
+        <span class="s1">&#39;asset_cycle_period_residual&#39;</span><span class="p">:</span> <span class="mf">1.</span><span class="p">,</span>
+        <span class="s1">&#39;asset_cycle_period_dist&#39;</span><span class="p">:</span> <span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">uniform</span><span class="p">,</span>
+
+        <span class="s1">&#39;asset_cycle_span_offset&#39;</span><span class="p">:</span> <span class="mf">0.</span><span class="p">,</span>
+        <span class="s1">&#39;asset_cycle_span_residual&#39;</span><span class="p">:</span> <span class="mf">.2</span><span class="p">,</span>
+        <span class="s1">&#39;asset_cycle_span_dist&#39;</span><span class="p">:</span> <span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">uniform</span><span class="p">,</span>
+
+        <span class="s1">&#39;asset_cycle_amplitude_mean&#39;</span><span class="p">:</span> <span class="mf">.01</span><span class="p">,</span>
+        <span class="s1">&#39;asset_cycle_amplitude_residual&#39;</span><span class="p">:</span> <span class="mf">.0015</span><span class="p">,</span>
+        <span class="s1">&#39;asset_cycle_amplitude_dist&#39;</span><span class="p">:</span> <span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">PERT</span><span class="p">,</span>
+
+        <span class="s1">&#39;space_cycle_asymmetric_parameter&#39;</span><span class="p">:</span> <span class="mf">.5</span><span class="p">,</span>
+        <span class="s1">&#39;asset_cycle_asymmetric_parameter&#39;</span><span class="p">:</span> <span class="mf">.5</span>
+        <span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">market_cyclicality</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">cyclicality</span><span class="o">.</span><span class="n">Cyclicality</span><span class="p">(</span>
+    <span class="n">params</span><span class="o">=</span><span class="n">cyclicality_params</span><span class="p">,</span>
+    <span class="n">index</span><span class="o">=</span><span class="n">market_trend</span><span class="o">.</span><span class="n">trend</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">market_waves</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Market Waves&#39;</span><span class="p">,</span>
+    <span class="n">flows</span><span class="o">=</span><span class="p">[</span><span class="n">market_cyclicality</span><span class="o">.</span><span class="n">space_waveform</span><span class="p">,</span> <span class="n">market_cyclicality</span><span class="o">.</span><span class="n">asset_waveform</span><span class="p">],</span>
+    <span class="n">period_type</span><span class="o">=</span><span class="n">period_type</span><span class="p">)</span>
+<span class="n">market_waves</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="n">flows</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;space_waveform&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1.4</span><span class="p">),</span>
+        <span class="s1">&#39;asset_waveform&#39;</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.015</span><span class="p">,</span> <span class="mf">0.015</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/market_dynamics_33_0.png" src="_images/market_dynamics_33_0.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">market_params</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;noise_residual&#39;</span><span class="p">:</span> <span class="mf">.015</span><span class="p">,</span>
+    <span class="s1">&#39;cap_rate&#39;</span><span class="p">:</span> <span class="n">trend_params</span><span class="p">[</span><span class="s1">&#39;cap_rate&#39;</span><span class="p">],</span>
+    <span class="s1">&#39;black_swan_likelihood&#39;</span><span class="p">:</span> <span class="mf">.05</span><span class="p">,</span>
+    <span class="s1">&#39;black_swan_dissipation_rate&#39;</span><span class="p">:</span> <span class="n">volatility_params</span><span class="p">[</span><span class="s1">&#39;mean_reversion_param&#39;</span><span class="p">],</span>
+    <span class="s1">&#39;black_swan_impact&#39;</span><span class="p">:</span> <span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">PERT</span><span class="p">(</span>
+        <span class="n">peak</span><span class="o">=-</span><span class="mf">.3</span><span class="p">,</span>
+        <span class="n">weighting</span><span class="o">=</span><span class="mf">4.</span><span class="p">,</span>
+        <span class="n">minimum</span><span class="o">=-</span><span class="mf">.4</span><span class="p">,</span>
+        <span class="n">maximum</span><span class="o">=-</span><span class="mf">.2</span><span class="p">)</span><span class="o">.</span><span class="n">sample</span><span class="p">(),</span>
+    <span class="s1">&#39;black_swan_prob_dist&#39;</span><span class="p">:</span> <span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Uniform</span><span class="p">()</span>
+    <span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">market_dynamics</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">market</span><span class="o">.</span><span class="n">Market</span><span class="p">(</span>
+    <span class="n">params</span><span class="o">=</span><span class="n">market_params</span><span class="p">,</span>
+    <span class="n">trend</span><span class="o">=</span><span class="n">market_trend</span><span class="p">,</span>
+    <span class="n">volatility</span><span class="o">=</span><span class="n">market_volatility</span><span class="p">,</span>
+    <span class="n">cyclicality</span><span class="o">=</span><span class="n">market_cyclicality</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Market Dynamics&#39;</span><span class="p">,</span>
+    <span class="n">flows</span><span class="o">=</span><span class="p">[</span><span class="n">market_trend</span><span class="o">.</span><span class="n">trend</span><span class="p">,</span> <span class="n">market_dynamics</span><span class="o">.</span><span class="n">historical_value</span><span class="p">],</span>
+    <span class="n">period_type</span><span class="o">=</span><span class="n">period_type</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+        <span class="n">flows</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;Market Trend&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mf">.04</span><span class="p">,</span> <span class="mf">.06</span><span class="p">),</span>
+            <span class="s1">&#39;Historical Value&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/market_dynamics_36_0.png" src="_images/market_dynamics_36_0.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Market Dynamics Composite&#39;</span><span class="p">,</span>
+    <span class="n">flows</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">market_trend</span><span class="o">.</span><span class="n">trend</span><span class="p">,</span>
+        <span class="n">market_volatility</span><span class="o">.</span><span class="n">cumulative_volatility</span><span class="p">,</span>
+        <span class="n">market_dynamics</span><span class="o">.</span><span class="n">space_market</span><span class="p">,</span>
+        <span class="n">market_dynamics</span><span class="o">.</span><span class="n">asset_true_value</span><span class="p">,</span>
+        <span class="n">market_dynamics</span><span class="o">.</span><span class="n">noisy_value</span><span class="p">,</span>
+        <span class="n">market_dynamics</span><span class="o">.</span><span class="n">historical_value</span>
+        <span class="p">],</span>
+    <span class="n">period_type</span><span class="o">=</span><span class="n">period_type</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+        <span class="n">flows</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;Market Trend&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">.09</span><span class="p">),</span>
+            <span class="s1">&#39;Cumulative Volatility&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">.09</span><span class="p">),</span>
+            <span class="s1">&#39;Space Market&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">.09</span><span class="p">),</span>
+            <span class="s1">&#39;Asset True Value&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">),</span>
+            <span class="s1">&#39;Noisy Value&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">),</span>
+            <span class="s1">&#39;Historical Value&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">)</span>
+            <span class="p">}</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/market_dynamics_37_0.png" src="_images/market_dynamics_37_0.png" />
+</div>
+</div>
+</section>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+              </div>
+              
+            </main>
+            <footer class="footer-article noprint">
+                
+    <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+    <a class='left-prev' id="prev-link" href="deterministic_scenarios.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">Deterministic Scenario Analysis</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="flexibility_intro.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Introduction to Modeling Flexibility</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+            </footer>
+        </div>
+    </div>
+    <div class="footer-content row">
+        <footer class="col footer"><p>
+  
+    By Daniel Fink<br/>
+  
+      &copy; Copyright 2022.<br/>
+</p>
+        </footer>
+    </div>
+    
+</div>
+
+
+      </div>
+    </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+
+
+  </body>
+</html>
