@@ -3,17 +3,16 @@ from typing import Dict, List, Union
 from decimal import Decimal
 from pint import Quantity
 
-from . import graph
-from . import measure
+import rangekeeper as rk
 
 
-class Space(graph.Element):
+class Space(rk.graph.Element):
     def __init__(
             self,
             name: str,
             type: str,
-            measurements: Dict[measure.Measure, Quantity] = None,
-            events: List[graph.Event] = None,
+            measurements: Dict[rk.measure.Measure, Quantity] = None,
+            events: List[rk.graph.Event] = None,
             attributes: Dict = None):
         super().__init__(
             name=name,
@@ -35,7 +34,7 @@ class Apartment(Space):
             num_bed: int,
             num_bath: Decimal,
             num_balcony: int,
-            measurements: Dict[measure.Measure, Quantity] = None,
+            measurements: Dict[rk.measure.Measure, Quantity] = None,
             attributes: Dict = None):
         super().__init__(name, type, measurements, attributes)
         self.num_bed = num_bed

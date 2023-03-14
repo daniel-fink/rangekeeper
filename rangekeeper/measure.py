@@ -7,10 +7,6 @@ import moneyed
 
 
 class Index:
-    # registry: pint.UnitRegistry
-
-    # def __init__(self):
-
     # Define Fractions:
     registry = pint.UnitRegistry()
     #     preprocessors=[lambda s: s.replace('%', ' percent ')]
@@ -126,3 +122,9 @@ class Measure:
         self.name = name
         self.units = units
         self.definition = definition
+
+    def __str__(self):
+        return 'Rangekeeper Measure: "{0}". {1}. Units: {2}'.format(
+            self.name,
+            self.definition,
+            self.units)

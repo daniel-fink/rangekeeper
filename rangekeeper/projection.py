@@ -4,27 +4,24 @@ import enum
 import typing
 from typing import Optional, Union, Tuple
 
-import aenum
+import enum
 import numpy as np
 import pandas as pd
 import scipy.stats as ss
-from abc import ABC, abstractmethod
 
-from . import periodicity, distribution
+import rangekeeper as rk
 
 
-class Padding(aenum.Enum):
+class Padding(enum.Enum):
     """
     Enum for padding types.
     """
-    _init_ = 'value', '__doc__'
-
-    nil = 'nil', 'Zero out factors or densities until bound'
-    unitize = 'unitize', 'Repeat unit factor or density until bound'
-    extend = 'extend', 'Repeat last factor or density until bound'
+    NIL = 'nil'  # Zero out factors or densities until bound
+    UNITIZE = 'unitize'  # Repeat unit factor or density until bound
+    EXTEND = 'extend'  # 'Repeat last factor or density until bound'
 
 
-class Projection(ABC):
+class Projection:
     sequence: pd.PeriodIndex
     bounds: Tuple[pd.Period, pd.Period]
 
@@ -80,23 +77,23 @@ class Projection(ABC):
             value: float,
             length: int,
             type: Optional[Padding]) -> np.ndarray:
-        if type == Padding.nil:
+        if type == Padding.NIL:
             return np.zeros(shape=length)
-        elif type == Padding.unitize:
+        elif type == Padding.UNITIZE:
             return np.ones(shape=length)
-        elif type == Padding.extend:
+        elif type == Padding.EXTEND:
             return np.full(shape=length, fill_value=value)
         elif type is None:
             return np.empty(shape=0)
 
 
 class Extrapolation(Projection):
-    form: Form
-    padding: Tuple[Padding, Padding]
+    form: rk.extrapolation.Form
+    padding: Tuple[Optional[Padding], Optional[Padding]]
 
     def __init__(
             self,
-            form: Form,
+            form: rk.extrapolation.Form,
             sequence: pd.PeriodIndex,
             bounds: Tuple[pd.Period, pd.Period] = None,
             padding: Tuple[Padding, Padding] = None):
@@ -114,100 +111,41 @@ class Extrapolation(Projection):
         else:
             self.padding = padding
 
-    def factors(self) -> pd.Series:
-        factors = self.form.factors(
-            periodicity.to_range_index(
-                period_index=self.sequence))
+    def terms(self) -> pd.Series:
+        terms = self.form.terms(
+            sequence=rk.periodicity.to_range_index(period_index=self.sequence))
         left_length = self.sequence[0] - self.bounds[0]
         right_length = self.bounds[1] - self.sequence[-1]
         left = self._pad(
-            value=factors[0],
+            value=terms[0],
             length=left_length.n,
             type=self.padding[0])
         right = self._pad(
-            value=factors[-1],
+            value=terms[-1],
             length=right_length.n,
             type=self.padding[1])
-        data = np.concatenate((left, factors, right))
+        data = np.concatenate((left, terms, right))
 
         return pd.Series(
             data=data,
-            index=periodicity.to_datestamps(
-                periodicity.period_index(
-                    include_start=self.bounds[0].to_timestamp(),
-                    period_type=periodicity.from_value(self.sequence.freq),
-                    bound=self.bounds[1].to_timestamp())))
-
-    class Form:
-        """
-        A specified methodology, logic, or algorithm for extrapolating a value to a sequence.
-        """
-
-        @abstractmethod
-        def factors(
-                self,
-                sequence: pd.RangeIndex) -> [float]:
-            """
-            Returns the multiplicative factor of the projection's form at each value in the sequence.
-            """
-            pass
-
-    class StraightLine(Form):
-        """
-        A constant-change (linearly growing (or decaying)) projection form, originating from an initial value.
-        To calculate the factor, the projection is modelled as a linear function of (slope * period) + 1
-        """
-        slope: float
-
-        def __init__(
-                self,
-                slope: float):
-            self.slope = slope
-
-        def factors(
-                self,
-                sequence: pd.RangeIndex) -> [float]:
-            """
-            Returns the multiplicative factor of the projection at each value in the sequence.
-            """
-            return [(self.slope * index) + 1 for index in sequence]
-
-    class Recurring(StraightLine):
-        def __init__(self):
-            super().__init__(slope=0)
-
-    class Compounding(Form):
-        """
-        An exponentially growing (compounding) or decaying projection at a specified rate per period.
-        To calculate the factor, the projection is modelled as an exponential function of (1 + rate) ** period
-        """
-        rate: float
-
-        def __init__(
-                self,
-                rate: float):
-            self.rate = rate
-
-        def factors(
-                self,
-                sequence: pd.RangeIndex) -> [float]:
-            """
-            Returns the multiplicative factor of the projection's form at each value in the sequence.
-            """
-            return [np.power((1 + self.rate), index) for index in sequence]
+            index=rk.periodicity.to_datestamps(
+                rk.periodicity.period_index(
+                    include_start=self.bounds[0].to_timestamp(how='start'),
+                    period_type=rk.periodicity.from_value(self.sequence.freq),
+                    bound=self.bounds[1].to_timestamp(how='start'))))
 
 
 class Distribution(Projection):
-    dist: distribution.Form
+    form: rk.distribution.Form
 
     def __init__(
             self,
-            dist: distribution.Form,
+            form: rk.distribution.Form,
             sequence: pd.PeriodIndex,
             bounds: Tuple[pd.Period, pd.Period] = None):
         super().__init__(
             sequence=sequence)
-        self.dist = dist
+        self.form = form
 
         if bounds is None:
             self.bounds = (sequence[0], sequence[-1])
@@ -224,11 +162,11 @@ class Distribution(Projection):
         self._left_padding = self._pad(
             value=0,
             length=left_length.n,
-            type=Padding.nil)
+            type=Padding.NIL)
         self._right_padding = self._pad(
             value=0,
             length=right_length.n,
-            type=Padding.nil)
+            type=Padding.NIL)
 
         # self._index = periodicity.period_index(
         #     include_start=self.bounds[0].to_timestamp(),
@@ -236,7 +174,7 @@ class Distribution(Projection):
         #     bound=self.bounds[1].to_timestamp())
 
     def _seq_to_params(self) -> [float]:
-        range_index = periodicity.to_range_index(
+        range_index = rk.periodicity.to_range_index(
             period_index=self.sequence)
         range_index = range_index.insert(
             loc=len(range_index),
@@ -245,26 +183,26 @@ class Distribution(Projection):
         return [index / max for index in range_index]
 
     def interval_density(self) -> pd.Series:
-        densities = self.dist.interval_density(parameters=self._parameters)
+        densities = self.form.interval_density(parameters=self._parameters)
         data = np.concatenate((self._left_padding, densities, self._right_padding))
 
         return pd.Series(
             data=data,
-            index=periodicity.to_datestamps(
-                periodicity.period_index(
+            index=rk.periodicity.to_datestamps(
+                rk.periodicity.period_index(
                     include_start=self.bounds[0].to_timestamp(),
-                    period_type=periodicity.from_value(self.sequence.freq),
+                    period_type=rk.periodicity.from_value(self.sequence.freq),
                     bound=self.bounds[1].to_timestamp())))
 
     def cumulative_density(self) -> [float]:
-        densities = self.dist.cumulative_density(parameters=self._parameters)
+        densities = self.form.cumulative_density(parameters=self._parameters)
         data = np.concatenate((self._left_padding, densities, self._right_padding))
 
-        period_index = periodicity.period_index(
+        period_index = rk.periodicity.period_index(
             include_start=self.bounds[0].to_timestamp(),
-            period_type=periodicity.from_value(self.sequence.freq),
+            period_type=rk.periodicity.from_value(self.sequence.freq),
             bound=self.bounds[1].to_timestamp())
-        datestamp_index = periodicity.to_datestamps(period_index=period_index)
+        datestamp_index = rk.periodicity.to_datestamps(period_index=period_index)
         datestamp_index = datestamp_index.insert(loc=0, item=self.bounds[0].start_time)
 
         return pd.Series(

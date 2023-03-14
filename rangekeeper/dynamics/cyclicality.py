@@ -4,7 +4,8 @@ import numpy as np
 import pandas as pd
 from numba import jit
 
-from .. import distribution, flux, measure
+import periodicity
+import rangekeeper as rk
 
 
 class Enumerate:
@@ -94,9 +95,10 @@ class Cycle:
             span=self.span,
             amplitude=self.amplitude,
             num_periods=index.size)
-        return flux.Flow(
-            movements=pd.Series(data=data, index=index),
-            units=measure.scalar,
+        return rk.flux.Flow(
+            movements=pd.Series(
+                data=data,
+                index=periodicity.to_datestamps(period_index=index)),
             name=name)
 
     def asymmetric_sine(
@@ -105,7 +107,7 @@ class Cycle:
             index: pd.PeriodIndex,
             precision: float = 1e-10,
             bound: float = 1e-1,
-            name: str = "asymmetric_sine_cycle") -> flux.Flow:
+            name: str = "asymmetric_sine_cycle") -> rk.flux.Flow:
         data = Enumerate.asymmetric_sine(
             period=self.period,
             span=self.span,
@@ -114,10 +116,10 @@ class Cycle:
             num_periods=index.size,
             precision=precision,
             bound=bound)
-        return flux.Flow(
+        return rk.flux.Flow(
             movements=pd.Series(
                 data=data,
-                index=index),
+                index=periodicity.to_datestamps(period_index=index)),
             # units=measure.scalar,
             name=name)
 
@@ -126,7 +128,7 @@ class Cyclicality:
     def __init__(
             self,
             params: dict,
-            index: pd.PeriodIndex):
+            sequence: pd.PeriodIndex):
         """
         This models a (possibly somewhat) predictable long-term cycle in the
         pricing. In fact, there are two cycles, not necessarily in sync,
@@ -137,7 +139,7 @@ class Cyclicality:
         input period, amplitude, and span.
 
         """
-        space_period = distribution.Symmetric(
+        space_period = rk.distribution.Symmetric(
             mean=params['space_cycle_period_mean'],
             residual=params['space_cycle_period_residual'],
             distribution_type=params['space_cycle_period_dist']
@@ -150,7 +152,7 @@ class Cyclicality:
         future history to be between 10 and 20 years.
         """
 
-        space_span = distribution.Symmetric(
+        space_span = rk.distribution.Symmetric(
             mean=params['space_cycle_span_offset'],
             residual=params['space_cycle_span_residual'],
             distribution_type=params['space_cycle_span_dist']
@@ -184,7 +186,7 @@ class Cyclicality:
         you would enter:
         =(.175*RAND()+.65)*J10, if Period is in J10.
         """
-        space_amplitude = distribution.Symmetric(
+        space_amplitude = rk.distribution.Symmetric(
             mean=params['space_cycle_amplitude_mean'],
             residual=params['space_cycle_amplitude_residual'],
             distribution_type=params['space_cycle_amplitude_dist']
@@ -195,7 +197,7 @@ class Cyclicality:
             span=space_span,
             amplitude=space_amplitude)
 
-        asset_period = distribution.Symmetric(
+        asset_period = rk.distribution.Symmetric(
             mean=params['asset_cycle_period_offset'],
             residual=params['asset_cycle_period_residual'],
             distribution_type=params['asset_cycle_period_dist']
@@ -207,7 +209,7 @@ class Cyclicality:
         =J10+(RAND()*2-1)
         """
 
-        asset_span = distribution.Symmetric(
+        asset_span = rk.distribution.Symmetric(
             mean=params['asset_cycle_span_offset'],
             residual=params['asset_cycle_span_residual'],
             distribution_type=params['asset_cycle_span_dist']
@@ -225,7 +227,7 @@ class Cyclicality:
         (here, a fifth of the asset cycle period).
         """
 
-        asset_amplitude = distribution.Symmetric(
+        asset_amplitude = rk.distribution.Symmetric(
             mean=params['asset_cycle_amplitude_mean'],
             residual=params['asset_cycle_amplitude_residual'],
             distribution_type=params['asset_cycle_amplitude_dist']
@@ -249,10 +251,10 @@ class Cyclicality:
             amplitude=asset_amplitude)
 
         space_waveform = self.space_cycle.asymmetric_sine(
-            index=index,
+            index=sequence,
             name='space_waveform',
             parameter=params['space_cycle_asymmetric_parameter'])
-        self.space_waveform = flux.Flow(
+        self.space_waveform = rk.flux.Flow(
             name=space_waveform.name,
             movements=(1 + space_waveform.movements),
             units=space_waveform.units)
@@ -268,7 +270,7 @@ class Cyclicality:
         """
 
         self.asset_waveform = self.asset_cycle.asymmetric_sine(
-            index=index,
+            index=sequence,
             name='asset_waveform',
             parameter=params['asset_cycle_asymmetric_parameter'])
         """
