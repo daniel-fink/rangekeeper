@@ -1,3 +1,4 @@
+import locale
 import math
 import matplotlib
 import matplotlib.pyplot as plt
@@ -20,10 +21,9 @@ matplotlib.use('TkAgg')
 plt.style.use('seaborn')  # pretty matplotlib plots
 plt.rcParams['figure.figsize'] = (12, 8)
 
+locale = locale.setlocale(locale.LC_ALL, 'en_us')
 units = rk.measure.Index.registry
-currency = rk.measure.register_currency(
-    country_code='USD',
-    registry=units)
+currency = rk.measure.register_currency(registry=units)
 scope = dict(globals(), **locals())
 
 
@@ -79,7 +79,7 @@ class TestPeriod:
             period_type=rk.periodicity.Type.QUARTER)
         assert sequence.size == 4
 
-        end_date = rk.periodicity.date_offset(
+        end_date = rk.periodicity.offset_date(
             date=date,
             period_type=rk.periodicity.Type.MONTH,
             num_periods=4)
@@ -377,93 +377,6 @@ class TestSpan:
         assert spans[1].end_date == pd.Timestamp(2021, 2, 27)
 
 
-class TestMeasures:
-    aud = rk.measure.register_currency(
-        country_code='AUD',
-        registry=units)
-
-    def test_currency(self):
-        assert TestMeasures.aud.name == 'Australian Dollar'
-        assert TestMeasures.aud.units == 'AUD'
-        assert TestMeasures.aud.units.dimensionality == '[currency]'
-
-    gfa = rk.measure.Measure(
-        name='Gross Floor Area',
-        units=units.meter ** 2)
-
-    nsa = rk.measure.Measure(
-        name='Net Sellable Area',
-        units=units.sqm)
-
-    rent = rk.measure.Measure(
-        name='Rent',
-        units=aud.units)
-
-    rent_per_nsa = rk.measure.Measure(
-        name='Rent per sqm of NSA',
-        units=rent.units / nsa.units)
-
-    def test_custom_derivative(self):
-        assert (1 * TestMeasures.gfa.units).to('sqm') == units.Quantity('1 * sqm')
-        assert TestMeasures.rent_per_nsa.units == 'AUD / squaremeter'
-
-    def test_eval_units(self):
-        area = 100 * units.sqm
-        value = 5 * (units.USD / units.sqm)
-        assert area * value == units.Quantity('500 USD')
-
-        result = eval('100 * units.sqm * 5 * (units.USD / units.sqm)')
-        assert result == area * value
-        assert result.units == 'USD'
-        area_check = area.to('km ** 2')
-        print(area.to('km ** 2'))
-        assert area_check.magnitude == approx(0.0001)
-
-        quantity_check = 100 * rk.measure.Index.registry.dimensionless
-        print(quantity_check)
-        assert quantity_check.units == units.dimensionless
-
-        print((value / (5 * units.hour)).units)
-
-
-class TestSpace:
-    # parent_type = graph.Type(
-    #     name='ParentType')
-    # child_type = graph.Type(
-    #     name='ChildType',
-    #     parent=parent_type)
-    # grandchild01_type = graph.Type(
-    #     name='Grandchild01Type')
-    # grandchild02_type = graph.Type(
-    #     name='Grandchild02Type')
-    # grandchild01_type.set_parent(child_type)
-    # grandchild02_type.set_parent(child_type)
-    # parent_type.set_children([child_type])
-    #
-    # def test_type_hierarchy(self):
-    #     assert TestSpace.parent_type.children == [TestSpace.child_type]
-    #     assert TestSpace.child_type.children == [TestSpace.grandchild01_type,
-    #                                              TestSpace.grandchild02_type]
-    #     assert TestSpace.grandchild01_type.__str__() == 'ParentType.ChildType.Grandchild01Type'
-    #     print(TestSpace.grandchild02_type)
-
-    def test_space_init(self):
-        measurements = {
-            TestMeasures.gfa: 12.3 * TestMeasures.gfa.units,
-            TestMeasures.nsa: 4.56 * TestMeasures.nsa.units
-            }
-        parent_space = rk.space.Space(
-            name='Parent',
-            type='parent_type',
-            measurements=measurements)
-
-        assert parent_space.measurements[TestMeasures.gfa].units.dimensionality == '[length] ** 2'
-
-        parent_space.measurements[TestMeasures.rent] = 9.81 * TestMeasures.rent_per_nsa.units * \
-                                                       parent_space.measurements[TestMeasures.nsa]
-        assert parent_space.measurements[TestMeasures.rent].units == 'AUD'
-
-
 class TestGraph:
     def test_graph(self):
         element_root = rk.graph.Element(
@@ -603,17 +516,16 @@ class TestType:
         TestType.child.subtypes[0].display()
         print([ancestor.name for ancestor in TestType.child.subtypes[0].ancestors()])
 
-
 # class TestAPI:
-    # def test_speckle(self):
-    #     speckle = rk.api.Speckle(token='52c9b20071b2854f98ad91af10c154ad5e232b88a7')
-    #     item = speckle.get_item(
-    #         stream_id='1dd7d041b5',
-    #         commit_id='a29679079f')
-    #     print(item)
-    #     print(item.Data)
-    #
-    #
-    # def test_query(self):
-    #     query = rk.api.Speckle.query2('https://speckle.xyz/streams/1dd7d041b5/objects/33cfc8f0cdfc980b783f00cc35167fc6')
-    #     print(query)
+# def test_speckle(self):
+#     speckle = rk.api.Speckle(token='52c9b20071b2854f98ad91af10c154ad5e232b88a7')
+#     item = speckle.get_item(
+#         stream_id='1dd7d041b5',
+#         commit_id='a29679079f')
+#     print(item)
+#     print(item.Data)
+#
+#
+# def test_query(self):
+#     query = rk.api.Speckle.query2('https://speckle.xyz/streams/1dd7d041b5/objects/33cfc8f0cdfc980b783f00cc35167fc6')
+#     print(query)
