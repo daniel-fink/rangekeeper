@@ -1,0 +1,30 @@
+Traceback (most recent call last):
+  File "/Users/danfink/Library/Caches/pypoetry/virtualenvs/rangekeeper-L7-q-mcx-py3.10/lib/python3.10/site-packages/jupyter_cache/executors/utils.py", line 58, in single_nb_execution
+    executenb(
+  File "/Users/danfink/Library/Caches/pypoetry/virtualenvs/rangekeeper-L7-q-mcx-py3.10/lib/python3.10/site-packages/nbclient/client.py", line 1305, in execute
+    return NotebookClient(nb=nb, resources=resources, km=km, **kwargs).execute()
+  File "/Users/danfink/Library/Caches/pypoetry/virtualenvs/rangekeeper-L7-q-mcx-py3.10/lib/python3.10/site-packages/jupyter_core/utils/__init__.py", line 166, in wrapped
+    return loop.run_until_complete(inner)
+  File "/Users/danfink/.pyenv/versions/3.10.4/lib/python3.10/asyncio/base_events.py", line 646, in run_until_complete
+    return future.result()
+  File "/Users/danfink/Library/Caches/pypoetry/virtualenvs/rangekeeper-L7-q-mcx-py3.10/lib/python3.10/site-packages/nbclient/client.py", line 705, in async_execute
+    await self.async_execute_cell(
+  File "/Users/danfink/Library/Caches/pypoetry/virtualenvs/rangekeeper-L7-q-mcx-py3.10/lib/python3.10/site-packages/nbclient/client.py", line 1058, in async_execute_cell
+    await self._check_raise_for_error(cell, cell_index, exec_reply)
+  File "/Users/danfink/Library/Caches/pypoetry/virtualenvs/rangekeeper-L7-q-mcx-py3.10/lib/python3.10/site-packages/nbclient/client.py", line 914, in _check_raise_for_error
+    raise CellExecutionError.from_cell_and_msg(cell, exec_reply_content)
+nbclient.exceptions.CellExecutionError: An error occurred while executing the following cell:
+------------------
+growth_rates = [market.trend.growth_rate for market in markets]
+growth_rates.describe()
+------------------
+
+
+[0;31m---------------------------------------------------------------------------[0m
+[0;31mAttributeError[0m                            Traceback (most recent call last)
+Cell [0;32mIn[25], line 2[0m
+[1;32m      1[0m growth_rates [38;5;241m=[39m [market[38;5;241m.[39mtrend[38;5;241m.[39mgrowth_rate [38;5;28;01mfor[39;00m market [38;5;129;01min[39;00m markets]
+[0;32m----> 2[0m [43mgrowth_rates[49m[38;5;241;43m.[39;49m[43mdescribe[49m()
+
+[0;31mAttributeError[0m: 'list' object has no attribute 'describe'
+
