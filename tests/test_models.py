@@ -5,11 +5,11 @@
 # and any function in a file that should be treated as a test must also start with 'test_'.
 
 import math
+import locale
 
 import matplotlib
 import matplotlib.pyplot as plt
 import pandas as pd
-import pint
 
 import rangekeeper as rk
 
@@ -17,10 +17,9 @@ matplotlib.use('TkAgg')
 plt.style.use('seaborn')  # pretty matplotlib plots
 plt.rcParams['figure.figsize'] = (12, 8)
 
+locale.setlocale(locale.LC_ALL, 'en_au')
 units = rk.measure.Index.registry
-currency = rk.measure.register_currency(
-    country_code='USD',
-    registry=units)
+currency = rk.measure.register_currency(registry=units)
 
 
 class TestLinear:

@@ -1,343 +1,660 @@
+from __future__ import annotations
+
 # Pytests file.
 # Note: gathers tests according to a naming convention.
 # By default any file that is to contain tests must be named starting with 'test_',
 # classes that hold tests must be named starting with 'Test',
 # and any function in a file that should be treated as a test must also start with 'test_'.
+import os
+import locale
+import multiprocess as mp
+from typing import List, Callable, Dict
 
 import matplotlib
 import matplotlib.pyplot as plt
 # In addition, in order to enable pytest to find all modules,
 # run tests via a 'python -m pytest tests/<test_file>.py' command from the root directory of this project
 import pandas as pd
+import numpy as np
+import scipy.stats as ss
+import pint
 
-import periodicity
 import rangekeeper as rk
-
-# try:
-#     import projection
-#     import distribution
-#     import flux
-#     import periodicity
-#     import span
-#     from dynamics import trend, volatility, cyclicality, market
-# except:
-#     import modules.rangekeeper.distribution
-#     import modules.rangekeeper.flux
-#     import modules.rangekeeper.periodicity
-#     import modules.rangekeeper.span
-#     from modules.rangekeeper.dynamics import trend, volatility, cyclicality, market
 
 matplotlib.use('TkAgg')
 plt.style.use('seaborn')  # pretty matplotlib plots
 plt.rcParams['figure.figsize'] = (12, 8)
+
+locale.setlocale(locale.LC_ALL, 'en_au')
+units = rk.measure.Index.registry
+currency = rk.measure.register_currency(registry=units)
+
+pint.set_application_registry(rk.measure.Index.registry)
+model_params = {
+    'start_date': pd.Timestamp('2001-01-01'),
+    'num_periods': 10,
+    'period_type': rk.periodicity.Type.YEAR,
+    'acquisition_cost': -1000 * currency.units,
+    'initial_income': 100 * currency.units,
+    'growth_rate': .02,
+    'vacancy_rate': 0.05,
+    'opex_pgi_ratio': 0.35,
+    'capex_pgi_ratio': 0.1,
+    'discount_rate': 0.07,
+    'exit_cap_rate': 0.05
+    }
+
+
+class ExAnteInflexibleModel:
+    def __init__(
+            self,
+            params: dict):
+        self.params = params
+        self.calc_span = rk.span.Span.from_num_periods(
+            name='Span to Calculate Reversion',
+            date=self.params['start_date'],
+            period_type=self.params['period_type'],
+            num_periods=self.params['num_periods'] + 1)
+        self.acq_span = rk.span.Span.from_num_periods(
+            name='Acquisition Span',
+            date=rk.periodicity.offset_date(
+                params['start_date'],
+                num_periods=-1,
+                period_type=self.params['period_type']),
+            period_type=self.params['period_type'],
+            num_periods=1)
+        self.span = self.calc_span.shift(
+            name='Span',
+            num_periods=-1,
+            period_type=self.params['period_type'],
+            bound='end')
+        self.reversion_span = self.span.shift(
+            name='Reversion Span',
+            num_periods=9,
+            period_type=self.params['period_type'],
+            bound='start')
+
+        self.acquisition = rk.flux.Flow.from_projection(
+            name='Acquisition',
+            value=self.params['acquisition_cost'],
+            proj=rk.projection.Distribution(
+                form=rk.distribution.Uniform(),
+                sequence=self.acq_span.to_index(period_type=self.params['period_type'])),
+            units=currency.units)
+
+        self.pgi = rk.flux.Flow.from_projection(
+            name='Potential Gross Income',
+            value=self.params['initial_income'],
+            proj=rk.projection.Extrapolation(
+                form=rk.extrapolation.Compounding(
+                    rate=self.params['growth_rate']),
+                sequence=self.calc_span.to_index(period_type=self.params['period_type'])),
+            units=currency.units)
+
+        self.vacancy = rk.flux.Flow(
+            name='Vacancy Allowance',
+            movements=self.pgi.movements * -params['vacancy_rate'],
+            units=currency.units)
+        self.egi = rk.flux.Stream(
+            name='Effective Gross Income',
+            flows=[self.pgi, self.vacancy],
+            period_type=self.params['period_type']).sum()
+        self.opex = rk.flux.Flow(
+            name='Operating Expenses',
+            movements=self.pgi.movements * params['opex_pgi_ratio'],
+            units=currency.units).invert()
+        self.noi = rk.flux.Stream(
+            name='Net Operating Income',
+            flows=[self.egi, self.opex],
+            period_type=self.params['period_type']).sum()
+        self.capex = rk.flux.Flow(
+            name='Capital Expenditures',
+            movements=self.pgi.movements * params['capex_pgi_ratio'],
+            units=currency.units).invert()
+        self.net_cfs = rk.flux.Stream(
+            name='Net Annual Cashflows',
+            flows=[self.noi, self.capex],
+            period_type=self.params['period_type']).sum()
+
+        self.reversions = rk.flux.Flow(
+            name='Reversions',
+            movements=self.net_cfs.movements.shift(periods=-1).dropna() / params['exit_cap_rate'],
+            units=currency.units).trim_to_span(span=self.span)
+        self.net_cfs = self.net_cfs.trim_to_span(span=self.span)
+
+        self.pbtcfs = rk.flux.Stream(
+            name='PBTCFs',
+            flows=[
+                self.net_cfs.trim_to_span(span=self.span),
+                self.reversions.trim_to_span(span=self.reversion_span)
+                ],
+            period_type=self.params['period_type'])
+
+        pvs = []
+        irrs = []
+        for period in self.net_cfs.movements.index:
+            cumulative_net_cfs = self.net_cfs.trim_to_span(
+                span=rk.span.Span(
+                    name='Cumulative Net Cashflow Span',
+                    start_date=self.params['start_date'],
+                    end_date=period))
+            reversion = rk.flux.Flow(
+                movements=self.reversions.movements.loc[[period]],
+                units=currency.units)
+            cumulative_net_cfs_with_rev = rk.flux.Stream(
+                name='Net Cashflow with Reversion',
+                flows=[cumulative_net_cfs, reversion],
+                period_type=self.params['period_type'])
+            pv = cumulative_net_cfs_with_rev.sum().pv(
+                name='Present Value',
+                period_type=self.params['period_type'],
+                discount_rate=self.params['discount_rate'])
+            pvs.append(pv.collapse().movements)
+
+            incl_acq = rk.flux.Stream(
+                name='Net Cashflow with Reversion and Acquisition',
+                flows=[cumulative_net_cfs_with_rev.sum(), self.acquisition],
+                period_type=self.params['period_type'])
+
+            irrs.append(round(incl_acq.sum().xirr(), 4))
+
+        self.pvs = rk.flux.Flow(
+            name='Present Values',
+            movements=pd.concat(pvs),
+            units=currency.units)
+        self.irrs = rk.flux.Flow(
+            name='Internal Rates of Return',
+            movements=pd.Series(irrs, index=self.pvs.movements.index),
+            units=None)
+
+
+class ExPostInflexibleModel:
+    def __init__(self):
+        pass
+
+    def set_params(self, params: dict):
+        self.params = params
+
+    def set_market(self, market: rk.dynamics.market.Market):
+        self.market = market
+
+    def set_spans(self):
+        self.calc_span = rk.span.Span.from_num_periods(
+            name='Span to Calculate Reversion',
+            date=self.params['start_date'],
+            period_type=self.params['period_type'],
+            num_periods=self.params['num_periods'] + 1)
+        self.acq_span = rk.span.Span.from_num_periods(
+            name='Acquisition Span',
+            date=rk.periodicity.offset_date(
+                self.params['start_date'],
+                num_periods=-1,
+                period_type=self.params['period_type']),
+            period_type=self.params['period_type'],
+            num_periods=1)
+        self.span = self.calc_span.shift(
+            name='Span',
+            num_periods=-1,
+            period_type=self.params['period_type'],
+            bound='end')
+        self.reversion_span = self.span.shift(
+            name='Reversion Span',
+            num_periods=self.params['num_periods'] - 1,
+            period_type=self.params['period_type'],
+            bound='start')
+
+    def set_flows(self):
+        self.acquisition = rk.flux.Flow.from_projection(
+            name='Acquisition',
+            value=self.params['acquisition_cost'],
+            proj=rk.projection.Distribution(
+                form=rk.distribution.Uniform(),
+                sequence=self.acq_span.to_index(period_type=self.params['period_type'])),
+            units=currency.units)
+
+        pgi = rk.flux.Flow.from_projection(
+            name='Potential Gross Income',
+            value=self.params['initial_income'],
+            proj=rk.projection.Extrapolation(
+                form=rk.extrapolation.Compounding(
+                    rate=self.params['growth_rate']),
+                sequence=self.calc_span.to_index(period_type=self.params['period_type'])),
+            units=currency.units)
+
+        self.pgi = rk.flux.Stream(
+            name='Potential Gross Income',
+            flows=[
+                pgi,
+                self.market.space_market_price_factors
+                ],
+            period_type=self.params['period_type']
+            ).product(registry=rk.measure.Index.registry)
+
+        self.vacancy = rk.flux.Flow(
+            name='Vacancy Allowance',
+            movements=self.pgi.movements * -self.params['vacancy_rate'],
+            units=currency.units)
+        self.egi = rk.flux.Stream(
+            name='Effective Gross Income',
+            flows=[self.pgi, self.vacancy],
+            period_type=self.params['period_type']).sum()
+        self.opex = rk.flux.Flow(
+            name='Operating Expenses',
+            movements=self.pgi.movements * self.params['opex_pgi_ratio'],
+            units=currency.units).invert()
+        self.noi = rk.flux.Stream(
+            name='Net Operating Income',
+            flows=[self.egi, self.opex],
+            period_type=self.params['period_type']).sum()
+        self.capex = rk.flux.Flow(
+            name='Capital Expenditures',
+            movements=self.pgi.movements * self.params['capex_pgi_ratio'],
+            units=currency.units).invert()
+        self.net_cfs = rk.flux.Stream(
+            name='Net Annual Cashflows',
+            flows=[self.noi, self.capex],
+            period_type=self.params['period_type']).sum()
+
+        self.reversions = rk.flux.Flow(
+            name='Reversions',
+            movements=self.net_cfs.movements.shift(periods=-1).dropna() /
+                      self.market.implied_rev_cap_rate.movements,
+            units=currency.units).trim_to_span(span=self.span)
+        self.net_cfs = self.net_cfs.trim_to_span(span=self.span)
+
+        self.pbtcfs = rk.flux.Stream(
+            name='PBTCFs',
+            flows=[
+                self.net_cfs.trim_to_span(span=self.span),
+                self.reversions.trim_to_span(span=self.reversion_span)
+                ],
+            period_type=self.params['period_type'])
+
+    def set_metrics(self):
+        pvs = []
+        irrs = []
+        for period in self.net_cfs.movements.index:
+            cumulative_net_cfs = self.net_cfs.trim_to_span(
+                span=rk.span.Span(
+                    name='Cumulative Net Cashflow Span',
+                    start_date=self.params['start_date'],
+                    end_date=period))
+            reversion = rk.flux.Flow(
+                movements=self.reversions.movements.loc[[period]],
+                units=currency.units)
+            cumulative_net_cfs_with_rev = rk.flux.Stream(
+                name='Net Cashflow with Reversion',
+                flows=[cumulative_net_cfs, reversion],
+                period_type=self.params['period_type'])
+            pv = cumulative_net_cfs_with_rev.sum().pv(
+                name='Present Value',
+                period_type=self.params['period_type'],
+                discount_rate=self.params['discount_rate'])
+            pvs.append(pv.collapse().movements)
+
+            incl_acq = rk.flux.Stream(
+                name='Net Cashflow with Reversion and Acquisition',
+                flows=[cumulative_net_cfs_with_rev.sum(), self.acquisition],
+                period_type=self.params['period_type'])
+
+            irrs.append(round(incl_acq.sum().xirr(), 4))
+
+        self.pvs = rk.flux.Flow(
+            name='Present Values',
+            movements=pd.concat(pvs),
+            units=currency.units)
+        self.irrs = rk.flux.Flow(
+            name='Internal Rates of Return',
+            movements=pd.Series(irrs, index=self.pvs.movements.index),
+            units=None)
+
+    def generate(self):
+        self.set_spans()
+        self.set_flows()
+        self.set_metrics()
+
+    @classmethod
+    def _from_args(
+            cls,
+            args: tuple) -> ExPostInflexibleModel:
+        params, market = args
+        model = cls()
+        model.set_params(params=params)
+        model.set_market(market=market)
+        model.generate()
+        return model
+
+    @classmethod
+    def from_markets(
+            cls,
+            params: dict,
+            markets: [rk.dynamics.market.Market]):
+        # print('Starting multiprocessing...\n')
+        # print(f'Number of markets: {len(markets)}\n')
+
+        pool = mp.Pool(os.cpu_count())
+        # print('Initiated Multiprocessing Pool...\n')
+
+        args = [(params, market) for market in markets]
+        # print('Created args...\n')
+        # print(f'Number of args: {len(args)}\n')
+
+        result = pool.map(ExPostInflexibleModel._from_args, args)
+        # print('Created result...\n')
+
+        return result
+
+        # while not result.ready():
+        #     time.sleep(1)
+        #     print('Waiting for results...\n')
+        # if result.successful():
+        #     return result
+        # else:
+        #     print('Error in multiprocessing: ')
+        # return result.get()
 
 
 class TestDynamics:
     period_type = rk.periodicity.Type.YEAR
     span = rk.span.Span.from_num_periods(
         name="Span",
-        date=pd.Timestamp(2021, 1, 1),
+        date=pd.Timestamp(2000, 1, 1),
         period_type=period_type,
         num_periods=25)
     sequence = span.to_index(period_type=period_type)
-    trend_params = {
-        # Rent Yield:
-        # This governs the base rental (net income) value as a fraction of asset value.
-        # To normalize the values by giving them a "base" value of 1.00,
-        # we have set this equal to the cap rate (net income yield) times the initial price factor above.
-        # This will give a base asset value of 1.00 if the initial price factor is 1.00.
-        #
-        # Initial Price Factor:
-        # This will govern the central tendency or deterministic component of the initial rent value.
-        'initial_price_factor': 1.,
-        'rent_mean': .05,
-        'rent_residual': .005,
 
-        # Growth Trend Relative to Proforma:
-        # Normally this should be zero. But to adjust for convexity effects on
-        # average cash flow levels for comparison across different price
-        # dynamics inputs assumptions, you may need to adjust this trend.
-        # For example, a symmetric cap rate cycle will impart a positive bias
-        # into the simulated future cash flows relative to the proforma,
-        # while Black Swans and cycle span or other inputs may impart a negative bias.
-        # Enter a relative trend rate here to counteract such bias
-        # (under the assumption that the proforma is unbiased).
-        # Check the t-stat in column K to see if the resulting comparison
-        # of NPV (without flexibility) relative to the proforma is statistically insignificant.
-        # If you're not comparing across different price dynamics, then you can just leave this input at zero.
-        # That is, if you're just comparing flexible vs inflexible, any bias will cancel out.
-
-        # This will govern the central tendency of the long-run growth rate
-        # trend that will apply over the entire scenario.
-        # As Pricing Factors are only RELATIVE TO the Base Case pro-forma
-        # which should contain any realistic expected growth, the default value
-        # input here should normally be zero. However, you should check to
-        # see if there is a convexity bias that needs to be corrected with this trend input.
-        'trend_mean': 0.,
-        'trend_residual': .005,
-        }
-    market_proj = rk.extrapolation.Compounding(
-        rate=rk.distribution.PERT(
-            peak=trend_params['trend_mean'],
-            minimum=trend_params['trend_mean'] - trend_params['trend_residual'],
-            maximum=trend_params['trend_mean'] + trend_params['trend_residual']).sample())
-    initial_rent = rk.distribution.PERT(
-        peak=trend_params['rent_mean'],
-        minimum=trend_params['rent_mean'] - trend_params['rent_residual'],
-        maximum=trend_params['rent_mean'] + trend_params['rent_residual']).sample()
-    market_trend = rk.flux.Flow.from_projection(
-        value=initial_rent,
-        proj=rk.projection.Extrapolation(
-            form=market_proj,
-            sequence=sequence))
-
-    # market_trend = rk.dynamics.trend.Trend(
-    #     span=span,
-    #     period_type=period_type,
-    #     params=trend_params)
-
-    # def test_trend(self):
-    #     TestDynamics.market_trend.trend.display()
-
-    volatility_params = {
-        # Volatility:
-        # "Volatility" refers to the standard deviation across time (longitudinal dispersion),
-        # in the changes or returns (differences from one period to the next).
-        # Volatility "accumulates" in the sense that the realization of the change in one period
-        # becomes embedded in the level (of rents) going forward into the next period,
-        # whose change is then added on top of the previous level (of rents).
-        # The volatility realizations tracked in this column apply only to the "innovations" in the rent level.
-        # If there is autoregression (next columns) then that will also affect
-        # the annual volatility in the rent changes.
-        'volatility_per_period': .08,
-
-        # Autoregressive Returns:
-        # This reflects the inertia in the price movements.
-        # This value indicates the degree of inertia for the relevant market.
-        # This is the autoregression parameter,
-        # which indicates what proportion of the previous period's return (price change)
-        # will automatically become a component of the current period's return (price change).
-        # In most real estate markets this would typically be a positive fraction,
-        # perhaps in the range +0.1 to +0.5.
-        # In more liquid and informationally efficient asset markets such as stock markets
-        # you might leave this at zero (no inertia).
-        # A "noisy" market would have a negative autoregression parameter,
-        # however, we deal with noise separately.
-        'autoregression_param': .2,
-
-        # Mean Reversion
-        # This parameter determines the strength (or speed) of the mean reversion tendency in the price levels.
-        # It is the proportion of the previous period's difference of the price level
-        # from the long-term trend price level that will be eliminated in the current price level.
-        # This parameter should be between zero and 1, probably not very close to 1.
-        # For example, if the previous price level were 1.0, and the long-term trend price level for that period were 1.2,
-        # and if the mean reversion parameter were 0.5,
-        # then 0.5*(1.2-1.0) = 0.10 will be added to this period's price level.
-        'mean_reversion_param': .3,
-        }
-    market_volatility = rk.dynamics.volatility.Volatility(
-        trend=market_proj,
-        initial_rent=initial_rent,
+    cap_rate = .05
+    growth_rate = -0.002537905
+    initial_value = 0.050747414
+    trend = rk.dynamics.trend.Trend(
         sequence=sequence,
-        params=volatility_params)
+        cap_rate=cap_rate,
+        initial_value=initial_value,
+        growth_rate=growth_rate)
 
-    volatility_frame = rk.flux.Stream(
-        name="Volatility",
-        flows=[
-            market_trend,
-            market_volatility.volatility,
-            market_volatility.autoregressive_returns,
-            market_volatility.cumulative_volatility],
-        period_type=period_type)
+    def test_trend(self):
+        assert TestDynamics.trend.initial_price_factor == 1.
+        TestDynamics.trend.display(decimals=8)
+
+    volatility_per_period = .1
+    autoregression_param = .2
+    mean_reversion_param = .3
+
+    volatility = rk.dynamics.volatility.Volatility(
+        sequence=sequence,
+        trend=trend,
+        volatility_per_period=volatility_per_period,
+        autoregression_param=autoregression_param,
+        mean_reversion_param=mean_reversion_param)
 
     def test_volatility(self):
-        # # dynamics.volatility.display()
-        # # dynamics.autoregressive_returns.display()
-        #
-        # # print(type(dynamics.volatility.movements.index))
-        #
-        # dynamics.volatility.display()
-        # dynamics.autoregressive_returns.display()
-        # dynamics.cumulative_volatility.display()
-        # dynamics.cumulative_volatility.movements.plot()
-        # TestDynamics.market_volatility.volatility.display()# dynamics.cumulative_volatility.movements.plot(kind='bar')
-        print(TestDynamics.volatility_frame.start_date)
-        print(TestDynamics.volatility_frame.end_date)
+        TestDynamics.volatility.autoregressive_returns.display(decimals=8)
+        TestDynamics.volatility.volatility.display(decimals=8)
 
-        plot = rk.flux.Stream(
-            name='Plot',
-            flows=[
-                TestDynamics.market_volatility.cumulative_volatility,
-                TestDynamics.market_trend],
-            period_type=TestDynamics.period_type).plot()
+    space_cycle_period = 15.1
+    space_cycle_phase = 14.3
+    space_cycle_amplitude = .5
+    asset_cycle_period = 16.1
+    asset_cycle_phase = 15.6
+    asset_cycle_amplitude = .02
+    space_cycle_asymmetric_parameter = .7
+    asset_cycle_asymmetric_parameter = .7
 
-        # print(dynamics.volatility_frame.frame)
-        TestDynamics.volatility_frame.display()
-
-    cyclicality_params = {
-        # In the U.S. the real estate market cycle seems to
-        # be in the range of 10 to 20 years.
-        # This will randomly generate the cycle period governing
-        # each future history to be between 10 and 20 years.
-        'space_cycle_period_mean': 15.,
-        'space_cycle_period_residual': 5.,
-        'space_cycle_period_dist': rk.distribution.Type.UNIFORM,
-
-        # If you make this equal to a uniform random variable times the rent cycle period
-        # then the span will range from starting anywhere from peak to trough with equal likelihood.
-        # E.g.:
-        # 'rent_cycle_span_mean' = distribution.Uniform().sample() * rent_cycle_period_avg,
-        #
-        # If you think you know where you are in the cycle, then use this relationship of Span to Cycle Period:
-        # Span=:             Cycle:
-        # (1/4)Period   = Bottom of cycle, headed up.
-        # (1/2)Period   = Mid-cycle, headed down.
-        # (3/4)Period   = Top of cycle, headed down.
-        # (1/1)Period   = Mid-cycle, headed up.
-        #
-        # Example, if you enter 20 in cycle period, and you enter 5 in cycle span,
-        # then the cycle will be starting out in the first year at the bottom of the cycle, heading up from there.
-        #
-        # Please note that with the compound-sine asymetric cycle formula,
-        # the peak parameter is slightly off from the above; 0.65*Period seems to start the cycle closer to the peak.
-        # For example, if you want the span to vary randomly and uniformly over the 1/8 of the cycle
-        # that is the top of the upswing (late boom just before downturn),
-        # you would enter: .175 * distribution.Uniform().sample() +.65 * rent_cycle_period_avg
-        'space_cycle_span_offset': .175,
-        'space_cycle_span_residual': .05,
-        'space_cycle_span_dist': rk.distribution.Type.PERT,
-
-        'space_cycle_amplitude_mean': .15,
-        'space_cycle_amplitude_residual': .025,
-        'space_cycle_amplitude_dist': rk.distribution.Type.UNIFORM,
-
-        # The Cap Rate period can be randomly different from rent cycle period,
-        # but probably not too different, maybe +/- 1 year.
-        'asset_cycle_period_offset': 0.,
-        'asset_cycle_period_residual': 1.,
-        'asset_cycle_period_dist': rk.distribution.Type.UNIFORM,
-
-        # This cap rate cycle input is the negative of the actual cap rate cycle,
-        # you can think of the span in the same way as the space market span.
-        # These two cycles are not generally exactly in sync, but the usually are not too far off.
-        # Hence, probably makes sense to set this asset market span equal to the space market span
-        # +/- some random difference that is a pretty small fraction of the cycle period.
-        # Remember that peak-to-trough is half period, LR mean to either peak or trough is quarter period.
-        # E.g.: rent_cycle_span + (distribution.Uniform().sample() * cap_rate_cycle_period/5) - cap_rate_cycle_period/10
-        # Above would let asset span differ from space span by +/- a bit less than a quarter-period (here, a fifth of the asset cycle period).
-        'asset_cycle_span_offset': 0.,
-        'asset_cycle_span_residual': .2,
-        'asset_cycle_span_dist': rk.distribution.Type.UNIFORM,
-
-        # This is in cap rate units, so keep in mind the magnitude of the initial cap rate
-        # entered on the MktDynamicsInputs sheet.
-        # For example, if the initial (base) cap rate entered there is 5.00%,
-        # and you enter 2.00% here, then this will mean a cap rate cycle
-        # swinging between 4.00% & 6.00%, which corresponds roughly to
-        # a property value swing of +/-20% (other things equal).
-        # Note also that because this cycle is symmetric
-        # but operates in the denominator of the pricing factors governing the simulated future cash flows,
-        # this cycle imparts a positive bias into the project ex post cash flows
-        # relative to the proforma expected cash flows.
-        'asset_cycle_amplitude_mean': .01,
-        'asset_cycle_amplitude_residual': .0015,
-        'asset_cycle_amplitude_dist': rk.distribution.Type.PERT,
-
-        'space_cycle_asymmetric_parameter': .5,
-        'asset_cycle_asymmetric_parameter': .5
-        }
-
-    market_cyclicality = rk.dynamics.cyclicality.Cyclicality(
-        params=cyclicality_params,
-        sequence=sequence)
+    cyclicality = rk.dynamics.cyclicality.Cyclicality.from_params(
+        sequence=sequence,
+        space_cycle_period=space_cycle_period,
+        space_cycle_phase=space_cycle_phase,
+        space_cycle_amplitude=space_cycle_amplitude,
+        asset_cycle_period=asset_cycle_period,
+        asset_cycle_phase=asset_cycle_phase,
+        asset_cycle_amplitude=asset_cycle_amplitude,
+        space_cycle_asymmetric_parameter=space_cycle_asymmetric_parameter,
+        asset_cycle_asymmetric_parameter=asset_cycle_asymmetric_parameter)
 
     def test_cyclicality(self):
-        test_cycle = rk.dynamics.cyclicality.Cycle(
-            period=25,
-            span=12.5,
-            amplitude=1.)
-
-        cycles = []
-        lim = 25
-        for i in range(1, lim):
-            param = i / lim
-            asymmetric_cycle = test_cycle.asymmetric_sine(
-                parameter=param,
-                index=TestDynamics.sequence,
-                name='parameter_' + str(param))
-            cycles.append(asymmetric_cycle)
-
-        asymmetric_cycle_plot = rk.flux.Stream(
-            name='asymmetric_cycle_plot',
-            flows=cycles,
-            period_type=TestDynamics.period_type)
-        asymmetric_cycle_plot.plot()
-
-        print("\nSpace Cycle:")
-        print(TestDynamics.market_cyclicality.space_cycle)
-
-        print("\nAsset Cycle:")
-        print(TestDynamics.market_cyclicality.asset_cycle)
-
         rk.flux.Stream(
-            name="Plot",
-            flows=[TestDynamics.market_cyclicality.space_waveform,
-                   TestDynamics.market_cyclicality.asset_waveform],
+            name="Cycles",
+            flows=[
+                TestDynamics.cyclicality.space_waveform,
+                TestDynamics.cyclicality.asset_waveform
+                ],
             period_type=TestDynamics.period_type).plot(
             flows={
-                'space_waveform': (0., 1.4),
-                'asset_waveform': (-0.015, 0.015)
+                'Space Cycle Waveform': (0, 1.6),
+                'Asset Cycle Waveform': (-.025, .025)
                 })
 
-        plt.show(block=True)
+    noise_residual = .05
+    noise_dist = rk.distribution.Symmetric(
+        type=rk.distribution.Type.TRIANGULAR,
+        mean=0.,
+        residual=noise_residual)
 
-    market_params = {
-        'noise_residual': .015,
-        'cap_rate': trend_params['rent_mean'], #TODO: Need to check if this is correct!
-        'black_swan_likelihood': .05,
-        'black_swan_dissipation_rate': volatility_params['mean_reversion_param'],
-        'black_swan_impact': rk.distribution.PERT(
-            peak=-.3,
-            weighting=4.,
-            minimum=-.4,
-            maximum=-.2).sample(),
-        'black_swan_prob_dist': rk.distribution.Uniform()
-        }
-    market_dynamics = rk.dynamics.market.Market(
+    noise = rk.dynamics.noise.Noise(
         sequence=sequence,
-        initial_rent=initial_rent,
-        trend=market_proj,
-        volatility_params=volatility_params,
-        cyclicality_params=cyclicality_params,
-        market_params=market_params)
+        noise_dist=noise_dist)
+
+    def test_noise(self):
+        print(TestDynamics.sequence.size)
+        TestDynamics.noise.generate().display(decimals=8)
+
+    black_swan_likelihood = .05
+    black_swan_diss_rate = mean_reversion_param
+    black_swan_probability = rk.distribution.Uniform()
+    black_swan_impact = -.25
+    black_swan = rk.dynamics.black_swan.BlackSwan(
+        sequence=sequence,
+        likelihood=black_swan_likelihood,
+        dissipation_rate=black_swan_diss_rate,
+        probability=black_swan_probability,
+        impact=black_swan_impact)
+
+    def test_black_swan(self):
+        TestDynamics.black_swan.generate().display(decimals=8)
+
+    market = rk.dynamics.market.Market(
+        sequence=sequence,
+        trend=trend,
+        volatility=volatility,
+        cyclicality=cyclicality,
+        noise=noise,
+        black_swan=black_swan)
 
     def test_market(self):
-        market = rk.flux.Stream(
+        stream = rk.flux.Stream(
             name="Market",
             flows=[
-                TestDynamics.market_trend,
-                TestDynamics.market_volatility.cumulative_volatility,
-                TestDynamics.market_dynamics.space_market,
-                TestDynamics.market_dynamics.asset_true_value,
-                TestDynamics.market_dynamics.noisy_value,
-                TestDynamics.market_dynamics.historical_value],
-            period_type=TestDynamics.period_type)
-        market.plot(
+                TestDynamics.market.trend,
+                TestDynamics.market.volatility,
+                TestDynamics.market.space_market,
+                TestDynamics.market.asset_true_value,
+                TestDynamics.market.noisy_value,
+                TestDynamics.market.historical_value],
+            period_type=TestDynamics.period_type).plot(
             flows={
-                'Trend': (0., .08),
-                'Cumulative Volatility': (0., .08),
-                'Space Market': (0., .08),
-                'Asset True Value': (0., 2.),
-                'Noisy Value': (0., 2.),
-                'Historical Value': (0., 2.)
+                'Market Trend': (0., .09),
+                'Cumulative Volatility': (0., .09),
+                'Space Market': (0., .09),
+                'Asset True Value': (0., 3.5),
+                'Noisy Value': (0., 3.5),
+                'Historical Value': (0., 3.5)
                 })
 
-        # TestDynamics.market_dynamics.asset_true_value.display()
-        # TestDynamics.market_dynamics.noisy_value.display()
-        market.display()
-        TestDynamics.market_dynamics.implied_cap_rate.display()
-        # foo = TestDynamics.market_dynamics.space_market.movements[1:].reset_index()
-        # bar = TestDynamics.market_dynamics.historical_value.movements[:-1].reset_index()
-        # market.display()
+    iterations = 100
+    growth_rate_dist = rk.distribution.Symmetric(
+        type=rk.distribution.Type.TRIANGULAR,
+        mean=-.0005,
+        residual=.005)
+    initial_value_dist = rk.distribution.Symmetric(
+        type=rk.distribution.Type.TRIANGULAR,
+        mean=.05,
+        residual=.005)
 
-        plt.show(block=True)
+    trends = rk.dynamics.trend.Trend.from_likelihoods(
+        sequence=sequence,
+        cap_rate=cap_rate,
+        growth_rate_dist=growth_rate_dist,
+        initial_value_dist=initial_value_dist,
+        iterations=iterations)
+    volatilities = rk.dynamics.volatility.Volatility.from_trends(
+        sequence=sequence,
+        trends=trends,
+        volatility_per_period=volatility_per_period,
+        autoregression_param=autoregression_param,
+        mean_reversion_param=mean_reversion_param)
+    cyclicalities = rk.dynamics.cyclicality.Cyclicality.from_likelihoods(
+        sequence=sequence,
+        space_cycle_phase_prop_dist=rk.distribution.Uniform(),
+        space_cycle_period_dist=rk.distribution.Symmetric(
+            type=rk.distribution.Type.UNIFORM,
+            mean=15,
+            residual=5),
+        space_cycle_height_dist=rk.distribution.Symmetric(
+            type=rk.distribution.Type.UNIFORM,
+            mean=.5,
+            residual=0),
+        asset_cycle_phase_prop_dist=rk.distribution.Symmetric(
+            type=rk.distribution.Type.UNIFORM,
+            mean=0,
+            residual=.2),
+        asset_cycle_period_diff_dist=rk.distribution.Symmetric(
+            type=rk.distribution.Type.UNIFORM,
+            mean=0,
+            residual=1),
+        asset_cycle_amplitude_dist=rk.distribution.Symmetric(
+            type=rk.distribution.Type.UNIFORM,
+            mean=.02,
+            residual=0.),
+        space_cycle_asymmetric_parameter_dist=rk.distribution.Symmetric(
+            type=rk.distribution.Type.UNIFORM,
+            mean=.75,
+            residual=0.),
+        asset_cycle_asymmetric_parameter_dist=rk.distribution.Symmetric(
+            type=rk.distribution.Type.UNIFORM,
+            mean=.75,
+            residual=0.),
+        iterations=iterations)
+    noise = rk.dynamics.noise.Noise(
+        sequence=sequence,
+        noise_dist=rk.distribution.Symmetric(
+            type=rk.distribution.Type.TRIANGULAR,
+            mean=0.,
+            residual=.1))
+    black_swan = rk.dynamics.black_swan.BlackSwan(
+        sequence=sequence,
+        likelihood=.05,
+        dissipation_rate=mean_reversion_param,
+        probability=rk.distribution.Uniform(),
+        impact=-.25)
+    markets = rk.dynamics.market.Market.from_likelihoods(
+        sequence=sequence,
+        trends=trends,
+        volatilities=volatilities,
+        cyclicalities=cyclicalities,
+        noise=noise,
+        black_swan=black_swan)
+
+    def test_likelihoods(self):
+        assert len(TestDynamics.trends) == TestDynamics.iterations
+        print(
+            'Avg Growth Rate: {}'.format(np.mean([market.trend.growth_rate for market in TestDynamics.markets]) * 100))
+        print('Max Growth Rate: {}'.format(np.max([market.trend.growth_rate for market in TestDynamics.markets]) * 100))
+        print('Min Growth Rate: {}'.format(np.min([market.trend.growth_rate for market in TestDynamics.markets]) * 100))
+
+    def test_statistics(self):
+        exanteinflex_model = ExAnteInflexibleModel(
+            params=model_params)
+
+        expostinflex_models = ExPostInflexibleModel.from_markets(
+            params=model_params,
+            markets=TestDynamics.markets)
+
+        assert len(expostinflex_models) == TestDynamics.iterations
+        print(len(expostinflex_models))
+
+        inflex_diffs = np.array(
+            [(expostinflex_model.pvs.movements[-1] - exanteinflex_model.pvs.movements[-1])
+             for expostinflex_model
+             in expostinflex_models])
+        print('Inflex Stats: \n')
+        print('Inflex Diffs Mean: {}'.format(np.mean(inflex_diffs)))
+        print('Inflex Diffs Std: {}'.format(np.std(inflex_diffs)))
+        print('Inflex Diffs Max: {}'.format(np.max(inflex_diffs)))
+        print('Inflex Diffs Min: {}'.format(np.min(inflex_diffs)))
+        print('Inflex Diffs Median: {}'.format(np.median(inflex_diffs)))
+        print('Inflex Diffs Skew: {}'.format(ss.skew(inflex_diffs)))
+        print('Inflex Diffs Kurtosis: {}'.format(ss.kurtosis(inflex_diffs)))
+        print('Inflex Diffs t-stat: {}'.format(
+            np.mean(inflex_diffs) /
+            (np.std(inflex_diffs) / np.sqrt(len(inflex_diffs)))
+            ))
+        print('Inflex Diffs t-stat from scipy: {}'.format(
+            ss.ttest_1samp(inflex_diffs, 0)))
+
+    def test_dynamic_modelling(self):
+        model = ExPostInflexibleModel()
+        model.set_params(model_params)
+        model.set_market(TestDynamics.market)
+        model.generate()
+
+        print(type(model))
+        print(model.params)
+        print(model.irrs)
+
+        new_params = model_params.copy()
+        new_params['num_periods'] = 4
+        model.set_params(new_params)
+        model.generate()
+        print(model.params)
+        print(model.irrs)
+
+    def test_policy(self):
+        # flexible_params = model_params.copy()
+        # flexible_params['num_periods'] = 25
+
+        model = ExPostInflexibleModel()
+        model.set_params(model_params)
+        model.set_market(TestDynamics.market)
+        # model.generate()
+
+        def exceed_pricing_factor(state: rk.flux.Flow) -> [bool]:
+            threshold = 1.5
+            result = []
+            for i in range(state.movements.index.size):
+                if any(result):
+                    result.append(False)
+                else:
+                    if state.movements[i] > threshold:
+                        result.append(True)
+                    else:
+                        result.append(False)
+            return result
+
+        def adjust_hold_period(
+                model: object,
+                decisions: List[bool]) -> object:
+            if len(decisions) != model.market.sequence.size:
+                raise ValueError(
+                    'Count of Decisions (outcomes of condition tests) must equal count of model periods. Decisions: {0}; Model Periods: {1}'.format(
+                        len(decisions), model.reversions.movements.size))
+            else:
+                try:
+                    idx = decisions.index(True)
+                except ValueError:
+                    idx = len(decisions)
+                policy_params = model.params.copy()
+                policy_params['num_periods'] = idx
+
+                model.set_params(policy_params)
+                model.generate()
+                return model
+
+        policy = rk.policy.Policy(
+            state=model.market.space_market_price_factors,
+            model=model,
+            condition=exceed_pricing_factor,
+            action=adjust_hold_period)
+
+        result = policy.execute()
+        print(result.irrs)
+        # action=action)

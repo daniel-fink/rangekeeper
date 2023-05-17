@@ -62,7 +62,7 @@ class TestProjection:
             form=rk.extrapolation.Compounding(rate=0.05),
             sequence=sequence,
             bounds=(pd.Period(value='1999-01'), pd.Period(value='2003-01')),
-            padding=(rk.projection.Padding.unitize, rk.projection.Padding.extend))
+            padding=(rk.projection.Padding.UNITIZE, rk.projection.Padding.EXTEND))
 
         factors = extrapolation_padding.terms()
 
