@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Optional
 from decimal import Decimal
 from pint import Quantity
 
@@ -32,8 +32,8 @@ class Apartment(Space):
             name: str,
             type: str,
             num_bed: int,
-            num_bath: Decimal,
-            num_balcony: int,
+            num_bath: Union[int, Decimal],
+            num_balcony: Optional[int] = None,
             measurements: Dict[rk.measure.Measure, Quantity] = None,
             attributes: Dict = None):
         super().__init__(name, type, measurements, attributes)

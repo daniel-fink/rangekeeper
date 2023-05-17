@@ -39,7 +39,7 @@
 #
 #         self.operation_span = Span.from_num_periods(
 #             name='Operation',
-#             start_date=Periodicity.date_offset(
+#             start_date=Periodicity.offset_date(
 #                 date=self.acquisition_span.end_date,
 #                 period_type=Periodicity.Type.day,
 #                 num_periods=1),
@@ -48,7 +48,7 @@
 #
 #         self.disposition_span = Span.from_num_periods(
 #             name='Disposition',
-#             start_date=Periodicity.date_offset(
+#             start_date=Periodicity.offset_date(
 #                 date=self.acquisition_span.start_date,
 #                 period_type=Periodicity.Type.year,
 #                 num_periods=params['num_periods']),
@@ -57,7 +57,7 @@
 #
 #         self.projection_span = Span.from_num_periods(
 #             name='Projection',
-#             start_date=Periodicity.date_offset(
+#             start_date=Periodicity.offset_date(
 #                 date=self.operation_span.end_date,
 #                 period_type=Periodicity.Type.day,
 #                 num_periods=1),

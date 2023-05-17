@@ -1,0 +1,241 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>rangekeeper.measure &#8212; Rangekeeper  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for rangekeeper.measure</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">pint</span>
+<span class="c1">#from pint.definitions import UnitDefinition</span>
+<span class="c1">#from pint.converters import ScaleConverter</span>
+<span class="kn">import</span> <span class="nn">moneyed</span>
+
+
+<div class="viewcode-block" id="Index"><a class="viewcode-back" href="../../rangekeeper.html#rangekeeper.measure.Index">[docs]</a><span class="k">class</span> <span class="nc">Index</span><span class="p">:</span>
+    <span class="c1"># Define Fractions:</span>
+    <span class="n">registry</span> <span class="o">=</span> <span class="n">pint</span><span class="o">.</span><span class="n">UnitRegistry</span><span class="p">()</span>
+    <span class="c1">#     preprocessors=[lambda s: s.replace(&#39;%&#39;, &#39; percent &#39;)]</span>
+    <span class="c1">#     )</span>
+    <span class="c1"># # registry.define(&#39;percent = 0.01 * dimensionless = %&#39;)</span>
+    <span class="c1"># registry.define(UnitDefinition(&#39;percent&#39;, &#39;%&#39;, (), ScaleConverter(1 / 100.0)))</span>
+
+    <span class="c1"># Add Additional Terms:</span>
+    <span class="n">registry</span><span class="o">.</span><span class="n">define</span><span class="p">(</span><span class="s1">&#39;squaremeter = 1 m**2 = m2 = sqm&#39;</span><span class="p">)</span>
+    <span class="n">registry</span><span class="o">.</span><span class="n">define</span><span class="p">(</span><span class="s1">&#39;squarefoot = 1 foot**2 = ft2 = sqft&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Define Domain Units:</span>
+    <span class="n">registry</span><span class="o">.</span><span class="n">define</span><span class="p">(</span><span class="s1">&#39;zone = [space]&#39;</span><span class="p">)</span>
+    <span class="n">registry</span><span class="o">.</span><span class="n">define</span><span class="p">(</span><span class="s1">&#39;parking_stall = 1 * zone&#39;</span><span class="p">)</span></div>
+
+    <span class="c1"># self.registry = registry</span>
+
+    <span class="c1"># # Define Scalar:</span>
+    <span class="c1"># scalar = Measure(</span>
+    <span class="c1">#     name=&#39;Scalar Quantity&#39;,</span>
+    <span class="c1">#     definition=&#39;Dimensionless or Unitless Quantity&#39;,</span>
+    <span class="c1">#     units=pint.UnitRegistry().dimensionless)</span>
+
+    <span class="c1"># @staticmethod</span>
+
+
+<div class="viewcode-block" id="remove_dimension"><a class="viewcode-back" href="../../rangekeeper.html#rangekeeper.measure.remove_dimension">[docs]</a><span class="k">def</span> <span class="nf">remove_dimension</span><span class="p">(</span>
+        <span class="n">quantity</span><span class="p">:</span> <span class="n">pint</span><span class="o">.</span><span class="n">Quantity</span><span class="p">,</span>
+        <span class="n">dimension</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">registry</span><span class="p">:</span> <span class="n">pint</span><span class="o">.</span><span class="n">UnitRegistry</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pint</span><span class="o">.</span><span class="n">Quantity</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Remove a dimension from the units of a quantity. Specify the dimension as a string wrapped in square brackets ([&#39;&#39;]).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">dimension</span> <span class="ow">in</span> <span class="n">quantity</span><span class="o">.</span><span class="n">dimensionality</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">unit_str</span> <span class="ow">in</span> <span class="n">quantity</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">_units</span><span class="p">:</span>
+            <span class="n">units</span> <span class="o">=</span> <span class="n">registry</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="n">unit_str</span><span class="p">)</span> <span class="k">if</span> <span class="n">registry</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">pint</span><span class="o">.</span><span class="n">Unit</span><span class="p">(</span><span class="n">unit_str</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">units</span><span class="o">.</span><span class="n">dimensionality</span> <span class="o">==</span> <span class="n">dimension</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">quantity</span><span class="o">.</span><span class="n">dimensionality</span><span class="p">[</span><span class="n">dimension</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">quantity</span> <span class="o">*</span> <span class="n">units</span>
+                <span class="k">elif</span> <span class="n">quantity</span><span class="o">.</span><span class="n">dimensionality</span><span class="p">[</span><span class="n">dimension</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">quantity</span> <span class="o">/</span> <span class="n">units</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                        <span class="s1">&#39;Error: Dimension reduction currently only works for single-order (^1 or ^-1) dimensions.&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">quantity</span></div>
+
+
+<div class="viewcode-block" id="multiply_units"><a class="viewcode-back" href="../../rangekeeper.html#rangekeeper.measure.multiply_units">[docs]</a><span class="k">def</span> <span class="nf">multiply_units</span><span class="p">(</span>
+        <span class="n">units</span><span class="p">:</span> <span class="p">[</span><span class="n">pint</span><span class="o">.</span><span class="n">Unit</span><span class="p">],</span>
+        <span class="n">registry</span><span class="p">:</span> <span class="n">pint</span><span class="o">.</span><span class="n">UnitRegistry</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pint</span><span class="o">.</span><span class="n">Unit</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Multiply units together.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">registry</span> <span class="o">=</span> <span class="n">registry</span> <span class="k">if</span> <span class="n">registry</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">pint</span><span class="o">.</span><span class="n">UnitRegistry</span><span class="p">()</span>
+    <span class="n">quantities</span> <span class="o">=</span> <span class="p">[</span><span class="n">registry</span><span class="o">.</span><span class="n">Quantity</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span> <span class="k">for</span> <span class="n">unit</span> <span class="ow">in</span> <span class="n">units</span><span class="p">]</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">*</span> <span class="n">registry</span><span class="o">.</span><span class="n">dimensionless</span>
+    <span class="k">for</span> <span class="n">quantity</span> <span class="ow">in</span> <span class="n">quantities</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">*=</span> <span class="n">quantity</span>
+    <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">units</span></div>
+
+
+<div class="viewcode-block" id="register_currency"><a class="viewcode-back" href="../../rangekeeper.html#rangekeeper.measure.register_currency">[docs]</a><span class="k">def</span> <span class="nf">register_currency</span><span class="p">(</span>
+        <span class="n">country_code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">registry</span><span class="p">:</span> <span class="n">pint</span><span class="o">.</span><span class="n">UnitRegistry</span><span class="p">):</span>
+    <span class="c1"># if unit_registry is None:</span>
+    <span class="c1">#     unit_registry = pint.UnitRegistry()</span>
+
+    <span class="n">currency</span> <span class="o">=</span> <span class="n">moneyed</span><span class="o">.</span><span class="n">Currency</span><span class="p">(</span><span class="n">code</span><span class="o">=</span><span class="n">country_code</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s1">&#39;[currency]&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">registry</span><span class="o">.</span><span class="n">_dimensions</span><span class="p">:</span>
+        <span class="n">registry</span><span class="o">.</span><span class="n">define</span><span class="p">(</span><span class="s1">&#39;money = [currency]&#39;</span><span class="p">)</span>
+        <span class="n">registry</span><span class="o">.</span><span class="n">define</span><span class="p">(</span>
+            <span class="s1">&#39;</span><span class="si">{0}</span><span class="s1"> = nan money = </span><span class="si">{0}</span><span class="s1"> = </span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">currency</span><span class="o">.</span><span class="n">code</span><span class="o">.</span><span class="n">split</span><span class="p">()),</span>
+                <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">currency</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">())))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">registry</span><span class="o">.</span><span class="n">define</span><span class="p">(</span>
+            <span class="s1">&#39;</span><span class="si">{0}</span><span class="s1"> = nan money = </span><span class="si">{0}</span><span class="s1"> = </span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">currency</span><span class="o">.</span><span class="n">code</span><span class="o">.</span><span class="n">split</span><span class="p">()),</span>
+                <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">currency</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">())))</span>
+
+    <span class="k">return</span> <span class="n">Measure</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+        <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Currency of </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">currency</span><span class="o">.</span><span class="n">countries</span><span class="p">),</span>
+        <span class="n">units</span><span class="o">=</span><span class="n">registry</span><span class="p">[</span><span class="n">currency</span><span class="o">.</span><span class="n">code</span><span class="p">]</span><span class="o">.</span><span class="n">units</span><span class="p">)</span></div>
+
+
+<span class="c1">#</span>
+<span class="c1"># class Quantity(pint.Quantity):</span>
+<span class="c1">#     def __init__(</span>
+<span class="c1">#             self,</span>
+<span class="c1">#             value,</span>
+<span class="c1">#             units: pint.Unit</span>
+<span class="c1">#             ):</span>
+<span class="c1">#         &quot;&quot;&quot;</span>
+<span class="c1">#         value : str, pint.Quantity or any numeric type. Value of the physical quantity to be created.</span>
+<span class="c1">#         units :</span>
+<span class="c1">#         &quot;&quot;&quot;</span>
+<span class="c1">#         super.__init__()</span>
+
+
+<div class="viewcode-block" id="Measure"><a class="viewcode-back" href="../../rangekeeper.html#rangekeeper.measure.Measure">[docs]</a><span class="k">class</span> <span class="nc">Measure</span><span class="p">:</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">definition</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">units</span><span class="p">:</span> <span class="n">pint</span><span class="o">.</span><span class="n">Unit</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">units</span><span class="p">:</span> <span class="n">pint</span><span class="o">.</span><span class="n">Unit</span><span class="p">,</span>
+            <span class="n">definition</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="n">units</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">definition</span> <span class="o">=</span> <span class="n">definition</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;Rangekeeper Measure: &quot;</span><span class="si">{0}</span><span class="s1">&quot;. </span><span class="si">{1}</span><span class="s1">. Units: </span><span class="si">{2}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">definition</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="fm">__hash__</span><span class="p">()))</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">name</span> <span class="ow">and</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">units</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">Rangekeeper</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">rangekeeper</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  <li><a href="../rangekeeper.html">rangekeeper</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, Daniel Fink.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
