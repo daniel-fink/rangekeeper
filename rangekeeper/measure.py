@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import locale
+
 import pint
 #from pint.definitions import UnitDefinition
 #from pint.converters import ScaleConverter
@@ -38,7 +40,7 @@ def remove_dimension(
         dimension: str,
         registry: pint.UnitRegistry = None) -> pint.Quantity:
     """
-    Remove a dimension from a unit. Specify the dimension as a string wrapped in square brackets (['']).
+    Remove a dimension from the units of a quantity. Specify the dimension as a string wrapped in square brackets (['']).
     """
     if dimension in quantity.dimensionality:
         for unit_str in quantity.units._units:
@@ -70,12 +72,11 @@ def multiply_units(
 
 
 def register_currency(
-        country_code: str,
         registry: pint.UnitRegistry):
     # if unit_registry is None:
     #     unit_registry = pint.UnitRegistry()
 
-    currency = moneyed.Currency(code=country_code)
+    currency = moneyed.Currency(code=locale.localeconv()['int_curr_symbol'].strip())
 
     if '[currency]' not in registry._dimensions:
         registry.define('money = [currency]')
@@ -128,3 +129,10 @@ class Measure:
             self.name,
             self.definition,
             self.units)
+
+    def __hash__(self):
+        return hash((self.name, self.units.__hash__()))
+
+    def __eq__(self, other):
+        return (self.name == other.name and
+                self.units == other.units)

@@ -4,7 +4,7 @@ import enum
 import numpy as np
 import pandas as pd
 import scipy.stats as ss
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 
 class Type(enum.Enum):
@@ -78,3 +78,23 @@ class Compounding(Form):
         Returns the multiplicative factors of the projection's form at each value in the sequence.
         """
         return [np.power((1 + self.rate), index) for index in sequence]
+
+
+class Dynamic(Form):
+    series: pd.Series
+
+    def __init__(
+            self,
+            series: pd.Series):
+        self.type = Type.DYNAMIC
+        self.series = series
+
+    def terms(
+            self,
+            sequence: pd.RangeIndex) -> [float]:
+        """
+        Returns the multiplicative factors of the projection's form at each value in the sequence.
+        """
+        if self.series.index.size != sequence.size:
+            raise ValueError("Error: series and sequence must match in size")
+        return list(self.series.values)

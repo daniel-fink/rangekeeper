@@ -1,9 +1,11 @@
 from __future__ import annotations
+
+import locale
 import os
 
 import itertools
 import math
-from typing import Dict, Union, Optional
+from typing import Dict, Union, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -13,7 +15,26 @@ import json
 import pyxirr
 
 import rangekeeper as rk
-# import projection, distribution, extrapolation, periodicity, span, measure
+
+
+def _format_series(
+        series: pd.Series,
+        units: pint.Unit,
+        decimals: int = 2):
+
+    if units.dimensionality == '[currency]':
+        formatted = pd.Series(
+            data=[str(locale.currency(value, grouping=True)) for value in series],
+            index=pd.Series(series.index, name='date'),
+            name=series.name)
+    else:
+        floatfmt = "{:." + str(decimals) + "f}"
+        formatted = pd.Series(
+            data=[str(floatfmt.format(value)) for value in series],
+            index=pd.Series(series.index, name='date'),
+            name=series.name)
+
+    return formatted
 
 
 class Flow:
@@ -28,7 +49,7 @@ class Flow:
     def __init__(
             self,
             movements: pd.Series,
-            units: pint.Unit = None,
+            units: Optional[pint.Unit] = None,
             name: str = None):
         """
         Initializes a Flow. If units are not provided, a scalar (dimensionless) unit is assumed.
@@ -64,10 +85,16 @@ class Flow:
             raise ValueError('Error: Units must be of type pint.Unit')
 
     def __str__(self):
-        return str(self._format())
+        return str(_format_series(
+            series=self.movements,
+            units=self.units))
 
     def _repr_html_(self):
-        return self.movements.to_markdown(
+        return _format_series(
+            series=self.movements,
+            units=self.units).to_markdown(
+            stralign="right",
+            numalign="right",
             tablefmt='html')
 
     def duplicate(self) -> Flow:
@@ -76,36 +103,40 @@ class Flow:
             units=self.units,
             name=self.name)
 
-    def _format(
-            self,
-            tablefmt: str = 'github',
-            decimals: int = 2):
-
-        floatfmt = "." + str(decimals) + "f"
-
-        linebreak = os.linesep
-        name = 'Name: ' + self.name
-        units = 'Units: ' + str(self.units)
-        movements = 'Movements: ' + linebreak + self.movements.to_markdown(
-            tablefmt=tablefmt,
-            floatfmt=floatfmt)
-
-        return linebreak.join([name, units, movements])
+    # def _format(
+    #         self,
+    #         decimals: int = 2):
 
     def display(
             self,
+            tablefmt: str = 'github',
             decimals: int = 2):
-        format = self._format(decimals=decimals)
-        print(format + os.linesep)
+        linebreak = os.linesep
+        name = 'Name: ' + self.name
+        units = 'Units: ' + str(self.units)
+        movements = 'Movements: ' + linebreak + _format_series(
+            series=self.movements,
+            units=self.units,
+            decimals=decimals).to_markdown(
+            stralign="right",
+            numalign="right",
+            tablefmt=tablefmt,
+            floatfmt='.' + str(decimals) + 'f')
+
+        print(linebreak.join([name, units, movements, os.linesep]))
+        # print(self._format(decimals=decimals) + os.linesep)
 
     def plot(
             self,
+            bounds: Optional[Tuple[float, float]] = None,
             normalize: bool = False,
             *args, **kwargs):
         self.movements.plot(*args, **kwargs)
         plt.legend(loc='best')
         plt.xlabel('Date')
         plt.ylabel(self.units.__doc__)
+        if bounds is not None:
+            plt.ylim(bottom=bounds[0], top=bounds[1])
         if normalize:
             plt.ylim(bottom=0)
         plt.show(block=True)
@@ -115,7 +146,7 @@ class Flow:
             cls,
             index: pd.PeriodIndex,
             data: [float],
-            units: pint.Unit,
+            units: Optional[pint.Unit] = None,
             name: str = None) -> Flow:
         """
         Returns a Flow where movement dates are defined by the end-dates of the specified periods
@@ -126,7 +157,7 @@ class Flow:
         dates = [pd.Timestamp(period.to_timestamp(how='end').date()) for period in index]
         series = pd.Series(
             data=data,
-            index=pd.Series(data=dates, name='dates'),
+            index=pd.Series(data=dates, name='date'),
             name=name,
             dtype=float)
         return cls(
@@ -147,7 +178,7 @@ class Flow:
         dates = movements.keys()
         series = pd.Series(
             data=list(movements.values()),
-            index=pd.Series(dates, name='dates'),
+            index=pd.Series(dates, name='date'),
             name=name,
             dtype=float)
         return cls(
@@ -158,7 +189,7 @@ class Flow:
     @classmethod
     def from_projection(
             cls,
-            value: Union[float, rk.distribution.Form],
+            value: Union[float, pint.Quantity, rk.distribution.Form],
             proj: rk.projection,
             units: pint.Unit = None,
             name: str = None) -> Flow:
@@ -173,8 +204,10 @@ class Flow:
 
         if isinstance(value, float):
             value = value
+        elif isinstance(value, pint.Quantity):
+            value = value.magnitude
         elif isinstance(value, rk.distribution.Form):
-            value = value.sample()
+            value = value.sample()[0]
 
         if isinstance(proj, rk.projection.Extrapolation):
             if proj.form.type == rk.extrapolation.Type.STRAIGHT_LINE or proj.form.type == rk.extrapolation.Type.RECURRING:
@@ -252,7 +285,7 @@ class Flow:
         """
         Returns a Flow with movements summed to specified frequency of dates
         """
-        return self.__class__(
+        return rk.flux.Flow(
             movements=self.movements.copy(deep=True).resample(rule=period_type.value).sum(),
             units=self.units,
             name=self.name)
@@ -266,8 +299,8 @@ class Flow:
         return self \
             .resample(period_type=period_type) \
             .movements.to_period(freq=period_type.value, copy=True) \
-            .rename_axis('periods') \
-            .groupby(level='periods') \
+            .rename_axis('period') \
+            .groupby(level='period') \
             .sum()
 
     def get_frequency(self) -> str:
@@ -275,7 +308,8 @@ class Flow:
 
     def trim_to_span(
             self,
-            span: rk.span.Span) -> Flow:
+            span: rk.span.Span,
+            name: str = None) -> Flow:
         """
         Returns a Flow with movements trimmed to the specified span
         """
@@ -284,7 +318,7 @@ class Flow:
                 before=span.start_date,
                 after=span.end_date),
             units=self.units,
-            name=self.name)
+            name=self.name if name is None else name)
 
     def to_stream(
             self,
@@ -356,14 +390,31 @@ class Stream:
         """
 
     def __str__(self):
-        return str(self._format())
+        return str(self._format_flows())
 
     def _repr_html_(self):
-        return self.frame.to_markdown(
+        return self._format_flows().to_markdown(
+            stralign="right",
+            numalign="right",
             tablefmt='html',
             floatfmt=".2f")
 
-    def _format(
+    def _format_flows(
+            self,
+            decimals: int = 2) -> pd.DataFrame:
+
+        formatted_flows = []
+        for flow in self.flows:
+            series = flow.to_periods(period_type=self.period_type)
+            formatted_flows.append(_format_series(
+                series=series,
+                units=flow.units,
+                decimals=decimals))
+        # formatted_flows = [flow._format_movements(decimals=decimals) for flow in self._resampled_flows]
+        frame = pd.concat(formatted_flows, axis=1).fillna(0).sort_index()
+        return frame
+
+    def display(
             self,
             tablefmt: str = 'github',
             decimals: int = 2):
@@ -372,18 +423,20 @@ class Stream:
 
         linebreak = os.linesep
         name = 'Name: ' + self.name
-        units = 'Units: ' + json.dumps({flow.name: flow.units.__str__() for flow in self.flows}, indent=2)
-        flows = 'Flows: ' + linebreak + self.frame.to_markdown(
+        units = 'Units: ' + json.dumps({flow.name: flow.units.__str__() for flow in self.flows}, indent=4)
+        flows = 'Flows: ' + linebreak + self._format_flows(decimals=decimals).to_markdown(
             tablefmt=tablefmt,
+            stralign="right",
+            numalign="right",
             floatfmt=floatfmt)
 
-        return linebreak.join([name, units, flows])
+        print(linebreak.join([name, units, flows, os.linesep]))
 
-    def display(
-            self,
-            decimals: int = 2):
-        format = self._format(decimals=decimals)
-        print(format + os.linesep)
+    # def display(
+    #         self,
+    #         decimals: int = 2):
+    #     format = self._format(decimals=decimals)
+    #     print(format + os.linesep)
 
     def duplicate(self) -> Stream:
         return self.__class__(
@@ -409,8 +462,6 @@ class Stream:
             name=name,
             flows=flows,
             period_type=rk.periodicity.from_value(data.index.freqstr))
-
-
 
     def plot(
             self,
@@ -475,7 +526,6 @@ class Stream:
                 datums.append(additional)
 
         else:
-            # if flows[primary_flow] is not None:
             host.set_ylim([flows[primary_flow_name][0], flows[primary_flow_name][1]])
 
             if len(flows) > 1:
@@ -506,7 +556,7 @@ class Stream:
                                                          self.frame[additional_flow_name],
                                                          color=plt.cm.viridis(i / (len(flows) + 1)),
                                                          label=additional_flow_name)
-                        supplementary.spines.right.set_position(('axes', 1 + (i - 1)/10))
+                        supplementary.spines.right.set_position(('axes', 1 + (i - 1) / 7.5))
                         supplementary.spines.right.set_visible(True)
                         supplementary.spines.right.set_linewidth(1)
                         supplementary.set_ylabel(additional_flow_name)
@@ -522,22 +572,13 @@ class Stream:
                         axes.append(supplementary)
 
         labels = [datum.get_label() for datum in datums]
-        # if normalize:
-        #     legend = axes[0].legend(datums,
-        #                              labels,
-        #                              loc='best',
-        #                              title=self.name,
-        #                              facecolor="white",
-        #                              frameon=True,
-        #                              framealpha=1,
-        #                              borderpad=.75,
-        #                              edgecolor='grey')
-        # else:
         legend = axes[-1].legend(
             datums,
             labels,
             loc='best',
             title=self.name,
+            title_fontsize=8,
+            fontsize=7,
             facecolor="white",
             frameon=True,
             framealpha=1,
@@ -571,7 +612,9 @@ class Stream:
         """
         # Check if all units are the same:
         if not len(list(set(list(self.units.values())))) == 1:
-            raise ValueError("Error: summation requires all flows' units to be the same. Units: {0}".format(json.dumps(self.units, indent=2)))
+            raise ValueError("Error: summation requires all flows' units to be the same. Units: {0}".format(
+                json.dumps(
+                    {flow.name: flow.units.__str__() for flow in self.flows}, indent=4)))
 
         return Flow.from_periods(
             name=name if name is not None else self.name,
@@ -592,20 +635,20 @@ class Stream:
         # Produce resultant units:
         # singleton = ['1 * units.' + str(value) for value in self.units.values()]
         # singleton = eval(' * '.join(singleton), scope)
-        registry = registry if registry is not None else pint.UnitRegistry()
+        registry = registry if registry is not None else rk.measure.Index.registry
         units = rk.measure.multiply_units(
             units=list(self.units.values()),
             registry=registry)
         reduced_units = rk.measure.remove_dimension(
             quantity=registry.Quantity(1, units),
             dimension='[time]',
-            registry=registry)
+            registry=registry).units
 
         return Flow.from_periods(
             name=name if name is not None else self.name,
             index=self.frame.index,  # .to_period(),
             data=self.frame.prod(axis=1).to_list(),
-            units=reduced_units.units)
+            units=reduced_units)
 
     def collapse(self) -> Stream:
         """

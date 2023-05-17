@@ -24,7 +24,7 @@ class Model:
 
         self.operation_span = rk.span.Span.from_num_periods(
             name='Operation',
-            date=rk.periodicity.date_offset(
+            date=rk.periodicity.offset_date(
                 date=self.acquisition_span.end_date,
                 period_type=rk.periodicity.Type.DAY,
                 num_periods=1),
@@ -33,7 +33,7 @@ class Model:
 
         self.projection_span = rk.span.Span.from_num_periods(
             name='Projection',
-            date=rk.periodicity.date_offset(
+            date=rk.periodicity.offset_date(
                 date=self.operation_span.end_date,
                 period_type=rk.periodicity.Type.DAY,
                 num_periods=1),
