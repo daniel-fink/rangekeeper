@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from typing import Union
+from typing import Union, Optional
 
 import aenum
 import enum
@@ -9,6 +9,7 @@ from datetime import datetime
 import dateutil.relativedelta
 import pandas as pd
 
+import rangekeeper as rk
 
 class Type(enum.Enum):
     YEAR = 'A-DEC'  # Anchored on end of December
@@ -69,6 +70,37 @@ def period_index(
             freq=period_type.value,
             name='periods')
 
+def offset_periodindex(
+        index: pd.PeriodIndex,
+        offset_start: Optional[int] = None,
+        offset_end: Optional[int] = None) -> pd.PeriodIndex:
+    """
+    Returns a pd.PeriodIndex with periods offset by given number of periods (of type given by the index)
+    """
+    start = index[0].to_timestamp()
+    if offset_start is not None:
+        start = offset_date(
+            date=period_index[0].to_timestamp(),
+            period_type=from_value(index.freq),
+            num_periods=offset_start)
+    end = index[-1].to_timestamp()
+    if offset_end is not None:
+        end = offset_date(
+            date=index[-1].to_timestamp(),
+            period_type=from_value(index.freq),
+            num_periods=offset_end)
+    return period_index(
+        include_start=start,
+        period_type=from_value(index.freq),
+        bound=end)
+
+def to_span(period_index: pd.PeriodIndex):
+    """
+    Returns a Span encompassing a pd.PeriodIndex
+    """
+    return rk.span.Span(
+        start_date=period_index[0].to_timestamp(how='start'),
+        end_date=period_index[-1].to_timestamp(how='end'))
 
 def single_period_index(period: pd.Period) -> pd.PeriodIndex:
     return pd.period_range(
@@ -102,7 +134,7 @@ def periods_per_year(period_type: Type) -> int:
         }.get(period_type, None)
 
 
-def date_offset(
+def offset_date(
         date: pd.Timestamp,
         period_type: Type = Type.DAY,
         num_periods: int = 1) -> pd.Timestamp:
@@ -141,7 +173,7 @@ def duration(
     """
     calc_end_date = end_date
     if inclusive:
-        calc_end_date = date_offset(
+        calc_end_date = offset_date(
             date=end_date,
             period_type=Type.DAY,
             num_periods=1)
