@@ -7,7 +7,7 @@
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
     <title>Introduction to Modeling Flexibility &#8212; Rangekeeper</title>
   
@@ -64,6 +64,7 @@ const thebe_selector_output = ".output, .cell_output"
     <script>DOCUMENTATION_OPTIONS.pagename = 'flexibility_intro';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Flexibility under Uncertainty" href="flexibility_under_uncertainty.html" />
     <link rel="prev" title="Real Estate Pricing Factor Dynamics" href="market_dynamics.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -135,8 +136,14 @@ const thebe_selector_output = ".output, .cell_output"
   
   
   
+    
+    
+      
+    
+    
+    <img src="_static/rangekeeper.jpg" class="logo__image only-light" alt="Logo image"/>
+    <script>document.write(`<img src="_static/rangekeeper.jpg" class="logo__image only-dark" alt="Logo image"/>`);</script>
   
-    <p class="title logo__title">Rangekeeper</p>
   
 </a></div>
         <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
@@ -145,7 +152,7 @@ const thebe_selector_output = ".output, .cell_output"
         <ul class="nav bd-sidenav bd-sidenav__home-link">
             <li class="toctree-l1">
                 <a class="reference internal" href="intro.html">
-                    Exposition
+                    Rangekeeper
                 </a>
             </li>
         </ul>
@@ -154,6 +161,7 @@ const thebe_selector_output = ".output, .cell_output"
 <li class="toctree-l1"><a class="reference internal" href="deterministic_scenarios.html">Deterministic Scenario Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="market_dynamics.html">Real Estate Pricing Factor Dynamics</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Introduction to Modeling Flexibility</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flexibility_under_uncertainty.html">Flexibility under Uncertainty</a></li>
 </ul>
 
     </div>
@@ -208,7 +216,7 @@ const thebe_selector_output = ".output, .cell_output"
       
       
       
-      <li><a href="https://github.com/executablebooks/jupyter-book" target="_blank"
+      <li><a href="https://github.com/daniel-fink/rangekeeper" target="_blank"
    class="btn btn-sm btn-source-repository-button dropdown-item"
    title="Source repository"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -225,7 +233,7 @@ const thebe_selector_output = ".output, .cell_output"
       
       
       
-      <li><a href="https://github.com/executablebooks/jupyter-book/issues/new?title=Issue%20on%20page%20%2Fflexibility_intro.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/daniel-fink/rangekeeper/issues/new?title=Issue%20on%20page%20%2Fflexibility_intro.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -370,7 +378,7 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="introduction-to-modeling-flexibility">
 <h1>Introduction to Modeling Flexibility<a class="headerlink" href="#introduction-to-modeling-flexibility" title="Permalink to this heading">#</a></h1>
-<p><span id="id1">[<a class="reference internal" href="basic_dcf.html#id6" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> apply the simulated Real Estate Market to a basic Proforma
+<p><span id="id1">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> apply the simulated Real Estate Market to a basic Proforma
 in two ways:</p>
 <ol class="arabic simple">
 <li><p>Using the <code class="docutils literal notranslate"><span class="pre">Market</span></code> pricing factors to adjust projected values for cash flows
@@ -700,7 +708,7 @@ years.</p>
 counting reversion). This is to indicate the relative favorability of the
 scenario outcomes in terms of the real estate space market, the fundamental
 economic basis of the property value.</p>
-<p>(From <span id="id2">[<a class="reference internal" href="basic_dcf.html#id6" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span>, accompanying Excel spreadsheets)</p>
+<p>(From <span id="id2">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span>, accompanying Excel spreadsheets)</p>
 </div>
 </section>
 <section id="ex-post-inflexible-model">
@@ -834,7 +842,7 @@ emulate how an ‘Ex-Post’ Model would look)</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="_images/5478629360d6093b886f4e34f2de874b5d5bd2125d034a6c0f8586c0a7ca5407.png" src="_images/5478629360d6093b886f4e34f2de874b5d5bd2125d034a6c0f8586c0a7ca5407.png" />
+<img alt="_images/9a95ba6a3c897a9af9ab138e2348ee34db3ba643f8b6c433345b85acdd46ff06.png" src="_images/9a95ba6a3c897a9af9ab138e2348ee34db3ba643f8b6c433345b85acdd46ff06.png" />
 </div>
 </div>
 <div class="admonition warning">
@@ -963,17 +971,17 @@ Model’s PGI and the simulated <code class="docutils literal notranslate"><span
 <tr><th style="text-align: right;">  date</th><th style="text-align: right;">  Potential Gross Income</th><th style="text-align: right;">  Vacancy Allowance</th><th style="text-align: right;">  Effective Gross Income</th><th style="text-align: right;">  Operating Expenses</th><th style="text-align: right;">  Net Operating Income</th><th style="text-align: right;">  Capital Expenditures</th><th style="text-align: right;">  Net Annual Cashflow</th><th style="text-align: right;">  Reversion</th></tr>
 </thead>
 <tbody>
-<tr><td style="text-align: right;">  2001</td><td style="text-align: right;">                 $126.36</td><td style="text-align: right;">             -$6.32</td><td style="text-align: right;">                 $120.04</td><td style="text-align: right;">             -$44.23</td><td style="text-align: right;">                $75.81</td><td style="text-align: right;">               -$12.64</td><td style="text-align: right;">               $63.18</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">  2002</td><td style="text-align: right;">                 $148.06</td><td style="text-align: right;">             -$7.40</td><td style="text-align: right;">                 $140.66</td><td style="text-align: right;">             -$51.82</td><td style="text-align: right;">                $88.84</td><td style="text-align: right;">               -$14.81</td><td style="text-align: right;">               $74.03</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">  2003</td><td style="text-align: right;">                 $151.13</td><td style="text-align: right;">             -$7.56</td><td style="text-align: right;">                 $143.58</td><td style="text-align: right;">             -$52.90</td><td style="text-align: right;">                $90.68</td><td style="text-align: right;">               -$15.11</td><td style="text-align: right;">               $75.57</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">  2004</td><td style="text-align: right;">                 $153.54</td><td style="text-align: right;">             -$7.68</td><td style="text-align: right;">                 $145.86</td><td style="text-align: right;">             -$53.74</td><td style="text-align: right;">                $92.12</td><td style="text-align: right;">               -$15.35</td><td style="text-align: right;">               $76.77</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">  2005</td><td style="text-align: right;">                 $120.79</td><td style="text-align: right;">             -$6.04</td><td style="text-align: right;">                 $114.75</td><td style="text-align: right;">             -$42.28</td><td style="text-align: right;">                $72.48</td><td style="text-align: right;">               -$12.08</td><td style="text-align: right;">               $60.40</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">  2006</td><td style="text-align: right;">                 $121.34</td><td style="text-align: right;">             -$6.07</td><td style="text-align: right;">                 $115.27</td><td style="text-align: right;">             -$42.47</td><td style="text-align: right;">                $72.80</td><td style="text-align: right;">               -$12.13</td><td style="text-align: right;">               $60.67</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">  2007</td><td style="text-align: right;">                  $97.41</td><td style="text-align: right;">             -$4.87</td><td style="text-align: right;">                  $92.54</td><td style="text-align: right;">             -$34.09</td><td style="text-align: right;">                $58.44</td><td style="text-align: right;">                -$9.74</td><td style="text-align: right;">               $48.70</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">  2008</td><td style="text-align: right;">                  $71.67</td><td style="text-align: right;">             -$3.58</td><td style="text-align: right;">                  $68.09</td><td style="text-align: right;">             -$25.08</td><td style="text-align: right;">                $43.00</td><td style="text-align: right;">                -$7.17</td><td style="text-align: right;">               $35.83</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">  2009</td><td style="text-align: right;">                  $50.01</td><td style="text-align: right;">             -$2.50</td><td style="text-align: right;">                  $47.51</td><td style="text-align: right;">             -$17.50</td><td style="text-align: right;">                $30.00</td><td style="text-align: right;">                -$5.00</td><td style="text-align: right;">               $25.00</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">  2010</td><td style="text-align: right;">                  $43.46</td><td style="text-align: right;">             -$2.17</td><td style="text-align: right;">                  $41.28</td><td style="text-align: right;">             -$15.21</td><td style="text-align: right;">                $26.07</td><td style="text-align: right;">                -$4.35</td><td style="text-align: right;">               $21.73</td><td style="text-align: right;">    $256.66</td></tr>
-<tr><td style="text-align: right;">  2011</td><td style="text-align: right;">                  $60.00</td><td style="text-align: right;">             -$3.00</td><td style="text-align: right;">                  $57.00</td><td style="text-align: right;">             -$21.00</td><td style="text-align: right;">                $36.00</td><td style="text-align: right;">                -$6.00</td><td style="text-align: right;">               $30.00</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2001</td><td style="text-align: right;">                 $122.03</td><td style="text-align: right;">             -$6.10</td><td style="text-align: right;">                 $115.93</td><td style="text-align: right;">             -$42.71</td><td style="text-align: right;">                $73.22</td><td style="text-align: right;">               -$12.20</td><td style="text-align: right;">               $61.02</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2002</td><td style="text-align: right;">                 $134.77</td><td style="text-align: right;">             -$6.74</td><td style="text-align: right;">                 $128.03</td><td style="text-align: right;">             -$47.17</td><td style="text-align: right;">                $80.86</td><td style="text-align: right;">               -$13.48</td><td style="text-align: right;">               $67.39</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2003</td><td style="text-align: right;">                 $140.74</td><td style="text-align: right;">             -$7.04</td><td style="text-align: right;">                 $133.70</td><td style="text-align: right;">             -$49.26</td><td style="text-align: right;">                $84.44</td><td style="text-align: right;">               -$14.07</td><td style="text-align: right;">               $70.37</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2004</td><td style="text-align: right;">                 $152.53</td><td style="text-align: right;">             -$7.63</td><td style="text-align: right;">                 $144.90</td><td style="text-align: right;">             -$53.38</td><td style="text-align: right;">                $91.52</td><td style="text-align: right;">               -$15.25</td><td style="text-align: right;">               $76.26</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2005</td><td style="text-align: right;">                 $173.91</td><td style="text-align: right;">             -$8.70</td><td style="text-align: right;">                 $165.22</td><td style="text-align: right;">             -$60.87</td><td style="text-align: right;">               $104.35</td><td style="text-align: right;">               -$17.39</td><td style="text-align: right;">               $86.96</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2006</td><td style="text-align: right;">                 $171.25</td><td style="text-align: right;">             -$8.56</td><td style="text-align: right;">                 $162.69</td><td style="text-align: right;">             -$59.94</td><td style="text-align: right;">               $102.75</td><td style="text-align: right;">               -$17.13</td><td style="text-align: right;">               $85.63</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2007</td><td style="text-align: right;">                 $141.63</td><td style="text-align: right;">             -$7.08</td><td style="text-align: right;">                 $134.55</td><td style="text-align: right;">             -$49.57</td><td style="text-align: right;">                $84.98</td><td style="text-align: right;">               -$14.16</td><td style="text-align: right;">               $70.81</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2008</td><td style="text-align: right;">                  $98.06</td><td style="text-align: right;">             -$4.90</td><td style="text-align: right;">                  $93.16</td><td style="text-align: right;">             -$34.32</td><td style="text-align: right;">                $58.84</td><td style="text-align: right;">                -$9.81</td><td style="text-align: right;">               $49.03</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2009</td><td style="text-align: right;">                  $79.03</td><td style="text-align: right;">             -$3.95</td><td style="text-align: right;">                  $75.08</td><td style="text-align: right;">             -$27.66</td><td style="text-align: right;">                $47.42</td><td style="text-align: right;">                -$7.90</td><td style="text-align: right;">               $39.52</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2010</td><td style="text-align: right;">                  $81.97</td><td style="text-align: right;">             -$4.10</td><td style="text-align: right;">                  $77.88</td><td style="text-align: right;">             -$28.69</td><td style="text-align: right;">                $49.18</td><td style="text-align: right;">                -$8.20</td><td style="text-align: right;">               $40.99</td><td style="text-align: right;">    $542.74</td></tr>
+<tr><td style="text-align: right;">  2011</td><td style="text-align: right;">                  $97.39</td><td style="text-align: right;">             -$4.87</td><td style="text-align: right;">                  $92.52</td><td style="text-align: right;">             -$34.09</td><td style="text-align: right;">                $58.44</td><td style="text-align: right;">                -$9.74</td><td style="text-align: right;">               $48.70</td><td style="text-align: right;">          0</td></tr>
 </tbody>
 </table></div></div>
 </div>
@@ -987,9 +995,9 @@ Model’s PGI and the simulated <code class="docutils literal notranslate"><span
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Projected IRR at Market Value Price: -3.40%
-Time 0 Present Value at OCC: $533.75
-Average Annual Cashflow: $54.19
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Projected IRR at Market Value Price: 2.44%
+Time 0 Present Value at OCC: $741.43
+Average Annual Cashflow: $64.80
 </pre></div>
 </div>
 </div>
@@ -1005,8 +1013,8 @@ Average Annual Cashflow: $54.19
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Percentage Difference of Scenario PV Minus Pro-forma PV: -46.62%
-Difference of Scenario IRR Minus Pro-forma IRR: -10.40%
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Percentage Difference of Scenario PV Minus Pro-forma PV: -25.86%
+Difference of Scenario IRR Minus Pro-forma IRR: -4.56%
 </pre></div>
 </div>
 </div>
@@ -1019,7 +1027,7 @@ Difference of Scenario IRR Minus Pro-forma IRR: -10.40%
 introduce the ability to program optionality into our model; that is, the
 creation of alternate options to a single course of action, that may be
 exercised (but are not obliged to be)</p>
-<p>In <span id="id3">[<a class="reference internal" href="basic_dcf.html#id6" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span>, Chapter 9 presents a simple case of flexibility; the
+<p>In <span id="id3">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span>, Chapter 9 presents a simple case of flexibility; the
 ‘Resale Timing Problem’, which is described as the question of when and how to
 decide to sell an investment property.</p>
 <p><em>Rangekeeper</em> formulates these types of decision problems as <code class="docutils literal notranslate"><span class="pre">Policy</span></code>s that
@@ -1036,10 +1044,10 @@ the <code class="docutils literal notranslate"><span class="pre">Model</span></c
 <figure class="align-default" id="farevuu-figure9-1">
 <a class="reference internal image-reference" href="_images/FaREVuU-figure9.1.png"><img alt="_images/FaREVuU-figure9.1.png" src="_images/FaREVuU-figure9.1.png" style="width: 75%;" /></a>
 <figcaption>
-<p><span class="caption-number">Fig. 4 </span><span class="caption-text">Figure 9.1 From <span id="id4">[<a class="reference internal" href="basic_dcf.html#id6" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span></span><a class="headerlink" href="#farevuu-figure9-1" title="Permalink to this image">#</a></p>
+<p><span class="caption-number">Fig. 4 </span><span class="caption-text">Figure 9.1 From <span id="id4">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span></span><a class="headerlink" href="#farevuu-figure9-1" title="Permalink to this image">#</a></p>
 </figcaption>
 </figure>
-<p><span id="id5">[<a class="reference internal" href="basic_dcf.html#id6" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> diagram the logic of the “Stop-Gain Resale Rule” as a
+<p><span id="id5">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> diagram the logic of the “Stop-Gain Resale Rule” as a
 flowchart (influenced by Excel functions). In <em>Rangekeeper</em>, this would be
 programmed as simply adjusting the holding period of the asset (in effect
 bringing its reversion/sale to the specified period):</p>
@@ -1129,10 +1137,10 @@ mimic a manager or developer of a real estate asset. For more information, see
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Flexible Model Hold Period: 14
-Projected IRR at Market Value Price: 8.21%
-Time 0 Present Value at OCC: $1,122.62
-Average Annual Cashflow: $54.46
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Flexible Model Hold Period: 7
+Projected IRR at Market Value Price: 9.96%
+Time 0 Present Value at OCC: $1,175.63
+Average Annual Cashflow: $74.06
 </pre></div>
 </div>
 </div>
@@ -1183,6 +1191,15 @@ downturns.</p>
         <p class="prev-next-subtitle">previous</p>
         <p class="prev-next-title">Real Estate Pricing Factor Dynamics</p>
       </div>
+    </a>
+    <a class="right-next"
+       href="flexibility_under_uncertainty.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Flexibility under Uncertainty</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
     </a>
 </div></div>
   
@@ -1235,7 +1252,7 @@ By Daniel Fink
     
   <p class="copyright">
     
-      © Copyright 2022.
+      © Copyright 2023.
       <br/>
     
   </p>
