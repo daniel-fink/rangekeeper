@@ -1,4 +1,4 @@
-![Rangekeeper](https://github.com/daniel-fink/rangekeeper/blob/v0.2.0/walkthrough/resources/rangekeeper.jpg?raw=true)
+<img src="https://github.com/daniel-fink/rangekeeper/blob/v0.2.0/walkthrough/resources/rangekeeper.jpg?raw=true" width="300">
 
 # Rangekeeper
 Rangekeeper is a library assisting financial modelling in real estate scenario planning, decision-making, cashflow forecasting, and the like.
