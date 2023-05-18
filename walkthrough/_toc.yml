@@ -8,3 +8,4 @@ chapters:
 - file: deterministic_scenarios
 - file: market_dynamics
 - file: flexibility_intro
+- file: flexibility_under_uncertainty

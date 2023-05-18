@@ -9,6 +9,7 @@ author: Daniel Fink
 # See https://jupyterbook.org/content/execute.html
 execute:
   execute_notebooks: force
+  timeout: 6000
 
 # Add a bibtex file so that we can create citations
 bibtex_bibfiles:
@@ -25,4 +26,5 @@ repository:
 html:
   use_issues_button: true
   use_repository_button: true
+
 
