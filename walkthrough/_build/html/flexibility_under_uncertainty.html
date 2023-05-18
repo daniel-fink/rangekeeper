@@ -7,7 +7,7 @@
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
     <title>Flexibility under Uncertainty &#8212; Rangekeeper</title>
   
@@ -135,8 +135,14 @@ const thebe_selector_output = ".output, .cell_output"
   
   
   
+    
+    
+      
+    
+    
+    <img src="_static/rangekeeper.jpg" class="logo__image only-light" alt="Logo image"/>
+    <script>document.write(`<img src="_static/rangekeeper.jpg" class="logo__image only-dark" alt="Logo image"/>`);</script>
   
-    <p class="title logo__title">Rangekeeper</p>
   
 </a></div>
         <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
@@ -145,7 +151,7 @@ const thebe_selector_output = ".output, .cell_output"
         <ul class="nav bd-sidenav bd-sidenav__home-link">
             <li class="toctree-l1">
                 <a class="reference internal" href="intro.html">
-                    Exposition
+                    Rangekeeper
                 </a>
             </li>
         </ul>
@@ -209,7 +215,7 @@ const thebe_selector_output = ".output, .cell_output"
       
       
       
-      <li><a href="https://github.com/executablebooks/jupyter-book" target="_blank"
+      <li><a href="https://github.com/daniel-fink/rangekeeper" target="_blank"
    class="btn btn-sm btn-source-repository-button dropdown-item"
    title="Source repository"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -226,7 +232,7 @@ const thebe_selector_output = ".output, .cell_output"
       
       
       
-      <li><a href="https://github.com/executablebooks/jupyter-book/issues/new?title=Issue%20on%20page%20%2Fflexibility_under_uncertainty.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/daniel-fink/rangekeeper/issues/new?title=Issue%20on%20page%20%2Fflexibility_under_uncertainty.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -362,7 +368,27 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#comparing-models">Comparing Models</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inflexible-base-model">Inflexible (Base) Model</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#flexible-model">Flexible Model</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#results">Results</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#results">Results</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#time-0-present-values-at-occ">Time 0 Present Values at OCC</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#pvs-cumulative-distribution-target-curves">PVs Cumulative Distribution (‘Target Curves’)</a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#realized-irr-at-market-value-price">Realized IRR at Market Value Price</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#irrs-cumulative-distribution-target-curves">IRRs Cumulative Distribution (‘Target Curves’)</a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#irrs-x-pvs">IRRs x PVs</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#inflexible-model">Inflexible Model</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">Flexible Model</a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pvs-diffs">PVs Diffs</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#pv-difference-as-a-function-of-inflex-pv">PV Difference as a function of Inflex PV</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#irr-difference-as-a-function-of-inflex-irr">IRR Difference as a function of Inflex IRR</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -418,7 +444,7 @@ will produce.</p>
 of samples we will take from the probability distributions:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">iterations</span> <span class="o">=</span> <span class="mi">10000</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">iterations</span> <span class="o">=</span> <span class="mi">2000</span>
 </pre></div>
 </div>
 </div>
@@ -441,8 +467,21 @@ of samples we will take from the probability distributions:</p>
 <h4>Overall Trend<a class="headerlink" href="#overall-trend" title="Permalink to this heading">#</a></h4>
 <p>Following how <span id="id2">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> construct market simulations, a <em>Rangekeeper</em>
 <code class="docutils literal notranslate"><span class="pre">Market</span></code> <code class="docutils literal notranslate"><span class="pre">Trend</span></code> can sample from distributions defining the growth rate (trend)
-and initial rent value.
-First define the distributions:</p>
+and initial rent value.</p>
+<p>For initial (rent) value, typically values would not be more than 0.05 or 0.1,
+at most. Initial rents should be able to be estimated pretty accurately in the
+realistic pro-forma, especially for existing buildings.</p>
+<p>The growth rate distribution reflects uncertainty in the long-run trend growth
+rate (that applies throughout the entire scenario. In <span id="id3">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span>, this
+is modeled as a triangular distribution (though <em>Rangekeeper</em> provides other
+distributions easily), and the half-range should typically be a small value, at
+most .01 or .02, unless there is great uncertainty in the long-run average
+growth rate in the economy (such as perhaps in some emerging market countries),
+or if one is modeling nominal values and there is great uncertainty about what
+the future rate of inflation will be (but in such cases it is better to model
+real values, net of inflation anyway).</p>
+<p>(From <span id="id4">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span>, accompanying Excel spreadsheets)</p>
+<p>First we define the distributions:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">growth_rate_dist</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Symmetric</span><span class="p">(</span>
@@ -487,7 +526,7 @@ First define the distributions:</p>
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;Axes: ylabel=&#39;Count&#39;&gt;
 </pre></div>
 </div>
-<img alt="_images/8e415b41d359a5955ac873fbb23fd94513a6d808979e58fb8966825567d64081.png" src="_images/8e415b41d359a5955ac873fbb23fd94513a6d808979e58fb8966825567d64081.png" />
+<img alt="_images/951ea393a6efed3936305a1b8c603ef8ad27627320198ce08885d421dc964b09.png" src="_images/951ea393a6efed3936305a1b8c603ef8ad27627320198ce08885d421dc964b09.png" />
 </div>
 </div>
 </section>
@@ -514,7 +553,7 @@ producing multiple <code class="docutils literal notranslate"><span class="pre">
 </section>
 <section id="cyclicality">
 <h4>Cyclicality<a class="headerlink" href="#cyclicality" title="Permalink to this heading">#</a></h4>
-<p><span id="id3">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> document multiple means to incorporate estimations of market
+<p><span id="id5">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> document multiple means to incorporate estimations of market
 cycle parameters into a market simulation. Here we replicate the distribution
 parameters for use in <em>Rangekeeper</em>.</p>
 <p>We are agnostic about where the market currently is in the cycle, and want
@@ -587,7 +626,7 @@ the Space (Rent) Cycle’s</p>
 </div>
 </div>
 <p>For both the Space and Asset Cycles, we remove any cycle asymmetries, in order
-to align with <span id="id4">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span>’s spreadsheet for Chapters 8, 9, 10. In future
+to align with <span id="id6">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span>’s spreadsheet for Chapters 8, 9, 10. In future
 classes (and possibly future editions), they incorporate cycle asymmetries.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -665,7 +704,7 @@ classes (and possibly future editions), they incorporate cycle asymmetries.</p>
 </section>
 <section id="comparing-models">
 <h2>Comparing Models<a class="headerlink" href="#comparing-models" title="Permalink to this heading">#</a></h2>
-<p>From <span id="id5">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span>: to obtain the value of flexibility, we compare the
+<p>From <span id="id7">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span>: to obtain the value of flexibility, we compare the
 project utilizing flexibility against a base case or alternative that lacks the
 particular flexibility or rule we are evaluating.
 We must expose the inflexible case to the same independent, random future
@@ -909,7 +948,7 @@ a few libraries:</p>
         <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">result</span><span class="p">):</span>
             <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">movements</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">:</span>
@@ -962,8 +1001,15 @@ descriptive statistics</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">scipy.stats</span> <span class="k">as</span> <span class="nn">ss</span>
-
-<span class="n">inflex_pvs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="n">scenario</span><span class="o">.</span><span class="n">pvs</span><span class="o">.</span><span class="n">movements</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">scenario</span> <span class="ow">in</span> <span class="n">inflex_scenarios</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+</div>
+<section id="time-0-present-values-at-occ">
+<h4>Time 0 Present Values at OCC<a class="headerlink" href="#time-0-present-values-at-occ" title="Permalink to this heading">#</a></h4>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">inflex_pvs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="n">scenario</span><span class="o">.</span><span class="n">pvs</span><span class="o">.</span><span class="n">movements</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">scenario</span> <span class="ow">in</span> <span class="n">inflex_scenarios</span><span class="p">])</span>
 <span class="n">flex_pvs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="n">scenario</span><span class="o">.</span><span class="n">pvs</span><span class="o">.</span><span class="n">movements</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">scenario</span> <span class="ow">in</span> <span class="n">flex_scenarios</span><span class="p">])</span>
 <span class="n">diff_pvs</span> <span class="o">=</span> <span class="n">flex_pvs</span> <span class="o">-</span> <span class="n">inflex_pvs</span>
 
@@ -1002,51 +1048,51 @@ descriptive statistics</p>
   <tbody>
     <tr>
       <th>count</th>
-      <td>10000.000000</td>
-      <td>10000.000000</td>
-      <td>10000.000000</td>
+      <td>2000.000000</td>
+      <td>2000.000000</td>
+      <td>2000.000000</td>
     </tr>
     <tr>
       <th>mean</th>
-      <td>1073.597803</td>
-      <td>1431.837605</td>
-      <td>358.239802</td>
+      <td>1069.156572</td>
+      <td>1456.659217</td>
+      <td>387.502644</td>
     </tr>
     <tr>
       <th>std</th>
-      <td>349.091679</td>
-      <td>410.862831</td>
-      <td>571.570215</td>
+      <td>353.990828</td>
+      <td>402.164699</td>
+      <td>570.014706</td>
     </tr>
     <tr>
       <th>min</th>
-      <td>465.628478</td>
-      <td>484.303692</td>
-      <td>-1356.105301</td>
+      <td>514.255662</td>
+      <td>487.790673</td>
+      <td>-1134.635212</td>
     </tr>
     <tr>
       <th>25%</th>
-      <td>785.224470</td>
-      <td>1198.976899</td>
-      <td>-49.592386</td>
+      <td>778.438240</td>
+      <td>1237.704650</td>
+      <td>-18.738306</td>
     </tr>
     <tr>
       <th>50%</th>
-      <td>980.877220</td>
-      <td>1444.007747</td>
-      <td>366.522059</td>
+      <td>972.026827</td>
+      <td>1469.794750</td>
+      <td>420.167843</td>
     </tr>
     <tr>
       <th>75%</th>
-      <td>1322.199917</td>
-      <td>1700.378655</td>
-      <td>764.840804</td>
+      <td>1324.518978</td>
+      <td>1723.344840</td>
+      <td>802.301622</td>
     </tr>
     <tr>
       <th>max</th>
-      <td>2395.128593</td>
-      <td>2772.804674</td>
-      <td>2020.286671</td>
+      <td>2323.746585</td>
+      <td>2669.976385</td>
+      <td>1815.119890</td>
     </tr>
   </tbody>
 </table>
@@ -1059,9 +1105,9 @@ descriptive statistics</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inflexible    0.759847
-Flexible     -0.191147
-Difference    0.010651
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inflexible    0.799188
+Flexible     -0.348066
+Difference   -0.111420
 dtype: float64
 </pre></div>
 </div>
@@ -1074,9 +1120,9 @@ dtype: float64
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inflexible   -0.209038
-Flexible     -0.022541
-Difference   -0.617942
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inflexible   -0.160268
+Flexible     -0.025477
+Difference   -0.654264
 dtype: float64
 </pre></div>
 </div>
@@ -1084,21 +1130,24 @@ dtype: float64
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Inflex Diffs t-stat from scipy: </span><span class="se">\n</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;PV Diffs t-stat: </span><span class="se">\n</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
     <span class="n">ss</span><span class="o">.</span><span class="n">ttest_1samp</span><span class="p">(</span><span class="n">diff_pvs</span><span class="p">,</span> <span class="mi">0</span><span class="p">)))</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inflex Diffs t-stat from scipy: 
-TtestResult(statistic=62.67642930559402, pvalue=0.0, df=9999)
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>PV Diffs t-stat: 
+TtestResult(statistic=30.40210175067427, pvalue=3.3480671250083484e-167, df=1999)
 </pre></div>
 </div>
 </div>
 </div>
+<section id="pvs-cumulative-distribution-target-curves">
+<h5>PVs Cumulative Distribution (‘Target Curves’)<a class="headerlink" href="#pvs-cumulative-distribution-target-curves" title="Permalink to this heading">#</a></h5>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sns</span><span class="o">.</span><span class="n">ecdfplot</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">inflex_pvs</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sns</span><span class="o">.</span><span class="n">ecdfplot</span><span class="p">(</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">pvs</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="s1">&#39;Difference&#39;</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -1106,9 +1155,264 @@ TtestResult(statistic=62.67642930559402, pvalue=0.0, df=9999)
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;Axes: ylabel=&#39;Proportion&#39;&gt;
 </pre></div>
 </div>
-<img alt="_images/c59d50541e9ba11e9e2c246b736531d167cf0370245f20035c79624ac04ca62a.png" src="_images/c59d50541e9ba11e9e2c246b736531d167cf0370245f20035c79624ac04ca62a.png" />
+<img alt="_images/c026e87d2ada1a3d5206aaa6c04052b5240079c68af0c1a9d16d384b3b8f5594.png" src="_images/c026e87d2ada1a3d5206aaa6c04052b5240079c68af0c1a9d16d384b3b8f5594.png" />
 </div>
 </div>
+</section>
+</section>
+<section id="realized-irr-at-market-value-price">
+<h4>Realized IRR at Market Value Price<a class="headerlink" href="#realized-irr-at-market-value-price" title="Permalink to this heading">#</a></h4>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">inflex_irrs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="n">scenario</span><span class="o">.</span><span class="n">irrs</span><span class="o">.</span><span class="n">movements</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">scenario</span> <span class="ow">in</span> <span class="n">inflex_scenarios</span><span class="p">])</span>
+<span class="n">flex_irrs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="n">scenario</span><span class="o">.</span><span class="n">irrs</span><span class="o">.</span><span class="n">movements</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">scenario</span> <span class="ow">in</span> <span class="n">flex_scenarios</span><span class="p">])</span>
+<span class="n">diff_irrs</span> <span class="o">=</span> <span class="n">flex_irrs</span> <span class="o">-</span> <span class="n">inflex_irrs</span>
+
+<span class="n">irrs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+    <span class="s1">&#39;Inflexible&#39;</span><span class="p">:</span> <span class="n">inflex_irrs</span><span class="p">,</span>
+    <span class="s1">&#39;Flexible&#39;</span><span class="p">:</span> <span class="n">flex_irrs</span><span class="p">,</span>
+    <span class="s1">&#39;Difference&#39;</span><span class="p">:</span> <span class="n">diff_irrs</span><span class="p">})</span>
+<span class="n">irrs</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Inflexible</th>
+      <th>Flexible</th>
+      <th>Difference</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>count</th>
+      <td>2000.000000</td>
+      <td>2000.000000</td>
+      <td>2000.000000</td>
+    </tr>
+    <tr>
+      <th>mean</th>
+      <td>0.070222</td>
+      <td>0.301390</td>
+      <td>0.231168</td>
+    </tr>
+    <tr>
+      <th>std</th>
+      <td>0.041764</td>
+      <td>0.358745</td>
+      <td>0.372717</td>
+    </tr>
+    <tr>
+      <th>min</th>
+      <td>-0.025600</td>
+      <td>0.007400</td>
+      <td>-0.131200</td>
+    </tr>
+    <tr>
+      <th>25%</th>
+      <td>0.035475</td>
+      <td>0.095975</td>
+      <td>0.000000</td>
+    </tr>
+    <tr>
+      <th>50%</th>
+      <td>0.066200</td>
+      <td>0.137550</td>
+      <td>0.061850</td>
+    </tr>
+    <tr>
+      <th>75%</th>
+      <td>0.105425</td>
+      <td>0.320750</td>
+      <td>0.281650</td>
+    </tr>
+    <tr>
+      <th>max</th>
+      <td>0.173900</td>
+      <td>1.856900</td>
+      <td>1.810200</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">irrs</span><span class="o">.</span><span class="n">skew</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inflexible    0.211829
+Flexible      1.819036
+Difference    1.746010
+dtype: float64
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">irrs</span><span class="o">.</span><span class="n">kurtosis</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inflexible   -0.955729
+Flexible      2.211048
+Difference    1.979543
+dtype: float64
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;IRR Diffs t-stat: </span><span class="se">\n</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+    <span class="n">ss</span><span class="o">.</span><span class="n">ttest_1samp</span><span class="p">(</span><span class="n">diff_irrs</span><span class="p">,</span> <span class="mi">0</span><span class="p">)))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>IRR Diffs t-stat: 
+TtestResult(statistic=27.737336523879172, pvalue=1.5485411577219973e-143, df=1999)
+</pre></div>
+</div>
+</div>
+</div>
+<section id="irrs-cumulative-distribution-target-curves">
+<h5>IRRs Cumulative Distribution (‘Target Curves’)<a class="headerlink" href="#irrs-cumulative-distribution-target-curves" title="Permalink to this heading">#</a></h5>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sns</span><span class="o">.</span><span class="n">ecdfplot</span><span class="p">(</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">irrs</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="s1">&#39;Difference&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;Axes: ylabel=&#39;Proportion&#39;&gt;
+</pre></div>
+</div>
+<img alt="_images/e9ea5a0d9dde6f6df3a5a0de4eac2bbb05c84a9814954463223d78bde9db5a05.png" src="_images/e9ea5a0d9dde6f6df3a5a0de4eac2bbb05c84a9814954463223d78bde9db5a05.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="irrs-x-pvs">
+<h4>IRRs x PVs<a class="headerlink" href="#irrs-x-pvs" title="Permalink to this heading">#</a></h4>
+<section id="inflexible-model">
+<h5>Inflexible Model<a class="headerlink" href="#inflexible-model" title="Permalink to this heading">#</a></h5>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">inflex_irr_x_pv</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+    <span class="s1">&#39;PV&#39;</span><span class="p">:</span> <span class="n">inflex_pvs</span><span class="p">,</span>
+    <span class="s1">&#39;IRR&#39;</span><span class="p">:</span> <span class="n">inflex_irrs</span><span class="p">,})</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">jointplot</span><span class="p">(</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">inflex_irr_x_pv</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="s1">&#39;PV&#39;</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="s1">&#39;IRR&#39;</span><span class="p">,</span>
+    <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;scatter&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;seaborn.axisgrid.JointGrid at 0x33cd0b880&gt;
+</pre></div>
+</div>
+<img alt="_images/49490ed23d5a2c98c1ed7e57b2b4c502df0b7239df2c68ad3cdf30abb788cf69.png" src="_images/49490ed23d5a2c98c1ed7e57b2b4c502df0b7239df2c68ad3cdf30abb788cf69.png" />
+</div>
+</div>
+</section>
+<section id="id8">
+<h5>Flexible Model<a class="headerlink" href="#id8" title="Permalink to this heading">#</a></h5>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">flex_irr_x_pv</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+    <span class="s1">&#39;PV&#39;</span><span class="p">:</span> <span class="n">flex_pvs</span><span class="p">,</span>
+    <span class="s1">&#39;IRR&#39;</span><span class="p">:</span> <span class="n">flex_irrs</span><span class="p">})</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">jointplot</span><span class="p">(</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">flex_irr_x_pv</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="s1">&#39;PV&#39;</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="s1">&#39;IRR&#39;</span><span class="p">,</span>
+    <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;scatter&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;seaborn.axisgrid.JointGrid at 0x33cfe1030&gt;
+</pre></div>
+</div>
+<img alt="_images/09feeb9b0914bb3c13830123dacf51b9189ab63e280fece9ff4c7ff012ab1cf1.png" src="_images/09feeb9b0914bb3c13830123dacf51b9189ab63e280fece9ff4c7ff012ab1cf1.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="pvs-diffs">
+<h4>PVs Diffs<a class="headerlink" href="#pvs-diffs" title="Permalink to this heading">#</a></h4>
+<section id="pv-difference-as-a-function-of-inflex-pv">
+<h5>PV Difference as a function of Inflex PV<a class="headerlink" href="#pv-difference-as-a-function-of-inflex-pv" title="Permalink to this heading">#</a></h5>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">diff_pvs_x_inflex_pvs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+    <span class="s1">&#39;Inflexible PVs&#39;</span><span class="p">:</span> <span class="n">inflex_pvs</span><span class="p">,</span>
+    <span class="s1">&#39;Difference in PV&#39;</span><span class="p">:</span> <span class="n">diff_pvs</span><span class="p">})</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">jointplot</span><span class="p">(</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">diff_pvs_x_inflex_pvs</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="s1">&#39;Inflexible PVs&#39;</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="s1">&#39;Difference in PV&#39;</span><span class="p">,</span>
+    <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;hist&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;seaborn.axisgrid.JointGrid at 0x2f4ba3eb0&gt;
+</pre></div>
+</div>
+<img alt="_images/a9b18da8efa3b8d6d75cb7f5b665eb4d2643279bc2eeb64439ac0e3d23a8822d.png" src="_images/a9b18da8efa3b8d6d75cb7f5b665eb4d2643279bc2eeb64439ac0e3d23a8822d.png" />
+</div>
+</div>
+</section>
+<section id="irr-difference-as-a-function-of-inflex-irr">
+<h5>IRR Difference as a function of Inflex IRR<a class="headerlink" href="#irr-difference-as-a-function-of-inflex-irr" title="Permalink to this heading">#</a></h5>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">diff_irrs_x_inflex_irrs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+    <span class="s1">&#39;Inflexible IRRs&#39;</span><span class="p">:</span> <span class="n">inflex_irrs</span><span class="p">,</span>
+    <span class="s1">&#39;Difference in IRR&#39;</span><span class="p">:</span> <span class="n">diff_irrs</span><span class="p">})</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">jointplot</span><span class="p">(</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">diff_irrs_x_inflex_irrs</span><span class="p">,</span>
+    <span class="n">x</span><span class="o">=</span><span class="s1">&#39;Inflexible IRRs&#39;</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="s1">&#39;Difference in IRR&#39;</span><span class="p">,</span>
+    <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;hist&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;seaborn.axisgrid.JointGrid at 0x33cd923b0&gt;
+</pre></div>
+</div>
+<img alt="_images/3d82c0aaf4b82c7210fe54576554d7bedccde256b80f2acc727eee4e904e16e3.png" src="_images/3d82c0aaf4b82c7210fe54576554d7bedccde256b80f2acc727eee4e904e16e3.png" />
+</div>
+</div>
+</section>
+</section>
 </section>
 </section>
 </section>
@@ -1185,7 +1489,27 @@ TtestResult(statistic=62.67642930559402, pvalue=0.0, df=9999)
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#comparing-models">Comparing Models</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inflexible-base-model">Inflexible (Base) Model</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#flexible-model">Flexible Model</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#results">Results</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#results">Results</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#time-0-present-values-at-occ">Time 0 Present Values at OCC</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#pvs-cumulative-distribution-target-curves">PVs Cumulative Distribution (‘Target Curves’)</a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#realized-irr-at-market-value-price">Realized IRR at Market Value Price</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#irrs-cumulative-distribution-target-curves">IRRs Cumulative Distribution (‘Target Curves’)</a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#irrs-x-pvs">IRRs x PVs</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#inflexible-model">Inflexible Model</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">Flexible Model</a></li>
+</ul>
+</li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pvs-diffs">PVs Diffs</a><ul class="nav section-nav flex-column">
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#pv-difference-as-a-function-of-inflex-pv">PV Difference as a function of Inflex PV</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#irr-difference-as-a-function-of-inflex-irr">IRR Difference as a function of Inflex IRR</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -1211,7 +1535,7 @@ By Daniel Fink
     
   <p class="copyright">
     
-      © Copyright 2022.
+      © Copyright 2023.
       <br/>
     
   </p>
