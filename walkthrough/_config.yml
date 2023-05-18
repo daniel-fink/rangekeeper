@@ -3,12 +3,13 @@
 
 title: Rangekeeper
 author: Daniel Fink
-#logo: logo.png
+copyright: '2023'
+logo: resources/rangekeeper.jpg
 
 # Force re-execution of notebooks on each build.
 # See https://jupyterbook.org/content/execute.html
 execute:
-  execute_notebooks: force
+  execute_notebooks: cache
   timeout: 6000
 
 # Add a bibtex file so that we can create citations
@@ -17,7 +18,7 @@ bibtex_bibfiles:
 
 # Information about where the book exists on the web
 repository:
-  url: https://github.com/executablebooks/jupyter-book  # Online location of your book
+  url: https://github.com/daniel-fink/rangekeeper  # Online location of your book
   path_to_book: walkthrough  # Optional path to your book, relative to the repository root
   branch: master  # Which branch of the repository should be used when creating links (optional)
 
