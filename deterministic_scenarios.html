@@ -7,7 +7,7 @@
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
     <title>Deterministic Scenario Analysis &#8212; Rangekeeper</title>
   
@@ -136,8 +136,14 @@ const thebe_selector_output = ".output, .cell_output"
   
   
   
+    
+    
+      
+    
+    
+    <img src="_static/rangekeeper.jpg" class="logo__image only-light" alt="Logo image"/>
+    <script>document.write(`<img src="_static/rangekeeper.jpg" class="logo__image only-dark" alt="Logo image"/>`);</script>
   
-    <p class="title logo__title">Rangekeeper</p>
   
 </a></div>
         <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
@@ -146,7 +152,7 @@ const thebe_selector_output = ".output, .cell_output"
         <ul class="nav bd-sidenav bd-sidenav__home-link">
             <li class="toctree-l1">
                 <a class="reference internal" href="intro.html">
-                    Exposition
+                    Rangekeeper
                 </a>
             </li>
         </ul>
@@ -155,6 +161,7 @@ const thebe_selector_output = ".output, .cell_output"
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Deterministic Scenario Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="market_dynamics.html">Real Estate Pricing Factor Dynamics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="flexibility_intro.html">Introduction to Modeling Flexibility</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flexibility_under_uncertainty.html">Flexibility under Uncertainty</a></li>
 </ul>
 
     </div>
@@ -209,7 +216,7 @@ const thebe_selector_output = ".output, .cell_output"
       
       
       
-      <li><a href="https://github.com/executablebooks/jupyter-book" target="_blank"
+      <li><a href="https://github.com/daniel-fink/rangekeeper" target="_blank"
    class="btn btn-sm btn-source-repository-button dropdown-item"
    title="Source repository"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -226,7 +233,7 @@ const thebe_selector_output = ".output, .cell_output"
       
       
       
-      <li><a href="https://github.com/executablebooks/jupyter-book/issues/new?title=Issue%20on%20page%20%2Fdeterministic_scenarios.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/daniel-fink/rangekeeper/issues/new?title=Issue%20on%20page%20%2Fdeterministic_scenarios.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -375,7 +382,7 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="deterministic-scenario-analysis">
 <h1>Deterministic Scenario Analysis<a class="headerlink" href="#deterministic-scenario-analysis" title="Permalink to this heading">#</a></h1>
-<p>Chapter 4 of <span id="id1">[<a class="reference internal" href="basic_dcf.html#id6" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> presents the concept of various “scenarios” of
+<p>Chapter 4 of <span id="id1">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> presents the concept of various “scenarios” of
 cashflows by varying key input parameters or modyfing how certain cashflows are
 produced.</p>
 <p>In order to replicate this with <em>Rangekeeper</em>, we integrate all the steps to
@@ -386,7 +393,7 @@ scenarios by simply changing the parameters in the dictionary.</p>
 <figure class="align-default" id="farevuu-table4-1">
 <a class="reference internal image-reference" href="_images/FaREVuU-table4.1.png"><img alt="_images/FaREVuU-table4.1.png" src="_images/FaREVuU-table4.1.png" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-number">Fig. 2 </span><span class="caption-text">Table 4.1 from <span id="id2">[<a class="reference internal" href="basic_dcf.html#id6" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span></span><a class="headerlink" href="#farevuu-table4-1" title="Permalink to this image">#</a></p>
+<p><span class="caption-number">Fig. 2 </span><span class="caption-text">Table 4.1 from <span id="id2">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span></span><a class="headerlink" href="#farevuu-table4-1" title="Permalink to this image">#</a></p>
 </figcaption>
 </figure>
 <p>Again we import the necessary libraries:</p>
@@ -819,7 +826,7 @@ with a <code class="docutils literal notranslate"><span class="pre">Projection</
 </section>
 <section id="analysis-and-expected-value-ev">
 <h2>Analysis and Expected Value (EV)<a class="headerlink" href="#analysis-and-expected-value-ev" title="Permalink to this heading">#</a></h2>
-<p><span id="id3">[<a class="reference internal" href="basic_dcf.html#id6" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> Table 4.1 continues with calculating the Expected Value (EV)
+<p><span id="id3">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> Table 4.1 continues with calculating the Expected Value (EV)
 of the outcome, given that both optimistic and pessimistic scenarios have a 50%
 chance of occuring:</p>
 <div class="cell docutils container">
@@ -873,7 +880,7 @@ Name: Internal Rates of Return, dtype: float64
 </div>
 </div>
 </div>
-<p>As documented in <span id="id4">[<a class="reference internal" href="basic_dcf.html#id6" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> Chapter 4.3, we can calculate the value of
+<p>As documented in <span id="id4">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> Chapter 4.3, we can calculate the value of
 the flexibility, assuming it is possible to sell the property at will:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -996,7 +1003,7 @@ By Daniel Fink
     
   <p class="copyright">
     
-      © Copyright 2022.
+      © Copyright 2023.
       <br/>
     
   </p>
