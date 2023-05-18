@@ -157,6 +157,7 @@ const thebe_selector_output = ".output, .cell_output"
 <li class="toctree-l1"><a class="reference internal" href="deterministic_scenarios.html">Deterministic Scenario Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="market_dynamics.html">Real Estate Pricing Factor Dynamics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="flexibility_intro.html">Introduction to Modeling Flexibility</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flexibility_under_uncertainty.html">Flexibility under Uncertainty</a></li>
 </ul>
 
     </div>
@@ -360,7 +361,6 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#a-stream">A <code class="docutils literal notranslate"><span class="pre">Stream</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bibliography">Bibliography</a></li>
 </ul>
             </nav>
         </div>
@@ -374,16 +374,16 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="a-basic-discounted-cash-flow-valuation">
 <h1>A Basic Discounted Cash Flow Valuation<a class="headerlink" href="#a-basic-discounted-cash-flow-valuation" title="Permalink to this heading">#</a></h1>
-<p>Chapter 1 of <span id="id1">[<a class="reference internal" href="#id6" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> showcases the structure and functionality of a
+<p>Chapter 1 of <span id="id1">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> showcases the structure and functionality of a
 <em>basic</em> Discounted Cash Flow (DCF) Valuation in use in a real estate project.
 In this notebook, the core computational objects (classes), their functionality,
 and how they are composed together into a valuation model are outlined.</p>
-<p>To do so, we will be replicating Table 1.1 from <span id="id2">[<a class="reference internal" href="#id6" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span>, which
+<p>To do so, we will be replicating Table 1.1 from <span id="id2">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span>, which
 describes this DCF:</p>
 <figure class="align-default" id="farevuu-table1-1">
 <a class="reference internal image-reference" href="_images/FaREVuU-table1.1.jpg"><img alt="_images/FaREVuU-table1.1.jpg" src="_images/FaREVuU-table1.1.jpg" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-number">Fig. 1 </span><span class="caption-text">Table 1.1 From <span id="id3">[<a class="reference internal" href="#id6" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span></span><a class="headerlink" href="#farevuu-table1-1" title="Permalink to this image">#</a></p>
+<p><span class="caption-number">Fig. 1 </span><span class="caption-text">Table 1.1 From <span id="id3">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span></span><a class="headerlink" href="#farevuu-table1-1" title="Permalink to this image">#</a></p>
 </figcaption>
 </figure>
 <p>First, we will need to import any neccesary libraries, as well as the
@@ -892,7 +892,7 @@ the project’s complete cashflows:</p>
 </tbody>
 </table></div></div>
 </div>
-<p>If we wished to replicate Table 1.1 from <span id="id4">[<a class="reference internal" href="#id6" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> we can construct a <code class="docutils literal notranslate"><span class="pre">Stream</span></code> like so:</p>
+<p>If we wished to replicate Table 1.1 from <span id="id4">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> we can construct a <code class="docutils literal notranslate"><span class="pre">Stream</span></code> like so:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">table</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
@@ -981,17 +981,6 @@ Present Value (PV):</p>
 </div>
 </section>
 </section>
-<section id="bibliography">
-<h2>Bibliography<a class="headerlink" href="#bibliography" title="Permalink to this heading">#</a></h2>
-<div class="docutils container" id="id5">
-<div class="citation" id="id6" role="doc-biblioentry">
-<span class="label"><span class="fn-bracket">[</span>dNG18<span class="fn-bracket">]</span></span>
-<span class="backrefs">(<a role="doc-backlink" href="#id1">1</a>,<a role="doc-backlink" href="#id2">2</a>,<a role="doc-backlink" href="#id3">3</a>,<a role="doc-backlink" href="#id4">4</a>)</span>
-<p>R. de Neufville and D. Geltner. <em>Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers</em>. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: <a class="reference external" href="https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470">https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470</a>, <a class="reference external" href="https://arxiv.org/abs/https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470">arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470</a>, <a class="reference external" href="https://doi.org/https://doi.org/10.1002/9781119106470">doi:https://doi.org/10.1002/9781119106470</a>.</p>
-</div>
-</div>
-</div>
-</section>
 </section>
 
     <script type="text/x-thebe-config">
@@ -1071,7 +1060,6 @@ Present Value (PV):</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#a-stream">A <code class="docutils literal notranslate"><span class="pre">Stream</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bibliography">Bibliography</a></li>
 </ul>
   </nav></div>
 
