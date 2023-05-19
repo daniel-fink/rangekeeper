@@ -1,6 +1,6 @@
 # Rangekeeper
 
-Rangekeeper is a library assisting financial modelling in real estate scenario planning, decision-making, cashflow forecasting, and the like.
+Rangekeeper is an open-source [library](https://github.com/daniel-fink/rangekeeper) assisting financial modelling in real estate scenario planning, decision-making, cashflow forecasting, and the like.
 
 It decomposes elements of the Discounted Cash Flow (DCF) Proforma modelling approach into recomposable code functions that can be wired together to form a full model.
 
