@@ -9,7 +9,7 @@ under Uncertainty: A Practical Guide for Developers](https://www.wiley.com/go/ge
 
 This series of notebooks provides a walkthrough of the library in parallel with chapters of the book. It is intended for use by practitioners who are both familiar with the book's content, and well-versed in data-science-oriented programming. 
 
-If you wish to tinker with the notebooks themselves, please feel free to open them in Google Colab, by using the ![Interactive Notebook Launch Icon](resources/rocket.png) icon at the top of each notebook.
+If you wish to tinker with the notebooks themselves, please feel free to open them in Google Colab, by using the ![Interactive Notebook Launch Icon](resources/rocket.png) icon at the top of each notebook. Note: you will need to add a `!pip install rangekeeper` cell at the top of each notebook to install the library into your Colab environment.
 
 ## Table of Contents
 ```{tableofcontents}
