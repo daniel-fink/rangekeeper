@@ -7,8 +7,9 @@
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Index &#8212; Rangekeeper</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Examples &#8212; Rangekeeper</title>
   
   
   
@@ -60,8 +61,8 @@ const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
     <script async="async" src="_static/sphinx-thebe.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'genindex';</script>
-    <link rel="index" title="Index" href="#" />
+    <script>DOCUMENTATION_OPTIONS.pagename = 'examples';</script>
+    <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -163,7 +164,7 @@ const thebe_selector_output = ".output, .cell_output"
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Using Rangekeeper in Examples</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="load_design_scenario.html">Loading a Design Scenario</a></li>
+<li class="toctree-l1"><a class="reference internal" href="speckle.html">Loading a Design Scenario</a></li>
 </ul>
 
     </div>
@@ -235,7 +236,7 @@ const thebe_selector_output = ".output, .cell_output"
       
       
       
-      <li><a href="https://github.com/daniel-fink/rangekeeper/issues/new?title=Issue%20on%20page%20%2Fgenindex.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/daniel-fink/rangekeeper/issues/new?title=Issue%20on%20page%20%2Fexamples.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -247,6 +248,54 @@ const thebe_selector_output = ".output, .cell_output"
   </span>
 <span class="btn__text-container">Open issue</span>
 </a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/examples.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
 </li>
       
   </ul>
@@ -297,7 +346,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1></h1>
+    <h1>Examples</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -311,13 +360,30 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article" role="main">
                   
+  <section class="tex2jax_ignore mathjax_ignore" id="examples">
+<h1>Examples<a class="headerlink" href="#examples" title="Permalink to this heading">#</a></h1>
+<p>The following notebooks illustrate examples of using the library, with a focus on I/O and requirements around object models.</p>
+</section>
 
-<h1 id="index">Index</h1>
-
-<div class="genindex-jumpbox">
- 
-</div>
-
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
 
                 </article>
               
