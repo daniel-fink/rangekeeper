@@ -104,6 +104,8 @@ class Speckle:
         else:
             return False
 
+
+
     # @staticmethod
     # def query(
     #         stream_id: str,
