@@ -6,31 +6,35 @@ using Speckle.Core.Models;
 
 namespace Rangekeeper;
 
-public class Assembly : Collection, IEntity
+public class Assembly : Base, IEntity
 {
     public Assembly() { }
 
     public string entityId { get; }
+    
+    public string name { get; }
 
-    public string assemblyType { get; set; }
+    public string type { get; }
 
-    public new string collectionType => "Rangekeeper Assembly";
+    // public new string collectionType => "Rangekeeper Assembly";
 
-    // [DetachProperty] 
-    // public HashSet<Base> entities { get; } = new (new BaseComparer());
+    [DetachProperty] 
+    public HashSet<Base> entities { get; } = new (new Assembly.BaseComparer());
 
-    public List<string> entityIds => this.elements.Select(obj => {
-        obj.TryGetProperty("entityId", out object entityId);
-        return (string)entityId;
-    }).ToList();
+    public List<string> entityIds => this.entities
+        .Select(obj => { obj
+                .TryGetProperty("entityId", out object entityId);
+            return (string)entityId; })
+        .ToList();
 
     public List<Relationship> relationships { get; } = new();
     
-    public Assembly(string name, string assemblyType)
+    public Assembly(string name, string type)
     {
         this.name = name;
-        this.assemblyType = assemblyType;
+        this.type = type;
         this.entityId = Guid.NewGuid().ToString();
+        this.entities.Add(this);
     }
 
     public void AddRelationship(Relationship relationship)
@@ -38,14 +42,14 @@ public class Assembly : Collection, IEntity
         if (!this.relationships.Contains(relationship))
         {
             this.relationships.Add(relationship);
-            this.elements.Add(relationship.source);
-            this.elements.Add(relationship.target);
+            this.entities.Add(relationship.source);
+            this.entities.Add(relationship.target);
         }
     }
     
     public class BaseComparer : IEqualityComparer<Base>
     {
-        public bool Equals(Base entity, Base other)
+        public bool Equals(Base entity, Base? other)
         {
             if (other is null) return false;
             if (ReferenceEquals(entity, other)) return true;
