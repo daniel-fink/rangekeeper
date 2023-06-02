@@ -13,7 +13,7 @@ from typing import List, Callable, Dict
 import matplotlib
 import matplotlib.pyplot as plt
 import networkx as nx
-
+from pyvis.network import Network
 # In addition, in order to enable pytest to find all modules,
 # run tests via a 'python -m pytest tests/<test_file>.py' command from the root directory of this project
 import pandas as pd
@@ -43,7 +43,7 @@ class TestApi:
         root_assembly = rk.api.Speckle.to_entity(rk.api.Speckle.parse(model['@scenario'])[0])
         print('Root Assembly: {0}'.format(root_assembly))
         #
-        buildingA = [node for node in root_assembly.nodes if node.name == 'BuildingA']
+        buildingA = [node for node in root_assembly.nodes if node.name == 'BuildingA'][0]
         # buildingA = root_assembly.entities.where(lambda entity: entity.name == 'BuildingA').first()
         print('BuildingA: {0}'.format(type(buildingA)))
 
@@ -53,8 +53,8 @@ class TestApi:
         # buildingA_edges = buildingA.edges(data=True)
         # print('BuildingA Edges: \n {0}\n'.format(buildingA_edges))
         #
-        # buildingA_containment = buildingA.get_relatives()
-        # print('BuildingA Containment: \n {0}\n'.format(buildingA_containment))
+        buildingA_containment = buildingA.get_relatives(outgoing=True, relationship_type='spatiallyContains')
+        print('BuildingA Containment: \n {0}\n'.format(buildingA_containment))
         # #
         # buildingA_resi = buildingA.entities.where(lambda entity: entity.name == 'BuildingA.Residential').first()
         # print('BuildingA Residential: \n {0}'.format(buildingA_resi))
@@ -87,9 +87,11 @@ class TestApi:
         # develop.nodes(data=True)
         print('Develop: \n {0}'.format(develop.nodes(data=True)))
 
-        pos = nx.nx_agraph.graphviz_layout(develop, prog="twopi")
-        nx.draw(develop, pos)
-        plt.show()
+        develop.plot()
+
+        # pos = nx.nx_agraph.graphviz_layout(develop, prog="sfdp")
+        # nx.draw(develop, pos)
+        # plt.show()
 
 
 

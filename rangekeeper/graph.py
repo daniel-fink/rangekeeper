@@ -6,6 +6,7 @@ from typing import List, Dict, Union, Optional
 import pprint
 
 import networkx as nx
+from pyvis import network, options
 from pint import Quantity
 # from py_linq import Enumerable
 
@@ -118,7 +119,7 @@ class Entity:
                 relatives = successors
             else:
                 for successor in successors:
-                    if assembly.get_edge_data(self, successor)['type'] == relationship_type:
+                    if assembly.get_edge_data(self, successor, key=relationship_type) is not None:
                         relatives.append(successor)
         elif not outgoing:
             predecessors = list(assembly.predecessors(n=self))
@@ -126,7 +127,7 @@ class Entity:
                 relatives = predecessors
             else:
                 for predecessor in predecessors:
-                    if assembly.get_edge_data(predecessor, self)['type'] == relationship_type:
+                    if assembly.get_edge_data(predecessor, self, key=relationship_type) is not None:
                         relatives.append(predecessor)
 
         elif outgoing is None:
@@ -158,7 +159,7 @@ class Assembly(nx.MultiDiGraph, Entity):
             self.name,
             self.type,
             self.nodes(data=True),
-            self.edges(data=True))
+            self.edges(keys=True))
 
     @classmethod
     def from_properties(
@@ -180,13 +181,13 @@ class Assembly(nx.MultiDiGraph, Entity):
         return assembly
 
     def add_relationship(self, relationship: tuple[Entity, Entity, str]):
-        self.add_edge(relationship[0], relationship[1], type=relationship[2])
+        self.add_edge(relationship[0], relationship[1], key=relationship[2])
 
     def add_relationships(self, relationships: List[tuple[Entity, Entity, str]]):
         for relationship in relationships:
             self.add_relationship(relationship)
 
-    def join(
+    def merge(
             self,
             others: List[Assembly],
             name: str,
@@ -225,13 +226,12 @@ class Assembly(nx.MultiDiGraph, Entity):
             self,
             name: str,
             type: str,
-            # relationship_type: str = None,
             graph: Optional[Assembly] = None) -> Assembly:
         if graph is None:
             graph = self
         subassemblies = self.get_subassemblies()
         if len(subassemblies) > 0:
-            graph = graph.join(
+            graph = graph.merge(
                 others=subassemblies,
                 name=name,
                 type=type)
@@ -239,47 +239,51 @@ class Assembly(nx.MultiDiGraph, Entity):
                 subassembly.develop(
                     name=name,
                     type=type,
-                    # relationship_type=relationship_type,
                     graph=graph)
         return graph
 
+    def _to_network(self) -> network.Network:
+        nt = network.Network(
+            directed=True,
+            filter_menu=True,
+            layout=True)
+        for node in self.nodes():
+            if isinstance(node, Assembly):
+                nt.add_node(
+                    n_id=node.id,
+                    label=node.name,
+                    title=node.type,
+                    shape='circle',
+                    borderWidth=2,
+                    labelHighlightBold=True,
+                    level=len(self.in_edges(node)))
+            else:
+                nt.add_node(
+                    n_id=node.id,
+                    label=node.name,
+                    title=node.type,
+                    shape='dot',
+                    size=10,
+                    level=len(self.in_edges(node)) + 1)
+        for edge in self.edges(keys=True):
+            nt.add_edge(
+                source=edge[0].id,
+                to=edge[1].id,
+                title=edge[2],
+                arrows='to',
+                arrowStrikethrough=False)
+        nt.set_edge_smooth('dynamic')
+        return nt
 
-        # relatives = self.get_relatives(relationship_type=relationship_type)
-        # if len(relatives) > 0:
-        #     for relative in relatives:
-        #         if (relative is not self) and (relative is not graph):
-        #             if isinstance(relative, Assembly):
-        #                 join = graph.join(
-        #                     other=relative,
-        #                     name=name,
-        #                     type=type)
-        #                 return relative.develop(
-        #                     name=name,
-        #                     type=type,
-        #                     relationship_type=relationship_type,
-        #                     graph=join)
-        #             else:
-        #                 return graph
-        #         else:
-        #             return graph
-        # else:
-        #     return graph
+    def plot(self):
+        nt = self._to_network()
+        nt.show('graph.html', notebook=False)
 
 
 
 
 
 
-    # def descedants(
-    #         self,
-    #         entities: List[Entity] = None) -> List[Entity]:
-    #     children = self.entities.to_list()
-    #     if len(children) > 0:
-    #         if entities is None:
-    #             entities = [children]
-    #         else:
-    #             entities.extend(children)
-    #         for child in children:
-    #             if isinstance(child, Assembly):
-    #                 child.descedants(entities=entities)
-    #     return entities
+
+
+

@@ -1100,6 +1100,22 @@ files = [
 dev = ["hypothesis"]
 
 [[package]]
+name = "jsonpickle"
+version = "3.0.1"
+description = "Python library for serializing any arbitrary object graph into JSON"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "jsonpickle-3.0.1-py2.py3-none-any.whl", hash = "sha256:130d8b293ea0add3845de311aaba55e6d706d0bb17bc123bd2c8baf8a39ac77c"},
+    {file = "jsonpickle-3.0.1.tar.gz", hash = "sha256:032538804795e73b94ead410800ac387fdb6de98f8882ac957fcd247e3a85200"},
+]
+
+[package.extras]
+docs = ["jaraco.packaging (>=3.2)", "rst.linker (>=1.9)", "sphinx"]
+testing = ["ecdsa", "feedparser", "gmpy2", "numpy", "pandas", "pymongo", "pytest (>=3.5,!=3.7.3)", "pytest-black-multipy", "pytest-checkdocs (>=1.2.3)", "pytest-cov", "pytest-flake8 (>=1.1.1)", "scikit-learn", "sqlalchemy"]
+testing-libs = ["simplejson", "ujson"]
+
+[[package]]
 name = "jsonpointer"
 version = "2.3"
 description = "Identify specific nodes in a JSON document (RFC 6901)"
@@ -2758,6 +2774,16 @@ files = [
 plugins = ["importlib-metadata"]
 
 [[package]]
+name = "pygraphviz"
+version = "1.11"
+description = "Python interface to Graphviz"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pygraphviz-1.11.zip", hash = "sha256:a97eb5ced266f45053ebb1f2c6c6d29091690503e3a5c14be7f908b37b06f2d4"},
+]
+
+[[package]]
 name = "pyparsing"
 version = "3.0.9"
 description = "pyparsing module - Classes and methods to define and execute parsing grammars"
@@ -2864,6 +2890,22 @@ files = [
     {file = "pytz-2023.3-py2.py3-none-any.whl", hash = "sha256:a151b3abb88eda1d4e34a9814df37de2a80e301e68ba0fd856fb9b46bfbbbffb"},
     {file = "pytz-2023.3.tar.gz", hash = "sha256:1d8ce29db189191fb55338ee6d0387d82ab59f3d00eac103412d64e0ebd0c588"},
 ]
+
+[[package]]
+name = "pyvis"
+version = "0.3.2"
+description = "A Python network graph visualization library"
+optional = false
+python-versions = ">3.6"
+files = [
+    {file = "pyvis-0.3.2-py3-none-any.whl", hash = "sha256:5720c4ca8161dc5d9ab352015723abb7a8bb8fb443edeb07f7a322db34a97555"},
+]
+
+[package.dependencies]
+ipython = ">=5.3.0"
+jinja2 = ">=2.9.6"
+jsonpickle = ">=1.4.1"
+networkx = ">=1.11"
 
 [[package]]
 name = "pywin32"
@@ -4435,4 +4477,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9, <3.11"
-content-hash = "53cf6875d9c3efc889bbf3a65bc0a1ab4e8d4fa47bdbf80e5856599417306fad"
+content-hash = "3d58aeb845ae8b56c88e90b9d7cab6d7f884fd808c65fa7568dc5a769a576e56"
