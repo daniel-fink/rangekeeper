@@ -188,27 +188,32 @@ class Assembly(nx.MultiDiGraph, Entity):
 
     def join(
             self,
-            other: Assembly,
+            others: List[Assembly],
             name: str,
             type: str):
-        composition = nx.compose(self, other)
+        all = others.copy()
+        all.append(self)
+        composition = nx.compose_all(all)
 
         composition.name = name
         composition.type = type
         composition.id = str(uuid.uuid4())
 
         composition.attributes = self.attributes
-        composition.attributes.update(other.attributes)
+        for other in others:
+            composition.attributes.update(other.attributes)
 
         composition.events = self.events
-        composition.events.extend(other.events)
+        for other in others:
+            composition.events.extend(other.events)
 
         composition.measurements = self.measurements
-        composition.measurements.update(other.measurements)
+        for other in others:
+            composition.measurements.update(other.measurements)
 
         return composition
 
-    def subassemblies(self):
+    def get_subassemblies(self):
         subassemblies = []
         for entity in self.nodes():
             if isinstance(entity, Assembly):
@@ -220,30 +225,45 @@ class Assembly(nx.MultiDiGraph, Entity):
             self,
             name: str,
             type: str,
-            relationship_type: str = None,
+            # relationship_type: str = None,
             graph: Optional[Assembly] = None) -> Assembly:
         if graph is None:
             graph = self
-        relatives = self.get_relatives(relationship_type=relationship_type)
-        if len(relatives) > 0:
-            for relative in relatives:
-                if (relative is not self) and (relative is not graph):
-                    if isinstance(relative, Assembly):
-                        join = graph.join(
-                            other=relative,
-                            name=name,
-                            type=type)
-                        return relative.develop(
-                            name=name,
-                            type=type,
-                            relationship_type=relationship_type,
-                            graph=join)
-                    else:
-                        return graph
-                else:
-                    return graph
-        else:
-            return graph
+        subassemblies = self.get_subassemblies()
+        if len(subassemblies) > 0:
+            graph = graph.join(
+                others=subassemblies,
+                name=name,
+                type=type)
+            for subassembly in subassemblies:
+                subassembly.develop(
+                    name=name,
+                    type=type,
+                    # relationship_type=relationship_type,
+                    graph=graph)
+        return graph
+
+
+        # relatives = self.get_relatives(relationship_type=relationship_type)
+        # if len(relatives) > 0:
+        #     for relative in relatives:
+        #         if (relative is not self) and (relative is not graph):
+        #             if isinstance(relative, Assembly):
+        #                 join = graph.join(
+        #                     other=relative,
+        #                     name=name,
+        #                     type=type)
+        #                 return relative.develop(
+        #                     name=name,
+        #                     type=type,
+        #                     relationship_type=relationship_type,
+        #                     graph=join)
+        #             else:
+        #                 return graph
+        #         else:
+        #             return graph
+        # else:
+        #     return graph
 
 
 

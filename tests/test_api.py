@@ -44,7 +44,8 @@ class TestApi:
         print('Root Assembly: {0}'.format(root_assembly))
         #
         buildingA = [node for node in root_assembly.nodes if node.name == 'BuildingA']
-        print('BuildingA: {0}'.format(type(buildingA[0])))
+        # buildingA = root_assembly.entities.where(lambda entity: entity.name == 'BuildingA').first()
+        print('BuildingA: {0}'.format(type(buildingA)))
 
         root_assembly_nodes = root_assembly.nodes
         print('Root Assembly Nodes: {0}'.format(root_assembly_nodes))
@@ -58,7 +59,7 @@ class TestApi:
         # buildingA_resi = buildingA.entities.where(lambda entity: entity.name == 'BuildingA.Residential').first()
         # print('BuildingA Residential: \n {0}'.format(buildingA_resi))
         #
-        # buildingB = root_assembly.entities.where(lambda entity: entity.name == 'BuildingB').first()
+        # buildingBlinq = root_assembly.entities.where(lambda entity: entity.name == 'BuildingB').first_or_default()
         buildingB = [node for node in root_assembly.nodes if node.name == 'BuildingB']
         print('BuildingB: {0}'.format(buildingB))
         #
@@ -77,18 +78,18 @@ class TestApi:
         #     type='foo')
         # print('Join: \n {0}'.format(join))
 
-        subassemblies = root_assembly.subassemblies()
+        subassemblies = root_assembly.get_subassemblies()
         print('Subassemblies: \n {0}'.format(subassemblies))
 
-        # develop = root_assembly.develop(
-        #     name='Develop',
-        #     type='foo')
-        # # develop.nodes(data=True)
-        # print('Develop: \n {0}'.format(develop.nodes(data=True)))
+        develop = root_assembly.develop(
+            name='Develop',
+            type='foo')
+        # develop.nodes(data=True)
+        print('Develop: \n {0}'.format(develop.nodes(data=True)))
 
-        # pos = nx.nx_agraph.graphviz_layout(join, prog="twopi")
-        # nx.draw(develop)#, pos)
-        # plt.show()
+        pos = nx.nx_agraph.graphviz_layout(develop, prog="twopi")
+        nx.draw(develop, pos)
+        plt.show()
 
 
 
