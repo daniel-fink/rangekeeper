@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Threading.Tasks;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
@@ -31,25 +32,28 @@ namespace Rangekeeper.Components
                 "Assembly Name",
                 "N",
                 "Name of the Assembly",
-                GH_ParamAccess.item
-            );
+                GH_ParamAccess.item);
+            
             pManager.AddTextParameter(
-                "Assembly Type",
+                "Type",
                 "Ty",
                 "Type of Assembly. (It is best to use a standardised vocabulary)",
                 GH_ParamAccess.item);
+            
             pManager.AddGenericParameter(
                 "Source Speckle Objects",
                 "S",
-                "Speckle Objects from which a Relationship originates.",
-                GH_ParamAccess.list
-            );
+                "Speckle Objects from which a Relationship originates. If this is empty, the Assembly itself will be used as source for all Relationships.",
+                GH_ParamAccess.list);
+            pManager[2].Optional = true;
+            
             pManager.AddGenericParameter(
                 "Target Speckle Objects",
                 "T",
-                "Speckle Objects to which a Relationship is directed.",
-                GH_ParamAccess.list
-            );
+                "Speckle Objects to which a Relationship is directed. If this is empty, the Assembly itself will be used as target for all Relationships.",
+                GH_ParamAccess.list);
+            pManager[3].Optional = true;
+            
             pManager.AddTextParameter(
                 "Relationship Types",
                 "R",
@@ -74,15 +78,13 @@ namespace Rangekeeper.Components
             var sources = new List<IGH_Goo>();
             if (!DA.GetDataList(2, sources))
             {
-                this.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "No Source Objects supplied.");
-                return;
+                this.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "No Source Objects supplied. Using Assembly itself as source.");
             }        
             
             var targets = new List<IGH_Goo>();
             if (!DA.GetDataList(3, targets))
             {
-                this.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "No Target Objects supplied.");
-                return;
+                this.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "No Target Objects supplied. Using Assembly itself as target.");
             }
             
             var relationshipTypes = new List<string>();
@@ -129,14 +131,18 @@ namespace Rangekeeper.Components
                     return;
                 }
             }
-
+            
+            var assembly = new Assembly(name, type);
+            if (sourceEntities.Count == 0)
+            {
+                sourceEntities.AddRange(Enumerable.Repeat((Base)assembly, targetEntities.Count));
+            }
             if (!(sourceEntities.Count == targetEntities.Count && targetEntities.Count == relationshipTypes.Count))
             {
                 this.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Error: Number of Sources, Targets and Relationships must match.");
                 return;
             }
 
-            var assembly = new Assembly(name, type);
             for (int i = 0; i < relationshipTypes.Count; i++)
             {
                 assembly.AddRelationship(new Relationship(sourceEntities[i], targetEntities[i], relationshipTypes[i])); 
