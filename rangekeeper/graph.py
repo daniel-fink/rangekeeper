@@ -8,7 +8,7 @@ import pprint
 import networkx as nx
 from pyvis import network, options
 from pint import Quantity
-# from py_linq import Enumerable
+from IPython.display import IFrame
 
 import rangekeeper as rk
 
@@ -242,11 +242,15 @@ class Assembly(nx.MultiDiGraph, Entity):
                     graph=graph)
         return graph
 
-    def _to_network(self) -> network.Network:
+    def _to_network(
+            self,
+            notebook: bool = True) -> network.Network:
         nt = network.Network(
             directed=True,
             filter_menu=True,
-            layout=True)
+            layout=True,
+            notebook=notebook,
+            cdn_resources='in_line')
         for node in self.nodes():
             if isinstance(node, Assembly):
                 nt.add_node(
@@ -275,9 +279,20 @@ class Assembly(nx.MultiDiGraph, Entity):
         nt.set_edge_smooth('dynamic')
         return nt
 
-    def plot(self):
-        nt = self._to_network()
-        nt.show('graph.html', notebook=False)
+    def plot(
+            self,
+            height: int = 800,
+            width: Union[int, str] = '100%',
+            notebook: bool = True,
+            display: bool = False):
+        nt = self._to_network(
+            notebook=notebook)
+        nt.show(
+            name=self.name + '.html',
+            local=False,
+            notebook=notebook)
+        if notebook & display:
+            return IFrame(self.name + '.html', width=width, height=height)
 
 
 

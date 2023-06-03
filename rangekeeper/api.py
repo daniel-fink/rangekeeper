@@ -2,7 +2,6 @@ import os
 from typing import Optional, Union, List, Type
 
 import rangekeeper as rk
-from graph import Assembly, Entity
 from rangekeeper import graph
 
 from specklepy import objects
