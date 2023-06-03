@@ -1,4 +1,4 @@
-# Examples
+# Real Estate Flexibility and Valuation under Uncertainty
 
-The following notebooks illustrate examples of using the library, with a focus on I/O and requirements around object models.
+This series of notebooks provides a walkthrough of the library in parallel with chapters of the book. It is intended for use by practitioners who are both familiar with the book's content, and well-versed in data-science-oriented programming. 
 
