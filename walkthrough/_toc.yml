@@ -3,9 +3,14 @@
 
 format: jb-book
 root: intro
-chapters:
-- file: basic_dcf
-- file: deterministic_scenarios
-- file: market_dynamics
-- file: flexibility_intro
-- file: flexibility_under_uncertainty
+parts:
+  - caption: Real Estate Flexibility and Valuation under Uncertainty
+    chapters:
+      - file: basic_dcf
+      - file: deterministic_scenarios
+      - file: market_dynamics
+      - file: flexibility_intro
+      - file: flexibility_under_uncertainty
+  - caption: Using Rangekeeper in Examples
+    chapters:
+      - file: load_design_scenario
