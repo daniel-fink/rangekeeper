@@ -6,7 +6,7 @@ from pint import Quantity
 import rangekeeper as rk
 
 
-class Space(rk.graph.Element):
+class Space(rk.graph.Entity):
     def __init__(
             self,
             name: str,

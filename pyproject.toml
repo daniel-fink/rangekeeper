@@ -30,6 +30,8 @@ multiprocess = "^0.70.14"
 seaborn = "^0.12.2"
 jupyter-book = "^0.15.1"
 sphinx-rtd-theme = "^1.2.0"
+pygraphviz = "^1.11"
+pyvis = "^0.3.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.2.1"

@@ -1,36 +1,108 @@
-import specklepy
-import specklepy.api.credentials
-import specklepy.api.client
-from specklepy.transports.server import ServerTransport
-from specklepy.api import operations
+import os
+from typing import Optional, Union, List, Type
+
+import rangekeeper as rk
+from rangekeeper import graph
+
 from specklepy import objects
-from specklepy.api.wrapper import StreamWrapper
+from specklepy.api import client, credentials, operations
+from specklepy.transports.server import ServerTransport
 
 
 class Speckle:
     def __init__(
             self,
-            host="speckle.xyz",
-            token=None):
-
-        print("Connecting to {} with {}".format(host, token))
-        self.client = specklepy.api.client.SpeckleClient(host=host)
-        account = specklepy.api.credentials.get_account_from_token(token, host)
+            token: str,
+            host: str = "speckle.xyz"):
+        self.client = client.SpeckleClient(host=host)
+        account = credentials.get_account_from_token(token, host)
         self.client.authenticate_with_account(account)
-        print(self.client)
+        print('{0} {1}'.format(os.linesep, self.client))
 
-    def get_item(
+    def get_commit(
             self,
             stream_id: str,
             commit_id: str):
         stream = self.client.stream.get(id=stream_id)
         transport = ServerTransport(client=self.client, stream_id=stream_id)
-        # latest_commit = stream.branches.items[0].commits.items[0]
 
         commit = self.client.commit.get(stream_id, commit_id)
-        received_base = operations.receive(obj_id=commit.referencedObject, remote_transport=transport)
-        data = received_base
-        return data
+        return operations.receive(obj_id=commit.referencedObject, remote_transport=transport)
+
+    @staticmethod
+    def parse(base: objects.Base,
+              entities: Optional[List[objects.Base]] = None) -> List[objects.Base]:
+        entities = [] if entities is None else entities
+        if isinstance(base, objects.Base):
+            if Speckle.is_entity(base):
+                entities.append(base)
+            member_names = base.get_dynamic_member_names()
+            if len(member_names) > 0:
+                for member_name in member_names:
+                    members = base[member_name]
+                    if isinstance(members, objects.Base):
+                        Speckle.parse(members, entities)
+                    elif isinstance(members, list):
+                        for member in members:
+                            Speckle.parse(member, entities)
+        return entities
+
+    @staticmethod
+    def to_entity(base: objects.Base):# -> Union[Assembly, Entity]:
+        if Speckle.is_entity(base):
+            member_names = base.get_dynamic_member_names()
+            if ('entities' in member_names) & ('relationships' in member_names):
+                return Speckle.to_assembly(base)
+            else:
+                entity = rk.graph.Entity(
+                    id=base['entityId'],
+                    name=base['name'],
+                    type=base['type'],
+                    attributes=getattr(base, 'attributes', None),
+                    events=getattr(base, 'events', None),
+                    measurements=getattr(base, 'measurements', None))
+                return entity
+
+    @staticmethod
+    def to_assembly(base: objects.Base) -> graph.Assembly:
+        # entities: List[rk.graph.Entity]) -> List[tuple[rk.graph.Entity, rk.graph.Entity, str]]:
+        entities = []
+        for entity in base['entities']:
+            entities.append(Speckle.to_entity(entity))
+        entities = list(filter(None, entities))
+
+        assembly = rk.graph.Assembly()
+        assembly.id = base['entityId']
+        assembly.name = base['name']
+        assembly.type = base['type']
+        assembly.attributes = getattr(base, 'attributes', {})
+        assembly.events = getattr(base, 'events', [])
+        assembly.measurements = getattr(base, 'measurements', {})
+        entities.append(assembly)
+
+        for relationship in base['relationships']:
+            source = next((entity for entity in entities if entity.id == relationship['sourceId']), None)
+            target = next((entity for entity in entities if entity.id == relationship['targetId']), None)
+            if (source is not None) & (target is not None):
+                assembly.add_relationship((source, target, relationship['type']))
+
+        return assembly
+        # return rk.graph.Assembly.from_relationships(
+        #     id=assembly['entityId'],
+        #     name=assembly['name'],
+        #     type=assembly['type'],
+        #     relationships=relationships,
+        #     attributes=getattr(assembly, 'attributes', None),
+        #     events=getattr(assembly, 'events', None),
+        #     measurements=getattr(assembly, 'measurements', None))
+
+    @staticmethod
+    def is_entity(obj: object) -> bool:
+        if isinstance(obj, objects.Base):
+            return 'entityId' in obj.get_dynamic_member_names()
+        else:
+            return False
+
 
 
     # @staticmethod
