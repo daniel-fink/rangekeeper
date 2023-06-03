@@ -15,6 +15,22 @@
       <PackageReference Include="Grasshopper" Version="7.29.23107.3001" />
       <PackageReference Include="RhinoCommon" Version="7.29.23107.3001" />
       <PackageReference Include="Speckle.Objects" Version="2.13.0" />
+      <PackageReference Include="System.Resources.Extensions" Version="7.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Update="Properties\Resources.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="Properties\Resources.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>Resources.resx</DependentUpon>
+      </Compile>
     </ItemGroup>
 
 </Project>

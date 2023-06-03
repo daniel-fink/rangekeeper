@@ -7,6 +7,7 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 using Speckle.Core.Models;
 using Rangekeeper;
+using RangekeeperGrasshopper;
 
 namespace Rangekeeper.Components
 {
@@ -22,7 +23,7 @@ namespace Rangekeeper.Components
             )
         { }
 
-        // protected override Bitmap Icon => Resources.CreateRangekeeperAssembly;
+        protected override Bitmap Icon => Resources.CreateAssemblyIcon;
         
         public override Guid ComponentGuid => new("7CE1F751-0A1D-40F1-9B9C-17F71EB9394D");
         
