@@ -64,7 +64,6 @@ const thebe_selector_output = ".output, .cell_output"
     <script>DOCUMENTATION_OPTIONS.pagename = 'speckle';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="Flexibility under Uncertainty" href="flexibility_under_uncertainty.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -155,17 +154,16 @@ const thebe_selector_output = ".output, .cell_output"
                 </a>
             </li>
         </ul>
-        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Real Estate Flexibility and Valuation under Uncertainty</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="basic_dcf.html">A Basic Discounted Cash Flow Valuation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="deterministic_scenarios.html">Deterministic Scenario Analysis</a></li>
-<li class="toctree-l1"><a class="reference internal" href="market_dynamics.html">Real Estate Pricing Factor Dynamics</a></li>
-<li class="toctree-l1"><a class="reference internal" href="flexibility_intro.html">Introduction to Modeling Flexibility</a></li>
-<li class="toctree-l1"><a class="reference internal" href="flexibility_under_uncertainty.html">Flexibility under Uncertainty</a></li>
+        <ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="flex_val_under_uncertainty.html">Real Estate Flexibility and Valuation under Uncertainty</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="basic_dcf.html">A Basic Discounted Cash Flow Valuation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deterministic_scenarios.html">Deterministic Scenario Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="market_dynamics.html">Real Estate Pricing Factor Dynamics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flexibility_intro.html">Introduction to Modeling Flexibility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flexibility_under_uncertainty.html">Flexibility under Uncertainty</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Using Rangekeeper in Examples</span></p>
-<ul class="current nav bd-sidenav">
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Loading a Design Scenario</a></li>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 </ul>
 
     </div>
@@ -207,37 +205,6 @@ const thebe_selector_output = ".output, .cell_output"
         <div class="header-article-item">
 
 <div class="article-header-buttons">
-
-
-
-
-
-<div class="dropdown dropdown-launch-buttons">
-  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Launch interactive content">
-    <i class="fas fa-rocket"></i>
-  </button>
-  <ul class="dropdown-menu">
-      
-      
-      
-      <li><a href="https://colab.research.google.com/github/daniel-fink/rangekeeper/blob/main/walkthrough/speckle.ipynb" target="_blank"
-   class="btn btn-sm dropdown-item"
-   title="Launch onColab"
-   data-bs-placement="left" data-bs-toggle="tooltip"
->
-  
-
-<span class="btn__icon-container">
-  
-    <img src="_static/images/logo_colab.png">
-  </span>
-<span class="btn__text-container">Colab</span>
-</a>
-</li>
-      
-  </ul>
-</div>
-
 
 
 
@@ -397,19 +364,7 @@ document.write(`
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#assemblys"><code class="docutils literal notranslate"><span class="pre">Assembly</span></code>s</a></li>
 </ul>
 </li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#definitions">Definitions</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#properties-of-elements">Properties of <code class="docutils literal notranslate"><span class="pre">Element</span></code>s</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#properties-of-relationships">Properties of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#events"><code class="docutils literal notranslate"><span class="pre">Event</span></code>s</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rationale-and-implications">Rationale and Implications</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#technicalities">Technicalities</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#defining-elements-and-relationships-in-the-design-scenario">Defining <code class="docutils literal notranslate"><span class="pre">Element</span></code>s and <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s in the Design Scenario</a></li>
-</ul>
-</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#properties-of-elements">Properties of Elements</a></li>
 </ul>
 </li>
 </ul>
@@ -425,10 +380,6 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="loading-a-design-scenario">
 <h1>Loading a Design Scenario<a class="headerlink" href="#loading-a-design-scenario" title="Permalink to this heading">#</a></h1>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>The following is a work in progress. More content will be added as produced.</p>
-</div>
 <p><em>Rangekeeper</em> provides API access to <a class="reference external" href="https://speckle.systems/">Speckle</a>. This
 enables loading and extending a 3D design scenario with <em>Rangekeeper</em> to produce
 its financial valuation, as well as execute any automated decision-making or
@@ -451,7 +402,7 @@ what services it (e.g. the mechanical systems controlling its air conditioning)<
 <figure class="align-default" id="real-estate-scenario-as-a-graph">
 <a class="reference internal image-reference" href="_images/devModelGraph.jpg"><img alt="_images/devModelGraph.jpg" src="_images/devModelGraph.jpg" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-number">Fig. 5 </span><span class="caption-text">An entire Real Estate Development Scenario is represented as a huge web (graph)
+<p><span class="caption-text">An entire Real Estate Development Scenario is represented as a huge web (graph)
 of <code class="docutils literal notranslate"><span class="pre">Element</span></code>s and <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s</span><a class="headerlink" href="#real-estate-scenario-as-a-graph" title="Permalink to this image">#</a></p>
 </figcaption>
 </figure>
@@ -462,11 +413,10 @@ that have substance, material, mass, volume, existence, are ‘real’, etc.</p>
 </section>
 <section id="relationships">
 <h4><code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s<a class="headerlink" href="#relationships" title="Permalink to this heading">#</a></h4>
-<p><code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s describe some sort of (directed) association, connection, or
-link between <code class="docutils literal notranslate"><span class="pre">Element</span></code>s. Each <code class="docutils literal notranslate"><span class="pre">Relationship</span></code> is described by its ‘type’; for
-instance, an <code class="docutils literal notranslate"><span class="pre">Element</span></code> can be related to another by virtue of it “being
-contained (spatially)” by the other, or it could be “installed before” another
-<code class="docutils literal notranslate"><span class="pre">Element</span></code>.
+<p><code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s describe some sort of association, connection, or link between
+<code class="docutils literal notranslate"><span class="pre">Element</span></code>s. Each <code class="docutils literal notranslate"><span class="pre">Relationship</span></code> is described by its ‘type’; for instance, an
+<code class="docutils literal notranslate"><span class="pre">Element</span></code> can be related to another by virtue of it “being contained
+(spatially)” by the other, or it could be “installed before” another <code class="docutils literal notranslate"><span class="pre">Element</span></code>.
 There can be any number of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s between any number of <code class="docutils literal notranslate"><span class="pre">Element</span></code>s.</p>
 </section>
 <section id="assemblys">
@@ -482,128 +432,14 @@ of how a real estate development scenario is structured.</p>
 <figure class="align-default" id="an-assembly-of-elements">
 <a class="reference internal image-reference" href="_images/devModelAssembly.jpg"><img alt="_images/devModelAssembly.jpg" src="_images/devModelAssembly.jpg" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-number">Fig. 6 </span><span class="caption-text">An <code class="docutils literal notranslate"><span class="pre">Assembly</span></code> is a non-exclusive collection of <code class="docutils literal notranslate"><span class="pre">Element</span></code>s and <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s,
-enabling the traversal of <code class="docutils literal notranslate"><span class="pre">Element</span></code>s in the graph.</span><a class="headerlink" href="#an-assembly-of-elements" title="Permalink to this image">#</a></p>
+<p><span class="caption-text">An <code class="docutils literal notranslate"><span class="pre">Assembly</span></code> is a non-exclusive collection of <code class="docutils literal notranslate"><span class="pre">Element</span></code>s and <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s,
+enabling the traversal of <code class="docutils literal notranslate"><span class="pre">Assmebly</span></code>s in the graph.</span><a class="headerlink" href="#an-assembly-of-elements" title="Permalink to this image">#</a></p>
 </figcaption>
 </figure>
 </section>
 </section>
-<section id="definitions">
-<h3>Definitions<a class="headerlink" href="#definitions" title="Permalink to this heading">#</a></h3>
 <section id="properties-of-elements">
-<h4>Properties of <code class="docutils literal notranslate"><span class="pre">Element</span></code>s<a class="headerlink" href="#properties-of-elements" title="Permalink to this heading">#</a></h4>
-<p>All <code class="docutils literal notranslate"><span class="pre">Element</span></code>s have the following properties:</p>
-<ol class="arabic simple">
-<li><p><strong>Id</strong>: a unique, immutable, identifier</p></li>
-<li><p><strong>Name</strong>: a string</p></li>
-<li><p><strong>Type</strong>: an <code class="docutils literal notranslate"><span class="pre">ElementType</span></code>, which is a node of a tree of <code class="docutils literal notranslate"><span class="pre">ElementType</span></code>s)</p></li>
-<li><p><strong>Attributes</strong>: a key-value store of specific properties of the <code class="docutils literal notranslate"><span class="pre">Element</span></code>
-(eg, its area, geometry, material, etc).
-There are two key <code class="docutils literal notranslate"><span class="pre">Attribute</span></code>s (stored in the <code class="docutils literal notranslate"><span class="pre">Attributes</span></code> property), where
-<em>Rangekeeper</em> seeks and records data for its use:</p>
-<ul class="simple">
-<li><p><strong>Events</strong>: a set of time-based occurrences, or experiences, that happen
-in or to the <code class="docutils literal notranslate"><span class="pre">Element</span></code> (called <code class="docutils literal notranslate"><span class="pre">Event</span></code>s)</p></li>
-<li><p><strong>Measurements</strong>: a key-value store of named quantities measuring the
-<code class="docutils literal notranslate"><span class="pre">Element</span></code> (e.g. its Net Lettable Area (NLA))</p></li>
-</ul>
-</li>
-</ol>
-<p>In addition, <code class="docutils literal notranslate"><span class="pre">Assembly</span></code>s have properties collecting related <code class="docutils literal notranslate"><span class="pre">Element</span></code>s:</p>
-<ol class="arabic simple">
-<li><p><strong>ElementIds</strong>: a set pointers to <code class="docutils literal notranslate"><span class="pre">Element</span></code>s</p></li>
-<li><p><strong>Relationships</strong>: a set of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s</p></li>
-</ol>
-</section>
-<section id="properties-of-relationships">
-<h4>Properties of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s<a class="headerlink" href="#properties-of-relationships" title="Permalink to this heading">#</a></h4>
-<p>Meanwhile, all <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s have the following properties:</p>
-<ol class="arabic simple">
-<li><p><strong>Type</strong>: a <code class="docutils literal notranslate"><span class="pre">RelationshipType</span></code>, which is an item from a list of defined
-<code class="docutils literal notranslate"><span class="pre">RelationshipType</span></code>s</p></li>
-<li><p><strong>SourceId</strong>: the <code class="docutils literal notranslate"><span class="pre">Element</span></code> <code class="docutils literal notranslate"><span class="pre">Id</span></code> that is the source of the <code class="docutils literal notranslate"><span class="pre">Relationship</span></code></p></li>
-<li><p><strong>TargetId</strong>: the <code class="docutils literal notranslate"><span class="pre">Element</span></code> <code class="docutils literal notranslate"><span class="pre">Id</span></code> that is the target of the <code class="docutils literal notranslate"><span class="pre">Relationship</span></code></p></li>
-</ol>
-</section>
-<section id="events">
-<h4><code class="docutils literal notranslate"><span class="pre">Event</span></code>s<a class="headerlink" href="#events" title="Permalink to this heading">#</a></h4>
-<p>Every <code class="docutils literal notranslate"><span class="pre">Element</span></code> can exist in both space and time. Most <code class="docutils literal notranslate"><span class="pre">Element</span></code>s will have (or
-its sub-<code class="docutils literal notranslate"><span class="pre">Element</span></code>s will have, in the case of an <code class="docutils literal notranslate"><span class="pre">Assembly</span></code>) geometry/s that
-define the extent of space that the Element exists in.</p>
-<p>To represent how an <code class="docutils literal notranslate"><span class="pre">Element</span></code> exists in time, the <code class="docutils literal notranslate"><span class="pre">Element</span></code> has <code class="docutils literal notranslate"><span class="pre">Event</span></code>s
-recorded against it. For example, an <code class="docutils literal notranslate"><span class="pre">Event</span></code> may record the installation of the
-<code class="docutils literal notranslate"><span class="pre">Element</span></code> during construction, or it may record production of revenue during
-operation of the real estate project as an asset.</p>
-<p><code class="docutils literal notranslate"><span class="pre">Flow</span></code>s and <code class="docutils literal notranslate"><span class="pre">Stream</span></code>s are subclasses of <code class="docutils literal notranslate"><span class="pre">Event</span></code>s.</p>
-<figure class="align-default" id="uml-style-diagram-of-foundation-of-rangekeeper-s-object-model">
-<a class="reference internal image-reference" href="_images/objModel.jpg"><img alt="_images/objModel.jpg" src="_images/objModel.jpg" style="width: 100%;" /></a>
-<figcaption>
-<p><span class="caption-number">Fig. 7 </span><span class="caption-text">Diagram of general overview of the founational concepts of <em>Rangekeeper</em>’s
-object model, in UML-style.</span><a class="headerlink" href="#uml-style-diagram-of-foundation-of-rangekeeper-s-object-model" title="Permalink to this image">#</a></p>
-</figcaption>
-</figure>
-</section>
-</section>
-</section>
-<section id="rationale-and-implications">
-<h2>Rationale and Implications<a class="headerlink" href="#rationale-and-implications" title="Permalink to this heading">#</a></h2>
-<p><em>Rangekeeper</em> will use the <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s defined in the <code class="docutils literal notranslate"><span class="pre">Assembly</span></code>/s of a
-design scenario to structure the “drill-downs” and “roll-ups” (ie, the
-compositions) of <code class="docutils literal notranslate"><span class="pre">Flow</span></code>s into <code class="docutils literal notranslate"><span class="pre">Stream</span></code>s that are appropriate for the kinds of
-summations and metrics that the DCF Proforma model requires.</p>
-<p>For example, an office building may produce revenue from multiple tenants. A
-tenant may occupy multiple floors, or a part (space) of a single floor.
-For <em>Rangekeeper</em>, each space would be an <code class="docutils literal notranslate"><span class="pre">Element</span></code>; with its <code class="docutils literal notranslate"><span class="pre">Events</span></code> property
-containing a set of <code class="docutils literal notranslate"><span class="pre">Flow</span></code>s and/or <code class="docutils literal notranslate"><span class="pre">Stream</span></code>s that represent revenues or costs
-associated with that space. Those may be aggregated into cash flows generated by
-the tenant of those spaces, and analysed as such, or they may be aggregated per
-floor, or per building, or per project.</p>
-<p>This makes it simple to calculate things like the share of total revenue
-generated by each tenant; or the share of revenue generated by each floor.
-Likewise with costs.</p>
-<p>The multi-faceted nature of the <code class="docutils literal notranslate"><span class="pre">Element</span></code>-<code class="docutils literal notranslate"><span class="pre">Relationship</span></code> model enables multiple
-pathways for those aggregations to be specified, and thus enables an efficient
-and broad ability to query the model for the kinds of analyses pertinent to
-real estate valuation.</p>
-<section id="technicalities">
-<h3>Technicalities<a class="headerlink" href="#technicalities" title="Permalink to this heading">#</a></h3>
-<p>To provide a <em>Rangekeeper</em> model with the <code class="docutils literal notranslate"><span class="pre">Element</span></code>-<code class="docutils literal notranslate"><span class="pre">Relationship</span></code> organization,
-those need to either be defined in the design scenario itself, or they need to
-be specified after receiving and loading the design scenario.</p>
-<section id="defining-elements-and-relationships-in-the-design-scenario">
-<h4>Defining <code class="docutils literal notranslate"><span class="pre">Element</span></code>s and <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s in the Design Scenario<a class="headerlink" href="#defining-elements-and-relationships-in-the-design-scenario" title="Permalink to this heading">#</a></h4>
-<p><em>Rangekeeper</em> uses the <a class="reference external" href="https://speckle.systems">Speckle</a> service and data model
-for the exchange of design scenarios, and scaffolds <code class="docutils literal notranslate"><span class="pre">Element</span></code>s off a <a class="reference external" href="https://speckle.guide/dev/base.html">Speckle
-<code class="docutils literal notranslate"><span class="pre">Base</span></code></a></p>
-<p>It also provides two means to define <code class="docutils literal notranslate"><span class="pre">Element</span></code>s and <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s:</p>
-<ol class="arabic simple">
-<li><p>A plugin to [McNeel’s Rhinoceros3D Grasshopper]
-(<a class="reference external" href="https://www.rhino3d.com/6/new/grasshopper/">https://www.rhino3d.com/6/new/grasshopper/</a>), that enables both automated and
-manual assignment of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s to geometries before their export to
-Speckle; and</p></li>
-<li><p>Manual assignment of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s to <code class="docutils literal notranslate"><span class="pre">Element</span></code>s once they have been loaded
-from a Speckle stream in <em>Rangekeeper</em>.</p></li>
-</ol>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">IFrame</span>
-<span class="n">IFrame</span><span class="p">(</span><span class="s2">&quot;https://speckle.xyz/embed?stream=3073b96e86&amp;commit=604bea8cc6&amp;c=%5B41.608%2C46.98512%2C69.78354%2C20.86703%2C15.4694%2C16.57642%2C0%2C1%5D&quot;</span><span class="p">,</span><span class="n">width</span><span class="o">=</span><span class="mi">700</span><span class="p">,</span><span class="n">height</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_html">
-        <iframe
-            width="700"
-            height="500"
-            src="https://speckle.xyz/embed?stream=3073b96e86&commit=604bea8cc6&c=%5B41.608%2C46.98512%2C69.78354%2C20.86703%2C15.4694%2C16.57642%2C0%2C1%5D"
-            frameborder="0"
-            allowfullscreen
-            
-        ></iframe>
-        </div></div>
-</div>
-</section>
+<h3>Properties of Elements<a class="headerlink" href="#properties-of-elements" title="Permalink to this heading">#</a></h3>
 </section>
 </section>
 </section>
@@ -639,15 +475,6 @@ from a Speckle stream in <em>Rangekeeper</em>.</p></li>
   
     <div class="footer-article-item"><!-- Previous / next buttons -->
 <div class="prev-next-area">
-    <a class="left-prev"
-       href="flexibility_under_uncertainty.html"
-       title="previous page">
-      <i class="fa-solid fa-angle-left"></i>
-      <div class="prev-next-info">
-        <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Flexibility under Uncertainty</p>
-      </div>
-    </a>
 </div></div>
   
 </div>
@@ -673,19 +500,7 @@ from a Speckle stream in <em>Rangekeeper</em>.</p></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#assemblys"><code class="docutils literal notranslate"><span class="pre">Assembly</span></code>s</a></li>
 </ul>
 </li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#definitions">Definitions</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#properties-of-elements">Properties of <code class="docutils literal notranslate"><span class="pre">Element</span></code>s</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#properties-of-relationships">Properties of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#events"><code class="docutils literal notranslate"><span class="pre">Event</span></code>s</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rationale-and-implications">Rationale and Implications</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#technicalities">Technicalities</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#defining-elements-and-relationships-in-the-design-scenario">Defining <code class="docutils literal notranslate"><span class="pre">Element</span></code>s and <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s in the Design Scenario</a></li>
-</ul>
-</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#properties-of-elements">Properties of Elements</a></li>
 </ul>
 </li>
 </ul>
