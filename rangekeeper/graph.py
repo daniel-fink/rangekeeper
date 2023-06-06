@@ -9,8 +9,10 @@ import networkx as nx
 from pyvis import network, options
 from pint import Quantity
 from IPython.display import IFrame
+import matplotlib as mpl
 
 import rangekeeper as rk
+
 
 # from . import measure
 
@@ -244,13 +246,30 @@ class Assembly(nx.MultiDiGraph, Entity):
 
     def _to_network(
             self,
+            hierarchical_layout: bool = True,
             notebook: bool = True) -> network.Network:
         nt = network.Network(
             directed=True,
             filter_menu=True,
-            layout=True,
+            layout=hierarchical_layout,
             notebook=notebook,
             cdn_resources='in_line')
+        node_types = set([node.type for node in self.nodes()])
+        node_colors = {
+            type: rk.rgba_from_cmap(
+                cmap_name='twilight_shifted',
+                start_val=0,
+                stop_val=len(node_types),
+                val=i) for i, type in enumerate(node_types)}
+
+        edge_keys = set([edge[2] for edge in self.edges(keys=True)])
+        edge_colors = {
+            key: rk.rgba_from_cmap(
+                cmap_name='inferno',
+                start_val=0,
+                stop_val=len(edge_keys),
+                val=i) for i, key in enumerate(edge_keys)}
+
         for node in self.nodes():
             if isinstance(node, Assembly):
                 nt.add_node(
@@ -260,7 +279,9 @@ class Assembly(nx.MultiDiGraph, Entity):
                     shape='circle',
                     borderWidth=2,
                     labelHighlightBold=True,
-                    level=len(self.in_edges(node)))
+                    font='16px arial white',
+                    level=len(self.in_edges(node)),
+                    color=mpl.colors.rgb2hex(node_colors[node.type]))
             else:
                 nt.add_node(
                     n_id=node.id,
@@ -268,24 +289,35 @@ class Assembly(nx.MultiDiGraph, Entity):
                     title=node.type,
                     shape='dot',
                     size=10,
-                    level=len(self.in_edges(node)) + 1)
+                    font='12px arial black',
+                    level=len(self.in_edges(node)) + 1,
+                    color=mpl.colors.rgb2hex(node_colors[node.type]))
         for edge in self.edges(keys=True):
             nt.add_edge(
                 source=edge[0].id,
                 to=edge[1].id,
                 title=edge[2],
+                label=edge[2],
                 arrows='to',
-                arrowStrikethrough=False)
+                font={
+                    'color': 'grey',
+                    'size': 8,
+                    'align': 'middle'
+                    },
+                arrowStrikethrough=False,
+                color=mpl.colors.rgb2hex(edge_colors[edge[2]]))
         nt.set_edge_smooth('dynamic')
         return nt
 
     def plot(
             self,
+            hierarchical_layout: bool = True,
             height: int = 800,
             width: Union[int, str] = '100%',
             notebook: bool = True,
             display: bool = False):
         nt = self._to_network(
+            hierarchical_layout=hierarchical_layout,
             notebook=notebook)
         nt.show(
             name=self.name + '.html',
@@ -293,12 +325,3 @@ class Assembly(nx.MultiDiGraph, Entity):
             notebook=notebook)
         if notebook & display:
             return IFrame(self.name + '.html', width=width, height=height)
-
-
-
-
-
-
-
-
-

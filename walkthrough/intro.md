@@ -14,7 +14,7 @@ This series of notebooks provides a walkthrough of the library in parallel with 
 ```
 
 ## Acknowledgements
-For Andrea
+For Andrea, who keeps reminding me it is possible.
 
 ## Bibliography
 ```{bibliography}

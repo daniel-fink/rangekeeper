@@ -22,12 +22,19 @@ class Speckle:
     def get_commit(
             self,
             stream_id: str,
-            commit_id: str):
-        stream = self.client.stream.get(id=stream_id)
+            commit_id: Optional[str] = None):
+        commit_id = self.get_latest_commit_id(stream_id) if commit_id is None else commit_id
         transport = ServerTransport(client=self.client, stream_id=stream_id)
-
         commit = self.client.commit.get(stream_id, commit_id)
         return operations.receive(obj_id=commit.referencedObject, remote_transport=transport)
+
+    def get_latest_commit_id(
+            self,
+            stream_id: str,
+            branch_name: Optional[str] = None):
+        branch_name = "main" if branch_name is None else branch_name
+        branch = self.client.branch.get(stream_id, branch_name, 1)
+        return branch.commits.items[0].id
 
     @staticmethod
     def parse(base: objects.Base,
