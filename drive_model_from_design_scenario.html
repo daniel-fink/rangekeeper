@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Loading a Design Scenario &#8212; Rangekeeper</title>
+    <title>Driving a Financial Valuation from a Design Scenario &#8212; Rangekeeper</title>
   
   
   
@@ -61,11 +61,10 @@ const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
     <script async="async" src="_static/sphinx-thebe.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'load_design_scenario';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'drive_model_from_design_scenario';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Driving a Financial Valuation from a Design Scenario" href="drive_model_from_design_scenario.html" />
-    <link rel="prev" title="Flexibility under Uncertainty" href="flexibility_under_uncertainty.html" />
+    <link rel="prev" title="Loading a Design Scenario" href="load_design_scenario.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -166,8 +165,8 @@ const thebe_selector_output = ".output, .cell_output"
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Using Rangekeeper in Examples</span></p>
 <ul class="current nav bd-sidenav">
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Loading a Design Scenario</a></li>
-<li class="toctree-l1"><a class="reference internal" href="drive_model_from_design_scenario.html">Driving a Financial Valuation from a Design Scenario</a></li>
+<li class="toctree-l1"><a class="reference internal" href="load_design_scenario.html">Loading a Design Scenario</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Driving a Financial Valuation from a Design Scenario</a></li>
 </ul>
 
     </div>
@@ -239,7 +238,7 @@ const thebe_selector_output = ".output, .cell_output"
       
       
       
-      <li><a href="https://github.com/daniel-fink/rangekeeper/issues/new?title=Issue%20on%20page%20%2Fload_design_scenario.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/daniel-fink/rangekeeper/issues/new?title=Issue%20on%20page%20%2Fdrive_model_from_design_scenario.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -269,7 +268,7 @@ const thebe_selector_output = ".output, .cell_output"
       
       
       
-      <li><a href="_sources/load_design_scenario.ipynb" target="_blank"
+      <li><a href="_sources/drive_model_from_design_scenario.ipynb" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -351,7 +350,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Loading a Design Scenario</h1>
+    <h1>Driving a Financial Valuation from a Design Scenario</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -361,35 +360,8 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#object-model">Object Model</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#entities-and-relationships">Entities and Relationships</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#entitys"><code class="docutils literal notranslate"><span class="pre">Entity</span></code>s</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#relationships"><code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#assemblys"><code class="docutils literal notranslate"><span class="pre">Assembly</span></code>s</a></li>
-</ul>
-</li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#definitions">Definitions</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#properties-of-entitys">Properties of <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#properties-of-relationships">Properties of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#events"><code class="docutils literal notranslate"><span class="pre">Event</span></code>s</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rationale-and-implications">Rationale and Implications</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#technicalities">Technicalities</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#defining-entitys-and-relationships-in-the-design-scenario">Defining <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s and <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s in the Design Scenario</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-design-scenario">Example Design Scenario</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#authenticate-and-load-the-design-scenario-from-speckle">Authenticate and Load the Design scenario from Speckle</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inspect-the-design-scenario">Inspect the Design Scenario</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rangekeeper-entitys-in-the-design-scenario">Rangekeeper <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s in the Design Scenario</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#querying-the-design-scenario-s-object-graph">Querying the Design Scenario’s Object Graph</a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#load-the-design-scenario">Load the Design Scenario</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inspect-the-model-graph">Inspect the Model Graph</a></li>
 </ul>
 </li>
 </ul>
@@ -403,194 +375,44 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article" role="main">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="loading-a-design-scenario">
-<h1>Loading a Design Scenario<a class="headerlink" href="#loading-a-design-scenario" title="Permalink to this heading">#</a></h1>
-<p><em>Rangekeeper</em> provides API access to <a class="reference external" href="https://speckle.systems/">Speckle</a>. This
-enables loading and extending a 3D design scenario with <em>Rangekeeper</em> in order
-to produce its financial valuation, as well as execute any automated
-decision-making or optimisation processes, and sending the results back to
-Speckle.</p>
-<section id="object-model">
-<h2>Object Model<a class="headerlink" href="#object-model" title="Permalink to this heading">#</a></h2>
-<p>Before walking through the I/O methods, it is important to understand the
-requirements <em>Rangekeeper</em> places on how a design scenario must be structured,
-so that the <code class="docutils literal notranslate"><span class="pre">Flow</span></code>s and <code class="docutils literal notranslate"><span class="pre">Stream</span></code>s of a DCF Proforma can be appropriately
-attributed to the design scenario’s objects (especially its representations of
-physical spaces, components, and equipment).</p>
-<section id="entities-and-relationships">
-<h3>Entities and Relationships<a class="headerlink" href="#entities-and-relationships" title="Permalink to this heading">#</a></h3>
-<p>A holistic representation of a real estate development scenario is that it is a
-web of inter-related ‘entities’; where each entity is a ‘thing’ and can have
-multiple relationships with other entities. For example, a floor is a type
-of entity (say, a “Space”) and it has relationships with floors above and
-below it, as well as relationships to its sub-entities (e.g. rooms), or even
-what services it (e.g. the mechanical systems controlling its air conditioning)</p>
-<figure class="align-default" id="real-estate-scenario-as-a-graph">
-<a class="reference internal image-reference" href="_images/devModelGraph.jpg"><img alt="_images/devModelGraph.jpg" src="_images/devModelGraph.jpg" style="width: 100%;" /></a>
-<figcaption>
-<p><span class="caption-number">Fig. 5 </span><span class="caption-text">An entire Real Estate Development Scenario is represented as a huge web (graph)
-of <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s and <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s</span><a class="headerlink" href="#real-estate-scenario-as-a-graph" title="Permalink to this image">#</a></p>
-</figcaption>
-</figure>
-<section id="entitys">
-<h4><code class="docutils literal notranslate"><span class="pre">Entity</span></code>s<a class="headerlink" href="#entitys" title="Permalink to this heading">#</a></h4>
-<p>An <code class="docutils literal notranslate"><span class="pre">Entity</span></code> is a ‘thing’ that has substance, or is composed of sub-<code class="docutils literal notranslate"><span class="pre">Entity</span></code>s
-that have substance, material, mass, volume, existence, are ‘real’, etc.</p>
-</section>
-<section id="relationships">
-<h4><code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s<a class="headerlink" href="#relationships" title="Permalink to this heading">#</a></h4>
-<p><code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s describe some sort of (directed) association, connection, or
-link between <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s. Each <code class="docutils literal notranslate"><span class="pre">Relationship</span></code> is described by its ‘type’; for
-instance, an <code class="docutils literal notranslate"><span class="pre">Entity</span></code> can be related to another by virtue of it “being
-contained (spatially)” by the other, or it could be “installed before” another
-<code class="docutils literal notranslate"><span class="pre">Entity</span></code>.
-There can be any number of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s between any number of <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s.</p>
-</section>
-<section id="assemblys">
-<h4><code class="docutils literal notranslate"><span class="pre">Assembly</span></code>s<a class="headerlink" href="#assemblys" title="Permalink to this heading">#</a></h4>
-<p>In order to clearly encapsulate ‘groups’ of intuitively-related <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s,
-<em>Rangekeeper</em> has a concept of an <code class="docutils literal notranslate"><span class="pre">Assembly</span></code>, which is an object that defines
-a collection of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s and their associated <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s.
-<code class="docutils literal notranslate"><span class="pre">Assembly</span></code>s are <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s themselves, too –- so they can also be related to
-other <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s.
-This means that <em>Rangekeeper</em> can traverse from <code class="docutils literal notranslate"><span class="pre">Assembly</span></code> to <code class="docutils literal notranslate"><span class="pre">Assembly</span></code> through
-overlapping <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s, in a similar fashion to common-sense conceptualisation
-of how a real estate development scenario is structured.</p>
-<figure class="align-default" id="a-diagram-of-assembly-s-of-entity-s">
-<a class="reference internal image-reference" href="_images/devModelAssembly.jpg"><img alt="_images/devModelAssembly.jpg" src="_images/devModelAssembly.jpg" style="width: 100%;" /></a>
-<figcaption>
-<p><span class="caption-number">Fig. 6 </span><span class="caption-text">An <code class="docutils literal notranslate"><span class="pre">Assembly</span></code> is a non-exclusive collection of <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s and <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s,
-enabling the traversal of <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s in the graph.</span><a class="headerlink" href="#a-diagram-of-assembly-s-of-entity-s" title="Permalink to this image">#</a></p>
-</figcaption>
-</figure>
-</section>
-</section>
-<section id="definitions">
-<h3>Definitions<a class="headerlink" href="#definitions" title="Permalink to this heading">#</a></h3>
-<section id="properties-of-entitys">
-<h4>Properties of <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s<a class="headerlink" href="#properties-of-entitys" title="Permalink to this heading">#</a></h4>
-<p>All <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s have the following properties:</p>
-<ol class="arabic simple">
-<li><p><strong>Id</strong>: a unique &amp; immutable identifier for the <code class="docutils literal notranslate"><span class="pre">Entity</span></code> over the whole of
-its lifetime.</p></li>
-<li><p><strong>Name</strong>: human-readable text identifying the <code class="docutils literal notranslate"><span class="pre">Entity</span></code></p></li>
-<li><p><strong>Type</strong>: an <code class="docutils literal notranslate"><span class="pre">entityType</span></code> (which is a node of a tree of <code class="docutils literal notranslate"><span class="pre">entityType</span></code>s)</p></li>
-<li><p><strong>Attributes</strong>: a key-value store of specific properties of the <code class="docutils literal notranslate"><span class="pre">Entity</span></code>
-(eg, its area, geometry, material, etc).
-There are two key <code class="docutils literal notranslate"><span class="pre">Attribute</span></code>s (stored in the <code class="docutils literal notranslate"><span class="pre">Attributes</span></code> property), where
-<em>Rangekeeper</em> seeks and records data for its use:</p>
-<ul class="simple">
-<li><p><strong>Events</strong>: a set of time-based occurrences, or experiences, that happen
-in or to the <code class="docutils literal notranslate"><span class="pre">Entity</span></code> (called <code class="docutils literal notranslate"><span class="pre">Event</span></code>s)</p></li>
-<li><p><strong>Measurements</strong>: a key-value store of named quantities measuring the
-<code class="docutils literal notranslate"><span class="pre">Entity</span></code> (e.g. its Net Lettable Area (NLA))</p></li>
-</ul>
-</li>
-</ol>
-<p>In addition, <code class="docutils literal notranslate"><span class="pre">Assembly</span></code>s have properties collecting related <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s:</p>
-<ol class="arabic simple">
-<li><p><strong>entityIds</strong>: a set pointers to <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s</p></li>
-<li><p><strong>Relationships</strong>: a set of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s</p></li>
-</ol>
-</section>
-<section id="properties-of-relationships">
-<h4>Properties of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s<a class="headerlink" href="#properties-of-relationships" title="Permalink to this heading">#</a></h4>
-<p>Meanwhile, all <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s have the following properties:</p>
-<ol class="arabic simple">
-<li><p><strong>Type</strong>: a <code class="docutils literal notranslate"><span class="pre">RelationshipType</span></code>, which is an item from a list of defined
-<code class="docutils literal notranslate"><span class="pre">RelationshipType</span></code>s</p></li>
-<li><p><strong>SourceId</strong>: the <code class="docutils literal notranslate"><span class="pre">Entity</span></code> <code class="docutils literal notranslate"><span class="pre">Id</span></code> that is the source of the <code class="docutils literal notranslate"><span class="pre">Relationship</span></code></p></li>
-<li><p><strong>TargetId</strong>: the <code class="docutils literal notranslate"><span class="pre">Entity</span></code> <code class="docutils literal notranslate"><span class="pre">Id</span></code> that is the target of the <code class="docutils literal notranslate"><span class="pre">Relationship</span></code></p></li>
-</ol>
-</section>
-<section id="events">
-<h4><code class="docutils literal notranslate"><span class="pre">Event</span></code>s<a class="headerlink" href="#events" title="Permalink to this heading">#</a></h4>
-<p>Every <code class="docutils literal notranslate"><span class="pre">Entity</span></code> can exist in both space and time. Most <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s will have (or
-its sub-<code class="docutils literal notranslate"><span class="pre">Entity</span></code>s will have, in the case of an <code class="docutils literal notranslate"><span class="pre">Assembly</span></code>) geometry/s that
-define the extent of space that the entity exists in.</p>
-<p>To represent how an <code class="docutils literal notranslate"><span class="pre">Entity</span></code> exists in time, the <code class="docutils literal notranslate"><span class="pre">Entity</span></code> has <code class="docutils literal notranslate"><span class="pre">Event</span></code>s
-recorded against it. For example, an <code class="docutils literal notranslate"><span class="pre">Event</span></code> may record the installation of the
-<code class="docutils literal notranslate"><span class="pre">entity</span></code> during construction, or it may record production of revenue during
-operation of the real estate project as an asset.</p>
-<p><code class="docutils literal notranslate"><span class="pre">Flow</span></code>s and <code class="docutils literal notranslate"><span class="pre">Stream</span></code>s are subclasses of <code class="docutils literal notranslate"><span class="pre">Event</span></code>s.</p>
-<figure class="align-default" id="uml-style-diagram-of-foundation-of-rangekeeper-s-object-model">
-<a class="reference internal image-reference" href="_images/objModel.jpg"><img alt="_images/objModel.jpg" src="_images/objModel.jpg" style="width: 100%;" /></a>
-<figcaption>
-<p><span class="caption-number">Fig. 7 </span><span class="caption-text">Diagram of general overview of the founational concepts of <em>Rangekeeper</em>’s
-object model, in UML-style.</span><a class="headerlink" href="#uml-style-diagram-of-foundation-of-rangekeeper-s-object-model" title="Permalink to this image">#</a></p>
-</figcaption>
-</figure>
-</section>
-</section>
-</section>
-<section id="rationale-and-implications">
-<h2>Rationale and Implications<a class="headerlink" href="#rationale-and-implications" title="Permalink to this heading">#</a></h2>
-<p><em>Rangekeeper</em> will use the <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s defined in the <code class="docutils literal notranslate"><span class="pre">Assembly</span></code>/s of a
-design scenario to structure the “drill-downs” and “roll-ups” (ie, the
-compositions) of <code class="docutils literal notranslate"><span class="pre">Flow</span></code>s into <code class="docutils literal notranslate"><span class="pre">Stream</span></code>s that are appropriate for the kinds of
-summations and metrics that the DCF Proforma model requires.</p>
-<p>For example, an office building may produce revenue from multiple tenants. A
-tenant may occupy multiple floors, or a part (space) of a single floor.
-For <em>Rangekeeper</em>, each space would be an <code class="docutils literal notranslate"><span class="pre">entity</span></code>; with its <code class="docutils literal notranslate"><span class="pre">Events</span></code> property
-containing a set of <code class="docutils literal notranslate"><span class="pre">Flow</span></code>s and/or <code class="docutils literal notranslate"><span class="pre">Stream</span></code>s that represent revenues or costs
-associated with that space. Those may be aggregated into cash flows generated by
-the tenant of those spaces, and analysed as such, or they may be aggregated per
-floor, or per building, or per project.</p>
-<p>This makes it simple to calculate things like the share of total revenue
-generated by each tenant; or the share of revenue generated by each floor.
-Likewise with costs.</p>
-<p>The multi-faceted nature of the <a class="reference external" href="https://en.wikipedia.org/wiki/Entity%E2%80%93relationship_model"><code class="docutils literal notranslate"><span class="pre">Entity</span></code>-<code class="docutils literal notranslate"><span class="pre">Relationship</span></code> model</a> enables
-multiple pathways for those aggregations to be specified, and thus enables an
-efficient and broad ability to query the model for the kinds of analyses
-pertinent to real estate valuation.</p>
-<section id="technicalities">
-<h3>Technicalities<a class="headerlink" href="#technicalities" title="Permalink to this heading">#</a></h3>
-<p>To provide a <em>Rangekeeper</em> model with the <code class="docutils literal notranslate"><span class="pre">Entity</span></code>-<code class="docutils literal notranslate"><span class="pre">Relationship</span></code> organization,
-those need to either be defined in the design scenario itself, or they need to
-be specified after receiving and loading the design scenario.</p>
-<section id="defining-entitys-and-relationships-in-the-design-scenario">
-<h4>Defining <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s and <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s in the Design Scenario<a class="headerlink" href="#defining-entitys-and-relationships-in-the-design-scenario" title="Permalink to this heading">#</a></h4>
-<p><em>Rangekeeper</em> uses the <a class="reference external" href="https://speckle.systems">Speckle</a> service and data model
-for the exchange of design scenarios, and scaffolds <code class="docutils literal notranslate"><span class="pre">entity</span></code>s off a <a class="reference external" href="https://speckle.guide/dev/base.html">Speckle
-<code class="docutils literal notranslate"><span class="pre">Base</span></code></a></p>
-<p>It also provides two means to define <code class="docutils literal notranslate"><span class="pre">entity</span></code>s and <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s:</p>
-<ol class="arabic simple">
-<li><p>A plugin to [McNeel’s Rhinoceros3D Grasshopper]
-(<a class="reference external" href="https://www.rhino3d.com/6/new/grasshopper/">https://www.rhino3d.com/6/new/grasshopper/</a>), that enables both automated and
-manual assignment of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s to geometries before their export to
-Speckle; and</p></li>
-<li><p>Manual assignment of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s to <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s once they have been loaded
-from a Speckle stream in <em>Rangekeeper</em>.</p></li>
-</ol>
-</section>
-</section>
-</section>
-<section id="example-design-scenario">
-<h2>Example Design Scenario<a class="headerlink" href="#example-design-scenario" title="Permalink to this heading">#</a></h2>
-<p>An example development has been designed and uploaded to Speckle for us to use
-as a demonstration of the object model and its use in <em>Rangekeeper</em>.</p>
-<p>This design scenario is composed of two mixed-use buildings, that both share a
-common basement plinth, used for parking and shared mechanical and other
-services (e.g. garbage disposal, storage)</p>
-<p>To access the design scenario in <em>Rangekeeper</em>, we need to load it from Speckle.
-First load neccesary libraries:</p>
+  <section class="tex2jax_ignore mathjax_ignore" id="driving-a-financial-valuation-from-a-design-scenario">
+<h1>Driving a Financial Valuation from a Design Scenario<a class="headerlink" href="#driving-a-financial-valuation-from-a-design-scenario" title="Permalink to this heading">#</a></h1>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The following is a work in progress. More content will be added as produced.</p>
+</div>
+<p>As seen in
+<a class="reference internal" href="load_design_scenario.html"><span class="doc std std-doc">Loading a Design Scenario</span></a>,
+a design scenario’s object model (a
+<a class="reference external" href="https://en.wikipedia.org/wiki/Knowledge_graph">knowledge graph</a> including all
+its spatial and semantic relationships) can be loaded via Speckle from any of
+Speckle’s supported <a class="reference external" href="https://speckle.guide/user/connectors.html">connectors</a>, so
+long as those objects (<code class="docutils literal notranslate"><span class="pre">Entity</span></code>s and <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s) have been assigned.</p>
+<p>In this notebook, we will demonstrate how to use the object model (graph) to
+drive a financial valuation of the design scenario. This is done by calculating
+cash flows per <code class="docutils literal notranslate"><span class="pre">Entity</span></code>, and then using the <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s to aggregate those
+<code class="docutils literal notranslate"><span class="pre">Flow</span></code>s into appropriate <code class="docutils literal notranslate"><span class="pre">Stream</span></code>s.</p>
+<section id="load-the-design-scenario">
+<h2>Load the Design Scenario<a class="headerlink" href="#load-the-design-scenario" title="Permalink to this heading">#</a></h2>
+<p>We will use the same design scenario as in the previous notebook.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">IFrame</span>
 
 <span class="kn">import</span> <span class="nn">rangekeeper</span> <span class="k">as</span> <span class="nn">rk</span>
 </pre></div>
 </div>
 </div>
 </div>
-<section id="authenticate-and-load-the-design-scenario-from-speckle">
-<h3>Authenticate and Load the Design scenario from Speckle<a class="headerlink" href="#authenticate-and-load-the-design-scenario-from-speckle" title="Permalink to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Authenticate with Speckle</span>
-<span class="n">speckle</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">Speckle</span><span class="p">(</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">speckle</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">Speckle</span><span class="p">(</span>
     <span class="n">host</span><span class="o">=</span><span class="s2">&quot;speckle.xyz&quot;</span><span class="p">,</span>
-    <span class="n">token</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s1">&#39;SPECKLE_TOKEN&#39;</span><span class="p">))</span> <span class="c1"># Note if you run this notebook yourself, you&#39;ll need to set this environment variable</span>
+    <span class="n">token</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s1">&#39;SPECKLE_TOKEN&#39;</span><span class="p">))</span>
+<span class="n">stream_id</span> <span class="o">=</span> <span class="s2">&quot;3f40d86240&quot;</span>
+<span class="n">commit_id</span> <span class="o">=</span> <span class="n">speckle</span><span class="o">.</span><span class="n">get_latest_commit_id</span><span class="p">(</span><span class="n">stream_id</span><span class="p">)</span>
+<span class="n">IFrame</span><span class="p">(</span><span class="s2">&quot;https://speckle.xyz/embed?stream=</span><span class="si">{0}</span><span class="s2">&amp;commit=</span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">stream_id</span><span class="p">,</span> <span class="n">commit_id</span><span class="p">),</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -598,43 +420,6 @@ First load neccesary libraries:</p>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> SpeckleClient( server: https://speckle.xyz, authenticated: True )
 </pre></div>
 </div>
-</div>
-</div>
-<p>The scenario is stored in a Speckle stream, which is a container for a set of
-‘commits’, or versions of the stream.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stream_id</span> <span class="o">=</span> <span class="s2">&quot;3f40d86240&quot;</span>
-<span class="n">commit_id</span> <span class="o">=</span> <span class="n">speckle</span><span class="o">.</span><span class="n">get_latest_commit_id</span><span class="p">(</span><span class="n">stream_id</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load the design scenario</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">speckle</span><span class="o">.</span><span class="n">get_commit</span><span class="p">(</span><span class="n">stream_id</span><span class="o">=</span><span class="n">stream_id</span><span class="p">)</span> <span class="c1"># Providing no commit_id defaults to the latest commit</span>
-<span class="n">model</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Base(id: 25b3551c0b32e8044de35043525ae5d3, speckle_type: Base, totalChildrenCount: 2074)
-</pre></div>
-</div>
-</div>
-</div>
-</section>
-<section id="inspect-the-design-scenario">
-<h3>Inspect the Design Scenario<a class="headerlink" href="#inspect-the-design-scenario" title="Permalink to this heading">#</a></h3>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">IFrame</span>
-<span class="n">IFrame</span><span class="p">(</span><span class="s2">&quot;https://speckle.xyz/embed?stream=</span><span class="si">{0}</span><span class="s2">&amp;commit=</span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">stream_id</span><span class="p">,</span> <span class="n">commit_id</span><span class="p">),</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
 <div class="output text_html">
         <iframe
             width="100%"
@@ -646,135 +431,17 @@ First load neccesary libraries:</p>
         ></iframe>
         </div></div>
 </div>
+<section id="inspect-the-model-graph">
+<h3>Inspect the Model Graph<a class="headerlink" href="#inspect-the-model-graph" title="Permalink to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Let&#39;s identify the root members of the scenario:</span>
-<span class="n">roots</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_dynamic_member_names</span><span class="p">()</span>
-<span class="n">roots</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&#39;@scenario&#39;, &#39;@context&#39;]
-</pre></div>
-</div>
-</div>
-</div>
-<p>In this design scenario, there are two members (Speckle Objects) at the root of
-the model:</p>
-<ol class="arabic simple">
-<li><p>‘&#64;context’, and</p></li>
-<li><p>‘&#64;scenario’</p></li>
-</ol>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Speckle Objects whose member names begin with an <code class="docutils literal notranslate"><span class="pre">&#64;</span></code> indicate ‘detached’ data:
-See <a class="reference external" href="https://speckle.guide/dev/base.html#detaching">The Base Object: Detaching</a>
-for more information.</p>
-</div>
-<p>For future reference, if we wanted to see what a  they represented, we can pass them in to the Speckle
-Viewer’s “objects” endpoint with their <code class="docutils literal notranslate"><span class="pre">id</span></code>s:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">IFrame</span><span class="p">(</span><span class="s2">&quot;https://speckle.xyz/streams/</span><span class="si">{0}</span><span class="s2">/objects/</span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">stream_id</span><span class="p">,</span> <span class="n">model</span><span class="p">[</span><span class="s1">&#39;@scenario&#39;</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">]),</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_html">
-        <iframe
-            width="100%"
-            height="800"
-            src="https://speckle.xyz/streams/3f40d86240/objects/0b0b84df4d3be3f8e2926684ed18e450"
-            frameborder="0"
-            allowfullscreen
-            
-        ></iframe>
-        </div></div>
-</div>
-</section>
-<section id="rangekeeper-entitys-in-the-design-scenario">
-<h3>Rangekeeper <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s in the Design Scenario<a class="headerlink" href="#rangekeeper-entitys-in-the-design-scenario" title="Permalink to this heading">#</a></h3>
-<p>Of course, not all Speckle Objects are Rangekeeper <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s for us to use in
-our valuations and modeling.
-To make parsing the design scenario easier, <em>Rangekeeper</em> provides some helper
-methods to convert the Speckle Objects into Rangekeeper <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Return any Speckle Objects that have &#39;entityId&#39;s:</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">speckle</span><span class="o">.</span><span class="n">get_commit</span><span class="p">(</span><span class="n">stream_id</span><span class="o">=</span><span class="n">stream_id</span><span class="p">)</span> <span class="c1"># Providing no commit_id defaults to the latest commit</span>
 <span class="n">speckle_entities</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">Speckle</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s1">&#39;@scenario&#39;</span><span class="p">])</span>
-
-<span class="c1"># Convert the first object (root) into a Rangekeeper Entity:</span>
 <span class="n">root_assembly</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">Speckle</span><span class="o">.</span><span class="n">to_entity</span><span class="p">(</span><span class="n">speckle_entities</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-
-<span class="c1"># (We can check that it is an Assembly:)</span>
-<span class="nb">isinstance</span><span class="p">(</span><span class="n">root_assembly</span><span class="p">,</span> <span class="n">rk</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">Assembly</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>True
-</pre></div>
-</div>
-</div>
-</div>
-<section id="querying-the-design-scenario-s-object-graph">
-<h4>Querying the Design Scenario’s Object Graph<a class="headerlink" href="#querying-the-design-scenario-s-object-graph" title="Permalink to this heading">#</a></h4>
-<p><em>Rangekeeper</em> uses the <a class="reference external" href="https://networkx.org/">NetworkX</a> library to represent
-the object graph of the design scenario, where each <code class="docutils literal notranslate"><span class="pre">Assembly</span></code> is a
-<code class="docutils literal notranslate"><span class="pre">MultiDiGraph</span></code> of <code class="docutils literal notranslate"><span class="pre">Entity</span></code> nodes and <code class="docutils literal notranslate"><span class="pre">Relationship</span></code> edges.
-This means we can query it pythonically:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get the &quot;BuildingA&quot; Assembly:</span>
-<span class="n">buildingA</span> <span class="o">=</span> <span class="p">[</span><span class="n">node</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">root_assembly</span><span class="o">.</span><span class="n">nodes</span> <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;BuildingA&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;BuildingA: </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">buildingA</span><span class="p">))</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>BuildingA: Assembly: BuildingA
-Type: building
-Entities: [(Assembly: BuildingA (Type: building), {}), (Entity: BuildingA.Residential (Type: space), {}), (Entity: BuildingA.Retail (Type: space), {}), (Entity: BuildingA.Parking (Type: space), {}), (Entity: BuildingA.Office (Type: space), {}), (Entity: BuildingA.Core (Type: space), {})]
-Relationships: [(Assembly: BuildingA (Type: building), Entity: BuildingA.Residential (Type: space), &#39;spatiallyContains&#39;), (Assembly: BuildingA (Type: building), Entity: BuildingA.Retail (Type: space), &#39;spatiallyContains&#39;), (Assembly: BuildingA (Type: building), Entity: BuildingA.Parking (Type: space), &#39;spatiallyContains&#39;), (Assembly: BuildingA (Type: building), Entity: BuildingA.Office (Type: space), &#39;spatiallyContains&#39;), (Assembly: BuildingA (Type: building), Entity: BuildingA.Core (Type: space), &#39;spatiallyContains&#39;), (Entity: BuildingA.Core (Type: space), Entity: BuildingA.Residential (Type: space), &#39;services&#39;), (Entity: BuildingA.Core (Type: space), Entity: BuildingA.Retail (Type: space), &#39;services&#39;), (Entity: BuildingA.Core (Type: space), Entity: BuildingA.Parking (Type: space), &#39;services&#39;), (Entity: BuildingA.Core (Type: space), Entity: BuildingA.Office (Type: space), &#39;services&#39;)]
-</pre></div>
-</div>
-</div>
-</div>
-<p>Because we can also define directed, labelled <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s between <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s,
-we can identify relatives of <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s accordingly:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get all relatives of BuildingA where BuildingA is the source of</span>
-<span class="c1"># a &#39;spatiallyContains&#39; relationship:</span>
-<span class="n">buildingA_containment</span> <span class="o">=</span> <span class="n">buildingA</span><span class="o">.</span><span class="n">get_relatives</span><span class="p">(</span><span class="n">outgoing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">relationship_type</span><span class="o">=</span><span class="s1">&#39;spatiallyContains&#39;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;BuildingA Containment: </span><span class="se">\n</span><span class="s1"> </span><span class="si">{0}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">buildingA_containment</span><span class="p">))</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>BuildingA Containment: 
- [Entity: BuildingA.Residential (Type: space), Entity: BuildingA.Retail (Type: space), Entity: BuildingA.Parking (Type: space), Entity: BuildingA.Office (Type: space), Entity: BuildingA.Core (Type: space)]
-</pre></div>
-</div>
-</div>
-</div>
-<p>Since each <code class="docutils literal notranslate"><span class="pre">Assembly</span></code> is a both a distinct <code class="docutils literal notranslate"><span class="pre">MultiDiGraph</span></code> and an <code class="docutils literal notranslate"><span class="pre">Entity</span></code> with
-<code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s to other <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s, in order to consolidate the whole object
-graph we ‘unroll’ (or ‘develop’) it:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">develop</span> <span class="o">=</span> <span class="n">root_assembly</span><span class="o">.</span><span class="n">develop</span><span class="p">(</span>
+<span class="n">develop</span> <span class="o">=</span> <span class="n">root_assembly</span><span class="o">.</span><span class="n">develop</span><span class="p">(</span>
     <span class="n">name</span><span class="o">=</span><span class="s1">&#39;design_scenario&#39;</span><span class="p">,</span>
     <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;design_scenario&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>And that means we can visualize it as well:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">develop</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+<span class="n">develop</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
     <span class="n">notebook</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">hierarchical_layout</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">display</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -2017,7 +1684,6 @@ var tomSelect=function(e,t){return new TomSelect(e,t)}
 </html></section>
 </section>
 </section>
-</section>
 
     <script type="text/x-thebe-config">
     {
@@ -2051,22 +1717,13 @@ var tomSelect=function(e,t){return new TomSelect(e,t)}
     <div class="footer-article-item"><!-- Previous / next buttons -->
 <div class="prev-next-area">
     <a class="left-prev"
-       href="flexibility_under_uncertainty.html"
+       href="load_design_scenario.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Flexibility under Uncertainty</p>
+        <p class="prev-next-title">Loading a Design Scenario</p>
       </div>
-    </a>
-    <a class="right-next"
-       href="drive_model_from_design_scenario.html"
-       title="next page">
-      <div class="prev-next-info">
-        <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Driving a Financial Valuation from a Design Scenario</p>
-      </div>
-      <i class="fa-solid fa-angle-right"></i>
     </a>
 </div></div>
   
@@ -2086,35 +1743,8 @@ var tomSelect=function(e,t){return new TomSelect(e,t)}
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#object-model">Object Model</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#entities-and-relationships">Entities and Relationships</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#entitys"><code class="docutils literal notranslate"><span class="pre">Entity</span></code>s</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#relationships"><code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#assemblys"><code class="docutils literal notranslate"><span class="pre">Assembly</span></code>s</a></li>
-</ul>
-</li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#definitions">Definitions</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#properties-of-entitys">Properties of <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#properties-of-relationships">Properties of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#events"><code class="docutils literal notranslate"><span class="pre">Event</span></code>s</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rationale-and-implications">Rationale and Implications</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#technicalities">Technicalities</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#defining-entitys-and-relationships-in-the-design-scenario">Defining <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s and <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s in the Design Scenario</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-design-scenario">Example Design Scenario</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#authenticate-and-load-the-design-scenario-from-speckle">Authenticate and Load the Design scenario from Speckle</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inspect-the-design-scenario">Inspect the Design Scenario</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rangekeeper-entitys-in-the-design-scenario">Rangekeeper <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s in the Design Scenario</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#querying-the-design-scenario-s-object-graph">Querying the Design Scenario’s Object Graph</a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#load-the-design-scenario">Load the Design Scenario</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inspect-the-model-graph">Inspect the Model Graph</a></li>
 </ul>
 </li>
 </ul>
