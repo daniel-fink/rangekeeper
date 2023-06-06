@@ -30,9 +30,12 @@ class TestApi:
             host="speckle.xyz",
             token=os.getenv('SPECKLE_TOKEN'))
 
-        model = speckle.get_commit(
-            stream_id="3f40d86240",
-            commit_id="d5930913d6")
+        stream_id = "3f40d86240"
+
+        latest_commit_id = speckle.get_latest_commit_id(stream_id=stream_id)
+        print('Latest Commit: {0}'.format(latest_commit_id))
+
+        model = speckle.get_commit(stream_id=stream_id)
 
         roots = model.get_dynamic_member_names()
         print('Roots: {0}'.format(roots))
@@ -82,12 +85,15 @@ class TestApi:
         print('Subassemblies: \n {0}'.format(subassemblies))
 
         develop = root_assembly.develop(
-            name='Develop',
-            type='foo')
+            name='test_develop',
+            type='design_scenario')
         # develop.nodes(data=True)
         print('Develop: \n {0}'.format(develop.nodes(data=True)))
 
-        develop.plot()
+        develop.plot(
+            hierarchical_layout=False,
+            display=False,
+            )
 
         # pos = nx.nx_agraph.graphviz_layout(develop, prog="sfdp")
         # nx.draw(develop, pos)
