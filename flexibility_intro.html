@@ -167,6 +167,7 @@ const thebe_selector_output = ".output, .cell_output"
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Using Rangekeeper in Examples</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="load_design_scenario.html">Loading a Design Scenario</a></li>
+<li class="toctree-l1"><a class="reference internal" href="drive_model_from_design_scenario.html">Driving a Financial Valuation from a Design Scenario</a></li>
 </ul>
 
     </div>
@@ -847,7 +848,7 @@ emulate how an ‘Ex-Post’ Model would look)</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="_images/0a942138a1c2cb2e72268600171b11efc6dd019e5195a45c5ac7d7a98a4708a1.png" src="_images/0a942138a1c2cb2e72268600171b11efc6dd019e5195a45c5ac7d7a98a4708a1.png" />
+<img alt="_images/bf03b5f0ec8785c650cbe05e628416db6542223b95f00ee8b2b3fbc717507f97.png" src="_images/bf03b5f0ec8785c650cbe05e628416db6542223b95f00ee8b2b3fbc717507f97.png" />
 </div>
 </div>
 <div class="admonition warning">
@@ -976,17 +977,17 @@ Model’s PGI and the simulated <code class="docutils literal notranslate"><span
 <tr><th style="text-align: right;">  date</th><th style="text-align: right;">  Potential Gross Income</th><th style="text-align: right;">  Vacancy Allowance</th><th style="text-align: right;">  Effective Gross Income</th><th style="text-align: right;">  Operating Expenses</th><th style="text-align: right;">  Net Operating Income</th><th style="text-align: right;">  Capital Expenditures</th><th style="text-align: right;">  Net Annual Cashflow</th><th style="text-align: right;">  Reversion</th></tr>
 </thead>
 <tbody>
-<tr><td style="text-align: right;">  2001</td><td style="text-align: right;">                 $116.22</td><td style="text-align: right;">             -$5.81</td><td style="text-align: right;">                 $110.41</td><td style="text-align: right;">             -$40.68</td><td style="text-align: right;">                $69.73</td><td style="text-align: right;">               -$11.62</td><td style="text-align: right;">               $58.11</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">  2002</td><td style="text-align: right;">                 $126.53</td><td style="text-align: right;">             -$6.33</td><td style="text-align: right;">                 $120.20</td><td style="text-align: right;">             -$44.28</td><td style="text-align: right;">                $75.92</td><td style="text-align: right;">               -$12.65</td><td style="text-align: right;">               $63.26</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">  2003</td><td style="text-align: right;">                 $120.19</td><td style="text-align: right;">             -$6.01</td><td style="text-align: right;">                 $114.18</td><td style="text-align: right;">             -$42.07</td><td style="text-align: right;">                $72.12</td><td style="text-align: right;">               -$12.02</td><td style="text-align: right;">               $60.10</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">  2004</td><td style="text-align: right;">                 $140.54</td><td style="text-align: right;">             -$7.03</td><td style="text-align: right;">                 $133.52</td><td style="text-align: right;">             -$49.19</td><td style="text-align: right;">                $84.33</td><td style="text-align: right;">               -$14.05</td><td style="text-align: right;">               $70.27</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">  2005</td><td style="text-align: right;">                 $159.85</td><td style="text-align: right;">             -$7.99</td><td style="text-align: right;">                 $151.86</td><td style="text-align: right;">             -$55.95</td><td style="text-align: right;">                $95.91</td><td style="text-align: right;">               -$15.99</td><td style="text-align: right;">               $79.93</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">  2006</td><td style="text-align: right;">                 $132.80</td><td style="text-align: right;">             -$6.64</td><td style="text-align: right;">                 $126.16</td><td style="text-align: right;">             -$46.48</td><td style="text-align: right;">                $79.68</td><td style="text-align: right;">               -$13.28</td><td style="text-align: right;">               $66.40</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">  2007</td><td style="text-align: right;">                  $90.96</td><td style="text-align: right;">             -$4.55</td><td style="text-align: right;">                  $86.41</td><td style="text-align: right;">             -$31.84</td><td style="text-align: right;">                $54.58</td><td style="text-align: right;">                -$9.10</td><td style="text-align: right;">               $45.48</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">  2008</td><td style="text-align: right;">                  $62.65</td><td style="text-align: right;">             -$3.13</td><td style="text-align: right;">                  $59.51</td><td style="text-align: right;">             -$21.93</td><td style="text-align: right;">                $37.59</td><td style="text-align: right;">                -$6.26</td><td style="text-align: right;">               $31.32</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">  2009</td><td style="text-align: right;">                  $45.98</td><td style="text-align: right;">             -$2.30</td><td style="text-align: right;">                  $43.68</td><td style="text-align: right;">             -$16.09</td><td style="text-align: right;">                $27.59</td><td style="text-align: right;">                -$4.60</td><td style="text-align: right;">               $22.99</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">  2010</td><td style="text-align: right;">                  $53.40</td><td style="text-align: right;">             -$2.67</td><td style="text-align: right;">                  $50.73</td><td style="text-align: right;">             -$18.69</td><td style="text-align: right;">                $32.04</td><td style="text-align: right;">                -$5.34</td><td style="text-align: right;">               $26.70</td><td style="text-align: right;">    $349.26</td></tr>
-<tr><td style="text-align: right;">  2011</td><td style="text-align: right;">                  $48.22</td><td style="text-align: right;">             -$2.41</td><td style="text-align: right;">                  $45.81</td><td style="text-align: right;">             -$16.88</td><td style="text-align: right;">                $28.93</td><td style="text-align: right;">                -$4.82</td><td style="text-align: right;">               $24.11</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2001</td><td style="text-align: right;">                 $108.00</td><td style="text-align: right;">             -$5.40</td><td style="text-align: right;">                 $102.60</td><td style="text-align: right;">             -$37.80</td><td style="text-align: right;">                $64.80</td><td style="text-align: right;">               -$10.80</td><td style="text-align: right;">               $54.00</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2002</td><td style="text-align: right;">                  $99.86</td><td style="text-align: right;">             -$4.99</td><td style="text-align: right;">                  $94.87</td><td style="text-align: right;">             -$34.95</td><td style="text-align: right;">                $59.92</td><td style="text-align: right;">                -$9.99</td><td style="text-align: right;">               $49.93</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2003</td><td style="text-align: right;">                 $125.68</td><td style="text-align: right;">             -$6.28</td><td style="text-align: right;">                 $119.39</td><td style="text-align: right;">             -$43.99</td><td style="text-align: right;">                $75.41</td><td style="text-align: right;">               -$12.57</td><td style="text-align: right;">               $62.84</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2004</td><td style="text-align: right;">                 $140.59</td><td style="text-align: right;">             -$7.03</td><td style="text-align: right;">                 $133.56</td><td style="text-align: right;">             -$49.21</td><td style="text-align: right;">                $84.35</td><td style="text-align: right;">               -$14.06</td><td style="text-align: right;">               $70.29</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2005</td><td style="text-align: right;">                 $147.14</td><td style="text-align: right;">             -$7.36</td><td style="text-align: right;">                 $139.79</td><td style="text-align: right;">             -$51.50</td><td style="text-align: right;">                $88.29</td><td style="text-align: right;">               -$14.71</td><td style="text-align: right;">               $73.57</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2006</td><td style="text-align: right;">                 $138.73</td><td style="text-align: right;">             -$6.94</td><td style="text-align: right;">                 $131.79</td><td style="text-align: right;">             -$48.55</td><td style="text-align: right;">                $83.24</td><td style="text-align: right;">               -$13.87</td><td style="text-align: right;">               $69.36</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2007</td><td style="text-align: right;">                 $106.66</td><td style="text-align: right;">             -$5.33</td><td style="text-align: right;">                 $101.33</td><td style="text-align: right;">             -$37.33</td><td style="text-align: right;">                $64.00</td><td style="text-align: right;">               -$10.67</td><td style="text-align: right;">               $53.33</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2008</td><td style="text-align: right;">                  $73.40</td><td style="text-align: right;">             -$3.67</td><td style="text-align: right;">                  $69.73</td><td style="text-align: right;">             -$25.69</td><td style="text-align: right;">                $44.04</td><td style="text-align: right;">                -$7.34</td><td style="text-align: right;">               $36.70</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2009</td><td style="text-align: right;">                  $63.57</td><td style="text-align: right;">             -$3.18</td><td style="text-align: right;">                  $60.39</td><td style="text-align: right;">             -$22.25</td><td style="text-align: right;">                $38.14</td><td style="text-align: right;">                -$6.36</td><td style="text-align: right;">               $31.79</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2010</td><td style="text-align: right;">                  $57.00</td><td style="text-align: right;">             -$2.85</td><td style="text-align: right;">                  $54.15</td><td style="text-align: right;">             -$19.95</td><td style="text-align: right;">                $34.20</td><td style="text-align: right;">                -$5.70</td><td style="text-align: right;">               $28.50</td><td style="text-align: right;">    $433.57</td></tr>
+<tr><td style="text-align: right;">  2011</td><td style="text-align: right;">                  $59.35</td><td style="text-align: right;">             -$2.97</td><td style="text-align: right;">                  $56.38</td><td style="text-align: right;">             -$20.77</td><td style="text-align: right;">                $35.61</td><td style="text-align: right;">                -$5.93</td><td style="text-align: right;">               $29.67</td><td style="text-align: right;">          0</td></tr>
 </tbody>
 </table></div></div>
 </div>
@@ -1000,9 +1001,9 @@ Model’s PGI and the simulated <code class="docutils literal notranslate"><span
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Projected IRR at Market Value Price: -1.92%
-Time 0 Present Value at OCC: $563.64
-Average Annual Cashflow: $52.46
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Projected IRR at Market Value Price: -0.50%
+Time 0 Present Value at OCC: $604.43
+Average Annual Cashflow: $53.03
 </pre></div>
 </div>
 </div>
@@ -1018,8 +1019,8 @@ Average Annual Cashflow: $52.46
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Percentage Difference of Scenario PV Minus Pro-forma PV: -43.64%
-Difference of Scenario IRR Minus Pro-forma IRR: -8.92%
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Percentage Difference of Scenario PV Minus Pro-forma PV: -39.56%
+Difference of Scenario IRR Minus Pro-forma IRR: -7.50%
 </pre></div>
 </div>
 </div>
@@ -1142,10 +1143,10 @@ mimic a manager or developer of a real estate asset. For more information, see
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Flexible Model Hold Period: 16
-Projected IRR at Market Value Price: 10.60%
-Time 0 Present Value at OCC: $1,507.10
-Average Annual Cashflow: $54.66
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Flexible Model Hold Period: 15
+Projected IRR at Market Value Price: 8.58%
+Time 0 Present Value at OCC: $1,180.08
+Average Annual Cashflow: $51.27
 </pre></div>
 </div>
 </div>
