@@ -14,3 +14,4 @@ parts:
   - caption: Using Rangekeeper in Examples
     chapters:
       - file: load_design_scenario
+      - file: drive_model_from_design_scenario
