@@ -64,6 +64,7 @@ const thebe_selector_output = ".output, .cell_output"
     <script>DOCUMENTATION_OPTIONS.pagename = 'load_design_scenario';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Driving a Financial Valuation from a Design Scenario" href="drive_model_from_design_scenario.html" />
     <link rel="prev" title="Flexibility under Uncertainty" href="flexibility_under_uncertainty.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -166,6 +167,7 @@ const thebe_selector_output = ".output, .cell_output"
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Using Rangekeeper in Examples</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Loading a Design Scenario</a></li>
+<li class="toctree-l1"><a class="reference internal" href="drive_model_from_design_scenario.html">Driving a Financial Valuation from a Design Scenario</a></li>
 </ul>
 
     </div>
@@ -403,10 +405,6 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="loading-a-design-scenario">
 <h1>Loading a Design Scenario<a class="headerlink" href="#loading-a-design-scenario" title="Permalink to this heading">#</a></h1>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>The following is a work in progress. More content will be added as produced.</p>
-</div>
 <p><em>Rangekeeper</em> provides API access to <a class="reference external" href="https://speckle.systems/">Speckle</a>. This
 enables loading and extending a 3D design scenario with <em>Rangekeeper</em> in order
 to produce its financial valuation, as well as execute any automated
@@ -571,28 +569,11 @@ from a Speckle stream in <em>Rangekeeper</em>.</p></li>
 <h2>Example Design Scenario<a class="headerlink" href="#example-design-scenario" title="Permalink to this heading">#</a></h2>
 <p>An example development has been designed and uploaded to Speckle for us to use
 as a demonstration of the object model and its use in <em>Rangekeeper</em>.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">IFrame</span>
-<span class="n">IFrame</span><span class="p">(</span><span class="s2">&quot;https://speckle.xyz/streams/3f40d86240/commits/d5930913d6&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_html">
-        <iframe
-            width="100%"
-            height="800"
-            src="https://speckle.xyz/streams/3f40d86240/commits/d5930913d6"
-            frameborder="0"
-            allowfullscreen
-            
-        ></iframe>
-        </div></div>
-</div>
-<p>As you can see, this design scenario is composed of two mixed-use buildings,
-that both share a common basement, used for parking primarily.</p>
-<p>To access the design scenario in <em>Rangekeeper</em>, we need to load it from Speckle:</p>
+<p>This design scenario is composed of two mixed-use buildings, that both share a
+common basement plinth, used for parking and shared mechanical and other
+services (e.g. garbage disposal, storage)</p>
+<p>To access the design scenario in <em>Rangekeeper</em>, we need to load it from Speckle.
+First load neccesary libraries:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
@@ -619,12 +600,26 @@ that both share a common basement, used for parking primarily.</p>
 </div>
 </div>
 </div>
+<p>The scenario is stored in a Speckle stream, which is a container for a set of
+‘commits’, or versions of the stream.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stream_id</span> <span class="o">=</span> <span class="s2">&quot;3f40d86240&quot;</span>
+<span class="n">commit_id</span> <span class="o">=</span> <span class="n">speckle</span><span class="o">.</span><span class="n">get_latest_commit_id</span><span class="p">(</span><span class="n">stream_id</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load the design scenario</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">speckle</span><span class="o">.</span><span class="n">get_commit</span><span class="p">(</span>
-    <span class="n">stream_id</span><span class="o">=</span><span class="s2">&quot;3f40d86240&quot;</span><span class="p">,</span>
-    <span class="n">commit_id</span><span class="o">=</span><span class="s2">&quot;d5930913d6&quot;</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">speckle</span><span class="o">.</span><span class="n">get_commit</span><span class="p">(</span><span class="n">stream_id</span><span class="o">=</span><span class="n">stream_id</span><span class="p">)</span> <span class="c1"># Providing no commit_id defaults to the latest commit</span>
+<span class="n">model</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Base(id: 25b3551c0b32e8044de35043525ae5d3, speckle_type: Base, totalChildrenCount: 2074)
 </pre></div>
 </div>
 </div>
@@ -632,6 +627,25 @@ that both share a common basement, used for parking primarily.</p>
 </section>
 <section id="inspect-the-design-scenario">
 <h3>Inspect the Design Scenario<a class="headerlink" href="#inspect-the-design-scenario" title="Permalink to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">IFrame</span>
+<span class="n">IFrame</span><span class="p">(</span><span class="s2">&quot;https://speckle.xyz/embed?stream=</span><span class="si">{0}</span><span class="s2">&amp;commit=</span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">stream_id</span><span class="p">,</span> <span class="n">commit_id</span><span class="p">),</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html">
+        <iframe
+            width="100%"
+            height="800"
+            src="https://speckle.xyz/embed?stream=3f40d86240&commit=0cbad6f35c"
+            frameborder="0"
+            allowfullscreen
+            
+        ></iframe>
+        </div></div>
+</div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Let&#39;s identify the root members of the scenario:</span>
@@ -662,7 +676,7 @@ for more information.</p>
 Viewer’s “objects” endpoint with their <code class="docutils literal notranslate"><span class="pre">id</span></code>s:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">IFrame</span><span class="p">(</span><span class="s2">&quot;https://speckle.xyz/streams/3f40d86240/objects/</span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">model</span><span class="p">[</span><span class="s1">&#39;@scenario&#39;</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">]),</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">IFrame</span><span class="p">(</span><span class="s2">&quot;https://speckle.xyz/streams/</span><span class="si">{0}</span><span class="s2">/objects/</span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">stream_id</span><span class="p">,</span> <span class="n">model</span><span class="p">[</span><span class="s1">&#39;@scenario&#39;</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">]),</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -671,7 +685,7 @@ Viewer’s “objects” endpoint with their <code class="docutils literal notra
         <iframe
             width="100%"
             height="800"
-            src="https://speckle.xyz/streams/3f40d86240/objects/42bbcef93d01580f723de0d30bb1b398"
+            src="https://speckle.xyz/streams/3f40d86240/objects/0b0b84df4d3be3f8e2926684ed18e450"
             frameborder="0"
             allowfullscreen
             
@@ -721,8 +735,8 @@ This means we can query it pythonically:</p>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>BuildingA: Assembly: BuildingA
 Type: building
-Entities: [(Assembly: BuildingA (Type: building), {}), (Entity: BuildingA.Residential (Type: space), {}), (Entity: BuildingA.Retail (Type: space), {}), (Entity: BuildingA.Parking (Type: space), {})]
-Relationships: [(Assembly: BuildingA (Type: building), Entity: BuildingA.Residential (Type: space), &#39;spatiallyContains&#39;), (Assembly: BuildingA (Type: building), Entity: BuildingA.Retail (Type: space), &#39;spatiallyContains&#39;), (Assembly: BuildingA (Type: building), Entity: BuildingA.Parking (Type: space), &#39;spatiallyContains&#39;)]
+Entities: [(Assembly: BuildingA (Type: building), {}), (Entity: BuildingA.Residential (Type: space), {}), (Entity: BuildingA.Retail (Type: space), {}), (Entity: BuildingA.Parking (Type: space), {}), (Entity: BuildingA.Office (Type: space), {}), (Entity: BuildingA.Core (Type: space), {})]
+Relationships: [(Assembly: BuildingA (Type: building), Entity: BuildingA.Residential (Type: space), &#39;spatiallyContains&#39;), (Assembly: BuildingA (Type: building), Entity: BuildingA.Retail (Type: space), &#39;spatiallyContains&#39;), (Assembly: BuildingA (Type: building), Entity: BuildingA.Parking (Type: space), &#39;spatiallyContains&#39;), (Assembly: BuildingA (Type: building), Entity: BuildingA.Office (Type: space), &#39;spatiallyContains&#39;), (Assembly: BuildingA (Type: building), Entity: BuildingA.Core (Type: space), &#39;spatiallyContains&#39;), (Entity: BuildingA.Core (Type: space), Entity: BuildingA.Residential (Type: space), &#39;services&#39;), (Entity: BuildingA.Core (Type: space), Entity: BuildingA.Retail (Type: space), &#39;services&#39;), (Entity: BuildingA.Core (Type: space), Entity: BuildingA.Parking (Type: space), &#39;services&#39;), (Entity: BuildingA.Core (Type: space), Entity: BuildingA.Office (Type: space), &#39;services&#39;)]
 </pre></div>
 </div>
 </div>
@@ -740,7 +754,7 @@ we can identify relatives of <code class="docutils literal notranslate"><span cl
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>BuildingA Containment: 
- [Entity: BuildingA.Residential (Type: space), Entity: BuildingA.Retail (Type: space), Entity: BuildingA.Parking (Type: space)]
+ [Entity: BuildingA.Residential (Type: space), Entity: BuildingA.Retail (Type: space), Entity: BuildingA.Parking (Type: space), Entity: BuildingA.Office (Type: space), Entity: BuildingA.Core (Type: space)]
 </pre></div>
 </div>
 </div>
@@ -760,7 +774,10 @@ graph we ‘unroll’ (or ‘develop’) it:</p>
 <p>And that means we can visualize it as well:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">develop</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">notebook</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">develop</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+    <span class="n">notebook</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">hierarchical_layout</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">display</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1933,8 +1950,8 @@ var tomSelect=function(e,t){return new TomSelect(e,t)}
                   
 
                   // parsing and collecting nodes and edges from the python
-                  nodes = new vis.DataSet([{"borderWidth": 2, "color": "#97c2fc", "id": "978f5752-b8a9-4dfb-a619-e0c50da86635", "label": "BuildingA", "labelHighlightBold": true, "level": 1, "shape": "circle", "title": "building"}, {"color": "#97c2fc", "id": "40e90026-ee9b-4407-85b2-043e3c6d5e2e", "label": "BuildingA.Residential", "level": 2, "shape": "dot", "size": 10, "title": "space"}, {"color": "#97c2fc", "id": "34b417bf-b5fd-4214-a3f5-d2486c9f2a13", "label": "BuildingA.Retail", "level": 2, "shape": "dot", "size": 10, "title": "space"}, {"color": "#97c2fc", "id": "adde3886-c345-4bee-91dd-d2725e9af6cf", "label": "BuildingA.Parking", "level": 2, "shape": "dot", "size": 10, "title": "space"}, {"borderWidth": 2, "color": "#97c2fc", "id": "45d29351-f66e-4369-aaa2-f8194fbb20c9", "label": "BuildingB", "labelHighlightBold": true, "level": 1, "shape": "circle", "title": "building"}, {"color": "#97c2fc", "id": "7f3e9ca7-484d-4802-bb52-d91da50d6eab", "label": "BuildingB.Residential", "level": 2, "shape": "dot", "size": 10, "title": "space"}, {"color": "#97c2fc", "id": "space", "label": "BuildingB.Retail", "level": 2, "shape": "dot", "size": 10, "title": "retail"}, {"color": "#97c2fc", "id": "bf7a97ff-8e3c-4f3d-9a21-14c2e0d7d05b", "label": "BuildingB.Parking", "level": 2, "shape": "dot", "size": 10, "title": "space"}, {"borderWidth": 2, "color": "#97c2fc", "id": "b26c78c1-2c9f-445a-ad66-c871c153828f", "label": "Complex", "labelHighlightBold": true, "level": 0, "shape": "circle", "title": "building"}, {"color": "#97c2fc", "id": "081b5ef6-ab03-4363-afc1-205f90710c11", "label": "Complex.Parking", "level": 2, "shape": "dot", "size": 10, "title": "space"}]);
-                  edges = new vis.DataSet([{"arrowStrikethrough": false, "arrows": "to", "from": "978f5752-b8a9-4dfb-a619-e0c50da86635", "title": "spatiallyContains", "to": "40e90026-ee9b-4407-85b2-043e3c6d5e2e"}, {"arrowStrikethrough": false, "arrows": "to", "from": "978f5752-b8a9-4dfb-a619-e0c50da86635", "title": "spatiallyContains", "to": "34b417bf-b5fd-4214-a3f5-d2486c9f2a13"}, {"arrowStrikethrough": false, "arrows": "to", "from": "978f5752-b8a9-4dfb-a619-e0c50da86635", "title": "spatiallyContains", "to": "adde3886-c345-4bee-91dd-d2725e9af6cf"}, {"arrowStrikethrough": false, "arrows": "to", "from": "45d29351-f66e-4369-aaa2-f8194fbb20c9", "title": "spatiallyContains", "to": "7f3e9ca7-484d-4802-bb52-d91da50d6eab"}, {"arrowStrikethrough": false, "arrows": "to", "from": "45d29351-f66e-4369-aaa2-f8194fbb20c9", "title": "spatiallyContains", "to": "space"}, {"arrowStrikethrough": false, "arrows": "to", "from": "45d29351-f66e-4369-aaa2-f8194fbb20c9", "title": "spatiallyContains", "to": "bf7a97ff-8e3c-4f3d-9a21-14c2e0d7d05b"}, {"arrowStrikethrough": false, "arrows": "to", "from": "b26c78c1-2c9f-445a-ad66-c871c153828f", "title": "spatiallyContains", "to": "978f5752-b8a9-4dfb-a619-e0c50da86635"}, {"arrowStrikethrough": false, "arrows": "to", "from": "b26c78c1-2c9f-445a-ad66-c871c153828f", "title": "spatiallyContains", "to": "45d29351-f66e-4369-aaa2-f8194fbb20c9"}, {"arrowStrikethrough": false, "arrows": "to", "from": "b26c78c1-2c9f-445a-ad66-c871c153828f", "title": "spatiallyContains", "to": "081b5ef6-ab03-4363-afc1-205f90710c11"}]);
+                  nodes = new vis.DataSet([{"borderWidth": 2, "color": "#301437", "font": "16px arial white", "id": "1eab1eb6-d1ce-485c-b59c-6faf37f1923e", "label": "BuildingA", "labelHighlightBold": true, "level": 1, "shape": "circle", "title": "building"}, {"color": "#b25652", "font": "12px arial black", "id": "c70f1f1b-54b3-4ccb-b674-daf74efe6bd9", "label": "BuildingA.Residential", "level": 3, "shape": "dot", "size": 10, "title": "space"}, {"color": "#b25652", "font": "12px arial black", "id": "913dc3f6-750d-4226-b1aa-3e1c8995a516", "label": "BuildingA.Retail", "level": 3, "shape": "dot", "size": 10, "title": "space"}, {"color": "#b25652", "font": "12px arial black", "id": "91bf98c2-5f3d-4310-9e72-67da1cdfd649", "label": "BuildingA.Parking", "level": 3, "shape": "dot", "size": 10, "title": "space"}, {"color": "#b25652", "font": "12px arial black", "id": "b3d1b2f2-0301-4207-a59f-26b6d49a41fa", "label": "BuildingA.Office", "level": 3, "shape": "dot", "size": 10, "title": "space"}, {"color": "#b25652", "font": "12px arial black", "id": "9a079434-e5bb-4b5d-bd37-4604653ebdfe", "label": "BuildingA.Core", "level": 2, "shape": "dot", "size": 10, "title": "space"}, {"borderWidth": 2, "color": "#301437", "font": "16px arial white", "id": "ed1e940b-889e-48fe-a330-40aed63e3789", "label": "BuildingB", "labelHighlightBold": true, "level": 1, "shape": "circle", "title": "building"}, {"color": "#b25652", "font": "12px arial black", "id": "6bdc5bdc-dd49-4deb-a88a-9aaa4d4e12eb", "label": "BuildingB.Residential", "level": 3, "shape": "dot", "size": 10, "title": "space"}, {"color": "#b25652", "font": "12px arial black", "id": "space", "label": "BuildingB.Retail", "level": 3, "shape": "dot", "size": 10, "title": "space"}, {"color": "#b25652", "font": "12px arial black", "id": "6f4531a7-533e-4463-be65-08067b5fa83e", "label": "BuildingB.Parking", "level": 3, "shape": "dot", "size": 10, "title": "space"}, {"color": "#b25652", "font": "12px arial black", "id": "bc66825a-8464-4fb1-93b9-a74abd4db0e8", "label": "BuildingB.Core", "level": 2, "shape": "dot", "size": 10, "title": "space"}, {"color": "#6276ba", "font": "12px arial black", "id": "a78c6f6d-1fd9-43fe-8a62-900b54a0cf53", "label": "Complex.Plant", "level": 2, "shape": "dot", "size": 10, "title": "plant"}, {"borderWidth": 2, "color": "#e2d9e2", "font": "16px arial white", "id": "c5a29cb9-84db-4c01-9158-c533070f8b25", "label": "Plinth", "labelHighlightBold": true, "level": 1, "shape": "circle", "title": "infrastructure"}, {"color": "#b25652", "font": "12px arial black", "id": "0f109dea-c923-4a51-9de4-45c87f8a3d05", "label": "Complex.Parking", "level": 2, "shape": "dot", "size": 10, "title": "space"}, {"borderWidth": 2, "color": "#301437", "font": "16px arial white", "id": "a1060762-7324-4b81-9464-da79ff19630d", "label": "Complex", "labelHighlightBold": true, "level": 0, "shape": "circle", "title": "building"}]);
+                  edges = new vis.DataSet([{"arrowStrikethrough": false, "arrows": "to", "color": "#bc3754", "font": {"align": "middle", "color": "grey", "size": 8}, "from": "1eab1eb6-d1ce-485c-b59c-6faf37f1923e", "label": "spatiallyContains", "title": "spatiallyContains", "to": "c70f1f1b-54b3-4ccb-b674-daf74efe6bd9"}, {"arrowStrikethrough": false, "arrows": "to", "color": "#bc3754", "font": {"align": "middle", "color": "grey", "size": 8}, "from": "1eab1eb6-d1ce-485c-b59c-6faf37f1923e", "label": "spatiallyContains", "title": "spatiallyContains", "to": "913dc3f6-750d-4226-b1aa-3e1c8995a516"}, {"arrowStrikethrough": false, "arrows": "to", "color": "#bc3754", "font": {"align": "middle", "color": "grey", "size": 8}, "from": "1eab1eb6-d1ce-485c-b59c-6faf37f1923e", "label": "spatiallyContains", "title": "spatiallyContains", "to": "91bf98c2-5f3d-4310-9e72-67da1cdfd649"}, {"arrowStrikethrough": false, "arrows": "to", "color": "#bc3754", "font": {"align": "middle", "color": "grey", "size": 8}, "from": "1eab1eb6-d1ce-485c-b59c-6faf37f1923e", "label": "spatiallyContains", "title": "spatiallyContains", "to": "b3d1b2f2-0301-4207-a59f-26b6d49a41fa"}, {"arrowStrikethrough": false, "arrows": "to", "color": "#bc3754", "font": {"align": "middle", "color": "grey", "size": 8}, "from": "1eab1eb6-d1ce-485c-b59c-6faf37f1923e", "label": "spatiallyContains", "title": "spatiallyContains", "to": "9a079434-e5bb-4b5d-bd37-4604653ebdfe"}, {"arrowStrikethrough": false, "arrows": "to", "color": "#000004", "font": {"align": "middle", "color": "grey", "size": 8}, "from": "9a079434-e5bb-4b5d-bd37-4604653ebdfe", "label": "services", "title": "services", "to": "c70f1f1b-54b3-4ccb-b674-daf74efe6bd9"}, {"arrowStrikethrough": false, "arrows": "to", "color": "#000004", "font": {"align": "middle", "color": "grey", "size": 8}, "from": "9a079434-e5bb-4b5d-bd37-4604653ebdfe", "label": "services", "title": "services", "to": "913dc3f6-750d-4226-b1aa-3e1c8995a516"}, {"arrowStrikethrough": false, "arrows": "to", "color": "#000004", "font": {"align": "middle", "color": "grey", "size": 8}, "from": "9a079434-e5bb-4b5d-bd37-4604653ebdfe", "label": "services", "title": "services", "to": "91bf98c2-5f3d-4310-9e72-67da1cdfd649"}, {"arrowStrikethrough": false, "arrows": "to", "color": "#000004", "font": {"align": "middle", "color": "grey", "size": 8}, "from": "9a079434-e5bb-4b5d-bd37-4604653ebdfe", "label": "services", "title": "services", "to": "b3d1b2f2-0301-4207-a59f-26b6d49a41fa"}, {"arrowStrikethrough": false, "arrows": "to", "color": "#bc3754", "font": {"align": "middle", "color": "grey", "size": 8}, "from": "ed1e940b-889e-48fe-a330-40aed63e3789", "label": "spatiallyContains", "title": "spatiallyContains", "to": "6bdc5bdc-dd49-4deb-a88a-9aaa4d4e12eb"}, {"arrowStrikethrough": false, "arrows": "to", "color": "#bc3754", "font": {"align": "middle", "color": "grey", "size": 8}, "from": "ed1e940b-889e-48fe-a330-40aed63e3789", "label": "spatiallyContains", "title": "spatiallyContains", "to": "space"}, {"arrowStrikethrough": false, "arrows": "to", "color": "#bc3754", "font": {"align": "middle", "color": "grey", "size": 8}, "from": "ed1e940b-889e-48fe-a330-40aed63e3789", "label": "spatiallyContains", "title": "spatiallyContains", "to": "6f4531a7-533e-4463-be65-08067b5fa83e"}, {"arrowStrikethrough": false, "arrows": "to", "color": "#bc3754", "font": {"align": "middle", "color": "grey", "size": 8}, "from": "ed1e940b-889e-48fe-a330-40aed63e3789", "label": "spatiallyContains", "title": "spatiallyContains", "to": "bc66825a-8464-4fb1-93b9-a74abd4db0e8"}, {"arrowStrikethrough": false, "arrows": "to", "color": "#bc3754", "font": {"align": "middle", "color": "grey", "size": 8}, "from": "ed1e940b-889e-48fe-a330-40aed63e3789", "label": "spatiallyContains", "title": "spatiallyContains", "to": "a78c6f6d-1fd9-43fe-8a62-900b54a0cf53"}, {"arrowStrikethrough": false, "arrows": "to", "color": "#000004", "font": {"align": "middle", "color": "grey", "size": 8}, "from": "bc66825a-8464-4fb1-93b9-a74abd4db0e8", "label": "services", "title": "services", "to": "6bdc5bdc-dd49-4deb-a88a-9aaa4d4e12eb"}, {"arrowStrikethrough": false, "arrows": "to", "color": "#000004", "font": {"align": "middle", "color": "grey", "size": 8}, "from": "bc66825a-8464-4fb1-93b9-a74abd4db0e8", "label": "services", "title": "services", "to": "space"}, {"arrowStrikethrough": false, "arrows": "to", "color": "#000004", "font": {"align": "middle", "color": "grey", "size": 8}, "from": "bc66825a-8464-4fb1-93b9-a74abd4db0e8", "label": "services", "title": "services", "to": "6f4531a7-533e-4463-be65-08067b5fa83e"}, {"arrowStrikethrough": false, "arrows": "to", "color": "#bc3754", "font": {"align": "middle", "color": "grey", "size": 8}, "from": "c5a29cb9-84db-4c01-9158-c533070f8b25", "label": "spatiallyContains", "title": "spatiallyContains", "to": "0f109dea-c923-4a51-9de4-45c87f8a3d05"}, {"arrowStrikethrough": false, "arrows": "to", "color": "#000004", "font": {"align": "middle", "color": "grey", "size": 8}, "from": "a78c6f6d-1fd9-43fe-8a62-900b54a0cf53", "label": "services", "title": "services", "to": "9a079434-e5bb-4b5d-bd37-4604653ebdfe"}, {"arrowStrikethrough": false, "arrows": "to", "color": "#000004", "font": {"align": "middle", "color": "grey", "size": 8}, "from": "a78c6f6d-1fd9-43fe-8a62-900b54a0cf53", "label": "services", "title": "services", "to": "bc66825a-8464-4fb1-93b9-a74abd4db0e8"}, {"arrowStrikethrough": false, "arrows": "to", "color": "#bc3754", "font": {"align": "middle", "color": "grey", "size": 8}, "from": "a1060762-7324-4b81-9464-da79ff19630d", "label": "spatiallyContains", "title": "spatiallyContains", "to": "1eab1eb6-d1ce-485c-b59c-6faf37f1923e"}, {"arrowStrikethrough": false, "arrows": "to", "color": "#bc3754", "font": {"align": "middle", "color": "grey", "size": 8}, "from": "a1060762-7324-4b81-9464-da79ff19630d", "label": "spatiallyContains", "title": "spatiallyContains", "to": "ed1e940b-889e-48fe-a330-40aed63e3789"}, {"arrowStrikethrough": false, "arrows": "to", "color": "#bc3754", "font": {"align": "middle", "color": "grey", "size": 8}, "from": "a1060762-7324-4b81-9464-da79ff19630d", "label": "spatiallyContains", "title": "spatiallyContains", "to": "c5a29cb9-84db-4c01-9158-c533070f8b25"}]);
 
                   nodeColors = {};
                   allNodes = nodes.get({ returnType: "Object" });
@@ -1962,19 +1979,6 @@ var tomSelect=function(e,t){return new TomSelect(e,t)}
         "dragNodes": true,
         "hideEdgesOnDrag": false,
         "hideNodesOnDrag": false
-    },
-    "layout": {
-        "hierarchical": {
-            "blockShifting": true,
-            "edgeMinimization": true,
-            "enabled": true,
-            "levelSeparation": 150,
-            "parentCentralization": true,
-            "sortMethod": "hubsize",
-            "treeSpacing": 200
-        },
-        "improvedLayout": true,
-        "randomSeed": 0
     },
     "physics": {
         "enabled": true,
@@ -2054,6 +2058,15 @@ var tomSelect=function(e,t){return new TomSelect(e,t)}
         <p class="prev-next-subtitle">previous</p>
         <p class="prev-next-title">Flexibility under Uncertainty</p>
       </div>
+    </a>
+    <a class="right-next"
+       href="drive_model_from_design_scenario.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Driving a Financial Valuation from a Design Scenario</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
     </a>
 </div></div>
   
