@@ -12,7 +12,7 @@ namespace Rangekeeper.Components
             : base(
                 "Create Rangekeeper Entity",
                 "CRkE",
-                "Create a Rangekeeper Entity by providing a Speckle Object, and optional additional properties",
+                "Create a Rangekeeper Entity by providing a Speckle Object",
                 "Rangekeeper",
                 "Entities"
             )
@@ -24,20 +24,6 @@ namespace Rangekeeper.Components
         
         protected override void RegisterInputParams(GH_InputParamManager pManager)
         {
-            pManager.AddTextParameter(
-                "Entity Name",
-                "N",
-                "Name of the Entity",
-                GH_ParamAccess.item);
-            pManager[0].Optional = true;
-            
-            pManager.AddTextParameter(
-                "Type",
-                "Ty",
-                "Type of Entity. (It is best to use a standardised vocabulary)",
-                GH_ParamAccess.item);
-            pManager[1].Optional = true;
-            
             pManager.AddGenericParameter(
                 "Speckle Object",
                 "O",
@@ -47,28 +33,29 @@ namespace Rangekeeper.Components
         
         protected override void RegisterOutputParams(GH_OutputParamManager pManager)
         {
-            pManager.AddParameter(new EntityParam("Entity", "E", "Rangekeeper Entity", GH_ParamAccess.item));
+            pManager.AddParameter(new EntityParam("Entity", "E", "Model Entity", GH_ParamAccess.item));
         }
         
         protected sealed override void SolveInstance(IGH_DataAccess DA)
         {
-            var name = string.Empty;
-            DA.GetData(0, ref name);
-            
-            var type = string.Empty;
-            DA.GetData(1, ref type);
-
             IGH_Goo? speckleGoo = null;
-            DA.GetData(2, ref speckleGoo);
-            if (!speckleGoo.CanConvertToBase(out Base? speckleBase, out string? remark))
+            Base? speckleBase = null;
+            if (DA.GetData(0, ref speckleGoo))
             {
-                this.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, string.Format("Error: Input Object is not a Speckle Object: {0}.", remark));
+             if (speckleGoo is not null)
+                 if (!speckleGoo.CanConvertToBase(out speckleBase, out string? remark))
+                 {
+                     this.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, remark);
+                     return;
+                 }
+            }
+            else
+            {
+                this.AddRuntimeMessage(GH_RuntimeMessageLevel.Error, string.Format("Error: Input Object was not provided."));
                 return;
             }
 
             var entity = new Entity(speckleBase);
-            entity.name = name;
-            entity.type = type;
 
             DA.SetData(0, entity);
         }

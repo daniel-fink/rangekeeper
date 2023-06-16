@@ -6,16 +6,16 @@ namespace Rangekeeper.Components;
 
 public class GH_Entity : GH_Goo<Entity>
 {
-    public override IGH_Goo Duplicate() => new GH_Entity() { m_value = m_value.ShallowCopy() as Entity };
+    public override IGH_Goo Duplicate() => new GH_Entity() { m_value = m_value.Clone() };
 
     public override string ToString() =>
-        string.Format("Rangekeeper Entity: {0} of Type: {1}", this.Value.name ?? "[Unnamed]", this.Value.type ?? "[Unspecified]");
+        string.Format("Rangekeeper Entity");//": {0}, of Type: {1}", this.Value.Name ?? "[Unnamed]", this.Value.Type ?? "[Unspecified]");
     
     public override bool IsValid => m_value != null;
     
     public override string TypeName => "Rangekeeper Entity";
     
-    public override string TypeDescription => "Represents a Rangekeeper Entity (that extends a Speckle Object)";
+    public override string TypeDescription => "Represents a Rangekeeper Entity, that extends a Speckle Object";
 
     public override bool CastFrom(object source)
     {
@@ -27,17 +27,19 @@ public class GH_Entity : GH_Goo<Entity>
             case GH_Entity gooEntity:
                 this.Value = gooEntity.Value;
                 return true;
-            
             case GH_Goo<Base> goo:
-                if (goo.Value is Entity gooBaseEntity)
+                if (goo.Value is IEntity ientity)
                 {
-                    this.Value = gooBaseEntity;
-                    return true;
-                }
-                else if (goo.Value is Assembly gooBaseAssembly)
-                {
-                    this.Value = gooBaseAssembly;
-                    return true;
+                    if (ientity is Entity entity)
+                    {
+                        this.Value = entity;
+                        return true;
+                    }
+                    else if (ientity is Assembly assembly)
+                    {
+                        this.Value = assembly;
+                        return true;
+                    }
                 }
                 break;
         }
@@ -49,7 +51,13 @@ public class GH_Entity : GH_Goo<Entity>
         var success = false;
         var type = typeof(Q);
         
-        if (type == typeof(Entity))
+        if (type == typeof(IEntity))
+        {
+            target = (Q)(object)this.Value;
+            success = true;
+        }
+        
+        else if (type == typeof(Entity))
         {
             target = (Q)(object)this.Value;
             success = true;
@@ -62,6 +70,12 @@ public class GH_Entity : GH_Goo<Entity>
         }
         
         else if (type == typeof(GH_Goo<Base>))
+        {
+            target = (Q)(object)new GH_Entity() { Value = this.Value };
+            success = true;
+        }
+        
+        else if (type == typeof(Base))
         {
             target = (Q)(object)(Base)this.Value;
             success = true;

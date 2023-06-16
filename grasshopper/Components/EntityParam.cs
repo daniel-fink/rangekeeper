@@ -26,9 +26,9 @@ public class EntityParam : GH_Param<GH_Entity>
         : base(name, nickname, description, category, subcategory, access) { }
 
     public EntityParam() : this(
-        "Rangekeeper Entity Object",
+        "Rangekeeper Entity",
         "RkE",
-        "Rangekeeper Entity, extending a Speckle Object",
+        "A Rangekeeper Entity, that extends a Speckle Object",
         GH_ParamAccess.item) 
     { }
 

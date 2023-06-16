@@ -8,14 +8,14 @@ public class Relationship : Base, IEquatable<Relationship>
     public Relationship() { }
 
     [DetachProperty]
-    internal IEntity source { get; }
+    public IEntity source { get; }
 
-    public string sourceId => source.entityId;
+    // public string sourceId => this.source.entityId;
 
     [DetachProperty]
-    internal IEntity target { get; }
+    public IEntity target { get; }
 
-    public string targetId => target.entityId;
+    // public string targetId => this.target.entityId;
 
     public string type { get; set; }
     
@@ -30,11 +30,20 @@ public class Relationship : Base, IEquatable<Relationship>
         this.target = target;
         this.type = type;
     }
-    
-    public bool Equals(Relationship other)
+
+    /// <summary>
+    /// Clones a Relationship, including cloning the source and target Entities.
+    /// </summary>
+    /// <returns></returns>
+    public Relationship Clone()
+    {
+        return new Relationship(this.source.Clone(), this.target.Clone(), this.type);
+    }
+
+    public bool Equals(Relationship? other)
     {
         if (other is null) return false;
         if (ReferenceEquals(this, other)) return true;
-        return Equals(this.sourceId, other.sourceId) && Equals(this.targetId, other.targetId) && (this.type == other.type);
+        return Equals(this.source.entityId, other.source.entityId) && Equals(this.target.entityId, other.target.entityId) && (this.type == other.type);
     }
 }
