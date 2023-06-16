@@ -17,6 +17,9 @@ from . import models as models
 
 # Helper Methods:
 import functools
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+from matplotlib import cm
 
 
 def update_class(
@@ -38,3 +41,14 @@ def update_class(
         return main_class
 
     return functools.partial(decorates, main_class, exclude)
+
+
+def rgba_from_cmap(cmap_name, start_val, stop_val, val):
+    """
+    Returns the rgb value of a color from a matplotlib colormap
+    from https://stackoverflow.com/a/26109298
+    """
+    cmap = plt.get_cmap(cmap_name)
+    norm = mpl.colors.Normalize(vmin=start_val, vmax=stop_val)
+    scalar_map = cm.ScalarMappable(norm=norm, cmap=cmap)
+    return scalar_map.to_rgba(val)

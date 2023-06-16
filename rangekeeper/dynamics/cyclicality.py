@@ -248,7 +248,7 @@ class Cyclicality:
             space_cycle_period: float,
             space_cycle_height: float,
             asset_cycle_period_diff: float,
-            asset_cycle_phase_prop: float,
+            asset_cycle_phase_diff_prop: float,
             asset_cycle_amplitude: float,
             space_cycle_asymmetric_parameter: float,
             asset_cycle_asymmetric_parameter: float,
@@ -283,7 +283,7 @@ class Cyclicality:
         too different, maybe +/- 1 year.
         """
 
-        asset_cycle_phase = space_cycle_phase + (asset_cycle_phase_prop * asset_cycle_period)
+        asset_cycle_phase = space_cycle_phase + (asset_cycle_phase_diff_prop * asset_cycle_period)
         """
         These two cycles are not generally exactly in sync, but they usually are 
         not too far off from each other. 
@@ -309,7 +309,7 @@ class Cyclicality:
             space_cycle_period, \
             space_cycle_height, \
             asset_cycle_period_diff, \
-            asset_cycle_phase_prop, \
+            asset_cycle_phase_diff_prop, \
             asset_cycle_amplitude, \
             space_cycle_asymmetric_param, \
             asset_cycle_asymmetric_param, \
@@ -320,7 +320,7 @@ class Cyclicality:
             space_cycle_period=space_cycle_period,
             space_cycle_height=space_cycle_height,
             asset_cycle_period_diff=asset_cycle_period_diff,
-            asset_cycle_phase_prop=asset_cycle_phase_prop,
+            asset_cycle_phase_diff_prop=asset_cycle_phase_diff_prop,
             asset_cycle_amplitude=asset_cycle_amplitude,
             space_cycle_asymmetric_parameter=space_cycle_asymmetric_param,
             asset_cycle_asymmetric_parameter=asset_cycle_asymmetric_param,
@@ -332,7 +332,7 @@ class Cyclicality:
             space_cycle_phase_prop_dist: rk.distribution.Form,
             space_cycle_period_dist: rk.distribution.Form,
             space_cycle_height_dist: rk.distribution.Form,
-            asset_cycle_phase_prop_dist: rk.distribution.Form,
+            asset_cycle_phase_diff_prop_dist: rk.distribution.Form,
             asset_cycle_period_diff_dist: rk.distribution.Form,
             asset_cycle_amplitude_dist: rk.distribution.Form,
             space_cycle_asymmetric_parameter_dist: rk.distribution.Form,
@@ -362,7 +362,7 @@ class Cyclicality:
         distribution should generate reasonable (+/- 1 year) differences
         """
 
-        asset_cycle_phase_props = asset_cycle_phase_prop_dist.sample(iterations)
+        asset_cycle_phase_props = asset_cycle_phase_diff_prop_dist.sample(iterations)
         """
         The asset market phase is equal to the space market phase +/- some 
         random difference that is a pretty small fraction of the cycle period.

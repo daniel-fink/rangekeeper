@@ -513,7 +513,7 @@ class TestDynamics:
             type=rk.distribution.Type.UNIFORM,
             mean=.5,
             residual=0),
-        asset_cycle_phase_prop_dist=rk.distribution.Symmetric(
+        asset_cycle_phase_diff_prop_dist=rk.distribution.Symmetric(
             type=rk.distribution.Type.UNIFORM,
             mean=0,
             residual=.2),

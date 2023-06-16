@@ -7,7 +7,7 @@
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
     <title>Introduction to Modeling Flexibility &#8212; Rangekeeper</title>
   
@@ -64,6 +64,7 @@ const thebe_selector_output = ".output, .cell_output"
     <script>DOCUMENTATION_OPTIONS.pagename = 'flexibility_intro';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Flexibility under Uncertainty" href="flexibility_under_uncertainty.html" />
     <link rel="prev" title="Real Estate Pricing Factor Dynamics" href="market_dynamics.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -135,8 +136,14 @@ const thebe_selector_output = ".output, .cell_output"
   
   
   
+    
+    
+      
+    
+    
+    <img src="_static/rangekeeper.jpg" class="logo__image only-light" alt="Logo image"/>
+    <script>document.write(`<img src="_static/rangekeeper.jpg" class="logo__image only-dark" alt="Logo image"/>`);</script>
   
-    <p class="title logo__title">Rangekeeper</p>
   
 </a></div>
         <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
@@ -145,15 +152,22 @@ const thebe_selector_output = ".output, .cell_output"
         <ul class="nav bd-sidenav bd-sidenav__home-link">
             <li class="toctree-l1">
                 <a class="reference internal" href="intro.html">
-                    Exposition
+                    Rangekeeper
                 </a>
             </li>
         </ul>
-        <ul class="current nav bd-sidenav">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Real Estate Flexibility and Valuation under Uncertainty</span></p>
+<ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="basic_dcf.html">A Basic Discounted Cash Flow Valuation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="deterministic_scenarios.html">Deterministic Scenario Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="market_dynamics.html">Real Estate Pricing Factor Dynamics</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Introduction to Modeling Flexibility</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flexibility_under_uncertainty.html">Flexibility under Uncertainty</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Using Rangekeeper in Examples</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="load_design_scenario.html">Loading a Design Scenario</a></li>
+<li class="toctree-l1"><a class="reference internal" href="drive_model_from_design_scenario.html">Driving a Financial Valuation from a Design Scenario</a></li>
 </ul>
 
     </div>
@@ -208,7 +222,7 @@ const thebe_selector_output = ".output, .cell_output"
       
       
       
-      <li><a href="https://github.com/executablebooks/jupyter-book" target="_blank"
+      <li><a href="https://github.com/daniel-fink/rangekeeper" target="_blank"
    class="btn btn-sm btn-source-repository-button dropdown-item"
    title="Source repository"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -225,7 +239,7 @@ const thebe_selector_output = ".output, .cell_output"
       
       
       
-      <li><a href="https://github.com/executablebooks/jupyter-book/issues/new?title=Issue%20on%20page%20%2Fflexibility_intro.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/daniel-fink/rangekeeper/issues/new?title=Issue%20on%20page%20%2Fflexibility_intro.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -370,7 +384,7 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="introduction-to-modeling-flexibility">
 <h1>Introduction to Modeling Flexibility<a class="headerlink" href="#introduction-to-modeling-flexibility" title="Permalink to this heading">#</a></h1>
-<p><span id="id1">[<a class="reference internal" href="basic_dcf.html#id6" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> apply the simulated Real Estate Market to a basic Proforma
+<p><span id="id1">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> apply the simulated Real Estate Market to a basic Proforma
 in two ways:</p>
 <ol class="arabic simple">
 <li><p>Using the <code class="docutils literal notranslate"><span class="pre">Market</span></code> pricing factors to adjust projected values for cash flows
@@ -381,9 +395,8 @@ dynamics</p></li>
 </ol>
 <p>To begin with, let’s see how <em>Rangekeeper</em> adjusts the projected Potential Gross
 Income and Reversion cash flows, using a single scenario/trial of a <code class="docutils literal notranslate"><span class="pre">Market</span></code>.</p>
-<p>Similar to the Deterministic Scenarios in
-<span class="xref std std-doc">/deterministic_scenarios.ipynb</span>, we import required libraries and set up
-a base Model:</p>
+<p>Similar to the <a class="reference internal" href="deterministic_scenarios.html"><span class="doc std std-doc">Deterministic Scenario Analysis</span></a>
+, we import required libraries and set up a base Model:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">locale</span>
@@ -700,7 +713,7 @@ years.</p>
 counting reversion). This is to indicate the relative favorability of the
 scenario outcomes in terms of the real estate space market, the fundamental
 economic basis of the property value.</p>
-<p>(From <span id="id2">[<a class="reference internal" href="basic_dcf.html#id6" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span>, accompanying Excel spreadsheets)</p>
+<p>(From <span id="id2">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span>, accompanying Excel spreadsheets)</p>
 </div>
 </section>
 <section id="ex-post-inflexible-model">
@@ -761,7 +774,7 @@ emulate how an ‘Ex-Post’ Model would look)</p>
     <span class="n">space_cycle_height</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="n">space_cycle_asymmetric_parameter</span><span class="o">=</span><span class="mf">.5</span><span class="p">,</span>
     <span class="n">asset_cycle_period_diff</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span>
-    <span class="n">asset_cycle_phase_prop</span><span class="o">=-</span><span class="mf">.05</span><span class="p">,</span>
+    <span class="n">asset_cycle_phase_diff_prop</span><span class="o">=-</span><span class="mf">.05</span><span class="p">,</span>
     <span class="n">asset_cycle_amplitude</span><span class="o">=</span><span class="mf">.02</span><span class="p">,</span>
     <span class="n">asset_cycle_asymmetric_parameter</span><span class="o">=</span><span class="mf">.5</span><span class="p">,</span>
     <span class="n">sequence</span><span class="o">=</span><span class="n">sequence</span><span class="p">)</span>
@@ -834,7 +847,7 @@ emulate how an ‘Ex-Post’ Model would look)</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="_images/2c1e3a5b9c8c4bd568086589946949eec166e0245441406f6642184e76f7db91.png" src="_images/2c1e3a5b9c8c4bd568086589946949eec166e0245441406f6642184e76f7db91.png" />
+<img alt="_images/7e1c54ec5388e711f7d36898527aaeb1f6d5ac9da190f073ea7dd1c25ded27d4.png" src="_images/7e1c54ec5388e711f7d36898527aaeb1f6d5ac9da190f073ea7dd1c25ded27d4.png" />
 </div>
 </div>
 <div class="admonition warning">
@@ -866,11 +879,11 @@ Model’s PGI and the simulated <code class="docutils literal notranslate"><span
     <span class="k">def</span> <span class="nf">calc_egi</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">pgi</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="o">.</span><span class="n">from_projection</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Potential Gross Income&#39;</span><span class="p">,</span>
-            <span class="n">value</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;initial_income&#39;</span><span class="p">],</span>
+            <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;initial_income&#39;</span><span class="p">],</span>
             <span class="n">proj</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">projection</span><span class="o">.</span><span class="n">Extrapolation</span><span class="p">(</span>
                 <span class="n">form</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">extrapolation</span><span class="o">.</span><span class="n">Compounding</span><span class="p">(</span>
-                    <span class="n">rate</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;growth_rate&#39;</span><span class="p">]),</span>
-                <span class="n">sequence</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_span</span><span class="o">.</span><span class="n">to_index</span><span class="p">(</span><span class="n">period_type</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">])),</span>
+                    <span class="n">rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;growth_rate&#39;</span><span class="p">]),</span>
+                <span class="n">sequence</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_span</span><span class="o">.</span><span class="n">to_index</span><span class="p">(</span><span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">])),</span>
             <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
 
         <span class="c1"># Construct a Stream that multiplies the Base Model&#39;s PGI by the</span>
@@ -879,19 +892,19 @@ Model’s PGI and the simulated <code class="docutils literal notranslate"><span
             <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Potential Gross Income&#39;</span><span class="p">,</span>
             <span class="n">flows</span><span class="o">=</span><span class="p">[</span>
                 <span class="n">pgi</span><span class="p">,</span>
-                <span class="n">market</span><span class="o">.</span><span class="n">space_market_price_factors</span><span class="o">.</span><span class="n">trim_to_span</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_span</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">market</span><span class="o">.</span><span class="n">space_market_price_factors</span><span class="o">.</span><span class="n">trim_to_span</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_span</span><span class="p">)</span>
                 <span class="p">],</span>
-            <span class="n">period_type</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">]</span>
+            <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">]</span>
             <span class="p">)</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">registry</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">measure</span><span class="o">.</span><span class="n">Index</span><span class="o">.</span><span class="n">registry</span><span class="p">)</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">vacancy</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Vacancy Allowance&#39;</span><span class="p">,</span>
-            <span class="n">movements</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pgi</span><span class="o">.</span><span class="n">movements</span> <span class="o">*</span> <span class="o">-</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;vacancy_rate&#39;</span><span class="p">],</span>
+            <span class="n">movements</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pgi</span><span class="o">.</span><span class="n">movements</span> <span class="o">*</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;vacancy_rate&#39;</span><span class="p">],</span>
             <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">egi</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Effective Gross Income&#39;</span><span class="p">,</span>
             <span class="n">flows</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">pgi</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">vacancy</span><span class="p">],</span>
-            <span class="n">period_type</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -920,7 +933,7 @@ Model’s PGI and the simulated <code class="docutils literal notranslate"><span
                 <span class="bp">self</span><span class="o">.</span><span class="n">net_cf</span><span class="o">.</span><span class="n">trim_to_span</span><span class="p">(</span><span class="n">span</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">span</span><span class="p">),</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">reversions</span><span class="o">.</span><span class="n">trim_to_span</span><span class="p">(</span><span class="n">span</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">reversion_span</span><span class="p">)</span>
                 <span class="p">],</span>
-            <span class="n">period_type</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">])</span>
+            <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -963,17 +976,17 @@ Model’s PGI and the simulated <code class="docutils literal notranslate"><span
 <tr><th style="text-align: right;">  date</th><th style="text-align: right;">  Potential Gross Income</th><th style="text-align: right;">  Vacancy Allowance</th><th style="text-align: right;">  Effective Gross Income</th><th style="text-align: right;">  Operating Expenses</th><th style="text-align: right;">  Net Operating Income</th><th style="text-align: right;">  Capital Expenditures</th><th style="text-align: right;">  Net Annual Cashflow</th><th style="text-align: right;">  Reversion</th></tr>
 </thead>
 <tbody>
-<tr><td style="text-align: right;">  2001</td><td style="text-align: right;">                  $88.10</td><td style="text-align: right;">             -$4.40</td><td style="text-align: right;">                  $83.69</td><td style="text-align: right;">             -$30.83</td><td style="text-align: right;">                $52.86</td><td style="text-align: right;">                -$8.81</td><td style="text-align: right;">               $44.05</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">  2002</td><td style="text-align: right;">                  $90.71</td><td style="text-align: right;">             -$4.54</td><td style="text-align: right;">                  $86.18</td><td style="text-align: right;">             -$31.75</td><td style="text-align: right;">                $54.43</td><td style="text-align: right;">                -$9.07</td><td style="text-align: right;">               $45.36</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">  2003</td><td style="text-align: right;">                 $112.06</td><td style="text-align: right;">             -$5.60</td><td style="text-align: right;">                 $106.46</td><td style="text-align: right;">             -$39.22</td><td style="text-align: right;">                $67.24</td><td style="text-align: right;">               -$11.21</td><td style="text-align: right;">               $56.03</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">  2004</td><td style="text-align: right;">                 $135.57</td><td style="text-align: right;">             -$6.78</td><td style="text-align: right;">                 $128.79</td><td style="text-align: right;">             -$47.45</td><td style="text-align: right;">                $81.34</td><td style="text-align: right;">               -$13.56</td><td style="text-align: right;">               $67.79</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">  2005</td><td style="text-align: right;">                 $143.18</td><td style="text-align: right;">             -$7.16</td><td style="text-align: right;">                 $136.02</td><td style="text-align: right;">             -$50.11</td><td style="text-align: right;">                $85.91</td><td style="text-align: right;">               -$14.32</td><td style="text-align: right;">               $71.59</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">  2006</td><td style="text-align: right;">                 $120.96</td><td style="text-align: right;">             -$6.05</td><td style="text-align: right;">                 $114.91</td><td style="text-align: right;">             -$42.33</td><td style="text-align: right;">                $72.57</td><td style="text-align: right;">               -$12.10</td><td style="text-align: right;">               $60.48</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">  2007</td><td style="text-align: right;">                  $88.64</td><td style="text-align: right;">             -$4.43</td><td style="text-align: right;">                  $84.21</td><td style="text-align: right;">             -$31.02</td><td style="text-align: right;">                $53.18</td><td style="text-align: right;">                -$8.86</td><td style="text-align: right;">               $44.32</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">  2008</td><td style="text-align: right;">                  $57.48</td><td style="text-align: right;">             -$2.87</td><td style="text-align: right;">                  $54.61</td><td style="text-align: right;">             -$20.12</td><td style="text-align: right;">                $34.49</td><td style="text-align: right;">                -$5.75</td><td style="text-align: right;">               $28.74</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">  2009</td><td style="text-align: right;">                  $50.19</td><td style="text-align: right;">             -$2.51</td><td style="text-align: right;">                  $47.68</td><td style="text-align: right;">             -$17.57</td><td style="text-align: right;">                $30.11</td><td style="text-align: right;">                -$5.02</td><td style="text-align: right;">               $25.09</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">  2010</td><td style="text-align: right;">                  $55.08</td><td style="text-align: right;">             -$2.75</td><td style="text-align: right;">                  $52.32</td><td style="text-align: right;">             -$19.28</td><td style="text-align: right;">                $33.05</td><td style="text-align: right;">                -$5.51</td><td style="text-align: right;">               $27.54</td><td style="text-align: right;">    $424.38</td></tr>
-<tr><td style="text-align: right;">  2011</td><td style="text-align: right;">                  $67.20</td><td style="text-align: right;">             -$3.36</td><td style="text-align: right;">                  $63.84</td><td style="text-align: right;">             -$23.52</td><td style="text-align: right;">                $40.32</td><td style="text-align: right;">                -$6.72</td><td style="text-align: right;">               $33.60</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2001</td><td style="text-align: right;">                 $117.86</td><td style="text-align: right;">             -$5.89</td><td style="text-align: right;">                 $111.97</td><td style="text-align: right;">             -$41.25</td><td style="text-align: right;">                $70.72</td><td style="text-align: right;">               -$11.79</td><td style="text-align: right;">               $58.93</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2002</td><td style="text-align: right;">                 $163.44</td><td style="text-align: right;">             -$8.17</td><td style="text-align: right;">                 $155.27</td><td style="text-align: right;">             -$57.21</td><td style="text-align: right;">                $98.07</td><td style="text-align: right;">               -$16.34</td><td style="text-align: right;">               $81.72</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2003</td><td style="text-align: right;">                 $173.01</td><td style="text-align: right;">             -$8.65</td><td style="text-align: right;">                 $164.36</td><td style="text-align: right;">             -$60.55</td><td style="text-align: right;">               $103.80</td><td style="text-align: right;">               -$17.30</td><td style="text-align: right;">               $86.50</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2004</td><td style="text-align: right;">                 $183.05</td><td style="text-align: right;">             -$9.15</td><td style="text-align: right;">                 $173.90</td><td style="text-align: right;">             -$64.07</td><td style="text-align: right;">               $109.83</td><td style="text-align: right;">               -$18.31</td><td style="text-align: right;">               $91.53</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2005</td><td style="text-align: right;">                 $217.50</td><td style="text-align: right;">            -$10.87</td><td style="text-align: right;">                 $206.62</td><td style="text-align: right;">             -$76.12</td><td style="text-align: right;">               $130.50</td><td style="text-align: right;">               -$21.75</td><td style="text-align: right;">              $108.75</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2006</td><td style="text-align: right;">                 $187.30</td><td style="text-align: right;">             -$9.37</td><td style="text-align: right;">                 $177.94</td><td style="text-align: right;">             -$65.56</td><td style="text-align: right;">               $112.38</td><td style="text-align: right;">               -$18.73</td><td style="text-align: right;">               $93.65</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2007</td><td style="text-align: right;">                 $120.18</td><td style="text-align: right;">             -$6.01</td><td style="text-align: right;">                 $114.18</td><td style="text-align: right;">             -$42.06</td><td style="text-align: right;">                $72.11</td><td style="text-align: right;">               -$12.02</td><td style="text-align: right;">               $60.09</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2008</td><td style="text-align: right;">                  $51.22</td><td style="text-align: right;">             -$2.56</td><td style="text-align: right;">                  $48.66</td><td style="text-align: right;">             -$17.93</td><td style="text-align: right;">                $30.73</td><td style="text-align: right;">                -$5.12</td><td style="text-align: right;">               $25.61</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2009</td><td style="text-align: right;">                  $47.67</td><td style="text-align: right;">             -$2.38</td><td style="text-align: right;">                  $45.28</td><td style="text-align: right;">             -$16.68</td><td style="text-align: right;">                $28.60</td><td style="text-align: right;">                -$4.77</td><td style="text-align: right;">               $23.83</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2010</td><td style="text-align: right;">                  $53.73</td><td style="text-align: right;">             -$2.69</td><td style="text-align: right;">                  $51.05</td><td style="text-align: right;">             -$18.81</td><td style="text-align: right;">                $32.24</td><td style="text-align: right;">                -$5.37</td><td style="text-align: right;">               $26.87</td><td style="text-align: right;">    $415.42</td></tr>
+<tr><td style="text-align: right;">  2011</td><td style="text-align: right;">                  $61.45</td><td style="text-align: right;">             -$3.07</td><td style="text-align: right;">                  $58.37</td><td style="text-align: right;">             -$21.51</td><td style="text-align: right;">                $36.87</td><td style="text-align: right;">                -$6.14</td><td style="text-align: right;">               $30.72</td><td style="text-align: right;">          0</td></tr>
 </tbody>
 </table></div></div>
 </div>
@@ -987,9 +1000,9 @@ Model’s PGI and the simulated <code class="docutils literal notranslate"><span
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Projected IRR at Market Value Price: -1.48%
-Time 0 Present Value at OCC: $557.29
-Average Annual Cashflow: $47.10
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Projected IRR at Market Value Price: 1.06%
+Time 0 Present Value at OCC: $696.96
+Average Annual Cashflow: $65.75
 </pre></div>
 </div>
 </div>
@@ -1005,8 +1018,8 @@ Average Annual Cashflow: $47.10
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Percentage Difference of Scenario PV Minus Pro-forma PV: -44.27%
-Difference of Scenario IRR Minus Pro-forma IRR: -8.48%
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Percentage Difference of Scenario PV Minus Pro-forma PV: -30.30%
+Difference of Scenario IRR Minus Pro-forma IRR: -5.94%
 </pre></div>
 </div>
 </div>
@@ -1019,7 +1032,7 @@ Difference of Scenario IRR Minus Pro-forma IRR: -8.48%
 introduce the ability to program optionality into our model; that is, the
 creation of alternate options to a single course of action, that may be
 exercised (but are not obliged to be)</p>
-<p>In <span id="id3">[<a class="reference internal" href="basic_dcf.html#id6" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span>, Chapter 9 presents a simple case of flexibility; the
+<p>In <span id="id3">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span>, Chapter 9 presents a simple case of flexibility; the
 ‘Resale Timing Problem’, which is described as the question of when and how to
 decide to sell an investment property.</p>
 <p><em>Rangekeeper</em> formulates these types of decision problems as <code class="docutils literal notranslate"><span class="pre">Policy</span></code>s that
@@ -1036,10 +1049,10 @@ the <code class="docutils literal notranslate"><span class="pre">Model</span></c
 <figure class="align-default" id="farevuu-figure9-1">
 <a class="reference internal image-reference" href="_images/FaREVuU-figure9.1.png"><img alt="_images/FaREVuU-figure9.1.png" src="_images/FaREVuU-figure9.1.png" style="width: 75%;" /></a>
 <figcaption>
-<p><span class="caption-number">Fig. 4 </span><span class="caption-text">Figure 9.1 From <span id="id4">[<a class="reference internal" href="basic_dcf.html#id6" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span></span><a class="headerlink" href="#farevuu-figure9-1" title="Permalink to this image">#</a></p>
+<p><span class="caption-number">Fig. 4 </span><span class="caption-text">Figure 9.1 From <span id="id4">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span></span><a class="headerlink" href="#farevuu-figure9-1" title="Permalink to this image">#</a></p>
 </figcaption>
 </figure>
-<p><span id="id5">[<a class="reference internal" href="basic_dcf.html#id6" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> diagram the logic of the “Stop-Gain Resale Rule” as a
+<p><span id="id5">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> diagram the logic of the “Stop-Gain Resale Rule” as a
 flowchart (influenced by Excel functions). In <em>Rangekeeper</em>, this would be
 programmed as simply adjusting the holding period of the asset (in effect
 bringing its reversion/sale to the specified period):</p>
@@ -1110,8 +1123,6 @@ mimic a manager or developer of a real estate asset. For more information, see
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stop_gain_resale_policy</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">policy</span><span class="o">.</span><span class="n">Policy</span><span class="p">(</span>
-    <span class="n">state</span><span class="o">=</span><span class="n">ex_post_inflex</span><span class="o">.</span><span class="n">market</span><span class="o">.</span><span class="n">space_market_price_factors</span><span class="p">,</span>
-    <span class="n">model</span><span class="o">=</span><span class="n">ex_post_inflex</span><span class="p">,</span>
     <span class="n">condition</span><span class="o">=</span><span class="n">exceed_pricing_factor</span><span class="p">,</span>
     <span class="n">action</span><span class="o">=</span><span class="n">adjust_hold_period</span><span class="p">)</span>
 </pre></div>
@@ -1120,7 +1131,8 @@ mimic a manager or developer of a real estate asset. For more information, see
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ex_post_flex</span> <span class="o">=</span> <span class="n">stop_gain_resale_policy</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ex_post_flex</span> <span class="o">=</span> <span class="n">stop_gain_resale_policy</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+    <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">ex_post_inflex</span><span class="o">.</span><span class="n">market</span><span class="o">.</span><span class="n">space_market_price_factors</span><span class="p">,</span> <span class="n">ex_post_inflex</span><span class="p">))</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Flexible Model Hold Period: </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ex_post_flex</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;num_periods&#39;</span><span class="p">]))</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Projected IRR at Market Value Price: </span><span class="si">{:.2%}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ex_post_flex</span><span class="o">.</span><span class="n">irrs</span><span class="o">.</span><span class="n">movements</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
@@ -1130,10 +1142,10 @@ mimic a manager or developer of a real estate asset. For more information, see
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Flexible Model Hold Period: 15
-Projected IRR at Market Value Price: 8.44%
-Time 0 Present Value at OCC: $1,168.25
-Average Annual Cashflow: $50.74
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Flexible Model Hold Period: 16
+Projected IRR at Market Value Price: 10.17%
+Time 0 Present Value at OCC: $1,389.04
+Average Annual Cashflow: $60.77
 </pre></div>
 </div>
 </div>
@@ -1184,6 +1196,15 @@ downturns.</p>
         <p class="prev-next-subtitle">previous</p>
         <p class="prev-next-title">Real Estate Pricing Factor Dynamics</p>
       </div>
+    </a>
+    <a class="right-next"
+       href="flexibility_under_uncertainty.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Flexibility under Uncertainty</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
     </a>
 </div></div>
   
@@ -1236,7 +1257,7 @@ By Daniel Fink
     
   <p class="copyright">
     
-      © Copyright 2022.
+      © Copyright 2023.
       <br/>
     
   </p>
