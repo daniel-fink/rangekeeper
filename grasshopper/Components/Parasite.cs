@@ -3,19 +3,19 @@
 //using System.IO;
 //using System.Linq;
 
-//using Grasshopper.Kernel;
-//using Grasshopper.Kernel.Special;
-//using Grasshopper.GUI.Script;
+//using Components.Kernel;
+//using Components.Kernel.Special;
+//using Components.GUI.Script;
 
 ////using ScriptComponents;
 
 
 //// In order to load the result of this wizard, you will also need to
 //// add the output bin/ folder of this project to the list of loaded
-//// folder in Grasshopper.
+//// folder in Components.
 //// You can use the _GrasshopperDeveloperSettings Rhino command for that.
 
-//namespace Rangekeeper.Components
+//namespace Model.Components
 //{
 //    public class ParasiteComponent : GH_Component
 //    {
@@ -33,7 +33,7 @@
 //            (
 //            "Parasite",
 //            "Parasite",
-//            "Parasite injects a text file into a Grasshopper C# scripting component, complete with custom 'using', 'script', and 'additional' code sections.",
+//            "Parasite injects a text file into a Components C# scripting component, complete with custom 'using', 'script', and 'additional' code sections.",
 //            "Maths",
 //            "Script"
 //            )
@@ -155,7 +155,7 @@
 //        {
 //            // find all groups that this object is in.
 //            var groups = OnPingDocument()
-//                .Objects
+//                .Model
 //                .OfType<GH_Group>()
 //                .Where(gr => gr.ObjectIDs.Contains(InstanceGuid))
 //                .ToList();
@@ -164,7 +164,7 @@
 //            var output = groups.Aggregate(new List<T>(), (list, item) =>
 //            {
 //                list.AddRange(
-//                    OnPingDocument().Objects.OfType<T>()
+//                    OnPingDocument().Model.OfType<T>()
 //                        .Where(obj => item.ObjectIDs.Contains(obj.InstanceGuid))
 //                );
 //                return list;

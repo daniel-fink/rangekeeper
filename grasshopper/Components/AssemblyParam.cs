@@ -1,5 +1,4 @@
 using System;
-using System.Drawing;
 using Grasshopper.Kernel;
 
 namespace Rangekeeper.Components;
@@ -26,9 +25,9 @@ public class AssemblyParam : GH_Param<GH_Assembly>
         : base(name, nickname, description, category, subcategory, access) { }
 
     public AssemblyParam() : this(
-        "Rangekeeper Assembly Object",
-        "RKkA",
-        "Rangekeeper Assembly, encapsulating Entities and extending a Speckle Object",
+        "Rangekeeper Assembly",
+        "RkA",
+        "A Rangekeeper Assembly of related Entities",
         GH_ParamAccess.item) 
     { }
 

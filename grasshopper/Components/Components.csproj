@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <TargetFramework>net48</TargetFramework>
+    <Nullable>enable</Nullable>
+    <TargetExt>.gha</TargetExt>
+    <Configurations>Debug;Release;Debug Mac;Release Mac</Configurations>
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
+    <PackageId>Components</PackageId>
+    <RootNamespace>Rangekeeper.Components</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Grasshopper" Version="7.29.23107.3001" />
+    <PackageReference Include="RhinoCommon" Version="7.29.23107.3001" />
+    <PackageReference Include="Speckle.Core" Version="2.14.2" />
+    <PackageReference Include="Speckle.Objects" Version="2.14.2" />
+    <PackageReference Include="Speckle.Objects.Converter.Grasshopper7" Version="2.14.2" />
+    <PackageReference Include="Speckle.Objects.Converter.Grasshopper6" Version="2.14.2" />
+    <PackageReference Include="Speckle.Objects.Converter.Rhino6" Version="2.14.2" />
+    <PackageReference Include="Speckle.Objects.Converter.Rhino7" Version="2.14.2" />
+    <PackageReference Include="System.Resources.Extensions" Version="7.0.0" />    
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Model\Model.csproj" />
+  </ItemGroup>
+
+</Project>
