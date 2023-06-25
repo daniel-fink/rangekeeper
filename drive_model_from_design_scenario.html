@@ -576,7 +576,7 @@ to aggregate up through our hierarchy all <code class="docutils literal notransl
 </div>
 </div>
 <p>We can tabulate this by converting the graph to a pandas <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code>:</p>
-<div class="cell docutils container">
+<div class="cell tag_output_scroll docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">spatial_containment</span><span class="o">.</span><span class="n">to_DataFrame</span><span class="p">()</span>
 </pre></div>
@@ -601,27 +601,27 @@ to aggregate up through our hierarchy all <code class="docutils literal notransl
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>id</th>
-      <th>type</th>
-      <th>entityId</th>
-      <th>name</th>
       <th>subtotal_gfa</th>
+      <th>id</th>
+      <th>name</th>
+      <th>entityId</th>
+      <th>type</th>
       <th>parent</th>
       <th>children</th>
       <th>use</th>
-      <th>ffl</th>
-      <th>number</th>
       <th>gfa</th>
+      <th>number</th>
+      <th>ffl</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>003c1ee8-4450-4fb1-98bd-54d11408d99e</th>
+      <td>45816.419959</td>
       <td>06f4b837038f2cc3edf4244fceb946f3</td>
       <td>development</td>
       <td>003c1ee8-4450-4fb1-98bd-54d11408d99e</td>
       <td>development</td>
-      <td>45816.419959</td>
       <td>None</td>
       <td>[eb42cd14-73ab-41fc-99c0-c46631ee1208, dac040a...</td>
       <td>NaN</td>
@@ -631,11 +631,11 @@ to aggregate up through our hierarchy all <code class="docutils literal notransl
     </tr>
     <tr>
       <th>eb42cd14-73ab-41fc-99c0-c46631ee1208</th>
-      <td>a648fcc8f96e4160b0c35953139e4211</td>
-      <td>building</td>
-      <td>eb42cd14-73ab-41fc-99c0-c46631ee1208</td>
-      <td>buildingA</td>
       <td>19605.790919</td>
+      <td>a648fcc8f96e4160b0c35953139e4211</td>
+      <td>buildingA</td>
+      <td>eb42cd14-73ab-41fc-99c0-c46631ee1208</td>
+      <td>building</td>
       <td>003c1ee8-4450-4fb1-98bd-54d11408d99e</td>
       <td>[655b2dfe-5c18-4d68-95f0-f5d27804430d, 47dfa8b...</td>
       <td>NaN</td>
@@ -645,11 +645,11 @@ to aggregate up through our hierarchy all <code class="docutils literal notransl
     </tr>
     <tr>
       <th>dac040a5-2605-4cd0-a2fb-40ebb85450d9</th>
-      <td>8cc56cf9901af95f74b642f7a1950e6f</td>
-      <td>building</td>
-      <td>dac040a5-2605-4cd0-a2fb-40ebb85450d9</td>
-      <td>plinth</td>
       <td>12773.744211</td>
+      <td>8cc56cf9901af95f74b642f7a1950e6f</td>
+      <td>plinth</td>
+      <td>dac040a5-2605-4cd0-a2fb-40ebb85450d9</td>
+      <td>building</td>
       <td>003c1ee8-4450-4fb1-98bd-54d11408d99e</td>
       <td>[c7dfbeaf-1b8c-424c-bad0-0b2b5975af6e, 1993c55...</td>
       <td>NaN</td>
@@ -659,11 +659,11 @@ to aggregate up through our hierarchy all <code class="docutils literal notransl
     </tr>
     <tr>
       <th>8c7c9be7-fd8f-4527-ae90-24e15c3581db</th>
-      <td>bfc0db6a88d730984d4eead94ac5a2e6</td>
-      <td>building</td>
-      <td>8c7c9be7-fd8f-4527-ae90-24e15c3581db</td>
-      <td>buildingB</td>
       <td>13436.884829</td>
+      <td>bfc0db6a88d730984d4eead94ac5a2e6</td>
+      <td>buildingB</td>
+      <td>8c7c9be7-fd8f-4527-ae90-24e15c3581db</td>
+      <td>building</td>
       <td>003c1ee8-4450-4fb1-98bd-54d11408d99e</td>
       <td>[23b3acb0-8acb-4254-b54c-e76b4b7b8fe9, 1235045...</td>
       <td>NaN</td>
@@ -673,11 +673,11 @@ to aggregate up through our hierarchy all <code class="docutils literal notransl
     </tr>
     <tr>
       <th>f7e2fa84-54a6-4fd4-ae93-f339947035b6</th>
+      <td>0.000000</td>
       <td>aabdd3fcac0dd1e5c793235001dd945b</td>
       <td>utilities</td>
       <td>f7e2fa84-54a6-4fd4-ae93-f339947035b6</td>
       <td>utilities</td>
-      <td>0.000000</td>
       <td>003c1ee8-4450-4fb1-98bd-54d11408d99e</td>
       <td>[]</td>
       <td>NaN</td>
@@ -687,11 +687,11 @@ to aggregate up through our hierarchy all <code class="docutils literal notransl
     </tr>
     <tr>
       <th>655b2dfe-5c18-4d68-95f0-f5d27804430d</th>
-      <td>f3fcf8533f26a84803e72de91ec51d47</td>
-      <td>space</td>
-      <td>655b2dfe-5c18-4d68-95f0-f5d27804430d</td>
-      <td>buildingAoffice</td>
       <td>14691.140177</td>
+      <td>f3fcf8533f26a84803e72de91ec51d47</td>
+      <td>buildingAoffice</td>
+      <td>655b2dfe-5c18-4d68-95f0-f5d27804430d</td>
+      <td>space</td>
       <td>eb42cd14-73ab-41fc-99c0-c46631ee1208</td>
       <td>[6bfd12d7-72d7-417f-bc31-1bef4ffaadb0, f25ef6d...</td>
       <td>office</td>
@@ -701,11 +701,11 @@ to aggregate up through our hierarchy all <code class="docutils literal notransl
     </tr>
     <tr>
       <th>47dfa8b6-e213-4099-9f5b-834df0ca34b0</th>
-      <td>6e4bdf36f792bd089039c6ef4c5cf23e</td>
-      <td>space</td>
-      <td>47dfa8b6-e213-4099-9f5b-834df0ca34b0</td>
-      <td>buildingAretail</td>
       <td>1123.715326</td>
+      <td>6e4bdf36f792bd089039c6ef4c5cf23e</td>
+      <td>buildingAretail</td>
+      <td>47dfa8b6-e213-4099-9f5b-834df0ca34b0</td>
+      <td>space</td>
       <td>eb42cd14-73ab-41fc-99c0-c46631ee1208</td>
       <td>[037235ef-f5ef-4763-b652-13d59dc03a34]</td>
       <td>retail</td>
@@ -715,11 +715,11 @@ to aggregate up through our hierarchy all <code class="docutils literal notransl
     </tr>
     <tr>
       <th>da796c3e-94b0-4175-8c6f-ac63e5e60714</th>
-      <td>5e079a3b71d254fc2eba55f62a1188d1</td>
-      <td>space</td>
-      <td>da796c3e-94b0-4175-8c6f-ac63e5e60714</td>
-      <td>buildingAresidential</td>
       <td>2296.143091</td>
+      <td>5e079a3b71d254fc2eba55f62a1188d1</td>
+      <td>buildingAresidential</td>
+      <td>da796c3e-94b0-4175-8c6f-ac63e5e60714</td>
+      <td>space</td>
       <td>eb42cd14-73ab-41fc-99c0-c46631ee1208</td>
       <td>[a987a169-2605-4308-9462-8d22eb6df2be, d2db8f8...</td>
       <td>residential</td>
@@ -729,11 +729,11 @@ to aggregate up through our hierarchy all <code class="docutils literal notransl
     </tr>
     <tr>
       <th>08e12c72-4450-424f-8ff4-a4da7246ee05</th>
-      <td>ff0fdddd8d8669831c2c1f6a0bad6640</td>
-      <td>space</td>
-      <td>08e12c72-4450-424f-8ff4-a4da7246ee05</td>
-      <td>buildingAretail</td>
       <td>534.530238</td>
+      <td>ff0fdddd8d8669831c2c1f6a0bad6640</td>
+      <td>buildingAretail</td>
+      <td>08e12c72-4450-424f-8ff4-a4da7246ee05</td>
+      <td>space</td>
       <td>eb42cd14-73ab-41fc-99c0-c46631ee1208</td>
       <td>[b5466f16-c071-41a5-93b1-0d794930e62d]</td>
       <td>retail</td>
@@ -743,11 +743,11 @@ to aggregate up through our hierarchy all <code class="docutils literal notransl
     </tr>
     <tr>
       <th>634c5fb4-f204-4287-8c80-f23371056f1c</th>
-      <td>7de6c744113bcb82c54b2c10d12a451d</td>
-      <td>space</td>
-      <td>634c5fb4-f204-4287-8c80-f23371056f1c</td>
-      <td>buildingAparking</td>
       <td>960.262087</td>
+      <td>7de6c744113bcb82c54b2c10d12a451d</td>
+      <td>buildingAparking</td>
+      <td>634c5fb4-f204-4287-8c80-f23371056f1c</td>
+      <td>space</td>
       <td>eb42cd14-73ab-41fc-99c0-c46631ee1208</td>
       <td>[02b101a5-0ad5-4f8d-9f0b-f65787d4073f]</td>
       <td>parking</td>
@@ -757,11 +757,11 @@ to aggregate up through our hierarchy all <code class="docutils literal notransl
     </tr>
     <tr>
       <th>abdf16fd-494e-4d7f-a604-134ce1c004ac</th>
-      <td>ba4cb24b6f3a2c4ce98b1cda917cadff</td>
-      <td>utilities</td>
-      <td>abdf16fd-494e-4d7f-a604-134ce1c004ac</td>
-      <td>buildingAcores</td>
       <td>0.000000</td>
+      <td>ba4cb24b6f3a2c4ce98b1cda917cadff</td>
+      <td>buildingAcores</td>
+      <td>abdf16fd-494e-4d7f-a604-134ce1c004ac</td>
+      <td>utilities</td>
       <td>eb42cd14-73ab-41fc-99c0-c46631ee1208</td>
       <td>[]</td>
       <td>cores</td>
@@ -771,263 +771,263 @@ to aggregate up through our hierarchy all <code class="docutils literal notransl
     </tr>
     <tr>
       <th>6bfd12d7-72d7-417f-bc31-1bef4ffaadb0</th>
-      <td>bb9485a02747b6b96c5048d6749ded98</td>
-      <td>floor</td>
-      <td>6bfd12d7-72d7-417f-bc31-1bef4ffaadb0</td>
-      <td>buildingAofficeFloor1</td>
       <td>1650.842103</td>
+      <td>bb9485a02747b6b96c5048d6749ded98</td>
+      <td>buildingAofficeFloor1</td>
+      <td>6bfd12d7-72d7-417f-bc31-1bef4ffaadb0</td>
+      <td>floor</td>
       <td>655b2dfe-5c18-4d68-95f0-f5d27804430d</td>
       <td>[]</td>
       <td>NaN</td>
-      <td>5.3</td>
-      <td>1.0</td>
       <td>1650.842103</td>
+      <td>1.0</td>
+      <td>5.3</td>
     </tr>
     <tr>
       <th>f25ef6dc-c9cc-444a-b758-e30e87a9593f</th>
-      <td>2054ecb0e810dde67e49dc75cbe90b6d</td>
-      <td>floor</td>
-      <td>f25ef6dc-c9cc-444a-b758-e30e87a9593f</td>
-      <td>buildingAofficeFloor2</td>
       <td>1448.922008</td>
+      <td>2054ecb0e810dde67e49dc75cbe90b6d</td>
+      <td>buildingAofficeFloor2</td>
+      <td>f25ef6dc-c9cc-444a-b758-e30e87a9593f</td>
+      <td>floor</td>
       <td>655b2dfe-5c18-4d68-95f0-f5d27804430d</td>
       <td>[]</td>
       <td>NaN</td>
-      <td>8.4</td>
-      <td>2.0</td>
       <td>1448.922008</td>
+      <td>2.0</td>
+      <td>8.4</td>
     </tr>
     <tr>
       <th>97e6b3b6-edfb-49a9-91f3-337b0b150c21</th>
-      <td>cabffd9774ad7738f318eae789de45f2</td>
-      <td>floor</td>
-      <td>97e6b3b6-edfb-49a9-91f3-337b0b150c21</td>
-      <td>buildingAofficeFloor3</td>
       <td>1448.922008</td>
+      <td>cabffd9774ad7738f318eae789de45f2</td>
+      <td>buildingAofficeFloor3</td>
+      <td>97e6b3b6-edfb-49a9-91f3-337b0b150c21</td>
+      <td>floor</td>
       <td>655b2dfe-5c18-4d68-95f0-f5d27804430d</td>
       <td>[]</td>
       <td>NaN</td>
-      <td>11.5</td>
-      <td>3.0</td>
       <td>1448.922008</td>
+      <td>3.0</td>
+      <td>11.5</td>
     </tr>
     <tr>
       <th>6ee48fbb-decc-47ea-8e20-e415c669143f</th>
-      <td>376219e18ab55a8399a9e7b1f8053063</td>
-      <td>floor</td>
-      <td>6ee48fbb-decc-47ea-8e20-e415c669143f</td>
-      <td>buildingAofficeFloor4</td>
       <td>1448.922008</td>
+      <td>376219e18ab55a8399a9e7b1f8053063</td>
+      <td>buildingAofficeFloor4</td>
+      <td>6ee48fbb-decc-47ea-8e20-e415c669143f</td>
+      <td>floor</td>
       <td>655b2dfe-5c18-4d68-95f0-f5d27804430d</td>
       <td>[]</td>
       <td>NaN</td>
-      <td>14.6</td>
-      <td>4.0</td>
       <td>1448.922008</td>
+      <td>4.0</td>
+      <td>14.6</td>
     </tr>
     <tr>
       <th>e57ea01c-ae5d-4281-8aff-56e95d40a239</th>
-      <td>2bbe0ec9efa8d791d1be9479ab35bad1</td>
-      <td>floor</td>
-      <td>e57ea01c-ae5d-4281-8aff-56e95d40a239</td>
-      <td>buildingAofficeFloor5</td>
       <td>1448.922008</td>
+      <td>2bbe0ec9efa8d791d1be9479ab35bad1</td>
+      <td>buildingAofficeFloor5</td>
+      <td>e57ea01c-ae5d-4281-8aff-56e95d40a239</td>
+      <td>floor</td>
       <td>655b2dfe-5c18-4d68-95f0-f5d27804430d</td>
       <td>[]</td>
       <td>NaN</td>
-      <td>17.7</td>
-      <td>5.0</td>
       <td>1448.922008</td>
+      <td>5.0</td>
+      <td>17.7</td>
     </tr>
     <tr>
       <th>59adf9e1-f47d-4bcc-b506-b3a2731654b9</th>
-      <td>e852a889a7b190930eb652a49a950473</td>
-      <td>floor</td>
-      <td>59adf9e1-f47d-4bcc-b506-b3a2731654b9</td>
-      <td>buildingAofficeFloor6</td>
       <td>1448.922008</td>
+      <td>e852a889a7b190930eb652a49a950473</td>
+      <td>buildingAofficeFloor6</td>
+      <td>59adf9e1-f47d-4bcc-b506-b3a2731654b9</td>
+      <td>floor</td>
       <td>655b2dfe-5c18-4d68-95f0-f5d27804430d</td>
       <td>[]</td>
       <td>NaN</td>
-      <td>20.8</td>
-      <td>6.0</td>
       <td>1448.922008</td>
+      <td>6.0</td>
+      <td>20.8</td>
     </tr>
     <tr>
       <th>68f28de9-539f-4276-8dcc-cf4eb7dbe82c</th>
-      <td>bd24ef34732d88ac7e111cf9adb4b0b5</td>
-      <td>floor</td>
-      <td>68f28de9-539f-4276-8dcc-cf4eb7dbe82c</td>
-      <td>buildingAofficeFloor7</td>
       <td>1448.922008</td>
+      <td>bd24ef34732d88ac7e111cf9adb4b0b5</td>
+      <td>buildingAofficeFloor7</td>
+      <td>68f28de9-539f-4276-8dcc-cf4eb7dbe82c</td>
+      <td>floor</td>
       <td>655b2dfe-5c18-4d68-95f0-f5d27804430d</td>
       <td>[]</td>
       <td>NaN</td>
-      <td>23.9</td>
-      <td>7.0</td>
       <td>1448.922008</td>
+      <td>7.0</td>
+      <td>23.9</td>
     </tr>
     <tr>
       <th>508b3a7f-7094-4f47-9b61-57ef8f4a6205</th>
-      <td>9e805df365930792f7cdb4b44f28624c</td>
-      <td>floor</td>
-      <td>508b3a7f-7094-4f47-9b61-57ef8f4a6205</td>
-      <td>buildingAofficeFloor8</td>
       <td>1448.922008</td>
+      <td>9e805df365930792f7cdb4b44f28624c</td>
+      <td>buildingAofficeFloor8</td>
+      <td>508b3a7f-7094-4f47-9b61-57ef8f4a6205</td>
+      <td>floor</td>
       <td>655b2dfe-5c18-4d68-95f0-f5d27804430d</td>
       <td>[]</td>
       <td>NaN</td>
-      <td>27.0</td>
-      <td>8.0</td>
       <td>1448.922008</td>
+      <td>8.0</td>
+      <td>27.0</td>
     </tr>
     <tr>
       <th>1e6b1a6a-d64a-4c68-9210-3c4f0585000f</th>
-      <td>a10cfa41a5e1ba14f1c4f77d3da347f3</td>
-      <td>floor</td>
-      <td>1e6b1a6a-d64a-4c68-9210-3c4f0585000f</td>
-      <td>buildingAofficeFloor9</td>
       <td>1448.922008</td>
+      <td>a10cfa41a5e1ba14f1c4f77d3da347f3</td>
+      <td>buildingAofficeFloor9</td>
+      <td>1e6b1a6a-d64a-4c68-9210-3c4f0585000f</td>
+      <td>floor</td>
       <td>655b2dfe-5c18-4d68-95f0-f5d27804430d</td>
       <td>[]</td>
       <td>NaN</td>
-      <td>30.1</td>
-      <td>9.0</td>
       <td>1448.922008</td>
+      <td>9.0</td>
+      <td>30.1</td>
     </tr>
     <tr>
       <th>12c94d26-7779-4384-856a-2139664d55e1</th>
-      <td>fcdffb74c3197134b0d3bcad63063e23</td>
-      <td>floor</td>
-      <td>12c94d26-7779-4384-856a-2139664d55e1</td>
-      <td>buildingAofficeFloor10</td>
       <td>1448.922008</td>
+      <td>fcdffb74c3197134b0d3bcad63063e23</td>
+      <td>buildingAofficeFloor10</td>
+      <td>12c94d26-7779-4384-856a-2139664d55e1</td>
+      <td>floor</td>
       <td>655b2dfe-5c18-4d68-95f0-f5d27804430d</td>
       <td>[]</td>
       <td>NaN</td>
-      <td>33.2</td>
-      <td>10.0</td>
       <td>1448.922008</td>
+      <td>10.0</td>
+      <td>33.2</td>
     </tr>
     <tr>
       <th>037235ef-f5ef-4763-b652-13d59dc03a34</th>
-      <td>936d88be85f4bdd1c60db2e75e44e1ea</td>
-      <td>floor</td>
-      <td>037235ef-f5ef-4763-b652-13d59dc03a34</td>
-      <td>buildingAretailFloor0</td>
       <td>1123.715326</td>
+      <td>936d88be85f4bdd1c60db2e75e44e1ea</td>
+      <td>buildingAretailFloor0</td>
+      <td>037235ef-f5ef-4763-b652-13d59dc03a34</td>
+      <td>floor</td>
       <td>47dfa8b6-e213-4099-9f5b-834df0ca34b0</td>
       <td>[]</td>
       <td>NaN</td>
-      <td>0.3</td>
-      <td>0.0</td>
       <td>1123.715326</td>
+      <td>0.0</td>
+      <td>0.3</td>
     </tr>
     <tr>
       <th>a987a169-2605-4308-9462-8d22eb6df2be</th>
-      <td>fa3ebd0829aff1ba42729ed61a92d4aa</td>
-      <td>floor</td>
-      <td>a987a169-2605-4308-9462-8d22eb6df2be</td>
-      <td>buildingAresidentialFloor0</td>
       <td>57.900000</td>
+      <td>fa3ebd0829aff1ba42729ed61a92d4aa</td>
+      <td>buildingAresidentialFloor0</td>
+      <td>a987a169-2605-4308-9462-8d22eb6df2be</td>
+      <td>floor</td>
       <td>da796c3e-94b0-4175-8c6f-ac63e5e60714</td>
       <td>[]</td>
       <td>NaN</td>
-      <td>0.3</td>
-      <td>0.0</td>
       <td>57.900000</td>
+      <td>0.0</td>
+      <td>0.3</td>
     </tr>
     <tr>
       <th>d2db8f8f-36c9-4a92-a1dd-016376fee217</th>
-      <td>d134e3b5e5025bfb18918aa3c050b21a</td>
-      <td>floor</td>
-      <td>d2db8f8f-36c9-4a92-a1dd-016376fee217</td>
-      <td>buildingAresidentialFloor0</td>
       <td>43.800000</td>
+      <td>d134e3b5e5025bfb18918aa3c050b21a</td>
+      <td>buildingAresidentialFloor0</td>
+      <td>d2db8f8f-36c9-4a92-a1dd-016376fee217</td>
+      <td>floor</td>
       <td>da796c3e-94b0-4175-8c6f-ac63e5e60714</td>
       <td>[]</td>
       <td>NaN</td>
-      <td>0.3</td>
-      <td>0.0</td>
       <td>43.800000</td>
+      <td>0.0</td>
+      <td>0.3</td>
     </tr>
     <tr>
       <th>b0384123-9bec-4c0e-87f6-32abb6a49fb3</th>
-      <td>0198dbbf8e749878791cf680d3266ee9</td>
-      <td>floor</td>
-      <td>b0384123-9bec-4c0e-87f6-32abb6a49fb3</td>
-      <td>buildingAresidentialFloor1</td>
       <td>731.481030</td>
+      <td>0198dbbf8e749878791cf680d3266ee9</td>
+      <td>buildingAresidentialFloor1</td>
+      <td>b0384123-9bec-4c0e-87f6-32abb6a49fb3</td>
+      <td>floor</td>
       <td>da796c3e-94b0-4175-8c6f-ac63e5e60714</td>
       <td>[]</td>
       <td>NaN</td>
-      <td>5.3</td>
-      <td>1.0</td>
       <td>731.481030</td>
+      <td>1.0</td>
+      <td>5.3</td>
     </tr>
     <tr>
       <th>bbd83975-af58-492e-8818-ce1968564a05</th>
-      <td>06f37b8849330d06fe4f3ac980ce224e</td>
-      <td>floor</td>
-      <td>bbd83975-af58-492e-8818-ce1968564a05</td>
-      <td>buildingAresidentialFloor2</td>
       <td>731.481030</td>
+      <td>06f37b8849330d06fe4f3ac980ce224e</td>
+      <td>buildingAresidentialFloor2</td>
+      <td>bbd83975-af58-492e-8818-ce1968564a05</td>
+      <td>floor</td>
       <td>da796c3e-94b0-4175-8c6f-ac63e5e60714</td>
       <td>[]</td>
       <td>NaN</td>
-      <td>8.4</td>
-      <td>2.0</td>
       <td>731.481030</td>
+      <td>2.0</td>
+      <td>8.4</td>
     </tr>
     <tr>
       <th>c78fd645-372b-4a23-a823-98e2f6885b97</th>
-      <td>51ed62db81794bafa9fb676ea9ad7a69</td>
-      <td>floor</td>
-      <td>c78fd645-372b-4a23-a823-98e2f6885b97</td>
-      <td>buildingAresidentialFloor3</td>
       <td>731.481030</td>
+      <td>51ed62db81794bafa9fb676ea9ad7a69</td>
+      <td>buildingAresidentialFloor3</td>
+      <td>c78fd645-372b-4a23-a823-98e2f6885b97</td>
+      <td>floor</td>
       <td>da796c3e-94b0-4175-8c6f-ac63e5e60714</td>
       <td>[]</td>
       <td>NaN</td>
-      <td>11.5</td>
-      <td>3.0</td>
       <td>731.481030</td>
+      <td>3.0</td>
+      <td>11.5</td>
     </tr>
     <tr>
       <th>b5466f16-c071-41a5-93b1-0d794930e62d</th>
-      <td>28e1ae0fb304be98df4ca616eb247986</td>
-      <td>floor</td>
-      <td>b5466f16-c071-41a5-93b1-0d794930e62d</td>
-      <td>buildingAretailFloor0</td>
       <td>534.530238</td>
+      <td>28e1ae0fb304be98df4ca616eb247986</td>
+      <td>buildingAretailFloor0</td>
+      <td>b5466f16-c071-41a5-93b1-0d794930e62d</td>
+      <td>floor</td>
       <td>08e12c72-4450-424f-8ff4-a4da7246ee05</td>
       <td>[]</td>
       <td>NaN</td>
-      <td>0.3</td>
-      <td>0.0</td>
       <td>534.530238</td>
+      <td>0.0</td>
+      <td>0.3</td>
     </tr>
     <tr>
       <th>02b101a5-0ad5-4f8d-9f0b-f65787d4073f</th>
-      <td>9a6d9f25bd30a6d91b7d2b80b33779f2</td>
-      <td>floor</td>
-      <td>02b101a5-0ad5-4f8d-9f0b-f65787d4073f</td>
-      <td>buildingAparkingFloor0</td>
       <td>960.262087</td>
+      <td>9a6d9f25bd30a6d91b7d2b80b33779f2</td>
+      <td>buildingAparkingFloor0</td>
+      <td>02b101a5-0ad5-4f8d-9f0b-f65787d4073f</td>
+      <td>floor</td>
       <td>634c5fb4-f204-4287-8c80-f23371056f1c</td>
       <td>[]</td>
       <td>NaN</td>
-      <td>0.3</td>
-      <td>0.0</td>
       <td>960.262087</td>
+      <td>0.0</td>
+      <td>0.3</td>
     </tr>
     <tr>
       <th>c7dfbeaf-1b8c-424c-bad0-0b2b5975af6e</th>
-      <td>693ef9b693352d9876def8ec1c572de0</td>
-      <td>space</td>
-      <td>c7dfbeaf-1b8c-424c-bad0-0b2b5975af6e</td>
-      <td>plinthparking</td>
       <td>12773.744211</td>
+      <td>693ef9b693352d9876def8ec1c572de0</td>
+      <td>plinthparking</td>
+      <td>c7dfbeaf-1b8c-424c-bad0-0b2b5975af6e</td>
+      <td>space</td>
       <td>dac040a5-2605-4cd0-a2fb-40ebb85450d9</td>
       <td>[d82b6b35-c57b-402d-92da-13fd460157ed, a25d7bb...</td>
       <td>parking</td>
@@ -1037,11 +1037,11 @@ to aggregate up through our hierarchy all <code class="docutils literal notransl
     </tr>
     <tr>
       <th>1993c555-a42b-4496-83fa-0a35540ce846</th>
-      <td>11759d025b80b3468e884826696caebf</td>
-      <td>utilities</td>
-      <td>1993c555-a42b-4496-83fa-0a35540ce846</td>
-      <td>plinthplant</td>
       <td>0.000000</td>
+      <td>11759d025b80b3468e884826696caebf</td>
+      <td>plinthplant</td>
+      <td>1993c555-a42b-4496-83fa-0a35540ce846</td>
+      <td>utilities</td>
       <td>dac040a5-2605-4cd0-a2fb-40ebb85450d9</td>
       <td>[]</td>
       <td>plant</td>
@@ -1051,39 +1051,39 @@ to aggregate up through our hierarchy all <code class="docutils literal notransl
     </tr>
     <tr>
       <th>d82b6b35-c57b-402d-92da-13fd460157ed</th>
-      <td>87c70aed989715efc1233e4b9eff12a2</td>
-      <td>floor</td>
-      <td>d82b6b35-c57b-402d-92da-13fd460157ed</td>
-      <td>plinthparkingFloor-2</td>
       <td>6386.872106</td>
+      <td>87c70aed989715efc1233e4b9eff12a2</td>
+      <td>plinthparkingFloor-2</td>
+      <td>d82b6b35-c57b-402d-92da-13fd460157ed</td>
+      <td>floor</td>
       <td>c7dfbeaf-1b8c-424c-bad0-0b2b5975af6e</td>
       <td>[]</td>
       <td>NaN</td>
-      <td>-5.9</td>
-      <td>-2.0</td>
       <td>6386.872106</td>
+      <td>-2.0</td>
+      <td>-5.9</td>
     </tr>
     <tr>
       <th>a25d7bbf-0cff-4ef8-9432-f77459c16ac1</th>
-      <td>106226680b69771195e9cbd166bb177d</td>
-      <td>floor</td>
-      <td>a25d7bbf-0cff-4ef8-9432-f77459c16ac1</td>
-      <td>plinthparkingFloor-1</td>
       <td>6386.872106</td>
+      <td>106226680b69771195e9cbd166bb177d</td>
+      <td>plinthparkingFloor-1</td>
+      <td>a25d7bbf-0cff-4ef8-9432-f77459c16ac1</td>
+      <td>floor</td>
       <td>c7dfbeaf-1b8c-424c-bad0-0b2b5975af6e</td>
       <td>[]</td>
       <td>NaN</td>
-      <td>-2.8</td>
-      <td>-1.0</td>
       <td>6386.872106</td>
+      <td>-1.0</td>
+      <td>-2.8</td>
     </tr>
     <tr>
       <th>23b3acb0-8acb-4254-b54c-e76b4b7b8fe9</th>
-      <td>30d2709068dde3284f4466198c5100ee</td>
-      <td>space</td>
-      <td>23b3acb0-8acb-4254-b54c-e76b4b7b8fe9</td>
-      <td>buildingBretail</td>
       <td>815.983454</td>
+      <td>30d2709068dde3284f4466198c5100ee</td>
+      <td>buildingBretail</td>
+      <td>23b3acb0-8acb-4254-b54c-e76b4b7b8fe9</td>
+      <td>space</td>
       <td>8c7c9be7-fd8f-4527-ae90-24e15c3581db</td>
       <td>[bf032649-dd19-4bf3-ae54-a2c2c768c911]</td>
       <td>retail</td>
@@ -1093,11 +1093,11 @@ to aggregate up through our hierarchy all <code class="docutils literal notransl
     </tr>
     <tr>
       <th>12350456-019d-44a5-89f1-fec7401afd0c</th>
-      <td>540eb82a8ba6b4ad7c28a5fee7dcbd65</td>
-      <td>space</td>
-      <td>12350456-019d-44a5-89f1-fec7401afd0c</td>
-      <td>buildingBparking</td>
       <td>1178.164752</td>
+      <td>540eb82a8ba6b4ad7c28a5fee7dcbd65</td>
+      <td>buildingBparking</td>
+      <td>12350456-019d-44a5-89f1-fec7401afd0c</td>
+      <td>space</td>
       <td>8c7c9be7-fd8f-4527-ae90-24e15c3581db</td>
       <td>[a336f32d-1a65-460e-b66c-f92db03a51e0]</td>
       <td>parking</td>
@@ -1107,11 +1107,11 @@ to aggregate up through our hierarchy all <code class="docutils literal notransl
     </tr>
     <tr>
       <th>a4ee86bf-24af-4745-9aec-a903170f9e53</th>
-      <td>95dc2945009d940571987e218736580f</td>
-      <td>space</td>
-      <td>a4ee86bf-24af-4745-9aec-a903170f9e53</td>
-      <td>buildingBresidential</td>
       <td>11442.736624</td>
+      <td>95dc2945009d940571987e218736580f</td>
+      <td>buildingBresidential</td>
+      <td>a4ee86bf-24af-4745-9aec-a903170f9e53</td>
+      <td>space</td>
       <td>8c7c9be7-fd8f-4527-ae90-24e15c3581db</td>
       <td>[b02a36da-d053-4e8b-8061-214cc0cc2aab, aca9206...</td>
       <td>residential</td>
@@ -1121,11 +1121,11 @@ to aggregate up through our hierarchy all <code class="docutils literal notransl
     </tr>
     <tr>
       <th>d4411714-a51f-4d9a-ba97-7ea0c4c8fba3</th>
-      <td>f11506247ac9f88307622de21c7aaa88</td>
-      <td>utilities</td>
-      <td>d4411714-a51f-4d9a-ba97-7ea0c4c8fba3</td>
-      <td>buildingBcores</td>
       <td>0.000000</td>
+      <td>f11506247ac9f88307622de21c7aaa88</td>
+      <td>buildingBcores</td>
+      <td>d4411714-a51f-4d9a-ba97-7ea0c4c8fba3</td>
+      <td>utilities</td>
       <td>8c7c9be7-fd8f-4527-ae90-24e15c3581db</td>
       <td>[]</td>
       <td>cores</td>
@@ -1135,143 +1135,143 @@ to aggregate up through our hierarchy all <code class="docutils literal notransl
     </tr>
     <tr>
       <th>bf032649-dd19-4bf3-ae54-a2c2c768c911</th>
-      <td>ef3d0ac1b655110368bb05fc51435ede</td>
-      <td>floor</td>
-      <td>bf032649-dd19-4bf3-ae54-a2c2c768c911</td>
-      <td>buildingBretailFloor0</td>
       <td>815.983454</td>
+      <td>ef3d0ac1b655110368bb05fc51435ede</td>
+      <td>buildingBretailFloor0</td>
+      <td>bf032649-dd19-4bf3-ae54-a2c2c768c911</td>
+      <td>floor</td>
       <td>23b3acb0-8acb-4254-b54c-e76b4b7b8fe9</td>
       <td>[]</td>
       <td>NaN</td>
-      <td>0.3</td>
-      <td>0.0</td>
       <td>815.983454</td>
+      <td>0.0</td>
+      <td>0.3</td>
     </tr>
     <tr>
       <th>a336f32d-1a65-460e-b66c-f92db03a51e0</th>
-      <td>2a97568b5b915ecef88221b6bdd3b522</td>
-      <td>floor</td>
-      <td>a336f32d-1a65-460e-b66c-f92db03a51e0</td>
-      <td>buildingBparkingFloor0</td>
       <td>1178.164752</td>
+      <td>2a97568b5b915ecef88221b6bdd3b522</td>
+      <td>buildingBparkingFloor0</td>
+      <td>a336f32d-1a65-460e-b66c-f92db03a51e0</td>
+      <td>floor</td>
       <td>12350456-019d-44a5-89f1-fec7401afd0c</td>
       <td>[]</td>
       <td>NaN</td>
-      <td>0.3</td>
-      <td>0.0</td>
       <td>1178.164752</td>
+      <td>0.0</td>
+      <td>0.3</td>
     </tr>
     <tr>
       <th>b02a36da-d053-4e8b-8061-214cc0cc2aab</th>
-      <td>fd4cf3968ce3deb34aa5f749aec3020f</td>
-      <td>floor</td>
-      <td>b02a36da-d053-4e8b-8061-214cc0cc2aab</td>
-      <td>buildingBresidentialFloor0</td>
       <td>765.941631</td>
+      <td>fd4cf3968ce3deb34aa5f749aec3020f</td>
+      <td>buildingBresidentialFloor0</td>
+      <td>b02a36da-d053-4e8b-8061-214cc0cc2aab</td>
+      <td>floor</td>
       <td>a4ee86bf-24af-4745-9aec-a903170f9e53</td>
       <td>[]</td>
       <td>NaN</td>
-      <td>0.3</td>
-      <td>0.0</td>
       <td>765.941631</td>
+      <td>0.0</td>
+      <td>0.3</td>
     </tr>
     <tr>
       <th>aca92060-bc6a-4add-80ce-453e95632c10</th>
-      <td>1afac525326440fd0bfb5c60028bc164</td>
-      <td>floor</td>
-      <td>aca92060-bc6a-4add-80ce-453e95632c10</td>
-      <td>buildingBresidentialFloor1</td>
       <td>2361.056035</td>
+      <td>1afac525326440fd0bfb5c60028bc164</td>
+      <td>buildingBresidentialFloor1</td>
+      <td>aca92060-bc6a-4add-80ce-453e95632c10</td>
+      <td>floor</td>
       <td>a4ee86bf-24af-4745-9aec-a903170f9e53</td>
       <td>[]</td>
       <td>NaN</td>
-      <td>5.3</td>
-      <td>1.0</td>
       <td>2361.056035</td>
+      <td>1.0</td>
+      <td>5.3</td>
     </tr>
     <tr>
       <th>52fdcc00-9d28-4be4-adc0-19e90bdea02e</th>
-      <td>0432cabe6c45f451b2b97895c81b04e9</td>
-      <td>floor</td>
-      <td>52fdcc00-9d28-4be4-adc0-19e90bdea02e</td>
-      <td>buildingBresidentialFloor2</td>
       <td>2361.056035</td>
+      <td>0432cabe6c45f451b2b97895c81b04e9</td>
+      <td>buildingBresidentialFloor2</td>
+      <td>52fdcc00-9d28-4be4-adc0-19e90bdea02e</td>
+      <td>floor</td>
       <td>a4ee86bf-24af-4745-9aec-a903170f9e53</td>
       <td>[]</td>
       <td>NaN</td>
-      <td>8.4</td>
-      <td>2.0</td>
       <td>2361.056035</td>
+      <td>2.0</td>
+      <td>8.4</td>
     </tr>
     <tr>
       <th>bf4d5c5b-fb0e-4444-98b5-c11a871a6bab</th>
-      <td>b726683811c11c39382460f2a4a50347</td>
-      <td>floor</td>
-      <td>bf4d5c5b-fb0e-4444-98b5-c11a871a6bab</td>
-      <td>buildingBresidentialFloor3</td>
       <td>2015.956035</td>
+      <td>b726683811c11c39382460f2a4a50347</td>
+      <td>buildingBresidentialFloor3</td>
+      <td>bf4d5c5b-fb0e-4444-98b5-c11a871a6bab</td>
+      <td>floor</td>
       <td>a4ee86bf-24af-4745-9aec-a903170f9e53</td>
       <td>[]</td>
       <td>NaN</td>
-      <td>11.5</td>
-      <td>3.0</td>
       <td>2015.956035</td>
+      <td>3.0</td>
+      <td>11.5</td>
     </tr>
     <tr>
       <th>47012c33-7c80-4c47-bb2b-21bd3f2e6abb</th>
-      <td>027671edff104e8e15f6bd413eebd7c4</td>
-      <td>floor</td>
-      <td>47012c33-7c80-4c47-bb2b-21bd3f2e6abb</td>
-      <td>buildingBresidentialFloor4</td>
       <td>2015.956035</td>
+      <td>027671edff104e8e15f6bd413eebd7c4</td>
+      <td>buildingBresidentialFloor4</td>
+      <td>47012c33-7c80-4c47-bb2b-21bd3f2e6abb</td>
+      <td>floor</td>
       <td>a4ee86bf-24af-4745-9aec-a903170f9e53</td>
       <td>[]</td>
       <td>NaN</td>
-      <td>14.6</td>
-      <td>4.0</td>
       <td>2015.956035</td>
+      <td>4.0</td>
+      <td>14.6</td>
     </tr>
     <tr>
       <th>da8910bc-f4e3-47c0-af67-a3ffe27f7255</th>
-      <td>d8bcb28fb83662c46ee47a00e82407c7</td>
-      <td>floor</td>
-      <td>da8910bc-f4e3-47c0-af67-a3ffe27f7255</td>
-      <td>buildingBresidentialFloor5</td>
       <td>875.014900</td>
+      <td>d8bcb28fb83662c46ee47a00e82407c7</td>
+      <td>buildingBresidentialFloor5</td>
+      <td>da8910bc-f4e3-47c0-af67-a3ffe27f7255</td>
+      <td>floor</td>
       <td>a4ee86bf-24af-4745-9aec-a903170f9e53</td>
       <td>[]</td>
       <td>NaN</td>
-      <td>17.7</td>
-      <td>5.0</td>
       <td>875.014900</td>
+      <td>5.0</td>
+      <td>17.7</td>
     </tr>
     <tr>
       <th>3f64b970-a1d1-440f-a06d-951e74c80381</th>
-      <td>1c3399100760db413b8c6251291c906f</td>
-      <td>floor</td>
-      <td>3f64b970-a1d1-440f-a06d-951e74c80381</td>
-      <td>buildingBresidentialFloor6</td>
       <td>875.014900</td>
+      <td>1c3399100760db413b8c6251291c906f</td>
+      <td>buildingBresidentialFloor6</td>
+      <td>3f64b970-a1d1-440f-a06d-951e74c80381</td>
+      <td>floor</td>
       <td>a4ee86bf-24af-4745-9aec-a903170f9e53</td>
       <td>[]</td>
       <td>NaN</td>
-      <td>20.8</td>
-      <td>6.0</td>
       <td>875.014900</td>
+      <td>6.0</td>
+      <td>20.8</td>
     </tr>
     <tr>
       <th>4157f428-1dce-4e14-8099-4eee13fa405e</th>
-      <td>2462df507a5825d1b2c33612a7f54ede</td>
-      <td>floor</td>
-      <td>4157f428-1dce-4e14-8099-4eee13fa405e</td>
-      <td>buildingBresidentialFloor0</td>
       <td>172.741054</td>
+      <td>2462df507a5825d1b2c33612a7f54ede</td>
+      <td>buildingBresidentialFloor0</td>
+      <td>4157f428-1dce-4e14-8099-4eee13fa405e</td>
+      <td>floor</td>
       <td>a4ee86bf-24af-4745-9aec-a903170f9e53</td>
       <td>[]</td>
       <td>NaN</td>
-      <td>0.3</td>
-      <td>0.0</td>
       <td>172.741054</td>
+      <td>0.0</td>
+      <td>0.3</td>
     </tr>
   </tbody>
 </table>
@@ -1497,79 +1497,141 @@ parameter:</p>
     <span class="n">function</span><span class="o">=</span><span class="n">aggregate_egis</span><span class="p">,</span>
     <span class="nb">property</span><span class="o">=</span><span class="s1">&#39;events&#39;</span><span class="p">,</span>
     <span class="n">label</span><span class="o">=</span><span class="s1">&#39;aggregate_egi&#39;</span><span class="p">,</span>
-    <span class="n">relationship_type</span><span class="o">=</span><span class="s1">&#39;contains&#39;</span><span class="p">)</span>
+    <span class="n">relationship_type</span><span class="o">=</span><span class="s1">&#39;spatiallyContains&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">floors</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get_member_names</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">floors</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;events&#39;</span><span class="p">][</span><span class="s1">&#39;egi&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&#39;use&#39;,
- &#39;units&#39;,
- &#39;id&#39;,
- &#39;totalChildrenCount&#39;,
- &#39;events&#39;,
- &#39;type&#39;,
- &#39;speckle_type&#39;,
- &#39;@displayValue&#39;,
- &#39;ffl&#39;,
- &#39;entityId&#39;,
- &#39;renderMaterial&#39;,
- &#39;params&#39;,
- &#39;applicationId&#39;,
- &#39;number&#39;,
- &#39;gfa&#39;,
- &#39;subtotal_gfa&#39;,
- &#39;name&#39;]
-</pre></div>
-</div>
-</div>
+<div class="output text_html"><table>
+<thead>
+<tr><th style="text-align: right;">  date</th><th style="text-align: right;">  Potential Gross Income</th><th style="text-align: right;">  Vacancy Allowance</th></tr>
+</thead>
+<tbody>
+<tr><td style="text-align: right;">  2001</td><td style="text-align: right;">           $1,086,691.51</td><td style="text-align: right;">        -$81,501.86</td></tr>
+<tr><td style="text-align: right;">  2002</td><td style="text-align: right;">           $1,108,425.34</td><td style="text-align: right;">        -$83,131.90</td></tr>
+<tr><td style="text-align: right;">  2003</td><td style="text-align: right;">           $1,130,593.84</td><td style="text-align: right;">        -$84,794.54</td></tr>
+<tr><td style="text-align: right;">  2004</td><td style="text-align: right;">           $1,153,205.72</td><td style="text-align: right;">        -$86,490.43</td></tr>
+<tr><td style="text-align: right;">  2005</td><td style="text-align: right;">           $1,176,269.83</td><td style="text-align: right;">        -$88,220.24</td></tr>
+<tr><td style="text-align: right;">  2006</td><td style="text-align: right;">           $1,199,795.23</td><td style="text-align: right;">        -$89,984.64</td></tr>
+<tr><td style="text-align: right;">  2007</td><td style="text-align: right;">           $1,223,791.14</td><td style="text-align: right;">        -$91,784.34</td></tr>
+<tr><td style="text-align: right;">  2008</td><td style="text-align: right;">           $1,248,266.96</td><td style="text-align: right;">        -$93,620.02</td></tr>
+<tr><td style="text-align: right;">  2009</td><td style="text-align: right;">           $1,273,232.30</td><td style="text-align: right;">        -$95,492.42</td></tr>
+<tr><td style="text-align: right;">  2010</td><td style="text-align: right;">           $1,298,696.94</td><td style="text-align: right;">        -$97,402.27</td></tr>
+<tr><td style="text-align: right;">  2011</td><td style="text-align: right;">           $1,324,670.88</td><td style="text-align: right;">        -$99,350.32</td></tr>
+</tbody>
+</table></div></div>
 </div>
 <p>We can now inspect the <code class="docutils literal notranslate"><span class="pre">aggregate_egi</span></code> property of an <code class="docutils literal notranslate"><span class="pre">Entity</span></code>. Let’s use the
 office compartment in Building A:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># buildingAoffice = [e for (id, e) in spatial_containment.get_entities().items() if e.name == &#39;buildingAoffice&#39;][0]</span>
-<span class="c1"># buildingAoffice.get_member_names()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">buildingAoffice</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span> <span class="ow">in</span> <span class="n">spatial_containment</span><span class="o">.</span><span class="n">get_entities</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;buildingAoffice&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">buildingAoffice</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+<span class="n">buildingAoffice</span><span class="p">[</span><span class="s1">&#39;aggregate_egi&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 </div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># print(buildingAoffice.name)</span>
-<span class="c1"># buildingAoffice[&#39;aggregate_egi&#39;]</span>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>buildingAoffice
 </pre></div>
 </div>
-</div>
+<div class="output text_html"><table>
+<thead>
+<tr><th style="text-align: right;">  date</th><th style="text-align: right;">  Effective Gross Income for &lt;built-in function id&gt;</th><th style="text-align: right;">  Effective Gross Income for &lt;built-in function id&gt;</th><th style="text-align: right;">  Effective Gross Income for &lt;built-in function id&gt;</th><th style="text-align: right;">  Effective Gross Income for &lt;built-in function id&gt;</th><th style="text-align: right;">  Effective Gross Income for &lt;built-in function id&gt;</th><th style="text-align: right;">  Effective Gross Income for &lt;built-in function id&gt;</th><th style="text-align: right;">  Effective Gross Income for &lt;built-in function id&gt;</th><th style="text-align: right;">  Effective Gross Income for &lt;built-in function id&gt;</th><th style="text-align: right;">  Effective Gross Income for &lt;built-in function id&gt;</th><th style="text-align: right;">  Effective Gross Income for &lt;built-in function id&gt;</th></tr>
+</thead>
+<tbody>
+<tr><td style="text-align: right;">  2001</td><td style="text-align: right;">                                      $1,145,271.71</td><td style="text-align: right;">                                      $1,005,189.64</td><td style="text-align: right;">                                      $1,005,189.64</td><td style="text-align: right;">                                      $1,005,189.64</td><td style="text-align: right;">                                      $1,005,189.64</td><td style="text-align: right;">                                      $1,005,189.64</td><td style="text-align: right;">                                      $1,005,189.64</td><td style="text-align: right;">                                      $1,005,189.64</td><td style="text-align: right;">                                      $1,005,189.64</td><td style="text-align: right;">                                      $1,005,189.64</td></tr>
+<tr><td style="text-align: right;">  2002</td><td style="text-align: right;">                                      $1,168,177.14</td><td style="text-align: right;">                                      $1,025,293.44</td><td style="text-align: right;">                                      $1,025,293.44</td><td style="text-align: right;">                                      $1,025,293.44</td><td style="text-align: right;">                                      $1,025,293.44</td><td style="text-align: right;">                                      $1,025,293.44</td><td style="text-align: right;">                                      $1,025,293.44</td><td style="text-align: right;">                                      $1,025,293.44</td><td style="text-align: right;">                                      $1,025,293.44</td><td style="text-align: right;">                                      $1,025,293.44</td></tr>
+<tr><td style="text-align: right;">  2003</td><td style="text-align: right;">                                      $1,191,540.69</td><td style="text-align: right;">                                      $1,045,799.30</td><td style="text-align: right;">                                      $1,045,799.30</td><td style="text-align: right;">                                      $1,045,799.30</td><td style="text-align: right;">                                      $1,045,799.30</td><td style="text-align: right;">                                      $1,045,799.30</td><td style="text-align: right;">                                      $1,045,799.30</td><td style="text-align: right;">                                      $1,045,799.30</td><td style="text-align: right;">                                      $1,045,799.30</td><td style="text-align: right;">                                      $1,045,799.30</td></tr>
+<tr><td style="text-align: right;">  2004</td><td style="text-align: right;">                                      $1,215,371.50</td><td style="text-align: right;">                                      $1,066,715.29</td><td style="text-align: right;">                                      $1,066,715.29</td><td style="text-align: right;">                                      $1,066,715.29</td><td style="text-align: right;">                                      $1,066,715.29</td><td style="text-align: right;">                                      $1,066,715.29</td><td style="text-align: right;">                                      $1,066,715.29</td><td style="text-align: right;">                                      $1,066,715.29</td><td style="text-align: right;">                                      $1,066,715.29</td><td style="text-align: right;">                                      $1,066,715.29</td></tr>
+<tr><td style="text-align: right;">  2005</td><td style="text-align: right;">                                      $1,239,678.93</td><td style="text-align: right;">                                      $1,088,049.60</td><td style="text-align: right;">                                      $1,088,049.60</td><td style="text-align: right;">                                      $1,088,049.60</td><td style="text-align: right;">                                      $1,088,049.60</td><td style="text-align: right;">                                      $1,088,049.60</td><td style="text-align: right;">                                      $1,088,049.60</td><td style="text-align: right;">                                      $1,088,049.60</td><td style="text-align: right;">                                      $1,088,049.60</td><td style="text-align: right;">                                      $1,088,049.60</td></tr>
+<tr><td style="text-align: right;">  2006</td><td style="text-align: right;">                                      $1,264,472.51</td><td style="text-align: right;">                                      $1,109,810.59</td><td style="text-align: right;">                                      $1,109,810.59</td><td style="text-align: right;">                                      $1,109,810.59</td><td style="text-align: right;">                                      $1,109,810.59</td><td style="text-align: right;">                                      $1,109,810.59</td><td style="text-align: right;">                                      $1,109,810.59</td><td style="text-align: right;">                                      $1,109,810.59</td><td style="text-align: right;">                                      $1,109,810.59</td><td style="text-align: right;">                                      $1,109,810.59</td></tr>
+<tr><td style="text-align: right;">  2007</td><td style="text-align: right;">                                      $1,289,761.96</td><td style="text-align: right;">                                      $1,132,006.80</td><td style="text-align: right;">                                      $1,132,006.80</td><td style="text-align: right;">                                      $1,132,006.80</td><td style="text-align: right;">                                      $1,132,006.80</td><td style="text-align: right;">                                      $1,132,006.80</td><td style="text-align: right;">                                      $1,132,006.80</td><td style="text-align: right;">                                      $1,132,006.80</td><td style="text-align: right;">                                      $1,132,006.80</td><td style="text-align: right;">                                      $1,132,006.80</td></tr>
+<tr><td style="text-align: right;">  2008</td><td style="text-align: right;">                                      $1,315,557.20</td><td style="text-align: right;">                                      $1,154,646.94</td><td style="text-align: right;">                                      $1,154,646.94</td><td style="text-align: right;">                                      $1,154,646.94</td><td style="text-align: right;">                                      $1,154,646.94</td><td style="text-align: right;">                                      $1,154,646.94</td><td style="text-align: right;">                                      $1,154,646.94</td><td style="text-align: right;">                                      $1,154,646.94</td><td style="text-align: right;">                                      $1,154,646.94</td><td style="text-align: right;">                                      $1,154,646.94</td></tr>
+<tr><td style="text-align: right;">  2009</td><td style="text-align: right;">                                      $1,341,868.34</td><td style="text-align: right;">                                      $1,177,739.88</td><td style="text-align: right;">                                      $1,177,739.88</td><td style="text-align: right;">                                      $1,177,739.88</td><td style="text-align: right;">                                      $1,177,739.88</td><td style="text-align: right;">                                      $1,177,739.88</td><td style="text-align: right;">                                      $1,177,739.88</td><td style="text-align: right;">                                      $1,177,739.88</td><td style="text-align: right;">                                      $1,177,739.88</td><td style="text-align: right;">                                      $1,177,739.88</td></tr>
+<tr><td style="text-align: right;">  2010</td><td style="text-align: right;">                                      $1,368,705.71</td><td style="text-align: right;">                                      $1,201,294.67</td><td style="text-align: right;">                                      $1,201,294.67</td><td style="text-align: right;">                                      $1,201,294.67</td><td style="text-align: right;">                                      $1,201,294.67</td><td style="text-align: right;">                                      $1,201,294.67</td><td style="text-align: right;">                                      $1,201,294.67</td><td style="text-align: right;">                                      $1,201,294.67</td><td style="text-align: right;">                                      $1,201,294.67</td><td style="text-align: right;">                                      $1,201,294.67</td></tr>
+<tr><td style="text-align: right;">  2011</td><td style="text-align: right;">                                      $1,396,079.82</td><td style="text-align: right;">                                      $1,225,320.57</td><td style="text-align: right;">                                      $1,225,320.57</td><td style="text-align: right;">                                      $1,225,320.57</td><td style="text-align: right;">                                      $1,225,320.57</td><td style="text-align: right;">                                      $1,225,320.57</td><td style="text-align: right;">                                      $1,225,320.57</td><td style="text-align: right;">                                      $1,225,320.57</td><td style="text-align: right;">                                      $1,225,320.57</td><td style="text-align: right;">                                      $1,225,320.57</td></tr>
+</tbody>
+</table></div></div>
 </div>
 <p>We can also easily sum and collapse that aggregation, as it is a Stream`:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># buildingAoffice[&#39;aggregate_egi&#39;].sum()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">buildingAoffice</span><span class="p">[</span><span class="s1">&#39;aggregate_egi&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><table>
+<thead>
+<tr><th style="text-align: right;">               date</th><th style="text-align: right;">  egi for 655b2dfe-5c18-4d68-95f0-f5d27804430d Aggregation (sum)</th></tr>
+</thead>
+<tbody>
+<tr><td style="text-align: right;">2001-12-31 00:00:00</td><td style="text-align: right;">                                                  $10,191,978.50</td></tr>
+<tr><td style="text-align: right;">2002-12-31 00:00:00</td><td style="text-align: right;">                                                  $10,395,818.07</td></tr>
+<tr><td style="text-align: right;">2003-12-31 00:00:00</td><td style="text-align: right;">                                                  $10,603,734.43</td></tr>
+<tr><td style="text-align: right;">2004-12-31 00:00:00</td><td style="text-align: right;">                                                  $10,815,809.12</td></tr>
+<tr><td style="text-align: right;">2005-12-31 00:00:00</td><td style="text-align: right;">                                                  $11,032,125.30</td></tr>
+<tr><td style="text-align: right;">2006-12-31 00:00:00</td><td style="text-align: right;">                                                  $11,252,767.81</td></tr>
+<tr><td style="text-align: right;">2007-12-31 00:00:00</td><td style="text-align: right;">                                                  $11,477,823.16</td></tr>
+<tr><td style="text-align: right;">2008-12-31 00:00:00</td><td style="text-align: right;">                                                  $11,707,379.63</td></tr>
+<tr><td style="text-align: right;">2009-12-31 00:00:00</td><td style="text-align: right;">                                                  $11,941,527.22</td></tr>
+<tr><td style="text-align: right;">2010-12-31 00:00:00</td><td style="text-align: right;">                                                  $12,180,357.76</td></tr>
+<tr><td style="text-align: right;">2011-12-31 00:00:00</td><td style="text-align: right;">                                                  $12,423,964.92</td></tr>
+</tbody>
+</table></div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">buildingAoffice</span><span class="p">[</span><span class="s1">&#39;aggregate_egi&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">collapse</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><table>
+<thead>
+<tr><th style="text-align: right;">               date</th><th style="text-align: right;">  egi for 655b2dfe-5c18-4d68-95f0-f5d27804430d Aggregation (sum)</th></tr>
+</thead>
+<tbody>
+<tr><td style="text-align: right;">2011-12-31 00:00:00</td><td style="text-align: right;">                                                 $124,023,285.90</td></tr>
+</tbody>
+</table></div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="p">(</span><span class="n">entityId</span><span class="p">,</span> <span class="n">entity</span><span class="p">)</span> <span class="ow">in</span> <span class="n">spatial_containment</span><span class="o">.</span><span class="n">get_entities</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">entity</span><span class="p">[</span><span class="s1">&#39;aggregate_egi_value&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">entity</span><span class="p">[</span><span class="s1">&#39;aggregate_egi&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">collapse</span><span class="p">()</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">entity</span><span class="p">[</span><span class="s1">&#39;aggregate_egi&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># buildingAoffice[&#39;aggregate_egi&#39;].sum().collapse()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">spatial_containment</span><span class="o">.</span><span class="n">sunburst</span><span class="p">(</span><span class="nb">property</span><span class="o">=</span><span class="s1">&#39;aggregate_egi_value&#39;</span><span class="p">)</span>
+<span class="n">filename</span><span class="o">=</span><span class="s1">&#39;aggregate_egis_sunburst.html&#39;</span>
+<span class="n">py</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;assets/</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">),</span> <span class="n">auto_open</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">IFrame</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="s2">&quot;./</span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">),</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># tree = nx.DiGraph(containment.graph)</span>
-<span class="c1"># nx.to_pandas_adjacency(tree)</span>
-</pre></div>
-</div>
-</div>
+<div class="cell_output docutils container">
+<div class="output text_html">
+        <iframe
+            width="100%"
+            height="800"
+            src="./aggregate_egis_sunburst.html"
+            frameborder="0"
+            allowfullscreen
+            
+        ></iframe>
+        </div></div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
