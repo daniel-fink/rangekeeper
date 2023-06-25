@@ -2,14 +2,22 @@ from __future__ import annotations
 
 import os
 import uuid
-from typing import List, Dict, Union, Optional
+from typing import List, Dict, Union, Optional, Callable, Any
 import pprint
 
 import networkx as nx
+import pandas as pd
 from pyvis import network, options
+import plotly.express as px
+import plotly.graph_objects as go
+import plotly.io as pio
+import plotly.offline as py
+
 from pint import Quantity
 from IPython.display import IFrame
 import matplotlib as mpl
+
+import specklepy.objects as objects
 
 import rangekeeper as rk
 
@@ -67,44 +75,112 @@ class Event:
     type: str
 
 
-class Entity:
-    id: str
-    name: str
-    type: str
-    attributes: dict
-    events: List[Event]
-    measurements: Dict[rk.measure.Measure, Quantity]
+def is_entity(base: objects.Base, exclusive: bool = False) -> bool:
+    if 'Rangekeeper' in base.speckle_type:
+        if exclusive:
+            return ('Entity' in base.speckle_type) and ('Assembly' not in base.speckle_type)
+        else:
+            return ('Entity' in base.speckle_type) or ('Assembly' in base.speckle_type)
+    else:
+        return False
+
+
+def is_assembly(base: objects.Base) -> bool:
+    if 'Rangekeeper' in base.speckle_type:
+        return 'Assembly' in base.speckle_type
+    else:
+        return False
+
+
+class Entity(objects.Base):
+    entityId: str
+
+    # name: str
+    # type: str
+    # attributes: dict
+    # events: List[Event]
+    # measurements: Dict[rk.measure.Measure, Quantity]
 
     def __str__(self):
         return ('Entity: {1}{0}' +
                 'Type: {2}{0}' +
-                'Attributes: {3}{0}' +
-                'Events: {4}{0}' +
-                'Measurements: {5}{0}').format(
+                'Entity Id: {3}{0}' +
+                'Members: {4}'
+                ).format(
             os.linesep,
-            self.name,
-            self.type,
-            pprint.pformat(self.attributes),
-            pprint.pformat(self.events),
-            pprint.pformat(self.measurements))
+            self["name"] if hasattr(self, 'name') else '[Unnamed]',
+            self["type"] if hasattr(self, 'type') else '[Unknown]',
+            self["entityId"],
+            self.get_dynamic_member_names()
+            )
 
     def __repr__(self):
-        return 'Entity: {0} (Type: {1})'.format(self.name, self.type)
+        return 'Entity: {0} (Type: {1})'.format(
+            self["name"] if hasattr(self, 'name') else '[Unnamed]',
+            self["type"] if hasattr(self, 'type') else '[Unknown]')
+
+    def __eq__(self, other):
+        return self.entityId == other.entityId
 
     def __init__(
             self,
-            name: str,
-            type: str,
-            id: str = None,
-            attributes: dict = None,
-            events: List[Event] = None,
-            measurements: Dict[rk.measure.Measure, Quantity] = None):
-        self.name = name
-        self.type = type
-        self.id = str(uuid.uuid4()) if id is None else id
-        self.attributes = {} if attributes is None else attributes
-        self.events = [] if events is None else events
-        self.measurements = {} if measurements is None else measurements
+            entityId: str = None,
+            name: str = None,
+            type: str = None):
+        super().__init__(
+            entityId=str(uuid.uuid4()) if entityId is None else entityId,
+            name=name if name is not None else '[Unnamed]',
+            type=type if type is not None else '[Unknown]'
+            )
+
+    @classmethod
+    def from_base(
+            cls,
+            base: objects.Base,
+            name: str = None,
+            type: str = None):
+        if rk.graph.is_assembly(base):
+            return Assembly.from_assemblybase(base)
+        elif rk.graph.is_entity(base, True):
+            return cls.from_entitybase(base)
+        else:
+            entity = cls(
+                entityId=str(uuid.uuid4()),
+                name=base["name"] if base["name"] is not None else '[Unnamed]',
+                type=base["type"] if base["type"] is not None else '[Unknown]'
+                )
+            for member_name in base.get_member_names():
+                entity.__setattr__(member_name, base[member_name])
+            return entity
+
+    @classmethod
+    def from_entitybase(
+            cls,
+            base: objects.Base,
+            name: str = None,
+            type: str = None) -> Entity:
+        if not rk.graph.is_entity(base, True):
+            raise TypeError('Base is not an Entity')
+        entity = cls(
+            entityId=base["entityId"],
+            name=base["name"] if base["name"] is not None else '[Unnamed]',
+            type=base["type"] if base["type"] is not None else '[Unknown]'
+            )
+        for member_name in base.get_member_names():
+            if member_name == 'units':  # This is tripping something? Weird..
+                continue
+            else:
+                entity.__setattr__(member_name, base[member_name])
+        return entity
+
+    def get_relationships(
+            self,
+            assembly: Assembly = None) -> list[tuple[str, str, str]]:
+        incoming = [(edge[2], 'incoming', edge[0]) for edge in
+                    assembly.graph.in_edges(nbunch=self['entityId'], keys=True)]
+        outgoing = [(edge[2], 'outgoing', edge[1]) for edge in
+                    assembly.graph.out_edges(nbunch=self['entityId'], keys=True)]
+        return incoming + outgoing
 
     def get_relatives(
             self,
@@ -112,140 +188,330 @@ class Entity:
             outgoing: Optional[bool] = True,
             assembly: Assembly = None) -> List[Entity]:
 
-        assembly = self if assembly is None else assembly
+        relationships = self.get_relationships(assembly)
+        if relationship_type is not None:
+            relationships = [relationship for relationship in relationships if relationship[0] == relationship_type]
 
-        relatives = []
         if outgoing:
-            successors = list(assembly.successors(n=self))
-            if relationship_type is None:
-                relatives = successors
-            else:
-                for successor in successors:
-                    if assembly.get_edge_data(self, successor, key=relationship_type) is not None:
-                        relatives.append(successor)
+            relationships = [relationship for relationship in relationships if relationship[1] == 'outgoing']
+
         elif not outgoing:
-            predecessors = list(assembly.predecessors(n=self))
-            if relationship_type is None:
-                relatives = predecessors
-            else:
-                for predecessor in predecessors:
-                    if assembly.get_edge_data(predecessor, self, key=relationship_type) is not None:
-                        relatives.append(predecessor)
+            relationships = [relationship for relationship in relationships if relationship[1] == 'incoming']
 
-        elif outgoing is None:
-            outgoing_relatives = self.get_relatives(relationship_type, True, assembly)
-            incoming_relatives = self.get_relatives(relationship_type, False, assembly)
-            relatives = set(outgoing_relatives + incoming_relatives)
+        return [assembly.get_entity(relationship[2]) for relationship in relationships]
 
-        return relatives
+    def _aggregate(
+            self,
+            assembly: rk.graph.Assembly,
+            property: str,
+            label: str,
+            relationship_type: str = None,
+            function: Optional[Callable] = None,
+            outgoing: bool = True) -> dict[str, Any]:
+
+        aggregation = {self.entityId: self[property] if hasattr(self, property) else None}
+        # print('Added {0} of {1} to partial in {3}'.format(property_name, self.name, aggregation_name, self.name))
+
+        relatives = self.get_relatives(
+            relationship_type=relationship_type,
+            outgoing=outgoing,
+            assembly=assembly)
+
+        # print('Found {0} relatives: {1}'.format(len(relatives), [relative.name for relative in relatives]))
+        for relative in relatives:
+            aggregation.update(relative._aggregate(
+                assembly=assembly,
+                function=function,
+                property=property,
+                label=label,
+                relationship_type=relationship_type,
+                outgoing=outgoing))
+
+        # print('State of partial for {0}: {1}'.format(self.name, partial))
+        self[label] = sum(filter(None, aggregation.values())) if function is None else function(aggregation=aggregation, entity=self)
+        # print('State of {0} for {1}: {2}'.format(aggregation_name, self.name, self[aggregation_name]))
+        return aggregation
+
+    @staticmethod
+    def aggregate_events(
+            aggregation: dict[str, Union[rk.flux.Stream, rk.flux.Flow]],
+            entity: rk.graph.Entity,
+            key: str,
+            period_type: rk.periodicity.Type
+            ) -> Optional[rk.flux.Stream]:
+        flows = []
+
+        for id, event in aggregation.items():
+            if event is not None:
+                flux = event[key]
+                flux_name = '{0} for {1}'.format(flux.name, id)
+                if isinstance(flux, rk.flux.Stream):
+                    flow = flux.sum(name=flux_name)
+                else:
+                    flux.name = flux_name
+                    flow = flux
+                flows.append(flow)
+
+        if len(flows) > 0:
+            return rk.flux.Stream(
+                name='{0} for {1} Aggregation'.format(key, entity.entityId),
+                flows=flows,
+                period_type=period_type)
+        else:
+            return None
+
+    def to_kvps(
+            self,
+            assembly: Assembly,
+            arborescence: bool = False,
+            properties: List[str] = None) -> dict:
+        filtered = [
+            'applicationId',
+            'graph',
+            'speckle_type',
+            'totalChildrenCount',
+            'units',
+            '@displayValue',
+            'renderMaterial']
+        keys = properties
+        if properties is None:
+            keys = list(filter(lambda key: key not in filtered, self.get_member_names()))
+        attributes = {key: self[key] for key in keys}
+        relationships = self.get_relationships(assembly=assembly)
+        if arborescence is False:
+            attributes['relationships'] = relationships
+        else:
+            parents = self.get_relatives(assembly=assembly, outgoing=False)
+            if len(parents) > 1:
+                raise ValueError('Multiple parents found for {0} in {1}'.format(self['entityId'], arborescence))
+            children = self.get_relatives(assembly=assembly, outgoing=True)
+
+            attributes.update({
+                'parent': None if len(parents) == 0 else parents[0]['entityId'],
+                'children': [child['entityId'] for child in children]
+                })
+
+        return attributes
 
 
-class Assembly(nx.MultiDiGraph, Entity):
-    # entities: Enumerable
-    # relationships: Enumerable
-
-    def __init__(self):
-        super().__init__()
-        # self.entities = Enumerable(self.nodes())
-        # self.relationships = Enumerable(self.edges(data=True))
+class Assembly(Entity):
+    graph: nx.MultiDiGraph
 
     def __repr__(self):
-        return 'Assembly: {0} (Type: {1})'.format(self.name, self.type)
+        return 'Assembly: {0} (Type: {1})'.format(
+            self.name if hasattr(self, 'name') else '[Unnamed]',
+            self.type if hasattr(self, 'type') else '[Unknown]')
 
     def __str__(self):
         return ('Assembly: {1}{0}' +
                 'Type: {2}{0}' +
-                'Entities: {3}{0}' +
-                'Relationships: {4}{0}').format(
+                'Members: {3}{0}' +
+                'Entities: {4}{0}' +
+                'Relationships: {5}{0}').format(
             os.linesep,
-            self.name,
-            self.type,
-            self.nodes(data=True),
-            self.edges(keys=True))
+            self.name if hasattr(self, 'name') else '[Unnamed]',
+            self.type if hasattr(self, 'type') else '[Unknown]',
+            self.get_dynamic_member_names(),
+            self.graph.nodes(data=True),
+            self.graph.edges(keys=True))
+
+    def __init__(
+            self,
+            entityId: str = None,
+            name: str = None,
+            type: str = None):
+        super().__init__(entityId, name, type)
+        self.graph = nx.MultiDiGraph()
 
     @classmethod
-    def from_properties(
+    def from_graph(
             cls,
-            name: str,
-            type: str,
-            id: str = None,
-            attributes: dict = None,
-            events: List[Event] = None,
-            measurements: Dict[rk.measure.Measure, Quantity] = None) -> Assembly:
-        assembly = cls()
-
-        assembly.name = name
-        assembly.type = type
-        assembly.id = str(uuid.uuid4()) if id is None else id
-        assembly.attributes = {} if attributes is None else attributes
-        assembly.events = [] if events is None else events
-        assembly.measurements = {} if measurements is None else measurements
+            graph: nx.MultiDiGraph,
+            name: str = None,
+            type: str = None):
+        assembly = cls(
+            entityId=str(uuid.uuid4()),
+            name=name if name is not None else '[Unnamed]',
+            type=type if type is not None else '[Unknown]'
+            )
+        assembly.graph = graph
         return assembly
 
+    @classmethod
+    def from_assemblybase(
+            cls,
+            base: objects.Base,
+            relatives: dict[str, objects.Base] = None):
+        if not rk.graph.is_assembly(base):
+            raise TypeError('The provided Base is not an Assembly.')
+        assembly = cls(
+            entityId=base["entityId"],
+            name=base["name"] if base["name"] is not None else '[Unnamed]',
+            type=base["type"] if base["type"] is not None else '[Unknown]'
+            )
+
+        for member_name in base.get_member_names():
+            if member_name in ['relationships']:
+                continue
+            elif member_name == 'units':  # This is tripping something? Weird..
+                continue
+            else:
+                value = base[member_name]
+                assembly.__setattr__(member_name, value)
+
+        if relatives is not None:
+            for relationship in base['relationships']:
+                source = relatives[relationship['source']['entityId']] if relationship[
+                                                                              'source'] is not None else assembly
+                # This seems to happen bc of Speckle's serialization?
+                target = relatives[relationship['target']['entityId']] if relationship[
+                                                                              'target'] is not None else assembly
+                # This seems to happen bc of Speckle's serialization?
+                assembly.add_relationship((
+                    source,
+                    target,
+                    relationship['type'],
+                    ))
+        return assembly
+
+    def add_entities(self, entities: List[Entity]):
+        self.graph.add_nodes_from(entities)
+        nx.set_node_attributes(self.graph, entities, 'entity')
+
+    def get_entities(self) -> dict[str, Entity]:
+        return nx.get_node_attributes(self.graph, 'entity')
+
+    def get_entity(self, entityId: str) -> (str, Entity):
+        return self.get_entities()[entityId]
+
     def add_relationship(self, relationship: tuple[Entity, Entity, str]):
-        self.add_edge(relationship[0], relationship[1], key=relationship[2])
+        self.graph.add_edge(relationship[0]['entityId'], relationship[1]['entityId'], key=relationship[2])
+        nx.set_node_attributes(
+            G=self.graph,
+            values={
+                relationship[0]['entityId']: relationship[0],
+                relationship[1]['entityId']: relationship[1]
+                },
+            name='entity')
 
     def add_relationships(self, relationships: List[tuple[Entity, Entity, str]]):
         for relationship in relationships:
             self.add_relationship(relationship)
 
-    def merge(
-            self,
-            others: List[Assembly],
-            name: str,
-            type: str):
-        all = others.copy()
-        all.append(self)
-        composition = nx.compose_all(all)
+    def get_roots(self) -> dict[str, list[Entity]]:
+        types = set(edge[2] for edge in self.graph.edges(keys=True))
+        roots = {}
+        for type in types:
+            graph = self.graph.edge_subgraph(
+                [edge for edge in self.graph.edges(keys=True) if edge[2] == type])
+            roots[type] = [self.get_entity(node) for node in graph.nodes() if graph.in_degree(node) == 0]
+        return roots
 
-        composition.name = name
-        composition.type = type
-        composition.id = str(uuid.uuid4())
-
-        composition.attributes = self.attributes
-        for other in others:
-            composition.attributes.update(other.attributes)
-
-        composition.events = self.events
-        for other in others:
-            composition.events.extend(other.events)
-
-        composition.measurements = self.measurements
-        for other in others:
-            composition.measurements.update(other.measurements)
-
-        return composition
-
-    def get_subassemblies(self):
-        subassemblies = []
-        for entity in self.nodes():
+    def get_subassemblies(self) -> dict[str, Assembly]:
+        subassemblies = {}
+        for entity in self.get_entities().values():
             if isinstance(entity, Assembly):
                 if entity is not self:
-                    subassemblies.append(entity)
+                    if entity not in subassemblies.values():
+                        subassemblies[entity.entityId] = entity
+                        subassemblies.update(entity.get_subassemblies())
         return subassemblies
 
-    def develop(
+    def get_subentities(self) -> dict[str, Entity]:
+        subentities = {}
+        for entity in self.get_entities().values():
+            if entity is not self:
+                if isinstance(entity, Assembly):
+                    if entity not in subentities.values():
+                        subentities[entity.entityId] = entity
+                        subentities.update(entity.get_subentities())
+                else:
+                    if isinstance(entity, Entity):
+                        if entity.entityId not in subentities:
+                            subentities[entity.entityId] = entity
+        return subentities
+
+    def aggregate(
             self,
-            name: str,
-            type: str,
-            graph: Optional[Assembly] = None) -> Assembly:
-        if graph is None:
-            graph = self
-        subassemblies = self.get_subassemblies()
-        if len(subassemblies) > 0:
-            graph = graph.merge(
-                others=subassemblies,
-                name=name,
-                type=type)
-            for subassembly in subassemblies:
-                subassembly.develop(
-                    name=name,
-                    type=type,
-                    graph=graph)
-        return graph
+            property: str,
+            label: str,
+            relationship_type: str = None,
+            function: Optional[Callable] = None,
+            outgoing: bool = True):
+
+        if nx.is_arborescence(self.graph):
+            root = next(nx.topological_sort(self.graph))
+
+            self.get_entity(root)._aggregate(
+                assembly=self,
+                property=property,
+                label=label,
+                relationship_type=relationship_type,
+                function=function,
+                outgoing=outgoing)
+        else:
+            raise NotImplementedError('Aggregation is only implemented for arborescent graphs.')
+
+    def to_dict(
+            self,
+            properties: Optional[List[str]] = None) -> dict[str, dict]:
+        arborecence = False
+        if nx.is_arborescence(self.graph):
+            arborecence = True
+        results = {}
+        for entity in self.get_entities().values():
+            if entity['entityId'] not in results:
+                results[entity.entityId] = entity.to_kvps(
+                    assembly=self,
+                    properties=properties,
+                    arborescence=arborecence
+                    )
+            else:
+                raise ValueError('Duplicate Entity found: {0}'.format(entity.entityId))
+        return results
+
+    def to_DataFrame(
+            self,
+            properties: Optional[List[str]] = None) -> pd.DataFrame:
+        return pd.DataFrame.from_dict(
+            self.to_dict(properties=properties),
+            orient='index')
+
+    def sunburst(
+            self,
+            property: str):
+        if not nx.is_arborescence(self.graph):
+            raise NotImplementedError('Sunburst is only implemented for arborescent (hierarchical) graphs.')
+        df = self.to_DataFrame()
+
+        root = list(self.get_roots().values())[0][0]
+        ancestors = root.get_relatives(assembly=self)
+
+
+
+        fig = go.Figure()
+        fig.add_trace(go.Sunburst(
+            ids=df['entityId'],
+            labels=df['name'],
+            parents=df['parent'],
+            values=df[property],
+            branchvalues='total',
+            insidetextorientation='radial'
+            ))
+        fig.update_traces(
+            # marker=dict(
+            #     colors=df[property],
+            #     colorscale='RdBu',
+            #     cmid=df[property].mean()),
+            sort=True,
+            selector=dict(type='sunburst')
+            )
+        return fig
+        # fig.show()
 
     def _to_network(
             self,
+            node_sizes: dict[Entity, Any] = None,
             hierarchical_layout: bool = True,
             notebook: bool = True) -> network.Network:
         nt = network.Network(
@@ -254,7 +520,10 @@ class Assembly(nx.MultiDiGraph, Entity):
             layout=hierarchical_layout,
             notebook=notebook,
             cdn_resources='in_line')
-        node_types = set([node.type for node in self.nodes()])
+
+        nodes = self.to_dict()
+        node_types = set([node['type'] for node in nodes.values()])
+
         node_colors = {
             type: rk.rgba_from_cmap(
                 cmap_name='twilight_shifted',
@@ -262,7 +531,8 @@ class Assembly(nx.MultiDiGraph, Entity):
                 stop_val=len(node_types),
                 val=i) for i, type in enumerate(node_types)}
 
-        edge_keys = set([edge[2] for edge in self.edges(keys=True)])
+        edges = self.graph.edges(keys=True)
+        edge_keys = set([edge[2] for edge in edges])
         edge_colors = {
             key: rk.rgba_from_cmap(
                 cmap_name='inferno',
@@ -270,32 +540,22 @@ class Assembly(nx.MultiDiGraph, Entity):
                 stop_val=len(edge_keys),
                 val=i) for i, key in enumerate(edge_keys)}
 
-        for node in self.nodes():
-            if isinstance(node, Assembly):
-                nt.add_node(
-                    n_id=node.id,
-                    label=node.name,
-                    title=node.type,
-                    shape='circle',
-                    borderWidth=2,
-                    labelHighlightBold=True,
-                    font='16px arial white',
-                    level=len(self.in_edges(node)),
-                    color=mpl.colors.rgb2hex(node_colors[node.type]))
-            else:
-                nt.add_node(
-                    n_id=node.id,
-                    label=node.name,
-                    title=node.type,
-                    shape='dot',
-                    size=10,
-                    font='12px arial black',
-                    level=len(self.in_edges(node)) + 1,
-                    color=mpl.colors.rgb2hex(node_colors[node.type]))
-        for edge in self.edges(keys=True):
+        node_sizes = nx.harmonic_centrality(self.graph) if node_sizes is None else node_sizes
+
+        for entityId, properties in nodes.items():
+            nt.add_node(
+                n_id=entityId,
+                label=properties['name'] if 'name' in properties else '[Unnamed]',
+                title=properties['type'] if 'type' in properties else '[Unknown]',
+                shape='dot',
+                size=(1 / (node_sizes[entityId] + 1)) * 50,
+                font='12px arial black',
+                level=node_sizes[entityId],
+                color=mpl.colors.rgb2hex(node_colors[properties['type']]))
+        for edge in edges:
             nt.add_edge(
-                source=edge[0].id,
-                to=edge[1].id,
+                source=edge[0],  # .entityId,
+                to=edge[1],  # .entityId,
                 title=edge[2],
                 label=edge[2],
                 arrows='to',
@@ -311,17 +571,22 @@ class Assembly(nx.MultiDiGraph, Entity):
 
     def plot(
             self,
-            hierarchical_layout: bool = True,
+            name: str = None,
+            hierarchical_layout: bool = False,
+            node_sizes: dict[Entity, Any] = None,
             height: int = 800,
             width: Union[int, str] = '100%',
             notebook: bool = True,
             display: bool = False):
         nt = self._to_network(
             hierarchical_layout=hierarchical_layout,
+            node_sizes=node_sizes,
             notebook=notebook)
+        filename = (self['name'] + '.html') if name is None else (name + '.html')
+        # print(filename)
         nt.show(
-            name=self.name + '.html',
+            name=filename,
             local=False,
             notebook=notebook)
         if notebook & display:
-            return IFrame(self.name + '.html', width=width, height=height)
+            return IFrame(self['name'] + '.html', width=width, height=height)

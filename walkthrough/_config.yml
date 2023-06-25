@@ -28,4 +28,12 @@ html:
   use_issues_button: true
   use_repository_button: true
 
+sphinx:
+  config:
+    language: en
+    html_extra_path: ['assets']
+#    suppress_warnings: [ "mystnb.unknown_mime_type" ]  # See https://github.com/executablebooks/jupyter-book/issues/1950
+#    html_js_files:
+#      - https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js  # See https://jupyterbook.org/en/stable/interactive/interactive.html
+
 

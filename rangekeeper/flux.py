@@ -617,7 +617,7 @@ class Stream:
                     {flow.name: flow.units.__str__() for flow in self.flows}, indent=4)))
 
         return Flow.from_periods(
-            name=name if name is not None else self.name,
+            name=name if name is not None else self.name + ' (sum)',
             index=self.frame.index,  # .to_period(),
             data=self.frame.sum(axis=1).to_list(),
             units=next(iter(self.units.values())))
@@ -645,7 +645,7 @@ class Stream:
             registry=registry).units
 
         return Flow.from_periods(
-            name=name if name is not None else self.name,
+            name=name if name is not None else self.name + ' (product)',
             index=self.frame.index,  # .to_period(),
             data=self.frame.prod(axis=1).to_list(),
             units=reduced_units)

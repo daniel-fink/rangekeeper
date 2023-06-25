@@ -9,6 +9,8 @@ import pytest
 import scipy.stats as ss
 from pytest import approx
 
+import specklepy.objects as objects
+
 import rangekeeper as rk
 
 # Pytests file.
@@ -375,61 +377,6 @@ class TestSpan:
 
         assert spans[1].start_date == pd.Timestamp(2020, 3, 1)
         assert spans[1].end_date == pd.Timestamp(2021, 2, 27)
-
-
-class TestGraph:
-    def test_graph(self):
-        element_root = rk.graph.Element(
-            name='root',
-            type='root_type')
-        element_child = rk.graph.Element(
-            name='child',
-            type='child_type')
-        element_grandchild01 = rk.graph.Element(
-            name='grandchild01',
-            type='grandchild_type')
-        element_grandchild02 = rk.graph.Element(
-            name='grandchild02',
-            type='grandchild_type')
-
-        assembly = rk.graph.Assembly(
-            name='assembly',
-            type='assembly_type',
-            elements=[
-                element_root,
-                element_child,
-                element_grandchild01,
-                element_grandchild02],
-            relationships=[
-                (element_root, element_child, 'is_parent_of'),
-                (element_child, element_grandchild01, 'is_parent_of'),
-                (element_child, element_grandchild02, 'is_parent_of')])
-
-        assert assembly.size() == 3
-        assert assembly.has_predecessor(element_child, element_root)
-
-        # Test Querying:
-        # Check retrieval of first Element in query:
-        assert assembly.elements.first(
-            lambda x: x.name == 'grandchild01').type == 'grandchild_type'
-
-        # Check count of query response:
-        assert assembly.elements.count(lambda element: element.type == 'grandchild_type') == 2
-
-        # Check retrieval of Element Relatives:
-        assert [element.name for element in element_root.get_relatives(
-            assembly=assembly,
-            relationship_type='is_parent_of')] == ['child']
-
-        # Check retrieval of Element Relatives in chained query:
-        assert [element.name for element in assembly.elements.where(
-            lambda element: element.type == 'grandchild_type').select_many(
-            lambda element: element.get_relatives(
-                assembly=assembly,
-                relationship_type='is_parent_of',
-                outgoing=False)
-            ).distinct(
-            lambda element: element.id)] == ['child']
 
 
 class TestSegmentation:

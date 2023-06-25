@@ -16,10 +16,10 @@ Developers](https://www.wiley.com/go/geltner-deneufville/flexibility-and-real-es
 , and expands it into a more robust computational framework.
 
 There are two sections to the walkthrough:
-1. *Real Estate Flexibility and Valuation under Uncertainty*: a series of 
+1. **Real Estate Flexibility and Valuation under Uncertainty**: a series of 
    notebooks providing a walkthrough of the library in parallel with chapters of
    the book. 
-2. *Using Rangekeeper in Examples*: notebooks that showcase some of the 
+2. **Using Rangekeeper in Examples**: notebooks that showcase some of the 
    library's functionality in practice 
 
 This walkthrough is intended for use by practitioners who are both familiar with 
