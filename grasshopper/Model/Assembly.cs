@@ -19,7 +19,6 @@ public class Assembly : Entity
     /// The set of Entities that this Assembly refers to
     /// </summary>
     internal HashSet<IEntity> _entities => new (this._relationships.SelectMany(relationship => new[] { relationship.source, relationship.target }), new EntityComparer());
-    public List<IEntity> entities => new (this._entities);
 
     /// <summary>
     /// The set of EntityIds that this Assembly refers to
@@ -31,6 +30,12 @@ public class Assembly : Entity
         return this._entities.FirstOrDefault(entity => entity.entityId == entityId);
     }
 
+    public List<IEntity>? GetEntities(IEnumerable<string>? entityIds = null) //=> new (this._entities);
+    {
+        if (entityIds is null) return new(this._entities);
+        else return this._entities.Where(entity => entityIds.Contains(entity.entityId)).ToList();
+    }
+
     /// <summary>
     /// Construct an Assembly
     /// </summary>
@@ -38,9 +43,19 @@ public class Assembly : Entity
     /// <param name="type"></param>
     public Assembly() : base()//name, type)
     { }
-    
-    public Assembly(Entity entity) : base(entity)//, entity.Name, entity.Type)
-    { }
+
+    /// <summary>
+    /// Construct an Assembly from an Entity, with the option to clone it (ie, retain the EntityId)
+    /// </summary>
+    /// <param name="entity"></param>
+    /// <param name="clone"></param>
+    public Assembly(Entity entity, bool clone = false) : base(entity) //, entity.Name, entity.Type)
+    {
+        if (clone)
+        {
+            this.SetEntityId(entity.entityId);
+        }
+    }
 
     /// <summary>
     /// Construct a new Assembly by copying one.
@@ -61,10 +76,9 @@ public class Assembly : Entity
     /// Duplicate an Assembly and all its Entities, with the same EntityIds.
     /// </summary>
     /// <returns></returns>
-    public new IEntity Clone()
+    public new Assembly Clone()
     {
-        var clone = new Assembly(new Entity(this));
-        clone.SetEntityId(this.entityId);
+        var clone = new Assembly(this, true);
         foreach (var relationship in this._relationships) clone.AddRelationship(relationship.Clone());
         return clone;
     }

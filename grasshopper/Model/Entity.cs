@@ -44,10 +44,6 @@ public class Entity : Base, IEntity
 
     public Entity(Base speckleBase) : this()//name, type)
     {
-        // this.Name = name ?? string.Empty;
-        // this.Type = type ?? string.Empty;
-        //this.SetEntityId();
-        
         Base instance = (Base)Activator.CreateInstance(speckleBase.GetType());
         this.id = instance.id;
         this.applicationId = instance.applicationId;
