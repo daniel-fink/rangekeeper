@@ -8,9 +8,12 @@ public class GH_Entity : GH_Goo<Entity>
 {
     public override IGH_Goo Duplicate() => new GH_Entity() { m_value = m_value.Clone() };
 
-    public override string ToString() =>
-        string.Format("Rangekeeper Entity");//": {0}, of Type: {1}", this.Value.Name ?? "[Unnamed]", this.Value.Type ?? "[Unspecified]");
-    
+    public override string ToString() 
+    {
+        object? name;
+        if (!this.Value.TryGetProperty("name", out name, out string? remark)) name = "[Unnamed]";
+        return string.Format("Rangekeeper Entity [{0}]", name);
+    }
     public override bool IsValid => m_value != null;
     
     public override string TypeName => "Rangekeeper Entity";

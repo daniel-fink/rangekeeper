@@ -14,7 +14,7 @@ namespace Rangekeeper.Components
                 "CRkE",
                 "Create a Rangekeeper Entity by providing a Speckle Object",
                 "Rangekeeper",
-                "Entities"
+                "Rangekeeper"
             )
         { }
 

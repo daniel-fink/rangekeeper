@@ -6,10 +6,14 @@ namespace Rangekeeper.Components;
 
 public class GH_Assembly : GH_Goo<Assembly>
 {
-    public override IGH_Goo Duplicate() => new GH_Assembly() { m_value = m_value.ShallowCopy() as Assembly };
+    public override IGH_Goo Duplicate() => new GH_Assembly() { m_value = m_value.Clone() };
 
-    public override string ToString() =>
-        string.Format("Rangekeeper Assembly");//": {0} of Type: {1}", this.Value.name ?? "[Unnamed]", this.Value.type ?? "[Unspecified]");
+    public override string ToString() 
+    {
+        object? name;
+        if (!this.Value.TryGetProperty("name", out name, out string? remark)) name = "[Unnamed]";
+        return string.Format("Rangekeeper Assembly [{0}]", name);
+    }
 
     public override bool IsValid => m_value != null;
     

@@ -77,18 +77,22 @@ public class TestEntities
          Assert.True(entityA.Equals(entityD));
 
          output.WriteLine(assemblyA.SerializeToJson());
-         output.WriteLine(assemblyA.entities.SerializeToJson());
+         output.WriteLine(assemblyA.GetEntities().SerializeToJson());
          
          Assert.Equal(entityA, assemblyA.GetEntity(entityA.entityId));
-         Assert.Equal(3, assemblyA.entities.Count);
+         Assert.Equal(3, assemblyA.GetEntities().Count);
          Assert.Equal(4, assemblyA.relationships.Count);
          
          var assemblyB = new Assembly(assemblyA);
          Assert.False(assemblyA.Equals(assemblyB));
 
          var assemblyC = (Assembly)assemblyA.Clone();
+         var assemblyZ = new Assembly(assemblyA, true);
+
          Assert.True(assemblyA.Equals(assemblyC));
+         Assert.True(assemblyA.Equals(assemblyZ));
          Assert.False(ReferenceEquals(assemblyA, assemblyC));
+         Assert.False(ReferenceEquals(assemblyA, assemblyZ));
          
          Assert.True(assemblyA.GetEntity(entityA.entityId).Equals(assemblyC.GetEntity(entityA.entityId)));
          Assert.False(
