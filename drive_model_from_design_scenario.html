@@ -400,11 +400,15 @@ document.write(`
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#simple-aggregation">Simple Aggregation</a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#aggregating-a-financial-calculation">Aggregating a (Financial) Calculation</a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#streams-of-revenue-flows-per-entity"><code class="docutils literal notranslate"><span class="pre">Stream</span></code>s of Revenue <code class="docutils literal notranslate"><span class="pre">Flow</span></code>s per <code class="docutils literal notranslate"><span class="pre">Entity</span></code>:</a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#aggregating-by-container">Aggregating by Container</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#aggregating-by-parent-container">Aggregating by Parent Container</a></li>
 </ul>
 </li>
 </ul>
 </li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cost-generating-entities">Cost-generating Entities</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#operational-and-capital-expenses-of-building-systems">Operational and Capital Expenses of Building Systems</a></li>
 </ul>
 </li>
 </ul>
@@ -446,8 +450,8 @@ cash flows per <code class="docutils literal notranslate"><span class="pre">Enti
 <span class="kn">import</span> <span class="nn">locale</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">IFrame</span>
-<span class="kn">import</span> <span class="nn">plotly.io</span> <span class="k">as</span> <span class="nn">pio</span>
-<span class="kn">import</span> <span class="nn">plotly.express</span> <span class="k">as</span> <span class="nn">px</span>
+<span class="kn">import</span> <span class="nn">plotly.subplots</span>
+<span class="kn">import</span> <span class="nn">plotly.graph_objects</span> <span class="k">as</span> <span class="nn">go</span>
 <span class="kn">import</span> <span class="nn">plotly.offline</span> <span class="k">as</span> <span class="nn">py</span>
 <span class="kn">import</span> <span class="nn">pprint</span> <span class="k">as</span> <span class="nn">pp</span>
 <span class="kn">import</span> <span class="nn">rangekeeper</span> <span class="k">as</span> <span class="nn">rk</span>
@@ -545,11 +549,9 @@ we can first slice our graph to a tree of nodes that have “contains”
 relationships:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">spatial_containment</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">Assembly</span><span class="o">.</span><span class="n">from_graph</span><span class="p">(</span>
-    <span class="n">graph</span><span class="o">=</span><span class="n">scenario</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">edge_subgraph</span><span class="p">(</span>
-        <span class="p">[</span><span class="n">edge</span> <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">scenario</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">keys</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">if</span> <span class="n">edge</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;spatiallyContains&#39;</span><span class="p">]),</span>
-    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;spatial_containment&#39;</span><span class="p">,</span>
-    <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;subgraph&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">spatial_containment</span> <span class="o">=</span> <span class="n">scenario</span><span class="o">.</span><span class="n">filter_by_relationship_type</span><span class="p">(</span>
+    <span class="n">relationship_type</span><span class="o">=</span><span class="s1">&#39;spatiallyContains&#39;</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;spatial_containment&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1172,13 +1174,21 @@ via NetworkX’s Node Attributes. See <a class="reference external" href="https:
 </table>
 </div></div></div>
 </div>
-<p>We can also plot this as a hierarchical pie chart (a.k.a. ‘sunburst’ chart):</p>
+<p>We can also plot this as a hierarchical pie chart (a.k.a. ‘sunburst’ chart), or
+a treemap:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">spatial_containment</span><span class="o">.</span><span class="n">sunburst</span><span class="p">(</span><span class="nb">property</span><span class="o">=</span><span class="s1">&#39;subtotal_gfa&#39;</span><span class="p">)</span>
-<span class="n">filename</span><span class="o">=</span><span class="s1">&#39;spatial_containment_sunburst.html&#39;</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sunburst</span> <span class="o">=</span> <span class="n">spatial_containment</span><span class="o">.</span><span class="n">sunburst</span><span class="p">(</span><span class="nb">property</span><span class="o">=</span><span class="s1">&#39;subtotal_gfa&#39;</span><span class="p">)</span>
+<span class="n">treemap</span> <span class="o">=</span> <span class="n">spatial_containment</span><span class="o">.</span><span class="n">treemap</span><span class="p">(</span><span class="nb">property</span><span class="o">=</span><span class="s1">&#39;subtotal_gfa&#39;</span><span class="p">)</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plotly</span><span class="o">.</span><span class="n">subplots</span><span class="o">.</span><span class="n">make_subplots</span><span class="p">(</span>
+    <span class="n">rows</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">specs</span><span class="o">=</span><span class="p">[[{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;sunburst&quot;</span><span class="p">}],</span> <span class="p">[{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;treemap&quot;</span><span class="p">}]])</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">append_trace</span><span class="p">(</span><span class="n">sunburst</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">append_trace</span><span class="p">(</span><span class="n">treemap</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">filename</span><span class="o">=</span><span class="s1">&#39;spatial_containment_chart.html&#39;</span>
+
 <span class="n">py</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;assets/</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">),</span> <span class="n">auto_open</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">IFrame</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="s2">&quot;./</span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">),</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span><span class="p">)</span>
+<span class="n">IFrame</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="s2">&quot;./</span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">),</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">fig</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -1186,8 +1196,8 @@ via NetworkX’s Node Attributes. See <a class="reference external" href="https:
 <div class="output text_html">
         <iframe
             width="100%"
-            height="800"
-            src="./spatial_containment_sunburst.html"
+            height="1600"
+            src="./spatial_containment_chart.html"
             frameborder="0"
             allowfullscreen
             
@@ -1435,8 +1445,8 @@ and run  the <code class="docutils literal notranslate"><span class="pre">init_s
 </div>
 </div>
 </section>
-<section id="aggregating-by-container">
-<h5>Aggregating by Container<a class="headerlink" href="#aggregating-by-container" title="Permalink to this heading">#</a></h5>
+<section id="aggregating-by-parent-container">
+<h5>Aggregating by Parent Container<a class="headerlink" href="#aggregating-by-parent-container" title="Permalink to this heading">#</a></h5>
 <p>Since we have the “containment” hierarchy, we can aggregate the <code class="docutils literal notranslate"><span class="pre">Revenues</span></code> per
 parent <code class="docutils literal notranslate"><span class="pre">Entity</span></code>:</p>
 <p><em>Rangekeeper</em> provides some helper methods to assist in the aggregation of
@@ -1573,8 +1583,8 @@ office compartment in Building A:</p>
 </tbody>
 </table></div></div>
 </div>
-<p>THe above subtotals the revenue from the Office space of Building A over the
-period of the scenario.</p>
+<p>The above subtotals the Effective Gross Income (EGI) for the office space of
+Building A over the period of the scenario.</p>
 <p>We can then do this for all <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s in the graph, and plot the results:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -1586,10 +1596,16 @@ period of the scenario.</p>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">spatial_containment</span><span class="o">.</span><span class="n">sunburst</span><span class="p">(</span><span class="nb">property</span><span class="o">=</span><span class="s1">&#39;aggregate_egi_value&#39;</span><span class="p">)</span>
-<span class="n">filename</span><span class="o">=</span><span class="s1">&#39;aggregate_egis_sunburst.html&#39;</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sunburst</span> <span class="o">=</span> <span class="n">spatial_containment</span><span class="o">.</span><span class="n">sunburst</span><span class="p">(</span><span class="nb">property</span><span class="o">=</span><span class="s1">&#39;aggregate_egi_value&#39;</span><span class="p">)</span>
+<span class="n">treemap</span> <span class="o">=</span> <span class="n">spatial_containment</span><span class="o">.</span><span class="n">treemap</span><span class="p">(</span><span class="nb">property</span><span class="o">=</span><span class="s1">&#39;aggregate_egi_value&#39;</span><span class="p">)</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plotly</span><span class="o">.</span><span class="n">subplots</span><span class="o">.</span><span class="n">make_subplots</span><span class="p">(</span>
+    <span class="n">rows</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">specs</span><span class="o">=</span><span class="p">[[{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;sunburst&quot;</span><span class="p">}],</span> <span class="p">[{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;treemap&quot;</span><span class="p">}]])</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">append_trace</span><span class="p">(</span><span class="n">sunburst</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">append_trace</span><span class="p">(</span><span class="n">treemap</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">filename</span><span class="o">=</span><span class="s1">&#39;aggregate_egis_chart.html&#39;</span>
 <span class="n">py</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;assets/</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">),</span> <span class="n">auto_open</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">IFrame</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="s2">&quot;./</span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">),</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span><span class="p">)</span>
+<span class="n">IFrame</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="s2">&quot;./</span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">),</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">fig</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -1597,31 +1613,67 @@ period of the scenario.</p>
 <div class="output text_html">
         <iframe
             width="100%"
-            height="800"
-            src="./aggregate_egis_sunburst.html"
+            height="1600"
+            src="./aggregate_egis_chart.html"
             frameborder="0"
             allowfullscreen
             
         ></iframe>
         </div></div>
 </div>
+</section>
+</section>
+</section>
+</section>
+<section id="cost-generating-entities">
+<h2>Cost-generating Entities<a class="headerlink" href="#cost-generating-entities" title="Permalink to this heading">#</a></h2>
+<p>Let’s now do the same for the cost-generating <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s. While it is routine to
+register revenue-generating <code class="docutils literal notranslate"><span class="pre">Flow</span></code>s with <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s that have lettable or
+sellable floor space, the convention to also register all cost-generating
+<code class="docutils literal notranslate"><span class="pre">Flow</span></code>s with only those same <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s is possibly only done out of convenience
+rather than accuracy.</p>
+<p>For example, both operating and capital expenses may be attributed to building
+systems (e.g. maintenance, upgrading, &amp; replacement of MEP or facade
+componentry) that are not coincident with the floor space they are servicing.
+Ie, the convention to average (sub)total costs across (sub)total floor space may
+be misleading, especially when attempting to compare different scenarios at
+different resolutions (See <span id="id1">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span>, 5.4 Flaw of Averages).</p>
+<p>By virtue of <em>Rangekeeper</em>’s multi-faceted approach to its object model, costs
+can be attributed and aggregated to <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s that are not spatially coincident
+with the revenue-generating <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s; in the example design scenario, we will
+use the ‘services’ relationship-type to register and aggregate some of these,
+while space-specific costs will be registered and aggregated via spatial
+containment:</p>
+<section id="operational-and-capital-expenses-of-building-systems">
+<h3>Operational and Capital Expenses of Building Systems<a class="headerlink" href="#operational-and-capital-expenses-of-building-systems" title="Permalink to this heading">#</a></h3>
+<p>Of course, in a simplified model and without knowing design and engineering
+details for the scenario, costs for building systems will effectively be also
+calculated via a floorspace area rate. However, this walkthrough will
+demonstrate the methodology, which in practice would adjust to real-world data
+about building systems and their costs.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># df = px.data.tips()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">utilities</span> <span class="o">=</span> <span class="n">scenario</span><span class="o">.</span><span class="n">filter_by_relationship_type</span><span class="p">(</span>
+    <span class="n">relationship_type</span><span class="o">=</span><span class="s1">&#39;services&#39;</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;utilities&#39;</span><span class="p">)</span>
+<span class="n">plant</span> <span class="o">=</span> <span class="n">utilities</span><span class="o">.</span><span class="n">get_roots</span><span class="p">()[</span><span class="s1">&#39;services&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">plant</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Entity: plinthplant (Type: utilities)
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># fig = px.sunburst(df, path=[&#39;day&#39;, &#39;time&#39;, &#39;sex&#39;], values=&#39;total_bill&#39;)</span>
-<span class="c1"># fig.show()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">leafs</span> <span class="o">=</span> <span class="n">utilities</span><span class="o">.</span><span class="n">get_leaves</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 </div>
-</section>
-</section>
 </section>
 </section>
 </section>
@@ -1693,11 +1745,15 @@ period of the scenario.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#simple-aggregation">Simple Aggregation</a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#aggregating-a-financial-calculation">Aggregating a (Financial) Calculation</a><ul class="nav section-nav flex-column">
 <li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#streams-of-revenue-flows-per-entity"><code class="docutils literal notranslate"><span class="pre">Stream</span></code>s of Revenue <code class="docutils literal notranslate"><span class="pre">Flow</span></code>s per <code class="docutils literal notranslate"><span class="pre">Entity</span></code>:</a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#aggregating-by-container">Aggregating by Container</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#aggregating-by-parent-container">Aggregating by Parent Container</a></li>
 </ul>
 </li>
 </ul>
 </li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cost-generating-entities">Cost-generating Entities</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#operational-and-capital-expenses-of-building-systems">Operational and Capital Expenses of Building Systems</a></li>
 </ul>
 </li>
 </ul>
