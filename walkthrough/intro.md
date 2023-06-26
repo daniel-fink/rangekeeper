@@ -15,7 +15,9 @@ and Real Estate Valuation under Uncertainty: A Practical Guide for
 Developers](https://www.wiley.com/go/geltner-deneufville/flexibility-and-real-estate-valuation)
 , and expands it into a more robust computational framework.
 
-There are two sections to the walkthrough:
+This walkthrough is intended to provide a brief introduction to the library, as 
+well as examples of its use in practice. There are two sections to the 
+walkthrough:
 1. **Real Estate Flexibility and Valuation under Uncertainty**: a series of 
    notebooks providing a walkthrough of the library in parallel with chapters of
    the book. 
@@ -24,6 +26,14 @@ There are two sections to the walkthrough:
 
 This walkthrough is intended for use by practitioners who are both familiar with 
 the book's content, and well-versed in data-science-oriented programming. 
+
+For those interested, notebooks can be run interactively via Google Colab, by
+clicking the ![Open In Colab](./resources/rocket.png) icon at the top of each 
+notebook.
+```{note}
+Note: installation of the library via `!pip install rangekeeper` is required 
+for use in Google Colab.
+```
 
 ## Table of Contents
 ```{tableofcontents}

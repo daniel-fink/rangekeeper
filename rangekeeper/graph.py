@@ -6,6 +6,7 @@ from typing import List, Dict, Union, Optional, Callable, Any
 import pprint
 
 import networkx as nx
+import numpy as np
 import pandas as pd
 from pyvis import network, options
 import plotly.express as px
@@ -228,23 +229,24 @@ class Entity(objects.Base):
                 outgoing=outgoing))
 
         # print('State of partial for {0}: {1}'.format(self.name, partial))
-        self[label] = sum(filter(None, aggregation.values())) if function is None else function(aggregation=aggregation, entity=self)
+        self[label] = sum(filter(None, aggregation.values())) if function is None else function(aggregation=aggregation,
+                                                                                                entity=self)
         # print('State of {0} for {1}: {2}'.format(aggregation_name, self.name, self[aggregation_name]))
         return aggregation
 
     @staticmethod
     def aggregate_events(
-            aggregation: dict[str, Union[rk.flux.Stream, rk.flux.Flow]],
+            aggregation: dict[str, dict[str, Union[rk.flux.Stream, rk.flux.Flow]]],
             entity: rk.graph.Entity,
-            key: str,
+            property: str,
             period_type: rk.periodicity.Type
             ) -> Optional[rk.flux.Stream]:
         flows = []
 
-        for id, event in aggregation.items():
+        for entityId, event in aggregation.items():
             if event is not None:
-                flux = event[key]
-                flux_name = '{0} for {1}'.format(flux.name, id)
+                flux = event[property]
+                flux_name = '{0} for {1}'.format(flux.name, entityId)
                 if isinstance(flux, rk.flux.Stream):
                     flow = flux.sum(name=flux_name)
                 else:
@@ -254,7 +256,7 @@ class Entity(objects.Base):
 
         if len(flows) > 0:
             return rk.flux.Stream(
-                name='{0} for {1} Aggregation'.format(key, entity.entityId),
+                name='{0} for {1} Aggregation'.format(property, entity.entityId),
                 flows=flows,
                 period_type=period_type)
         else:
@@ -292,6 +294,32 @@ class Entity(objects.Base):
                 })
 
         return attributes
+
+    def get_ancestors(
+            self,
+            relationship_type: str = None,
+            assembly: Assembly = None) -> dict[str, Entity]:
+        assembly = self if assembly is None else assembly
+
+        if relationship_type is None:
+            tree = assembly
+        else:
+            tree = assembly.filter_by_relationship_type(relationship_type)
+        if not nx.is_arborescence(tree.graph):
+            raise Exception('The Assembly is not a tree. Cannot calculate ancestors.')
+
+        ancestors = {}
+        parents = self.get_relatives(
+            outgoing=False,
+            relationship_type=relationship_type,
+            assembly=tree)
+        if len(parents) > 0:
+            parent = parents[0]
+            ancestors[parent['entityId']] = parent
+            ancestors.update(parent.get_ancestors(
+                relationship_type=relationship_type,
+                assembly=tree))
+        return ancestors
 
 
 class Assembly(Entity):
@@ -336,6 +364,21 @@ class Assembly(Entity):
             )
         assembly.graph = graph
         return assembly
+
+    def filter_by_relationship_type(
+            self,
+            relationship_type: str,
+            name: str = None,
+            type: str = None) -> Assembly:
+        name = '{0} by {1}'.format(self['name'], relationship_type) if name is None else name
+        type = 'subgraph' if type is None else type
+        graph = self.graph.edge_subgraph(
+            [edge for edge in self.graph.edges(keys=True) if edge[2] == relationship_type])
+
+        return Assembly.from_graph(
+            graph=graph,
+            name=name,
+            type=type)
 
     @classmethod
     def from_assemblybase(
@@ -402,10 +445,17 @@ class Assembly(Entity):
         types = set(edge[2] for edge in self.graph.edges(keys=True))
         roots = {}
         for type in types:
-            graph = self.graph.edge_subgraph(
-                [edge for edge in self.graph.edges(keys=True) if edge[2] == type])
-            roots[type] = [self.get_entity(node) for node in graph.nodes() if graph.in_degree(node) == 0]
+            subgraph = self.filter_by_relationship_type(relationship_type=type).graph
+            roots[type] = [self.get_entity(node) for node in subgraph.nodes() if subgraph.in_degree(node) == 0]
         return roots
+
+    def get_leaves(self) -> dict[str, list[Entity]]:
+        types = set(edge[2] for edge in self.graph.edges(keys=True))
+        leaves = {}
+        for type in types:
+            subgraph = self.filter_by_relationship_type(relationship_type=type).graph
+            leaves[type] = [self.get_entity(node) for node in subgraph.nodes() if subgraph.out_degree(node) == 0]
+        return leaves
 
     def get_subassemblies(self) -> dict[str, Assembly]:
         subassemblies = {}
@@ -477,6 +527,19 @@ class Assembly(Entity):
             self.to_dict(properties=properties),
             orient='index')
 
+    def _get_trunk_index(self, entityId: str) -> int:
+        root = list(self.get_roots().values())[0][0]
+        trunks = root.get_relatives(assembly=self)
+        entity = self.get_entity(entityId)
+        ancestors = entity.get_ancestors(assembly=self)
+        for i in range(len(trunks)):
+            if trunks[i]['entityId'] == entityId:
+                return i
+            elif trunks[i]['entityId'] in ancestors:
+                return i
+            # else:
+            #     return -1
+
     def sunburst(
             self,
             property: str):
@@ -484,30 +547,61 @@ class Assembly(Entity):
             raise NotImplementedError('Sunburst is only implemented for arborescent (hierarchical) graphs.')
         df = self.to_DataFrame()
 
-        root = list(self.get_roots().values())[0][0]
-        ancestors = root.get_relatives(assembly=self)
+        df['trunk_idx'] = df['entityId'].apply(lambda entityId: self._get_trunk_index(entityId))
+        # df['trunk_idx'] = df['trunk_idx'].fillna(0)
+        df['color_norm'] = (df[property] - df[property].min()) / (df[property].max() - df[property].min())
+        df['color'] = df['color_norm'] + (df['trunk_idx'] + 2)
 
-
-
-        fig = go.Figure()
-        fig.add_trace(go.Sunburst(
+        trace = go.Sunburst(
             ids=df['entityId'],
             labels=df['name'],
             parents=df['parent'],
             values=df[property],
             branchvalues='total',
-            insidetextorientation='radial'
-            ))
-        fig.update_traces(
-            # marker=dict(
-            #     colors=df[property],
-            #     colorscale='RdBu',
-            #     cmid=df[property].mean()),
-            sort=True,
-            selector=dict(type='sunburst')
-            )
-        return fig
-        # fig.show()
+            insidetextorientation='radial',
+            marker=dict(
+                colors=df['color'],
+                colorscale='thermal',
+                cmin=df['color'].min(),
+                # cmid=df['color'].mean(),
+                cmax=df['color'].max()),
+            hovertemplate="%{label}<br>" + property + ": %{value:,.2f}<br>",
+            sort=False)
+        return trace
+
+    def treemap(
+            self,
+            property):
+        if not nx.is_arborescence(self.graph):
+            raise NotImplementedError('Sunburst is only implemented for arborescent (hierarchical) graphs.')
+        df = self.to_DataFrame()
+
+        df['trunk_idx'] = df['entityId'].apply(lambda entityId: self._get_trunk_index(entityId))
+        df['color_norm'] = (df[property] - df[property].min()) / (df[property].max() - df[property].min())
+        df['color'] = df['color_norm'] + (df['trunk_idx'] + 2)
+
+        trace = go.Treemap(
+            ids=df['entityId'],
+            labels=df['name'],
+            parents=df['parent'],
+            values=df[property],
+            branchvalues='total',
+            marker=dict(
+                cornerradius=3,
+                colors=df['color'],
+                colorscale='thermal',
+                cmin=df['color'].min(),
+                # cmid=df['color'].mean(),
+                cmax=df['color'].max()),
+            pathbar=dict(
+                side='bottom',
+                thickness=24),
+            tiling=dict(
+                packing='squarify',
+                squarifyratio=1),
+            hovertemplate="%{label}<br>" + property + ": %{value:,.2f}<br>",
+            sort=False)
+        return trace
 
     def _to_network(
             self,
