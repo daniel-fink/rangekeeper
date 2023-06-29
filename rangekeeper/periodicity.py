@@ -11,8 +11,13 @@ import pandas as pd
 
 import rangekeeper as rk
 
+
 class Type(enum.Enum):
+    DECADE = '10A'
+    SEMIDECADE = '5A'
+    BIENNIUM = '2A'
     YEAR = 'A-DEC'  # Anchored on end of December
+    SEMIYEAR = '6M'  # Anchored on end of June & December
     QUARTER = 'Q-DEC'  # Anchored on end of March, June, September, & December
     MONTH = 'M'  # Anchored on end-of-month
     SEMIMONTH = 'SM'  # Twice-monthly periods anchored on mid-month and end-of-month dates
@@ -21,8 +26,16 @@ class Type(enum.Enum):
 
 
 def from_value(value: str):
+    if value == '10A':
+        return Type.DECADE
+    if value == '5A':
+        return Type.SEMIDECADE
+    if value == '2A':
+        return Type.BIENNIUM
     if value == 'A-DEC':
         return Type.YEAR
+    if value == '6M':
+        return Type.SEMIYEAR
     if value == 'Q-DEC':
         return Type.QUARTER
     if value == 'M':
@@ -70,6 +83,7 @@ def period_index(
             freq=period_type.value,
             name='periods')
 
+
 def offset_periodindex(
         index: pd.PeriodIndex,
         offset_start: Optional[int] = None,
@@ -80,7 +94,7 @@ def offset_periodindex(
     start = index[0].to_timestamp()
     if offset_start is not None:
         start = offset_date(
-            date=period_index[0].to_timestamp(),
+            date=start,
             period_type=from_value(index.freq),
             num_periods=offset_start)
     end = index[-1].to_timestamp()
@@ -94,6 +108,7 @@ def offset_periodindex(
         period_type=from_value(index.freq),
         bound=end)
 
+
 def to_span(period_index: pd.PeriodIndex):
     """
     Returns a Span encompassing a pd.PeriodIndex
@@ -101,6 +116,7 @@ def to_span(period_index: pd.PeriodIndex):
     return rk.span.Span(
         start_date=period_index[0].to_timestamp(how='start'),
         end_date=period_index[-1].to_timestamp(how='end'))
+
 
 def single_period_index(period: pd.Period) -> pd.PeriodIndex:
     return pd.period_range(
@@ -125,7 +141,11 @@ def to_datestamps(
 
 def periods_per_year(period_type: Type) -> int:
     return {
+        Type.DECADE: 0.1,
+        Type.SEMIDECADE: 0.2,
+        Type.BIENNIUM: 0.5,
         Type.YEAR: 1,
+        Type.SEMIYEAR: 2,
         Type.QUARTER: 4,
         Type.MONTH: 12,
         Type.SEMIMONTH: 24,
@@ -149,8 +169,16 @@ def offset_date(
     :return:
     :rtype:
     """
-    if period_type.value == Type.YEAR.value:
+    if period_type.value == Type.DECADE.value:
+        return date + pd.DateOffset(years=10 * num_periods)
+    elif period_type.value == Type.SEMIDECADE.value:
+        return date + pd.DateOffset(years=5 * num_periods)
+    elif period_type.value == Type.BIENNIUM.value:
+        return date + pd.DateOffset(years=2 * num_periods)
+    elif period_type.value == Type.YEAR.value:
         return date + pd.DateOffset(years=num_periods)
+    elif period_type.value == Type.SEMIYEAR.value:
+        return date + pd.DateOffset(months=6 * num_periods)
     elif period_type.value == Type.QUARTER.value:
         return date + pd.DateOffset(months=3 * num_periods)
     elif period_type.value == Type.MONTH.value:
@@ -180,8 +208,16 @@ def duration(
 
     delta = dateutil.relativedelta.relativedelta(calc_end_date, start_date)
 
-    if period_type.value == Type.YEAR.value:
+    if period_type.value == Type.DECADE.value:
+        result = math.floor(delta.years / 10)
+    elif period_type.value == Type.SEMIDECADE.value:
+        result = math.floor(delta.years / 5)
+    elif period_type.value == Type.BIENNIUM.value:
+        result = math.floor(delta.years / 2)
+    elif period_type.value == Type.YEAR.value:
         result = delta.years
+    elif period_type.value == Type.SEMIYEAR.value:
+        result = (delta.years * 2) + math.floor(delta.months / 6)
     elif period_type.value == Type.QUARTER.value:
         result = (delta.years * 4) + math.floor(delta.months / 3)
     elif period_type.value == Type.MONTH.value:

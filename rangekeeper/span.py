@@ -5,6 +5,7 @@ import pandas as pd
 
 import rangekeeper as rk
 
+
 class Span:
     start_date: pd.Timestamp
     end_date: pd.Timestamp
@@ -188,7 +189,8 @@ class Span:
                             ' (i.e. one less than number of dates)')
 
         date_pairs = list(zip(dates, dates[1:]))
-        date_pairs = [(start, rk.periodicity.offset_date(end, rk.periodicity.Type.DAY, -1)) for (start, end) in date_pairs]
+        date_pairs = [(start, rk.periodicity.offset_date(end, rk.periodicity.Type.DAY, -1)) for (start, end) in
+                      date_pairs]
 
         spans = []
         for i in range(len(names)):
