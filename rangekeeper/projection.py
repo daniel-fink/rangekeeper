@@ -126,14 +126,23 @@ class Extrapolation(Projection):
             type=self.padding[1])
         data = np.concatenate((left, terms, right))
 
-        return pd.Series(
-            data=data,
-            index=rk.periodicity.to_datestamps(
-                rk.periodicity.period_index(
-                    include_start=self.bounds[0].to_timestamp(how='start'),
-                    period_type=rk.periodicity.from_value(self.sequence.freq),
-                    bound=self.bounds[1].to_timestamp(how='start'))))
+        start = self.bounds[0].to_timestamp(how='start')
+        bound = self.bounds[1].to_timestamp(how='end')
 
+        period_index = rk.periodicity.period_index(
+            include_start=start,
+            period_type=rk.periodicity.from_value(self.sequence.freq),
+            bound=bound)
+
+        index = rk.periodicity.to_datestamps(period_index=period_index)
+
+        result = pd.Series(
+            data=data,
+            index=index)
+
+        # result = result[start:bound]
+
+        return result
 
 class Distribution(Projection):
     form: rk.distribution.Form
