@@ -96,11 +96,13 @@ class Flow:
             numalign="right",
             tablefmt='html')
 
-    def duplicate(self) -> Flow:
+    def duplicate(
+            self,
+            name: str = None) -> Flow:
         return self.__class__(
             movements=self.movements.copy(deep=True),
             units=self.units,
-            name=self.name)
+            name=self.name if name is None else name)
 
     # def _format(
     #         self,
@@ -442,6 +444,19 @@ class Stream:
     #         decimals: int = 2):
     #     format = self._format(decimals=decimals)
     #     print(format + os.linesep)
+
+    def __iadd__(self, other):
+        flows = self.flows
+        if isinstance(other, Flow):
+            flows.append(other)
+        elif isinstance(other, Stream):
+            flows.extend(other.flows)
+        else:
+            raise Exception("Cannot add type " + type(other).__name__ + " to Stream.")
+        return self.__class__(
+            name=self.name,
+            flows=flows,
+            period_type=self.period_type)
 
     def duplicate(self) -> Stream:
         return self.__class__(

@@ -229,36 +229,40 @@ class Entity(objects.Base):
                 outgoing=outgoing))
 
         # print('State of partial for {0}: {1}'.format(self.name, partial))
-        self[label] = sum(filter(None, aggregation.values())) if function is None else function(
-            aggregation=aggregation,
-            entity=self)
+        if hasattr(self, label):
+            if function is None:
+                self[label] += sum(filter(None, aggregation.values()))
+            else:
+                self[label] += function(aggregation=aggregation, entity=self)
+        else:
+            if function is None:
+                self[label] = sum(filter(None, aggregation.values()))
+            else:
+                self[label] = function(aggregation=aggregation, entity=self)
         # print('State of {0} for {1}: {2}'.format(aggregation_name, self.name, self[aggregation_name]))
         return aggregation
 
     @staticmethod
-    def aggregate_events(
-            aggregation: dict[str, dict[str, Union[rk.flux.Stream, rk.flux.Flow]]],
+    def aggregate_flows(
+            name: str,
+            aggregation: dict[str, Union[rk.flux.Stream, rk.flux.Flow]],
             entity: rk.graph.Entity,
-            property: str,
-            period_type: rk.periodicity.Type
+            period_type: rk.periodicity.Type,
             ) -> Optional[rk.flux.Stream]:
         flows = []
 
-        for (aggregand_id, aggregand_name), event in aggregation.items():
-            if event is not None:
-                if property in event:
-                    flux = event[property]
-                    flux_name = '{0} for {1} [{2}]'.format(flux.name, aggregand_id, aggregand_name)
-                    if isinstance(flux, rk.flux.Stream):
-                        flow = flux.sum(name=flux_name)
-                    else:
-                        flux.name = flux_name
-                        flow = flux
-                    flows.append(flow)
+        for (aggregand_id, aggregand_name), flux in aggregation.items():
+            if flux is not None:
+                flow_name = '{0} for {1} [{2}]'.format(flux.name, aggregand_id, aggregand_name)
+                if isinstance(flux, rk.flux.Stream):
+                    flow = flux.sum(name=flow_name)
+                else:
+                    flow = flux.duplicate(name=flow_name)
+                flows.append(flow)
 
         if len(flows) > 0:
             return rk.flux.Stream(
-                name='{0} for {1} [{2}] Aggregation'.format(property, entity['entityId'], entity['name']),
+                name='{0} for {1} [{2}] Aggregation'.format(name, entity['entityId'], entity['name']),
                 flows=flows,
                 period_type=period_type)
         else:
@@ -583,6 +587,11 @@ class Assembly(Entity):
         df['property_total'] = [item.total() if isinstance(item, rk.flux.Flow) or isinstance(item, rk.flux.Stream)
                                 else item for item in df[property]]
 
+        df['property_total'] = df['property_total'].fillna(0)
+
+        if (df['property_total'].values <= 0).all():
+            df['property_total'] = df['property_total'].abs()
+
         df['trunk_idx'] = df['entityId'].apply(lambda entityId: self._get_trunk_index(entityId))
         df['color_norm'] = (df['property_total'] - df['property_total'].min()) / (df['property_total'].max() - df['property_total'].min())
         df['color'] = df['color_norm'] + (df['trunk_idx'] + 2)
@@ -612,6 +621,11 @@ class Assembly(Entity):
 
         df['property_total'] = [item.total() if isinstance(item, rk.flux.Flow) or isinstance(item, rk.flux.Stream)
                                 else item for item in df[property]]
+
+        df['property_total'] = df['property_total'].fillna(0)
+
+        if (df['property_total'].values <= 0).all():
+            df['property_total'] = df['property_total'].abs()
 
         df['trunk_idx'] = df['entityId'].apply(lambda entityId: self._get_trunk_index(entityId))
         df['color_norm'] = (df['property_total'] - df['property_total'].min()) / (df['property_total'].max() - df['property_total'].min())
