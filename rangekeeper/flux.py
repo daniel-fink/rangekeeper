@@ -21,7 +21,6 @@ def _format_series(
         series: pd.Series,
         units: pint.Unit,
         decimals: int = 2):
-
     if units.dimensionality == '[currency]':
         formatted = pd.Series(
             data=[str(locale.currency(value, grouping=True)) for value in series],
@@ -222,6 +221,9 @@ class Flow:
         else:
             raise ValueError("Unsupported projection type: {0}".format(type(proj)))
 
+        # movements = movements[proj.bounds[0].to_timestamp(how='start'):proj.bounds[1].to_timestamp(how='end')]  # Fix for >yearly periodicities
+        # TODO: Fix for issues with >yearly periodicities inducing movements at the end of multi-year periods beyond the end of the projection
+
         return cls(
             movements=movements,
             units=units,
@@ -245,6 +247,9 @@ class Flow:
             name=self.name,
             movements={self.movements.index[-1]: self.movements.sum()},
             units=self.units)
+
+    def total(self) -> np.float64:
+        return self.collapse().movements[0]
 
     def pv(
             self,
@@ -618,7 +623,7 @@ class Stream:
 
         return Flow.from_periods(
             name=name if name is not None else self.name + ' (sum)',
-            index=self.frame.index,  # .to_period(),
+            index=self.frame.index,
             data=self.frame.sum(axis=1).to_list(),
             units=next(iter(self.units.values())))
 
@@ -660,6 +665,9 @@ class Stream:
             name=self.name,
             flows=[flow.collapse() for flow in flows],
             period_type=self.period_type)
+
+    def total(self) -> np.float64:
+        return self.sum().collapse().movements[0]
 
     def append(
             self,
