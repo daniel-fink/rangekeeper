@@ -396,6 +396,7 @@ document.write(`
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-foundational-elements-of-a-proforma">The Foundational Elements of a Proforma</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#a-flow">A <code class="docutils literal notranslate"><span class="pre">Flow</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#initializing-a-flow">Initializing a <code class="docutils literal notranslate"><span class="pre">Flow</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#overview-of-a-flow">Overview of a <code class="docutils literal notranslate"><span class="pre">Flow</span></code></a></li>
 </ul>
 </li>
@@ -418,8 +419,12 @@ document.write(`
   <section class="tex2jax_ignore mathjax_ignore" id="a-basic-discounted-cash-flow-valuation">
 <h1>A Basic Discounted Cash Flow Valuation<a class="headerlink" href="#a-basic-discounted-cash-flow-valuation" title="Permalink to this heading">#</a></h1>
 <p>Chapter 1 of <span id="id1">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> showcases the structure and functionality of a
-<em>basic</em> Discounted Cash Flow (DCF) Valuation in use in a real estate property.
-In this notebook, the core computational objects (classes), their functionality,
+basic Discounted Cash Flow (DCF) Valuation for a real estate property.</p>
+<p>Like in the vast majority of cases, the implementation of their DCF model is in
+Microsoft Excel. However, in these notebooks, we will be implementing the same
+methodology in Python, using the
+<a class="reference external" href="https://github.com/daniel-fink/rangekeeper">Rangekeeper</a> open source library.</p>
+<p>In this notebook, the core computational objects (classes), their functionality,
 and how they are composed together into a valuation model are outlined.</p>
 <p>To do so, we will be replicating Table 1.1 from <span id="id2">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span>, which
 describes this DCF:</p>
@@ -447,21 +452,25 @@ describes this DCF:</p>
 <h2>The Foundational Elements of a Proforma<a class="headerlink" href="#the-foundational-elements-of-a-proforma" title="Permalink to this heading">#</a></h2>
 <section id="a-flow">
 <h3>A <code class="docutils literal notranslate"><span class="pre">Flow</span></code><a class="headerlink" href="#a-flow" title="Permalink to this heading">#</a></h3>
-<p>The core element of a Cash Flow analysis is the cash flow; a sequence of
-<em>movements</em> of currency (whether positive – <em>inflow</em>, or negative – <em>outflow</em>)
-, where each movement is associated with a <em>date</em> and a <em>quantity</em>. A cash flow
-is also sometimes referred to as a ‘line item’, which is a way of designating
-the subject of flows, e.g.: “Operational Expenses”, or “Income from Building 2’s
-Parking”</p>
-<p>A cash flow is implemented in Rangekeeper as a <code class="docutils literal notranslate"><span class="pre">Flow</span></code> object (from the flux
-module), which uses a pandas <code class="docutils literal notranslate"><span class="pre">Series</span></code> object to encapsulate the “movements” of
-material (with specified units, like currency, energy, mass, etc) that occur at
-specified dates.</p>
-<p>Note: the <code class="docutils literal notranslate"><span class="pre">Flow</span></code>’s movements Series index is pandas <code class="docutils literal notranslate"><span class="pre">DatetimeIndex</span></code>, and its
-values are <code class="docutils literal notranslate"><span class="pre">float</span></code>s.</p>
+<p>The core element of a Cash Flow analysis is the cash flow itself; a sequence of
+‘movements’ of currency (whether positive – <em>inflow</em>, or negative – <em>outflow</em>)
+, where each movement is associated with a date and a quantity. A movement
+could be considered a transaction, payment, or transfer of currency, but it does
+not consider the parties involved – only its amount, date, and direction.</p>
+<p>A cash flow is also sometimes referred to as a ‘line item’, which is a way of
+designating the subject of flows, e.g.: “Operational Expenses”, or “Income from
+Building 2’s Parking”</p>
+<p>A cash flow is implemented in Rangekeeper as a <code class="docutils literal notranslate"><span class="pre">Flow</span></code> object (from the <code class="docutils literal notranslate"><span class="pre">flux</span></code>
+module), which uses a <a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.Series.html">pandas <code class="docutils literal notranslate"><span class="pre">Series</span></code></a>
+object to encapsulate the movements of a quantity (with specified units, like
+currency, energy, mass, etc.) that occur at specified dates.</p>
+<p>Note: the <code class="docutils literal notranslate"><span class="pre">Flow</span></code>’s movements Series index is a <a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DatetimeIndex.html">Pandas <code class="docutils literal notranslate"><span class="pre">DatetimeIndex</span></code></a>, and its values are <code class="docutils literal notranslate"><span class="pre">float</span></code>s.</p>
+<section id="initializing-a-flow">
+<h4>Initializing a <code class="docutils literal notranslate"><span class="pre">Flow</span></code><a class="headerlink" href="#initializing-a-flow" title="Permalink to this heading">#</a></h4>
 <p>First we initialize the currency used in our Proforma. Currencies are a type of
 <code class="docutils literal notranslate"><span class="pre">Measure</span></code>, which encapsulate <a class="reference external" href="https://github.com/hgrecco/pint">Pint</a> unit
-definitions</p>
+definitions. <em>Rangekeeper</em> uses the standard library’s <code class="docutils literal notranslate"><span class="pre">locale</span></code> module to set
+the currency units.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">locale</span><span class="o">.</span><span class="n">setlocale</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">LC_ALL</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
@@ -517,8 +526,8 @@ definitions</p>
 </tbody>
 </table></div></div>
 </div>
-<p>We can also inspect it by displaying it’s “movements”, and its <code class="docutils literal notranslate"><span class="pre">Index</span></code> (as it
-encapsulates a Pandas Series):</p>
+<p>We can also inspect it by displaying its ‘movements’ (a Pandas <code class="docutils literal notranslate"><span class="pre">Series</span></code>), and its
+<code class="docutils literal notranslate"><span class="pre">index</span></code> (the Pandas Series’ <code class="docutils literal notranslate"><span class="pre">DateTimeIndex</span></code>):</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cash_flow</span><span class="o">.</span><span class="n">movements</span>
@@ -557,6 +566,7 @@ Name: Operational Expenses, dtype: float64
 <div class="cell_output docutils container">
 <div class="output text_html">AUD</div></div>
 </div>
+</section>
 <section id="overview-of-a-flow">
 <h4>Overview of a <code class="docutils literal notranslate"><span class="pre">Flow</span></code><a class="headerlink" href="#overview-of-a-flow" title="Permalink to this heading">#</a></h4>
 <p>As you can see, a <code class="docutils literal notranslate"><span class="pre">Flow</span></code> has three properties:</p>
@@ -1095,6 +1105,7 @@ Present Value (PV):</p>
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-foundational-elements-of-a-proforma">The Foundational Elements of a Proforma</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#a-flow">A <code class="docutils literal notranslate"><span class="pre">Flow</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#initializing-a-flow">Initializing a <code class="docutils literal notranslate"><span class="pre">Flow</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#overview-of-a-flow">Overview of a <code class="docutils literal notranslate"><span class="pre">Flow</span></code></a></li>
 </ul>
 </li>
