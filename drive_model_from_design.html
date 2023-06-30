@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Driving a Financial Valuation from a Design Scenario &#8212; Rangekeeper</title>
+    <title>Driving a Financial Valuation from a Design &#8212; Rangekeeper</title>
   
   
   
@@ -61,10 +61,10 @@ const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
     <script async="async" src="_static/sphinx-thebe.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'drive_model_from_design_scenario';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'drive_model_from_design';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="Loading a Design Scenario" href="load_design_scenario.html" />
+    <link rel="prev" title="Loading a Design" href="load_design.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -165,8 +165,8 @@ const thebe_selector_output = ".output, .cell_output"
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Using Rangekeeper in Examples</span></p>
 <ul class="current nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="load_design_scenario.html">Loading a Design Scenario</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Driving a Financial Valuation from a Design Scenario</a></li>
+<li class="toctree-l1"><a class="reference internal" href="load_design.html">Loading a Design</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Driving a Financial Valuation from a Design</a></li>
 </ul>
 
     </div>
@@ -221,7 +221,7 @@ const thebe_selector_output = ".output, .cell_output"
       
       
       
-      <li><a href="https://colab.research.google.com/github/daniel-fink/rangekeeper/blob/main/walkthrough/drive_model_from_design_scenario.ipynb" target="_blank"
+      <li><a href="https://colab.research.google.com/github/daniel-fink/rangekeeper/blob/main/walkthrough/drive_model_from_design.ipynb" target="_blank"
    class="btn btn-sm dropdown-item"
    title="Launch onColab"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -269,7 +269,7 @@ const thebe_selector_output = ".output, .cell_output"
       
       
       
-      <li><a href="https://github.com/daniel-fink/rangekeeper/issues/new?title=Issue%20on%20page%20%2Fdrive_model_from_design_scenario.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/daniel-fink/rangekeeper/issues/new?title=Issue%20on%20page%20%2Fdrive_model_from_design.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -299,7 +299,7 @@ const thebe_selector_output = ".output, .cell_output"
       
       
       
-      <li><a href="_sources/drive_model_from_design_scenario.ipynb" target="_blank"
+      <li><a href="_sources/drive_model_from_design.ipynb" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -381,7 +381,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Driving a Financial Valuation from a Design Scenario</h1>
+    <h1>Driving a Financial Valuation from a Design</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -391,7 +391,7 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#load-the-design-scenario">Load the Design Scenario</a><ul class="nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#load-the-design">Load the Design</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inspect-the-model-graph">Inspect the Model Graph</a></li>
 </ul>
 </li>
@@ -412,6 +412,11 @@ document.write(`
 </li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#calculating-overall-valuation">Calculating Overall Valuation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reversion">Reversion</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#valuation">Valuation</a></li>
+</ul>
+</li>
 </ul>
             </nav>
         </div>
@@ -423,31 +428,34 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article" role="main">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="driving-a-financial-valuation-from-a-design-scenario">
-<h1>Driving a Financial Valuation from a Design Scenario<a class="headerlink" href="#driving-a-financial-valuation-from-a-design-scenario" title="Permalink to this heading">#</a></h1>
+  <section class="tex2jax_ignore mathjax_ignore" id="driving-a-financial-valuation-from-a-design">
+<h1>Driving a Financial Valuation from a Design<a class="headerlink" href="#driving-a-financial-valuation-from-a-design" title="Permalink to this heading">#</a></h1>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>The following is a work in progress. More content will be added as produced.</p>
 </div>
 <p>As seen in
-<a class="reference internal" href="load_design_scenario.html"><span class="doc std std-doc">Loading a Design Scenario</span></a>,
-a design scenario’s object model (a
+<a class="reference internal" href="load_design.html"><span class="doc std std-doc">Loading a Design</span></a>, a design’s object model (a
 <a class="reference external" href="https://en.wikipedia.org/wiki/Knowledge_graph">knowledge graph</a> including all
 its spatial and semantic relationships) can be loaded via Speckle from any of
 Speckle’s supported <a class="reference external" href="https://speckle.guide/user/connectors.html">connectors</a>, so
 long as those objects (<code class="docutils literal notranslate"><span class="pre">Entity</span></code>s and <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s) have been assigned.</p>
-<p>In this notebook, we will demonstrate how to use the object model (graph) to
-drive a financial valuation of the design scenario. This is done by calculating
-cash flows per <code class="docutils literal notranslate"><span class="pre">Entity</span></code>, and then using the <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s to aggregate those
-<code class="docutils literal notranslate"><span class="pre">Flow</span></code>s into appropriate <code class="docutils literal notranslate"><span class="pre">Stream</span></code>s.</p>
-<section id="load-the-design-scenario">
-<h2>Load the Design Scenario<a class="headerlink" href="#load-the-design-scenario" title="Permalink to this heading">#</a></h2>
-<p>We will use the same design scenario as in the previous notebook.</p>
+<p>In this notebook, we will demonstrate how to integrate financial modelling into
+the object model (graph) in order to derive the financial valuation of a real
+estate property from its spatial design.
+This is done by calculating cash flows per <code class="docutils literal notranslate"><span class="pre">Entity</span></code>, and then using the
+<code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s to aggregate those <code class="docutils literal notranslate"><span class="pre">Flow</span></code>s into appropriate <code class="docutils literal notranslate"><span class="pre">Stream</span></code>s.</p>
+<section id="load-the-design">
+<h2>Load the Design<a class="headerlink" href="#load-the-design" title="Permalink to this heading">#</a></h2>
+<p>We will use the same design as in the previous notebook.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
 
 <span class="kn">import</span> <span class="nn">locale</span>
+<span class="kn">import</span> <span class="nn">urllib.parse</span>
+<span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">networkx</span> <span class="k">as</span> <span class="nn">nx</span>
 <span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">IFrame</span>
@@ -478,7 +486,7 @@ cash flows per <code class="docutils literal notranslate"><span class="pre">Enti
         <iframe
             width="100%"
             height="800"
-            src="https://speckle.xyz/embed?stream=f5e306e3fa&commit=ad17a888c3"
+            src="https://speckle.xyz/embed?stream=f5e306e3fa&commit=362b15db49"
             frameborder="0"
             allowfullscreen
             
@@ -490,22 +498,22 @@ cash flows per <code class="docutils literal notranslate"><span class="pre">Enti
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">speckle</span><span class="o">.</span><span class="n">get_commit</span><span class="p">(</span><span class="n">stream_id</span><span class="o">=</span><span class="n">stream_id</span><span class="p">)</span>
-<span class="n">parsed</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">Speckle</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">base</span><span class="o">=</span><span class="n">model</span><span class="p">[</span><span class="s1">&#39;@scenario&#39;</span><span class="p">])</span>
-<span class="n">scenario</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">Speckle</span><span class="o">.</span><span class="n">to_rk</span><span class="p">(</span>
+<span class="n">parsed</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">Speckle</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">base</span><span class="o">=</span><span class="n">model</span><span class="p">[</span><span class="s1">&#39;@property&#39;</span><span class="p">])</span>
+<span class="nb">property</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">Speckle</span><span class="o">.</span><span class="n">to_rk</span><span class="p">(</span>
     <span class="n">bases</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">parsed</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span>
-    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;design_scenario&#39;</span><span class="p">,</span>
-    <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;scenario&#39;</span><span class="p">)</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;property&#39;</span><span class="p">,</span>
+    <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;archetype&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Warning: Duplicate Entity 29b746f5-42fe-4321-9a4a-8c65c9f0410c [utilities] found.
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Warning: Duplicate Entity d68eab6c-7031-4780-b8da-a356d629dbe4 [utilities] found.
 Existing Entity is an Assembly while new Entity is not. Keeping Assembly.
-Warning: Duplicate Entity 29b746f5-42fe-4321-9a4a-8c65c9f0410c [utilities] found.
+Warning: Duplicate Entity d68eab6c-7031-4780-b8da-a356d629dbe4 [utilities] found.
 Existing Entity is an Assembly while new Entity is not. Keeping Assembly.
-Warning: Duplicate Entity 29b746f5-42fe-4321-9a4a-8c65c9f0410c [utilities] found.
+Warning: Duplicate Entity d68eab6c-7031-4780-b8da-a356d629dbe4 [utilities] found.
 Existing Entity is an Assembly while new Entity is not. Keeping Assembly.
-Warning: Duplicate Entity d188b4bb-27a3-4f63-9469-e9705c60a7a5 [plinthparking] found.
+Warning: Duplicate Entity fae72e2d-608f-4666-acc8-7799896797a6 [plinthparking] found.
 Existing Entity is an Assembly while new Entity is not. Keeping Assembly.
 </pre></div>
 </div>
@@ -513,20 +521,20 @@ Existing Entity is an Assembly while new Entity is not. Keeping Assembly.
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">scenario</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;assets/design_scenario&#39;</span><span class="p">)</span>
-<span class="n">IFrame</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="s2">&quot;./design_scenario.html&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">property</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;assets/</span><span class="si">{</span><span class="nb">property</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">IFrame</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;./</span><span class="si">{</span><span class="nb">property</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">.html&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>assets/design_scenario.html
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>assets/property.html
 </pre></div>
 </div>
 <div class="output text_html">
         <iframe
             width="100%"
             height="800"
-            src="./design_scenario.html"
+            src="./property.html"
             frameborder="0"
             allowfullscreen
             
@@ -538,7 +546,7 @@ Existing Entity is an Assembly while new Entity is not. Keeping Assembly.
 <section id="assigning-and-aggregating-flows-per-entity">
 <h2>Assigning and Aggregating <code class="docutils literal notranslate"><span class="pre">Flow</span></code>s per <code class="docutils literal notranslate"><span class="pre">Entity</span></code><a class="headerlink" href="#assigning-and-aggregating-flows-per-entity" title="Permalink to this heading">#</a></h2>
 <p>Now we can organise the two main categories of cash flows (costs and revenues)
-according to the <code class="docutils literal notranslate"><span class="pre">Relationship</span></code> types in the design scenario.</p>
+according to the <code class="docutils literal notranslate"><span class="pre">Relationship</span></code> types in the design.</p>
 <p>In this example, revenue-based cash flows are generated by <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s that have a
 measureable floor area – in this case, anything that has a ‘gfa’ property.</p>
 <p>We can query the graph to find them:</p>
@@ -549,7 +557,7 @@ we can first slice our graph to a tree of nodes that have “contains”
 relationships:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">spatial_containment</span> <span class="o">=</span> <span class="n">scenario</span><span class="o">.</span><span class="n">filter_by_type</span><span class="p">(</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">spatial_containment</span> <span class="o">=</span> <span class="nb">property</span><span class="o">.</span><span class="n">filter_by_type</span><span class="p">(</span>
     <span class="n">relationship_type</span><span class="o">=</span><span class="s1">&#39;spatiallyContains&#39;</span><span class="p">,</span>
     <span class="n">name</span><span class="o">=</span><span class="s1">&#39;spatial_containment&#39;</span><span class="p">)</span>
 </pre></div>
@@ -575,20 +583,20 @@ check this by testing whether the containment graph is a “tree” (or
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Plot the spatial containment graph</span>
-<span class="n">spatial_containment</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;assets/spatial_containment&#39;</span><span class="p">)</span>
-<span class="n">IFrame</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="s2">&quot;./spatial_containment.html&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span><span class="p">)</span>
+<span class="n">spatial_containment</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;assets/</span><span class="si">{</span><span class="n">spatial_containment</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">IFrame</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;./</span><span class="si">{</span><span class="n">spatial_containment</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">.html&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>assets/spatial_containment.html
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>assets/property by spatiallyContains and None.html
 </pre></div>
 </div>
 <div class="output text_html">
         <iframe
             width="100%"
             height="800"
-            src="./spatial_containment.html"
+            src="./property by spatiallyContains and None.html"
             frameborder="0"
             allowfullscreen
             
@@ -604,7 +612,7 @@ method for this, whereby a named property of any <code class="docutils literal n
 addition) into its parent <code class="docutils literal notranslate"><span class="pre">Entity</span></code> against a specified label:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">scenario</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">property</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span>
     <span class="nb">property</span><span class="o">=</span><span class="s1">&#39;gfa&#39;</span><span class="p">,</span>
     <span class="n">label</span><span class="o">=</span><span class="s1">&#39;subtotal_gfa&#39;</span><span class="p">,</span>
     <span class="n">relationship_type</span><span class="o">=</span><span class="s1">&#39;spatiallyContains&#39;</span><span class="p">)</span>
@@ -655,9 +663,9 @@ via NetworkX’s Node Attributes. See <a class="reference external" href="https:
   </thead>
   <tbody>
     <tr>
-      <th>a39ac4c3-094b-4d92-b71d-46c5a857f407</th>
-      <td>development</td>
-      <td>development</td>
+      <th>4fd8cf16-d01f-4d1e-964b-87942232e857</th>
+      <td>property</td>
+      <td>property</td>
       <td>NaN</td>
       <td>45816.419959</td>
       <td>None</td>
@@ -666,507 +674,507 @@ via NetworkX’s Node Attributes. See <a class="reference external" href="https:
       <td>NaN</td>
     </tr>
     <tr>
-      <th>981c0743-6a4c-4abd-8a97-2c937e48b897</th>
+      <th>b72f69fc-5c1e-4501-99fb-01c3d3b4dddd</th>
       <td>buildingB</td>
       <td>building</td>
       <td>NaN</td>
       <td>13436.884829</td>
-      <td>a39ac4c3-094b-4d92-b71d-46c5a857f407</td>
+      <td>4fd8cf16-d01f-4d1e-964b-87942232e857</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
     </tr>
     <tr>
-      <th>e3149444-dfbc-41d0-9eb1-f08785a62da1</th>
+      <th>b7673e43-2e24-42df-bc0a-a364891daa94</th>
       <td>plinth</td>
       <td>building</td>
       <td>NaN</td>
       <td>12773.744211</td>
-      <td>a39ac4c3-094b-4d92-b71d-46c5a857f407</td>
+      <td>4fd8cf16-d01f-4d1e-964b-87942232e857</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
     </tr>
     <tr>
-      <th>529ce7bc-addf-4bad-8ec5-cbecbd73d4f1</th>
+      <th>37e4f7dd-a27d-4e7e-b7f2-3da8bc46b4ac</th>
       <td>buildingA</td>
       <td>building</td>
       <td>NaN</td>
       <td>19605.790919</td>
-      <td>a39ac4c3-094b-4d92-b71d-46c5a857f407</td>
+      <td>4fd8cf16-d01f-4d1e-964b-87942232e857</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
     </tr>
     <tr>
-      <th>29b746f5-42fe-4321-9a4a-8c65c9f0410c</th>
+      <th>d68eab6c-7031-4780-b8da-a356d629dbe4</th>
       <td>utilities</td>
       <td>utilities</td>
       <td>NaN</td>
       <td>0.000000</td>
-      <td>a39ac4c3-094b-4d92-b71d-46c5a857f407</td>
+      <td>4fd8cf16-d01f-4d1e-964b-87942232e857</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
     </tr>
     <tr>
-      <th>3fc29315-81e7-45a9-8241-62938e904d73</th>
+      <th>62e63c92-aff1-43da-9ff8-538567f943e6</th>
       <td>buildingBresidential</td>
       <td>space</td>
       <td>NaN</td>
       <td>11442.736624</td>
-      <td>981c0743-6a4c-4abd-8a97-2c937e48b897</td>
+      <td>b72f69fc-5c1e-4501-99fb-01c3d3b4dddd</td>
       <td>residential</td>
       <td>NaN</td>
       <td>NaN</td>
     </tr>
     <tr>
-      <th>f508623d-1d81-4082-85ee-5b1e32c7bb10</th>
+      <th>ae3ed380-4db9-4e55-94c3-259f913205a2</th>
       <td>buildingBparking</td>
       <td>space</td>
       <td>NaN</td>
       <td>1178.164752</td>
-      <td>981c0743-6a4c-4abd-8a97-2c937e48b897</td>
+      <td>b72f69fc-5c1e-4501-99fb-01c3d3b4dddd</td>
       <td>parking</td>
       <td>NaN</td>
       <td>NaN</td>
     </tr>
     <tr>
-      <th>6ac8ab6d-a730-44b8-97aa-a5db09b7fbd0</th>
+      <th>d0dd5d16-1a60-4cf4-9261-873a76b551ae</th>
       <td>buildingBretail</td>
       <td>space</td>
       <td>NaN</td>
       <td>815.983454</td>
-      <td>981c0743-6a4c-4abd-8a97-2c937e48b897</td>
+      <td>b72f69fc-5c1e-4501-99fb-01c3d3b4dddd</td>
       <td>retail</td>
       <td>NaN</td>
       <td>NaN</td>
     </tr>
     <tr>
-      <th>71fd4551-8e65-4e7a-8e2a-9d18e69146b0</th>
+      <th>b7db88ba-b8cc-4f29-a67c-b996707a1340</th>
       <td>buildingBcores</td>
       <td>utilities</td>
       <td>NaN</td>
       <td>0.000000</td>
-      <td>981c0743-6a4c-4abd-8a97-2c937e48b897</td>
+      <td>b72f69fc-5c1e-4501-99fb-01c3d3b4dddd</td>
       <td>cores</td>
       <td>NaN</td>
       <td>NaN</td>
     </tr>
     <tr>
-      <th>c11f68da-0544-487b-9cb9-8a3a3a98a9b8</th>
+      <th>a7da795b-96a8-4f81-bb89-fda0e88a783c</th>
       <td>buildingBresidentialFloor0</td>
       <td>floor</td>
       <td>765.941631</td>
       <td>765.941631</td>
-      <td>3fc29315-81e7-45a9-8241-62938e904d73</td>
+      <td>62e63c92-aff1-43da-9ff8-538567f943e6</td>
       <td>NaN</td>
       <td>0.3</td>
       <td>0.0</td>
     </tr>
     <tr>
-      <th>cfc3edf5-1e7d-4499-b25f-ee86ed013516</th>
+      <th>d43eb48b-bcdf-4039-a9ec-20839ecf9fdb</th>
       <td>buildingBresidentialFloor1</td>
       <td>floor</td>
       <td>2361.056035</td>
       <td>2361.056035</td>
-      <td>3fc29315-81e7-45a9-8241-62938e904d73</td>
+      <td>62e63c92-aff1-43da-9ff8-538567f943e6</td>
       <td>NaN</td>
       <td>5.3</td>
       <td>1.0</td>
     </tr>
     <tr>
-      <th>3e158dd9-aa5d-47bb-bc13-4b3e6d328fe1</th>
+      <th>beef28d1-5882-484f-b84d-3f318570113c</th>
       <td>buildingBresidentialFloor2</td>
       <td>floor</td>
       <td>2361.056035</td>
       <td>2361.056035</td>
-      <td>3fc29315-81e7-45a9-8241-62938e904d73</td>
+      <td>62e63c92-aff1-43da-9ff8-538567f943e6</td>
       <td>NaN</td>
       <td>8.4</td>
       <td>2.0</td>
     </tr>
     <tr>
-      <th>b8609a1e-b9f8-44a0-ab98-468ff247d753</th>
+      <th>f56b43a6-e061-4148-b2ad-57ff44fa4233</th>
       <td>buildingBresidentialFloor3</td>
       <td>floor</td>
       <td>2015.956035</td>
       <td>2015.956035</td>
-      <td>3fc29315-81e7-45a9-8241-62938e904d73</td>
+      <td>62e63c92-aff1-43da-9ff8-538567f943e6</td>
       <td>NaN</td>
       <td>11.5</td>
       <td>3.0</td>
     </tr>
     <tr>
-      <th>f68d2f9b-13c5-42e2-9bca-1826f7eff481</th>
+      <th>2651bc40-b486-4d06-9872-6506cb6b1c20</th>
       <td>buildingBresidentialFloor4</td>
       <td>floor</td>
       <td>2015.956035</td>
       <td>2015.956035</td>
-      <td>3fc29315-81e7-45a9-8241-62938e904d73</td>
+      <td>62e63c92-aff1-43da-9ff8-538567f943e6</td>
       <td>NaN</td>
       <td>14.6</td>
       <td>4.0</td>
     </tr>
     <tr>
-      <th>ec086fbc-7b21-4958-b456-9bce6a883c98</th>
+      <th>0a44df41-c11a-4b3e-93a2-832da0897097</th>
       <td>buildingBresidentialFloor5</td>
       <td>floor</td>
       <td>875.014900</td>
       <td>875.014900</td>
-      <td>3fc29315-81e7-45a9-8241-62938e904d73</td>
+      <td>62e63c92-aff1-43da-9ff8-538567f943e6</td>
       <td>NaN</td>
       <td>17.7</td>
       <td>5.0</td>
     </tr>
     <tr>
-      <th>9ecaf92a-a90e-4572-a426-3ed392e0c28a</th>
+      <th>22fe1b3c-a9f0-4ce7-b049-8fb5648e5a91</th>
       <td>buildingBresidentialFloor6</td>
       <td>floor</td>
       <td>875.014900</td>
       <td>875.014900</td>
-      <td>3fc29315-81e7-45a9-8241-62938e904d73</td>
+      <td>62e63c92-aff1-43da-9ff8-538567f943e6</td>
       <td>NaN</td>
       <td>20.8</td>
       <td>6.0</td>
     </tr>
     <tr>
-      <th>9a884f88-0627-4eb7-b1ec-80ea39b0a25b</th>
+      <th>e9bbf6dc-4e29-4d57-8fbe-11b7ff85dd41</th>
       <td>buildingBresidentialFloor0</td>
       <td>floor</td>
       <td>172.741054</td>
       <td>172.741054</td>
-      <td>3fc29315-81e7-45a9-8241-62938e904d73</td>
+      <td>62e63c92-aff1-43da-9ff8-538567f943e6</td>
       <td>NaN</td>
       <td>0.3</td>
       <td>0.0</td>
     </tr>
     <tr>
-      <th>d7dd5233-b1c3-451f-ae90-5a80fed205bd</th>
+      <th>c6c2936d-94c9-4161-b971-09b3ace1ac1a</th>
       <td>buildingBparkingFloor0</td>
       <td>floor</td>
       <td>1178.164752</td>
       <td>1178.164752</td>
-      <td>f508623d-1d81-4082-85ee-5b1e32c7bb10</td>
+      <td>ae3ed380-4db9-4e55-94c3-259f913205a2</td>
       <td>NaN</td>
       <td>0.3</td>
       <td>0.0</td>
     </tr>
     <tr>
-      <th>4acebff3-f17b-44fb-ba29-6bc02053b329</th>
+      <th>5afcbb21-2864-46e7-9b5f-32aff1509606</th>
       <td>buildingBretailFloor0</td>
       <td>floor</td>
       <td>815.983454</td>
       <td>815.983454</td>
-      <td>6ac8ab6d-a730-44b8-97aa-a5db09b7fbd0</td>
+      <td>d0dd5d16-1a60-4cf4-9261-873a76b551ae</td>
       <td>NaN</td>
       <td>0.3</td>
       <td>0.0</td>
     </tr>
     <tr>
-      <th>d188b4bb-27a3-4f63-9469-e9705c60a7a5</th>
+      <th>fae72e2d-608f-4666-acc8-7799896797a6</th>
       <td>plinthparking</td>
       <td>space</td>
       <td>NaN</td>
       <td>12773.744211</td>
-      <td>e3149444-dfbc-41d0-9eb1-f08785a62da1</td>
+      <td>b7673e43-2e24-42df-bc0a-a364891daa94</td>
       <td>parking</td>
       <td>NaN</td>
       <td>NaN</td>
     </tr>
     <tr>
-      <th>8d9f92cf-5613-4de4-b99b-7681aa76b4cd</th>
+      <th>9dc0420d-bc75-4bad-97e4-97595dfe3be4</th>
       <td>plinthplant</td>
       <td>utilities</td>
       <td>NaN</td>
       <td>0.000000</td>
-      <td>e3149444-dfbc-41d0-9eb1-f08785a62da1</td>
+      <td>b7673e43-2e24-42df-bc0a-a364891daa94</td>
       <td>plant</td>
       <td>NaN</td>
       <td>NaN</td>
     </tr>
     <tr>
-      <th>cf287254-7d66-4a4b-8a56-f247f51b41db</th>
+      <th>c7d04af3-0655-4c38-ac39-70a396e20dea</th>
       <td>plinthparkingFloor-2</td>
       <td>floor</td>
       <td>6386.872106</td>
       <td>6386.872106</td>
-      <td>d188b4bb-27a3-4f63-9469-e9705c60a7a5</td>
+      <td>fae72e2d-608f-4666-acc8-7799896797a6</td>
       <td>NaN</td>
       <td>-5.9</td>
       <td>-2.0</td>
     </tr>
     <tr>
-      <th>926a3e9d-0601-4f96-bd71-317d928194f2</th>
+      <th>13a20724-8e76-4ccb-8f78-39775e41c67e</th>
       <td>plinthparkingFloor-1</td>
       <td>floor</td>
       <td>6386.872106</td>
       <td>6386.872106</td>
-      <td>d188b4bb-27a3-4f63-9469-e9705c60a7a5</td>
+      <td>fae72e2d-608f-4666-acc8-7799896797a6</td>
       <td>NaN</td>
       <td>-2.8</td>
       <td>-1.0</td>
     </tr>
     <tr>
-      <th>987c5866-03b0-4948-962e-4870684f481b</th>
+      <th>19b22f27-b94d-4358-a516-8edd7e7bd15e</th>
       <td>buildingAparking</td>
       <td>space</td>
       <td>NaN</td>
       <td>960.262087</td>
-      <td>529ce7bc-addf-4bad-8ec5-cbecbd73d4f1</td>
+      <td>37e4f7dd-a27d-4e7e-b7f2-3da8bc46b4ac</td>
       <td>parking</td>
       <td>NaN</td>
       <td>NaN</td>
     </tr>
     <tr>
-      <th>7dc6bf46-805f-4990-bcd2-d0fe1de4dd47</th>
+      <th>f2b95810-88f4-4e6b-b58c-3954b59b175c</th>
       <td>buildingAretail</td>
       <td>space</td>
       <td>NaN</td>
       <td>534.530238</td>
-      <td>529ce7bc-addf-4bad-8ec5-cbecbd73d4f1</td>
+      <td>37e4f7dd-a27d-4e7e-b7f2-3da8bc46b4ac</td>
       <td>retail</td>
       <td>NaN</td>
       <td>NaN</td>
     </tr>
     <tr>
-      <th>549a988b-c3bc-42d4-a6a3-a8dc694fa770</th>
+      <th>4b425c76-d286-42c6-8f0a-c2251122d212</th>
       <td>buildingAresidential</td>
       <td>space</td>
       <td>NaN</td>
       <td>2296.143091</td>
-      <td>529ce7bc-addf-4bad-8ec5-cbecbd73d4f1</td>
+      <td>37e4f7dd-a27d-4e7e-b7f2-3da8bc46b4ac</td>
       <td>residential</td>
       <td>NaN</td>
       <td>NaN</td>
     </tr>
     <tr>
-      <th>3cf2bf71-61fa-4a61-b163-6265c299376d</th>
+      <th>218fd91a-d72c-4fb2-a82f-3882388659f9</th>
       <td>buildingAretail</td>
       <td>space</td>
       <td>NaN</td>
       <td>1123.715326</td>
-      <td>529ce7bc-addf-4bad-8ec5-cbecbd73d4f1</td>
+      <td>37e4f7dd-a27d-4e7e-b7f2-3da8bc46b4ac</td>
       <td>retail</td>
       <td>NaN</td>
       <td>NaN</td>
     </tr>
     <tr>
-      <th>bfc1c272-665f-432d-a7b3-a4c955556e7f</th>
+      <th>f746d0de-a8ab-491e-9d3f-875c62c87f53</th>
       <td>buildingAoffice</td>
       <td>space</td>
       <td>NaN</td>
       <td>14691.140177</td>
-      <td>529ce7bc-addf-4bad-8ec5-cbecbd73d4f1</td>
+      <td>37e4f7dd-a27d-4e7e-b7f2-3da8bc46b4ac</td>
       <td>office</td>
       <td>NaN</td>
       <td>NaN</td>
     </tr>
     <tr>
-      <th>55963d84-702d-423d-be05-c8bb6e88f517</th>
+      <th>c94db8fb-243f-4dec-95af-3c93f04e0cf5</th>
       <td>buildingAcores</td>
       <td>utilities</td>
       <td>NaN</td>
       <td>0.000000</td>
-      <td>529ce7bc-addf-4bad-8ec5-cbecbd73d4f1</td>
+      <td>37e4f7dd-a27d-4e7e-b7f2-3da8bc46b4ac</td>
       <td>cores</td>
       <td>NaN</td>
       <td>NaN</td>
     </tr>
     <tr>
-      <th>01282060-ad91-44be-b0d3-ff43e340e8bd</th>
+      <th>6fbaaae2-13f8-422f-aa8f-4f32918ecc04</th>
       <td>buildingAparkingFloor0</td>
       <td>floor</td>
       <td>960.262087</td>
       <td>960.262087</td>
-      <td>987c5866-03b0-4948-962e-4870684f481b</td>
+      <td>19b22f27-b94d-4358-a516-8edd7e7bd15e</td>
       <td>NaN</td>
       <td>0.3</td>
       <td>0.0</td>
     </tr>
     <tr>
-      <th>f9e9ae1c-00f3-4966-9682-281ef2a86899</th>
+      <th>4bd06810-752e-4acd-aca4-3b8ad6e344a6</th>
       <td>buildingAretailFloor0</td>
       <td>floor</td>
       <td>534.530238</td>
       <td>534.530238</td>
-      <td>7dc6bf46-805f-4990-bcd2-d0fe1de4dd47</td>
+      <td>f2b95810-88f4-4e6b-b58c-3954b59b175c</td>
       <td>NaN</td>
       <td>0.3</td>
       <td>0.0</td>
     </tr>
     <tr>
-      <th>e7b3aec0-5003-448b-a0e3-4c2dbb605f85</th>
+      <th>550a32d6-c3fb-4c23-99fa-780592b69224</th>
       <td>buildingAresidentialFloor0</td>
       <td>floor</td>
       <td>57.900000</td>
       <td>57.900000</td>
-      <td>549a988b-c3bc-42d4-a6a3-a8dc694fa770</td>
+      <td>4b425c76-d286-42c6-8f0a-c2251122d212</td>
       <td>NaN</td>
       <td>0.3</td>
       <td>0.0</td>
     </tr>
     <tr>
-      <th>9c13f0be-9991-4d9f-b41b-a0e962bdeb89</th>
+      <th>f04a9d62-ed7c-4eae-8874-082179472279</th>
       <td>buildingAresidentialFloor0</td>
       <td>floor</td>
       <td>43.800000</td>
       <td>43.800000</td>
-      <td>549a988b-c3bc-42d4-a6a3-a8dc694fa770</td>
+      <td>4b425c76-d286-42c6-8f0a-c2251122d212</td>
       <td>NaN</td>
       <td>0.3</td>
       <td>0.0</td>
     </tr>
     <tr>
-      <th>e88ff464-a453-45bb-93d8-5f983d417912</th>
+      <th>faf0e45c-a74d-46a2-be7f-c63315a6aa0b</th>
       <td>buildingAresidentialFloor1</td>
       <td>floor</td>
       <td>731.481030</td>
       <td>731.481030</td>
-      <td>549a988b-c3bc-42d4-a6a3-a8dc694fa770</td>
+      <td>4b425c76-d286-42c6-8f0a-c2251122d212</td>
       <td>NaN</td>
       <td>5.3</td>
       <td>1.0</td>
     </tr>
     <tr>
-      <th>8ce80d06-69f6-404a-b0fd-a728eb0dfed6</th>
+      <th>e677c443-81df-4d7c-a0b9-de37a2459ca0</th>
       <td>buildingAresidentialFloor2</td>
       <td>floor</td>
       <td>731.481030</td>
       <td>731.481030</td>
-      <td>549a988b-c3bc-42d4-a6a3-a8dc694fa770</td>
+      <td>4b425c76-d286-42c6-8f0a-c2251122d212</td>
       <td>NaN</td>
       <td>8.4</td>
       <td>2.0</td>
     </tr>
     <tr>
-      <th>bb0a0d86-31c1-4780-b81f-8d0e5a5d83be</th>
+      <th>8a3a9eb5-25b8-4f01-80cd-9b87c692a1fb</th>
       <td>buildingAresidentialFloor3</td>
       <td>floor</td>
       <td>731.481030</td>
       <td>731.481030</td>
-      <td>549a988b-c3bc-42d4-a6a3-a8dc694fa770</td>
+      <td>4b425c76-d286-42c6-8f0a-c2251122d212</td>
       <td>NaN</td>
       <td>11.5</td>
       <td>3.0</td>
     </tr>
     <tr>
-      <th>32080c6a-1f31-446f-a3d9-59759ac00ff4</th>
+      <th>887654e7-9a5e-4229-a2d9-52965ef3c764</th>
       <td>buildingAretailFloor0</td>
       <td>floor</td>
       <td>1123.715326</td>
       <td>1123.715326</td>
-      <td>3cf2bf71-61fa-4a61-b163-6265c299376d</td>
+      <td>218fd91a-d72c-4fb2-a82f-3882388659f9</td>
       <td>NaN</td>
       <td>0.3</td>
       <td>0.0</td>
     </tr>
     <tr>
-      <th>a1fc1a28-1133-47f2-a8d9-58da817946c2</th>
+      <th>b8992cc5-7cef-40a1-9b84-1b0bf7b33dcb</th>
       <td>buildingAofficeFloor1</td>
       <td>floor</td>
       <td>1650.842103</td>
       <td>1650.842103</td>
-      <td>bfc1c272-665f-432d-a7b3-a4c955556e7f</td>
+      <td>f746d0de-a8ab-491e-9d3f-875c62c87f53</td>
       <td>NaN</td>
       <td>5.3</td>
       <td>1.0</td>
     </tr>
     <tr>
-      <th>0296748a-317a-47eb-bf94-e5dbbd78afc1</th>
+      <th>db13e799-4efd-481c-ae1d-db47b6a7e997</th>
       <td>buildingAofficeFloor2</td>
       <td>floor</td>
       <td>1448.922008</td>
       <td>1448.922008</td>
-      <td>bfc1c272-665f-432d-a7b3-a4c955556e7f</td>
+      <td>f746d0de-a8ab-491e-9d3f-875c62c87f53</td>
       <td>NaN</td>
       <td>8.4</td>
       <td>2.0</td>
     </tr>
     <tr>
-      <th>74ed0525-d8f9-4f36-b20f-1b8a2baf60f2</th>
+      <th>7fd89991-3575-4f24-93c6-36a15deef8c1</th>
       <td>buildingAofficeFloor3</td>
       <td>floor</td>
       <td>1448.922008</td>
       <td>1448.922008</td>
-      <td>bfc1c272-665f-432d-a7b3-a4c955556e7f</td>
+      <td>f746d0de-a8ab-491e-9d3f-875c62c87f53</td>
       <td>NaN</td>
       <td>11.5</td>
       <td>3.0</td>
     </tr>
     <tr>
-      <th>ae0fb830-76df-4d91-82ed-4ed755fdec4b</th>
+      <th>3d738ff6-0132-407b-a157-bcdbddab3185</th>
       <td>buildingAofficeFloor4</td>
       <td>floor</td>
       <td>1448.922008</td>
       <td>1448.922008</td>
-      <td>bfc1c272-665f-432d-a7b3-a4c955556e7f</td>
+      <td>f746d0de-a8ab-491e-9d3f-875c62c87f53</td>
       <td>NaN</td>
       <td>14.6</td>
       <td>4.0</td>
     </tr>
     <tr>
-      <th>c1b696b1-cae0-49ed-a8ba-0e795438d3d2</th>
+      <th>a47cb204-0317-46bf-a023-000272671b88</th>
       <td>buildingAofficeFloor5</td>
       <td>floor</td>
       <td>1448.922008</td>
       <td>1448.922008</td>
-      <td>bfc1c272-665f-432d-a7b3-a4c955556e7f</td>
+      <td>f746d0de-a8ab-491e-9d3f-875c62c87f53</td>
       <td>NaN</td>
       <td>17.7</td>
       <td>5.0</td>
     </tr>
     <tr>
-      <th>add95b48-71c3-40e7-9f35-7db604f3f9f0</th>
+      <th>c1c1de38-f85c-4ea5-8a3c-c1b0809419a6</th>
       <td>buildingAofficeFloor6</td>
       <td>floor</td>
       <td>1448.922008</td>
       <td>1448.922008</td>
-      <td>bfc1c272-665f-432d-a7b3-a4c955556e7f</td>
+      <td>f746d0de-a8ab-491e-9d3f-875c62c87f53</td>
       <td>NaN</td>
       <td>20.8</td>
       <td>6.0</td>
     </tr>
     <tr>
-      <th>d8443e6d-9080-4154-89e3-29f0e98ed90a</th>
+      <th>a1d87916-6fe5-4199-b126-b0d576f80c48</th>
       <td>buildingAofficeFloor7</td>
       <td>floor</td>
       <td>1448.922008</td>
       <td>1448.922008</td>
-      <td>bfc1c272-665f-432d-a7b3-a4c955556e7f</td>
+      <td>f746d0de-a8ab-491e-9d3f-875c62c87f53</td>
       <td>NaN</td>
       <td>23.9</td>
       <td>7.0</td>
     </tr>
     <tr>
-      <th>f8945b4f-6f59-4c5a-a83f-462a97f2dcc4</th>
+      <th>ab0e1b85-def5-48b5-82d9-8f72f93eb0b3</th>
       <td>buildingAofficeFloor8</td>
       <td>floor</td>
       <td>1448.922008</td>
       <td>1448.922008</td>
-      <td>bfc1c272-665f-432d-a7b3-a4c955556e7f</td>
+      <td>f746d0de-a8ab-491e-9d3f-875c62c87f53</td>
       <td>NaN</td>
       <td>27.0</td>
       <td>8.0</td>
     </tr>
     <tr>
-      <th>b548b184-1643-4c23-9b14-9025aeda59c3</th>
+      <th>82aa4837-1b06-4df1-be65-c1f644d79704</th>
       <td>buildingAofficeFloor9</td>
       <td>floor</td>
       <td>1448.922008</td>
       <td>1448.922008</td>
-      <td>bfc1c272-665f-432d-a7b3-a4c955556e7f</td>
+      <td>f746d0de-a8ab-491e-9d3f-875c62c87f53</td>
       <td>NaN</td>
       <td>30.1</td>
       <td>9.0</td>
     </tr>
     <tr>
-      <th>e8048367-edd2-4a61-ae0f-fd878688c910</th>
+      <th>510e17fc-4933-4ec5-be97-a2a2b7f952b6</th>
       <td>buildingAofficeFloor10</td>
       <td>floor</td>
       <td>1448.922008</td>
       <td>1448.922008</td>
-      <td>bfc1c272-665f-432d-a7b3-a4c955556e7f</td>
+      <td>f746d0de-a8ab-491e-9d3f-875c62c87f53</td>
       <td>NaN</td>
       <td>33.2</td>
       <td>10.0</td>
@@ -1183,13 +1191,14 @@ a treemap:</p>
 <span class="n">treemap</span> <span class="o">=</span> <span class="n">spatial_containment</span><span class="o">.</span><span class="n">treemap</span><span class="p">(</span><span class="nb">property</span><span class="o">=</span><span class="s1">&#39;subtotal_gfa&#39;</span><span class="p">)</span>
 <span class="n">fig</span> <span class="o">=</span> <span class="n">plotly</span><span class="o">.</span><span class="n">subplots</span><span class="o">.</span><span class="n">make_subplots</span><span class="p">(</span>
     <span class="n">rows</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">specs</span><span class="o">=</span><span class="p">[[{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;sunburst&quot;</span><span class="p">}],</span> <span class="p">[{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;treemap&quot;</span><span class="p">}]])</span>
+    <span class="n">specs</span><span class="o">=</span><span class="p">[[{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;sunburst&quot;</span><span class="p">}],</span> <span class="p">[{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;treemap&quot;</span><span class="p">}]],</span>
+    <span class="n">subplot_titles</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;Gross Floor Area - Sunburst Plot&#39;</span><span class="p">,</span> <span class="s1">&#39;Gross Floor Area - Treemap Plot&#39;</span><span class="p">))</span>
 <span class="n">fig</span><span class="o">.</span><span class="n">append_trace</span><span class="p">(</span><span class="n">sunburst</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">fig</span><span class="o">.</span><span class="n">append_trace</span><span class="p">(</span><span class="n">treemap</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;spatial_containment_chart.html&#39;</span>
 
-<span class="n">py</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;assets/</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">),</span> <span class="n">auto_open</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">IFrame</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="s2">&quot;./</span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">),</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">fig</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
+<span class="n">py</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;assets/</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">auto_open</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">IFrame</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;./</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">fig</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -1211,13 +1220,13 @@ a treemap:</p>
 <p>A more complex aggregation involves collecting specific cash <code class="docutils literal notranslate"><span class="pre">Flow</span></code>s into
 <code class="docutils literal notranslate"><span class="pre">Stream</span></code>s per <code class="docutils literal notranslate"><span class="pre">Entity</span></code>/<code class="docutils literal notranslate"><span class="pre">Assembly</span></code>; for instance, we may want to aggregate all
 revenues generated by lettable floorspace into their respective parent <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s,
-in order to analyse or compare the performance of the scenario at different
+in order to analyse or compare the performance of the design at different
 resolutions.</p>
 <p>We start by identifying which <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s are ‘floor’ types and have an area
 measurement:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">floors</span> <span class="o">=</span> <span class="n">scenario</span><span class="o">.</span><span class="n">filter_by_type</span><span class="p">(</span><span class="n">entity_type</span><span class="o">=</span><span class="s1">&#39;floor&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">floors</span> <span class="o">=</span> <span class="nb">property</span><span class="o">.</span><span class="n">filter_by_type</span><span class="p">(</span><span class="n">entity_type</span><span class="o">=</span><span class="s1">&#39;floor&#39;</span><span class="p">)</span>
 <span class="n">floors</span> <span class="o">=</span> <span class="p">[</span><span class="n">floor</span> <span class="k">for</span> <span class="n">floor</span> <span class="ow">in</span> <span class="n">floors</span><span class="o">.</span><span class="n">get_entities</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">floor</span><span class="p">,</span> <span class="s1">&#39;gfa&#39;</span><span class="p">)]</span>
 </pre></div>
 </div>
@@ -1351,8 +1360,8 @@ area efficiency ratios, initial incomes per area, and growth rates:</p>
 </div>
 <section id="streams-of-revenue-flows-per-entity">
 <h5><code class="docutils literal notranslate"><span class="pre">Stream</span></code>s of Revenue <code class="docutils literal notranslate"><span class="pre">Flow</span></code>s per <code class="docutils literal notranslate"><span class="pre">Entity</span></code>:<a class="headerlink" href="#streams-of-revenue-flows-per-entity" title="Permalink to this heading">#</a></h5>
-<p>It is now simple to construct a set of cash flows per <code class="docutils literal notranslate"><span class="pre">Entity</span></code> in our design
-scenario. We will use a similar structure to the previous notebooks.</p>
+<p>We can now construct a set of cash flows per <code class="docutils literal notranslate"><span class="pre">Entity</span></code> in our design for our
+asset. We will use a similar structure to the previous notebooks.</p>
 <p>First we will define a general ‘Spans’ class that defines the time periods. This
 can be used by any subsequent calculations:</p>
 <div class="cell docutils container">
@@ -1446,19 +1455,11 @@ and run  the <code class="docutils literal notranslate"><span class="pre">init_s
     <span class="n">floor</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;pgi_growth_rate&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pgi_growth_rates</span><span class="p">[</span><span class="n">floor</span><span class="p">[</span><span class="s1">&#39;use&#39;</span><span class="p">]]</span>
     <span class="n">floor</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;vacancy_rate&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">vacancy_rates</span><span class="p">[</span><span class="n">floor</span><span class="p">[</span><span class="s1">&#39;use&#39;</span><span class="p">]]</span>
 
-    <span class="c1"># floor.events = {}</span>
-
     <span class="n">revenues</span> <span class="o">=</span> <span class="n">Revenues</span><span class="p">(</span><span class="n">floor</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="n">spans</span><span class="p">)</span>
     <span class="n">revenues</span><span class="o">.</span><span class="n">generate</span><span class="p">()</span>
-
     <span class="n">floor</span><span class="p">[</span><span class="s1">&#39;pgi&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">revenues</span><span class="o">.</span><span class="n">pgi</span>
     <span class="n">floor</span><span class="p">[</span><span class="s1">&#39;vacancy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">revenues</span><span class="o">.</span><span class="n">vacancy</span>
     <span class="n">floor</span><span class="p">[</span><span class="s1">&#39;egi&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">revenues</span><span class="o">.</span><span class="n">egi</span>
-    <span class="c1"># floor = {</span>
-    <span class="c1">#     &#39;pgi&#39;: revenues.pgi,</span>
-    <span class="c1">#     &#39;vacancy&#39;: revenues.vacancy,</span>
-    <span class="c1">#     &#39;egi&#39;: revenues.egi,</span>
-    <span class="c1">#     }</span>
 </pre></div>
 </div>
 </div>
@@ -1489,7 +1490,7 @@ properties, keyed by their respective <code class="docutils literal notranslate"
 parameter:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">spatial_containment</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">property</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span>
     <span class="n">function</span><span class="o">=</span><span class="n">aggregate_egis</span><span class="p">,</span>
     <span class="nb">property</span><span class="o">=</span><span class="s1">&#39;egi&#39;</span><span class="p">,</span>
     <span class="n">label</span><span class="o">=</span><span class="s1">&#39;subtotal_egi&#39;</span><span class="p">,</span>
@@ -1528,7 +1529,7 @@ office compartment in Building A:</p>
 </div>
 <div class="output text_html"><table>
 <thead>
-<tr><th style="text-align: right;">  date</th><th style="text-align: right;">  Effective Gross Income for a1fc1a28-1133-47f2-a8d9-58da817946c2 [buildingAofficeFloor1]</th><th style="text-align: right;">  Effective Gross Income for 0296748a-317a-47eb-bf94-e5dbbd78afc1 [buildingAofficeFloor2]</th><th style="text-align: right;">  Effective Gross Income for 74ed0525-d8f9-4f36-b20f-1b8a2baf60f2 [buildingAofficeFloor3]</th><th style="text-align: right;">  Effective Gross Income for ae0fb830-76df-4d91-82ed-4ed755fdec4b [buildingAofficeFloor4]</th><th style="text-align: right;">  Effective Gross Income for c1b696b1-cae0-49ed-a8ba-0e795438d3d2 [buildingAofficeFloor5]</th><th style="text-align: right;">  Effective Gross Income for add95b48-71c3-40e7-9f35-7db604f3f9f0 [buildingAofficeFloor6]</th><th style="text-align: right;">  Effective Gross Income for d8443e6d-9080-4154-89e3-29f0e98ed90a [buildingAofficeFloor7]</th><th style="text-align: right;">  Effective Gross Income for f8945b4f-6f59-4c5a-a83f-462a97f2dcc4 [buildingAofficeFloor8]</th><th style="text-align: right;">  Effective Gross Income for b548b184-1643-4c23-9b14-9025aeda59c3 [buildingAofficeFloor9]</th><th style="text-align: right;">  Effective Gross Income for e8048367-edd2-4a61-ae0f-fd878688c910 [buildingAofficeFloor10]</th></tr>
+<tr><th style="text-align: right;">  date</th><th style="text-align: right;">  Effective Gross Income for b8992cc5-7cef-40a1-9b84-1b0bf7b33dcb [buildingAofficeFloor1]</th><th style="text-align: right;">  Effective Gross Income for db13e799-4efd-481c-ae1d-db47b6a7e997 [buildingAofficeFloor2]</th><th style="text-align: right;">  Effective Gross Income for 7fd89991-3575-4f24-93c6-36a15deef8c1 [buildingAofficeFloor3]</th><th style="text-align: right;">  Effective Gross Income for 3d738ff6-0132-407b-a157-bcdbddab3185 [buildingAofficeFloor4]</th><th style="text-align: right;">  Effective Gross Income for a47cb204-0317-46bf-a023-000272671b88 [buildingAofficeFloor5]</th><th style="text-align: right;">  Effective Gross Income for c1c1de38-f85c-4ea5-8a3c-c1b0809419a6 [buildingAofficeFloor6]</th><th style="text-align: right;">  Effective Gross Income for a1d87916-6fe5-4199-b126-b0d576f80c48 [buildingAofficeFloor7]</th><th style="text-align: right;">  Effective Gross Income for ab0e1b85-def5-48b5-82d9-8f72f93eb0b3 [buildingAofficeFloor8]</th><th style="text-align: right;">  Effective Gross Income for 82aa4837-1b06-4df1-be65-c1f644d79704 [buildingAofficeFloor9]</th><th style="text-align: right;">  Effective Gross Income for 510e17fc-4933-4ec5-be97-a2a2b7f952b6 [buildingAofficeFloor10]</th></tr>
 </thead>
 <tbody>
 <tr><td style="text-align: right;">  2001</td><td style="text-align: right;">                                                                              $944,849.16</td><td style="text-align: right;">                                                                              $829,281.46</td><td style="text-align: right;">                                                                              $829,281.46</td><td style="text-align: right;">                                                                              $829,281.46</td><td style="text-align: right;">                                                                              $829,281.46</td><td style="text-align: right;">                                                                              $829,281.46</td><td style="text-align: right;">                                                                              $829,281.46</td><td style="text-align: right;">                                                                              $829,281.46</td><td style="text-align: right;">                                                                              $829,281.46</td><td style="text-align: right;">                                                                               $829,281.46</td></tr>
@@ -1555,7 +1556,7 @@ office compartment in Building A:</p>
 <div class="cell_output docutils container">
 <div class="output text_html"><table>
 <thead>
-<tr><th style="text-align: right;">               date</th><th style="text-align: right;">  Effective Gross Income for bfc1c272-665f-432d-a7b3-a4c955556e7f [buildingAoffice] Aggregation (sum)</th></tr>
+<tr><th style="text-align: right;">               date</th><th style="text-align: right;">  Effective Gross Income for f746d0de-a8ab-491e-9d3f-875c62c87f53 [buildingAoffice] Aggregation (sum)</th></tr>
 </thead>
 <tbody>
 <tr><td style="text-align: right;">2001-12-31 00:00:00</td><td style="text-align: right;">                                                                                        $8,408,382.26</td></tr>
@@ -1581,7 +1582,7 @@ office compartment in Building A:</p>
 <div class="cell_output docutils container">
 <div class="output text_html"><table>
 <thead>
-<tr><th style="text-align: right;">               date</th><th style="text-align: right;">  Effective Gross Income for bfc1c272-665f-432d-a7b3-a4c955556e7f [buildingAoffice] Aggregation (sum)</th></tr>
+<tr><th style="text-align: right;">               date</th><th style="text-align: right;">  Effective Gross Income for f746d0de-a8ab-491e-9d3f-875c62c87f53 [buildingAoffice] Aggregation (sum)</th></tr>
 </thead>
 <tbody>
 <tr><td style="text-align: right;">2011-12-31 00:00:00</td><td style="text-align: right;">                                                                                      $104,965,756.69</td></tr>
@@ -1589,7 +1590,7 @@ office compartment in Building A:</p>
 </table></div></div>
 </div>
 <p>The above subtotals the Effective Gross Income (EGI) for the office space of
-Building A over the period of the scenario.</p>
+Building A over the hold period of the asset.</p>
 <p>We can then do this for all <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s in the graph, and plot the results:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -1597,12 +1598,14 @@ Building A over the period of the scenario.</p>
 <span class="n">treemap</span> <span class="o">=</span> <span class="n">spatial_containment</span><span class="o">.</span><span class="n">treemap</span><span class="p">(</span><span class="nb">property</span><span class="o">=</span><span class="s1">&#39;subtotal_egi&#39;</span><span class="p">)</span>
 <span class="n">fig</span> <span class="o">=</span> <span class="n">plotly</span><span class="o">.</span><span class="n">subplots</span><span class="o">.</span><span class="n">make_subplots</span><span class="p">(</span>
     <span class="n">rows</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">specs</span><span class="o">=</span><span class="p">[[{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;sunburst&quot;</span><span class="p">}],</span> <span class="p">[{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;treemap&quot;</span><span class="p">}]])</span>
+    <span class="n">specs</span><span class="o">=</span><span class="p">[[{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;sunburst&quot;</span><span class="p">}],</span> <span class="p">[{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;treemap&quot;</span><span class="p">}]],</span>
+    <span class="n">subplot_titles</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;Effective Gross Income - Sunburst Plot&#39;</span><span class="p">,</span> <span class="s1">&#39;Effective Gross Income - Treemap Plot&#39;</span><span class="p">))</span>
 <span class="n">fig</span><span class="o">.</span><span class="n">append_trace</span><span class="p">(</span><span class="n">sunburst</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">fig</span><span class="o">.</span><span class="n">append_trace</span><span class="p">(</span><span class="n">treemap</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;aggregate_egis_chart.html&#39;</span>
-<span class="n">py</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;assets/</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">),</span> <span class="n">auto_open</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">IFrame</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="s2">&quot;./</span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">),</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">fig</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
+
+<span class="n">py</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;assets/</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">auto_open</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">IFrame</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;./</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">fig</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -1631,19 +1634,19 @@ rather than accuracy.</p>
 <p>For example, both operating and capital expenses may be attributed to building
 systems (e.g. maintenance, upgrading, &amp; replacement of MEP or facade
 componentry) that are not coincident with the floor space they are servicing.
-Ie, the convention to average (sub)total costs across (sub)total floor space may
-be misleading, especially when attempting to compare different scenarios at
+I.e., the convention to average (sub)total costs across (sub)total floor space
+may be misleading, especially when attempting to compare different scenarios at
 different resolutions (See <span id="id1">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span>, 5.4 Flaw of Averages).</p>
 <p>By virtue of <em>Rangekeeper</em>’s multi-faceted approach to its object model, costs
 can be attributed and aggregated to <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s that are not spatially coincident
-with the revenue-generating <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s; in the example design scenario, we will
+with the revenue-generating <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s; in the example design, we will
 use the ‘services’ relationship-type to register and aggregate some of these,
 while space-specific costs will be registered and aggregated via spatial
 containment:</p>
 <section id="operational-and-capital-expenses-of-building-utilities-systems">
 <h4>Operational and Capital Expenses of Building Utilities &amp; Systems<a class="headerlink" href="#operational-and-capital-expenses-of-building-utilities-systems" title="Permalink to this heading">#</a></h4>
 <p>Of course, in a simplified model and without knowing design and engineering
-details for the scenario, costs for operational and capital expenses will be
+details for the property, costs for operational and capital expenses will be
 calculated from some proportional rate of spatial characteristics of the
 building. In this example, we will use the following as simplifications of how
 these types of costs may be calculated. Note that this is more a demonstration
@@ -1658,8 +1661,8 @@ maintaining, repairing and upgrading elements on the floors themselves
 <li><p>‘Facade-derived’ Operational Expenses will be calculated as a function of the
 surface area of ‘building’ <code class="docutils literal notranslate"><span class="pre">Entity</span></code>. This would represent the cost of facade
 maintenance, repair or replacement.</p></li>
-<li><p>‘Utility-derived’ Capital Expenses will be calculated as a function of the</p></li>
-<li><p>volume of ‘utility’ <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s. This represents the cost of repairing and
+<li><p>‘Utility-derived’ Capital Expenses will be calculated as a function of the
+volume of ‘utility’ <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s. This represents the cost of repairing and
 upgrading the building’s MEP and transportation systems.</p></li>
 </ul>
 </section>
@@ -1672,7 +1675,7 @@ properties:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Aggregate Facade Areas:</span>
-<span class="k">for</span> <span class="p">(</span><span class="n">entityId</span><span class="p">,</span> <span class="n">entity</span><span class="p">)</span> <span class="ow">in</span> <span class="n">scenario</span><span class="o">.</span><span class="n">get_entities</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">entityId</span><span class="p">,</span> <span class="n">entity</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">property</span><span class="o">.</span><span class="n">get_entities</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">entity</span><span class="p">,</span> <span class="s1">&#39;perimeter&#39;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">entity</span><span class="p">,</span> <span class="s1">&#39;ftf&#39;</span><span class="p">):</span>
         <span class="n">entity</span><span class="p">[</span><span class="s1">&#39;facade_area&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">entity</span><span class="p">[</span><span class="s1">&#39;perimeter&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">entity</span><span class="p">[</span><span class="s1">&#39;ftf&#39;</span><span class="p">]</span>
 <span class="n">spatial_containment</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span>
@@ -1811,20 +1814,48 @@ as they will be applied to different <code class="docutils literal notranslate">
 </div>
 </div>
 </div>
+<p>The utilities are a bit different, as (for this example), their capex is a
+factor of their volume. We can see that the utilities are the cores and plant
+of the property:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">utilities</span> <span class="o">=</span> <span class="n">scenario</span><span class="o">.</span><span class="n">filter_by_type</span><span class="p">(</span><span class="n">entity_type</span><span class="o">=</span><span class="s1">&#39;utilities&#39;</span><span class="p">,</span> <span class="n">is_assembly</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">utilities</span><span class="o">.</span><span class="n">get_entities</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">utilities</span> <span class="o">=</span> <span class="nb">property</span><span class="o">.</span><span class="n">filter_by_type</span><span class="p">(</span><span class="n">entity_type</span><span class="o">=</span><span class="s1">&#39;utilities&#39;</span><span class="p">,</span> <span class="n">is_assembly</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;type&#39;</span>
+<span class="n">isolated_ids</span> <span class="o">=</span> <span class="p">[</span><span class="n">entity</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="n">utilities</span><span class="o">.</span><span class="n">get_entities</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;https://speckle.xyz/streams/</span><span class="si">{0}</span><span class="s1">/commits/</span><span class="si">{1}</span><span class="s1">?filter=</span><span class="si">{2}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+    <span class="n">stream_id</span><span class="p">,</span>
+    <span class="n">commit_id</span><span class="p">,</span>
+    <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span>
+        <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">propertyInfoKey</span> <span class="o">=</span> <span class="n">key</span><span class="p">,</span>
+            <span class="n">isolatedIds</span> <span class="o">=</span> <span class="n">isolated_ids</span><span class="p">))))</span>
+<span class="n">IFrame</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;71fd4551-8e65-4e7a-8e2a-9d18e69146b0&#39;: Entity: buildingBcores (Type: utilities),
- &#39;55963d84-702d-423d-be05-c8bb6e88f517&#39;: Entity: buildingAcores (Type: utilities),
- &#39;8d9f92cf-5613-4de4-b99b-7681aa76b4cd&#39;: Entity: plinthplant (Type: utilities)}
-</pre></div>
-</div>
-</div>
+<div class="output text_html">
+        <iframe
+            width="100%"
+            height="800"
+            src="https://speckle.xyz/streams/f5e306e3fa/commits/362b15db49?filter=%7B%22propertyInfoKey%22%3A%20%22type%22%2C%20%22isolatedIds%22%3A%20%5B%22ef003ad5f47731e7ce0c5f7a68d267d8%22%2C%20%2282a7bd365b9dfe78c0a77c901a8b9f81%22%2C%20%221ae737bcea2c78fa83ae2046ee7af6eb%22%5D%7D"
+            frameborder="0"
+            allowfullscreen
+            
+        ></iframe>
+        </div></div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -1862,8 +1893,8 @@ as they will be applied to different <code class="docutils literal notranslate">
 <tr><th style="text-align: right;">               date</th><th style="text-align: right;">  Utilities-derived Capital Expenses</th></tr>
 </thead>
 <tbody>
-<tr><td style="text-align: right;">2005-12-31 00:00:00</td><td style="text-align: right;">                        -$865,663.39</td></tr>
-<tr><td style="text-align: right;">2010-12-31 00:00:00</td><td style="text-align: right;">                        -$895,961.61</td></tr>
+<tr><td style="text-align: right;">2005-12-31 00:00:00</td><td style="text-align: right;">                        -$729,061.23</td></tr>
+<tr><td style="text-align: right;">2010-12-31 00:00:00</td><td style="text-align: right;">                        -$754,578.37</td></tr>
 </tbody>
 </table></div></div>
 </div>
@@ -1875,7 +1906,7 @@ as they will be applied to different <code class="docutils literal notranslate">
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Operational Expenses&#39;</span><span class="p">,</span>
         <span class="n">period_type</span><span class="o">=</span><span class="n">period_type</span><span class="p">)</span>
-<span class="n">scenario</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span>
+<span class="nb">property</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span>
     <span class="n">function</span><span class="o">=</span><span class="n">aggregate_opex</span><span class="p">,</span>
     <span class="nb">property</span><span class="o">=</span><span class="s1">&#39;opex&#39;</span><span class="p">,</span>
     <span class="n">label</span><span class="o">=</span><span class="s1">&#39;subtotal_opex&#39;</span><span class="p">,</span>
@@ -1891,7 +1922,7 @@ as they will be applied to different <code class="docutils literal notranslate">
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Capital Expenses&#39;</span><span class="p">,</span>
         <span class="n">period_type</span><span class="o">=</span><span class="n">period_type</span><span class="p">)</span>
-<span class="n">scenario</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span>
+<span class="nb">property</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span>
     <span class="n">function</span><span class="o">=</span><span class="n">aggregate_capex</span><span class="p">,</span>
     <span class="nb">property</span><span class="o">=</span><span class="s1">&#39;capex&#39;</span><span class="p">,</span>
     <span class="n">label</span><span class="o">=</span><span class="s1">&#39;subtotal_capex&#39;</span><span class="p">,</span>
@@ -1904,44 +1935,22 @@ as they will be applied to different <code class="docutils literal notranslate">
 totalling them at their root <code class="docutils literal notranslate"><span class="pre">Entity</span></code>:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">buildingB</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">scenario</span><span class="o">.</span><span class="n">get_entities</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="n">e</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;buildingB&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">buildingB</span><span class="p">[</span><span class="s1">&#39;subtotal_capex&#39;</span><span class="p">]</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_html"><table>
-<thead>
-<tr><th style="text-align: right;">  date</th><th style="text-align: right;">  Floor-derived Capital Expenses for c11f68da-0544-487b-9cb9-8a3a3a98a9b8 [buildingBresidentialFloor0]</th><th style="text-align: right;">  Floor-derived Capital Expenses for cfc3edf5-1e7d-4499-b25f-ee86ed013516 [buildingBresidentialFloor1]</th><th style="text-align: right;">  Floor-derived Capital Expenses for 3e158dd9-aa5d-47bb-bc13-4b3e6d328fe1 [buildingBresidentialFloor2]</th><th style="text-align: right;">  Floor-derived Capital Expenses for b8609a1e-b9f8-44a0-ab98-468ff247d753 [buildingBresidentialFloor3]</th><th style="text-align: right;">  Floor-derived Capital Expenses for f68d2f9b-13c5-42e2-9bca-1826f7eff481 [buildingBresidentialFloor4]</th><th style="text-align: right;">  Floor-derived Capital Expenses for ec086fbc-7b21-4958-b456-9bce6a883c98 [buildingBresidentialFloor5]</th><th style="text-align: right;">  Floor-derived Capital Expenses for 9ecaf92a-a90e-4572-a426-3ed392e0c28a [buildingBresidentialFloor6]</th><th style="text-align: right;">  Floor-derived Capital Expenses for 9a884f88-0627-4eb7-b1ec-80ea39b0a25b [buildingBresidentialFloor0]</th><th style="text-align: right;">  Floor-derived Capital Expenses for d7dd5233-b1c3-451f-ae90-5a80fed205bd [buildingBparkingFloor0]</th><th style="text-align: right;">  Floor-derived Capital Expenses for 4acebff3-f17b-44fb-ba29-6bc02053b329 [buildingBretailFloor0]</th><th style="text-align: right;">  Utilities-derived Capital Expenses for 71fd4551-8e65-4e7a-8e2a-9d18e69146b0 [buildingBcores]</th></tr>
-</thead>
-<tbody>
-<tr><td style="text-align: right;">  2005</td><td style="text-align: right;">                                                                                           -$57,445.62</td><td style="text-align: right;">                                                                                          -$177,079.20</td><td style="text-align: right;">                                                                                          -$177,079.20</td><td style="text-align: right;">                                                                                          -$151,196.70</td><td style="text-align: right;">                                                                                          -$151,196.70</td><td style="text-align: right;">                                                                                           -$65,626.12</td><td style="text-align: right;">                                                                                           -$65,626.12</td><td style="text-align: right;">                                                                                           -$12,955.58</td><td style="text-align: right;">                                                                                       -$58,908.24</td><td style="text-align: right;">                                                                                     -$122,397.52</td><td style="text-align: right;">                                                                                  -$865,663.39</td></tr>
-<tr><td style="text-align: right;">  2006</td><td style="text-align: right;">                                                                                                 $0.00</td><td style="text-align: right;">                                                                                                 $0.00</td><td style="text-align: right;">                                                                                                 $0.00</td><td style="text-align: right;">                                                                                                 $0.00</td><td style="text-align: right;">                                                                                                 $0.00</td><td style="text-align: right;">                                                                                                 $0.00</td><td style="text-align: right;">                                                                                                 $0.00</td><td style="text-align: right;">                                                                                                 $0.00</td><td style="text-align: right;">                                                                                             $0.00</td><td style="text-align: right;">                                                                                            $0.00</td><td style="text-align: right;">                                                                                         $0.00</td></tr>
-<tr><td style="text-align: right;">  2007</td><td style="text-align: right;">                                                                                                 $0.00</td><td style="text-align: right;">                                                                                                 $0.00</td><td style="text-align: right;">                                                                                                 $0.00</td><td style="text-align: right;">                                                                                                 $0.00</td><td style="text-align: right;">                                                                                                 $0.00</td><td style="text-align: right;">                                                                                                 $0.00</td><td style="text-align: right;">                                                                                                 $0.00</td><td style="text-align: right;">                                                                                                 $0.00</td><td style="text-align: right;">                                                                                             $0.00</td><td style="text-align: right;">                                                                                            $0.00</td><td style="text-align: right;">                                                                                         $0.00</td></tr>
-<tr><td style="text-align: right;">  2008</td><td style="text-align: right;">                                                                                                 $0.00</td><td style="text-align: right;">                                                                                                 $0.00</td><td style="text-align: right;">                                                                                                 $0.00</td><td style="text-align: right;">                                                                                                 $0.00</td><td style="text-align: right;">                                                                                                 $0.00</td><td style="text-align: right;">                                                                                                 $0.00</td><td style="text-align: right;">                                                                                                 $0.00</td><td style="text-align: right;">                                                                                                 $0.00</td><td style="text-align: right;">                                                                                             $0.00</td><td style="text-align: right;">                                                                                            $0.00</td><td style="text-align: right;">                                                                                         $0.00</td></tr>
-<tr><td style="text-align: right;">  2009</td><td style="text-align: right;">                                                                                                 $0.00</td><td style="text-align: right;">                                                                                                 $0.00</td><td style="text-align: right;">                                                                                                 $0.00</td><td style="text-align: right;">                                                                                                 $0.00</td><td style="text-align: right;">                                                                                                 $0.00</td><td style="text-align: right;">                                                                                                 $0.00</td><td style="text-align: right;">                                                                                                 $0.00</td><td style="text-align: right;">                                                                                                 $0.00</td><td style="text-align: right;">                                                                                             $0.00</td><td style="text-align: right;">                                                                                            $0.00</td><td style="text-align: right;">                                                                                         $0.00</td></tr>
-<tr><td style="text-align: right;">  2010</td><td style="text-align: right;">                                                                                           -$59,456.22</td><td style="text-align: right;">                                                                                          -$183,276.97</td><td style="text-align: right;">                                                                                          -$183,276.97</td><td style="text-align: right;">                                                                                          -$156,488.59</td><td style="text-align: right;">                                                                                          -$156,488.59</td><td style="text-align: right;">                                                                                           -$67,923.03</td><td style="text-align: right;">                                                                                           -$67,923.03</td><td style="text-align: right;">                                                                                           -$13,409.02</td><td style="text-align: right;">                                                                                       -$60,970.03</td><td style="text-align: right;">                                                                                     -$126,681.43</td><td style="text-align: right;">                                                                                  -$895,961.61</td></tr>
-</tbody>
-</table></div></div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">scenario_opex</span> <span class="o">=</span> <span class="n">scenario</span><span class="o">.</span><span class="n">get_roots</span><span class="p">()[</span><span class="s1">&#39;spatiallyContains&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;subtotal_opex&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-<span class="n">scenario_capex</span> <span class="o">=</span> <span class="n">scenario</span><span class="o">.</span><span class="n">get_roots</span><span class="p">()[</span><span class="s1">&#39;spatiallyContains&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;subtotal_capex&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">property_opex</span> <span class="o">=</span> <span class="nb">property</span><span class="o">.</span><span class="n">get_roots</span><span class="p">()[</span><span class="s1">&#39;spatiallyContains&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;subtotal_opex&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<span class="n">property_capex</span> <span class="o">=</span> <span class="nb">property</span><span class="o">.</span><span class="n">get_roots</span><span class="p">()[</span><span class="s1">&#39;spatiallyContains&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;subtotal_capex&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Scenario OPEX: $</span><span class="si">{:,.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">scenario_opex</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">mean</span><span class="p">()))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Scenario CAPEX: $</span><span class="si">{:,.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">scenario_capex</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">mean</span><span class="p">()))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Property Average Periodic OPEX: $</span><span class="si">{:,.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">property_opex</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">mean</span><span class="p">()))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Property Average Periodic CAPEX: $</span><span class="si">{:,.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">property_capex</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">mean</span><span class="p">()))</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Scenario OPEX: $-7,655,727.08
-Scenario CAPEX: $-2,134,823.79
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Property Average Periodic OPEX: $-7,655,727.08
+Property Average Periodic CAPEX: $-2,134,823.79
 </pre></div>
 </div>
 </div>
@@ -1969,16 +1978,16 @@ to the PGI. First let’s aggregate the PGI for all <code class="docutils litera
 </div>
 </div>
 </div>
-<p>+And total it to the root <code class="docutils literal notranslate"><span class="pre">Entity</span></code>:</p>
+<p>And total it to the root <code class="docutils literal notranslate"><span class="pre">Entity</span></code>:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">scenario_pgi</span> <span class="o">=</span> <span class="n">scenario</span><span class="o">.</span><span class="n">get_roots</span><span class="p">()[</span><span class="s1">&#39;spatiallyContains&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;subtotal_pgi&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Scenario PGI: $</span><span class="si">{:,.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">scenario_pgi</span><span class="o">.</span><span class="n">movements</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">property_pgi</span> <span class="o">=</span> <span class="nb">property</span><span class="o">.</span><span class="n">get_roots</span><span class="p">()[</span><span class="s1">&#39;spatiallyContains&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;subtotal_pgi&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Property Average Periodic PGI: $</span><span class="si">{:,.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">property_pgi</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">mean</span><span class="p">()))</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Scenario PGI: $16,942,743.44
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Property Average Periodic PGI: $20,973,469.58
 </pre></div>
 </div>
 </div>
@@ -1986,40 +1995,47 @@ to the PGI. First let’s aggregate the PGI for all <code class="docutils litera
 <p>Now we can calculate the Expenses ratios:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Scenario OpEx as proportion of PGI: </span><span class="si">{:.2%}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">-</span><span class="n">scenario_opex</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">/</span> <span class="n">scenario_pgi</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">mean</span><span class="p">()))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Property OpEx as proportion of PGI: </span><span class="si">{:.2%}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">-</span><span class="n">property_opex</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">/</span> <span class="n">property_pgi</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">mean</span><span class="p">()))</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Scenario OpEx as proportion of PGI: 36.50%
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Property OpEx as proportion of PGI: 36.50%
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Scenario CapEx as proportion of PGI: </span><span class="si">{:.2%}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">-</span><span class="n">scenario_capex</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">/</span> <span class="n">scenario_pgi</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">mean</span><span class="p">()))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Property CapEx as proportion of PGI: </span><span class="si">{:.2%}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">-</span><span class="n">property_capex</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">/</span> <span class="n">property_pgi</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">mean</span><span class="p">()))</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Scenario CapEx as proportion of PGI: 10.18%
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Property CapEx as proportion of PGI: 10.18%
 </pre></div>
 </div>
 </div>
 </div>
+<p>Looking at just the cost-producing <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s, we can see that in the OpEx and
+CapEx breakdowns, there is a significant amount of cost generated by non-floor
+(i.e., non-revenue-generating) <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s, like cores and plant. This type of
+analysis is important in understanding the cost drivers of a property, and
+where the most effective cost-saving measures could be applied.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">opex</span> <span class="o">=</span> <span class="n">spatial_containment</span><span class="o">.</span><span class="n">sunburst</span><span class="p">(</span><span class="nb">property</span><span class="o">=</span><span class="s1">&#39;subtotal_opex&#39;</span><span class="p">)</span>
 <span class="n">capex</span> <span class="o">=</span> <span class="n">spatial_containment</span><span class="o">.</span><span class="n">sunburst</span><span class="p">(</span><span class="nb">property</span><span class="o">=</span><span class="s1">&#39;subtotal_capex&#39;</span><span class="p">)</span>
 <span class="n">fig</span> <span class="o">=</span> <span class="n">plotly</span><span class="o">.</span><span class="n">subplots</span><span class="o">.</span><span class="n">make_subplots</span><span class="p">(</span>
     <span class="n">rows</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">specs</span><span class="o">=</span><span class="p">[[{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;sunburst&quot;</span><span class="p">}],</span> <span class="p">[{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;sunburst&quot;</span><span class="p">}]])</span>
+    <span class="n">specs</span><span class="o">=</span><span class="p">[[{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;sunburst&quot;</span><span class="p">}],</span> <span class="p">[{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;sunburst&quot;</span><span class="p">}]],</span>
+    <span class="n">subplot_titles</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;Total Operational Expenses&#39;</span><span class="p">,</span> <span class="s1">&#39;Total Capital Expenses&#39;</span><span class="p">))</span>
 <span class="n">fig</span><span class="o">.</span><span class="n">append_trace</span><span class="p">(</span><span class="n">opex</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">fig</span><span class="o">.</span><span class="n">append_trace</span><span class="p">(</span><span class="n">capex</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;aggregate_exp_chart.html&#39;</span>
-<span class="n">py</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;assets/</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">),</span> <span class="n">auto_open</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">IFrame</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="s2">&quot;./</span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">),</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">fig</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
+
+<span class="n">py</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;assets/</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">auto_open</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">IFrame</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;./</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">fig</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -2035,22 +2051,50 @@ to the PGI. First let’s aggregate the PGI for all <code class="docutils litera
         ></iframe>
         </div></div>
 </div>
+</section>
+</section>
+</section>
+<section id="calculating-overall-valuation">
+<h2>Calculating Overall Valuation<a class="headerlink" href="#calculating-overall-valuation" title="Permalink to this heading">#</a></h2>
+<p>Now that we have our revenues and cost line items (<code class="docutils literal notranslate"><span class="pre">Flow</span></code>s) generated per
+<code class="docutils literal notranslate"><span class="pre">Entity</span></code>, we can accumulate them into Net Operating Income (NOI) and
+Net Annual Cashflow (NACF) subtotals, as well as the reversion (disposition, or
+sale) of the whole asset, in order to determine the overall valuation of the
+property.</p>
 <p>We can also calculate the net position of each <code class="docutils literal notranslate"><span class="pre">Entity</span></code> as its ‘Net Annual
 Cashflow (NACF)’:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="n">scenario</span><span class="o">.</span><span class="n">get_entities</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-    <span class="n">flows</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">flows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">entity</span><span class="p">,</span> <span class="s1">&#39;egi&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
-    <span class="n">flows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">entity</span><span class="p">,</span> <span class="s1">&#39;opex&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
-    <span class="n">flows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">entity</span><span class="p">,</span> <span class="s1">&#39;capex&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
-    <span class="n">flows</span> <span class="o">=</span> <span class="p">[</span><span class="n">flow</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">flow</span><span class="p">,</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">)</span> <span class="k">else</span> <span class="n">flow</span> <span class="k">for</span> <span class="n">flow</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">flows</span><span class="p">))]</span>
-
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">flows</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">entity</span><span class="p">[</span><span class="s1">&#39;nacf&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Net Annual Cashflow&#39;</span><span class="p">,</span>
-            <span class="n">flows</span><span class="o">=</span><span class="n">flows</span><span class="p">,</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="nb">property</span><span class="o">.</span><span class="n">get_entities</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+    <span class="n">noi</span> <span class="o">=</span> <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="n">entity</span><span class="p">,</span> <span class="s1">&#39;egi&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">entity</span><span class="p">,</span> <span class="s1">&#39;opex&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)]</span>
+    <span class="n">noi</span> <span class="o">=</span> <span class="p">[</span><span class="n">flow</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">flow</span><span class="p">,</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">)</span> <span class="k">else</span> <span class="n">flow</span> <span class="k">for</span> <span class="n">flow</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">noi</span><span class="p">))]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">noi</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">entity</span><span class="p">[</span><span class="s1">&#39;noi&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Net Operating Income&#39;</span><span class="p">,</span>
+            <span class="n">flows</span><span class="o">=</span><span class="n">noi</span><span class="p">,</span>
             <span class="n">period_type</span><span class="o">=</span><span class="n">period_type</span><span class="p">)</span>
+        <span class="n">capex</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">entity</span><span class="p">,</span> <span class="s1">&#39;capex&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">capex</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">entity</span><span class="p">[</span><span class="s1">&#39;nacf&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Net Annual Cashflow&#39;</span><span class="p">,</span>
+                <span class="n">flows</span><span class="o">=</span><span class="n">entity</span><span class="p">[</span><span class="s1">&#39;noi&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">flows</span> <span class="o">+</span> <span class="p">[</span><span class="n">capex</span><span class="p">],</span>
+                <span class="n">period_type</span><span class="o">=</span><span class="n">period_type</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">aggregate_noi</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">rk</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">Entity</span><span class="o">.</span><span class="n">aggregate_flows</span><span class="p">(</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Net Operating Income&#39;</span><span class="p">,</span>
+        <span class="n">period_type</span><span class="o">=</span><span class="n">period_type</span><span class="p">)</span>
+<span class="nb">property</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span>
+    <span class="n">function</span><span class="o">=</span><span class="n">aggregate_noi</span><span class="p">,</span>
+    <span class="nb">property</span><span class="o">=</span><span class="s1">&#39;noi&#39;</span><span class="p">,</span>
+    <span class="n">label</span><span class="o">=</span><span class="s1">&#39;subtotal_noi&#39;</span><span class="p">,</span>
+    <span class="n">relationship_type</span><span class="o">=</span><span class="s1">&#39;spatiallyContains&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -2062,8 +2106,8 @@ Cashflow (NACF)’:</p>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Net Annual Cashflow&#39;</span><span class="p">,</span>
         <span class="n">period_type</span><span class="o">=</span><span class="n">period_type</span><span class="p">)</span>
-<span class="n">scenario</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span>
-    <span class="n">function</span><span class="o">=</span><span class="n">aggregate_opex</span><span class="p">,</span>
+<span class="nb">property</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span>
+    <span class="n">function</span><span class="o">=</span><span class="n">aggregate_nacf</span><span class="p">,</span>
     <span class="nb">property</span><span class="o">=</span><span class="s1">&#39;nacf&#39;</span><span class="p">,</span>
     <span class="n">label</span><span class="o">=</span><span class="s1">&#39;subtotal_nacf&#39;</span><span class="p">,</span>
     <span class="n">relationship_type</span><span class="o">=</span><span class="s1">&#39;spatiallyContains&#39;</span><span class="p">)</span>
@@ -2071,20 +2115,172 @@ Cashflow (NACF)’:</p>
 </div>
 </div>
 </div>
+<section id="reversion">
+<h3>Reversion<a class="headerlink" href="#reversion" title="Permalink to this heading">#</a></h3>
+<p>To calculate the reversion cashflow, we set up a period that spans the 10th year
+of the project. This only applies to the asset as a whole, so it is recorded
+at the root <code class="docutils literal notranslate"><span class="pre">Entity</span></code>:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">scenario_nacf</span> <span class="o">=</span> <span class="n">scenario</span><span class="o">.</span><span class="n">get_roots</span><span class="p">()[</span><span class="s1">&#39;spatiallyContains&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;subtotal_nacf&#39;</span><span class="p">]</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Scenario NACF: $</span><span class="si">{:,.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">scenario_nacf</span><span class="o">.</span><span class="n">total</span><span class="p">()))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">root</span> <span class="o">=</span> <span class="nb">property</span><span class="o">.</span><span class="n">get_roots</span><span class="p">()[</span><span class="s1">&#39;spatiallyContains&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">reversion_span</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">span</span><span class="o">.</span><span class="n">Span</span><span class="o">.</span><span class="n">from_num_periods</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Reversion&#39;</span><span class="p">,</span>
+    <span class="n">date</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;start_date&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">pd</span><span class="o">.</span><span class="n">DateOffset</span><span class="p">(</span><span class="n">years</span><span class="o">=</span><span class="mi">9</span><span class="p">),</span>
+    <span class="n">period_type</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">],</span>
+    <span class="n">num_periods</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">exit_caprate</span> <span class="o">=</span> <span class="mf">0.05</span>
+<span class="n">reversion_flow</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="o">.</span><span class="n">from_projection</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Reversion&#39;</span><span class="p">,</span>
+    <span class="n">value</span><span class="o">=</span><span class="n">root</span><span class="p">[</span><span class="s1">&#39;subtotal_nacf&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">exit_caprate</span><span class="p">,</span>
+    <span class="n">proj</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">projection</span><span class="o">.</span><span class="n">Distribution</span><span class="p">(</span>
+        <span class="n">form</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Uniform</span><span class="p">(),</span>
+        <span class="n">sequence</span><span class="o">=</span><span class="n">reversion_span</span><span class="o">.</span><span class="n">to_index</span><span class="p">(</span><span class="n">period_type</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">])),</span>
+    <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
+<span class="n">root</span><span class="p">[</span><span class="s1">&#39;reversion&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reversion_flow</span>
+<span class="n">reversion_flow</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Scenario NACF: $109,837,612.44
+<div class="output text_html"><table>
+<thead>
+<tr><th style="text-align: right;">               date</th><th style="text-align: right;">      Reversion</th></tr>
+</thead>
+<tbody>
+<tr><td style="text-align: right;">2010-12-31 00:00:00</td><td style="text-align: right;">$275,897,434.55</td></tr>
+</tbody>
+</table></div></div>
+</div>
+<p>Now we can aggregate the net and reversion cashflows in the root <code class="docutils literal notranslate"><span class="pre">Entity</span></code> in
+order to derive the project’s complete cashflows:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">net_cashflows_with_reversion</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Net Cashflow with Reversion&#39;</span><span class="p">,</span>
+    <span class="n">flows</span><span class="o">=</span><span class="p">[</span><span class="n">root</span><span class="p">[</span><span class="s1">&#39;subtotal_nacf&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">root</span><span class="p">[</span><span class="s1">&#39;reversion&#39;</span><span class="p">]],</span>
+    <span class="n">period_type</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">periodicity</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span><span class="p">)</span><span class="o">.</span><span class="n">trim_to_span</span><span class="p">(</span>
+    <span class="n">rk</span><span class="o">.</span><span class="n">span</span><span class="o">.</span><span class="n">Span</span><span class="p">(</span>
+        <span class="n">start_date</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;start_date&#39;</span><span class="p">],</span>
+        <span class="n">end_date</span><span class="o">=</span><span class="n">reversion_span</span><span class="o">.</span><span class="n">end_date</span><span class="p">)</span>
+    <span class="p">)</span>
+<span class="n">root</span><span class="p">[</span><span class="s1">&#39;nacf_reversion&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">net_cashflows_with_reversion</span>
+<span class="n">net_cashflows_with_reversion</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><table>
+<thead>
+<tr><th style="text-align: right;">  date</th><th style="text-align: right;">  Net Annual Cashflow for 4fd8cf16-d01f-4d1e-964b-87942232e857 [property] Aggregation (sum)</th><th style="text-align: right;">      Reversion</th></tr>
+</thead>
+<tbody>
+<tr><td style="text-align: right;">  2001</td><td style="text-align: right;">                                                                              $8,894,347.95</td><td style="text-align: right;">              0</td></tr>
+<tr><td style="text-align: right;">  2002</td><td style="text-align: right;">                                                                              $9,276,145.32</td><td style="text-align: right;">              0</td></tr>
+<tr><td style="text-align: right;">  2003</td><td style="text-align: right;">                                                                              $9,678,373.39</td><td style="text-align: right;">              0</td></tr>
+<tr><td style="text-align: right;">  2004</td><td style="text-align: right;">                                                                             $10,102,249.12</td><td style="text-align: right;">              0</td></tr>
+<tr><td style="text-align: right;">  2005</td><td style="text-align: right;">                                                                              $6,932,792.13</td><td style="text-align: right;">              0</td></tr>
+<tr><td style="text-align: right;">  2006</td><td style="text-align: right;">                                                                             $11,020,193.91</td><td style="text-align: right;">              0</td></tr>
+<tr><td style="text-align: right;">  2007</td><td style="text-align: right;">                                                                             $11,517,093.98</td><td style="text-align: right;">              0</td></tr>
+<tr><td style="text-align: right;">  2008</td><td style="text-align: right;">                                                                             $12,041,314.24</td><td style="text-align: right;">              0</td></tr>
+<tr><td style="text-align: right;">  2009</td><td style="text-align: right;">                                                                             $12,594,500.24</td><td style="text-align: right;">              0</td></tr>
+<tr><td style="text-align: right;">  2010</td><td style="text-align: right;">                                                                              $9,435,557.80</td><td style="text-align: right;">$275,897,434.55</td></tr>
+</tbody>
+</table></div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">table</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Table 1.1&#39;</span><span class="p">,</span>
+    <span class="n">flows</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">root</span><span class="p">[</span><span class="s1">&#39;subtotal_egi&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span>
+        <span class="n">root</span><span class="p">[</span><span class="s1">&#39;subtotal_opex&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span>
+        <span class="n">root</span><span class="p">[</span><span class="s1">&#39;subtotal_noi&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span>
+        <span class="n">root</span><span class="p">[</span><span class="s1">&#39;subtotal_capex&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span>
+        <span class="n">root</span><span class="p">[</span><span class="s1">&#39;subtotal_nacf&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span>
+        <span class="n">root</span><span class="p">[</span><span class="s1">&#39;reversion&#39;</span><span class="p">],</span>
+        <span class="n">root</span><span class="p">[</span><span class="s1">&#39;nacf_reversion&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="p">],</span>
+    <span class="n">period_type</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">periodicity</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span>
+    <span class="p">)</span>
+<span class="n">table</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><table>
+<thead>
+<tr><th style="text-align: right;">  date</th><th style="text-align: right;">  Effective Gross Income for 4fd8cf16-d01f-4d1e-964b-87942232e857 [property] Aggregation (sum)</th><th style="text-align: right;">  Operational Expenses for 4fd8cf16-d01f-4d1e-964b-87942232e857 [property] Aggregation (sum)</th><th style="text-align: right;">  Net Operating Income for 4fd8cf16-d01f-4d1e-964b-87942232e857 [property] Aggregation (sum)</th><th style="text-align: right;">  Capital Expenses for 4fd8cf16-d01f-4d1e-964b-87942232e857 [property] Aggregation (sum)</th><th style="text-align: right;">  Net Annual Cashflow for 4fd8cf16-d01f-4d1e-964b-87942232e857 [property] Aggregation (sum)</th><th style="text-align: right;">      Reversion</th><th style="text-align: right;">  Net Cashflow with Reversion (sum)</th></tr>
+</thead>
+<tbody>
+<tr><td style="text-align: right;">  2001</td><td style="text-align: right;">                                                                                $15,302,280.51</td><td style="text-align: right;">                                                                              -$6,407,932.55</td><td style="text-align: right;">                                                                               $8,894,347.95</td><td style="text-align: right;">                                                                                       0</td><td style="text-align: right;">                                                                              $8,894,347.95</td><td style="text-align: right;">              0</td><td style="text-align: right;">                      $8,894,347.95</td></tr>
+<tr><td style="text-align: right;">  2002</td><td style="text-align: right;">                                                                                $15,908,355.51</td><td style="text-align: right;">                                                                              -$6,632,210.19</td><td style="text-align: right;">                                                                               $9,276,145.32</td><td style="text-align: right;">                                                                                       0</td><td style="text-align: right;">                                                                              $9,276,145.32</td><td style="text-align: right;">              0</td><td style="text-align: right;">                      $9,276,145.32</td></tr>
+<tr><td style="text-align: right;">  2003</td><td style="text-align: right;">                                                                                $16,542,710.94</td><td style="text-align: right;">                                                                              -$6,864,337.55</td><td style="text-align: right;">                                                                               $9,678,373.39</td><td style="text-align: right;">                                                                                       0</td><td style="text-align: right;">                                                                              $9,678,373.39</td><td style="text-align: right;">              0</td><td style="text-align: right;">                      $9,678,373.39</td></tr>
+<tr><td style="text-align: right;">  2004</td><td style="text-align: right;">                                                                                $17,206,838.49</td><td style="text-align: right;">                                                                              -$7,104,589.37</td><td style="text-align: right;">                                                                              $10,102,249.12</td><td style="text-align: right;">                                                                                       0</td><td style="text-align: right;">                                                                             $10,102,249.12</td><td style="text-align: right;">              0</td><td style="text-align: right;">                     $10,102,249.12</td></tr>
+<tr><td style="text-align: right;">  2005</td><td style="text-align: right;">                                                                                $17,902,315.02</td><td style="text-align: right;">                                                                              -$7,353,249.99</td><td style="text-align: right;">                                                                              $10,549,065.03</td><td style="text-align: right;">                                                                          -$6,294,320.75</td><td style="text-align: right;">                                                                              $6,932,792.13</td><td style="text-align: right;">              0</td><td style="text-align: right;">                      $6,932,792.13</td></tr>
+<tr><td style="text-align: right;">  2006</td><td style="text-align: right;">                                                                                $18,630,807.66</td><td style="text-align: right;">                                                                              -$7,610,613.74</td><td style="text-align: right;">                                                                              $11,020,193.91</td><td style="text-align: right;">                                                                                   $0.00</td><td style="text-align: right;">                                                                             $11,020,193.91</td><td style="text-align: right;">              0</td><td style="text-align: right;">                     $11,020,193.91</td></tr>
+<tr><td style="text-align: right;">  2007</td><td style="text-align: right;">                                                                                $19,394,079.21</td><td style="text-align: right;">                                                                              -$7,876,985.22</td><td style="text-align: right;">                                                                              $11,517,093.98</td><td style="text-align: right;">                                                                                   $0.00</td><td style="text-align: right;">                                                                             $11,517,093.98</td><td style="text-align: right;">              0</td><td style="text-align: right;">                     $11,517,093.98</td></tr>
+<tr><td style="text-align: right;">  2008</td><td style="text-align: right;">                                                                                $20,193,993.94</td><td style="text-align: right;">                                                                              -$8,152,679.71</td><td style="text-align: right;">                                                                              $12,041,314.24</td><td style="text-align: right;">                                                                                   $0.00</td><td style="text-align: right;">                                                                             $12,041,314.24</td><td style="text-align: right;">              0</td><td style="text-align: right;">                     $12,041,314.24</td></tr>
+<tr><td style="text-align: right;">  2009</td><td style="text-align: right;">                                                                                $21,032,523.74</td><td style="text-align: right;">                                                                              -$8,438,023.50</td><td style="text-align: right;">                                                                              $12,594,500.24</td><td style="text-align: right;">                                                                                   $0.00</td><td style="text-align: right;">                                                                             $12,594,500.24</td><td style="text-align: right;">              0</td><td style="text-align: right;">                     $12,594,500.24</td></tr>
+<tr><td style="text-align: right;">  2010</td><td style="text-align: right;">                                                                                $21,911,754.57</td><td style="text-align: right;">                                                                              -$8,733,354.32</td><td style="text-align: right;">                                                                              $13,178,400.25</td><td style="text-align: right;">                                                                          -$6,514,621.98</td><td style="text-align: right;">                                                                              $9,435,557.80</td><td style="text-align: right;">$275,897,434.55</td><td style="text-align: right;">                    $285,332,992.35</td></tr>
+<tr><td style="text-align: right;">  2011</td><td style="text-align: right;">                                                                                $22,833,893.45</td><td style="text-align: right;">                                                                              -$9,039,021.72</td><td style="text-align: right;">                                                                              $13,794,871.73</td><td style="text-align: right;">                                                                                       0</td><td style="text-align: right;">                                                                             $13,794,871.73</td><td style="text-align: right;">              0</td><td style="text-align: right;">                                  0</td></tr>
+</tbody>
+</table></div></div>
+</div>
+</section>
+<section id="valuation">
+<h3>Valuation<a class="headerlink" href="#valuation" title="Permalink to this heading">#</a></h3>
+<p>With our net cashflows including reversion, if we specify a discount rate, we
+can calculate the present value of the property:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">discount_rate</span> <span class="o">=</span> <span class="mf">0.07</span>
+<span class="n">pvs</span> <span class="o">=</span> <span class="n">root</span><span class="p">[</span><span class="s1">&#39;nacf_reversion&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">pv</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Present Value&#39;</span><span class="p">,</span>
+    <span class="n">period_type</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">periodicity</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span><span class="p">,</span>
+    <span class="n">discount_rate</span><span class="o">=</span><span class="n">discount_rate</span><span class="p">)</span>
+<span class="n">pvs</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><table>
+<thead>
+<tr><th style="text-align: right;">               date</th><th style="text-align: right;">  Present Value</th></tr>
+</thead>
+<tbody>
+<tr><td style="text-align: right;">2001-12-31 00:00:00</td><td style="text-align: right;">  $8,312,474.72</td></tr>
+<tr><td style="text-align: right;">2002-12-31 00:00:00</td><td style="text-align: right;">  $8,102,144.57</td></tr>
+<tr><td style="text-align: right;">2003-12-31 00:00:00</td><td style="text-align: right;">  $7,900,435.65</td></tr>
+<tr><td style="text-align: right;">2004-12-31 00:00:00</td><td style="text-align: right;">  $7,706,957.49</td></tr>
+<tr><td style="text-align: right;">2005-12-31 00:00:00</td><td style="text-align: right;">  $4,942,984.97</td></tr>
+<tr><td style="text-align: right;">2006-12-31 00:00:00</td><td style="text-align: right;">  $7,343,220.52</td></tr>
+<tr><td style="text-align: right;">2007-12-31 00:00:00</td><td style="text-align: right;">  $7,172,267.30</td></tr>
+<tr><td style="text-align: right;">2008-12-31 00:00:00</td><td style="text-align: right;">  $7,008,154.52</td></tr>
+<tr><td style="text-align: right;">2009-12-31 00:00:00</td><td style="text-align: right;">  $6,850,573.65</td></tr>
+<tr><td style="text-align: right;">2010-12-31 00:00:00</td><td style="text-align: right;">$145,048,824.68</td></tr>
+</tbody>
+</table></div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">property_pv</span> <span class="o">=</span> <span class="n">pvs</span><span class="o">.</span><span class="n">collapse</span><span class="p">()</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Property PV: $</span><span class="si">{:,.0f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">property_pv</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Property PV: $210,388,038
 </pre></div>
 </div>
 </div>
 </div>
-</section>
 </section>
 </section>
 </section>
@@ -2121,12 +2317,12 @@ Cashflow (NACF)’:</p>
     <div class="footer-article-item"><!-- Previous / next buttons -->
 <div class="prev-next-area">
     <a class="left-prev"
-       href="load_design_scenario.html"
+       href="load_design.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Loading a Design Scenario</p>
+        <p class="prev-next-title">Loading a Design</p>
       </div>
     </a>
 </div></div>
@@ -2147,7 +2343,7 @@ Cashflow (NACF)’:</p>
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#load-the-design-scenario">Load the Design Scenario</a><ul class="nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#load-the-design">Load the Design</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inspect-the-model-graph">Inspect the Model Graph</a></li>
 </ul>
 </li>
@@ -2166,6 +2362,11 @@ Cashflow (NACF)’:</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#cost-flows-per-entity">Cost <code class="docutils literal notranslate"><span class="pre">Flow</span></code>s per <code class="docutils literal notranslate"><span class="pre">Entity</span></code></a></li>
 </ul>
 </li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#calculating-overall-valuation">Calculating Overall Valuation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reversion">Reversion</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#valuation">Valuation</a></li>
 </ul>
 </li>
 </ul>
