@@ -605,7 +605,7 @@ class Assembly(Entity):
             insidetextorientation='radial',
             marker=dict(
                 colors=df['color'],
-                colorscale='thermal',
+                colorscale='Sunset',
                 cmin=df['color'].min(),
                 cmax=df['color'].max()),
             hovertemplate="%{label}<br>" + property + ": %{value:,.2f}<br>",
@@ -614,7 +614,8 @@ class Assembly(Entity):
 
     def treemap(
             self,
-            property):
+            property,
+            title: str = None):
         if not nx.is_arborescence(self.graph):
             raise NotImplementedError('Sunburst is only implemented for arborescent (hierarchical) graphs.')
         df = self.to_DataFrame()
@@ -640,7 +641,7 @@ class Assembly(Entity):
             marker=dict(
                 cornerradius=3,
                 colors=df['color'],
-                colorscale='thermal',
+                colorscale='Sunset',
                 cmin=df['color'].min(),
                 cmax=df['color'].max()),
             pathbar=dict(
