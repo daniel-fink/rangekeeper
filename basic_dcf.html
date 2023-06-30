@@ -168,8 +168,8 @@ const thebe_selector_output = ".output, .cell_output"
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Using Rangekeeper in Examples</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="load_design_scenario.html">Loading a Design Scenario</a></li>
-<li class="toctree-l1"><a class="reference internal" href="drive_model_from_design_scenario.html">Driving a Financial Valuation from a Design Scenario</a></li>
+<li class="toctree-l1"><a class="reference internal" href="load_design.html">Loading a Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="drive_model_from_design.html">Driving a Financial Valuation from a Design</a></li>
 </ul>
 
     </div>
@@ -418,7 +418,7 @@ document.write(`
   <section class="tex2jax_ignore mathjax_ignore" id="a-basic-discounted-cash-flow-valuation">
 <h1>A Basic Discounted Cash Flow Valuation<a class="headerlink" href="#a-basic-discounted-cash-flow-valuation" title="Permalink to this heading">#</a></h1>
 <p>Chapter 1 of <span id="id1">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> showcases the structure and functionality of a
-<em>basic</em> Discounted Cash Flow (DCF) Valuation in use in a real estate project.
+<em>basic</em> Discounted Cash Flow (DCF) Valuation in use in a real estate property.
 In this notebook, the core computational objects (classes), their functionality,
 and how they are composed together into a valuation model are outlined.</p>
 <p>To do so, we will be replicating Table 1.1 from <span id="id2">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span>, which
@@ -869,7 +869,7 @@ at the <em>end</em> date of each period.</p>
 </table></div></div>
 </div>
 <p>To calculate the reversion cashflow, we set up a period that spans the 10th year
-of the project:</p>
+of the property:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">reversion_span</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">span</span><span class="o">.</span><span class="n">Span</span><span class="o">.</span><span class="n">from_num_periods</span><span class="p">(</span>
@@ -977,7 +977,7 @@ the project’s complete cashflows:</p>
 </tbody>
 </table></div></div>
 </div>
-<p>Given that the discount rate is specified as 7%, we can calculate the project’s
+<p>Given that the discount rate is specified as 7%, we can calculate the property’s
 Present Value (PV):</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -1011,13 +1011,13 @@ Present Value (PV):</p>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">project_pv</span> <span class="o">=</span> <span class="n">pvs</span><span class="o">.</span><span class="n">collapse</span><span class="p">()</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-<span class="nb">round</span><span class="p">(</span><span class="n">project_pv</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">property_pv</span> <span class="o">=</span> <span class="n">pvs</span><span class="o">.</span><span class="n">collapse</span><span class="p">()</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Property PV: $</span><span class="si">{:,.0f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">property_pv</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>1000.0
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Property PV: $1,000
 </pre></div>
 </div>
 </div>
