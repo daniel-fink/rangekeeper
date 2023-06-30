@@ -64,7 +64,7 @@ const thebe_selector_output = ".output, .cell_output"
     <script>DOCUMENTATION_OPTIONS.pagename = 'flexibility_under_uncertainty';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Loading a Design Scenario" href="load_design_scenario.html" />
+    <link rel="next" title="Loading a Design" href="load_design.html" />
     <link rel="prev" title="Introduction to Modeling Flexibility" href="flexibility_intro.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -166,8 +166,8 @@ const thebe_selector_output = ".output, .cell_output"
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Using Rangekeeper in Examples</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="load_design_scenario.html">Loading a Design Scenario</a></li>
-<li class="toctree-l1"><a class="reference internal" href="drive_model_from_design_scenario.html">Driving a Financial Valuation from a Design Scenario</a></li>
+<li class="toctree-l1"><a class="reference internal" href="load_design.html">Loading a Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="drive_model_from_design.html">Driving a Financial Valuation from a Design</a></li>
 </ul>
 
     </div>
@@ -564,7 +564,7 @@ real values, net of inflation anyway).</p>
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;Axes: ylabel=&#39;Count&#39;&gt;
 </pre></div>
 </div>
-<img alt="_images/904a259304a36af8ea9ee7f4497cc41cf244685a6d5c377bce77c71ebc2a0400.png" src="_images/904a259304a36af8ea9ee7f4497cc41cf244685a6d5c377bce77c71ebc2a0400.png" />
+<img alt="_images/b91401d05b5fa516048219c66086212605c7f10b0d64958799ce65fe70bfa7c0.png" src="_images/b91401d05b5fa516048219c66086212605c7f10b0d64958799ce65fe70bfa7c0.png" />
 </div>
 </div>
 </section>
@@ -1098,45 +1098,45 @@ descriptive statistics</p>
     </tr>
     <tr>
       <th>mean</th>
-      <td>1074.344437</td>
-      <td>1459.582911</td>
-      <td>385.238474</td>
+      <td>1058.080579</td>
+      <td>1474.168678</td>
+      <td>416.088099</td>
     </tr>
     <tr>
       <th>std</th>
-      <td>352.641065</td>
-      <td>417.502269</td>
-      <td>577.466957</td>
+      <td>346.834189</td>
+      <td>416.994856</td>
+      <td>587.248035</td>
     </tr>
     <tr>
       <th>min</th>
-      <td>520.731089</td>
-      <td>507.824915</td>
-      <td>-1375.442755</td>
+      <td>517.903462</td>
+      <td>505.779757</td>
+      <td>-1245.284965</td>
     </tr>
     <tr>
       <th>25%</th>
-      <td>790.269026</td>
-      <td>1212.401709</td>
-      <td>-3.261869</td>
+      <td>770.508114</td>
+      <td>1226.338417</td>
+      <td>0.000000</td>
     </tr>
     <tr>
       <th>50%</th>
-      <td>985.597885</td>
-      <td>1483.764092</td>
-      <td>407.137891</td>
+      <td>963.054941</td>
+      <td>1489.100388</td>
+      <td>438.360012</td>
     </tr>
     <tr>
       <th>75%</th>
-      <td>1290.945015</td>
-      <td>1748.815702</td>
-      <td>830.897448</td>
+      <td>1301.648013</td>
+      <td>1761.975243</td>
+      <td>864.692825</td>
     </tr>
     <tr>
       <th>max</th>
-      <td>2831.338227</td>
-      <td>2475.613777</td>
-      <td>1771.444283</td>
+      <td>2519.325702</td>
+      <td>2589.711081</td>
+      <td>1751.944746</td>
     </tr>
   </tbody>
 </table>
@@ -1149,9 +1149,9 @@ descriptive statistics</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inflexible    0.947951
-Flexible     -0.330352
-Difference   -0.135482
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inflexible    0.790498
+Flexible     -0.292469
+Difference   -0.110367
 dtype: float64
 </pre></div>
 </div>
@@ -1164,9 +1164,9 @@ dtype: float64
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inflexible    0.463397
-Flexible     -0.202562
-Difference   -0.588691
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inflexible   -0.093917
+Flexible     -0.134007
+Difference   -0.688760
 dtype: float64
 </pre></div>
 </div>
@@ -1181,7 +1181,7 @@ dtype: float64
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>PV Diffs t-stat: 
-TtestResult(statistic=29.834414038576462, pvalue=4.345241879327504e-162, df=1999)
+TtestResult(statistic=31.68682462937177, pvalue=6.712051734223303e-179, df=1999)
 </pre></div>
 </div>
 </div>
@@ -1199,7 +1199,7 @@ TtestResult(statistic=29.834414038576462, pvalue=4.345241879327504e-162, df=1999
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;Axes: ylabel=&#39;Proportion&#39;&gt;
 </pre></div>
 </div>
-<img alt="_images/cf35727d7c0b23259414b032d7ccda2f9cf165fd68d62a2573fa63a409fd7490.png" src="_images/cf35727d7c0b23259414b032d7ccda2f9cf165fd68d62a2573fa63a409fd7490.png" />
+<img alt="_images/84d1ebd7238e2ae67b9d4440c6d306c396a2faf6319b630f755beb908816ab9b.png" src="_images/84d1ebd7238e2ae67b9d4440c6d306c396a2faf6319b630f755beb908816ab9b.png" />
 </div>
 </div>
 </section>
@@ -1253,45 +1253,45 @@ TtestResult(statistic=29.834414038576462, pvalue=4.345241879327504e-162, df=1999
     </tr>
     <tr>
       <th>mean</th>
-      <td>0.071239</td>
-      <td>0.308062</td>
-      <td>0.236822</td>
+      <td>0.068929</td>
+      <td>0.319743</td>
+      <td>0.250813</td>
     </tr>
     <tr>
       <th>std</th>
-      <td>0.040740</td>
-      <td>0.366943</td>
-      <td>0.380370</td>
+      <td>0.041564</td>
+      <td>0.377074</td>
+      <td>0.392570</td>
     </tr>
     <tr>
       <th>min</th>
-      <td>-0.021500</td>
-      <td>-0.073200</td>
-      <td>-0.115800</td>
+      <td>-0.027600</td>
+      <td>-0.055900</td>
+      <td>-0.193300</td>
     </tr>
     <tr>
       <th>25%</th>
-      <td>0.037500</td>
-      <td>0.092900</td>
+      <td>0.033400</td>
+      <td>0.095875</td>
       <td>0.000000</td>
     </tr>
     <tr>
       <th>50%</th>
-      <td>0.067900</td>
-      <td>0.141150</td>
-      <td>0.061800</td>
+      <td>0.064900</td>
+      <td>0.141850</td>
+      <td>0.067050</td>
     </tr>
     <tr>
       <th>75%</th>
-      <td>0.102300</td>
-      <td>0.338475</td>
-      <td>0.291950</td>
+      <td>0.103550</td>
+      <td>0.368900</td>
+      <td>0.322675</td>
     </tr>
     <tr>
       <th>max</th>
-      <td>0.202800</td>
-      <td>1.648900</td>
-      <td>1.610700</td>
+      <td>0.185100</td>
+      <td>1.771000</td>
+      <td>1.721600</td>
     </tr>
   </tbody>
 </table>
@@ -1304,9 +1304,9 @@ TtestResult(statistic=29.834414038576462, pvalue=4.345241879327504e-162, df=1999
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inflexible    0.274490
-Flexible      1.789764
-Difference    1.721717
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inflexible    0.193226
+Flexible      1.734520
+Difference    1.663812
 dtype: float64
 </pre></div>
 </div>
@@ -1319,9 +1319,9 @@ dtype: float64
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inflexible   -0.812528
-Flexible      2.130275
-Difference    1.906266
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inflexible   -0.966445
+Flexible      1.925865
+Difference    1.705664
 dtype: float64
 </pre></div>
 </div>
@@ -1336,7 +1336,7 @@ dtype: float64
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>IRR Diffs t-stat: 
-TtestResult(statistic=27.844005499676513, pvalue=1.8200581788742374e-144, df=1999)
+TtestResult(statistic=28.57254462923337, pvalue=7.384412369669391e-151, df=1999)
 </pre></div>
 </div>
 </div>
@@ -1354,7 +1354,7 @@ TtestResult(statistic=27.844005499676513, pvalue=1.8200581788742374e-144, df=199
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;Axes: ylabel=&#39;Proportion&#39;&gt;
 </pre></div>
 </div>
-<img alt="_images/42a38a99aa66c54fb74ad6aef1162c18000264507b9039735f8886b2fe8ec0cf.png" src="_images/42a38a99aa66c54fb74ad6aef1162c18000264507b9039735f8886b2fe8ec0cf.png" />
+<img alt="_images/87d823fecf4628b31a7c949241ebccb649775f41e474255ec7993526d284fd1c.png" src="_images/87d823fecf4628b31a7c949241ebccb649775f41e474255ec7993526d284fd1c.png" />
 </div>
 </div>
 </section>
@@ -1377,10 +1377,10 @@ TtestResult(statistic=27.844005499676513, pvalue=1.8200581788742374e-144, df=199
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;seaborn.axisgrid.JointGrid at 0x33a2bee60&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;seaborn.axisgrid.JointGrid at 0x33d055540&gt;
 </pre></div>
 </div>
-<img alt="_images/c628657b894a1ebb1bc223f3f81f580bc288bff6fde4c666eb6be2bc55d0f255.png" src="_images/c628657b894a1ebb1bc223f3f81f580bc288bff6fde4c666eb6be2bc55d0f255.png" />
+<img alt="_images/ac23cde5c19da1deea7c41147a30ba35e8cb951bd3e1937b1e64e2681d6661cb.png" src="_images/ac23cde5c19da1deea7c41147a30ba35e8cb951bd3e1937b1e64e2681d6661cb.png" />
 </div>
 </div>
 </section>
@@ -1400,10 +1400,10 @@ TtestResult(statistic=27.844005499676513, pvalue=1.8200581788742374e-144, df=199
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;seaborn.axisgrid.JointGrid at 0x33a4b7820&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;seaborn.axisgrid.JointGrid at 0x33d1df010&gt;
 </pre></div>
 </div>
-<img alt="_images/ba69f71baa4d3279ad434d3ebffd727c5572930cdcac4babe5981816f33f560c.png" src="_images/ba69f71baa4d3279ad434d3ebffd727c5572930cdcac4babe5981816f33f560c.png" />
+<img alt="_images/32c0469abe06a2f584e011fea5d3c4d9e79366e5603f4f148d8fcbf389f855ed.png" src="_images/32c0469abe06a2f584e011fea5d3c4d9e79366e5603f4f148d8fcbf389f855ed.png" />
 </div>
 </div>
 </section>
@@ -1426,10 +1426,10 @@ TtestResult(statistic=27.844005499676513, pvalue=1.8200581788742374e-144, df=199
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;seaborn.axisgrid.JointGrid at 0x2e3540c70&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;seaborn.axisgrid.JointGrid at 0x2e560b490&gt;
 </pre></div>
 </div>
-<img alt="_images/0c1163a85c92bc0dba1dfd011fb09f079c6761de78d5cd622d8d13cf9eab762f.png" src="_images/0c1163a85c92bc0dba1dfd011fb09f079c6761de78d5cd622d8d13cf9eab762f.png" />
+<img alt="_images/719152b0b82048d2ba64faa1e07f09d5a59271acdae464b956ffe05c95221171.png" src="_images/719152b0b82048d2ba64faa1e07f09d5a59271acdae464b956ffe05c95221171.png" />
 </div>
 </div>
 </section>
@@ -1449,10 +1449,10 @@ TtestResult(statistic=27.844005499676513, pvalue=1.8200581788742374e-144, df=199
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;seaborn.axisgrid.JointGrid at 0x2e36d2aa0&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;seaborn.axisgrid.JointGrid at 0x2e56e25c0&gt;
 </pre></div>
 </div>
-<img alt="_images/dea6dde0bbd647c3aee16a7aa61da45ba3eb878fa7e18c1b6eb1526363731514.png" src="_images/dea6dde0bbd647c3aee16a7aa61da45ba3eb878fa7e18c1b6eb1526363731514.png" />
+<img alt="_images/91cc2c55cbea520d3b8d966b2c08a811d954b9fe16e8f1634b597e96ee26b762.png" src="_images/91cc2c55cbea520d3b8d966b2c08a811d954b9fe16e8f1634b597e96ee26b762.png" />
 </div>
 </div>
 </section>
@@ -1502,11 +1502,11 @@ TtestResult(statistic=27.844005499676513, pvalue=1.8200581788742374e-144, df=199
       </div>
     </a>
     <a class="right-next"
-       href="load_design_scenario.html"
+       href="load_design.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Loading a Design Scenario</p>
+        <p class="prev-next-title">Loading a Design</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
