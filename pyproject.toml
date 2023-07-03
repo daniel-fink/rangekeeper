@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Rangekeeper"
-version = "0.2.1-alpha"
+version = "0.4.0-alpha"
 description = "A Python library assisting financial modelling in scenario planning, decision-making, cashflow forecasting, and the like"
 authors = ["Daniel Fink <danfink@mit.edu>"]
 license = "MPL-2.0"
