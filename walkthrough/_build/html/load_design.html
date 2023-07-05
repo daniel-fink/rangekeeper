@@ -450,17 +450,17 @@ attributed to the design’s objects (especially its representations of
 physical spaces, components, and equipment).</p>
 <section id="entities-and-relationships">
 <h3>Entities and Relationships<a class="headerlink" href="#entities-and-relationships" title="Permalink to this heading">#</a></h3>
-<p>A holistic representation of a real estate development is that it is a
+<p>A holistic representation of a real estate asset is that it is a
 web of inter-related ‘entities’; where each entity is a ‘thing’ and can have
 multiple relationships with other entities. For example, a floor is a type
 of entity (say, a “Space”) and it has relationships with floors above and
 below it, as well as relationships to its sub-entities (e.g. rooms), or even
 what services it (e.g. the mechanical systems controlling its air conditioning)</p>
-<figure class="align-default" id="real-estate-scenario-as-a-graph">
+<figure class="align-default" id="real-estate-asset-property-as-a-graph">
 <a class="reference internal image-reference" href="_images/devModelGraph.jpg"><img alt="_images/devModelGraph.jpg" src="_images/devModelGraph.jpg" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-number">Fig. 5 </span><span class="caption-text">An entire Real Estate Development Scenario is represented as a huge web (graph)
-of <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s and <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s</span><a class="headerlink" href="#real-estate-scenario-as-a-graph" title="Permalink to this image">#</a></p>
+<p><span class="caption-number">Fig. 5 </span><span class="caption-text">An entire Real Estate asset is represented as a huge web (graph) of <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s
+and <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s between those <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s</span><a class="headerlink" href="#real-estate-asset-property-as-a-graph" title="Permalink to this image">#</a></p>
 </figcaption>
 </figure>
 <section id="entitys">
@@ -486,7 +486,7 @@ a collection of <code class="docutils literal notranslate"><span class="pre">Rel
 other <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s.
 This means that <em>Rangekeeper</em> can traverse from <code class="docutils literal notranslate"><span class="pre">Assembly</span></code> to <code class="docutils literal notranslate"><span class="pre">Assembly</span></code> through
 overlapping <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s, in a similar fashion to common-sense conceptualisation
-of how a real estate development is structured.</p>
+of how a real estate asset is structured.</p>
 <figure class="align-default" id="a-diagram-of-assembly-s-of-entity-s">
 <a class="reference internal image-reference" href="_images/devModelAssembly.jpg"><img alt="_images/devModelAssembly.jpg" src="_images/devModelAssembly.jpg" style="width: 100%;" /></a>
 <figcaption>
@@ -507,16 +507,7 @@ its lifetime.</p></li>
 <li><p><strong>Name</strong>: human-readable text identifying the <code class="docutils literal notranslate"><span class="pre">Entity</span></code></p></li>
 <li><p><strong>Type</strong>: an <code class="docutils literal notranslate"><span class="pre">entityType</span></code> (which is a node of a tree of <code class="docutils literal notranslate"><span class="pre">entityType</span></code>s)</p></li>
 <li><p><strong>Attributes</strong>: a key-value store of specific properties of the <code class="docutils literal notranslate"><span class="pre">Entity</span></code>
-(eg, its area, geometry, material, etc).
-There are two key <code class="docutils literal notranslate"><span class="pre">Attribute</span></code>s (stored in the <code class="docutils literal notranslate"><span class="pre">Attributes</span></code> property), where
-<em>Rangekeeper</em> seeks and records data for its use:</p>
-<ul class="simple">
-<li><p><strong>Events</strong>: a set of time-based occurrences, or experiences, that happen
-in or to the <code class="docutils literal notranslate"><span class="pre">Entity</span></code> (called <code class="docutils literal notranslate"><span class="pre">Event</span></code>s)</p></li>
-<li><p><strong>Measurements</strong>: a key-value store of named quantities measuring the
-<code class="docutils literal notranslate"><span class="pre">Entity</span></code> (e.g. its Net Lettable Area (NLA))</p></li>
-</ul>
-</li>
+(eg, its area, geometry, material, cash flows, etc).</p></li>
 </ol>
 <p>In addition, <code class="docutils literal notranslate"><span class="pre">Assembly</span></code>s record a set of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s about <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s that
 are related to, or in, the <code class="docutils literal notranslate"><span class="pre">Assembly</span></code>.</p>
@@ -530,8 +521,8 @@ are related to, or in, the <code class="docutils literal notranslate"><span clas
 <ol class="arabic simple">
 <li><p><strong>Type</strong>: a <code class="docutils literal notranslate"><span class="pre">RelationshipType</span></code>, which is an item from a list of defined
 <code class="docutils literal notranslate"><span class="pre">RelationshipType</span></code>s</p></li>
-<li><p><strong>SourceId</strong>: the <code class="docutils literal notranslate"><span class="pre">Entity</span></code> <code class="docutils literal notranslate"><span class="pre">Id</span></code> that is the source of the <code class="docutils literal notranslate"><span class="pre">Relationship</span></code></p></li>
-<li><p><strong>TargetId</strong>: the <code class="docutils literal notranslate"><span class="pre">Entity</span></code> <code class="docutils literal notranslate"><span class="pre">Id</span></code> that is the target of the <code class="docutils literal notranslate"><span class="pre">Relationship</span></code></p></li>
+<li><p><strong>Source</strong>: the <code class="docutils literal notranslate"><span class="pre">Entity</span></code> that is the source of the <code class="docutils literal notranslate"><span class="pre">Relationship</span></code></p></li>
+<li><p><strong>Target</strong>: the <code class="docutils literal notranslate"><span class="pre">Entity</span></code> that is the target of the <code class="docutils literal notranslate"><span class="pre">Relationship</span></code></p></li>
 </ol>
 </section>
 <section id="events">
@@ -598,7 +589,7 @@ from a Speckle stream in <em>Rangekeeper</em>.</p></li>
 </section>
 <section id="example-design">
 <h2>Example Design<a class="headerlink" href="#example-design" title="Permalink to this heading">#</a></h2>
-<p>An example development has been designed and uploaded to Speckle for us to use
+<p>An example property has been documented and uploaded to Speckle for us to use
 as a demonstration of the object model and its use in <em>Rangekeeper</em>.</p>
 <p>This design is composed of two mixed-use buildings, that both share a
 common basement plinth, used for parking and shared mechanical and other
