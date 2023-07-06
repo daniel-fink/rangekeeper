@@ -1,4 +1,5 @@
 using System;
+using System.Drawing;
 using Grasshopper.Kernel;
 
 namespace Rangekeeper.Components;
@@ -33,7 +34,7 @@ public class AssemblyParam : GH_Param<GH_Assembly>
 
     public override Guid ComponentGuid => new("8C4EB9A5-A658-49B9-B1E8-3982A524CAE2");
     
-    // protected override Bitmap Icon => Resources.AssemblyParamIcon;
+    protected override Bitmap Icon => Resources.AssemblyParamIcon;
     
     public override GH_Exposure Exposure => GH_Exposure.tertiary;
     

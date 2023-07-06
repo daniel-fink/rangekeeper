@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Rangekeeper"
-version = "0.2.1-alpha"
+version = "0.4.0-alpha"
 description = "A Python library assisting financial modelling in scenario planning, decision-making, cashflow forecasting, and the like"
 authors = ["Daniel Fink <danfink@mit.edu>"]
 license = "MPL-2.0"
@@ -33,6 +33,7 @@ sphinx-rtd-theme = "^1.2.0"
 pygraphviz = "^1.11"
 pyvis = "^0.3.2"
 plotly = "^5.15.0"
+pyppeteer = "^1.0.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.2.1"
