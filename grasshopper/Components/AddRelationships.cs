@@ -1,4 +1,5 @@
 using System;
+using System.Drawing;
 using System.Collections.Generic;
 using System.Linq;
 using Grasshopper.Kernel;
@@ -19,7 +20,7 @@ namespace Rangekeeper.Components
             )
         { }
 
-        // protected override Bitmap Icon => Resources.CreateAssemblyIcon;
+        protected override Bitmap Icon => Resources.AddRelationshipsIcon;
         
         public override Guid ComponentGuid => new("F7297015-6047-4003-B205-D4918FE0A63A");
         

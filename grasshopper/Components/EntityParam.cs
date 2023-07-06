@@ -34,7 +34,7 @@ public class EntityParam : GH_Param<GH_Entity>
 
     public override Guid ComponentGuid => new("8316B1CC-A04B-4276-85B9-C0A987A9F6BD");
     
-    // protected override Bitmap Icon => Resources.EntityParamIcon;
+    protected override Bitmap Icon => Resources.EntityParamIcon;
     
     public override GH_Exposure Exposure => GH_Exposure.tertiary;
 }

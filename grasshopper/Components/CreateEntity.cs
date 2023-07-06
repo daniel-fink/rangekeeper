@@ -18,7 +18,7 @@ namespace Rangekeeper.Components
             )
         { }
 
-        // protected override Bitmap Icon => Resources.CreateEntityIcon;
+        protected override Bitmap Icon => Resources.CreateEntityIcon;
         
         public override Guid ComponentGuid => new("5B115630-2F5A-4E82-BEB2-1E86768B1893");
         
