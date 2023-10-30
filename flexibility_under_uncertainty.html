@@ -581,7 +581,7 @@ real values, net of inflation anyway).</p>
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;Axes: ylabel=&#39;Count&#39;&gt;
 </pre></div>
 </div>
-<img alt="_images/77b786f3dbde9c6bd349a04aa546fcb24e11da2515d212a39e33263323d95cc9.png" src="_images/77b786f3dbde9c6bd349a04aa546fcb24e11da2515d212a39e33263323d95cc9.png" />
+<img alt="_images/1e579a04c69a00fd4c4af2fa0d8b45f3ac294f888f921ded907385eaed3f3bef.png" src="_images/1e579a04c69a00fd4c4af2fa0d8b45f3ac294f888f921ded907385eaed3f3bef.png" />
 </div>
 </div>
 </section>
@@ -753,6 +753,47 @@ classes (and possibly future editions), they incorporate cycle asymmetries.</p>
     <span class="n">black_swan</span><span class="o">=</span><span class="n">black_swan</span><span class="p">)</span>
 </pre></div>
 </div>
+</div>
+</div>
+<p>As an example, here is one of the <code class="docutils literal notranslate"><span class="pre">Market</span></code>s (drawn from the <code class="docutils literal notranslate"><span class="pre">markets</span></code> by a random integer):</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">random</span>
+<span class="n">sample_market</span> <span class="o">=</span> <span class="n">markets</span><span class="p">[</span><span class="n">random</span><span class="o">.</span><span class="n">Random</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">iterations</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span>
+<span class="n">table</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
+<span class="n">name</span><span class="o">=</span><span class="s1">&#39;Market Dynamics&#39;</span><span class="p">,</span>
+<span class="n">flows</span><span class="o">=</span><span class="p">[</span>
+    <span class="n">sample_market</span><span class="o">.</span><span class="n">trend</span><span class="p">,</span>
+    <span class="n">sample_market</span><span class="o">.</span><span class="n">volatility</span><span class="o">.</span><span class="n">volatility</span><span class="p">,</span>
+    <span class="n">sample_market</span><span class="o">.</span><span class="n">volatility</span><span class="o">.</span><span class="n">autoregressive_returns</span><span class="p">,</span>
+    <span class="n">sample_market</span><span class="o">.</span><span class="n">volatility</span><span class="p">,</span>
+    <span class="n">sample_market</span><span class="o">.</span><span class="n">cyclicality</span><span class="o">.</span><span class="n">space_waveform</span><span class="p">,</span>
+    <span class="n">sample_market</span><span class="o">.</span><span class="n">space_market</span><span class="p">,</span>
+    <span class="n">sample_market</span><span class="o">.</span><span class="n">cyclicality</span><span class="o">.</span><span class="n">asset_waveform</span><span class="p">,</span>
+    <span class="n">sample_market</span><span class="o">.</span><span class="n">asset_market</span><span class="p">,</span>
+    <span class="n">sample_market</span><span class="o">.</span><span class="n">asset_true_value</span><span class="p">,</span>
+    <span class="n">sample_market</span><span class="o">.</span><span class="n">space_market_price_factors</span><span class="p">,</span>
+    <span class="n">sample_market</span><span class="o">.</span><span class="n">noisy_value</span><span class="p">,</span>
+    <span class="n">sample_market</span><span class="o">.</span><span class="n">historical_value</span><span class="p">,</span>
+    <span class="n">sample_market</span><span class="o">.</span><span class="n">implied_rev_cap_rate</span><span class="p">,</span>
+    <span class="n">sample_market</span><span class="o">.</span><span class="n">returns</span>
+    <span class="p">],</span>
+<span class="n">period_type</span><span class="o">=</span><span class="n">period_type</span><span class="p">)</span>
+<span class="n">table</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+        <span class="n">flows</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;Market Trend&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">.1</span><span class="p">),</span>
+            <span class="s1">&#39;Cumulative Volatility&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">.1</span><span class="p">),</span>
+            <span class="s1">&#39;Space Market&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">.1</span><span class="p">),</span>
+            <span class="s1">&#39;Asset True Value&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+            <span class="s1">&#39;Noisy Value&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+            <span class="s1">&#39;Historical Value&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+            <span class="p">}</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/26d05f5b853e96e273b5d00f9d8480d3ddeb8413ae7b0698c15f113d42081a44.png" src="_images/26d05f5b853e96e273b5d00f9d8480d3ddeb8413ae7b0698c15f113d42081a44.png" />
 </div>
 </div>
 </section>
@@ -1115,45 +1156,45 @@ descriptive statistics</p>
     </tr>
     <tr>
       <th>mean</th>
-      <td>1075.255808</td>
-      <td>1467.260204</td>
-      <td>392.004396</td>
+      <td>1077.484448</td>
+      <td>1473.869623</td>
+      <td>396.385176</td>
     </tr>
     <tr>
       <th>std</th>
-      <td>348.488124</td>
-      <td>406.861697</td>
-      <td>581.459949</td>
+      <td>343.973386</td>
+      <td>411.732675</td>
+      <td>577.017892</td>
     </tr>
     <tr>
       <th>min</th>
-      <td>519.441263</td>
-      <td>512.640744</td>
-      <td>-1224.268154</td>
+      <td>533.366780</td>
+      <td>508.498546</td>
+      <td>-1064.128897</td>
     </tr>
     <tr>
       <th>25%</th>
-      <td>787.627457</td>
-      <td>1227.962094</td>
-      <td>0.000000</td>
+      <td>794.226662</td>
+      <td>1229.611569</td>
+      <td>-27.317746</td>
     </tr>
     <tr>
       <th>50%</th>
-      <td>974.529148</td>
-      <td>1487.054227</td>
-      <td>406.653475</td>
+      <td>985.874401</td>
+      <td>1491.176333</td>
+      <td>399.163094</td>
     </tr>
     <tr>
       <th>75%</th>
-      <td>1328.405364</td>
-      <td>1736.497736</td>
-      <td>827.582680</td>
+      <td>1329.146775</td>
+      <td>1759.415137</td>
+      <td>841.427510</td>
     </tr>
     <tr>
       <th>max</th>
-      <td>2324.389772</td>
-      <td>2547.569546</td>
-      <td>1754.990102</td>
+      <td>2326.582538</td>
+      <td>2637.228788</td>
+      <td>1807.126775</td>
     </tr>
   </tbody>
 </table>
@@ -1168,9 +1209,9 @@ However, there still is a significant distortion of the distributions from norma
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inflexible    0.785431
-Flexible     -0.252260
-Difference   -0.082064
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inflexible    0.718980
+Flexible     -0.319660
+Difference   -0.049177
 dtype: float64
 </pre></div>
 </div>
@@ -1183,9 +1224,9 @@ dtype: float64
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inflexible   -0.140740
-Flexible     -0.037552
-Difference   -0.631001
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inflexible   -0.258545
+Flexible     -0.076575
+Difference   -0.716802
 dtype: float64
 </pre></div>
 </div>
@@ -1200,7 +1241,7 @@ dtype: float64
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>PV Diffs t-stat: 
-TtestResult(statistic=30.14991756302942, pvalue=6.319488513610633e-165, df=1999)
+TtestResult(statistic=30.721549931660807, pvalue=4.285182621647174e-170, df=1999)
 </pre></div>
 </div>
 </div>
@@ -1224,7 +1265,7 @@ TtestResult(statistic=30.14991756302942, pvalue=6.319488513610633e-165, df=1999)
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;Axes: ylabel=&#39;Count&#39;&gt;
 </pre></div>
 </div>
-<img alt="_images/63695f9d28d58c10a7b438ca8940735fb5cd9382c887a60c8f12fbfb6bc45120.png" src="_images/63695f9d28d58c10a7b438ca8940735fb5cd9382c887a60c8f12fbfb6bc45120.png" />
+<img alt="_images/b9942ebb0521c9e34a6b38fe382d31ad5feff6d7971a0a138d4da69740637ec2.png" src="_images/b9942ebb0521c9e34a6b38fe382d31ad5feff6d7971a0a138d4da69740637ec2.png" />
 </div>
 </div>
 <p>To make reading the plot easier and identify just how and when the Flexible model outperforms the Inflexible, we can also plot the cumulative distribution of the PVs:</p>
@@ -1239,7 +1280,7 @@ TtestResult(statistic=30.14991756302942, pvalue=6.319488513610633e-165, df=1999)
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;Axes: ylabel=&#39;Proportion&#39;&gt;
 </pre></div>
 </div>
-<img alt="_images/19bb27ccd6a0a50765b3111e704502b87dd8e35aa80058e5efa43371542c44be.png" src="_images/19bb27ccd6a0a50765b3111e704502b87dd8e35aa80058e5efa43371542c44be.png" />
+<img alt="_images/9be41e0ee879b0b168ead3dbdf62c5ee6c71b9dbc53750bf86aadfb4829e73e7.png" src="_images/9be41e0ee879b0b168ead3dbdf62c5ee6c71b9dbc53750bf86aadfb4829e73e7.png" />
 </div>
 </div>
 </section>
@@ -1294,45 +1335,45 @@ TtestResult(statistic=30.14991756302942, pvalue=6.319488513610633e-165, df=1999)
     </tr>
     <tr>
       <th>mean</th>
-      <td>0.071264</td>
-      <td>0.311238</td>
-      <td>0.239974</td>
+      <td>0.071669</td>
+      <td>0.313108</td>
+      <td>0.241439</td>
     </tr>
     <tr>
       <th>std</th>
-      <td>0.040962</td>
-      <td>0.373707</td>
-      <td>0.388104</td>
+      <td>0.040776</td>
+      <td>0.367733</td>
+      <td>0.382581</td>
     </tr>
     <tr>
       <th>min</th>
-      <td>-0.024500</td>
-      <td>-0.061800</td>
-      <td>-0.165500</td>
+      <td>-0.019400</td>
+      <td>0.008100</td>
+      <td>-0.104900</td>
     </tr>
     <tr>
       <th>25%</th>
-      <td>0.037075</td>
-      <td>0.095375</td>
+      <td>0.038075</td>
+      <td>0.096175</td>
       <td>0.000000</td>
     </tr>
     <tr>
       <th>50%</th>
-      <td>0.066500</td>
-      <td>0.137600</td>
-      <td>0.062650</td>
+      <td>0.068100</td>
+      <td>0.139450</td>
+      <td>0.062500</td>
     </tr>
     <tr>
       <th>75%</th>
-      <td>0.106200</td>
-      <td>0.330000</td>
-      <td>0.285425</td>
+      <td>0.106225</td>
+      <td>0.352000</td>
+      <td>0.296725</td>
     </tr>
     <tr>
       <th>max</th>
-      <td>0.176200</td>
-      <td>1.725900</td>
-      <td>1.658200</td>
+      <td>0.173800</td>
+      <td>1.821800</td>
+      <td>1.752200</td>
     </tr>
   </tbody>
 </table>
@@ -1345,9 +1386,9 @@ TtestResult(statistic=30.14991756302942, pvalue=6.319488513610633e-165, df=1999)
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inflexible    0.201903
-Flexible      1.817019
-Difference    1.743768
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inflexible    0.129381
+Flexible      1.754477
+Difference    1.688099
 dtype: float64
 </pre></div>
 </div>
@@ -1360,9 +1401,9 @@ dtype: float64
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inflexible   -0.962782
-Flexible      2.222966
-Difference    2.005044
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inflexible   -0.974868
+Flexible      2.021469
+Difference    1.808664
 dtype: float64
 </pre></div>
 </div>
@@ -1377,7 +1418,7 @@ dtype: float64
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>IRR Diffs t-stat: 
-TtestResult(statistic=27.652266339464635, pvalue=8.518292688109676e-143, df=1999)
+TtestResult(statistic=28.22267709300851, pvalue=8.844270782012402e-148, df=1999)
 </pre></div>
 </div>
 </div>
@@ -1395,7 +1436,7 @@ TtestResult(statistic=27.652266339464635, pvalue=8.518292688109676e-143, df=1999
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="_images/0f265f3c964e059da6ee4fe29a139aad115fde75792d1820caa0cfc270e7c781.png" src="_images/0f265f3c964e059da6ee4fe29a139aad115fde75792d1820caa0cfc270e7c781.png" />
+<img alt="_images/52ddd68b09728472d71c5e27a01d80a9773e6efcbb16732502bd23d970281d22.png" src="_images/52ddd68b09728472d71c5e27a01d80a9773e6efcbb16732502bd23d970281d22.png" />
 </div>
 </div>
 <div class="cell docutils container">
@@ -1409,7 +1450,7 @@ TtestResult(statistic=27.652266339464635, pvalue=8.518292688109676e-143, df=1999
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;Axes: ylabel=&#39;Proportion&#39;&gt;
 </pre></div>
 </div>
-<img alt="_images/f935117b54bc10afd6a15e5b03428759d599f7a2bf73be8d9ba10a338c58c6f2.png" src="_images/f935117b54bc10afd6a15e5b03428759d599f7a2bf73be8d9ba10a338c58c6f2.png" />
+<img alt="_images/99951465b67fdcda25239a637b68020faaa91f632042f555d7a63d1c5cbac6ab.png" src="_images/99951465b67fdcda25239a637b68020faaa91f632042f555d7a63d1c5cbac6ab.png" />
 </div>
 </div>
 </section>
@@ -1432,10 +1473,10 @@ TtestResult(statistic=27.652266339464635, pvalue=8.518292688109676e-143, df=1999
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;seaborn.axisgrid.JointGrid at 0x33e9932b0&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;seaborn.axisgrid.JointGrid at 0x3423d27a0&gt;
 </pre></div>
 </div>
-<img alt="_images/15ea728a52da61c46b69372054446bfae731e167d1cae5ae7669fdef98fa2c21.png" src="_images/15ea728a52da61c46b69372054446bfae731e167d1cae5ae7669fdef98fa2c21.png" />
+<img alt="_images/5d24e74d4451e1d4ffecbfce4578c698fea05a46c3a84b7e22ce63653e8b092d.png" src="_images/5d24e74d4451e1d4ffecbfce4578c698fea05a46c3a84b7e22ce63653e8b092d.png" />
 </div>
 </div>
 </section>
@@ -1455,10 +1496,10 @@ TtestResult(statistic=27.652266339464635, pvalue=8.518292688109676e-143, df=1999
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;seaborn.axisgrid.JointGrid at 0x309542e00&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;seaborn.axisgrid.JointGrid at 0x3410a8490&gt;
 </pre></div>
 </div>
-<img alt="_images/251b8b46d5ebea651842172e003352d4dbe7adbabf1f2472d352c2ec15c836fa.png" src="_images/251b8b46d5ebea651842172e003352d4dbe7adbabf1f2472d352c2ec15c836fa.png" />
+<img alt="_images/1d7d77a658836a80342e31d7c4615579a03b49b3a58843b60a7181c6c062efd7.png" src="_images/1d7d77a658836a80342e31d7c4615579a03b49b3a58843b60a7181c6c062efd7.png" />
 </div>
 </div>
 </section>
@@ -1489,10 +1530,10 @@ TtestResult(statistic=27.652266339464635, pvalue=8.518292688109676e-143, df=1999
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;seaborn.axisgrid.JointGrid at 0x30970fbb0&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;seaborn.axisgrid.JointGrid at 0x3420ccca0&gt;
 </pre></div>
 </div>
-<img alt="_images/22fe826502fbb2e61e48918df0676d45f34569681cfb638fe4117b505e8817a2.png" src="_images/22fe826502fbb2e61e48918df0676d45f34569681cfb638fe4117b505e8817a2.png" />
+<img alt="_images/61b8363c2bcf7c76c7e88d041162712a0136742e30e2d67c29df09bddcb9e2be.png" src="_images/61b8363c2bcf7c76c7e88d041162712a0136742e30e2d67c29df09bddcb9e2be.png" />
 </div>
 </div>
 </section>
@@ -1520,10 +1561,10 @@ TtestResult(statistic=27.652266339464635, pvalue=8.518292688109676e-143, df=1999
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;seaborn.axisgrid.JointGrid at 0x30994e5c0&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;seaborn.axisgrid.JointGrid at 0x32a331780&gt;
 </pre></div>
 </div>
-<img alt="_images/feedcdadf52d2379fefc3163a0ea9147a8a06f9dbeb1518bf1a76f1bfac9d69d.png" src="_images/feedcdadf52d2379fefc3163a0ea9147a8a06f9dbeb1518bf1a76f1bfac9d69d.png" />
+<img alt="_images/3526baaa0927971b8c47fce82aeaa2e16118d18133e15464e83599b67dd37286.png" src="_images/3526baaa0927971b8c47fce82aeaa2e16118d18133e15464e83599b67dd37286.png" />
 </div>
 </div>
 </section>
