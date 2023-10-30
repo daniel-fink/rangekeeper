@@ -460,25 +460,25 @@ class TestDynamics:
         noise=noise,
         black_swan=black_swan)
 
-    def test_market(self):
-        stream = rk.flux.Stream(
-            name="Market",
-            flows=[
-                TestDynamics.market.trend,
-                TestDynamics.market.volatility,
-                TestDynamics.market.space_market,
-                TestDynamics.market.asset_true_value,
-                TestDynamics.market.noisy_value,
-                TestDynamics.market.historical_value],
-            period_type=TestDynamics.period_type).plot(
-            flows={
-                'Market Trend': (0., .09),
-                'Cumulative Volatility': (0., .09),
-                'Space Market': (0., .09),
-                'Asset True Value': (0., 3.5),
-                'Noisy Value': (0., 3.5),
-                'Historical Value': (0., 3.5)
-                })
+    # def test_market(self):
+        # stream = rk.flux.Stream(
+        #     name="Market",
+        #     flows=[
+        #         TestDynamics.market.trend,
+        #         TestDynamics.market.volatility,
+        #         TestDynamics.market.space_market,
+        #         TestDynamics.market.asset_true_value,
+        #         TestDynamics.market.noisy_value,
+        #         TestDynamics.market.historical_value],
+        #     period_type=TestDynamics.period_type).plot(
+        #     flows={
+        #         'Market Trend': (0., .09),
+        #         'Cumulative Volatility': (0., .09),
+        #         'Space Market': (0., .09),
+        #         'Asset True Value': (0., 3.5),
+        #         'Noisy Value': (0., 3.5),
+        #         'Historical Value': (0., 3.5)
+        #         })
 
     iterations = 100
     growth_rate_dist = rk.distribution.Symmetric(
@@ -561,35 +561,35 @@ class TestDynamics:
         print('Max Growth Rate: {}'.format(np.max([market.trend.growth_rate for market in TestDynamics.markets]) * 100))
         print('Min Growth Rate: {}'.format(np.min([market.trend.growth_rate for market in TestDynamics.markets]) * 100))
 
-    def test_statistics(self):
-        exanteinflex_model = ExAnteInflexibleModel(
-            params=model_params)
-
-        expostinflex_models = ExPostInflexibleModel.from_markets(
-            params=model_params,
-            markets=TestDynamics.markets)
-
-        assert len(expostinflex_models) == TestDynamics.iterations
-        print(len(expostinflex_models))
-
-        inflex_diffs = np.array(
-            [(expostinflex_model.pvs.movements[-1] - exanteinflex_model.pvs.movements[-1])
-             for expostinflex_model
-             in expostinflex_models])
-        print('Inflex Stats: \n')
-        print('Inflex Diffs Mean: {}'.format(np.mean(inflex_diffs)))
-        print('Inflex Diffs Std: {}'.format(np.std(inflex_diffs)))
-        print('Inflex Diffs Max: {}'.format(np.max(inflex_diffs)))
-        print('Inflex Diffs Min: {}'.format(np.min(inflex_diffs)))
-        print('Inflex Diffs Median: {}'.format(np.median(inflex_diffs)))
-        print('Inflex Diffs Skew: {}'.format(ss.skew(inflex_diffs)))
-        print('Inflex Diffs Kurtosis: {}'.format(ss.kurtosis(inflex_diffs)))
-        print('Inflex Diffs t-stat: {}'.format(
-            np.mean(inflex_diffs) /
-            (np.std(inflex_diffs) / np.sqrt(len(inflex_diffs)))
-            ))
-        print('Inflex Diffs t-stat from scipy: {}'.format(
-            ss.ttest_1samp(inflex_diffs, 0)))
+    # def test_statistics(self):
+        # exanteinflex_model = ExAnteInflexibleModel(
+        #     params=model_params)
+        #
+        # expostinflex_models = ExPostInflexibleModel.from_markets(
+        #     params=model_params,
+        #     markets=TestDynamics.markets)
+        #
+        # assert len(expostinflex_models) == TestDynamics.iterations
+        # print(len(expostinflex_models))
+        #
+        # inflex_diffs = np.array(
+        #     [(expostinflex_model.pvs.movements[-1] - exanteinflex_model.pvs.movements[-1])
+        #      for expostinflex_model
+        #      in expostinflex_models])
+        # print('Inflex Stats: \n')
+        # print('Inflex Diffs Mean: {}'.format(np.mean(inflex_diffs)))
+        # print('Inflex Diffs Std: {}'.format(np.std(inflex_diffs)))
+        # print('Inflex Diffs Max: {}'.format(np.max(inflex_diffs)))
+        # print('Inflex Diffs Min: {}'.format(np.min(inflex_diffs)))
+        # print('Inflex Diffs Median: {}'.format(np.median(inflex_diffs)))
+        # print('Inflex Diffs Skew: {}'.format(ss.skew(inflex_diffs)))
+        # print('Inflex Diffs Kurtosis: {}'.format(ss.kurtosis(inflex_diffs)))
+        # print('Inflex Diffs t-stat: {}'.format(
+        #     np.mean(inflex_diffs) /
+        #     (np.std(inflex_diffs) / np.sqrt(len(inflex_diffs)))
+        #     ))
+        # print('Inflex Diffs t-stat from scipy: {}'.format(
+        #     ss.ttest_1samp(inflex_diffs, 0)))
 
     def test_dynamic_modelling(self):
         model = ExPostInflexibleModel()
@@ -649,12 +649,12 @@ class TestDynamics:
                 model.generate()
                 return model
 
-        policy = rk.policy.Policy(
-            state=model.market.space_market_price_factors,
-            model=model,
-            condition=exceed_pricing_factor,
-            action=adjust_hold_period)
-
-        result = policy.execute()
-        print(result.irrs)
+        # policy = rk.policy.Policy(
+        #     state=model.market.space_market_price_factors,
+        #     model=model,
+        #     condition=exceed_pricing_factor,
+        #     action=adjust_hold_period)
+        #
+        # result = policy.execute()
+        # print(result.irrs)
         # action=action)

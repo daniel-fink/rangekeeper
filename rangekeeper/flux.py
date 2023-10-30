@@ -682,7 +682,7 @@ class Stream:
             period_type=self.period_type)
 
     def total(self) -> np.float64:
-        return self.sum().collapse().movements[0]
+        return self.sum().collapse().movements.iloc[0]
 
     def append(
             self,
