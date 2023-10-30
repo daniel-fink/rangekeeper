@@ -49,16 +49,16 @@ class TestApi:
         roots = TestApi.model.get_dynamic_member_names()
 
         assert len(roots) == 2
-        assert '@scenario' in roots
+        assert '@property' in roots
 
     def test_conversion(self):
-        parsed = rk.api.Speckle.parse(base=TestApi.model['@scenario'])
+        parsed = rk.api.Speckle.parse(base=TestApi.model['@property'])
         root_base = list(parsed.values())[0]
         print('Root Base:\n {0}'.format(root_base))
         assert root_base.speckle_type == 'Rangekeeper.Entity:Rangekeeper.Assembly'
 
         root_entity = graph.Entity.from_base(root_base)
-        assert root_entity.name == 'development'
+        assert root_entity.name == 'property'
         assert len(root_entity.graph.nodes) == 5
         assert type(root_entity) == graph.Assembly
         print('Root Entity:\n {0}'.format(root_entity))

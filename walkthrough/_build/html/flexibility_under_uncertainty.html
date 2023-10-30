@@ -19,12 +19,12 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet" />
-<link href="_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet" />
-<link href="_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+  <link href="_static/styles/theme.css?digest=c5ced968eda925caa686" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=c5ced968eda925caa686" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=c5ced968eda925caa686" rel="stylesheet" />
 
   
-  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet" />
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=c5ced968eda925caa686" rel="stylesheet" />
   <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
@@ -38,8 +38,9 @@
     <link rel="stylesheet" type="text/css" href="_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
-<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" />
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=c5ced968eda925caa686" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=c5ced968eda925caa686" />
+  <script src="_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=c5ced968eda925caa686"></script>
 
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
@@ -76,6 +77,15 @@ const thebe_selector_output = ".output, .cell_output"
   
   
   <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
   
   <input type="checkbox"
           class="sidebar-toggle"
@@ -136,13 +146,14 @@ const thebe_selector_output = ".output, .cell_output"
   
   
   
+  
     
     
       
     
     
-    <img src="_static/rangekeeper.jpg" class="logo__image only-light" alt="Logo image"/>
-    <script>document.write(`<img src="_static/rangekeeper.jpg" class="logo__image only-dark" alt="Logo image"/>`);</script>
+    <img src="_static/rangekeeper.jpg" class="logo__image only-light" alt="Rangekeeper - Home"/>
+    <script>document.write(`<img src="_static/rangekeeper.jpg" class="logo__image only-dark" alt="Rangekeeper - Home"/>`);</script>
   
   
 </a></div>
@@ -354,10 +365,10 @@ const thebe_selector_output = ".output, .cell_output"
 
 <script>
 document.write(`
-  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
-    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
-    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
   </button>
 `);
 </script>
@@ -365,7 +376,7 @@ document.write(`
 <script>
 document.write(`
   <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
   </button>
 `);
 </script>
@@ -408,7 +419,10 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#flexible-model">Flexible Model</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#results">Results</a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#time-0-present-values-at-occ">Time 0 Present Values at OCC</a><ul class="nav section-nav flex-column">
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#pvs-cumulative-distribution-target-curves">PVs Cumulative Distribution (‘Target Curves’)</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#pvs-cumulative-distribution-target-curves">PVs Cumulative Distribution (‘Target Curves’)</a><ul class="nav section-nav flex-column">
+<li class="toc-h6 nav-item toc-entry"><a class="reference internal nav-link" href="#present-values">Present Values</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#realized-irr-at-market-value-price">Realized IRR at Market Value Price</a><ul class="nav section-nav flex-column">
@@ -461,6 +475,9 @@ will produce.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">locale</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">FutureWarning</span><span class="p">)</span> <span class="c1"># to suppress pandas warnings about deprecated functions</span>
+
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
 
@@ -564,7 +581,7 @@ real values, net of inflation anyway).</p>
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;Axes: ylabel=&#39;Count&#39;&gt;
 </pre></div>
 </div>
-<img alt="_images/8e56c78c94730711ec12b3b561f8a4a35b136a28fe55547fc1758ecf19acc5d9.png" src="_images/8e56c78c94730711ec12b3b561f8a4a35b136a28fe55547fc1758ecf19acc5d9.png" />
+<img alt="_images/77b786f3dbde9c6bd349a04aa546fcb24e11da2515d212a39e33263323d95cc9.png" src="_images/77b786f3dbde9c6bd349a04aa546fcb24e11da2515d212a39e33263323d95cc9.png" />
 </div>
 </div>
 </section>
@@ -1098,50 +1115,52 @@ descriptive statistics</p>
     </tr>
     <tr>
       <th>mean</th>
-      <td>1072.720535</td>
-      <td>1458.821466</td>
-      <td>386.100930</td>
+      <td>1075.255808</td>
+      <td>1467.260204</td>
+      <td>392.004396</td>
     </tr>
     <tr>
       <th>std</th>
-      <td>351.174784</td>
-      <td>405.684737</td>
-      <td>570.515451</td>
+      <td>348.488124</td>
+      <td>406.861697</td>
+      <td>581.459949</td>
     </tr>
     <tr>
       <th>min</th>
-      <td>519.916623</td>
-      <td>518.411135</td>
-      <td>-1460.430379</td>
+      <td>519.441263</td>
+      <td>512.640744</td>
+      <td>-1224.268154</td>
     </tr>
     <tr>
       <th>25%</th>
-      <td>785.228762</td>
-      <td>1218.396593</td>
+      <td>787.627457</td>
+      <td>1227.962094</td>
       <td>0.000000</td>
     </tr>
     <tr>
       <th>50%</th>
-      <td>979.032725</td>
-      <td>1463.984851</td>
-      <td>417.393340</td>
+      <td>974.529148</td>
+      <td>1487.054227</td>
+      <td>406.653475</td>
     </tr>
     <tr>
       <th>75%</th>
-      <td>1306.389225</td>
-      <td>1726.333652</td>
-      <td>798.147039</td>
+      <td>1328.405364</td>
+      <td>1736.497736</td>
+      <td>827.582680</td>
     </tr>
     <tr>
       <th>max</th>
-      <td>2433.887145</td>
-      <td>2646.704333</td>
-      <td>1921.473604</td>
+      <td>2324.389772</td>
+      <td>2547.569546</td>
+      <td>1754.990102</td>
     </tr>
   </tbody>
 </table>
 </div></div></div>
 </div>
+<p>At a high level, we can see from the mean and median (50th percentile) results that the Flexible Model produces a higher PV than the Inflexible Model (by about $400.
+However, there still is a significant distortion of the distributions from normal, as can be seen in the skewness and kurtosis statistics.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pvs</span><span class="o">.</span><span class="n">skew</span><span class="p">()</span>
@@ -1149,9 +1168,9 @@ descriptive statistics</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inflexible    0.823909
-Flexible     -0.276205
-Difference   -0.118676
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inflexible    0.785431
+Flexible     -0.252260
+Difference   -0.082064
 dtype: float64
 </pre></div>
 </div>
@@ -1164,9 +1183,9 @@ dtype: float64
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inflexible   -0.027348
-Flexible     -0.084250
-Difference   -0.593383
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inflexible   -0.140740
+Flexible     -0.037552
+Difference   -0.631001
 dtype: float64
 </pre></div>
 </div>
@@ -1181,17 +1200,38 @@ dtype: float64
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>PV Diffs t-stat: 
-TtestResult(statistic=30.26554055527296, pvalue=5.729113127799281e-166, df=1999)
+TtestResult(statistic=30.14991756302942, pvalue=6.319488513610633e-165, df=1999)
 </pre></div>
 </div>
 </div>
 </div>
 <section id="pvs-cumulative-distribution-target-curves">
 <h5>PVs Cumulative Distribution (‘Target Curves’)<a class="headerlink" href="#pvs-cumulative-distribution-target-curves" title="Permalink to this heading">#</a></h5>
+<p>To get a better idea of just how the Flexible Model outperforms the Inflexible Model, we can plot their distributions of outcomes</p>
+<section id="present-values">
+<h6>Present Values<a class="headerlink" href="#present-values" title="Permalink to this heading">#</a></h6>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sns</span><span class="o">.</span><span class="n">histplot</span><span class="p">(</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">pvs</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Difference&#39;</span><span class="p">]),</span>
+    <span class="n">binwidth</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+    <span class="n">kde</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;Axes: ylabel=&#39;Count&#39;&gt;
+</pre></div>
+</div>
+<img alt="_images/63695f9d28d58c10a7b438ca8940735fb5cd9382c887a60c8f12fbfb6bc45120.png" src="_images/63695f9d28d58c10a7b438ca8940735fb5cd9382c887a60c8f12fbfb6bc45120.png" />
+</div>
+</div>
+<p>To make reading the plot easier and identify just how and when the Flexible model outperforms the Inflexible, we can also plot the cumulative distribution of the PVs:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sns</span><span class="o">.</span><span class="n">ecdfplot</span><span class="p">(</span>
-    <span class="n">data</span><span class="o">=</span><span class="n">pvs</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="s1">&#39;Difference&#39;</span><span class="p">))</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">pvs</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Difference&#39;</span><span class="p">]))</span>
 </pre></div>
 </div>
 </div>
@@ -1199,9 +1239,10 @@ TtestResult(statistic=30.26554055527296, pvalue=5.729113127799281e-166, df=1999)
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;Axes: ylabel=&#39;Proportion&#39;&gt;
 </pre></div>
 </div>
-<img alt="_images/c72909ebe87b9ee24737c63a1d123ee8a3162de5a88192de46aa1da3d93e04b1.png" src="_images/c72909ebe87b9ee24737c63a1d123ee8a3162de5a88192de46aa1da3d93e04b1.png" />
+<img alt="_images/19bb27ccd6a0a50765b3111e704502b87dd8e35aa80058e5efa43371542c44be.png" src="_images/19bb27ccd6a0a50765b3111e704502b87dd8e35aa80058e5efa43371542c44be.png" />
 </div>
 </div>
+</section>
 </section>
 </section>
 <section id="realized-irr-at-market-value-price">
@@ -1253,45 +1294,45 @@ TtestResult(statistic=30.26554055527296, pvalue=5.729113127799281e-166, df=1999)
     </tr>
     <tr>
       <th>mean</th>
-      <td>0.070864</td>
-      <td>0.303401</td>
-      <td>0.232537</td>
+      <td>0.071264</td>
+      <td>0.311238</td>
+      <td>0.239974</td>
     </tr>
     <tr>
       <th>std</th>
-      <td>0.041247</td>
-      <td>0.364079</td>
-      <td>0.377216</td>
+      <td>0.040962</td>
+      <td>0.373707</td>
+      <td>0.388104</td>
     </tr>
     <tr>
       <th>min</th>
-      <td>-0.020900</td>
-      <td>-0.005800</td>
-      <td>-0.135600</td>
+      <td>-0.024500</td>
+      <td>-0.061800</td>
+      <td>-0.165500</td>
     </tr>
     <tr>
       <th>25%</th>
-      <td>0.036275</td>
-      <td>0.095100</td>
+      <td>0.037075</td>
+      <td>0.095375</td>
       <td>0.000000</td>
     </tr>
     <tr>
       <th>50%</th>
-      <td>0.067150</td>
-      <td>0.138950</td>
-      <td>0.065500</td>
+      <td>0.066500</td>
+      <td>0.137600</td>
+      <td>0.062650</td>
     </tr>
     <tr>
       <th>75%</th>
-      <td>0.103900</td>
-      <td>0.316225</td>
-      <td>0.270325</td>
+      <td>0.106200</td>
+      <td>0.330000</td>
+      <td>0.285425</td>
     </tr>
     <tr>
       <th>max</th>
-      <td>0.179900</td>
-      <td>1.832000</td>
-      <td>1.810100</td>
+      <td>0.176200</td>
+      <td>1.725900</td>
+      <td>1.658200</td>
     </tr>
   </tbody>
 </table>
@@ -1304,9 +1345,9 @@ TtestResult(statistic=30.26554055527296, pvalue=5.729113127799281e-166, df=1999)
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inflexible    0.207357
-Flexible      1.885632
-Difference    1.813701
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inflexible    0.201903
+Flexible      1.817019
+Difference    1.743768
 dtype: float64
 </pre></div>
 </div>
@@ -1319,9 +1360,9 @@ dtype: float64
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inflexible   -0.913515
-Flexible      2.488298
-Difference    2.259613
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inflexible   -0.962782
+Flexible      2.222966
+Difference    2.005044
 dtype: float64
 </pre></div>
 </div>
@@ -1336,7 +1377,7 @@ dtype: float64
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>IRR Diffs t-stat: 
-TtestResult(statistic=27.56875576619919, pvalue=4.5313204579811265e-142, df=1999)
+TtestResult(statistic=27.652266339464635, pvalue=8.518292688109676e-143, df=1999)
 </pre></div>
 </div>
 </div>
@@ -1345,8 +1386,22 @@ TtestResult(statistic=27.56875576619919, pvalue=4.5313204579811265e-142, df=1999
 <h5>IRRs Cumulative Distribution (‘Target Curves’)<a class="headerlink" href="#irrs-cumulative-distribution-target-curves" title="Permalink to this heading">#</a></h5>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">g</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">histplot</span><span class="p">(</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">irrs</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Difference&#39;</span><span class="p">]),</span>
+    <span class="n">binwidth</span><span class="o">=</span><span class="mf">.025</span><span class="p">,</span>
+    <span class="n">kde</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/0f265f3c964e059da6ee4fe29a139aad115fde75792d1820caa0cfc270e7c781.png" src="_images/0f265f3c964e059da6ee4fe29a139aad115fde75792d1820caa0cfc270e7c781.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sns</span><span class="o">.</span><span class="n">ecdfplot</span><span class="p">(</span>
-    <span class="n">data</span><span class="o">=</span><span class="n">irrs</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="s1">&#39;Difference&#39;</span><span class="p">))</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">irrs</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Difference&#39;</span><span class="p">]))</span>
 </pre></div>
 </div>
 </div>
@@ -1354,7 +1409,7 @@ TtestResult(statistic=27.56875576619919, pvalue=4.5313204579811265e-142, df=1999
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;Axes: ylabel=&#39;Proportion&#39;&gt;
 </pre></div>
 </div>
-<img alt="_images/92c396b03ce1b1ac53a62f2f55bfedcc81cdd4873b7d28e6333ad5d9b415a8d6.png" src="_images/92c396b03ce1b1ac53a62f2f55bfedcc81cdd4873b7d28e6333ad5d9b415a8d6.png" />
+<img alt="_images/f935117b54bc10afd6a15e5b03428759d599f7a2bf73be8d9ba10a338c58c6f2.png" src="_images/f935117b54bc10afd6a15e5b03428759d599f7a2bf73be8d9ba10a338c58c6f2.png" />
 </div>
 </div>
 </section>
@@ -1377,10 +1432,10 @@ TtestResult(statistic=27.56875576619919, pvalue=4.5313204579811265e-142, df=1999
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;seaborn.axisgrid.JointGrid at 0x33dc6a680&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;seaborn.axisgrid.JointGrid at 0x33e9932b0&gt;
 </pre></div>
 </div>
-<img alt="_images/3c2cd483ce206dcfe8071cc3bfaa4fccdf4edfb63a1b3adee41b65986139ad34.png" src="_images/3c2cd483ce206dcfe8071cc3bfaa4fccdf4edfb63a1b3adee41b65986139ad34.png" />
+<img alt="_images/15ea728a52da61c46b69372054446bfae731e167d1cae5ae7669fdef98fa2c21.png" src="_images/15ea728a52da61c46b69372054446bfae731e167d1cae5ae7669fdef98fa2c21.png" />
 </div>
 </div>
 </section>
@@ -1400,10 +1455,10 @@ TtestResult(statistic=27.56875576619919, pvalue=4.5313204579811265e-142, df=1999
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;seaborn.axisgrid.JointGrid at 0x33de2beb0&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;seaborn.axisgrid.JointGrid at 0x309542e00&gt;
 </pre></div>
 </div>
-<img alt="_images/229fee025c34335519a12481fa4ea69b151806d67bd8ace373e5cc68a7fadb43.png" src="_images/229fee025c34335519a12481fa4ea69b151806d67bd8ace373e5cc68a7fadb43.png" />
+<img alt="_images/251b8b46d5ebea651842172e003352d4dbe7adbabf1f2472d352c2ec15c836fa.png" src="_images/251b8b46d5ebea651842172e003352d4dbe7adbabf1f2472d352c2ec15c836fa.png" />
 </div>
 </div>
 </section>
@@ -1417,19 +1472,27 @@ TtestResult(statistic=27.56875576619919, pvalue=4.5313204579811265e-142, df=1999
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">diff_pvs_x_inflex_pvs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
     <span class="s1">&#39;Inflexible PVs&#39;</span><span class="p">:</span> <span class="n">inflex_pvs</span><span class="p">,</span>
     <span class="s1">&#39;Difference in PV&#39;</span><span class="p">:</span> <span class="n">diff_pvs</span><span class="p">})</span>
-<span class="n">sns</span><span class="o">.</span><span class="n">jointplot</span><span class="p">(</span>
+<span class="n">g</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">jointplot</span><span class="p">(</span>
     <span class="n">data</span><span class="o">=</span><span class="n">diff_pvs_x_inflex_pvs</span><span class="p">,</span>
     <span class="n">x</span><span class="o">=</span><span class="s1">&#39;Inflexible PVs&#39;</span><span class="p">,</span>
     <span class="n">y</span><span class="o">=</span><span class="s1">&#39;Difference in PV&#39;</span><span class="p">,</span>
     <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;hist&#39;</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">plot_joint</span><span class="p">(</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">kdeplot</span><span class="p">,</span>
+    <span class="n">color</span><span class="o">=</span><span class="s1">&#39;grey&#39;</span><span class="p">,</span>
+    <span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">levels</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">plot_marginals</span><span class="p">(</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">histplot</span>
+    <span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;seaborn.axisgrid.JointGrid at 0x33de2afe0&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;seaborn.axisgrid.JointGrid at 0x30970fbb0&gt;
 </pre></div>
 </div>
-<img alt="_images/cf1c4baf14ffb93fe11761380e8d52d7dc8583192f94db4ffaa2c79cebae32f8.png" src="_images/cf1c4baf14ffb93fe11761380e8d52d7dc8583192f94db4ffaa2c79cebae32f8.png" />
+<img alt="_images/22fe826502fbb2e61e48918df0676d45f34569681cfb638fe4117b505e8817a2.png" src="_images/22fe826502fbb2e61e48918df0676d45f34569681cfb638fe4117b505e8817a2.png" />
 </div>
 </div>
 </section>
@@ -1440,19 +1503,27 @@ TtestResult(statistic=27.56875576619919, pvalue=4.5313204579811265e-142, df=1999
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">diff_irrs_x_inflex_irrs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
     <span class="s1">&#39;Inflexible IRRs&#39;</span><span class="p">:</span> <span class="n">inflex_irrs</span><span class="p">,</span>
     <span class="s1">&#39;Difference in IRR&#39;</span><span class="p">:</span> <span class="n">diff_irrs</span><span class="p">})</span>
-<span class="n">sns</span><span class="o">.</span><span class="n">jointplot</span><span class="p">(</span>
+<span class="n">g</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">jointplot</span><span class="p">(</span>
     <span class="n">data</span><span class="o">=</span><span class="n">diff_irrs_x_inflex_irrs</span><span class="p">,</span>
     <span class="n">x</span><span class="o">=</span><span class="s1">&#39;Inflexible IRRs&#39;</span><span class="p">,</span>
     <span class="n">y</span><span class="o">=</span><span class="s1">&#39;Difference in IRR&#39;</span><span class="p">,</span>
     <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;hist&#39;</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">plot_joint</span><span class="p">(</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">kdeplot</span><span class="p">,</span>
+    <span class="n">color</span><span class="o">=</span><span class="s1">&#39;grey&#39;</span><span class="p">,</span>
+    <span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">levels</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">plot_marginals</span><span class="p">(</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">histplot</span>
+    <span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;seaborn.axisgrid.JointGrid at 0x2f5d1ba00&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;seaborn.axisgrid.JointGrid at 0x30994e5c0&gt;
 </pre></div>
 </div>
-<img alt="_images/c2b8e712be01c7f5a948a006a7e823fbd58afc19b3e9ccb3c1c67a1c6d70e6ff.png" src="_images/c2b8e712be01c7f5a948a006a7e823fbd58afc19b3e9ccb3c1c67a1c6d70e6ff.png" />
+<img alt="_images/feedcdadf52d2379fefc3163a0ea9147a8a06f9dbeb1518bf1a76f1bfac9d69d.png" src="_images/feedcdadf52d2379fefc3163a0ea9147a8a06f9dbeb1518bf1a76f1bfac9d69d.png" />
 </div>
 </div>
 </section>
@@ -1486,11 +1557,10 @@ TtestResult(statistic=27.56875576619919, pvalue=4.5313204579811265e-142, df=1999
 
               
               
-                <footer class="bd-footer-article">
-                  
-<div class="footer-article-items footer-article__inner">
-  
-    <div class="footer-article-item"><!-- Previous / next buttons -->
+              
+              
+                <footer class="prev-next-footer">
+                  <!-- Previous / next buttons -->
 <div class="prev-next-area">
     <a class="left-prev"
        href="flexibility_intro.html"
@@ -1510,10 +1580,7 @@ TtestResult(statistic=27.56875576619919, pvalue=4.5313204579811265e-142, df=1999
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
-</div></div>
-  
 </div>
-
                 </footer>
               
             </div>
@@ -1544,7 +1611,10 @@ TtestResult(statistic=27.56875576619919, pvalue=4.5313204579811265e-142, df=1999
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#flexible-model">Flexible Model</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#results">Results</a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#time-0-present-values-at-occ">Time 0 Present Values at OCC</a><ul class="nav section-nav flex-column">
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#pvs-cumulative-distribution-target-curves">PVs Cumulative Distribution (‘Target Curves’)</a></li>
+<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#pvs-cumulative-distribution-target-curves">PVs Cumulative Distribution (‘Target Curves’)</a><ul class="nav section-nav flex-column">
+<li class="toc-h6 nav-item toc-entry"><a class="reference internal nav-link" href="#present-values">Present Values</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#realized-irr-at-market-value-price">Realized IRR at Market Value Price</a><ul class="nav section-nav flex-column">
@@ -1612,8 +1682,8 @@ By Daniel Fink
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
-<script src="_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
+  <script src="_static/scripts/bootstrap.js?digest=c5ced968eda925caa686"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=c5ced968eda925caa686"></script>
 
   <footer class="bd-footer">
   </footer>

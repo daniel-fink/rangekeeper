@@ -19,12 +19,12 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet" />
-<link href="_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet" />
-<link href="_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+  <link href="_static/styles/theme.css?digest=c5ced968eda925caa686" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=c5ced968eda925caa686" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=c5ced968eda925caa686" rel="stylesheet" />
 
   
-  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet" />
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=c5ced968eda925caa686" rel="stylesheet" />
   <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
@@ -38,8 +38,9 @@
     <link rel="stylesheet" type="text/css" href="_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
-<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" />
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=c5ced968eda925caa686" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=c5ced968eda925caa686" />
+  <script src="_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=c5ced968eda925caa686"></script>
 
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
@@ -75,6 +76,15 @@ const thebe_selector_output = ".output, .cell_output"
   
   
   <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
   
   <input type="checkbox"
           class="sidebar-toggle"
@@ -135,13 +145,14 @@ const thebe_selector_output = ".output, .cell_output"
   
   
   
+  
     
     
       
     
     
-    <img src="_static/rangekeeper.jpg" class="logo__image only-light" alt="Logo image"/>
-    <script>document.write(`<img src="_static/rangekeeper.jpg" class="logo__image only-dark" alt="Logo image"/>`);</script>
+    <img src="_static/rangekeeper.jpg" class="logo__image only-light" alt="Rangekeeper - Home"/>
+    <script>document.write(`<img src="_static/rangekeeper.jpg" class="logo__image only-dark" alt="Rangekeeper - Home"/>`);</script>
   
   
 </a></div>
@@ -353,10 +364,10 @@ const thebe_selector_output = ".output, .cell_output"
 
 <script>
 document.write(`
-  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
-    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
-    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
   </button>
 `);
 </script>
@@ -364,7 +375,7 @@ document.write(`
 <script>
 document.write(`
   <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
   </button>
 `);
 </script>
@@ -430,10 +441,6 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="driving-a-financial-valuation-from-a-design">
 <h1>Driving a Financial Valuation from a Design<a class="headerlink" href="#driving-a-financial-valuation-from-a-design" title="Permalink to this heading">#</a></h1>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>The following is a work in progress. More content will be added as produced.</p>
-</div>
 <p>As seen in
 <a class="reference internal" href="load_design.html"><span class="doc std std-doc">Loading a Design</span></a>, a design’s object model (a
 <a class="reference external" href="https://en.wikipedia.org/wiki/Knowledge_graph">knowledge graph</a> including all
@@ -1850,7 +1857,7 @@ of the property:</p>
         <iframe
             width="100%"
             height="800"
-            src="https://speckle.xyz/streams/f5e306e3fa/commits/362b15db49?filter=%7B%22propertyInfoKey%22%3A%20%22type%22%2C%20%22isolatedIds%22%3A%20%5B%22ef003ad5f47731e7ce0c5f7a68d267d8%22%2C%20%2282a7bd365b9dfe78c0a77c901a8b9f81%22%2C%20%221ae737bcea2c78fa83ae2046ee7af6eb%22%5D%7D"
+            src="https://speckle.xyz/streams/f5e306e3fa/commits/362b15db49?filter=%7B%22propertyInfoKey%22%3A%20%22type%22%2C%20%22isolatedIds%22%3A%20%5B%2282a7bd365b9dfe78c0a77c901a8b9f81%22%2C%20%221ae737bcea2c78fa83ae2046ee7af6eb%22%2C%20%22ef003ad5f47731e7ce0c5f7a68d267d8%22%5D%7D"
             frameborder="0"
             allowfullscreen
             
@@ -1893,8 +1900,8 @@ of the property:</p>
 <tr><th style="text-align: right;">               date</th><th style="text-align: right;">  Utilities-derived Capital Expenses</th></tr>
 </thead>
 <tbody>
-<tr><td style="text-align: right;">2005-12-31 00:00:00</td><td style="text-align: right;">                        -$729,061.23</td></tr>
-<tr><td style="text-align: right;">2010-12-31 00:00:00</td><td style="text-align: right;">                        -$754,578.37</td></tr>
+<tr><td style="text-align: right;">2005-12-31 00:00:00</td><td style="text-align: right;">                      -$1,083,323.23</td></tr>
+<tr><td style="text-align: right;">2010-12-31 00:00:00</td><td style="text-align: right;">                      -$1,121,239.55</td></tr>
 </tbody>
 </table></div></div>
 </div>
@@ -2310,11 +2317,10 @@ can calculate the present value of the property:</p>
 
               
               
-                <footer class="bd-footer-article">
-                  
-<div class="footer-article-items footer-article__inner">
-  
-    <div class="footer-article-item"><!-- Previous / next buttons -->
+              
+              
+                <footer class="prev-next-footer">
+                  <!-- Previous / next buttons -->
 <div class="prev-next-area">
     <a class="left-prev"
        href="load_design.html"
@@ -2325,10 +2331,7 @@ can calculate the present value of the property:</p>
         <p class="prev-next-title">Loading a Design</p>
       </div>
     </a>
-</div></div>
-  
 </div>
-
                 </footer>
               
             </div>
@@ -2416,8 +2419,8 @@ By Daniel Fink
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
-<script src="_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
+  <script src="_static/scripts/bootstrap.js?digest=c5ced968eda925caa686"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=c5ced968eda925caa686"></script>
 
   <footer class="bd-footer">
   </footer>

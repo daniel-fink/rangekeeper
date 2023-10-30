@@ -23,7 +23,7 @@ matplotlib.use('TkAgg')
 plt.style.use('seaborn')  # pretty matplotlib plots
 plt.rcParams['figure.figsize'] = (12, 8)
 
-locale = locale.setlocale(locale.LC_ALL, 'en_us')
+locale = locale.setlocale(locale.LC_ALL, '')
 units = rk.measure.Index.registry
 currency = rk.measure.register_currency(registry=units)
 scope = dict(globals(), **locals())
