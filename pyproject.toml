@@ -33,6 +33,7 @@ sphinx-rtd-theme = "^1.2.0"
 pyvis = "^0.3.2"
 plotly = "^5.15.0"
 pyppeteer = "^1.0.2"
+ghp-import = "^2.1.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.2.1"
