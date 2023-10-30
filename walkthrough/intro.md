@@ -1,7 +1,7 @@
 # Rangekeeper
 
-Rangekeeper is an open-source 
-[library](https://github.com/daniel-fink/rangekeeper) code library for financial
+Rangekeeper is an open-source python-based [code 
+library](https://github.com/daniel-fink/rangekeeper) for financial
 modelling in real estate asset & development planning, decision-making, cashflow
 forecasting, and scenario analysis.
 
