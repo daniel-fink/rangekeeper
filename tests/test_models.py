@@ -13,11 +13,11 @@ import pandas as pd
 
 import rangekeeper as rk
 
-matplotlib.use('TkAgg')
-plt.style.use('seaborn')  # pretty matplotlib plots
+# matplotlib.use('TkAgg')
+plt.style.use('seaborn-v0_8')  # pretty matplotlib plots
 plt.rcParams['figure.figsize'] = (12, 8)
 
-locale.setlocale(locale.LC_ALL, 'en_au')
+locale.setlocale(locale.LC_ALL, 'en_AU')
 units = rk.measure.Index.registry
 currency = rk.measure.register_currency(registry=units)
 

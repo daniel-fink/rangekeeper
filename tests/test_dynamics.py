@@ -21,8 +21,8 @@ import pint
 
 import rangekeeper as rk
 
-matplotlib.use('TkAgg')
-plt.style.use('seaborn')  # pretty matplotlib plots
+# matplotlib.use('TkAgg')
+plt.style.use('seaborn-v0_8')  # pretty matplotlib plots
 plt.rcParams['figure.figsize'] = (12, 8)
 
 locale.setlocale(locale.LC_ALL, 'en_au')
