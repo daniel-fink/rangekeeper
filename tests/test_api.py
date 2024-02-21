@@ -26,6 +26,7 @@ import numpy as np
 import scipy.stats as ss
 import pint
 
+import graph
 import rangekeeper as rk
 
 
@@ -56,10 +57,10 @@ class TestApi:
         print('Root Base:\n {0}'.format(root_base))
         assert root_base.speckle_type == 'Rangekeeper.Entity:Rangekeeper.Assembly'
 
-        root_entity = rk.graph.Entity.from_base(root_base)
+        root_entity = graph.Entity.from_base(root_base)
         assert root_entity.name == 'property'
-        # assert len(root_entity.graph.nodes) == 5
-        assert type(root_entity) == rk.graph.Assembly
+        assert len(root_entity.graph.nodes) == 5
+        assert type(root_entity) == graph.Assembly
         print('Root Entity:\n {0}'.format(root_entity))
 
         buildingA = [node for node in root_entity.graph.nodes if node.name == 'buildingA'][0]
@@ -71,7 +72,7 @@ class TestApi:
         print('BuildingAresidential:\n {0}'.format(buildingAresidential))
 
     def test_develop(self):
-        parsed = rk.api.Speckle.parse(base=TestApi.model['@property'])
+        parsed = rk.api.Speckle.parse(base=TestApi.model['@scenario'])
         # print('\nParsed: \n{0}'.format(pp.pprint([base['name'] for base in parsed.values()])))
         # print('\nCount Parsed: \n{0}'.format(len(parsed)))
 

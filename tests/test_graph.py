@@ -18,14 +18,15 @@ import rangekeeper as rk
 # classes that hold tests must be named starting with 'Test',
 # and any function in a file that should be treated as a test must also start with 'test_'.
 
-# matplotlib.use('TkAgg')
-plt.style.use('seaborn-v0_8')  # pretty matplotlib plots
+matplotlib.use('TkAgg')
+plt.style.use('seaborn')  # pretty matplotlib plots
 plt.rcParams['figure.figsize'] = (12, 8)
 
-locale = locale.setlocale(locale.LC_ALL, 'en_AU')
+locale = locale.setlocale(locale.LC_ALL, 'en_us')
 units = rk.measure.Index.registry
 currency = rk.measure.register_currency(registry=units)
 scope = dict(globals(), **locals())
+
 
 element_root = rk.graph.Entity(
     name='root',
@@ -53,7 +54,7 @@ relationships = [
 class TestGraph:
     def test_graph(self):
         assert assembly.graph.size() == 3
-        assert assembly.graph.has_predecessor(element_child.entityId, element_root.entityId)
+        assert assembly.graph.has_predecessor(element_child, element_root)
 
         assert issubclass(type(assembly), rk.graph.Entity)
         assert issubclass(type(assembly), objects.Base)
@@ -61,12 +62,11 @@ class TestGraph:
         assert assembly.new_property == 'foo'
 
         # Test Querying:
-        # Check retrieval of first Entity in query:
-        assert [entity for entity in assembly.get_entities().values() if entity.name == 'grandchild01'][
-                   0].type == 'grandchild_type'
+        # Check retrieval of first Element in query:
+        assert [node for node in assembly.graph.nodes if node.name == 'grandchild01'][0].type == 'grandchild_type'
 
         # Check count of query response:
-        assert len([entity for entity in assembly.get_entities().values() if entity.type == 'grandchild_type']) == 2
+        assert len([node for node in assembly.graph.nodes if node.type == 'grandchild_type']) == 2
 
         # Check retrieval of Element Relatives:
         assert [element.name for element in element_root.get_relatives(
@@ -83,17 +83,18 @@ class TestGraph:
         #     ).distinct(
         #     lambda element: element.id)] == ['child']
 
-    # def test_aggregation(self):
-    #     element_root._aggregate(
-    #         property='name',
-    #         label='children',
-    #         relationship_type='is_parent_of',
-    #         assembly=assembly)
-    #
-    #     assert element_root['children'] == {element_child.entityId: 'child'}
-    #     assert element_child['children'] == {
-    #         element_grandchild01.entityId: 'grandchild01',
-    #         element_grandchild02.entityId: 'grandchild02'
-    #         }
-    #     assert element_grandchild01['children'] == {}
-    #     assert element_grandchild02['children'] == {}
+    def test_aggregation(self):
+
+        element_root.aggregate(
+            property_name='name',
+            aggregation_name='children',
+            relationship_type='is_parent_of',
+            assembly=assembly)
+
+        assert element_root['children'] == { element_child.entityId : 'child'}
+        assert element_child['children'] == {
+            element_grandchild01.entityId : 'grandchild01',
+            element_grandchild02.entityId : 'grandchild02'}
+        assert element_grandchild01['children'] == {}
+        assert element_grandchild02['children'] == {}
+

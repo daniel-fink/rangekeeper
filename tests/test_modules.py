@@ -9,7 +9,7 @@ import pytest
 import scipy.stats as ss
 from pytest import approx
 
-# import specklepy.objects as objects
+import specklepy.objects as objects
 
 import rangekeeper as rk
 
@@ -19,11 +19,11 @@ import rangekeeper as rk
 # classes that hold tests must be named starting with 'Test',
 # and any function in a file that should be treated as a test must also start with 'test_'.
 
-# matplotlib.use('TkAgg')
-plt.style.use('seaborn-v0_8')  # pretty matplotlib plots
+matplotlib.use('TkAgg')
+plt.style.use('seaborn')  # pretty matplotlib plots
 plt.rcParams['figure.figsize'] = (12, 8)
 
-locale = locale.setlocale(locale.LC_ALL, 'en_AU')
+locale = locale.setlocale(locale.LC_ALL, '')
 units = rk.measure.Index.registry
 currency = rk.measure.register_currency(registry=units)
 scope = dict(globals(), **locals())
@@ -120,7 +120,7 @@ class TestUnits:
         product = rk.measure.multiply_units(
             units=[quantity.units for quantity in quantities],
             registry=units)
-        assert product == 'AUD * meter / month / squaremeter / year'
+        assert product == 'USD * meter / month / squaremeter / year'
 
 
 class TestFlow:
@@ -333,7 +333,7 @@ class TestStream:
             scope=scope,
             registry=units)
 
-        assert stream_sqm_agg.units == 'AUD * squaremeter'
+        assert stream_sqm_agg.units == 'USD * squaremeter'
 
     def test_stream_duplication(self):
         duplicate = TestStream.stream.duplicate()

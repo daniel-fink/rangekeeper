@@ -123,9 +123,6 @@ class Entity(objects.Base):
     def __eq__(self, other):
         return self.entityId == other.entityId
 
-    def __hash__(self):
-        return hash(self.entityId)
-
     def __init__(
             self,
             entityId: str = None,
@@ -136,12 +133,6 @@ class Entity(objects.Base):
             name=name if name is not None else '[Unnamed]',
             type=type if type is not None else '[Unknown]'
             )
-
-    def try_get_attribute(self, key):
-        try:
-            return self[key]
-        except KeyError:
-            return None
 
     @classmethod
     def from_base(
@@ -293,7 +284,7 @@ class Entity(objects.Base):
         keys = properties
         if properties is None:
             keys = list(filter(lambda key: key not in filtered, self.get_member_names()))
-        attributes = {key: self.try_get_attribute(key) for key in keys}
+        attributes = {key: self[key] for key in keys}
         relationships = self.get_relationships(assembly=assembly)
         if arborescence is False:
             attributes['relationships'] = relationships
@@ -319,7 +310,7 @@ class Entity(objects.Base):
         if relationship_type is None:
             tree = assembly
         else:
-            tree = assembly.filter_by_type(relationship_type=relationship_type)
+            tree = assembly.filter_by_relationship_type(relationship_type)
         if not nx.is_arborescence(tree.graph):
             raise Exception('The Assembly is not a tree. Cannot calculate ancestors.')
 

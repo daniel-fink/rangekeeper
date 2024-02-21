@@ -144,7 +144,6 @@ class Extrapolation(Projection):
 
         return result
 
-
 class Distribution(Projection):
     form: rk.distribution.Form
 
