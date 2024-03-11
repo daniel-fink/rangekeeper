@@ -81,12 +81,12 @@ def register_currency(
     if '[currency]' not in registry._dimensions:
         registry.define('money = [currency]')
         registry.define(
-            '{0} = [currency] = {0} = {1}'.format(
+            '{0} = nan money = {0} = {1}'.format(
                 ''.join(currency.code.split()),
                 ''.join(currency.name.split())))
     else:
         registry.define(
-            '{0} =[currency] = {0} = {1}'.format(
+            '{0} = nan money = {0} = {1}'.format(
                 ''.join(currency.code.split()),
                 ''.join(currency.name.split())))
 

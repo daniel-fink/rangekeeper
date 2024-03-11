@@ -33,7 +33,7 @@ class Volatility(rk.flux.Flow):
                   for x in range(sequence.size)],
             # the ndtri() function replicates excel's NORMSINV().
             # See https://stackoverflow.com/questions/20626994/how-to-calculate-the-inverse-of-the-normal-cumulative-distribution-function-in-p/20627638
-            index=rk.periodicity.to_datestamps(period_index=sequence))
+            index=rk.duration.Sequence.to_datestamps(sequence=sequence))
 
         self.volatility = rk.flux.Flow(
             movements=volatilities,
@@ -65,7 +65,7 @@ class Volatility(rk.flux.Flow):
 
         movements = pd.Series(
                 data=cumulative_volatility_data,
-                index=rk.periodicity.to_datestamps(period_index=sequence))
+                index=rk.duration.Sequence.to_datestamps(sequence=sequence))
 
         super().__init__(
             name='Cumulative Volatility',

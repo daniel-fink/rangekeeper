@@ -44,7 +44,7 @@ class BlackSwan:
                     likelihood=self.likelihood,
                     dissipation_rate=self.dissipation_rate,
                     events=self.probability.sample(self.sequence.size)),
-                index=rk.periodicity.to_datestamps(period_index=self.sequence)))
+                index=rk.duration.Sequence.to_datestamps(sequence=self.sequence)))
 
     @staticmethod
     @jit(nopython=True)

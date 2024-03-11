@@ -36,42 +36,6 @@ class Projection:
         else:
             self.bounds = bounds
 
-    # def __init__(
-    #         self,
-    #         sequence: Union[pd.RangeIndex, pd.PeriodIndex],
-    #         bounds: Union[Tuple[int, int], Tuple[pd.Period, pd.Period]] = None):
-    #
-    #     if isinstance(sequence, pd.RangeIndex):
-    #         if bounds is None:
-    #             self.sequence = sequence
-    #             self.bounds = (0, len(sequence))
-    #         elif isinstance(bounds[0], int):
-    #             self.sequence = sequence
-    #             self.bounds = bounds
-    #         else:
-    #             raise ValueError(f"sequence and bounds must match in type (int or pd.Period)")
-    #
-    #     elif isinstance(sequence, pd.PeriodIndex):
-    #         if bounds is None:
-    #             self.sequence = periodicity.to_range_index(
-    #                 period_index=sequence)
-    #             self.bounds = (0, len(sequence))
-    #         elif isinstance(bounds[0], pd.Period):
-    #             self.sequence = periodicity.to_range_index(
-    #                 period_index=sequence,
-    #                 start=bounds[0],
-    #                 end=bounds[1])
-    #             bounds_range = pd.period_range(
-    #                 start=bounds[0],
-    #                 end=bounds[1],
-    #                 freq=sequence.freq)
-    #             self.bounds = (0, len(bounds_range))
-    #         else:
-    #             raise ValueError(f"sequence and bounds must match in type (int or pd.Period)")
-    #
-    #     else:
-    #         raise ValueError(f"sequence must be of type (pd.RangeIndex or pd.PeriodIndex)")
-
     @staticmethod
     def _pad(
             value: float,
@@ -113,7 +77,7 @@ class Extrapolation(Projection):
 
     def terms(self) -> pd.Series:
         terms = self.form.terms(
-            sequence=rk.periodicity.to_range_index(period_index=self.sequence))
+            sequence=rk.duration.Sequence.to_range_index(sequence=self.sequence))
         left_length = self.sequence[0] - self.bounds[0]
         right_length = self.bounds[1] - self.sequence[-1]
         left = self._pad(
@@ -129,18 +93,16 @@ class Extrapolation(Projection):
         start = self.bounds[0].to_timestamp(how='start')
         bound = self.bounds[1].to_timestamp(how='end')
 
-        period_index = rk.periodicity.period_index(
+        sequence = rk.duration.Sequence.from_bounds(
             include_start=start,
-            period_type=rk.periodicity.from_value(self.sequence.freq),
+            frequency=rk.duration.Type.from_value(self.sequence.freq),
             bound=bound)
 
-        index = rk.periodicity.to_datestamps(period_index=period_index)
+        index = rk.duration.Sequence.to_datestamps(sequence=sequence)
 
         result = pd.Series(
             data=data,
             index=index)
-
-        # result = result[start:bound]
 
         return result
 
@@ -178,14 +140,9 @@ class Distribution(Projection):
             length=right_length.n,
             type=Padding.NIL)
 
-        # self._index = periodicity.period_index(
-        #     include_start=self.bounds[0].to_timestamp(),
-        #     period_type=periodicity.from_value(self.sequence.freq),
-        #     bound=self.bounds[1].to_timestamp())
-
     def _seq_to_params(self) -> [float]:
-        range_index = rk.periodicity.to_range_index(
-            period_index=self.sequence)
+        range_index = rk.duration.Sequence.to_range_index(
+            sequence=self.sequence)
         range_index = range_index.insert(
             loc=len(range_index),
             item=range_index[-1] + 1)
@@ -198,21 +155,21 @@ class Distribution(Projection):
 
         return pd.Series(
             data=data,
-            index=rk.periodicity.to_datestamps(
-                rk.periodicity.period_index(
+            index=rk.duration.Sequence.to_datestamps(
+                rk.duration.Sequence.from_bounds(
                     include_start=self.bounds[0].to_timestamp(),
-                    period_type=rk.periodicity.from_value(self.sequence.freq),
+                    frequency=rk.duration.Type.from_value(self.sequence.freq),
                     bound=self.bounds[1].to_timestamp())))
 
     def cumulative_density(self) -> [float]:
         densities = self.form.cumulative_density(parameters=self._parameters)
         data = np.concatenate((self._left_padding, densities, self._right_padding))
 
-        period_index = rk.periodicity.period_index(
+        period_index = rk.duration.Sequence.from_bounds(
             include_start=self.bounds[0].to_timestamp(),
-            period_type=rk.periodicity.from_value(self.sequence.freq),
+            frequency=rk.duration.Type.from_value(self.sequence.freq),
             bound=self.bounds[1].to_timestamp())
-        datestamp_index = rk.periodicity.to_datestamps(period_index=period_index)
+        datestamp_index = rk.duration.Sequence.to_datestamps(sequence=period_index)
         datestamp_index = datestamp_index.insert(loc=0, item=self.bounds[0].start_time)
 
         return pd.Series(

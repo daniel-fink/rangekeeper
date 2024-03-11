@@ -180,7 +180,7 @@ class Segment:
             frame = pd.pivot_table(
                 data=frame,
                 index=[pivot.value],
-                aggfunc=np.sum
+                aggfunc='sum'#np.sum
                 # columns=['Amount', 'Use', 'Proportion (of Parent)']
                 )
             frame['Proportion (of Parent)'] = frame['Amount'] / self.bounds.length

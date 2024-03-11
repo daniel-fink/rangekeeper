@@ -26,7 +26,6 @@ import numpy as np
 import scipy.stats as ss
 import pint
 
-import graph
 import rangekeeper as rk
 
 
@@ -57,10 +56,10 @@ class TestApi:
         print('Root Base:\n {0}'.format(root_base))
         assert root_base.speckle_type == 'Rangekeeper.Entity:Rangekeeper.Assembly'
 
-        root_entity = graph.Entity.from_base(root_base)
+        root_entity = rk.graph.Entity.from_base(root_base)
         assert root_entity.name == 'property'
         assert len(root_entity.graph.nodes) == 5
-        assert type(root_entity) == graph.Assembly
+        assert type(root_entity) == rk.graph.Assembly
         print('Root Entity:\n {0}'.format(root_entity))
 
         buildingA = [node for node in root_entity.graph.nodes if node.name == 'buildingA'][0]
@@ -72,28 +71,28 @@ class TestApi:
         print('BuildingAresidential:\n {0}'.format(buildingAresidential))
 
     def test_develop(self):
-        parsed = rk.api.Speckle.parse(base=TestApi.model['@scenario'])
+        parsed = rk.api.Speckle.parse(base=TestApi.model['@property'])
         # print('\nParsed: \n{0}'.format(pp.pprint([base['name'] for base in parsed.values()])))
         # print('\nCount Parsed: \n{0}'.format(len(parsed)))
 
-        scenario = rk.api.Speckle.to_rk(
+        property = rk.api.Speckle.to_rk(
             bases=list(parsed.values()),
-            name='scenario',
-            type='scenario')
+            name='property',
+            type='property')
         # print('\nScenario: \n{0}'.format(scenario))
         # print('\nCount Scenario: \n{0}'.format(len(scenario.graph.nodes())))
 
         spatial_containment = rk.graph.Assembly.from_graph(
-            graph=scenario.graph.edge_subgraph(
-                [edge for edge in scenario.graph.edges(keys=True) if edge[2] == 'spatiallyContains']),
+            graph=property.graph.edge_subgraph(
+                [edge for edge in property.graph.edges(keys=True) if edge[2] == 'spatiallyContains']),
             name='spatial_containment',
             type='subgraph')
         # print('\nSpatial Containment: \n{0}'.format(spatial_containment))
 
-        roots = scenario.get_roots()  # ['spatiallyContains']
+        roots = property.get_roots()  # ['spatiallyContains']
         # print('\nRoots: \n{0}'.format(roots))
 
-        subassemblies = scenario.get_subassemblies()
+        subassemblies = property.get_subassemblies()
         # print('\nSubassemblies: \n{0}'.format(pp.pprint(list(subassemblies.values()))))
 
         buildingA = [assembly for assembly in subassemblies.values() if assembly['name'] == 'buildingA'][0]
@@ -102,10 +101,10 @@ class TestApi:
         subentities = buildingA.get_subentities()
         # print('\nSubentities: \n{0}'.format(pp.pprint(list(subentities.values()))))
 
-        scenario_dict = scenario.to_dict()
+        scenario_dict = property.to_dict()
         # print('\nDicts: \n{0}'.format(pp.pprint(scenario_dict)))
 
-        scenario.plot(
+        property.plot(
             hierarchical_layout=False,
             display=False,
             height=1600,

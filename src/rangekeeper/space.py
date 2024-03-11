@@ -16,11 +16,10 @@ class Space(rk.graph.Entity):
             attributes: Dict = None):
         super().__init__(
             name=name,
-            type=type,
-            # measurements=measurements,
-            # events=events,
-            # attributes=attributes
-        )
+            type=type)
+        self.measurements = measurements
+        self.events=events
+        self.attributes = attributes
 
 
 class Apartment(Space):

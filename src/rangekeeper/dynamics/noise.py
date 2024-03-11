@@ -30,5 +30,5 @@ class Noise:
         return rk.flux.Flow(
             movements=pd.Series(
                 data=self.noise_dist.sample(size=self.sequence.size),
-                index=rk.periodicity.to_datestamps(period_index=self.sequence)),
+                index=rk.duration.Sequence.to_datestamps(sequence=self.sequence)),
             name='Noise')

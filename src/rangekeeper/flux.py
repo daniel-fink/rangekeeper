@@ -143,19 +143,19 @@ class Flow:
         plt.show(block=True)
 
     @classmethod
-    def from_periods(
+    def from_sequence(
             cls,
-            index: pd.PeriodIndex,
+            sequence: pd.PeriodIndex,
             data: [float],
             units: Optional[pint.Unit] = None,
             name: str = None) -> Flow:
         """
-        Returns a Flow where movement dates are defined by the end-dates of the specified periods
+        Returns a Flow where movement dates are defined by the end-dates of the specified sequence of periods (a pd.PeriodIndex)
         """
 
-        if index.size != len(data):
+        if sequence.size != len(data):
             raise ValueError("Error: count of periods and data must match")
-        dates = [pd.Timestamp(period.to_timestamp(how='end').date()) for period in index]
+        dates = [pd.Timestamp(period.to_timestamp(how='end').date()) for period in sequence]
         series = pd.Series(
             data=data,
             index=pd.Series(data=dates, name='date'),
@@ -255,13 +255,13 @@ class Flow:
 
     def pv(
             self,
-            period_type: rk.periodicity.Type,
+            frequency: rk.duration.Type,
             discount_rate: float,
             name: str = None) -> Flow:
         """
         Returns a Flow with values discounted to the present (i.e. before its first period) by a specified rate
         """
-        resampled = self.resample(period_type)
+        resampled = self.resample(frequency)
         frame = resampled.movements.to_frame()
         frame.insert(0, 'index', range(resampled.movements.index.size))
         frame['Discounted Flow'] = frame.apply(
@@ -288,24 +288,24 @@ class Flow:
 
     def resample(
             self,
-            period_type: rk.periodicity.Type) -> Flow:
+            frequency: rk.duration.Type) -> Flow:
         """
         Returns a Flow with movements summed to specified frequency of dates
         """
         return rk.flux.Flow(
-            movements=self.movements.copy(deep=True).resample(rule=period_type.value).sum(),
+            movements=self.movements.copy(deep=True).resample(rule=frequency.value).sum(),
             units=self.units,
             name=self.name)
 
     def to_periods(
             self,
-            period_type: rk.periodicity.Type) -> pd.Series:
+            frequency: rk.duration.Type) -> pd.Series:
         """
-        Returns a pd.Series (of index pd.PeriodIndex) with movements summed to specified periodicity
+        Returns a pd.Series (of index pd.PeriodIndex) with movements summed to specified frequency
         """
         return self \
-            .resample(period_type=period_type) \
-            .movements.to_period(freq=period_type.value, copy=True) \
+            .resample(frequency=frequency) \
+            .movements.to_period(freq=rk.duration.Type.period(frequency), copy=True) \
             .rename_axis('period') \
             .groupby(level='period') \
             .sum()
@@ -329,38 +329,36 @@ class Flow:
 
     def to_stream(
             self,
-            period_type: rk.periodicity.Type,
+            frequency: rk.duration.Type,
             name: str = None) -> Stream:
         """
         Returns a Stream with the flow as flow
-        resampled at the specified periodicity
-        :param period_type:
-        :param name:
+        resampled at the specified frequency
         """
         return Stream(
             name=name if name is not None else self.name,
             flows=[self],
-            period_type=period_type)
+            frequency=frequency)
 
 
 class Stream:
     name: str
     flows: [Flow]
-    period_type: rk.periodicity.Type
+    frequency: rk.duration.Type
     start_date: pd.Timestamp
     end_date: pd.Timestamp
     frame: pd.DataFrame
 
     """
     A `Stream` collects flow (constituent) Flows
-    and resamples them with a specified periodicity.
+    and resamples them with a specified frequency.
     """
 
     def __init__(
             self,
             name: str,
             flows: [Flow],
-            period_type: rk.periodicity.Type):
+            frequency: rk.duration.Type):
 
         # Name:
         self.name = name
@@ -377,8 +375,8 @@ class Stream:
 
         self.units = {flow.name: flow.units for flow in self.flows}
 
-        # Periodicity Type:
-        self.period_type = period_type
+        # Frequency:
+        self.frequency = frequency
 
         # Stream:
         flows_dates = list(
@@ -386,14 +384,14 @@ class Stream:
         self.start_date = min(flows_dates)
         self.end_date = max(flows_dates)
 
-        index = rk.periodicity.period_index(
+        index = rk.duration.Sequence.from_bounds(
             include_start=self.start_date,
-            period_type=self.period_type,
+            frequency=self.frequency,
             bound=self.end_date)
-        self._resampled_flows = [flow.to_periods(period_type=self.period_type) for flow in self.flows]
+        self._resampled_flows = [flow.to_periods(frequency=self.frequency) for flow in self.flows]
         self.frame = pd.concat(self._resampled_flows, axis=1).fillna(0).sort_index()
         """
-        A pd.DataFrame of the Stream's flow Flows accumulated into the Stream's periodicity
+        A pd.DataFrame of the Stream's flow Flows accumulated into the Stream's frequency
         """
 
     def __str__(self):
@@ -412,7 +410,7 @@ class Stream:
 
         formatted_flows = []
         for flow in self.flows:
-            series = flow.to_periods(period_type=self.period_type)
+            series = flow.to_periods(frequency=self.frequency)
             formatted_flows.append(_format_series(
                 series=series,
                 units=flow.units,
@@ -456,13 +454,13 @@ class Stream:
         return self.__class__(
             name=self.name,
             flows=flows,
-            period_type=self.period_type)
+            frequency=self.frequency)
 
     def duplicate(self) -> Stream:
         return self.__class__(
             name=self.name,
             flows=[flow.duplicate() for flow in self.flows],
-            period_type=self.period_type)
+            frequency=self.frequency)
 
     @classmethod
     def from_DataFrame(
@@ -481,7 +479,7 @@ class Stream:
         return cls(
             name=name,
             flows=flows,
-            period_type=rk.periodicity.from_value(data.index.freqstr))
+            frequency=rk.duration.Type.from_value(data.index.freqstr))
 
     def plot(
             self,
@@ -617,10 +615,10 @@ class Stream:
         :param flow_name:
         :return:
         """
-        return Flow.from_periods(
+        return Flow.from_sequence(
             name=flow_name,
             data=list(self.frame[flow_name]),
-            index=self.frame.index,
+            sequence=self.frame.index,
             units=self.units[flow_name])
 
     def sum(
@@ -636,9 +634,9 @@ class Stream:
                 json.dumps(
                     {flow.name: flow.units.__str__() for flow in self.flows}, indent=4)))
 
-        return Flow.from_periods(
+        return Flow.from_sequence(
             name=name if name is not None else self.name + ' (sum)',
-            index=self.frame.index,
+            sequence=self.frame.index,
             data=self.frame.sum(axis=1).to_list(),
             units=next(iter(self.units.values())))
 
@@ -664,9 +662,9 @@ class Stream:
             dimension='[time]',
             registry=registry).units
 
-        return Flow.from_periods(
+        return Flow.from_sequence(
             name=name if name is not None else self.name + ' (product)',
-            index=self.frame.index,  # .to_period(),
+            sequence=self.frame.index,  # .to_period(),
             data=self.frame.prod(axis=1).to_list(),
             units=reduced_units)
 
@@ -679,7 +677,7 @@ class Stream:
         return self.__class__(
             name=self.name,
             flows=[flow.collapse() for flow in flows],
-            period_type=self.period_type)
+            frequency=self.frequency)
 
     def total(self) -> np.float64:
         return self.sum().collapse().movements.iloc[0]
@@ -709,20 +707,20 @@ class Stream:
         self.start_date = min(flows_dates)
         self.end_date = max(flows_dates)
 
-        index = rk.periodicity.period_index(
-            include_start=self.start_date,
-            period_type=self.period_type,
-            bound=self.end_date)
-        _resampled_flows = [flow.to_periods(period_type=self.period_type) for flow in self.flows]
+        # sequence = rk.duration.Sequence.from_bounds(
+        #     include_start=self.start_date,
+        #     frequency=self.frequency,
+        #     bound=self.end_date)
+        _resampled_flows = [flow.to_periods(frequency=self.frequency) for flow in self.flows]
         self.frame = pd.concat(_resampled_flows, axis=1).fillna(0)
 
     def resample(
             self,
-            period_type: rk.periodicity.Type) -> Stream:
+            frequency: rk.duration.Type) -> Stream:
         return Stream(
             name=self.name,
             flows=self.flows,
-            period_type=period_type)
+            frequency=frequency)
 
     def trim_to_span(
             self,
@@ -735,14 +733,14 @@ class Stream:
         return self.__class__(
             name=self.name,
             flows=[flow.duplicate().trim_to_span(span) for flow in self.flows],
-            period_type=self.period_type)
+            frequency=self.frequency)
 
     @classmethod
     def merge(
             cls,
             streams,
             name: str,
-            period_type: rk.periodicity.Type) -> Stream:
+            frequency: rk.duration.Type) -> Stream:
         # Check Units:
         if any(stream.units != streams[0].units for stream in streams):
             raise Exception("Input Streams have dissimilar units. Cannot merge into Stream.")
@@ -753,4 +751,4 @@ class Stream:
         return cls(
             name=name,
             flows=flows,
-            period_type=period_type)
+            frequency=frequency)

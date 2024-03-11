@@ -1,10 +1,10 @@
 from . import api as api
 from . import distribution as distribution
+from . import duration as duration
 from . import extrapolation as extrapolation
 from . import flux as flux
 from . import graph as graph
 from . import measure as measure
-from . import periodicity as periodicity
 from . import policy as policy
 from . import projection as projection
 from . import span as span

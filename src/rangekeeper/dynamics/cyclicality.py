@@ -98,23 +98,23 @@ class Cycle:
 
     def sine(
             self,
-            index: pd.PeriodIndex,
+            sequence: pd.PeriodIndex,
             name: str = "sine_cycle"):
         data = Enumerate.sine(
             period=self.period,
             phase=self.phase,
             amplitude=self.amplitude,
-            num_periods=index.size)
+            num_periods=sequence.size)
         return rk.flux.Flow(
             movements=pd.Series(
                 data=data,
-                index=rk.periodicity.to_datestamps(period_index=index)),
+                index=rk.duration.Sequence.to_datestamps(sequence=sequence)),
             name=name)
 
     def asymmetric_sine(
             self,
             parameter: float,
-            index: pd.PeriodIndex,
+            sequence: pd.PeriodIndex,
             precision: float = 1e-8,
             bound: float = 1e-1,
             name: str = "asymmetric_sine_cycle") -> rk.flux.Flow:
@@ -123,13 +123,13 @@ class Cycle:
             phase=self.phase,
             amplitude=self.amplitude,
             parameter=parameter,
-            num_periods=index.size,
+            num_periods=sequence.size,
             precision=precision,
             bound=bound)
         return rk.flux.Flow(
             movements=pd.Series(
                 data=data,
-                index=rk.periodicity.to_datestamps(period_index=index)),
+                index=rk.duration.Sequence.to_datestamps(sequence=sequence)),
             # units=measure.scalar,
             name=name)
 
@@ -158,11 +158,11 @@ class Cyclicality:
 
         if space_cycle_asymmetric_parameter == 0:
             space_waveform = self.space_cycle.sine(
-                index=sequence,
+                sequence=sequence,
                 name='Space Cycle Waveform')
         else:
             space_waveform = self.space_cycle.asymmetric_sine(
-                index=sequence,
+                sequence=sequence,
                 name='Space Cycle Waveform',
                 parameter=space_cycle_asymmetric_parameter)
         self.space_waveform = rk.flux.Flow(
@@ -172,11 +172,11 @@ class Cyclicality:
 
         if asset_cycle_asymmetric_parameter == 0:
             self.asset_waveform = self.asset_cycle.sine(
-                index=sequence,
+                sequence=sequence,
                 name='Asset Cycle Waveform')
         else:
             self.asset_waveform = self.asset_cycle.asymmetric_sine(
-                index=sequence,
+                sequence=sequence,
                 name='Asset Cycle Waveform',
                 parameter=asset_cycle_asymmetric_parameter)
 
