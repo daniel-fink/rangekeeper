@@ -21,11 +21,11 @@ import pint
 
 import rangekeeper as rk
 
-matplotlib.use('TkAgg')
-plt.style.use('seaborn')  # pretty matplotlib plots
+# matplotlib.use('TkAgg')
+plt.style.use('seaborn-v0_8')  # pretty matplotlib plots
 plt.rcParams['figure.figsize'] = (12, 8)
 
-locale.setlocale(locale.LC_ALL, 'en_au')
+locale.setlocale(locale.LC_ALL, 'en_AU')
 units = rk.measure.Index.registry
 currency = rk.measure.register_currency(registry=units)
 
@@ -33,7 +33,7 @@ pint.set_application_registry(rk.measure.Index.registry)
 model_params = {
     'start_date': pd.Timestamp('2001-01-01'),
     'num_periods': 10,
-    'period_type': rk.periodicity.Type.YEAR,
+    'frequency': rk.duration.Type.YEAR,
     'acquisition_cost': -1000 * currency.units,
     'initial_income': 100 * currency.units,
     'growth_rate': .02,
@@ -50,28 +50,28 @@ class ExAnteInflexibleModel:
             self,
             params: dict):
         self.params = params
-        self.calc_span = rk.span.Span.from_num_periods(
+        self.calc_span = rk.span.Span.from_duration(
             name='Span to Calculate Reversion',
             date=self.params['start_date'],
-            period_type=self.params['period_type'],
-            num_periods=self.params['num_periods'] + 1)
-        self.acq_span = rk.span.Span.from_num_periods(
+            duration=self.params['frequency'],
+            amount=self.params['num_periods'] + 1)
+        self.acq_span = rk.span.Span.from_duration(
             name='Acquisition Span',
-            date=rk.periodicity.offset_date(
+            date=rk.duration.offset(
                 params['start_date'],
-                num_periods=-1,
-                period_type=self.params['period_type']),
-            period_type=self.params['period_type'],
-            num_periods=1)
+                amount=-1,
+                duration=self.params['frequency']),
+            duration=self.params['frequency'],
+            amount=1)
         self.span = self.calc_span.shift(
             name='Span',
-            num_periods=-1,
-            period_type=self.params['period_type'],
+            amount=-1,
+            duration=self.params['frequency'],
             bound='end')
         self.reversion_span = self.span.shift(
             name='Reversion Span',
-            num_periods=9,
-            period_type=self.params['period_type'],
+            amount=9,
+            duration=self.params['frequency'],
             bound='start')
 
         self.acquisition = rk.flux.Flow.from_projection(
@@ -79,7 +79,7 @@ class ExAnteInflexibleModel:
             value=self.params['acquisition_cost'],
             proj=rk.projection.Distribution(
                 form=rk.distribution.Uniform(),
-                sequence=self.acq_span.to_index(period_type=self.params['period_type'])),
+                sequence=self.acq_span.to_sequence(frequency=self.params['frequency'])),
             units=currency.units)
 
         self.pgi = rk.flux.Flow.from_projection(
@@ -88,7 +88,7 @@ class ExAnteInflexibleModel:
             proj=rk.projection.Extrapolation(
                 form=rk.extrapolation.Compounding(
                     rate=self.params['growth_rate']),
-                sequence=self.calc_span.to_index(period_type=self.params['period_type'])),
+                sequence=self.calc_span.to_sequence(frequency=self.params['frequency'])),
             units=currency.units)
 
         self.vacancy = rk.flux.Flow(
@@ -98,7 +98,7 @@ class ExAnteInflexibleModel:
         self.egi = rk.flux.Stream(
             name='Effective Gross Income',
             flows=[self.pgi, self.vacancy],
-            period_type=self.params['period_type']).sum()
+            frequency=self.params['frequency']).sum()
         self.opex = rk.flux.Flow(
             name='Operating Expenses',
             movements=self.pgi.movements * params['opex_pgi_ratio'],
@@ -106,7 +106,7 @@ class ExAnteInflexibleModel:
         self.noi = rk.flux.Stream(
             name='Net Operating Income',
             flows=[self.egi, self.opex],
-            period_type=self.params['period_type']).sum()
+            frequency=self.params['frequency']).sum()
         self.capex = rk.flux.Flow(
             name='Capital Expenditures',
             movements=self.pgi.movements * params['capex_pgi_ratio'],
@@ -114,7 +114,7 @@ class ExAnteInflexibleModel:
         self.net_cfs = rk.flux.Stream(
             name='Net Annual Cashflows',
             flows=[self.noi, self.capex],
-            period_type=self.params['period_type']).sum()
+            frequency=self.params['frequency']).sum()
 
         self.reversions = rk.flux.Flow(
             name='Reversions',
@@ -128,7 +128,7 @@ class ExAnteInflexibleModel:
                 self.net_cfs.trim_to_span(span=self.span),
                 self.reversions.trim_to_span(span=self.reversion_span)
                 ],
-            period_type=self.params['period_type'])
+            frequency=self.params['frequency'])
 
         pvs = []
         irrs = []
@@ -144,17 +144,17 @@ class ExAnteInflexibleModel:
             cumulative_net_cfs_with_rev = rk.flux.Stream(
                 name='Net Cashflow with Reversion',
                 flows=[cumulative_net_cfs, reversion],
-                period_type=self.params['period_type'])
+                frequency=self.params['frequency'])
             pv = cumulative_net_cfs_with_rev.sum().pv(
                 name='Present Value',
-                period_type=self.params['period_type'],
+                frequency=self.params['frequency'],
                 discount_rate=self.params['discount_rate'])
             pvs.append(pv.collapse().movements)
 
             incl_acq = rk.flux.Stream(
                 name='Net Cashflow with Reversion and Acquisition',
                 flows=[cumulative_net_cfs_with_rev.sum(), self.acquisition],
-                period_type=self.params['period_type'])
+                frequency=self.params['frequency'])
 
             irrs.append(round(incl_acq.sum().xirr(), 4))
 
@@ -179,28 +179,28 @@ class ExPostInflexibleModel:
         self.market = market
 
     def set_spans(self):
-        self.calc_span = rk.span.Span.from_num_periods(
+        self.calc_span = rk.span.Span.from_duration(
             name='Span to Calculate Reversion',
             date=self.params['start_date'],
-            period_type=self.params['period_type'],
-            num_periods=self.params['num_periods'] + 1)
-        self.acq_span = rk.span.Span.from_num_periods(
+            duration=self.params['frequency'],
+            amount=self.params['num_periods'] + 1)
+        self.acq_span = rk.span.Span.from_duration(
             name='Acquisition Span',
-            date=rk.periodicity.offset_date(
+            date=rk.duration.offset(
                 self.params['start_date'],
-                num_periods=-1,
-                period_type=self.params['period_type']),
-            period_type=self.params['period_type'],
-            num_periods=1)
+                amount=-1,
+                duration=self.params['frequency']),
+            duration=self.params['frequency'],
+            amount=1)
         self.span = self.calc_span.shift(
             name='Span',
-            num_periods=-1,
-            period_type=self.params['period_type'],
+            amount=-1,
+            duration=self.params['frequency'],
             bound='end')
         self.reversion_span = self.span.shift(
             name='Reversion Span',
-            num_periods=self.params['num_periods'] - 1,
-            period_type=self.params['period_type'],
+            amount=self.params['num_periods'] - 1,
+            duration=self.params['frequency'],
             bound='start')
 
     def set_flows(self):
@@ -209,7 +209,7 @@ class ExPostInflexibleModel:
             value=self.params['acquisition_cost'],
             proj=rk.projection.Distribution(
                 form=rk.distribution.Uniform(),
-                sequence=self.acq_span.to_index(period_type=self.params['period_type'])),
+                sequence=self.acq_span.to_sequence(frequency=self.params['frequency'])),
             units=currency.units)
 
         pgi = rk.flux.Flow.from_projection(
@@ -218,7 +218,7 @@ class ExPostInflexibleModel:
             proj=rk.projection.Extrapolation(
                 form=rk.extrapolation.Compounding(
                     rate=self.params['growth_rate']),
-                sequence=self.calc_span.to_index(period_type=self.params['period_type'])),
+                sequence=self.calc_span.to_sequence(frequency=self.params['frequency'])),
             units=currency.units)
 
         self.pgi = rk.flux.Stream(
@@ -227,7 +227,7 @@ class ExPostInflexibleModel:
                 pgi,
                 self.market.space_market_price_factors
                 ],
-            period_type=self.params['period_type']
+            frequency=self.params['frequency']
             ).product(registry=rk.measure.Index.registry)
 
         self.vacancy = rk.flux.Flow(
@@ -237,7 +237,7 @@ class ExPostInflexibleModel:
         self.egi = rk.flux.Stream(
             name='Effective Gross Income',
             flows=[self.pgi, self.vacancy],
-            period_type=self.params['period_type']).sum()
+            frequency=self.params['frequency']).sum()
         self.opex = rk.flux.Flow(
             name='Operating Expenses',
             movements=self.pgi.movements * self.params['opex_pgi_ratio'],
@@ -245,7 +245,7 @@ class ExPostInflexibleModel:
         self.noi = rk.flux.Stream(
             name='Net Operating Income',
             flows=[self.egi, self.opex],
-            period_type=self.params['period_type']).sum()
+            frequency=self.params['frequency']).sum()
         self.capex = rk.flux.Flow(
             name='Capital Expenditures',
             movements=self.pgi.movements * self.params['capex_pgi_ratio'],
@@ -253,7 +253,7 @@ class ExPostInflexibleModel:
         self.net_cfs = rk.flux.Stream(
             name='Net Annual Cashflows',
             flows=[self.noi, self.capex],
-            period_type=self.params['period_type']).sum()
+            frequency=self.params['frequency']).sum()
 
         self.reversions = rk.flux.Flow(
             name='Reversions',
@@ -268,7 +268,7 @@ class ExPostInflexibleModel:
                 self.net_cfs.trim_to_span(span=self.span),
                 self.reversions.trim_to_span(span=self.reversion_span)
                 ],
-            period_type=self.params['period_type'])
+            frequency=self.params['frequency'])
 
     def set_metrics(self):
         pvs = []
@@ -285,17 +285,17 @@ class ExPostInflexibleModel:
             cumulative_net_cfs_with_rev = rk.flux.Stream(
                 name='Net Cashflow with Reversion',
                 flows=[cumulative_net_cfs, reversion],
-                period_type=self.params['period_type'])
+                frequency=self.params['frequency'])
             pv = cumulative_net_cfs_with_rev.sum().pv(
                 name='Present Value',
-                period_type=self.params['period_type'],
+                frequency=self.params['frequency'],
                 discount_rate=self.params['discount_rate'])
             pvs.append(pv.collapse().movements)
 
             incl_acq = rk.flux.Stream(
                 name='Net Cashflow with Reversion and Acquisition',
                 flows=[cumulative_net_cfs_with_rev.sum(), self.acquisition],
-                period_type=self.params['period_type'])
+                frequency=self.params['frequency'])
 
             irrs.append(round(incl_acq.sum().xirr(), 4))
 
@@ -355,13 +355,13 @@ class ExPostInflexibleModel:
 
 
 class TestDynamics:
-    period_type = rk.periodicity.Type.YEAR
-    span = rk.span.Span.from_num_periods(
+    frequency = rk.duration.Type.YEAR
+    span = rk.span.Span.from_duration(
         name="Span",
         date=pd.Timestamp(2000, 1, 1),
-        period_type=period_type,
-        num_periods=25)
-    sequence = span.to_index(period_type=period_type)
+        duration=frequency,
+        amount=25)
+    sequence = span.to_sequence(frequency=frequency)
 
     cap_rate = .05
     growth_rate = -0.002537905
@@ -418,7 +418,7 @@ class TestDynamics:
                 TestDynamics.cyclicality.space_waveform,
                 TestDynamics.cyclicality.asset_waveform
                 ],
-            period_type=TestDynamics.period_type).plot(
+            frequency=TestDynamics.frequency).plot(
             flows={
                 'Space Cycle Waveform': (0, 1.6),
                 'Asset Cycle Waveform': (-.025, .025)
@@ -459,26 +459,6 @@ class TestDynamics:
         cyclicality=cyclicality,
         noise=noise,
         black_swan=black_swan)
-
-    # def test_market(self):
-        # stream = rk.flux.Stream(
-        #     name="Market",
-        #     flows=[
-        #         TestDynamics.market.trend,
-        #         TestDynamics.market.volatility,
-        #         TestDynamics.market.space_market,
-        #         TestDynamics.market.asset_true_value,
-        #         TestDynamics.market.noisy_value,
-        #         TestDynamics.market.historical_value],
-        #     period_type=TestDynamics.period_type).plot(
-        #     flows={
-        #         'Market Trend': (0., .09),
-        #         'Cumulative Volatility': (0., .09),
-        #         'Space Market': (0., .09),
-        #         'Asset True Value': (0., 3.5),
-        #         'Noisy Value': (0., 3.5),
-        #         'Historical Value': (0., 3.5)
-        #         })
 
     iterations = 100
     growth_rate_dist = rk.distribution.Symmetric(

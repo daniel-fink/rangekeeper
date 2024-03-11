@@ -18,7 +18,7 @@ import rangekeeper as rk
 # and any function in a file that should be treated as a test must also start with 'test_'.
 
 
-locale = locale.setlocale(locale.LC_ALL, 'en_au')
+locale = locale.setlocale(locale.LC_ALL, 'en_AU')
 units = rk.measure.Index.registry
 
 

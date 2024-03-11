@@ -19,11 +19,11 @@ import rangekeeper as rk
 # classes that hold tests must be named starting with 'Test',
 # and any function in a file that should be treated as a test must also start with 'test_'.
 
-matplotlib.use('TkAgg')
-plt.style.use('seaborn')  # pretty matplotlib plots
+# matplotlib.use('TkAgg')
+plt.style.use('seaborn-v0_8')  # pretty matplotlib plots
 plt.rcParams['figure.figsize'] = (12, 8)
 
-locale = locale.setlocale(locale.LC_ALL, '')
+locale = locale.setlocale(locale.LC_ALL, 'en_AU')
 units = rk.measure.Index.registry
 currency = rk.measure.register_currency(registry=units)
 scope = dict(globals(), **locals())
@@ -69,22 +69,22 @@ class TestDistribution:
 class TestPeriod:
     def test_period_index_validity(self):
         date = pd.Timestamp(2020, 2, 28)
-        period = rk.periodicity.include_date(
+        period = rk.duration.Period.include_date(
             date=date,
-            duration=rk.periodicity.Type.MONTH)
+            duration=rk.duration.Type.MONTH)
         assert period.day == 29  # end date of Period
         assert period.month == 2
 
-        sequence = rk.periodicity.period_index(
+        sequence = rk.duration.Sequence.from_bounds(
             include_start=date,
             bound=pd.Timestamp(2020, 12, 31),
-            period_type=rk.periodicity.Type.QUARTER)
+            frequency=rk.duration.Type.QUARTER)
         assert sequence.size == 4
 
-        end_date = rk.periodicity.offset_date(
+        end_date = rk.duration.offset(
             date=date,
-            period_type=rk.periodicity.Type.MONTH,
-            num_periods=4)
+            duration=rk.duration.Type.MONTH,
+            amount=4)
         assert end_date == pd.Timestamp(2020, 6, 28)
 
 
@@ -120,7 +120,7 @@ class TestUnits:
         product = rk.measure.multiply_units(
             units=[quantity.units for quantity in quantities],
             registry=units)
-        assert product == 'USD * meter / month / squaremeter / year'
+        assert product == 'AUD * meter / month / squaremeter / year'
 
 
 class TestFlow:
@@ -159,9 +159,9 @@ class TestFlow:
 
         TestFlow.flow_from_series.display()
 
-    periods = rk.periodicity.period_index(
+    periods = rk.duration.Sequence.from_bounds(
         include_start=pd.Timestamp(2020, 1, 31),
-        period_type=rk.periodicity.Type.MONTH,
+        frequency=rk.duration.Type.MONTH,
         bound=pd.Timestamp(2022, 1, 1))
 
     print(periods.size)
@@ -205,25 +205,25 @@ class TestFlow:
         assert TestFlow.invert_flow.movements.name == "bar"
         assert TestFlow.invert_flow.units == currency.units
 
-    resample_flow = invert_flow.resample(period_type=rk.periodicity.Type.YEAR)
+    resample_flow = invert_flow.resample(frequency=rk.duration.Type.YEAR)
 
     def test_resampling(self):
         # TestFlow.resample_flow.display()
         assert TestFlow.resample_flow.movements.size == 3
-        assert TestFlow.resample_flow.movements[0] == -48
-        assert TestFlow.resample_flow.movements[1] == -48
-        assert TestFlow.resample_flow.movements[2] == pytest.approx(-4)
+        assert TestFlow.resample_flow.movements.iloc[0] == -48
+        assert TestFlow.resample_flow.movements.iloc[1] == -48
+        assert TestFlow.resample_flow.movements.iloc[2] == pytest.approx(-4)
 
-    to_periods = flow.to_periods(period_type=rk.periodicity.Type.YEAR)
+    to_periods = flow.to_periods(frequency=rk.duration.Type.YEAR)
 
     def test_conversion_to_period_index(self):
         print(TestFlow.to_periods)
         # assert TestFlow.to_periods
 
     def test_distribution_as_input(self):
-        periods = rk.periodicity.period_index(
+        periods = rk.duration.Sequence.from_bounds(
             include_start=pd.Timestamp(2020, 1, 31),
-            period_type=rk.periodicity.Type.MONTH,
+            frequency=rk.duration.Type.MONTH,
             bound=pd.Timestamp(2022, 1, 1))
 
         dist = rk.distribution.PERT(
@@ -242,7 +242,7 @@ class TestFlow:
                     form=rk.distribution.Uniform(),
                     sequence=periods),
                 units=currency.units)
-            sums.append(flow.collapse().movements[0])
+            sums.append(flow.collapse().movements.iloc[0])
 
         # estimate distribution parameters, in this case (a, b, loc, scale)
         params = ss.beta.fit(sums)
@@ -265,10 +265,11 @@ class TestStream:
         value=100.0,
         proj=rk.projection.Distribution(
             form=rk.distribution.Uniform(),
-            sequence=rk.periodicity.period_index(
+            sequence=rk.duration.Sequence.from_bounds(
                 include_start=pd.Timestamp(2020, 1, 31),
                 bound=pd.Timestamp(2022, 1, 1),
-                period_type=rk.periodicity.Type.YEAR), ),
+                frequency=rk.duration.Type.YEAR),
+            ),
         units=currency.units)
 
     flow2 = rk.flux.Flow.from_projection(
@@ -276,16 +277,16 @@ class TestStream:
         value=-50.0,
         proj=rk.projection.Distribution(
             form=rk.distribution.Uniform(),
-            sequence=rk.periodicity.period_index(
+            sequence=rk.duration.Sequence.from_bounds(
                 include_start=pd.Timestamp(2020, 3, 1),
                 bound=pd.Timestamp(2021, 2, 28),
-                period_type=rk.periodicity.Type.WEEK)),
+                frequency=rk.duration.Type.WEEK)),
         units=currency.units)
 
     stream = rk.flux.Stream(
         name="stream",
         flows=[flow1, flow2],
-        period_type=rk.periodicity.Type.MONTH)
+        frequency=rk.duration.Type.MONTH)
 
     stream.display()
 
@@ -299,7 +300,7 @@ class TestStream:
 
         assert TestStream.stream.sum().movements.index.size == 24 + 10  # Two full years plus March-Dec inclusive
         assert TestStream.stream.frame['weekly_flow'].sum() == -50
-        assert TestStream.stream.frame.index.freq == 'M'
+        assert TestStream.stream.frame.index.freq == 'ME'
 
         product = TestStream.stream.product(
             name="product",
@@ -326,24 +327,24 @@ class TestStream:
         stream_sqm = rk.flux.Stream(
             name="stream_sqm",
             flows=[TestStream.flow1, flow2_sqm],
-            period_type=rk.periodicity.Type.MONTH)
+            frequency=rk.duration.Type.MONTH)
 
         stream_sqm_agg = stream_sqm.product(
             name="stream_sqm_agg",
             scope=scope,
             registry=units)
 
-        assert stream_sqm_agg.units == 'USD * squaremeter'
+        assert stream_sqm_agg.units == 'AUD * squaremeter'
 
     def test_stream_duplication(self):
         duplicate = TestStream.stream.duplicate()
         assert duplicate.name == "stream"
         assert len(duplicate.flows) == 2
-        assert duplicate.frame.index.freq == 'M'
+        assert duplicate.frame.index.freq == 'ME'
 
     def test_stream_stream(self):
         collapse = TestStream.stream.collapse()
-        assert collapse.frame['yearly_flow'][0] == approx(100.0)
+        assert collapse.frame['yearly_flow'].iloc[0] == approx(100.0)
 
         datetime = pd.Timestamp(2020, 12, 31)
         sum = TestStream.stream.sum()
@@ -357,8 +358,8 @@ class TestSpan:
             start_date=pd.Timestamp(2020, 3, 1),
             end_date=pd.Timestamp(2021, 2, 28))
         assert test_span.start_date < test_span.end_date
-        assert test_span.duration(
-            period_type=rk.periodicity.Type.DAY,
+        assert test_span.measure(
+            duration=rk.duration.Type.DAY,
             inclusive=False) == 364
 
     def test_correct_spans(self):
@@ -368,12 +369,12 @@ class TestSpan:
                  pd.Timestamp(2021, 12, 31),
                  pd.Timestamp(2024, 2, 29)]
         names = ['Span1', 'Span2', 'Span3', 'Span4']
-        spans = rk.span.Span.from_date_sequence(names=names, dates=dates)
+        spans = rk.span.Span.from_dates(names=names, dates=dates)
 
         assert len(spans) == 4
         assert spans[0].name == 'Span1'
         assert spans[0].end_date == pd.Timestamp(2020, 2, 29)
-        assert spans[0].duration(rk.periodicity.Type.DAY) == 0
+        assert spans[0].measure(duration=rk.duration.Type.DAY) == 0
 
         assert spans[1].start_date == pd.Timestamp(2020, 3, 1)
         assert spans[1].end_date == pd.Timestamp(2021, 2, 27)

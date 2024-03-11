@@ -13,11 +13,11 @@ import pandas as pd
 
 import rangekeeper as rk
 
-matplotlib.use('TkAgg')
-plt.style.use('seaborn')  # pretty matplotlib plots
+# matplotlib.use('TkAgg')
+plt.style.use('seaborn-v0_8')  # pretty matplotlib plots
 plt.rcParams['figure.figsize'] = (12, 8)
 
-locale.setlocale(locale.LC_ALL, 'en_au')
+locale.setlocale(locale.LC_ALL, 'en_AU')
 units = rk.measure.Index.registry
 currency = rk.measure.register_currency(registry=units)
 
@@ -29,7 +29,7 @@ class TestLinear:
             'start_date': pd.Timestamp(2020, 1, 1),
             'num_periods': 10,
             'acquisition_price': 1000,
-            'period_type': rk.periodicity.Type.YEAR,
+            'frequency': rk.duration.Type.YEAR,
             'growth_rate': 0.02,
             'initial_pgi': 100.,
             'vacancy_rate': 0.05,
@@ -59,7 +59,7 @@ class TestDeterministic:
             'units': currency.units,
             'start_date': pd.Timestamp(2020, 1, 1),
             'num_periods': 10,
-            'period_type': rk.periodicity.Type.YEAR,
+            'frequency': rk.duration.Type.YEAR,
             'growth_rate': 0.02,
             'initial_pgi': 100.,
             'addl_pgi_per_period': 0.,
@@ -74,15 +74,15 @@ class TestDeterministic:
         base = rk.models.deterministic.Model(base_params)
 
         base.pv_sums.display()
-        assert base.pv_sums.movements[0] == 1000
-        assert math.isclose(base.pv_sums.collapse().movements[0], 10000)
+        assert base.pv_sums.movements.iloc[0] == 1000
+        assert math.isclose(base.pv_sums.collapse().movements.iloc[0], 10000)
 
         # Adjust model to optimistic parameters:
         optimistic_params = base_params.copy()
         optimistic_params['initial_pgi'] = 110.
         optimistic_params['addl_pgi_per_period'] = 3.
         optimistic = rk.models.deterministic.Model(optimistic_params)
-        assert math.isclose(a=optimistic.pv_sums.movements[9], b=1294.08, rel_tol=.01)
+        assert math.isclose(a=optimistic.pv_sums.movements.iloc[9], b=1294.08, rel_tol=.01)
 
         # Adjust the model to pessimistic parameters:
         pessimistic_params = base_params.copy()
@@ -90,16 +90,16 @@ class TestDeterministic:
         pessimistic_params['addl_pgi_per_period'] = -3.
         pessimistic = rk.models.deterministic.Model(pessimistic_params)
         pessimistic.pv_sums.display()
-        assert math.isclose(a=pessimistic.pv_sums.movements[9], b=705.92, rel_tol=.01)
+        assert math.isclose(a=pessimistic.pv_sums.movements.iloc[9], b=705.92, rel_tol=.01)
 
         # Calculate expected value of the property at any period:
         exp = rk.flux.Flow(
             movements=pessimistic.pv_sums.movements * .5 + optimistic.pv_sums.movements * .5,
             units=base_params['units'])
-        assert math.isclose(exp.movements[6], 1000.)
+        assert math.isclose(exp.movements.iloc[6], 1000.)
 
         # Calculate the expected value with flexibility:
-        exp_flex = pessimistic.pv_sums.movements[0] * .5 + optimistic.pv_sums.movements[9] * .5
+        exp_flex = pessimistic.pv_sums.movements.iloc[0] * .5 + optimistic.pv_sums.movements.iloc[9] * .5
         assert math.isclose(a=exp_flex, b=1083., rel_tol=.1)
 
 
@@ -110,7 +110,7 @@ class TestProbabilistic:
             'start_date': pd.Timestamp(2020, 1, 1),
             'num_periods': 10,
             'acquisition_price': 1000,
-            'period_type': rk.periodicity.Type.YEAR,
+            'frequency': rk.duration.Type.YEAR,
             'growth_rate': 0.02,
             'initial_pgi': 100.,
             'space_market_dist': rk.distribution.PERT(peak=1., weighting=4.0, minimum=0.75, maximum=1.25),
@@ -136,7 +136,7 @@ class TestFlexible:
             'start_date': pd.Timestamp(2020, 1, 1),
             'num_periods': 24,
             'acquisition_price': 1000,
-            'period_type': rk.periodicity.Type.YEAR,
+            'frequency': rk.duration.Type.YEAR,
             'growth_rate': 0.02,
             'initial_pgi': 100.,
             'space_market_dist': rk.distribution.PERT(peak=1., weighting=4.0, minimum=0.5, maximum=1.75),
