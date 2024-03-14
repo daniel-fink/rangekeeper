@@ -1,0 +1,1026 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Loading a Design &#8212; Rangekeeper</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.1/css/all.min.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=384b581d" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
+  <script src="../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
+
+    <script src="../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../_static/design-tabs.js?v=36754332"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'archive/load_design';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a id="pst-skip-link" class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+
+<a class="navbar-brand logo" href="../intro.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/rangekeeper.jpg" class="logo__image only-light" alt="Rangekeeper - Home"/>
+    <script>document.write(`<img src="../_static/rangekeeper.jpg" class="logo__image only-dark" alt="Rangekeeper - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../intro.html">
+                    Rangekeeper
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Real Estate Flexibility and Valuation under Uncertainty</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../basic_dcf.html">A Basic Discounted Cash Flow Valuation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../deterministic_scenarios.html">Deterministic Scenario Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../market_dynamics.html">Real Estate Pricing Factor Dynamics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../flexibility_intro.html">Introduction to Modeling Flexibility</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../flexibility_under_uncertainty.html">Flexibility under Uncertainty</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Using Rangekeeper in Examples</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../load_design.html">Loading a Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../drive_model_from_design.html">Driving a Financial Valuation from a Design</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-launch-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Launch interactive content">
+    <i class="fas fa-rocket"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://colab.research.google.com/github/daniel-fink/rangekeeper/blob/main/walkthrough/archive/load_design.ipynb" target="_blank"
+   class="btn btn-sm dropdown-item"
+   title="Launch onColab"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  
+    <img src="../_static/images/logo_colab.png">
+  </span>
+<span class="btn__text-container">Colab</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/daniel-fink/rangekeeper" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/daniel-fink/rangekeeper/issues/new?title=Issue%20on%20page%20%2Farchive/load_design.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/archive/load_design.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Loading a Design</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#object-model">Object Model</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#entities-and-relationships">Entities and Relationships</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#entitys"><code class="docutils literal notranslate"><span class="pre">Entity</span></code>s</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#relationships"><code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#assemblys"><code class="docutils literal notranslate"><span class="pre">Assembly</span></code>s</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#definitions">Definitions</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#properties-of-entitys">Properties of <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#properties-of-relationships">Properties of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#events"><code class="docutils literal notranslate"><span class="pre">Event</span></code>s</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rationale-and-implications">Rationale and Implications</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#technicalities">Technicalities</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#defining-entitys-and-relationships-in-the-design-scenario">Defining <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s and <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s in the Design Scenario</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-design">Example Design</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#authenticate-and-load-the-design-from-speckle">Authenticate and Load the Design from Speckle</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inspect-the-design">Inspect the Design</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rangekeeper-entitys-in-the-design">Rangekeeper <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s in the Design</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#querying-the-design-s-object-graph">Querying the Design’s Object Graph</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="loading-a-design">
+<h1>Loading a Design<a class="headerlink" href="#loading-a-design" title="Link to this heading">#</a></h1>
+<p><em>Rangekeeper</em> provides API access to <a class="reference external" href="https://speckle.systems/">Speckle</a>. This
+enables loading and extending a 3D design with <em>Rangekeeper</em> in order
+to produce its financial valuation, as well as execute any automated
+decision-making or optimisation processes, and sending the results back to
+Speckle.</p>
+<section id="object-model">
+<h2>Object Model<a class="headerlink" href="#object-model" title="Link to this heading">#</a></h2>
+<p>Before walking through the I/O methods, it is important to understand the
+requirements <em>Rangekeeper</em> places on how a design must be structured,
+so that the <code class="docutils literal notranslate"><span class="pre">Flow</span></code>s and <code class="docutils literal notranslate"><span class="pre">Stream</span></code>s of a DCF Proforma can be appropriately
+attributed to the design’s objects (especially its representations of
+physical spaces, components, and equipment).</p>
+<section id="entities-and-relationships">
+<h3>Entities and Relationships<a class="headerlink" href="#entities-and-relationships" title="Link to this heading">#</a></h3>
+<p>A holistic representation of a real estate asset is that it is a
+web of inter-related ‘entities’; where each entity is a ‘thing’ and can have
+multiple relationships with other entities. For example, a floor is a type
+of entity (say, a “Space”) and it has relationships with floors above and
+below it, as well as relationships to its sub-entities (e.g. rooms), or even
+what services it (e.g. the mechanical systems controlling its air conditioning)</p>
+<figure class="align-default" id="real-estate-asset-property-as-a-graph">
+<a class="reference internal image-reference" href="../_images/devModelGraph.jpg"><img alt="../_images/devModelGraph.jpg" src="../_images/devModelGraph.jpg" style="width: 100%;" /></a>
+<figcaption>
+<p><span class="caption-text">An entire Real Estate asset is represented as a huge web (graph) of <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s
+and <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s between those <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s</span><a class="headerlink" href="#real-estate-asset-property-as-a-graph" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<section id="entitys">
+<h4><code class="docutils literal notranslate"><span class="pre">Entity</span></code>s<a class="headerlink" href="#entitys" title="Link to this heading">#</a></h4>
+<p>An <code class="docutils literal notranslate"><span class="pre">Entity</span></code> is a ‘thing’ that has substance, or is composed of sub-<code class="docutils literal notranslate"><span class="pre">Entity</span></code>s
+that have substance, material, mass, volume, existence, are ‘real’, etc.</p>
+</section>
+<section id="relationships">
+<h4><code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s<a class="headerlink" href="#relationships" title="Link to this heading">#</a></h4>
+<p><code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s describe some sort of (directed) association, connection, or
+link between <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s. Each <code class="docutils literal notranslate"><span class="pre">Relationship</span></code> is described by its ‘type’; for
+instance, an <code class="docutils literal notranslate"><span class="pre">Entity</span></code> can be related to another by virtue of it “being
+contained (spatially)” by the other, or it could be “installed before” another
+<code class="docutils literal notranslate"><span class="pre">Entity</span></code>.
+There can be any number of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s between any number of <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s.</p>
+</section>
+<section id="assemblys">
+<h4><code class="docutils literal notranslate"><span class="pre">Assembly</span></code>s<a class="headerlink" href="#assemblys" title="Link to this heading">#</a></h4>
+<p>In order to clearly encapsulate ‘groups’ of intuitively-related <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s,
+<em>Rangekeeper</em> has a concept of an <code class="docutils literal notranslate"><span class="pre">Assembly</span></code>, which is an object that defines
+a collection of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s and their associated <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s.
+<code class="docutils literal notranslate"><span class="pre">Assembly</span></code>s are <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s themselves, too –- so they can also be related to
+other <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s.
+This means that <em>Rangekeeper</em> can traverse from <code class="docutils literal notranslate"><span class="pre">Assembly</span></code> to <code class="docutils literal notranslate"><span class="pre">Assembly</span></code> through
+overlapping <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s, in a similar fashion to common-sense conceptualisation
+of how a real estate asset is structured.</p>
+<figure class="align-default" id="a-diagram-of-assembly-s-of-entity-s">
+<a class="reference internal image-reference" href="../_images/devModelAssembly.jpg"><img alt="../_images/devModelAssembly.jpg" src="../_images/devModelAssembly.jpg" style="width: 100%;" /></a>
+<figcaption>
+<p><span class="caption-text">An <code class="docutils literal notranslate"><span class="pre">Assembly</span></code> is a non-exclusive collection of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s, enabling the
+traversal of <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s in the graph.</span><a class="headerlink" href="#a-diagram-of-assembly-s-of-entity-s" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</section>
+</section>
+<section id="definitions">
+<h3>Definitions<a class="headerlink" href="#definitions" title="Link to this heading">#</a></h3>
+<section id="properties-of-entitys">
+<h4>Properties of <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s<a class="headerlink" href="#properties-of-entitys" title="Link to this heading">#</a></h4>
+<p>All <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s have the following properties:</p>
+<ol class="arabic simple">
+<li><p><strong>entityId</strong>: a unique &amp; immutable identifier for the <code class="docutils literal notranslate"><span class="pre">Entity</span></code> over the whole of
+its lifetime.</p></li>
+<li><p><strong>Name</strong>: human-readable text identifying the <code class="docutils literal notranslate"><span class="pre">Entity</span></code></p></li>
+<li><p><strong>Type</strong>: an <code class="docutils literal notranslate"><span class="pre">entityType</span></code> (which is a node of a tree of <code class="docutils literal notranslate"><span class="pre">entityType</span></code>s)</p></li>
+<li><p><strong>Attributes</strong>: a key-value store of specific properties of the <code class="docutils literal notranslate"><span class="pre">Entity</span></code>
+(eg, its area, geometry, material, cash flows, etc).</p></li>
+</ol>
+<p>In addition, <code class="docutils literal notranslate"><span class="pre">Assembly</span></code>s record a set of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s about <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s that
+are related to, or in, the <code class="docutils literal notranslate"><span class="pre">Assembly</span></code>.</p>
+<ol class="arabic simple">
+<li><p><strong>Relationships</strong>: a set of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s</p></li>
+</ol>
+</section>
+<section id="properties-of-relationships">
+<h4>Properties of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s<a class="headerlink" href="#properties-of-relationships" title="Link to this heading">#</a></h4>
+<p>Meanwhile, all <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s have the following properties:</p>
+<ol class="arabic simple">
+<li><p><strong>Type</strong>: a <code class="docutils literal notranslate"><span class="pre">RelationshipType</span></code>, which is an item from a list of defined
+<code class="docutils literal notranslate"><span class="pre">RelationshipType</span></code>s</p></li>
+<li><p><strong>Source</strong>: the <code class="docutils literal notranslate"><span class="pre">Entity</span></code> that is the source of the <code class="docutils literal notranslate"><span class="pre">Relationship</span></code></p></li>
+<li><p><strong>Target</strong>: the <code class="docutils literal notranslate"><span class="pre">Entity</span></code> that is the target of the <code class="docutils literal notranslate"><span class="pre">Relationship</span></code></p></li>
+</ol>
+</section>
+<section id="events">
+<h4><code class="docutils literal notranslate"><span class="pre">Event</span></code>s<a class="headerlink" href="#events" title="Link to this heading">#</a></h4>
+<p>Every <code class="docutils literal notranslate"><span class="pre">Entity</span></code> can exist in both space and time. Most <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s will have (or
+its sub-<code class="docutils literal notranslate"><span class="pre">Entity</span></code>s will have, in the case of an <code class="docutils literal notranslate"><span class="pre">Assembly</span></code>) geometry/s that
+define the extent of space that the entity exists in.</p>
+<p>To represent how an <code class="docutils literal notranslate"><span class="pre">Entity</span></code> exists in time, the <code class="docutils literal notranslate"><span class="pre">Entity</span></code> has <code class="docutils literal notranslate"><span class="pre">Event</span></code>s
+recorded against it. For example, an <code class="docutils literal notranslate"><span class="pre">Event</span></code> may record the installation of the
+<code class="docutils literal notranslate"><span class="pre">entity</span></code> during construction, or it may record production of revenue during
+operation of the real estate project as an asset.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Flow</span></code>s and <code class="docutils literal notranslate"><span class="pre">Stream</span></code>s are subclasses of <code class="docutils literal notranslate"><span class="pre">Event</span></code>s.</p>
+<figure class="align-default" id="uml-style-diagram-of-foundation-of-rangekeeper-s-object-model">
+<a class="reference internal image-reference" href="../_images/objModel.jpg"><img alt="../_images/objModel.jpg" src="../_images/objModel.jpg" style="width: 100%;" /></a>
+<figcaption>
+<p><span class="caption-text">Diagram of general overview of the founational concepts of <em>Rangekeeper</em>’s
+object model, in UML-style.</span><a class="headerlink" href="#uml-style-diagram-of-foundation-of-rangekeeper-s-object-model" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</section>
+</section>
+</section>
+<section id="rationale-and-implications">
+<h2>Rationale and Implications<a class="headerlink" href="#rationale-and-implications" title="Link to this heading">#</a></h2>
+<p><em>Rangekeeper</em> will use the <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s defined in the <code class="docutils literal notranslate"><span class="pre">Assembly</span></code>/s of a
+design to structure the “drill-downs” and “roll-ups” (ie, the
+compositions) of <code class="docutils literal notranslate"><span class="pre">Flow</span></code>s into <code class="docutils literal notranslate"><span class="pre">Stream</span></code>s that are appropriate for the kinds of
+summations and metrics that the DCF Proforma model requires.</p>
+<p>For example, an office building may produce revenue from multiple tenants. A
+tenant may occupy multiple floors, or a part (space) of a single floor.
+For <em>Rangekeeper</em>, each space would be an <code class="docutils literal notranslate"><span class="pre">entity</span></code>; with its <code class="docutils literal notranslate"><span class="pre">Events</span></code> property
+containing a set of <code class="docutils literal notranslate"><span class="pre">Flow</span></code>s and/or <code class="docutils literal notranslate"><span class="pre">Stream</span></code>s that represent revenues or costs
+associated with that space. Those may be aggregated into cash flows generated by
+the tenant of those spaces, and analysed as such, or they may be aggregated per
+floor, or per building, or per project.</p>
+<p>This makes it simple to calculate things like the share of total revenue
+generated by each tenant; or the share of revenue generated by each floor.
+Likewise with costs.</p>
+<p>The multi-faceted nature of the <a class="reference external" href="https://en.wikipedia.org/wiki/Entity%E2%80%93relationship_model"><code class="docutils literal notranslate"><span class="pre">Entity</span></code>-<code class="docutils literal notranslate"><span class="pre">Relationship</span></code> model</a> enables
+multiple pathways for those aggregations to be specified, and thus enables an
+efficient and broad ability to query the model for the kinds of analyses
+pertinent to real estate valuation.</p>
+<section id="technicalities">
+<h3>Technicalities<a class="headerlink" href="#technicalities" title="Link to this heading">#</a></h3>
+<p>To provide a <em>Rangekeeper</em> model with the <code class="docutils literal notranslate"><span class="pre">Entity</span></code>-<code class="docutils literal notranslate"><span class="pre">Relationship</span></code> organization,
+those need to either be defined in the design itself, or they need to
+be specified after receiving and loading the design.</p>
+<section id="defining-entitys-and-relationships-in-the-design-scenario">
+<h4>Defining <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s and <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s in the Design Scenario<a class="headerlink" href="#defining-entitys-and-relationships-in-the-design-scenario" title="Link to this heading">#</a></h4>
+<p><em>Rangekeeper</em> uses the <a class="reference external" href="https://speckle.systems">Speckle</a> service and data model
+for the exchange of designs, and scaffolds <code class="docutils literal notranslate"><span class="pre">entity</span></code>s off a <a class="reference external" href="https://speckle.guide/dev/base.html">Speckle
+<code class="docutils literal notranslate"><span class="pre">Base</span></code></a></p>
+<p>It also provides two means to define <code class="docutils literal notranslate"><span class="pre">entity</span></code>s and <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s:</p>
+<ol class="arabic simple">
+<li><p>A plugin to [McNeel’s Rhinoceros3D Grasshopper]
+(<a class="reference external" href="https://www.rhino3d.com/6/new/grasshopper/">https://www.rhino3d.com/6/new/grasshopper/</a>), that enables both automated and
+manual assignment of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s to geometries before their export to
+Speckle; and</p></li>
+<li><p>Manual assignment of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s to <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s once they have been loaded
+from a Speckle stream in <em>Rangekeeper</em>.</p></li>
+</ol>
+</section>
+</section>
+</section>
+<section id="example-design">
+<h2>Example Design<a class="headerlink" href="#example-design" title="Link to this heading">#</a></h2>
+<p>An example property has been documented and uploaded to Speckle for us to use
+as a demonstration of the object model and its use in <em>Rangekeeper</em>.</p>
+<p>This design is composed of two mixed-use buildings, that both share a
+common basement plinth, used for parking and shared mechanical and other
+services (e.g. garbage disposal, storage)</p>
+<p>To access the design in <em>Rangekeeper</em>, we need to load it from Speckle.
+First load neccesary libraries:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">import</span> <span class="nn">pprint</span> <span class="k">as</span> <span class="nn">pp</span>
+<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">IFrame</span>
+
+<span class="kn">import</span> <span class="nn">rangekeeper</span> <span class="k">as</span> <span class="nn">rk</span>
+</pre></div>
+</div>
+</div>
+</div>
+<section id="authenticate-and-load-the-design-from-speckle">
+<h3>Authenticate and Load the Design from Speckle<a class="headerlink" href="#authenticate-and-load-the-design-from-speckle" title="Link to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Authenticate with Speckle</span>
+<span class="n">speckle</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">Speckle</span><span class="p">(</span>
+    <span class="n">host</span><span class="o">=</span><span class="s2">&quot;speckle.xyz&quot;</span><span class="p">,</span>
+    <span class="n">token</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s1">&#39;SPECKLE_TOKEN&#39;</span><span class="p">))</span> <span class="c1"># Note if you run this notebook yourself, you&#39;ll need to set this environment variable</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> SpeckleClient( server: https://speckle.xyz, authenticated: True )
+</pre></div>
+</div>
+</div>
+</div>
+<p>The design is stored in a Speckle ‘stream’, which is a container for a set of
+‘commits’, or versions of the data.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stream_id</span> <span class="o">=</span> <span class="s2">&quot;f5e306e3fa&quot;</span>
+<span class="n">commit_id</span> <span class="o">=</span> <span class="n">speckle</span><span class="o">.</span><span class="n">get_latest_commit_id</span><span class="p">(</span><span class="n">stream_id</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load the design data</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">speckle</span><span class="o">.</span><span class="n">get_commit</span><span class="p">(</span><span class="n">stream_id</span><span class="o">=</span><span class="n">stream_id</span><span class="p">)</span> <span class="c1"># Providing no commit_id defaults to the latest commit</span>
+<span class="n">data</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Base(id: 9d6669ce68b619ca16dde4375ac1b0b6, speckle_type: Base, totalChildrenCount: 2894)
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="inspect-the-design">
+<h3>Inspect the Design<a class="headerlink" href="#inspect-the-design" title="Link to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">IFrame</span><span class="p">(</span><span class="s2">&quot;https://speckle.xyz/embed?stream=</span><span class="si">{0}</span><span class="s2">&amp;commit=</span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">stream_id</span><span class="p">,</span> <span class="n">commit_id</span><span class="p">),</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html">
+        <iframe
+            width="100%"
+            height="800"
+            src="https://speckle.xyz/embed?stream=f5e306e3fa&commit=362b15db49"
+            frameborder="0"
+            allowfullscreen
+            
+        ></iframe>
+        </div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Let&#39;s identify the root members of the:</span>
+<span class="n">roots</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get_dynamic_member_names</span><span class="p">()</span>
+<span class="n">roots</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&#39;@context&#39;, &#39;@property&#39;]
+</pre></div>
+</div>
+</div>
+</div>
+<p>In this design, there are two members (Speckle Objects) at the root of
+the model:</p>
+<ol class="arabic simple">
+<li><p>‘&#64;context’, and</p></li>
+<li><p>‘&#64;property’</p></li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Speckle Objects whose member names begin with an <code class="docutils literal notranslate"><span class="pre">&#64;</span></code> indicate ‘detached’ data:
+See <a class="reference external" href="https://speckle.guide/dev/base.html#detaching">The Base Object: Detaching</a>
+for more information.</p>
+</div>
+<p>For future reference, if we wanted to see their spatial representation, we can
+pass them in to the Speckle Viewer’s “objects” endpoint with their <code class="docutils literal notranslate"><span class="pre">id</span></code>s:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">IFrame</span><span class="p">(</span><span class="s2">&quot;https://speckle.xyz/streams/</span><span class="si">{0}</span><span class="s2">/objects/</span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">stream_id</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;@property&#39;</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">]),</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html">
+        <iframe
+            width="100%"
+            height="800"
+            src="https://speckle.xyz/streams/f5e306e3fa/objects/49d1282453a26bd553fc1b592528bb39"
+            frameborder="0"
+            allowfullscreen
+            
+        ></iframe>
+        </div></div>
+</div>
+<p>We can even use the Speckle Viewer’s ‘filter’ functionality to see only the
+certain types of objects contained within the spaces of the design (try toggling
+the isolation mode for “floor” or “utilities” types):</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;type&#39;</span>
+<span class="n">IFrame</span><span class="p">(</span><span class="s1">&#39;https://speckle.xyz/streams/</span><span class="si">{0}</span><span class="s1">/commits/</span><span class="si">{1}</span><span class="s1">?filter=%7B%22propertyInfoKey</span><span class="si">%22%</span><span class="s1">3A%22</span><span class="si">{2}%22%</span><span class="s1">7D&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+    <span class="n">stream_id</span><span class="p">,</span>
+    <span class="n">commit_id</span><span class="p">,</span>
+    <span class="n">label</span><span class="p">),</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html">
+        <iframe
+            width="100%"
+            height="800"
+            src="https://speckle.xyz/streams/f5e306e3fa/commits/362b15db49?filter=%7B%22propertyInfoKey%22%3A%22type%22%7D"
+            frameborder="0"
+            allowfullscreen
+            
+        ></iframe>
+        </div></div>
+</div>
+</section>
+<section id="rangekeeper-entitys-in-the-design">
+<h3>Rangekeeper <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s in the Design<a class="headerlink" href="#rangekeeper-entitys-in-the-design" title="Link to this heading">#</a></h3>
+<p>Of course, not all Speckle Objects are Rangekeeper <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s for us to use in
+our valuations and modeling.
+To make parsing the design easier, <em>Rangekeeper</em> provides some helper
+methods to convert the Speckle Objects into Rangekeeper <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Return any Speckle Objects in the &#39;@design&#39; trunk that have &#39;entityId&#39;s:</span>
+<span class="n">parsed</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">Speckle</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">base</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;@property&#39;</span><span class="p">])</span>
+
+<span class="c1"># (Recursively) Convert the Speckle Objects into Rangekeeper Entities:</span>
+<span class="nb">property</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">Speckle</span><span class="o">.</span><span class="n">to_rk</span><span class="p">(</span>
+    <span class="n">bases</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">parsed</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;property&#39;</span><span class="p">,</span>
+    <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;archetype&#39;</span><span class="p">)</span>
+
+<span class="c1"># (We can check that it is an Assembly:)</span>
+<span class="nb">isinstance</span><span class="p">(</span><span class="nb">property</span><span class="p">,</span> <span class="n">rk</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">Assembly</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Warning: Duplicate Entity d68eab6c-7031-4780-b8da-a356d629dbe4 [utilities] found.
+Existing Entity is an Assembly while new Entity is not. Keeping Assembly.
+Warning: Duplicate Entity d68eab6c-7031-4780-b8da-a356d629dbe4 [utilities] found.
+Existing Entity is an Assembly while new Entity is not. Keeping Assembly.
+Warning: Duplicate Entity d68eab6c-7031-4780-b8da-a356d629dbe4 [utilities] found.
+Existing Entity is an Assembly while new Entity is not. Keeping Assembly.
+Warning: Duplicate Entity fae72e2d-608f-4666-acc8-7799896797a6 [plinthparking] found.
+Existing Entity is an Assembly while new Entity is not. Keeping Assembly.
+</pre></div>
+</div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>True
+</pre></div>
+</div>
+</div>
+</div>
+<section id="querying-the-design-s-object-graph">
+<h4>Querying the Design’s Object Graph<a class="headerlink" href="#querying-the-design-s-object-graph" title="Link to this heading">#</a></h4>
+<p><em>Rangekeeper</em> uses the <a class="reference external" href="https://networkx.org/">NetworkX</a> library to represent
+the object graph of the design, where each <code class="docutils literal notranslate"><span class="pre">Assembly</span></code> is a <code class="docutils literal notranslate"><span class="pre">MultiDiGraph</span></code> of
+Entity<code class="docutils literal notranslate"><span class="pre">nodes</span> <span class="pre">and</span></code>Relationship` edges.
+This means we can query it pythonically:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get the &quot;BuildingA&quot; Assembly:</span>
+<span class="n">buildingA</span> <span class="o">=</span> <span class="p">[</span><span class="n">entity</span> <span class="k">for</span> <span class="p">(</span><span class="n">entityId</span><span class="p">,</span> <span class="n">entity</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">property</span><span class="o">.</span><span class="n">get_entities</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">entity</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;buildingA&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;buildingA: </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">buildingA</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>buildingA: Assembly: buildingA
+Type: building
+Members: [&#39;type&#39;, &#39;name&#39;]
+Entities: [(&#39;37e4f7dd-a27d-4e7e-b7f2-3da8bc46b4ac&#39;, {&#39;entity&#39;: Assembly: buildingA (Type: building)}), (&#39;19b22f27-b94d-4358-a516-8edd7e7bd15e&#39;, {&#39;entity&#39;: Assembly: buildingAparking (Type: space)}), (&#39;f2b95810-88f4-4e6b-b58c-3954b59b175c&#39;, {&#39;entity&#39;: Assembly: buildingAretail (Type: space)}), (&#39;4b425c76-d286-42c6-8f0a-c2251122d212&#39;, {&#39;entity&#39;: Assembly: buildingAresidential (Type: space)}), (&#39;218fd91a-d72c-4fb2-a82f-3882388659f9&#39;, {&#39;entity&#39;: Assembly: buildingAretail (Type: space)}), (&#39;f746d0de-a8ab-491e-9d3f-875c62c87f53&#39;, {&#39;entity&#39;: Assembly: buildingAoffice (Type: space)}), (&#39;c94db8fb-243f-4dec-95af-3c93f04e0cf5&#39;, {&#39;entity&#39;: Entity: buildingAcores (Type: utilities)})]
+Relationships: [(&#39;37e4f7dd-a27d-4e7e-b7f2-3da8bc46b4ac&#39;, &#39;19b22f27-b94d-4358-a516-8edd7e7bd15e&#39;, &#39;spatiallyContains&#39;), (&#39;37e4f7dd-a27d-4e7e-b7f2-3da8bc46b4ac&#39;, &#39;f2b95810-88f4-4e6b-b58c-3954b59b175c&#39;, &#39;spatiallyContains&#39;), (&#39;37e4f7dd-a27d-4e7e-b7f2-3da8bc46b4ac&#39;, &#39;4b425c76-d286-42c6-8f0a-c2251122d212&#39;, &#39;spatiallyContains&#39;), (&#39;37e4f7dd-a27d-4e7e-b7f2-3da8bc46b4ac&#39;, &#39;218fd91a-d72c-4fb2-a82f-3882388659f9&#39;, &#39;spatiallyContains&#39;), (&#39;37e4f7dd-a27d-4e7e-b7f2-3da8bc46b4ac&#39;, &#39;f746d0de-a8ab-491e-9d3f-875c62c87f53&#39;, &#39;spatiallyContains&#39;), (&#39;37e4f7dd-a27d-4e7e-b7f2-3da8bc46b4ac&#39;, &#39;c94db8fb-243f-4dec-95af-3c93f04e0cf5&#39;, &#39;spatiallyContains&#39;)]
+</pre></div>
+</div>
+</div>
+</div>
+<p>Because we can also define directed, labelled <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s between <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s,
+we can identify relatives of <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s accordingly:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get all relatives of BuildingA where BuildingA is the source of</span>
+<span class="c1"># a &#39;spatiallyContains&#39; relationship:</span>
+<span class="n">buildingA_containment</span> <span class="o">=</span> <span class="n">buildingA</span><span class="o">.</span><span class="n">get_relatives</span><span class="p">(</span>
+    <span class="n">outgoing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">relationship_type</span><span class="o">=</span><span class="s1">&#39;spatiallyContains&#39;</span><span class="p">,</span>
+    <span class="n">assembly</span><span class="o">=</span><span class="nb">property</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;buildingA Containment: </span><span class="se">\n</span><span class="s1"> </span><span class="si">{0}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">buildingA_containment</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>buildingA Containment: 
+ [Assembly: buildingAparking (Type: space), Assembly: buildingAretail (Type: space), Assembly: buildingAresidential (Type: space), Assembly: buildingAretail (Type: space), Assembly: buildingAoffice (Type: space), Entity: buildingAcores (Type: utilities)]
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">buildingAresi</span> <span class="o">=</span> <span class="p">[</span><span class="n">entity</span> <span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="n">buildingA_containment</span> <span class="k">if</span> <span class="n">entity</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;buildingAresidential&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;buildingAresidential: </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">buildingAresi</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>buildingAresidential: Assembly: buildingAresidential
+Type: space
+Members: [&#39;type&#39;, &#39;volume&#39;, &#39;use&#39;, &#39;@displayValue&#39;, &#39;renderMaterial&#39;, &#39;name&#39;]
+Entities: [(&#39;4b425c76-d286-42c6-8f0a-c2251122d212&#39;, {&#39;entity&#39;: Assembly: buildingAresidential (Type: space)}), (&#39;550a32d6-c3fb-4c23-99fa-780592b69224&#39;, {&#39;entity&#39;: Entity: buildingAresidentialFloor0 (Type: floor)}), (&#39;f04a9d62-ed7c-4eae-8874-082179472279&#39;, {&#39;entity&#39;: Entity: buildingAresidentialFloor0 (Type: floor)}), (&#39;faf0e45c-a74d-46a2-be7f-c63315a6aa0b&#39;, {&#39;entity&#39;: Entity: buildingAresidentialFloor1 (Type: floor)}), (&#39;e677c443-81df-4d7c-a0b9-de37a2459ca0&#39;, {&#39;entity&#39;: Entity: buildingAresidentialFloor2 (Type: floor)}), (&#39;8a3a9eb5-25b8-4f01-80cd-9b87c692a1fb&#39;, {&#39;entity&#39;: Entity: buildingAresidentialFloor3 (Type: floor)})]
+Relationships: [(&#39;4b425c76-d286-42c6-8f0a-c2251122d212&#39;, &#39;550a32d6-c3fb-4c23-99fa-780592b69224&#39;, &#39;spatiallyContains&#39;), (&#39;4b425c76-d286-42c6-8f0a-c2251122d212&#39;, &#39;f04a9d62-ed7c-4eae-8874-082179472279&#39;, &#39;spatiallyContains&#39;), (&#39;4b425c76-d286-42c6-8f0a-c2251122d212&#39;, &#39;faf0e45c-a74d-46a2-be7f-c63315a6aa0b&#39;, &#39;spatiallyContains&#39;), (&#39;4b425c76-d286-42c6-8f0a-c2251122d212&#39;, &#39;e677c443-81df-4d7c-a0b9-de37a2459ca0&#39;, &#39;spatiallyContains&#39;), (&#39;4b425c76-d286-42c6-8f0a-c2251122d212&#39;, &#39;8a3a9eb5-25b8-4f01-80cd-9b87c692a1fb&#39;, &#39;spatiallyContains&#39;)]
+</pre></div>
+</div>
+</div>
+</div>
+<p>We can also visualize the design’s graph as well:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">property</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;assets/property&#39;</span><span class="p">)</span>
+<span class="n">IFrame</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="s2">&quot;./property.html&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>assets/property.html
+</pre></div>
+</div>
+<div class="output text_html">
+        <iframe
+            width="100%"
+            height="800"
+            src="./property.html"
+            frameborder="0"
+            allowfullscreen
+            
+        ></iframe>
+        </div></div>
+</div>
+</section>
+</section>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./archive"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#object-model">Object Model</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#entities-and-relationships">Entities and Relationships</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#entitys"><code class="docutils literal notranslate"><span class="pre">Entity</span></code>s</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#relationships"><code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#assemblys"><code class="docutils literal notranslate"><span class="pre">Assembly</span></code>s</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#definitions">Definitions</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#properties-of-entitys">Properties of <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#properties-of-relationships">Properties of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#events"><code class="docutils literal notranslate"><span class="pre">Event</span></code>s</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rationale-and-implications">Rationale and Implications</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#technicalities">Technicalities</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#defining-entitys-and-relationships-in-the-design-scenario">Defining <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s and <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s in the Design Scenario</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-design">Example Design</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#authenticate-and-load-the-design-from-speckle">Authenticate and Load the Design from Speckle</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inspect-the-design">Inspect the Design</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rangekeeper-entitys-in-the-design">Rangekeeper <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s in the Design</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#querying-the-design-s-object-graph">Querying the Design’s Object Graph</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Daniel Fink
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
