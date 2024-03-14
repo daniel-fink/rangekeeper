@@ -96,12 +96,6 @@ def is_assembly(base: objects.Base) -> bool:
 class Entity(objects.Base):
     entityId: str
 
-    # name: str
-    # type: str
-    # attributes: dict
-    # events: List[Event]
-    # measurements: Dict[rk.measure.Measure, Quantity]
-
     def __str__(self):
         return ('Entity: {1}{0}' +
                 'Type: {2}{0}' +
@@ -256,7 +250,7 @@ class Entity(objects.Base):
             name: str,
             aggregation: dict[str, Union[rk.flux.Stream, rk.flux.Flow]],
             entity: rk.graph.Entity,
-            period_type: rk.periodicity.Type,
+            frequency: rk.duration.Type,
             ) -> Optional[rk.flux.Stream]:
         flows = []
 
@@ -273,7 +267,7 @@ class Entity(objects.Base):
             return rk.flux.Stream(
                 name='{0} for {1} [{2}] Aggregation'.format(name, entity['entityId'], entity['name']),
                 flows=flows,
-                period_type=period_type)
+                frequency=frequency)
         else:
             return None
 

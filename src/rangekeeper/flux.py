@@ -256,7 +256,7 @@ class Flow:
     def pv(
             self,
             frequency: rk.duration.Type,
-            discount_rate: float,
+            rate: float,
             name: str = None) -> Flow:
         """
         Returns a Flow with values discounted to the present (i.e. before its first period) by a specified rate
@@ -265,7 +265,7 @@ class Flow:
         frame = resampled.movements.to_frame()
         frame.insert(0, 'index', range(resampled.movements.index.size))
         frame['Discounted Flow'] = frame.apply(
-            lambda movement: movement[self.name] / math.pow((1 + discount_rate), movement['index'] + 1), axis=1)
+            lambda movement: movement[self.name] / np.power((1 + rate), movement['index'] + 1), axis=1)
         if name is None:
             name = 'Discounted ' + self.name
         return self.__class__(
@@ -303,12 +303,13 @@ class Flow:
         """
         Returns a pd.Series (of index pd.PeriodIndex) with movements summed to specified frequency
         """
-        return self \
-            .resample(frequency=frequency) \
-            .movements.to_period(freq=rk.duration.Type.period(frequency), copy=True) \
-            .rename_axis('period') \
-            .groupby(level='period') \
-            .sum()
+        return (self
+                .resample(frequency=frequency)
+                .movements.to_period(freq=rk.duration.Type.period(frequency), copy=True)
+                .rename_axis('period')
+                .groupby(level='period')
+                .sum()
+                )
 
     def get_frequency(self) -> str:
         return self.movements.index.freq

@@ -289,7 +289,7 @@ class ExPostInflexibleModel:
             pv = cumulative_net_cfs_with_rev.sum().pv(
                 name='Present Value',
                 frequency=self.params['frequency'],
-                discount_rate=self.params['discount_rate'])
+                rate=self.params['discount_rate'])
             pvs.append(pv.collapse().movements)
 
             incl_acq = rk.flux.Stream(
