@@ -19,27 +19,11 @@ Development of the library follows the rigorous methodology established by
 Profs Geltner and de Neufville in their book [Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers](https://doi.org/10.1002/9781119106470).
 
 
-## Installation
-`pip install rangekeeper` or `poetry add rangekeeper`
+## Structure
 
+This repository is comprised of three separate, but inter-dependent projects:
+1. Rangekeeper library source (in Python) 
+2. Walkthrough documentation (a Jupyter Book)
+3. McNeel Rhinoceros 3D Grasshopper components (to assist the creation of Rangekeeper-compliant objects from 3D models, in C#)
 
-## Development
-
-### Dependencies
-
-- Python >= 3.9 & < 3.11
-
-- Poetry: <https://python-poetry.org/>, a package manager (although it is 
-possible to roll your own; YMMV)
-
-### Environment Setup
-
-1. Install poetry, if you haven't yet: <https://python-poetry.org/docs/master/#installing-with-the-official-installer>
-
-2. Clone this repo.
-
-3. Use a terminal to install poetry packages from the repo's directory: `<path_to_repo>$ poetry install`
-
-4. If you wish to develop this repo alongside other projects locally, you may 
-install the local Rangekeeper library via `<path_to_repo>$ poetry run pip install -e <path_to_rangekeeper_repo>`,
-replacing `<path_to_rangekeeper_repo>` with its location on your system.
+Each project has its own readme to assist setup and dependency resolution.

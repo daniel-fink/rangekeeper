@@ -692,3 +692,8 @@ FodyWeavers.xsd
 
 # Built Visual Studio Code Extensions
 *.vsix
+
+# ------------------------------------------------------------------------------
+# Rhino3D
+*.3dm.rhl
+*.3dmbak

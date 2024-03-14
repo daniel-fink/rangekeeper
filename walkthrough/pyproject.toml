@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "RangekeeperWalkthrough"
+version = "0.1"
+description = "Walthrough documentation of the Rangekeeper library (https://github.com/daniel-fink/rangekeeper)"
+authors = ["Daniel Fink <danfink@mit.edu>"]
+license = "MPL-2.0"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.10, <3.12"
+jupyter = "^1.0.0"
+docutils = "0.20.1"
+jupyter-book = "^1.0.0"
+plotly = "^5.19.0"
+ghp-import = "^2.1.0"
+rangekeeper = "^0.6.1a0"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["setuptools", "poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

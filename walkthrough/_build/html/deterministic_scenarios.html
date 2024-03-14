@@ -1,13 +1,12 @@
 
-
 <!DOCTYPE html>
 
 
-<html lang="en" >
+<html lang="en" data-content_root="./" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Deterministic Scenario Analysis &#8212; Rangekeeper</title>
   
@@ -19,49 +18,45 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="_static/styles/theme.css?digest=c5ced968eda925caa686" rel="stylesheet" />
-<link href="_static/styles/bootstrap.css?digest=c5ced968eda925caa686" rel="stylesheet" />
-<link href="_static/styles/pydata-sphinx-theme.css?digest=c5ced968eda925caa686" rel="stylesheet" />
+  <link href="_static/styles/theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
 
   
-  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=c5ced968eda925caa686" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+  <link href="_static/vendor/fontawesome/6.5.1/css/all.min.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.1/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
-    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
-    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=384b581d" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=c5ced968eda925caa686" />
-<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=c5ced968eda925caa686" />
-  <script src="_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=c5ced968eda925caa686"></script>
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
+  <script src="_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/clipboard.min.js"></script>
-    <script src="_static/copybutton.js"></script>
-    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="_static/togglebutton.js"></script>
+    <script src="_static/togglebutton.js?v=4a39c7ea"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <script src="_static/design-tabs.js"></script>
-    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
-const thebe_selector = ".thebe,.cell"
-const thebe_selector_input = "pre"
-const thebe_selector_output = ".output, .cell_output"
-</script>
-    <script async="async" src="_static/sphinx-thebe.js"></script>
+    <script src="_static/design-tabs.js?v=36754332"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'deterministic_scenarios';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -76,10 +71,9 @@ const thebe_selector_output = ".output, .cell_output"
 
   
   
-  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <a id="pst-skip-link" class="skip-link" href="#main-content">Skip to main content</a>
   
   <div id="pst-scroll-pixel-helper"></div>
-
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>
@@ -120,11 +114,14 @@ const thebe_selector_output = ".output, .cell_output"
 </form></div>
   </div>
   
-    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
-    </nav>
+    <header class="bd-header navbar navbar-expand-lg bd-navbar">
+    </header>
   
+
   <div class="bd-container">
     <div class="bd-container__inner bd-page-width">
+      
+      
       
       <div class="bd-sidebar-primary bd-sidebar">
         
@@ -139,6 +136,7 @@ const thebe_selector_output = ".output, .cell_output"
   
     <div class="sidebar-primary-items__start sidebar-primary__section">
         <div class="sidebar-primary-item">
+
   
 
 <a class="navbar-brand logo" href="intro.html">
@@ -157,7 +155,18 @@ const thebe_selector_output = ".output, .cell_output"
   
   
 </a></div>
-        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         
         <ul class="nav bd-sidenav bd-sidenav__home-link">
@@ -363,6 +372,7 @@ const thebe_selector_output = ".output, .cell_output"
 </button>
 
 
+
 <script>
 document.write(`
   <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
@@ -372,6 +382,7 @@ document.write(`
   </button>
 `);
 </script>
+
 
 <script>
 document.write(`
@@ -426,10 +437,10 @@ document.write(`
               
                 
 <div id="searchbox"></div>
-                <article class="bd-article" role="main">
+                <article class="bd-article">
                   
   <section class="tex2jax_ignore mathjax_ignore" id="deterministic-scenario-analysis">
-<h1>Deterministic Scenario Analysis<a class="headerlink" href="#deterministic-scenario-analysis" title="Permalink to this heading">#</a></h1>
+<h1>Deterministic Scenario Analysis<a class="headerlink" href="#deterministic-scenario-analysis" title="Link to this heading">#</a></h1>
 <p>Chapter 4 of <span id="id1">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> presents the concept of various “scenarios” of
 cashflows by varying key input parameters or modyfing how certain cashflows are
 produced.</p>
@@ -441,7 +452,7 @@ scenarios by simply changing the parameters in the dictionary.</p>
 <figure class="align-default" id="farevuu-table4-1">
 <a class="reference internal image-reference" href="_images/FaREVuU-table4.1.png"><img alt="_images/FaREVuU-table4.1.png" src="_images/FaREVuU-table4.1.png" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-number">Fig. 2 </span><span class="caption-text">Table 4.1 from <span id="id2">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span></span><a class="headerlink" href="#farevuu-table4-1" title="Permalink to this image">#</a></p>
+<p><span class="caption-number">Fig. 2 </span><span class="caption-text">Table 4.1 from <span id="id2">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span></span><a class="headerlink" href="#farevuu-table4-1" title="Link to this image">#</a></p>
 </figcaption>
 </figure>
 <p>Again we import the necessary libraries:</p>
@@ -456,18 +467,18 @@ scenarios by simply changing the parameters in the dictionary.</p>
 </div>
 </div>
 <section id="base-parameters">
-<h2>Base Parameters<a class="headerlink" href="#base-parameters" title="Permalink to this heading">#</a></h2>
+<h2>Base Parameters<a class="headerlink" href="#base-parameters" title="Link to this heading">#</a></h2>
 <p>First let’s set up the Proforma Model’s parameters. These will be formatted as a
 dictionary of inputs:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">locale</span><span class="o">.</span><span class="n">setlocale</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">LC_ALL</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">locale</span><span class="o">.</span><span class="n">setlocale</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">LC_ALL</span><span class="p">,</span> <span class="s1">&#39;en_AU&#39;</span><span class="p">)</span>
 <span class="n">units</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">measure</span><span class="o">.</span><span class="n">Index</span><span class="o">.</span><span class="n">registry</span>
 <span class="n">currency</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">measure</span><span class="o">.</span><span class="n">register_currency</span><span class="p">(</span><span class="n">registry</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
 <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;start_date&#39;</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="s1">&#39;2001-01-01&#39;</span><span class="p">),</span>
     <span class="s1">&#39;num_periods&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
-    <span class="s1">&#39;period_type&#39;</span><span class="p">:</span> <span class="n">rk</span><span class="o">.</span><span class="n">periodicity</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span><span class="p">,</span>
+    <span class="s1">&#39;frequency&#39;</span><span class="p">:</span> <span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span><span class="p">,</span>
     <span class="s1">&#39;acquisition_cost&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1000</span> <span class="o">*</span> <span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">,</span>
     <span class="s1">&#39;initial_income&#39;</span><span class="p">:</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">,</span>
     <span class="s1">&#39;growth_rate&#39;</span><span class="p">:</span> <span class="mf">0.02</span><span class="p">,</span>
@@ -487,7 +498,7 @@ dictionary of inputs:</p>
 </div>
 </section>
 <section id="base-proforma-model">
-<h2>Base Proforma Model<a class="headerlink" href="#base-proforma-model" title="Permalink to this heading">#</a></h2>
+<h2>Base Proforma Model<a class="headerlink" href="#base-proforma-model" title="Link to this heading">#</a></h2>
 <p>Then let’s set up the base proforma model, which will accept the <code class="docutils literal notranslate"><span class="pre">dict</span></code> of
 parameters on initialization:</p>
 <div class="cell docutils container">
@@ -504,30 +515,30 @@ decorator in order to sequentially add methods to the class in the following
 cells. This is not necessary, but it helps when the documentation is in Jupyter
 format.</p>
 <section id="spans">
-<h3>Spans<a class="headerlink" href="#spans" title="Permalink to this heading">#</a></h3>
+<h3>Spans<a class="headerlink" href="#spans" title="Link to this heading">#</a></h3>
 <p>First we set up the Model’s <code class="docutils literal notranslate"><span class="pre">Span</span></code>s:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nd">@rk</span><span class="o">.</span><span class="n">update_class</span><span class="p">(</span><span class="n">Model</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">Model</span><span class="p">:</span>
     <span class="k">def</span> <span class="nf">init_spans</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">calc_span</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">span</span><span class="o">.</span><span class="n">Span</span><span class="o">.</span><span class="n">from_num_periods</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calc_span</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">span</span><span class="o">.</span><span class="n">Span</span><span class="o">.</span><span class="n">from_duration</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Span to Calculate Reversion&#39;</span><span class="p">,</span>
             <span class="n">date</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;start_date&#39;</span><span class="p">],</span>
-            <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">],</span>
-            <span class="n">num_periods</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;num_periods&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">acq_span</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">span</span><span class="o">.</span><span class="n">Span</span><span class="o">.</span><span class="n">from_num_periods</span><span class="p">(</span>
+            <span class="n">duration</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">],</span>
+            <span class="n">amount</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;num_periods&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">acq_span</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">span</span><span class="o">.</span><span class="n">Span</span><span class="o">.</span><span class="n">from_duration</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Acquisition Span&#39;</span><span class="p">,</span>
-            <span class="n">date</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">periodicity</span><span class="o">.</span><span class="n">offset_date</span><span class="p">(</span>
+            <span class="n">date</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">offset</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;start_date&#39;</span><span class="p">],</span>
-                <span class="n">num_periods</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
-                <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">]),</span>
-            <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">],</span>
-            <span class="n">num_periods</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">amount</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">duration</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">]),</span>
+            <span class="n">duration</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">]</span>
+            <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">span</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_span</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Span&#39;</span><span class="p">,</span>
-            <span class="n">num_periods</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
-            <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">],</span>
+            <span class="n">amount</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">duration</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">],</span>
             <span class="n">bound</span><span class="o">=</span><span class="s1">&#39;end&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -535,7 +546,7 @@ format.</p>
 </div>
 </section>
 <section id="cash-flows">
-<h3>Cash Flows<a class="headerlink" href="#cash-flows" title="Permalink to this heading">#</a></h3>
+<h3>Cash Flows<a class="headerlink" href="#cash-flows" title="Link to this heading">#</a></h3>
 <p>We now set up the Model’s Operational Cash Flows:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -547,7 +558,7 @@ format.</p>
             <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;acquisition_cost&#39;</span><span class="p">],</span>
             <span class="n">proj</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">projection</span><span class="o">.</span><span class="n">Distribution</span><span class="p">(</span>
                 <span class="n">form</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Uniform</span><span class="p">(),</span>
-                <span class="n">sequence</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">acq_span</span><span class="o">.</span><span class="n">to_index</span><span class="p">(</span><span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">])),</span>
+                <span class="n">sequence</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">acq_span</span><span class="o">.</span><span class="n">to_sequence</span><span class="p">(</span><span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])),</span>
             <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">base_pgi</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="o">.</span><span class="n">from_projection</span><span class="p">(</span>
@@ -556,7 +567,7 @@ format.</p>
             <span class="n">proj</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">projection</span><span class="o">.</span><span class="n">Extrapolation</span><span class="p">(</span>
             <span class="n">form</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">extrapolation</span><span class="o">.</span><span class="n">Compounding</span><span class="p">(</span>
                 <span class="n">rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;growth_rate&#39;</span><span class="p">]),</span>
-            <span class="n">sequence</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_span</span><span class="o">.</span><span class="n">to_index</span><span class="p">(</span><span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">])),</span>
+            <span class="n">sequence</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_span</span><span class="o">.</span><span class="n">to_sequence</span><span class="p">(</span><span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])),</span>
             <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
 
         <span class="c1"># Table 4.1 has proformas that absorb an additional straight-line income</span>
@@ -567,38 +578,43 @@ format.</p>
             <span class="n">proj</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">projection</span><span class="o">.</span><span class="n">Extrapolation</span><span class="p">(</span>
                 <span class="n">form</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">extrapolation</span><span class="o">.</span><span class="n">StraightLine</span><span class="p">(</span>
                     <span class="n">slope</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;addl_pgi_slope&#39;</span><span class="p">]),</span>
-                <span class="n">sequence</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_span</span><span class="o">.</span><span class="n">to_index</span><span class="p">(</span><span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">])),</span>
+                <span class="n">sequence</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_span</span><span class="o">.</span><span class="n">to_sequence</span><span class="p">(</span><span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])),</span>
             <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">pgi</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pgi</span> <span class="o">=</span> <span class="p">(</span><span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Potential Gross Income&#39;</span><span class="p">,</span>
             <span class="n">flows</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">base_pgi</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">addl_pgi</span><span class="p">],</span>
-            <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])</span>
+                <span class="o">.</span><span class="n">sum</span><span class="p">())</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">vacancy</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Vacancy Allowance&#39;</span><span class="p">,</span>
             <span class="n">movements</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pgi</span><span class="o">.</span><span class="n">movements</span> <span class="o">*</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;vacancy_rate&#39;</span><span class="p">],</span>
             <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">egi</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">egi</span> <span class="o">=</span> <span class="p">(</span><span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Effective Gross Income&#39;</span><span class="p">,</span>
             <span class="n">flows</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">pgi</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">vacancy</span><span class="p">],</span>
-            <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">opex</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="p">(</span>
+            <span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])</span>
+                <span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">opex</span> <span class="o">=</span> <span class="p">(</span><span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Operating Expenses&#39;</span><span class="p">,</span>
             <span class="n">movements</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pgi</span><span class="o">.</span><span class="n">movements</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;opex_pgi_ratio&#39;</span><span class="p">],</span>
-            <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span><span class="o">.</span><span class="n">invert</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">noi</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
+            <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">invert</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">noi</span> <span class="o">=</span> <span class="p">(</span><span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Net Operating Income&#39;</span><span class="p">,</span>
             <span class="n">flows</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">egi</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">opex</span><span class="p">],</span>
-            <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])</span>
+                <span class="o">.</span><span class="n">sum</span><span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">capex</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Capital Expenditures&#39;</span><span class="p">,</span>
             <span class="n">movements</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pgi</span><span class="o">.</span><span class="n">movements</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;capex_pgi_ratio&#39;</span><span class="p">],</span>
             <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span><span class="o">.</span><span class="n">invert</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">net_cfs</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">net_cfs</span> <span class="o">=</span> <span class="p">(</span><span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Net Annual Cashflows&#39;</span><span class="p">,</span>
             <span class="n">flows</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">noi</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">capex</span><span class="p">],</span>
-            <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])</span>
+                <span class="o">.</span><span class="n">sum</span><span class="p">())</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">reversions</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Reversions&#39;</span><span class="p">,</span>
@@ -611,7 +627,7 @@ format.</p>
 </div>
 </section>
 <section id="metrics">
-<h3>Metrics<a class="headerlink" href="#metrics" title="Permalink to this heading">#</a></h3>
+<h3>Metrics<a class="headerlink" href="#metrics" title="Link to this heading">#</a></h3>
 <p>Now we can add methods to calculate metrics, like the present value (PV) and
 internal rate of return (IRR) for each period in the Model’s <code class="docutils literal notranslate"><span class="pre">Span</span></code>:</p>
 <div class="cell docutils container">
@@ -633,17 +649,20 @@ internal rate of return (IRR) for each period in the Model’s <code class="docu
             <span class="n">cumulative_net_cfs_with_rev</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
                 <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Net Cashflow with Reversion&#39;</span><span class="p">,</span>
                 <span class="n">flows</span><span class="o">=</span><span class="p">[</span><span class="n">cumulative_net_cfs</span><span class="p">,</span> <span class="n">reversion</span><span class="p">],</span>
-                <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">])</span>
-            <span class="n">pv</span> <span class="o">=</span> <span class="n">cumulative_net_cfs_with_rev</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">pv</span><span class="p">(</span>
-                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Present Value&#39;</span><span class="p">,</span>
-                <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">],</span>
-                <span class="n">discount_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;discount_rate&#39;</span><span class="p">])</span>
+                <span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])</span>
+            <span class="n">pv</span> <span class="o">=</span> <span class="p">(</span><span class="n">cumulative_net_cfs_with_rev</span>
+                <span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+                <span class="o">.</span><span class="n">pv</span><span class="p">(</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Present Value&#39;</span><span class="p">,</span>
+                    <span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">],</span>
+                    <span class="n">rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;discount_rate&#39;</span><span class="p">])</span>
+                <span class="p">)</span>
             <span class="n">pvs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pv</span><span class="o">.</span><span class="n">collapse</span><span class="p">()</span><span class="o">.</span><span class="n">movements</span><span class="p">)</span>
 
             <span class="n">incl_acq</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
                 <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Net Cashflow with Reversion and Acquisition&#39;</span><span class="p">,</span>
                 <span class="n">flows</span><span class="o">=</span><span class="p">[</span><span class="n">cumulative_net_cfs_with_rev</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">acquisition</span><span class="p">],</span>
-                <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">])</span>
+                <span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])</span>
 
             <span class="n">irrs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">incl_acq</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">xirr</span><span class="p">(),</span> <span class="mi">4</span><span class="p">))</span>
 
@@ -661,7 +680,7 @@ internal rate of return (IRR) for each period in the Model’s <code class="docu
 </div>
 </section>
 <section id="output">
-<h3>Output<a class="headerlink" href="#output" title="Permalink to this heading">#</a></h3>
+<h3>Output<a class="headerlink" href="#output" title="Link to this heading">#</a></h3>
 <p>Now our Proforma Model is set up, and we can initialize and calculate it:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -726,9 +745,9 @@ internal rate of return (IRR) for each period in the Model’s <code class="docu
 </section>
 </section>
 <section id="scenarios">
-<h2>Scenarios<a class="headerlink" href="#scenarios" title="Permalink to this heading">#</a></h2>
+<h2>Scenarios<a class="headerlink" href="#scenarios" title="Link to this heading">#</a></h2>
 <section id="optimistic">
-<h3>Optimistic<a class="headerlink" href="#optimistic" title="Permalink to this heading">#</a></h3>
+<h3>Optimistic<a class="headerlink" href="#optimistic" title="Link to this heading">#</a></h3>
 <p>In Table 4.1, the ‘Panel B’ (Optimistic) scenario is created by increasing the
 initial income <code class="docutils literal notranslate"><span class="pre">Flow</span></code> by 10%, and also adding additional Potential Gross Income
 with a <code class="docutils literal notranslate"><span class="pre">Projection</span></code> that compounds at 3% p.a.:</p>
@@ -804,7 +823,7 @@ with a <code class="docutils literal notranslate"><span class="pre">Projection</
 </div>
 </section>
 <section id="pessimistic">
-<h3>Pessimistic<a class="headerlink" href="#pessimistic" title="Permalink to this heading">#</a></h3>
+<h3>Pessimistic<a class="headerlink" href="#pessimistic" title="Link to this heading">#</a></h3>
 <p>Similarly, we can create the ‘Panel C’ (Pessimistic) scenario:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -873,7 +892,7 @@ with a <code class="docutils literal notranslate"><span class="pre">Projection</
 </section>
 </section>
 <section id="analysis-and-expected-value-ev">
-<h2>Analysis and Expected Value (EV)<a class="headerlink" href="#analysis-and-expected-value-ev" title="Permalink to this heading">#</a></h2>
+<h2>Analysis and Expected Value (EV)<a class="headerlink" href="#analysis-and-expected-value-ev" title="Link to this heading">#</a></h2>
 <p><span id="id3">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> Table 4.1 continues with calculating the Expected Value (EV)
 of the outcome, given that both optimistic and pessimistic scenarios have a 50%
 chance of occuring:</p>
@@ -933,18 +952,13 @@ the flexibility, assuming it is possible to sell the property at will:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Valuation of Flexibility to Sell at Optimal Time:</span>
-<span class="n">value_of_flex</span> <span class="o">=</span> <span class="p">(</span><span class="n">optimistic</span><span class="o">.</span><span class="n">pvs</span><span class="o">.</span><span class="n">movements</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">pessimistic</span><span class="o">.</span><span class="n">pvs</span><span class="o">.</span><span class="n">movements</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="n">evs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-<span class="n">value_of_flex</span>
+<span class="n">value_of_flex</span> <span class="o">=</span> <span class="p">(</span><span class="n">optimistic</span><span class="o">.</span><span class="n">pvs</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">pessimistic</span><span class="o">.</span><span class="n">pvs</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="n">evs</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Value of flexiblity: $</span><span class="si">{:,.2f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">value_of_flex</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/var/folders/bw/j7bw1l0s1fjdf833nbbhh6_h0000gn/T/ipykernel_26844/2107257998.py:2: FutureWarning:
-
-Series.__getitem__ treating keys as positions is deprecated. In a future version, integer keys will always be treated as labels (consistent with DataFrame behavior). To access a value by position, use `ser.iloc[pos]`
-</pre></div>
-</div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>83.02036601269492
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Value of flexiblity: $83.02
 </pre></div>
 </div>
 </div>
@@ -980,7 +994,7 @@ Series.__getitem__ treating keys as positions is deprecated. In a future version
               
               
                 <footer class="prev-next-footer">
-                  <!-- Previous / next buttons -->
+                  
 <div class="prev-next-area">
     <a class="left-prev"
        href="basic_dcf.html"
@@ -1008,6 +1022,7 @@ Series.__getitem__ treating keys as positions is deprecated. In a future version
             
               
                 <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
 
   <div class="sidebar-secondary-item">
   <div class="page-toc tocsection onthispage">
@@ -1050,6 +1065,7 @@ By Daniel Fink
   
   <div class="footer-item">
     
+
   <p class="copyright">
     
       © Copyright 2023.
@@ -1076,8 +1092,8 @@ By Daniel Fink
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="_static/scripts/bootstrap.js?digest=c5ced968eda925caa686"></script>
-<script src="_static/scripts/pydata-sphinx-theme.js?digest=c5ced968eda925caa686"></script>
+  <script src="_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae"></script>
 
   <footer class="bd-footer">
   </footer>
