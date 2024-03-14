@@ -140,12 +140,12 @@ class Model:
         # Calculate the Present Value of the NCFs:
         self.pv_ncf = self.ncf.sum().pv(
             frequency=params['frequency'],
-            discount_rate=params['discount_rate'])
+            rate=params['discount_rate'])
 
         # Calculate the Present Value of Disposition CFs:
         self.pv_disposition = self.disposition.pv(
             frequency=params['frequency'],
-            discount_rate=params['discount_rate'])
+            rate=params['discount_rate'])
 
         self.pv_ncf_agg = rk.flux.Stream(
             name='Discounted Net Cashflow Sums',
