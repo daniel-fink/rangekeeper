@@ -1,13 +1,12 @@
 
-
 <!DOCTYPE html>
 
 
-<html lang="en" >
+<html lang="en" data-content_root="./" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Introduction to Modeling Flexibility &#8212; Rangekeeper</title>
   
@@ -19,49 +18,45 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="_static/styles/theme.css?digest=c5ced968eda925caa686" rel="stylesheet" />
-<link href="_static/styles/bootstrap.css?digest=c5ced968eda925caa686" rel="stylesheet" />
-<link href="_static/styles/pydata-sphinx-theme.css?digest=c5ced968eda925caa686" rel="stylesheet" />
+  <link href="_static/styles/theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
 
   
-  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=c5ced968eda925caa686" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+  <link href="_static/vendor/fontawesome/6.5.1/css/all.min.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.1/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
-    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
-    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=384b581d" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=c5ced968eda925caa686" />
-<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=c5ced968eda925caa686" />
-  <script src="_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=c5ced968eda925caa686"></script>
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
+  <script src="_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/clipboard.min.js"></script>
-    <script src="_static/copybutton.js"></script>
-    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="_static/togglebutton.js"></script>
+    <script src="_static/togglebutton.js?v=4a39c7ea"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <script src="_static/design-tabs.js"></script>
-    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
-const thebe_selector = ".thebe,.cell"
-const thebe_selector_input = "pre"
-const thebe_selector_output = ".output, .cell_output"
-</script>
-    <script async="async" src="_static/sphinx-thebe.js"></script>
+    <script src="_static/design-tabs.js?v=36754332"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'flexibility_intro';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -76,10 +71,9 @@ const thebe_selector_output = ".output, .cell_output"
 
   
   
-  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <a id="pst-skip-link" class="skip-link" href="#main-content">Skip to main content</a>
   
   <div id="pst-scroll-pixel-helper"></div>
-
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>
@@ -120,11 +114,14 @@ const thebe_selector_output = ".output, .cell_output"
 </form></div>
   </div>
   
-    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
-    </nav>
+    <header class="bd-header navbar navbar-expand-lg bd-navbar">
+    </header>
   
+
   <div class="bd-container">
     <div class="bd-container__inner bd-page-width">
+      
+      
       
       <div class="bd-sidebar-primary bd-sidebar">
         
@@ -139,6 +136,7 @@ const thebe_selector_output = ".output, .cell_output"
   
     <div class="sidebar-primary-items__start sidebar-primary__section">
         <div class="sidebar-primary-item">
+
   
 
 <a class="navbar-brand logo" href="intro.html">
@@ -157,7 +155,18 @@ const thebe_selector_output = ".output, .cell_output"
   
   
 </a></div>
-        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         
         <ul class="nav bd-sidenav bd-sidenav__home-link">
@@ -363,6 +372,7 @@ const thebe_selector_output = ".output, .cell_output"
 </button>
 
 
+
 <script>
 document.write(`
   <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
@@ -372,6 +382,7 @@ document.write(`
   </button>
 `);
 </script>
+
 
 <script>
 document.write(`
@@ -422,10 +433,10 @@ document.write(`
               
                 
 <div id="searchbox"></div>
-                <article class="bd-article" role="main">
+                <article class="bd-article">
                   
   <section class="tex2jax_ignore mathjax_ignore" id="introduction-to-modeling-flexibility">
-<h1>Introduction to Modeling Flexibility<a class="headerlink" href="#introduction-to-modeling-flexibility" title="Permalink to this heading">#</a></h1>
+<h1>Introduction to Modeling Flexibility<a class="headerlink" href="#introduction-to-modeling-flexibility" title="Link to this heading">#</a></h1>
 <p><span id="id1">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> apply the simulated Real Estate Market to a basic Proforma
 in two ways:</p>
 <ol class="arabic simple">
@@ -437,7 +448,7 @@ dynamics</p></li>
 </ol>
 <p>To begin with, let’s see how <em>Rangekeeper</em> adjusts the projected Potential Gross
 Income and Reversion cash flows, using a single scenario/trial of a <code class="docutils literal notranslate"><span class="pre">Market</span></code>.</p>
-<p>Similar to the <a class="reference internal" href="deterministic_scenarios.html"><span class="doc std std-doc">Deterministic Scenario Analysis</span></a>
+<p>Similar to the <a class="reference internal" href="deterministic_scenarios.html"><span class="std std-doc">Deterministic Scenario Analysis</span></a>
 , we import required libraries and set up a base Model:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -452,13 +463,13 @@ Income and Reversion cash flows, using a single scenario/trial of a <code class=
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">locale</span><span class="o">.</span><span class="n">setlocale</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">LC_ALL</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">locale</span><span class="o">.</span><span class="n">setlocale</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">LC_ALL</span><span class="p">,</span> <span class="s1">&#39;en_AU&#39;</span><span class="p">)</span>
 <span class="n">units</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">measure</span><span class="o">.</span><span class="n">Index</span><span class="o">.</span><span class="n">registry</span>
 <span class="n">currency</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">measure</span><span class="o">.</span><span class="n">register_currency</span><span class="p">(</span><span class="n">registry</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
 <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;start_date&#39;</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="s1">&#39;2001-01-01&#39;</span><span class="p">),</span>
     <span class="s1">&#39;num_periods&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
-    <span class="s1">&#39;period_type&#39;</span><span class="p">:</span> <span class="n">rk</span><span class="o">.</span><span class="n">periodicity</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span><span class="p">,</span>
+    <span class="s1">&#39;frequency&#39;</span><span class="p">:</span> <span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span><span class="p">,</span>
     <span class="s1">&#39;acquisition_cost&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1000</span> <span class="o">*</span> <span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">,</span>
     <span class="s1">&#39;initial_income&#39;</span><span class="p">:</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">,</span>
     <span class="s1">&#39;growth_rate&#39;</span><span class="p">:</span> <span class="mf">0.02</span><span class="p">,</span>
@@ -473,7 +484,7 @@ Income and Reversion cash flows, using a single scenario/trial of a <code class=
 </div>
 </div>
 <section id="base-ex-ante-inflexible-model">
-<h2>Base (Ex-Ante, Inflexible) Model<a class="headerlink" href="#base-ex-ante-inflexible-model" title="Permalink to this heading">#</a></h2>
+<h2>Base (Ex-Ante, Inflexible) Model<a class="headerlink" href="#base-ex-ante-inflexible-model" title="Link to this heading">#</a></h2>
 <p>The Base (non-market-adjusted and inflexible) Model is the same as before:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -498,28 +509,26 @@ Income and Reversion cash flows, using a single scenario/trial of a <code class=
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nd">@rk</span><span class="o">.</span><span class="n">update_class</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">BaseModel</span><span class="p">:</span>
     <span class="k">def</span> <span class="nf">init_spans</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">calc_span</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">span</span><span class="o">.</span><span class="n">Span</span><span class="o">.</span><span class="n">from_num_periods</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calc_span</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">span</span><span class="o">.</span><span class="n">Span</span><span class="o">.</span><span class="n">from_duration</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Span to Calculate Reversion&#39;</span><span class="p">,</span>
             <span class="n">date</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;start_date&#39;</span><span class="p">],</span>
-            <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">],</span>
-            <span class="n">num_periods</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;num_periods&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">acq_span</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">span</span><span class="o">.</span><span class="n">Span</span><span class="o">.</span><span class="n">from_num_periods</span><span class="p">(</span>
+            <span class="n">duration</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">],</span>
+            <span class="n">amount</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;num_periods&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">acq_span</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">span</span><span class="o">.</span><span class="n">Span</span><span class="o">.</span><span class="n">from_duration</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Acquisition Span&#39;</span><span class="p">,</span>
-            <span class="n">date</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">periodicity</span><span class="o">.</span><span class="n">offset_date</span><span class="p">(</span>
+            <span class="n">date</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">offset</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;start_date&#39;</span><span class="p">],</span>
-                <span class="n">num_periods</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
-                <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">]),</span>
-            <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">],</span>
-            <span class="n">num_periods</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">amount</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">duration</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">]),</span>
+            <span class="n">duration</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">span</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_span</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Span&#39;</span><span class="p">,</span>
-            <span class="n">num_periods</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
-            <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">],</span>
-            <span class="n">bound</span><span class="o">=</span><span class="s1">&#39;end&#39;</span><span class="p">)</span>
+            <span class="n">amount</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">duration</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reversion_span</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">span</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Reversion Span&#39;</span><span class="p">,</span>
-            <span class="n">num_periods</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;num_periods&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
-            <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">],</span>
+            <span class="n">amount</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;num_periods&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="n">duration</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">],</span>
             <span class="n">bound</span><span class="o">=</span><span class="s1">&#39;start&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -542,7 +551,7 @@ Income and Reversion cash flows, using a single scenario/trial of a <code class=
             <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;acquisition_cost&#39;</span><span class="p">],</span>
             <span class="n">proj</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">projection</span><span class="o">.</span><span class="n">Distribution</span><span class="p">(</span>
                 <span class="n">form</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Uniform</span><span class="p">(),</span>
-                <span class="n">sequence</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">acq_span</span><span class="o">.</span><span class="n">to_index</span><span class="p">(</span><span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">])),</span>
+                <span class="n">sequence</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">acq_span</span><span class="o">.</span><span class="n">to_sequence</span><span class="p">(</span><span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])),</span>
             <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">calc_egi</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -552,36 +561,41 @@ Income and Reversion cash flows, using a single scenario/trial of a <code class=
             <span class="n">proj</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">projection</span><span class="o">.</span><span class="n">Extrapolation</span><span class="p">(</span>
                 <span class="n">form</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">extrapolation</span><span class="o">.</span><span class="n">Compounding</span><span class="p">(</span>
                     <span class="n">rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;growth_rate&#39;</span><span class="p">]),</span>
-                <span class="n">sequence</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_span</span><span class="o">.</span><span class="n">to_index</span><span class="p">(</span><span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">])),</span>
+                <span class="n">sequence</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_span</span><span class="o">.</span><span class="n">to_sequence</span><span class="p">(</span><span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])),</span>
             <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">vacancy</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Vacancy Allowance&#39;</span><span class="p">,</span>
             <span class="n">movements</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pgi</span><span class="o">.</span><span class="n">movements</span> <span class="o">*</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;vacancy_rate&#39;</span><span class="p">],</span>
             <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">egi</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">egi</span> <span class="o">=</span> <span class="p">(</span><span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Effective Gross Income&#39;</span><span class="p">,</span>
             <span class="n">flows</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">pgi</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">vacancy</span><span class="p">],</span>
-            <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])</span>
+                <span class="o">.</span><span class="n">sum</span><span class="p">())</span>
 
     <span class="k">def</span> <span class="nf">calc_noi</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">opex</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">opex</span> <span class="o">=</span> <span class="p">(</span><span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Operating Expenses&#39;</span><span class="p">,</span>
             <span class="n">movements</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pgi</span><span class="o">.</span><span class="n">movements</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;opex_pgi_ratio&#39;</span><span class="p">],</span>
-            <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span><span class="o">.</span><span class="n">invert</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">noi</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
+            <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">invert</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">noi</span> <span class="o">=</span> <span class="p">(</span><span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Net Operating Income&#39;</span><span class="p">,</span>
             <span class="n">flows</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">egi</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">opex</span><span class="p">],</span>
-            <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])</span>
+                <span class="o">.</span><span class="n">sum</span><span class="p">())</span>
 
     <span class="k">def</span> <span class="nf">calc_ncf</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">capex</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">capex</span> <span class="o">=</span> <span class="p">(</span><span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Capital Expenditures&#39;</span><span class="p">,</span>
             <span class="n">movements</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pgi</span><span class="o">.</span><span class="n">movements</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;capex_pgi_ratio&#39;</span><span class="p">],</span>
-            <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span><span class="o">.</span><span class="n">invert</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">net_cf</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
+            <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">invert</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">net_cf</span> <span class="o">=</span> <span class="p">(</span><span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Net Annual Cashflow&#39;</span><span class="p">,</span>
             <span class="n">flows</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">noi</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">capex</span><span class="p">],</span>
-            <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])</span>
+                <span class="o">.</span><span class="n">sum</span><span class="p">())</span>
 
     <span class="k">def</span> <span class="nf">calc_reversion</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reversions</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="p">(</span>
@@ -599,7 +613,7 @@ Income and Reversion cash flows, using a single scenario/trial of a <code class=
                 <span class="bp">self</span><span class="o">.</span><span class="n">net_cf</span><span class="o">.</span><span class="n">trim_to_span</span><span class="p">(</span><span class="n">span</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">span</span><span class="p">),</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">reversions</span><span class="o">.</span><span class="n">trim_to_span</span><span class="p">(</span><span class="n">span</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">reversion_span</span><span class="p">)</span>
                 <span class="p">],</span>
-            <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">])</span>
+            <span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -633,17 +647,20 @@ Income and Reversion cash flows, using a single scenario/trial of a <code class=
                     <span class="n">cumulative_net_cf</span><span class="p">,</span>
                     <span class="n">reversion</span>
                     <span class="p">],</span>
-                <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">])</span>
-            <span class="n">pv</span> <span class="o">=</span> <span class="n">cumulative_net_cf_with_rev</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">pv</span><span class="p">(</span>
-                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Present Value&#39;</span><span class="p">,</span>
-                <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">],</span>
-                <span class="n">discount_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;discount_rate&#39;</span><span class="p">])</span>
+                <span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])</span>
+            <span class="n">pv</span> <span class="o">=</span> <span class="p">(</span><span class="n">cumulative_net_cf_with_rev</span>
+                <span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+                <span class="o">.</span><span class="n">pv</span><span class="p">(</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Present Value&#39;</span><span class="p">,</span>
+                    <span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">],</span>
+                    <span class="n">rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;discount_rate&#39;</span><span class="p">])</span>
+            <span class="p">)</span>
             <span class="n">pvs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pv</span><span class="o">.</span><span class="n">collapse</span><span class="p">()</span><span class="o">.</span><span class="n">movements</span><span class="p">)</span>
 
             <span class="n">incl_acq</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
                 <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Net Cashflow with Reversion and Acquisition&#39;</span><span class="p">,</span>
                 <span class="n">flows</span><span class="o">=</span><span class="p">[</span><span class="n">cumulative_net_cf_with_rev</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">acquisition</span><span class="p">],</span>
-                <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">])</span>
+                <span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])</span>
 
             <span class="n">irrs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">incl_acq</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">xirr</span><span class="p">(),</span> <span class="mi">4</span><span class="p">))</span>
 
@@ -701,7 +718,7 @@ Income and Reversion cash flows, using a single scenario/trial of a <code class=
         <span class="n">ex_ante</span><span class="o">.</span><span class="n">net_cf</span><span class="p">,</span>
         <span class="n">ex_ante</span><span class="o">.</span><span class="n">reversion</span><span class="p">,</span>
         <span class="p">],</span>
-    <span class="n">period_type</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">periodicity</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span>
+    <span class="n">frequency</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span>
     <span class="p">)</span>
 <span class="n">ex_ante_table</span>
 </pre></div>
@@ -730,8 +747,8 @@ Income and Reversion cash flows, using a single scenario/trial of a <code class=
 <p>The metrics for the Base Model are:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Projected IRR at Market Value Price: </span><span class="si">{:.2%}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ex_ante</span><span class="o">.</span><span class="n">irrs</span><span class="o">.</span><span class="n">movements</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Time 0 Present Value at OCC: </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">currency</span><span class="p">(</span><span class="n">ex_ante</span><span class="o">.</span><span class="n">pvs</span><span class="o">.</span><span class="n">movements</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">grouping</span><span class="o">=</span><span class="kc">True</span><span class="p">)))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Projected IRR at Market Value Price: </span><span class="si">{:.2%}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ex_ante</span><span class="o">.</span><span class="n">irrs</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Time 0 Present Value at OCC: </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">currency</span><span class="p">(</span><span class="n">ex_ante</span><span class="o">.</span><span class="n">pvs</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">grouping</span><span class="o">=</span><span class="kc">True</span><span class="p">)))</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Average Annual Cashflow: </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">currency</span><span class="p">(</span><span class="n">ex_ante</span><span class="o">.</span><span class="n">net_cf</span><span class="o">.</span><span class="n">trim_to_span</span><span class="p">(</span><span class="n">ex_ante</span><span class="o">.</span><span class="n">span</span><span class="p">)</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">grouping</span><span class="o">=</span><span class="kc">True</span><span class="p">)))</span>
 </pre></div>
 </div>
@@ -740,15 +757,6 @@ Income and Reversion cash flows, using a single scenario/trial of a <code class=
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Projected IRR at Market Value Price: 7.00%
 Time 0 Present Value at OCC: $1,000.00
 Average Annual Cashflow: $54.75
-</pre></div>
-</div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/var/folders/bw/j7bw1l0s1fjdf833nbbhh6_h0000gn/T/ipykernel_26868/3371849146.py:1: FutureWarning:
-
-Series.__getitem__ treating keys as positions is deprecated. In a future version, integer keys will always be treated as labels (consistent with DataFrame behavior). To access a value by position, use `ser.iloc[pos]`
-
-/var/folders/bw/j7bw1l0s1fjdf833nbbhh6_h0000gn/T/ipykernel_26868/3371849146.py:2: FutureWarning:
-
-Series.__getitem__ treating keys as positions is deprecated. In a future version, integer keys will always be treated as labels (consistent with DataFrame behavior). To access a value by position, use `ser.iloc[pos]`
 </pre></div>
 </div>
 </div>
@@ -768,25 +776,25 @@ economic basis of the property value.</p>
 </div>
 </section>
 <section id="ex-post-inflexible-model">
-<h2>Ex-Post Inflexible Model<a class="headerlink" href="#ex-post-inflexible-model" title="Permalink to this heading">#</a></h2>
+<h2>Ex-Post Inflexible Model<a class="headerlink" href="#ex-post-inflexible-model" title="Link to this heading">#</a></h2>
 <p>The Ex-Post Model uses a simulated <code class="docutils literal notranslate"><span class="pre">Market</span></code> scenario to adjust the Base
 Model’s Potential Gross Income (PGI) and Reversion cash flows. In this case,
 instead of using straight-line projected growth to calculate the PGI, we will
 use the simulated <code class="docutils literal notranslate"><span class="pre">Market</span></code>’s Price Factors to adjust the Ex-Ante Model (and
 emulate how an ‘Ex-Post’ Model would look)</p>
 <section id="market">
-<h3>Market<a class="headerlink" href="#market" title="Permalink to this heading">#</a></h3>
+<h3>Market<a class="headerlink" href="#market" title="Link to this heading">#</a></h3>
 <p>First, we need to simulate a <code class="docutils literal notranslate"><span class="pre">Market</span></code> scenario:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">period_type</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">periodicity</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">frequency</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span>
 <span class="n">num_periods</span> <span class="o">=</span> <span class="mi">25</span>
-<span class="n">span</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">span</span><span class="o">.</span><span class="n">Span</span><span class="o">.</span><span class="n">from_num_periods</span><span class="p">(</span>
+<span class="n">span</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">span</span><span class="o">.</span><span class="n">Span</span><span class="o">.</span><span class="n">from_duration</span><span class="p">(</span>
     <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Span&quot;</span><span class="p">,</span>
     <span class="n">date</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
-    <span class="n">period_type</span><span class="o">=</span><span class="n">period_type</span><span class="p">,</span>
-    <span class="n">num_periods</span><span class="o">=</span><span class="n">num_periods</span><span class="p">)</span>
-<span class="n">sequence</span> <span class="o">=</span> <span class="n">span</span><span class="o">.</span><span class="n">to_index</span><span class="p">(</span><span class="n">period_type</span><span class="o">=</span><span class="n">period_type</span><span class="p">)</span>
+    <span class="n">duration</span><span class="o">=</span><span class="n">frequency</span><span class="p">,</span>
+    <span class="n">amount</span><span class="o">=</span><span class="n">num_periods</span><span class="p">)</span>
+<span class="n">sequence</span> <span class="o">=</span> <span class="n">span</span><span class="o">.</span><span class="n">to_sequence</span><span class="p">(</span><span class="n">frequency</span><span class="o">=</span><span class="n">frequency</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -880,7 +888,7 @@ emulate how an ‘Ex-Post’ Model would look)</p>
         <span class="n">market</span><span class="o">.</span><span class="n">implied_rev_cap_rate</span><span class="p">,</span>
         <span class="n">market</span><span class="o">.</span><span class="n">returns</span>
         <span class="p">],</span>
-    <span class="n">period_type</span><span class="o">=</span><span class="n">period_type</span><span class="p">)</span>
+    <span class="n">frequency</span><span class="o">=</span><span class="n">frequency</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -898,7 +906,7 @@ emulate how an ‘Ex-Post’ Model would look)</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="_images/680037b24cbdba4f74964d4ce7177bff94ee15a908621d45371e9e14780c5119.png" src="_images/680037b24cbdba4f74964d4ce7177bff94ee15a908621d45371e9e14780c5119.png" />
+<img alt="_images/6d31bcb2af98507f4ccbb48e907fd28ff91bc05fc7297ed03ac6fa0edab6c096.png" src="_images/6d31bcb2af98507f4ccbb48e907fd28ff91bc05fc7297ed03ac6fa0edab6c096.png" />
 </div>
 </div>
 <div class="admonition warning">
@@ -907,7 +915,7 @@ emulate how an ‘Ex-Post’ Model would look)</p>
 </div>
 </section>
 <section id="model">
-<h3>Model<a class="headerlink" href="#model" title="Permalink to this heading">#</a></h3>
+<h3>Model<a class="headerlink" href="#model" title="Link to this heading">#</a></h3>
 <p>Now we can duplicate and edit (subclass) the Base Model to create the Inflexible
 Ex-Post Model.</p>
 <div class="cell docutils container">
@@ -934,28 +942,32 @@ Model’s PGI and the simulated <code class="docutils literal notranslate"><span
             <span class="n">proj</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">projection</span><span class="o">.</span><span class="n">Extrapolation</span><span class="p">(</span>
                 <span class="n">form</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">extrapolation</span><span class="o">.</span><span class="n">Compounding</span><span class="p">(</span>
                     <span class="n">rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;growth_rate&#39;</span><span class="p">]),</span>
-                <span class="n">sequence</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_span</span><span class="o">.</span><span class="n">to_index</span><span class="p">(</span><span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">])),</span>
+                <span class="n">sequence</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_span</span><span class="o">.</span><span class="n">to_sequence</span><span class="p">(</span><span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])),</span>
             <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
 
         <span class="c1"># Construct a Stream that multiplies the Base Model&#39;s PGI by the</span>
         <span class="c1"># simulated Market&#39;s Space Market factors</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pgi</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pgi</span> <span class="o">=</span> <span class="p">(</span><span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Potential Gross Income&#39;</span><span class="p">,</span>
             <span class="n">flows</span><span class="o">=</span><span class="p">[</span>
                 <span class="n">pgi</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">market</span><span class="o">.</span><span class="n">space_market_price_factors</span><span class="o">.</span><span class="n">trim_to_span</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_span</span><span class="p">)</span>
                 <span class="p">],</span>
-            <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">]</span>
-            <span class="p">)</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">registry</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">measure</span><span class="o">.</span><span class="n">Index</span><span class="o">.</span><span class="n">registry</span><span class="p">)</span>
+            <span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])</span>
+                <span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">registry</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">measure</span><span class="o">.</span><span class="n">Index</span><span class="o">.</span><span class="n">registry</span><span class="p">))</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">vacancy</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Vacancy Allowance&#39;</span><span class="p">,</span>
             <span class="n">movements</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pgi</span><span class="o">.</span><span class="n">movements</span> <span class="o">*</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;vacancy_rate&#39;</span><span class="p">],</span>
             <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">egi</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">egi</span> <span class="o">=</span> <span class="p">(</span><span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Effective Gross Income&#39;</span><span class="p">,</span>
-            <span class="n">flows</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">pgi</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">vacancy</span><span class="p">],</span>
-            <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="n">flows</span><span class="o">=</span><span class="p">[</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pgi</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">vacancy</span>
+                <span class="p">],</span>
+            <span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])</span>
+                <span class="o">.</span><span class="n">sum</span><span class="p">())</span>
 </pre></div>
 </div>
 </div>
@@ -969,11 +981,12 @@ Model’s PGI and the simulated <code class="docutils literal notranslate"><span
     <span class="k">def</span> <span class="nf">calc_reversion</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Construct the Reversions using the simulated Market&#39;s Asset Market</span>
         <span class="c1"># factors (cap rates):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reversions</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reversions</span> <span class="o">=</span> <span class="p">(</span><span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Reversions&#39;</span><span class="p">,</span>
             <span class="n">movements</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">net_cf</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">periods</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span> <span class="o">/</span>
                       <span class="bp">self</span><span class="o">.</span><span class="n">market</span><span class="o">.</span><span class="n">implied_rev_cap_rate</span><span class="o">.</span><span class="n">movements</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span><span class="o">.</span><span class="n">trim_to_span</span><span class="p">(</span><span class="n">span</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">span</span><span class="p">)</span>
+            <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">trim_to_span</span><span class="p">(</span><span class="n">span</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">span</span><span class="p">))</span>
         
         <span class="bp">self</span><span class="o">.</span><span class="n">reversion</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reversions</span><span class="o">.</span><span class="n">trim_to_span</span><span class="p">(</span>
             <span class="n">span</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">reversion_span</span><span class="p">,</span>
@@ -984,7 +997,7 @@ Model’s PGI and the simulated <code class="docutils literal notranslate"><span
                 <span class="bp">self</span><span class="o">.</span><span class="n">net_cf</span><span class="o">.</span><span class="n">trim_to_span</span><span class="p">(</span><span class="n">span</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">span</span><span class="p">),</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">reversions</span><span class="o">.</span><span class="n">trim_to_span</span><span class="p">(</span><span class="n">span</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">reversion_span</span><span class="p">)</span>
                 <span class="p">],</span>
-            <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">])</span>
+            <span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -1015,7 +1028,7 @@ Model’s PGI and the simulated <code class="docutils literal notranslate"><span
         <span class="n">ex_post_inflex</span><span class="o">.</span><span class="n">net_cf</span><span class="p">,</span>
         <span class="n">ex_post_inflex</span><span class="o">.</span><span class="n">reversion</span><span class="p">,</span>
         <span class="p">],</span>
-    <span class="n">period_type</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">periodicity</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span>
+    <span class="n">frequency</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span>
     <span class="p">)</span>
 <span class="n">ex_post_table</span>
 </pre></div>
@@ -1027,68 +1040,50 @@ Model’s PGI and the simulated <code class="docutils literal notranslate"><span
 <tr><th style="text-align: right;">  date</th><th style="text-align: right;">  Potential Gross Income (product)</th><th style="text-align: right;">  Vacancy Allowance</th><th style="text-align: right;">  Effective Gross Income (sum)</th><th style="text-align: right;">  Operating Expenses</th><th style="text-align: right;">  Net Operating Income (sum)</th><th style="text-align: right;">  Capital Expenditures</th><th style="text-align: right;">  Net Annual Cashflow (sum)</th><th style="text-align: right;">  Reversion</th></tr>
 </thead>
 <tbody>
-<tr><td style="text-align: right;">  2001</td><td style="text-align: right;">                           $131.74</td><td style="text-align: right;">             -$6.59</td><td style="text-align: right;">                       $125.16</td><td style="text-align: right;">             -$46.11</td><td style="text-align: right;">                      $79.05</td><td style="text-align: right;">               -$13.17</td><td style="text-align: right;">                     $65.87</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">  2002</td><td style="text-align: right;">                           $142.31</td><td style="text-align: right;">             -$7.12</td><td style="text-align: right;">                       $135.19</td><td style="text-align: right;">             -$49.81</td><td style="text-align: right;">                      $85.39</td><td style="text-align: right;">               -$14.23</td><td style="text-align: right;">                     $71.15</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">  2003</td><td style="text-align: right;">                           $175.67</td><td style="text-align: right;">             -$8.78</td><td style="text-align: right;">                       $166.88</td><td style="text-align: right;">             -$61.48</td><td style="text-align: right;">                     $105.40</td><td style="text-align: right;">               -$17.57</td><td style="text-align: right;">                     $87.83</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">  2004</td><td style="text-align: right;">                           $174.55</td><td style="text-align: right;">             -$8.73</td><td style="text-align: right;">                       $165.82</td><td style="text-align: right;">             -$61.09</td><td style="text-align: right;">                     $104.73</td><td style="text-align: right;">               -$17.45</td><td style="text-align: right;">                     $87.27</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">  2005</td><td style="text-align: right;">                           $201.81</td><td style="text-align: right;">            -$10.09</td><td style="text-align: right;">                       $191.72</td><td style="text-align: right;">             -$70.63</td><td style="text-align: right;">                     $121.08</td><td style="text-align: right;">               -$20.18</td><td style="text-align: right;">                    $100.90</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">  2006</td><td style="text-align: right;">                           $178.48</td><td style="text-align: right;">             -$8.92</td><td style="text-align: right;">                       $169.55</td><td style="text-align: right;">             -$62.47</td><td style="text-align: right;">                     $107.09</td><td style="text-align: right;">               -$17.85</td><td style="text-align: right;">                     $89.24</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">  2007</td><td style="text-align: right;">                           $147.82</td><td style="text-align: right;">             -$7.39</td><td style="text-align: right;">                       $140.43</td><td style="text-align: right;">             -$51.74</td><td style="text-align: right;">                      $88.69</td><td style="text-align: right;">               -$14.78</td><td style="text-align: right;">                     $73.91</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">  2008</td><td style="text-align: right;">                            $96.50</td><td style="text-align: right;">             -$4.83</td><td style="text-align: right;">                        $91.68</td><td style="text-align: right;">             -$33.78</td><td style="text-align: right;">                      $57.90</td><td style="text-align: right;">                -$9.65</td><td style="text-align: right;">                     $48.25</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">  2009</td><td style="text-align: right;">                            $72.00</td><td style="text-align: right;">             -$3.60</td><td style="text-align: right;">                        $68.40</td><td style="text-align: right;">             -$25.20</td><td style="text-align: right;">                      $43.20</td><td style="text-align: right;">                -$7.20</td><td style="text-align: right;">                     $36.00</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">  2010</td><td style="text-align: right;">                            $76.62</td><td style="text-align: right;">             -$3.83</td><td style="text-align: right;">                        $72.79</td><td style="text-align: right;">             -$26.82</td><td style="text-align: right;">                      $45.97</td><td style="text-align: right;">                -$7.66</td><td style="text-align: right;">                     $38.31</td><td style="text-align: right;">    $466.72</td></tr>
-<tr><td style="text-align: right;">  2011</td><td style="text-align: right;">                            $80.94</td><td style="text-align: right;">             -$4.05</td><td style="text-align: right;">                        $76.89</td><td style="text-align: right;">             -$28.33</td><td style="text-align: right;">                      $48.56</td><td style="text-align: right;">                -$8.09</td><td style="text-align: right;">                     $40.47</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2001</td><td style="text-align: right;">                           $109.43</td><td style="text-align: right;">             -$5.47</td><td style="text-align: right;">                       $103.96</td><td style="text-align: right;">             -$38.30</td><td style="text-align: right;">                      $65.66</td><td style="text-align: right;">               -$10.94</td><td style="text-align: right;">                     $54.72</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2002</td><td style="text-align: right;">                           $136.99</td><td style="text-align: right;">             -$6.85</td><td style="text-align: right;">                       $130.14</td><td style="text-align: right;">             -$47.95</td><td style="text-align: right;">                      $82.19</td><td style="text-align: right;">               -$13.70</td><td style="text-align: right;">                     $68.49</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2003</td><td style="text-align: right;">                           $153.53</td><td style="text-align: right;">             -$7.68</td><td style="text-align: right;">                       $145.85</td><td style="text-align: right;">             -$53.74</td><td style="text-align: right;">                      $92.12</td><td style="text-align: right;">               -$15.35</td><td style="text-align: right;">                     $76.76</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2004</td><td style="text-align: right;">                           $142.58</td><td style="text-align: right;">             -$7.13</td><td style="text-align: right;">                       $135.45</td><td style="text-align: right;">             -$49.90</td><td style="text-align: right;">                      $85.55</td><td style="text-align: right;">               -$14.26</td><td style="text-align: right;">                     $71.29</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2005</td><td style="text-align: right;">                           $121.42</td><td style="text-align: right;">             -$6.07</td><td style="text-align: right;">                       $115.35</td><td style="text-align: right;">             -$42.50</td><td style="text-align: right;">                      $72.85</td><td style="text-align: right;">               -$12.14</td><td style="text-align: right;">                     $60.71</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2006</td><td style="text-align: right;">                           $121.31</td><td style="text-align: right;">             -$6.07</td><td style="text-align: right;">                       $115.25</td><td style="text-align: right;">             -$42.46</td><td style="text-align: right;">                      $72.79</td><td style="text-align: right;">               -$12.13</td><td style="text-align: right;">                     $60.66</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2007</td><td style="text-align: right;">                           $102.45</td><td style="text-align: right;">             -$5.12</td><td style="text-align: right;">                        $97.33</td><td style="text-align: right;">             -$35.86</td><td style="text-align: right;">                      $61.47</td><td style="text-align: right;">               -$10.25</td><td style="text-align: right;">                     $51.23</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2008</td><td style="text-align: right;">                            $67.20</td><td style="text-align: right;">             -$3.36</td><td style="text-align: right;">                        $63.84</td><td style="text-align: right;">             -$23.52</td><td style="text-align: right;">                      $40.32</td><td style="text-align: right;">                -$6.72</td><td style="text-align: right;">                     $33.60</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2009</td><td style="text-align: right;">                            $51.72</td><td style="text-align: right;">             -$2.59</td><td style="text-align: right;">                        $49.13</td><td style="text-align: right;">             -$18.10</td><td style="text-align: right;">                      $31.03</td><td style="text-align: right;">                -$5.17</td><td style="text-align: right;">                     $25.86</td><td style="text-align: right;">          0</td></tr>
+<tr><td style="text-align: right;">  2010</td><td style="text-align: right;">                            $54.39</td><td style="text-align: right;">             -$2.72</td><td style="text-align: right;">                        $51.67</td><td style="text-align: right;">             -$19.04</td><td style="text-align: right;">                      $32.63</td><td style="text-align: right;">                -$5.44</td><td style="text-align: right;">                     $27.19</td><td style="text-align: right;">    $385.31</td></tr>
+<tr><td style="text-align: right;">  2011</td><td style="text-align: right;">                            $58.33</td><td style="text-align: right;">             -$2.92</td><td style="text-align: right;">                        $55.41</td><td style="text-align: right;">             -$20.41</td><td style="text-align: right;">                      $35.00</td><td style="text-align: right;">                -$5.83</td><td style="text-align: right;">                     $29.16</td><td style="text-align: right;">          0</td></tr>
 </tbody>
 </table></div></div>
 </div>
 <p>We can compare models on the same metrics:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Projected IRR at Market Value Price: </span><span class="si">{:.2%}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ex_post_inflex</span><span class="o">.</span><span class="n">irrs</span><span class="o">.</span><span class="n">movements</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Time 0 Present Value at OCC: </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">currency</span><span class="p">(</span><span class="n">ex_post_inflex</span><span class="o">.</span><span class="n">pvs</span><span class="o">.</span><span class="n">movements</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">grouping</span><span class="o">=</span><span class="kc">True</span><span class="p">)))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Projected IRR at Market Value Price: </span><span class="si">{:.2%}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ex_post_inflex</span><span class="o">.</span><span class="n">irrs</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Time 0 Present Value at OCC: </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">currency</span><span class="p">(</span><span class="n">ex_post_inflex</span><span class="o">.</span><span class="n">pvs</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">grouping</span><span class="o">=</span><span class="kc">True</span><span class="p">)))</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Average Annual Cashflow: </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">currency</span><span class="p">(</span><span class="n">ex_post_inflex</span><span class="o">.</span><span class="n">net_cf</span><span class="o">.</span><span class="n">trim_to_span</span><span class="p">(</span><span class="n">ex_post_inflex</span><span class="o">.</span><span class="n">span</span><span class="p">)</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">grouping</span><span class="o">=</span><span class="kc">True</span><span class="p">)))</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Projected IRR at Market Value Price: 2.25%
-Time 0 Present Value at OCC: $743.82
-Average Annual Cashflow: $69.87
-</pre></div>
-</div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/var/folders/bw/j7bw1l0s1fjdf833nbbhh6_h0000gn/T/ipykernel_26868/2913948527.py:1: FutureWarning:
-
-Series.__getitem__ treating keys as positions is deprecated. In a future version, integer keys will always be treated as labels (consistent with DataFrame behavior). To access a value by position, use `ser.iloc[pos]`
-
-/var/folders/bw/j7bw1l0s1fjdf833nbbhh6_h0000gn/T/ipykernel_26868/2913948527.py:2: FutureWarning:
-
-Series.__getitem__ treating keys as positions is deprecated. In a future version, integer keys will always be treated as labels (consistent with DataFrame behavior). To access a value by position, use `ser.iloc[pos]`
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Projected IRR at Market Value Price: -1.25%
+Time 0 Present Value at OCC: $586.93
+Average Annual Cashflow: $53.05
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pv_diff</span> <span class="o">=</span> <span class="p">(</span><span class="n">ex_post_inflex</span><span class="o">.</span><span class="n">pvs</span><span class="o">.</span><span class="n">movements</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">ex_ante</span><span class="o">.</span><span class="n">pvs</span><span class="o">.</span><span class="n">movements</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">ex_ante</span><span class="o">.</span><span class="n">pvs</span><span class="o">.</span><span class="n">movements</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pv_diff</span> <span class="o">=</span> <span class="p">(</span><span class="n">ex_post_inflex</span><span class="o">.</span><span class="n">pvs</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">ex_ante</span><span class="o">.</span><span class="n">pvs</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">ex_ante</span><span class="o">.</span><span class="n">pvs</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Percentage Difference of Scenario PV Minus Pro-forma PV: </span><span class="si">{:.2%}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">pv_diff</span><span class="p">))</span>
 
-<span class="n">irr_diff</span> <span class="o">=</span> <span class="n">ex_post_inflex</span><span class="o">.</span><span class="n">irrs</span><span class="o">.</span><span class="n">movements</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">ex_ante</span><span class="o">.</span><span class="n">irrs</span><span class="o">.</span><span class="n">movements</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">irr_diff</span> <span class="o">=</span> <span class="n">ex_post_inflex</span><span class="o">.</span><span class="n">irrs</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">ex_ante</span><span class="o">.</span><span class="n">irrs</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Difference of Scenario IRR Minus Pro-forma IRR: </span><span class="si">{:.2%}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">irr_diff</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Percentage Difference of Scenario PV Minus Pro-forma PV: -25.62%
-Difference of Scenario IRR Minus Pro-forma IRR: -4.75%
-</pre></div>
-</div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/var/folders/bw/j7bw1l0s1fjdf833nbbhh6_h0000gn/T/ipykernel_26868/2000035765.py:1: FutureWarning:
-
-Series.__getitem__ treating keys as positions is deprecated. In a future version, integer keys will always be treated as labels (consistent with DataFrame behavior). To access a value by position, use `ser.iloc[pos]`
-
-/var/folders/bw/j7bw1l0s1fjdf833nbbhh6_h0000gn/T/ipykernel_26868/2000035765.py:4: FutureWarning:
-
-Series.__getitem__ treating keys as positions is deprecated. In a future version, integer keys will always be treated as labels (consistent with DataFrame behavior). To access a value by position, use `ser.iloc[pos]`
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Percentage Difference of Scenario PV Minus Pro-forma PV: -41.31%
+Difference of Scenario IRR Minus Pro-forma IRR: -8.25%
 </pre></div>
 </div>
 </div>
@@ -1096,7 +1091,7 @@ Series.__getitem__ treating keys as positions is deprecated. In a future version
 </section>
 </section>
 <section id="ex-post-flexible-model">
-<h2>Ex-Post Flexible Model<a class="headerlink" href="#ex-post-flexible-model" title="Permalink to this heading">#</a></h2>
+<h2>Ex-Post Flexible Model<a class="headerlink" href="#ex-post-flexible-model" title="Link to this heading">#</a></h2>
 <p>In attempting to capture the effects of <em>flexibility</em> in our Proforma, we must
 introduce the ability to program optionality into our model; that is, the
 creation of alternate options to a single course of action, that may be
@@ -1108,7 +1103,7 @@ decide to sell an investment property.</p>
 encapsulate the sequence of conditions required to trigger a decision, and the
 option actions that are execised as a result.</p>
 <section id="policys">
-<h3><code class="docutils literal notranslate"><span class="pre">Policy</span></code>s<a class="headerlink" href="#policys" title="Permalink to this heading">#</a></h3>
+<h3><code class="docutils literal notranslate"><span class="pre">Policy</span></code>s<a class="headerlink" href="#policys" title="Link to this heading">#</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">Policy</span></code>s adjust or edit a <code class="docutils literal notranslate"><span class="pre">Model</span></code> dynamically (e.g. by overwriting how it
 constructs its <code class="docutils literal notranslate"><span class="pre">Flow</span></code>s, <code class="docutils literal notranslate"><span class="pre">Stream</span></code>s, or metrics/outcomes), and thus enable the
 Proforma to be <em>flexible</em>.
@@ -1118,7 +1113,7 @@ the <code class="docutils literal notranslate"><span class="pre">Model</span></c
 <figure class="align-default" id="farevuu-figure9-1">
 <a class="reference internal image-reference" href="_images/FaREVuU-figure9.1.png"><img alt="_images/FaREVuU-figure9.1.png" src="_images/FaREVuU-figure9.1.png" style="width: 75%;" /></a>
 <figcaption>
-<p><span class="caption-number">Fig. 4 </span><span class="caption-text">Figure 9.1 From <span id="id4">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span></span><a class="headerlink" href="#farevuu-figure9-1" title="Permalink to this image">#</a></p>
+<p><span class="caption-number">Fig. 4 </span><span class="caption-text">Figure 9.1 From <span id="id4">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span></span><a class="headerlink" href="#farevuu-figure9-1" title="Link to this image">#</a></p>
 </figcaption>
 </figure>
 <p><span id="id5">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> diagram the logic of the “Stop-Gain Resale Rule” as a
@@ -1146,7 +1141,7 @@ consistently in the first few years as the <code class="docutils literal notrans
             <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">7</span><span class="p">:</span>
                 <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">movements</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">:</span>
                     <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
@@ -1204,30 +1199,17 @@ mimic a manager or developer of a real estate asset. For more information, see
     <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">ex_post_inflex</span><span class="o">.</span><span class="n">market</span><span class="o">.</span><span class="n">space_market_price_factors</span><span class="p">,</span> <span class="n">ex_post_inflex</span><span class="p">))</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Flexible Model Hold Period: </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ex_post_flex</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;num_periods&#39;</span><span class="p">]))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Projected IRR at Market Value Price: </span><span class="si">{:.2%}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ex_post_flex</span><span class="o">.</span><span class="n">irrs</span><span class="o">.</span><span class="n">movements</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Time 0 Present Value at OCC: </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">currency</span><span class="p">(</span><span class="n">ex_post_flex</span><span class="o">.</span><span class="n">pvs</span><span class="o">.</span><span class="n">movements</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">grouping</span><span class="o">=</span><span class="kc">True</span><span class="p">)))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Projected IRR at Market Value Price: </span><span class="si">{:.2%}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ex_post_flex</span><span class="o">.</span><span class="n">irrs</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Time 0 Present Value at OCC: </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">currency</span><span class="p">(</span><span class="n">ex_post_flex</span><span class="o">.</span><span class="n">pvs</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">grouping</span><span class="o">=</span><span class="kc">True</span><span class="p">)))</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Average Annual Cashflow: </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">currency</span><span class="p">(</span><span class="n">ex_post_flex</span><span class="o">.</span><span class="n">net_cf</span><span class="o">.</span><span class="n">trim_to_span</span><span class="p">(</span><span class="n">ex_post_inflex</span><span class="o">.</span><span class="n">span</span><span class="p">)</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">grouping</span><span class="o">=</span><span class="kc">True</span><span class="p">)))</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Flexible Model Hold Period: 7
-Projected IRR at Market Value Price: 10.89%
-Time 0 Present Value at OCC: $1,231.59
-Average Annual Cashflow: $82.31
-</pre></div>
-</div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/var/folders/bw/j7bw1l0s1fjdf833nbbhh6_h0000gn/T/ipykernel_26868/2472096578.py:11: FutureWarning:
-
-Series.__getitem__ treating keys as positions is deprecated. In a future version, integer keys will always be treated as labels (consistent with DataFrame behavior). To access a value by position, use `ser.iloc[pos]`
-
-/var/folders/bw/j7bw1l0s1fjdf833nbbhh6_h0000gn/T/ipykernel_26868/2566890294.py:5: FutureWarning:
-
-Series.__getitem__ treating keys as positions is deprecated. In a future version, integer keys will always be treated as labels (consistent with DataFrame behavior). To access a value by position, use `ser.iloc[pos]`
-
-/var/folders/bw/j7bw1l0s1fjdf833nbbhh6_h0000gn/T/ipykernel_26868/2566890294.py:6: FutureWarning:
-
-Series.__getitem__ treating keys as positions is deprecated. In a future version, integer keys will always be treated as labels (consistent with DataFrame behavior). To access a value by position, use `ser.iloc[pos]`
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Flexible Model Hold Period: 18
+Projected IRR at Market Value Price: 10.06%
+Time 0 Present Value at OCC: $1,459.66
+Average Annual Cashflow: $56.39
 </pre></div>
 </div>
 </div>
@@ -1267,7 +1249,7 @@ downturns.</p>
               
               
                 <footer class="prev-next-footer">
-                  <!-- Previous / next buttons -->
+                  
 <div class="prev-next-area">
     <a class="left-prev"
        href="market_dynamics.html"
@@ -1295,6 +1277,7 @@ downturns.</p>
             
               
                 <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
 
   <div class="sidebar-secondary-item">
   <div class="page-toc tocsection onthispage">
@@ -1333,6 +1316,7 @@ By Daniel Fink
   
   <div class="footer-item">
     
+
   <p class="copyright">
     
       © Copyright 2023.
@@ -1359,8 +1343,8 @@ By Daniel Fink
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="_static/scripts/bootstrap.js?digest=c5ced968eda925caa686"></script>
-<script src="_static/scripts/pydata-sphinx-theme.js?digest=c5ced968eda925caa686"></script>
+  <script src="_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae"></script>
 
   <footer class="bd-footer">
   </footer>
