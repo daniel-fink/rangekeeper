@@ -1,0 +1,1103 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Deterministic Scenario Analysis &#8212; Rangekeeper</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.1/css/all.min.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=384b581d" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
+  <script src="../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
+
+    <script src="../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../_static/design-tabs.js?v=36754332"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'archive/deterministic_scenarios';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a id="pst-skip-link" class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+
+<a class="navbar-brand logo" href="../intro.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/rangekeeper.jpg" class="logo__image only-light" alt="Rangekeeper - Home"/>
+    <script>document.write(`<img src="../_static/rangekeeper.jpg" class="logo__image only-dark" alt="Rangekeeper - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../intro.html">
+                    Rangekeeper
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Real Estate Flexibility and Valuation under Uncertainty</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../basic_dcf.html">A Basic Discounted Cash Flow Valuation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../deterministic_scenarios.html">Deterministic Scenario Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../market_dynamics.html">Real Estate Pricing Factor Dynamics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../flexibility_intro.html">Introduction to Modeling Flexibility</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../flexibility_under_uncertainty.html">Flexibility under Uncertainty</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Using Rangekeeper in Examples</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../load_design.html">Loading a Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../drive_model_from_design.html">Driving a Financial Valuation from a Design</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-launch-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Launch interactive content">
+    <i class="fas fa-rocket"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://colab.research.google.com/github/daniel-fink/rangekeeper/blob/main/walkthrough/archive/deterministic_scenarios.ipynb" target="_blank"
+   class="btn btn-sm dropdown-item"
+   title="Launch onColab"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  
+    <img src="../_static/images/logo_colab.png">
+  </span>
+<span class="btn__text-container">Colab</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/daniel-fink/rangekeeper" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/daniel-fink/rangekeeper/issues/new?title=Issue%20on%20page%20%2Farchive/deterministic_scenarios.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/archive/deterministic_scenarios.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Deterministic Scenario Analysis</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#base-parameters">Base Parameters</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#base-proforma-model">Base Proforma Model</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#spans">Spans</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cash-flows">Cash Flows</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#metrics">Metrics</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#output">Output</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#scenarios">Scenarios</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#optimistic">Optimistic</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pessimistic">Pessimistic</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#analysis-and-expected-value-ev">Analysis and Expected Value (EV)</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="deterministic-scenario-analysis">
+<h1>Deterministic Scenario Analysis<a class="headerlink" href="#deterministic-scenario-analysis" title="Link to this heading">#</a></h1>
+<p>Chapter 4 of <span id="id1">[<a class="reference internal" href="../intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> presents the concept of various “scenarios” of
+cashflows by varying key input parameters or modyfing how certain cashflows are
+produced.</p>
+<p>In order to replicate this with <em>Rangekeeper</em>, we integrate all the steps to
+produce a proforma model into a single class, where this class accepts a
+<code class="docutils literal notranslate"><span class="pre">dictionary</span></code> of input parameters. This allows us to easily create alternate
+scenarios by simply changing the parameters in the dictionary.</p>
+<p>Specifically, we will be recreating the three DCF Scenarios in Table 4.1:</p>
+<figure class="align-default" id="farevuu-table4-1">
+<a class="reference internal image-reference" href="../_images/FaREVuU-table4.1.png"><img alt="../_images/FaREVuU-table4.1.png" src="../_images/FaREVuU-table4.1.png" style="width: 100%;" /></a>
+<figcaption>
+<p><span class="caption-text">Table 4.1 from <span id="id2">[<a class="reference internal" href="../intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span></span><a class="headerlink" href="#farevuu-table4-1" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<p>Again we import the necessary libraries:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">locale</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">import</span> <span class="nn">rangekeeper</span> <span class="k">as</span> <span class="nn">rk</span>
+</pre></div>
+</div>
+</div>
+</div>
+<section id="base-parameters">
+<h2>Base Parameters<a class="headerlink" href="#base-parameters" title="Link to this heading">#</a></h2>
+<p>First let’s set up the Proforma Model’s parameters. These will be formatted as a
+dictionary of inputs:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">locale</span><span class="o">.</span><span class="n">setlocale</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">LC_ALL</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+<span class="n">units</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">measure</span><span class="o">.</span><span class="n">Index</span><span class="o">.</span><span class="n">registry</span>
+<span class="n">currency</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">measure</span><span class="o">.</span><span class="n">register_currency</span><span class="p">(</span><span class="n">registry</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
+<span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;start_date&#39;</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="s1">&#39;2001-01-01&#39;</span><span class="p">),</span>
+    <span class="s1">&#39;num_periods&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="s1">&#39;period_type&#39;</span><span class="p">:</span> <span class="n">rk</span><span class="o">.</span><span class="n">periodicity</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span><span class="p">,</span>
+    <span class="s1">&#39;acquisition_cost&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1000</span> <span class="o">*</span> <span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">,</span>
+    <span class="s1">&#39;initial_income&#39;</span><span class="p">:</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">,</span>
+    <span class="s1">&#39;growth_rate&#39;</span><span class="p">:</span> <span class="mf">0.02</span><span class="p">,</span>
+    <span class="s1">&#39;vacancy_rate&#39;</span><span class="p">:</span> <span class="mf">0.05</span><span class="p">,</span>
+    <span class="s1">&#39;opex_pgi_ratio&#39;</span><span class="p">:</span> <span class="mf">0.35</span><span class="p">,</span>
+    <span class="s1">&#39;capex_pgi_ratio&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+    <span class="s1">&#39;exit_caprate&#39;</span><span class="p">:</span> <span class="mf">0.05</span><span class="p">,</span>
+    <span class="s1">&#39;discount_rate&#39;</span><span class="p">:</span> <span class="mf">0.07</span><span class="p">,</span>
+
+    <span class="c1"># Table 4.1 has proformas that absorb an additional straight-line income flow:</span>
+    <span class="s1">&#39;addl_pgi_init&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="s1">&#39;addl_pgi_slope&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
+<span class="ne">AttributeError</span><span class="g g-Whitespace">                            </span>Traceback (most recent call last)
+<span class="n">Cell</span> <span class="n">In</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">line</span> <span class="mi">7</span>
+<span class="g g-Whitespace">      </span><span class="mi">2</span> <span class="n">units</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">measure</span><span class="o">.</span><span class="n">Index</span><span class="o">.</span><span class="n">registry</span>
+<span class="g g-Whitespace">      </span><span class="mi">3</span> <span class="n">currency</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">measure</span><span class="o">.</span><span class="n">register_currency</span><span class="p">(</span><span class="n">registry</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
+<span class="g g-Whitespace">      </span><span class="mi">4</span> <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+<span class="g g-Whitespace">      </span><span class="mi">5</span>     <span class="s1">&#39;start_date&#39;</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="s1">&#39;2001-01-01&#39;</span><span class="p">),</span>
+<span class="g g-Whitespace">      </span><span class="mi">6</span>     <span class="s1">&#39;num_periods&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+<span class="ne">----&gt; </span><span class="mi">7</span>     <span class="s1">&#39;period_type&#39;</span><span class="p">:</span> <span class="n">rk</span><span class="o">.</span><span class="n">periodicity</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span><span class="p">,</span>
+<span class="g g-Whitespace">      </span><span class="mi">8</span>     <span class="s1">&#39;acquisition_cost&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1000</span> <span class="o">*</span> <span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">,</span>
+<span class="g g-Whitespace">      </span><span class="mi">9</span>     <span class="s1">&#39;initial_income&#39;</span><span class="p">:</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">,</span>
+<span class="g g-Whitespace">     </span><span class="mi">10</span>     <span class="s1">&#39;growth_rate&#39;</span><span class="p">:</span> <span class="mf">0.02</span><span class="p">,</span>
+<span class="g g-Whitespace">     </span><span class="mi">11</span>     <span class="s1">&#39;vacancy_rate&#39;</span><span class="p">:</span> <span class="mf">0.05</span><span class="p">,</span>
+<span class="g g-Whitespace">     </span><span class="mi">12</span>     <span class="s1">&#39;opex_pgi_ratio&#39;</span><span class="p">:</span> <span class="mf">0.35</span><span class="p">,</span>
+<span class="g g-Whitespace">     </span><span class="mi">13</span>     <span class="s1">&#39;capex_pgi_ratio&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+<span class="g g-Whitespace">     </span><span class="mi">14</span>     <span class="s1">&#39;exit_caprate&#39;</span><span class="p">:</span> <span class="mf">0.05</span><span class="p">,</span>
+<span class="g g-Whitespace">     </span><span class="mi">15</span>     <span class="s1">&#39;discount_rate&#39;</span><span class="p">:</span> <span class="mf">0.07</span><span class="p">,</span>
+<span class="g g-Whitespace">     </span><span class="mi">16</span> 
+<span class="g g-Whitespace">     </span><span class="mi">17</span>     <span class="c1"># Table 4.1 has proformas that absorb an additional straight-line income flow:</span>
+<span class="g g-Whitespace">     </span><span class="mi">18</span>     <span class="s1">&#39;addl_pgi_init&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+<span class="g g-Whitespace">     </span><span class="mi">19</span>     <span class="s1">&#39;addl_pgi_slope&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+<span class="g g-Whitespace">     </span><span class="mi">20</span>     <span class="p">}</span>
+
+<span class="ne">AttributeError</span>: module &#39;rangekeeper&#39; has no attribute &#39;periodicity&#39;
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="base-proforma-model">
+<h2>Base Proforma Model<a class="headerlink" href="#base-proforma-model" title="Link to this heading">#</a></h2>
+<p>Then let’s set up the base proforma model, which will accept the <code class="docutils literal notranslate"><span class="pre">dict</span></code> of
+parameters on initialization:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Model</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="n">params</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>In order to make the class more readable, we will use the <code class="docutils literal notranslate"><span class="pre">&#64;rk.update_class</span></code>
+decorator in order to sequentially add methods to the class in the following
+cells. This is not necessary, but it helps when the documentation is in Jupyter
+format.</p>
+<section id="spans">
+<h3>Spans<a class="headerlink" href="#spans" title="Link to this heading">#</a></h3>
+<p>First we set up the Model’s <code class="docutils literal notranslate"><span class="pre">Span</span></code>s:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nd">@rk</span><span class="o">.</span><span class="n">update_class</span><span class="p">(</span><span class="n">Model</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">Model</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">init_spans</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calc_span</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">span</span><span class="o">.</span><span class="n">Span</span><span class="o">.</span><span class="n">from_num_periods</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Span to Calculate Reversion&#39;</span><span class="p">,</span>
+            <span class="n">date</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;start_date&#39;</span><span class="p">],</span>
+            <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">],</span>
+            <span class="n">num_periods</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;num_periods&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">acq_span</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">span</span><span class="o">.</span><span class="n">Span</span><span class="o">.</span><span class="n">from_num_periods</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Acquisition Span&#39;</span><span class="p">,</span>
+            <span class="n">date</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">periodicity</span><span class="o">.</span><span class="n">offset_date</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;start_date&#39;</span><span class="p">],</span>
+                <span class="n">num_periods</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">]),</span>
+            <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">],</span>
+            <span class="n">num_periods</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">span</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_span</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Span&#39;</span><span class="p">,</span>
+            <span class="n">num_periods</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">],</span>
+            <span class="n">bound</span><span class="o">=</span><span class="s1">&#39;end&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="cash-flows">
+<h3>Cash Flows<a class="headerlink" href="#cash-flows" title="Link to this heading">#</a></h3>
+<p>We now set up the Model’s Operational Cash Flows:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nd">@rk</span><span class="o">.</span><span class="n">update_class</span><span class="p">(</span><span class="n">Model</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">Model</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">init_flows</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">acquisition</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="o">.</span><span class="n">from_projection</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Acquisition&#39;</span><span class="p">,</span>
+            <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;acquisition_cost&#39;</span><span class="p">],</span>
+            <span class="n">proj</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">projection</span><span class="o">.</span><span class="n">Distribution</span><span class="p">(</span>
+                <span class="n">form</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Uniform</span><span class="p">(),</span>
+                <span class="n">sequence</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">acq_span</span><span class="o">.</span><span class="n">to_index</span><span class="p">(</span><span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">])),</span>
+            <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">base_pgi</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="o">.</span><span class="n">from_projection</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Base Potential Gross Income&#39;</span><span class="p">,</span>
+            <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;initial_income&#39;</span><span class="p">],</span>
+            <span class="n">proj</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">projection</span><span class="o">.</span><span class="n">Extrapolation</span><span class="p">(</span>
+            <span class="n">form</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">extrapolation</span><span class="o">.</span><span class="n">Compounding</span><span class="p">(</span>
+                <span class="n">rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;growth_rate&#39;</span><span class="p">]),</span>
+            <span class="n">sequence</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_span</span><span class="o">.</span><span class="n">to_index</span><span class="p">(</span><span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">])),</span>
+            <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
+
+        <span class="c1"># Table 4.1 has proformas that absorb an additional straight-line income</span>
+        <span class="c1"># flow:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addl_pgi</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="o">.</span><span class="n">from_projection</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Additional Potential Gross Income&#39;</span><span class="p">,</span>
+            <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;addl_pgi_init&#39;</span><span class="p">],</span>
+            <span class="n">proj</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">projection</span><span class="o">.</span><span class="n">Extrapolation</span><span class="p">(</span>
+                <span class="n">form</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">extrapolation</span><span class="o">.</span><span class="n">StraightLine</span><span class="p">(</span>
+                    <span class="n">slope</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;addl_pgi_slope&#39;</span><span class="p">]),</span>
+                <span class="n">sequence</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_span</span><span class="o">.</span><span class="n">to_index</span><span class="p">(</span><span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">])),</span>
+            <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pgi</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Potential Gross Income&#39;</span><span class="p">,</span>
+            <span class="n">flows</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">base_pgi</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">addl_pgi</span><span class="p">],</span>
+            <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">vacancy</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Vacancy Allowance&#39;</span><span class="p">,</span>
+            <span class="n">movements</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pgi</span><span class="o">.</span><span class="n">movements</span> <span class="o">*</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;vacancy_rate&#39;</span><span class="p">],</span>
+            <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">egi</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Effective Gross Income&#39;</span><span class="p">,</span>
+            <span class="n">flows</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">pgi</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">vacancy</span><span class="p">],</span>
+            <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">opex</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Operating Expenses&#39;</span><span class="p">,</span>
+            <span class="n">movements</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pgi</span><span class="o">.</span><span class="n">movements</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;opex_pgi_ratio&#39;</span><span class="p">],</span>
+            <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span><span class="o">.</span><span class="n">invert</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">noi</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Net Operating Income&#39;</span><span class="p">,</span>
+            <span class="n">flows</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">egi</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">opex</span><span class="p">],</span>
+            <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">capex</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Capital Expenditures&#39;</span><span class="p">,</span>
+            <span class="n">movements</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pgi</span><span class="o">.</span><span class="n">movements</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;capex_pgi_ratio&#39;</span><span class="p">],</span>
+            <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span><span class="o">.</span><span class="n">invert</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">net_cfs</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Net Annual Cashflows&#39;</span><span class="p">,</span>
+            <span class="n">flows</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">noi</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">capex</span><span class="p">],</span>
+            <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">reversions</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Reversions&#39;</span><span class="p">,</span>
+            <span class="n">movements</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">net_cfs</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">periods</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;exit_caprate&#39;</span><span class="p">],</span>
+            <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span><span class="o">.</span><span class="n">trim_to_span</span><span class="p">(</span><span class="n">span</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">span</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">net_cfs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net_cfs</span><span class="o">.</span><span class="n">trim_to_span</span><span class="p">(</span><span class="n">span</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">span</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="metrics">
+<h3>Metrics<a class="headerlink" href="#metrics" title="Link to this heading">#</a></h3>
+<p>Now we can add methods to calculate metrics, like the present value (PV) and
+internal rate of return (IRR) for each period in the Model’s <code class="docutils literal notranslate"><span class="pre">Span</span></code>:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nd">@rk</span><span class="o">.</span><span class="n">update_class</span><span class="p">(</span><span class="n">Model</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">Model</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">calc_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">pvs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">irrs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">period</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">net_cfs</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
+            <span class="n">cumulative_net_cfs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net_cfs</span><span class="o">.</span><span class="n">trim_to_span</span><span class="p">(</span>
+                <span class="n">span</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">span</span><span class="o">.</span><span class="n">Span</span><span class="p">(</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Cumulative Net Cashflow Span&#39;</span><span class="p">,</span>
+                    <span class="n">start_date</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;start_date&#39;</span><span class="p">],</span>
+                    <span class="n">end_date</span><span class="o">=</span><span class="n">period</span><span class="p">))</span>
+            <span class="n">reversion</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="p">(</span>
+                <span class="n">movements</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">reversions</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="n">period</span><span class="p">]],</span>
+                <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
+            <span class="n">cumulative_net_cfs_with_rev</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Net Cashflow with Reversion&#39;</span><span class="p">,</span>
+                <span class="n">flows</span><span class="o">=</span><span class="p">[</span><span class="n">cumulative_net_cfs</span><span class="p">,</span> <span class="n">reversion</span><span class="p">],</span>
+                <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">])</span>
+            <span class="n">pv</span> <span class="o">=</span> <span class="n">cumulative_net_cfs_with_rev</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">pv</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Present Value&#39;</span><span class="p">,</span>
+                <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">],</span>
+                <span class="n">discount_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;discount_rate&#39;</span><span class="p">])</span>
+            <span class="n">pvs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pv</span><span class="o">.</span><span class="n">collapse</span><span class="p">()</span><span class="o">.</span><span class="n">movements</span><span class="p">)</span>
+
+            <span class="n">incl_acq</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Net Cashflow with Reversion and Acquisition&#39;</span><span class="p">,</span>
+                <span class="n">flows</span><span class="o">=</span><span class="p">[</span><span class="n">cumulative_net_cfs_with_rev</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">acquisition</span><span class="p">],</span>
+                <span class="n">period_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;period_type&#39;</span><span class="p">])</span>
+
+            <span class="n">irrs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">incl_acq</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">xirr</span><span class="p">(),</span> <span class="mi">4</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pvs</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Present Values&#39;</span><span class="p">,</span>
+            <span class="n">movements</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">pvs</span><span class="p">),</span>
+            <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">irrs</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Internal Rates of Return&#39;</span><span class="p">,</span>
+            <span class="n">movements</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">irrs</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pvs</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">index</span><span class="p">),</span>
+            <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="output">
+<h3>Output<a class="headerlink" href="#output" title="Link to this heading">#</a></h3>
+<p>Now our Proforma Model is set up, and we can initialize and calculate it:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">init_spans</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">init_flows</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">calc_metrics</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">pvs</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><table>
+<thead>
+<tr><th style="text-align: right;">               date</th><th style="text-align: right;">  Present Values</th></tr>
+</thead>
+<tbody>
+<tr><td style="text-align: right;">2001-12-31 00:00:00</td><td style="text-align: right;">       $1,000.00</td></tr>
+<tr><td style="text-align: right;">2002-12-31 00:00:00</td><td style="text-align: right;">       $1,000.00</td></tr>
+<tr><td style="text-align: right;">2003-12-31 00:00:00</td><td style="text-align: right;">       $1,000.00</td></tr>
+<tr><td style="text-align: right;">2004-12-31 00:00:00</td><td style="text-align: right;">       $1,000.00</td></tr>
+<tr><td style="text-align: right;">2005-12-31 00:00:00</td><td style="text-align: right;">       $1,000.00</td></tr>
+<tr><td style="text-align: right;">2006-12-31 00:00:00</td><td style="text-align: right;">       $1,000.00</td></tr>
+<tr><td style="text-align: right;">2007-12-31 00:00:00</td><td style="text-align: right;">       $1,000.00</td></tr>
+<tr><td style="text-align: right;">2008-12-31 00:00:00</td><td style="text-align: right;">       $1,000.00</td></tr>
+<tr><td style="text-align: right;">2009-12-31 00:00:00</td><td style="text-align: right;">       $1,000.00</td></tr>
+<tr><td style="text-align: right;">2010-12-31 00:00:00</td><td style="text-align: right;">       $1,000.00</td></tr>
+</tbody>
+</table></div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">irrs</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><table>
+<thead>
+<tr><th style="text-align: right;">               date</th><th style="text-align: right;">  Internal Rates of Return</th></tr>
+</thead>
+<tbody>
+<tr><td style="text-align: right;">2001-12-31 00:00:00</td><td style="text-align: right;">                      0.07</td></tr>
+<tr><td style="text-align: right;">2002-12-31 00:00:00</td><td style="text-align: right;">                      0.07</td></tr>
+<tr><td style="text-align: right;">2003-12-31 00:00:00</td><td style="text-align: right;">                      0.07</td></tr>
+<tr><td style="text-align: right;">2004-12-31 00:00:00</td><td style="text-align: right;">                      0.07</td></tr>
+<tr><td style="text-align: right;">2005-12-31 00:00:00</td><td style="text-align: right;">                      0.07</td></tr>
+<tr><td style="text-align: right;">2006-12-31 00:00:00</td><td style="text-align: right;">                      0.07</td></tr>
+<tr><td style="text-align: right;">2007-12-31 00:00:00</td><td style="text-align: right;">                      0.07</td></tr>
+<tr><td style="text-align: right;">2008-12-31 00:00:00</td><td style="text-align: right;">                      0.07</td></tr>
+<tr><td style="text-align: right;">2009-12-31 00:00:00</td><td style="text-align: right;">                      0.07</td></tr>
+<tr><td style="text-align: right;">2010-12-31 00:00:00</td><td style="text-align: right;">                      0.07</td></tr>
+</tbody>
+</table></div></div>
+</div>
+</section>
+</section>
+<section id="scenarios">
+<h2>Scenarios<a class="headerlink" href="#scenarios" title="Link to this heading">#</a></h2>
+<section id="optimistic">
+<h3>Optimistic<a class="headerlink" href="#optimistic" title="Link to this heading">#</a></h3>
+<p>In Table 4.1, the ‘Panel B’ (Optimistic) scenario is created by increasing the
+initial income <code class="docutils literal notranslate"><span class="pre">Flow</span></code> by 10%, and also adding additional Potential Gross Income
+with a <code class="docutils literal notranslate"><span class="pre">Projection</span></code> that compounds at 3% p.a.:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">optimistic_params</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">optimistic_params</span><span class="p">[</span><span class="s1">&#39;initial_income&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;initial_income&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">currency</span><span class="o">.</span><span class="n">units</span>
+<span class="n">optimistic_params</span><span class="p">[</span><span class="s1">&#39;addl_pgi_slope&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Again, we can create a new <code class="docutils literal notranslate"><span class="pre">Model</span></code> with these parameters, and calculate it:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">optimistic</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">optimistic_params</span><span class="p">)</span>
+<span class="n">optimistic</span><span class="o">.</span><span class="n">init_spans</span><span class="p">()</span>
+<span class="n">optimistic</span><span class="o">.</span><span class="n">init_flows</span><span class="p">()</span>
+<span class="n">optimistic</span><span class="o">.</span><span class="n">calc_metrics</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">optimistic</span><span class="o">.</span><span class="n">pvs</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><table>
+<thead>
+<tr><th style="text-align: right;">               date</th><th style="text-align: right;">  Present Values</th></tr>
+</thead>
+<tbody>
+<tr><td style="text-align: right;">2001-12-31 00:00:00</td><td style="text-align: right;">       $1,128.04</td></tr>
+<tr><td style="text-align: right;">2002-12-31 00:00:00</td><td style="text-align: right;">       $1,153.72</td></tr>
+<tr><td style="text-align: right;">2003-12-31 00:00:00</td><td style="text-align: right;">       $1,177.23</td></tr>
+<tr><td style="text-align: right;">2004-12-31 00:00:00</td><td style="text-align: right;">       $1,198.74</td></tr>
+<tr><td style="text-align: right;">2005-12-31 00:00:00</td><td style="text-align: right;">       $1,218.42</td></tr>
+<tr><td style="text-align: right;">2006-12-31 00:00:00</td><td style="text-align: right;">       $1,236.41</td></tr>
+<tr><td style="text-align: right;">2007-12-31 00:00:00</td><td style="text-align: right;">       $1,252.85</td></tr>
+<tr><td style="text-align: right;">2008-12-31 00:00:00</td><td style="text-align: right;">       $1,267.87</td></tr>
+<tr><td style="text-align: right;">2009-12-31 00:00:00</td><td style="text-align: right;">       $1,281.57</td></tr>
+<tr><td style="text-align: right;">2010-12-31 00:00:00</td><td style="text-align: right;">       $1,294.08</td></tr>
+</tbody>
+</table></div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">optimistic</span><span class="o">.</span><span class="n">irrs</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><table>
+<thead>
+<tr><th style="text-align: right;">               date</th><th style="text-align: right;">  Internal Rates of Return</th></tr>
+</thead>
+<tbody>
+<tr><td style="text-align: right;">2001-12-31 00:00:00</td><td style="text-align: right;">                      0.21</td></tr>
+<tr><td style="text-align: right;">2002-12-31 00:00:00</td><td style="text-align: right;">                      0.15</td></tr>
+<tr><td style="text-align: right;">2003-12-31 00:00:00</td><td style="text-align: right;">                      0.13</td></tr>
+<tr><td style="text-align: right;">2004-12-31 00:00:00</td><td style="text-align: right;">                      0.12</td></tr>
+<tr><td style="text-align: right;">2005-12-31 00:00:00</td><td style="text-align: right;">                      0.12</td></tr>
+<tr><td style="text-align: right;">2006-12-31 00:00:00</td><td style="text-align: right;">                      0.11</td></tr>
+<tr><td style="text-align: right;">2007-12-31 00:00:00</td><td style="text-align: right;">                      0.11</td></tr>
+<tr><td style="text-align: right;">2008-12-31 00:00:00</td><td style="text-align: right;">                      0.11</td></tr>
+<tr><td style="text-align: right;">2009-12-31 00:00:00</td><td style="text-align: right;">                      0.11</td></tr>
+<tr><td style="text-align: right;">2010-12-31 00:00:00</td><td style="text-align: right;">                       0.1</td></tr>
+</tbody>
+</table></div></div>
+</div>
+</section>
+<section id="pessimistic">
+<h3>Pessimistic<a class="headerlink" href="#pessimistic" title="Link to this heading">#</a></h3>
+<p>Similarly, we can create the ‘Panel C’ (Pessimistic) scenario:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pessimistic_params</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">pessimistic_params</span><span class="p">[</span><span class="s1">&#39;initial_income&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;initial_income&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">currency</span><span class="o">.</span><span class="n">units</span>
+<span class="n">pessimistic_params</span><span class="p">[</span><span class="s1">&#39;addl_pgi_slope&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">3</span>
+
+<span class="n">pessimistic</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">pessimistic_params</span><span class="p">)</span>
+<span class="n">pessimistic</span><span class="o">.</span><span class="n">init_spans</span><span class="p">()</span>
+<span class="n">pessimistic</span><span class="o">.</span><span class="n">init_flows</span><span class="p">()</span>
+<span class="n">pessimistic</span><span class="o">.</span><span class="n">calc_metrics</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pessimistic</span><span class="o">.</span><span class="n">pvs</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><table>
+<thead>
+<tr><th style="text-align: right;">               date</th><th style="text-align: right;">  Present Values</th></tr>
+</thead>
+<tbody>
+<tr><td style="text-align: right;">2001-12-31 00:00:00</td><td style="text-align: right;">         $871.96</td></tr>
+<tr><td style="text-align: right;">2002-12-31 00:00:00</td><td style="text-align: right;">         $846.28</td></tr>
+<tr><td style="text-align: right;">2003-12-31 00:00:00</td><td style="text-align: right;">         $822.77</td></tr>
+<tr><td style="text-align: right;">2004-12-31 00:00:00</td><td style="text-align: right;">         $801.26</td></tr>
+<tr><td style="text-align: right;">2005-12-31 00:00:00</td><td style="text-align: right;">         $781.58</td></tr>
+<tr><td style="text-align: right;">2006-12-31 00:00:00</td><td style="text-align: right;">         $763.59</td></tr>
+<tr><td style="text-align: right;">2007-12-31 00:00:00</td><td style="text-align: right;">         $747.15</td></tr>
+<tr><td style="text-align: right;">2008-12-31 00:00:00</td><td style="text-align: right;">         $732.13</td></tr>
+<tr><td style="text-align: right;">2009-12-31 00:00:00</td><td style="text-align: right;">         $718.43</td></tr>
+<tr><td style="text-align: right;">2010-12-31 00:00:00</td><td style="text-align: right;">         $705.92</td></tr>
+</tbody>
+</table></div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pessimistic</span><span class="o">.</span><span class="n">irrs</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><table>
+<thead>
+<tr><th style="text-align: right;">               date</th><th style="text-align: right;">  Internal Rates of Return</th></tr>
+</thead>
+<tbody>
+<tr><td style="text-align: right;">2001-12-31 00:00:00</td><td style="text-align: right;">                     -0.07</td></tr>
+<tr><td style="text-align: right;">2002-12-31 00:00:00</td><td style="text-align: right;">                     -0.02</td></tr>
+<tr><td style="text-align: right;">2003-12-31 00:00:00</td><td style="text-align: right;">                        -0</td></tr>
+<tr><td style="text-align: right;">2004-12-31 00:00:00</td><td style="text-align: right;">                      0.01</td></tr>
+<tr><td style="text-align: right;">2005-12-31 00:00:00</td><td style="text-align: right;">                      0.01</td></tr>
+<tr><td style="text-align: right;">2006-12-31 00:00:00</td><td style="text-align: right;">                      0.02</td></tr>
+<tr><td style="text-align: right;">2007-12-31 00:00:00</td><td style="text-align: right;">                      0.02</td></tr>
+<tr><td style="text-align: right;">2008-12-31 00:00:00</td><td style="text-align: right;">                      0.02</td></tr>
+<tr><td style="text-align: right;">2009-12-31 00:00:00</td><td style="text-align: right;">                      0.02</td></tr>
+<tr><td style="text-align: right;">2010-12-31 00:00:00</td><td style="text-align: right;">                      0.02</td></tr>
+</tbody>
+</table></div></div>
+</div>
+</section>
+</section>
+<section id="analysis-and-expected-value-ev">
+<h2>Analysis and Expected Value (EV)<a class="headerlink" href="#analysis-and-expected-value-ev" title="Link to this heading">#</a></h2>
+<p><span id="id3">[<a class="reference internal" href="../intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> Table 4.1 continues with calculating the Expected Value (EV)
+of the outcome, given that both optimistic and pessimistic scenarios have a 50%
+chance of occuring:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Expected Time 0 Property Valuation:</span>
+<span class="n">evs</span> <span class="o">=</span> <span class="p">(</span><span class="n">optimistic</span><span class="o">.</span><span class="n">pvs</span><span class="o">.</span><span class="n">movements</span> <span class="o">+</span> <span class="n">pessimistic</span><span class="o">.</span><span class="n">pvs</span><span class="o">.</span><span class="n">movements</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+<span class="n">evs</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>date
+2001-12-31    1000.0
+2002-12-31    1000.0
+2003-12-31    1000.0
+2004-12-31    1000.0
+2005-12-31    1000.0
+2006-12-31    1000.0
+2007-12-31    1000.0
+2008-12-31    1000.0
+2009-12-31    1000.0
+2010-12-31    1000.0
+Name: Present Values, dtype: float64
+</pre></div>
+</div>
+</div>
+</div>
+<p>And the expected return (IRR) at each time period is:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Expected Return (IRR) at $1000 Price:</span>
+<span class="n">ers</span> <span class="o">=</span> <span class="p">(</span><span class="n">optimistic</span><span class="o">.</span><span class="n">irrs</span><span class="o">.</span><span class="n">movements</span> <span class="o">+</span> <span class="n">pessimistic</span><span class="o">.</span><span class="n">irrs</span><span class="o">.</span><span class="n">movements</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+<span class="n">ers</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>date
+2001-12-31    0.07000
+2002-12-31    0.06675
+2003-12-31    0.06605
+2004-12-31    0.06565
+2005-12-31    0.06535
+2006-12-31    0.06510
+2007-12-31    0.06485
+2008-12-31    0.06465
+2009-12-31    0.06450
+2010-12-31    0.06435
+Name: Internal Rates of Return, dtype: float64
+</pre></div>
+</div>
+</div>
+</div>
+<p>As documented in <span id="id4">[<a class="reference internal" href="../intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> Chapter 4.3, we can calculate the value of
+the flexibility, assuming it is possible to sell the property at will:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Valuation of Flexibility to Sell at Optimal Time:</span>
+<span class="n">value_of_flex</span> <span class="o">=</span> <span class="p">(</span><span class="n">optimistic</span><span class="o">.</span><span class="n">pvs</span><span class="o">.</span><span class="n">movements</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">pessimistic</span><span class="o">.</span><span class="n">pvs</span><span class="o">.</span><span class="n">movements</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="n">evs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">value_of_flex</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>83.02036601269492
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./archive"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#base-parameters">Base Parameters</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#base-proforma-model">Base Proforma Model</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#spans">Spans</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cash-flows">Cash Flows</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#metrics">Metrics</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#output">Output</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#scenarios">Scenarios</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#optimistic">Optimistic</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pessimistic">Pessimistic</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#analysis-and-expected-value-ev">Analysis and Expected Value (EV)</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Daniel Fink
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
