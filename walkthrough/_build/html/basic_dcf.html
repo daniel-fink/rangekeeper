@@ -1,13 +1,12 @@
 
-
 <!DOCTYPE html>
 
 
-<html lang="en" >
+<html lang="en" data-content_root="./" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>A Basic Discounted Cash Flow Valuation &#8212; Rangekeeper</title>
   
@@ -19,49 +18,45 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="_static/styles/theme.css?digest=c5ced968eda925caa686" rel="stylesheet" />
-<link href="_static/styles/bootstrap.css?digest=c5ced968eda925caa686" rel="stylesheet" />
-<link href="_static/styles/pydata-sphinx-theme.css?digest=c5ced968eda925caa686" rel="stylesheet" />
+  <link href="_static/styles/theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
 
   
-  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=c5ced968eda925caa686" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+  <link href="_static/vendor/fontawesome/6.5.1/css/all.min.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.1/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
-    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
-    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
-    <link rel="stylesheet" type="text/css" href="_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=384b581d" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=c5ced968eda925caa686" />
-<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=c5ced968eda925caa686" />
-  <script src="_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=c5ced968eda925caa686"></script>
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
+  <script src="_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/clipboard.min.js"></script>
-    <script src="_static/copybutton.js"></script>
-    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="_static/togglebutton.js"></script>
+    <script src="_static/togglebutton.js?v=4a39c7ea"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <script src="_static/design-tabs.js"></script>
-    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
-const thebe_selector = ".thebe,.cell"
-const thebe_selector_input = "pre"
-const thebe_selector_output = ".output, .cell_output"
-</script>
-    <script async="async" src="_static/sphinx-thebe.js"></script>
+    <script src="_static/design-tabs.js?v=36754332"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
     <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'basic_dcf';</script>
@@ -78,10 +73,9 @@ const thebe_selector_output = ".output, .cell_output"
 
   
   
-  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <a id="pst-skip-link" class="skip-link" href="#main-content">Skip to main content</a>
   
   <div id="pst-scroll-pixel-helper"></div>
-
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>
@@ -122,11 +116,14 @@ const thebe_selector_output = ".output, .cell_output"
 </form></div>
   </div>
   
-    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
-    </nav>
+    <header class="bd-header navbar navbar-expand-lg bd-navbar">
+    </header>
   
+
   <div class="bd-container">
     <div class="bd-container__inner bd-page-width">
+      
+      
       
       <div class="bd-sidebar-primary bd-sidebar">
         
@@ -141,6 +138,7 @@ const thebe_selector_output = ".output, .cell_output"
   
     <div class="sidebar-primary-items__start sidebar-primary__section">
         <div class="sidebar-primary-item">
+
   
 
 <a class="navbar-brand logo" href="intro.html">
@@ -159,7 +157,18 @@ const thebe_selector_output = ".output, .cell_output"
   
   
 </a></div>
-        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         
         <ul class="nav bd-sidenav bd-sidenav__home-link">
@@ -365,6 +374,7 @@ const thebe_selector_output = ".output, .cell_output"
 </button>
 
 
+
 <script>
 document.write(`
   <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
@@ -374,6 +384,7 @@ document.write(`
   </button>
 `);
 </script>
+
 
 <script>
 document.write(`
@@ -425,10 +436,10 @@ document.write(`
               
                 
 <div id="searchbox"></div>
-                <article class="bd-article" role="main">
+                <article class="bd-article">
                   
   <section class="tex2jax_ignore mathjax_ignore" id="a-basic-discounted-cash-flow-valuation">
-<h1>A Basic Discounted Cash Flow Valuation<a class="headerlink" href="#a-basic-discounted-cash-flow-valuation" title="Permalink to this heading">#</a></h1>
+<h1>A Basic Discounted Cash Flow Valuation<a class="headerlink" href="#a-basic-discounted-cash-flow-valuation" title="Link to this heading">#</a></h1>
 <p>Chapter 1 of <span id="id1">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> showcases the structure and functionality of a
 basic Discounted Cash Flow (DCF) Valuation for a real estate property.</p>
 <p>Like in the vast majority of cases, the implementation of their DCF model is in
@@ -442,7 +453,7 @@ describes this DCF:</p>
 <figure class="align-default" id="farevuu-table1-1">
 <a class="reference internal image-reference" href="_images/FaREVuU-table1.1.jpg"><img alt="_images/FaREVuU-table1.1.jpg" src="_images/FaREVuU-table1.1.jpg" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-number">Fig. 1 </span><span class="caption-text">Table 1.1 From <span id="id3">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span></span><a class="headerlink" href="#farevuu-table1-1" title="Permalink to this image">#</a></p>
+<p><span class="caption-number">Fig. 1 </span><span class="caption-text">Table 1.1 From <span id="id3">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span></span><a class="headerlink" href="#farevuu-table1-1" title="Link to this image">#</a></p>
 </figcaption>
 </figure>
 <p>First, we will need to import any neccesary libraries, as well as the
@@ -460,9 +471,9 @@ describes this DCF:</p>
 </div>
 </div>
 <section id="the-foundational-elements-of-a-proforma">
-<h2>The Foundational Elements of a Proforma<a class="headerlink" href="#the-foundational-elements-of-a-proforma" title="Permalink to this heading">#</a></h2>
+<h2>The Foundational Elements of a Proforma<a class="headerlink" href="#the-foundational-elements-of-a-proforma" title="Link to this heading">#</a></h2>
 <section id="a-flow">
-<h3>A <code class="docutils literal notranslate"><span class="pre">Flow</span></code><a class="headerlink" href="#a-flow" title="Permalink to this heading">#</a></h3>
+<h3>A <code class="docutils literal notranslate"><span class="pre">Flow</span></code><a class="headerlink" href="#a-flow" title="Link to this heading">#</a></h3>
 <p>The core element of a Cash Flow analysis is the cash flow itself; a sequence of
 ‘movements’ of currency (whether positive – <em>inflow</em>, or negative – <em>outflow</em>)
 , where each movement is associated with a date and a quantity. A movement
@@ -477,14 +488,14 @@ object to encapsulate the movements of a quantity (with specified units, like
 currency, energy, mass, etc.) that occur at specified dates.</p>
 <p>Note: the <code class="docutils literal notranslate"><span class="pre">Flow</span></code>’s movements Series index is a <a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DatetimeIndex.html">Pandas <code class="docutils literal notranslate"><span class="pre">DatetimeIndex</span></code></a>, and its values are <code class="docutils literal notranslate"><span class="pre">float</span></code>s.</p>
 <section id="initializing-a-flow">
-<h4>Initializing a <code class="docutils literal notranslate"><span class="pre">Flow</span></code><a class="headerlink" href="#initializing-a-flow" title="Permalink to this heading">#</a></h4>
+<h4>Initializing a <code class="docutils literal notranslate"><span class="pre">Flow</span></code><a class="headerlink" href="#initializing-a-flow" title="Link to this heading">#</a></h4>
 <p>First we initialize the currency used in our Proforma. Currencies are a type of
 <code class="docutils literal notranslate"><span class="pre">Measure</span></code>, which encapsulate <a class="reference external" href="https://github.com/hgrecco/pint">Pint</a> unit
 definitions. <em>Rangekeeper</em> uses the standard library’s <code class="docutils literal notranslate"><span class="pre">locale</span></code> module to set
 the currency units.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">locale</span><span class="o">.</span><span class="n">setlocale</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">LC_ALL</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">locale</span><span class="o">.</span><span class="n">setlocale</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">LC_ALL</span><span class="p">,</span> <span class="s1">&#39;en_AU&#39;</span><span class="p">)</span>
 <span class="n">units</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">measure</span><span class="o">.</span><span class="n">Index</span><span class="o">.</span><span class="n">registry</span>
 <span class="n">currency</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">measure</span><span class="o">.</span><span class="n">register_currency</span><span class="p">(</span><span class="n">registry</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">currency</span><span class="p">)</span>
@@ -579,7 +590,7 @@ Name: Operational Expenses, dtype: float64
 </div>
 </section>
 <section id="overview-of-a-flow">
-<h4>Overview of a <code class="docutils literal notranslate"><span class="pre">Flow</span></code><a class="headerlink" href="#overview-of-a-flow" title="Permalink to this heading">#</a></h4>
+<h4>Overview of a <code class="docutils literal notranslate"><span class="pre">Flow</span></code><a class="headerlink" href="#overview-of-a-flow" title="Link to this heading">#</a></h4>
 <p>As you can see, a <code class="docutils literal notranslate"><span class="pre">Flow</span></code> has three properties:</p>
 <ol class="arabic simple">
 <li><p>it’s Name,</p></li>
@@ -620,7 +631,7 @@ Movements:
 </section>
 </section>
 <section id="a-span">
-<h3>A <code class="docutils literal notranslate"><span class="pre">Span</span></code><a class="headerlink" href="#a-span" title="Permalink to this heading">#</a></h3>
+<h3>A <code class="docutils literal notranslate"><span class="pre">Span</span></code><a class="headerlink" href="#a-span" title="Link to this heading">#</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">Span</span></code>s are used to define intervals of time that encompass the movements of a
 Flow.</p>
 <p>A <code class="docutils literal notranslate"><span class="pre">Span</span></code> is a pd.Interval of pd.Timestamps that bound its start and end dates.</p>
@@ -629,11 +640,11 @@ Flow.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define a Span:</span>
 <span class="n">start_date</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="s1">&#39;2001-01-01&#39;</span><span class="p">)</span>
 <span class="n">num_periods</span> <span class="o">=</span> <span class="mi">11</span>
-<span class="n">span</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">span</span><span class="o">.</span><span class="n">Span</span><span class="o">.</span><span class="n">from_num_periods</span><span class="p">(</span>
+<span class="n">span</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">span</span><span class="o">.</span><span class="n">Span</span><span class="o">.</span><span class="n">from_duration</span><span class="p">(</span>
     <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Operation&#39;</span><span class="p">,</span>
     <span class="n">date</span><span class="o">=</span><span class="n">start_date</span><span class="p">,</span>
-    <span class="n">period_type</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">periodicity</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span><span class="p">,</span>
-    <span class="n">num_periods</span><span class="o">=</span><span class="n">num_periods</span><span class="p">)</span>
+    <span class="n">duration</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span><span class="p">,</span>
+    <span class="n">amount</span><span class="o">=</span><span class="n">num_periods</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">span</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -648,7 +659,7 @@ End Date: 2011-12-31
 </div>
 </section>
 <section id="a-projection">
-<h3>A <code class="docutils literal notranslate"><span class="pre">Projection</span></code><a class="headerlink" href="#a-projection" title="Permalink to this heading">#</a></h3>
+<h3>A <code class="docutils literal notranslate"><span class="pre">Projection</span></code><a class="headerlink" href="#a-projection" title="Link to this heading">#</a></h3>
 <p>A <code class="docutils literal notranslate"><span class="pre">Projection</span></code> takes a value and casts it over a sequence of periods according
 to a specified logic. There are two classes of the form of the logic:</p>
 <ol class="arabic simple">
@@ -665,7 +676,7 @@ will use a “Compounding” extrapolation:</p>
 <span class="n">compounding_rate</span> <span class="o">=</span> <span class="mf">0.02</span>
 <span class="n">projection</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">projection</span><span class="o">.</span><span class="n">Extrapolation</span><span class="p">(</span>
     <span class="n">form</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">extrapolation</span><span class="o">.</span><span class="n">Compounding</span><span class="p">(</span><span class="n">rate</span><span class="o">=</span><span class="n">compounding_rate</span><span class="p">),</span>
-    <span class="n">sequence</span><span class="o">=</span><span class="n">span</span><span class="o">.</span><span class="n">to_index</span><span class="p">(</span><span class="n">period_type</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">periodicity</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span><span class="p">))</span>
+    <span class="n">sequence</span><span class="o">=</span><span class="n">span</span><span class="o">.</span><span class="n">to_sequence</span><span class="p">(</span><span class="n">frequency</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -745,7 +756,7 @@ negative, because it is an <em>outflow</em>.</p>
 </div>
 </section>
 <section id="a-stream">
-<h3>A <code class="docutils literal notranslate"><span class="pre">Stream</span></code><a class="headerlink" href="#a-stream" title="Permalink to this heading">#</a></h3>
+<h3>A <code class="docutils literal notranslate"><span class="pre">Stream</span></code><a class="headerlink" href="#a-stream" title="Link to this heading">#</a></h3>
 <p>A <code class="docutils literal notranslate"><span class="pre">Stream</span></code> is a collection of constituent <code class="docutils literal notranslate"><span class="pre">Flow</span></code>s into a table, such that their
 movements (transactions) are resampled with a specified periodicity.</p>
 <p>Let’s use the ‘Effective Gross Income’ line item in Table 1.1 to illustrate the
@@ -755,7 +766,7 @@ concept of a <code class="docutils literal notranslate"><span class="pre">Stream
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">effective_gross_income</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
     <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Effective Gross Income&#39;</span><span class="p">,</span>
     <span class="n">flows</span><span class="o">=</span><span class="p">[</span><span class="n">potential_gross_income</span><span class="p">,</span> <span class="n">vacancy</span><span class="p">],</span>
-    <span class="n">period_type</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">periodicity</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span><span class="p">)</span>
+    <span class="n">frequency</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span><span class="p">)</span>
 <span class="n">effective_gross_income</span>
 </pre></div>
 </div>
@@ -826,7 +837,7 @@ at the <em>end</em> date of each period.</p>
 <span class="n">net_operating_income</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
     <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Net Operating Income&#39;</span><span class="p">,</span>
     <span class="n">flows</span><span class="o">=</span><span class="p">[</span><span class="n">effective_gross_income_flow</span><span class="p">,</span> <span class="n">operating_expenses</span><span class="p">],</span>
-    <span class="n">period_type</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">periodicity</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span><span class="p">)</span>
+    <span class="n">frequency</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span><span class="p">)</span>
 
 <span class="n">net_operating_income</span>
 </pre></div>
@@ -863,7 +874,7 @@ at the <em>end</em> date of each period.</p>
 <span class="n">net_annual_cashflows</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
     <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Net Annual Cashflows&#39;</span><span class="p">,</span>
     <span class="n">flows</span><span class="o">=</span><span class="p">[</span><span class="n">net_operating_income</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">capital_expenditures</span><span class="p">],</span>
-    <span class="n">period_type</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">periodicity</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span><span class="p">)</span>
+    <span class="n">frequency</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span><span class="p">)</span>
 
 <span class="n">net_annual_cashflows</span>
 </pre></div>
@@ -893,11 +904,11 @@ at the <em>end</em> date of each period.</p>
 of the property:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">reversion_span</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">span</span><span class="o">.</span><span class="n">Span</span><span class="o">.</span><span class="n">from_num_periods</span><span class="p">(</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">reversion_span</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">span</span><span class="o">.</span><span class="n">Span</span><span class="o">.</span><span class="n">from_duration</span><span class="p">(</span>
     <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Reversion&#39;</span><span class="p">,</span>
     <span class="n">date</span><span class="o">=</span><span class="n">start_date</span> <span class="o">+</span> <span class="n">pd</span><span class="o">.</span><span class="n">DateOffset</span><span class="p">(</span><span class="n">years</span><span class="o">=</span><span class="mi">9</span><span class="p">),</span>
-    <span class="n">period_type</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">periodicity</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span><span class="p">,</span>
-    <span class="n">num_periods</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">duration</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span>
+    <span class="p">)</span>
 
 <span class="n">exit_caprate</span> <span class="o">=</span> <span class="mf">0.05</span>
 <span class="n">reversion_flow</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="o">.</span><span class="n">from_projection</span><span class="p">(</span>
@@ -905,7 +916,7 @@ of the property:</p>
     <span class="n">value</span><span class="o">=</span><span class="n">net_annual_cashflows</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">exit_caprate</span><span class="p">,</span>
     <span class="n">proj</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">projection</span><span class="o">.</span><span class="n">Distribution</span><span class="p">(</span>
         <span class="n">form</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Uniform</span><span class="p">(),</span>
-        <span class="n">sequence</span><span class="o">=</span><span class="n">reversion_span</span><span class="o">.</span><span class="n">to_index</span><span class="p">(</span><span class="n">period_type</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">periodicity</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span><span class="p">)),</span>
+        <span class="n">sequence</span><span class="o">=</span><span class="n">reversion_span</span><span class="o">.</span><span class="n">to_sequence</span><span class="p">(</span><span class="n">frequency</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span><span class="p">)),</span>
     <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
 <span class="n">reversion_flow</span>
 </pre></div>
@@ -928,7 +939,7 @@ the project’s complete cashflows:</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">net_cashflows_with_reversion</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
     <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Net Cashflow with Reversion&#39;</span><span class="p">,</span>
     <span class="n">flows</span><span class="o">=</span><span class="p">[</span><span class="n">net_annual_cashflows</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">reversion_flow</span><span class="p">],</span>
-    <span class="n">period_type</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">periodicity</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span><span class="p">)</span><span class="o">.</span><span class="n">trim_to_span</span><span class="p">(</span>
+    <span class="n">frequency</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span><span class="p">)</span><span class="o">.</span><span class="n">trim_to_span</span><span class="p">(</span>
     <span class="n">rk</span><span class="o">.</span><span class="n">span</span><span class="o">.</span><span class="n">Span</span><span class="p">(</span>
         <span class="n">start_date</span><span class="o">=</span><span class="n">start_date</span><span class="p">,</span>
         <span class="n">end_date</span><span class="o">=</span><span class="n">reversion_span</span><span class="o">.</span><span class="n">end_date</span><span class="p">)</span>
@@ -972,7 +983,7 @@ the project’s complete cashflows:</p>
         <span class="n">reversion_flow</span><span class="p">,</span>
         <span class="n">net_cashflows_with_reversion</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
         <span class="p">],</span>
-    <span class="n">period_type</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">periodicity</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span>
+    <span class="n">frequency</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span>
     <span class="p">)</span>
 <span class="n">table</span>
 </pre></div>
@@ -1005,8 +1016,8 @@ Present Value (PV):</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">discount_rate</span> <span class="o">=</span> <span class="mf">0.07</span>
 <span class="n">pvs</span> <span class="o">=</span> <span class="n">net_cashflows_with_reversion</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">pv</span><span class="p">(</span>
     <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Present Value&#39;</span><span class="p">,</span>
-    <span class="n">period_type</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">periodicity</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span><span class="p">,</span>
-    <span class="n">discount_rate</span><span class="o">=</span><span class="n">discount_rate</span><span class="p">)</span>
+    <span class="n">frequency</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span><span class="p">,</span>
+    <span class="n">rate</span><span class="o">=</span><span class="n">discount_rate</span><span class="p">)</span>
 <span class="n">pvs</span>
 </pre></div>
 </div>
@@ -1075,7 +1086,7 @@ Present Value (PV):</p>
               
               
                 <footer class="prev-next-footer">
-                  <!-- Previous / next buttons -->
+                  
 <div class="prev-next-area">
     <a class="left-prev"
        href="intro.html"
@@ -1103,6 +1114,7 @@ Present Value (PV):</p>
             
               
                 <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
 
   <div class="sidebar-secondary-item">
   <div class="page-toc tocsection onthispage">
@@ -1142,6 +1154,7 @@ By Daniel Fink
   
   <div class="footer-item">
     
+
   <p class="copyright">
     
       © Copyright 2023.
@@ -1168,8 +1181,8 @@ By Daniel Fink
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="_static/scripts/bootstrap.js?digest=c5ced968eda925caa686"></script>
-<script src="_static/scripts/pydata-sphinx-theme.js?digest=c5ced968eda925caa686"></script>
+  <script src="_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae"></script>
 
   <footer class="bd-footer">
   </footer>

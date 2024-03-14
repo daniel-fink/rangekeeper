@@ -6,11 +6,13 @@ author: Daniel Fink
 copyright: '2023'
 logo: resources/rangekeeper.jpg
 
+
 # Force re-execution of notebooks on each build.
 # See https://jupyterbook.org/content/execute.html
 execute:
   execute_notebooks: cache
   timeout: 6000
+only_build_toc_files: true
 
 # Add a bibtex file so that we can create citations
 bibtex_bibfiles:
