@@ -11,8 +11,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Speckle.Core" Version="2.14.2" />
-    <PackageReference Include="Speckle.Objects" Version="2.14.2" />
+    <PackageReference Include="Speckle.Core" Version="2.18.0" />
+    <PackageReference Include="Speckle.Objects" Version="2.18.0" />
   </ItemGroup>
 
   <ItemGroup>
