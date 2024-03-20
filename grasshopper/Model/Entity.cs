@@ -14,25 +14,9 @@ public class Entity : Base, IEntity
     // public Entity() { }
 
     public string entityId { get; internal set; }
-    
-    // public string? Name { get; set; }
-    //
-    // public string? Type { get; set; }
-    //
-    // public Dictionary<string, object?> GetAttributes() => (Dictionary<string, object?>)this["Attributes"];
-    //
-    // public Dictionary<string, double?> GetMeasurements() => (Dictionary<string, double?>)this["Measurements"];
-    //
-    // public Dictionary<string, object?> GetEvents() => (Dictionary<string, object?>)this["Events"];    
 
     public Entity()//string? name, string? type)
     {
-        // this.Name = name ?? string.Empty;
-        // this.Type = type ?? string.Empty;
-        // this["Attributes"] = new Dictionary<string, object?>();
-        // this["Measurements"] = new Dictionary<string, double?>();
-        // this["Events"] = new Dictionary<string, object?>();
-        
         this.SetEntityId();
     }
 
@@ -47,7 +31,7 @@ public class Entity : Base, IEntity
         Base instance = (Base)Activator.CreateInstance(speckleBase.GetType());
         this.id = instance.id;
         this.applicationId = instance.applicationId;
-        foreach (KeyValuePair<string, object> member in speckleBase.GetMembers(DynamicBaseMemberType.Instance | DynamicBaseMemberType.Dynamic | DynamicBaseMemberType.SchemaIgnored))
+        foreach (KeyValuePair<string, object?> member in speckleBase.GetMembers(DynamicBaseMemberType.Instance | DynamicBaseMemberType.Dynamic | DynamicBaseMemberType.SchemaIgnored))
         {
             if (member.Key == "entityId") continue;
             
@@ -94,7 +78,8 @@ public class Entity : Base, IEntity
     {
         public bool Equals(IEntity entity, IEntity? other)
         {
-            return entity.Equals(other);
+            if (other is null) return false;
+            else return entity.Equals(other);
         }
     
         public int GetHashCode(IEntity entity)

@@ -1,3 +1,6 @@
+using System;
+using System.Linq;
+
 using Xunit.Abstractions;
 using Speckle.Core.Models;
 using Rangekeeper;
@@ -41,7 +44,7 @@ public class TestEntities
          };
          entity["foo"] = "bar";
          entity["quux"] = 42;
-         entity["pi"] = Double.Pi;
+         entity["pi"] = Math.PI;
 
          var attribMember = entity.GetMembers(DynamicBaseMemberType.All).FirstOrDefault(member => member.Key == "foo").Value;
          Assert.Equal("bar", entity["foo"]);
