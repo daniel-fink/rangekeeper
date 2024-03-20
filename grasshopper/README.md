@@ -16,7 +16,7 @@ Rangekeeper `Entity`s can br created from Speckle Objects. Any `name` key will b
 
 ## Add Relationships
 
-![Add Relationships](https://raw.githubusercontent.com/daniel-fink/rangekeeper/main/grasshopper/CRkE.jpg)
+![Add Relationships](https://raw.githubusercontent.com/daniel-fink/rangekeeper/main/grasshopper/ARkR.jpg)
 
 Speckle Objects and`Entity`s can be related to each other in `Assembly`s by using the `Add Relationships` component (any Speckle Objects are converted automatically to `Entity`s). Since `Assembly`s are `Entity`s, any `Entity` provided to the "Entity" input will be used as, or converted to the `Assembly`. The `Assembly` can also be used in its own source & target graph. The component matches sources & targets with relationship types sequentially (if only one relationship type is provided, it is assumed to be the same for all sources & targets)
 
