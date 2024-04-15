@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=384b581d" />
     <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
   
@@ -650,7 +650,7 @@ First load neccesary libraries:</p>
 ‘commits’, or versions of the data.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stream_id</span> <span class="o">=</span> <span class="s2">&quot;e3ea4fe91a&quot;</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">stream_id</span> <span class="o">=</span> <span class="s2">&quot;c0f66c35e3&quot;</span>
 <span class="n">commit_id</span> <span class="o">=</span> <span class="n">speckle</span><span class="o">.</span><span class="n">get_latest_commit_id</span><span class="p">(</span><span class="n">stream_id</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -665,7 +665,7 @@ First load neccesary libraries:</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Base(id: 2916559e41a0defb57cd23e757718135, speckle_type: Base, totalChildrenCount: 3006)
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Base(id: e7acaac21ae7e9369339900a4aaeb827, speckle_type: Base, totalChildrenCount: 3006)
 </pre></div>
 </div>
 </div>
@@ -684,7 +684,7 @@ First load neccesary libraries:</p>
         <iframe
             width="100%"
             height="800"
-            src="https://speckle.xyz/embed?stream=e3ea4fe91a&commit=9196d66cd1"
+            src="https://speckle.xyz/embed?stream=c0f66c35e3&commit=9a9670946f"
             frameborder="0"
             allowfullscreen
             
@@ -730,7 +730,7 @@ pass them in to the Speckle Viewer’s “objects” endpoint with their <code c
         <iframe
             width="100%"
             height="800"
-            src="https://speckle.xyz/streams/e3ea4fe91a/objects/397f8570ba992bbce9e44fe0aa82ba21"
+            src="https://speckle.xyz/streams/c0f66c35e3/objects/bed351126771f61e3d6255c18cd48aa5"
             frameborder="0"
             allowfullscreen
             
@@ -755,7 +755,7 @@ the isolation mode for “floor” or “utilities” types):</p>
         <iframe
             width="100%"
             height="800"
-            src="https://speckle.xyz/streams/e3ea4fe91a/commits/9196d66cd1?filter=%7B%22propertyInfoKey%22%3A%22type%22%7D"
+            src="https://speckle.xyz/streams/c0f66c35e3/commits/9a9670946f?filter=%7B%22propertyInfoKey%22%3A%22type%22%7D"
             frameborder="0"
             allowfullscreen
             
@@ -786,13 +786,13 @@ methods to convert the Speckle Objects into Rangekeeper <code class="docutils li
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Warning: Duplicate Entity 6072b243-6bba-4e67-96de-25119e17150f [utilities] found.
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Warning: Duplicate Entity 6496e279-88ca-49f4-b48c-6c0f156e0a58 [utilities] found.
 Existing Entity is an Assembly while new Entity is not. Keeping Assembly.
-Warning: Duplicate Entity 6072b243-6bba-4e67-96de-25119e17150f [utilities] found.
+Warning: Duplicate Entity 6496e279-88ca-49f4-b48c-6c0f156e0a58 [utilities] found.
 Existing Entity is an Assembly while new Entity is not. Keeping Assembly.
-Warning: Duplicate Entity 6072b243-6bba-4e67-96de-25119e17150f [utilities] found.
+Warning: Duplicate Entity 6496e279-88ca-49f4-b48c-6c0f156e0a58 [utilities] found.
 Existing Entity is an Assembly while new Entity is not. Keeping Assembly.
-Warning: Duplicate Entity c19933d4-eaa0-4398-882d-b8554d2963db [plinthparking] found.
+Warning: Duplicate Entity 2b51847e-ec54-415d-afa0-ce32d74c6144 [plinthparking] found.
 Existing Entity is an Assembly while new Entity is not. Keeping Assembly.
 </pre></div>
 </div>
@@ -805,7 +805,7 @@ Existing Entity is an Assembly while new Entity is not. Keeping Assembly.
 <h4>Querying the Design’s Object Graph<a class="headerlink" href="#querying-the-design-s-object-graph" title="Link to this heading">#</a></h4>
 <p><em>Rangekeeper</em> uses the <a class="reference external" href="https://networkx.org/">NetworkX</a> library to represent
 the object graph of the design, where each <code class="docutils literal notranslate"><span class="pre">Assembly</span></code> is a <code class="docutils literal notranslate"><span class="pre">MultiDiGraph</span></code> of
-Entity<code class="docutils literal notranslate"><span class="pre">nodes</span> <span class="pre">and</span></code>Relationship` edges.
+<code class="docutils literal notranslate"><span class="pre">Entity</span></code> nodes and <code class="docutils literal notranslate"><span class="pre">Relationship</span></code> edges.
 This means we can query it pythonically:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -819,8 +819,8 @@ This means we can query it pythonically:</p>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>buildingA: Assembly: buildingA
 Type: building
 Members: [&#39;type&#39;, &#39;name&#39;]
-Entities: [(&#39;bfb80bb9-08e8-4a9c-8892-df73e6561d32&#39;, {&#39;entity&#39;: Assembly: buildingA (Type: building)}), (&#39;48a9f4a0-1157-48f8-94b2-f64461730009&#39;, {&#39;entity&#39;: Assembly: buildingAhotel (Type: space)}), (&#39;2e6cefe7-a5c3-4c0b-a578-ef2fa298482f&#39;, {&#39;entity&#39;: Assembly: buildingAretail (Type: space)}), (&#39;6e260151-086b-40c2-83a5-d14ea8e006dd&#39;, {&#39;entity&#39;: Assembly: buildingAresidential (Type: space)}), (&#39;40e0d08f-67e5-48ec-b828-9f921a4eee34&#39;, {&#39;entity&#39;: Assembly: buildingAretail (Type: space)}), (&#39;ba6a675c-fad0-4236-993e-6451f7ef6f88&#39;, {&#39;entity&#39;: Assembly: buildingAparking (Type: space)}), (&#39;e805830b-9774-4519-aedc-fd03552308c2&#39;, {&#39;entity&#39;: Entity: buildingAcores (Type: utilities)})]
-Relationships: [(&#39;bfb80bb9-08e8-4a9c-8892-df73e6561d32&#39;, &#39;48a9f4a0-1157-48f8-94b2-f64461730009&#39;, &#39;spatiallyContains&#39;), (&#39;bfb80bb9-08e8-4a9c-8892-df73e6561d32&#39;, &#39;2e6cefe7-a5c3-4c0b-a578-ef2fa298482f&#39;, &#39;spatiallyContains&#39;), (&#39;bfb80bb9-08e8-4a9c-8892-df73e6561d32&#39;, &#39;6e260151-086b-40c2-83a5-d14ea8e006dd&#39;, &#39;spatiallyContains&#39;), (&#39;bfb80bb9-08e8-4a9c-8892-df73e6561d32&#39;, &#39;40e0d08f-67e5-48ec-b828-9f921a4eee34&#39;, &#39;spatiallyContains&#39;), (&#39;bfb80bb9-08e8-4a9c-8892-df73e6561d32&#39;, &#39;ba6a675c-fad0-4236-993e-6451f7ef6f88&#39;, &#39;spatiallyContains&#39;), (&#39;bfb80bb9-08e8-4a9c-8892-df73e6561d32&#39;, &#39;e805830b-9774-4519-aedc-fd03552308c2&#39;, &#39;spatiallyContains&#39;)]
+Entities: [(&#39;5ebb9736-5f18-4103-a5a4-040cd2e9b019&#39;, {&#39;entity&#39;: Assembly: buildingA (Type: building)}), (&#39;c0348c0f-a31f-421b-b6bc-0fe0d5ea947f&#39;, {&#39;entity&#39;: Assembly: buildingAhotel (Type: space)}), (&#39;1d0841bf-aa28-41d7-ba75-0ad0f3d57d21&#39;, {&#39;entity&#39;: Assembly: buildingAretail (Type: space)}), (&#39;7716632b-f43c-4ed2-9f84-26709361bbfe&#39;, {&#39;entity&#39;: Assembly: buildingAresidential (Type: space)}), (&#39;01aec121-ef19-4e6d-9f09-b2ce007b717d&#39;, {&#39;entity&#39;: Assembly: buildingAretail (Type: space)}), (&#39;6f6b227b-b28b-4412-89bd-0a9bbc47164e&#39;, {&#39;entity&#39;: Assembly: buildingAparking (Type: space)}), (&#39;7eec5208-fc0e-4dfd-bd0b-b1d226b2e97e&#39;, {&#39;entity&#39;: Entity: buildingAcores (Type: utilities)})]
+Relationships: [(&#39;5ebb9736-5f18-4103-a5a4-040cd2e9b019&#39;, &#39;c0348c0f-a31f-421b-b6bc-0fe0d5ea947f&#39;, &#39;spatiallyContains&#39;), (&#39;5ebb9736-5f18-4103-a5a4-040cd2e9b019&#39;, &#39;1d0841bf-aa28-41d7-ba75-0ad0f3d57d21&#39;, &#39;spatiallyContains&#39;), (&#39;5ebb9736-5f18-4103-a5a4-040cd2e9b019&#39;, &#39;7716632b-f43c-4ed2-9f84-26709361bbfe&#39;, &#39;spatiallyContains&#39;), (&#39;5ebb9736-5f18-4103-a5a4-040cd2e9b019&#39;, &#39;01aec121-ef19-4e6d-9f09-b2ce007b717d&#39;, &#39;spatiallyContains&#39;), (&#39;5ebb9736-5f18-4103-a5a4-040cd2e9b019&#39;, &#39;6f6b227b-b28b-4412-89bd-0a9bbc47164e&#39;, &#39;spatiallyContains&#39;), (&#39;5ebb9736-5f18-4103-a5a4-040cd2e9b019&#39;, &#39;7eec5208-fc0e-4dfd-bd0b-b1d226b2e97e&#39;, &#39;spatiallyContains&#39;)]
 </pre></div>
 </div>
 </div>
@@ -856,9 +856,9 @@ we can identify relatives of <code class="docutils literal notranslate"><span cl
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>buildingAresidential: Assembly: buildingAresidential
 Type: space
-Members: [&#39;volume&#39;, &#39;type&#39;, &#39;name&#39;, &#39;@geometry&#39;, &#39;renderMaterial&#39;, &#39;use&#39;]
-Entities: [(&#39;6e260151-086b-40c2-83a5-d14ea8e006dd&#39;, {&#39;entity&#39;: Assembly: buildingAresidential (Type: space)}), (&#39;bef4da00-cd24-4703-ad27-82963ae2cf87&#39;, {&#39;entity&#39;: Entity: buildingAresidentialFloor0 (Type: floor)}), (&#39;13d41e1a-627b-46de-abea-d98a4e053892&#39;, {&#39;entity&#39;: Entity: buildingAresidentialFloor1 (Type: floor)}), (&#39;ff6c54fd-095e-462e-aba0-2e43842a7b10&#39;, {&#39;entity&#39;: Entity: buildingAresidentialFloor2 (Type: floor)}), (&#39;15063656-315e-46fe-a193-eb8b364c725e&#39;, {&#39;entity&#39;: Entity: buildingAresidentialFloor3 (Type: floor)})]
-Relationships: [(&#39;6e260151-086b-40c2-83a5-d14ea8e006dd&#39;, &#39;bef4da00-cd24-4703-ad27-82963ae2cf87&#39;, &#39;spatiallyContains&#39;), (&#39;6e260151-086b-40c2-83a5-d14ea8e006dd&#39;, &#39;13d41e1a-627b-46de-abea-d98a4e053892&#39;, &#39;spatiallyContains&#39;), (&#39;6e260151-086b-40c2-83a5-d14ea8e006dd&#39;, &#39;ff6c54fd-095e-462e-aba0-2e43842a7b10&#39;, &#39;spatiallyContains&#39;), (&#39;6e260151-086b-40c2-83a5-d14ea8e006dd&#39;, &#39;15063656-315e-46fe-a193-eb8b364c725e&#39;, &#39;spatiallyContains&#39;)]
+Members: [&#39;type&#39;, &#39;volume&#39;, &#39;use&#39;, &#39;@displayValue&#39;, &#39;name&#39;, &#39;renderMaterial&#39;]
+Entities: [(&#39;7716632b-f43c-4ed2-9f84-26709361bbfe&#39;, {&#39;entity&#39;: Assembly: buildingAresidential (Type: space)}), (&#39;bf5a4444-6abd-4b89-b7a8-d758df5134fe&#39;, {&#39;entity&#39;: Entity: buildingAresidentialFloor0 (Type: floor)}), (&#39;dbf25b07-6f85-45bb-905c-de5b8562f5e7&#39;, {&#39;entity&#39;: Entity: buildingAresidentialFloor1 (Type: floor)}), (&#39;507e4ef2-fe13-44d7-af5f-bcf717b3de53&#39;, {&#39;entity&#39;: Entity: buildingAresidentialFloor2 (Type: floor)}), (&#39;bb815059-7516-45df-8fac-16f0e62242f3&#39;, {&#39;entity&#39;: Entity: buildingAresidentialFloor3 (Type: floor)})]
+Relationships: [(&#39;7716632b-f43c-4ed2-9f84-26709361bbfe&#39;, &#39;bf5a4444-6abd-4b89-b7a8-d758df5134fe&#39;, &#39;spatiallyContains&#39;), (&#39;7716632b-f43c-4ed2-9f84-26709361bbfe&#39;, &#39;dbf25b07-6f85-45bb-905c-de5b8562f5e7&#39;, &#39;spatiallyContains&#39;), (&#39;7716632b-f43c-4ed2-9f84-26709361bbfe&#39;, &#39;507e4ef2-fe13-44d7-af5f-bcf717b3de53&#39;, &#39;spatiallyContains&#39;), (&#39;7716632b-f43c-4ed2-9f84-26709361bbfe&#39;, &#39;bb815059-7516-45df-8fac-16f0e62242f3&#39;, &#39;spatiallyContains&#39;)]
 </pre></div>
 </div>
 </div>
