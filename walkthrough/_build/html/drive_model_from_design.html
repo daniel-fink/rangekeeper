@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=384b581d" />
     <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
   
@@ -60,6 +60,7 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'drive_model_from_design';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="&lt;no title&gt;" href="test_dotnet.html" />
     <link rel="prev" title="Loading a Design" href="load_design.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -490,7 +491,7 @@ This is done by calculating cash flows per <code class="docutils literal notrans
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">speckle</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">Speckle</span><span class="p">(</span>
     <span class="n">host</span><span class="o">=</span><span class="s2">&quot;speckle.xyz&quot;</span><span class="p">,</span>
     <span class="n">token</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s1">&#39;SPECKLE_TOKEN&#39;</span><span class="p">))</span>
-<span class="n">stream_id</span> <span class="o">=</span> <span class="s2">&quot;e3ea4fe91a&quot;</span>
+<span class="n">stream_id</span> <span class="o">=</span> <span class="s2">&quot;c0f66c35e3&quot;</span>
 <span class="n">commit_id</span> <span class="o">=</span> <span class="n">speckle</span><span class="o">.</span><span class="n">get_latest_commit_id</span><span class="p">(</span><span class="n">stream_id</span><span class="p">)</span>
 <span class="n">IFrame</span><span class="p">(</span><span class="s2">&quot;https://speckle.xyz/embed?stream=</span><span class="si">{0}</span><span class="s2">&amp;commit=</span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">stream_id</span><span class="p">,</span> <span class="n">commit_id</span><span class="p">),</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span><span class="p">)</span>
 </pre></div>
@@ -504,7 +505,7 @@ This is done by calculating cash flows per <code class="docutils literal notrans
         <iframe
             width="100%"
             height="800"
-            src="https://speckle.xyz/embed?stream=e3ea4fe91a&commit=9196d66cd1"
+            src="https://speckle.xyz/embed?stream=c0f66c35e3&commit=9a9670946f"
             frameborder="0"
             allowfullscreen
             
@@ -525,13 +526,13 @@ This is done by calculating cash flows per <code class="docutils literal notrans
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Warning: Duplicate Entity 6072b243-6bba-4e67-96de-25119e17150f [utilities] found.
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Warning: Duplicate Entity 6496e279-88ca-49f4-b48c-6c0f156e0a58 [utilities] found.
 Existing Entity is an Assembly while new Entity is not. Keeping Assembly.
-Warning: Duplicate Entity 6072b243-6bba-4e67-96de-25119e17150f [utilities] found.
+Warning: Duplicate Entity 6496e279-88ca-49f4-b48c-6c0f156e0a58 [utilities] found.
 Existing Entity is an Assembly while new Entity is not. Keeping Assembly.
-Warning: Duplicate Entity 6072b243-6bba-4e67-96de-25119e17150f [utilities] found.
+Warning: Duplicate Entity 6496e279-88ca-49f4-b48c-6c0f156e0a58 [utilities] found.
 Existing Entity is an Assembly while new Entity is not. Keeping Assembly.
-Warning: Duplicate Entity c19933d4-eaa0-4398-882d-b8554d2963db [plinthparking] found.
+Warning: Duplicate Entity 2b51847e-ec54-415d-afa0-ce32d74c6144 [plinthparking] found.
 Existing Entity is an Assembly while new Entity is not. Keeping Assembly.
 </pre></div>
 </div>
@@ -681,7 +682,7 @@ via NetworkX’s Node Attributes. See <a class="reference external" href="https:
   </thead>
   <tbody>
     <tr>
-      <th>ee762902-113d-4762-9949-f2594f6a63cb</th>
+      <th>afe8e730-ad0f-4c2a-a15c-e249e4518fa8</th>
       <td>property</td>
       <td>property</td>
       <td>NaN</td>
@@ -692,540 +693,540 @@ via NetworkX’s Node Attributes. See <a class="reference external" href="https:
       <td>NaN</td>
     </tr>
     <tr>
-      <th>93747bdd-9c81-4332-bad6-20152101d4f4</th>
+      <th>0a0a97ef-431d-471d-bc33-ace7e7df5fcb</th>
       <td>plinth</td>
       <td>building</td>
       <td>NaN</td>
       <td>12773.744211</td>
-      <td>ee762902-113d-4762-9949-f2594f6a63cb</td>
+      <td>afe8e730-ad0f-4c2a-a15c-e249e4518fa8</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
     </tr>
     <tr>
-      <th>bfb80bb9-08e8-4a9c-8892-df73e6561d32</th>
+      <th>5ebb9736-5f18-4103-a5a4-040cd2e9b019</th>
       <td>buildingA</td>
       <td>building</td>
       <td>NaN</td>
       <td>16575.630074</td>
-      <td>ee762902-113d-4762-9949-f2594f6a63cb</td>
+      <td>afe8e730-ad0f-4c2a-a15c-e249e4518fa8</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
     </tr>
     <tr>
-      <th>cdd2a9b9-f204-42be-8b7c-0d6cdec34594</th>
+      <th>a1e00481-e51e-47c5-b629-8b214c0900bd</th>
       <td>buildingB</td>
       <td>building</td>
       <td>NaN</td>
       <td>13436.884829</td>
-      <td>ee762902-113d-4762-9949-f2594f6a63cb</td>
+      <td>afe8e730-ad0f-4c2a-a15c-e249e4518fa8</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
     </tr>
     <tr>
-      <th>6072b243-6bba-4e67-96de-25119e17150f</th>
+      <th>6496e279-88ca-49f4-b48c-6c0f156e0a58</th>
       <td>utilities</td>
       <td>utilities</td>
       <td>NaN</td>
       <td>0.000000</td>
-      <td>ee762902-113d-4762-9949-f2594f6a63cb</td>
+      <td>afe8e730-ad0f-4c2a-a15c-e249e4518fa8</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
     </tr>
     <tr>
-      <th>c19933d4-eaa0-4398-882d-b8554d2963db</th>
+      <th>2b51847e-ec54-415d-afa0-ce32d74c6144</th>
       <td>plinthparking</td>
       <td>space</td>
       <td>NaN</td>
       <td>12773.744211</td>
-      <td>93747bdd-9c81-4332-bad6-20152101d4f4</td>
+      <td>0a0a97ef-431d-471d-bc33-ace7e7df5fcb</td>
       <td>parking</td>
       <td>NaN</td>
       <td>NaN</td>
     </tr>
     <tr>
-      <th>79af032a-c245-41c9-a2d4-33bb3029346a</th>
+      <th>938f4cf1-d307-4160-9538-d4bfa9583ad8</th>
       <td>plinthplant</td>
       <td>utilities</td>
       <td>NaN</td>
       <td>0.000000</td>
-      <td>93747bdd-9c81-4332-bad6-20152101d4f4</td>
+      <td>0a0a97ef-431d-471d-bc33-ace7e7df5fcb</td>
       <td>plant</td>
       <td>NaN</td>
       <td>NaN</td>
     </tr>
     <tr>
-      <th>4665be87-5447-4303-b333-724024f4a00a</th>
+      <th>e84b8c35-fd4a-49fc-b4c9-e318a958685b</th>
       <td>plinthparkingFloor-2</td>
       <td>floor</td>
       <td>6386.872106</td>
       <td>6386.872106</td>
-      <td>c19933d4-eaa0-4398-882d-b8554d2963db</td>
+      <td>2b51847e-ec54-415d-afa0-ce32d74c6144</td>
       <td>NaN</td>
       <td>-5.9</td>
       <td>-2.0</td>
     </tr>
     <tr>
-      <th>20898dd5-2b80-47bc-b963-b0f546dc0e00</th>
+      <th>c3ebe151-1e0c-45c6-8852-7ea21f72290e</th>
       <td>plinthparkingFloor-1</td>
       <td>floor</td>
       <td>6386.872106</td>
       <td>6386.872106</td>
-      <td>c19933d4-eaa0-4398-882d-b8554d2963db</td>
+      <td>2b51847e-ec54-415d-afa0-ce32d74c6144</td>
       <td>NaN</td>
       <td>-2.8</td>
       <td>-1.0</td>
     </tr>
     <tr>
-      <th>48a9f4a0-1157-48f8-94b2-f64461730009</th>
+      <th>c0348c0f-a31f-421b-b6bc-0fe0d5ea947f</th>
       <td>buildingAhotel</td>
       <td>space</td>
       <td>NaN</td>
       <td>11716.690054</td>
-      <td>bfb80bb9-08e8-4a9c-8892-df73e6561d32</td>
+      <td>5ebb9736-5f18-4103-a5a4-040cd2e9b019</td>
       <td>hotel</td>
       <td>NaN</td>
       <td>NaN</td>
     </tr>
     <tr>
-      <th>2e6cefe7-a5c3-4c0b-a578-ef2fa298482f</th>
+      <th>1d0841bf-aa28-41d7-ba75-0ad0f3d57d21</th>
       <td>buildingAretail</td>
       <td>space</td>
       <td>NaN</td>
       <td>789.114895</td>
-      <td>bfb80bb9-08e8-4a9c-8892-df73e6561d32</td>
+      <td>5ebb9736-5f18-4103-a5a4-040cd2e9b019</td>
       <td>retail</td>
       <td>NaN</td>
       <td>NaN</td>
     </tr>
     <tr>
-      <th>6e260151-086b-40c2-83a5-d14ea8e006dd</th>
+      <th>7716632b-f43c-4ed2-9f84-26709361bbfe</th>
       <td>buildingAresidential</td>
       <td>space</td>
       <td>NaN</td>
       <td>2308.322369</td>
-      <td>bfb80bb9-08e8-4a9c-8892-df73e6561d32</td>
+      <td>5ebb9736-5f18-4103-a5a4-040cd2e9b019</td>
       <td>residential</td>
       <td>NaN</td>
       <td>NaN</td>
     </tr>
     <tr>
-      <th>40e0d08f-67e5-48ec-b828-9f921a4eee34</th>
+      <th>01aec121-ef19-4e6d-9f09-b2ce007b717d</th>
       <td>buildingAretail</td>
       <td>space</td>
       <td>NaN</td>
       <td>722.715820</td>
-      <td>bfb80bb9-08e8-4a9c-8892-df73e6561d32</td>
+      <td>5ebb9736-5f18-4103-a5a4-040cd2e9b019</td>
       <td>retail</td>
       <td>NaN</td>
       <td>NaN</td>
     </tr>
     <tr>
-      <th>ba6a675c-fad0-4236-993e-6451f7ef6f88</th>
+      <th>6f6b227b-b28b-4412-89bd-0a9bbc47164e</th>
       <td>buildingAparking</td>
       <td>space</td>
       <td>NaN</td>
       <td>1038.786936</td>
-      <td>bfb80bb9-08e8-4a9c-8892-df73e6561d32</td>
+      <td>5ebb9736-5f18-4103-a5a4-040cd2e9b019</td>
       <td>parking</td>
       <td>NaN</td>
       <td>NaN</td>
     </tr>
     <tr>
-      <th>e805830b-9774-4519-aedc-fd03552308c2</th>
+      <th>7eec5208-fc0e-4dfd-bd0b-b1d226b2e97e</th>
       <td>buildingAcores</td>
       <td>utilities</td>
       <td>NaN</td>
       <td>0.000000</td>
-      <td>bfb80bb9-08e8-4a9c-8892-df73e6561d32</td>
+      <td>5ebb9736-5f18-4103-a5a4-040cd2e9b019</td>
       <td>cores</td>
       <td>NaN</td>
       <td>NaN</td>
     </tr>
     <tr>
-      <th>f9e3f130-41d5-41d4-b268-ce4de951c1ce</th>
+      <th>bc265fcf-d0f6-4d22-8e92-d8f86f4d707a</th>
       <td>buildingAhotelFloor0</td>
       <td>floor</td>
       <td>111.690000</td>
       <td>111.690000</td>
-      <td>48a9f4a0-1157-48f8-94b2-f64461730009</td>
+      <td>c0348c0f-a31f-421b-b6bc-0fe0d5ea947f</td>
       <td>NaN</td>
       <td>0.3</td>
       <td>0.0</td>
     </tr>
     <tr>
-      <th>dfbaf91f-64cb-4218-b528-b8eb5e742cd4</th>
+      <th>22851887-f9ee-4aa8-8755-bc021c3a3b30</th>
       <td>buildingAhotelFloor1</td>
       <td>floor</td>
       <td>1697.451572</td>
       <td>1697.451572</td>
-      <td>48a9f4a0-1157-48f8-94b2-f64461730009</td>
+      <td>c0348c0f-a31f-421b-b6bc-0fe0d5ea947f</td>
       <td>NaN</td>
       <td>5.3</td>
       <td>1.0</td>
     </tr>
     <tr>
-      <th>e547ef7b-8f3c-4cf6-b877-0ae9b0e3ea97</th>
+      <th>d67cc046-9c03-4e43-b1b5-876417dbcdda</th>
       <td>buildingAhotelFloor2</td>
       <td>floor</td>
       <td>1270.128420</td>
       <td>1270.128420</td>
-      <td>48a9f4a0-1157-48f8-94b2-f64461730009</td>
+      <td>c0348c0f-a31f-421b-b6bc-0fe0d5ea947f</td>
       <td>NaN</td>
       <td>8.4</td>
       <td>2.0</td>
     </tr>
     <tr>
-      <th>d7871d3f-d8e7-458d-8e7e-d33157170daf</th>
+      <th>5f90565d-44c0-4de2-b510-d263599953f5</th>
       <td>buildingAhotelFloor3</td>
       <td>floor</td>
       <td>1068.208325</td>
       <td>1068.208325</td>
-      <td>48a9f4a0-1157-48f8-94b2-f64461730009</td>
+      <td>c0348c0f-a31f-421b-b6bc-0fe0d5ea947f</td>
       <td>NaN</td>
       <td>11.5</td>
       <td>3.0</td>
     </tr>
     <tr>
-      <th>29d18596-9aa4-440a-b578-3b33c01caca0</th>
+      <th>f7b76e8b-93f0-47c6-8666-05c541c19e25</th>
       <td>buildingAhotelFloor4</td>
       <td>floor</td>
       <td>756.921174</td>
       <td>756.921174</td>
-      <td>48a9f4a0-1157-48f8-94b2-f64461730009</td>
+      <td>c0348c0f-a31f-421b-b6bc-0fe0d5ea947f</td>
       <td>NaN</td>
       <td>14.6</td>
       <td>4.0</td>
     </tr>
     <tr>
-      <th>13338cb2-ece4-43d5-a5dd-f2a7b47fe25f</th>
+      <th>9bdec185-a51b-4845-b746-ddcd3e3fa433</th>
       <td>buildingAhotelFloor5</td>
       <td>floor</td>
       <td>756.921174</td>
       <td>756.921174</td>
-      <td>48a9f4a0-1157-48f8-94b2-f64461730009</td>
+      <td>c0348c0f-a31f-421b-b6bc-0fe0d5ea947f</td>
       <td>NaN</td>
       <td>17.7</td>
       <td>5.0</td>
     </tr>
     <tr>
-      <th>f5153bc8-224f-4a8c-9987-6211fd73c120</th>
+      <th>250edc28-32de-4633-add0-a384305b5e87</th>
       <td>buildingAhotelFloor6</td>
       <td>floor</td>
       <td>756.921174</td>
       <td>756.921174</td>
-      <td>48a9f4a0-1157-48f8-94b2-f64461730009</td>
+      <td>c0348c0f-a31f-421b-b6bc-0fe0d5ea947f</td>
       <td>NaN</td>
       <td>20.8</td>
       <td>6.0</td>
     </tr>
     <tr>
-      <th>33a10ae8-721d-46c3-8e66-d278ce872cf7</th>
+      <th>e4f25e01-0e9d-4fd2-b705-96d118802468</th>
       <td>buildingAhotelFloor7</td>
       <td>floor</td>
       <td>756.921174</td>
       <td>756.921174</td>
-      <td>48a9f4a0-1157-48f8-94b2-f64461730009</td>
+      <td>c0348c0f-a31f-421b-b6bc-0fe0d5ea947f</td>
       <td>NaN</td>
       <td>23.9</td>
       <td>7.0</td>
     </tr>
     <tr>
-      <th>328020e8-4694-427e-b433-8367c7f1f14d</th>
+      <th>9582fd3c-ce66-42c7-8675-39b04b7a4689</th>
       <td>buildingAhotelFloor8</td>
       <td>floor</td>
       <td>756.921174</td>
       <td>756.921174</td>
-      <td>48a9f4a0-1157-48f8-94b2-f64461730009</td>
+      <td>c0348c0f-a31f-421b-b6bc-0fe0d5ea947f</td>
       <td>NaN</td>
       <td>27.0</td>
       <td>8.0</td>
     </tr>
     <tr>
-      <th>c26f2937-1354-455d-949d-3a0a187e157b</th>
+      <th>9151983a-1344-4c88-81f3-76cd4ca8ec6d</th>
       <td>buildingAhotelFloor9</td>
       <td>floor</td>
       <td>756.921174</td>
       <td>756.921174</td>
-      <td>48a9f4a0-1157-48f8-94b2-f64461730009</td>
+      <td>c0348c0f-a31f-421b-b6bc-0fe0d5ea947f</td>
       <td>NaN</td>
       <td>30.1</td>
       <td>9.0</td>
     </tr>
     <tr>
-      <th>5d1ba8b7-a2f6-4ea8-ae43-fe228b4a5ab5</th>
+      <th>56eec388-d1bb-4de7-92a8-be8202d5be2d</th>
       <td>buildingAhotelFloor10</td>
       <td>floor</td>
       <td>756.921174</td>
       <td>756.921174</td>
-      <td>48a9f4a0-1157-48f8-94b2-f64461730009</td>
+      <td>c0348c0f-a31f-421b-b6bc-0fe0d5ea947f</td>
       <td>NaN</td>
       <td>33.2</td>
       <td>10.0</td>
     </tr>
     <tr>
-      <th>e5abcf3b-73ee-4ade-8ce2-99115cb8e8d5</th>
+      <th>49d884ea-f590-46a3-a662-db5e73190848</th>
       <td>buildingAhotelFloor11</td>
       <td>floor</td>
       <td>756.921174</td>
       <td>756.921174</td>
-      <td>48a9f4a0-1157-48f8-94b2-f64461730009</td>
+      <td>c0348c0f-a31f-421b-b6bc-0fe0d5ea947f</td>
       <td>NaN</td>
       <td>36.3</td>
       <td>11.0</td>
     </tr>
     <tr>
-      <th>2712f2e2-0810-4d4c-843a-0b388e56d83e</th>
+      <th>192fb1b2-fc6c-4b42-8135-45cbcbead777</th>
       <td>buildingAhotelFloor12</td>
       <td>floor</td>
       <td>756.921174</td>
       <td>756.921174</td>
-      <td>48a9f4a0-1157-48f8-94b2-f64461730009</td>
+      <td>c0348c0f-a31f-421b-b6bc-0fe0d5ea947f</td>
       <td>NaN</td>
       <td>39.4</td>
       <td>12.0</td>
     </tr>
     <tr>
-      <th>a57a309a-fba1-4613-b395-511df17d8cbe</th>
+      <th>85305abb-0e6f-4c8f-bf27-553292e317e9</th>
       <td>buildingAhotelFloor13</td>
       <td>floor</td>
       <td>756.921174</td>
       <td>756.921174</td>
-      <td>48a9f4a0-1157-48f8-94b2-f64461730009</td>
+      <td>c0348c0f-a31f-421b-b6bc-0fe0d5ea947f</td>
       <td>NaN</td>
       <td>42.5</td>
       <td>13.0</td>
     </tr>
     <tr>
-      <th>9a94af5c-11de-445c-a65f-fa5ea5b34a1c</th>
+      <th>75c85658-55c8-4bd0-9d0c-c03a9b2c6169</th>
       <td>buildingAretailFloor0</td>
       <td>floor</td>
       <td>789.114895</td>
       <td>789.114895</td>
-      <td>2e6cefe7-a5c3-4c0b-a578-ef2fa298482f</td>
+      <td>1d0841bf-aa28-41d7-ba75-0ad0f3d57d21</td>
       <td>NaN</td>
       <td>0.3</td>
       <td>0.0</td>
     </tr>
     <tr>
-      <th>bef4da00-cd24-4703-ad27-82963ae2cf87</th>
+      <th>bf5a4444-6abd-4b89-b7a8-d758df5134fe</th>
       <td>buildingAresidentialFloor0</td>
       <td>floor</td>
       <td>57.900000</td>
       <td>57.900000</td>
-      <td>6e260151-086b-40c2-83a5-d14ea8e006dd</td>
+      <td>7716632b-f43c-4ed2-9f84-26709361bbfe</td>
       <td>NaN</td>
       <td>0.3</td>
       <td>0.0</td>
     </tr>
     <tr>
-      <th>13d41e1a-627b-46de-abea-d98a4e053892</th>
+      <th>dbf25b07-6f85-45bb-905c-de5b8562f5e7</th>
       <td>buildingAresidentialFloor1</td>
       <td>floor</td>
       <td>750.140790</td>
       <td>750.140790</td>
-      <td>6e260151-086b-40c2-83a5-d14ea8e006dd</td>
+      <td>7716632b-f43c-4ed2-9f84-26709361bbfe</td>
       <td>NaN</td>
       <td>5.3</td>
       <td>1.0</td>
     </tr>
     <tr>
-      <th>ff6c54fd-095e-462e-aba0-2e43842a7b10</th>
+      <th>507e4ef2-fe13-44d7-af5f-bcf717b3de53</th>
       <td>buildingAresidentialFloor2</td>
       <td>floor</td>
       <td>750.140790</td>
       <td>750.140790</td>
-      <td>6e260151-086b-40c2-83a5-d14ea8e006dd</td>
+      <td>7716632b-f43c-4ed2-9f84-26709361bbfe</td>
       <td>NaN</td>
       <td>8.4</td>
       <td>2.0</td>
     </tr>
     <tr>
-      <th>15063656-315e-46fe-a193-eb8b364c725e</th>
+      <th>bb815059-7516-45df-8fac-16f0e62242f3</th>
       <td>buildingAresidentialFloor3</td>
       <td>floor</td>
       <td>750.140790</td>
       <td>750.140790</td>
-      <td>6e260151-086b-40c2-83a5-d14ea8e006dd</td>
+      <td>7716632b-f43c-4ed2-9f84-26709361bbfe</td>
       <td>NaN</td>
       <td>11.5</td>
       <td>3.0</td>
     </tr>
     <tr>
-      <th>9d0d9b38-2f76-43a1-a67a-755155625b0b</th>
+      <th>d45316af-5763-4b39-8e39-dc7645c39ec2</th>
       <td>buildingAretailFloor0</td>
       <td>floor</td>
       <td>722.715820</td>
       <td>722.715820</td>
-      <td>40e0d08f-67e5-48ec-b828-9f921a4eee34</td>
+      <td>01aec121-ef19-4e6d-9f09-b2ce007b717d</td>
       <td>NaN</td>
       <td>0.3</td>
       <td>0.0</td>
     </tr>
     <tr>
-      <th>aed4f503-92e3-4ddd-b0cf-ba8739f31ecb</th>
+      <th>99dae6a3-d102-4525-9f3a-b8ee50a9c45f</th>
       <td>buildingAparkingFloor0</td>
       <td>floor</td>
       <td>1038.786936</td>
       <td>1038.786936</td>
-      <td>ba6a675c-fad0-4236-993e-6451f7ef6f88</td>
+      <td>6f6b227b-b28b-4412-89bd-0a9bbc47164e</td>
       <td>NaN</td>
       <td>0.3</td>
       <td>0.0</td>
     </tr>
     <tr>
-      <th>3b92a79c-61f1-4e01-887f-4d2d51b75307</th>
+      <th>e9acc93a-6f25-4179-97b3-594d1927565a</th>
       <td>buildingBresidential</td>
       <td>space</td>
       <td>NaN</td>
       <td>11442.736624</td>
-      <td>cdd2a9b9-f204-42be-8b7c-0d6cdec34594</td>
+      <td>a1e00481-e51e-47c5-b629-8b214c0900bd</td>
       <td>residential</td>
       <td>NaN</td>
       <td>NaN</td>
     </tr>
     <tr>
-      <th>649e49a3-170b-43df-b8d6-698e1549edcb</th>
+      <th>eb1a8e6c-abf7-4fde-be66-b79a53eb7d52</th>
       <td>buildingBparking</td>
       <td>space</td>
       <td>NaN</td>
       <td>1178.164752</td>
-      <td>cdd2a9b9-f204-42be-8b7c-0d6cdec34594</td>
+      <td>a1e00481-e51e-47c5-b629-8b214c0900bd</td>
       <td>parking</td>
       <td>NaN</td>
       <td>NaN</td>
     </tr>
     <tr>
-      <th>cbf37424-e9ee-4256-9616-bccb33877959</th>
+      <th>34e63754-df1f-4c4d-b480-afa4109b3a5a</th>
       <td>buildingBretail</td>
       <td>space</td>
       <td>NaN</td>
       <td>815.983454</td>
-      <td>cdd2a9b9-f204-42be-8b7c-0d6cdec34594</td>
+      <td>a1e00481-e51e-47c5-b629-8b214c0900bd</td>
       <td>retail</td>
       <td>NaN</td>
       <td>NaN</td>
     </tr>
     <tr>
-      <th>b46237d4-fbe2-4be6-8efc-59785f708ba2</th>
+      <th>cb5a02f7-b1b9-4a32-95b8-bbb70a946230</th>
       <td>buildingBcores</td>
       <td>utilities</td>
       <td>NaN</td>
       <td>0.000000</td>
-      <td>cdd2a9b9-f204-42be-8b7c-0d6cdec34594</td>
+      <td>a1e00481-e51e-47c5-b629-8b214c0900bd</td>
       <td>cores</td>
       <td>NaN</td>
       <td>NaN</td>
     </tr>
     <tr>
-      <th>8e9146d0-2104-4e1c-9c82-c13f75615ec8</th>
+      <th>0c018f4e-85d1-45ca-a83a-e3047e63ea6e</th>
       <td>buildingBresidentialFloor0</td>
       <td>floor</td>
       <td>765.941631</td>
       <td>765.941631</td>
-      <td>3b92a79c-61f1-4e01-887f-4d2d51b75307</td>
+      <td>e9acc93a-6f25-4179-97b3-594d1927565a</td>
       <td>NaN</td>
       <td>0.3</td>
       <td>0.0</td>
     </tr>
     <tr>
-      <th>f59987d8-0e52-498f-a867-0c1d075fd79b</th>
+      <th>5ffdc26b-ed78-45e7-95a7-93114f38437b</th>
       <td>buildingBresidentialFloor1</td>
       <td>floor</td>
       <td>2361.056035</td>
       <td>2361.056035</td>
-      <td>3b92a79c-61f1-4e01-887f-4d2d51b75307</td>
+      <td>e9acc93a-6f25-4179-97b3-594d1927565a</td>
       <td>NaN</td>
       <td>5.3</td>
       <td>1.0</td>
     </tr>
     <tr>
-      <th>be309f24-a650-47f1-9fe1-4937b77b5db6</th>
+      <th>15c0f8fb-5a62-4f60-94fc-5f1ea1a79f76</th>
       <td>buildingBresidentialFloor2</td>
       <td>floor</td>
       <td>2361.056035</td>
       <td>2361.056035</td>
-      <td>3b92a79c-61f1-4e01-887f-4d2d51b75307</td>
+      <td>e9acc93a-6f25-4179-97b3-594d1927565a</td>
       <td>NaN</td>
       <td>8.4</td>
       <td>2.0</td>
     </tr>
     <tr>
-      <th>fb71f7fb-461c-4fed-a153-8022feb7fbff</th>
+      <th>aece3428-b220-4ced-a819-15cdb72166aa</th>
       <td>buildingBresidentialFloor3</td>
       <td>floor</td>
       <td>2015.956035</td>
       <td>2015.956035</td>
-      <td>3b92a79c-61f1-4e01-887f-4d2d51b75307</td>
+      <td>e9acc93a-6f25-4179-97b3-594d1927565a</td>
       <td>NaN</td>
       <td>11.5</td>
       <td>3.0</td>
     </tr>
     <tr>
-      <th>792a321a-2b80-4967-b674-270c885ef050</th>
+      <th>1b966f89-f491-425e-9da1-ad0ad124cae4</th>
       <td>buildingBresidentialFloor4</td>
       <td>floor</td>
       <td>2015.956035</td>
       <td>2015.956035</td>
-      <td>3b92a79c-61f1-4e01-887f-4d2d51b75307</td>
+      <td>e9acc93a-6f25-4179-97b3-594d1927565a</td>
       <td>NaN</td>
       <td>14.6</td>
       <td>4.0</td>
     </tr>
     <tr>
-      <th>44400ec9-2a8e-4f3c-90c8-d59629c9537b</th>
+      <th>f3ff41c9-c6e6-4bcb-8d36-c7acfbecf839</th>
       <td>buildingBresidentialFloor5</td>
       <td>floor</td>
       <td>875.014900</td>
       <td>875.014900</td>
-      <td>3b92a79c-61f1-4e01-887f-4d2d51b75307</td>
+      <td>e9acc93a-6f25-4179-97b3-594d1927565a</td>
       <td>NaN</td>
       <td>17.7</td>
       <td>5.0</td>
     </tr>
     <tr>
-      <th>aabba2f5-b60e-4051-b012-b332dcef6bed</th>
+      <th>1df6c7b8-7e0a-4347-b94c-82324a5c4765</th>
       <td>buildingBresidentialFloor6</td>
       <td>floor</td>
       <td>875.014900</td>
       <td>875.014900</td>
-      <td>3b92a79c-61f1-4e01-887f-4d2d51b75307</td>
+      <td>e9acc93a-6f25-4179-97b3-594d1927565a</td>
       <td>NaN</td>
       <td>20.8</td>
       <td>6.0</td>
     </tr>
     <tr>
-      <th>7d1610e9-c044-4ce4-9e88-fa760853bfe8</th>
+      <th>7f876f6b-5eef-44d0-b9be-39b08176e2e4</th>
       <td>buildingBresidentialFloor0</td>
       <td>floor</td>
       <td>172.741054</td>
       <td>172.741054</td>
-      <td>3b92a79c-61f1-4e01-887f-4d2d51b75307</td>
+      <td>e9acc93a-6f25-4179-97b3-594d1927565a</td>
       <td>NaN</td>
       <td>0.3</td>
       <td>0.0</td>
     </tr>
     <tr>
-      <th>e7730ec9-3304-4af3-b978-d08aaff7858b</th>
+      <th>3623f3aa-9226-46d1-9e2f-b3e82e0f187f</th>
       <td>buildingBparkingFloor0</td>
       <td>floor</td>
       <td>1178.164752</td>
       <td>1178.164752</td>
-      <td>649e49a3-170b-43df-b8d6-698e1549edcb</td>
+      <td>eb1a8e6c-abf7-4fde-be66-b79a53eb7d52</td>
       <td>NaN</td>
       <td>0.3</td>
       <td>0.0</td>
     </tr>
     <tr>
-      <th>4607a6a9-a74b-4b95-a1f7-17b04189120c</th>
+      <th>bb756739-0f7c-43ec-874a-ec0def2ca9e4</th>
       <td>buildingBretailFloor0</td>
       <td>floor</td>
       <td>815.983454</td>
       <td>815.983454</td>
-      <td>cbf37424-e9ee-4256-9616-bccb33877959</td>
+      <td>34e63754-df1f-4c4d-b480-afa4109b3a5a</td>
       <td>NaN</td>
       <td>0.3</td>
       <td>0.0</td>
@@ -1578,7 +1579,7 @@ hotel compartment in Building A:</p>
 </div>
 <div class="output text_html"><table>
 <thead>
-<tr><th style="text-align: right;">  date</th><th style="text-align: right;">  Effective Gross Income for f9e3f130-41d5-41d4-b268-ce4de951c1ce [buildingAhotelFloor0]</th><th style="text-align: right;">  Effective Gross Income for dfbaf91f-64cb-4218-b528-b8eb5e742cd4 [buildingAhotelFloor1]</th><th style="text-align: right;">  Effective Gross Income for e547ef7b-8f3c-4cf6-b877-0ae9b0e3ea97 [buildingAhotelFloor2]</th><th style="text-align: right;">  Effective Gross Income for d7871d3f-d8e7-458d-8e7e-d33157170daf [buildingAhotelFloor3]</th><th style="text-align: right;">  Effective Gross Income for 29d18596-9aa4-440a-b578-3b33c01caca0 [buildingAhotelFloor4]</th><th style="text-align: right;">  Effective Gross Income for 13338cb2-ece4-43d5-a5dd-f2a7b47fe25f [buildingAhotelFloor5]</th><th style="text-align: right;">  Effective Gross Income for f5153bc8-224f-4a8c-9987-6211fd73c120 [buildingAhotelFloor6]</th><th style="text-align: right;">  Effective Gross Income for 33a10ae8-721d-46c3-8e66-d278ce872cf7 [buildingAhotelFloor7]</th><th style="text-align: right;">  Effective Gross Income for 328020e8-4694-427e-b433-8367c7f1f14d [buildingAhotelFloor8]</th><th style="text-align: right;">  Effective Gross Income for c26f2937-1354-455d-949d-3a0a187e157b [buildingAhotelFloor9]</th><th style="text-align: right;">  Effective Gross Income for 5d1ba8b7-a2f6-4ea8-ae43-fe228b4a5ab5 [buildingAhotelFloor10]</th><th style="text-align: right;">  Effective Gross Income for e5abcf3b-73ee-4ade-8ce2-99115cb8e8d5 [buildingAhotelFloor11]</th><th style="text-align: right;">  Effective Gross Income for 2712f2e2-0810-4d4c-843a-0b388e56d83e [buildingAhotelFloor12]</th><th style="text-align: right;">  Effective Gross Income for a57a309a-fba1-4613-b395-511df17d8cbe [buildingAhotelFloor13]</th></tr>
+<tr><th style="text-align: right;">  date</th><th style="text-align: right;">  Effective Gross Income for bc265fcf-d0f6-4d22-8e92-d8f86f4d707a [buildingAhotelFloor0]</th><th style="text-align: right;">  Effective Gross Income for 22851887-f9ee-4aa8-8755-bc021c3a3b30 [buildingAhotelFloor1]</th><th style="text-align: right;">  Effective Gross Income for d67cc046-9c03-4e43-b1b5-876417dbcdda [buildingAhotelFloor2]</th><th style="text-align: right;">  Effective Gross Income for 5f90565d-44c0-4de2-b510-d263599953f5 [buildingAhotelFloor3]</th><th style="text-align: right;">  Effective Gross Income for f7b76e8b-93f0-47c6-8666-05c541c19e25 [buildingAhotelFloor4]</th><th style="text-align: right;">  Effective Gross Income for 9bdec185-a51b-4845-b746-ddcd3e3fa433 [buildingAhotelFloor5]</th><th style="text-align: right;">  Effective Gross Income for 250edc28-32de-4633-add0-a384305b5e87 [buildingAhotelFloor6]</th><th style="text-align: right;">  Effective Gross Income for e4f25e01-0e9d-4fd2-b705-96d118802468 [buildingAhotelFloor7]</th><th style="text-align: right;">  Effective Gross Income for 9582fd3c-ce66-42c7-8675-39b04b7a4689 [buildingAhotelFloor8]</th><th style="text-align: right;">  Effective Gross Income for 9151983a-1344-4c88-81f3-76cd4ca8ec6d [buildingAhotelFloor9]</th><th style="text-align: right;">  Effective Gross Income for 56eec388-d1bb-4de7-92a8-be8202d5be2d [buildingAhotelFloor10]</th><th style="text-align: right;">  Effective Gross Income for 49d884ea-f590-46a3-a662-db5e73190848 [buildingAhotelFloor11]</th><th style="text-align: right;">  Effective Gross Income for 192fb1b2-fc6c-4b42-8135-45cbcbead777 [buildingAhotelFloor12]</th><th style="text-align: right;">  Effective Gross Income for 85305abb-0e6f-4c8f-bf27-553292e317e9 [buildingAhotelFloor13]</th></tr>
 </thead>
 <tbody>
 <tr><td style="text-align: right;">  2001</td><td style="text-align: right;">                                                                              $65,338.65</td><td style="text-align: right;">                                                                             $993,009.17</td><td style="text-align: right;">                                                                             $743,025.13</td><td style="text-align: right;">                                                                             $624,901.87</td><td style="text-align: right;">                                                                             $442,798.89</td><td style="text-align: right;">                                                                             $442,798.89</td><td style="text-align: right;">                                                                             $442,798.89</td><td style="text-align: right;">                                                                             $442,798.89</td><td style="text-align: right;">                                                                             $442,798.89</td><td style="text-align: right;">                                                                             $442,798.89</td><td style="text-align: right;">                                                                              $442,798.89</td><td style="text-align: right;">                                                                              $442,798.89</td><td style="text-align: right;">                                                                              $442,798.89</td><td style="text-align: right;">                                                                              $442,798.89</td></tr>
@@ -1605,7 +1606,7 @@ hotel compartment in Building A:</p>
 <div class="cell_output docutils container">
 <div class="output text_html"><table>
 <thead>
-<tr><th style="text-align: right;">               date</th><th style="text-align: right;">  Effective Gross Income for 48a9f4a0-1157-48f8-94b2-f64461730009 [buildingAhotel] Aggregation (sum)</th></tr>
+<tr><th style="text-align: right;">               date</th><th style="text-align: right;">  Effective Gross Income for c0348c0f-a31f-421b-b6bc-0fe0d5ea947f [buildingAhotel] Aggregation (sum)</th></tr>
 </thead>
 <tbody>
 <tr><td style="text-align: right;">2001-12-31 00:00:00</td><td style="text-align: right;">                                                                                       $6,854,263.68</td></tr>
@@ -1631,7 +1632,7 @@ hotel compartment in Building A:</p>
 <div class="cell_output docutils container">
 <div class="output text_html"><table>
 <thead>
-<tr><th style="text-align: right;">               date</th><th style="text-align: right;">  Effective Gross Income for 48a9f4a0-1157-48f8-94b2-f64461730009 [buildingAhotel] Aggregation (sum)</th></tr>
+<tr><th style="text-align: right;">               date</th><th style="text-align: right;">  Effective Gross Income for c0348c0f-a31f-421b-b6bc-0fe0d5ea947f [buildingAhotel] Aggregation (sum)</th></tr>
 </thead>
 <tbody>
 <tr><td style="text-align: right;">2011-12-31 00:00:00</td><td style="text-align: right;">                                                                                      $90,078,677.93</td></tr>
@@ -1899,7 +1900,7 @@ of the property:</p>
         <iframe
             width="100%"
             height="800"
-            src="https://speckle.xyz/streams/e3ea4fe91a/commits/9196d66cd1?filter=%7B%22propertyInfoKey%22%3A%20%22type%22%2C%20%22isolatedIds%22%3A%20%5B%227f54ec9bebb76a5e63c71cf003997e94%22%2C%20%229735baf66e333f4c20bb7522ffdcb65f%22%2C%20%22921624ec351b7d6b289bbcc27394fccf%22%5D%7D"
+            src="https://speckle.xyz/streams/c0f66c35e3/commits/9a9670946f?filter=%7B%22propertyInfoKey%22%3A%20%22type%22%2C%20%22isolatedIds%22%3A%20%5B%229b2992a4e98e81b6f2c4b8a57c5dbcf5%22%2C%20%2214147098f0b31f4846dd7144529defd7%22%2C%20%2290da8a6faba34db1ce909900e215019a%22%5D%7D"
             frameborder="0"
             allowfullscreen
             
@@ -1942,8 +1943,8 @@ of the property:</p>
 <tr><th style="text-align: right;">               date</th><th style="text-align: right;">  Utilities-derived Capital Expenses</th></tr>
 </thead>
 <tbody>
-<tr><td style="text-align: right;">2005-12-31 00:00:00</td><td style="text-align: right;">                        -$865,663.39</td></tr>
-<tr><td style="text-align: right;">2010-12-31 00:00:00</td><td style="text-align: right;">                        -$895,961.61</td></tr>
+<tr><td style="text-align: right;">2005-12-31 00:00:00</td><td style="text-align: right;">                        -$643,105.79</td></tr>
+<tr><td style="text-align: right;">2010-12-31 00:00:00</td><td style="text-align: right;">                        -$665,614.49</td></tr>
 </tbody>
 </table></div></div>
 </div>
@@ -2228,7 +2229,7 @@ order to derive the project’s complete cashflows:</p>
 <div class="cell_output docutils container">
 <div class="output text_html"><table>
 <thead>
-<tr><th style="text-align: right;">  date</th><th style="text-align: right;">  Net Annual Cashflow for ee762902-113d-4762-9949-f2594f6a63cb [property] Aggregation (sum)</th><th style="text-align: right;">      Reversion</th></tr>
+<tr><th style="text-align: right;">  date</th><th style="text-align: right;">  Net Annual Cashflow for afe8e730-ad0f-4c2a-a15c-e249e4518fa8 [property] Aggregation (sum)</th><th style="text-align: right;">      Reversion</th></tr>
 </thead>
 <tbody>
 <tr><td style="text-align: right;">  2001</td><td style="text-align: right;">                                                                              $8,134,691.89</td><td style="text-align: right;">              0</td></tr>
@@ -2266,7 +2267,7 @@ order to derive the project’s complete cashflows:</p>
 <div class="cell_output docutils container">
 <div class="output text_html"><table>
 <thead>
-<tr><th style="text-align: right;">  date</th><th style="text-align: right;">  Effective Gross Income for ee762902-113d-4762-9949-f2594f6a63cb [property] Aggregation (sum)</th><th style="text-align: right;">  Operational Expenses for ee762902-113d-4762-9949-f2594f6a63cb [property] Aggregation (sum)</th><th style="text-align: right;">  Net Operating Income for ee762902-113d-4762-9949-f2594f6a63cb [property] Aggregation (sum)</th><th style="text-align: right;">  Capital Expenses for ee762902-113d-4762-9949-f2594f6a63cb [property] Aggregation (sum)</th><th style="text-align: right;">  Net Annual Cashflow for ee762902-113d-4762-9949-f2594f6a63cb [property] Aggregation (sum)</th><th style="text-align: right;">      Reversion</th><th style="text-align: right;">  Net Cashflow with Reversion (sum)</th></tr>
+<tr><th style="text-align: right;">  date</th><th style="text-align: right;">  Effective Gross Income for afe8e730-ad0f-4c2a-a15c-e249e4518fa8 [property] Aggregation (sum)</th><th style="text-align: right;">  Operational Expenses for afe8e730-ad0f-4c2a-a15c-e249e4518fa8 [property] Aggregation (sum)</th><th style="text-align: right;">  Net Operating Income for afe8e730-ad0f-4c2a-a15c-e249e4518fa8 [property] Aggregation (sum)</th><th style="text-align: right;">  Capital Expenses for afe8e730-ad0f-4c2a-a15c-e249e4518fa8 [property] Aggregation (sum)</th><th style="text-align: right;">  Net Annual Cashflow for afe8e730-ad0f-4c2a-a15c-e249e4518fa8 [property] Aggregation (sum)</th><th style="text-align: right;">      Reversion</th><th style="text-align: right;">  Net Cashflow with Reversion (sum)</th></tr>
 </thead>
 <tbody>
 <tr><td style="text-align: right;">  2001</td><td style="text-align: right;">                                                                                $14,402,849.55</td><td style="text-align: right;">                                                                              -$6,268,157.66</td><td style="text-align: right;">                                                                               $8,134,691.89</td><td style="text-align: right;">                                                                                       0</td><td style="text-align: right;">                                                                              $8,134,691.89</td><td style="text-align: right;">              0</td><td style="text-align: right;">                      $8,134,691.89</td></tr>
@@ -2373,6 +2374,15 @@ can calculate the present value of the property:</p>
         <p class="prev-next-subtitle">previous</p>
         <p class="prev-next-title">Loading a Design</p>
       </div>
+    </a>
+    <a class="right-next"
+       href="test_dotnet.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">&lt;no title&gt;</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
     </a>
 </div>
                 </footer>
