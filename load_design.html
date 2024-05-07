@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=384b581d" />
     <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
   
@@ -481,7 +481,7 @@ what services it (e.g. the mechanical systems controlling its air conditioning)<
 <figure class="align-default" id="real-estate-asset-property-as-a-graph">
 <a class="reference internal image-reference" href="_images/devModelGraph.jpg"><img alt="_images/devModelGraph.jpg" src="_images/devModelGraph.jpg" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-number">Fig. 5 </span><span class="caption-text">An entire Real Estate asset is represented as a huge web (graph) of <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s
+<p><span class="caption-number">Fig. 6 </span><span class="caption-text">An entire Real Estate asset is represented as a huge web (graph) of <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s
 and <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s between those <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s</span><a class="headerlink" href="#real-estate-asset-property-as-a-graph" title="Link to this image">#</a></p>
 </figcaption>
 </figure>
@@ -512,7 +512,7 @@ of how a real estate asset is structured.</p>
 <figure class="align-default" id="a-diagram-of-assembly-s-of-entity-s">
 <a class="reference internal image-reference" href="_images/devModelAssembly.jpg"><img alt="_images/devModelAssembly.jpg" src="_images/devModelAssembly.jpg" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-number">Fig. 6 </span><span class="caption-text">An <code class="docutils literal notranslate"><span class="pre">Assembly</span></code> is a non-exclusive collection of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s, enabling the
+<p><span class="caption-number">Fig. 7 </span><span class="caption-text">An <code class="docutils literal notranslate"><span class="pre">Assembly</span></code> is a non-exclusive collection of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s, enabling the
 traversal of <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s in the graph.</span><a class="headerlink" href="#a-diagram-of-assembly-s-of-entity-s" title="Link to this image">#</a></p>
 </figcaption>
 </figure>
@@ -560,7 +560,7 @@ operation of the real estate project as an asset.</p>
 <figure class="align-default" id="uml-style-diagram-of-foundation-of-rangekeeper-s-object-model">
 <a class="reference internal image-reference" href="_images/objModel.jpg"><img alt="_images/objModel.jpg" src="_images/objModel.jpg" style="width: 100%;" /></a>
 <figcaption>
-<p><span class="caption-number">Fig. 7 </span><span class="caption-text">Diagram of general overview of the founational concepts of <em>Rangekeeper</em>’s
+<p><span class="caption-number">Fig. 8 </span><span class="caption-text">Diagram of general overview of the founational concepts of <em>Rangekeeper</em>’s
 object model, in UML-style.</span><a class="headerlink" href="#uml-style-diagram-of-foundation-of-rangekeeper-s-object-model" title="Link to this image">#</a></p>
 </figcaption>
 </figure>
@@ -805,7 +805,7 @@ Existing Entity is an Assembly while new Entity is not. Keeping Assembly.
 <h4>Querying the Design’s Object Graph<a class="headerlink" href="#querying-the-design-s-object-graph" title="Link to this heading">#</a></h4>
 <p><em>Rangekeeper</em> uses the <a class="reference external" href="https://networkx.org/">NetworkX</a> library to represent
 the object graph of the design, where each <code class="docutils literal notranslate"><span class="pre">Assembly</span></code> is a <code class="docutils literal notranslate"><span class="pre">MultiDiGraph</span></code> of
-Entity<code class="docutils literal notranslate"><span class="pre">nodes</span> <span class="pre">and</span></code>Relationship` edges.
+<code class="docutils literal notranslate"><span class="pre">Entity</span></code> nodes and <code class="docutils literal notranslate"><span class="pre">Relationship</span></code> edges.
 This means we can query it pythonically:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">

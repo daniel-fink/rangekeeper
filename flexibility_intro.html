@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=384b581d" />
     <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
   
@@ -437,14 +437,24 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="introduction-to-modeling-flexibility">
 <h1>Introduction to Modeling Flexibility<a class="headerlink" href="#introduction-to-modeling-flexibility" title="Link to this heading">#</a></h1>
-<p><span id="id1">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> apply the simulated Real Estate Market to a basic Proforma
-in two ways:</p>
+<p>Introducing flexibility into a Proforma allows for the modeling of decision
+points and alternate courses of action, which have <em>optionality</em> (the agency
+but not the requirement to act). This offers a more sophisticated, and
+realistic, simulation of real estate investment scenarios.</p>
+<figure class="align-default" id="model-progression">
+<a class="reference internal image-reference" href="_images/modelProgression.png"><img alt="_images/modelProgression.png" src="_images/modelProgression.png" style="width: 100%;" /></a>
+<figcaption>
+<p><span class="caption-number">Fig. 4 </span><span class="caption-text">How a basic Proforma can be progressed from simple deterministic projections,
+to non-responsive sensitivity analysis, to responsive decision-making.</span><a class="headerlink" href="#model-progression" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<p><span id="id1">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> apply flexibility to a basic Proforma in two steps:</p>
 <ol class="arabic simple">
-<li><p>Using the <code class="docutils literal notranslate"><span class="pre">Market</span></code> pricing factors to adjust projected values for cash flows
-(by multiplying the factor against respective line items)</p></li>
+<li><p>Using a simulated <code class="docutils literal notranslate"><span class="pre">Market</span></code>’s pricing factors to adjust projected values for cash flows
+(by multiplying the factor against respective line items).</p></li>
 <li><p>Programming ‘decisions’ into the Proforma that change how the Proforma
 operates, in response to conditions or characteristics of the <code class="docutils literal notranslate"><span class="pre">Market</span></code>
-dynamics</p></li>
+dynamics.</p></li>
 </ol>
 <p>To begin with, let’s see how <em>Rangekeeper</em> adjusts the projected Potential Gross
 Income and Reversion cash flows, using a single scenario/trial of a <code class="docutils literal notranslate"><span class="pre">Market</span></code>.</p>
@@ -1113,7 +1123,7 @@ the <code class="docutils literal notranslate"><span class="pre">Model</span></c
 <figure class="align-default" id="farevuu-figure9-1">
 <a class="reference internal image-reference" href="_images/FaREVuU-figure9.1.png"><img alt="_images/FaREVuU-figure9.1.png" src="_images/FaREVuU-figure9.1.png" style="width: 75%;" /></a>
 <figcaption>
-<p><span class="caption-number">Fig. 4 </span><span class="caption-text">Figure 9.1 From <span id="id4">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span></span><a class="headerlink" href="#farevuu-figure9-1" title="Link to this image">#</a></p>
+<p><span class="caption-number">Fig. 5 </span><span class="caption-text">Figure 9.1 From <span id="id4">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span></span><a class="headerlink" href="#farevuu-figure9-1" title="Link to this image">#</a></p>
 </figcaption>
 </figure>
 <p><span id="id5">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> diagram the logic of the “Stop-Gain Resale Rule” as a
