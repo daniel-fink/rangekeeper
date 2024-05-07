@@ -15,6 +15,3 @@ parts:
     chapters:
       - file: load_design
       - file: drive_model_from_design
-  - caption: Test
-    chapters:
-      - file: test_dotnet
