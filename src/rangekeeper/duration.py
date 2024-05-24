@@ -172,7 +172,7 @@ class Period:
             periods=1)
 
     @staticmethod
-    def yearly_count(period_type: Type) -> int:
+    def yearly_count(duration: Type) -> int:
         """
         Returns the number of periods in a year of the given type
         """
@@ -187,7 +187,7 @@ class Period:
             Type.SEMIMONTH: 24,
             Type.WEEK: 52,
             Type.DAY: 365
-            }.get(period_type, None)
+            }.get(duration, None)
 
 
 class Sequence:
