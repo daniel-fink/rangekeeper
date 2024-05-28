@@ -10,10 +10,8 @@ from . import projection as projection
 from . import span as span
 from . import segmentation as segmentation
 from . import space as space
-
 from . import dynamics as dynamics
-
-from . import models as models
+from . import formula as formula
 
 # Helper Methods:
 import functools
@@ -52,3 +50,4 @@ def rgba_from_cmap(cmap_name, start_val, stop_val, val):
     norm = mpl.colors.Normalize(vmin=start_val, vmax=stop_val)
     scalar_map = cm.ScalarMappable(norm=norm, cmap=cmap)
     return scalar_map.to_rgba(val)
+

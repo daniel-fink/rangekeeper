@@ -428,7 +428,7 @@ class Stream:
         floatfmt = "." + str(decimals) + "f"
 
         linebreak = os.linesep
-        name = 'Name: ' + self.name
+        name = 'Name: ' + self.name if self.name is not None else ''
         units = 'Units: ' + json.dumps({flow.name: flow.units.__str__() for flow in self.flows}, indent=4)
         flows = 'Flows: ' + linebreak + self._format_flows(decimals=decimals).to_markdown(
             tablefmt=tablefmt,

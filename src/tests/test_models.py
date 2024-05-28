@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 import rangekeeper as rk
+import tests
 
 # matplotlib.use('TkAgg')
 plt.style.use('seaborn-v0_8')  # pretty matplotlib plots
@@ -39,7 +40,7 @@ class TestLinear:
             'discount_rate': 0.07
             }
 
-        linear = rk.models.linear.Model(base_params)
+        linear = tests.models.linear.Model(base_params)
 
         linear.ncf_disposition.display()
         print(linear.operation_span)
@@ -71,7 +72,7 @@ class TestDeterministic:
             }
 
         # Run model with base parameters:
-        base = rk.models.deterministic.Model(base_params)
+        base = tests.models.deterministic.Model(base_params)
 
         base.pv_sums.display()
         assert base.pv_sums.movements.iloc[0] == 1000
@@ -81,14 +82,14 @@ class TestDeterministic:
         optimistic_params = base_params.copy()
         optimistic_params['initial_pgi'] = 110.
         optimistic_params['addl_pgi_per_period'] = 3.
-        optimistic = rk.models.deterministic.Model(optimistic_params)
+        optimistic = tests.models.deterministic.Model(optimistic_params)
         assert math.isclose(a=optimistic.pv_sums.movements.iloc[9], b=1294.08, rel_tol=.01)
 
         # Adjust the model to pessimistic parameters:
         pessimistic_params = base_params.copy()
         pessimistic_params['initial_pgi'] = 90.
         pessimistic_params['addl_pgi_per_period'] = -3.
-        pessimistic = rk.models.deterministic.Model(pessimistic_params)
+        pessimistic = tests.models.deterministic.Model(pessimistic_params)
         pessimistic.pv_sums.display()
         assert math.isclose(a=pessimistic.pv_sums.movements.iloc[9], b=705.92, rel_tol=.01)
 
@@ -121,7 +122,7 @@ class TestProbabilistic:
             'discount_rate': 0.07
             }
 
-        prob = rk.models.probabilistic.Model(base_params)
+        prob = tests.models.probabilistic.Model(base_params)
         prob.pv_sums.display()
         prob.investment_cashflows.display()
         prob.investment_cashflows.sum().display()
@@ -148,7 +149,7 @@ class TestFlexible:
             'discount_rate': 0.07
             }
 
-        flex = rk.models.flexible.Model(base_params)
+        flex = tests.models.flexible.Model(base_params)
         flex.pgi_factor.display()
         flex.disposition.display()
         flex.pv_ncf_agg.display()
