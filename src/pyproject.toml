@@ -26,6 +26,7 @@ plotly = "^5.22.0"
 mpld3 = "^0.5.10"
 pyarrow = "^16.1.0"
 aenum = "^3.1.15"
+numpy-financial = "^1.0.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^8.2.1"

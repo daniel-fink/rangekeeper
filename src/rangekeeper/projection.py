@@ -29,6 +29,9 @@ class Projection:
             self,
             sequence: pd.PeriodIndex,
             bounds: Tuple[pd.Period, pd.Period] = None):
+
+        if type(sequence) is not pd.PeriodIndex:
+            raise ValueError('Error: Sequence must be a PeriodIndex.')
         self.sequence = sequence
 
         if bounds is None:
@@ -41,14 +44,16 @@ class Projection:
             value: float,
             length: int,
             type: Optional[Padding]) -> np.ndarray:
-        if type == Padding.NIL:
+        if type is None:
+            return np.empty(shape=0)
+        elif type == Padding.NIL:
             return np.zeros(shape=length)
         elif type == Padding.UNITIZE:
             return np.ones(shape=length)
         elif type == Padding.EXTEND:
             return np.full(shape=length, fill_value=value)
-        elif type is None:
-            return np.empty(shape=0)
+        else:
+            raise ValueError('Error: Invalid padding type.')
 
 
 class Extrapolation(Projection):
@@ -78,25 +83,23 @@ class Extrapolation(Projection):
     def terms(self) -> pd.Series:
         terms = self.form.terms(
             sequence=rk.duration.Sequence.to_range_index(sequence=self.sequence))
-        left_length = self.sequence[0] - self.bounds[0]
-        right_length = self.bounds[1] - self.sequence[-1]
         left = self._pad(
             value=terms[0],
-            length=left_length.n,
+            length=pd.period_range(start=self.bounds[0], end=self.sequence[0]).size,
             type=self.padding[0])
         right = self._pad(
             value=terms[-1],
-            length=right_length.n,
+            length=pd.period_range(start=self.sequence[-1], end=self.bounds[1]).size,
             type=self.padding[1])
         data = np.concatenate((left, terms, right))
 
-        start = self.bounds[0].to_timestamp(how='start')
-        bound = self.bounds[1].to_timestamp(how='end')
+        # start = self.bounds[0] #.to_timestamp(how='start')
+        # bound = self.bounds[1] #.to_timestamp(how='end')
 
         sequence = rk.duration.Sequence.from_bounds(
-            include_start=start,
+            include_start=self.bounds[0].to_timestamp(),
             frequency=rk.duration.Type.from_value(self.sequence.freq),
-            bound=bound)
+            bound=self.bounds[1].to_timestamp())
 
         index = rk.duration.Sequence.to_datestamps(sequence=sequence)
 

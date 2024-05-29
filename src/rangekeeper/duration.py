@@ -285,7 +285,15 @@ class Sequence:
                 break
             else:
                 continue
-        return pd.RangeIndex(start=index_offset, stop=sequence.size + index_offset, step=1)
+
+        start = index_offset
+        stop = sequence.size + (index_offset if index_offset is not None else 0)
+        step = 1
+
+        return pd.RangeIndex(
+            start=start,
+            stop=stop,
+            step=step)
 
 
 class Span:
