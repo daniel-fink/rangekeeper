@@ -2,6 +2,8 @@ import numpy as np
 from numba import jit
 import numba
 
+import pandas as pd
+
 import rangekeeper as rk
 
 
@@ -10,18 +12,28 @@ class Financial:
     @staticmethod
     def interest(
             amount: float,
-            rate_pa: float,
+            rate: float,
             balance: rk.flux.Flow,
-            frequency: rk.duration.Type) -> rk.flux.Flow:
+            frequency: rk.duration.Type,
+            capitalized: bool = False) -> rk.flux.Flow:
+        """
+        Calculate interest expense on a loan or other interest-bearing liability.
+        Make sure the rate is consistent with the frequency
+        """
+
+        balance = balance.resample(frequency=frequency)
 
         interest_amounts = rk.formula.Financial._calculate_interest(
             amount=np.float64(amount),
             balance=numba.typed.List(balance.movements.to_list()),
-            rate=np.float64(rate_pa / rk.duration.Period.yearly_count(frequency)))
+            rate=np.float64(rate),
+            capitalized=capitalized)
 
-        return rk.flux.Flow.from_dict(
+        return rk.flux.Flow(
             name='Interest Expense',
-            movements=dict(zip(balance.movements.index, interest_amounts)),
+            movements=pd.Series(
+                data=interest_amounts,
+                index=balance.movements.index),
             units=balance.units)
 
     @staticmethod
@@ -41,8 +53,9 @@ class Financial:
             rk.flux.Flow.from_sequence(
                 sequence=transactions.frame.index,
                 data=record,
-                units=transactions.sum().units)
-            for record in balance
+                units=transactions.sum().units,
+                name=name)
+            for record, name in zip(balance, ('Start Balance', 'End Balance'))
         ]
 
         return rk.flux.Stream(
@@ -67,7 +80,8 @@ class Financial:
     def _calculate_interest(
             amount: np.float64,
             balance: numba.typed.List,
-            rate: np.float64) -> numba.typed.List:
+            rate: np.float64,
+            capitalized: bool = False) -> numba.typed.List:
 
         utilized = numba.typed.List()
         interest = numba.typed.List()
@@ -75,9 +89,15 @@ class Financial:
 
         for i in range(len(balance)):
             utilized.append(amount - balance[i])
-            accrued_amount = 0 if i == 0 else accrued[-1]
-            interest_amount = 0 if np.isclose(utilized[i], 0) else (utilized[i] + accrued_amount) * rate
-            interest.append(interest_amount)
-            accrued.append(sum(interest))
+
+            if capitalized:
+                accrued_amount = 0 if i == 0 else accrued[-1]
+                interest_amount = 0 if np.isclose(utilized[i], 0) else (utilized[i] + accrued_amount) * rate
+                interest.append(interest_amount)
+                accrued.append(sum(interest))
+            else:
+                interest_amount = 0 if np.isclose(utilized[i], 0) else utilized[i] * rate
+                interest.append(interest_amount)
 
         return interest
+
