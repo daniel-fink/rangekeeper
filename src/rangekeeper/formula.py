@@ -1,3 +1,5 @@
+from typing import Callable
+
 import numpy as np
 from numba import jit
 import numba
@@ -35,6 +37,32 @@ class Financial:
                 data=interest_amounts,
                 index=balance.movements.index),
             units=balance.units)
+
+    @staticmethod
+    @numba.jit
+    def _calculate_interest(
+            amount: np.float64,
+            balance: numba.typed.List,
+            rate: np.float64,
+            capitalized: bool = False) -> numba.typed.List:
+
+        utilized = numba.typed.List()
+        interest = numba.typed.List()
+        accrued = numba.typed.List()
+
+        for i in range(len(balance)):
+            utilized.append(amount - balance[i])
+
+            if capitalized:
+                accrued_amount = 0 if i == 0 else accrued[-1]
+                interest_amount = 0 if np.isclose(utilized[i], 0) else (utilized[i] + accrued_amount) * rate
+                interest.append(interest_amount)
+                accrued.append(sum(interest))
+            else:
+                interest_amount = 0 if np.isclose(utilized[i], 0) else utilized[i] * rate
+                interest.append(interest_amount)
+
+        return interest
 
     @staticmethod
     def balance(
@@ -76,28 +104,20 @@ class Financial:
         return (start_balance[:-1], end_balance)
 
     @staticmethod
-    @numba.jit
-    def _calculate_interest(
-            amount: np.float64,
-            balance: numba.typed.List,
-            rate: np.float64,
-            capitalized: bool = False) -> numba.typed.List:
+    def solve_principal(
+            desired: float,
+            costing: Callable[[float, dict], float],
+            params: dict = None) -> float:
 
-        utilized = numba.typed.List()
-        interest = numba.typed.List()
-        accrued = numba.typed.List()
+        principal = desired
+        cost = costing(principal, params)
+        delta = not np.isclose(desired - (principal - cost), 0)
+        next = desired + cost
 
-        for i in range(len(balance)):
-            utilized.append(amount - balance[i])
+        while delta:
+            principal = next
+            cost = costing(principal, params)
+            delta = not np.isclose(desired - (principal - cost), 0)
+            next = desired + cost
 
-            if capitalized:
-                accrued_amount = 0 if i == 0 else accrued[-1]
-                interest_amount = 0 if np.isclose(utilized[i], 0) else (utilized[i] + accrued_amount) * rate
-                interest.append(interest_amount)
-                accrued.append(sum(interest))
-            else:
-                interest_amount = 0 if np.isclose(utilized[i], 0) else utilized[i] * rate
-                interest.append(interest_amount)
-
-        return interest
-
+        return principal
