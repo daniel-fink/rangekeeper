@@ -17,7 +17,7 @@ locale.setlocale(locale.LC_ALL, 'en_US')
 currency = rk.measure.register_currency(registry=rk.measure.Index.registry)
 
 
-class TestFormula:
+class TestFinancial:
     frequency = rk.duration.Type.YEAR
     loan_amount = 1000000
     interest_rate_pa = 0.05
@@ -31,32 +31,32 @@ class TestFormula:
     def test_compound_interest(self):
         draws = rk.flux.Flow.from_projection(
             name='Draws',
-            value=-TestFormula.loan_amount,
+            value=-TestFinancial.loan_amount,
             proj=rk.projection.Distribution(
                 form=rk.distribution.Uniform(),
                 sequence=rk.duration.Sequence.from_bounds(
-                    include_start=TestFormula.draws_span.start_date,
-                    frequency=TestFormula.frequency,
+                    include_start=TestFinancial.draws_span.start_date,
+                    frequency=TestFinancial.frequency,
                     bound=1),
-                bounds=(TestFormula.sequence[0], TestFormula.sequence[-1])
+                bounds=(TestFinancial.sequence[0], TestFinancial.sequence[-1])
             ),
             units=currency.units
         )
 
         balance = rk.formula.Financial.balance(
-            start_amount=TestFormula.loan_amount,
+            start_amount=TestFinancial.loan_amount,
             transactions=rk.flux.Stream(
                 name='Transactions',
                 flows=[draws],
-                frequency=TestFormula.frequency)
+                frequency=TestFinancial.frequency)
         )
 
         balance.display()
         interest = rk.formula.Financial.interest(
-            amount=TestFormula.loan_amount,
+            amount=TestFinancial.loan_amount,
             balance=balance.flows[-1],
-            rate=TestFormula.interest_rate_pa,
-            frequency=TestFormula.frequency,
+            rate=TestFinancial.interest_rate_pa,
+            frequency=TestFinancial.frequency,
             capitalized=True)
 
         interest.display()
@@ -68,16 +68,17 @@ class TestFormula:
     def test_amortized_interest(self):
         draws = rk.flux.Flow.from_projection(
             name='Draws',
-            value=-TestFormula.loan_amount,
+            value=-TestFinancial.loan_amount,
             proj=rk.projection.Distribution(
                 form=rk.distribution.Uniform(),
                 sequence=rk.duration.Sequence.from_bounds(
-                    include_start=TestFormula.draws_span.start_date,
-                    frequency=TestFormula.frequency,
+                    include_start=TestFinancial.draws_span.start_date,
+                    frequency=TestFinancial.frequency,
                     bound=1),
                 bounds=(
-                    TestFormula.draws_span.start_date.to_period(freq=rk.duration.Type.period(TestFormula.frequency)),
-                    TestFormula.draws_span.end_date.to_period(freq=rk.duration.Type.period(TestFormula.frequency))
+                    TestFinancial.draws_span.start_date.to_period(
+                        freq=rk.duration.Type.period(TestFinancial.frequency)),
+                    TestFinancial.draws_span.end_date.to_period(freq=rk.duration.Type.period(TestFinancial.frequency))
                 )
             ),
             units=currency.units
@@ -87,29 +88,29 @@ class TestFormula:
             name='Payments',
             movements=pd.Series(
                 data=npf.ppmt(
-                    rate=TestFormula.interest_rate_pa,
-                    per=np.arange(1, TestFormula.sequence.size + 1),
-                    nper=TestFormula.sequence.size,
-                    pv=TestFormula.loan_amount),
-                index=TestFormula.sequence.to_timestamp()),
+                    rate=TestFinancial.interest_rate_pa,
+                    per=np.arange(1, TestFinancial.sequence.size + 1),
+                    nper=TestFinancial.sequence.size,
+                    pv=TestFinancial.loan_amount),
+                index=TestFinancial.sequence.to_timestamp()),
             units=currency.units
         ).invert()
         payments.display()
 
         balance = rk.formula.Financial.balance(
-            start_amount=TestFormula.loan_amount,
+            start_amount=TestFinancial.loan_amount,
             transactions=rk.flux.Stream(
                 name='Transactions',
                 flows=[draws, payments],
-                frequency=TestFormula.frequency)
+                frequency=TestFinancial.frequency)
         )
         balance.display()
 
         interest = rk.formula.Financial.interest(
-            amount=TestFormula.loan_amount,
+            amount=TestFinancial.loan_amount,
             balance=balance.flows[-1],
-            rate=TestFormula.interest_rate_pa,
-            frequency=TestFormula.frequency)
+            rate=TestFinancial.interest_rate_pa,
+            frequency=TestFinancial.frequency)
 
         interest.display()
         print(interest.movements.sum())
@@ -166,3 +167,15 @@ class TestFormula:
         interest_flow.display()
         print(draws.movements.sum())
         print(payments.movements.sum())
+
+    def test_solve_principal(self):
+        def simple_interest(params):
+            return principal * params['rate']
+
+        params = {'rate': 0.05}
+
+        principal = rk.formula.Financial.solve_principal(
+            desired=1000000,
+            costing=simple_interest(params=params),
+        )
+        print(principal)
