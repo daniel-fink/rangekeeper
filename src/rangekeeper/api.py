@@ -17,7 +17,7 @@ class Speckle:
     def __init__(
             self,
             token: str,
-            host: str = "speckle.xyz"):
+            host: str = "app.speckle.systems"):
         self.client = client.SpeckleClient(host=host)
         account = credentials.get_account_from_token(token, host)
         self.client.authenticate_with_account(account)

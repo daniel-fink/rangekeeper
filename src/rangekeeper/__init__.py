@@ -12,6 +12,7 @@ from . import segmentation as segmentation
 from . import space as space
 from . import dynamics as dynamics
 from . import formula as formula
+from . import format as format
 
 # Helper Methods:
 import functools

@@ -30,10 +30,8 @@ import rangekeeper as rk
 
 
 class TestApi:
-    stream_id = "f5e306e3fa"
-    speckle = rk.api.Speckle(
-        host="speckle.xyz",
-        token=os.getenv('SPECKLE_TOKEN'))
+    stream_id = "c0f66c35e3"
+    speckle = rk.api.Speckle(token=os.getenv('SPECKLE_TOKEN'))
     model = speckle.get_commit(stream_id=stream_id)
 
     def test_connection(self):

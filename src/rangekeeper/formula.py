@@ -1,10 +1,10 @@
-from typing import Callable
+from typing import Callable, Optional
 
 import numpy as np
 from numba import jit
 import numba
-
 import pandas as pd
+import scipy.optimize as opt
 
 import rangekeeper as rk
 
@@ -13,111 +13,135 @@ class Financial:
 
     @staticmethod
     def interest(
-            amount: float,
             rate: float,
-            balance: rk.flux.Flow,
+            transactions: rk.flux.Flow,
             frequency: rk.duration.Type,
-            capitalized: bool = False) -> rk.flux.Flow:
+            capitalized: bool = False) -> (rk.flux.Stream, rk.flux.Flow):
         """
-        Calculate interest expense on a loan or other interest-bearing liability.
-        Make sure the rate is consistent with the frequency
+        Calculate interest expense on a loan or other interest-bearing liability,
+        described by a series of transactions.
+        Assumes interest is compounded on a positive, outstanding balance per period
+        (i.e. draws are positive, payments are negative).
+        Make sure the rate is consistent with the frequency.
         """
 
-        balance = balance.resample(frequency=frequency)
+        transactions = transactions.resample(frequency=frequency)
 
-        interest_amounts = rk.formula.Financial._calculate_interest(
-            amount=np.float64(amount),
-            balance=numba.typed.List(balance.movements.to_list()),
+        startings, endings, interests = rk.formula.Financial._calc_interest(
+            transactions=numba.typed.List(transactions.movements.to_list()),
             rate=np.float64(rate),
             capitalized=capitalized)
 
-        return rk.flux.Flow(
-            name='Interest Expense',
-            movements=pd.Series(
-                data=interest_amounts,
-                index=balance.movements.index),
-            units=balance.units)
+        balance = rk.flux.Stream(
+            name='Balance',
+            flows=[
+                rk.flux.Flow(
+                    movements=pd.Series(startings, index=transactions.movements.index),
+                    units=transactions.units,
+                    name='Start Balance'),
+                rk.flux.Flow(
+                    movements=pd.Series(endings, index=transactions.movements.index),
+                    units=transactions.units,
+                    name='End Balance')
+            ],
+            frequency=frequency)
+
+        interest = rk.flux.Flow(
+            movements=pd.Series(interests, index=transactions.movements.index),
+            units=transactions.units,
+            name='Interest')
+
+        return (balance, interest)
+
 
     @staticmethod
     @numba.jit
-    def _calculate_interest(
-            amount: np.float64,
-            balance: numba.typed.List,
+    def _calc_interest(
+            transactions: numba.typed.List,
             rate: np.float64,
-            capitalized: bool = False) -> numba.typed.List:
+            capitalized: bool = False) -> (numba.typed.List, numba.typed.List, numba.typed.List):
 
-        utilized = numba.typed.List()
-        interest = numba.typed.List()
-        accrued = numba.typed.List()
+        startings = numba.typed.List.empty_list(numba.float64)
+        endings = numba.typed.List.empty_list(numba.float64)
+        interests = numba.typed.List.empty_list(numba.float64)
 
-        for i in range(len(balance)):
-            utilized.append(amount - balance[i])
-
-            if capitalized:
-                accrued_amount = 0 if i == 0 else accrued[-1]
-                interest_amount = 0 if np.isclose(utilized[i], 0) else (utilized[i] + accrued_amount) * rate
-                interest.append(interest_amount)
-                accrued.append(sum(interest))
+        for i in range(len(transactions)):
+            if i == 0:
+                startings.append(0)
             else:
-                interest_amount = 0 if np.isclose(utilized[i], 0) else utilized[i] * rate
-                interest.append(interest_amount)
+                startings.append(endings[-1])
+            principal = startings[i] + transactions[i]
+            if capitalized:
+                interest = (principal * rate) / (1 - rate) if principal > 0 else 0 # Since we are capitalizing interest, the interest amount (draw) must include interest to pay on the principal. Derived from i = r * (P + i)
+                endings.append(principal + interest)
+            else:
+                interest = principal * rate if principal > 0 else 0
+                endings.append(principal + interest)
+            interests.append(interest)
 
-        return interest
+        return (startings, endings, interests)
+
 
     @staticmethod
     def balance(
-            start_amount: float,
-            transactions: rk.flux.Stream,
-            name: str = None) -> rk.flux.Stream:
+            starting: float,
+            transactions: rk.flux.Flow,
+            frequency: rk.duration.Type,
+            name: str = None) -> rk.flux.Stream:#, rk.flux.Flow):
+        """
+        Calculate the balance of a financial account given a starting balance and a series of transactions.
+        """
 
-        start_balance = numba.typed.List([np.float64(start_amount)])
-        transaction_amounts = numba.typed.List(transactions.sum().movements.to_list())
+        starting = numba.typed.List([np.float64(starting)])
+        transaction_amounts = numba.typed.List(transactions.movements.to_list())
 
         balance = rk.formula.Financial._calculate_balance(
-            start_balance=start_balance,
+            starting=starting,
             transactions=transaction_amounts)
 
-        balance_flows = [
-            rk.flux.Flow.from_sequence(
-                sequence=transactions.frame.index,
-                data=record,
-                units=transactions.sum().units,
+        flows = [
+            rk.flux.Flow(
+                movements=pd.Series(record, index=transactions.movements.index),
+                units=transactions.units,
                 name=name)
             for record, name in zip(balance, ('Start Balance', 'End Balance'))
         ]
 
-        return rk.flux.Stream(
+        statement = rk.flux.Stream(
             name=name,
-            flows=balance_flows,
-            frequency=transactions.frequency)
+            flows=flows,
+            frequency=frequency)
+
+        return statement
 
     @staticmethod
     @numba.jit
     def _calculate_balance(
-            start_balance: numba.typed.List,
-            transactions: numba.typed.List) -> numba.typed.List:
+            starting: numba.typed.List,
+            transactions: numba.typed.List) -> (numba.typed.List, numba.typed.List):
 
-        end_balance = numba.typed.List()
+        ending = numba.typed.List.empty_list(numba.float64)
         for i in range(len(transactions)):
-            end_balance.append(start_balance[-1] + transactions[i])
-            start_balance.append(end_balance[-1])
-        return (start_balance[:-1], end_balance)
+            ending.append(float(starting[-1] + transactions[i]))
+            starting.append(ending[-1])
+        return (starting[:-1], ending)
 
     @staticmethod
-    def solve_principal(
-            desired: float,
-            costing: Callable[[float, dict], float],
-            params: dict = None) -> float:
+    def overdraft(
+            balance: rk.flux.Stream,
+            name: str = None) -> rk.flux.Flow:
+        """
+        Identifies the portion of transactions occurring while the balance is negative.
+        """
+        if len(balance.flows) != 2:
+            raise ValueError('Balance must be Stream with two flows; Start and End.')
+        if balance.flows[0].units != balance.flows[1].units:
+            raise ValueError('Units of the Start and End Flows must be the same.')
 
-        principal = desired
-        cost = costing(principal, params)
-        delta = not np.isclose(desired - (principal - cost), 0)
-        next = desired + cost
+        starts = balance.flows[0].movements.where(balance.flows[0].movements < 0).fillna(0)
+        ends = balance.flows[1].movements.where(balance.flows[1].movements < 0).fillna(0)
 
-        while delta:
-            principal = next
-            cost = costing(principal, params)
-            delta = not np.isclose(desired - (principal - cost), 0)
-            next = desired + cost
-
-        return principal
+        return rk.flux.Flow(
+            movements=ends - starts,
+            units=balance.flows[0].units,
+            name='Overdraft' if name is None else name)

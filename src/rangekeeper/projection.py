@@ -66,6 +66,10 @@ class Extrapolation(Projection):
             sequence: pd.PeriodIndex,
             bounds: Tuple[pd.Period, pd.Period] = None,
             padding: Tuple[Padding, Padding] = None):
+        """
+        Initialize an Extrapolation projection with a specified form over a sequence.
+        Note: optional bounds are inclusive.
+        """
         super().__init__(
             sequence=sequence,
             bounds=bounds)
@@ -91,10 +95,7 @@ class Extrapolation(Projection):
             value=terms[-1],
             length=pd.period_range(start=self.sequence[-1], end=self.bounds[1]).size,
             type=self.padding[1])
-        data = np.concatenate((left, terms, right))
-
-        # start = self.bounds[0] #.to_timestamp(how='start')
-        # bound = self.bounds[1] #.to_timestamp(how='end')
+        data = np.concatenate((left[:-1], terms, right[1:])) # Exclude last item from left and first item from right as we included them in padding length.
 
         sequence = rk.duration.Sequence.from_bounds(
             include_start=self.bounds[0].to_timestamp(),
