@@ -47,7 +47,7 @@ class TestDistribution:
             start=0,
             stop=12,
             step=1
-            ))
+        ))
         # exp_densities = exp_dist.density(parameters=TestDistribution.parameters)
         # exp_cumulative = exp_dist.cumulative_density(parameters=TestDistribution.parameters)
 
@@ -64,6 +64,16 @@ class TestDistribution:
         assert sum(pert_values) == 1.0
 
         # print(pert_value)
+
+
+class TestDuration:
+    def test_offset(self):
+        date = pd.Timestamp(2020, 2, 29)
+        offset_eom = rk.duration.offset(
+            date=date,
+            duration=rk.duration.Type.MONTH,
+            amount=3)
+        assert offset_eom == pd.Timestamp(2020, 5, 31)
 
 
 class TestPeriod:
@@ -269,7 +279,7 @@ class TestStream:
                 include_start=pd.Timestamp(2020, 1, 31),
                 bound=pd.Timestamp(2022, 1, 1),
                 frequency=rk.duration.Type.YEAR),
-            ),
+        ),
         units=currency.units)
 
     flow2 = rk.flux.Flow.from_projection(
@@ -424,22 +434,22 @@ class TestSegmentation:
                  rk.segmentation.Characteristic.tenure: 'Mixed',
                  rk.segmentation.Characteristic.use: 'Parking',
                  rk.segmentation.Characteristic.span: 1
-                 }, 0.5),
+             }, 0.5),
             ('Retail',
              {
                  rk.segmentation.Characteristic.type: 'Podium',
                  rk.segmentation.Characteristic.tenure: 'Mixed',
                  rk.segmentation.Characteristic.use: 'Retail',
                  rk.segmentation.Characteristic.span: 2
-                 }, 0.25),
+             }, 0.25),
             ('boh',
              {
                  rk.segmentation.Characteristic.type: 'Podium',
                  rk.segmentation.Characteristic.tenure: 'Mixed',
                  rk.segmentation.Characteristic.use: 'BOH',
                  rk.segmentation.Characteristic.span: 2
-                 }, 0.25)
-            ])
+             }, 0.25)
+        ])
 
         podium.display_children()
 
@@ -455,7 +465,7 @@ class TestType:
     child.add_subtypes([
         rk.segmentation.Type(name='grandchild01'),
         rk.segmentation.Type(name='grandchild02')
-        ])
+    ])
     grandparent = rk.segmentation.Type(name='grandparent')
     grandparent.add_subtypes([parent])
 

@@ -130,26 +130,48 @@ def offset(
         duration: Type = Type.DAY,
         amount: int = 1) -> pd.Timestamp:
     """
-    Offsets a date by an amount of durations
+    Offsets a date by an amount of durations.
+    Assumes offsets on end-of-month dates will return end-of-month dates.
     """
-    if duration.value == Type.DECADE.value:
-        return date + pd.DateOffset(years=10 * amount)
-    elif duration.value == Type.SEMIDECADE.value:
-        return date + pd.DateOffset(years=5 * amount)
-    elif duration.value == Type.BIENNIUM.value:
-        return date + pd.DateOffset(years=2 * amount)
-    elif duration.value == Type.YEAR.value:
-        return date + pd.DateOffset(years=amount)
-    elif duration.value == Type.SEMIYEAR.value:
-        return date + pd.DateOffset(months=6 * amount)
-    elif duration.value == Type.QUARTER.value:
-        return date + pd.DateOffset(months=3 * amount)
-    elif duration.value == Type.MONTH.value:
-        return date + pd.DateOffset(months=amount)
-    elif duration.value == Type.WEEK.value:
-        return date + pd.DateOffset(weeks=amount)
-    elif duration.value == Type.DAY.value:
-        return date + pd.DateOffset(days=amount)
+    if date.is_month_end:
+        if duration.value == Type.DECADE.value:
+            return date + pd.offsets.MonthEnd(120 * amount)
+        elif duration.value == Type.SEMIDECADE.value:
+            return date + pd.offsets.MonthEnd(60 * amount)
+        elif duration.value == Type.BIENNIUM.value:
+            return date + pd.offsets.MonthEnd(24 * amount)
+        elif duration.value == Type.YEAR.value:
+            return date + pd.offsets.MonthEnd(12 * amount)
+        elif duration.value == Type.SEMIYEAR.value:
+            return date + pd.offsets.MonthEnd(6 * amount)
+        elif duration.value == Type.QUARTER.value:
+            return date + pd.offsets.MonthEnd(3 * amount)
+        elif duration.value == Type.MONTH.value:
+            return date + pd.offsets.MonthEnd(amount)
+        elif duration.value == Type.WEEK.value:
+            return date + pd.DateOffset(weeks=amount)
+        elif duration.value == Type.DAY.value:
+            return date + pd.DateOffset(days=amount)
+
+    else:
+        if duration.value == Type.DECADE.value:
+            return date + pd.DateOffset(years=10 * amount)
+        elif duration.value == Type.SEMIDECADE.value:
+            return date + pd.DateOffset(years=5 * amount)
+        elif duration.value == Type.BIENNIUM.value:
+            return date + pd.DateOffset(years=2 * amount)
+        elif duration.value == Type.YEAR.value:
+            return date + pd.DateOffset(years=amount)
+        elif duration.value == Type.SEMIYEAR.value:
+            return date + pd.DateOffset(months=6 * amount)
+        elif duration.value == Type.QUARTER.value:
+            return date + pd.DateOffset(months=3 * amount)
+        elif duration.value == Type.MONTH.value:
+            return date + pd.DateOffset(months=amount)
+        elif duration.value == Type.WEEK.value:
+            return date + pd.DateOffset(weeks=amount)
+        elif duration.value == Type.DAY.value:
+            return date + pd.DateOffset(days=amount)
 
 
 class Period:
