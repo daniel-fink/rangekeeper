@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "Rangekeeper"
-version = "0.6.6-alpha"
-description = "A Python library assisting financial modelling in scenario planning, decision-making, cashflow forecasting, and the like"
+version = "0.7-alpha"
+description = "A Python library assisting financial modelling in real estate asset & development planning, decision-making, cashflow forecasting, and scenario analysis."
 authors = ["Daniel Fink <danfink@mit.edu>"]
 license = "MPL-2.0"
 readme = "README.md"
@@ -24,7 +24,7 @@ seaborn = "^0.13"
 pyvis = "^0.3"
 plotly = "^5.22"
 mpld3 = "^0.5"
-pyarrow = "^16.1"
+pyarrow = "^17.0"
 aenum = "^3.1"
 numpy-financial = "^1.0"
 

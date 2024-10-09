@@ -84,9 +84,10 @@ class Flow:
             raise ValueError('Error: Units must be of type pint.Unit')
 
     def __str__(self):
-        return str(_format_series(
+        return os.linesep + str(_format_series(
             series=self.movements,
-            units=self.units))
+            units=self.units)
+        )
 
     def _repr_html_(self):
         return _format_series(
@@ -112,10 +113,9 @@ class Flow:
             self,
             tablefmt: str = 'github',
             decimals: int = 2):
-        linebreak = os.linesep
         name = 'Name: ' + self.name
         units = 'Units: ' + str(self.units)
-        movements = 'Movements: ' + linebreak + _format_series(
+        movements = 'Movements: ' + os.linesep + _format_series(
             series=self.movements,
             units=self.units,
             decimals=decimals).to_markdown(
@@ -124,7 +124,7 @@ class Flow:
             tablefmt=tablefmt,
             floatfmt='.' + str(decimals) + 'f')
 
-        print(linebreak.join([name, units, movements, os.linesep]))
+        print(os.linesep + os.linesep.join([name, units, movements]))
         # print(self._format(decimals=decimals) + os.linesep)
 
     def plot(
@@ -251,6 +251,9 @@ class Flow:
             units=self.units)
 
     def total(self) -> np.float64:
+        """
+        Returns the value of the collapsed (summed) Flow's movements
+        """
         return self.collapse().movements[0]
 
     def pv(
@@ -351,18 +354,17 @@ class Stream:
     frame: pd.DataFrame
 
     """
-    A `Stream` collects flow (constituent) Flows
-    and resamples them with a specified frequency.
+    A `Stream` collects constituent Flows and resamples them with a specified frequency.
     """
 
     def __init__(
             self,
-            name: str,
             flows: [Flow],
-            frequency: rk.duration.Type):
+            frequency: rk.duration.Type,
+            name: str = None):
 
         # Name:
-        self.name = name
+        self.name = name if name is not None else 'Unnamed'
 
         # Units:
         # if all(flow.units == flows[0].units for flow in flows):
@@ -396,7 +398,7 @@ class Stream:
         """
 
     def __str__(self):
-        return str(self._format_flows())
+        return os.linesep + str(self._format_flows())
 
     def _repr_html_(self):
         return self._format_flows().to_markdown(
@@ -427,16 +429,15 @@ class Stream:
 
         floatfmt = "." + str(decimals) + "f"
 
-        linebreak = os.linesep
         name = 'Name: ' + self.name if self.name is not None else ''
         units = 'Units: ' + json.dumps({flow.name: flow.units.__str__() for flow in self.flows}, indent=4)
-        flows = 'Flows: ' + linebreak + self._format_flows(decimals=decimals).to_markdown(
+        flows = 'Flows: ' + os.linesep + self._format_flows(decimals=decimals).to_markdown(
             tablefmt=tablefmt,
             stralign="right",
             numalign="right",
             floatfmt=floatfmt)
 
-        print(linebreak.join([name, units, flows, os.linesep]))
+        print(os.linesep + os.linesep.join([name, units, flows]))
 
     # def display(
     #         self,
