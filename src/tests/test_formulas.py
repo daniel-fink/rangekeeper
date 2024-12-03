@@ -93,7 +93,7 @@ class Model:
                 ],
                 frequency=self.params['frequency']).sum(),
             frequency=self.params['frequency'],
-            capitalized=True)
+            instrument=rk.formula.Financial.Instrument.CAPITALIZED)
 
 
 class TestFinancial:
