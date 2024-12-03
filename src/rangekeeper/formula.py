@@ -1,5 +1,5 @@
 from typing import Callable, Optional
-
+import enum
 import numpy as np
 from numba import jit
 import numba
@@ -11,12 +11,19 @@ import rangekeeper as rk
 
 class Financial:
 
+    class Instrument(enum.Enum):
+        INTEREST_ONLY = 'interest_only'
+        COMPOUND = 'compound'
+        CAPITALIZED = 'capitalized'
+
+
     @staticmethod
     def interest(
-            rate: float,
+            rate: float | rk.flux.Flow,
             transactions: rk.flux.Flow,
             frequency: rk.duration.Type,
-            capitalized: bool = False) -> (rk.flux.Stream, rk.flux.Flow):
+            # capitalized: bool = False)\
+            instrument: Instrument = Instrument.COMPOUND) -> (rk.flux.Stream, rk.flux.Flow):
         """
         Calculate interest expense on a loan or other interest-bearing liability,
         described by a series of transactions.
@@ -27,10 +34,23 @@ class Financial:
 
         transactions = transactions.resample(frequency=frequency)
 
+        if isinstance(rate, float):
+            rate = rk.flux.Flow.from_projection(
+                name='Interest Rates',
+                value=rate,
+                proj=rk.projection.Extrapolation(
+                    form=rk.extrapolation.Recurring(),
+                    sequence=rk.duration.Sequence.from_datestamps(
+                        datestamps=transactions.movements.index,
+                        frequency=frequency)))
+
+        if len(transactions.movements) != len(rate.movements):
+            raise ValueError('The number of transactions must match the number of rates.')
+
         startings, endings, interests = rk.formula.Financial._calc_interest(
             transactions=numba.typed.List(transactions.movements.to_list()),
-            rate=np.float64(rate),
-            capitalized=capitalized)
+            rates=numba.typed.List(rate.movements.to_list()),
+            instrument=instrument.value)
 
         balance = rk.flux.Stream(
             name='Balance',
@@ -58,8 +78,8 @@ class Financial:
     @numba.jit
     def _calc_interest(
             transactions: numba.typed.List,
-            rate: np.float64,
-            capitalized: bool = False) -> (numba.typed.List, numba.typed.List, numba.typed.List):
+            rates: numba.typed.List,
+            instrument: str) -> (numba.typed.List, numba.typed.List, numba.typed.List):
 
         startings = numba.typed.List.empty_list(numba.float64)
         endings = numba.typed.List.empty_list(numba.float64)
@@ -70,13 +90,24 @@ class Financial:
                 startings.append(0)
             else:
                 startings.append(endings[-1])
+
             principal = startings[i] + transactions[i]
-            if capitalized:
-                interest = (principal * rate) / (1 - rate) if principal > 0 else 0 # Since we are capitalizing interest, the interest amount (draw) must include interest to pay on the principal. Derived from i = r * (P + i)
+            if instrument == 'interest_only':
+                interest = principal * rates[i] if principal > 0 else 0
+                endings.append(principal)
+
+            elif instrument == 'compound':
+                interest = principal * rates[i] if principal > 0 else 0
                 endings.append(principal + interest)
+
+            elif instrument == 'capitalized':
+                interest = (principal * rates[i]) / (1 - rates[i]) if principal > 0 else 0 # Since we are capitalizing
+                # interest, the interest amount (draw) must include interest to pay on the principal. Derived from i = r * (P + i)
+                endings.append(principal + interest)
+
             else:
-                interest = principal * rate if principal > 0 else 0
-                endings.append(principal + interest)
+                raise ValueError(f'Invalid instrument: {instrument}')
+
             interests.append(interest)
 
         return (startings, endings, interests)
@@ -87,7 +118,7 @@ class Financial:
             starting: float,
             transactions: rk.flux.Flow,
             frequency: rk.duration.Type,
-            name: str = None) -> rk.flux.Stream:#, rk.flux.Flow):
+            name: str = None) -> rk.flux.Stream:
         """
         Calculate the balance of a financial account given a starting balance and a series of transactions.
         """

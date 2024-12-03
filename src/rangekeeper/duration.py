@@ -214,6 +214,15 @@ class Period:
 
 class Sequence:
     @staticmethod
+    def from_datestamps(
+            datestamps: pd.DatetimeIndex,
+            frequency: Type) -> pd.PeriodIndex:
+        """
+        Returns a pd.PeriodIndex from a pd.DatetimeIndex with Datetimes being Dates
+        """
+        return datestamps.to_period(freq=Type.period(frequency))
+
+    @staticmethod
     def from_bounds(
             include_start: pd.Timestamp,
             frequency: Type,
