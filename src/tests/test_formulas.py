@@ -157,7 +157,7 @@ class TestFinancial:
             rate=self.params['interest_rate_pa'] / rk.duration.Period.yearly_count((self.params['frequency'])),
             transactions=self.model.draws.sum().invert(),
             frequency=self.params['frequency'],
-            capitalized=True)
+            instrument=rk.formula.Financial.Instrument.CAPITALIZED)
         assert balance.flows[-1].movements.iloc[-1] == approx(510577.82)
         assert interest.total() == approx(10577.82)
 
@@ -175,7 +175,7 @@ class TestFinancial:
             rate=self.params['interest_rate_pa'] / rk.duration.Period.yearly_count((self.params['frequency'])),
             transactions=transactions.sum(),
             frequency=self.params['frequency'],
-            capitalized=True)
+            instrument=rk.formula.Financial.Instrument.CAPITALIZED)
         assert balance.flows[-1].movements.iloc[-1] == approx(-488680.57)
         assert interest.total() == approx(11319.43)
 
@@ -210,7 +210,7 @@ class TestFinancial:
                 ],
                 frequency=self.params['frequency']).sum(),
             frequency=self.params['frequency'],
-            capitalized=True)
+            instrument=rk.formula.Financial.Instrument.CAPITALIZED)
         loan.display()
         interest.display()
         print(interest.total())
