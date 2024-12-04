@@ -11,41 +11,43 @@ import pandas as pd
 
 
 class Type(enum.Enum):
-    DECADE = '10YE'
-    SEMIDECADE = '5YE'
-    BIENNIUM = '2YE'
-    YEAR = 'YE'
-    SEMIYEAR = '6ME'
-    QUARTER = 'QE'
-    MONTH = 'ME'
-    SEMIMONTH = 'SME'
+    DECADE = '10Y'
+    SEMIDECADE = '5Y'
+    BIENNIUM = '2Y'
+    YEAR = 'Y'
+    SEMIYEAR = '6M'
+    QUARTER = 'Q'
+    MONTH = 'M'
+    SEMIMONTH = 'SM'
     WEEK = 'W'
     DAY = 'D'
 
-    @staticmethod
+    @staticmethod # Possibly dealing with pandas > 2.2 changes
     def from_value(value: str):
-        if value == '10YE':
+        if value == '10Y':
             return Type.DECADE
-        if value == '5YE':
+        if value == '5Y':
             return Type.SEMIDECADE
-        if value == '2YE':
+        if value == '2Y':
             return Type.BIENNIUM
-        if value == 'YE':
+        if value == 'Y' or value == 'Y-DEC' or value == 'A-DEC':
             return Type.YEAR
-        if value == '6ME':
+        if value == '6M':
             return Type.SEMIYEAR
-        if value == 'QE':
+        if value == 'Q':
             return Type.QUARTER
-        if value == 'ME':
+        if value == 'M':
             return Type.MONTH
-        if value == 'SME':
+        if value == 'SM':
             return Type.SEMIMONTH
-        if value == 'W':
+        if value == 'W-SUN' or value == 'W':
             return Type.WEEK
         if value == 'D':
             return Type.DAY
+        else:
+            raise ValueError('Unsupported period type: {0}'.format(value))
 
-    @staticmethod
+    @staticmethod # Possibly dealing with pandas > 2.2 changes
     def period(type: Type):
         if type == Type.DECADE:
             return '10Y'
@@ -67,6 +69,8 @@ class Type(enum.Enum):
             return 'W'
         if type == Type.DAY:
             return 'D'
+        else:
+            raise ValueError('Unsupported period type: {0}'.format(type))
 
 
 def measure(
