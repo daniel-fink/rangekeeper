@@ -296,7 +296,7 @@ class Flow:
         Returns a Flow with movements summed to specified frequency of dates
         """
         return rk.flux.Flow(
-            movements=self.movements.copy(deep=True).resample(rule=frequency.value).sum(),
+            movements=self.movements.copy(deep=True).resample(rule=rk.duration.Type.period(frequency)).sum(),
             units=self.units,
             name=self.name)
 
@@ -445,7 +445,7 @@ class Stream:
     #     format = self._format(decimals=decimals)
     #     print(format + os.linesep)
 
-    def __iadd__(self, other):
+    def __add__(self, other):
         flows = self.flows
         if isinstance(other, Flow):
             flows.append(other)
@@ -457,6 +457,7 @@ class Stream:
             name=self.name,
             flows=flows,
             frequency=self.frequency)
+
 
     def is_homogeneous(self) -> bool:
         return len(list(set(list(self.units.values())))) == 1

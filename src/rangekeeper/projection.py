@@ -99,7 +99,7 @@ class Extrapolation(Projection):
 
         sequence = rk.duration.Sequence.from_bounds(
             include_start=self.bounds[0].to_timestamp(),
-            frequency=rk.duration.Type.from_value(self.sequence.freq),
+            frequency=rk.duration.Type.from_value(self.sequence.freqstr),
             bound=self.bounds[1].to_timestamp())
 
         index = rk.duration.Sequence.to_datestamps(sequence=sequence)
@@ -162,7 +162,7 @@ class Distribution(Projection):
             index=rk.duration.Sequence.to_datestamps(
                 rk.duration.Sequence.from_bounds(
                     include_start=self.bounds[0].to_timestamp(),
-                    frequency=rk.duration.Type.from_value(self.sequence.freq),
+                    frequency=rk.duration.Type.from_value(self.sequence.freqstr),
                     bound=self.bounds[1].to_timestamp())))
 
     def cumulative_density(self) -> [float]:

@@ -310,7 +310,7 @@ class TestStream:
 
         assert TestStream.stream.sum().movements.index.size == 24 + 10  # Two full years plus March-Dec inclusive
         assert TestStream.stream.frame['weekly_flow'].sum() == -50
-        assert TestStream.stream.frame.index.freq == 'ME'
+        assert TestStream.stream.frame.index.freqstr == 'M'
 
         product = TestStream.stream.product(
             name="product",
@@ -350,7 +350,7 @@ class TestStream:
         duplicate = TestStream.stream.duplicate()
         assert duplicate.name == "stream"
         assert len(duplicate.flows) == 2
-        assert duplicate.frame.index.freq == 'ME'
+        assert duplicate.frame.index.freqstr == 'M'
 
     def test_stream_stream(self):
         collapse = TestStream.stream.collapse()
