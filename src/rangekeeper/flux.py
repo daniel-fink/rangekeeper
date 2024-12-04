@@ -684,8 +684,10 @@ class Stream:
                 json.dumps(
                     {flow.name: flow.units.__str__() for flow in self.flows}, indent=4)))
         else:
-            return Flow(
-                movements=self.frame.min(axis=1),
+            name=name if name is not None else self.name + ' (min)'
+            return Flow.from_sequence(
+                sequence=self.frame.index,
+                data=self.frame.min(axis=1).to_list(),
                 units=next(iter(self.units.values())),
                 name=name)
 
@@ -700,8 +702,10 @@ class Stream:
                 json.dumps(
                     {flow.name: flow.units.__str__() for flow in self.flows}, indent=4)))
         else:
-            return Flow(
-                movements=self.frame.max(axis=1),
+            name=name if name is not None else self.name + ' (max)'
+            return Flow.from_sequence(
+                sequence=self.frame.index,
+                data=self.frame.max(axis=1).to_list(),
                 units=next(iter(self.units.values())),
                 name=name)
 
