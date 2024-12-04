@@ -458,6 +458,9 @@ class Stream:
             flows=flows,
             frequency=self.frequency)
 
+    def is_homogeneous(self) -> bool:
+        return len(list(set(list(self.units.values())))) == 1
+
     def duplicate(self) -> Stream:
         return self.__class__(
             name=self.name,
@@ -669,6 +672,38 @@ class Stream:
             sequence=self.frame.index,  # .to_period(),
             data=self.frame.prod(axis=1).to_list(),
             units=reduced_units)
+
+    def min(
+            self,
+            name):
+        """
+        Returns a Flow whose movements are the minimum of the Stream's flows by period
+        """
+        if not self.is_homogeneous():
+            raise ValueError("Error: minimum requires all flows' units to be the same. Units: {0}".format(
+                json.dumps(
+                    {flow.name: flow.units.__str__() for flow in self.flows}, indent=4)))
+        else:
+            return Flow(
+                movements=self.frame.min(axis=1),
+                units=next(iter(self.units.values())),
+                name=name)
+
+    def max(
+            self,
+            name):
+        """
+        Returns a Flow whose movements are the maximum of the Stream's flows by period
+        """
+        if not self.is_homogeneous():
+            raise ValueError("Error: maximum requires all flows' units to be the same. Units: {0}".format(
+                json.dumps(
+                    {flow.name: flow.units.__str__() for flow in self.flows}, indent=4)))
+        else:
+            return Flow(
+                movements=self.frame.max(axis=1),
+                units=next(iter(self.units.values())),
+                name=name)
 
     def collapse(self) -> Stream:
         """
