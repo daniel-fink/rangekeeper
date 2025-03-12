@@ -76,15 +76,14 @@ class Model:
             units=currency.units)
 
     def init_finance(self):
-        self.equity = rk.formula.Financial.balance(
-            name='Equity',
+        self.equity = rk.formula.financial.Balance(
             starting=self.params['equity'],
             transactions=self.draws.sum(),
             frequency=self.params['frequency'])
 
-        self.overdraft = rk.formula.Financial.overdraft(self.equity)
+        self.overdraft = self.equity.overdraft()
 
-        self.loan, self.interest = rk.formula.Financial.interest(
+        self.interest = rk.formula.financial.Interest(
             rate=self.params['interest_rate_pa'] / rk.duration.Period.yearly_count((self.params['frequency'])),
             transactions=rk.flux.Stream(
                 flows=[
@@ -93,7 +92,7 @@ class Model:
                 ],
                 frequency=self.params['frequency']).sum(),
             frequency=self.params['frequency'],
-            instrument=rk.formula.Financial.Instrument.CAPITALIZED)
+            type=rk.formula.financial.Interest.Type.CAPITALIZED)
 
 
 class TestFinancial:
@@ -123,13 +122,13 @@ class TestFinancial:
             name='Transactions',
             data=np.insert(np.full(11, 0), 0,self.params['costs']),
             sequence=self.model.model_span.to_sequence(frequency=self.params['frequency']))
-        balance, interest = rk.formula.Financial.interest(
+        interest = rk.formula.financial.Interest(
             rate=self.params['interest_rate_pa'] / rk.duration.Period.yearly_count((self.params['frequency'])),
             transactions=transactions,
             frequency=self.params['frequency'])
 
-        assert balance.flows[-1].movements.iloc[-1] == approx(525580.95)
-        assert interest.total() == approx(25580.95)
+        assert interest.balance.endings.movements.iloc[-1] == approx(525580.95)
+        assert interest.amounts.total() == approx(25580.95)
 
     def test_amortized_interest(self):
         amount = -self.params['costs']
@@ -141,7 +140,7 @@ class TestFinancial:
             nper=sequence.size,
             pv=amount)
 
-        balance, interest = rk.formula.Financial.interest(
+        interest = rk.formula.financial.Interest(
             rate=rate,
             transactions=rk.flux.Flow.from_sequence(
                 name='Transactions',
@@ -149,19 +148,20 @@ class TestFinancial:
                 sequence=sequence),
             frequency=self.params['frequency'])
 
-        assert balance.flows[-1].movements.iloc[-1] == approx(513644.89)
-        assert interest.total() == approx(13644.89)
+        assert interest.balance.endings.movements.iloc[-1] == approx(513644.89)
+        assert interest.amounts.total() == approx(13644.89)
 
     def test_capitalized_interest(self):
-        balance, interest = rk.formula.Financial.interest(
+        interest = rk.formula.financial.Interest(
             rate=self.params['interest_rate_pa'] / rk.duration.Period.yearly_count((self.params['frequency'])),
             transactions=self.model.draws.sum().invert(),
             frequency=self.params['frequency'],
-            instrument=rk.formula.Financial.Instrument.CAPITALIZED)
-        assert balance.flows[-1].movements.iloc[-1] == approx(510577.82)
-        assert interest.total() == approx(10577.82)
+            type=rk.formula.financial.Interest.Type.CAPITALIZED)
+        assert interest.balance.endings.movements.iloc[-1] == approx(510577.82)
+        assert interest.amounts.total() == approx(10577.82)
 
-        balance.display()
+        interest.balance.startings.display()
+        interest.balance.endings.display()
 
     def test_balance(self):
         transactions = rk.flux.Stream(
@@ -171,16 +171,17 @@ class TestFinancial:
                 self.model.payments.invert()
             ],
             frequency=self.params['frequency'])
-        balance, interest = rk.formula.Financial.interest(
+        interest = rk.formula.financial.Interest(
             rate=self.params['interest_rate_pa'] / rk.duration.Period.yearly_count((self.params['frequency'])),
             transactions=transactions.sum(),
             frequency=self.params['frequency'],
-            instrument=rk.formula.Financial.Instrument.CAPITALIZED)
-        assert balance.flows[-1].movements.iloc[-1] == approx(-488680.57)
-        assert interest.total() == approx(11319.43)
+            type=rk.formula.financial.Interest.Type.CAPITALIZED)
+        assert interest.balance.endings.movements.iloc[-1] == approx(-488680.57)
+        assert interest.amounts.total() == approx(11319.43)
 
-        balance.display()
-        interest.display()
+        interest.balance.startings.display()
+        interest.balance.endings.display()
+        interest.amounts.display()
 
     def test_balances(self):
         transactions = rk.flux.Stream(
@@ -189,19 +190,19 @@ class TestFinancial:
                 self.model.draws.sum().invert(),
             ],
             frequency=self.params['frequency'])
-        equity = rk.formula.Financial.balance(
-            name='Equity',
+        equity = rk.formula.financial.Balance(
             starting=176631.99,
             transactions=transactions.sum().invert(),
             frequency=self.params['frequency'])
-        assert equity.flows[-1].movements.iloc[2] == approx(9965.32)
+        assert equity.endings.movements.iloc[2] == approx(9965.32)
         transactions.display()
-        equity.display()
+        equity.startings.display()
+        equity.endings.display()
 
-        overdraft = rk.formula.Financial.overdraft(equity)
+        overdraft = equity.overdraft()
         overdraft.display()
 
-        loan, interest = rk.formula.Financial.interest(
+        interest = rk.formula.financial.Interest(
             rate=self.params['interest_rate_pa'] / rk.duration.Period.yearly_count((self.params['frequency'])),
             transactions=rk.flux.Stream(
                 flows=[
@@ -210,14 +211,13 @@ class TestFinancial:
                 ],
                 frequency=self.params['frequency']).sum(),
             frequency=self.params['frequency'],
-            instrument=rk.formula.Financial.Instrument.CAPITALIZED)
-        loan.display()
-        interest.display()
-        print(interest.total())
+            type=rk.formula.financial.Interest.Type.CAPITALIZED)
+        interest.balance.startings.display()
+        interest.balance.endings.display()
+        interest.amounts.display()
+        print(interest.amounts.total())
 
-        profit = rk.formula.Financial.overdraft(
-            balance=loan,
-            name='Profit').invert()
+        profit = interest.balance.overdraft(name='Profit').invert()
         profit.display()
 
         assert profit.total() == approx(671969.16)
@@ -251,7 +251,7 @@ class TestSolver:
             model = Model(params)
             model.init_transactions()
             model.init_finance()
-            finance = model.interest.total()
+            finance = model.interest.amounts.total()
             sources = equity + loan
             uses = dev + finance + rlv
 

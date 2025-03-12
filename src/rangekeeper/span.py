@@ -41,9 +41,9 @@ class Span:
         self.end_date = self._interval.right
 
     def __str__(self):
-        return 'Span: {}\n' \
-               'Start Date: {}\n' \
-               'End Date: {}'.format(self.name, self.start_date.date(), self.end_date.date())
+        return f'Span: {self.name}\n' \
+               f'Start Date: {self.start_date.date()}\n' \
+               f'End Date: {self.end_date.date()}\n'
 
     def __repr__(self):
         return self.__str__()
