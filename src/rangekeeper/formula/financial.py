@@ -60,8 +60,11 @@ class Balance:
         starts = self.startings.movements.where(self.startings.movements < 0).fillna(0)
         ends = self.endings.movements.where(self.endings.movements < 0).fillna(0)
 
+        overdrafts = ends - starts
+        overdrafts = overdrafts.where(overdrafts < 0).dropna()
+
         return rk.flux.Flow(
-            movements=ends - starts,
+            movements=overdrafts,
             units=self.startings.units,
             name='Overdraft' if name is None else name)
 
