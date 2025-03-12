@@ -293,7 +293,7 @@ class Flow:
             self,
             frequency: rk.duration.Type) -> Flow:
         """
-        Returns a Flow with movements summed to specified frequency of dates
+        Returns a Flow with movements summed to specified frequency of periods
         """
         return rk.flux.Flow(
             movements=self.movements.copy(deep=True).resample(rule=rk.duration.Type.period(frequency)).sum(),
