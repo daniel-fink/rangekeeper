@@ -32,3 +32,4 @@ dependencies = [
 
 [tool.ruff.format]
 preview = true  # Uses Black's experimental formatting rules
+
