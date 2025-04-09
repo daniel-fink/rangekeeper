@@ -7,9 +7,8 @@ from . import graph as graph
 from . import measure as measure
 from . import policy as policy
 from . import projection as projection
-from . import span as span
 from . import segmentation as segmentation
-from . import space as space
+# from . import space as space
 from . import dynamics as dynamics
 from . import formula as formula
 from . import format as format
