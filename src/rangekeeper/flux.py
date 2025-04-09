@@ -1,17 +1,16 @@
 from __future__ import annotations
 
+import datetime
+import itertools
+import json
 import locale
 import os
-
-import itertools
-import math
 from typing import Dict, Union, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pint
-import json
 import pyxirr
 
 import rangekeeper as rk
@@ -66,7 +65,17 @@ class Flow:
         """
 
         if not isinstance(movements.index, pd.DatetimeIndex):
-            raise Exception("Error: Flow's movements' Index is not a pd.DatetimeIndex")
+            try:
+                movements.index = pd.to_datetime(
+                    arg=movements.index,
+                    errors="raise",
+                )
+            except Exception as e:
+                raise Exception(
+                    "Error: Flow's movements' Index cannot be converted to a pd.DatetimeIndex: {0}".format(
+                        str(e)
+                    )
+                )
 
         if movements.dtype != float:
             try:
@@ -185,13 +194,16 @@ class Flow:
     @classmethod
     def from_dict(
         cls,
-        movements: Dict[pd.Timestamp, float],
+        movements: Dict[datetime.date | pd.Timestamp, float],
         units: pint.Unit,
         name: str = None,
     ) -> Flow:
         """
         Returns a Flow where movements are defined by key-value pairs of pd.Timestamps and amounts.
         """
+
+        if any(not isinstance(key, pd.Timestamp) for key in movements):
+            movements = {pd.Timestamp(key): value for key, value in movements.items()}
 
         dates = movements.keys()
         series = pd.Series(
@@ -299,7 +311,7 @@ class Flow:
 
     def xirr(self) -> float:
         return pyxirr.xirr(
-            dates=[datetime.date() for datetime in list(self.movements.index.array)],
+            dates=list(self.movements.index.array),
             amounts=self.movements.to_list(),
         )
 
@@ -309,7 +321,7 @@ class Flow:
     ) -> float:
         return pyxirr.xnpv(
             rate=rate,
-            dates=[datetime.date() for datetime in list(self.movements.index.array)],
+            dates=list(self.movements.index.array),
             amounts=self.movements.to_list(),
         )
 
@@ -322,7 +334,7 @@ class Flow:
         """
         return rk.flux.Flow(
             movements=self.movements.copy(deep=True)
-            .resample(rule=rk.duration.Type.period(frequency))
+            .resample(rule=rk.duration.Type.offset(frequency))
             .sum(),
             units=self.units,
             name=self.name,
@@ -348,7 +360,7 @@ class Flow:
 
     def trim_to_span(
         self,
-        span: rk.span.Span,
+        span: rk.duration.Span,
         name: str = None,
     ) -> Flow:
         """
@@ -830,7 +842,7 @@ class Stream:
     ) -> Stream:
         return Stream(name=self.name, flows=self.flows, frequency=frequency)
 
-    def trim_to_span(self, span: rk.span.Span) -> Stream:
+    def trim_to_span(self, span: rk.duration.Span) -> Stream:
         """
         Returns an Stream with all flows trimmed to the specified Span
         :param span:
