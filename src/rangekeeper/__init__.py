@@ -8,6 +8,7 @@ from . import measure as measure
 from . import policy as policy
 from . import projection as projection
 from . import segmentation as segmentation
+
 # from . import space as space
 from . import dynamics as dynamics
 from . import formula as formula
@@ -21,8 +22,8 @@ from matplotlib import cm
 
 
 def update_class(
-        main_class=None, exclude=("__module__", "__name__", "__dict__", "__weakref__")
-        ):
+    main_class=None, exclude=("__module__", "__name__", "__dict__", "__weakref__")
+):
     """Class decorator. Adds all methods and members from the wrapped class to main_class
 
     Args:
@@ -50,4 +51,3 @@ def rgba_from_cmap(cmap_name, start_val, stop_val, val):
     norm = mpl.colors.Normalize(vmin=start_val, vmax=stop_val)
     scalar_map = cm.ScalarMappable(norm=norm, cmap=cmap)
     return scalar_map.to_rgba(val)
-
