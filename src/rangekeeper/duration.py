@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import enum
 import math
-from datetime import datetime
+import datetime
 import dateutil
 from typing import Union, Optional
 
@@ -11,73 +11,99 @@ import pandas as pd
 
 
 class Type(enum.Enum):
-    DECADE = '10Y'
-    SEMIDECADE = '5Y'
-    BIENNIUM = '2Y'
-    YEAR = 'Y'
-    SEMIYEAR = '6M'
-    QUARTER = 'Q'
-    MONTH = 'M'
-    SEMIMONTH = 'SM'
-    WEEK = 'W'
-    DAY = 'D'
+    DECADE = "10Y"
+    SEMIDECADE = "5Y"
+    BIENNIUM = "2Y"
+    YEAR = "Y"
+    SEMIYEAR = "6M"
+    QUARTER = "Q"
+    MONTH = "M"
+    SEMIMONTH = "SM"
+    WEEK = "W"
+    DAY = "D"
 
-    @staticmethod # Possibly dealing with pandas > 2.2 changes
+    @staticmethod  # Possibly dealing with pandas > 2.2 changes
     def from_value(value: str):
-        if value == '10Y':
+        if value == "10Y":
             return Type.DECADE
-        if value == '5Y':
+        if value == "5Y":
             return Type.SEMIDECADE
-        if value == '2Y':
+        if value == "2Y":
             return Type.BIENNIUM
-        if value == 'Y' or value == 'Y-DEC' or value == 'A-DEC':
+        if value in ("Y", "YE", "YE-DEC", "Y-DEC", "A-DEC"):
             return Type.YEAR
-        if value == '6M':
+        if value == "6M":
             return Type.SEMIYEAR
-        if value == 'Q':
+        if value == "Q":
             return Type.QUARTER
-        if value == 'M':
+        if value == "M":
             return Type.MONTH
-        if value == 'SM':
+        if value == "SM":
             return Type.SEMIMONTH
-        if value == 'W-SUN' or value == 'W':
+        if value in ("W-SUN", "W"):
             return Type.WEEK
-        if value == 'D':
+        if value == "D":
             return Type.DAY
         else:
-            raise ValueError('Unsupported period type: {0}'.format(value))
+            raise ValueError("Unsupported period type: {0}".format(value))
 
-    @staticmethod # Possibly dealing with pandas > 2.2 changes
+    @staticmethod  # Possibly dealing with pandas > 2.2 changes
     def period(type: Type):
         if type == Type.DECADE:
-            return '10Y'
+            return "10Y"
         if type == Type.SEMIDECADE:
-            return '5Y'
+            return "5Y"
         if type == Type.BIENNIUM:
-            return '2Y'
+            return "2Y"
         if type == Type.YEAR:
-            return 'Y'
+            return "Y"
         if type == Type.SEMIYEAR:
-            return '6M'
+            return "6M"
         if type == Type.QUARTER:
-            return 'Q'
+            return "Q"
         if type == Type.MONTH:
-            return 'M'
+            return "M"
         if type == Type.SEMIMONTH:
-            return 'SM'
+            return "SM"
         if type == Type.WEEK:
-            return 'W'
+            return "W"
         if type == Type.DAY:
-            return 'D'
+            return "D"
         else:
-            raise ValueError('Unsupported period type: {0}'.format(type))
+            raise ValueError("Unsupported period type: {0}".format(type))
+
+    @staticmethod
+    def offset(type: Type):
+        if type == Type.DECADE:
+            return "10YE"
+        if type == Type.SEMIDECADE:
+            return "5YE"
+        if type == Type.BIENNIUM:
+            return "2YE"
+        if type == Type.YEAR:
+            return "YE"
+        if type == Type.SEMIYEAR:
+            return "6ME"
+        if type == Type.QUARTER:
+            return "QE"
+        if type == Type.MONTH:
+            return "ME"
+        if type == Type.SEMIMONTH:
+            return "SME"
+        if type == Type.WEEK:
+            return "W"
+        if type == Type.DAY:
+            return "D"
+        else:
+            raise ValueError("Unsupported period type: {0}".format(type))
 
 
 def measure(
-        start_date: pd.Timestamp,
-        end_date: pd.Timestamp,
-        duration: Type,
-        inclusive: bool = False) -> int:
+    start_date: datetime.date,
+    end_date: datetime.date,
+    duration: Type,
+    inclusive: bool = False,
+) -> int:
     """
     Returns the whole integer (i.e. no remainder) number of periods between
     given dates.
@@ -85,10 +111,7 @@ def measure(
     """
     calc_end_date = end_date
     if inclusive:
-        calc_end_date = offset(
-            date=end_date,
-            duration=Type.DAY,
-            amount=1)
+        calc_end_date = offset(date=end_date, duration=Type.DAY, amount=1)
 
     delta = dateutil.relativedelta.relativedelta(calc_end_date, start_date)
 
@@ -113,7 +136,7 @@ def measure(
     elif duration.value == Type.DAY.value:
         result = (calc_end_date - start_date).days
     else:
-        raise ValueError('Unsupported period type: {0}'.format(duration))
+        raise ValueError("Unsupported period type: {0}".format(duration))
 
     def direction(rd: dateutil.relativedelta.relativedelta) -> int:
         """
@@ -121,7 +144,7 @@ def measure(
         From https://stackoverflow.com/a/57906103/10964780
         """
         try:
-            datetime.min + rd
+            datetime.date.min + rd
             return 1
         except OverflowError:
             return -1
@@ -130,72 +153,80 @@ def measure(
 
 
 def offset(
-        date: pd.Timestamp,
-        duration: Type = Type.DAY,
-        amount: int = 1) -> pd.Timestamp:
+    date: datetime.date,
+    duration: Type = Type.DAY,
+    amount: int = 1,
+) -> datetime.date:
     """
     Offsets a date by an amount of durations.
     Assumes offsets on end-of-month dates will return end-of-month dates.
     """
+    date = pd.Timestamp(date)
     if date.is_month_end:
         if duration.value == Type.DECADE.value:
-            return date + pd.offsets.MonthEnd(120 * amount)
+            result = date + pd.offsets.MonthEnd(120 * amount)
         elif duration.value == Type.SEMIDECADE.value:
-            return date + pd.offsets.MonthEnd(60 * amount)
+            result = date + pd.offsets.MonthEnd(60 * amount)
         elif duration.value == Type.BIENNIUM.value:
-            return date + pd.offsets.MonthEnd(24 * amount)
+            result = date + pd.offsets.MonthEnd(24 * amount)
         elif duration.value == Type.YEAR.value:
-            return date + pd.offsets.MonthEnd(12 * amount)
+            result = date + pd.offsets.MonthEnd(12 * amount)
         elif duration.value == Type.SEMIYEAR.value:
-            return date + pd.offsets.MonthEnd(6 * amount)
+            result = date + pd.offsets.MonthEnd(6 * amount)
         elif duration.value == Type.QUARTER.value:
-            return date + pd.offsets.MonthEnd(3 * amount)
+            result = date + pd.offsets.MonthEnd(3 * amount)
         elif duration.value == Type.MONTH.value:
-            return date + pd.offsets.MonthEnd(amount)
+            result = date + pd.offsets.MonthEnd(amount)
         elif duration.value == Type.WEEK.value:
-            return date + pd.DateOffset(weeks=amount)
+            result = date + pd.DateOffset(weeks=amount)
         elif duration.value == Type.DAY.value:
-            return date + pd.DateOffset(days=amount)
-
+            result = date + pd.DateOffset(days=amount)
+        else:
+            raise ValueError("Unsupported period type: {0}".format(duration))
     else:
         if duration.value == Type.DECADE.value:
-            return date + pd.DateOffset(years=10 * amount)
+            result = date + pd.DateOffset(years=10 * amount)
         elif duration.value == Type.SEMIDECADE.value:
-            return date + pd.DateOffset(years=5 * amount)
+            result = date + pd.DateOffset(years=5 * amount)
         elif duration.value == Type.BIENNIUM.value:
-            return date + pd.DateOffset(years=2 * amount)
+            result = date + pd.DateOffset(years=2 * amount)
         elif duration.value == Type.YEAR.value:
-            return date + pd.DateOffset(years=amount)
+            result = date + pd.DateOffset(years=amount)
         elif duration.value == Type.SEMIYEAR.value:
-            return date + pd.DateOffset(months=6 * amount)
+            result = date + pd.DateOffset(months=6 * amount)
         elif duration.value == Type.QUARTER.value:
-            return date + pd.DateOffset(months=3 * amount)
+            result = date + pd.DateOffset(months=3 * amount)
         elif duration.value == Type.MONTH.value:
-            return date + pd.DateOffset(months=amount)
+            result = date + pd.DateOffset(months=amount)
         elif duration.value == Type.WEEK.value:
-            return date + pd.DateOffset(weeks=amount)
+            result = date + pd.DateOffset(weeks=amount)
         elif duration.value == Type.DAY.value:
-            return date + pd.DateOffset(days=amount)
+            result = date + pd.DateOffset(days=amount)
+        else:
+            raise ValueError("Unsupported period type: {0}".format(duration))
+
+    return result.date()
 
 
 class Period:
     @staticmethod
-    def include_date(
-            date: pd.Timestamp,
-            duration: Type) -> pd.Period:
+    def include_date(date: datetime.date, duration: Type) -> pd.Period:
         """
         Returns a pd.Period that encompasses the given date
         """
-        return pd.Period(year=date.year, month=date.month, day=date.day, freq=Type.period(duration))
+        return pd.Period(
+            year=date.year,
+            month=date.month,
+            day=date.day,
+            freq=Type.period(duration),
+        )
 
     @staticmethod
     def to_sequence(period: pd.Period) -> pd.PeriodIndex:
         """
         Returns a single-period pd.PeriodIndex of a pd.Period
         """
-        return pd.period_range(
-            start=period,
-            periods=1)
+        return pd.period_range(start=period, periods=1)
 
     @staticmethod
     def yearly_count(duration: Type) -> int:
@@ -212,15 +243,16 @@ class Period:
             Type.MONTH: 12,
             Type.SEMIMONTH: 24,
             Type.WEEK: 52,
-            Type.DAY: 365
-            }.get(duration, None)
+            Type.DAY: 365,
+        }.get(duration, None)
 
 
 class Sequence:
     @staticmethod
     def from_datestamps(
-            datestamps: pd.DatetimeIndex,
-            frequency: Type) -> pd.PeriodIndex:
+        datestamps: pd.DatetimeIndex,
+        frequency: Type,
+    ) -> pd.PeriodIndex:
         """
         Returns a pd.PeriodIndex from a pd.DatetimeIndex with Datetimes being Dates
         """
@@ -228,78 +260,85 @@ class Sequence:
 
     @staticmethod
     def from_bounds(
-            include_start: pd.Timestamp,
-            frequency: Type,
-            bound: Union[pd.Timestamp, int]) -> pd.PeriodIndex:
+        include_start: datetime.date,
+        frequency: Type,
+        bound: Union[datetime.date, int],
+    ) -> pd.PeriodIndex:
         """
         Returns a pd.PeriodIndex from a start date with periods of given duration.
         Either an end date, or number of periods must be given to bound the sequence.
 
-        :param include_start: pd.Timestamp start date
+        :param include_start: datetime.date start date
         :param frequency: Index frequency
         :param bound: A terminating condition; either a pd.Timestamp end date or a (integer) number of periods
         """
-        if isinstance(bound, pd.Timestamp):
+        if isinstance(bound, datetime.date):
             return pd.period_range(
                 start=include_start,
                 end=bound,
                 freq=Type.period(frequency),
-                name='periods')
+                name="periods",
+            )
         elif isinstance(bound, int):
             return pd.period_range(
                 start=include_start,
                 periods=bound,
                 freq=Type.period(frequency),
-                name='periods')
+                name="periods",
+            )
+        else:
+            raise ValueError("Unsupported bound type: {0}".format(type(bound)))
 
     @staticmethod
     def to_datestamps(
-            sequence: pd.PeriodIndex,
-            end: bool = True) -> pd.DatetimeIndex:
+        sequence: pd.PeriodIndex,
+        end: bool = True,
+    ) -> pd.DatetimeIndex:
         """
         Returns a pd.DatetimeIndex from a pd.PeriodIndex with Datetimes being Dates
         :param sequence: pd.PeriodIndex
         :param end: If True, the end of the period is used. If False, the start of the period is used.
         """
         if end:
-            timestamps = sequence.to_timestamp(how='end')
+            timestamps = sequence.to_timestamp(how="end")
         else:
-            timestamps = sequence.to_timestamp(how='start')
+            timestamps = sequence.to_timestamp(how="start")
         datestamps = timestamps.date
         return pd.DatetimeIndex(datestamps)
 
     @staticmethod
     def extend(
-            sequence: pd.PeriodIndex,
-            start_offset: Optional[int] = None,
-            end_offset: Optional[int] = None) -> pd.PeriodIndex:
+        sequence: pd.PeriodIndex,
+        start_offset: Optional[int] = None,
+        end_offset: Optional[int] = None,
+    ) -> pd.PeriodIndex:
         """
         Returns a pd.PeriodIndex with periods extended by given number of periods (of type given by the index)
         """
         start = sequence[0].to_timestamp()
         if start_offset is not None:
             start = offset(
-                date=start,
-                duration=Type.from_value(sequence.freq),
-                amount=start_offset)
+                date=start, duration=Type.from_value(sequence.freq), amount=start_offset
+            )
 
         end = sequence[-1].to_timestamp()
         if end_offset is not None:
             end = offset(
                 date=sequence[-1].to_timestamp(),
                 duration=Type.from_value(sequence.freq),
-                amount=end_offset)
+                amount=end_offset,
+            )
 
         return Sequence.from_bounds(
-            include_start=start,
-            frequency=Type.from_value(sequence.freq),
-            bound=end)
+            include_start=start, frequency=Type.from_value(sequence.freq), bound=end
+        )
 
     @staticmethod
     def to_range_index(
-            sequence: pd.PeriodIndex,
-            start_period: pd.Period = None,
-            end_period: pd.Period = None) -> pd.RangeIndex:
+        sequence: pd.PeriodIndex,
+        start_period: pd.Period = None,
+        end_period: pd.Period = None,
+    ) -> pd.RangeIndex:
         """
         Returns a RangeIndex that maps a PeriodIndex to a range of integers.
         """
@@ -312,7 +351,8 @@ class Sequence:
         bounds_index = pd.period_range(
             start=start_period,
             end=end_period,
-            freq=sequence.freq)
+            freq=sequence.freq,
+        )
 
         for i in range(bounds_index.size):
             if sequence.__contains__(bounds_index[i]):
@@ -328,22 +368,24 @@ class Sequence:
         return pd.RangeIndex(
             start=start,
             stop=stop,
-            step=step)
+            step=step,
+        )
 
 
 class Span:
-    start_date: pd.Timestamp
-    end_date: pd.Timestamp
+    start_date: datetime.date
+    end_date: datetime.date
     name: str = None
     """
     A `Span` is a pd.Interval of pd.Timestamps that bound its start and end dates
     """
 
     def __init__(
-            self,
-            start_date: pd.Timestamp,
-            end_date: pd.Timestamp = None,
-            name: str = None):
+        self,
+        start_date: datetime.date | pd.Timestamp,
+        end_date: datetime.date | pd.Timestamp = None,
+        name: str = None,
+    ):
         """
         Define a Span using dates and a name. If no end date is provided, it is
         assumed to be a one-day Span (ie, the start and end dates are the same)
@@ -351,33 +393,43 @@ class Span:
         :param end_date:
         :param name:
         """
+        start_date = datetime.date(start_date.year, start_date.month, start_date.day)
+        end_date = (
+            datetime.date(end_date.year, end_date.month, end_date.day)
+            if end_date
+            else None
+        )
+
         if end_date is None:
             end_date = start_date
         elif end_date < start_date:
-            raise Exception('Error: end_date cannot be before start_date')
+            raise Exception("Error: end_date cannot be before start_date")
 
         if name is None:
-            self.name = ''
+            self.name = ""
         else:
             self.name = name
 
-        self._interval = pd.Interval(left=start_date, right=end_date)
-        self.start_date = self._interval.left
-        self.end_date = self._interval.right
+        self._interval = pd.Interval(
+            left=pd.Timestamp(start_date),
+            right=pd.Timestamp(end_date),
+            closed="both",
+        )
+        self.start_date = self._interval.left.date()
+        self.end_date = self._interval.right.date()
 
     def __str__(self):
-        return 'Span: {}\n' \
-               'Start Date: {}\n' \
-               'End Date: {}'.format(self.name, self.start_date.date(), self.end_date.date())
+        return (
+            f"Span: {self.name}\n"
+            f"Start Date: {self.start_date}\n"
+            f"End Date: {self.end_date}"
+        )
 
     def __repr__(self):
         return self.__str__()
 
     @classmethod
-    def merge(
-            cls,
-            name: str,
-            spans: [Span]) -> Span:
+    def merge(cls, name: str, spans: [Span]) -> Span:
         """
         Merge a set of Spans into a single Span
         """
@@ -388,16 +440,19 @@ class Span:
                 start_date = span.start_date
             if span.end_date > end_date:
                 end_date = span.end_date
-        return cls(name=name,
-                   start_date=start_date,
-                   end_date=end_date)
+        return cls(
+            name=name,
+            start_date=start_date,
+            end_date=end_date,
+        )
 
     def extend(
-            self,
-            duration: Type,
-            amount: int,
-            bound: str = 'end',
-            name: str = None) -> Span:
+        self,
+        duration: Type,
+        amount: int,
+        bound: str = "end",
+        name: str = None,
+    ) -> Span:
         """
         Extend the Span's bounds by a specified period increment
 
@@ -410,144 +465,183 @@ class Span:
         start_date = offset(
             date=self.start_date,
             duration=duration,
-            amount=amount)
+            amount=amount,
+        )
         end_date = offset(
             date=self.end_date,
             duration=duration,
-            amount=amount)
+            amount=amount,
+        )
 
-        if bound == 'start':
+        if bound == "start":
             return Span(
                 name=name,
                 start_date=start_date,
-                end_date=self.end_date)
-        elif bound == 'end':
+                end_date=self.end_date,
+            )
+        elif bound == "end":
             return Span(
                 name=name,
                 start_date=self.start_date,
-                end_date=end_date)
-        elif bound == 'both':
+                end_date=end_date,
+            )
+        elif bound == "both":
             return Span(
                 name=name,
                 start_date=start_date,
-                end_date=end_date)
+                end_date=end_date,
+            )
         else:
-            raise Exception('Error: invalid bound specified')
+            raise Exception("Error: invalid bound specified")
 
-    def to_sequence(
-            self,
-            frequency: Type) -> pd.PeriodIndex:
+    def to_sequence(self, frequency: Type) -> pd.PeriodIndex:
         """
         Return a pd.PeriodIndex of the Span at the specified frequency
         """
         return Sequence.from_bounds(
             include_start=self.start_date,
             frequency=frequency,
-            bound=self.end_date)
+            bound=self.end_date,
+        )
 
-    def duration(
-            self,
-            period_type: Type,
-            inclusive: bool = False) -> int:
+    def duration(self, type: Type, inclusive: bool = False) -> int:
         """
         Return the whole-period duration of the Span of the specified period type
+        :param type: The period type to measure by
+        :param inclusive: If True, the end date is included in the calculation
         """
         return measure(
             start_date=self.start_date,
             end_date=self.end_date,
-            period_type=period_type,
-            inclusive=inclusive)
+            duration=type,
+            inclusive=inclusive,
+        )
 
     @classmethod
     def from_duration(
-            cls,
-            name: str,
-            date: pd.Timestamp,
-            duration: Type,
-            amount: int = 1) -> Span:
+        cls,
+        name: str,
+        date: datetime.date | pd.Timestamp,
+        duration: Type,
+        amount: int = 1,
+    ) -> Span:
         """
         Create a Span from a date with a set number of periods of specified type.
         If the number of periods is negative, the Span will end on the date specified.
         If the number of periods is positive, the Span will start on the date specified.
         """
+        date = datetime.date(date.year, date.month, date.day)
+
         if amount < 0:
             end_date = date
             start_date = offset(
                 date=date,
                 duration=duration,
-                amount=amount)
+                amount=amount,
+            )
             start_date = offset(
                 date=start_date,
                 duration=Type.DAY,
-                amount=1)
-            return cls(name=name, start_date=start_date, end_date=end_date)
+                amount=1,
+            )
+            return cls(
+                name=name,
+                start_date=start_date,
+                end_date=end_date,
+            )
         else:
             start_date = date
             end_date = offset(
                 date=date,
                 duration=duration,
-                amount=amount)
+                amount=amount,
+            )
             end_date = offset(
                 date=end_date,
                 duration=Type.DAY,
-                amount=-1)
-            return cls(name=name, start_date=start_date, end_date=end_date)
+                amount=-1,
+            )
+            return cls(
+                name=name,
+                start_date=start_date,
+                end_date=end_date,
+            )
 
     @classmethod
     def from_date_sequence(
-            cls,
-            names: [str],
-            dates: [pd.Timestamp]) -> [Span]:
+        cls,
+        names: [str],
+        dates: [datetime.date],
+    ) -> [Span]:
         """
         Create a set of Spans from a sequence of dates.
         Note: dates list length must be 1 longer than names
         :param names:
-        :type names:
         :param dates:
-        :type dates:
-        :return:
-        :rtype:
         """
         if len(names) != len(dates) - 1:
-            raise Exception('Error: number of Span names must equal number of Spans created'
-                            ' (i.e. one less than number of dates)')
+            raise Exception(
+                "Error: number of Span names must equal number of Spans created"
+                " (i.e. one less than number of dates)"
+            )
 
         date_pairs = list(zip(dates, dates[1:]))
-        date_pairs = [(start, offset(end, Type.DAY, -1)) for (start, end) in
-                      date_pairs]
+        date_pairs = [
+            (
+                start,
+                offset(
+                    date=end,
+                    duration=Type.DAY,
+                    amount=-1,
+                ),
+            )
+            for (start, end) in date_pairs
+        ]
 
         spans = []
         for i in range(len(names)):
-            spans.append(cls(name=names[i], start_date=date_pairs[i][0], end_date=date_pairs[i][1]))
+            spans.append(
+                cls(
+                    name=names[i],
+                    start_date=date_pairs[i][0],
+                    end_date=date_pairs[i][1],
+                )
+            )
         return spans
 
     @classmethod
     def from_duration_sequence(
-            cls,
-            duration: Type,
-            names: [str],
-            amounts: [int],
-            start_date: pd.Timestamp) -> [Span]:
+        cls,
+        duration: Type,
+        names: [str],
+        amounts: [int],
+        start_date: datetime.date,
+    ) -> [Span]:
         """
         Create a set of Spans from a sequence of durations of specified period type
         """
         if len(names) != len(amounts):
-            raise Exception('Error: number of Span names must equal number of Spans')
+            raise Exception("Error: number of Span names must equal number of Spans")
 
         dates = []
         cumulative_amounts = np.cumsum(amounts)
         for amount in cumulative_amounts:
-            dates.append(offset(date=start_date, duration=duration, amount=amount))
+            dates.append(
+                offset(
+                    date=start_date,
+                    duration=duration,
+                    amount=amount,
+                )
+            )
 
         return cls.from_date_sequence(names=names, dates=dates)
 
     @classmethod
-    def from_sequence(
-            cls,
-            sequence: pd.PeriodIndex):
+    def from_sequence(cls, sequence: pd.PeriodIndex):
         """
         Returns a Span encompassing a pd.PeriodIndex
         """
         return cls(
-            start_date=sequence[0].to_timestamp(how='start'),
-            end_date=sequence[-1].to_timestamp(how='end'))
+            start_date=sequence[0].to_timestamp(how="start").date(),
+            end_date=sequence[-1].to_timestamp(how="end").date(),
+        )

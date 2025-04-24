@@ -10,48 +10,71 @@ import rangekeeper as rk
 class Balance:
     startings: rk.flux.Flow
     endings: rk.flux.Flow
+    overdraft: rk.flux.Flow
 
     def __init__(
-            self,
-            starting: float,
-            transactions: rk.flux.Flow,
-            frequency: rk.duration.Type,
+        self,
+        starting: float,
+        transactions: rk.flux.Flow,
+        frequency: rk.duration.Type,
+        name: str = "",
     ):
         """
         Calculate the balance of a financial account given a starting balance and a series of transactions.
+        Returns an object with the starting and ending balances, as well as the overdraft amount, as `Flow`s.
+        Overdraft is the portion of transactions occurring while the balance is non-positive.
         """
 
         transactions = transactions.resample(frequency=frequency)
 
         result = self._calculate_balance(
             startings=numba.typed.List([np.float64(starting)]),
-            transactions=numba.typed.List(transactions.movements.to_list()))
+            transactions=numba.typed.List(transactions.movements.to_list()),
+        )
 
-        self.startings=rk.flux.Flow(
-            movements=pd.Series(result[0], index=transactions.movements.index),
+        self.startings = rk.flux.Flow(
+            movements=pd.Series(
+                result[0],
+                index=transactions.movements.index,
+            ),
             units=transactions.units,
-            name='Start Balance')
+            name=f"{name} Start Balance",
+        )
 
-        self.endings=rk.flux.Flow(
-            movements=pd.Series(result[1], index=transactions.movements.index),
+        self.endings = rk.flux.Flow(
+            movements=pd.Series(
+                result[1],
+                index=transactions.movements.index,
+            ),
             units=transactions.units,
-            name='End Balance')
+            name=f"{name} End Balance",
+        )
+
+        self.overdraft = rk.flux.Flow(
+            movements=pd.Series(
+                result[2],
+                index=transactions.movements.index,
+            ),
+            units=transactions.units,
+            name=f"{name} Overdraft",
+        )
 
     @classmethod
     def from_flows(
-            cls,
-            startings: rk.flux.Flow,
-            endings: rk.flux.Flow,
+        cls,
+        startings: rk.flux.Flow,
+        endings: rk.flux.Flow,
     ):
         balance = super().__new__(cls)
         balance.startings = startings
         balance.endings = endings
+        balance.overdraft = balance._overdraft()
 
         return balance
 
-    def overdraft(
-            self,
-            name: str = None,
+    def _overdraft(
+        self,
+        name: str = None,
     ) -> rk.flux.Flow:
         """
         Identifies the portion of transactions occurring while the balance is negative.
@@ -66,21 +89,35 @@ class Balance:
         return rk.flux.Flow(
             movements=overdrafts,
             units=self.startings.units,
-            name='Overdraft' if name is None else name)
-
+            name="Overdraft" if name is None else name,
+        )
 
     @staticmethod
     @numba.jit
     def _calculate_balance(
-            startings: numba.typed.List,
-            transactions: numba.typed.List) -> (numba.typed.List, numba.typed.List):
+        startings: numba.typed.List,
+        transactions: numba.typed.List,
+    ) -> (
+        numba.typed.List,
+        numba.typed.List,
+        numba.typed.List,
+    ):
 
         endings = numba.typed.List.empty_list(numba.float64)
+        overdrafts = numba.typed.List.empty_list(numba.float64)
         for i in range(len(transactions)):
-            endings.append(float(startings[-1] + transactions[i]))
-            startings.append(endings[-1])
+            ending = float(startings[-1] + transactions[i])
 
-        return (startings[:-1], endings)
+            overdrafts.append(ending if ending < 0 else 0)
+            endings.append(ending if ending > 0 else 0)
+            startings.append(endings[-1])
+            # startings.append(ending)
+
+        return (
+            startings[:-1],
+            endings,
+            overdrafts,
+        )
 
 
 class Interest:
@@ -88,16 +125,16 @@ class Interest:
     balance: Balance
 
     class Type(enum.Enum):
-        INTEREST_ONLY = 'interest_only'
-        COMPOUND = 'compound'
-        CAPITALIZED = 'capitalized'
+        INTEREST_ONLY = "interest_only"
+        COMPOUND = "compound"
+        CAPITALIZED = "capitalized"
 
     def __init__(
-            self,
-            rate: float | rk.flux.Flow,
-            transactions: rk.flux.Flow,
-            frequency: rk.duration.Type,
-            type: Type = Type.COMPOUND,
+        self,
+        rate: float | rk.flux.Flow,
+        transactions: rk.flux.Flow,
+        frequency: rk.duration.Type,
+        type: Type = Type.COMPOUND,
     ):
         """
         Calculate interest expense on a loan or other interest-bearing liability,
@@ -111,47 +148,54 @@ class Interest:
 
         if isinstance(rate, float):
             rate = rk.flux.Flow.from_projection(
-                name='Interest Rates',
+                name="Interest Rates",
                 value=rate,
                 proj=rk.projection.Extrapolation(
                     form=rk.extrapolation.Recurring(),
                     sequence=rk.duration.Sequence.from_datestamps(
-                        datestamps=transactions.movements.index,
-                        frequency=frequency)))
+                        datestamps=transactions.movements.index, frequency=frequency
+                    ),
+                ),
+            )
         else:
-            raise NotImplementedError('Only float rates are supported currently.')
+            raise NotImplementedError("Only float rates are supported currently.")
 
         if len(transactions.movements) != len(rate.movements):
-            raise ValueError('The number of transactions must match the number of rates.')
+            raise ValueError(
+                "The number of transactions must match the number of rates."
+            )
 
         startings, endings, interests = self._calc_interest(
             transactions=numba.typed.List(transactions.movements.to_list()),
             rates=numba.typed.List(rate.movements.to_list()),
-            type=type.value)
+            type=type.value,
+        )
 
         self.balance = rk.formula.financial.Balance.from_flows(
             startings=rk.flux.Flow(
                 movements=pd.Series(startings, index=transactions.movements.index),
                 units=transactions.units,
-                name='Start Balance'),
+                name="Start Balance",
+            ),
             endings=rk.flux.Flow(
                 movements=pd.Series(endings, index=transactions.movements.index),
                 units=transactions.units,
-                name='End Balance')
+                name="End Balance",
+            ),
         )
 
         self.amounts = rk.flux.Flow(
             movements=pd.Series(interests, index=transactions.movements.index),
             units=transactions.units,
-            name='Interest')
-
+            name="Interest",
+        )
 
     @staticmethod
     @numba.jit
     def _calc_interest(
-            transactions: numba.typed.List,
-            rates: numba.typed.List,
-            type: str,
+        transactions: numba.typed.List,
+        rates: numba.typed.List,
+        type: str,
     ) -> (numba.typed.List, numba.typed.List, numba.typed.List):
 
         startings = numba.typed.List.empty_list(numba.float64)
@@ -165,25 +209,24 @@ class Interest:
                 startings.append(endings[-1])
 
             principal = startings[i] + transactions[i]
-            if type == 'interest_only':
+            if type == "interest_only":
                 interest = principal * rates[i] if principal > 0 else 0
                 endings.append(principal)
 
-            elif type == 'compound':
+            elif type == "compound":
                 interest = principal * rates[i] if principal > 0 else 0
                 endings.append(principal + interest)
 
-            elif type == 'capitalized':
-                interest = (principal * rates[i]) / (1 - rates[i]) if principal > 0 else 0 # Since we are capitalizing
+            elif type == "capitalized":
+                interest = (
+                    (principal * rates[i]) / (1 - rates[i]) if principal > 0 else 0
+                )  # Since we are capitalizing
                 # interest, the amount (draw) must include interest to pay on the principal. Derived from i = r * (P + i)
                 endings.append(principal + interest)
 
             else:
-                raise ValueError(f'Invalid instrument: {type}')
+                raise ValueError(f"Invalid instrument: {type}")
 
             amounts.append(interest)
 
         return (startings, endings, amounts)
-
-
-
