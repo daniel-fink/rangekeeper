@@ -840,7 +840,7 @@ class Stream:
 
     def extend(
         self,
-        flows: [Flow],
+        flows: List[Flow],
     ):
         """
         Returns a new Stream with additional Flows
