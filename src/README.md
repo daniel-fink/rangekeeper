@@ -18,3 +18,9 @@ environment and dependency management:
 5. Install dependencies: `uv pip install -r <(uv pip compile pyproject.toml)`
 6. Some tests require API access to [Speckle](https://speckle.systems/). It is recommended to use [Python-Dotenv]
    (https://github.com/theskumar/python-dotenv), and add a `.env` file in the project's root directory with your `SPECKLE_TOKEN` environment variable.
+
+### Publishing
+1. First, remove any previously built packages: `rm -rf dist/`
+2. Build the package: `uv build`
+3. Then, publish it to PyPI with your "UV_PUBLISH_TOKEN" recorded in a .env file: `uv publish`: export $(grep -v 
+   '^#' .env | xargs) && uv publish --token $UV_PUBLISH_TOKEN
