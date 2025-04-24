@@ -64,32 +64,28 @@ class Balance:
         cls,
         startings: rk.flux.Flow,
         endings: rk.flux.Flow,
+        frequency: rk.duration.Type,
+        name: str = "",
     ):
-        balance = super().__new__(cls)
-        balance.startings = startings
-        balance.endings = endings
-        balance.overdraft = balance._overdraft()
+        name = startings.name if name is None else name
+        if startings.units != endings.units:
+            raise ValueError("The units of the starting and ending flows must match.")
+        units = startings.units
 
-        return balance
+        startings = startings.resample(frequency=frequency)
+        endings = endings.resample(frequency=frequency)
 
-    def _overdraft(
-        self,
-        name: str = None,
-    ) -> rk.flux.Flow:
-        """
-        Identifies the portion of transactions occurring while the balance is negative.
-        """
+        transactions = rk.flux.Flow(
+            movements=endings.movements - startings.movements,
+            units=units,
+        )
+        starting = startings.movements.iloc[0]
 
-        starts = self.startings.movements.where(self.startings.movements < 0).fillna(0)
-        ends = self.endings.movements.where(self.endings.movements < 0).fillna(0)
-
-        overdrafts = ends - starts
-        overdrafts = overdrafts.where(overdrafts < 0).dropna()
-
-        return rk.flux.Flow(
-            movements=overdrafts,
-            units=self.startings.units,
-            name="Overdraft" if name is None else name,
+        return cls(
+            starting=starting,
+            transactions=transactions,
+            frequency=frequency,
+            name=name,
         )
 
     @staticmethod
@@ -111,7 +107,6 @@ class Balance:
             overdrafts.append(ending if ending < 0 else 0)
             endings.append(ending if ending > 0 else 0)
             startings.append(endings[-1])
-            # startings.append(ending)
 
         return (
             startings[:-1],
@@ -165,27 +160,29 @@ class Interest:
                 "The number of transactions must match the number of rates."
             )
 
-        startings, endings, interests = self._calc_interest(
+        startings, endings, amounts = self._calc_interest(
             transactions=numba.typed.List(transactions.movements.to_list()),
             rates=numba.typed.List(rate.movements.to_list()),
             type=type.value,
         )
 
+        startings = rk.flux.Flow(
+            movements=pd.Series(startings, index=transactions.movements.index),
+            units=transactions.units,
+        )
+        endings = rk.flux.Flow(
+            movements=pd.Series(endings, index=transactions.movements.index),
+            units=transactions.units,
+        )
+
         self.balance = rk.formula.financial.Balance.from_flows(
-            startings=rk.flux.Flow(
-                movements=pd.Series(startings, index=transactions.movements.index),
-                units=transactions.units,
-                name="Start Balance",
-            ),
-            endings=rk.flux.Flow(
-                movements=pd.Series(endings, index=transactions.movements.index),
-                units=transactions.units,
-                name="End Balance",
-            ),
+            startings=startings,
+            endings=endings,
+            frequency=frequency,
         )
 
         self.amounts = rk.flux.Flow(
-            movements=pd.Series(interests, index=transactions.movements.index),
+            movements=pd.Series(amounts, index=transactions.movements.index),
             units=transactions.units,
             name="Interest",
         )
@@ -196,7 +193,11 @@ class Interest:
         transactions: numba.typed.List,
         rates: numba.typed.List,
         type: str,
-    ) -> (numba.typed.List, numba.typed.List, numba.typed.List):
+    ) -> (
+        numba.typed.List,
+        numba.typed.List,
+        numba.typed.List,
+    ):
 
         startings = numba.typed.List.empty_list(numba.float64)
         endings = numba.typed.List.empty_list(numba.float64)
@@ -218,10 +219,11 @@ class Interest:
                 endings.append(principal + interest)
 
             elif type == "capitalized":
+                # Since we are capitalizing interest, the amount (draw) must include interest to pay on the principal.
+                # Derived from i = r * (P + i)
                 interest = (
                     (principal * rates[i]) / (1 - rates[i]) if principal > 0 else 0
-                )  # Since we are capitalizing
-                # interest, the amount (draw) must include interest to pay on the principal. Derived from i = r * (P + i)
+                )
                 endings.append(principal + interest)
 
             else:
