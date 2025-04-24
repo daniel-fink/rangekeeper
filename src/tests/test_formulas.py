@@ -122,7 +122,9 @@ class TestFinancial:
         draws_periods=9,
         payments=value,
         payments_start_date=rk.duration.offset(
-            date=start_date, duration=rk.duration.Type.MONTH, amount=9
+            date=start_date,
+            duration=rk.duration.Type.MONTH,
+            amount=9,
         ),
         payments_periods=3,
     )
@@ -206,9 +208,7 @@ class TestFinancial:
     def test_balances(self):
         transactions = rk.flux.Stream(
             name="Transactions",
-            flows=[
-                self.model.draws.sum().invert(),
-            ],
+            flows=[self.model.draws.sum().invert()],
             frequency=self.params["frequency"],
         )
         equity = rk.formula.financial.Balance(
@@ -221,14 +221,17 @@ class TestFinancial:
         equity.startings.display()
         equity.endings.display()
 
-        overdraft = equity.overdraft()
+        overdraft = equity.overdraft
         overdraft.display()
 
         interest = rk.formula.financial.Interest(
             rate=self.params["interest_rate_pa"]
             / rk.duration.Period.yearly_count((self.params["frequency"])),
             transactions=rk.flux.Stream(
-                flows=[overdraft.invert(), self.model.payments.invert()],
+                flows=[
+                    overdraft.invert(),
+                    self.model.payments.invert(),
+                ],
                 frequency=self.params["frequency"],
             ).sum(),
             frequency=self.params["frequency"],
@@ -239,7 +242,8 @@ class TestFinancial:
         interest.amounts.display()
         print(interest.amounts.total())
 
-        profit = interest.balance.overdraft(name="Profit").invert()
+        profit = interest.balance.overdraft.invert()
+        profit.name = "Profit"
         profit.display()
 
         assert profit.total() == approx(671969.16)
