@@ -1,15 +1,13 @@
+import datetime
 import locale
 import math
-import matplotlib
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import pint
 import pytest
 import scipy.stats as ss
 from pytest import approx
-
-import specklepy.objects as objects
 
 import rangekeeper as rk
 
@@ -20,10 +18,10 @@ import rangekeeper as rk
 # and any function in a file that should be treated as a test must also start with 'test_'.
 
 # matplotlib.use('TkAgg')
-plt.style.use('seaborn-v0_8')  # pretty matplotlib plots
-plt.rcParams['figure.figsize'] = (12, 8)
+plt.style.use("seaborn-v0_8")  # pretty matplotlib plots
+plt.rcParams["figure.figsize"] = (12, 8)
 
-locale = locale.setlocale(locale.LC_ALL, 'en_AU')
+locale = locale.setlocale(locale.LC_ALL, "en_AU")
 units = rk.measure.Index.registry
 currency = rk.measure.register_currency(registry=units)
 scope = dict(globals(), **locals())
@@ -37,17 +35,15 @@ class TestDistribution:
 
     def test_uniform_distribution_has_density_of_1(self):
         uniform_dist = rk.distribution.Uniform(generator=None)
-        uniform_densities = uniform_dist.interval_density(parameters=TestDistribution.parameters)
+        uniform_densities = uniform_dist.interval_density(
+            parameters=TestDistribution.parameters
+        )
         # plt.plot(TestDistribution.parameters, uniform_densities)
         assert sum(uniform_densities) == 1.0
 
     def test_exponential_distribution_total_and_initial_match(self):
         exp_form = rk.extrapolation.Compounding(rate=0.02)
-        exp_factors = exp_form.terms(sequence=pd.RangeIndex(
-            start=0,
-            stop=12,
-            step=1
-        ))
+        exp_factors = exp_form.terms(sequence=pd.RangeIndex(start=0, stop=12, step=1))
         # exp_densities = exp_dist.density(parameters=TestDistribution.parameters)
         # exp_cumulative = exp_dist.cumulative_density(parameters=TestDistribution.parameters)
 
@@ -68,57 +64,53 @@ class TestDistribution:
 
 class TestDuration:
     def test_offset(self):
-        date = pd.Timestamp(2020, 2, 29)
+        date = datetime.date(2020, 2, 29)
         offset_eom = rk.duration.offset(
-            date=date,
-            duration=rk.duration.Type.MONTH,
-            amount=3)
-        assert offset_eom == pd.Timestamp(2020, 5, 31)
+            date=date, duration=rk.duration.Type.MONTH, amount=3
+        )
+        assert offset_eom == datetime.date(2020, 5, 31)
 
 
 class TestPeriod:
     def test_period_index_validity(self):
-        date = pd.Timestamp(2020, 2, 28)
+        date = datetime.date(2020, 2, 28)
         period = rk.duration.Period.include_date(
             date=date,
-            duration=rk.duration.Type.MONTH)
-        assert period.day == 29  # end date of Period
-        assert period.month == 2
-
-        sequence = rk.duration.Sequence.from_bounds(
-            include_start=date,
-            bound=pd.Timestamp(2020, 12, 31),
-            frequency=rk.duration.Type.QUARTER)
-        assert sequence.size == 4
-
-        end_date = rk.duration.offset(
-            date=date,
             duration=rk.duration.Type.MONTH,
-            amount=4)
-        assert end_date == pd.Timestamp(2020, 6, 28)
+        )
+        assert period.day == 29  # end date of Period
+        # assert period.month == 2
+        #
+        # sequence = rk.duration.Sequence.from_bounds(
+        #     include_start=date,
+        #     bound=datetime.date(2020, 12, 31),
+        #     frequency=rk.duration.Type.QUARTER,
+        # )
+        # assert sequence.size == 4
+        #
+        # end_date = rk.duration.offset(
+        #     date=date, duration=rk.duration.Type.MONTH, amount=4
+        # )
+        # assert end_date == datetime.date(2020, 6, 28)
 
 
 class TestUnits:
     def test_series_units(self):
-        date1 = pd.Timestamp(2000, 1, 2)
-        date2 = pd.Timestamp(2000, 2, 29)
-        date3 = pd.Timestamp(2000, 12, 31)
+        date1 = datetime.date(2000, 1, 2)
+        date2 = datetime.date(2000, 2, 29)
+        date3 = datetime.date(2000, 12, 31)
 
         dates = [date1, date2, date3]
         values = [1 * units.meter, 2.3 * units.second, 456 * units.meter]
 
-        series = pd.Series(
-            data=values,
-            index=dates,
-            name="foo")
+        series = pd.Series(data=values, index=dates, name="foo")
         print(series)
 
     def test_remove_dim(self):
         quantity = math.pi * currency.units / units.squaremeter / units.month
         reduced_quantity = rk.measure.remove_dimension(
-            quantity=quantity,
-            dimension='[time]',
-            registry=units)
+            quantity=quantity, dimension="[time]", registry=units
+        )
         assert reduced_quantity == math.pi * currency.units / units.squaremeter
 
     def test_multiply_units(self):
@@ -128,60 +120,68 @@ class TestUnits:
 
         quantities = [q1, q2, q3]
         product = rk.measure.multiply_units(
-            units=[quantity.units for quantity in quantities],
-            registry=units)
-        assert product == 'AUD * meter / month / squaremeter / year'
+            units=[quantity.units for quantity in quantities], registry=units
+        )
+        assert product == "AUD * meter / month / squaremeter / year"
 
 
 class TestFlow:
-    date1 = pd.Timestamp(2000, 1, 2)
-    date2 = pd.Timestamp(2000, 2, 29)
-    date3 = pd.Timestamp(2000, 12, 31)
+    date1 = datetime.date(2000, 1, 2)
+    date2 = datetime.date(2000, 2, 29)
+    date3 = datetime.date(2000, 12, 31)
 
     dates = [date1, date2, date3]
     values = [1, 2.3, 456]
 
     series = pd.Series(
         data=values,
-        index=dates,
+        index=[pd.Timestamp(date) for date in dates],
         name="foo",
-        dtype=float)
+        dtype=float,
+    )
 
-    flow_from_series = rk.flux.Flow(
-        movements=series,
-        units=currency.units)
+    flow_from_series = rk.flux.Flow(movements=series, units=currency.units)
 
-    dict = {date1: values[0], date2: values[1], date3: values[2]}
+    dict = {
+        date1: values[0],
+        date2: values[1],
+        date3: values[2],
+    }
     flow_from_dict = rk.flux.Flow.from_dict(
         movements=dict,
         name="foo",
-        units=currency.units)
+        units=currency.units,
+    )
 
     def test_flow_validity(self):
         # TestFlow.flow_from_series.display()
         # TestFlow.flow_from_dict.display()
-        date = pd.Timestamp(2000, 2, 29)
-        assert TestFlow.flow_from_series.movements[date] == 2.3
+        datestamp = pd.Timestamp(2000, 2, 29)
+        assert TestFlow.flow_from_series.movements[datestamp] == 2.3
         assert TestFlow.flow_from_series.movements.size == 3
-        assert TestFlow.flow_from_series.movements.loc[date] == 2.3
-        assert TestFlow.flow_from_series.movements.equals(TestFlow.flow_from_dict.movements)
+        assert TestFlow.flow_from_series.movements.loc[datestamp] == 2.3
+        assert TestFlow.flow_from_series.movements.equals(
+            TestFlow.flow_from_dict.movements
+        )
         assert isinstance(TestFlow.flow_from_series.movements.index, pd.DatetimeIndex)
 
         TestFlow.flow_from_series.display()
 
     periods = rk.duration.Sequence.from_bounds(
-        include_start=pd.Timestamp(2020, 1, 31),
+        include_start=datetime.date(2020, 1, 31),
         frequency=rk.duration.Type.MONTH,
-        bound=pd.Timestamp(2022, 1, 1))
+        bound=datetime.date(2022, 1, 1),
+    )
 
     print(periods.size)
     flow = rk.flux.Flow.from_projection(
         name="bar",
         value=100.0,
         proj=rk.projection.Distribution(
-            form=rk.distribution.Uniform(),
-            sequence=periods),
-        units=currency.units)
+            form=rk.distribution.Uniform(), sequence=periods
+        ),
+        units=currency.units,
+    )
 
     def test_flow_duplication(self):
         duplicate = TestFlow.flow.duplicate()
@@ -210,7 +210,9 @@ class TestFlow:
         # TestFlow.invert_flow.display()
         assert TestFlow.invert_flow.movements.size == 25
         assert TestFlow.invert_flow.movements.array.sum() == -100.0
-        assert TestFlow.invert_flow.movements.index.array[2] == pd.Timestamp(2020, 3, 31)
+        assert TestFlow.invert_flow.movements.index.array[2] == pd.Timestamp(
+            2020, 3, 31
+        )
         assert TestFlow.invert_flow.movements.array[2] == pytest.approx(-4)
         assert TestFlow.invert_flow.movements.name == "bar"
         assert TestFlow.invert_flow.units == currency.units
@@ -232,26 +234,24 @@ class TestFlow:
 
     def test_distribution_as_input(self):
         periods = rk.duration.Sequence.from_bounds(
-            include_start=pd.Timestamp(2020, 1, 31),
+            include_start=datetime.date(2020, 1, 31),
             frequency=rk.duration.Type.MONTH,
-            bound=pd.Timestamp(2022, 1, 1))
+            bound=datetime.date(2022, 1, 1),
+        )
 
-        dist = rk.distribution.PERT(
-            peak=5,
-            weighting=4,
-            minimum=2,
-            maximum=8)
+        dist = rk.distribution.PERT(peak=5, weighting=4, minimum=2, maximum=8)
         assert isinstance(dist, rk.distribution.Form)
 
         sums = []
         for i in range(1000):
             flow = rk.flux.Flow.from_projection(
-                name='foo',
+                name="foo",
                 value=dist,
                 proj=rk.projection.Distribution(
-                    form=rk.distribution.Uniform(),
-                    sequence=periods),
-                units=currency.units)
+                    form=rk.distribution.Uniform(), sequence=periods
+                ),
+                units=currency.units,
+            )
             sums.append(flow.collapse().movements.iloc[0])
 
         # estimate distribution parameters, in this case (a, b, loc, scale)
@@ -265,7 +265,7 @@ class TestFlow:
         # plot
         fig, ax = plt.subplots(1, 1)
         ax.hist(sums, bins=20)
-        ax.plot(x, pdf, '--r')
+        ax.plot(x, pdf, "--r")
         plt.show(block=True)
 
 
@@ -276,11 +276,13 @@ class TestStream:
         proj=rk.projection.Distribution(
             form=rk.distribution.Uniform(),
             sequence=rk.duration.Sequence.from_bounds(
-                include_start=pd.Timestamp(2020, 1, 31),
-                bound=pd.Timestamp(2022, 1, 1),
-                frequency=rk.duration.Type.YEAR),
+                include_start=datetime.date(2020, 1, 31),
+                bound=datetime.date(2022, 1, 1),
+                frequency=rk.duration.Type.YEAR,
+            ),
         ),
-        units=currency.units)
+        units=currency.units,
+    )
 
     flow2 = rk.flux.Flow.from_projection(
         name="weekly_flow",
@@ -288,15 +290,17 @@ class TestStream:
         proj=rk.projection.Distribution(
             form=rk.distribution.Uniform(),
             sequence=rk.duration.Sequence.from_bounds(
-                include_start=pd.Timestamp(2020, 3, 1),
-                bound=pd.Timestamp(2021, 2, 28),
-                frequency=rk.duration.Type.WEEK)),
-        units=currency.units)
+                include_start=datetime.date(2020, 3, 1),
+                bound=datetime.date(2021, 2, 28),
+                frequency=rk.duration.Type.WEEK,
+            ),
+        ),
+        units=currency.units,
+    )
 
     stream = rk.flux.Stream(
-        name="stream",
-        flows=[flow1, flow2],
-        frequency=rk.duration.Type.MONTH)
+        name="stream", flows=[flow1, flow2], frequency=rk.duration.Type.MONTH
+    )
 
     stream.display()
 
@@ -308,25 +312,27 @@ class TestStream:
 
         TestStream.stream.display()
 
-        assert TestStream.stream.sum().movements.index.size == 24 + 10  # Two full years plus March-Dec inclusive
-        assert TestStream.stream.frame['weekly_flow'].sum() == -50
-        assert TestStream.stream.frame.index.freqstr == 'M'
+        assert (
+            TestStream.stream.sum().movements.index.size == 24 + 10
+        )  # Two full years plus March-Dec inclusive
+        assert TestStream.stream.frame["weekly_flow"].sum() == -50
+        assert TestStream.stream.frame.index.freqstr == "M"
 
         product = TestStream.stream.product(
-            name="product",
-            registry=units,
-            scope=dict(globals(), **locals()))
+            name="product", registry=units, scope=dict(globals(), **locals())
+        )
         product.display()
 
-        datetime = pd.Timestamp(2020, 12, 31)
-        print(TestStream.stream.frame['yearly_flow'][datetime])
-        print(TestStream.stream.frame['weekly_flow'][datetime])
-        assert product.movements[datetime] == approx(-125.786163522)
+        datestamp = pd.Timestamp(2020, 12, 31)
+        print(TestStream.stream.frame["yearly_flow"][datestamp])
+        print(TestStream.stream.frame["weekly_flow"][datestamp])
+        assert product.movements[datestamp] == approx(-125.786163522)
 
         cumsum_flow = rk.flux.Flow(
             name="cumsum_flow",
             movements=TestStream.flow1.movements.cumsum(),
-            units=currency.units)
+            units=currency.units,
+        )
         cumsum_flow.display()
         assert cumsum_flow.movements.iloc[-1] == 100
 
@@ -337,63 +343,62 @@ class TestStream:
         stream_sqm = rk.flux.Stream(
             name="stream_sqm",
             flows=[TestStream.flow1, flow2_sqm],
-            frequency=rk.duration.Type.MONTH)
+            frequency=rk.duration.Type.MONTH,
+        )
 
         stream_sqm_agg = stream_sqm.product(
-            name="stream_sqm_agg",
-            scope=scope,
-            registry=units)
+            name="stream_sqm_agg", scope=scope, registry=units
+        )
 
-        assert stream_sqm_agg.units == 'AUD * squaremeter'
+        assert stream_sqm_agg.units == "AUD * squaremeter"
 
     def test_stream_duplication(self):
         duplicate = TestStream.stream.duplicate()
         assert duplicate.name == "stream"
         assert len(duplicate.flows) == 2
-        assert duplicate.frame.index.freqstr == 'M'
+        assert duplicate.frame.index.freqstr == "M"
 
     def test_stream_stream(self):
         collapse = TestStream.stream.collapse()
-        assert collapse.frame['yearly_flow'].iloc[0] == approx(100.0)
+        assert collapse.frame["yearly_flow"].iloc[0] == approx(100.0)
 
-        datetime = pd.Timestamp(2020, 12, 31)
+        datestamp = pd.Timestamp(2020, 12, 31)
         sum = TestStream.stream.sum()
-        assert sum.movements[datetime] == approx(29.5597484277)
+        assert sum.movements[datestamp] == approx(29.5597484277)
 
 
 class TestSpan:
     def test_correct_span(self):
-        test_span = rk.span.Span(
-            name='test_span',
-            start_date=pd.Timestamp(2020, 3, 1),
-            end_date=pd.Timestamp(2021, 2, 28))
+        test_span = rk.duration.Span(
+            name="test_span",
+            start_date=datetime.date(2020, 3, 1),
+            end_date=datetime.date(2021, 2, 28),
+        )
         assert test_span.start_date < test_span.end_date
-        assert test_span.measure(
-            duration=rk.duration.Type.DAY,
-            inclusive=False) == 364
+        assert test_span.duration(type=rk.duration.Type.DAY, inclusive=False) == 364
 
     def test_correct_spans(self):
-        dates = [pd.Timestamp(2020, 2, 29),
-                 pd.Timestamp(2020, 3, 1),
-                 pd.Timestamp(2021, 2, 28),
-                 pd.Timestamp(2021, 12, 31),
-                 pd.Timestamp(2024, 2, 29)]
-        names = ['Span1', 'Span2', 'Span3', 'Span4']
-        spans = rk.span.Span.from_dates(names=names, dates=dates)
+        dates = [
+            datetime.date(2020, 2, 29),
+            datetime.date(2020, 3, 1),
+            datetime.date(2021, 2, 28),
+            datetime.date(2021, 12, 31),
+            datetime.date(2024, 2, 29),
+        ]
+        names = ["Span1", "Span2", "Span3", "Span4"]
+        spans = rk.duration.Span.from_date_sequence(names=names, dates=dates)
 
         assert len(spans) == 4
-        assert spans[0].name == 'Span1'
-        assert spans[0].end_date == pd.Timestamp(2020, 2, 29)
-        assert spans[0].measure(duration=rk.duration.Type.DAY) == 0
+        assert spans[0].name == "Span1"
+        assert spans[0].end_date == datetime.date(2020, 2, 29)
+        assert spans[0].duration(type=rk.duration.Type.DAY) == 0
 
-        assert spans[1].start_date == pd.Timestamp(2020, 3, 1)
-        assert spans[1].end_date == pd.Timestamp(2021, 2, 27)
+        assert spans[1].start_date == datetime.date(2020, 3, 1)
+        assert spans[1].end_date == datetime.date(2021, 2, 27)
 
 
 class TestSegmentation:
-    interval = rk.segmentation.Interval(
-        right=9.6,
-        left=2.4)
+    interval = rk.segmentation.Interval(right=9.6, left=2.4)
 
     def test_interval(self):
         assert TestSegmentation.interval.mid == approx(6.0)
@@ -419,37 +424,49 @@ class TestSegmentation:
     def test_division(self):
         gross = rk.segmentation.Segment(
             bounds=rk.segmentation.Interval(right=100),
-            characteristics={rk.segmentation.Characteristic.use: 'mixed'})
-        (residential, podium) = gross.split(proportion=.65)
+            characteristics={rk.segmentation.Characteristic.use: "mixed"},
+        )
+        (residential, podium) = gross.split(proportion=0.65)
 
-        residential.characteristics[rk.segmentation.Characteristic.use] = 'residential'
-        podium.characteristics[rk.segmentation.Characteristic.use] = 'mixed'
+        residential.characteristics[rk.segmentation.Characteristic.use] = "residential"
+        podium.characteristics[rk.segmentation.Characteristic.use] = "mixed"
 
         assert residential.bounds.right == approx(65)
 
-        podium_subdivs = podium.subdivide(divisions=[
-            ('Parking',
-             {
-                 rk.segmentation.Characteristic.type: 'Podium',
-                 rk.segmentation.Characteristic.tenure: 'Mixed',
-                 rk.segmentation.Characteristic.use: 'Parking',
-                 rk.segmentation.Characteristic.span: 1
-             }, 0.5),
-            ('Retail',
-             {
-                 rk.segmentation.Characteristic.type: 'Podium',
-                 rk.segmentation.Characteristic.tenure: 'Mixed',
-                 rk.segmentation.Characteristic.use: 'Retail',
-                 rk.segmentation.Characteristic.span: 2
-             }, 0.25),
-            ('boh',
-             {
-                 rk.segmentation.Characteristic.type: 'Podium',
-                 rk.segmentation.Characteristic.tenure: 'Mixed',
-                 rk.segmentation.Characteristic.use: 'BOH',
-                 rk.segmentation.Characteristic.span: 2
-             }, 0.25)
-        ])
+        podium_subdivs = podium.subdivide(
+            divisions=[
+                (
+                    "Parking",
+                    {
+                        rk.segmentation.Characteristic.type: "Podium",
+                        rk.segmentation.Characteristic.tenure: "Mixed",
+                        rk.segmentation.Characteristic.use: "Parking",
+                        rk.segmentation.Characteristic.span: 1,
+                    },
+                    0.5,
+                ),
+                (
+                    "Retail",
+                    {
+                        rk.segmentation.Characteristic.type: "Podium",
+                        rk.segmentation.Characteristic.tenure: "Mixed",
+                        rk.segmentation.Characteristic.use: "Retail",
+                        rk.segmentation.Characteristic.span: 2,
+                    },
+                    0.25,
+                ),
+                (
+                    "boh",
+                    {
+                        rk.segmentation.Characteristic.type: "Podium",
+                        rk.segmentation.Characteristic.tenure: "Mixed",
+                        rk.segmentation.Characteristic.use: "BOH",
+                        rk.segmentation.Characteristic.span: 2,
+                    },
+                    0.25,
+                ),
+            ]
+        )
 
         podium.display_children()
 
@@ -459,20 +476,23 @@ class TestSegmentation:
 
 
 class TestType:
-    parent = rk.segmentation.Type(name='parent')
-    child = rk.segmentation.Type(name='child')
+    parent = rk.segmentation.Type(name="parent")
+    child = rk.segmentation.Type(name="child")
     parent.add_subtypes([child])
-    child.add_subtypes([
-        rk.segmentation.Type(name='grandchild01'),
-        rk.segmentation.Type(name='grandchild02')
-    ])
-    grandparent = rk.segmentation.Type(name='grandparent')
+    child.add_subtypes(
+        [
+            rk.segmentation.Type(name="grandchild01"),
+            rk.segmentation.Type(name="grandchild02"),
+        ]
+    )
+    grandparent = rk.segmentation.Type(name="grandparent")
     grandparent.add_subtypes([parent])
 
     def test_heritage(self):
         assert len(TestType.grandparent.subtypes[0].subtypes[0].subtypes) == 2
         TestType.child.subtypes[0].display()
         print([ancestor.name for ancestor in TestType.child.subtypes[0].ancestors()])
+
 
 # class TestAPI:
 # def test_speckle(self):

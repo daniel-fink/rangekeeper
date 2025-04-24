@@ -1,34 +1,35 @@
-[tool.poetry]
+[project]
 name = "Rangekeeper"
-version = "0.7.6"
+version = "0.7.7"
 description = "A Python library assisting financial modelling in real estate asset & development planning, decision-making, cashflow forecasting, and scenario analysis."
-authors = ["Daniel Fink <danfink@mit.edu>"]
+authors = [
+    { name = "Daniel Fink", email = "danfink@mit.edu" }
+]
 license = "MPL-2.0"
 readme = "README.md"
+requires-python = ">=3.10, <3.13"
 
-[tool.poetry.dependencies]
-python = ">=3.10, <3.13"
-matplotlib = "^3.10"
-pandas = "^2.2"
-pint = "^0.24"
-pyxirr = "^0.10"
-scipy = "^1.14"
-networkx = "^3.3"
-py-moneyed = "^3.0"
-tabulate = "^0.9"
-specklepy = "^2.21"
-numba = "^0.61"
-multiprocess = "^0.70"
-seaborn = "^0.13"
-pyvis = "^0.3"
-plotly = "^6.0"
-aenum = "^3.1"
-numpy-financial = "^1.0"
-black = "^25.1.0"
+dependencies = [
+    "matplotlib>=3.10",
+    "pandas>=2.2",
+    "pint>=0.24",
+    "pyxirr>=0.10",
+    "scipy>=1.14",
+    "networkx>=3.3",
+    "py-moneyed>=3.0",
+    "tabulate>=0.9",
+    "specklepy>=2.21",
+    "numba>=0.61",
+    "multiprocess>=0.70",
+    "seaborn>=0.13",
+    "pyvis>=0.3",
+    "plotly>=6.0",
+    "aenum>=3.1",
+    "numpy-financial>=1.0",
+    "black>=25.1",
+    "pytest>=8.3",
+]
 
-[tool.poetry.dev-dependencies]
-pytest = "^8.3"
+[tool.ruff.format]
+preview = true  # Uses Black's experimental formatting rules
 
-[build-system]
-requires = ["setuptools", "poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"

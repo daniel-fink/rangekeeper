@@ -1,90 +1,93 @@
 from __future__ import annotations
 
-import json
-import pprint as pp
 # Pytests file.
 # Note: gathers tests according to a naming convention.
 # By default any file that is to contain tests must be named starting with 'test_',
 # classes that hold tests must be named starting with 'Test',
 # and any function in a file that should be treated as a test must also start with 'test_'.
 import os
-import locale
-import multiprocess as mp
-from typing import List, Callable, Dict
+import pprint as pp
 
-import matplotlib
-import matplotlib.pyplot as plt
-import networkx as nx
-from pyvis.network import Network
-import plotly.express as px
-import plotly.graph_objects as go
 # In addition, in order to enable pytest to find all modules,
 # run tests via a 'python -m pytest tests/<test_file>.py' command from the root directory of this project
 import pandas as pd
-pd.set_option('display.max_columns', None)
-import numpy as np
-import scipy.stats as ss
-import pint
+
+pd.set_option("display.max_columns", None)
 
 import rangekeeper as rk
 
 
 class TestApi:
     stream_id = "c0f66c35e3"
-    speckle = rk.api.Speckle(token=os.getenv('SPECKLE_TOKEN'))
+    speckle = rk.api.Speckle(token=os.getenv("SPECKLE_TOKEN"))
     model = speckle.get_commit(stream_id=stream_id)
 
     def test_connection(self):
-        latest_commit_id = TestApi.speckle.get_latest_commit_id(stream_id=TestApi.stream_id)
-        print('Latest Commit: {0}'.format(latest_commit_id))
+        latest_commit_id = TestApi.speckle.get_latest_commit_id(
+            stream_id=TestApi.stream_id
+        )
+        print("Latest Commit: {0}".format(latest_commit_id))
 
         metadata = TestApi.speckle.get_metadata(stream_id=TestApi.stream_id)
         print(metadata)
 
-        assert metadata.name == 'RangekeeperDemo'
+        assert metadata.name == "RangekeeperDemo"
 
         roots = TestApi.model.get_dynamic_member_names()
 
         assert len(roots) == 2
-        assert '@property' in roots
+        assert "@property" in roots
 
     def test_conversion(self):
-        parsed = rk.api.Speckle.parse(base=TestApi.model['@property'])
+        parsed = rk.api.Speckle.parse(base=TestApi.model["@property"])
         root_base = list(parsed.values())[0]
-        print('Root Base:\n {0}'.format(root_base))
-        assert root_base.speckle_type == 'Rangekeeper.Entity:Rangekeeper.Assembly'
+        print("Root Base:\n {0}".format(root_base))
+        assert root_base.speckle_type == "Rangekeeper.Entity:Rangekeeper.Assembly"
 
         root_entity = rk.graph.Entity.from_base(root_base)
-        assert root_entity.name == 'property'
+        assert root_entity.name == "property"
         assert len(root_entity.graph.nodes) == 5
         assert type(root_entity) == rk.graph.Assembly
-        print('Root Entity:\n {0}'.format(root_entity))
+        print("Root Entity:\n {0}".format(root_entity))
 
-        buildingA = [node for node in root_entity.graph.nodes if node.name == 'buildingA'][0]
-        print('BuildingA:\n {0}'.format(buildingA))
-        buildingA_containment = buildingA.get_relatives(outgoing=True, relationship_type='contains')
-        print('BuildingA Containment: \n {0}\n'.format(buildingA_containment))
+        buildingA = [
+            node for node in root_entity.graph.nodes if node.name == "buildingA"
+        ][0]
+        print("BuildingA:\n {0}".format(buildingA))
+        buildingA_containment = buildingA.get_relatives(
+            outgoing=True, relationship_type="contains"
+        )
+        print("BuildingA Containment: \n {0}\n".format(buildingA_containment))
 
-        buildingAresidential = [node for node in buildingA.graph.nodes if node.name == 'buildingAresidential'][0]
-        print('BuildingAresidential:\n {0}'.format(buildingAresidential))
+        buildingAresidential = [
+            node
+            for node in buildingA.graph.nodes
+            if node.name == "buildingAresidential"
+        ][0]
+        print("BuildingAresidential:\n {0}".format(buildingAresidential))
 
     def test_develop(self):
-        parsed = rk.api.Speckle.parse(base=TestApi.model['@property'])
+        parsed = rk.api.Speckle.parse(base=TestApi.model["@property"])
         # print('\nParsed: \n{0}'.format(pp.pprint([base['name'] for base in parsed.values()])))
         # print('\nCount Parsed: \n{0}'.format(len(parsed)))
 
         property = rk.api.Speckle.to_rk(
-            bases=list(parsed.values()),
-            name='property',
-            type='property')
+            bases=list(parsed.values()), name="property", type="property"
+        )
         # print('\nScenario: \n{0}'.format(scenario))
         # print('\nCount Scenario: \n{0}'.format(len(scenario.graph.nodes())))
 
         spatial_containment = rk.graph.Assembly.from_graph(
             graph=property.graph.edge_subgraph(
-                [edge for edge in property.graph.edges(keys=True) if edge[2] == 'spatiallyContains']),
-            name='spatial_containment',
-            type='subgraph')
+                [
+                    edge
+                    for edge in property.graph.edges(keys=True)
+                    if edge[2] == "spatiallyContains"
+                ]
+            ),
+            name="spatial_containment",
+            type="subgraph",
+        )
         # print('\nSpatial Containment: \n{0}'.format(spatial_containment))
 
         roots = property.get_roots()  # ['spatiallyContains']
@@ -93,7 +96,11 @@ class TestApi:
         subassemblies = property.get_subassemblies()
         # print('\nSubassemblies: \n{0}'.format(pp.pprint(list(subassemblies.values()))))
 
-        buildingA = [assembly for assembly in subassemblies.values() if assembly['name'] == 'buildingA'][0]
+        buildingA = [
+            assembly
+            for assembly in subassemblies.values()
+            if assembly["name"] == "buildingA"
+        ][0]
         # print('\nBuildingA: \n{0}'.format(buildingA))
 
         subentities = buildingA.get_subentities()
@@ -106,26 +113,25 @@ class TestApi:
             hierarchical_layout=False,
             display=False,
             height=1600,
-            )
+        )
 
         spatial_containment_dict = spatial_containment.to_dict()
         # print('\nSpatial Containment Dict: \n{0}'.format(pp.pprint(spatial_containment_dict)))
 
-        spatial_containment.aggregate(
-            property='gfa',
-            label='subtotal_gfa')
+        spatial_containment.aggregate(property="gfa", label="subtotal_gfa")
 
-        print('\nGFA Aggregation: \n{0}'.format(pp.pprint(spatial_containment.to_dict())))
+        print(
+            "\nGFA Aggregation: \n{0}".format(pp.pprint(spatial_containment.to_dict()))
+        )
         #
-        df = pd.DataFrame.from_dict(spatial_containment.to_dict(), orient='index')
+        df = pd.DataFrame.from_dict(spatial_containment.to_dict(), orient="index")
         print(df)
 
         foo = spatial_containment.to_DataFrame()
         #
 
-        fig = spatial_containment.sunburst('subtotal_gfa')
+        fig = spatial_containment.sunburst("subtotal_gfa")
         fig.show()
-
 
         #
 

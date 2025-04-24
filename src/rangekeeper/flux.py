@@ -1,17 +1,16 @@
 from __future__ import annotations
 
+import datetime
+import itertools
+import json
 import locale
 import os
-
-import itertools
-import math
-from typing import Dict, Union, Optional, Tuple
+from typing import Dict, Union, Optional, Tuple, List
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pint
-import json
 import pyxirr
 
 import rangekeeper as rk
@@ -20,19 +19,22 @@ import rangekeeper as rk
 def _format_series(
     series: pd.Series,
     units: pint.Unit,
+    to_datestamps: bool = True,
     decimals: int = 2,
 ):
+    index = pd.Series(series.index.date, name="date") if to_datestamps else series.index
+
     if units.dimensionality == "[currency]":
         formatted = pd.Series(
             data=[str(locale.currency(value, grouping=True)) for value in series],
-            index=pd.Series(series.index, name="date"),
+            index=index,
             name=series.name,
         )
     else:
         floatfmt = "{:." + str(decimals) + "f}"
         formatted = pd.Series(
             data=[str(floatfmt.format(value)) for value in series],
-            index=pd.Series(series.index, name="date"),
+            index=index,
             name=series.name,
         )
 
@@ -66,7 +68,17 @@ class Flow:
         """
 
         if not isinstance(movements.index, pd.DatetimeIndex):
-            raise Exception("Error: Flow's movements' Index is not a pd.DatetimeIndex")
+            try:
+                movements.index = pd.to_datetime(
+                    arg=movements.index,
+                    errors="raise",
+                )
+            except Exception as e:
+                raise Exception(
+                    "Error: Flow's movements' Index cannot be converted to a pd.DatetimeIndex: {0}".format(
+                        str(e)
+                    )
+                )
 
         if movements.dtype != float:
             try:
@@ -124,7 +136,9 @@ class Flow:
             "Movements: "
             + os.linesep
             + _format_series(
-                series=self.movements, units=self.units, decimals=decimals
+                series=self.movements,
+                units=self.units,
+                decimals=decimals,
             ).to_markdown(
                 stralign="right",
                 numalign="right",
@@ -185,13 +199,16 @@ class Flow:
     @classmethod
     def from_dict(
         cls,
-        movements: Dict[pd.Timestamp, float],
+        movements: Dict[datetime.date | pd.Timestamp, float],
         units: pint.Unit,
         name: str = None,
     ) -> Flow:
         """
         Returns a Flow where movements are defined by key-value pairs of pd.Timestamps and amounts.
         """
+
+        if any(not isinstance(key, pd.Timestamp) for key in movements):
+            movements = {pd.Timestamp(key): value for key, value in movements.items()}
 
         dates = movements.keys()
         series = pd.Series(
@@ -299,7 +316,7 @@ class Flow:
 
     def xirr(self) -> float:
         return pyxirr.xirr(
-            dates=[datetime.date() for datetime in list(self.movements.index.array)],
+            dates=list(self.movements.index.array),
             amounts=self.movements.to_list(),
         )
 
@@ -309,7 +326,7 @@ class Flow:
     ) -> float:
         return pyxirr.xnpv(
             rate=rate,
-            dates=[datetime.date() for datetime in list(self.movements.index.array)],
+            dates=list(self.movements.index.array),
             amounts=self.movements.to_list(),
         )
 
@@ -322,7 +339,7 @@ class Flow:
         """
         return rk.flux.Flow(
             movements=self.movements.copy(deep=True)
-            .resample(rule=rk.duration.Type.period(frequency))
+            .resample(rule=rk.duration.Type.offset(frequency))
             .sum(),
             units=self.units,
             name=self.name,
@@ -348,7 +365,7 @@ class Flow:
 
     def trim_to_span(
         self,
-        span: rk.span.Span,
+        span: rk.duration.Span,
         name: str = None,
     ) -> Flow:
         """
@@ -381,10 +398,10 @@ class Flow:
 
 class Stream:
     name: str
-    flows: [Flow]
+    flows: List[Flow]
     frequency: rk.duration.Type
-    start_date: pd.Timestamp
-    end_date: pd.Timestamp
+    start_date: datetime.date
+    end_date: datetime.date
     frame: pd.DataFrame
 
     """
@@ -393,7 +410,7 @@ class Stream:
 
     def __init__(
         self,
-        flows: [Flow],
+        flows: List[Flow],
         frequency: rk.duration.Type,
         name: str = None,
     ):
@@ -425,9 +442,9 @@ class Stream:
         self.start_date = min(flows_dates)
         self.end_date = max(flows_dates)
 
-        index = rk.duration.Sequence.from_bounds(
-            include_start=self.start_date, frequency=self.frequency, bound=self.end_date
-        )
+        # index = rk.duration.Sequence.from_bounds(
+        #     include_start=self.start_date, frequency=self.frequency, bound=self.end_date
+        # )
         self._resampled_flows = [
             flow.to_periods(frequency=self.frequency) for flow in self.flows
         ]
@@ -453,10 +470,22 @@ class Stream:
         for flow in self.flows:
             series = flow.to_periods(frequency=self.frequency)
             formatted_flows.append(
-                _format_series(series=series, units=flow.units, decimals=decimals)
+                _format_series(
+                    series=series,
+                    units=flow.units,
+                    to_datestamps=False,
+                    decimals=decimals,
+                )
             )
         # formatted_flows = [flow._format_movements(decimals=decimals) for flow in self._resampled_flows]
-        frame = pd.concat(formatted_flows, axis=1).fillna(0).sort_index()
+        frame = (
+            pd.concat(
+                formatted_flows,
+                axis=1,
+            )
+            .fillna(0)
+            .sort_index()
+        )
         return frame
 
     def display(
@@ -475,7 +504,10 @@ class Stream:
             "Flows: "
             + os.linesep
             + self._format_flows(decimals=decimals).to_markdown(
-                tablefmt=tablefmt, stralign="right", numalign="right", floatfmt=floatfmt
+                tablefmt=tablefmt,
+                stralign="right",
+                numalign="right",
+                floatfmt=floatfmt,
             )
         )
 
@@ -830,7 +862,7 @@ class Stream:
     ) -> Stream:
         return Stream(name=self.name, flows=self.flows, frequency=frequency)
 
-    def trim_to_span(self, span: rk.span.Span) -> Stream:
+    def trim_to_span(self, span: rk.duration.Span) -> Stream:
         """
         Returns an Stream with all flows trimmed to the specified Span
         :param span:
