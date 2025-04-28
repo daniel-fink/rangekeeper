@@ -330,6 +330,26 @@ class Flow:
             amounts=self.movements.to_list(),
         )
 
+    def diff(
+        self,
+        with_previous: bool = True,
+        name: str = None,
+    ) -> Flow:
+        """
+        Returns a Flow with the deltas between each sequential movement
+        """
+        if not with_previous:
+            return self.__class__(
+                movements=self.movements.copy(deep=True).diff(periods=-1),
+                units=self.units,
+                name=name if name is not None else self.name + " (diff)",
+            )
+        return self.__class__(
+            movements=self.movements.copy(deep=True).diff(),
+            units=self.units,
+            name=name if name is not None else self.name + " (diff)",
+        )
+
     def resample(
         self,
         frequency: rk.duration.Type,
