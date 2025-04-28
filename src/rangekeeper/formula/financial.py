@@ -94,9 +94,9 @@ class Account:
 
     def __init__(
         self,
-        starting: float,
         transactions: rk.flux.Flow,
         frequency: rk.duration.Type,
+        starting: float = 0.0,
         rate: Union[float, rk.flux.Flow] = 0.0,
         type: Type = Type.SIMPLE,
         arrears: bool = False,
