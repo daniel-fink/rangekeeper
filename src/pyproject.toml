@@ -1,6 +1,6 @@
 [project]
 name = "Rangekeeper"
-version = "0.8.0"
+version = "0.8.3"
 description = "A Python library assisting financial modelling in real estate asset & development planning, decision-making, cashflow forecasting, and scenario analysis."
 authors = [
     { name = "Daniel Fink", email = "danfink@mit.edu" }
