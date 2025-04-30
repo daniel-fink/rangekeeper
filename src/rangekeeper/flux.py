@@ -380,8 +380,41 @@ class Flow:
             .sum()
         )
 
-    def get_frequency(self) -> str:
-        return self.movements.index.freq
+    def earliest(self) -> datetime.date:
+        """
+        Returns the earliest non-zero movement date in the Flow.
+        """
+
+        sorted = self.movements[
+            ~((self.movements == 0) | (self.movements.isna()))
+        ].sort_index()
+        return sorted.index[0].date()
+
+    def latest(self) -> datetime.date:
+        """
+        Returns the latest non-zero movement date in the Flow.
+        """
+
+        sorted = self.movements[
+            ~((self.movements == 0) | (self.movements.isna()))
+        ].sort_index()
+        return sorted.index[-1].date()
+
+    def trim_empty(
+        self,
+        name: str = None,
+    ) -> Flow:
+        return self.__class__(
+            movements=self.movements.copy(deep=True).truncate(
+                before=self.earliest(),
+                after=self.latest(),
+            ),
+            units=self.units,
+            name=self.name if name is None else name,
+        )
+
+    # def get_frequency(self) -> str:
+    #     return self.movements.index.freq
 
     def trim_to_span(
         self,

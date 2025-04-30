@@ -6,7 +6,6 @@ from typing import Union
 import numba
 import numpy as np
 import pandas as pd
-import pint
 
 import rangekeeper as rk
 
