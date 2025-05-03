@@ -131,7 +131,7 @@ class Account:
 
         self.name = f"{name}Account"
 
-        self.startings = rk.flux.Flow(
+        startings = rk.flux.Flow(
             movements=pd.Series(
                 startings,
                 index=transactions.movements.index,
@@ -139,7 +139,9 @@ class Account:
             units=transactions.units,
             name=f"{name}Start Balance",
         )
-        self.endings = rk.flux.Flow(
+        self.startings = startings.clean()
+
+        endings = rk.flux.Flow(
             movements=pd.Series(
                 endings,
                 index=transactions.movements.index,
@@ -147,7 +149,9 @@ class Account:
             units=transactions.units,
             name=f"{name}End Balance",
         )
-        self.overdraft = rk.flux.Flow(
+        self.endings = endings.clean()
+
+        overdraft = rk.flux.Flow(
             movements=pd.Series(
                 overdraft,
                 index=transactions.movements.index,
@@ -155,7 +159,9 @@ class Account:
             units=transactions.units,
             name=f"{name}Overdraft",
         )
-        self.interest = rk.flux.Flow(
+        self.overdraft = overdraft.clean()
+
+        interest = rk.flux.Flow(
             movements=pd.Series(
                 interest,
                 index=transactions.movements.index,
@@ -163,17 +169,22 @@ class Account:
             units=transactions.units,
             name=f"{name}Interest Amounts",
         )
+        self.interest = interest.clean()
 
-    def diff(self, name: str = None) -> rk.flux.Flow:
+    def diff(
+        self,
+        name: str = None,
+    ) -> rk.flux.Flow:
         """
         Calculate the difference between the start and end balances.
         """
         name = self.name if name is None else name
-        return rk.flux.Flow(
+        result = rk.flux.Flow(
             movements=self.endings.movements - self.startings.movements,
             units=self.startings.units,
             name=f"{self.startings.name} (diff)",
         )
+        return result.clean()
 
 
 # class Balance:
