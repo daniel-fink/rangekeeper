@@ -289,7 +289,7 @@ class Flow:
         """
         Returns the value of the collapsed (summed) Flow's movements
         """
-        return self.collapse().movements[0]
+        return self.collapse().movements.iloc[0]
 
     def pv(
         self,
@@ -339,16 +339,18 @@ class Flow:
         Returns a Flow with the deltas between each sequential movement
         """
         if not with_previous:
-            return self.__class__(
+            result = self.__class__(
                 movements=self.movements.copy(deep=True).diff(periods=-1),
                 units=self.units,
                 name=name if name is not None else self.name + " (diff)",
             )
-        return self.__class__(
+            return result.clean()
+        result = self.__class__(
             movements=self.movements.copy(deep=True).diff(),
             units=self.units,
             name=name if name is not None else self.name + " (diff)",
         )
+        return result.clean()
 
     def resample(
         self,
@@ -446,6 +448,21 @@ class Flow:
             name=name if name is not None else self.name,
             flows=[self],
             frequency=frequency,
+        )
+
+    def clean(self, zeroes: bool = False) -> Flow:
+        """
+        Returns a Flow with movements cleaned of NaNs (and optionally zero values)
+        """
+        movements = self.movements.copy(deep=True)
+        if zeroes:
+            movements = movements[(movements != 0) & (movements != -0.0)]
+        movements = movements[~movements.isna()]
+
+        return self.__class__(
+            movements=movements,
+            units=self.units,
+            name=self.name,
         )
 
 
