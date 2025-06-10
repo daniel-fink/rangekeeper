@@ -1,6 +1,6 @@
 [project]
 name = "Rangekeeper"
-version = "0.8.8"
+version = "0.8.9"
 description = "A Python library assisting financial modelling in real estate asset & development planning, decision-making, cashflow forecasting, and scenario analysis."
 authors = [
     { name = "Daniel Fink", email = "danfink@mit.edu" }
@@ -13,21 +13,21 @@ dependencies = [
     "matplotlib>=3.10",
     "pandas>=2.2",
     "pint>=0.24",
-    "pyxirr>=0.10",
-    "scipy>=1.14",
-    "networkx>=3.3",
+    "pyxirr>=0.9",
+    "scipy>=1.12",
+    "networkx>=3.1",
     "py-moneyed>=3.0",
     "tabulate>=0.9",
     "specklepy>=2.21",
     "numba>=0.61",
-    "multiprocess>=0.70",
+    "multiprocess>=0.70.18",
     "seaborn>=0.13",
-    "pyvis>=0.3",
+    "pyvis>=0.3.2",
     "plotly>=6.0",
-    "aenum>=3.1",
+    "aenum>=3.0",
     "numpy-financial>=1.0",
-    "black>=25.1",
-    "pytest>=8.3",
+    "pytest>=8.0",
+    "black>=25.0",
 ]
 
 [tool.ruff.format]
