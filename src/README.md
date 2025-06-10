@@ -21,5 +21,4 @@ environment and dependency management:
 ### Publishing
 1. First, remove any previously built packages: `rm -rf dist/`
 2. Build the package: `uv build`
-3. Then, publish it to PyPI with your `UV_PUBLISH_TOKEN` recorded in the .env file: `export $(grep -v 
-   '^#' .env | xargs) && uv publish --token $UV_PUBLISH_TOKEN`
+3. Then, publish it to PyPI with your `UV_PUBLISH_TOKEN` recorded in the .env file: `export $(grep -v '^#' .env | xargs) && uv publish --token $UV_PUBLISH_TOKEN`
