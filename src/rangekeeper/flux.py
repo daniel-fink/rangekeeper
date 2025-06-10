@@ -25,19 +25,29 @@ def _format_series(
     index = pd.Series(series.index.date, name="date") if to_datestamps else series.index
 
     if units.dimensionality == "[currency]":
-        formatted = pd.Series(
-            data=[str(locale.currency(value, grouping=True)) for value in series],
-            index=index,
-            name=series.name,
+        formatted = rk.format.to_currencys(
+            series,
+            decimals=decimals > 0,
         )
+        # formatted = pd.Series(
+        #     data=rk.format.to_currencys(
+        #     # data=[str(locale.currency(value, grouping=True)) for value in series],
+        #     index=index,
+        #     name=series.name,
+        # )
     else:
-        floatfmt = "{:." + str(decimals) + "f}"
-        formatted = pd.Series(
-            data=[str(floatfmt.format(value)) for value in series],
-            index=index,
-            name=series.name,
+        formatted = rk.format.to_decimals(
+            series=series,
+            places=decimals,
         )
+        # floatfmt = "{:." + str(decimals) + "f}"
+        # formatted = pd.Series(
+        #     data=[str(floatfmt.format(value)) for value in series],
+        #     index=index,
+        #     name=series.name,
+        # )
 
+    formatted.name = series.name
     return formatted
 
 
@@ -553,7 +563,7 @@ class Stream:
                 formatted_flows,
                 axis=1,
             )
-            .fillna(0)
+            .fillna("0")
             .sort_index()
         )
         return frame
