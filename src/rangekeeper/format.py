@@ -70,7 +70,7 @@ def to_thousandss(series: pd.Series) -> pd.Series:
 def to_currency(
     value,
     currency: str = "USD",
-    locale: str = "",
+    locale: str = "en_US",
     decimals: bool = True,
     compact: bool = False,
 ) -> str:
@@ -92,7 +92,10 @@ def to_currency(
         )
 
     result = numbers.format_currency(
-        number=number, currency=currency, locale=locale, decimal_quantization=False
+        number=number,
+        currency=currency,
+        locale=locale,
+        decimal_quantization=False,
     )
     if not decimals:
         return result.split(".")[0]
@@ -102,7 +105,7 @@ def to_currency(
 def to_currencys(
     series: pd.Series,
     currency: str = "USD",
-    locale: str = "",
+    locale: str = "en_US",
     decimals: bool = True,
     compact: bool = False,
 ) -> pd.Series:
@@ -170,7 +173,7 @@ def to_percentages(
 
 def to_locale(
     value,
-    locale: str = "",
+    locale: str = "en_US",
     decimal_places: int = 2,
 ) -> str:
     number = to_decimal(
@@ -186,7 +189,7 @@ def to_locale(
 
 def to_locales(
     series: pd.Series,
-    locale: str = "",
+    locale: str = "en_US",
     decimal_places: int = 2,
 ) -> pd.Series:
     return series.map(
@@ -322,7 +325,7 @@ def to_nonnullables(data, verbose: bool = True):
 def to_timestampstrings(
     series: pd.Series,
     format: str = "short",
-    locale: str = "",
+    locale: str = "en_US",
 ):
     if "datetime" in str(series.dtype):
         return series.apply(
@@ -341,7 +344,7 @@ def to_timestampstrings(
 def to_datestrings(
     series: pd.Series,
     format: str = "medium",
-    locale: str = "",
+    locale: str = "en_US",
 ):
     if "datetime" in str(series.dtype):
         return series.apply(
