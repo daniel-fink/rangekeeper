@@ -490,40 +490,46 @@ class Stream:
 
     def __init__(
         self,
-        flows: Optional[List[Flow]],
+        flows: List[Flow],
         frequency: rk.duration.Type,
         name: str = None,
     ):
+
+        if flows is None or len(flows) == 0:
+            raise ValueError("Error: Stream must have at least one Flow.")
 
         # Name:
         self.name = name if name is not None else "Unnamed"
 
         # Flows:
-        self.flows = flows if flows is not None else []
+        self.flows = flows
         """The set of input Flows that are aggregated in this Stream"""
 
         self.units = {flow.name: flow.units for flow in self.flows}
+        """A dictionary of the Stream's constituent Flows' units, by Flow name."""
 
         # Frequency:
         self.frequency = frequency
+        """ The frequency of the Stream's resampled Flows."""
 
         # Stream:
-        flows_dates = list(
-            itertools.chain.from_iterable(
-                list(flow.movements.index.array) for flow in self.flows
-            )
-        )
-        if not flows_dates:
-            self.start_date = None
-            self.end_date = None
-        else:
-            self.start_date = min(flows_dates)
-            self.end_date = max(flows_dates)
+        dates = [date for flow in self.flows for date in flow.movements.index.array]
+        self.start_date = min(dates)
+        """The earliest date of the Stream's constituent Flows' movements."""
+        self.end_date = max(dates)
+        """The latest date of the Stream's constituent Flows' movements."""
 
         self._resampled_flows = [
             flow.to_periods(frequency=self.frequency) for flow in self.flows
         ]
-        self.frame = pd.concat(self._resampled_flows, axis=1).fillna(0).sort_index()
+        self.frame = (
+            pd.concat(
+                self._resampled_flows,
+                axis=1,
+            )
+            .fillna(0)
+            .sort_index()
+        )
         """
         A pd.DataFrame of the Stream's flow Flows accumulated into the Stream's frequency
         """
