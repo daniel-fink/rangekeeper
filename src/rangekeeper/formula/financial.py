@@ -6,6 +6,7 @@ from typing import Union
 import numba
 import numpy as np
 import pandas as pd
+import pint
 
 import rangekeeper as rk
 
@@ -95,7 +96,7 @@ class Account:
         self,
         transactions: rk.flux.Flow,
         frequency: rk.duration.Type,
-        starting: float = 0.0,
+        starting: Union[float, pint.Quantity] = 0.0,
         rate: Union[float, rk.flux.Flow] = 0.0,
         type: Type = Type.SIMPLE,
         arrears: bool = False,
@@ -120,6 +121,13 @@ class Account:
             assert len(rate.movements.index) == len(
                 transactions.movements.index
             ), "Rate must be a Flow with the same number of periods as transactions."
+
+        if isinstance(starting, pint.Quantity):
+            if starting.units != transactions.units:
+                raise ValueError(
+                    f"Starting balance units {starting.units} do not match transaction units {transactions.units}."
+                )
+            starting = starting.magnitude
 
         startings, endings, overdraft, interest = self._calculate(
             starting=starting,
