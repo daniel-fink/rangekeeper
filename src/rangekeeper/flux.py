@@ -478,10 +478,10 @@ class Flow:
 
 class Stream:
     name: str
-    flows: List[Flow]
+    flows: Optional[List[Flow]]
     frequency: rk.duration.Type
-    start_date: datetime.date
-    end_date: datetime.date
+    start_date: Optional[datetime.date]
+    end_date: Optional[datetime.date]
     frame: pd.DataFrame
 
     """
@@ -490,7 +490,7 @@ class Stream:
 
     def __init__(
         self,
-        flows: List[Flow],
+        flows: Optional[List[Flow]],
         frequency: rk.duration.Type,
         name: str = None,
     ):
@@ -498,14 +498,8 @@ class Stream:
         # Name:
         self.name = name if name is not None else "Unnamed"
 
-        # Units:
-        # if all(flow.units == flows[0].units for flow in flows):
-        #     self.units = flows[0].units
-        # else:
-        #     raise Exception("Input Flows have dissimilar units. Cannot aggregate into Stream.")
-
         # Flows:
-        self.flows = flows
+        self.flows = flows if flows is not None else []
         """The set of input Flows that are aggregated in this Stream"""
 
         self.units = {flow.name: flow.units for flow in self.flows}
@@ -519,12 +513,13 @@ class Stream:
                 list(flow.movements.index.array) for flow in self.flows
             )
         )
-        self.start_date = min(flows_dates)
-        self.end_date = max(flows_dates)
+        if not flows_dates:
+            self.start_date = None
+            self.end_date = None
+        else:
+            self.start_date = min(flows_dates)
+            self.end_date = max(flows_dates)
 
-        # index = rk.duration.Sequence.from_bounds(
-        #     include_start=self.start_date, frequency=self.frequency, bound=self.end_date
-        # )
         self._resampled_flows = [
             flow.to_periods(frequency=self.frequency) for flow in self.flows
         ]
