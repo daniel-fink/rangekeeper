@@ -195,7 +195,9 @@ class TestFinancial:
         interest_account.interest.display()
 
         assert interest_account.endings.movements.iloc[-1] == approx(500000.00)
-        assert interest_account.interest.total() == approx(694.44 + 2083.33, rel=1e-2)
+        assert interest_account.interest.total().magnitude == approx(
+            694.44 + 2083.33, rel=1e-2
+        )
 
     def test_compounded_interest(self):
         transactions = rk.flux.Flow.from_sequence(
@@ -227,7 +229,7 @@ class TestFinancial:
         account.interest.display()
 
         assert account.endings.movements.iloc[-1] == approx(525580.95)
-        assert account.interest.total() == approx(25580.95)
+        assert account.interest.total().magnitude == approx(25580.95)
 
     def test_amortized_loan(self):
         amount = self.params["costs"]
@@ -270,7 +272,7 @@ class TestFinancial:
 
         assert account.endings.movements.iloc[-1] == approx(0.00)
         assert transactions[0] + account.interest.movements.iloc[0] == approx(payment)
-        assert account.interest.total() == approx(13644.89)
+        assert account.interest.total().magnitude == approx(13644.89)
 
     def test_capitalized_interest(self):
         account = rk.formula.financial.Account(
@@ -289,7 +291,7 @@ class TestFinancial:
         account.interest.display()
 
         assert account.endings.movements.iloc[-1] == approx(510577.82)
-        assert account.interest.total() == approx(10577.82)
+        assert account.interest.total().magnitude == approx(10577.82)
 
     def test_balance(self):
         transactions = rk.flux.Stream(
@@ -319,7 +321,7 @@ class TestFinancial:
         account.interest.display()
 
         assert account.overdraft.movements.iloc[-1] == approx(-488680.57)
-        assert account.interest.total() == approx(11319.43)
+        assert account.interest.total().magnitude == approx(11319.43)
 
     def test_balances(self):
         transactions = rk.flux.Stream(
@@ -374,7 +376,7 @@ class TestFinancial:
         )
         profit.display()
 
-        assert profit.sum().total() == approx(495337.17)
+        assert profit.sum().total().magnitude == approx(495337.17)
 
 
 class TestSolver:
@@ -407,7 +409,7 @@ class TestSolver:
             model = Model(params)
             model.init_transactions()
             model.init_finance()
-            finance = model.loan.interest.total()
+            finance = model.loan.interest.total().magnitude
             sources = equity + loan
             uses = dev + finance + rlv
 

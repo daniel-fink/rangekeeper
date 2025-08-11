@@ -62,6 +62,36 @@ class TestMeasures:
 
         print((value / (5 * units.hour)).units)
 
+        # ureg = pint.UnitRegistry()
+
+        ratio = (
+            (100 * units.percent) * (5 * units.AUD) / (1 * units.sqm)
+        )  # * 100 * units.dimensionless
+        # ratio = (
+        #     pint.Quantity(100, "%") * pint.Quantity(5, "%") / pint.Quantity(100, "%")
+        # )
+        print(f"Ratio: {ratio}")
+        print(f"Ratio dimensionality: {ratio.units.dimensionality}")
+        print(f"Ratio units: {ratio.units}")
+
+        print(f"_Units: {ratio.units._units}")
+        print(f"_d: {ratio.units._units._d}")
+
+        if "percent" in ratio.units._units._d:
+            print(ratio.units._units._d["percent"])
+
+        # ratio.units._units._d.remove("percent")
+        # print(f"Updated _d: {ratio.units._units._d}")
+
+        reduced = ratio.to_reduced_units()
+        print(f" Reduced: {reduced}")
+
+        to = ratio.to("AUD / sqm")
+        print(f"To dimensionless: {to}")
+
+        foo = rk.measure.to_filtered(quantity=ratio, registry=units)
+        print(f"Filtered: {foo}")
+
 
 # class TestSpace:
 # parent_type = graph.Type(
