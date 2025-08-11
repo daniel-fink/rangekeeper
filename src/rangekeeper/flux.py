@@ -295,11 +295,11 @@ class Flow:
             units=self.units,
         )
 
-    def total(self) -> np.float64:
+    def total(self) -> pint.Quantity:
         """
         Returns the value of the collapsed (summed) Flow's movements
         """
-        return self.collapse().movements.iloc[0]
+        return pint.Quantity(self.collapse().movements.iloc[0], self.units)
 
     def pv(
         self,

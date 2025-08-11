@@ -7,28 +7,26 @@ from abc import abstractmethod
 
 
 class Type(enum.Enum):
-    UNIFORM = 'Uniform'  # Continuous uniform distribution or rectangular distribution
-    TRIANGULAR = 'Triangular'  # Continuous linear distribution with lower limit a, upper limit b and mode c, where a < b and a ≤ c ≤ b.
-    NORMAL = 'Normal'  # Continuous probability distribution defined as the limiting case of a discrete binomial distribution.
-    PERT = 'PERT'  # Transformation of the four-parameter Beta distribution defined by the minimum, most likely, and maximum values.
+    UNIFORM = "Uniform"  # Continuous uniform distribution or rectangular distribution
+    TRIANGULAR = "Triangular"  # Continuous linear distribution with lower limit a, upper limit b and mode c, where a < b and a ≤ c ≤ b.
+    # NORMAL = 'Normal'  # Continuous probability distribution defined as the limiting case of a discrete binomial distribution.
+    PERT = "PERT"  # Transformation of the four-parameter Beta distribution defined by the minimum, most likely, and maximum values.
 
 
 class Form:
     type: Type
 
-    def __init__(
-            self,
-            generator: Optional[np.random.Generator] = None):
+    def __init__(self, generator: Optional[np.random.Generator] = None):
         self.generator = generator
         self.dist = ss.rv_continuous()
 
-    def sample(
-            self,
-            size: int = 1):
+    def sample(self, size: int = 1):
 
-        if hasattr(self.dist, 'b'):
-            if self.dist.b == 0.:
-                return self.dist.a  # If the distribution is a point mass, return the value of the point mass
+        if hasattr(self.dist, "b"):
+            if self.dist.b == 0.0:
+                return (
+                    self.dist.a
+                )  # If the distribution is a point mass, return the value of the point mass
 
         if self.generator is None:
             generator = np.random.default_rng()
@@ -42,9 +40,7 @@ class Form:
         #     return variates
 
     @abstractmethod
-    def interval_density(
-            self,
-            parameters: [float]):
+    def interval_density(self, parameters: [float]):
         """
         Returns the cumulative density (integral of the interpolated curve)
         between n parameter pairs as intervals (i.e. returns n-1 results)
@@ -55,15 +51,15 @@ class Form:
         """
 
         if (all(parameters) >= 0) & (all(parameters) <= 1):
-            return [(self.dist.cdf(parameters[i + 1]) - self.dist.cdf(parameters[i]))
-                    for i in (range(0, len(parameters) - 1))]
+            return [
+                (self.dist.cdf(parameters[i + 1]) - self.dist.cdf(parameters[i]))
+                for i in (range(0, len(parameters) - 1))
+            ]
         else:
             raise ValueError("Error: Parameter must be between 0 and 1 inclusive")
 
     @abstractmethod
-    def cumulative_density(
-            self,
-            parameters: [float]):
+    def cumulative_density(self, parameters: [float]):
         """
         Returns the cumulative distribution at parameters between 0 and 1.
         """
@@ -75,11 +71,12 @@ class Form:
 
 class Symmetric(Form):
     def __init__(
-            self,
-            type: Type,
-            residual: float,
-            mean: float = 0,
-            generator: Optional[np.random.Generator] = None):
+        self,
+        type: Type,
+        residual: float,
+        mean: float = 0,
+        generator: Optional[np.random.Generator] = None,
+    ):
         """
         Parameters that define the mean and residual (maximum deviation)
         of a symmetric distribution
@@ -92,7 +89,9 @@ class Symmetric(Form):
         if type is Type.UNIFORM or type is Type.PERT or type is Type.TRIANGULAR:
             self.type = type
         else:
-            raise ValueError("Distribution type must be able to be symmetrical about its mean")
+            raise ValueError(
+                "Distribution type must be able to be symmetrical about its mean"
+            )
         self.mean = mean
         self.residual = residual
         self.generator = generator
@@ -103,24 +102,17 @@ class Symmetric(Form):
             return Uniform(
                 lower=self.mean - self.residual,
                 range=self.residual * 2,
-                generator=self.generator)
+                generator=self.generator,
+            )
         elif self.type == Type.PERT:
-            return PERT.symmetric(
-                peak=self.mean,
-                residual=self.residual)
+            return PERT.symmetric(peak=self.mean, residual=self.residual)
         elif self.type == Type.TRIANGULAR:
-            return Triangular.symmetric(
-                mode=self.mean,
-                residual=self.residual)
+            return Triangular.symmetric(mode=self.mean, residual=self.residual)
 
-    def interval_density(
-            self,
-            parameters: [float]) -> [float]:
+    def interval_density(self, parameters: [float]) -> [float]:
         return self._distribution().interval_density(parameters)
 
-    def cumulative_density(
-            self,
-            parameters: [float]) -> [float]:
+    def cumulative_density(self, parameters: [float]) -> [float]:
         return self._distribution().cumulative_density(parameters)
 
 
@@ -133,33 +125,28 @@ class Uniform(Form):
     """
 
     def __init__(
-            self,
-            lower: float = 0.,
-            range: float = 1.,
-            generator: Optional[np.random.Generator] = None):
+        self,
+        lower: float = 0.0,
+        range: float = 1.0,
+        generator: Optional[np.random.Generator] = None,
+    ):
         super().__init__(generator=generator)
         self.dist = ss.uniform(loc=lower, scale=range)
         self.type = Type.UNIFORM
 
     @classmethod
     def symmetric(
-            cls,
-            mean: float,
-            residual: float,
-            generator: Optional[np.random.Generator] = None):
-        return cls(
-            lower=mean - residual,
-            range=residual * 2,
-            generator=generator)
+        cls,
+        mean: float,
+        residual: float,
+        generator: Optional[np.random.Generator] = None,
+    ):
+        return cls(lower=mean - residual, range=residual * 2, generator=generator)
 
-    def interval_density(
-            self,
-            parameters: [float]) -> [float]:
+    def interval_density(self, parameters: [float]) -> [float]:
         return super().interval_density(parameters)
 
-    def cumulative_density(
-            self,
-            parameters: [float]) -> [float]:
+    def cumulative_density(self, parameters: [float]) -> [float]:
         return super().cumulative_density(parameters)
 
 
@@ -169,11 +156,12 @@ class Triangular(Form):
     """
 
     def __init__(
-            self,
-            lower: float = 0.,
-            upper: float = 1.,
-            mode: float = 0.5,
-            generator: Optional[np.random.Generator] = None):
+        self,
+        lower: float = 0.0,
+        upper: float = 1.0,
+        mode: float = 0.5,
+        generator: Optional[np.random.Generator] = None,
+    ):
         super().__init__(generator=generator)
         loc = lower
         scale = upper - lower
@@ -185,23 +173,13 @@ class Triangular(Form):
         self.type = Type.TRIANGULAR
 
     @classmethod
-    def symmetric(
-            cls,
-            mode: float,
-            residual: float):
-        return cls(
-            lower=mode - residual,
-            upper=mode + residual,
-            mode=mode)
+    def symmetric(cls, mode: float, residual: float):
+        return cls(lower=mode - residual, upper=mode + residual, mode=mode)
 
-    def interval_density(
-            self,
-            parameters: [float]) -> [float]:
+    def interval_density(self, parameters: [float]) -> [float]:
         return super().interval_density(parameters)
 
-    def cumulative_density(
-            self,
-            parameters: [float]) -> [float]:
+    def cumulative_density(self, parameters: [float]) -> [float]:
         return super().cumulative_density(parameters)
 
 
@@ -223,47 +201,50 @@ class PERT(Form):
     """
 
     def __init__(
-            self,
-            peak: float = 0.5,
-            weighting: float = 4.0,
-            minimum: float = 0.0,
-            maximum: float = 1.0,
-            generator: Optional[np.random.Generator] = None):
+        self,
+        peak: float = 0.5,
+        weighting: float = 4.0,
+        minimum: float = 0.0,
+        maximum: float = 1.0,
+        generator: Optional[np.random.Generator] = None,
+    ):
         super().__init__(generator=generator)
         self.type = Type.PERT
         self.peak = peak
         self.weighting = weighting
         self.minimum = minimum
         self.maximum = maximum
-        self.scale = maximum - minimum
-        if (self.weighting >= 0) & (self.peak >= minimum) & (self.peak <= maximum):
-            a = (1. + self.weighting * (self.peak - minimum) / (maximum - minimum))
-            b = (1. + self.weighting * (maximum - self.peak) / (maximum - minimum))
-            self.dist = ss.beta(
-                loc=minimum,
-                scale=self.scale,
-                a=a,
-                b=b)
-        else:
-            raise ValueError("Error: Weighting must be greater than 0 and Peak must be between 0 and 1 inclusive")
+
+        if self.maximum <= self.minimum:
+            raise ValueError(
+                f"maximum ({self.maximum}) must be greater than minimum ({self.minimum})"
+            )
+
+        if not (self.minimum <= self.peak <= self.maximum):
+            raise ValueError(
+                f"peak must lie between minimum ({self.minimum}) and "
+                f"maximum ({self.maximum}), inclusive"
+            )
+
+        if self.weighting < 0:
+            raise ValueError("weighting must be non-negative (>= 0)")
+
+        # now compute
+        self.scale = self.maximum - self.minimum
+        a = 1 + self.weighting * (self.peak - self.minimum) / self.scale
+        b = 1 + self.weighting * (self.maximum - self.peak) / self.scale
+
+        # finally, instantiate the SciPy beta:
+        self.dist = ss.beta(a=a, b=b, loc=self.minimum, scale=self.scale)
 
     @classmethod
-    def symmetric(
-            cls,
-            peak: float,
-            residual: float):
+    def symmetric(cls, peak: float, residual: float):
         return cls(
-            peak=peak,
-            weighting=4.,
-            minimum=peak - residual,
-            maximum=peak + residual)
+            peak=peak, weighting=4.0, minimum=peak - residual, maximum=peak + residual
+        )
 
-    def interval_density(
-            self,
-            parameters: [float]) -> [float]:
+    def interval_density(self, parameters: [float]) -> [float]:
         return super().interval_density(parameters)
 
-    def cumulative_density(
-            self,
-            parameters: [float]) -> [float]:
+    def cumulative_density(self, parameters: [float]) -> [float]:
         return super().cumulative_density(parameters)
