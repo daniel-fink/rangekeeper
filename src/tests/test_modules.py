@@ -268,6 +268,11 @@ class TestFlow:
         ax.plot(x, pdf, "--r")
         plt.show(block=True)
 
+    def test_total(self):
+        total = TestFlow.flow.total()
+
+        print(total)
+
 
 class TestStream:
     flow1 = rk.flux.Flow.from_projection(
