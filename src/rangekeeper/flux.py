@@ -270,7 +270,7 @@ class Flow:
             raise ValueError("Unsupported projection type: {0}".format(type(proj)))
 
         # movements = movements[proj.bounds[0].to_timestamp(how='start'):proj.bounds[1].to_timestamp(how='end')]  # Fix for >yearly periodicities
-        # TODO: Fix for issues with >yearly periodicities inducing movements at the end of multi-year periods beyond the end of the projection
+        # TODO: Fix for issues with >yearly frequencies inducing movements at the end of multi-year periods beyond the end of the projection
 
         return cls(movements=movements, units=units, name=name)
 
@@ -299,7 +299,7 @@ class Flow:
         """
         Returns the value of the collapsed (summed) Flow's movements
         """
-        return pint.Quantity(self.collapse().movements.iloc[0], self.units)
+        return self.movements.sum() * self.units
 
     def pv(
         self,
