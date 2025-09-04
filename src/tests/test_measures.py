@@ -86,10 +86,13 @@ class TestMeasures:
         reduced = ratio.to_reduced_units()
         print(f" Reduced: {reduced}")
 
+        base = ratio.to_base_units()
+        print(f"Base: {base}")
+
         to = ratio.to("AUD / sqm")
         print(f"To dimensionless: {to}")
 
-        foo = rk.measure.to_filtered(quantity=ratio, registry=units)
+        foo = rk.measure.to_filtered(quantity=ratio)
         print(f"Filtered: {foo}")
 
 

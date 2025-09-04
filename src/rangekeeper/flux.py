@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 import datetime
-import itertools
 import json
-import locale
 import os
 from typing import Dict, Union, Optional, Tuple, List
 
@@ -324,21 +322,42 @@ class Flow:
             movements=frame["Discounted Flow"], units=self.units, name=name
         )
 
-    def xirr(self) -> float:
-        return pyxirr.xirr(
+    def xirr(
+        self,
+        registry: pint.UnitRegistry = None,
+    ) -> pint.Quantity:
+        """
+        Returns the XIRR (Extended Internal Rate of Return) of the Flow's movements.
+        Formats the result as a percentage in the specified registry's units.
+        """
+        # Lazy import to avoid circular dependency
+        if registry is None:
+            from rangekeeper.measure import Index
+
+            registry = Index.registry
+
+        result = pyxirr.xirr(
             dates=list(self.movements.index.array),
             amounts=self.movements.to_list(),
         )
+        return result * 100 * registry.percent
 
     def xnpv(
         self,
-        rate: float,
-    ) -> float:
-        return pyxirr.xnpv(
+        rate: Union[float, pint.Quantity],
+    ) -> pint.Quantity:
+        """
+        Returns the XNPV (Extended Net Present Value) of the Flow's movements at a specified rate.
+        Formats the result as a quantity in the Flow's units.
+        """
+        if isinstance(rate, pint.Quantity):
+            rate = rate.to(rk.measure.Index.registry.dimensionless).magnitude
+        result = pyxirr.xnpv(
             rate=rate,
             dates=list(self.movements.index.array),
             amounts=self.movements.to_list(),
         )
+        return result * self.units
 
     def diff(
         self,
@@ -808,7 +827,7 @@ class Stream:
         :return: Flow
         """
         # Check if all units are the same:
-        if not len(list(set(list(self.units.values())))) == 1:
+        if not self.is_homogeneous():
             raise ValueError(
                 "Error: summation requires all flows' units to be the same. Units: {0}".format(
                     json.dumps(
@@ -906,7 +925,7 @@ class Stream:
 
     def collapse(self) -> Stream:
         """
-        Returns an Stream with Flows' movements collapsed (summed) to the Stream's final period
+        Returns a Stream with Flows' movements collapsed (summed) to the Stream's final period
         :return: Stream
         """
         flows = [self.extract(name=name) for name in list(self.frame.columns)]
@@ -916,8 +935,17 @@ class Stream:
             frequency=self.frequency,
         )
 
-    def total(self) -> np.float64:
-        return self.sum().collapse().movements.iloc[0]
+    def total(self) -> pint.Quantity:
+        if not self.is_homogeneous():
+            raise ValueError(
+                "Error: total requires all flows' units to be the same. Units: {0}".format(
+                    json.dumps(
+                        {flow.name: flow.units.__str__() for flow in self.flows},
+                        indent=4,
+                    )
+                )
+            )
+        return self.frame.sum().sum() * next(iter(self.units.values()))
 
     def extend(
         self,

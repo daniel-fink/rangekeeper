@@ -18,7 +18,7 @@ class Type(enum.Enum):
     SEMIYEAR = "6M"
     QUARTER = "Q"
     MONTH = "M"
-    SEMIMONTH = "SM"
+    BIWEEK = "2W"
     WEEK = "W"
     DAY = "D"
 
@@ -34,12 +34,12 @@ class Type(enum.Enum):
             return Type.YEAR
         if value == "6M":
             return Type.SEMIYEAR
-        if value == "Q":
+        if value in ("Q", "Q-DEC"):
             return Type.QUARTER
         if value == "M":
             return Type.MONTH
-        if value == "SM":
-            return Type.SEMIMONTH
+        if value in ("2W", "2W-SUN"):
+            return Type.BIWEEK
         if value in ("W-SUN", "W"):
             return Type.WEEK
         if value == "D":
@@ -63,8 +63,8 @@ class Type(enum.Enum):
             return "Q"
         if type == Type.MONTH:
             return "M"
-        if type == Type.SEMIMONTH:
-            return "SM"
+        if type == Type.BIWEEK:
+            return "2W"
         if type == Type.WEEK:
             return "W"
         if type == Type.DAY:
@@ -88,8 +88,8 @@ class Type(enum.Enum):
             return "QE"
         if type == Type.MONTH:
             return "ME"
-        if type == Type.SEMIMONTH:
-            return "SME"
+        if type == Type.BIWEEK:
+            return "2W"
         if type == Type.WEEK:
             return "W"
         if type == Type.DAY:
@@ -129,8 +129,8 @@ def measure(
         result = (delta.years * 4) + math.floor(delta.months / 3)
     elif duration.value == Type.MONTH.value:
         result = (delta.years * 12) + delta.months
-    elif duration.value == Type.SEMIMONTH.value:
-        result = (delta.years * 24) + delta.months * 2
+    elif duration.value == Type.BIWEEK.value:
+        result = math.floor((calc_end_date - start_date).days / 14)
     elif duration.value == Type.WEEK.value:
         result = math.floor((calc_end_date - start_date).days / 7)
     elif duration.value == Type.DAY.value:
@@ -177,6 +177,8 @@ def offset(
             result = date + pd.offsets.MonthEnd(3 * amount)
         elif duration.value == Type.MONTH.value:
             result = date + pd.offsets.MonthEnd(amount)
+        elif duration.value == Type.BIWEEK.value:
+            result = date + pd.DateOffset(weeks=2 * amount)
         elif duration.value == Type.WEEK.value:
             result = date + pd.DateOffset(weeks=amount)
         elif duration.value == Type.DAY.value:
@@ -198,6 +200,8 @@ def offset(
             result = date + pd.DateOffset(months=3 * amount)
         elif duration.value == Type.MONTH.value:
             result = date + pd.DateOffset(months=amount)
+        elif duration.value == Type.BIWEEK.value:
+            result = date + pd.DateOffset(weeks=2 * amount)
         elif duration.value == Type.WEEK.value:
             result = date + pd.DateOffset(weeks=amount)
         elif duration.value == Type.DAY.value:
@@ -241,7 +245,7 @@ class Period:
             Type.SEMIYEAR: 2,
             Type.QUARTER: 4,
             Type.MONTH: 12,
-            Type.SEMIMONTH: 24,
+            Type.BIWEEK: 26,
             Type.WEEK: 52,
             Type.DAY: 365,
         }.get(duration, None)
