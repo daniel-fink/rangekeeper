@@ -21,16 +21,12 @@ class Index:
 
 def to_filtered(
     quantity: pint.Quantity,
-    excluded=("percent",),
-    registry: pint.UnitRegistry = pint.UnitRegistry(),
+    exclude=("percent",),
 ) -> pint.Quantity:
-    target = 1 * registry.dimensionless
-    # Build a target unit identical to quantity.units but without the excluded ones
-    for name, exp in quantity.units._units.items():  # UnitsContainer: name -> exponent
-        if name in excluded:
-            continue
-        target *= registry.Unit(name) ** exp
-    return quantity.to(target)
+    units = quantity._units
+    excluded = [name for name in units if name in set(exclude)]
+    new_units = units.remove(excluded) if excluded else units
+    return quantity.to(new_units)
 
 
 def remove_dimension(
@@ -106,7 +102,7 @@ def register_currency(
     return Measure(
         name=currency.name,
         definition="Currency of {0}".format(currency.countries),
-        units=registry[currency.code].units,
+        units=registry.parse_units(currency.code),
     )
 
 
