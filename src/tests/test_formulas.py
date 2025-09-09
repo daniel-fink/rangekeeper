@@ -100,8 +100,8 @@ class Model:
             starting=0,
             transactions=rk.flux.Stream(
                 flows=[
-                    self.equity.overdraft.diff().invert(),
-                    self.payments.invert(),
+                    self.equity.overdraft.diff().negate(),
+                    self.payments.negate(),
                 ],
                 frequency=self.params["frequency"],
             ).sum(),
@@ -252,7 +252,7 @@ class TestFinancial:
                 data=transactions,
                 sequence=sequence,
                 units=currency.units,
-            ).invert(),
+            ).negate(),
             frequency=self.params["frequency"],
             type=rk.formula.financial.Account.Type.SIMPLE,
             rate=rate,
@@ -277,7 +277,7 @@ class TestFinancial:
     def test_capitalized_interest(self):
         account = rk.formula.financial.Account(
             starting=0,
-            transactions=self.model.draws.sum().invert(),
+            transactions=self.model.draws.sum().negate(),
             frequency=self.params["frequency"],
             type=rk.formula.financial.Account.Type.CAPITALIZED,
             rate=self.params["interest_rate_pa"]
@@ -297,8 +297,8 @@ class TestFinancial:
         transactions = rk.flux.Stream(
             name="Transactions",
             flows=[
-                self.model.draws.sum().invert(),
-                self.model.payments.invert(),
+                self.model.draws.sum().negate(),
+                self.model.payments.negate(),
             ],
             frequency=self.params["frequency"],
         )
@@ -326,13 +326,13 @@ class TestFinancial:
     def test_balances(self):
         transactions = rk.flux.Stream(
             name="Transactions",
-            flows=[self.model.draws.sum().invert()],
+            flows=[self.model.draws.sum().negate()],
             frequency=self.params["frequency"],
         )
 
         equity = rk.formula.financial.Account(
             starting=176631.99,
-            transactions=transactions.sum().invert(),
+            transactions=transactions.sum().negate(),
             frequency=self.params["frequency"],
             type=rk.formula.financial.Account.Type.SIMPLE,
             name="Equity Account",
@@ -349,8 +349,8 @@ class TestFinancial:
             starting=0,
             transactions=rk.flux.Stream(
                 flows=[
-                    equity.overdraft.diff().invert(),
-                    self.model.payments.invert(),
+                    equity.overdraft.diff().negate(),
+                    self.model.payments.negate(),
                 ],
                 frequency=self.params["frequency"],
             ).sum(),
@@ -369,7 +369,7 @@ class TestFinancial:
         profit = rk.flux.Stream(
             flows=[
                 equity.diff(),
-                loan.overdraft.diff().invert(),
+                loan.overdraft.diff().negate(),
             ],
             frequency=self.params["frequency"],
             name="Profit",

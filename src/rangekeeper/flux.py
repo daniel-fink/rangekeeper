@@ -272,9 +272,9 @@ class Flow:
 
         return cls(movements=movements, units=units, name=name)
 
-    def invert(self) -> Flow:
+    def negate(self) -> Flow:
         """
-        Returns a Flow with movement values inverted (multiplied by -1)
+        Returns a Flow with movement values negated (multiplied by -1)
         """
         return self.__class__(
             movements=self.movements.copy(deep=True).multiply(-1),
@@ -384,13 +384,18 @@ class Flow:
     def resample(
         self,
         frequency: rk.duration.Type,
+        origin: Optional[Union[str, pd.Timestamp]] = "end_day",
     ) -> Flow:
         """
         Returns a Flow with movements summed to specified frequency of periods
         """
         return rk.flux.Flow(
             movements=self.movements.copy(deep=True)
-            .resample(rule=rk.duration.Type.offset(frequency))
+            .resample(
+                rule=rk.duration.Type.offset(frequency),
+                label="right",
+                origin=origin,
+            )
             .sum(),
             units=self.units,
             name=self.name,
@@ -398,18 +403,31 @@ class Flow:
 
     def to_periods(
         self,
-        frequency: rk.duration.Type,
+        index: pd.PeriodIndex,
     ) -> pd.Series:
         """
         Returns a pd.Series (of index pd.PeriodIndex) with movements summed to specified frequency
         """
-        return (
-            self.resample(frequency=frequency)
-            .movements.to_period(freq=rk.duration.Type.period(frequency), copy=True)
-            .rename_axis("period")
-            .groupby(level="period")
-            .sum()
+        resampled = self.resample(
+            frequency=rk.duration.Type.from_value(value=index.freqstr),
+            origin=index[0].start_time.date(),
         )
+        # convert Flow movements to same PeriodIndex freq as target
+        aligned = resampled.movements.to_period(freq=index.freqstr)
+
+        # re-anchor aligned index to match the target index’s anchor
+        aligned.index = aligned.index.asfreq(
+            freq=index.freqstr,
+            how="end",
+        )
+
+        # now reindex: exact matches only, no spillover
+        result = aligned.reindex(
+            index=index,
+            fill_value=0,
+        )
+
+        return result
 
     def earliest(self) -> datetime.date:
         """
@@ -538,16 +556,22 @@ class Stream:
         self.end_date = max(dates)
         """The latest date of the Stream's constituent Flows' movements."""
 
+        self.index = rk.duration.Sequence.from_bounds(
+            include_start=self.start_date,
+            bound=self.end_date,
+            frequency=self.frequency,
+        )
+
         self._resampled_flows = [
-            flow.to_periods(frequency=self.frequency) for flow in self.flows
+            flow.to_periods(index=self.index) for flow in self.flows
         ]
         self.frame = (
             pd.concat(
                 self._resampled_flows,
                 axis=1,
             )
-            .fillna(0)
-            .sort_index()
+            # .fillna(0)
+            # .sort_index()
         )
         """
         A pd.DataFrame of the Stream's flow Flows accumulated into the Stream's frequency
@@ -568,7 +592,7 @@ class Stream:
 
         formatted_flows = []
         for flow in self.flows:
-            series = flow.to_periods(frequency=self.frequency)
+            series = flow.to_periods(index=self.frame.index)
             formatted_flows.append(
                 _format_series(
                     series=series,
@@ -848,7 +872,6 @@ class Stream:
         self,
         name: str = None,
         registry: pint.UnitRegistry = None,
-        scope: Optional[dict] = None,
     ) -> Flow:
         """
         Returns a Flow whose movements are the product of the Stream's flows by period
