@@ -89,9 +89,9 @@ class Type(enum.Enum):
         if type == Type.MONTH:
             return "ME"
         if type == Type.BIWEEK:
-            return "2W"
+            return "2W-SUN"
         if type == Type.WEEK:
-            return "W"
+            return "W-SUN"
         if type == Type.DAY:
             return "D"
         else:
@@ -277,10 +277,23 @@ class Sequence:
         :param bound: A terminating condition; either a pd.Timestamp end date or a (integer) number of periods
         """
         if isinstance(bound, datetime.date):
+            freq = Type.period(frequency)
+
+            # Align to the start & ends of first & last periods
+            aligned_start = pd.Period(
+                value=include_start,
+                freq=freq,
+            ).start_time.date()
+
+            aligned_end = pd.Period(
+                value=bound,
+                freq=freq,
+            ).end_time.date()
+
             return pd.period_range(
-                start=include_start,
-                end=bound,
-                freq=Type.period(frequency),
+                start=aligned_start,
+                end=aligned_end,
+                freq=freq,
                 name="periods",
             )
         elif isinstance(bound, int):

@@ -108,7 +108,7 @@ class ExAnteInflexibleModel:
             name="Operating Expenses",
             movements=self.pgi.movements * params["opex_pgi_ratio"],
             units=currency.units,
-        ).invert()
+        ).negate()
         self.noi = rk.flux.Stream(
             name="Net Operating Income",
             flows=[self.egi, self.opex],
@@ -118,7 +118,7 @@ class ExAnteInflexibleModel:
             name="Capital Expenditures",
             movements=self.pgi.movements * params["capex_pgi_ratio"],
             units=currency.units,
-        ).invert()
+        ).negate()
         self.net_cfs = rk.flux.Stream(
             name="Net Annual Cashflows",
             flows=[self.noi, self.capex],
@@ -264,7 +264,7 @@ class ExPostInflexibleModel:
             name="Operating Expenses",
             movements=self.pgi.movements * self.params["opex_pgi_ratio"],
             units=currency.units,
-        ).invert()
+        ).negate()
         self.noi = rk.flux.Stream(
             name="Net Operating Income",
             flows=[self.egi, self.opex],
@@ -274,7 +274,7 @@ class ExPostInflexibleModel:
             name="Capital Expenditures",
             movements=self.pgi.movements * self.params["capex_pgi_ratio"],
             units=currency.units,
-        ).invert()
+        ).negate()
         self.net_cfs = rk.flux.Stream(
             name="Net Annual Cashflows",
             flows=[self.noi, self.capex],
