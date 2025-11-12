@@ -173,7 +173,7 @@ class ExAnteInflexibleModel:
                 frequency=self.params["frequency"],
             )
 
-            irrs.append(round(incl_acq.sum().xirr(), 4))
+            irrs.append(round(incl_acq.sum().irr(), 4))
 
         self.pvs = rk.flux.Flow(
             name="Present Values", movements=pd.concat(pvs), units=currency.units
@@ -330,7 +330,7 @@ class ExPostInflexibleModel:
                 frequency=self.params["frequency"],
             )
 
-            irrs.append(round(incl_acq.sum().xirr(), 4))
+            irrs.append(round(incl_acq.sum().irr(), 4))
 
         self.pvs = rk.flux.Flow(
             name="Present Values", movements=pd.concat(pvs), units=currency.units
