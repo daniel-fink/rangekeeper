@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 import datetime
-import itertools
 import json
-import locale
 import os
 from typing import Dict, Union, Optional, Tuple, List
 
@@ -270,13 +268,13 @@ class Flow:
             raise ValueError("Unsupported projection type: {0}".format(type(proj)))
 
         # movements = movements[proj.bounds[0].to_timestamp(how='start'):proj.bounds[1].to_timestamp(how='end')]  # Fix for >yearly periodicities
-        # TODO: Fix for issues with >yearly periodicities inducing movements at the end of multi-year periods beyond the end of the projection
+        # TODO: Fix for issues with >yearly frequencies inducing movements at the end of multi-year periods beyond the end of the projection
 
         return cls(movements=movements, units=units, name=name)
 
-    def invert(self) -> Flow:
+    def negate(self) -> Flow:
         """
-        Returns a Flow with movement values inverted (multiplied by -1)
+        Returns a Flow with movement values negated (multiplied by -1)
         """
         return self.__class__(
             movements=self.movements.copy(deep=True).multiply(-1),
@@ -295,11 +293,11 @@ class Flow:
             units=self.units,
         )
 
-    def total(self) -> np.float64:
+    def total(self) -> pint.Quantity:
         """
         Returns the value of the collapsed (summed) Flow's movements
         """
-        return self.collapse().movements.iloc[0]
+        return self.movements.sum() * self.units
 
     def pv(
         self,
@@ -324,21 +322,42 @@ class Flow:
             movements=frame["Discounted Flow"], units=self.units, name=name
         )
 
-    def xirr(self) -> float:
-        return pyxirr.xirr(
+    def irr(
+        self,
+        registry: pint.UnitRegistry = None,
+    ) -> pint.Quantity:
+        """
+        Returns the XIRR (Extended Internal Rate of Return) of the Flow's movements.
+        Formats the result as a percentage in the specified registry's units.
+        """
+        # Lazy import to avoid circular dependency
+        if registry is None:
+            from rangekeeper.measure import Index
+
+            registry = Index.registry
+
+        result = pyxirr.xirr(
             dates=list(self.movements.index.array),
             amounts=self.movements.to_list(),
         )
+        return result * 100 * registry.percent
 
-    def xnpv(
+    def npv(
         self,
-        rate: float,
-    ) -> float:
-        return pyxirr.xnpv(
+        rate: Union[float, pint.Quantity],
+    ) -> pint.Quantity:
+        """
+        Returns the XNPV (Extended Net Present Value) of the Flow's movements at a specified rate.
+        Formats the result as a quantity in the Flow's units.
+        """
+        if isinstance(rate, pint.Quantity):
+            rate = rate.to(rk.measure.Index.registry.dimensionless).magnitude
+        result = pyxirr.xnpv(
             rate=rate,
             dates=list(self.movements.index.array),
             amounts=self.movements.to_list(),
         )
+        return result * self.units
 
     def diff(
         self,
@@ -365,51 +384,158 @@ class Flow:
     def resample(
         self,
         frequency: rk.duration.Type,
+        origin: Optional[pd.Timestamp, datetime.date] = None,
+        sum: bool = True,
     ) -> Flow:
         """
-        Returns a Flow with movements summed to specified frequency of periods
+        Returns a Flow with movements summed to specified frequency
+        :param frequency: The frequency to resample to
+        :param origin: The date to anchor the resampling to (defaults to the first movement date)
         """
-        return rk.flux.Flow(
-            movements=self.movements.copy(deep=True)
-            .resample(rule=rk.duration.Type.offset(frequency))
-            .sum(),
+
+        if self.movements.size == 0:
+            return self.duplicate()
+
+        if origin is None:
+            origin = self.movements.index[0].date()
+
+        movements = self.movements.copy(deep=True)
+        if sum:
+            resampled = (
+                movements.resample(
+                    rule=rk.duration.Type.offset(frequency),
+                    label="right",
+                    origin="epoch",
+                ).sum()
+                # .ffill()
+            )
+        else:
+            resampled = movements.resample(
+                rule=rk.duration.Type.offset(frequency),
+                label="right",
+                origin="epoch",
+            ).ffill()
+
+        # print(f"Flow.resample() for {self.name} resampled:")
+        # print(resampled)
+        # print(
+        #     f"Flow.resample() for {self.name} resampled index count: {resampled.index.size}"
+        # )
+        #
+        # print(f"Flow.resample() for {self.name} bound: {self.movements.index[-1]}")
+        sequence = rk.duration.Sequence.from_bounds(
+            include_start=origin,
+            frequency=frequency,
+            bound=self.movements.index[-1] if self.movements.size > 1 else origin,
+        )
+        # print(f"Flow.resample() for {self.name} origin: {origin}")
+        # print(f"Flow.resample() for {self.name} sequence: {sequence}")
+        index = rk.duration.Sequence.to_datestamps(sequence=sequence)
+
+        index = index[(index >= resampled.index[0])]
+        # Hack to fix bug with dangling period at end of index
+        if index.size > 1 and resampled.index.size > 1:
+            if resampled.index[-1] <= index[-2]:
+                index = index[:-1]
+
+        # print(f"Flow.resample() for {self.name} index: {index}")
+        # print(f"Flow.resample() for {self.name} realigned index count: {index.size}")
+
+        aligned = (
+            resampled.reindex(
+                index=index,
+                method="ffill",
+                limit=1,
+                # fill_value=pd.NA,
+            )
+            # .fillna(0)
+        )
+        # print(f"Flow.resample() for {self.name} aligned:")
+        # print(aligned)
+
+        result = self.__class__(
+            movements=aligned,
             units=self.units,
             name=self.name,
         )
 
+        trimmed = result  # .trim_empty()
+
+        # result = result.trim_to_span(
+        #     span=rk.duration.Span(
+        #         start_date=self.movements.index[0].date(),
+        #         end_date=self.movements.index[-1].date(),
+        #     )
+        # )
+
+        return trimmed
+
     def to_periods(
         self,
-        frequency: rk.duration.Type,
+        index: pd.PeriodIndex,
+        origin: Optional[pd.Timestamp, datetime.date] = None,
     ) -> pd.Series:
         """
         Returns a pd.Series (of index pd.PeriodIndex) with movements summed to specified frequency
         """
-        return (
-            self.resample(frequency=frequency)
-            .movements.to_period(freq=rk.duration.Type.period(frequency), copy=True)
-            .rename_axis("period")
-            .groupby(level="period")
-            .sum()
-        )
+        if origin is None:
+            origin = self.movements.index[0].date()
 
-    def earliest(self) -> datetime.date:
+        # print(f"to_periods() Original {self.name}:")
+        # print(self.movements)
+        # print(f"to_periods() origin: {index[0].start_time.date()} freq: {index.freqstr}")
+
+        resampled = self.resample(
+            frequency=rk.duration.Type.from_value(value=index.freqstr),
+            origin=origin,
+        )
+        # print(f"to_periods() Resampled {self.name}:")
+        # print(resampled.movements)
+
+        # convert Flow movements to same PeriodIndex freq as target
+        aligned = resampled.movements.to_period(freq=index.freqstr)
+        # print(f"to_periods() Aligned {self.name}:")
+        # print(aligned)
+
+        # print(f"Aligned: {self.name}\n {aligned}")
+
+        # re-anchor aligned index to match the target index’s anchor
+        # aligned.index = aligned.index.asfreq(
+        #     freq=index.freqstr,
+        #     how="end",
+        # )
+
+        # now reindex: exact matches only, no spillover
+        # result = aligned.reindex(
+        #     index=index,
+        #     # method="bfill",
+        #     fill_value=0,
+        # )
+
+        return aligned
+
+    def earliest(self) -> Optional[datetime.date]:
         """
         Returns the earliest non-zero movement date in the Flow.
         """
 
         sorted = self.movements[
-            ~((self.movements == 0) | (self.movements.isna()))
+            ~((self.movements == 0) | (self.movements == -0) | (self.movements.isna()))
         ].sort_index()
+        if sorted.size == 0:
+            return None
         return sorted.index[0].date()
 
-    def latest(self) -> datetime.date:
+    def latest(self) -> Optional[datetime.date]:
         """
         Returns the latest non-zero movement date in the Flow.
         """
 
         sorted = self.movements[
-            ~((self.movements == 0) | (self.movements.isna()))
+            ~((self.movements == 0) | (self.movements == -0) | (self.movements.isna()))
         ].sort_index()
+        if sorted.size == 0:
+            return None
         return sorted.index[-1].date()
 
     def trim_empty(
@@ -466,7 +592,7 @@ class Flow:
         """
         movements = self.movements.copy(deep=True)
         if zeroes:
-            movements = movements[(movements != 0) & (movements != -0.0)]
+            movements = movements[(movements != 0) & (movements != -0)]
         movements = movements[~movements.isna()]
 
         return self.__class__(
@@ -478,10 +604,10 @@ class Flow:
 
 class Stream:
     name: str
-    flows: List[Flow]
+    flows: Optional[List[Flow]]
     frequency: rk.duration.Type
-    start_date: datetime.date
-    end_date: datetime.date
+    start_date: Optional[datetime.date]
+    end_date: Optional[datetime.date]
     frame: pd.DataFrame
 
     """
@@ -495,40 +621,51 @@ class Stream:
         name: str = None,
     ):
 
+        if flows is None or len(flows) == 0:
+            raise ValueError("Error: Stream must have at least one Flow.")
+
         # Name:
         self.name = name if name is not None else "Unnamed"
-
-        # Units:
-        # if all(flow.units == flows[0].units for flow in flows):
-        #     self.units = flows[0].units
-        # else:
-        #     raise Exception("Input Flows have dissimilar units. Cannot aggregate into Stream.")
 
         # Flows:
         self.flows = flows
         """The set of input Flows that are aggregated in this Stream"""
 
         self.units = {flow.name: flow.units for flow in self.flows}
+        """A dictionary of the Stream's constituent Flows' units, by Flow name."""
 
         # Frequency:
         self.frequency = frequency
+        """ The frequency of the Stream's resampled Flows."""
 
         # Stream:
-        flows_dates = list(
-            itertools.chain.from_iterable(
-                list(flow.movements.index.array) for flow in self.flows
-            )
-        )
-        self.start_date = min(flows_dates)
-        self.end_date = max(flows_dates)
+        dates = [date for flow in self.flows for date in flow.movements.index.array]
+        self.start_date = min(dates)
+        """The earliest date of the Stream's constituent Flows' movements."""
+        self.end_date = max(dates)
+        """The latest date of the Stream's constituent Flows' movements."""
 
-        # index = rk.duration.Sequence.from_bounds(
-        #     include_start=self.start_date, frequency=self.frequency, bound=self.end_date
-        # )
+        self.index = rk.duration.Sequence.from_bounds(
+            include_start=self.start_date,
+            bound=self.end_date,
+            frequency=self.frequency,
+        )
+
         self._resampled_flows = [
-            flow.to_periods(frequency=self.frequency) for flow in self.flows
+            flow.to_periods(
+                index=self.index,
+                origin=self.start_date,
+            )
+            for flow in self.flows
         ]
-        self.frame = pd.concat(self._resampled_flows, axis=1).fillna(0).sort_index()
+        self.frame = (
+            pd.concat(
+                self._resampled_flows,
+                axis=1,
+            )
+            # .fillna(0)
+            .sort_index()
+        )
         """
         A pd.DataFrame of the Stream's flow Flows accumulated into the Stream's frequency
         """
@@ -548,7 +685,10 @@ class Stream:
 
         formatted_flows = []
         for flow in self.flows:
-            series = flow.to_periods(frequency=self.frequency)
+            series = flow.to_periods(
+                index=self.frame.index,
+                origin=self.start_date,
+            )
             formatted_flows.append(
                 _format_series(
                     series=series,
@@ -807,7 +947,7 @@ class Stream:
         :return: Flow
         """
         # Check if all units are the same:
-        if not len(list(set(list(self.units.values())))) == 1:
+        if not self.is_homogeneous():
             raise ValueError(
                 "Error: summation requires all flows' units to be the same. Units: {0}".format(
                     json.dumps(
@@ -828,7 +968,6 @@ class Stream:
         self,
         name: str = None,
         registry: pint.UnitRegistry = None,
-        scope: Optional[dict] = None,
     ) -> Flow:
         """
         Returns a Flow whose movements are the product of the Stream's flows by period
@@ -905,7 +1044,7 @@ class Stream:
 
     def collapse(self) -> Stream:
         """
-        Returns an Stream with Flows' movements collapsed (summed) to the Stream's final period
+        Returns a Stream with Flows' movements collapsed (summed) to the Stream's final period
         :return: Stream
         """
         flows = [self.extract(name=name) for name in list(self.frame.columns)]
@@ -915,8 +1054,17 @@ class Stream:
             frequency=self.frequency,
         )
 
-    def total(self) -> np.float64:
-        return self.sum().collapse().movements.iloc[0]
+    def total(self) -> pint.Quantity:
+        if not self.is_homogeneous():
+            raise ValueError(
+                "Error: total requires all flows' units to be the same. Units: {0}".format(
+                    json.dumps(
+                        {flow.name: flow.units.__str__() for flow in self.flows},
+                        indent=4,
+                    )
+                )
+            )
+        return self.frame.sum().sum() * next(iter(self.units.values()))
 
     def extend(
         self,
@@ -940,7 +1088,13 @@ class Stream:
         self,
         frequency: rk.duration.Type,
     ) -> Stream:
-        return Stream(name=self.name, flows=self.flows, frequency=frequency)
+        if frequency == self.frequency:
+            return self
+        return Stream(
+            name=self.name,
+            flows=self.flows,
+            frequency=frequency,
+        )
 
     def trim_to_span(self, span: rk.duration.Span) -> Stream:
         """

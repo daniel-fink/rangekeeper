@@ -108,7 +108,7 @@ class ExAnteInflexibleModel:
             name="Operating Expenses",
             movements=self.pgi.movements * params["opex_pgi_ratio"],
             units=currency.units,
-        ).invert()
+        ).negate()
         self.noi = rk.flux.Stream(
             name="Net Operating Income",
             flows=[self.egi, self.opex],
@@ -118,7 +118,7 @@ class ExAnteInflexibleModel:
             name="Capital Expenditures",
             movements=self.pgi.movements * params["capex_pgi_ratio"],
             units=currency.units,
-        ).invert()
+        ).negate()
         self.net_cfs = rk.flux.Stream(
             name="Net Annual Cashflows",
             flows=[self.noi, self.capex],
@@ -173,7 +173,7 @@ class ExAnteInflexibleModel:
                 frequency=self.params["frequency"],
             )
 
-            irrs.append(round(incl_acq.sum().xirr(), 4))
+            irrs.append(round(incl_acq.sum().irr(), 4))
 
         self.pvs = rk.flux.Flow(
             name="Present Values", movements=pd.concat(pvs), units=currency.units
@@ -264,7 +264,7 @@ class ExPostInflexibleModel:
             name="Operating Expenses",
             movements=self.pgi.movements * self.params["opex_pgi_ratio"],
             units=currency.units,
-        ).invert()
+        ).negate()
         self.noi = rk.flux.Stream(
             name="Net Operating Income",
             flows=[self.egi, self.opex],
@@ -274,7 +274,7 @@ class ExPostInflexibleModel:
             name="Capital Expenditures",
             movements=self.pgi.movements * self.params["capex_pgi_ratio"],
             units=currency.units,
-        ).invert()
+        ).negate()
         self.net_cfs = rk.flux.Stream(
             name="Net Annual Cashflows",
             flows=[self.noi, self.capex],
@@ -330,7 +330,7 @@ class ExPostInflexibleModel:
                 frequency=self.params["frequency"],
             )
 
-            irrs.append(round(incl_acq.sum().xirr(), 4))
+            irrs.append(round(incl_acq.sum().irr(), 4))
 
         self.pvs = rk.flux.Flow(
             name="Present Values", movements=pd.concat(pvs), units=currency.units

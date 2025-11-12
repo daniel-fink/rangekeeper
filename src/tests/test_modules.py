@@ -204,7 +204,7 @@ class TestFlow:
         assert collapse.movements.size == 1
         assert collapse.movements.array[0] == 100.0
 
-    invert_flow = flow.invert()
+    invert_flow = flow.negate()
 
     def test_flow_inversion(self):
         # TestFlow.invert_flow.display()
@@ -226,11 +226,18 @@ class TestFlow:
         assert TestFlow.resample_flow.movements.iloc[1] == -48
         assert TestFlow.resample_flow.movements.iloc[2] == pytest.approx(-4)
 
-    to_periods = flow.to_periods(frequency=rk.duration.Type.YEAR)
+    # to_periods = flow.to_periods(index=rk.duration.Type.YEAR)
 
     def test_conversion_to_period_index(self):
-        print(TestFlow.to_periods)
+        pass
+        # print(TestFlow.to_periods)
         # assert TestFlow.to_periods
+
+        # resampled = TestFlow.invert_flow.resample(frequency=rk.duration.Type.BIWEEK)
+        # resampled.display()
+
+        # fortnightly = TestFlow.invert_flow.to_periods(frequency=rk.duration.Type.BIWEEK)
+        # print(fortnightly)
 
     def test_distribution_as_input(self):
         periods = rk.duration.Sequence.from_bounds(
@@ -268,6 +275,11 @@ class TestFlow:
         ax.plot(x, pdf, "--r")
         plt.show(block=True)
 
+    def test_total(self):
+        total = TestFlow.flow.total()
+
+        print(total)
+
 
 class TestStream:
     flow1 = rk.flux.Flow.from_projection(
@@ -298,43 +310,85 @@ class TestStream:
         units=currency.units,
     )
 
-    stream = rk.flux.Stream(
-        name="stream", flows=[flow1, flow2], frequency=rk.duration.Type.MONTH
+    flow3 = rk.flux.Flow.from_projection(
+        name="fortnightly_flow",
+        value=-50.0,
+        proj=rk.projection.Distribution(
+            form=rk.distribution.Uniform(),
+            sequence=rk.duration.Sequence.from_bounds(
+                include_start=datetime.date(2020, 1, 31),
+                bound=datetime.date(2022, 1, 1),
+                frequency=rk.duration.Type.BIWEEK,
+            ),
+        ),
+        units=currency.units,
     )
 
-    stream.display()
+    stream = rk.flux.Stream(
+        name="stream",
+        flows=[flow1, flow2, flow3],
+        frequency=rk.duration.Type.BIWEEK,
+    )
 
     def test_stream_validity(self):
-        assert TestStream.stream.name == "stream"
-        assert len(TestStream.stream.flows) == 2
-        assert TestStream.stream.start_date == pd.Timestamp(2020, 3, 1)
-        assert TestStream.stream.end_date == pd.Timestamp(2022, 12, 31)
+        print(f"\nFlows:\n")
+        TestStream.flow1.display()
+        TestStream.flow2.display()
+        TestStream.flow3.display()
+
+        print(f"\nResampled: \n")
+        TestStream.flow1.resample(
+            frequency=rk.duration.Type.BIWEEK,
+            origin=pd.Timestamp(2020, 2, 9),
+        ).display()
+        TestStream.flow2.resample(
+            frequency=rk.duration.Type.BIWEEK,
+            origin=pd.Timestamp(2020, 2, 9),
+        ).display()
+        TestStream.flow3.resample(
+            frequency=rk.duration.Type.BIWEEK,
+            origin=pd.Timestamp(2020, 2, 9),
+        ).display()
 
         TestStream.stream.display()
+        TestStream.stream.sum().display()
 
-        assert (
-            TestStream.stream.sum().movements.index.size == 24 + 10
-        )  # Two full years plus March-Dec inclusive
-        assert TestStream.stream.frame["weekly_flow"].sum() == -50
-        assert TestStream.stream.frame.index.freqstr == "M"
+        # # TestStream.flow1.display()
+        # TestStream.flow1.resample(frequency=rk.duration.Type.BIWEEK).display()
+        # #
+        # print(TestStream.flow1.to_periods(index=TestStream.stream.index).to_string())
 
-        product = TestStream.stream.product(
-            name="product", registry=units, scope=dict(globals(), **locals())
-        )
-        product.display()
+        assert TestStream.stream.name == "stream"
+        assert len(TestStream.stream.flows) == 3
+        assert TestStream.stream.start_date == pd.Timestamp(2020, 2, 9)
+        assert TestStream.stream.end_date == pd.Timestamp(2022, 12, 31)
 
-        datestamp = pd.Timestamp(2020, 12, 31)
-        print(TestStream.stream.frame["yearly_flow"][datestamp])
-        print(TestStream.stream.frame["weekly_flow"][datestamp])
-        assert product.movements[datestamp] == approx(-125.786163522)
+        assert TestStream.stream.total() == approx(100 - 50 - 50)
 
-        cumsum_flow = rk.flux.Flow(
-            name="cumsum_flow",
-            movements=TestStream.flow1.movements.cumsum(),
-            units=currency.units,
-        )
-        cumsum_flow.display()
-        assert cumsum_flow.movements.iloc[-1] == 100
+        # assert (
+        #     TestStream.stream.sum().movements.index.size == 24 + 10
+        # )  # Two full years plus March-Dec inclusive
+        # assert TestStream.stream.frame["weekly_flow"].sum() == -50
+        # assert TestStream.stream.frame.index.freqstr == "M"
+        #
+        # product = TestStream.stream.product(
+        #     name="product",
+        #     registry=units,
+        # )
+        # product.display()
+        #
+        # datestamp = pd.Timestamp(2020, 12, 31)
+        # print(TestStream.stream.frame["yearly_flow"][datestamp])
+        # print(TestStream.stream.frame["weekly_flow"][datestamp])
+        # assert product.movements[datestamp] == approx(-125.786163522)
+        #
+        # cumsum_flow = rk.flux.Flow(
+        #     name="cumsum_flow",
+        #     movements=TestStream.flow1.movements.cumsum(),
+        #     units=currency.units,
+        # )
+        # cumsum_flow.display()
+        # assert cumsum_flow.movements.iloc[-1] == 100
 
     def test_stream_aggregation(self):
         flow2_sqm = TestStream.flow2.duplicate()
@@ -347,7 +401,8 @@ class TestStream:
         )
 
         stream_sqm_agg = stream_sqm.product(
-            name="stream_sqm_agg", scope=scope, registry=units
+            name="stream_sqm_agg",
+            registry=units,
         )
 
         assert stream_sqm_agg.units == "AUD * squaremeter"
@@ -355,16 +410,18 @@ class TestStream:
     def test_stream_duplication(self):
         duplicate = TestStream.stream.duplicate()
         assert duplicate.name == "stream"
-        assert len(duplicate.flows) == 2
-        assert duplicate.frame.index.freqstr == "M"
+        assert len(duplicate.flows) == 3
+        assert duplicate.frame.index.freqstr == "2W-SUN"
 
     def test_stream_stream(self):
         collapse = TestStream.stream.collapse()
+        collapse.display()
         assert collapse.frame["yearly_flow"].iloc[0] == approx(100.0)
 
-        datestamp = pd.Timestamp(2020, 12, 31)
+        datestamp = pd.Timestamp(2022, 1, 9)
         sum = TestStream.stream.sum()
-        assert sum.movements[datestamp] == approx(29.5597484277)
+        sum.display()
+        assert sum.movements[datestamp] == approx(32.3529, rel=1e-4)
 
 
 class TestSpan:

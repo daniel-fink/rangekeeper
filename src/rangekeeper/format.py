@@ -1,5 +1,7 @@
 from typing import Tuple, Union, Optional
 import decimal
+
+import babel.core
 import numpy as np
 import matplotlib
 import pandas as pd
@@ -20,6 +22,12 @@ def to_decimal(
     """
     places = decimal.Decimal(10) ** -places
     with decimal.localcontext(decimal.Context(rounding=mode)):
+        if np.isposinf(value):
+            return decimal.Decimal("Infinity")
+        if np.isneginf(value):
+            return decimal.Decimal("-Infinity")
+        if np.isnan(value):
+            return decimal.Decimal("NaN")
         return decimal.Decimal(str(value)).quantize(places)
 
 
@@ -173,7 +181,7 @@ def to_percentages(
 
 def to_locale(
     value,
-    locale: str = "en_US",
+    locale: Optional[Union[str, babel.core.Locale]] = "en_US",
     decimal_places: int = 2,
 ) -> str:
     number = to_decimal(
