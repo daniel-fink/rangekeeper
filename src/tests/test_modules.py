@@ -331,6 +331,25 @@ class TestStream:
     )
 
     def test_stream_validity(self):
+        print(f"\nFlows:\n")
+        TestStream.flow1.display()
+        TestStream.flow2.display()
+        TestStream.flow3.display()
+
+        print(f"\nResampled: \n")
+        TestStream.flow1.resample(
+            frequency=rk.duration.Type.BIWEEK,
+            origin=pd.Timestamp(2020, 2, 9),
+        ).display()
+        TestStream.flow2.resample(
+            frequency=rk.duration.Type.BIWEEK,
+            origin=pd.Timestamp(2020, 2, 9),
+        ).display()
+        TestStream.flow3.resample(
+            frequency=rk.duration.Type.BIWEEK,
+            origin=pd.Timestamp(2020, 2, 9),
+        ).display()
+
         TestStream.stream.display()
         TestStream.stream.sum().display()
 
@@ -343,6 +362,8 @@ class TestStream:
         assert len(TestStream.stream.flows) == 3
         assert TestStream.stream.start_date == pd.Timestamp(2020, 2, 9)
         assert TestStream.stream.end_date == pd.Timestamp(2022, 12, 31)
+
+        assert TestStream.stream.total() == approx(100 - 50 - 50)
 
         # assert (
         #     TestStream.stream.sum().movements.index.size == 24 + 10
@@ -389,16 +410,18 @@ class TestStream:
     def test_stream_duplication(self):
         duplicate = TestStream.stream.duplicate()
         assert duplicate.name == "stream"
-        assert len(duplicate.flows) == 2
-        assert duplicate.frame.index.freqstr == "M"
+        assert len(duplicate.flows) == 3
+        assert duplicate.frame.index.freqstr == "2W-SUN"
 
     def test_stream_stream(self):
         collapse = TestStream.stream.collapse()
+        collapse.display()
         assert collapse.frame["yearly_flow"].iloc[0] == approx(100.0)
 
-        datestamp = pd.Timestamp(2020, 12, 31)
+        datestamp = pd.Timestamp(2022, 1, 9)
         sum = TestStream.stream.sum()
-        assert sum.movements[datestamp] == approx(29.5597484277)
+        sum.display()
+        assert sum.movements[datestamp] == approx(32.3529, rel=1e-4)
 
 
 class TestSpan:

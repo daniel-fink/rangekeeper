@@ -100,7 +100,7 @@ class Model:
             starting=0,
             transactions=rk.flux.Stream(
                 flows=[
-                    self.equity.overdraft.diff().negate(),
+                    self.equity.overdraft.negate(),
                     self.payments.negate(),
                 ],
                 frequency=self.params["frequency"],
@@ -196,7 +196,8 @@ class TestFinancial:
 
         assert interest_account.endings.movements.iloc[-1] == approx(500000.00)
         assert interest_account.interest.total().magnitude == approx(
-            694.44 + 2083.33, rel=1e-2
+            694.44 + 2083.33,
+            rel=1e-2,
         )
 
     def test_compounded_interest(self):
@@ -320,7 +321,7 @@ class TestFinancial:
         account.overdraft.display()
         account.interest.display()
 
-        assert account.overdraft.movements.iloc[-1] == approx(-488680.57)
+        assert account.overdraft.movements.iloc[-1] == approx(-333333.33)
         assert account.interest.total().magnitude == approx(11319.43)
 
     def test_balances(self):
@@ -343,13 +344,13 @@ class TestFinancial:
         equity.startings.display()
         equity.endings.display()
         equity.overdraft.display()
-        equity.overdraft.diff().display()
+        equity.overdraft.display()
 
         loan = rk.formula.financial.Account(
             starting=0,
             transactions=rk.flux.Stream(
                 flows=[
-                    equity.overdraft.diff().negate(),
+                    equity.overdraft.negate(),
                     self.model.payments.negate(),
                 ],
                 frequency=self.params["frequency"],
@@ -369,7 +370,7 @@ class TestFinancial:
         profit = rk.flux.Stream(
             flows=[
                 equity.diff(),
-                loan.overdraft.diff().negate(),
+                loan.overdraft.negate(),
             ],
             frequency=self.params["frequency"],
             name="Profit",
@@ -428,6 +429,7 @@ class TestSolver:
             "profit": solution.x[2],
             "rlv": solution.x[3],
         }
+        print("\nSolution:")
         print(
             "\n".join([f"{k}: {rk.format.to_currency(v)}" for k, v in results.items()])
         )

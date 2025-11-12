@@ -193,5 +193,5 @@ class Model:
         self.investment_cashflows.frame = self.investment_cashflows.frame[
             : self.disposition_date
         ]
-        self.irr = self.investment_cashflows.sum().xirr()
-        self.npv = self.investment_cashflows.sum().xnpv(params["discount_rate"])
+        self.irr = self.investment_cashflows.sum().irr()
+        self.npv = self.investment_cashflows.sum().npv(params["discount_rate"])

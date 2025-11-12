@@ -15,7 +15,7 @@ class Type(enum.Enum):
     SEMIDECADE = "5Y"
     BIENNIUM = "2Y"
     YEAR = "Y"
-    SEMIYEAR = "6M"
+    SEMIYEAR = "2Q"
     QUARTER = "Q"
     MONTH = "M"
     BIWEEK = "2W"
@@ -28,11 +28,11 @@ class Type(enum.Enum):
             return Type.DECADE
         if value == "5Y":
             return Type.SEMIDECADE
-        if value == "2Y":
+        if value in ("2Y", "2Y-DEC"):
             return Type.BIENNIUM
         if value in ("Y", "YE", "YE-DEC", "Y-DEC", "A-DEC"):
             return Type.YEAR
-        if value == "6M":
+        if value in ("2Q", "2Q-DEC"):
             return Type.SEMIYEAR
         if value in ("Q", "Q-DEC"):
             return Type.QUARTER
@@ -58,7 +58,7 @@ class Type(enum.Enum):
         if type == Type.YEAR:
             return "Y"
         if type == Type.SEMIYEAR:
-            return "6M"
+            return "2Q"
         if type == Type.QUARTER:
             return "Q"
         if type == Type.MONTH:
@@ -83,7 +83,7 @@ class Type(enum.Enum):
         if type == Type.YEAR:
             return "YE"
         if type == Type.SEMIYEAR:
-            return "6ME"
+            return "2QE"
         if type == Type.QUARTER:
             return "QE"
         if type == Type.MONTH:
