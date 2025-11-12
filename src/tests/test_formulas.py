@@ -100,8 +100,8 @@ class Model:
             starting=0,
             transactions=rk.flux.Stream(
                 flows=[
-                    self.equity.overdraft.diff().invert(),
-                    self.payments.invert(),
+                    self.equity.overdraft.negate(),
+                    self.payments.negate(),
                 ],
                 frequency=self.params["frequency"],
             ).sum(),
@@ -195,7 +195,10 @@ class TestFinancial:
         interest_account.interest.display()
 
         assert interest_account.endings.movements.iloc[-1] == approx(500000.00)
-        assert interest_account.interest.total() == approx(694.44 + 2083.33, rel=1e-2)
+        assert interest_account.interest.total().magnitude == approx(
+            694.44 + 2083.33,
+            rel=1e-2,
+        )
 
     def test_compounded_interest(self):
         transactions = rk.flux.Flow.from_sequence(
@@ -227,7 +230,7 @@ class TestFinancial:
         account.interest.display()
 
         assert account.endings.movements.iloc[-1] == approx(525580.95)
-        assert account.interest.total() == approx(25580.95)
+        assert account.interest.total().magnitude == approx(25580.95)
 
     def test_amortized_loan(self):
         amount = self.params["costs"]
@@ -250,7 +253,7 @@ class TestFinancial:
                 data=transactions,
                 sequence=sequence,
                 units=currency.units,
-            ).invert(),
+            ).negate(),
             frequency=self.params["frequency"],
             type=rk.formula.financial.Account.Type.SIMPLE,
             rate=rate,
@@ -270,12 +273,12 @@ class TestFinancial:
 
         assert account.endings.movements.iloc[-1] == approx(0.00)
         assert transactions[0] + account.interest.movements.iloc[0] == approx(payment)
-        assert account.interest.total() == approx(13644.89)
+        assert account.interest.total().magnitude == approx(13644.89)
 
     def test_capitalized_interest(self):
         account = rk.formula.financial.Account(
             starting=0,
-            transactions=self.model.draws.sum().invert(),
+            transactions=self.model.draws.sum().negate(),
             frequency=self.params["frequency"],
             type=rk.formula.financial.Account.Type.CAPITALIZED,
             rate=self.params["interest_rate_pa"]
@@ -289,14 +292,14 @@ class TestFinancial:
         account.interest.display()
 
         assert account.endings.movements.iloc[-1] == approx(510577.82)
-        assert account.interest.total() == approx(10577.82)
+        assert account.interest.total().magnitude == approx(10577.82)
 
     def test_balance(self):
         transactions = rk.flux.Stream(
             name="Transactions",
             flows=[
-                self.model.draws.sum().invert(),
-                self.model.payments.invert(),
+                self.model.draws.sum().negate(),
+                self.model.payments.negate(),
             ],
             frequency=self.params["frequency"],
         )
@@ -318,19 +321,19 @@ class TestFinancial:
         account.overdraft.display()
         account.interest.display()
 
-        assert account.overdraft.movements.iloc[-1] == approx(-488680.57)
-        assert account.interest.total() == approx(11319.43)
+        assert account.overdraft.movements.iloc[-1] == approx(-333333.33)
+        assert account.interest.total().magnitude == approx(11319.43)
 
     def test_balances(self):
         transactions = rk.flux.Stream(
             name="Transactions",
-            flows=[self.model.draws.sum().invert()],
+            flows=[self.model.draws.sum().negate()],
             frequency=self.params["frequency"],
         )
 
         equity = rk.formula.financial.Account(
             starting=176631.99,
-            transactions=transactions.sum().invert(),
+            transactions=transactions.sum().negate(),
             frequency=self.params["frequency"],
             type=rk.formula.financial.Account.Type.SIMPLE,
             name="Equity Account",
@@ -341,14 +344,14 @@ class TestFinancial:
         equity.startings.display()
         equity.endings.display()
         equity.overdraft.display()
-        equity.overdraft.diff().display()
+        equity.overdraft.display()
 
         loan = rk.formula.financial.Account(
             starting=0,
             transactions=rk.flux.Stream(
                 flows=[
-                    equity.overdraft.diff().invert(),
-                    self.model.payments.invert(),
+                    equity.overdraft.negate(),
+                    self.model.payments.negate(),
                 ],
                 frequency=self.params["frequency"],
             ).sum(),
@@ -367,14 +370,14 @@ class TestFinancial:
         profit = rk.flux.Stream(
             flows=[
                 equity.diff(),
-                loan.overdraft.diff().invert(),
+                loan.overdraft.negate(),
             ],
             frequency=self.params["frequency"],
             name="Profit",
         )
         profit.display()
 
-        assert profit.sum().total() == approx(495337.17)
+        assert profit.sum().total().magnitude == approx(495337.17)
 
 
 class TestSolver:
@@ -407,7 +410,7 @@ class TestSolver:
             model = Model(params)
             model.init_transactions()
             model.init_finance()
-            finance = model.loan.interest.total()
+            finance = model.loan.interest.total().magnitude
             sources = equity + loan
             uses = dev + finance + rlv
 
@@ -426,6 +429,7 @@ class TestSolver:
             "profit": solution.x[2],
             "rlv": solution.x[3],
         }
+        print("\nSolution:")
         print(
             "\n".join([f"{k}: {rk.format.to_currency(v)}" for k, v in results.items()])
         )

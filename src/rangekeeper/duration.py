@@ -15,10 +15,10 @@ class Type(enum.Enum):
     SEMIDECADE = "5Y"
     BIENNIUM = "2Y"
     YEAR = "Y"
-    SEMIYEAR = "6M"
+    SEMIYEAR = "2Q"
     QUARTER = "Q"
     MONTH = "M"
-    SEMIMONTH = "SM"
+    BIWEEK = "2W"
     WEEK = "W"
     DAY = "D"
 
@@ -28,18 +28,18 @@ class Type(enum.Enum):
             return Type.DECADE
         if value == "5Y":
             return Type.SEMIDECADE
-        if value == "2Y":
+        if value in ("2Y", "2Y-DEC"):
             return Type.BIENNIUM
         if value in ("Y", "YE", "YE-DEC", "Y-DEC", "A-DEC"):
             return Type.YEAR
-        if value == "6M":
+        if value in ("2Q", "2Q-DEC"):
             return Type.SEMIYEAR
-        if value == "Q":
+        if value in ("Q", "Q-DEC"):
             return Type.QUARTER
         if value == "M":
             return Type.MONTH
-        if value == "SM":
-            return Type.SEMIMONTH
+        if value in ("2W", "2W-SUN"):
+            return Type.BIWEEK
         if value in ("W-SUN", "W"):
             return Type.WEEK
         if value == "D":
@@ -58,13 +58,13 @@ class Type(enum.Enum):
         if type == Type.YEAR:
             return "Y"
         if type == Type.SEMIYEAR:
-            return "6M"
+            return "2Q"
         if type == Type.QUARTER:
             return "Q"
         if type == Type.MONTH:
             return "M"
-        if type == Type.SEMIMONTH:
-            return "SM"
+        if type == Type.BIWEEK:
+            return "2W"
         if type == Type.WEEK:
             return "W"
         if type == Type.DAY:
@@ -83,15 +83,15 @@ class Type(enum.Enum):
         if type == Type.YEAR:
             return "YE"
         if type == Type.SEMIYEAR:
-            return "6ME"
+            return "2QE"
         if type == Type.QUARTER:
             return "QE"
         if type == Type.MONTH:
             return "ME"
-        if type == Type.SEMIMONTH:
-            return "SME"
+        if type == Type.BIWEEK:
+            return "2W-SUN"
         if type == Type.WEEK:
-            return "W"
+            return "W-SUN"
         if type == Type.DAY:
             return "D"
         else:
@@ -129,8 +129,8 @@ def measure(
         result = (delta.years * 4) + math.floor(delta.months / 3)
     elif duration.value == Type.MONTH.value:
         result = (delta.years * 12) + delta.months
-    elif duration.value == Type.SEMIMONTH.value:
-        result = (delta.years * 24) + delta.months * 2
+    elif duration.value == Type.BIWEEK.value:
+        result = math.floor((calc_end_date - start_date).days / 14)
     elif duration.value == Type.WEEK.value:
         result = math.floor((calc_end_date - start_date).days / 7)
     elif duration.value == Type.DAY.value:
@@ -177,6 +177,8 @@ def offset(
             result = date + pd.offsets.MonthEnd(3 * amount)
         elif duration.value == Type.MONTH.value:
             result = date + pd.offsets.MonthEnd(amount)
+        elif duration.value == Type.BIWEEK.value:
+            result = date + pd.DateOffset(weeks=2 * amount)
         elif duration.value == Type.WEEK.value:
             result = date + pd.DateOffset(weeks=amount)
         elif duration.value == Type.DAY.value:
@@ -198,6 +200,8 @@ def offset(
             result = date + pd.DateOffset(months=3 * amount)
         elif duration.value == Type.MONTH.value:
             result = date + pd.DateOffset(months=amount)
+        elif duration.value == Type.BIWEEK.value:
+            result = date + pd.DateOffset(weeks=2 * amount)
         elif duration.value == Type.WEEK.value:
             result = date + pd.DateOffset(weeks=amount)
         elif duration.value == Type.DAY.value:
@@ -241,7 +245,7 @@ class Period:
             Type.SEMIYEAR: 2,
             Type.QUARTER: 4,
             Type.MONTH: 12,
-            Type.SEMIMONTH: 24,
+            Type.BIWEEK: 26,
             Type.WEEK: 52,
             Type.DAY: 365,
         }.get(duration, None)
@@ -273,10 +277,23 @@ class Sequence:
         :param bound: A terminating condition; either a pd.Timestamp end date or a (integer) number of periods
         """
         if isinstance(bound, datetime.date):
+            freq = Type.period(frequency)
+
+            # Align to the start & ends of first & last periods
+            aligned_start = pd.Period(
+                value=include_start,
+                freq=freq,
+            ).start_time.date()
+
+            aligned_end = pd.Period(
+                value=bound,
+                freq=freq,
+            ).end_time.date()
+
             return pd.period_range(
-                start=include_start,
-                end=bound,
-                freq=Type.period(frequency),
+                start=aligned_start,
+                end=aligned_end,
+                freq=freq,
                 name="periods",
             )
         elif isinstance(bound, int):

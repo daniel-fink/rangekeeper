@@ -10,13 +10,23 @@ class Index:
     registry = pint.UnitRegistry()
 
     # Add Additional Terms:
-    registry.define("percent = 0.01 * dimensionless = % = pct")
+    # registry.define("percent = 0.01 * dimensionless = % = pct") # Remove this because it causes issues?
     registry.define("squaremeter = 1 m**2 = m2 = sqm")
     registry.define("squarefoot = 1 foot**2 = ft2 = sqft")
 
     # Define Domain Units:
-    registry.define("zone = [space]")
-    registry.define("parking_stall = 1 * zone")
+    # registry.define("zone = [space]")
+    # registry.define("parking_stall = 1 * zone")
+
+
+def to_filtered(
+    quantity: pint.Quantity,
+    exclude=("percent",),
+) -> pint.Quantity:
+    units = quantity._units
+    excluded = [name for name in units if name in set(exclude)]
+    new_units = units.remove(excluded) if excluded else units
+    return quantity.to(new_units)
 
 
 def remove_dimension(
@@ -92,7 +102,7 @@ def register_currency(
     return Measure(
         name=currency.name,
         definition="Currency of {0}".format(currency.countries),
-        units=registry[currency.code].units,
+        units=registry.parse_units(currency.code),
     )
 
 

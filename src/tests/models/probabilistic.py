@@ -81,7 +81,7 @@ class Model:
             sequence=self.noi_calc_span.to_sequence(frequency=params["frequency"]),
             data=self.pgi.movements * params["vacancy_rate"],
             units=params["units"],
-        ).invert()
+        ).negate()
 
         # Effective Gross Income:
         self.egi = rk.flux.Stream(
@@ -96,7 +96,7 @@ class Model:
             sequence=self.noi_calc_span.to_sequence(frequency=params["frequency"]),
             data=self.pgi.movements * params["opex_pgi_ratio"],
             units=params["units"],
-        ).invert()
+        ).negate()
 
         # Net Operating Income:
         self.noi = rk.flux.Stream(
@@ -111,7 +111,7 @@ class Model:
             sequence=self.noi_calc_span.to_sequence(frequency=params["frequency"]),
             data=self.pgi.movements * params["capex_pgi_ratio"],
             units=params["units"],
-        ).invert()
+        ).negate()
 
         # Net Cashflows:
         self.ncf = rk.flux.Stream(
@@ -166,4 +166,4 @@ class Model:
         )
 
         self.investment_cashflows.frame = self.investment_cashflows.frame[:-1]
-        self.irr = self.investment_cashflows.sum().xirr()
+        self.irr = self.investment_cashflows.sum().irr()
