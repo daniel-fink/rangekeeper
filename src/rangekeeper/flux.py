@@ -426,7 +426,7 @@ class Flow:
         sequence = rk.duration.Sequence.from_bounds(
             include_start=origin,
             frequency=frequency,
-            bound=self.movements.index[-1] if self.movements.size > 1 else origin,
+            bound=self.movements.index[-1] if self.movements.size >= 1 else origin,
         )
         # print(f"Flow.resample() for {self.name} origin: {origin}")
         # print(f"Flow.resample() for {self.name} sequence: {sequence}")

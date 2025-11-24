@@ -1,6 +1,6 @@
 [project]
 name = "Rangekeeper"
-version = "0.8.63"
+version = "0.8.64"
 description = "A Python library assisting financial modelling in real estate asset & development planning, decision-making, cashflow forecasting, and scenario analysis."
 authors = [
     { name = "Daniel Fink", email = "danfink@mit.edu" }
@@ -28,6 +28,7 @@ dependencies = [
     "numpy-financial>=1.0",
     "pytest>=8.0",
     "black>=25.0",
+    "pandas-stubs==2.3.2.250926",
 ]
 
 [tool.ruff.format]
