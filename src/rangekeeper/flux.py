@@ -453,7 +453,7 @@ class Flow:
         # print(f"Flow.resample() for {self.name} aligned:")
         # print(aligned)
 
-        result = self.__class__(
+        result = rk.flux.Flow(
             movements=aligned,
             units=self.units,
             name=self.name,
