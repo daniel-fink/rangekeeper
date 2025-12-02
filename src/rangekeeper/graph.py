@@ -2,23 +2,15 @@ from __future__ import annotations
 
 import os
 import uuid
-from typing import List, Dict, Union, Optional, Callable, Any
-import pprint
+from typing import List, Union, Optional, Callable, Any
 
-import networkx as nx
-import numpy as np
-import pandas as pd
-from pyvis import network, options
-import plotly.express as px
-import plotly.graph_objects as go
-import plotly.io as pio
-import plotly.offline as py
-
-from pint import Quantity
-from IPython.display import IFrame
 import matplotlib as mpl
-
+import networkx as nx
+import pandas as pd
+import plotly.graph_objects as go
 import specklepy.objects as objects
+from IPython.display import IFrame
+from pyvis import network
 
 import rangekeeper as rk
 
@@ -72,7 +64,10 @@ import rangekeeper as rk
 #
 
 
-def is_entity(base: objects.Base, exclusive: bool = False) -> bool:
+def is_entity(
+    base: objects.Base,
+    exclusive: bool = False,
+) -> bool:
     if "Rangekeeper" in base.speckle_type:
         if exclusive:
             return ("Entity" in base.speckle_type) and (
@@ -117,12 +112,17 @@ class Entity(objects.Base):
     def __hash__(self):
         return hash(self.entityId)
 
-    def __init__(self, entityId: str = None, name: str = None, type: str = None):
-        super().__init__(
-            entityId=str(uuid.uuid4()) if entityId is None else entityId,
-            name=name if name is not None else "[Unnamed]",
-            type=type if type is not None else "[Unknown]",
-        )
+    def __init__(
+        self,
+        entityId: str = None,
+        name: str = None,
+        type: str = None,
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
+        self.entityId = str(uuid.uuid4()) if entityId is None else entityId
+        self.name = name if name is not None else "[Unnamed]"
+        self.type = type if type is not None else "[Unknown]"
 
     def try_get_attribute(self, key):
         try:
@@ -131,7 +131,7 @@ class Entity(objects.Base):
             return None
 
     @classmethod
-    def from_base(cls, base: objects.Base, name: str = None, type: str = None):
+    def from_base(cls, base: objects.Base):
         if rk.graph.is_assembly(base):
             return Assembly.from_assemblybase(base)
         elif rk.graph.is_entity(base, True):
@@ -148,7 +148,8 @@ class Entity(objects.Base):
 
     @classmethod
     def from_entitybase(
-        cls, base: objects.Base, name: str = None, type: str = None
+        cls,
+        base: objects.Base,
     ) -> Entity:
         if not rk.graph.is_entity(base, True):
             raise TypeError("Base is not an Entity")
@@ -457,8 +458,13 @@ class Assembly(Entity):
 
     @classmethod
     def from_assemblybase(
-        cls, base: objects.Base, relatives: dict[str, objects.Base] = None
-    ):
+        cls,
+        base: objects.Base,
+        relatives: dict[str, objects.Base] = None,
+    ) -> Assembly:
+
+        # TODO: Handle case where relatives is None better.
+
         if not rk.graph.is_assembly(base):
             raise TypeError("The provided Base is not an Assembly.")
         assembly = cls(
@@ -476,27 +482,39 @@ class Assembly(Entity):
                 value = base[member_name]
                 assembly.__setattr__(member_name, value)
 
-        if relatives is not None:
-            for relationship in base["relationships"]:
-                source = (
-                    relatives[relationship["source"]["entityId"]]
-                    if relationship["source"] is not None
-                    else assembly
+        # if relatives is not None:
+        for relationship in base["relationships"]:
+            if relatives is not None:
+                source = relatives[relationship["source"]["entityId"]]
+            elif relationship["source"] is not None:
+                source = relationship["source"]
+            else:
+                source = assembly
+
+            # source = (
+            #     relatives[relationship["source"]["entityId"]]
+            #     if relatives is not None
+            #     else None if relationship["source"] is not None else assembly
+            # )
+
+            if relatives is not None:
+                target = relatives[relationship["target"]["entityId"]]
+            elif relationship["target"] is not None:
+                target = relationship["target"]
+            else:
+                target = assembly
+            # target = (
+            #     relatives[relationship["target"]["entityId"]]
+            #     if relatives is not None
+            #     else (None if relationship["target"] is not None) else assembly
+            # )
+            assembly.add_relationship(
+                (
+                    source,
+                    target,
+                    relationship["type"],
                 )
-                # This seems to happen bc of Speckle's serialization?
-                target = (
-                    relatives[relationship["target"]["entityId"]]
-                    if relationship["target"] is not None
-                    else assembly
-                )
-                # This seems to happen bc of Speckle's serialization?
-                assembly.add_relationship(
-                    (
-                        source,
-                        target,
-                        relationship["type"],
-                    )
-                )
+            )
         return assembly
 
     def add_entities(self, entities: List[Entity]):
@@ -651,7 +669,7 @@ class Assembly(Entity):
 
         df["property_total"] = [
             (
-                item.total()
+                item.total().magnitude  # Note: this removes units
                 if isinstance(item, rk.flux.Flow) or isinstance(item, rk.flux.Stream)
                 else item
             )
@@ -698,7 +716,7 @@ class Assembly(Entity):
 
         df["property_total"] = [
             (
-                item.total()
+                item.total().magnitude  # Note: this removes units
                 if isinstance(item, rk.flux.Flow) or isinstance(item, rk.flux.Stream)
                 else item
             )
