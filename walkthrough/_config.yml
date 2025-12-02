@@ -13,6 +13,13 @@ execute:
   execute_notebooks: cache
   timeout: 6000
 only_build_toc_files: true
+exclude_patterns:
+  - .uv-cache/**
+  - .uv-cache
+  - .venv/**
+  - .venv
+  - '**/.ipynb_checkpoints'
+  - _build
 
 # Add a bibtex file so that we can create citations
 bibtex_bibfiles:
@@ -37,9 +44,15 @@ launch_buttons:
 sphinx:
   config:
     language: en
-    html_extra_path: ['assets']
+    html_extra_path: ['_static']
+    exclude_patterns:
+      - .uv-cache/**
+      - .uv-cache
+      - .venv/**
+      - .venv
+      - '**/.ipynb_checkpoints'
+      - _build
 #    suppress_warnings: [ "mystnb.unknown_mime_type" ]  # See https://github.com/executablebooks/jupyter-book/issues/1950
 #    html_js_files:
 #      - https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js  # See https://jupyterbook.org/en/stable/interactive/interactive.html
-
 

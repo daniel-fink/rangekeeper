@@ -1,2 +1,13 @@
-# MyST build outputs
+# Build outputs
 _build
+
+# Local environments and caches
+.venv
+.uv-cache
+
+# Notebook artifacts
+.ipynb_checkpoints
+
+# Editor cruft
+.DS_Store
+.idea
