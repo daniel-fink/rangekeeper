@@ -24,9 +24,9 @@ class Type(enum.Enum):
 
     @staticmethod  # Possibly dealing with pandas > 2.2 changes
     def from_value(value: str):
-        if value == "10Y":
+        if value in ("10Y", "10Y-DEC"):
             return Type.DECADE
-        if value == "5Y":
+        if value in ("5Y", "5Y-DEC"):
             return Type.SEMIDECADE
         if value in ("2Y", "2Y-DEC"):
             return Type.BIENNIUM
