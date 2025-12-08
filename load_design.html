@@ -32,7 +32,7 @@
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -745,7 +745,7 @@ Models: [&#39;main&#39;], [&#39;119ad04487&#39;]
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&#39;@property&#39;, &#39;@context&#39;, &#39;totalChildrenCount&#39;]
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&#39;@context&#39;, &#39;totalChildrenCount&#39;, &#39;@property&#39;]
 </pre></div>
 </div>
 </div>
@@ -862,7 +862,7 @@ This means we can query it pythonically:</p>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>buildingA: Assembly: buildingA
 Type: building
-Members: [&#39;type&#39;, &#39;name&#39;, &#39;totalChildrenCount&#39;]
+Members: [&#39;name&#39;, &#39;totalChildrenCount&#39;, &#39;type&#39;]
 Entities: [(&#39;5ebb9736-5f18-4103-a5a4-040cd2e9b019&#39;, {&#39;entity&#39;: Assembly: buildingA (Type: building)}), (&#39;c0348c0f-a31f-421b-b6bc-0fe0d5ea947f&#39;, {&#39;entity&#39;: Assembly: buildingAhotel (Type: space)}), (&#39;1d0841bf-aa28-41d7-ba75-0ad0f3d57d21&#39;, {&#39;entity&#39;: Assembly: buildingAretail (Type: space)}), (&#39;7716632b-f43c-4ed2-9f84-26709361bbfe&#39;, {&#39;entity&#39;: Assembly: buildingAresidential (Type: space)}), (&#39;01aec121-ef19-4e6d-9f09-b2ce007b717d&#39;, {&#39;entity&#39;: Assembly: buildingAretail (Type: space)}), (&#39;6f6b227b-b28b-4412-89bd-0a9bbc47164e&#39;, {&#39;entity&#39;: Assembly: buildingAparking (Type: space)}), (&#39;7eec5208-fc0e-4dfd-bd0b-b1d226b2e97e&#39;, {&#39;entity&#39;: Entity: buildingAcores (Type: utilities)})]
 Relationships: [(&#39;5ebb9736-5f18-4103-a5a4-040cd2e9b019&#39;, &#39;c0348c0f-a31f-421b-b6bc-0fe0d5ea947f&#39;, &#39;spatiallyContains&#39;), (&#39;5ebb9736-5f18-4103-a5a4-040cd2e9b019&#39;, &#39;1d0841bf-aa28-41d7-ba75-0ad0f3d57d21&#39;, &#39;spatiallyContains&#39;), (&#39;5ebb9736-5f18-4103-a5a4-040cd2e9b019&#39;, &#39;7716632b-f43c-4ed2-9f84-26709361bbfe&#39;, &#39;spatiallyContains&#39;), (&#39;5ebb9736-5f18-4103-a5a4-040cd2e9b019&#39;, &#39;01aec121-ef19-4e6d-9f09-b2ce007b717d&#39;, &#39;spatiallyContains&#39;), (&#39;5ebb9736-5f18-4103-a5a4-040cd2e9b019&#39;, &#39;6f6b227b-b28b-4412-89bd-0a9bbc47164e&#39;, &#39;spatiallyContains&#39;), (&#39;5ebb9736-5f18-4103-a5a4-040cd2e9b019&#39;, &#39;7eec5208-fc0e-4dfd-bd0b-b1d226b2e97e&#39;, &#39;spatiallyContains&#39;)]
 </pre></div>
@@ -900,7 +900,7 @@ we can identify relatives of <code class="docutils literal notranslate"><span cl
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>buildingAresidential: Assembly: buildingAresidential
 Type: space
-Members: [&#39;name&#39;, &#39;totalChildrenCount&#39;, &#39;volume&#39;, &#39;@displayValue&#39;, &#39;type&#39;, &#39;renderMaterial&#39;, &#39;use&#39;]
+Members: [&#39;name&#39;, &#39;use&#39;, &#39;@displayValue&#39;, &#39;volume&#39;, &#39;renderMaterial&#39;, &#39;totalChildrenCount&#39;, &#39;type&#39;]
 Entities: [(&#39;7716632b-f43c-4ed2-9f84-26709361bbfe&#39;, {&#39;entity&#39;: Assembly: buildingAresidential (Type: space)}), (&#39;bf5a4444-6abd-4b89-b7a8-d758df5134fe&#39;, {&#39;entity&#39;: Entity: buildingAresidentialFloor0 (Type: floor)}), (&#39;dbf25b07-6f85-45bb-905c-de5b8562f5e7&#39;, {&#39;entity&#39;: Entity: buildingAresidentialFloor1 (Type: floor)}), (&#39;507e4ef2-fe13-44d7-af5f-bcf717b3de53&#39;, {&#39;entity&#39;: Entity: buildingAresidentialFloor2 (Type: floor)}), (&#39;bb815059-7516-45df-8fac-16f0e62242f3&#39;, {&#39;entity&#39;: Entity: buildingAresidentialFloor3 (Type: floor)})]
 Relationships: [(&#39;7716632b-f43c-4ed2-9f84-26709361bbfe&#39;, &#39;bf5a4444-6abd-4b89-b7a8-d758df5134fe&#39;, &#39;spatiallyContains&#39;), (&#39;7716632b-f43c-4ed2-9f84-26709361bbfe&#39;, &#39;dbf25b07-6f85-45bb-905c-de5b8562f5e7&#39;, &#39;spatiallyContains&#39;), (&#39;7716632b-f43c-4ed2-9f84-26709361bbfe&#39;, &#39;507e4ef2-fe13-44d7-af5f-bcf717b3de53&#39;, &#39;spatiallyContains&#39;), (&#39;7716632b-f43c-4ed2-9f84-26709361bbfe&#39;, &#39;bb815059-7516-45df-8fac-16f0e62242f3&#39;, &#39;spatiallyContains&#39;)]
 </pre></div>
@@ -910,8 +910,8 @@ Relationships: [(&#39;7716632b-f43c-4ed2-9f84-26709361bbfe&#39;, &#39;bf5a4444-6
 <p>We can also visualize the design’s graph as well:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">property</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;_static/property&#39;</span><span class="p">)</span>
-<span class="n">IFrame</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="s2">&quot;../_static/property.html&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">property</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;_static/</span><span class="si">{</span><span class="nb">property</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">IFrame</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;_static/</span><span class="si">{</span><span class="nb">property</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">.html&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -923,7 +923,7 @@ Relationships: [(&#39;7716632b-f43c-4ed2-9f84-26709361bbfe&#39;, &#39;bf5a4444-6
         <iframe
             width="100%"
             height="800"
-            src="../_static/property.html"
+            src="_static/property.html"
             frameborder="0"
             allowfullscreen
             
