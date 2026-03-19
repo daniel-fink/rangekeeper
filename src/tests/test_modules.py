@@ -226,6 +226,51 @@ class TestFlow:
         assert TestFlow.resample_flow.movements.iloc[1] == -48
         assert TestFlow.resample_flow.movements.iloc[2] == pytest.approx(-4)
 
+    @pytest.mark.parametrize(
+        ("frequency", "expected_origin"),
+        [
+            (rk.duration.Type.DAY, "epoch"),
+            (rk.duration.Type.MONTH, None),
+            (rk.duration.Type.QUARTER, None),
+            (rk.duration.Type.YEAR, None),
+        ],
+    )
+    def test_resample_origin_only_for_tick_offsets(
+        self,
+        monkeypatch,
+        frequency,
+        expected_origin,
+    ):
+        flow = rk.flux.Flow(
+            movements=pd.Series(
+                data=[1.0, 2.0, 3.0],
+                index=pd.to_datetime(
+                    ["2020-01-31", "2020-02-29", "2020-03-31"]
+                ),
+                name="captured",
+                dtype=float,
+            ),
+            units=currency.units,
+        )
+        captured = {}
+        original_resample = pd.Series.resample
+
+        def capture_resample(series, *args, **kwargs):
+            captured.clear()
+            captured.update(kwargs)
+            return original_resample(series, *args, **kwargs)
+
+        monkeypatch.setattr(pd.Series, "resample", capture_resample)
+
+        flow.resample(frequency=frequency)
+
+        assert captured["rule"] == rk.duration.Type.offset(frequency)
+        assert captured["label"] == "right"
+        if expected_origin is None:
+            assert "origin" not in captured
+        else:
+            assert captured["origin"] == expected_origin
+
     # to_periods = flow.to_periods(index=rk.duration.Type.YEAR)
 
     def test_conversion_to_period_index(self):
