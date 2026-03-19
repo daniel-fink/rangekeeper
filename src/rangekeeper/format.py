@@ -22,6 +22,12 @@ def to_decimal(
     """
     places = decimal.Decimal(10) ** -places
     with decimal.localcontext(decimal.Context(rounding=mode)):
+        if np.isposinf(value):
+            return decimal.Decimal("Infinity")
+        if np.isneginf(value):
+            return decimal.Decimal("-Infinity")
+        if np.isnan(value):
+            return decimal.Decimal("NaN")
         return decimal.Decimal(str(value)).quantize(places)
 
 
