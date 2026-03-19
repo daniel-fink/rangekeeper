@@ -400,21 +400,20 @@ class Flow:
             origin = self.movements.index[0].date()
 
         movements = self.movements.copy(deep=True)
+        offset = rk.duration.Type.offset(frequency)
+        resample_kwargs = {
+            "rule": offset,
+            "label": "right",
+        }
+        if isinstance(
+            pd.tseries.frequencies.to_offset(offset), pd.tseries.offsets.Tick
+        ):
+            resample_kwargs["origin"] = "epoch"
+
         if sum:
-            resampled = (
-                movements.resample(
-                    rule=rk.duration.Type.offset(frequency),
-                    label="right",
-                    origin="epoch",
-                ).sum()
-                # .ffill()
-            )
+            resampled = movements.resample(**resample_kwargs).sum()
         else:
-            resampled = movements.resample(
-                rule=rk.duration.Type.offset(frequency),
-                label="right",
-                origin="epoch",
-            ).ffill()
+            resampled = movements.resample(**resample_kwargs).ffill()
 
         # print(f"Flow.resample() for {self.name} resampled:")
         # print(resampled)
