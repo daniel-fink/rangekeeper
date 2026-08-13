@@ -55,7 +55,7 @@ class Speckle:
         parsed = {} if parsed is None else parsed
 
         if isinstance(base, objects.Base):
-            if rk.graph.is_entity(base):
+            if rk.graph.entity.is_entity(base):
                 if base["entityId"] not in parsed:
                     parsed[base["entityId"]] = base
                 else:
@@ -68,14 +68,18 @@ class Speckle:
                                 base["entityId"], base["name"]
                             )
                         )
-                        if rk.graph.is_assembly(existing) & rk.graph.is_entity(
+                        if rk.graph.entity.is_assembly(
+                            existing
+                        ) & rk.graph.entity.is_entity(
                             base=base,
                             exclusive=True,
                         ):
                             print(
                                 "Existing Entity is an Assembly while new Entity is not. Keeping Assembly."
                             )
-                        elif rk.graph.is_assembly(base) & rk.graph.is_entity(
+                        elif rk.graph.entity.is_assembly(
+                            base
+                        ) & rk.graph.entity.is_entity(
                             base=existing,
                             exclusive=True,
                         ):
@@ -112,7 +116,7 @@ class Speckle:
         entities = {base["entityId"]: rk.graph.Entity.from_base(base) for base in bases}
 
         assemblies = {}
-        for assembly in [base for base in bases if rk.graph.is_assembly(base)]:
+        for assembly in [base for base in bases if rk.graph.entity.is_assembly(base)]:
             subassembly = entities[assembly["entityId"]]
             edges = []
             for relationship in assembly["relationships"]:
