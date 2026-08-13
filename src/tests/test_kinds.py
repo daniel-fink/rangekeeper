@@ -1,11 +1,11 @@
 import pytest
 
 import rangekeeper as rk
-from rangekeeper.graph.kind import EntityType
+from rangekeeper.graph.kind import Kind
 
 
-def make_apartment_types():
-    apartment = EntityType(code="apartment", name="Apartment")
+def make_apartment_kinds():
+    apartment = Kind(code="apartment", name="Apartment")
     three_bed = apartment.define(
         code="apartment.3bed",
         name="3-bed Apartment",
@@ -17,14 +17,14 @@ def make_apartment_types():
     return apartment, three_bed, corner
 
 
-def test_entity_type_module_is_public():
-    assert rk.graph.kind.EntityType is EntityType
-    assert rk.graph.EntityType is EntityType
+def test_kind_module_is_public():
+    assert rk.graph.kind.Kind is Kind
+    assert rk.graph.Kind is Kind
 
 
 def test_constructor_parenting_and_define_keep_both_sides_consistent():
-    apartment = EntityType(code="apartment", name="Apartment")
-    two_bed = EntityType(
+    apartment = Kind(code="apartment", name="Apartment")
+    two_bed = Kind(
         code="apartment.2bed",
         name="2-bed Apartment",
         parent=apartment,
@@ -40,9 +40,9 @@ def test_constructor_parenting_and_define_keep_both_sides_consistent():
 
 
 def test_constructor_children_are_parented_in_order():
-    office = EntityType(code="office", name="Office")
-    retail = EntityType(code="retail", name="Retail")
-    building = EntityType(
+    office = Kind(code="office", name="Office")
+    retail = Kind(code="retail", name="Retail")
+    building = Kind(
         code="building",
         name="Building",
         children=[office, retail],
@@ -54,9 +54,9 @@ def test_constructor_children_are_parented_in_order():
 
 
 def test_reparenting_and_removal_keep_both_sides_consistent():
-    residential = EntityType(code="residential", name="Residential")
-    commercial = EntityType(code="commercial", name="Commercial")
-    mixed_use = EntityType(code="mixed-use", name="Mixed Use")
+    residential = Kind(code="residential", name="Residential")
+    commercial = Kind(code="commercial", name="Commercial")
+    mixed_use = Kind(code="mixed-use", name="Mixed Use")
 
     residential.add_child(mixed_use)
     commercial.add_child(mixed_use)
@@ -74,8 +74,8 @@ def test_reparenting_and_removal_keep_both_sides_consistent():
 
 
 def test_readding_a_child_does_not_duplicate_it():
-    parent = EntityType(code="parent", name="Parent")
-    child = EntityType(code="child", name="Child")
+    parent = Kind(code="parent", name="Parent")
+    child = Kind(code="child", name="Child")
 
     parent.add_child(child)
     parent.add_child(child)
@@ -84,10 +84,10 @@ def test_readding_a_child_does_not_duplicate_it():
 
 
 def test_add_and_remove_children():
-    parent = EntityType(code="parent", name="Parent")
+    parent = Kind(code="parent", name="Parent")
     children = (
-        EntityType(code="child-1", name="Child 1"),
-        EntityType(code="child-2", name="Child 2"),
+        Kind(code="child-1", name="Child 1"),
+        Kind(code="child-2", name="Child 2"),
     )
 
     parent.add_children(children)
@@ -99,7 +99,7 @@ def test_add_and_remove_children():
 
 
 def test_self_parenting_and_cycles_are_rejected():
-    apartment, three_bed, corner = make_apartment_types()
+    apartment, three_bed, corner = make_apartment_kinds()
 
     with pytest.raises(ValueError, match="own parent"):
         apartment.set_parent(apartment)
@@ -113,8 +113,8 @@ def test_self_parenting_and_cycles_are_rejected():
 
 
 def test_duplicate_codes_are_rejected_within_a_connected_hierarchy():
-    apartment, _, _ = make_apartment_types()
-    duplicate = EntityType(code="apartment.3bed", name="Duplicate")
+    apartment, _, _ = make_apartment_kinds()
+    duplicate = Kind(code="apartment.3bed", name="Duplicate")
 
     with pytest.raises(ValueError, match="apartment.3bed"):
         apartment.add_child(duplicate)
@@ -124,7 +124,7 @@ def test_duplicate_codes_are_rejected_within_a_connected_hierarchy():
 
 
 def test_reparenting_within_a_hierarchy_does_not_conflict_with_own_subtree():
-    apartment, three_bed, corner = make_apartment_types()
+    apartment, three_bed, corner = make_apartment_kinds()
 
     apartment.add_child(corner)
 
@@ -133,8 +133,8 @@ def test_reparenting_within_a_hierarchy_does_not_conflict_with_own_subtree():
     assert apartment.children == (three_bed, corner)
 
 
-def test_traversal_order_lineage_and_type_checks():
-    apartment, three_bed, corner = make_apartment_types()
+def test_traversal_order_lineage_and_kind_checks():
+    apartment, three_bed, corner = make_apartment_kinds()
     two_bed = apartment.define(
         code="apartment.2bed",
         name="2-bed Apartment",
@@ -153,7 +153,7 @@ def test_traversal_order_lineage_and_type_checks():
 
 
 def test_code_is_immutable_and_children_are_read_only():
-    parent = EntityType(code="parent", name="Parent")
+    parent = Kind(code="parent", name="Parent")
 
     with pytest.raises(AttributeError):
         parent.code = "renamed"
@@ -163,7 +163,7 @@ def test_code_is_immutable_and_children_are_read_only():
 
 
 def test_flat_record_serialization_and_reconstruction():
-    apartment, three_bed, corner = make_apartment_types()
+    apartment, three_bed, corner = make_apartment_kinds()
     corner.definition = "An apartment on a building corner."
 
     records = corner.to_records()
@@ -189,7 +189,7 @@ def test_flat_record_serialization_and_reconstruction():
         },
     )
 
-    (restored,) = EntityType.from_records(records)
+    (restored,) = Kind.from_records(records)
     restored_three_bed = restored.find(three_bed.code)
     restored_corner = restored.find(corner.code)
 
@@ -206,10 +206,10 @@ def test_reconstruction_validates_duplicate_and_unknown_codes():
         {"code": "type", "name": "Duplicate", "parent_code": None},
     ]
     with pytest.raises(ValueError, match="duplicate"):
-        EntityType.from_records(duplicate_records)
+        Kind.from_records(duplicate_records)
 
     unknown_parent_records = [
         {"code": "child", "name": "Child", "parent_code": "missing"},
     ]
     with pytest.raises(ValueError, match="unknown parent"):
-        EntityType.from_records(unknown_parent_records)
+        Kind.from_records(unknown_parent_records)

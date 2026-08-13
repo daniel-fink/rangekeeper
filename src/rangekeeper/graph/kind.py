@@ -4,10 +4,10 @@ from collections.abc import Iterable, Mapping
 from typing import Any
 
 
-class EntityType:
-    """A named type in a single-parent entity type hierarchy.
+class Kind:
+    """A named classification in a single-parent kind hierarchy.
 
-    Type codes are immutable and unique within a connected hierarchy. Parent and
+    Kind codes are immutable and unique within a connected hierarchy. Parent and
     child mutations keep both sides of the relationship consistent.
     """
 
@@ -17,16 +17,16 @@ class EntityType:
         name: str,
         definition: str | None = None,
         *,
-        parent: EntityType | None = None,
-        children: Iterable[EntityType] | None = None,
+        parent: Kind | None = None,
+        children: Iterable[Kind] | None = None,
     ) -> None:
         self._code = self._validate_required_text(code, "code")
         self.name = self._validate_required_text(name, "name")
         if definition is not None and not isinstance(definition, str):
             raise TypeError("definition must be a string or None")
         self.definition = definition
-        self._parent: EntityType | None = None
-        self._children: list[EntityType] = []
+        self._parent: Kind | None = None
+        self._children: list[Kind] = []
 
         if parent is not None:
             self.set_parent(parent)
@@ -46,24 +46,24 @@ class EntityType:
         return self._code
 
     @property
-    def parent(self) -> EntityType | None:
+    def parent(self) -> Kind | None:
         return self._parent
 
     @property
-    def children(self) -> tuple[EntityType, ...]:
+    def children(self) -> tuple[Kind, ...]:
         return tuple(self._children)
 
     def __repr__(self) -> str:
-        return f"EntityType(code={self.code!r}, name={self.name!r})"
+        return f"Kind(code={self.code!r}, name={self.name!r})"
 
     def __str__(self) -> str:
         return self.name
 
-    def set_parent(self, parent: EntityType) -> None:
-        if not isinstance(parent, EntityType):
-            raise TypeError("parent must be an EntityType")
+    def set_parent(self, parent: Kind) -> None:
+        if not isinstance(parent, Kind):
+            raise TypeError("parent must be a Kind")
         if parent is self:
-            raise ValueError("an entity type cannot be its own parent")
+            raise ValueError("a kind cannot be its own parent")
         if parent in self.descendants():
             raise ValueError("parenting would create a cycle")
         if self._parent is parent:
@@ -71,17 +71,13 @@ class EntityType:
 
         subtree = set(self._walk_preorder())
         target_codes = {
-            entity_type.code
-            for entity_type in parent.root()._walk_preorder()
-            if entity_type not in subtree
+            kind.code for kind in parent.root()._walk_preorder() if kind not in subtree
         }
-        duplicate_codes = target_codes.intersection(
-            entity_type.code for entity_type in subtree
-        )
+        duplicate_codes = target_codes.intersection(kind.code for kind in subtree)
         if duplicate_codes:
             duplicates = ", ".join(sorted(duplicate_codes))
             raise ValueError(
-                f"entity type codes must be unique within a hierarchy: {duplicates}"
+                f"kind codes must be unique within a hierarchy: {duplicates}"
             )
 
         previous_parent = self._parent
@@ -97,23 +93,23 @@ class EntityType:
         self._parent = None
         parent._children.remove(self)
 
-    def add_child(self, child: EntityType) -> None:
-        if not isinstance(child, EntityType):
-            raise TypeError("child must be an EntityType")
+    def add_child(self, child: Kind) -> None:
+        if not isinstance(child, Kind):
+            raise TypeError("child must be a Kind")
         child.set_parent(self)
 
-    def remove_child(self, child: EntityType) -> None:
-        if not isinstance(child, EntityType):
-            raise TypeError("child must be an EntityType")
+    def remove_child(self, child: Kind) -> None:
+        if not isinstance(child, Kind):
+            raise TypeError("child must be a Kind")
         if child._parent is not self:
-            raise ValueError("entity type is not a direct child")
+            raise ValueError("kind is not a direct child")
         child.remove_parent()
 
-    def add_children(self, children: Iterable[EntityType]) -> None:
+    def add_children(self, children: Iterable[Kind]) -> None:
         for child in children:
             self.add_child(child)
 
-    def remove_children(self, children: Iterable[EntityType]) -> None:
+    def remove_children(self, children: Iterable[Kind]) -> None:
         for child in children:
             self.remove_child(child)
 
@@ -123,16 +119,16 @@ class EntityType:
         code: str,
         name: str,
         definition: str | None = None,
-    ) -> EntityType:
-        return EntityType(
+    ) -> Kind:
+        return Kind(
             code=code,
             name=name,
             definition=definition,
             parent=self,
         )
 
-    def ancestors(self) -> tuple[EntityType, ...]:
-        ancestors: list[EntityType] = []
+    def ancestors(self) -> tuple[Kind, ...]:
+        ancestors: list[Kind] = []
         current = self._parent
         while current is not None:
             ancestors.append(current)
@@ -140,27 +136,27 @@ class EntityType:
         ancestors.reverse()
         return tuple(ancestors)
 
-    def descendants(self) -> tuple[EntityType, ...]:
+    def descendants(self) -> tuple[Kind, ...]:
         return tuple(self._walk_preorder())[1:]
 
-    def lineage(self) -> tuple[EntityType, ...]:
+    def lineage(self) -> tuple[Kind, ...]:
         return (*self.ancestors(), self)
 
-    def root(self) -> EntityType:
+    def root(self) -> Kind:
         current = self
         while current._parent is not None:
             current = current._parent
         return current
 
-    def is_a(self, ancestor: EntityType) -> bool:
-        if not isinstance(ancestor, EntityType):
-            raise TypeError("ancestor must be an EntityType")
+    def is_a(self, ancestor: Kind) -> bool:
+        if not isinstance(ancestor, Kind):
+            raise TypeError("ancestor must be a Kind")
         return ancestor in self.lineage()
 
-    def find(self, code: str) -> EntityType | None:
-        for entity_type in self.root()._walk_preorder():
-            if entity_type.code == code:
-                return entity_type
+    def find(self, code: str) -> Kind | None:
+        for kind in self.root()._walk_preorder():
+            if kind.code == code:
+                return kind
         return None
 
     def to_record(self) -> dict[str, str | None]:
@@ -173,31 +169,27 @@ class EntityType:
 
     def to_records(self) -> tuple[dict[str, str | None], ...]:
         """Serialize the complete connected hierarchy in depth-first order."""
-        return tuple(
-            entity_type.to_record() for entity_type in self.root()._walk_preorder()
-        )
+        return tuple(kind.to_record() for kind in self.root()._walk_preorder())
 
     @classmethod
     def from_records(
         cls,
         records: Iterable[Mapping[str, Any]],
-    ) -> tuple[EntityType, ...]:
+    ) -> tuple[Kind, ...]:
         """Reconstruct one or more hierarchies and return their roots."""
         materialized = list(records)
-        by_code: dict[str, EntityType] = {}
+        by_code: dict[str, Kind] = {}
 
         for record in materialized:
             if not isinstance(record, Mapping):
-                raise TypeError("each entity type record must be a mapping")
+                raise TypeError("each kind record must be a mapping")
             try:
                 code = record["code"]
                 name = record["name"]
             except KeyError as error:
-                raise ValueError(
-                    f"entity type record is missing {error.args[0]!r}"
-                ) from error
+                raise ValueError(f"kind record is missing {error.args[0]!r}") from error
             if code in by_code:
-                raise ValueError(f"duplicate entity type code: {code}")
+                raise ValueError(f"duplicate kind code: {code}")
             by_code[code] = cls(
                 code=code,
                 name=name,
@@ -209,16 +201,12 @@ class EntityType:
             if parent_code is None:
                 continue
             if parent_code not in by_code:
-                raise ValueError(f"unknown parent entity type code: {parent_code}")
+                raise ValueError(f"unknown parent kind code: {parent_code}")
             by_code[record["code"]].set_parent(by_code[parent_code])
 
-        return tuple(
-            entity_type
-            for entity_type in by_code.values()
-            if entity_type.parent is None
-        )
+        return tuple(kind for kind in by_code.values() if kind.parent is None)
 
-    def _walk_preorder(self) -> Iterable[EntityType]:
+    def _walk_preorder(self) -> Iterable[Kind]:
         yield self
         for child in self._children:
             yield from child._walk_preorder()
