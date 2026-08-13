@@ -1,5 +1,7 @@
 import locale
 import math
+from dataclasses import FrozenInstanceError
+
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
@@ -26,18 +28,130 @@ class TestMeasures:
     currency = rk.measure.register_currency(registry=units)
 
     def test_currency(self):
+        assert TestMeasures.currency.code == "currency.aud"
         assert TestMeasures.currency.name == "Australian Dollar"
         assert TestMeasures.currency.units == "AUD"
         assert TestMeasures.currency.units.dimensionality == "[currency]"
 
-    gfa = rk.measure.Measure(name="Gross Floor Area", units=units.meter**2)
+    def test_identity_is_based_on_code(self):
+        original = rk.measure.Measure(
+            code="project.area",
+            name="Area",
+            units=units.sqm,
+            tags={"physical"},
+        )
+        renamed = rk.measure.Measure(
+            code="project.area",
+            name="Gross Area",
+            units=units.meter**2,
+            tags={"reporting"},
+        )
+        different = rk.measure.Measure(
+            code="project.other-area",
+            name="Area",
+            units=units.sqm,
+        )
 
-    nsa = rk.measure.Measure(name="Net Sellable Area", units=units.sqm)
+        assert original == renamed
+        assert hash(original) == hash(renamed)
+        assert original != different
+        original.assert_consistent_with(renamed)
 
-    rent = rk.measure.Measure(name="Rent", units=currency.units)
+    def test_measure_is_immutable(self):
+        measure = rk.measure.Measure(
+            code="project.area",
+            name="Area",
+            units=units.sqm,
+            tags={"physical", "reporting"},
+        )
+
+        assert measure.tags == frozenset({"physical", "reporting"})
+        with pytest.raises(FrozenInstanceError):
+            measure.name = "Changed"
+
+    def test_conflicting_definitions_are_rejected(self):
+        measure = rk.measure.Measure(
+            code="project.area",
+            name="Area",
+            units=units.sqm,
+            definition="Measured internally",
+        )
+        conflicting_units = rk.measure.Measure(
+            code="project.area",
+            name="Area",
+            units=units.meter,
+            definition="Measured internally",
+        )
+        conflicting_definition = rk.measure.Measure(
+            code="project.area",
+            name="Area",
+            units=units.sqm,
+            definition="Measured externally",
+        )
+
+        with pytest.raises(ValueError, match="units"):
+            measure.assert_consistent_with(conflicting_units)
+        with pytest.raises(ValueError, match="definition"):
+            measure.assert_consistent_with(conflicting_definition)
+
+    def test_quantity_validation(self):
+        measure = rk.measure.Measure(
+            code="project.area",
+            name="Area",
+            units=units.sqm,
+        )
+
+        measure.validate_quantity(100 * units.sqft)
+        with pytest.raises(pint.DimensionalityError):
+            measure.validate_quantity(100 * units.meter)
+        with pytest.raises(TypeError, match="Pint Quantity"):
+            measure.validate_quantity(100)
+
+    def test_serialization_round_trip(self):
+        measure = rk.measure.Measure(
+            code="project.area",
+            name="Area",
+            units=units.sqm,
+            definition="Total floor area",
+            tags={"reporting", "physical"},
+        )
+
+        record = measure.to_record()
+        reconstructed = rk.measure.Measure.from_record(record)
+
+        assert record == {
+            "code": "project.area",
+            "name": "Area",
+            "units": "squaremeter",
+            "definition": "Total floor area",
+            "tags": ["physical", "reporting"],
+        }
+        assert reconstructed == measure
+        assert reconstructed.to_record() == record
+        reconstructed.assert_consistent_with(measure)
+
+    gfa = rk.measure.Measure(
+        code="project.gfa",
+        name="Gross Floor Area",
+        units=units.meter**2,
+    )
+
+    nsa = rk.measure.Measure(
+        code="project.nsa",
+        name="Net Sellable Area",
+        units=units.sqm,
+    )
+
+    rent = rk.measure.Measure(
+        code="project.rent",
+        name="Rent",
+        units=currency.units,
+    )
 
     rent_per_nsa = rk.measure.Measure(
-        name="Rent per sqm of NSA", units=rent.units / nsa.units
+        code="project.rent-per-nsa",
+        name="Rent per sqm of NSA",
+        units=rent.units / nsa.units,
     )
 
     def test_custom_derivative(self):

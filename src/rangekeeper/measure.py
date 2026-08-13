@@ -1,5 +1,8 @@
 from __future__ import annotations
+from collections.abc import Iterable, Mapping
+from dataclasses import dataclass
 import locale
+from typing import Any
 
 import pint
 import moneyed
@@ -100,6 +103,7 @@ def register_currency(
         )
 
     return Measure(
+        code=f"currency.{currency.code.lower()}",
         name=currency.name,
         definition="Currency of {0}".format(currency.countries),
         units=registry.parse_units(currency.code),
@@ -120,23 +124,106 @@ def register_currency(
 #         super.__init__()
 
 
+@dataclass(frozen=True, eq=False)
 class Measure:
+    """A coded measurement definition with stable identity."""
+
+    code: str
     name: str
-    definition: str
     units: pint.Unit
+    definition: str | None = None
+    tags: frozenset[str] = frozenset()
 
-    def __init__(self, name: str, units: pint.Unit, definition: str = None):
-        self.name = name
-        self.units = units
-        self.definition = definition
+    def __post_init__(self) -> None:
+        self._validate_required_text(self.code, "code")
+        self._validate_required_text(self.name, "name")
+        if not isinstance(self.units, pint.Unit):
+            raise TypeError("units must be a Pint Unit")
+        if self.definition is not None and not isinstance(self.definition, str):
+            raise TypeError("definition must be a string or None")
 
-    def __str__(self):
-        return 'Rangekeeper Measure: "{0}". {1}. Units: {2}'.format(
-            self.name, self.definition, self.units
+        tags = frozenset(self.tags)
+        if any(not isinstance(tag, str) or not tag.strip() for tag in tags):
+            raise ValueError("tags must contain only non-empty strings")
+        object.__setattr__(self, "tags", tags)
+
+    @staticmethod
+    def _validate_required_text(value: str, field: str) -> None:
+        if not isinstance(value, str):
+            raise TypeError(f"{field} must be a string")
+        if not value.strip():
+            raise ValueError(f"{field} must not be empty")
+
+    def __str__(self) -> str:
+        return (
+            f'Rangekeeper Measure: "{self.name}" [{self.code}]. '
+            f"{self.definition}. Units: {self.units}"
         )
 
-    def __hash__(self):
-        return hash((self.name, self.units.__hash__()))
+    def __hash__(self) -> int:
+        return hash(self.code)
 
-    def __eq__(self, other):
-        return self.name == other.name and self.units == other.units
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Measure):
+            return NotImplemented
+        return self.code == other.code
+
+    def assert_consistent_with(self, other: Measure) -> None:
+        """Reject conflicting definitions that reuse this measure's code."""
+        if not isinstance(other, Measure):
+            raise TypeError("other must be a Measure")
+        if self.code != other.code:
+            raise ValueError("measures with different codes cannot be compared")
+
+        conflicts = []
+        if self.units.dimensionality != other.units.dimensionality:
+            conflicts.append("units")
+        if self.definition != other.definition:
+            conflicts.append("definition")
+        if conflicts:
+            fields = ", ".join(conflicts)
+            raise ValueError(
+                f"conflicting definitions for measure code {self.code!r}: {fields}"
+            )
+
+    def validate_quantity(self, quantity: pint.Quantity) -> None:
+        if not isinstance(quantity, pint.Quantity):
+            raise TypeError("quantity must be a Pint Quantity")
+        if quantity.dimensionality != self.units.dimensionality:
+            raise pint.DimensionalityError(quantity.units, self.units)
+
+    def to_record(self) -> dict[str, object]:
+        return {
+            "code": self.code,
+            "name": self.name,
+            "units": str(self.units),
+            "definition": self.definition,
+            "tags": sorted(self.tags),
+        }
+
+    @classmethod
+    def from_record(
+        cls,
+        record: Mapping[str, Any],
+        *,
+        registry: pint.UnitRegistry = Index.registry,
+    ) -> Measure:
+        if not isinstance(record, Mapping):
+            raise TypeError("measure record must be a mapping")
+        try:
+            code = record["code"]
+            name = record["name"]
+            units = record["units"]
+        except KeyError as error:
+            raise ValueError(f"measure record is missing {error.args[0]!r}") from error
+        if not isinstance(units, str):
+            raise TypeError("serialized measure units must be a string")
+
+        tags: Iterable[str] = record.get("tags", ())
+        return cls(
+            code=code,
+            name=name,
+            units=registry.parse_units(units),
+            definition=record.get("definition"),
+            tags=frozenset(tags),
+        )
