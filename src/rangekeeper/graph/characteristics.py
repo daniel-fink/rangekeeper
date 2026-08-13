@@ -5,16 +5,22 @@ from dataclasses import dataclass, field
 import pint
 
 from ..measure import Measure
+from .kind import Kind
 
 
 @dataclass
 class Characteristics:
-    use: object | None = None
-    tenure: object | None = None
+    use: Kind | None = None
+    tenure: Kind | None = None
     measures: dict[Measure, pint.Quantity] = field(default_factory=dict)
     features: dict[str, object] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
+        if self.use is not None and not isinstance(self.use, Kind):
+            raise TypeError("use must be a Kind or None")
+        if self.tenure is not None and not isinstance(self.tenure, Kind):
+            raise TypeError("tenure must be a Kind or None")
+
         initial_measures = dict(self.measures)
         self.measures = {}
         self.features = dict(self.features)

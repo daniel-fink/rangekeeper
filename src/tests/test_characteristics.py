@@ -30,6 +30,37 @@ class TestCharacteristics:
     def test_module_is_public(self):
         assert rk.graph.characteristics.Characteristics is not None
 
+    def test_use_and_tenure_are_kinds(self):
+        uses = rk.graph.Kind(
+            code="abs.fcb",
+            name="Functional Classification of Buildings",
+            scheme="ABS FCB",
+            edition="2021",
+        )
+        office = uses.define(code="231", name="Offices")
+        tenures = rk.graph.Kind(
+            code="abs.tend",
+            name="Tenure Type",
+            scheme="ABS TEND",
+            edition="2026",
+        )
+        rented = tenures.define(code="4", name="Rented")
+
+        characteristics = rk.graph.characteristics.Characteristics(
+            use=office,
+            tenure=rented,
+        )
+
+        assert characteristics.use is office
+        assert characteristics.use.scheme == "ABS FCB"
+        assert characteristics.tenure is rented
+        assert characteristics.tenure.scheme == "ABS TEND"
+
+        with pytest.raises(TypeError, match="use must be a Kind"):
+            rk.graph.characteristics.Characteristics(use="office")
+        with pytest.raises(TypeError, match="tenure must be a Kind"):
+            rk.graph.characteristics.Characteristics(tenure="rented")
+
     def test_compatible_quantity_preserves_supplied_units(self):
         characteristics = rk.graph.characteristics.Characteristics()
         measure = area_measure()

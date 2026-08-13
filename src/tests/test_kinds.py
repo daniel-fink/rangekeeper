@@ -162,6 +162,48 @@ def test_code_is_immutable_and_children_are_read_only():
         parent.children = ()
 
 
+def test_classification_provenance_is_inherited_and_read_only():
+    classification = Kind(
+        code="abs.fcb",
+        name="Functional Classification of Buildings",
+        scheme="ABS FCB",
+        edition="2021",
+        publisher="Australian Bureau of Statistics",
+        uri="https://www.abs.gov.au/statistics/classifications/functional-classification-buildings/latest-release",
+    )
+    commercial = classification.define(code="2", name="Commercial Buildings")
+    office = commercial.define(code="231", name="Offices")
+
+    assert office.scheme == "ABS FCB"
+    assert office.edition == "2021"
+    assert office.publisher == "Australian Bureau of Statistics"
+    assert office.uri == classification.uri
+
+    with pytest.raises(AttributeError):
+        office.scheme = "Changed"
+
+
+def test_classification_provenance_belongs_only_to_a_root():
+    classification = Kind(
+        code="abs.fcb",
+        name="Functional Classification of Buildings",
+        scheme="ABS FCB",
+    )
+    other = Kind(code="other", name="Other")
+
+    with pytest.raises(ValueError, match="remain a root"):
+        classification.set_parent(other)
+    with pytest.raises(ValueError, match="remain a root"):
+        Kind(
+            code="231",
+            name="Offices",
+            scheme="ABS FCB",
+            parent=classification,
+        )
+    with pytest.raises(ValueError, match="scheme is required"):
+        Kind(code="fcb", name="FCB", edition="2021")
+
+
 def test_flat_record_serialization_and_reconstruction():
     apartment, three_bed, corner = make_apartment_kinds()
     corner.definition = "An apartment on a building corner."
@@ -197,6 +239,42 @@ def test_flat_record_serialization_and_reconstruction():
     assert restored_corner is not None
     assert restored_corner.parent is restored_three_bed
     assert restored_corner.is_a(restored)
+    assert restored.to_records() == records
+
+
+def test_classification_provenance_serialization_and_reconstruction():
+    classification = Kind(
+        code="abs.fcb",
+        name="Functional Classification of Buildings",
+        scheme="ABS FCB",
+        edition="2021",
+        publisher="Australian Bureau of Statistics",
+        uri="https://www.abs.gov.au/statistics/classifications/functional-classification-buildings/latest-release",
+    )
+    office = classification.define(code="231", name="Offices")
+
+    records = office.to_records()
+
+    assert records[0] == {
+        "code": "abs.fcb",
+        "name": "Functional Classification of Buildings",
+        "definition": None,
+        "parent_code": None,
+        "scheme": "ABS FCB",
+        "edition": "2021",
+        "publisher": "Australian Bureau of Statistics",
+        "uri": "https://www.abs.gov.au/statistics/classifications/functional-classification-buildings/latest-release",
+    }
+    assert "scheme" not in records[1]
+
+    (restored,) = Kind.from_records(records)
+    restored_office = restored.find("231")
+
+    assert restored_office is not None
+    assert restored_office.scheme == "ABS FCB"
+    assert restored_office.edition == "2021"
+    assert restored_office.publisher == "Australian Bureau of Statistics"
+    assert restored_office.uri == classification.uri
     assert restored.to_records() == records
 
 
