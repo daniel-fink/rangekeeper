@@ -20,9 +20,6 @@ class Kind:
         definition: str | None = None,
         *,
         scheme: str | None = None,
-        edition: str | None = None,
-        publisher: str | None = None,
-        uri: str | None = None,
         parent: Kind | None = None,
         children: Iterable[Kind] | None = None,
     ) -> None:
@@ -32,13 +29,6 @@ class Kind:
             raise TypeError("definition must be a string or None")
         self.definition = definition
         self._scheme = self._validate_optional_text(scheme, "scheme")
-        self._edition = self._validate_optional_text(edition, "edition")
-        self._publisher = self._validate_optional_text(publisher, "publisher")
-        self._uri = self._validate_optional_text(uri, "uri")
-        if self._scheme is None and self._has_provenance_metadata():
-            raise ValueError(
-                "scheme is required when classification provenance is provided"
-            )
         self._parent: Kind | None = None
         self._children: list[Kind] = []
 
@@ -68,18 +58,6 @@ class Kind:
     @property
     def scheme(self) -> str | None:
         return self.root()._scheme
-
-    @property
-    def edition(self) -> str | None:
-        return self.root()._edition
-
-    @property
-    def publisher(self) -> str | None:
-        return self.root()._publisher
-
-    @property
-    def uri(self) -> str | None:
-        return self.root()._uri
 
     @property
     def parent(self) -> Kind | None:
@@ -205,14 +183,7 @@ class Kind:
             "parent_code": self._parent.code if self._parent is not None else None,
         }
         if self._parent is None and self._scheme is not None:
-            record.update(
-                {
-                    "scheme": self._scheme,
-                    "edition": self._edition,
-                    "publisher": self._publisher,
-                    "uri": self._uri,
-                }
-            )
+            record["scheme"] = self._scheme
         return record
 
     def to_records(self) -> tuple[dict[str, str | None], ...]:
@@ -243,9 +214,6 @@ class Kind:
                 name=name,
                 definition=record.get("definition"),
                 scheme=record.get("scheme"),
-                edition=record.get("edition"),
-                publisher=record.get("publisher"),
-                uri=record.get("uri"),
             )
 
         for record in materialized:
@@ -262,8 +230,3 @@ class Kind:
         yield self
         for child in self._children:
             yield from child._walk_preorder()
-
-    def _has_provenance_metadata(self) -> bool:
-        return any(
-            value is not None for value in (self._edition, self._publisher, self._uri)
-        )
