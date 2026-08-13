@@ -35,14 +35,12 @@ class TestCharacteristics:
             code="abs.fcb",
             name="Functional Classification of Buildings",
             scheme="ABS FCB",
-            edition="2021",
         )
         office = uses.define(code="231", name="Offices")
         tenures = rk.graph.Kind(
             code="abs.tend",
             name="Tenure Type",
             scheme="ABS TEND",
-            edition="2026",
         )
         rented = tenures.define(code="4", name="Rented")
 

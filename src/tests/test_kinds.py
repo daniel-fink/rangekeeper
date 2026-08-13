@@ -167,17 +167,11 @@ def test_classification_provenance_is_inherited_and_read_only():
         code="abs.fcb",
         name="Functional Classification of Buildings",
         scheme="ABS FCB",
-        edition="2021",
-        publisher="Australian Bureau of Statistics",
-        uri="https://www.abs.gov.au/statistics/classifications/functional-classification-buildings/latest-release",
     )
     commercial = classification.define(code="2", name="Commercial Buildings")
     office = commercial.define(code="231", name="Offices")
 
     assert office.scheme == "ABS FCB"
-    assert office.edition == "2021"
-    assert office.publisher == "Australian Bureau of Statistics"
-    assert office.uri == classification.uri
 
     with pytest.raises(AttributeError):
         office.scheme = "Changed"
@@ -200,8 +194,6 @@ def test_classification_provenance_belongs_only_to_a_root():
             scheme="ABS FCB",
             parent=classification,
         )
-    with pytest.raises(ValueError, match="scheme is required"):
-        Kind(code="fcb", name="FCB", edition="2021")
 
 
 def test_flat_record_serialization_and_reconstruction():
@@ -247,9 +239,6 @@ def test_classification_provenance_serialization_and_reconstruction():
         code="abs.fcb",
         name="Functional Classification of Buildings",
         scheme="ABS FCB",
-        edition="2021",
-        publisher="Australian Bureau of Statistics",
-        uri="https://www.abs.gov.au/statistics/classifications/functional-classification-buildings/latest-release",
     )
     office = classification.define(code="231", name="Offices")
 
@@ -261,9 +250,6 @@ def test_classification_provenance_serialization_and_reconstruction():
         "definition": None,
         "parent_code": None,
         "scheme": "ABS FCB",
-        "edition": "2021",
-        "publisher": "Australian Bureau of Statistics",
-        "uri": "https://www.abs.gov.au/statistics/classifications/functional-classification-buildings/latest-release",
     }
     assert "scheme" not in records[1]
 
@@ -272,9 +258,6 @@ def test_classification_provenance_serialization_and_reconstruction():
 
     assert restored_office is not None
     assert restored_office.scheme == "ABS FCB"
-    assert restored_office.edition == "2021"
-    assert restored_office.publisher == "Australian Bureau of Statistics"
-    assert restored_office.uri == classification.uri
     assert restored.to_records() == records
 
 
