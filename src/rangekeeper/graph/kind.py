@@ -8,7 +8,9 @@ class Kind:
     """A named classification in a single-parent kind hierarchy.
 
     Kind codes are immutable and unique within a connected hierarchy. Parent and
-    child mutations keep both sides of the relationship consistent.
+    child mutations keep both sides of the relationship consistent. Optional
+    classification provenance belongs to a hierarchy root and is inherited by
+    its descendants.
     """
 
     def __init__(
@@ -17,6 +19,10 @@ class Kind:
         name: str,
         definition: str | None = None,
         *,
+        scheme: str | None = None,
+        edition: str | None = None,
+        publisher: str | None = None,
+        uri: str | None = None,
         parent: Kind | None = None,
         children: Iterable[Kind] | None = None,
     ) -> None:
@@ -25,6 +31,14 @@ class Kind:
         if definition is not None and not isinstance(definition, str):
             raise TypeError("definition must be a string or None")
         self.definition = definition
+        self._scheme = self._validate_optional_text(scheme, "scheme")
+        self._edition = self._validate_optional_text(edition, "edition")
+        self._publisher = self._validate_optional_text(publisher, "publisher")
+        self._uri = self._validate_optional_text(uri, "uri")
+        if self._scheme is None and self._has_provenance_metadata():
+            raise ValueError(
+                "scheme is required when classification provenance is provided"
+            )
         self._parent: Kind | None = None
         self._children: list[Kind] = []
 
@@ -41,9 +55,31 @@ class Kind:
             raise ValueError(f"{field} must not be empty")
         return value
 
+    @staticmethod
+    def _validate_optional_text(value: str | None, field: str) -> str | None:
+        if value is None:
+            return None
+        return Kind._validate_required_text(value, field)
+
     @property
     def code(self) -> str:
         return self._code
+
+    @property
+    def scheme(self) -> str | None:
+        return self.root()._scheme
+
+    @property
+    def edition(self) -> str | None:
+        return self.root()._edition
+
+    @property
+    def publisher(self) -> str | None:
+        return self.root()._publisher
+
+    @property
+    def uri(self) -> str | None:
+        return self.root()._uri
 
     @property
     def parent(self) -> Kind | None:
@@ -68,6 +104,8 @@ class Kind:
             raise ValueError("parenting would create a cycle")
         if self._parent is parent:
             return
+        if self._scheme is not None:
+            raise ValueError("a kind with classification provenance must remain a root")
 
         subtree = set(self._walk_preorder())
         target_codes = {
@@ -160,12 +198,22 @@ class Kind:
         return None
 
     def to_record(self) -> dict[str, str | None]:
-        return {
+        record = {
             "code": self.code,
             "name": self.name,
             "definition": self.definition,
             "parent_code": self._parent.code if self._parent is not None else None,
         }
+        if self._parent is None and self._scheme is not None:
+            record.update(
+                {
+                    "scheme": self._scheme,
+                    "edition": self._edition,
+                    "publisher": self._publisher,
+                    "uri": self._uri,
+                }
+            )
+        return record
 
     def to_records(self) -> tuple[dict[str, str | None], ...]:
         """Serialize the complete connected hierarchy in depth-first order."""
@@ -194,6 +242,10 @@ class Kind:
                 code=code,
                 name=name,
                 definition=record.get("definition"),
+                scheme=record.get("scheme"),
+                edition=record.get("edition"),
+                publisher=record.get("publisher"),
+                uri=record.get("uri"),
             )
 
         for record in materialized:
@@ -210,3 +262,8 @@ class Kind:
         yield self
         for child in self._children:
             yield from child._walk_preorder()
+
+    def _has_provenance_metadata(self) -> bool:
+        return any(
+            value is not None for value in (self._edition, self._publisher, self._uri)
+        )
