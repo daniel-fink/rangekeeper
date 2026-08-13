@@ -18,6 +18,20 @@ environment and dependency management:
 5. Install dependencies: `uv pip install -r <(uv pip compile pyproject.toml)`
 6. Some tests require API access to [Speckle](https://speckle.systems/). It is recommended to use [Python-Dotenv](https://github.com/theskumar/python-dotenv), and add a `.env` file in the project's root directory with your `SPECKLE_TOKEN` environment variable.
 
+### Testing
+
+Run the test suite without opening Matplotlib windows:
+
+```bash
+uv run pytest
+```
+
+To inspect plots interactively, including from a PyCharm pytest run configuration, add the `--show-plots` option:
+
+```bash
+uv run pytest --show-plots
+```
+
 ### Publishing
 1. First, remove any previously built packages: `rm -rf dist/`
 2. Build the package: `uv build`
