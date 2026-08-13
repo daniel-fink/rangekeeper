@@ -5,6 +5,7 @@ from . import duration as duration
 from . import extrapolation as extrapolation
 from . import flux as flux
 from . import graph as graph
+from . import entity_type as entity_type
 from . import policy as policy
 from . import projection as projection
 from . import segmentation as segmentation
