@@ -9,6 +9,24 @@ import pandas as pd
 import networkx as nx
 
 import specklepy.objects as objects
+import rangekeeper as rk
+
+
+def test_graph_package_exports_domain_classes():
+    assert rk.graph.Entity.__module__ == "rangekeeper.graph.entity"
+    assert rk.graph.Assembly.__module__ == "rangekeeper.graph.entity"
+    assert rk.graph.EntityType.__module__ == "rangekeeper.graph.kind"
+
+
+def test_moved_entities_retain_speckle_classification():
+    entity = rk.graph.Entity(name="Entity")
+    assembly = rk.graph.Assembly(name="Assembly")
+
+    assert rk.graph.is_entity(entity)
+    assert not rk.graph.is_assembly(entity)
+    assert rk.graph.is_entity(assembly)
+    assert rk.graph.is_assembly(assembly)
+
 
 # import rangekeeper as rk
 #

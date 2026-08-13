@@ -1,7 +1,7 @@
 import pytest
 
 import rangekeeper as rk
-from rangekeeper.entity_type import EntityType
+from rangekeeper.graph.kind import EntityType
 
 
 def make_apartment_types():
@@ -18,7 +18,8 @@ def make_apartment_types():
 
 
 def test_entity_type_module_is_public():
-    assert rk.entity_type.EntityType is EntityType
+    assert rk.graph.kind.EntityType is EntityType
+    assert rk.graph.EntityType is EntityType
 
 
 def test_constructor_parenting_and_define_keep_both_sides_consistent():
