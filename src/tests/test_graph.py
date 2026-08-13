@@ -22,10 +22,10 @@ def test_moved_entities_retain_speckle_classification():
     entity = rk.graph.Entity(name="Entity")
     assembly = rk.graph.Assembly(name="Assembly")
 
-    assert rk.graph.is_entity(entity)
-    assert not rk.graph.is_assembly(entity)
-    assert rk.graph.is_entity(assembly)
-    assert rk.graph.is_assembly(assembly)
+    assert rk.graph.entity.is_entity(entity)
+    assert not rk.graph.entity.is_assembly(entity)
+    assert rk.graph.entity.is_entity(assembly)
+    assert rk.graph.entity.is_assembly(assembly)
 
 
 # import rangekeeper as rk

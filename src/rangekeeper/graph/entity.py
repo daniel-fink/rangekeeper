@@ -132,9 +132,9 @@ class Entity(objects.Base):
 
     @classmethod
     def from_base(cls, base: objects.Base):
-        if rk.graph.is_assembly(base):
+        if is_assembly(base):
             return Assembly.from_assemblybase(base)
-        elif rk.graph.is_entity(base, True):
+        elif is_entity(base, True):
             return cls.from_entitybase(base)
         else:
             entity = cls(
@@ -151,7 +151,7 @@ class Entity(objects.Base):
         cls,
         base: objects.Base,
     ) -> Entity:
-        if not rk.graph.is_entity(base, True):
+        if not is_entity(base, True):
             raise TypeError("Base is not an Entity")
         entity = cls(
             entityId=base["entityId"],
@@ -211,7 +211,7 @@ class Entity(objects.Base):
 
     def _aggregate(
         self,
-        assembly: rk.graph.Assembly,
+        assembly: Assembly,
         property: str,
         label: str,
         relationship_type: str = None,
@@ -261,7 +261,7 @@ class Entity(objects.Base):
     def aggregate_flows(
         name: str,
         aggregation: dict[str, Union[rk.flux.Stream, rk.flux.Flow]],
-        entity: rk.graph.Entity,
+        entity: Entity,
         frequency: rk.duration.Type,
     ) -> Optional[rk.flux.Stream]:
         flows = []
@@ -440,7 +440,7 @@ class Assembly(Entity):
                         for (entityId, entity) in nx.get_node_attributes(
                             graph, "entity"
                         ).items()
-                        if rk.graph.is_assembly(entity)
+                        if is_assembly(entity)
                     ]
                 )
             else:
@@ -450,7 +450,7 @@ class Assembly(Entity):
                         for (entityId, entity) in nx.get_node_attributes(
                             graph, "entity"
                         ).items()
-                        if rk.graph.is_entity(entity, True)
+                        if is_entity(entity, True)
                     ]
                 )
 
@@ -465,7 +465,7 @@ class Assembly(Entity):
 
         # TODO: Handle case where relatives is None better.
 
-        if not rk.graph.is_assembly(base):
+        if not is_assembly(base):
             raise TypeError("The provided Base is not an Assembly.")
         assembly = cls(
             entityId=base["entityId"],
