@@ -6,4 +6,4 @@ from .errors import (
 )
 from .record import Record, Snapshot
 from .snapshot import restore, snapshot
-from .table import Table, entity_table
+from .table import Table

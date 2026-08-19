@@ -85,11 +85,11 @@ def test_table_is_rectangular_read_only_and_column_addressable():
         materialization.Table(columns=("name",), rows=({"other": "A"},))
 
 
-def test_entity_table_owns_column_order_and_selected_fields():
+def test_table_from_view_owns_column_order_and_selected_fields():
     model, *_ = table_model()
 
-    table = materialization.entity_table(
-        model,
+    table = materialization.Table.from_view(
+        model.view(),
         fields=(
             "entity_id",
             "name",
@@ -115,10 +115,10 @@ def test_entity_table_owns_column_order_and_selected_fields():
     assert table.column("feature.rating") == ("A", "C", "B")
 
 
-def test_occupancy_projection_is_scheme_aware_and_has_explicit_multi_policy():
+def test_occupancy_projection_is_scheme_aware_and_preserves_all_values():
     model, _, office, mixed, *_ = table_model()
 
-    table = materialization.entity_table(model, occupancy_facets=("use",))
+    table = materialization.Table.from_view(model.view(), occupancy=("use",))
     rows = {row["entity_id"]: row for row in table.rows}
 
     assert rows[office.entity_id]["occupancy.use"] == (("ABS FCB", "231"),)
@@ -127,26 +127,11 @@ def test_occupancy_projection_is_scheme_aware_and_has_explicit_multi_policy():
         ("ABS FCB", "233"),
     )
 
-    first = materialization.entity_table(
-        model,
-        occupancy_facets=("use",),
-        multiple_classifications="first",
-    )
-    first_rows = {row["entity_id"]: row for row in first.rows}
-    assert first_rows[mixed.entity_id]["occupancy.use"] == ("ABS FCB", "231")
-
-    with pytest.raises(materialization.TableError, match="multiple classifications"):
-        materialization.entity_table(
-            model,
-            occupancy_facets=("use",),
-            multiple_classifications="error",
-        )
-
 
 def test_measure_projection_converts_to_target_units_and_uses_numeric_cells():
     model, building, office, _, _, area = table_model()
 
-    table = materialization.entity_table(model, measures={area: units.sqft})
+    table = materialization.Table.from_view(model.view(), measures={area: units.sqft})
     column = "measure.project.area [squarefoot]"
     rows = {row["entity_id"]: row for row in table.rows}
 
@@ -160,73 +145,23 @@ def test_measure_projection_converts_to_target_units_and_uses_numeric_cells():
 def test_default_measure_target_uses_the_measure_definition_units():
     model, _, office, _, _, area = table_model()
 
-    table = materialization.entity_table(model, measures={area: None})
+    table = materialization.Table.from_view(model.view(), measures={area: None})
     column = "measure.project.area [squaremeter]"
     rows = {row["entity_id"]: row for row in table.rows}
 
     assert rows[office.entity_id][column] == pytest.approx(929.0304)
 
 
-def test_parent_and_children_columns_come_from_the_selected_relationship_overlay():
-    model, building, office, mixed, contains, _ = table_model()
-
-    table = materialization.entity_table(model, parent_relationship=contains)
-    rows = {row["entity_id"]: row for row in table.rows}
-
-    assert rows[building.entity_id]["parent_id"] is None
-    assert rows[building.entity_id]["children_ids"] == ("mixed", "office")
-    assert rows[office.entity_id]["parent_id"] == "building"
-    assert rows[mixed.entity_id]["parent_id"] == "building"
-    assert rows[office.entity_id]["children_ids"] == ()
-
-
-def test_reverse_relationship_direction_can_supply_parent_columns():
-    contains = rk.graph.Classification(code="contains", name="Contains")
-    parent = rk.graph.Entity(entity_id="parent")
-    child = rk.graph.Entity(entity_id="child")
-    model = rk.graph.Model()
-    model.add_entities((parent, child))
-    model.add_relationship(
-        rk.graph.Relationship(
-            "child", "parent", contains, relationship_id="child-parent"
-        )
-    )
-
-    table = materialization.entity_table(
-        model, parent_relationship=contains, outgoing=False
-    )
-    rows = {row["entity_id"]: row for row in table.rows}
-
-    assert rows["child"]["parent_id"] == "parent"
-    assert rows["parent"]["children_ids"] == ("child",)
-
-
-def test_multiple_parents_are_rejected_for_a_singular_parent_column():
-    model, _, office, _, contains, _ = table_model()
-    other = rk.graph.Entity(entity_id="other")
-    model.add_entity(other)
-    model.add_relationship(
-        rk.graph.Relationship(
-            "other", office.entity_id, contains, relationship_id="other-office"
-        )
-    )
-
-    with pytest.raises(materialization.TableError, match="multiple parents"):
-        materialization.entity_table(model, parent_relationship=contains)
-
-
 def test_view_projection_remains_scoped_to_the_view():
-    model, building, office, _, contains, _ = table_model()
+    model, building, office, *_ = table_model()
     view = model.view(
         predicate=lambda entity: entity.entity_id in {"building", "office"}
     )
 
-    table = materialization.entity_table(
-        view, parent_relationship=contains, features=("rating",)
-    )
+    table = materialization.Table.from_view(view, features=("rating",))
 
     assert table.column("entity_id") == (building.entity_id, office.entity_id)
-    assert table.column("parent_id") == (None, "building")
+    assert table.column("feature.rating") == ("A", "B")
 
 
 def test_feature_projection_preserves_rich_runtime_values():
@@ -234,7 +169,7 @@ def test_feature_projection_preserves_rich_runtime_values():
     runtime_value = object()
     office.features["runtime"] = runtime_value
 
-    table = materialization.entity_table(model, features=("runtime",))
+    table = materialization.Table.from_view(model.view(), features=("runtime",))
     rows = {row["entity_id"]: row for row in table.rows}
 
     assert rows[office.entity_id]["feature.runtime"] is runtime_value
@@ -268,12 +203,15 @@ def test_group_by_uses_explicit_functions_and_preserves_first_seen_order():
 
 def test_table_selection_validation_is_precise():
     model, *_, area = table_model()
+    view = model.view()
 
+    with pytest.raises(TypeError, match="view must be a View"):
+        materialization.Table.from_view(model)
     with pytest.raises(materialization.TableError, match="unknown entity fields"):
-        materialization.entity_table(model, fields=("unknown",))
+        materialization.Table.from_view(view, fields=("unknown",))
     with pytest.raises(TypeError, match="not a string"):
-        materialization.entity_table(model, features="rating")
+        materialization.Table.from_view(view, features="rating")
     with pytest.raises(TypeError, match="Measure keys"):
-        materialization.entity_table(model, measures={"project.area": None})
+        materialization.Table.from_view(view, measures={"project.area": None})
     with pytest.raises(pint.DimensionalityError):
-        materialization.entity_table(model, measures={area: units.meter})
+        materialization.Table.from_view(view, measures={area: units.meter})
