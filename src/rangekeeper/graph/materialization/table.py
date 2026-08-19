@@ -3,20 +3,16 @@ from __future__ import annotations
 from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass
 from types import MappingProxyType
-from typing import Literal
 
 import pint
 
 from ...measure import Measure
 from ..assembly import Assembly
-from ..classification import Classification
 from ..entity import Entity
-from ..model import Model
 from ..view import View
 from .errors import TableError
 
 
-MultipleClassificationPolicy = Literal["tuple", "first", "error"]
 GroupFunction = Callable[[tuple[object, ...]], object]
 
 ENTITY_FIELDS = frozenset(
@@ -70,6 +66,53 @@ class Table:
             raise KeyError(name)
         return tuple(row[name] for row in self.rows)
 
+    @classmethod
+    def from_view(
+        cls,
+        view: View,
+        *,
+        fields: Iterable[str] = DEFAULT_ENTITY_FIELDS,
+        occupancy: Iterable[str] = (),
+        measures: Mapping[Measure, pint.Unit | str | None] | None = None,
+        features: Iterable[str] = (),
+    ) -> Table:
+        if not isinstance(view, View):
+            raise TypeError("view must be a View")
+        selected_fields = _validated_names(fields, "fields")
+        unknown_fields = set(selected_fields).difference(ENTITY_FIELDS)
+        if unknown_fields:
+            raise TableError(f"unknown entity fields: {sorted(unknown_fields)}")
+        facets = _validated_names(occupancy, "occupancy")
+        feature_names = _validated_names(features, "features")
+        measure_columns = _measure_columns(measures)
+
+        columns = (
+            *selected_fields,
+            *(f"occupancy.{facet}" for facet in facets),
+            *(column for _, _, column in measure_columns),
+            *(f"feature.{name}" for name in feature_names),
+        )
+        if len(columns) != len(set(columns)):
+            raise TableError("selected Table columns collide")
+
+        rows = []
+        for entity in view.entities():
+            row = {field: _entity_field(entity, field) for field in selected_fields}
+            for facet in facets:
+                row[f"occupancy.{facet}"] = tuple(
+                    classification.key
+                    for classification in entity.occupancy.get(facet, ())
+                )
+            for measure, target_unit, column in measure_columns:
+                quantity = entity.characteristics.get_measure(measure)
+                row[column] = (
+                    None if quantity is None else quantity.to(target_unit).magnitude
+                )
+            for name in feature_names:
+                row[f"feature.{name}"] = entity.features.get(name)
+            rows.append(row)
+        return cls(columns=columns, rows=tuple(rows))
+
     def group_by(
         self,
         *,
@@ -113,89 +156,6 @@ class Table:
                 )
             rows.append(row)
         return Table(columns=columns, rows=tuple(rows))
-
-
-def entity_table(
-    source: Model | View,
-    *,
-    fields: Iterable[str] = DEFAULT_ENTITY_FIELDS,
-    occupancy_facets: Iterable[str] = (),
-    measures: Mapping[Measure, pint.Unit | str | None] | None = None,
-    features: Iterable[str] = (),
-    parent_relationship: Classification | str | None = None,
-    outgoing: bool = True,
-    multiple_classifications: MultipleClassificationPolicy = "tuple",
-) -> Table:
-    view = _view(source)
-    selected_fields = _validated_names(fields, "fields")
-    unknown_fields = set(selected_fields).difference(ENTITY_FIELDS)
-    if unknown_fields:
-        raise TableError(f"unknown entity fields: {sorted(unknown_fields)}")
-    facets = _validated_names(occupancy_facets, "occupancy_facets")
-    feature_names = _validated_names(features, "features")
-    if multiple_classifications not in ("tuple", "first", "error"):
-        raise TableError(
-            "multiple_classifications must be 'tuple', 'first', or 'error'"
-        )
-    if not isinstance(outgoing, bool):
-        raise TypeError("outgoing must be a bool")
-    if parent_relationship is not None and not isinstance(
-        parent_relationship, (Classification, str)
-    ):
-        raise TypeError("parent_relationship must be a Classification, string, or None")
-    measure_columns = _measure_columns(measures)
-
-    columns = (
-        *selected_fields,
-        *(f"occupancy.{facet}" for facet in facets),
-        *(column for _, _, column in measure_columns),
-        *(f"feature.{name}" for name in feature_names),
-        *(("parent_id", "children_ids") if parent_relationship is not None else ()),
-    )
-    if len(columns) != len(set(columns)):
-        raise TableError("selected Table columns collide")
-
-    rows = []
-    for entity in view.entities():
-        row = {field: _entity_field(entity, field) for field in selected_fields}
-        for facet in facets:
-            row[f"occupancy.{facet}"] = _occupancy_value(
-                entity.occupancy.get(facet, ()),
-                policy=multiple_classifications,
-                entity=entity,
-                facet=facet,
-            )
-        for measure, target_unit, column in measure_columns:
-            quantity = entity.characteristics.get_measure(measure)
-            row[column] = (
-                None if quantity is None else quantity.to(target_unit).magnitude
-            )
-        for name in feature_names:
-            row[f"feature.{name}"] = entity.features.get(name)
-        if parent_relationship is not None:
-            if outgoing:
-                parents = view.predecessors(entity, parent_relationship)
-                children = view.successors(entity, parent_relationship)
-            else:
-                parents = view.successors(entity, parent_relationship)
-                children = view.predecessors(entity, parent_relationship)
-            if len(parents) > 1:
-                raise TableError(
-                    f"entity {entity.entity_id!r} has multiple parents in the "
-                    "selected relationship overlay"
-                )
-            row["parent_id"] = parents[0].entity_id if parents else None
-            row["children_ids"] = tuple(child.entity_id for child in children)
-        rows.append(row)
-    return Table(columns=columns, rows=tuple(rows))
-
-
-def _view(source: Model | View) -> View:
-    if isinstance(source, Model):
-        return source.view()
-    if isinstance(source, View):
-        return source
-    raise TypeError("source must be a Model or View")
 
 
 def _validated_names(values: Iterable[str], field: str) -> tuple[str, ...]:
@@ -254,21 +214,3 @@ def _entity_field(entity: Entity, field: str) -> object:
     if field == "classification_scheme":
         return entity.classification.scheme if entity.classification else None
     raise TableError(f"unknown entity field {field!r}")
-
-
-def _occupancy_value(
-    classifications: tuple[Classification, ...],
-    *,
-    policy: MultipleClassificationPolicy,
-    entity: Entity,
-    facet: str,
-) -> object:
-    values = tuple(classification.key for classification in classifications)
-    if policy == "tuple":
-        return values
-    if len(values) > 1 and policy == "error":
-        raise TableError(
-            f"entity {entity.entity_id!r} has multiple classifications for "
-            f"occupancy facet {facet!r}"
-        )
-    return values[0] if values else None
