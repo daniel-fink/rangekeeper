@@ -10,6 +10,12 @@ def test_graph_package_exports_phase_one_domain_classes():
     assert rk.graph.Provenance.__module__ == "rangekeeper.graph.provenance"
 
 
+def test_graph_package_exports_phase_two_model_types():
+    assert rk.graph.Model.__module__ == "rangekeeper.graph.model"
+    assert rk.graph.View.__module__ == "rangekeeper.graph.view"
+    assert rk.graph.ValidationResult.__module__ == ("rangekeeper.graph.validation")
+
+
 def test_phase_one_domain_classes_do_not_inherit_from_speckle_base():
     from specklepy.objects import Base
 

@@ -5,6 +5,7 @@ from collections.abc import Iterable
 from .characteristics import Characteristics
 from .classification import Classification
 from .entity import Entity
+from .errors import InvalidAssemblyError
 from .provenance import Provenance
 from .relationship import Relationship
 
@@ -51,6 +52,20 @@ class Assembly(Entity):
         relationships: Iterable[Relationship],
     ) -> None:
         """Validate and atomically replace contents for the future Model boundary."""
+        prepared_entities, prepared_relationships = self._prepare_contents(
+            entities=entities,
+            relationships=relationships,
+        )
+        self._entities = prepared_entities
+        self._relationships = prepared_relationships
+
+    def _prepare_contents(
+        self,
+        *,
+        entities: Iterable[Entity],
+        relationships: Iterable[Relationship],
+    ) -> tuple[set[Entity], set[Relationship]]:
+        """Validate proposed contents without mutating the Assembly."""
         materialized_entities = list(entities)
         materialized_relationships = list(relationships)
         entity_by_id = self._index_unique_entities(materialized_entities)
@@ -59,24 +74,23 @@ class Assembly(Entity):
         )
 
         if self.entity_id in entity_by_id:
-            raise ValueError("an assembly cannot contain itself")
+            raise InvalidAssemblyError("an assembly cannot contain itself")
         self._validate_no_recursive_containment(entity_by_id.values())
 
         allowed_endpoint_ids = {self.entity_id, *entity_by_id}
         for relationship in relationship_by_id.values():
             if relationship.source_id not in allowed_endpoint_ids:
-                raise ValueError(
+                raise InvalidAssemblyError(
                     f"relationship {relationship.relationship_id!r} source endpoint "
                     f"{relationship.source_id!r} is not contained by the assembly"
                 )
             if relationship.target_id not in allowed_endpoint_ids:
-                raise ValueError(
+                raise InvalidAssemblyError(
                     f"relationship {relationship.relationship_id!r} target endpoint "
                     f"{relationship.target_id!r} is not contained by the assembly"
                 )
 
-        self._entities = set(entity_by_id.values())
-        self._relationships = set(relationship_by_id.values())
+        return set(entity_by_id.values()), set(relationship_by_id.values())
 
     @staticmethod
     def _index_unique_entities(entities: Iterable[Entity]) -> dict[str, Entity]:
@@ -86,7 +100,7 @@ class Assembly(Entity):
                 raise TypeError("assembly entities must be Entity instances")
             existing = by_id.get(entity.entity_id)
             if existing is not None and existing is not entity:
-                raise ValueError(
+                raise InvalidAssemblyError(
                     f"different Entity objects share entity_id {entity.entity_id!r}"
                 )
             by_id[entity.entity_id] = entity
@@ -102,7 +116,7 @@ class Assembly(Entity):
                 raise TypeError("assembly relationships must be Relationship instances")
             existing = by_id.get(relationship.relationship_id)
             if existing is not None and existing is not relationship:
-                raise ValueError(
+                raise InvalidAssemblyError(
                     "different Relationship objects share relationship_id "
                     f"{relationship.relationship_id!r}"
                 )
@@ -115,7 +129,7 @@ class Assembly(Entity):
         while pending:
             assembly = pending.pop()
             if assembly.entity_id == self.entity_id:
-                raise ValueError("assembly containment would create a cycle")
+                raise InvalidAssemblyError("assembly containment would create a cycle")
             if assembly.entity_id in visited:
                 continue
             visited.add(assembly.entity_id)
