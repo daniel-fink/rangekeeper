@@ -1,3 +1,6 @@
-from .entity import Assembly, Entity
-from .kind import Kind
-from . import characteristics as characteristics
+from .assembly import Assembly
+from .characteristics import Characteristics
+from .classification import Classification
+from .entity import Entity
+from .provenance import Provenance
+from .relationship import Relationship

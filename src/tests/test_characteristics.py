@@ -30,14 +30,15 @@ class TestCharacteristics:
     def test_module_is_public(self):
         assert rk.graph.characteristics.Characteristics is not None
 
-    def test_use_and_tenure_are_kinds(self):
-        uses = rk.graph.Kind(
+    def test_occupancy_accepts_multiple_classification_facets(self):
+        uses = rk.graph.Classification(
             code="abs.fcb",
             name="Functional Classification of Buildings",
             scheme="ABS FCB",
         )
         office = uses.define(code="231", name="Offices")
-        tenures = rk.graph.Kind(
+        retail = uses.define(code="233", name="Shops")
+        tenures = rk.graph.Classification(
             code="abs.tend",
             name="Tenure Type",
             scheme="ABS TEND",
@@ -45,19 +46,43 @@ class TestCharacteristics:
         rented = tenures.define(code="4", name="Rented")
 
         characteristics = rk.graph.characteristics.Characteristics(
-            use=office,
-            tenure=rented,
+            occupancy={"use": [office, retail], "tenure": (rented,)},
         )
 
-        assert characteristics.use is office
-        assert characteristics.use.scheme == "ABS FCB"
-        assert characteristics.tenure is rented
-        assert characteristics.tenure.scheme == "ABS TEND"
+        assert characteristics.occupancy["use"] == (office, retail)
+        assert characteristics.occupancy["tenure"] == (rented,)
+        assert characteristics.occupancy["use"][0].scheme == "ABS FCB"
+        assert characteristics.occupancy["tenure"][0].scheme == "ABS TEND"
 
-        with pytest.raises(TypeError, match="use must be a Kind"):
-            rk.graph.characteristics.Characteristics(use="office")
-        with pytest.raises(TypeError, match="tenure must be a Kind"):
-            rk.graph.characteristics.Characteristics(tenure="rented")
+    @pytest.mark.parametrize("facet", ["", "   ", 1])
+    def test_occupancy_facet_is_a_non_empty_string(self, facet):
+        with pytest.raises((TypeError, ValueError), match="occupancy facet"):
+            rk.graph.Characteristics(occupancy={facet: ()})
+
+    @pytest.mark.parametrize("values", ["office", 1, ["office"]])
+    def test_occupancy_values_are_classification_iterables(self, values):
+        with pytest.raises(TypeError, match="occupancy values"):
+            rk.graph.Characteristics(occupancy={"use": values})
+
+    def test_occupancy_mapping_is_copied_and_values_are_normalized(self):
+        office = rk.graph.Classification(code="office", name="Office")
+        supplied_values = [office]
+        supplied = {"use": supplied_values}
+
+        characteristics = rk.graph.Characteristics(occupancy=supplied)
+        supplied.clear()
+        supplied_values.clear()
+
+        assert characteristics.occupancy == {"use": (office,)}
+
+    def test_duplicate_scheme_aware_occupancy_keys_are_rejected(self):
+        first = rk.graph.Classification(code="231", name="Office", scheme="ABS FCB")
+        duplicate = rk.graph.Classification(
+            code="231", name="Offices", scheme="ABS FCB"
+        )
+
+        with pytest.raises(ValueError, match="repeat"):
+            rk.graph.Characteristics(occupancy={"use": (first, duplicate)})
 
     def test_compatible_quantity_preserves_supplied_units(self):
         characteristics = rk.graph.characteristics.Characteristics()
@@ -115,9 +140,20 @@ class TestCharacteristics:
 
         first.set_measure(area_measure(), 100 * units.sqm)
         first.features["balcony"] = True
+        first.occupancy["use"] = ()
 
+        assert second.occupancy == {}
         assert second.measures == {}
         assert second.features == {}
+
+    def test_features_accept_rich_runtime_values(self):
+        runtime_value = object()
+        characteristics = rk.graph.Characteristics(
+            features={"flow": runtime_value, "events": [{"year": 2030}]}
+        )
+
+        assert characteristics.features["flow"] is runtime_value
+        assert characteristics.features["events"] == [{"year": 2030}]
 
     def test_reconstructed_measure_uses_stable_identity(self):
         original = area_measure()
