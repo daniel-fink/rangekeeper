@@ -11,8 +11,8 @@ from ..classification import Classification
 from ..entity import Entity
 from ..provenance import Provenance
 from ..relationship import Relationship
+from . import value as encoded_value
 from .errors import SnapshotError
-from .value import encode_value
 
 
 def _freeze(value: object) -> object:
@@ -155,10 +155,10 @@ def _encode_characteristics(
     )
     measures = tuple(
         {
-            "measure": encode_value(
+            "measure": encoded_value.encode(
                 measure.to_record(), path=f"{owner} measure {measure.code!r}"
             ),
-            "quantity": encode_value(
+            "quantity": encoded_value.encode(
                 quantity, path=f"{owner} measure {measure.code!r} quantity"
             ),
         }
@@ -171,7 +171,7 @@ def _encode_characteristics(
     features = tuple(
         {
             "name": name,
-            "value": encode_value(value, path=f"{owner} feature {name!r}"),
+            "value": encoded_value.encode(value, path=f"{owner} feature {name!r}"),
         }
         for name, value in sorted(
             characteristics.features.items(), key=lambda item: item[0]

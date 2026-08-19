@@ -14,11 +14,11 @@ from ..model import Model
 from ..provenance import Provenance
 from ..relationship import Relationship
 from ..view import View
+from . import value as encoded_value
 from .errors import SnapshotError
 from .fields import Fields
 from .record import Record, Snapshot
 from .selection import required_classifications, select_source
-from .value import decode_value
 
 
 SCHEMA_VERSION = 1
@@ -265,7 +265,7 @@ class _Deserializer:
         decoded_measures: dict[Measure, pint.Quantity] = {}
         for item in fields.mappings("measures"):
             item_fields = Fields(item, owner)
-            measure_data = decode_value(
+            measure_data = encoded_value.decode(
                 item_fields.required("measure"),
                 registry=self.registry,
                 path=f"{owner} measure",
@@ -291,7 +291,7 @@ class _Deserializer:
                 raise SnapshotError(
                     f"{owner} contains duplicate Measure {measure.code!r}"
                 )
-            quantity = decode_value(
+            quantity = encoded_value.decode(
                 item_fields.required("quantity"),
                 registry=self.registry,
                 path=f"{owner} measure {measure.code!r} quantity",
@@ -306,7 +306,7 @@ class _Deserializer:
             name = item_fields.text("name")
             if name in features:
                 raise SnapshotError(f"{owner} contains duplicate feature {name!r}")
-            features[name] = decode_value(
+            features[name] = encoded_value.decode(
                 item_fields.required("value"),
                 registry=self.registry,
                 path=f"{owner} feature {name!r}",
