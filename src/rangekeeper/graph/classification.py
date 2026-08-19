@@ -4,14 +4,8 @@ from collections.abc import Iterable, Mapping
 from typing import Any
 
 
-class Kind:
-    """A named classification in a single-parent kind hierarchy.
-
-    Kind codes are immutable and unique within a connected hierarchy. Parent and
-    child mutations keep both sides of the relationship consistent. Optional
-    classification provenance belongs to a hierarchy root and is inherited by
-    its descendants.
-    """
+class Classification:
+    """One term in a single-parent classification hierarchy."""
 
     def __init__(
         self,
@@ -20,8 +14,8 @@ class Kind:
         definition: str | None = None,
         *,
         scheme: str | None = None,
-        parent: Kind | None = None,
-        children: Iterable[Kind] | None = None,
+        parent: Classification | None = None,
+        children: Iterable[Classification] | None = None,
     ) -> None:
         self._code = self._validate_required_text(code, "code")
         self.name = self._validate_required_text(name, "name")
@@ -29,8 +23,8 @@ class Kind:
             raise TypeError("definition must be a string or None")
         self.definition = definition
         self._scheme = self._validate_optional_text(scheme, "scheme")
-        self._parent: Kind | None = None
-        self._children: list[Kind] = []
+        self._parent: Classification | None = None
+        self._children: list[Classification] = []
 
         if parent is not None:
             self.set_parent(parent)
@@ -49,7 +43,7 @@ class Kind:
     def _validate_optional_text(value: str | None, field: str) -> str | None:
         if value is None:
             return None
-        return Kind._validate_required_text(value, field)
+        return Classification._validate_required_text(value, field)
 
     @property
     def code(self) -> str:
@@ -60,40 +54,52 @@ class Kind:
         return self.root()._scheme
 
     @property
-    def parent(self) -> Kind | None:
+    def key(self) -> tuple[str | None, str]:
+        """Return the scheme-aware key used by registries and adapters."""
+        return self.scheme, self.code
+
+    @property
+    def parent(self) -> Classification | None:
         return self._parent
 
     @property
-    def children(self) -> tuple[Kind, ...]:
+    def children(self) -> tuple[Classification, ...]:
         return tuple(self._children)
 
     def __repr__(self) -> str:
-        return f"Kind(code={self.code!r}, name={self.name!r})"
+        return f"Classification(code={self.code!r}, name={self.name!r})"
 
     def __str__(self) -> str:
         return self.name
 
-    def set_parent(self, parent: Kind) -> None:
-        if not isinstance(parent, Kind):
-            raise TypeError("parent must be a Kind")
+    def set_parent(self, parent: Classification) -> None:
+        if not isinstance(parent, Classification):
+            raise TypeError("parent must be a Classification")
         if parent is self:
-            raise ValueError("a kind cannot be its own parent")
+            raise ValueError("a classification cannot be its own parent")
         if parent in self.descendants():
             raise ValueError("parenting would create a cycle")
         if self._parent is parent:
             return
         if self._scheme is not None:
-            raise ValueError("a kind with classification provenance must remain a root")
+            raise ValueError(
+                "a classification with scheme provenance must remain a root"
+            )
 
         subtree = set(self._traverse())
         target_codes = {
-            kind.code for kind in parent.root()._traverse() if kind not in subtree
+            classification.code
+            for classification in parent.root()._traverse()
+            if classification not in subtree
         }
-        duplicate_codes = target_codes.intersection(kind.code for kind in subtree)
+        duplicate_codes = target_codes.intersection(
+            classification.code for classification in subtree
+        )
         if duplicate_codes:
             duplicates = ", ".join(sorted(duplicate_codes))
             raise ValueError(
-                f"kind codes must be unique within a hierarchy: {duplicates}"
+                "classification codes must be unique within a hierarchy: "
+                f"{duplicates}"
             )
 
         previous_parent = self._parent
@@ -109,23 +115,23 @@ class Kind:
         self._parent = None
         parent._children.remove(self)
 
-    def add_child(self, child: Kind) -> None:
-        if not isinstance(child, Kind):
-            raise TypeError("child must be a Kind")
+    def add_child(self, child: Classification) -> None:
+        if not isinstance(child, Classification):
+            raise TypeError("child must be a Classification")
         child.set_parent(self)
 
-    def remove_child(self, child: Kind) -> None:
-        if not isinstance(child, Kind):
-            raise TypeError("child must be a Kind")
+    def remove_child(self, child: Classification) -> None:
+        if not isinstance(child, Classification):
+            raise TypeError("child must be a Classification")
         if child._parent is not self:
-            raise ValueError("kind is not a direct child")
+            raise ValueError("classification is not a direct child")
         child.remove_parent()
 
-    def add_children(self, children: Iterable[Kind]) -> None:
+    def add_children(self, children: Iterable[Classification]) -> None:
         for child in children:
             self.add_child(child)
 
-    def remove_children(self, children: Iterable[Kind]) -> None:
+    def remove_children(self, children: Iterable[Classification]) -> None:
         for child in children:
             self.remove_child(child)
 
@@ -135,16 +141,16 @@ class Kind:
         code: str,
         name: str,
         definition: str | None = None,
-    ) -> Kind:
-        return Kind(
+    ) -> Classification:
+        return Classification(
             code=code,
             name=name,
             definition=definition,
             parent=self,
         )
 
-    def ancestors(self) -> tuple[Kind, ...]:
-        ancestors: list[Kind] = []
+    def ancestors(self) -> tuple[Classification, ...]:
+        ancestors: list[Classification] = []
         current = self._parent
         while current is not None:
             ancestors.append(current)
@@ -152,27 +158,27 @@ class Kind:
         ancestors.reverse()
         return tuple(ancestors)
 
-    def descendants(self) -> tuple[Kind, ...]:
+    def descendants(self) -> tuple[Classification, ...]:
         return tuple(self._traverse())[1:]
 
-    def lineage(self) -> tuple[Kind, ...]:
+    def lineage(self) -> tuple[Classification, ...]:
         return (*self.ancestors(), self)
 
-    def root(self) -> Kind:
+    def root(self) -> Classification:
         current = self
         while current._parent is not None:
             current = current._parent
         return current
 
-    def is_a(self, ancestor: Kind) -> bool:
-        if not isinstance(ancestor, Kind):
-            raise TypeError("ancestor must be a Kind")
+    def is_a(self, ancestor: Classification) -> bool:
+        if not isinstance(ancestor, Classification):
+            raise TypeError("ancestor must be a Classification")
         return ancestor in self.lineage()
 
-    def find(self, code: str) -> Kind | None:
-        for kind in self.root()._traverse():
-            if kind.code == code:
-                return kind
+    def find(self, code: str) -> Classification | None:
+        for classification in self.root()._traverse():
+            if classification.code == code:
+                return classification
         return None
 
     def to_record(self) -> dict[str, str | None]:
@@ -188,27 +194,31 @@ class Kind:
 
     def to_records(self) -> tuple[dict[str, str | None], ...]:
         """Serialize the complete connected hierarchy in depth-first order."""
-        return tuple(kind.to_record() for kind in self.root()._traverse())
+        return tuple(
+            classification.to_record() for classification in self.root()._traverse()
+        )
 
     @classmethod
     def from_records(
         cls,
         records: Iterable[Mapping[str, Any]],
-    ) -> tuple[Kind, ...]:
+    ) -> tuple[Classification, ...]:
         """Reconstruct one or more hierarchies and return their roots."""
         materialized = list(records)
-        by_code: dict[str, Kind] = {}
+        by_code: dict[str, Classification] = {}
 
         for record in materialized:
             if not isinstance(record, Mapping):
-                raise TypeError("each kind record must be a mapping")
+                raise TypeError("each classification record must be a mapping")
             try:
                 code = record["code"]
                 name = record["name"]
             except KeyError as error:
-                raise ValueError(f"kind record is missing {error.args[0]!r}") from error
+                raise ValueError(
+                    f"classification record is missing {error.args[0]!r}"
+                ) from error
             if code in by_code:
-                raise ValueError(f"duplicate kind code: {code}")
+                raise ValueError(f"duplicate classification code: {code}")
             by_code[code] = cls(
                 code=code,
                 name=name,
@@ -221,12 +231,16 @@ class Kind:
             if parent_code is None:
                 continue
             if parent_code not in by_code:
-                raise ValueError(f"unknown parent kind code: {parent_code}")
+                raise ValueError(f"unknown parent classification code: {parent_code}")
             by_code[record["code"]].set_parent(by_code[parent_code])
 
-        return tuple(kind for kind in by_code.values() if kind.parent is None)
+        return tuple(
+            classification
+            for classification in by_code.values()
+            if classification.parent is None
+        )
 
-    def _traverse(self) -> Iterable[Kind]:
+    def _traverse(self) -> Iterable[Classification]:
         yield self
         for child in self._children:
             yield from child._traverse()

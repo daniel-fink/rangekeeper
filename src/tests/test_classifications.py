@@ -1,11 +1,11 @@
 import pytest
 
 import rangekeeper as rk
-from rangekeeper.graph.kind import Kind
+from rangekeeper.graph.classification import Classification
 
 
-def make_apartment_kinds():
-    apartment = Kind(code="apartment", name="Apartment")
+def make_apartment_classifications():
+    apartment = Classification(code="apartment", name="Apartment")
     three_bed = apartment.define(
         code="apartment.3bed",
         name="3-bed Apartment",
@@ -17,14 +17,15 @@ def make_apartment_kinds():
     return apartment, three_bed, corner
 
 
-def test_kind_module_is_public():
-    assert rk.graph.kind.Kind is Kind
-    assert rk.graph.Kind is Kind
+def test_classification_module_is_public_without_a_kind_alias():
+    assert rk.graph.classification.Classification is Classification
+    assert rk.graph.Classification is Classification
+    assert not hasattr(rk.graph, "Kind")
 
 
 def test_constructor_parenting_and_define_keep_both_sides_consistent():
-    apartment = Kind(code="apartment", name="Apartment")
-    two_bed = Kind(
+    apartment = Classification(code="apartment", name="Apartment")
+    two_bed = Classification(
         code="apartment.2bed",
         name="2-bed Apartment",
         parent=apartment,
@@ -40,9 +41,9 @@ def test_constructor_parenting_and_define_keep_both_sides_consistent():
 
 
 def test_constructor_children_are_parented_in_order():
-    office = Kind(code="office", name="Office")
-    retail = Kind(code="retail", name="Retail")
-    building = Kind(
+    office = Classification(code="office", name="Office")
+    retail = Classification(code="retail", name="Retail")
+    building = Classification(
         code="building",
         name="Building",
         children=[office, retail],
@@ -54,9 +55,9 @@ def test_constructor_children_are_parented_in_order():
 
 
 def test_reparenting_and_removal_keep_both_sides_consistent():
-    residential = Kind(code="residential", name="Residential")
-    commercial = Kind(code="commercial", name="Commercial")
-    mixed_use = Kind(code="mixed-use", name="Mixed Use")
+    residential = Classification(code="residential", name="Residential")
+    commercial = Classification(code="commercial", name="Commercial")
+    mixed_use = Classification(code="mixed-use", name="Mixed Use")
 
     residential.add_child(mixed_use)
     commercial.add_child(mixed_use)
@@ -74,8 +75,8 @@ def test_reparenting_and_removal_keep_both_sides_consistent():
 
 
 def test_readding_a_child_does_not_duplicate_it():
-    parent = Kind(code="parent", name="Parent")
-    child = Kind(code="child", name="Child")
+    parent = Classification(code="parent", name="Parent")
+    child = Classification(code="child", name="Child")
 
     parent.add_child(child)
     parent.add_child(child)
@@ -84,10 +85,10 @@ def test_readding_a_child_does_not_duplicate_it():
 
 
 def test_add_and_remove_children():
-    parent = Kind(code="parent", name="Parent")
+    parent = Classification(code="parent", name="Parent")
     children = (
-        Kind(code="child-1", name="Child 1"),
-        Kind(code="child-2", name="Child 2"),
+        Classification(code="child-1", name="Child 1"),
+        Classification(code="child-2", name="Child 2"),
     )
 
     parent.add_children(children)
@@ -99,7 +100,7 @@ def test_add_and_remove_children():
 
 
 def test_self_parenting_and_cycles_are_rejected():
-    apartment, three_bed, corner = make_apartment_kinds()
+    apartment, three_bed, corner = make_apartment_classifications()
 
     with pytest.raises(ValueError, match="own parent"):
         apartment.set_parent(apartment)
@@ -113,8 +114,8 @@ def test_self_parenting_and_cycles_are_rejected():
 
 
 def test_duplicate_codes_are_rejected_within_a_connected_hierarchy():
-    apartment, _, _ = make_apartment_kinds()
-    duplicate = Kind(code="apartment.3bed", name="Duplicate")
+    apartment, _, _ = make_apartment_classifications()
+    duplicate = Classification(code="apartment.3bed", name="Duplicate")
 
     with pytest.raises(ValueError, match="apartment.3bed"):
         apartment.add_child(duplicate)
@@ -124,7 +125,7 @@ def test_duplicate_codes_are_rejected_within_a_connected_hierarchy():
 
 
 def test_reparenting_within_a_hierarchy_does_not_conflict_with_own_subtree():
-    apartment, three_bed, corner = make_apartment_kinds()
+    apartment, three_bed, corner = make_apartment_classifications()
 
     apartment.add_child(corner)
 
@@ -133,8 +134,8 @@ def test_reparenting_within_a_hierarchy_does_not_conflict_with_own_subtree():
     assert apartment.children == (three_bed, corner)
 
 
-def test_traversal_order_lineage_and_kind_checks():
-    apartment, three_bed, corner = make_apartment_kinds()
+def test_traversal_order_lineage_and_classification_checks():
+    apartment, three_bed, corner = make_apartment_classifications()
     two_bed = apartment.define(
         code="apartment.2bed",
         name="2-bed Apartment",
@@ -153,7 +154,7 @@ def test_traversal_order_lineage_and_kind_checks():
 
 
 def test_code_is_immutable_and_children_are_read_only():
-    parent = Kind(code="parent", name="Parent")
+    parent = Classification(code="parent", name="Parent")
 
     with pytest.raises(AttributeError):
         parent.code = "renamed"
@@ -163,7 +164,7 @@ def test_code_is_immutable_and_children_are_read_only():
 
 
 def test_classification_provenance_is_inherited_and_read_only():
-    classification = Kind(
+    classification = Classification(
         code="abs.fcb",
         name="Functional Classification of Buildings",
         scheme="ABS FCB",
@@ -172,23 +173,24 @@ def test_classification_provenance_is_inherited_and_read_only():
     office = commercial.define(code="231", name="Offices")
 
     assert office.scheme == "ABS FCB"
+    assert office.key == ("ABS FCB", "231")
 
     with pytest.raises(AttributeError):
         office.scheme = "Changed"
 
 
 def test_classification_provenance_belongs_only_to_a_root():
-    classification = Kind(
+    classification = Classification(
         code="abs.fcb",
         name="Functional Classification of Buildings",
         scheme="ABS FCB",
     )
-    other = Kind(code="other", name="Other")
+    other = Classification(code="other", name="Other")
 
     with pytest.raises(ValueError, match="remain a root"):
         classification.set_parent(other)
     with pytest.raises(ValueError, match="remain a root"):
-        Kind(
+        Classification(
             code="231",
             name="Offices",
             scheme="ABS FCB",
@@ -197,7 +199,7 @@ def test_classification_provenance_belongs_only_to_a_root():
 
 
 def test_flat_record_serialization_and_reconstruction():
-    apartment, three_bed, corner = make_apartment_kinds()
+    apartment, three_bed, corner = make_apartment_classifications()
     corner.definition = "An apartment on a building corner."
 
     records = corner.to_records()
@@ -223,7 +225,7 @@ def test_flat_record_serialization_and_reconstruction():
         },
     )
 
-    (restored,) = Kind.from_records(records)
+    (restored,) = Classification.from_records(records)
     restored_three_bed = restored.find(three_bed.code)
     restored_corner = restored.find(corner.code)
 
@@ -235,7 +237,7 @@ def test_flat_record_serialization_and_reconstruction():
 
 
 def test_classification_provenance_serialization_and_reconstruction():
-    classification = Kind(
+    classification = Classification(
         code="abs.fcb",
         name="Functional Classification of Buildings",
         scheme="ABS FCB",
@@ -253,7 +255,7 @@ def test_classification_provenance_serialization_and_reconstruction():
     }
     assert "scheme" not in records[1]
 
-    (restored,) = Kind.from_records(records)
+    (restored,) = Classification.from_records(records)
     restored_office = restored.find("231")
 
     assert restored_office is not None
@@ -267,10 +269,10 @@ def test_reconstruction_validates_duplicate_and_unknown_codes():
         {"code": "type", "name": "Duplicate", "parent_code": None},
     ]
     with pytest.raises(ValueError, match="duplicate"):
-        Kind.from_records(duplicate_records)
+        Classification.from_records(duplicate_records)
 
     unknown_parent_records = [
         {"code": "child", "name": "Child", "parent_code": "missing"},
     ]
     with pytest.raises(ValueError, match="unknown parent"):
-        Kind.from_records(unknown_parent_records)
+        Classification.from_records(unknown_parent_records)
