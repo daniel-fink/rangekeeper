@@ -21,6 +21,20 @@ HEAD:       35ebfd3 refactor: simplify kind provenance
 Remote:     origin/feat/entity-area-core at the same commit
 ```
 
+Handoff update after the plan was created:
+
+```text
+HEAD:       abda45a chore: prepare graph refactor handoff
+Remote:     origin/feat/entity-area-core at the same commit
+State:      clean before this plan amendment
+```
+
+The previously uncommitted edits described below are now committed in
+`abda45a`; the warning remains as historical context for understanding that
+commit. The Assembly design was subsequently amended so an Assembly contains
+explicit canonical Entity and Relationship sets rather than synthetic
+`member_of` relationships.
+
 The repository had these **pre-existing, uncommitted user changes** when this
 plan was written:
 
@@ -108,6 +122,7 @@ needed:
 - a formal query language;
 - saved dynamic assembly predicates;
 - multiple-provenance support;
+- first-class membership records or a canonical `member_of` relationship;
 - separate Entity- and Relationship-Characteristics subclasses;
 - automatic serialization of every arbitrary object stored in `features`;
 - a rewrite of unrelated Rangekeeper finance, duration, flux, projection, or
@@ -210,7 +225,6 @@ A Relationship has a required Classification describing what the edge means,
 for example:
 
 ```text
-relationship.member_of
 relationship.spatially_contains
 relationship.services
 relationship.connected_to
@@ -291,7 +305,7 @@ Provenance(
 Relationship stores endpoint IDs, not Entity instances:
 
 ```python
-@dataclass
+@dataclass(eq=False)
 class Relationship:
     relationship_id: str
     source_id: str
@@ -306,41 +320,54 @@ resolves and validates them, and stores IDs.
 
 ### 9. Assembly semantics
 
-Assembly is an identifiable Entity subtype representing a durable conceptual
-group. It is not the exclusive owner of a separate graph and it does not store
-an authoritative member list.
+Assembly is an identifiable Entity subtype representing a durable named
+subgraph. It contains sets of canonical Entity/Assembly and Relationship
+instances. It does not own copies of those objects or a separate authoritative
+NetworkX graph.
 
 ```python
 @dataclass(eq=False)
 class Assembly(Entity):
-    pass
+    _entities: set[Entity]
+    _relationships: set[Relationship]
+
+    @property
+    def entities(self) -> frozenset[Entity]: ...
+
+    @property
+    def relationships(self) -> frozenset[Relationship]: ...
 ```
 
-Membership is canonical as classified Relationships:
+Assembly inclusion is structural metadata, not a domain Relationship. Do not
+create synthetic `member_of` edges. Characteristics and Provenance belong to
+the Assembly, its contained Entities, and its contained Relationships. There
+is no separate membership object or per-membership metadata.
 
-```text
-AHU --member_of--> Apartment Assembly
-AHU --member_of--> HVAC System Assembly
-```
+The sets contain the same object instances registered in Model. Snapshot and
+adapter representations store their stable IDs rather than recursive copies.
+This permits the same Entity or Relationship to appear in multiple Assemblies
+without duplication.
 
-This permits overlapping assemblies without duplicating entities.
+The Assembly itself is implicit in its selected subgraph and is not included in
+its own `entities` set. Every contained Relationship endpoint must be either:
 
-`Model.add_assembly(assembly, members=[...])` is a convenience that adds the
-Assembly node and creates `member_of` relationships. Membership is a set unless
-ordering becomes a demonstrated domain requirement.
+- an Entity in the Assembly's `entities` set; or
+- the Assembly itself.
 
-Distinguish:
+An Assembly may contain another Assembly because Assembly is an Entity subtype.
+Recursive Assembly containment cycles are rejected. Traversal of nested
+Assemblies must still use a visited set as defensive protection.
 
-```text
-member_of   loose conceptual membership
-contains    spatial, compositional, or physical containment
-```
+Model is the mutation and validation boundary after registration. Assembly
+constructor inputs are copied, public collection properties are read-only, and
+Model methods update registered Assembly contents atomically. Direct collection
+mutation must not bypass Model validation.
 
-An Assembly can participate as an endpoint in arbitrary relationships and can
-be a member of another Assembly. Recursive membership traversal must use a
-visited set. Whether membership cycles are allowed must be an explicit
-validation policy; default to rejecting cycles until a real use case requires
-them.
+`Model.add_assembly(assembly)` atomically registers the Assembly, recursively
+registers any contained Assemblies and their contents, and registers its other
+contained Entities and Relationships. An Assembly can also participate as an
+endpoint in arbitrary classified Relationships; those Relationships describe
+domain meaning such as spatial containment or service, not membership.
 
 ### 10. Model
 
@@ -410,10 +437,14 @@ Enforce these at every Model mutation boundary:
 9. An edge key always equals `relationship.relationship_id`.
 10. Every edge has a Relationship in its `relationship` attribute.
 11. Relationship classification is required.
-12. `member_of` targets must be Assemblies.
-13. Batch additions validate completely before mutating the Model.
-14. Public filtered graph results are Views, not mutable NetworkX views.
-15. NetworkX graph objects are never serialized directly.
+12. Assembly contents reference the exact canonical objects registered in the
+    Model.
+13. Every contained Relationship endpoint is contained by the Assembly or is
+    the Assembly itself.
+14. Recursive Assembly containment cycles are rejected.
+15. Batch additions validate completely before mutating the Model.
+16. Public filtered graph results are Views, not mutable NetworkX views.
+17. NetworkX graph objects are never serialized directly.
 
 Add a full `Model.validate()` that reports all invariant violations, while
 normal mutation methods fail fast on the first invalid operation.
@@ -531,17 +562,32 @@ class Entity:
 
 @dataclass(eq=False)
 class Assembly(Entity):
-    pass
+    _entities: set[Entity] = field(default_factory=set, repr=False)
+    _relationships: set[Relationship] = field(default_factory=set, repr=False)
+
+    @property
+    def entities(self) -> frozenset[Entity]:
+        return frozenset(self._entities)
+
+    @property
+    def relationships(self) -> frozenset[Relationship]:
+        return frozenset(self._relationships)
 ```
 
 A normal mutable dataclass cannot make only `entity_id` frozen. Implement a
 write-once private `_entity_id` plus read-only property, a guarded `__setattr__`,
 or a small custom initializer. Test mutation attempts explicitly.
 
+The Assembly sketch illustrates contained object references, not the final
+constructor mechanics. Copy incoming iterables before validation, detect
+different objects sharing an ID before constructing the sets, and expose
+read-only collection properties. Once an Assembly is registered, content
+changes go through Model so its canonical registries and graph remain in sync.
+
 ### Relationship
 
 ```python
-@dataclass
+@dataclass(eq=False)
 class Relationship:
     relationship_id: str = field(default_factory=new_relationship_id)
     source_id: str = ""
@@ -549,6 +595,14 @@ class Relationship:
     classification: Classification | None = None
     characteristics: Characteristics = field(default_factory=Characteristics)
     provenance: Provenance | None = None
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Relationship):
+            return NotImplemented
+        return self.relationship_id == other.relationship_id
+
+    def __hash__(self) -> int:
+        return hash(self.relationship_id)
 ```
 
 Prefer a constructor signature that makes invalid partially initialized
@@ -557,7 +611,10 @@ the final parameter order. `classification` must be non-optional in the public
 constructor.
 
 Relationship identity should also be immutable. Relationship equality semantics
-must be explicit; default to relationship-ID equality.
+must be explicit and use relationship-ID equality so canonical Relationships
+can participate in Assembly sets. Endpoint IDs and classification must also be
+immutable after registration so Assembly and Model invariants cannot be changed
+behind Model's back.
 
 ### Model
 
@@ -584,11 +641,22 @@ class Model:
         relationship_id: str | None = None,
     ) -> Relationship: ...
 
-    def add_assembly(
+    def add_assembly(self, assembly: Assembly) -> None: ...
+
+    def add_to_assembly(
         self,
-        assembly: Assembly,
+        assembly: Assembly | str,
         *,
-        members: Iterable[Entity | str] = (),
+        entities: Iterable[Entity | str] = (),
+        relationships: Iterable[Relationship | str] = (),
+    ) -> None: ...
+
+    def remove_from_assembly(
+        self,
+        assembly: Assembly | str,
+        *,
+        entities: Iterable[Entity | str] = (),
+        relationships: Iterable[Relationship | str] = (),
     ) -> None: ...
 
     def entity(self, entity_id: str) -> Entity: ...
@@ -597,8 +665,25 @@ class Model:
     def relationships(self) -> tuple[Relationship, ...]: ...
     def assemblies(self) -> tuple[Assembly, ...]: ...
 
-    def members(self, assembly: Assembly | str) -> tuple[Entity, ...]: ...
-    def assemblies_of(self, entity: Entity | str) -> tuple[Assembly, ...]: ...
+    def assembly_entities(
+        self,
+        assembly: Assembly | str,
+    ) -> tuple[Entity, ...]: ...
+
+    def assembly_relationships(
+        self,
+        assembly: Assembly | str,
+    ) -> tuple[Relationship, ...]: ...
+
+    def assemblies_of_entity(
+        self,
+        entity: Entity | str,
+    ) -> tuple[Assembly, ...]: ...
+
+    def assemblies_of_relationship(
+        self,
+        relationship: Relationship | str,
+    ) -> tuple[Assembly, ...]: ...
 
     def predecessors(
         self,
@@ -636,6 +721,12 @@ class Model:
 
 Avoid an overly clever fluent query language in this refactor. Add only the
 query arguments exercised by tests and notebooks.
+
+`add_assembly()` validates and registers the Assembly, its contained Entities,
+and its contained Relationships as one atomic operation. Assembly-scoped View
+selection includes the Assembly itself plus exactly its contained entities and
+relationships. `add_to_assembly()` and `remove_from_assembly()` validate the
+complete proposed result before modifying either the Assembly or Model.
 
 ### View
 
@@ -737,6 +828,7 @@ restore(snapshot: Snapshot) -> Model
 Snapshot must preserve:
 
 - Entity versus Assembly structural type;
+- each Assembly's contained entity and relationship ID sets;
 - IDs;
 - names;
 - classifications and hierarchy references;
@@ -826,10 +918,12 @@ tested merge rule:
 Outbound conversion must use explicit Base record types and reference endpoints
 by stable IDs. Never attach an `nx.MultiDiGraph` to a Base.
 
-Map assembly membership to a standard Speckle Group proxy only where the proxy
-semantics fit. Preserve arbitrary classified relationships in explicit
-Rangekeeper relationship records at the root. Do not force all graph edges into
-standard proxies.
+Map Assembly contents to a standard Speckle Group proxy only where the proxy
+semantics fit. Preserve each Assembly's exact entity and relationship references
+in explicit Rangekeeper records so Group conversion is never the sole source of
+truth. Preserve arbitrary classified relationships in explicit Rangekeeper
+relationship records at the root. Do not force all graph edges into standard
+proxies.
 
 ### JSON
 
@@ -1025,13 +1119,14 @@ NetworkX from Entity/Relationship modules.
 2. Implement validated atomic entity and relationship insertion.
 3. Implement direct lookup and enumeration.
 4. Implement `relate()` accepting instance or ID endpoints.
-5. Implement Assembly insertion and member relationships.
+5. Implement atomic Assembly insertion from contained Entity and Relationship
+   sets, plus validated Assembly content mutation.
 6. Implement View selection by entity classification, relationship
    classification, assembly, and predicate.
 7. Implement predecessor/successor, roots/leaves, traversal, and arborescence.
 8. Implement `Model.validate()` and typed errors/results.
 9. Add tests for collisions, dangling endpoints, duplicate edge IDs, overlapping
-   assemblies, and nested membership.
+   assemblies, exact relationship inclusion, and nested Assembly containment.
 
 Gate: the graph model cannot reach an invalid state through its public API.
 
@@ -1099,7 +1194,7 @@ After new code and notebooks work:
 1. Remove `rk.api.Speckle.parse()` and `to_rk()`.
 2. Remove Entity/Assembly inheritance from Speckle Base.
 3. Remove `Kind` and all old naming.
-4. Remove public Assembly graph ownership and mutation.
+4. Remove public Assembly NetworkX graph ownership and legacy graph mutation.
 5. Remove `filter_by_type()`, `get_entities()`, `get_entity()`,
    `get_relatives()`, and old root/leaf methods.
 6. Remove graph `to_dict()`/`to_DataFrame()` and visualization methods.
@@ -1143,6 +1238,8 @@ notebooks.
 - Provenance copies identifiers and validates strings.
 - Entity ID immutability.
 - Entity equality with Entity and unrelated objects.
+- Assembly content input copying and default isolation.
+- Assembly content properties are read-only.
 - Relationship ID immutability and equality.
 - Relationship endpoint and classification validation.
 
@@ -1154,11 +1251,14 @@ notebooks.
 - Duplicate relationship ID conflict.
 - Dangling endpoint rejection.
 - Atomic batch insertion.
-- Same entity in multiple Assemblies.
+- Same Entity in multiple Assemblies.
+- Same Relationship in multiple Assemblies.
 - Assembly can be a relationship endpoint.
-- `member_of` target must be Assembly.
-- Nested assembly traversal terminates.
-- Membership-cycle default policy.
+- Assembly relationship endpoint-closure validation.
+- Assembly itself may be an endpoint of one of its contained Relationships.
+- Nested Assembly traversal terminates.
+- Recursive Assembly containment is rejected.
+- Atomic addition and removal of Assembly contents.
 - Classification-filtered View.
 - Relationship-filtered View.
 - Assembly View.
@@ -1183,6 +1283,7 @@ notebooks.
 ### Materialization tests
 
 - Entity/Assembly structural type preservation.
+- Assembly entity and relationship references preserved exactly.
 - Relationship endpoint reference preservation.
 - Classification hierarchy preservation.
 - Provenance preservation.
@@ -1209,7 +1310,7 @@ notebooks.
 - Legacy type strings become adapter-owned Classifications.
 - No NetworkX serialization.
 - Explicit relationship records round-trip.
-- Standard Group proxy mapping for compatible membership.
+- Standard Group proxy mapping for compatible Assembly contents.
 - Unsupported feature does not stringify silently.
 
 ## Commands for Daniel's Mac Studio
@@ -1301,7 +1402,8 @@ The implementation is complete only when all of these are true:
 3. Entity and relationship IDs are immutable.
 4. Model is the sole owner of the mutable NetworkX graph.
 5. Relationship endpoints are stored as IDs.
-6. Assemblies support overlapping membership without entity duplication.
+6. Assemblies preserve explicit Entity and Relationship sets and support
+   overlapping contents without object duplication.
 7. View is the transient selected-subgraph concept.
 8. Graph aggregation is named `aggregate`, is topological, and is idempotent.
 9. Snapshot round-trips all supported core graph state.
@@ -1325,7 +1427,7 @@ These questions are intentionally deferred and should not block initial work:
   metadata;
 - whether graph aggregation should support general DAGs and how shared
   descendants are counted;
-- whether Assembly membership cycles ever have legitimate meaning;
+- whether recursive Assembly containment ever has legitimate meaning;
 - whether a future View can be defined by a saved serializable query;
 - whether multiple Provenance records are needed for merged data;
 - how every rich Rangekeeper financial object should be represented in a full
@@ -1335,4 +1437,3 @@ These questions are intentionally deferred and should not block initial work:
 
 Use the simplest behavior documented above until a current test or notebook
 demonstrates the need for expansion.
-
