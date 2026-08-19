@@ -4,6 +4,7 @@ from collections.abc import Callable, Iterable
 
 import networkx as nx
 
+from .aggregation import AggregationFunction, aggregate_view
 from .assembly import Assembly
 from .characteristics import Characteristics
 from .classification import Classification
@@ -304,6 +305,31 @@ class Model:
                 if assembly is not None
                 else None
             ),
+        )
+
+    def aggregate(
+        self,
+        *,
+        view: View,
+        feature: str,
+        into: str | None = None,
+        function: AggregationFunction | None = None,
+        outgoing: bool = True,
+    ) -> dict[str, object]:
+        """Aggregate a feature bottom-up through an oriented arborescent View.
+
+        Without ``function``, non-None numeric and Pint Quantity values are
+        added. A custom function receives keyword arguments ``entity``,
+        ``own_value``, and ordered ``child_values``. Results remain pure unless
+        ``into`` names a distinct destination feature.
+        """
+        return aggregate_view(
+            self,
+            view=view,
+            feature=feature,
+            into=into,
+            function=function,
+            outgoing=outgoing,
         )
 
     def validate(self) -> ValidationResult:

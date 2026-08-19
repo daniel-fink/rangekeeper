@@ -5,6 +5,7 @@ from .entity import Entity
 from .errors import (
     GraphError,
     IdentityConflictError,
+    InvalidAggregationError,
     InvalidAssemblyError,
     MissingEntityError,
     MissingRelationshipError,

@@ -16,3 +16,7 @@ class MissingRelationshipError(GraphError, KeyError):
 
 class InvalidAssemblyError(GraphError, ValueError):
     """Raised when proposed Assembly contents violate graph invariants."""
+
+
+class InvalidAggregationError(GraphError, ValueError):
+    """Raised when a View or aggregation request cannot be aggregated safely."""
