@@ -85,9 +85,9 @@ class Kind:
         if self._scheme is not None:
             raise ValueError("a kind with classification provenance must remain a root")
 
-        subtree = set(self._walk_preorder())
+        subtree = set(self._traverse())
         target_codes = {
-            kind.code for kind in parent.root()._walk_preorder() if kind not in subtree
+            kind.code for kind in parent.root()._traverse() if kind not in subtree
         }
         duplicate_codes = target_codes.intersection(kind.code for kind in subtree)
         if duplicate_codes:
@@ -153,7 +153,7 @@ class Kind:
         return tuple(ancestors)
 
     def descendants(self) -> tuple[Kind, ...]:
-        return tuple(self._walk_preorder())[1:]
+        return tuple(self._traverse())[1:]
 
     def lineage(self) -> tuple[Kind, ...]:
         return (*self.ancestors(), self)
@@ -170,7 +170,7 @@ class Kind:
         return ancestor in self.lineage()
 
     def find(self, code: str) -> Kind | None:
-        for kind in self.root()._walk_preorder():
+        for kind in self.root()._traverse():
             if kind.code == code:
                 return kind
         return None
@@ -188,7 +188,7 @@ class Kind:
 
     def to_records(self) -> tuple[dict[str, str | None], ...]:
         """Serialize the complete connected hierarchy in depth-first order."""
-        return tuple(kind.to_record() for kind in self.root()._walk_preorder())
+        return tuple(kind.to_record() for kind in self.root()._traverse())
 
     @classmethod
     def from_records(
@@ -226,7 +226,7 @@ class Kind:
 
         return tuple(kind for kind in by_code.values() if kind.parent is None)
 
-    def _walk_preorder(self) -> Iterable[Kind]:
+    def _traverse(self) -> Iterable[Kind]:
         yield self
         for child in self._children:
-            yield from child._walk_preorder()
+            yield from child._traverse()
