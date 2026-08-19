@@ -18,7 +18,6 @@ from . import value as encoded_value
 from .errors import SnapshotError
 from .fields import Fields
 from .record import Record, Snapshot
-from .selection import required_classifications, select_source
 
 
 SCHEMA_VERSION = 1
@@ -26,8 +25,8 @@ RECORD_TYPES = frozenset({"classification", "entity", "assembly", "relationship"
 
 
 def to_snapshot(source: Model | View) -> Snapshot:
-    entities, relationships = select_source(source)
-    classifications = required_classifications(entities, relationships)
+    entities, relationships = _graph_closure(source)
+    classifications = _classification_closure(entities, relationships)
     records = (
         *(
             Record.from_classification(item)
@@ -43,6 +42,80 @@ def to_snapshot(source: Model | View) -> Snapshot:
         ),
     )
     return Snapshot(schema_version=SCHEMA_VERSION, records=records)
+
+
+def _graph_closure(
+    source: Model | View,
+) -> tuple[tuple[Entity, ...], tuple[Relationship, ...]]:
+    if isinstance(source, Model):
+        return source.entities(), source.relationships()
+    if not isinstance(source, View):
+        raise TypeError("source must be a Model or View")
+
+    model = source.model
+    entity_ids: set[str] = set()
+    relationship_ids: set[str] = set()
+    pending_entities = list(source.entity_ids)
+    pending_relationships = list(source.relationship_ids)
+
+    while pending_entities or pending_relationships:
+        if pending_entities:
+            entity_id = pending_entities.pop()
+            if entity_id in entity_ids:
+                continue
+            entity_ids.add(entity_id)
+            entity = model.entity(entity_id)
+            if isinstance(entity, Assembly):
+                pending_entities.extend(item.entity_id for item in entity.entities)
+                pending_relationships.extend(
+                    item.relationship_id for item in entity.relationships
+                )
+            continue
+
+        relationship_id = pending_relationships.pop()
+        if relationship_id in relationship_ids:
+            continue
+        relationship_ids.add(relationship_id)
+        relationship = model.relationship(relationship_id)
+        pending_entities.extend((relationship.source_id, relationship.target_id))
+
+    return (
+        tuple(entity for entity in model.entities() if entity.entity_id in entity_ids),
+        tuple(
+            relationship
+            for relationship in model.relationships()
+            if relationship.relationship_id in relationship_ids
+        ),
+    )
+
+
+def _classification_closure(
+    entities: Iterable[Entity],
+    relationships: Iterable[Relationship],
+) -> tuple[Classification, ...]:
+    by_key: dict[tuple[str | None, str], Classification] = {}
+
+    def add(classification: Classification | None) -> None:
+        if classification is None:
+            return
+        root = classification.root()
+        for term in (root, *root.descendants()):
+            existing = by_key.get(term.key)
+            if existing is not None and existing is not term:
+                raise SnapshotError(f"different Classifications share key {term.key!r}")
+            by_key[term.key] = term
+
+    for entity in entities:
+        add(entity.classification)
+        for classifications in entity.occupancy.values():
+            for classification in classifications:
+                add(classification)
+    for relationship in relationships:
+        add(relationship.classification)
+        for classifications in relationship.characteristics.occupancy.values():
+            for classification in classifications:
+                add(classification)
+    return tuple(by_key.values())
 
 
 def from_snapshot(
