@@ -1,6 +1,7 @@
 import datetime
 
 import networkx as nx
+import pint
 import pytest
 
 import rangekeeper as rk
@@ -116,7 +117,7 @@ def test_record_and_snapshot_are_deeply_read_only():
 def test_model_snapshot_contains_only_neutral_records_and_stable_references():
     model = materialized_model()
 
-    snapshot = materialization.snapshot(model)
+    snapshot = materialization.to_snapshot(model)
 
     assert snapshot.schema_version == 1
     assert {record.record_type for record in snapshot.records} == {
@@ -151,12 +152,12 @@ def test_model_snapshot_contains_only_neutral_records_and_stable_references():
 
 def test_model_snapshot_round_trip_preserves_domain_structure_and_values():
     original = materialized_model()
-    snapshot = materialization.snapshot(original)
+    snapshot = materialization.to_snapshot(original)
 
-    restored = materialization.restore(snapshot)
+    restored = rk.graph.Model.from_snapshot(snapshot)
 
     assert restored.validate().is_valid
-    assert materialization.snapshot(restored) == snapshot
+    assert materialization.to_snapshot(restored) == snapshot
     assert isinstance(restored.entity("property"), rk.graph.Assembly)
     assert isinstance(restored.entity("level"), rk.graph.Assembly)
     assert type(restored.entity("office")) is rk.graph.Entity
@@ -199,11 +200,28 @@ def test_model_snapshot_round_trip_preserves_domain_structure_and_values():
     assert office.measures[office_measure].magnitude == 10_000
 
 
+def test_model_from_snapshot_uses_the_supplied_unit_registry():
+    registry = pint.UnitRegistry()
+    registry.define("squaremeter = 1 m**2 = m2 = sqm")
+    registry.define("squarefoot = 1 foot**2 = ft2 = sqft")
+
+    restored = rk.graph.Model.from_snapshot(
+        materialization.to_snapshot(materialized_model()),
+        registry=registry,
+    )
+
+    office = restored.entity("office")
+    measure = next(iter(office.measures))
+    assert measure.units._REGISTRY is registry
+    assert office.measures[measure]._REGISTRY is registry
+    assert office.features["allowance"]._REGISTRY is registry
+
+
 def test_view_snapshot_expands_assembly_references_without_networkx_state():
     model = materialized_model()
     root_only = model.view(predicate=lambda entity: entity.entity_id == "property")
 
-    restored = materialization.restore(materialization.snapshot(root_only))
+    restored = rk.graph.Model.from_snapshot(materialization.to_snapshot(root_only))
 
     assert {entity.entity_id for entity in restored.entities()} == {
         "property",
@@ -223,7 +241,7 @@ def test_view_snapshot_of_plain_entity_remains_scoped():
     model = materialized_model()
     office_only = model.view(predicate=lambda entity: entity.entity_id == "office")
 
-    restored = materialization.restore(materialization.snapshot(office_only))
+    restored = rk.graph.Model.from_snapshot(materialization.to_snapshot(office_only))
 
     assert tuple(entity.entity_id for entity in restored.entities()) == ("office",)
     assert restored.relationships() == ()
@@ -238,7 +256,7 @@ def test_unsupported_feature_reports_owner_feature_and_type():
         materialization.UnsupportedValueError,
         match=r"entity 'office' feature 'runtime'.*object",
     ):
-        materialization.snapshot(model)
+        materialization.to_snapshot(model)
 
 
 def test_non_string_feature_mapping_keys_are_rejected_precisely():
@@ -249,11 +267,11 @@ def test_non_string_feature_mapping_keys_are_rejected_precisely():
         materialization.UnsupportedValueError,
         match="mapping key type int",
     ):
-        materialization.snapshot(model)
+        materialization.to_snapshot(model)
 
 
-def test_restore_rejects_dangling_relationship_references():
-    snapshot = materialization.snapshot(materialized_model())
+def test_model_from_snapshot_rejects_dangling_relationship_references():
+    snapshot = materialization.to_snapshot(materialized_model())
     records = []
     for record in snapshot.records:
         if record.identifier == "level-office":
@@ -271,14 +289,18 @@ def test_restore_rejects_dangling_relationship_references():
     )
 
     with pytest.raises(materialization.SnapshotError, match="missing Entity"):
-        materialization.restore(malformed)
+        rk.graph.Model.from_snapshot(malformed)
 
 
-def test_restore_rejects_unknown_schema_and_record_types():
+def test_model_from_snapshot_rejects_invalid_inputs():
+    with pytest.raises(TypeError, match="snapshot must be a Snapshot"):
+        rk.graph.Model.from_snapshot(object())
     with pytest.raises(materialization.SnapshotError, match="schema version"):
-        materialization.restore(materialization.Snapshot(schema_version=2, records=()))
+        rk.graph.Model.from_snapshot(
+            materialization.Snapshot(schema_version=2, records=())
+        )
     with pytest.raises(materialization.SnapshotError, match="unknown record type"):
-        materialization.restore(
+        rk.graph.Model.from_snapshot(
             materialization.Snapshot(
                 schema_version=1,
                 records=(

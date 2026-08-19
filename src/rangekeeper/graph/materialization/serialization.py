@@ -13,14 +13,54 @@ from ..entity import Entity
 from ..model import Model
 from ..provenance import Provenance
 from ..relationship import Relationship
+from ..view import View
 from .errors import SnapshotError
 from .fields import Fields
-from .record import Record
+from .record import Record, Snapshot
+from .selection import required_classifications, select_source
 from .value import decode_value
 
 
+SCHEMA_VERSION = 1
+RECORD_TYPES = frozenset({"classification", "entity", "assembly", "relationship"})
+
+
+def to_snapshot(source: Model | View) -> Snapshot:
+    entities, relationships = select_source(source)
+    classifications = required_classifications(entities, relationships)
+    records = (
+        *(
+            Record.from_classification(item)
+            for item in sorted(classifications, key=Record.classification_id)
+        ),
+        *(
+            Record.from_entity(item)
+            for item in sorted(entities, key=lambda item: item.entity_id)
+        ),
+        *(
+            Record.from_relationship(item)
+            for item in sorted(relationships, key=lambda item: item.relationship_id)
+        ),
+    )
+    return Snapshot(schema_version=SCHEMA_VERSION, records=records)
+
+
+def from_snapshot(
+    snapshot: Snapshot,
+    *,
+    registry: pint.UnitRegistry,
+) -> Model:
+    if not isinstance(snapshot, Snapshot):
+        raise TypeError("snapshot must be a Snapshot")
+    if snapshot.schema_version != SCHEMA_VERSION:
+        raise SnapshotError(
+            f"unsupported Snapshot schema version {snapshot.schema_version}"
+        )
+    return _Deserializer(registry).to_model(snapshot.records)
+
+
 @dataclass
-class RestoreContext:
+class _Deserializer:
     registry: pint.UnitRegistry
     classifications: dict[str, Classification] = field(default_factory=dict)
     measures: dict[str, Measure] = field(default_factory=dict)
@@ -28,7 +68,31 @@ class RestoreContext:
     relationships: dict[str, Relationship] = field(default_factory=dict)
     assembly_records: dict[str, Record] = field(default_factory=dict)
 
-    def load_classifications(self, records: Iterable[Record]) -> None:
+    def to_model(self, records: Iterable[Record]) -> Model:
+        by_type = self._partition(records)
+        self._load_classifications(by_type["classification"])
+        for record in (*by_type["entity"], *by_type["assembly"]):
+            self._add_entity(record)
+        for record in by_type["relationship"]:
+            self._add_relationship(record)
+        self._populate_assemblies()
+        return self._build_model()
+
+    @staticmethod
+    def _partition(records: Iterable[Record]) -> dict[str, list[Record]]:
+        by_type: dict[str, list[Record]] = {
+            record_type: [] for record_type in RECORD_TYPES
+        }
+        for record in records:
+            try:
+                by_type[record.record_type].append(record)
+            except KeyError as error:
+                raise SnapshotError(
+                    f"unknown record type {record.record_type!r}"
+                ) from error
+        return by_type
+
+    def _load_classifications(self, records: Iterable[Record]) -> None:
         materialized = tuple(records)
         for record in materialized:
             fields = Fields(record.values, f"classification {record.identifier!r}")
@@ -72,7 +136,7 @@ class RestoreContext:
                     "match its scheme and code"
                 )
 
-    def add_entity(self, record: Record) -> None:
+    def _add_entity(self, record: Record) -> None:
         if record.identifier in self.entities:
             raise SnapshotError(
                 f"duplicate Entity/Assembly identifier {record.identifier!r}"
@@ -85,19 +149,19 @@ class RestoreContext:
         entity = entity_type(
             entity_id=record.identifier,
             name=name,
-            classification=self.classification(
+            classification=self._classification(
                 fields.get("classification_id"), owner=fields.owner
             ),
-            characteristics=self.characteristics(
+            characteristics=self._characteristics(
                 fields.mapping("characteristics"), owner=fields.owner
             ),
-            provenance=self.provenance(fields.get("provenance"), owner=fields.owner),
+            provenance=self._provenance(fields.get("provenance"), owner=fields.owner),
         )
         self.entities[record.identifier] = entity
         if isinstance(entity, Assembly):
             self.assembly_records[record.identifier] = record
 
-    def add_relationship(self, record: Record) -> None:
+    def _add_relationship(self, record: Record) -> None:
         fields = Fields(record.values, f"relationship {record.identifier!r}")
         source_id = fields.text("source_id")
         target_id = fields.text("target_id")
@@ -106,7 +170,7 @@ class RestoreContext:
                 raise SnapshotError(
                     f"{fields.owner} references missing Entity {endpoint!r}"
                 )
-        classification = self.classification(
+        classification = self._classification(
             fields.required("classification_id"),
             owner=fields.owner,
             required=True,
@@ -117,13 +181,13 @@ class RestoreContext:
             target_id=target_id,
             classification=classification,
             relationship_id=record.identifier,
-            characteristics=self.characteristics(
+            characteristics=self._characteristics(
                 fields.mapping("characteristics"), owner=fields.owner
             ),
-            provenance=self.provenance(fields.get("provenance"), owner=fields.owner),
+            provenance=self._provenance(fields.get("provenance"), owner=fields.owner),
         )
 
-    def populate_assemblies(self) -> None:
+    def _populate_assemblies(self) -> None:
         for assembly_id, record in self.assembly_records.items():
             assembly = self.entities[assembly_id]
             assert isinstance(assembly, Assembly)
@@ -146,7 +210,7 @@ class RestoreContext:
                     f"{fields.owner} contents are invalid: {error}"
                 ) from error
 
-    def build_model(self) -> Model:
+    def _build_model(self) -> Model:
         model = Model()
         try:
             model.add_entities(self.entities.values())
@@ -159,7 +223,7 @@ class RestoreContext:
             raise SnapshotError(f"restored Model is invalid: {messages}")
         return model
 
-    def classification(
+    def _classification(
         self,
         identifier: object,
         *,
@@ -179,7 +243,7 @@ class RestoreContext:
                 f"{owner} references missing Classification {identifier!r}"
             ) from error
 
-    def characteristics(
+    def _characteristics(
         self, encoded: Mapping[str, object], *, owner: str
     ) -> Characteristics:
         fields = Fields(encoded, owner)
@@ -192,7 +256,7 @@ class RestoreContext:
                     f"{owner} contains duplicate occupancy facet {facet!r}"
                 )
             values = tuple(
-                self.classification(identifier, owner=owner, required=True)
+                self._classification(identifier, owner=owner, required=True)
                 for identifier in item_fields.texts("classification_ids", unique=True)
             )
             assert all(value is not None for value in values)
@@ -254,7 +318,7 @@ class RestoreContext:
         )
 
     @staticmethod
-    def provenance(value: object, *, owner: str) -> Provenance | None:
+    def _provenance(value: object, *, owner: str) -> Provenance | None:
         if value is None:
             return None
         if not isinstance(value, Mapping):

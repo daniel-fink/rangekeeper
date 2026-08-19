@@ -5,5 +5,5 @@ from .errors import (
     UnsupportedValueError,
 )
 from .record import Record, Snapshot
-from .snapshot import restore, snapshot
+from .serialization import to_snapshot
 from .table import Table
