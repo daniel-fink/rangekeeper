@@ -603,7 +603,8 @@ class Model:
     ) -> dict[ClassificationKey, Classification]:
         staged: dict[ClassificationKey, Classification] = {}
         for classification in classifications:
-            for term in classification.lineage():
+            root = classification.root()
+            for term in (root, *root.descendants()):
                 existing = staged.get(term.key) or self._classifications.get(term.key)
                 if existing is not None and existing is not term:
                     raise IdentityConflictError(

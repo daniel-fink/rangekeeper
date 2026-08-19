@@ -15,3 +15,4 @@ from .provenance import Provenance
 from .relationship import Relationship
 from .validation import ValidationIssue, ValidationResult
 from .view import View
+from . import materialization as materialization
