@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable
+from typing import TYPE_CHECKING
 
 import networkx as nx
 
@@ -21,6 +22,12 @@ from .validation import ValidationIssue, ValidationResult
 from .view import View
 
 
+if TYPE_CHECKING:
+    import pint
+
+    from .materialization.record import Snapshot
+
+
 ClassificationKey = tuple[str | None, str]
 
 
@@ -32,6 +39,20 @@ class Model:
         self._entities: dict[str, Entity] = {}
         self._relationships: dict[str, Relationship] = {}
         self._classifications: dict[ClassificationKey, Classification] = {}
+
+    @staticmethod
+    def from_snapshot(
+        snapshot: Snapshot,
+        *,
+        registry: pint.UnitRegistry | None = None,
+    ) -> Model:
+        from ..measure import Index
+        from .materialization.serialization import from_snapshot as deserialize
+
+        return deserialize(
+            snapshot,
+            registry=Index.registry if registry is None else registry,
+        )
 
     def add_entity(self, entity: Entity) -> None:
         self.add_entities((entity,))
