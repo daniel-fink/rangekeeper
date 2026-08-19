@@ -8,12 +8,13 @@ from numbers import Integral, Real
 import pint
 
 from .errors import SnapshotError, UnsupportedValueError
+from .fields import Fields
 
 
-TYPE_KEY = "__rangekeeper_type__"
+_TYPE_KEY = "__rangekeeper_type__"
 
 
-def encode_value(value: object, *, path: str) -> object:
+def encode(value: object, *, path: str) -> object:
     if value is None or isinstance(value, (bool, str)):
         return value
     if isinstance(value, Integral):
@@ -26,28 +27,28 @@ def encode_value(value: object, *, path: str) -> object:
             )
         return number
     if isinstance(value, datetime.datetime):
-        return {TYPE_KEY: "datetime", "value": value.isoformat()}
+        return {_TYPE_KEY: "datetime", "value": value.isoformat()}
     if isinstance(value, datetime.date):
-        return {TYPE_KEY: "date", "value": value.isoformat()}
+        return {_TYPE_KEY: "date", "value": value.isoformat()}
     if isinstance(value, pint.Quantity):
         return {
-            TYPE_KEY: "quantity",
-            "magnitude": encode_value(value.magnitude, path=f"{path} magnitude"),
+            _TYPE_KEY: "quantity",
+            "magnitude": encode(value.magnitude, path=f"{path} magnitude"),
             "units": str(value.units),
         }
     if isinstance(value, tuple):
         return {
-            TYPE_KEY: "tuple",
+            _TYPE_KEY: "tuple",
             "items": tuple(
-                encode_value(item, path=f"{path}[{index}]")
+                encode(item, path=f"{path}[{index}]")
                 for index, item in enumerate(value)
             ),
         }
     if isinstance(value, list):
         return {
-            TYPE_KEY: "list",
+            _TYPE_KEY: "list",
             "items": tuple(
-                encode_value(item, path=f"{path}[{index}]")
+                encode(item, path=f"{path}[{index}]")
                 for index, item in enumerate(value)
             ),
         }
@@ -59,14 +60,14 @@ def encode_value(value: object, *, path: str) -> object:
                     f"{path} contains unsupported mapping key type "
                     f"{type(key).__name__}"
                 )
-            items.append((key, encode_value(item, path=f"{path}[{key!r}]")))
-        return {TYPE_KEY: "mapping", "items": tuple(items)}
+            items.append((key, encode(item, path=f"{path}[{key!r}]")))
+        return {_TYPE_KEY: "mapping", "items": tuple(items)}
     raise UnsupportedValueError(
         f"{path} has unsupported value type {type(value).__name__}"
     )
 
 
-def decode_value(
+def decode(
     value: object,
     *,
     registry: pint.UnitRegistry,
@@ -76,35 +77,36 @@ def decode_value(
         return value
     if not isinstance(value, Mapping):
         raise SnapshotError(f"{path} contains an invalid encoded value")
-    value_type = value.get(TYPE_KEY)
+    fields = Fields(value, path)
+    value_type = fields.get(_TYPE_KEY)
     if value_type == "datetime":
         try:
-            return datetime.datetime.fromisoformat(_string(value, "value", path))
+            return datetime.datetime.fromisoformat(fields.text("value"))
         except ValueError as error:
             raise SnapshotError(f"{path} contains an invalid datetime") from error
     if value_type == "date":
         try:
-            return datetime.date.fromisoformat(_string(value, "value", path))
+            return datetime.date.fromisoformat(fields.text("value"))
         except ValueError as error:
             raise SnapshotError(f"{path} contains an invalid date") from error
     if value_type == "quantity":
-        units = registry.parse_units(_string(value, "units", path))
-        magnitude = decode_value(
-            _required(value, "magnitude", path),
+        units = registry.parse_units(fields.text("units"))
+        magnitude = decode(
+            fields.required("magnitude"),
             registry=registry,
             path=f"{path} magnitude",
         )
         return magnitude * units
     if value_type in ("tuple", "list"):
-        items = _sequence(value, "items", path)
+        items = fields.sequence("items")
         decoded = [
-            decode_value(item, registry=registry, path=f"{path}[{index}]")
+            decode(item, registry=registry, path=f"{path}[{index}]")
             for index, item in enumerate(items)
         ]
         return tuple(decoded) if value_type == "tuple" else decoded
     if value_type == "mapping":
         decoded: dict[str, object] = {}
-        for index, pair in enumerate(_sequence(value, "items", path)):
+        for index, pair in enumerate(fields.sequence("items")):
             if not isinstance(pair, (list, tuple)) or len(pair) != 2:
                 raise SnapshotError(f"{path} mapping item {index} is invalid")
             key, item = pair
@@ -112,33 +114,10 @@ def decode_value(
                 raise SnapshotError(f"{path} mapping key must be a string")
             if key in decoded:
                 raise SnapshotError(f"{path} contains duplicate mapping key {key!r}")
-            decoded[key] = decode_value(
+            decoded[key] = decode(
                 item,
                 registry=registry,
                 path=f"{path}[{key!r}]",
             )
         return decoded
     raise SnapshotError(f"{path} contains unknown encoded value type {value_type!r}")
-
-
-def _required(mapping: Mapping[str, object], field: str, path: str) -> object:
-    try:
-        return mapping[field]
-    except KeyError as error:
-        raise SnapshotError(f"{path} is missing {field!r}") from error
-
-
-def _string(mapping: Mapping[str, object], field: str, path: str) -> str:
-    value = _required(mapping, field, path)
-    if not isinstance(value, str):
-        raise SnapshotError(f"{path} field {field!r} must be a string")
-    return value
-
-
-def _sequence(
-    mapping: Mapping[str, object], field: str, path: str
-) -> tuple[object, ...]:
-    value = _required(mapping, field, path)
-    if not isinstance(value, (list, tuple)):
-        raise SnapshotError(f"{path} field {field!r} must be a sequence")
-    return tuple(value)
