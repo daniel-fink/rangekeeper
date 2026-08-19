@@ -7,12 +7,6 @@ import pint
 from ...measure import Index
 from ..model import Model
 from ..view import View
-from .codec import (
-    classification_identifier,
-    classification_record,
-    entity_record,
-    relationship_record,
-)
 from .context import RestoreContext
 from .errors import SnapshotError
 from .record import Record, Snapshot
@@ -28,15 +22,15 @@ def snapshot(source: Model | View) -> Snapshot:
     classifications = required_classifications(entities, relationships)
     records = (
         *(
-            classification_record(item)
-            for item in sorted(classifications, key=classification_identifier)
+            Record.from_classification(item)
+            for item in sorted(classifications, key=Record.classification_id)
         ),
         *(
-            entity_record(item)
+            Record.from_entity(item)
             for item in sorted(entities, key=lambda item: item.entity_id)
         ),
         *(
-            relationship_record(item)
+            Record.from_relationship(item)
             for item in sorted(relationships, key=lambda item: item.relationship_id)
         ),
     )

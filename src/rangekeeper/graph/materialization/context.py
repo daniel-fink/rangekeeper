@@ -13,7 +13,6 @@ from ..entity import Entity
 from ..model import Model
 from ..provenance import Provenance
 from ..relationship import Relationship
-from .codec import classification_identifier
 from .errors import SnapshotError
 from .fields import Fields
 from .record import Record
@@ -67,7 +66,7 @@ class RestoreContext:
 
         for record in materialized:
             classification = self.classifications[record.identifier]
-            if classification_identifier(classification) != record.identifier:
+            if Record.classification_id(classification) != record.identifier:
                 raise SnapshotError(
                     f"classification identifier {record.identifier!r} does not "
                     "match its scheme and code"
