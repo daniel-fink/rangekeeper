@@ -237,6 +237,36 @@ def test_view_snapshot_expands_assembly_references_without_networkx_state():
     assert restored.validate().is_valid
 
 
+def test_relationship_selected_view_expands_an_assembly_endpoint_to_its_closure():
+    model = materialized_model()
+    linked_to = rk.graph.Classification(code="linked-to", name="Linked To")
+    external = rk.graph.Entity(entity_id="external")
+    model.add_entity(external)
+    model.relate(
+        external,
+        "property",
+        linked_to,
+        relationship_id="external-property",
+    )
+    view = model.view(relationship_classification=linked_to)
+
+    restored = rk.graph.Model.from_snapshot(materialization.to_snapshot(view))
+
+    assert {entity.entity_id for entity in restored.entities()} == {
+        "external",
+        "property",
+        "level",
+        "office",
+    }
+    assert {
+        relationship.relationship_id for relationship in restored.relationships()
+    } == {
+        "external-property",
+        "property-level",
+        "level-office",
+    }
+
+
 def test_view_snapshot_of_plain_entity_remains_scoped():
     model = materialized_model()
     office_only = model.view(predicate=lambda entity: entity.entity_id == "office")
