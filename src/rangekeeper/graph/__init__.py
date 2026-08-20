@@ -11,8 +11,15 @@ from .errors import (
     MissingRelationshipError,
 )
 from .model import Model
+from .registry import (
+    AssemblyRegistry,
+    EntityRegistry,
+    RelationshipRegistry,
+    TaxonomyRegistry,
+)
 from .provenance import Provenance
 from .relationship import Relationship
+from .taxonomy import Taxonomy
 from .validation import ValidationIssue, ValidationResult
 from .view import View
 from . import materialization as materialization

@@ -30,59 +30,61 @@ class TestCharacteristics:
     def test_module_is_public(self):
         assert rk.graph.characteristics.Characteristics is not None
 
-    def test_occupancy_accepts_multiple_classification_facets(self):
-        uses = rk.graph.Classification(
-            code="abs.fcb",
+    def test_labels_accept_multiple_classification_keys(self):
+        uses = rk.graph.Taxonomy(
+            code="ABS FCB",
             name="Functional Classification of Buildings",
-            scheme="ABS FCB",
-        )
+        ).define(code="abs.fcb", name="Building Uses")
         office = uses.define(code="231", name="Offices")
         retail = uses.define(code="233", name="Shops")
-        tenures = rk.graph.Classification(
-            code="abs.tend",
+        tenures = rk.graph.Taxonomy(
+            code="ABS TEND",
             name="Tenure Type",
-            scheme="ABS TEND",
-        )
+        ).define(code="abs.tend", name="Tenures")
         rented = tenures.define(code="4", name="Rented")
 
         characteristics = rk.graph.characteristics.Characteristics(
-            occupancy={"use": [office, retail], "tenure": (rented,)},
+            labels={"use": [office, retail], "tenure": (rented,)},
         )
 
-        assert characteristics.occupancy["use"] == (office, retail)
-        assert characteristics.occupancy["tenure"] == (rented,)
-        assert characteristics.occupancy["use"][0].scheme == "ABS FCB"
-        assert characteristics.occupancy["tenure"][0].scheme == "ABS TEND"
+        assert characteristics.labels["use"] == (office, retail)
+        assert characteristics.labels["tenure"] == (rented,)
+        assert characteristics.labels["use"][0].taxonomy.code == "ABS FCB"
+        assert characteristics.labels["tenure"][0].taxonomy.code == "ABS TEND"
 
-    @pytest.mark.parametrize("facet", ["", "   ", 1])
-    def test_occupancy_facet_is_a_non_empty_string(self, facet):
-        with pytest.raises((TypeError, ValueError), match="occupancy facet"):
-            rk.graph.Characteristics(occupancy={facet: ()})
+    @pytest.mark.parametrize("key", ["", "   ", 1])
+    def test_label_key_is_a_non_empty_string(self, key):
+        with pytest.raises((TypeError, ValueError), match="label key"):
+            rk.graph.Characteristics(labels={key: ()})
 
     @pytest.mark.parametrize("values", ["office", 1, ["office"]])
-    def test_occupancy_values_are_classification_iterables(self, values):
-        with pytest.raises(TypeError, match="occupancy values"):
-            rk.graph.Characteristics(occupancy={"use": values})
+    def test_label_values_are_classification_iterables(self, values):
+        with pytest.raises(TypeError, match="label values"):
+            rk.graph.Characteristics(labels={"use": values})
 
-    def test_occupancy_mapping_is_copied_and_values_are_normalized(self):
-        office = rk.graph.Classification(code="office", name="Office")
+    def test_labels_mapping_is_copied_and_values_are_normalized(self):
+        office = rk.graph.Taxonomy(code="project.use", name="Uses").define(
+            code="office", name="Office"
+        )
         supplied_values = [office]
         supplied = {"use": supplied_values}
 
-        characteristics = rk.graph.Characteristics(occupancy=supplied)
+        characteristics = rk.graph.Characteristics(labels=supplied)
         supplied.clear()
         supplied_values.clear()
 
-        assert characteristics.occupancy == {"use": (office,)}
+        assert characteristics.labels == {"use": (office,)}
 
-    def test_duplicate_scheme_aware_occupancy_keys_are_rejected(self):
-        first = rk.graph.Classification(code="231", name="Office", scheme="ABS FCB")
-        duplicate = rk.graph.Classification(
-            code="231", name="Offices", scheme="ABS FCB"
+    def test_duplicate_scheme_aware_label_keys_are_rejected(self):
+        first = rk.graph.Taxonomy(code="ABS FCB", name="Uses").define(
+            code="231", name="Office"
+        )
+        duplicate = rk.graph.Taxonomy(code="ABS FCB", name="Other Uses").define(
+            code="231", name="Offices"
         )
 
         with pytest.raises(ValueError, match="repeat"):
-            rk.graph.Characteristics(occupancy={"use": (first, duplicate)})
+            rk.graph.Characteristics(labels={"use": (first, duplicate)})
 
     def test_compatible_quantity_preserves_supplied_units(self):
         characteristics = rk.graph.characteristics.Characteristics()
@@ -140,9 +142,9 @@ class TestCharacteristics:
 
         first.set_measure(area_measure(), 100 * units.sqm)
         first.features["balcony"] = True
-        first.occupancy["use"] = ()
+        first.labels["use"] = ()
 
-        assert second.occupancy == {}
+        assert second.labels == {}
         assert second.measures == {}
         assert second.features == {}
 

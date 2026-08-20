@@ -5,7 +5,7 @@ import rangekeeper as rk
 
 
 def relationship_classification(code="relationship.contains"):
-    return rk.graph.Classification(code=code, name=code, scheme="project")
+    return rk.graph.Taxonomy(code=code, name=code).define(code=code, name=code)
 
 
 def tree_model(*, reverse=False):
@@ -14,13 +14,13 @@ def tree_model(*, reverse=False):
     leaf = rk.graph.Entity(entity_id="leaf", name="Leaf")
     contains = relationship_classification()
     model = rk.graph.Model()
-    model.add_entities((root, branch, leaf))
+    model.entities.add_all((root, branch, leaf))
     endpoints = (
         (("branch", "root"), ("leaf", "branch"))
         if reverse
         else (("root", "branch"), ("branch", "leaf"))
     )
-    model.add_relationships(
+    model.relationships.add_all(
         tuple(
             rk.graph.Relationship(
                 source,
@@ -40,7 +40,7 @@ def test_numeric_aggregation_is_pure_and_includes_zero():
     branch.features["gfa"] = 0
     leaf.features["gfa"] = 5
 
-    result = model.aggregate(view=model.view(), feature="gfa")
+    result = rk.graph.View(model).aggregate(feature="gfa")
 
     assert result == {"root": 15, "branch": 5, "leaf": 5}
     assert root.features == {"gfa": 10}
@@ -57,8 +57,8 @@ def test_missing_and_explicit_none_are_absent_but_zero_is_retained():
     none.features["value"] = None
     kind = relationship_classification()
     model = rk.graph.Model()
-    model.add_entities((root, zero, missing, none))
-    model.add_relationships(
+    model.entities.add_all((root, zero, missing, none))
+    model.relationships.add_all(
         tuple(
             rk.graph.Relationship(
                 "root", child.entity_id, kind, relationship_id=child.entity_id
@@ -67,7 +67,7 @@ def test_missing_and_explicit_none_are_absent_but_zero_is_retained():
         )
     )
 
-    result = model.aggregate(view=model.view(), feature="value")
+    result = rk.graph.View(model).aggregate(feature="value")
 
     assert result == {"root": 0, "zero": 0, "missing": None, "none": None}
 
@@ -79,7 +79,7 @@ def test_pint_quantities_use_default_numeric_aggregation():
     branch.features["area"] = 2 * units.sqm
     leaf.features["area"] = 30_000 * units.centimeter**2
 
-    result = model.aggregate(view=model.view(), feature="area")
+    result = rk.graph.View(model).aggregate(feature="area")
 
     assert result["root"].to(units.sqm).magnitude == pytest.approx(6)
     assert result["branch"].to(units.sqm).magnitude == pytest.approx(5)
@@ -90,24 +90,24 @@ def test_into_assignment_overwrites_only_after_success_and_is_idempotent():
     root.features["value"] = 1
     branch.features["value"] = 2
     leaf.features["value"] = 3
-    for entity in model.entities():
+    for entity in model.entities.all():
         entity.features["subtotal"] = -1
 
-    first = model.aggregate(view=model.view(), feature="value", into="subtotal")
-    second = model.aggregate(view=model.view(), feature="value", into="subtotal")
+    first = rk.graph.View(model).aggregate(feature="value", into="subtotal")
+    second = rk.graph.View(model).aggregate(feature="value", into="subtotal")
 
     assert first == second == {"root": 6, "branch": 5, "leaf": 3}
     assert root.features["subtotal"] == 6
     assert branch.features["subtotal"] == 5
     assert leaf.features["subtotal"] == 3
-    assert [entity.features["value"] for entity in model.entities()] == [1, 2, 3]
+    assert [entity.features["value"] for entity in model.entities.all()] == [1, 2, 3]
 
 
 def test_into_cannot_overwrite_the_source_feature():
     model, *_ = tree_model()
 
     with pytest.raises(rk.graph.InvalidAggregationError, match="must differ"):
-        model.aggregate(view=model.view(), feature="value", into="value")
+        rk.graph.View(model).aggregate(feature="value", into="value")
 
 
 @pytest.mark.parametrize(
@@ -122,7 +122,7 @@ def test_aggregation_request_types_are_validated(arguments, error, message):
     model, *_ = tree_model()
 
     with pytest.raises(error, match=message):
-        model.aggregate(view=model.view(), **arguments)
+        rk.graph.View(model).aggregate(**arguments)
 
 
 def test_callback_failure_does_not_partially_assign_results():
@@ -137,15 +137,14 @@ def test_callback_failure_does_not_partially_assign_results():
         return sum(values)
 
     with pytest.raises(RuntimeError, match="failed"):
-        model.aggregate(
-            view=model.view(),
+        rk.graph.View(model).aggregate(
             feature="value",
             into="subtotal",
             reduce=fail_at_root,
         )
 
     assert all(
-        entity.features["subtotal"] == "unchanged" for entity in model.entities()
+        entity.features["subtotal"] == "unchanged" for entity in model.entities.all()
     )
 
 
@@ -158,8 +157,8 @@ def test_custom_callback_receives_entity_and_ordered_values():
     right.features["value"] = "right"
     kind = relationship_classification()
     model = rk.graph.Model()
-    model.add_entities((root, left, right))
-    model.add_relationships(
+    model.entities.add_all((root, left, right))
+    model.relationships.add_all(
         (
             rk.graph.Relationship("root", "left", kind, relationship_id="left-edge"),
             rk.graph.Relationship("root", "right", kind, relationship_id="right-edge"),
@@ -171,19 +170,19 @@ def test_custom_callback_receives_entity_and_ordered_values():
         observed[entity.entity_id] = values
         return "+".join(values)
 
-    result = model.aggregate(view=model.view(), feature="value", reduce=collect)
+    result = rk.graph.View(model).aggregate(feature="value", reduce=collect)
 
     assert observed["left"] == ("left",)
     assert observed["root"] == ("root", "left", "right")
     assert result["root"] == "root+left+right"
 
 
-def test_default_aggregation_rejects_rich_values_with_guidance():
+def test_default_aggregation_rejects_values_that_cannot_be_summed():
     model, root, *_ = tree_model()
     root.features["value"] = {"amount": 1}
 
-    with pytest.raises(TypeError, match="provide reduce"):
-        model.aggregate(view=model.view(), feature="value")
+    with pytest.raises(TypeError):
+        rk.graph.View(model).aggregate(feature="value")
 
 
 def test_aggregation_follows_relationship_source_to_target_direction():
@@ -192,7 +191,7 @@ def test_aggregation_follows_relationship_source_to_target_direction():
     branch.features["value"] = 2
     leaf.features["value"] = 3
 
-    result = model.aggregate(view=model.view(), feature="value")
+    result = rk.graph.View(model).aggregate(feature="value")
 
     assert result == {"root": 1, "branch": 3, "leaf": 6}
 
@@ -200,30 +199,30 @@ def test_aggregation_follows_relationship_source_to_target_direction():
 def test_empty_cycle_and_multi_parent_views_are_rejected_precisely():
     empty_model = rk.graph.Model()
     with pytest.raises(rk.graph.InvalidAggregationError, match="empty View"):
-        empty_model.aggregate(view=empty_model.view(), feature="value")
+        rk.graph.View(empty_model).aggregate(feature="value")
 
     kind = relationship_classification()
     cycle_model = rk.graph.Model()
     cycle_entities = tuple(
         rk.graph.Entity(entity_id=entity_id) for entity_id in ("a", "b")
     )
-    cycle_model.add_entities(cycle_entities)
-    cycle_model.add_relationships(
+    cycle_model.entities.add_all(cycle_entities)
+    cycle_model.relationships.add_all(
         (
             rk.graph.Relationship("a", "b", kind, relationship_id="a-b"),
             rk.graph.Relationship("b", "a", kind, relationship_id="b-a"),
         )
     )
     with pytest.raises(rk.graph.InvalidAggregationError, match="arborescence"):
-        cycle_model.aggregate(view=cycle_model.view(), feature="value")
+        rk.graph.View(cycle_model).aggregate(feature="value")
 
     parent_model = rk.graph.Model()
     parents = tuple(
         rk.graph.Entity(entity_id=entity_id)
         for entity_id in ("first", "second", "child")
     )
-    parent_model.add_entities(parents)
-    parent_model.add_relationships(
+    parent_model.entities.add_all(parents)
+    parent_model.relationships.add_all(
         (
             rk.graph.Relationship(
                 "first", "child", kind, relationship_id="first-child"
@@ -234,15 +233,7 @@ def test_empty_cycle_and_multi_parent_views_are_rejected_precisely():
         )
     )
     with pytest.raises(rk.graph.InvalidAggregationError, match="arborescence"):
-        parent_model.aggregate(view=parent_model.view(), feature="value")
-
-
-def test_view_must_belong_to_the_aggregating_model():
-    first, *_ = tree_model()
-    second, *_ = tree_model()
-
-    with pytest.raises(rk.graph.InvalidAggregationError, match="different Model"):
-        first.aggregate(view=second.view(), feature="value")
+        rk.graph.View(parent_model).aggregate(feature="value")
 
 
 def test_relationship_filtered_overlay_can_be_aggregated():
@@ -251,16 +242,15 @@ def test_relationship_filtered_overlay_can_be_aggregated():
     branch.features["value"] = 2
     leaf.features["value"] = 3
     services = relationship_classification("relationship.services")
-    model.add_relationship(
+    model.relationships.add(
         rk.graph.Relationship("leaf", "root", services, relationship_id="services")
     )
 
     with pytest.raises(rk.graph.InvalidAggregationError, match="arborescence"):
-        model.aggregate(view=model.view(), feature="value")
+        rk.graph.View(model).aggregate(feature="value")
 
-    result = model.aggregate(
-        view=model.view(relationship_classification=contains),
-        feature="value",
+    result = rk.graph.View(model, relationship_classification=contains).aggregate(
+        feature="value"
     )
     assert result["root"] == 6
 
@@ -306,14 +296,12 @@ def test_stream_sum_can_reduce_flow_and_stream_features():
         )
         return stream.sum(name=stream.name)
 
-    first = model.aggregate(
-        view=model.view(),
+    first = rk.graph.View(model).aggregate(
         feature="cashflow",
         into="subtotal_cashflow",
         reduce=sum_flux,
     )
-    second = model.aggregate(
-        view=model.view(),
+    second = rk.graph.View(model).aggregate(
         feature="cashflow",
         into="subtotal_cashflow",
         reduce=sum_flux,

@@ -22,7 +22,7 @@ ENTITY_FIELDS = frozenset(
         "entity_type",
         "classification_code",
         "classification_name",
-        "classification_scheme",
+        "classification_taxonomy",
     }
 )
 DEFAULT_ENTITY_FIELDS = (
@@ -72,7 +72,7 @@ class Table:
         view: View,
         *,
         fields: Iterable[str] = DEFAULT_ENTITY_FIELDS,
-        occupancy: Iterable[str] = (),
+        labels: Iterable[str] = (),
         measures: Mapping[Measure, pint.Unit | str | None] | None = None,
         features: Iterable[str] = (),
     ) -> Table:
@@ -82,13 +82,13 @@ class Table:
         unknown_fields = set(selected_fields).difference(ENTITY_FIELDS)
         if unknown_fields:
             raise TableError(f"unknown entity fields: {sorted(unknown_fields)}")
-        facets = _validated_names(occupancy, "occupancy")
+        label_keys = _validated_names(labels, "labels")
         feature_names = _validated_names(features, "features")
         measure_columns = _measure_columns(measures)
 
         columns = (
             *selected_fields,
-            *(f"occupancy.{facet}" for facet in facets),
+            *(f"labels.{key}" for key in label_keys),
             *(column for _, _, column in measure_columns),
             *(f"feature.{name}" for name in feature_names),
         )
@@ -98,10 +98,9 @@ class Table:
         rows = []
         for entity in view.entities():
             row = {field: _entity_field(entity, field) for field in selected_fields}
-            for facet in facets:
-                row[f"occupancy.{facet}"] = tuple(
-                    classification.key
-                    for classification in entity.occupancy.get(facet, ())
+            for key in label_keys:
+                row[f"labels.{key}"] = tuple(
+                    classification.key for classification in entity.labels.get(key, ())
                 )
             for measure, target_unit, column in measure_columns:
                 quantity = entity.characteristics.get_measure(measure)
@@ -211,6 +210,6 @@ def _entity_field(entity: Entity, field: str) -> object:
         return entity.classification.code if entity.classification else None
     if field == "classification_name":
         return entity.classification.name if entity.classification else None
-    if field == "classification_scheme":
-        return entity.classification.scheme if entity.classification else None
+    if field == "classification_taxonomy":
+        return entity.classification.taxonomy.code if entity.classification else None
     raise TableError(f"unknown entity field {field!r}")

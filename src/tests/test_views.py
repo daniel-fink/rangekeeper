@@ -8,21 +8,13 @@ import rangekeeper as rk
 
 @pytest.fixture
 def graph_fixture():
-    building_kind = rk.graph.Classification(
-        code="entity.building", name="Building", scheme="project"
-    )
-    space_kind = rk.graph.Classification(
-        code="entity.space", name="Space", scheme="project"
-    )
-    equipment_kind = rk.graph.Classification(
-        code="entity.equipment", name="Equipment", scheme="project"
-    )
-    contains = rk.graph.Classification(
-        code="relationship.contains", name="Contains", scheme="project"
-    )
-    services = rk.graph.Classification(
-        code="relationship.services", name="Services", scheme="project"
-    )
+    taxonomy = rk.graph.Taxonomy(code="project", name="Project")
+    root = taxonomy.define(code="project", name="Project")
+    building_kind = root.define(code="entity.building", name="Building")
+    space_kind = root.define(code="entity.space", name="Space")
+    equipment_kind = root.define(code="entity.equipment", name="Equipment")
+    contains = root.define(code="relationship.contains", name="Contains")
+    services = root.define(code="relationship.services", name="Services")
     building = rk.graph.Entity(
         entity_id="building", name="Building", classification=building_kind
     )
@@ -47,8 +39,8 @@ def graph_fixture():
         ),
     )
     model = rk.graph.Model()
-    model.add_entities((building, office, retail, plant))
-    model.add_relationships(relationships)
+    model.entities.add_all((building, office, retail, plant))
+    model.relationships.add_all(relationships)
     return {
         "model": model,
         "building": building,
@@ -64,18 +56,18 @@ def graph_fixture():
 def test_full_view_contains_the_complete_model(graph_fixture):
     model = graph_fixture["model"]
 
-    view = model.view()
+    view = rk.graph.View(model)
 
     assert rk.graph.view.View is rk.graph.View
-    assert view.entities() == model.entities()
-    assert view.relationships() == model.relationships()
+    assert view.entities() == model.entities.all()
+    assert view.relationships() == model.relationships.all()
 
 
 def test_entity_classification_and_predicate_filters(graph_fixture):
     model = graph_fixture["model"]
 
-    spaces = model.view(entity_classification="entity.space")
-    office = model.view(predicate=lambda entity: entity.name == "Office")
+    spaces = rk.graph.View(model, entity_classification="entity.space")
+    office = rk.graph.View(model, predicate=lambda entity: entity.name == "Office")
 
     assert set(spaces.entities()) == {
         graph_fixture["office"],
@@ -88,8 +80,12 @@ def test_entity_classification_and_predicate_filters(graph_fixture):
 def test_relationship_filter_selects_only_edges_and_their_endpoints(graph_fixture):
     model = graph_fixture["model"]
 
-    contains = model.view(relationship_classification=graph_fixture["contains"])
-    services = model.view(relationship_classification="project:relationship.services")
+    contains = rk.graph.View(
+        model, relationship_classification=graph_fixture["contains"]
+    )
+    services = rk.graph.View(
+        model, relationship_classification="project:relationship.services"
+    )
 
     assert set(contains.entity_ids) == {"building", "office", "retail"}
     assert set(contains.relationship_ids) == {
@@ -101,7 +97,9 @@ def test_relationship_filter_selects_only_edges_and_their_endpoints(graph_fixtur
 
 
 def test_assembly_view_contains_exact_direct_contents_not_nested_contents():
-    contains = rk.graph.Classification(code="relationship.contains", name="Contains")
+    contains = rk.graph.Taxonomy(
+        code="project.relationship", name="Relationship Types"
+    ).define(code="relationship.contains", name="Contains")
     leaf = rk.graph.Entity(entity_id="leaf")
     child = rk.graph.Assembly(entity_id="child", entities=(leaf,))
     root_edge = rk.graph.Relationship(
@@ -111,9 +109,9 @@ def test_assembly_view_contains_exact_direct_contents_not_nested_contents():
         entity_id="root", entities=(child,), relationships=(root_edge,)
     )
     model = rk.graph.Model()
-    model.add_assembly(root)
+    model.assemblies.add(root)
 
-    view = model.view(assembly="root")
+    view = rk.graph.View(model, assembly="root")
 
     assert view.entity_ids == frozenset({"root", "child"})
     assert view.relationship_ids == frozenset({"root-child"})
@@ -121,7 +119,7 @@ def test_assembly_view_contains_exact_direct_contents_not_nested_contents():
 
 
 def test_view_fields_are_frozen_and_ids_are_frozensets(graph_fixture):
-    view = graph_fixture["model"].view()
+    view = rk.graph.View(graph_fixture["model"])
 
     assert isinstance(view.entity_ids, frozenset)
     assert isinstance(view.relationship_ids, frozenset)
@@ -131,7 +129,7 @@ def test_view_fields_are_frozen_and_ids_are_frozensets(graph_fixture):
 
 def test_view_filter_is_scoped_to_the_existing_selection(graph_fixture):
     model = graph_fixture["model"]
-    contains = model.view(relationship_classification="relationship.contains")
+    contains = rk.graph.View(model, relationship_classification="relationship.contains")
 
     filtered = contains.filter(predicate=lambda entity: entity.name == "Office")
 
@@ -142,7 +140,7 @@ def test_view_filter_is_scoped_to_the_existing_selection(graph_fixture):
 
 def test_expand_adds_one_hop_with_direction_and_classification(graph_fixture):
     model = graph_fixture["model"]
-    office = model.view(predicate=lambda entity: entity.entity_id == "office")
+    office = rk.graph.View(model, predicate=lambda entity: entity.entity_id == "office")
 
     incoming_contains = office.expand(
         graph_fixture["contains"], outgoing=False, incoming=True
@@ -159,7 +157,7 @@ def test_expand_adds_one_hop_with_direction_and_classification(graph_fixture):
 
 def test_view_predecessors_and_successors_respect_selected_edges(graph_fixture):
     model = graph_fixture["model"]
-    contains = model.view(relationship_classification="relationship.contains")
+    contains = rk.graph.View(model, relationship_classification="relationship.contains")
 
     assert contains.predecessors("office") == (graph_fixture["building"],)
     assert set(contains.successors("building")) == {
@@ -171,13 +169,15 @@ def test_view_predecessors_and_successors_respect_selected_edges(graph_fixture):
 
 
 def test_roots_leaves_and_arborescence_for_a_tree():
-    contains = rk.graph.Classification(code="contains", name="Contains")
+    contains = rk.graph.Taxonomy(
+        code="project.relationship", name="Relationship Types"
+    ).define(code="contains", name="Contains")
     root = rk.graph.Entity(entity_id="root")
     left = rk.graph.Entity(entity_id="left")
     right = rk.graph.Entity(entity_id="right")
     model = rk.graph.Model()
-    model.add_entities((root, left, right))
-    model.add_relationships(
+    model.entities.add_all((root, left, right))
+    model.relationships.add_all(
         (
             rk.graph.Relationship(
                 "root", "left", contains, relationship_id="left-edge"
@@ -187,7 +187,7 @@ def test_roots_leaves_and_arborescence_for_a_tree():
             ),
         )
     )
-    view = model.view()
+    view = rk.graph.View(model)
 
     assert view.roots() == (root,)
     assert view.leaves() == (left, right)
@@ -195,13 +195,15 @@ def test_roots_leaves_and_arborescence_for_a_tree():
 
 
 def test_multi_parent_view_is_not_an_arborescence():
-    kind = rk.graph.Classification(code="contains", name="Contains")
+    kind = rk.graph.Taxonomy(
+        code="project.relationship", name="Relationship Types"
+    ).define(code="contains", name="Contains")
     first = rk.graph.Entity(entity_id="first")
     second = rk.graph.Entity(entity_id="second")
     child = rk.graph.Entity(entity_id="child")
     model = rk.graph.Model()
-    model.add_entities((first, second, child))
-    model.add_relationships(
+    model.entities.add_all((first, second, child))
+    model.relationships.add_all(
         (
             rk.graph.Relationship(
                 "first", "child", kind, relationship_id="first-child"
@@ -212,13 +214,13 @@ def test_multi_parent_view_is_not_an_arborescence():
         )
     )
 
-    assert not model.view().is_arborescence()
-    assert not rk.graph.Model().view().is_arborescence()
+    assert not rk.graph.View(model).is_arborescence()
+    assert not rk.graph.View(rk.graph.Model()).is_arborescence()
 
 
 def test_networkx_export_is_a_frozen_copy(graph_fixture):
     model = graph_fixture["model"]
-    view = model.view(relationship_classification="relationship.contains")
+    view = rk.graph.View(model, relationship_classification="relationship.contains")
 
     graph = view.to_networkx()
 
@@ -227,26 +229,32 @@ def test_networkx_export_is_a_frozen_copy(graph_fixture):
     assert graph.nodes["building"]["entity"] is graph_fixture["building"]
     with pytest.raises(nx.NetworkXError):
         graph.add_node("other")
-    assert "other" not in model.view().entity_ids
+    assert "other" not in rk.graph.View(model).entity_ids
 
 
 def test_direct_view_construction_validates_ids_and_endpoint_closure(graph_fixture):
     model = graph_fixture["model"]
 
     with pytest.raises(rk.graph.MissingEntityError):
-        rk.graph.View(model, frozenset({"missing"}), frozenset())
+        rk.graph.View(
+            model,
+            entity_ids=frozenset({"missing"}),
+            relationship_ids=frozenset(),
+        )
     with pytest.raises(ValueError, match="endpoint outside"):
         rk.graph.View(
             model,
-            frozenset({"building"}),
-            frozenset({"contains-office"}),
+            entity_ids=frozenset({"building"}),
+            relationship_ids=frozenset({"contains-office"}),
         )
+    with pytest.raises(ValueError, match="supplied together"):
+        rk.graph.View(model, entity_ids=frozenset({"building"}))
 
 
 def test_classification_filters_validate_types_even_for_empty_models():
     model = rk.graph.Model()
 
     with pytest.raises(TypeError, match="classification filter"):
-        model.view(entity_classification=1)
+        rk.graph.View(model, entity_classification=1)
     with pytest.raises(TypeError, match="classification filter"):
-        model.view().expand(relationship=1)
+        rk.graph.View(model).expand(relationship=1)

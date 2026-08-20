@@ -4,7 +4,9 @@ import rangekeeper as rk
 def valid_model():
     source = rk.graph.Entity(entity_id="source")
     target = rk.graph.Entity(entity_id="target")
-    classification = rk.graph.Classification(code="connects", name="Connects")
+    classification = rk.graph.Taxonomy(
+        code="project.relationship", name="Relationship Types"
+    ).define(code="connects", name="Connects")
     relationship = rk.graph.Relationship(
         "source", "target", classification, relationship_id="relationship"
     )
@@ -14,7 +16,7 @@ def valid_model():
         relationships=(relationship,),
     )
     model = rk.graph.Model()
-    model.add_assembly(assembly)
+    model.assemblies.add(assembly)
     return model, assembly, source, target, relationship
 
 
@@ -48,7 +50,7 @@ def test_validation_reports_multiple_registry_and_graph_violations():
     assert "edge.key" in codes
     assert "edge.endpoints" in codes
     assert "relationship.edge_missing" in codes
-    assert model.entity("source") is source
+    assert model.entities["source"] is source
 
 
 def test_validation_reports_noncanonical_assembly_contents():
@@ -60,7 +62,7 @@ def test_validation_reports_noncanonical_assembly_contents():
     codes = {issue.code for issue in result.issues}
 
     assert "assembly.canonical_entity" in codes
-    assert model.relationship("relationship") is relationship
+    assert model.relationships["relationship"] is relationship
 
 
 def test_validation_survives_malformed_private_assembly_state():

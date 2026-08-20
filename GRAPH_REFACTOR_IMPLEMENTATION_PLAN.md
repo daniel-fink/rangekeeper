@@ -201,19 +201,18 @@ Do not use Speckle `id` as the Rangekeeper entity identity.
 Rename the concept and implementation directly. Do not retain a public `Kind`
 alias.
 
-The class represents one classification term in a hierarchy. It retains:
+`Classification` represents one term owned by a `Taxonomy`. It retains:
 
 - immutable code;
 - name;
 - optional definition;
-- optional scheme;
-- parent/child hierarchy behavior;
-- cycle prevention;
-- hierarchy-local code uniqueness;
-- record conversion.
+- a read-only owning Taxonomy;
+- thin hierarchy-query delegates.
 
-Classification identity must be scheme-aware or use namespaced codes so that
-codes from unrelated schemes cannot collide.
+`Taxonomy` owns the NetworkX hierarchy, enforces one root and taxonomy-local
+code uniqueness, and freezes when registered by a Model. Classification
+identity is `(taxonomy.code, classification.code)` so codes from unrelated
+taxonomies cannot collide.
 
 Classifications do **not** have `Characteristics`.
 
@@ -241,12 +240,12 @@ Use:
 ```python
 @dataclass
 class Characteristics:
-    occupancy: dict[str, tuple[Classification, ...]]
+    labels: dict[str, tuple[Classification, ...]]
     measures: dict[Measure, pint.Quantity]
     features: dict[str, object]
 ```
 
-- `occupancy` generalizes `use`, `tenure`, occupancy status, and occupant type.
+- `labels` generalizes `use`, `tenure`, occupancy status, and occupant type.
 - `measures` retains the existing validated `Measure -> Quantity` behavior.
 - call the remaining dictionary `features`, not `properties` or `utility`.
 - keep `features` open-ended in the engine. The notebooks attach `Flow`,
@@ -259,7 +258,7 @@ Provide deliberate convenience properties on Entity:
 ```python
 entity.features
 entity.measures
-entity.occupancy
+entity.labels
 ```
 
 Do not preserve Base-style arbitrary `entity["..."]` lookup as a compatibility
@@ -315,8 +314,8 @@ class Relationship:
     provenance: Provenance | None
 ```
 
-The ergonomic `Model.relate()` method accepts either Entity instances or IDs,
-resolves and validates them, and stores IDs.
+The ergonomic `model.relationships.connect()` method accepts either Entity
+instances or IDs, resolves and validates them, and stores IDs.
 
 ### 9. Assembly semantics
 
@@ -360,10 +359,10 @@ Assemblies must still use a visited set as defensive protection.
 
 Model is the mutation and validation boundary after registration. Assembly
 constructor inputs are copied, public collection properties are read-only, and
-Model methods update registered Assembly contents atomically. Direct collection
-mutation must not bypass Model validation.
+the model-bound `model.assemblies` service updates registered Assembly contents
+atomically. Direct collection mutation must not bypass Model validation.
 
-`Model.add_assembly(assembly)` atomically registers the Assembly, recursively
+`model.assemblies.add(assembly)` atomically registers the Assembly, recursively
 registers any contained Assemblies and their contents, and registers its other
 contained Entities and Relationships. An Assembly can also participate as an
 endpoint in arbitrary classified Relationships; those Relationships describe
@@ -407,13 +406,11 @@ never create an Assembly implicitly.
 
 Call the hierarchical graph operation `aggregate`, not `rollup`.
 
-Use either `Model.aggregate(...)` or a namespaced `rangekeeper.graph.aggregate`
-service consistently. The public notebook-facing form should be concise, for
-example:
+Expose aggregation on `View`, which already owns both the selected graph and its
+Model. The public notebook-facing form should be concise, for example:
 
 ```python
-model.aggregate(
-    view=spatial_containment,
+spatial_containment.aggregate(
     feature="gfa",
     into="subtotal_gfa",
 )
@@ -488,29 +485,41 @@ module count is reduced.
 
 ## Domain pseudocode
 
-### Classification
+### Taxonomy and Classification
 
-Adapt the current well-tested `Kind` implementation rather than rewriting its
-hierarchy algorithms from scratch.
+Use NetworkX once, inside Taxonomy, rather than maintaining synchronized parent
+and child references on every Classification.
 
 ```python
-class Classification:
+class Taxonomy:
     def __init__(
         self,
         code: str,
         name: str,
         definition: str | None = None,
-        *,
-        scheme: str | None = None,
-        parent: Classification | None = None,
-        children: Iterable[Classification] | None = None,
     ) -> None:
         ...
 
     @property
     def code(self) -> str: ...
+    def define(
+        self,
+        *,
+        code: str,
+        name: str,
+        definition: str | None = None,
+        parent: Classification | None = None,
+    ) -> Classification: ...
+    def classifications(self) -> tuple[Classification, ...]: ...
+    def freeze(self) -> None: ...
+
+class Classification:
     @property
-    def scheme(self) -> str | None: ...
+    def taxonomy(self) -> Taxonomy: ...
+    @property
+    def code(self) -> str: ...
+    @property
+    def key(self) -> tuple[str, str]: ...
     @property
     def parent(self) -> Classification | None: ...
     @property
@@ -519,13 +528,12 @@ class Classification:
     def ancestors(self) -> tuple[Classification, ...]: ...
     def descendants(self) -> tuple[Classification, ...]: ...
     def find(self, code: str) -> Classification | None: ...
-    def to_record(self) -> dict[str, object]: ...
-    @classmethod
-    def from_records(cls, records: Iterable[Mapping[str, object]]) -> tuple[Classification, ...]: ...
 ```
 
-Keep code immutable. Name/definition mutability may remain as currently
-designed unless tests establish otherwise.
+Construct Classifications through `Taxonomy.define()`. Keep taxonomy and
+classification codes immutable. Name/definition mutability may remain unless
+tests establish otherwise. Materialization, not the domain classes, owns record
+conversion.
 
 ### Entity and Assembly
 
@@ -555,8 +563,8 @@ class Entity:
         return self.characteristics.measures
 
     @property
-    def occupancy(self) -> dict[str, tuple[Classification, ...]]:
-        return self.characteristics.occupancy
+    def labels(self) -> dict[str, tuple[Classification, ...]]:
+        return self.characteristics.labels
 
 
 @dataclass(eq=False)
@@ -617,114 +625,79 @@ behind Model's back.
 
 ### Model
 
+Model owns graph state and atomic transactions. Its public graph API is grouped
+into stable, read-only service properties. Registry services do not own
+independent dictionaries and cannot mutate state except through Model's private
+transaction kernel.
+
 ```python
 class Model:
     def __init__(self) -> None:
         self._graph = nx.MultiDiGraph()
-        self._classifications: dict[str, Classification] = {}
+        self._entities: dict[str, Entity] = {}
+        self._relationships: dict[str, Relationship] = {}
+        self._taxonomies: dict[str, Taxonomy] = {}
+        self._classifications: dict[tuple[str, str], Classification] = {}
 
-    def add_entity(self, entity: Entity) -> None: ...
-    def add_entities(self, entities: Iterable[Entity]) -> None: ...
+    @property
+    def entities(self) -> EntityRegistry: ...
 
-    def add_relationship(self, relationship: Relationship) -> None: ...
-    def add_relationships(self, relationships: Iterable[Relationship]) -> None: ...
+    @property
+    def relationships(self) -> RelationshipRegistry: ...
 
-    def relate(
-        self,
-        source: Entity | str,
-        target: Entity | str,
-        classification: Classification,
-        *,
-        characteristics: Characteristics | None = None,
-        provenance: Provenance | None = None,
-        relationship_id: str | None = None,
-    ) -> Relationship: ...
+    @property
+    def assemblies(self) -> AssemblyRegistry: ...
 
-    def add_assembly(self, assembly: Assembly) -> None: ...
-
-    def add_to_assembly(
-        self,
-        assembly: Assembly | str,
-        *,
-        entities: Iterable[Entity | str] = (),
-        relationships: Iterable[Relationship | str] = (),
-    ) -> None: ...
-
-    def remove_from_assembly(
-        self,
-        assembly: Assembly | str,
-        *,
-        entities: Iterable[Entity | str] = (),
-        relationships: Iterable[Relationship | str] = (),
-    ) -> None: ...
-
-    def entity(self, entity_id: str) -> Entity: ...
-    def relationship(self, relationship_id: str) -> Relationship: ...
-    def entities(self) -> tuple[Entity, ...]: ...
-    def relationships(self) -> tuple[Relationship, ...]: ...
-    def assemblies(self) -> tuple[Assembly, ...]: ...
-
-    def assembly_entities(
-        self,
-        assembly: Assembly | str,
-    ) -> tuple[Entity, ...]: ...
-
-    def assembly_relationships(
-        self,
-        assembly: Assembly | str,
-    ) -> tuple[Relationship, ...]: ...
-
-    def assemblies_of_entity(
-        self,
-        entity: Entity | str,
-    ) -> tuple[Assembly, ...]: ...
-
-    def assemblies_of_relationship(
-        self,
-        relationship: Relationship | str,
-    ) -> tuple[Assembly, ...]: ...
-
-    def predecessors(
-        self,
-        entity: Entity | str,
-        relationship: Classification | str | None = None,
-    ) -> tuple[Entity, ...]: ...
-
-    def successors(
-        self,
-        entity: Entity | str,
-        relationship: Classification | str | None = None,
-    ) -> tuple[Entity, ...]: ...
-
-    def view(
-        self,
-        *,
-        entity_classification: Classification | str | None = None,
-        relationship_classification: Classification | str | None = None,
-        assembly: Assembly | str | None = None,
-        predicate: Callable[[Entity], bool] | None = None,
-    ) -> View: ...
-
-    def aggregate(
-        self,
-        *,
-        view: View,
-        feature: str,
-        into: str | None = None,
-        function: Callable[..., object] | None = None,
-        outgoing: bool = True,
-    ) -> dict[str, object]: ...
+    @property
+    def taxonomies(self) -> TaxonomyRegistry: ...
 
     def validate(self) -> ValidationResult: ...
 ```
 
+The public services use a small consistent vocabulary:
+
+```python
+model.entities.add(entity)
+model.entities.add_all(entities)
+model.entities[entity_id]
+model.entities.get(entity_id)
+model.entities.all()
+
+model.relationships.add(relationship)
+model.relationships.add_all(relationships)
+model.relationships.connect(source, target, classification)
+
+model.assemblies.add(assembly)
+model.assemblies.include(assembly, entity, relationship)
+model.assemblies.exclude(assembly, entity, relationship)
+model.assemblies.containing(entity_or_relationship)
+
+model.taxonomies.add(taxonomy)
+View(model, ...)
+```
+
+`EntityRegistry`, `RelationshipRegistry`, `AssemblyRegistry`, and
+`TaxonomyRegistry` are model-bound registry facades. Views are immutable derived
+values constructed directly with `View(model, ...)`; they are not registered
+objects and do not require a model-bound factory. No service exposes
+`__setitem__`, `__delitem__`, or object deletion.
+
+Assembly targets may be an Assembly or assembly ID. Positional members passed
+to `include()` and `exclude()` must be Entity or Relationship instances;
+strings are rejected because their registry is ambiguous. Exclusion removes
+only membership and leaves the objects registered with Model.
+
+Taxonomy registration adopts the complete Taxonomy, registers all of its
+Classifications, and freezes it. Classifications are accessed through their
+owning Taxonomy rather than a separate public Model registry.
+
 Avoid an overly clever fluent query language in this refactor. Add only the
 query arguments exercised by tests and notebooks.
 
-`add_assembly()` validates and registers the Assembly, its contained Entities,
-and its contained Relationships as one atomic operation. Assembly-scoped View
-selection includes the Assembly itself plus exactly its contained entities and
-relationships. `add_to_assembly()` and `remove_from_assembly()` validate the
+`model.assemblies.add()` validates and registers the Assembly, its contained
+Entities, and its contained Relationships as one atomic operation.
+Assembly-scoped View selection includes the Assembly itself plus exactly its
+contained entities and relationships. `include()` and `exclude()` validate the
 complete proposed result before modifying either the Assembly or Model.
 
 ### View
@@ -745,6 +718,13 @@ class View:
     def roots(self) -> tuple[Entity, ...]: ...
     def leaves(self) -> tuple[Entity, ...]: ...
     def is_arborescence(self) -> bool: ...
+    def aggregate(
+        self,
+        *,
+        feature: str,
+        into: str | None = None,
+        reduce: AggregationCallback | None = None,
+    ) -> dict[str, object]: ...
 ```
 
 If a NetworkX representation is required for an advanced external algorithm,
@@ -797,6 +777,7 @@ class Record:
 Initial record types:
 
 ```text
+taxonomy
 classification
 entity
 assembly
@@ -830,7 +811,7 @@ Snapshot must preserve:
 - each Assembly's contained entity and relationship ID sets;
 - IDs;
 - names;
-- classifications and hierarchy references;
+- taxonomies, classifications, and hierarchy references;
 - Characteristics;
 - Relationship endpoints;
 - Provenance;
@@ -856,7 +837,7 @@ Projection owns:
 
 - row grain;
 - selected entity fields;
-- selected occupancy facets;
+- selected label keys;
 - selected measures and target units;
 - selected features;
 - relationship-derived parent/child columns;
@@ -885,22 +866,22 @@ Inbound conversion of the existing demo design:
 ```text
 Speckle entityId          -> Entity.entity_id
 Speckle name              -> Entity.name
-Speckle entity type       -> Classification in a legacy entity-type scheme
+Speckle entity type       -> Classification in a legacy entity-type Taxonomy
 Speckle Assembly type     -> Assembly structural type
-Speckle relationship type -> Classification in a legacy relationship scheme
+Speckle relationship type -> Classification in a legacy relationship Taxonomy
 other dynamic members     -> Characteristics.features
-known use/tenure members  -> Characteristics.occupancy when safe to interpret
+known use/tenure members  -> Characteristics.labels when safe to interpret
 applicationId/id/context  -> Provenance identifiers
 ```
 
-Do not guess a sourced Classification scheme when the source supplies only a
-free string. Use explicit adapter-owned legacy schemes such as:
+Do not guess a sourced Taxonomy when the source supplies only a free string.
+Use explicit adapter-owned legacy Taxonomy codes such as:
 
 ```text
 legacy.entity_type
 legacy.relationship_type
-legacy.occupancy.use
-legacy.occupancy.tenure
+legacy.labels.use
+legacy.labels.tenure
 ```
 
 The current Speckle data contains repeated logical entities where an Assembly
@@ -1027,19 +1008,19 @@ Direct migration map:
 |---|---|
 | `rk.api.Speckle.parse()` | internal to `graph.adapter.speckle.load()` |
 | `rk.api.Speckle.to_rk()` | `graph.adapter.speckle.load()` |
-| `property.filter_by_type(...)` | `model.view(...)` |
-| `entity.get_relatives(...)` | `model.successors()` / `model.predecessors()` |
-| `property.get_entities()` | `model.entities()` |
+| `property.filter_by_type(...)` | `View(model, ...)` |
+| `entity.get_relatives(...)` | `model.entities.successors()` / `model.entities.predecessors()` |
+| `property.get_entities()` | `model.entities.all()` |
 | `filtered.get_entities()` | `view.entities()` |
 | `property.get_roots()` | `view.roots()` |
 | `nx.is_arborescence(view.graph)` | `view.is_arborescence()` |
-| `property.aggregate(...)` | `model.aggregate(...)` |
+| `property.aggregate(...)` | `view.aggregate(...)` |
 | `assembly.to_DataFrame()` | projection to Table, then pandas adapter |
 | `assembly.plot()` | visualization adapter |
 | `assembly.sunburst()` | hierarchy Table plus visualization adapter |
 | `assembly.treemap()` | hierarchy Table plus visualization adapter |
 | `entity["gfa"]` | `entity.features["gfa"]` |
-| `entity["use"]` | occupancy Classification code/name, or a documented legacy feature during import |
+| `entity["use"]` | label Classification code/name, or a documented legacy feature during import |
 
 Preserve the notebooks' teaching narrative and cell order where practical.
 Edit notebooks through `nbformat` or Jupyter tooling, not raw global JSON
@@ -1104,8 +1085,8 @@ lost.
 3. Rename `test_kinds.py` to `test_classifications.py`.
 4. Preserve and expand hierarchy tests.
 5. Implement minimal Provenance and tests.
-6. Update Characteristics to use `occupancy`, `measures`, and `features`.
-7. Migrate current use/tenure tests to occupancy classifications.
+6. Update Characteristics to use `labels`, `measures`, and `features`.
+7. Migrate current use/tenure tests to label classifications.
 8. Implement Entity, Assembly, and Relationship without Speckle Base.
 9. Add immutable ID, equality, default-isolation, and validation tests.
 
@@ -1116,8 +1097,8 @@ NetworkX from Entity/Relationship modules.
 
 1. Implement Model with private `nx.MultiDiGraph`.
 2. Implement validated atomic entity and relationship insertion.
-3. Implement direct lookup and enumeration.
-4. Implement `relate()` accepting instance or ID endpoints.
+3. Implement model-bound registry lookup and enumeration.
+4. Implement `model.relationships.connect()` accepting instance or ID endpoints.
 5. Implement atomic Assembly insertion from contained Entity and Relationship
    sets, plus validated Assembly content mutation.
 6. Implement View selection by entity classification, relationship
@@ -1231,7 +1212,7 @@ notebooks.
 - Cycle rejection.
 - Record round trip.
 - Characteristics default isolation.
-- Occupancy type validation.
+- Label type validation.
 - Measure/quantity validation retained.
 - Features accept rich runtime values.
 - Provenance copies identifiers and validates strings.
@@ -1286,7 +1267,7 @@ notebooks.
 - Relationship endpoint reference preservation.
 - Classification hierarchy preservation.
 - Provenance preservation.
-- Occupancy, measures, features preservation for supported types.
+- Labels, measures, features preservation for supported types.
 - Unsupported feature produces precise error.
 - Model Snapshot round trip.
 - View Snapshot includes required endpoints/classifications.

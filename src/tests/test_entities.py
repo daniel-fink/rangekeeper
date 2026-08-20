@@ -4,11 +4,15 @@ import rangekeeper as rk
 
 
 def classification(code="building"):
-    return rk.graph.Classification(code=code, name=code.title())
+    return rk.graph.Taxonomy(code=f"project.{code}", name=code.title()).define(
+        code=code, name=code.title()
+    )
 
 
 def relationship_classification():
-    return rk.graph.Classification(code="relationship.contains", name="Contains")
+    return rk.graph.Taxonomy(
+        code="project.relationship", name="Relationship Types"
+    ).define(code="relationship.contains", name="Contains")
 
 
 def test_entity_is_a_plain_public_domain_class():
@@ -60,13 +64,13 @@ def test_entity_characteristics_defaults_and_convenience_properties():
     office = classification("office")
 
     first.features["balcony"] = True
-    first.occupancy["use"] = (office,)
+    first.labels["use"] = (office,)
 
     assert first.features is first.characteristics.features
     assert first.measures is first.characteristics.measures
-    assert first.occupancy is first.characteristics.occupancy
+    assert first.labels is first.characteristics.labels
     assert second.features == {}
-    assert second.occupancy == {}
+    assert second.labels == {}
 
 
 def test_entity_preserves_supplied_characteristics_and_provenance():

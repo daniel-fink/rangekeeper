@@ -13,6 +13,10 @@ def test_graph_package_exports_phase_one_domain_classes():
 def test_graph_package_exports_phase_two_model_types():
     assert rk.graph.Model.__module__ == "rangekeeper.graph.model"
     assert rk.graph.View.__module__ == "rangekeeper.graph.view"
+    assert rk.graph.EntityRegistry.__module__ == "rangekeeper.graph.registry"
+    assert rk.graph.RelationshipRegistry.__module__ == "rangekeeper.graph.registry"
+    assert rk.graph.AssemblyRegistry.__module__ == "rangekeeper.graph.registry"
+    assert rk.graph.TaxonomyRegistry.__module__ == "rangekeeper.graph.registry"
     assert rk.graph.ValidationResult.__module__ == ("rangekeeper.graph.validation")
 
 

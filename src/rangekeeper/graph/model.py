@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING
 
 import networkx as nx
 
-from .aggregation import AggregationCallback, aggregate_view
 from .assembly import Assembly
 from .characteristics import Characteristics
 from .classification import Classification
@@ -16,10 +15,17 @@ from .errors import (
     MissingEntityError,
     MissingRelationshipError,
 )
+from .registry import (
+    AssemblyMember,
+    AssemblyRegistry,
+    EntityRegistry,
+    RelationshipRegistry,
+    TaxonomyRegistry,
+)
 from .provenance import Provenance
 from .relationship import Relationship
+from .taxonomy import Taxonomy
 from .validation import ValidationIssue, ValidationResult
-from .view import View
 
 
 if TYPE_CHECKING:
@@ -28,7 +34,7 @@ if TYPE_CHECKING:
     from .materialization.record import Snapshot
 
 
-ClassificationKey = tuple[str | None, str]
+ClassificationKey = tuple[str, str]
 
 
 class Model:
@@ -38,7 +44,28 @@ class Model:
         self._graph = nx.MultiDiGraph()
         self._entities: dict[str, Entity] = {}
         self._relationships: dict[str, Relationship] = {}
+        self._taxonomies: dict[str, Taxonomy] = {}
         self._classifications: dict[ClassificationKey, Classification] = {}
+        self._entity_registry = EntityRegistry(self)
+        self._relationship_registry = RelationshipRegistry(self)
+        self._assembly_registry = AssemblyRegistry(self)
+        self._taxonomy_registry = TaxonomyRegistry(self)
+
+    @property
+    def entities(self) -> EntityRegistry:
+        return self._entity_registry
+
+    @property
+    def relationships(self) -> RelationshipRegistry:
+        return self._relationship_registry
+
+    @property
+    def assemblies(self) -> AssemblyRegistry:
+        return self._assembly_registry
+
+    @property
+    def taxonomies(self) -> TaxonomyRegistry:
+        return self._taxonomy_registry
 
     @staticmethod
     def from_snapshot(
@@ -54,10 +81,7 @@ class Model:
             registry=Index.registry if registry is None else registry,
         )
 
-    def add_entity(self, entity: Entity) -> None:
-        self.add_entities((entity,))
-
-    def add_entities(self, entities: Iterable[Entity]) -> None:
+    def _add_entities(self, entities: Iterable[Entity]) -> tuple[Entity, ...]:
         materialized = list(entities)
         supplied: dict[str, Entity] = {}
         assemblies: list[Assembly] = []
@@ -82,19 +106,25 @@ class Model:
             staged_relationships,
             staged_classifications,
         )
+        return tuple(self._entities[entity.entity_id] for entity in materialized)
 
-    def add_relationship(self, relationship: Relationship) -> None:
-        self.add_relationships((relationship,))
-
-    def add_relationships(self, relationships: Iterable[Relationship]) -> None:
-        staged_relationships = self._stage_relationships(relationships)
+    def _add_relationships(
+        self,
+        relationships: Iterable[Relationship],
+    ) -> tuple[Relationship, ...]:
+        materialized = list(relationships)
+        staged_relationships = self._stage_relationships(materialized)
         self._validate_relationship_endpoints(staged_relationships.values(), set())
         staged_classifications = self._stage_classifications(
             self._relationship_classifications(staged_relationships.values())
         )
         self._commit({}, staged_relationships, staged_classifications)
+        return tuple(
+            self._relationships[relationship.relationship_id]
+            for relationship in materialized
+        )
 
-    def relate(
+    def _connect(
         self,
         source: Entity | str,
         target: Entity | str,
@@ -114,76 +144,67 @@ class Model:
             characteristics=characteristics,
             provenance=provenance,
         )
-        self.add_relationship(relationship)
-        return relationship
+        return self._add_relationships((relationship,))[0]
 
-    def add_assembly(self, assembly: Assembly) -> None:
+    def _add_assembly(self, assembly: Assembly) -> Assembly:
         if not isinstance(assembly, Assembly):
             raise TypeError("assembly must be an Assembly")
-        self.add_entity(assembly)
+        return self._add_entities((assembly,))[0]
 
-    def add_to_assembly(
+    def _change_assembly(
         self,
         assembly: Assembly | str,
         *,
-        entities: Iterable[Entity | str] = (),
-        relationships: Iterable[Relationship | str] = (),
-    ) -> None:
+        include: Iterable[AssemblyMember] = (),
+        exclude: Iterable[AssemblyMember] = (),
+    ) -> Assembly:
         canonical_assembly = self._resolve_assembly(assembly)
-        supplied_entities = [self._resolve_or_stage_entity(item) for item in entities]
-        supplied_relationships = [
-            self._resolve_or_stage_relationship(item) for item in relationships
-        ]
-        proposed_entities, proposed_relationships = (
-            canonical_assembly._prepare_contents(
-                entities=(*canonical_assembly.entities, *supplied_entities),
-                relationships=(
-                    *canonical_assembly.relationships,
-                    *supplied_relationships,
-                ),
-            )
-        )
+        included_entities: list[Entity] = []
+        included_relationships: list[Relationship] = []
+        excluded_entities: set[Entity] = set()
+        excluded_relationships: set[Relationship] = set()
 
-        closure_entities, closure_relationships = self._collect_assembly_closure(
-            entity for entity in supplied_entities if isinstance(entity, Assembly)
-        )
-        for entity in supplied_entities:
-            self._insert_unique_entity(closure_entities, entity)
-        for relationship in supplied_relationships:
-            self._insert_unique_relationship(closure_relationships, relationship)
+        for member in include:
+            if isinstance(member, Entity):
+                included_entities.append(self._resolve_or_stage_entity(member))
+            elif isinstance(member, Relationship):
+                included_relationships.append(
+                    self._resolve_or_stage_relationship(member)
+                )
+            else:
+                raise TypeError(
+                    "assembly members must be Entity or Relationship instances"
+                )
+        for member in exclude:
+            if isinstance(member, Entity):
+                excluded_entities.add(self._resolve_entity(member))
+            elif isinstance(member, Relationship):
+                excluded_relationships.add(self._resolve_relationship(member))
+            else:
+                raise TypeError(
+                    "assembly members must be Entity or Relationship instances"
+                )
 
-        staged_entities, staged_relationships, staged_classifications = (
-            self._stage_graph_additions(
-                closure_entities.values(), closure_relationships.values()
-            )
-        )
-        self._commit(
-            staged_entities,
-            staged_relationships,
-            staged_classifications,
-        )
-        canonical_assembly._entities = proposed_entities
-        canonical_assembly._relationships = proposed_relationships
-
-    def remove_from_assembly(
-        self,
-        assembly: Assembly | str,
-        *,
-        entities: Iterable[Entity | str] = (),
-        relationships: Iterable[Relationship | str] = (),
-    ) -> None:
-        canonical_assembly = self._resolve_assembly(assembly)
-        removed_entities = {self._resolve_entity(item) for item in entities}
-        removed_relationships = {
-            self._resolve_relationship(item) for item in relationships
+        included_entity_ids = {entity.entity_id for entity in included_entities}
+        excluded_entity_ids = {entity.entity_id for entity in excluded_entities}
+        included_relationship_ids = {
+            relationship.relationship_id for relationship in included_relationships
         }
-        missing_entities = removed_entities.difference(canonical_assembly.entities)
+        excluded_relationship_ids = {
+            relationship.relationship_id for relationship in excluded_relationships
+        }
+        if included_entity_ids.intersection(excluded_entity_ids) or (
+            included_relationship_ids.intersection(excluded_relationship_ids)
+        ):
+            raise ValueError("assembly members cannot be both included and excluded")
+
+        missing_entities = excluded_entities.difference(canonical_assembly.entities)
         if missing_entities:
             missing = sorted(entity.entity_id for entity in missing_entities)
             raise InvalidAssemblyError(
                 f"entities are not direct Assembly contents: {', '.join(missing)}"
             )
-        missing_relationships = removed_relationships.difference(
+        missing_relationships = excluded_relationships.difference(
             canonical_assembly.relationships
         )
         if missing_relationships:
@@ -197,16 +218,50 @@ class Model:
 
         proposed_entities, proposed_relationships = (
             canonical_assembly._prepare_contents(
-                entities=canonical_assembly.entities.difference(removed_entities),
-                relationships=canonical_assembly.relationships.difference(
-                    removed_relationships
+                entities=(
+                    *canonical_assembly.entities.difference(excluded_entities),
+                    *included_entities,
+                ),
+                relationships=(
+                    *canonical_assembly.relationships.difference(
+                        excluded_relationships
+                    ),
+                    *included_relationships,
                 ),
             )
         )
+
+        closure_entities, closure_relationships = self._collect_assembly_closure(
+            entity for entity in included_entities if isinstance(entity, Assembly)
+        )
+        for entity in included_entities:
+            self._insert_unique_entity(closure_entities, entity)
+        for relationship in included_relationships:
+            self._insert_unique_relationship(closure_relationships, relationship)
+        staged_entities, staged_relationships, staged_classifications = (
+            self._stage_graph_additions(
+                closure_entities.values(), closure_relationships.values()
+            )
+        )
+        self._commit(
+            staged_entities,
+            staged_relationships,
+            staged_classifications,
+        )
         canonical_assembly._entities = proposed_entities
         canonical_assembly._relationships = proposed_relationships
+        return canonical_assembly
 
-    def entity(self, entity_id: str) -> Entity:
+    def _add_taxonomy(self, taxonomy: Taxonomy) -> Taxonomy:
+        if not isinstance(taxonomy, Taxonomy):
+            raise TypeError("taxonomy must be a Taxonomy")
+        if taxonomy.root is None:
+            raise ValueError("taxonomy must define a root before registration")
+        staged_classifications = self._stage_classifications(taxonomy.classifications())
+        self._commit({}, {}, staged_classifications)
+        return self._taxonomies[taxonomy.code]
+
+    def _entity(self, entity_id: str) -> Entity:
         if not isinstance(entity_id, str):
             raise TypeError("entity_id must be a string")
         try:
@@ -214,142 +269,13 @@ class Model:
         except KeyError as error:
             raise MissingEntityError(entity_id) from error
 
-    def relationship(self, relationship_id: str) -> Relationship:
+    def _relationship(self, relationship_id: str) -> Relationship:
         if not isinstance(relationship_id, str):
             raise TypeError("relationship_id must be a string")
         try:
             return self._relationships[relationship_id]
         except KeyError as error:
             raise MissingRelationshipError(relationship_id) from error
-
-    def entities(self) -> tuple[Entity, ...]:
-        return tuple(self._entities.values())
-
-    def relationships(self) -> tuple[Relationship, ...]:
-        return tuple(self._relationships.values())
-
-    def assemblies(self) -> tuple[Assembly, ...]:
-        return tuple(
-            entity for entity in self._entities.values() if isinstance(entity, Assembly)
-        )
-
-    def classifications(self) -> tuple[Classification, ...]:
-        return tuple(self._classifications.values())
-
-    def assembly_entities(self, assembly: Assembly | str) -> tuple[Entity, ...]:
-        canonical = self._resolve_assembly(assembly)
-        return tuple(sorted(canonical.entities, key=lambda entity: entity.entity_id))
-
-    def assembly_relationships(
-        self, assembly: Assembly | str
-    ) -> tuple[Relationship, ...]:
-        canonical = self._resolve_assembly(assembly)
-        return tuple(
-            sorted(
-                canonical.relationships,
-                key=lambda relationship: relationship.relationship_id,
-            )
-        )
-
-    def assemblies_of_entity(self, entity: Entity | str) -> tuple[Assembly, ...]:
-        canonical = self._resolve_entity(entity)
-        return tuple(
-            assembly for assembly in self.assemblies() if canonical in assembly.entities
-        )
-
-    def assemblies_of_relationship(
-        self, relationship: Relationship | str
-    ) -> tuple[Assembly, ...]:
-        canonical = self._resolve_relationship(relationship)
-        return tuple(
-            assembly
-            for assembly in self.assemblies()
-            if canonical in assembly.relationships
-        )
-
-    def predecessors(
-        self,
-        entity: Entity | str,
-        relationship: Classification | str | None = None,
-    ) -> tuple[Entity, ...]:
-        canonical = self._resolve_entity(entity)
-        return self._predecessors(
-            canonical.entity_id,
-            relationship,
-            entity_ids=frozenset(self._entities),
-            relationship_ids=frozenset(self._relationships),
-        )
-
-    def successors(
-        self,
-        entity: Entity | str,
-        relationship: Classification | str | None = None,
-    ) -> tuple[Entity, ...]:
-        canonical = self._resolve_entity(entity)
-        return self._successors(
-            canonical.entity_id,
-            relationship,
-            entity_ids=frozenset(self._entities),
-            relationship_ids=frozenset(self._relationships),
-        )
-
-    def view(
-        self,
-        *,
-        entity_classification: Classification | str | None = None,
-        relationship_classification: Classification | str | None = None,
-        assembly: Assembly | str | None = None,
-        predicate: Callable[[Entity], bool] | None = None,
-    ) -> View:
-        if assembly is None:
-            entity_ids = frozenset(self._entities)
-            relationship_ids = frozenset(self._relationships)
-        else:
-            canonical = self._resolve_assembly(assembly)
-            entity_ids = frozenset(
-                {
-                    canonical.entity_id,
-                    *(entity.entity_id for entity in canonical.entities),
-                }
-            )
-            relationship_ids = frozenset(
-                relationship.relationship_id for relationship in canonical.relationships
-            )
-        return self._filtered_view(
-            entity_ids=entity_ids,
-            relationship_ids=relationship_ids,
-            entity_classification=entity_classification,
-            relationship_classification=relationship_classification,
-            predicate=predicate,
-            preserve_entity_id=(
-                self._resolve_assembly(assembly).entity_id
-                if assembly is not None
-                else None
-            ),
-        )
-
-    def aggregate(
-        self,
-        *,
-        view: View,
-        feature: str,
-        into: str | None = None,
-        reduce: AggregationCallback | None = None,
-    ) -> dict[str, object]:
-        """Aggregate a feature bottom-up through a parent-to-child View.
-
-        Without ``reduce``, non-None numeric and Pint Quantity values are
-        added. A custom reducer receives the current entity and a tuple containing
-        its own value followed by its child aggregates. Results remain pure
-        unless ``into`` names a distinct destination feature.
-        """
-        return aggregate_view(
-            self,
-            view=view,
-            feature=feature,
-            into=into,
-            reduce=reduce,
-        )
 
     def validate(self) -> ValidationResult:
         issues: list[ValidationIssue] = []
@@ -498,7 +424,7 @@ class Model:
                     f"relationship {relationship_id!r} has no matching graph edge",
                 )
 
-        for assembly in self.assemblies():
+        for assembly in self.assemblies.all():
             try:
                 assembly._prepare_contents(
                     entities=assembly.entities,
@@ -553,6 +479,46 @@ class Model:
                     "classification.registry_key",
                     f"classification registry key {key!r} does not match its Classification",
                 )
+            elif (
+                self._taxonomies.get(classification.taxonomy.code)
+                is not classification.taxonomy
+            ):
+                self._issue(
+                    issues,
+                    "classification.canonical_taxonomy",
+                    f"classification {key!r} belongs to a non-canonical Taxonomy",
+                )
+
+        for code, taxonomy in self._taxonomies.items():
+            if not isinstance(taxonomy, Taxonomy):
+                self._issue(
+                    issues,
+                    "taxonomy.type",
+                    f"taxonomy registry entry {code!r} is not a Taxonomy",
+                )
+            elif taxonomy.code != code:
+                self._issue(
+                    issues,
+                    "taxonomy.registry_key",
+                    f"taxonomy registry key {code!r} does not match its Taxonomy",
+                )
+            elif not taxonomy.is_frozen:
+                self._issue(
+                    issues,
+                    "taxonomy.mutable",
+                    f"taxonomy {code!r} is not frozen",
+                )
+            else:
+                for classification in taxonomy.classifications():
+                    if (
+                        self._classifications.get(classification.key)
+                        is not classification
+                    ):
+                        self._issue(
+                            issues,
+                            "taxonomy.canonical_classification",
+                            f"taxonomy {code!r} contains a non-canonical Classification",
+                        )
 
         return ValidationResult(tuple(issues))
 
@@ -621,9 +587,18 @@ class Model:
         self, classifications: Iterable[Classification]
     ) -> dict[ClassificationKey, Classification]:
         staged: dict[ClassificationKey, Classification] = {}
+        staged_taxonomies: dict[str, Taxonomy] = {}
         for classification in classifications:
-            root = classification.root()
-            for term in (root, *root.descendants()):
+            taxonomy = classification.taxonomy
+            existing_taxonomy = staged_taxonomies.get(taxonomy.code)
+            if existing_taxonomy is None:
+                existing_taxonomy = self._taxonomies.get(taxonomy.code)
+            if existing_taxonomy is not None and existing_taxonomy is not taxonomy:
+                raise IdentityConflictError(
+                    f"taxonomy code {taxonomy.code!r} belongs to another Taxonomy"
+                )
+            staged_taxonomies[taxonomy.code] = taxonomy
+            for term in taxonomy.classifications():
                 existing = staged.get(term.key) or self._classifications.get(term.key)
                 if existing is not None and existing is not term:
                     raise IdentityConflictError(
@@ -655,6 +630,10 @@ class Model:
         relationships: dict[str, Relationship],
         classifications: dict[ClassificationKey, Classification],
     ) -> None:
+        taxonomies = {
+            classification.taxonomy for classification in classifications.values()
+        }
+        self._taxonomies.update({taxonomy.code: taxonomy for taxonomy in taxonomies})
         self._classifications.update(classifications)
         for entity_id, entity in entities.items():
             self._entities[entity_id] = entity
@@ -667,6 +646,8 @@ class Model:
                 key=relationship_id,
                 relationship=relationship,
             )
+        for taxonomy in taxonomies:
+            taxonomy.freeze()
 
     def _collect_assembly_closure(
         self, assemblies: Iterable[Assembly]
@@ -728,10 +709,10 @@ class Model:
 
     def _resolve_entity(self, entity: Entity | str) -> Entity:
         if isinstance(entity, str):
-            return self.entity(entity)
+            return self._entity(entity)
         if not isinstance(entity, Entity):
             raise TypeError("entity must be an Entity or entity ID")
-        canonical = self.entity(entity.entity_id)
+        canonical = self._entity(entity.entity_id)
         if canonical is not entity:
             raise IdentityConflictError(
                 f"entity_id {entity.entity_id!r} belongs to another Entity"
@@ -740,7 +721,7 @@ class Model:
 
     def _resolve_or_stage_entity(self, entity: Entity | str) -> Entity:
         if isinstance(entity, str):
-            return self.entity(entity)
+            return self._entity(entity)
         if not isinstance(entity, Entity):
             raise TypeError("entity must be an Entity or entity ID")
         existing = self._entities.get(entity.entity_id)
@@ -752,10 +733,10 @@ class Model:
 
     def _resolve_relationship(self, relationship: Relationship | str) -> Relationship:
         if isinstance(relationship, str):
-            return self.relationship(relationship)
+            return self._relationship(relationship)
         if not isinstance(relationship, Relationship):
             raise TypeError("relationship must be a Relationship or relationship ID")
-        canonical = self.relationship(relationship.relationship_id)
+        canonical = self._relationship(relationship.relationship_id)
         if canonical is not relationship:
             raise IdentityConflictError(
                 "relationship_id "
@@ -767,7 +748,7 @@ class Model:
         self, relationship: Relationship | str
     ) -> Relationship:
         if isinstance(relationship, str):
-            return self.relationship(relationship)
+            return self._relationship(relationship)
         if not isinstance(relationship, Relationship):
             raise TypeError("relationship must be a Relationship or relationship ID")
         existing = self._relationships.get(relationship.relationship_id)
@@ -794,7 +775,7 @@ class Model:
                 classifications.append(entity.classification)
             classifications.extend(
                 classification
-                for values in entity.occupancy.values()
+                for values in entity.labels.values()
                 for classification in values
             )
         return tuple(classifications)
@@ -808,7 +789,7 @@ class Model:
             classifications.append(relationship.classification)
             classifications.extend(
                 classification
-                for values in relationship.characteristics.occupancy.values()
+                for values in relationship.characteristics.labels.values()
                 for classification in values
             )
         return tuple(classifications)
@@ -828,14 +809,10 @@ class Model:
             return False
         if isinstance(requested, Classification):
             return actual.key == requested.key
-        qualified_code = (
-            f"{actual.scheme}:{actual.code}"
-            if actual.scheme is not None
-            else actual.code
-        )
+        qualified_code = f"{actual.taxonomy.code}:{actual.code}"
         return requested in (actual.code, qualified_code)
 
-    def _filtered_view(
+    def _filter_view_ids(
         self,
         *,
         entity_ids: frozenset[str],
@@ -844,7 +821,7 @@ class Model:
         relationship_classification: Classification | str | None = None,
         predicate: Callable[[Entity], bool] | None = None,
         preserve_entity_id: str | None = None,
-    ) -> View:
+    ) -> tuple[frozenset[str], frozenset[str]]:
         self._classification_matches(None, entity_classification)
         self._classification_matches(None, relationship_classification)
         if predicate is not None and not callable(predicate):
@@ -888,10 +865,9 @@ class Model:
             if preserve_entity_id is not None and preserve_entity_id in entity_ids:
                 selected_entity_ids.add(preserve_entity_id)
 
-        return View(
-            model=self,
-            entity_ids=frozenset(selected_entity_ids),
-            relationship_ids=frozenset(selected_relationship_ids),
+        return (
+            frozenset(selected_entity_ids),
+            frozenset(selected_relationship_ids),
         )
 
     def _predecessors(

@@ -11,6 +11,7 @@ from ..classification import Classification
 from ..entity import Entity
 from ..provenance import Provenance
 from ..relationship import Relationship
+from ..taxonomy import Taxonomy
 from . import value as encoded_value
 from .errors import SnapshotError
 
@@ -49,17 +50,31 @@ class Record:
         return json.dumps(classification.key, ensure_ascii=False, separators=(",", ":"))
 
     @classmethod
+    def from_taxonomy(cls, taxonomy: Taxonomy) -> Record:
+        if not isinstance(taxonomy, Taxonomy):
+            raise TypeError("taxonomy must be a Taxonomy")
+        return cls(
+            record_type="taxonomy",
+            identifier=taxonomy.code,
+            values={
+                "code": taxonomy.code,
+                "name": taxonomy.name,
+                "definition": taxonomy.definition,
+            },
+        )
+
+    @classmethod
     def from_classification(cls, classification: Classification) -> Record:
         return cls(
             record_type="classification",
             identifier=cls.classification_id(classification),
             values={
+                "taxonomy": classification.taxonomy.code,
                 "code": classification.code,
                 "name": classification.name,
                 "definition": classification.definition,
-                "scheme": classification.scheme,
-                "parent_id": (
-                    cls.classification_id(classification.parent)
+                "parent_code": (
+                    classification.parent.code
                     if classification.parent is not None
                     else None
                 ),
@@ -143,15 +158,15 @@ def _encode_characteristics(
     *,
     owner: str,
 ) -> dict[str, object]:
-    occupancy = tuple(
+    labels = tuple(
         {
-            "facet": facet,
+            "key": key,
             "classification_ids": tuple(
                 Record.classification_id(classification)
                 for classification in classifications
             ),
         }
-        for facet, classifications in sorted(characteristics.occupancy.items())
+        for key, classifications in sorted(characteristics.labels.items())
     )
     measures = tuple(
         {
@@ -177,7 +192,7 @@ def _encode_characteristics(
             characteristics.features.items(), key=lambda item: item[0]
         )
     )
-    return {"occupancy": occupancy, "measures": measures, "features": features}
+    return {"labels": labels, "measures": measures, "features": features}
 
 
 def _encode_provenance(provenance: Provenance | None) -> object:
