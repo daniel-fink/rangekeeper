@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 import networkx as nx
 
-from .aggregation import AggregationFunction, aggregate_view
+from .aggregation import AggregationCallback, aggregate_view
 from .assembly import Assembly
 from .characteristics import Characteristics
 from .classification import Classification
@@ -334,23 +334,21 @@ class Model:
         view: View,
         feature: str,
         into: str | None = None,
-        function: AggregationFunction | None = None,
-        outgoing: bool = True,
+        reduce: AggregationCallback | None = None,
     ) -> dict[str, object]:
-        """Aggregate a feature bottom-up through an oriented arborescent View.
+        """Aggregate a feature bottom-up through a parent-to-child View.
 
-        Without ``function``, non-None numeric and Pint Quantity values are
-        added. A custom function receives keyword arguments ``entity``,
-        ``own_value``, and ordered ``child_values``. Results remain pure unless
-        ``into`` names a distinct destination feature.
+        Without ``reduce``, non-None numeric and Pint Quantity values are
+        added. A custom reducer receives the current entity and a tuple containing
+        its own value followed by its child aggregates. Results remain pure
+        unless ``into`` names a distinct destination feature.
         """
         return aggregate_view(
             self,
             view=view,
             feature=feature,
             into=into,
-            function=function,
-            outgoing=outgoing,
+            reduce=reduce,
         )
 
     def validate(self) -> ValidationResult:

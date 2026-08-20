@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from numbers import Number
-from typing import TYPE_CHECKING, Protocol
+from typing import TYPE_CHECKING
 
 import networkx as nx
 import pint
@@ -14,14 +15,7 @@ if TYPE_CHECKING:
     from .model import Model
 
 
-class AggregationFunction(Protocol):
-    def __call__(
-        self,
-        *,
-        entity: Entity,
-        own_value: object | None,
-        child_values: tuple[object, ...],
-    ) -> object: ...
+AggregationCallback = Callable[[Entity, tuple[object, ...]], object | None]
 
 
 def aggregate_view(
@@ -30,47 +24,46 @@ def aggregate_view(
     view: View,
     feature: str,
     into: str | None,
-    function: AggregationFunction | None,
-    outgoing: bool,
+    reduce: AggregationCallback | None,
 ) -> dict[str, object]:
-    """Aggregate one feature through an oriented arborescence.
+    """Aggregate one feature through a parent-to-child arborescence.
 
     Missing features and explicit ``None`` values both contribute no value.
-    Numeric zero is retained. A custom function is called with keyword arguments
-    ``entity``, ``own_value``, and ``child_values``.
+    Numeric zero is retained. A custom reducer receives the current entity and
+    its own value followed by the already-aggregated values of its children.
     """
     _validate_request(
         model=model,
         view=view,
         feature=feature,
         into=into,
-        function=function,
-        outgoing=outgoing,
+        reduce=reduce,
     )
 
     graph = view.to_networkx()
-    oriented = graph if outgoing else graph.reverse(copy=True)
-    if not nx.is_arborescence(oriented):
+    if not nx.is_arborescence(graph):
         raise InvalidAggregationError(
-            "aggregation requires the oriented View to be an arborescence; "
+            "aggregation requires the View to be a parent-to-child arborescence; "
             "filter it to one hierarchical relationship overlay"
         )
 
     results: dict[str, object] = {}
-    for entity_id in reversed(tuple(nx.topological_sort(oriented))):
+    for entity_id in reversed(tuple(nx.topological_sort(graph))):
         entity = model.entity(entity_id)
-        own_value = entity.features.get(feature)
-        child_values = tuple(
-            results[child_id] for child_id in oriented.successors(entity_id)
-        )
-        if function is None:
-            result = _sum_numeric_values((own_value, *child_values))
-        else:
-            result = function(
-                entity=entity,
-                own_value=own_value,
-                child_values=child_values,
+        values = tuple(
+            value
+            for value in (
+                entity.features.get(feature),
+                *(results[child_id] for child_id in graph.successors(entity_id)),
             )
+            if value is not None
+        )
+        if not values:
+            result = None
+        elif reduce is None:
+            result = _sum_numeric_values(values)
+        else:
+            result = reduce(entity, values)
         results[entity_id] = result
 
     entities = view.entities()
@@ -89,8 +82,7 @@ def _validate_request(
     view: View,
     feature: str,
     into: str | None,
-    function: AggregationFunction | None,
-    outgoing: bool,
+    reduce: AggregationCallback | None,
 ) -> None:
     if not isinstance(view, View):
         raise TypeError("view must be a View")
@@ -111,23 +103,18 @@ def _validate_request(
             raise InvalidAggregationError(
                 "into must differ from feature so repeated aggregation is idempotent"
             )
-    if function is not None and not callable(function):
-        raise TypeError("function must be callable or None")
-    if not isinstance(outgoing, bool):
-        raise TypeError("outgoing must be a bool")
+    if reduce is not None and not callable(reduce):
+        raise TypeError("reduce must be callable or None")
 
 
 def _sum_numeric_values(values: tuple[object, ...]) -> object:
-    available = tuple(value for value in values if value is not None)
-    if not available:
-        return None
-    for value in available:
+    for value in values:
         if not isinstance(value, (Number, pint.Quantity)):
             raise TypeError(
                 "default aggregation accepts only numeric or Pint Quantity values; "
-                "provide function for rich feature values"
+                "provide reduce for rich feature values"
             )
-    result = available[0]
-    for value in available[1:]:
+    result = values[0]
+    for value in values[1:]:
         result = result + value
     return result

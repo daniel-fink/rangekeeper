@@ -416,7 +416,6 @@ model.aggregate(
     view=spatial_containment,
     feature="gfa",
     into="subtotal_gfa",
-    function=sum,
 )
 ```
 
@@ -763,7 +762,7 @@ Algorithm:
 2. Reject an empty View with a clear error.
 3. For the initial implementation, require an arborescence. Supporting a DAG
    can follow only with an explicit shared-descendant counting policy.
-4. Determine edge direction from `outgoing`.
+4. Treat each Relationship's source-to-target direction as parent-to-child.
 5. Obtain a topological order and process it in reverse.
 6. For each entity, combine its own feature value with already-computed child
    aggregate values.
@@ -777,9 +776,9 @@ Default numeric behavior should include zero rather than filtering all falsey
 values. Missing values and explicit `None` need a documented policy.
 
 Custom aggregation must support the existing notebook's `Flow` and `Stream`
-values. Prefer a callback receiving explicit values rather than the current
-opaque `aggregation` dictionary if that improves clarity. Preserve meaningful
-names and frequencies when combining flux objects.
+values. A reducer receives the current Entity and a tuple containing its own
+non-None value followed by the already-aggregated values of its children.
+Preserve meaningful names and frequencies when combining flux objects.
 
 ## Materialization
 
