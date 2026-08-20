@@ -851,17 +851,23 @@ CSV and pandas adapters consume Table. They do not query Model directly.
 
 ### Speckle
 
-Required high-level API:
+Final high-level API:
 
 ```python
-load(base: specklepy.objects.Base, *, context: Mapping[str, str] | None = None) -> Model
+load(base: specklepy.objects.Base) -> Model
 dump(model_or_view: Model | View) -> specklepy.objects.Base
 ```
 
 It is acceptable for these to use lower-level `decode() -> Snapshot` and
 `encode(Snapshot) -> Base` functions internally.
 
-Inbound conversion of the existing demo design:
+In the final API, `load()` accepts only an explicit, versioned Rangekeeper
+Snapshot package. Phase 5 may temporarily auto-detect and import the existing
+demo design schema so that it can be converted, but that path is migration
+scaffolding rather than supported backwards compatibility. Phase 7 removes the
+fallback completely.
+
+Temporary inbound conversion of the existing demo design:
 
 ```text
 Speckle entityId          -> Entity.entity_id
@@ -895,6 +901,10 @@ tested merge rule:
 4. raise a typed conflict error for incompatible values;
 5. do not print warnings from library code; return diagnostics or use logging.
 
+These legacy Taxonomies and reconciliation rules exist only to perform the
+one-time conversion. They must not appear in the final package-only Speckle
+adapter after Phase 7.
+
 Outbound conversion must use explicit Base record types and reference endpoints
 by stable IDs. Never attach an `nx.MultiDiGraph` to a Base.
 
@@ -924,6 +934,12 @@ adapter.pandas.from_dataframe(frame) -> Table
 A normal CSV is a lossy table projection, not full graph persistence. A future
 multi-file graph CSV bundle is out of scope.
 
+The initial CSV contract writes only `None`, string, Boolean, integer, and
+finite floating-point cells, rejecting rich cells rather than stringifying
+them. Both directions compose through the pandas adapter, so CSV reading uses
+normal pandas type and missing-value inference. pandas conversion preserves
+in-memory cell objects and deliberately ignores the DataFrame index.
+
 ### Visualization
 
 This adapter is required because the two walkthroughs currently rely on:
@@ -936,11 +952,11 @@ Suggested surface:
 
 ```python
 adapter.visualization.graph_html(view, path, **layout_options)
-adapter.visualization.sunburst(hierarchy_table)
-adapter.visualization.treemap(hierarchy_table)
+adapter.visualization.sunburst(arborescence_table)
+adapter.visualization.treemap(arborescence_table)
 ```
 
-Visualization consumes View or materialized hierarchy Table, but PyVis, Plotly,
+Visualization consumes View or materialized arborescence Table, but PyVis, Plotly,
 pandas, and IPython must not remain imports of the core graph domain modules.
 
 ## Notebook compatibility inventory
@@ -959,27 +975,28 @@ The notebook currently exercises:
 - finding `buildingAresidential`;
 - PyVis graph HTML output.
 
-Migrate it to:
+The final migrated notebook loads the converted, versioned Rangekeeper package:
 
 ```python
-design = rk.graph.adapter.speckle.load(
-    root["@property"],
-    context={
-        "project_id": project.id,
-        "model_id": model.id,
-        "version_id": version.id,
-    },
-)
+package = operations.receive(obj_id=converted_object_id, remote_transport=transport)
+design = rk.graph.adapter.speckle.load(package)
 
 building_a = next(
-    entity for entity in design.entities() if entity.name == "buildingA"
+    entity for entity in design.entities.all() if entity.name == "buildingA"
 )
 
-building_a_containment = design.successors(
+building_a_containment = design.entities.successors(
     building_a,
     relationship="spatiallyContains",
 )
 ```
+
+During Phase 6 only, use the temporary importer to read the existing
+`root["@property"]`, immediately `dump()` the resulting Model as a versioned
+package, and publish that package to an explicitly authorized Speckle target or
+store it as a sanitized local fixture. Point both notebooks at the converted
+package before Phase 7 begins. Do not retain the conversion code in the final
+notebooks.
 
 Do not preserve the old synthetic root Assembly merely because the old parser
 returned an Assembly that owned the entire graph. The imported object graph is
@@ -1006,8 +1023,8 @@ Direct migration map:
 
 | Old API | New API |
 |---|---|
-| `rk.api.Speckle.parse()` | internal to `graph.adapter.speckle.load()` |
-| `rk.api.Speckle.to_rk()` | `graph.adapter.speckle.load()` |
+| `rk.api.Speckle.parse()` | one-time Phase 6 source conversion only; removed afterward |
+| `rk.api.Speckle.to_rk()` | `graph.adapter.speckle.load()` on the converted package |
 | `property.filter_by_type(...)` | `View(model, ...)` |
 | `entity.get_relatives(...)` | `model.entities.successors()` / `model.entities.predecessors()` |
 | `property.get_entities()` | `model.entities.all()` |
@@ -1017,10 +1034,10 @@ Direct migration map:
 | `property.aggregate(...)` | `view.aggregate(...)` |
 | `assembly.to_DataFrame()` | projection to Table, then pandas adapter |
 | `assembly.plot()` | visualization adapter |
-| `assembly.sunburst()` | hierarchy Table plus visualization adapter |
-| `assembly.treemap()` | hierarchy Table plus visualization adapter |
+| `assembly.sunburst()` | arborescence Table plus visualization adapter |
+| `assembly.treemap()` | arborescence Table plus visualization adapter |
 | `entity["gfa"]` | `entity.features["gfa"]` |
-| `entity["use"]` | label Classification code/name, or a documented legacy feature during import |
+| `entity["use"]` | label Classification code/name |
 
 Preserve the notebooks' teaching narrative and cell order where practical.
 Edit notebooks through `nbformat` or Jupyter tooling, not raw global JSON
@@ -1138,7 +1155,7 @@ Gate: GFA and flux aggregation behavior is deterministic and notebook-ready.
 Gate: a supported Model snapshot round-trips exactly; View projection produces
 the expected table rows and parent links.
 
-### Phase 5: adapters
+### Phase 5: adapters (complete)
 
 1. Implement JSON Snapshot round trip.
 2. Implement pandas Table conversion.
@@ -1155,37 +1172,56 @@ through pandas/CSV as defined.
 
 ### Phase 6: migrate walkthroughs
 
-1. Update `load_design.ipynb` to the new Speckle adapter, Model queries, and
-   visualization adapter.
-2. Add concise assertion cells for imported structure and `buildingA` traversal.
-3. Update `drive_model_from_design.ipynb` to View, Model aggregation,
+1. Use the temporary Speckle design importer once to convert the existing demo
+   design into an explicit, versioned Rangekeeper Snapshot package.
+2. Publish the converted package to an explicitly authorized Speckle target or
+   save a sanitized local fixture, and record no credentials in the repository.
+3. Verify the converted package round-trips to the expected Model, including
+   Assemblies, relationships, classifications, features, and provenance.
+4. Update `load_design.ipynb` to load only the converted package and use Model
+   queries and the visualization adapter.
+5. Add concise assertion cells for imported structure and `buildingA` traversal.
+6. Update `drive_model_from_design.ipynb` to View, Model aggregation,
    Characteristics access, Table/pandas projection, and visualization adapter.
-4. Preserve calculations and explanatory flow.
-5. Replace direct NetworkX access with View methods.
-6. Execute both notebooks top-to-bottom with local package code and
+7. Preserve calculations and explanatory flow.
+8. Replace direct NetworkX access with View methods.
+9. Remove all temporary conversion cells and legacy-source references from both
+   notebooks.
+10. Execute both notebooks top-to-bottom with local package code and
    `src/.env`.
-7. Compare numerical outputs with the regression anchors.
+11. Compare numerical outputs with the regression anchors.
 
-Gate: both notebooks execute successfully with no legacy graph calls.
+Gate: both notebooks execute successfully from the versioned Rangekeeper
+package with no legacy graph calls, legacy-source imports, or conversion code.
 
 ### Phase 7: remove legacy implementation
 
 After new code and notebooks work:
 
-1. Remove `rk.api.Speckle.parse()` and `to_rk()`.
-2. Remove Entity/Assembly inheritance from Speckle Base.
-3. Remove `Kind` and all old naming.
-4. Remove public Assembly NetworkX graph ownership and legacy graph mutation.
-5. Remove `filter_by_type()`, `get_entities()`, `get_entity()`,
+1. Remove the temporary Speckle design importer, including
+   `_LegacyImporter`, `_LegacyRepresentation`, auto-detection of unversioned
+   objects, duplicate old-entity reconciliation, and legacy feature mapping.
+2. Remove all `legacy.*` Taxonomy constants and construction.
+3. Remove synthetic legacy-import fixtures and tests; retain package round-trip
+   and malformed-package tests.
+4. Make `graph.adapter.speckle.load()` reject every object that is not an
+   explicit supported Rangekeeper package.
+5. Remove `rk.api.Speckle.parse()` and `to_rk()`.
+6. Remove Entity/Assembly inheritance from Speckle Base.
+7. Remove `Kind` and all old naming.
+8. Remove public Assembly NetworkX graph ownership and legacy graph mutation.
+9. Remove `filter_by_type()`, `get_entities()`, `get_entity()`,
    `get_relatives()`, and old root/leaf methods.
-6. Remove graph `to_dict()`/`to_DataFrame()` and visualization methods.
-7. Remove heavy visualization/pandas/IPython imports from core graph modules.
-8. Update `test_api.py`, `test_graph.py`, exports, README examples, and any
+10. Remove graph `to_dict()`/`to_DataFrame()` and visualization methods.
+11. Remove heavy visualization/pandas/IPython imports from core graph modules.
+12. Update `test_api.py`, `test_graph.py`, exports, README examples, and any
    other references found by `rg`.
-9. Do not add compatibility aliases or deprecation wrappers.
+13. Do not add compatibility aliases, fallback importers, or deprecation
+   wrappers.
 
-Gate: `rg` finds no unintended old API use in source, tests, or the two required
-notebooks.
+Gate: `rg` finds no unintended old API use, `legacy.*` Taxonomies, legacy
+Speckle import machinery, or backwards-compatibility paths in source, tests, or
+the two required notebooks.
 
 ### Phase 8: final verification and commits
 
