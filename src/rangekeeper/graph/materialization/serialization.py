@@ -347,7 +347,7 @@ class _Deserializer:
                 raise SnapshotError(f"{owner} measure definition is invalid")
             try:
                 candidate = Measure.from_record(measure_data, registry=self.registry)
-            except (TypeError, ValueError) as error:
+            except (TypeError, ValueError, pint.errors.PintError) as error:
                 raise SnapshotError(f"{owner} Measure is invalid: {error}") from error
             measure = self.measures.get(candidate.code)
             if measure is None:

@@ -125,7 +125,7 @@ class Snapshot:
     records: tuple[Record, ...]
 
     def __post_init__(self) -> None:
-        if not isinstance(self.schema_version, int):
+        if type(self.schema_version) is not int:
             raise TypeError("schema_version must be an integer")
         if self.schema_version < 1:
             raise ValueError("schema_version must be positive")

@@ -61,7 +61,7 @@ def encode(value: object, *, path: str) -> object:
                     f"{type(key).__name__}"
                 )
             items.append((key, encode(item, path=f"{path}[{key!r}]")))
-        return {_TYPE_KEY: "mapping", "items": tuple(items)}
+        return {_TYPE_KEY: "mapping", "items": tuple(sorted(items))}
     raise UnsupportedValueError(
         f"{path} has unsupported value type {type(value).__name__}"
     )
@@ -90,13 +90,22 @@ def decode(
         except ValueError as error:
             raise SnapshotError(f"{path} contains an invalid date") from error
     if value_type == "quantity":
-        units = registry.parse_units(fields.text("units"))
+        unit_name = fields.text("units")
+        try:
+            units = registry.parse_units(unit_name)
+        except pint.errors.PintError as error:
+            raise SnapshotError(
+                f"{path} contains invalid quantity units {unit_name!r}"
+            ) from error
         magnitude = decode(
             fields.required("magnitude"),
             registry=registry,
             path=f"{path} magnitude",
         )
-        return magnitude * units
+        try:
+            return magnitude * units
+        except (TypeError, ValueError, pint.errors.PintError) as error:
+            raise SnapshotError(f"{path} contains an invalid quantity") from error
     if value_type in ("tuple", "list"):
         items = fields.sequence("items")
         decoded = [

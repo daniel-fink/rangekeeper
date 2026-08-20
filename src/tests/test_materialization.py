@@ -5,6 +5,7 @@ import pint
 import pytest
 
 import rangekeeper as rk
+from rangekeeper.graph.materialization import value as encoded_value
 
 
 materialization = rk.graph.materialization
@@ -148,6 +149,29 @@ def test_model_snapshot_contains_only_neutral_records_and_stable_references():
         for record in snapshot.records
         for value in values(record.values)
     )
+
+
+def test_snapshot_encoding_canonicalizes_nested_mapping_order():
+    left = rk.graph.Model()
+    left.add_entity(
+        rk.graph.Entity(
+            entity_id="entity",
+            characteristics=rk.graph.Characteristics(
+                features={"mapping": {"a": 1, "b": 2}}
+            ),
+        )
+    )
+    right = rk.graph.Model()
+    right.add_entity(
+        rk.graph.Entity(
+            entity_id="entity",
+            characteristics=rk.graph.Characteristics(
+                features={"mapping": {"b": 2, "a": 1}}
+            ),
+        )
+    )
+
+    assert materialization.to_snapshot(left) == materialization.to_snapshot(right)
 
 
 def test_model_snapshot_round_trip_preserves_domain_structure_and_values():
@@ -322,7 +346,42 @@ def test_model_from_snapshot_rejects_dangling_relationship_references():
         rk.graph.Model.from_snapshot(malformed)
 
 
+def test_model_from_snapshot_wraps_invalid_measure_units():
+    snapshot = materialization.to_snapshot(materialized_model())
+    records = []
+    for record in snapshot.records:
+        if record.identifier == "office":
+            values = dict(record.values)
+            characteristics = dict(values["characteristics"])
+            measures = list(characteristics["measures"])
+            measure = dict(measures[0])
+            definition = dict(measure["measure"])
+            definition["items"] = tuple(
+                (key, "not_a_unit" if key == "units" else value)
+                for key, value in definition["items"]
+            )
+            measure["measure"] = definition
+            measures[0] = measure
+            characteristics["measures"] = tuple(measures)
+            values["characteristics"] = characteristics
+            record = materialization.Record(
+                record_type=record.record_type,
+                identifier=record.identifier,
+                values=values,
+            )
+        records.append(record)
+    malformed = materialization.Snapshot(
+        schema_version=snapshot.schema_version,
+        records=records,
+    )
+
+    with pytest.raises(materialization.SnapshotError, match="Measure is invalid"):
+        rk.graph.Model.from_snapshot(malformed)
+
+
 def test_model_from_snapshot_rejects_invalid_inputs():
+    with pytest.raises(TypeError, match="schema_version must be an integer"):
+        materialization.Snapshot(schema_version=True, records=())
     with pytest.raises(TypeError, match="snapshot must be a Snapshot"):
         rk.graph.Model.from_snapshot(object())
     with pytest.raises(materialization.SnapshotError, match="schema version"):
@@ -339,4 +398,17 @@ def test_model_from_snapshot_rejects_invalid_inputs():
                     ),
                 ),
             )
+        )
+
+
+def test_encoded_quantity_wraps_invalid_units_as_snapshot_error():
+    with pytest.raises(materialization.SnapshotError, match="quantity units"):
+        encoded_value.decode(
+            {
+                "__rangekeeper_type__": "quantity",
+                "magnitude": 1,
+                "units": "not_a_unit",
+            },
+            registry=pint.UnitRegistry(),
+            path="feature",
         )
