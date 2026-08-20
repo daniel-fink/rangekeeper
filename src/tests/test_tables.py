@@ -179,6 +179,172 @@ def test_feature_projection_preserves_rich_runtime_values():
     assert rows[office.entity_id]["feature.runtime"] is runtime_value
 
 
+def test_arborescence_projection_adds_parent_ids_and_uses_stable_preorder():
+    entity_kind = rk.graph.Taxonomy(code="project.entity", name="Entity Types").define(
+        code="entity", name="Entity"
+    )
+    contains = rk.graph.Taxonomy(
+        code="project.relationship", name="Relationship Types"
+    ).define(code="contains", name="Contains")
+    entities = tuple(
+        rk.graph.Entity(
+            entity_id=entity_id,
+            name=entity_id.title(),
+            classification=entity_kind,
+        )
+        for entity_id in ("root", "zulu", "alpha", "alpha-child")
+    )
+    model = rk.graph.Model()
+    model.entities.add_all(entities)
+    model.relationships.add_all(
+        (
+            rk.graph.Relationship(
+                "root", "zulu", contains, relationship_id="root-zulu"
+            ),
+            rk.graph.Relationship(
+                "root", "alpha", contains, relationship_id="root-alpha"
+            ),
+            rk.graph.Relationship(
+                "alpha",
+                "alpha-child",
+                contains,
+                relationship_id="alpha-child",
+            ),
+        )
+    )
+
+    table = materialization.Table.from_arborescence(
+        rk.graph.View(model), fields=("name", "entity_id")
+    )
+
+    assert table.columns == ("name", "entity_id", "parent_id")
+    assert table.column("entity_id") == (
+        "root",
+        "alpha",
+        "alpha-child",
+        "zulu",
+    )
+    assert table.column("parent_id") == (None, "root", "alpha", "root")
+
+
+def test_arborescence_projection_preserves_values_including_aggregates():
+    model, building, office, mixed, _, area = table_model()
+    office.features["area"] = 10
+    mixed.features["area"] = 20
+    view = rk.graph.View(model)
+    view.aggregate(feature="area", into="total_area")
+
+    table = materialization.Table.from_arborescence(
+        view,
+        fields=("entity_id", "name"),
+        labels=("use",),
+        measures={area: units.sqm},
+        features=("area", "total_area"),
+    )
+    rows = {row["entity_id"]: row for row in table.rows}
+
+    assert rows[building.entity_id]["parent_id"] is None
+    assert rows[office.entity_id]["parent_id"] == building.entity_id
+    assert rows[mixed.entity_id]["parent_id"] == building.entity_id
+    assert rows[building.entity_id]["feature.total_area"] == 30
+    assert rows[office.entity_id]["labels.use"] == (("ABS FCB", "231"),)
+    assert rows[building.entity_id]["measure.project.area [squaremeter]"] == 100
+
+
+def test_single_entity_is_an_arborescence_table():
+    model = rk.graph.Model()
+    model.entities.add(rk.graph.Entity(entity_id="only"))
+
+    table = materialization.Table.from_arborescence(rk.graph.View(model))
+
+    assert table.column("entity_id") == ("only",)
+    assert table.column("parent_id") == (None,)
+
+
+def test_arborescence_projection_rejects_invalid_views_and_missing_entity_id():
+    model, *_ = table_model()
+    view = rk.graph.View(model)
+
+    with pytest.raises(TypeError, match="view must be a View"):
+        materialization.Table.from_arborescence(model)
+    with pytest.raises(materialization.TableError, match="require.*entity_id"):
+        materialization.Table.from_arborescence(view, fields=("name",))
+
+    empty_view = rk.graph.View(rk.graph.Model())
+    with pytest.raises(materialization.TableError, match="non-empty"):
+        materialization.Table.from_arborescence(empty_view)
+
+    disconnected_model = rk.graph.Model()
+    disconnected_model.entities.add_all(
+        (
+            rk.graph.Entity(entity_id="first"),
+            rk.graph.Entity(entity_id="second"),
+        )
+    )
+    with pytest.raises(materialization.TableError, match="arborescence"):
+        materialization.Table.from_arborescence(rk.graph.View(disconnected_model))
+
+
+@pytest.mark.parametrize(
+    "edges",
+    (
+        (("first", "second"), ("second", "first")),
+        (("first", "child"), ("second", "child")),
+    ),
+)
+def test_arborescence_projection_rejects_cycles_and_multiple_parents(edges):
+    contains = rk.graph.Taxonomy(
+        code="project.relationship", name="Relationship Types"
+    ).define(code="contains", name="Contains")
+    entity_ids = {entity_id for edge in edges for entity_id in edge}
+    model = rk.graph.Model()
+    model.entities.add_all(
+        rk.graph.Entity(entity_id=entity_id) for entity_id in entity_ids
+    )
+    model.relationships.add_all(
+        rk.graph.Relationship(
+            source_id,
+            target_id,
+            contains,
+            relationship_id=f"{source_id}-{target_id}",
+        )
+        for source_id, target_id in edges
+    )
+
+    with pytest.raises(materialization.TableError, match="arborescence"):
+        materialization.Table.from_arborescence(rk.graph.View(model))
+
+
+def test_arborescence_projection_uses_only_relationships_selected_by_the_view():
+    relationship_types = rk.graph.Taxonomy(
+        code="project.relationship", name="Relationship Types"
+    )
+    relationship = relationship_types.define(code="relationship", name="Relationship")
+    contains = relationship.define(code="contains", name="Contains")
+    services = relationship.define(code="services", name="Services")
+    model = rk.graph.Model()
+    model.entities.add_all(
+        rk.graph.Entity(entity_id=entity_id)
+        for entity_id in ("root", "child", "external")
+    )
+    model.relationships.add_all(
+        (
+            rk.graph.Relationship(
+                "root", "child", contains, relationship_id="root-child"
+            ),
+            rk.graph.Relationship(
+                "external", "child", services, relationship_id="external-child"
+            ),
+        )
+    )
+    view = rk.graph.View(model, relationship_classification=contains)
+
+    table = materialization.Table.from_arborescence(view)
+
+    assert table.column("entity_id") == ("root", "child")
+    assert table.column("parent_id") == (None, "root")
+
+
 def test_group_by_uses_explicit_functions_and_preserves_first_seen_order():
     table = materialization.Table(
         columns=("use", "area", "count"),
