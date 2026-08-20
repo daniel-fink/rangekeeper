@@ -22,4 +22,5 @@ from .relationship import Relationship
 from .taxonomy import Taxonomy
 from .validation import ValidationIssue, ValidationResult
 from .view import View
+from . import adapter as adapter
 from . import materialization as materialization
