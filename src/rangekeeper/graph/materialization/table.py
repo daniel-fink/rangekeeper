@@ -112,6 +112,57 @@ class Table:
             rows.append(row)
         return cls(columns=columns, rows=tuple(rows))
 
+    @classmethod
+    def from_arborescence(
+        cls,
+        view: View,
+        *,
+        fields: Iterable[str] = DEFAULT_ENTITY_FIELDS,
+        labels: Iterable[str] = (),
+        measures: Mapping[Measure, pint.Unit | str | None] | None = None,
+        features: Iterable[str] = (),
+    ) -> Table:
+        """Project a parent-to-child arborescence with explicit parent IDs."""
+        if not isinstance(view, View):
+            raise TypeError("view must be a View")
+        selected_fields = _validated_names(fields, "fields")
+        if "entity_id" not in selected_fields:
+            raise TableError("arborescence Tables require the 'entity_id' field")
+        if not view.is_arborescence():
+            raise TableError("view must be a non-empty parent-to-child arborescence")
+
+        projected = cls.from_view(
+            view,
+            fields=selected_fields,
+            labels=labels,
+            measures=measures,
+            features=features,
+        )
+        parent_by_entity = {
+            relationship.target_id: relationship.source_id
+            for relationship in view.relationships()
+        }
+        children_by_parent: dict[str, list[str]] = {}
+        for child_id, parent_id in parent_by_entity.items():
+            children_by_parent.setdefault(parent_id, []).append(child_id)
+
+        root_id = view.roots()[0].entity_id
+        entity_order = _arborescence_preorder(root_id, children_by_parent)
+        projected_by_entity = {row["entity_id"]: row for row in projected.rows}
+        entity_id_index = projected.columns.index("entity_id")
+        columns = (
+            *projected.columns[: entity_id_index + 1],
+            "parent_id",
+            *projected.columns[entity_id_index + 1 :],
+        )
+        rows = []
+        for entity_id in entity_order:
+            projected_row = projected_by_entity[entity_id]
+            row = dict(projected_row)
+            row["parent_id"] = parent_by_entity.get(entity_id)
+            rows.append({column: row[column] for column in columns})
+        return cls(columns=columns, rows=tuple(rows))
+
     def group_by(
         self,
         *,
@@ -166,6 +217,19 @@ def _validated_names(values: Iterable[str], field: str) -> tuple[str, ...]:
     if len(materialized) != len(set(materialized)):
         raise ValueError(f"{field} must not contain duplicates")
     return materialized
+
+
+def _arborescence_preorder(
+    root_id: str,
+    children_by_parent: Mapping[str, Iterable[str]],
+) -> tuple[str, ...]:
+    ordered = []
+    pending = [root_id]
+    while pending:
+        entity_id = pending.pop()
+        ordered.append(entity_id)
+        pending.extend(sorted(children_by_parent.get(entity_id, ()), reverse=True))
+    return tuple(ordered)
 
 
 def _measure_columns(

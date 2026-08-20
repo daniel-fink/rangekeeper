@@ -840,7 +840,7 @@ Projection owns:
 - selected label keys;
 - selected measures and target units;
 - selected features;
-- relationship-derived parent/child columns;
+- arborescence-derived parent columns;
 - column names and order;
 - handling of multiple classifications;
 - tabular group-by aggregation.
@@ -1122,7 +1122,7 @@ Gate: the graph model cannot reach an invalid state through its public API.
 
 Gate: GFA and flux aggregation behavior is deterministic and notebook-ready.
 
-### Phase 4: materialization
+### Phase 4: materialization (complete)
 
 1. Implement Record and Snapshot.
 2. Implement Snapshot creation from Model and View.
@@ -1131,7 +1131,8 @@ Gate: GFA and flux aggregation behavior is deterministic and notebook-ready.
    Characteristics, Provenance, Measure, and Pint quantities.
 5. Define clear errors for unsupported rich feature values.
 6. Implement Table and the projections required by the notebook DataFrame.
-7. Implement hierarchy Table including parent IDs and aggregate values.
+7. Implement `Table.from_arborescence()` including parent IDs, deterministic
+   parent-before-child ordering, and projection of aggregate feature values.
 8. Implement table grouping/aggregation only as exercised by tests.
 
 Gate: a supported Model snapshot round-trips exactly; View projection produces
