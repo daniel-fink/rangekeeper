@@ -75,8 +75,8 @@ class Entity:
         return self.characteristics.measures
 
     @property
-    def occupancy(self) -> dict[str, tuple[Classification, ...]]:
-        return self.characteristics.occupancy
+    def labels(self) -> dict[str, tuple[Classification, ...]]:
+        return self.characteristics.labels
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Entity):

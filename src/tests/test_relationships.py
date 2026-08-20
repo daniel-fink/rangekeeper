@@ -4,9 +4,9 @@ import rangekeeper as rk
 
 
 def classification():
-    return rk.graph.Classification(
-        code="relationship.connected_to", name="Connected To"
-    )
+    return rk.graph.Taxonomy(
+        code="project.relationship", name="Relationship Types"
+    ).define(code="relationship.connected_to", name="Connected To")
 
 
 def test_relationship_is_public_and_preserves_domain_fields():

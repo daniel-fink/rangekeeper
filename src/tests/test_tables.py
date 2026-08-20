@@ -11,17 +11,19 @@ units = rk.measure.Index.registry
 
 
 def table_model():
-    entity_types = rk.graph.Classification(
-        code="entity", name="Entity", scheme="project.entity"
+    entity_types = rk.graph.Taxonomy(code="project.entity", name="Entity Types").define(
+        code="entity", name="Entity"
     )
     building_kind = entity_types.define(code="building", name="Building")
     space_kind = entity_types.define(code="space", name="Space")
-    uses = rk.graph.Classification(code="use", name="Use", scheme="ABS FCB")
+    uses = rk.graph.Taxonomy(code="ABS FCB", name="Building Uses").define(
+        code="use", name="Use"
+    )
     office_use = uses.define(code="231", name="Offices")
     retail_use = uses.define(code="233", name="Shops")
-    contains = rk.graph.Classification(
-        code="contains", name="Contains", scheme="project.relationship"
-    )
+    contains = rk.graph.Taxonomy(
+        code="project.relationship", name="Relationship Types"
+    ).define(code="contains", name="Contains")
     area = rk.measure.Measure(
         code="project.area",
         name="Area",
@@ -42,7 +44,7 @@ def table_model():
         name="Office",
         classification=space_kind,
         characteristics=rk.graph.Characteristics(
-            occupancy={"use": (office_use,)},
+            labels={"use": (office_use,)},
             measures={area: 10_000 * units.sqft},
             features={"rating": "B"},
         ),
@@ -52,7 +54,7 @@ def table_model():
         name="Mixed Use",
         classification=space_kind,
         characteristics=rk.graph.Characteristics(
-            occupancy={"use": (office_use, retail_use)},
+            labels={"use": (office_use, retail_use)},
             features={"rating": "C"},
         ),
     )
@@ -66,7 +68,7 @@ def table_model():
     )
     building._replace_contents(entities=(office, mixed), relationships=relationships)
     model = rk.graph.Model()
-    model.add_assembly(building)
+    model.assemblies.add(building)
     return model, building, office, mixed, contains, area
 
 
@@ -89,13 +91,13 @@ def test_table_from_view_owns_column_order_and_selected_fields():
     model, *_ = table_model()
 
     table = materialization.Table.from_view(
-        model.view(),
+        rk.graph.View(model),
         fields=(
             "entity_id",
             "name",
             "entity_type",
             "classification_code",
-            "classification_scheme",
+            "classification_taxonomy",
         ),
         features=("rating",),
     )
@@ -105,24 +107,24 @@ def test_table_from_view_owns_column_order_and_selected_fields():
         "name",
         "entity_type",
         "classification_code",
-        "classification_scheme",
+        "classification_taxonomy",
         "feature.rating",
     )
     assert table.column("entity_id") == ("building", "mixed", "office")
     assert table.rows[0]["entity_type"] == "assembly"
     assert table.rows[0]["classification_code"] == "building"
-    assert table.rows[0]["classification_scheme"] == "project.entity"
+    assert table.rows[0]["classification_taxonomy"] == "project.entity"
     assert table.column("feature.rating") == ("A", "C", "B")
 
 
-def test_occupancy_projection_is_scheme_aware_and_preserves_all_values():
+def test_label_projection_is_scheme_aware_and_preserves_all_values():
     model, _, office, mixed, *_ = table_model()
 
-    table = materialization.Table.from_view(model.view(), occupancy=("use",))
+    table = materialization.Table.from_view(rk.graph.View(model), labels=("use",))
     rows = {row["entity_id"]: row for row in table.rows}
 
-    assert rows[office.entity_id]["occupancy.use"] == (("ABS FCB", "231"),)
-    assert rows[mixed.entity_id]["occupancy.use"] == (
+    assert rows[office.entity_id]["labels.use"] == (("ABS FCB", "231"),)
+    assert rows[mixed.entity_id]["labels.use"] == (
         ("ABS FCB", "231"),
         ("ABS FCB", "233"),
     )
@@ -131,7 +133,9 @@ def test_occupancy_projection_is_scheme_aware_and_preserves_all_values():
 def test_measure_projection_converts_to_target_units_and_uses_numeric_cells():
     model, building, office, _, _, area = table_model()
 
-    table = materialization.Table.from_view(model.view(), measures={area: units.sqft})
+    table = materialization.Table.from_view(
+        rk.graph.View(model), measures={area: units.sqft}
+    )
     column = "measure.project.area [squarefoot]"
     rows = {row["entity_id"]: row for row in table.rows}
 
@@ -145,7 +149,7 @@ def test_measure_projection_converts_to_target_units_and_uses_numeric_cells():
 def test_default_measure_target_uses_the_measure_definition_units():
     model, _, office, _, _, area = table_model()
 
-    table = materialization.Table.from_view(model.view(), measures={area: None})
+    table = materialization.Table.from_view(rk.graph.View(model), measures={area: None})
     column = "measure.project.area [squaremeter]"
     rows = {row["entity_id"]: row for row in table.rows}
 
@@ -154,8 +158,8 @@ def test_default_measure_target_uses_the_measure_definition_units():
 
 def test_view_projection_remains_scoped_to_the_view():
     model, building, office, *_ = table_model()
-    view = model.view(
-        predicate=lambda entity: entity.entity_id in {"building", "office"}
+    view = rk.graph.View(
+        model, predicate=lambda entity: entity.entity_id in {"building", "office"}
     )
 
     table = materialization.Table.from_view(view, features=("rating",))
@@ -169,7 +173,7 @@ def test_feature_projection_preserves_rich_runtime_values():
     runtime_value = object()
     office.features["runtime"] = runtime_value
 
-    table = materialization.Table.from_view(model.view(), features=("runtime",))
+    table = materialization.Table.from_view(rk.graph.View(model), features=("runtime",))
     rows = {row["entity_id"]: row for row in table.rows}
 
     assert rows[office.entity_id]["feature.runtime"] is runtime_value
@@ -203,7 +207,7 @@ def test_group_by_uses_explicit_functions_and_preserves_first_seen_order():
 
 def test_table_selection_validation_is_precise():
     model, *_, area = table_model()
-    view = model.view()
+    view = rk.graph.View(model)
 
     with pytest.raises(TypeError, match="view must be a View"):
         materialization.Table.from_view(model)

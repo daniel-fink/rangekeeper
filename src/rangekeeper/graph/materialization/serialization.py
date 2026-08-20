@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 
+import networkx as nx
 import pint
 
 from ...measure import Measure
@@ -13,6 +14,7 @@ from ..entity import Entity
 from ..model import Model
 from ..provenance import Provenance
 from ..relationship import Relationship
+from ..taxonomy import Taxonomy
 from ..view import View
 from . import value as encoded_value
 from .errors import SnapshotError
@@ -20,14 +22,31 @@ from .fields import Fields
 from .record import Record, Snapshot
 
 
-SCHEMA_VERSION = 1
-RECORD_TYPES = frozenset({"classification", "entity", "assembly", "relationship"})
+SCHEMA_VERSION = 2
+RECORD_TYPES = frozenset(
+    {"taxonomy", "classification", "entity", "assembly", "relationship"}
+)
 
 
 def to_snapshot(source: Model | View) -> Snapshot:
     entities, relationships = _graph_closure(source)
-    classifications = _classification_closure(entities, relationships)
+    if isinstance(source, Model):
+        taxonomies = source.taxonomies.all()
+        classifications = tuple(
+            classification
+            for taxonomy in taxonomies
+            for classification in taxonomy.classifications()
+        )
+    else:
+        classifications = _classification_closure(entities, relationships)
+        taxonomies = tuple(
+            {classification.taxonomy for classification in classifications}
+        )
     records = (
+        *(
+            Record.from_taxonomy(item)
+            for item in sorted(taxonomies, key=lambda item: item.code)
+        ),
         *(
             Record.from_classification(item)
             for item in sorted(classifications, key=Record.classification_id)
@@ -48,7 +67,7 @@ def _graph_closure(
     source: Model | View,
 ) -> tuple[tuple[Entity, ...], tuple[Relationship, ...]]:
     if isinstance(source, Model):
-        return source.entities(), source.relationships()
+        return source.entities.all(), source.relationships.all()
     if not isinstance(source, View):
         raise TypeError("source must be a Model or View")
 
@@ -64,7 +83,7 @@ def _graph_closure(
             if entity_id in entity_ids:
                 continue
             entity_ids.add(entity_id)
-            entity = model.entity(entity_id)
+            entity = model.entities[entity_id]
             if isinstance(entity, Assembly):
                 pending_entities.extend(item.entity_id for item in entity.entities)
                 pending_relationships.extend(
@@ -76,14 +95,16 @@ def _graph_closure(
         if relationship_id in relationship_ids:
             continue
         relationship_ids.add(relationship_id)
-        relationship = model.relationship(relationship_id)
+        relationship = model.relationships[relationship_id]
         pending_entities.extend((relationship.source_id, relationship.target_id))
 
     return (
-        tuple(entity for entity in model.entities() if entity.entity_id in entity_ids),
+        tuple(
+            entity for entity in model.entities.all() if entity.entity_id in entity_ids
+        ),
         tuple(
             relationship
-            for relationship in model.relationships()
+            for relationship in model.relationships.all()
             if relationship.relationship_id in relationship_ids
         ),
     )
@@ -98,8 +119,7 @@ def _classification_closure(
     def add(classification: Classification | None) -> None:
         if classification is None:
             return
-        root = classification.root()
-        for term in (root, *root.descendants()):
+        for term in classification.taxonomy.classifications():
             existing = by_key.get(term.key)
             if existing is not None and existing is not term:
                 raise SnapshotError(f"different Classifications share key {term.key!r}")
@@ -107,12 +127,12 @@ def _classification_closure(
 
     for entity in entities:
         add(entity.classification)
-        for classifications in entity.occupancy.values():
+        for classifications in entity.labels.values():
             for classification in classifications:
                 add(classification)
     for relationship in relationships:
         add(relationship.classification)
-        for classifications in relationship.characteristics.occupancy.values():
+        for classifications in relationship.characteristics.labels.values():
             for classification in classifications:
                 add(classification)
     return tuple(by_key.values())
@@ -135,6 +155,7 @@ def from_snapshot(
 @dataclass
 class _Deserializer:
     registry: pint.UnitRegistry
+    taxonomies: dict[str, Taxonomy] = field(default_factory=dict)
     classifications: dict[str, Classification] = field(default_factory=dict)
     measures: dict[str, Measure] = field(default_factory=dict)
     entities: dict[str, Entity] = field(default_factory=dict)
@@ -143,6 +164,7 @@ class _Deserializer:
 
     def to_model(self, records: Iterable[Record]) -> Model:
         by_type = self._partition(records)
+        self._load_taxonomies(by_type["taxonomy"])
         self._load_classifications(by_type["classification"])
         for record in (*by_type["entity"], *by_type["assembly"]):
             self._add_entity(record)
@@ -165,49 +187,95 @@ class _Deserializer:
                 ) from error
         return by_type
 
-    def _load_classifications(self, records: Iterable[Record]) -> None:
-        materialized = tuple(records)
-        for record in materialized:
-            fields = Fields(record.values, f"classification {record.identifier!r}")
-            parent_id = fields.get("parent_id")
-            if parent_id is not None and not isinstance(parent_id, str):
-                raise SnapshotError(f"{fields.owner} parent reference is invalid")
-            scheme = fields.get("scheme")
-            if scheme is not None and not isinstance(scheme, str):
-                raise SnapshotError(f"{fields.owner} scheme is invalid")
+    def _load_taxonomies(self, records: Iterable[Record]) -> None:
+        for record in records:
+            fields = Fields(record.values, f"taxonomy {record.identifier!r}")
             try:
-                self.classifications[record.identifier] = Classification(
+                taxonomy = Taxonomy(
                     code=fields.text("code"),
                     name=fields.text("name"),
                     definition=fields.get("definition"),
-                    scheme=scheme if parent_id is None else None,
                 )
             except (TypeError, ValueError) as error:
                 raise SnapshotError(f"{fields.owner} is invalid: {error}") from error
-
-        try:
-            for record in materialized:
-                parent_id = record.values.get("parent_id")
-                if parent_id is not None:
-                    self.classifications[record.identifier].set_parent(
-                        self.classifications[parent_id]
-                    )
-        except KeyError as error:
-            raise SnapshotError(
-                f"classification references missing parent {error.args[0]!r}"
-            ) from error
-        except (TypeError, ValueError) as error:
-            raise SnapshotError(
-                f"classification hierarchy is invalid: {error}"
-            ) from error
-
-        for record in materialized:
-            classification = self.classifications[record.identifier]
-            if Record.classification_id(classification) != record.identifier:
+            if taxonomy.code != record.identifier:
                 raise SnapshotError(
-                    f"classification identifier {record.identifier!r} does not "
-                    "match its scheme and code"
+                    f"taxonomy identifier {record.identifier!r} does not match its code"
                 )
+            self.taxonomies[taxonomy.code] = taxonomy
+
+    def _load_classifications(self, records: Iterable[Record]) -> None:
+        grouped: dict[str, list[Record]] = {}
+        for record in records:
+            fields = Fields(record.values, f"classification {record.identifier!r}")
+            taxonomy_code = fields.text("taxonomy")
+            if taxonomy_code not in self.taxonomies:
+                raise SnapshotError(
+                    f"{fields.owner} references missing Taxonomy {taxonomy_code!r}"
+                )
+            grouped.setdefault(taxonomy_code, []).append(record)
+
+        for taxonomy_code, taxonomy_records in grouped.items():
+            taxonomy = self.taxonomies[taxonomy_code]
+            by_code: dict[str, Record] = {}
+            graph = nx.DiGraph()
+            for record in taxonomy_records:
+                fields = Fields(record.values, f"classification {record.identifier!r}")
+                code = fields.text("code")
+                if code in by_code:
+                    raise SnapshotError(
+                        f"Taxonomy {taxonomy_code!r} contains duplicate code {code!r}"
+                    )
+                by_code[code] = record
+                graph.add_node(code)
+
+            for code, record in by_code.items():
+                fields = Fields(record.values, f"classification {record.identifier!r}")
+                parent_code = fields.get("parent_code")
+                if parent_code is None:
+                    continue
+                if not isinstance(parent_code, str):
+                    raise SnapshotError(f"{fields.owner} parent reference is invalid")
+                if parent_code not in by_code:
+                    raise SnapshotError(
+                        f"{fields.owner} references missing parent {parent_code!r}"
+                    )
+                graph.add_edge(parent_code, code)
+
+            if not nx.is_directed_acyclic_graph(graph):
+                raise SnapshotError(
+                    f"Taxonomy {taxonomy_code!r} classification hierarchy has a cycle"
+                )
+            roots = tuple(code for code, degree in graph.in_degree() if degree == 0)
+            if len(roots) != 1:
+                raise SnapshotError(
+                    f"Taxonomy {taxonomy_code!r} must have exactly one root"
+                )
+
+            restored_by_code: dict[str, Classification] = {}
+            for code in nx.topological_sort(graph):
+                record = by_code[code]
+                fields = Fields(record.values, f"classification {record.identifier!r}")
+                parent_codes = tuple(graph.predecessors(code))
+                parent = None if not parent_codes else restored_by_code[parent_codes[0]]
+                try:
+                    classification = taxonomy.define(
+                        code=code,
+                        name=fields.text("name"),
+                        definition=fields.get("definition"),
+                        parent=parent,
+                    )
+                except (TypeError, ValueError) as error:
+                    raise SnapshotError(
+                        f"{fields.owner} is invalid: {error}"
+                    ) from error
+                if Record.classification_id(classification) != record.identifier:
+                    raise SnapshotError(
+                        f"classification identifier {record.identifier!r} does not "
+                        "match its taxonomy and code"
+                    )
+                restored_by_code[code] = classification
+                self.classifications[record.identifier] = classification
 
     def _add_entity(self, record: Record) -> None:
         if record.identifier in self.entities:
@@ -286,8 +354,10 @@ class _Deserializer:
     def _build_model(self) -> Model:
         model = Model()
         try:
-            model.add_entities(self.entities.values())
-            model.add_relationships(self.relationships.values())
+            for taxonomy in self.taxonomies.values():
+                model.taxonomies.add(taxonomy)
+            model.entities.add_all(self.entities.values())
+            model.relationships.add_all(self.relationships.values())
         except (TypeError, ValueError, KeyError) as error:
             raise SnapshotError(f"Snapshot graph is invalid: {error}") from error
         validation = model.validate()
@@ -320,20 +390,18 @@ class _Deserializer:
         self, encoded: Mapping[str, object], *, owner: str
     ) -> Characteristics:
         fields = Fields(encoded, owner)
-        occupancy: dict[str, tuple[Classification, ...]] = {}
-        for item in fields.mappings("occupancy"):
+        labels: dict[str, tuple[Classification, ...]] = {}
+        for item in fields.mappings("labels"):
             item_fields = Fields(item, owner)
-            facet = item_fields.text("facet")
-            if facet in occupancy:
-                raise SnapshotError(
-                    f"{owner} contains duplicate occupancy facet {facet!r}"
-                )
+            key = item_fields.text("key")
+            if key in labels:
+                raise SnapshotError(f"{owner} contains duplicate label key {key!r}")
             values = tuple(
                 self._classification(identifier, owner=owner, required=True)
                 for identifier in item_fields.texts("classification_ids", unique=True)
             )
             assert all(value is not None for value in values)
-            occupancy[facet] = values
+            labels[key] = values
 
         decoded_measures: dict[Measure, pint.Quantity] = {}
         for item in fields.mappings("measures"):
@@ -385,7 +453,7 @@ class _Deserializer:
                 path=f"{owner} feature {name!r}",
             )
         return Characteristics(
-            occupancy=occupancy,
+            labels=labels,
             measures=decoded_measures,
             features=features,
         )

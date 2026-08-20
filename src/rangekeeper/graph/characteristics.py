@@ -11,47 +11,47 @@ from .classification import Classification
 
 @dataclass
 class Characteristics:
-    occupancy: dict[str, tuple[Classification, ...]] = field(default_factory=dict)
+    labels: dict[str, tuple[Classification, ...]] = field(default_factory=dict)
     measures: dict[Measure, pint.Quantity] = field(default_factory=dict)
     features: dict[str, object] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
-        initial_occupancy = dict(self.occupancy)
+        initial_labels = dict(self.labels)
         initial_measures = dict(self.measures)
-        self.occupancy = {}
+        self.labels = {}
         self.measures = {}
         self.features = dict(self.features)
-        for facet, classifications in initial_occupancy.items():
-            self.set_occupancy(facet, classifications)
+        for key, classifications in initial_labels.items():
+            self.set_labels(key, classifications)
         for measure, quantity in initial_measures.items():
             self.set_measure(measure, quantity)
 
-    def set_occupancy(
+    def set_labels(
         self,
-        facet: str,
+        key: str,
         classifications: Iterable[Classification],
     ) -> None:
-        if not isinstance(facet, str):
-            raise TypeError("occupancy facet must be a string")
-        if not facet.strip():
-            raise ValueError("occupancy facet must not be empty")
+        if not isinstance(key, str):
+            raise TypeError("label key must be a string")
+        if not key.strip():
+            raise ValueError("label key must not be empty")
         if isinstance(classifications, (Classification, str, bytes)):
-            raise TypeError("occupancy values must be an iterable of Classifications")
+            raise TypeError("label values must be an iterable of Classifications")
         try:
             values = tuple(classifications)
         except TypeError as error:
             raise TypeError(
-                "occupancy values must be an iterable of Classifications"
+                "label values must be an iterable of Classifications"
             ) from error
         if not all(isinstance(value, Classification) for value in values):
-            raise TypeError("occupancy values must contain only Classifications")
-        keys = [value.key for value in values]
-        if len(keys) != len(set(keys)):
-            raise ValueError("occupancy values must not repeat a classification key")
-        self.occupancy[facet] = values
+            raise TypeError("label values must contain only Classifications")
+        classification_keys = [value.key for value in values]
+        if len(classification_keys) != len(set(classification_keys)):
+            raise ValueError("label values must not repeat a classification key")
+        self.labels[key] = values
 
-    def remove_occupancy(self, facet: str) -> tuple[Classification, ...]:
-        return self.occupancy.pop(facet)
+    def remove_labels(self, key: str) -> tuple[Classification, ...]:
+        return self.labels.pop(key)
 
     def get_measure(self, measure: Measure) -> pint.Quantity | None:
         stored_measure = self._resolve_measure(measure)
