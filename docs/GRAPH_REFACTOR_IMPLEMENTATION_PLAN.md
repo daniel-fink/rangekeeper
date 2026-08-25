@@ -3,22 +3,25 @@
 ## Execution handoff
 
 This document is the authoritative implementation brief for a deliberate
-breaking refactor of Rangekeeper's entity/relationship graph system. Portable
-Python and C# work can be developed on **Daniel's Mac Studio**. Rhino 8,
+breaking refactor of Rangekeeper's entity/relationship graph system. Rhino 8,
 Grasshopper, the official Speckle v3 connector, and end-to-end publication are
 tested on a dedicated **Windows host**. See
-[`grasshopper/WINDOWS_DEVELOPMENT.md`](grasshopper/WINDOWS_DEVELOPMENT.md) for
+[`grasshopper/WINDOWS_DEVELOPMENT.md`](../grasshopper/WINDOWS_DEVELOPMENT.md) for
 the reproducible Windows runbook.
 
 Source Codex tasks:
 
-- Current design task: `codex://threads/01a01836-b087-7011-bfff-04172ba2d304`
-- Earlier Rangekeeper design/history task: `codex://threads/019ffb06-6c47-7ec1-9c86-890bffb9485e`
+- Current design task: `$CODEX_GRAPH_REFACTOR_DESIGN_TASK`
+- Earlier Rangekeeper design/history task:
+  `$CODEX_RANGEKEEPER_DESIGN_HISTORY_TASK`
+
+The deep links are stored in the ignored `src/.env` file shared between the
+authorized development hosts and are intentionally omitted from the repository.
 
 Repository and branch at plan creation:
 
 ```text
-Repository: /Volumes/Data/Projects/Rangekeeper
+Repository: repository root
 Branch:     feat/entity-area-core
 HEAD:       35ebfd3 refactor: simplify kind provenance
 Remote:     origin/feat/entity-area-core at the same commit
@@ -68,7 +71,7 @@ The focused baseline at plan creation was:
 using:
 
 ```bash
-cd /Volumes/Data/Projects/Rangekeeper/src
+cd "$(git rev-parse --show-toplevel)/src"
 uv run pytest \
   tests/test_kinds.py \
   tests/test_characteristics.py \
@@ -80,7 +83,7 @@ uv run pytest \
 Speckle credentials already exist at:
 
 ```text
-/Volumes/Data/Projects/Rangekeeper/src/.env
+src/.env
 ```
 
 The file contains `SPECKLE_TOKEN` and is ignored by `src/.gitignore`. Never print,
@@ -90,17 +93,17 @@ copy into a fixture, commit, or include the token in command output.
 
 Status at `8502817` on 2026-08-22:
 
-| Phase | Status | Result |
-|---|---|---|
-| 0 | Complete | Baseline and legacy behavior characterized. |
-| 1 | Complete | Domain value objects and classifications implemented. |
-| 2 | Complete | Model, registries, View, traversal, and validation implemented. |
-| 3 | Complete | Graph aggregation implemented. |
-| 4 | Complete | Snapshot, Record, Table, and arborescence materialization implemented. |
-| 5 | Complete | JSON, pandas, CSV, Speckle, and visualization adapters implemented. |
-| 6 | Next | Rebuild the Grasshopper authoring path, publish with Speckle v3 on Windows, and migrate the walkthroughs. |
-| 7 | Pending | Remove all legacy implementation and conversion scaffolding. |
-| 8 | Pending | Complete cross-platform verification and release commits. |
+| Phase | Status   | Result                                                                                                    |
+| ----- | -------- | --------------------------------------------------------------------------------------------------------- |
+| 0     | Complete | Baseline and legacy behavior characterized.                                                               |
+| 1     | Complete | Domain value objects and classifications implemented.                                                     |
+| 2     | Complete | Model, registries, View, traversal, and validation implemented.                                           |
+| 3     | Complete | Graph aggregation implemented.                                                                            |
+| 4     | Complete | Snapshot, Record, Table, and arborescence materialization implemented.                                    |
+| 5     | Complete | JSON, pandas, CSV, Speckle, and visualization adapters implemented.                                       |
+| 6     | Next     | Rebuild the Grasshopper authoring path, publish with Speckle v3 on Windows, and migrate the walkthroughs. |
+| 7     | Pending  | Remove all legacy implementation and conversion scaffolding.                                              |
+| 8     | Pending  | Complete cross-platform verification and release commits.                                                 |
 
 Phase 6 no longer republishes the legacy v2 object as the target deliverable.
 The legacy object and saved notebook outputs are read-only regression evidence.
@@ -127,8 +130,8 @@ with a small domain-first graph engine that:
 Critical walkthroughs:
 
 ```text
-/Volumes/Data/Projects/Rangekeeper/walkthrough/load_design.ipynb
-/Volumes/Data/Projects/Rangekeeper/walkthrough/drive_model_from_design.ipynb
+walkthrough/load_design.ipynb
+walkthrough/drive_model_from_design.ipynb
 ```
 
 Both notebooks must be migrated to the new API and executed top-to-bottom as
@@ -1069,23 +1072,23 @@ The notebook additionally exercises:
 
 Direct migration map:
 
-| Old API | New API |
-|---|---|
-| `rk.api.Speckle.parse()` | Phase 6 baseline characterization only; removed afterward |
-| `rk.api.Speckle.to_rk()` | `graph.adapter.speckle.load()` on the newly generated package |
-| `property.filter_by_type(...)` | `View(model, ...)` |
-| `entity.get_relatives(...)` | `model.entities.successors()` / `model.entities.predecessors()` |
-| `property.get_entities()` | `model.entities.all()` |
-| `filtered.get_entities()` | `view.entities()` |
-| `property.get_roots()` | `view.roots()` |
-| `nx.is_arborescence(view.graph)` | `view.is_arborescence()` |
-| `property.aggregate(...)` | `view.aggregate(...)` |
-| `assembly.to_DataFrame()` | projection to Table, then pandas adapter |
-| `assembly.plot()` | visualization adapter |
-| `assembly.sunburst()` | arborescence Table plus visualization adapter |
-| `assembly.treemap()` | arborescence Table plus visualization adapter |
-| `entity["gfa"]` | `entity.features["gfa"]` |
-| `entity["use"]` | label Classification code/name |
+| Old API                          | New API                                                         |
+| -------------------------------- | --------------------------------------------------------------- |
+| `rk.api.Speckle.parse()`         | Phase 6 baseline characterization only; removed afterward       |
+| `rk.api.Speckle.to_rk()`         | `graph.adapter.speckle.load()` on the newly generated package   |
+| `property.filter_by_type(...)`   | `View(model, ...)`                                              |
+| `entity.get_relatives(...)`      | `model.entities.successors()` / `model.entities.predecessors()` |
+| `property.get_entities()`        | `model.entities.all()`                                          |
+| `filtered.get_entities()`        | `view.entities()`                                               |
+| `property.get_roots()`           | `view.roots()`                                                  |
+| `nx.is_arborescence(view.graph)` | `view.is_arborescence()`                                        |
+| `property.aggregate(...)`        | `view.aggregate(...)`                                           |
+| `assembly.to_DataFrame()`        | projection to Table, then pandas adapter                        |
+| `assembly.plot()`                | visualization adapter                                           |
+| `assembly.sunburst()`            | arborescence Table plus visualization adapter                   |
+| `assembly.treemap()`             | arborescence Table plus visualization adapter                   |
+| `entity["gfa"]`                  | `entity.features["gfa"]`                                        |
+| `entity["use"]`                  | label Classification code/name                                  |
 
 Preserve the notebooks' teaching narrative and cell order where practical.
 Edit notebooks through `nbformat` or Jupyter tooling, not raw global JSON
@@ -1126,7 +1129,7 @@ relying only on visible output.
 
 ### Phase 0: preflight and characterization
 
-1. Navigate to `/Volumes/Data/Projects/Rangekeeper`.
+1. Navigate to the repository root.
 2. Read this plan and both linked Codex task histories.
 3. Inspect `git status`, branch, HEAD, and all diffs.
 4. Preserve the pre-existing dirty edits described above.
@@ -1347,9 +1350,9 @@ After new code and notebooks work:
 10. Remove graph `to_dict()`/`to_DataFrame()` and visualization methods.
 11. Remove heavy visualization/pandas/IPython imports from core graph modules.
 12. Update `test_api.py`, `test_graph.py`, exports, README examples, and any
-   other references found by `rg`.
+    other references found by `rg`.
 13. Do not add compatibility aliases, fallback importers, or deprecation
-   wrappers.
+    wrappers.
 
 Gate: `rg` finds no unintended old API use, `legacy.*` Taxonomies, legacy
 Speckle import machinery, or backwards-compatibility paths in source, tests, or
@@ -1369,9 +1372,9 @@ the two required notebooks.
    numerical regressions.
 9. Run `git diff --check`.
 10. Review the entire diff for unrelated changes and accidental secret/output
-   inclusion.
+    inclusion.
 11. Commit in coherent checkpoints. Do not mix the pre-existing user edits into
-   a graph commit unless their intent is explicitly adopted and documented.
+    a graph commit unless their intent is explicitly adopted and documented.
 12. Push only if the user explicitly requests it in the executing task.
 
 ## Test plan
@@ -1478,7 +1481,7 @@ acceptance commands are maintained in
 ### Preflight
 
 ```bash
-cd /Volumes/Data/Projects/Rangekeeper
+cd "$(git rev-parse --show-toplevel)"
 git branch --show-current
 git log -1 --oneline --decorate
 git status --short
@@ -1488,7 +1491,7 @@ git diff --stat
 ### Focused baseline
 
 ```bash
-cd /Volumes/Data/Projects/Rangekeeper/src
+cd "$(git rev-parse --show-toplevel)/src"
 uv run pytest \
   tests/test_classifications.py \
   tests/test_characteristics.py \
@@ -1500,7 +1503,7 @@ uv run pytest \
 ### Full library tests
 
 ```bash
-cd /Volumes/Data/Projects/Rangekeeper/src
+cd "$(git rev-parse --show-toplevel)/src"
 uv run pytest tests -q
 ```
 
@@ -1513,7 +1516,7 @@ Run from the repository root. `uv --env-file` loads the ignored token without
 relying on `dotenv.find_dotenv()` discovering a sibling directory.
 
 ```bash
-cd /Volumes/Data/Projects/Rangekeeper
+cd "$(git rev-parse --show-toplevel)"
 
 uv run \
   --project walkthrough \
@@ -1542,7 +1545,7 @@ nbconvert rather than allowing cells to hang indefinitely.
 ### Search for legacy graph use
 
 ```bash
-cd /Volumes/Data/Projects/Rangekeeper
+cd "$(git rev-parse --show-toplevel)"
 rg -n \
   'rk\.graph\.Kind|filter_by_type|get_relatives|get_entities|to_DataFrame|\.graph\b|rk\.api\.Speckle\.(parse|to_rk)' \
   src walkthrough/load_design.ipynb walkthrough/drive_model_from_design.ipynb
