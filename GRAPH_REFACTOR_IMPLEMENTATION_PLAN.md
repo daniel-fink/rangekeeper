@@ -2,10 +2,13 @@
 
 ## Execution handoff
 
-This document is the implementation brief for a deliberate breaking refactor of
-Rangekeeper's entity/relationship graph system. It is intended to be executable
-by another Codex instance on **Daniel's Mac Studio**, which has the same absolute
-filesystem layout as the machine on which the plan was written.
+This document is the authoritative implementation brief for a deliberate
+breaking refactor of Rangekeeper's entity/relationship graph system. Portable
+Python and C# work can be developed on **Daniel's Mac Studio**. Rhino 8,
+Grasshopper, the official Speckle v3 connector, and end-to-end publication are
+tested on a dedicated **Windows host**. See
+[`grasshopper/WINDOWS_DEVELOPMENT.md`](grasshopper/WINDOWS_DEVELOPMENT.md) for
+the reproducible Windows runbook.
 
 Source Codex tasks:
 
@@ -82,6 +85,28 @@ Speckle credentials already exist at:
 
 The file contains `SPECKLE_TOKEN` and is ignored by `src/.gitignore`. Never print,
 copy into a fixture, commit, or include the token in command output.
+
+## Current status
+
+Status at `8502817` on 2026-08-22:
+
+| Phase | Status | Result |
+|---|---|---|
+| 0 | Complete | Baseline and legacy behavior characterized. |
+| 1 | Complete | Domain value objects and classifications implemented. |
+| 2 | Complete | Model, registries, View, traversal, and validation implemented. |
+| 3 | Complete | Graph aggregation implemented. |
+| 4 | Complete | Snapshot, Record, Table, and arborescence materialization implemented. |
+| 5 | Complete | JSON, pandas, CSV, Speckle, and visualization adapters implemented. |
+| 6 | Next | Rebuild the Grasshopper authoring path, publish with Speckle v3 on Windows, and migrate the walkthroughs. |
+| 7 | Pending | Remove all legacy implementation and conversion scaffolding. |
+| 8 | Pending | Complete cross-platform verification and release commits. |
+
+Phase 6 no longer republishes the legacy v2 object as the target deliverable.
+The legacy object and saved notebook outputs are read-only regression evidence.
+The new package is regenerated from `grasshopper/Tests/exampleDesign.3dm` and a
+rewritten `exampleDesignConfig.ghx`, then published through the supported
+Windows Speckle v3 connector.
 
 ## Goal
 
@@ -195,6 +220,29 @@ Speckle id                 content hash for one serialized state
 ```
 
 Do not use Speckle `id` as the Rangekeeper entity identity.
+
+Grasshopper follows the same boundary:
+
+- Rangekeeper's C# domain model and Grasshopper components must not inherit
+  from Speckle `Base` or reference connector-internal wrapper/Goo types.
+- Rangekeeper components construct entities, relationships, taxonomies,
+  assemblies, and a canonical Snapshot independently of Speckle.
+- They expose Rhino geometry, stable Rangekeeper IDs, display metadata, and the
+  canonical Snapshot envelope using ordinary Grasshopper-compatible values.
+- The official Speckle v3 Grasshopper components own Data Object creation,
+  Collection construction, Rhino geometry conversion, authentication, model
+  selection, and publication.
+- Speckle Data Objects carry stable entity association metadata. The root
+  Collection carries the canonical Snapshot payload. Geometry/Collection
+  structure is useful for Speckle viewing, but the Snapshot remains the sole
+  source of truth for graph reconstruction.
+- Do not create a Rangekeeper connector fork or make the Rangekeeper component
+  assembly depend on Speckle connector implementation details.
+
+The logical root envelope retains `packageKind = "rangekeeper.snapshot"`, an
+explicit package schema version, and a deterministic Snapshot payload. The
+short Windows integration spike in Phase 6 must freeze the exact supported v3
+property layout in a sanitized fixture before the Python adapter is changed.
 
 ### 4. `Kind` becomes `Classification`
 
@@ -975,10 +1023,11 @@ The notebook currently exercises:
 - finding `buildingAresidential`;
 - PyVis graph HTML output.
 
-The final migrated notebook loads the converted, versioned Rangekeeper package:
+The final migrated notebook loads the newly generated, versioned Rangekeeper
+package published through the Windows Speckle v3 workflow:
 
 ```python
-package = operations.receive(obj_id=converted_object_id, remote_transport=transport)
+package = operations.receive(obj_id=published_object_id, remote_transport=transport)
 design = rk.graph.adapter.speckle.load(package)
 
 building_a = next(
@@ -991,12 +1040,11 @@ building_a_containment = design.entities.successors(
 )
 ```
 
-During Phase 6 only, use the temporary importer to read the existing
-`root["@property"]`, immediately `dump()` the resulting Model as a versioned
-package, and publish that package to an explicitly authorized Speckle target or
-store it as a sanitized local fixture. Point both notebooks at the converted
-package before Phase 7 begins. Do not retain the conversion code in the final
-notebooks.
+During Phase 6, use the temporary importer only to characterize the existing
+`root["@property"]` and verify the regression baseline. Regenerate the supported
+package from the Rhino/Grasshopper source and point both notebooks at that new
+Speckle v3 package before Phase 7 begins. Do not retain legacy conversion code
+in either final notebook.
 
 Do not preserve the old synthetic root Assembly merely because the old parser
 returned an Assembly that owned the entire graph. The imported object graph is
@@ -1023,8 +1071,8 @@ Direct migration map:
 
 | Old API | New API |
 |---|---|
-| `rk.api.Speckle.parse()` | one-time Phase 6 source conversion only; removed afterward |
-| `rk.api.Speckle.to_rk()` | `graph.adapter.speckle.load()` on the converted package |
+| `rk.api.Speckle.parse()` | Phase 6 baseline characterization only; removed afterward |
+| `rk.api.Speckle.to_rk()` | `graph.adapter.speckle.load()` on the newly generated package |
 | `property.filter_by_type(...)` | `View(model, ...)` |
 | `entity.get_relatives(...)` | `model.entities.successors()` / `model.entities.predecessors()` |
 | `property.get_entities()` | `model.entities.all()` |
@@ -1172,27 +1220,111 @@ through pandas/CSV as defined.
 
 ### Phase 6: migrate walkthroughs
 
-1. Use the temporary Speckle design importer once to convert the existing demo
-   design into an explicit, versioned Rangekeeper Snapshot package.
-2. Publish the converted package to an explicitly authorized Speckle target or
-   save a sanitized local fixture, and record no credentials in the repository.
-3. Verify the converted package round-trips to the expected Model, including
-   Assemblies, relationships, classifications, features, and provenance.
-4. Update `load_design.ipynb` to load only the converted package and use Model
-   queries and the visualization adapter.
-5. Add concise assertion cells for imported structure and `buildingA` traversal.
-6. Update `drive_model_from_design.ipynb` to View, Model aggregation,
-   Characteristics access, Table/pandas projection, and visualization adapter.
-7. Preserve calculations and explanatory flow.
-8. Replace direct NetworkX access with View methods.
-9. Remove all temporary conversion cells and legacy-source references from both
-   notebooks.
-10. Execute both notebooks top-to-bottom with local package code and
-   `src/.env`.
-11. Compare numerical outputs with the regression anchors.
+#### 6A. Freeze the regression baseline
 
-Gate: both notebooks execute successfully from the versioned Rangekeeper
-package with no legacy graph calls, legacy-source imports, or conversion code.
+1. Treat the existing Speckle v2 model and saved notebook outputs as read-only
+   regression evidence; do not publish a converted legacy object as the new
+   canonical source.
+2. Preserve the observed graph baseline: 50 canonical entity IDs and 63
+   relationships, comprising 49 `spatiallyContains`, 3 `contains`, and 11
+   `services` relationships.
+3. Preserve the existing notebook numerical anchors and the documented
+   `buildingA` traversal result.
+4. Preserve the inspected source-model baseline: `exampleDesign.3dm` contains
+   735 objects across 30 layers, including 12 semantically tagged mass objects.
+   Confirm the intended source attributes used to create stable entity IDs and
+   labels before changing the source file.
+5. Preserve the inspected definition baseline: `exampleDesignConfig.ghx`
+   contains 222 components and uses Speckle connector 2.17.1 components. These
+   counts describe the legacy source; the rewritten definition need not retain
+   its component count.
+6. Store only sanitized fixtures and expected values. Never store Speckle
+   tokens or private account configuration.
+
+#### 6B. Rebuild the C# domain and Grasshopper components
+
+1. Retarget the Grasshopper solution to Rhino 8 and a supported modern .NET
+   target. Remove all Speckle v2 package references.
+2. Keep a Speckle-independent C# domain assembly mirroring the canonical Python
+   concepts: Entity, Relationship, Assembly, Taxonomy, Classification,
+   Characteristics, Provenance, Record, and Snapshot.
+3. Give the C# and Python implementations shared canonical JSON fixtures so
+   each language can read the other's Snapshot output exactly.
+4. Implement Grasshopper parameters/components for constructing and inspecting
+   those domain values. Inputs must permit explicit stable IDs; Rhino object IDs
+   may be used as source/application identifiers but must not be confused with
+   Speckle content IDs.
+5. Implement a single export-boundary component or small component group that
+   emits geometry, names, stable IDs, ordinary metadata, and the canonical
+   Snapshot envelope for the official connector nodes.
+6. Add pure unit tests for domain validation, deterministic serialization,
+   relationship endpoints, assembly contents, labels, and ID stability.
+7. Add Grasshopper component tests for input validation, list/tree matching,
+   null handling, and deterministic recomputation.
+
+#### 6C. Rebuild the source definition
+
+1. Rewrite `grasshopper/Tests/exampleDesignConfig.ghx` for Rhino 8.
+2. Use native Rhino 8 model-object querying where practical. Remove EleFront,
+   Speckle v2, and obsolete Rangekeeper component dependencies.
+3. Preserve and clarify the source logic that selects geometry, assigns stable
+   identities and classifications, and constructs containment and service
+   relationships.
+4. Keep the canvas staged and reviewable: source selection, metadata,
+   Rangekeeper graph construction, validation, Speckle packaging, and explicit
+   publication.
+5. Publication must require an explicit user-controlled run input and must not
+   occur merely because Grasshopper recomputes.
+
+#### 6D. Establish the Windows acceptance host
+
+1. Follow `grasshopper/WINDOWS_DEVELOPMENT.md` to provision native Windows,
+   Rhino 8, the official Speckle v3 connector, Codex, SSH, .NET, Python, and Git.
+2. Keep the repository on the native Windows filesystem in its own Git checkout.
+   Do not use a VM-shared checkout.
+3. Pin and record the exact Rhino, connector, .NET, and plugin build versions
+   used for the first successful acceptance run.
+4. Use SSH/Codex remote projects for builds and automated tests. Use an unlocked
+   Windows desktop session for Rhino/Grasshopper UI work, connector login, and
+   publication.
+
+#### 6E. Publish and validate the v3 package
+
+1. Run a narrow connector spike to freeze how ordinary component outputs map to
+   Speckle Data Object properties and how the root Snapshot envelope is stored.
+   Capture the result as a sanitized fixture and document the exact contract.
+2. Build and install the Rangekeeper `.gha`, open the rewritten GHX with the
+   associated 3dm, and confirm there are no missing or obsolete components.
+3. Recompute without publishing and validate all graph diagnostics and baseline
+   counts first.
+4. Publish a new version to an explicitly authorized Speckle v3 model using the
+   official connector.
+5. Receive the published root with Python and update
+   `graph.adapter.speckle` only as needed for the frozen v3 envelope.
+6. Verify Snapshot round-trip equality, stable entity-to-geometry associations,
+   assemblies, relationship counts/types, classifications, labels, features,
+   and provenance.
+
+#### 6F. Migrate and execute the walkthroughs
+
+1. Update `load_design.ipynb` to load only the newly published explicit package
+   and use Model queries plus the visualization adapter.
+2. Add concise assertion cells for the imported structure, relationship counts,
+   and `buildingA` traversal.
+3. Update `drive_model_from_design.ipynb` to View, Model aggregation,
+   Characteristics access, Table/pandas projection, and visualization adapter.
+4. Preserve calculations and explanatory flow; replace direct NetworkX access
+   with View methods.
+5. Remove temporary conversion cells and legacy-source references from both
+   notebooks.
+6. Execute both notebooks top-to-bottom with local package code and `src/.env`.
+7. Compare numerical outputs with every documented regression anchor.
+
+Gate: the Rhino source regenerates and explicitly publishes a supported Speckle
+v3 package on Windows; the received package matches the graph baseline and
+round-trips through the canonical Snapshot; both notebooks execute successfully
+with no Speckle v2 components, legacy graph calls, legacy-source imports, or
+conversion code.
 
 ### Phase 7: remove legacy implementation
 
@@ -1228,16 +1360,19 @@ the two required notebooks.
 1. Run formatting and linting configured by the repository.
 2. Run focused graph/materialization/adapter tests.
 3. Run all non-live tests.
-4. Run live Speckle adapter tests.
-5. Execute both notebooks top-to-bottom.
-6. Inspect notebook output for errors, warnings, excessive raw output, and
+4. Run C# domain and Grasshopper component tests.
+5. Run the Windows Rhino/Grasshopper/Speckle v3 acceptance procedure and retain
+   its sanitized result manifest.
+6. Run live Python Speckle adapter tests against the newly published package.
+7. Execute both notebooks top-to-bottom.
+8. Inspect notebook output for errors, warnings, excessive raw output, and
    numerical regressions.
-7. Run `git diff --check`.
-8. Review the entire diff for unrelated changes and accidental secret/output
+9. Run `git diff --check`.
+10. Review the entire diff for unrelated changes and accidental secret/output
    inclusion.
-9. Commit in coherent checkpoints. Do not mix the pre-existing user edits into
+11. Commit in coherent checkpoints. Do not mix the pre-existing user edits into
    a graph commit unless their intent is explicitly adopted and documented.
-10. Push only if the user explicitly requests it in the executing task.
+12. Push only if the user explicitly requests it in the executing task.
 
 ## Test plan
 
@@ -1327,10 +1462,18 @@ the two required notebooks.
 - Legacy type strings become adapter-owned Classifications.
 - No NetworkX serialization.
 - Explicit relationship records round-trip.
-- Standard Group proxy mapping for compatible Assembly contents.
+- Official v3 root envelope reconstructs the exact Snapshot.
+- Geometry Data Object metadata resolves to stable Entity IDs.
 - Unsupported feature does not stringify silently.
 
-## Commands for Daniel's Mac Studio
+Legacy import cases are removed in Phase 7. The explicit v3 package, malformed
+package, and stable geometry-association tests remain.
+
+## Cross-platform commands
+
+These commands cover the Mac development host. Windows C# build, connector, and
+acceptance commands are maintained in
+`grasshopper/WINDOWS_DEVELOPMENT.md`.
 
 ### Preflight
 
@@ -1347,14 +1490,12 @@ git diff --stat
 ```bash
 cd /Volumes/Data/Projects/Rangekeeper/src
 uv run pytest \
-  tests/test_kinds.py \
+  tests/test_classifications.py \
   tests/test_characteristics.py \
   tests/test_measures.py \
   tests/test_graph.py \
   -q
 ```
-
-Adjust filenames after `Kind` becomes `Classification`.
 
 ### Full library tests
 
@@ -1435,6 +1576,10 @@ The implementation is complete only when all of these are true:
     difference is explained by an intentional bug fix and accepted by the user.
 17. No credential or sensitive `.env` content appears in Git history, fixtures,
     notebook outputs, or logs.
+18. The rebuilt Rhino/Grasshopper source publishes through the official Speckle
+    v3 connector on the pinned Windows acceptance host.
+19. The published package reconstructs the canonical Snapshot and preserves the
+    expected 50 entities and 63 classified relationships.
 
 ## Decisions to make only if implementation forces them
 
@@ -1449,8 +1594,9 @@ These questions are intentionally deferred and should not block initial work:
 - whether multiple Provenance records are needed for merged data;
 - how every rich Rangekeeper financial object should be represented in a full
   Snapshot;
-- whether a standard Speckle proxy can represent each specialized Rangekeeper
-  relationship.
+- the exact official-connector property nesting used for the Snapshot envelope;
+  freeze it from the Phase 6 Windows spike rather than coupling to connector
+  wrapper classes.
 
 Use the simplest behavior documented above until a current test or notebook
 demonstrates the need for expansion.
