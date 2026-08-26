@@ -12,7 +12,7 @@ materialization = rk.graph.materialization
 units = rk.measure.Index.registry
 
 
-def materialized_model():
+def materialized_graph():
     entity_root = rk.graph.Taxonomy(code="project.entity", name="Entity Types").define(
         code="entity", name="Entity"
     )
@@ -95,9 +95,9 @@ def materialized_model():
         entities=(level,),
         relationships=(property_contains_level,),
     )
-    model = rk.graph.Model()
-    model.assemblies.add(property_assembly)
-    return model
+    graph = rk.graph.Graph()
+    graph.assemblies.add(property_assembly)
+    return graph
 
 
 def test_record_and_snapshot_are_deeply_read_only():
@@ -116,10 +116,10 @@ def test_record_and_snapshot_are_deeply_read_only():
         record.values["nested"]["changed"] = True
 
 
-def test_model_snapshot_contains_only_neutral_records_and_stable_references():
-    model = materialized_model()
+def test_graph_snapshot_contains_only_neutral_records_and_stable_references():
+    graph = materialized_graph()
 
-    snapshot = materialization.to_snapshot(model)
+    snapshot = materialization.to_snapshot(graph)
 
     assert snapshot.schema_version == 2
     assert {record.record_type for record in snapshot.records} == {
@@ -172,7 +172,7 @@ def test_model_snapshot_contains_only_neutral_records_and_stable_references():
 
 
 def test_snapshot_encoding_canonicalizes_nested_mapping_order():
-    left = rk.graph.Model()
+    left = rk.graph.Graph()
     left.entities.add(
         rk.graph.Entity(
             entity_id="entity",
@@ -181,7 +181,7 @@ def test_snapshot_encoding_canonicalizes_nested_mapping_order():
             ),
         )
     )
-    right = rk.graph.Model()
+    right = rk.graph.Graph()
     right.entities.add(
         rk.graph.Entity(
             entity_id="entity",
@@ -194,11 +194,11 @@ def test_snapshot_encoding_canonicalizes_nested_mapping_order():
     assert materialization.to_snapshot(left) == materialization.to_snapshot(right)
 
 
-def test_model_snapshot_round_trip_preserves_domain_structure_and_values():
-    original = materialized_model()
+def test_graph_snapshot_round_trip_preserves_domain_structure_and_values():
+    original = materialized_graph()
     snapshot = materialization.to_snapshot(original)
 
-    restored = rk.graph.Model.from_snapshot(snapshot)
+    restored = rk.graph.Graph.from_snapshot(snapshot)
 
     assert restored.validate().is_valid
     assert materialization.to_snapshot(restored) == snapshot
@@ -248,13 +248,13 @@ def test_model_snapshot_round_trip_preserves_domain_structure_and_values():
     assert office.measures[office_measure].magnitude == 10_000
 
 
-def test_model_from_snapshot_uses_the_supplied_unit_registry():
+def test_graph_from_snapshot_uses_the_supplied_unit_registry():
     registry = pint.UnitRegistry()
     registry.define("squaremeter = 1 m**2 = m2 = sqm")
     registry.define("squarefoot = 1 foot**2 = ft2 = sqft")
 
-    restored = rk.graph.Model.from_snapshot(
-        materialization.to_snapshot(materialized_model()),
+    restored = rk.graph.Graph.from_snapshot(
+        materialization.to_snapshot(materialized_graph()),
         registry=registry,
     )
 
@@ -265,26 +265,26 @@ def test_model_from_snapshot_uses_the_supplied_unit_registry():
     assert office.features["allowance"]._REGISTRY is registry
 
 
-def test_model_snapshot_preserves_an_explicitly_registered_unused_taxonomy():
+def test_graph_snapshot_preserves_an_explicitly_registered_unused_taxonomy():
     taxonomy = rk.graph.Taxonomy(code="uses", name="Uses")
     root = taxonomy.define(code="use", name="Use")
     root.define(code="office", name="Office")
-    model = rk.graph.Model()
-    model.taxonomies.add(taxonomy)
+    graph = rk.graph.Graph()
+    graph.taxonomies.add(taxonomy)
 
-    restored = rk.graph.Model.from_snapshot(materialization.to_snapshot(model))
+    restored = rk.graph.Graph.from_snapshot(materialization.to_snapshot(graph))
 
     assert restored.taxonomies["uses"].classification("office").name == "Office"
     assert restored.taxonomies["uses"].is_frozen
 
 
 def test_view_snapshot_expands_assembly_references_without_networkx_state():
-    model = materialized_model()
+    graph = materialized_graph()
     root_only = rk.graph.View(
-        model, predicate=lambda entity: entity.entity_id == "property"
+        graph, predicate=lambda entity: entity.entity_id == "property"
     )
 
-    restored = rk.graph.Model.from_snapshot(materialization.to_snapshot(root_only))
+    restored = rk.graph.Graph.from_snapshot(materialization.to_snapshot(root_only))
 
     assert {entity.entity_id for entity in restored.entities.all()} == {
         "property",
@@ -301,23 +301,23 @@ def test_view_snapshot_expands_assembly_references_without_networkx_state():
 
 
 def test_relationship_selected_view_expands_an_assembly_endpoint_to_its_closure():
-    model = materialized_model()
+    graph = materialized_graph()
     linked_to = next(
         taxonomy
-        for taxonomy in model.taxonomies.all()
+        for taxonomy in graph.taxonomies.all()
         if taxonomy.code == "project.relationship"
     ).classification("linked-to")
     external = rk.graph.Entity(entity_id="external")
-    model.entities.add(external)
-    model.relationships.connect(
+    graph.entities.add(external)
+    graph.relationships.connect(
         external,
         "property",
         linked_to,
         relationship_id="external-property",
     )
-    view = rk.graph.View(model, relationship_classification=linked_to)
+    view = rk.graph.View(graph, relationship_classification=linked_to)
 
-    restored = rk.graph.Model.from_snapshot(materialization.to_snapshot(view))
+    restored = rk.graph.Graph.from_snapshot(materialization.to_snapshot(view))
 
     assert {entity.entity_id for entity in restored.entities.all()} == {
         "external",
@@ -335,12 +335,12 @@ def test_relationship_selected_view_expands_an_assembly_endpoint_to_its_closure(
 
 
 def test_view_snapshot_of_plain_entity_remains_scoped():
-    model = materialized_model()
+    graph = materialized_graph()
     office_only = rk.graph.View(
-        model, predicate=lambda entity: entity.entity_id == "office"
+        graph, predicate=lambda entity: entity.entity_id == "office"
     )
 
-    restored = rk.graph.Model.from_snapshot(materialization.to_snapshot(office_only))
+    restored = rk.graph.Graph.from_snapshot(materialization.to_snapshot(office_only))
 
     assert tuple(entity.entity_id for entity in restored.entities.all()) == ("office",)
     assert restored.relationships.all() == ()
@@ -348,29 +348,29 @@ def test_view_snapshot_of_plain_entity_remains_scoped():
 
 
 def test_unsupported_feature_reports_owner_feature_and_type():
-    model = materialized_model()
-    model.entities["office"].features["runtime"] = object()
+    graph = materialized_graph()
+    graph.entities["office"].features["runtime"] = object()
 
     with pytest.raises(
         materialization.UnsupportedValueError,
         match=r"entity 'office' feature 'runtime'.*object",
     ):
-        materialization.to_snapshot(model)
+        materialization.to_snapshot(graph)
 
 
 def test_non_string_feature_mapping_keys_are_rejected_precisely():
-    model = materialized_model()
-    model.entities["office"].features["bad"] = {1: "value"}
+    graph = materialized_graph()
+    graph.entities["office"].features["bad"] = {1: "value"}
 
     with pytest.raises(
         materialization.UnsupportedValueError,
         match="mapping key type int",
     ):
-        materialization.to_snapshot(model)
+        materialization.to_snapshot(graph)
 
 
-def test_model_from_snapshot_rejects_dangling_relationship_references():
-    snapshot = materialization.to_snapshot(materialized_model())
+def test_graph_from_snapshot_rejects_dangling_relationship_references():
+    snapshot = materialization.to_snapshot(materialized_graph())
     records = []
     for record in snapshot.records:
         if record.identifier == "level-office":
@@ -388,11 +388,11 @@ def test_model_from_snapshot_rejects_dangling_relationship_references():
     )
 
     with pytest.raises(materialization.SnapshotError, match="missing Entity"):
-        rk.graph.Model.from_snapshot(malformed)
+        rk.graph.Graph.from_snapshot(malformed)
 
 
-def test_model_from_snapshot_wraps_invalid_measure_units():
-    snapshot = materialization.to_snapshot(materialized_model())
+def test_graph_from_snapshot_wraps_invalid_measure_units():
+    snapshot = materialization.to_snapshot(materialized_graph())
     records = []
     for record in snapshot.records:
         if record.identifier == "office":
@@ -421,11 +421,11 @@ def test_model_from_snapshot_wraps_invalid_measure_units():
     )
 
     with pytest.raises(materialization.SnapshotError, match="Measure is invalid"):
-        rk.graph.Model.from_snapshot(malformed)
+        rk.graph.Graph.from_snapshot(malformed)
 
 
-def test_model_from_snapshot_rejects_missing_taxonomy_reference():
-    snapshot = materialization.to_snapshot(materialized_model())
+def test_graph_from_snapshot_rejects_missing_taxonomy_reference():
+    snapshot = materialization.to_snapshot(materialized_graph())
     records = []
     changed = False
     for record in snapshot.records:
@@ -446,11 +446,11 @@ def test_model_from_snapshot_rejects_missing_taxonomy_reference():
     )
 
     with pytest.raises(materialization.SnapshotError, match="missing Taxonomy"):
-        rk.graph.Model.from_snapshot(malformed)
+        rk.graph.Graph.from_snapshot(malformed)
 
 
-def test_model_from_snapshot_rejects_taxonomy_cycle():
-    snapshot = materialization.to_snapshot(materialized_model())
+def test_graph_from_snapshot_rejects_taxonomy_cycle():
+    snapshot = materialization.to_snapshot(materialized_graph())
     records = []
     for record in snapshot.records:
         if (
@@ -473,20 +473,20 @@ def test_model_from_snapshot_rejects_taxonomy_cycle():
     )
 
     with pytest.raises(materialization.SnapshotError, match="cycle"):
-        rk.graph.Model.from_snapshot(malformed)
+        rk.graph.Graph.from_snapshot(malformed)
 
 
-def test_model_from_snapshot_rejects_invalid_inputs():
+def test_graph_from_snapshot_rejects_invalid_inputs():
     with pytest.raises(TypeError, match="schema_version must be an integer"):
         materialization.Snapshot(schema_version=True, records=())
     with pytest.raises(TypeError, match="snapshot must be a Snapshot"):
-        rk.graph.Model.from_snapshot(object())
+        rk.graph.Graph.from_snapshot(object())
     with pytest.raises(materialization.SnapshotError, match="schema version"):
-        rk.graph.Model.from_snapshot(
+        rk.graph.Graph.from_snapshot(
             materialization.Snapshot(schema_version=1, records=())
         )
     with pytest.raises(materialization.SnapshotError, match="unknown record type"):
-        rk.graph.Model.from_snapshot(
+        rk.graph.Graph.from_snapshot(
             materialization.Snapshot(
                 schema_version=2,
                 records=(

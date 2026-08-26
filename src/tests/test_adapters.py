@@ -13,7 +13,7 @@ adapter = rk.graph.adapter
 materialization = rk.graph.materialization
 
 
-def adapter_model():
+def adapter_graph():
     kinds = rk.graph.Taxonomy(code="entity", name="Entity Types")
     kind = kinds.define(code="entity", name="Entity")
     entity = rk.graph.Entity(
@@ -22,13 +22,13 @@ def adapter_model():
         classification=kind,
         characteristics=rk.graph.Characteristics(features={"values": (1, "two", None)}),
     )
-    model = rk.graph.Model()
-    model.entities.add(entity)
-    return model
+    graph = rk.graph.Graph()
+    graph.entities.add(entity)
+    return graph
 
 
 def test_json_snapshot_text_round_trip_is_deterministic():
-    snapshot = materialization.to_snapshot(adapter_model())
+    snapshot = materialization.to_snapshot(adapter_graph())
 
     encoded = adapter.json.dumps(snapshot)
     restored = adapter.json.loads(encoded)
@@ -39,8 +39,8 @@ def test_json_snapshot_text_round_trip_is_deterministic():
 
 
 def test_json_snapshot_file_round_trip(tmp_path):
-    snapshot = materialization.to_snapshot(adapter_model())
-    path = tmp_path / "model.json"
+    snapshot = materialization.to_snapshot(adapter_graph())
+    path = tmp_path / "graph.json"
 
     adapter.json.dump(snapshot, path)
 
@@ -49,7 +49,7 @@ def test_json_snapshot_file_round_trip(tmp_path):
 
 def test_json_adapter_rejects_invalid_boundary_values():
     with pytest.raises(TypeError, match="Snapshot"):
-        adapter.json.dumps(adapter_model())
+        adapter.json.dumps(adapter_graph())
     with pytest.raises(adapter.AdapterEncodingError, match="root"):
         adapter.json.loads("[]")
     with pytest.raises(adapter.AdapterEncodingError, match="invalid Snapshot JSON"):
@@ -191,14 +191,14 @@ def legacy_design():
 
 
 def test_speckle_legacy_import_reconciles_entities_and_builds_domain_graph(capsys):
-    model = adapter.speckle.load(
+    graph = adapter.speckle.load(
         legacy_design(),
         context={"project_id": "project", "version_id": "version"},
     )
 
-    office = model.entities["office"]
-    building = model.entities["building"]
-    relationship = model.relationships["contains-office"]
+    office = graph.entities["office"]
+    building = graph.entities["building"]
+    relationship = graph.relationships["contains-office"]
 
     assert isinstance(office, rk.graph.Assembly)
     assert isinstance(building, rk.graph.Assembly)
@@ -241,9 +241,9 @@ def test_speckle_legacy_import_rejects_unsupported_features_without_stringifying
 
 
 def test_speckle_snapshot_package_round_trip_is_lossless():
-    model = adapter_model()
+    graph = adapter_graph()
 
-    package = adapter.speckle.dump(model)
+    package = adapter.speckle.dump(graph)
     transport = MemoryTransport()
     transported = operations.deserialize(
         operations.serialize(package, write_transports=[transport]),
@@ -253,27 +253,27 @@ def test_speckle_snapshot_package_round_trip_is_lossless():
 
     assert package.packageKind == "rangekeeper.snapshot"
     assert not hasattr(package, "graph")
-    assert materialization.to_snapshot(restored) == materialization.to_snapshot(model)
+    assert materialization.to_snapshot(restored) == materialization.to_snapshot(graph)
 
 
 def visualization_fixture():
     relationships = rk.graph.Taxonomy(
         code="relationship", name="Relationship Types"
     ).define(code="contains", name="Contains")
-    model = rk.graph.Model()
-    model.entities.add_all(
+    graph = rk.graph.Graph()
+    graph.entities.add_all(
         (
             rk.graph.Entity(entity_id="root", name="Root"),
             rk.graph.Entity(entity_id="child", name="Child"),
         )
     )
-    model.relationships.connect(
+    graph.relationships.connect(
         "root",
         "child",
         relationships,
         relationship_id="root-child",
     )
-    view = rk.graph.View(model)
+    view = rk.graph.View(graph)
     table = materialization.Table(
         columns=("entity_id", "parent_id", "name", "total"),
         rows=(

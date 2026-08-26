@@ -15,57 +15,57 @@ def relationship_classification(code="relationship.contains", name="Contains"):
     )
 
 
-def test_model_is_public_and_starts_empty():
-    model = rk.graph.Model()
+def test_graph_is_public_and_starts_empty():
+    graph = rk.graph.Graph()
 
-    assert rk.graph.model.Model is rk.graph.Model
-    assert model.entities.all() == ()
-    assert model.relationships.all() == ()
-    assert model.assemblies.all() == ()
-    assert model.taxonomies.all() == ()
-    assert not hasattr(model, "add_entity")
-    assert not hasattr(model, "views")
-    assert not callable(model.entities)
-    assert not hasattr(model, "graph")
-    assert model.validate().is_valid
+    assert rk.graph.graph.Graph is rk.graph.Graph
+    assert graph.entities.all() == ()
+    assert graph.relationships.all() == ()
+    assert graph.assemblies.all() == ()
+    assert graph.taxonomies.all() == ()
+    assert not hasattr(graph, "add_entity")
+    assert not hasattr(graph, "views")
+    assert not callable(graph.entities)
+    assert not hasattr(graph, "graph")
+    assert graph.validate().is_valid
 
 
 def test_entity_registration_lookup_and_enumeration_are_canonical():
     root = entity_classification("entity", "Entity")
     building_kind = root.define(code="entity.building", name="Building")
     building = rk.graph.Entity(entity_id="building", classification=building_kind)
-    model = rk.graph.Model()
+    graph = rk.graph.Graph()
 
-    assert model.entities.add(building) is building
-    assert model.entities.add(building) is building
+    assert graph.entities.add(building) is building
+    assert graph.entities.add(building) is building
 
-    assert model.entities["building"] is building
-    assert model.entities.get("building") is building
-    assert model.entities.get("missing") is None
-    assert model.entities.all() == (building,)
-    assert model.taxonomies.all() == (root.taxonomy,)
+    assert graph.entities["building"] is building
+    assert graph.entities.get("building") is building
+    assert graph.entities.get("missing") is None
+    assert graph.entities.all() == (building,)
+    assert graph.taxonomies.all() == (root.taxonomy,)
     assert root.taxonomy.classifications() == (root, building_kind)
     assert root.taxonomy.is_frozen
-    assert model.validate().is_valid
+    assert graph.validate().is_valid
     with pytest.raises(ValueError, match="frozen"):
         root.define(code="entity.space", name="Space")
     with pytest.raises(rk.graph.MissingEntityError):
-        model.entities["missing"]
+        graph.entities["missing"]
 
 
 def test_entity_batches_reject_identity_conflicts_atomically():
     existing = rk.graph.Entity(entity_id="existing")
-    model = rk.graph.Model()
-    model.entities.add(existing)
+    graph = rk.graph.Graph()
+    graph.entities.add(existing)
     added = rk.graph.Entity(entity_id="added")
     conflict = rk.graph.Entity(entity_id="existing")
 
     with pytest.raises(rk.graph.IdentityConflictError, match="existing"):
-        model.entities.add_all((added, conflict))
+        graph.entities.add_all((added, conflict))
 
-    assert model.entities.all() == (existing,)
+    assert graph.entities.all() == (existing,)
     with pytest.raises(rk.graph.MissingEntityError):
-        model.entities["added"]
+        graph.entities["added"]
 
 
 def test_taxonomy_code_conflicts_are_rejected_atomically():
@@ -73,39 +73,39 @@ def test_taxonomy_code_conflicts_are_rejected_atomically():
     second_kind = entity_classification(name="A different definition")
     first = rk.graph.Entity(entity_id="first", classification=first_kind)
     second = rk.graph.Entity(entity_id="second", classification=second_kind)
-    model = rk.graph.Model()
-    model.entities.add(first)
+    graph = rk.graph.Graph()
+    graph.entities.add(first)
 
     with pytest.raises(rk.graph.IdentityConflictError, match="taxonomy code"):
-        model.entities.add(second)
+        graph.entities.add(second)
 
-    assert model.entities.all() == (first,)
+    assert graph.entities.all() == (first,)
 
 
 def test_taxonomies_can_be_registered_explicitly_as_complete_aggregates():
     taxonomy = rk.graph.Taxonomy(code="uses", name="Uses")
     root = taxonomy.define(code="use", name="Use")
     office = root.define(code="office", name="Office")
-    model = rk.graph.Model()
+    graph = rk.graph.Graph()
 
-    assert model.taxonomies.add(taxonomy) is taxonomy
-    assert model.taxonomies.add(taxonomy) is taxonomy
+    assert graph.taxonomies.add(taxonomy) is taxonomy
+    assert graph.taxonomies.add(taxonomy) is taxonomy
 
-    assert model.taxonomies["uses"] is taxonomy
-    assert model.taxonomies.get("uses") is taxonomy
-    assert model.taxonomies.get("missing") is None
-    assert model.taxonomies.all() == (taxonomy,)
+    assert graph.taxonomies["uses"] is taxonomy
+    assert graph.taxonomies.get("uses") is taxonomy
+    assert graph.taxonomies.get("missing") is None
+    assert graph.taxonomies.all() == (taxonomy,)
     assert taxonomy.classifications() == (root, office)
     assert taxonomy.is_frozen
 
 
 def test_empty_taxonomies_cannot_be_registered():
-    model = rk.graph.Model()
+    graph = rk.graph.Graph()
 
     with pytest.raises(ValueError, match="define a root"):
-        model.taxonomies.add(rk.graph.Taxonomy(code="empty", name="Empty"))
+        graph.taxonomies.add(rk.graph.Taxonomy(code="empty", name="Empty"))
 
-    assert model.taxonomies.all() == ()
+    assert graph.taxonomies.all() == ()
 
 
 def test_relationship_endpoints_must_be_registered_and_batch_is_atomic():
@@ -116,14 +116,14 @@ def test_relationship_endpoints_must_be_registered_and_batch_is_atomic():
     dangling = rk.graph.Relationship(
         "source", "missing", kind, relationship_id="dangling"
     )
-    model = rk.graph.Model()
-    model.entities.add_all((source, target))
+    graph = rk.graph.Graph()
+    graph.entities.add_all((source, target))
 
     with pytest.raises(rk.graph.MissingEntityError):
-        model.relationships.add_all((valid, dangling))
+        graph.relationships.add_all((valid, dangling))
 
-    assert model.relationships.all() == ()
-    assert model.validate().is_valid
+    assert graph.relationships.all() == ()
+    assert graph.validate().is_valid
 
 
 def test_relationship_identity_conflicts_are_rejected_atomically():
@@ -133,14 +133,14 @@ def test_relationship_identity_conflicts_are_rejected_atomically():
     existing = rk.graph.Relationship("source", "target", kind, relationship_id="same")
     conflict = rk.graph.Relationship("target", "source", kind, relationship_id="same")
     added = rk.graph.Relationship("target", "source", kind, relationship_id="added")
-    model = rk.graph.Model()
-    model.entities.add_all((source, target))
-    model.relationships.add(existing)
+    graph = rk.graph.Graph()
+    graph.entities.add_all((source, target))
+    graph.relationships.add(existing)
 
     with pytest.raises(rk.graph.IdentityConflictError, match="same"):
-        model.relationships.add_all((added, conflict))
+        graph.relationships.add_all((added, conflict))
 
-    assert model.relationships.all() == (existing,)
+    assert graph.relationships.all() == (existing,)
 
 
 def test_relationship_connect_accepts_entity_instances_and_ids():
@@ -149,10 +149,10 @@ def test_relationship_connect_accepts_entity_instances_and_ids():
     kind = relationship_classification()
     characteristics = rk.graph.Characteristics(features={"distance": 3})
     provenance = rk.graph.Provenance(source="survey")
-    model = rk.graph.Model()
-    model.entities.add_all((source, target))
+    graph = rk.graph.Graph()
+    graph.entities.add_all((source, target))
 
-    relationship = model.relationships.connect(
+    relationship = graph.relationships.connect(
         source,
         "target",
         kind,
@@ -161,9 +161,9 @@ def test_relationship_connect_accepts_entity_instances_and_ids():
         provenance=provenance,
     )
 
-    assert model.relationships["related"] is relationship
-    assert model.relationships.get("related") is relationship
-    assert model.relationships.get("missing") is None
+    assert graph.relationships["related"] is relationship
+    assert graph.relationships.get("related") is relationship
+    assert graph.relationships.get("missing") is None
     assert relationship.source_id == "source"
     assert relationship.target_id == "target"
     assert relationship.characteristics is characteristics
@@ -179,13 +179,13 @@ def test_internal_networkx_representation_uses_canonical_keys_and_objects():
         relationship_classification(),
         relationship_id="relationship",
     )
-    model = rk.graph.Model()
-    model.entities.add_all((source, target))
-    model.relationships.add(relationship)
+    graph = rk.graph.Graph()
+    graph.entities.add_all((source, target))
+    graph.relationships.add(relationship)
 
-    assert model._graph.nodes["source"]["entity"] is source
+    assert graph._graph.nodes["source"]["entity"] is source
     assert (
-        model._graph["source"]["target"]["relationship"]["relationship"] is relationship
+        graph._graph["source"]["target"]["relationship"]["relationship"] is relationship
     )
 
 
@@ -208,29 +208,29 @@ def test_assembly_add_recursively_registers_exact_contents():
         entities=(child,),
         relationships=(root_relationship,),
     )
-    model = rk.graph.Model()
+    graph = rk.graph.Graph()
 
-    assert model.assemblies.add(root) is root
+    assert graph.assemblies.add(root) is root
 
-    assert model.assemblies["root"] is root
-    assert model.assemblies.get("root") is root
-    assert model.assemblies.get("missing") is None
-    assert set(model.entities.all()) == {root, child, leaf}
-    assert set(model.relationships.all()) == {root_relationship, child_relationship}
-    assert model.entities["child"] is child
-    assert model.relationships["child-leaf"] is child_relationship
-    assert model.validate().is_valid
+    assert graph.assemblies["root"] is root
+    assert graph.assemblies.get("root") is root
+    assert graph.assemblies.get("missing") is None
+    assert set(graph.entities.all()) == {root, child, leaf}
+    assert set(graph.relationships.all()) == {root_relationship, child_relationship}
+    assert graph.entities["child"] is child
+    assert graph.relationships["child-leaf"] is child_relationship
+    assert graph.validate().is_valid
 
 
 def test_entity_add_routes_assemblies_through_recursive_registration():
     child = rk.graph.Entity(entity_id="child")
     assembly = rk.graph.Assembly(entity_id="assembly", entities=(child,))
-    model = rk.graph.Model()
+    graph = rk.graph.Graph()
 
-    model.entities.add(assembly)
+    graph.entities.add(assembly)
 
-    assert model.entities.all() == (assembly, child)
-    assert model.validate().is_valid
+    assert graph.entities.all() == (assembly, child)
+    assert graph.validate().is_valid
 
 
 def test_entities_and_relationships_can_belong_to_multiple_assemblies():
@@ -252,28 +252,28 @@ def test_entities_and_relationships_can_belong_to_multiple_assemblies():
         entities=(first, second),
         relationships=(relationship,),
     )
-    model = rk.graph.Model()
+    graph = rk.graph.Graph()
 
-    model.assemblies.add(left)
-    model.assemblies.add(right)
+    graph.assemblies.add(left)
+    graph.assemblies.add(right)
 
-    assert model.assemblies.containing(first) == (left, right)
-    assert model.assemblies.containing(relationship) == (left, right)
-    assert model.relationships.all() == (relationship,)
-    assert model.validate().is_valid
+    assert graph.assemblies.containing(first) == (left, right)
+    assert graph.assemblies.containing(relationship) == (left, right)
+    assert graph.relationships.all() == (relationship,)
+    assert graph.validate().is_valid
 
 
 def test_assembly_collision_rejects_the_complete_addition_atomically():
     canonical = rk.graph.Entity(entity_id="shared")
-    model = rk.graph.Model()
-    model.entities.add(canonical)
+    graph = rk.graph.Graph()
+    graph.entities.add(canonical)
     conflicting = rk.graph.Entity(entity_id="shared")
     assembly = rk.graph.Assembly(entity_id="assembly", entities=(conflicting,))
 
     with pytest.raises(rk.graph.IdentityConflictError, match="shared"):
-        model.assemblies.add(assembly)
+        graph.assemblies.add(assembly)
 
-    assert model.entities.all() == (canonical,)
+    assert graph.entities.all() == (canonical,)
 
 
 def test_assembly_include_registers_new_contents_atomically():
@@ -285,19 +285,19 @@ def test_assembly_include_registers_new_contents_atomically():
         relationship_classification(),
         relationship_id="contains",
     )
-    model = rk.graph.Model()
-    model.assemblies.add(assembly)
+    graph = rk.graph.Graph()
+    graph.assemblies.add(assembly)
 
-    assert model.assemblies.include("assembly", entity, relationship) is assembly
+    assert graph.assemblies.include("assembly", entity, relationship) is assembly
 
-    assert model.entities["entity"] is entity
-    assert model.relationships["contains"] is relationship
+    assert graph.entities["entity"] is entity
+    assert graph.relationships["contains"] is relationship
     assert assembly.entities == frozenset({entity})
     assert assembly.relationships == frozenset({relationship})
-    assert model.validate().is_valid
+    assert graph.validate().is_valid
 
 
-def test_invalid_assembly_include_changes_neither_model_nor_assembly():
+def test_invalid_assembly_include_changes_neither_graph_nor_assembly():
     assembly = rk.graph.Assembly(entity_id="assembly")
     entity = rk.graph.Entity(entity_id="entity")
     dangling = rk.graph.Relationship(
@@ -306,24 +306,24 @@ def test_invalid_assembly_include_changes_neither_model_nor_assembly():
         relationship_classification(),
         relationship_id="dangling",
     )
-    model = rk.graph.Model()
-    model.assemblies.add(assembly)
+    graph = rk.graph.Graph()
+    graph.assemblies.add(assembly)
 
     with pytest.raises(rk.graph.InvalidAssemblyError, match="outside"):
-        model.assemblies.include(assembly, entity, dangling)
+        graph.assemblies.include(assembly, entity, dangling)
 
-    assert model.entities.all() == (assembly,)
-    assert model.relationships.all() == ()
+    assert graph.entities.all() == (assembly,)
+    assert graph.relationships.all() == ()
     assert assembly.entities == frozenset()
 
 
 def test_assembly_members_must_be_domain_objects():
     assembly = rk.graph.Assembly(entity_id="assembly")
-    model = rk.graph.Model()
-    model.assemblies.add(assembly)
+    graph = rk.graph.Graph()
+    graph.assemblies.add(assembly)
 
     with pytest.raises(TypeError, match="Entity or Relationship"):
-        model.assemblies.include(assembly, "entity")
+        graph.assemblies.include(assembly, "entity")
 
 
 def test_assembly_exclude_validates_the_complete_proposed_result():
@@ -339,20 +339,20 @@ def test_assembly_exclude_validates_the_complete_proposed_result():
         entities=(entity,),
         relationships=(relationship,),
     )
-    model = rk.graph.Model()
-    model.assemblies.add(assembly)
+    graph = rk.graph.Graph()
+    graph.assemblies.add(assembly)
 
     with pytest.raises(rk.graph.InvalidAssemblyError, match="target endpoint"):
-        model.assemblies.exclude(assembly, entity)
+        graph.assemblies.exclude(assembly, entity)
 
     assert assembly.entities == frozenset({entity})
     assert assembly.relationships == frozenset({relationship})
 
-    assert model.assemblies.exclude(assembly, entity, relationship) is assembly
+    assert graph.assemblies.exclude(assembly, entity, relationship) is assembly
     assert assembly.entities == frozenset()
     assert assembly.relationships == frozenset()
-    assert model.entities["entity"] is entity
-    assert model.relationships["contains"] is relationship
+    assert graph.entities["entity"] is entity
+    assert graph.relationships["contains"] is relationship
 
 
 def test_private_recursive_assembly_corruption_is_rejected_on_registration():
@@ -360,12 +360,12 @@ def test_private_recursive_assembly_corruption_is_rejected_on_registration():
     second = rk.graph.Assembly(entity_id="second")
     first._entities.add(second)
     second._entities.add(first)
-    model = rk.graph.Model()
+    graph = rk.graph.Graph()
 
     with pytest.raises(rk.graph.InvalidAssemblyError, match="cycle"):
-        model.assemblies.add(first)
+        graph.assemblies.add(first)
 
-    assert model.entities.all() == ()
+    assert graph.entities.all() == ()
 
 
 def test_predecessors_successors_and_classification_filters():
@@ -376,9 +376,9 @@ def test_predecessors_successors_and_classification_filters():
     root = taxonomy.define(code="relationship", name="Relationship")
     contains = root.define(code="relationship.contains", name="Contains")
     services = root.define(code="relationship.services", name="Services")
-    model = rk.graph.Model()
-    model.entities.add_all((first, second, third))
-    model.relationships.add_all(
+    graph = rk.graph.Graph()
+    graph.entities.add_all((first, second, third))
+    graph.relationships.add_all(
         (
             rk.graph.Relationship("first", "second", contains, relationship_id="one"),
             rk.graph.Relationship("first", "second", services, relationship_id="two"),
@@ -386,6 +386,6 @@ def test_predecessors_successors_and_classification_filters():
         )
     )
 
-    assert set(model.entities.predecessors(second)) == {first, third}
-    assert model.entities.predecessors("second", services) == (first,)
-    assert model.entities.successors(first, "relationship.contains") == (second,)
+    assert set(graph.entities.predecessors(second)) == {first, third}
+    assert graph.entities.predecessors("second", services) == (first,)
+    assert graph.entities.successors(first, "relationship.contains") == (second,)

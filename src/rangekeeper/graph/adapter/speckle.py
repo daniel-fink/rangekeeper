@@ -10,7 +10,7 @@ from ..characteristics import Characteristics
 from ..entity import Entity
 from ..materialization import Record, Snapshot, UnsupportedValueError, to_snapshot
 from ..materialization import value as encoded_value
-from ..model import Model
+from ..graph import Graph
 from ..provenance import Provenance
 from ..relationship import Relationship
 from ..taxonomy import Taxonomy
@@ -56,7 +56,7 @@ def load(
     base: Base,
     *,
     context: Mapping[str, str] | None = None,
-) -> Model:
+) -> Graph:
     """Load a legacy design or explicit Rangekeeper Snapshot package."""
     if not isinstance(base, Base):
         raise TypeError("base must be a Speckle Base")
@@ -66,10 +66,10 @@ def load(
     return _LegacyImporter(normalized_context).load(base)
 
 
-def dump(source: Model | View) -> Base:
-    """Dump a Model or View as an explicit, Snapshot-backed Speckle package."""
-    if not isinstance(source, (Model, View)):
-        raise TypeError("source must be a Model or View")
+def dump(source: Graph | View) -> Base:
+    """Dump a Graph or View as an explicit, Snapshot-backed Speckle package."""
+    if not isinstance(source, (Graph, View)):
+        raise TypeError("source must be a Graph or View")
     snapshot = to_snapshot(source)
     package = SnapshotPackage()
     package["packageKind"] = PACKAGE_KIND
@@ -85,7 +85,7 @@ def dump(source: Model | View) -> Base:
     return package
 
 
-def _load_package(base: Base) -> Model:
+def _load_package(base: Base) -> Graph:
     package_version = _member(base, "packageSchemaVersion")
     if package_version != PACKAGE_SCHEMA_VERSION:
         raise AdapterEncodingError(
@@ -115,7 +115,7 @@ def _load_package(base: Base) -> Model:
             ) from error
     try:
         snapshot = Snapshot(schema_version=snapshot_version, records=tuple(records))
-        return Model.from_snapshot(snapshot)
+        return Graph.from_snapshot(snapshot)
     except (TypeError, ValueError) as error:
         raise AdapterEncodingError(f"Speckle package is invalid: {error}") from error
 
@@ -138,7 +138,7 @@ class _LegacyImporter:
     representations: dict[str, _LegacyRepresentation] = field(default_factory=dict)
     _seen_bases: set[int] = field(default_factory=set)
 
-    def load(self, root: Base) -> Model:
+    def load(self, root: Base) -> Graph:
         self._walk(root)
         if not self.representations:
             raise SpeckleImportError("Speckle object graph contains no entityId values")
@@ -239,20 +239,20 @@ class _LegacyImporter:
                 relationships=assembly_relationships,
             )
 
-        model = Model()
+        graph = Graph()
         for taxonomy in (
             entity_taxonomy,
             relationship_taxonomy,
             *(taxonomy for taxonomy, _ in label_taxonomies.values()),
         ):
-            model.taxonomies.add(taxonomy)
-        model.entities.add_all(entities.values())
-        model.relationships.add_all(relationships.values())
-        validation = model.validate()
+            graph.taxonomies.add(taxonomy)
+        graph.entities.add_all(entities.values())
+        graph.relationships.add_all(relationships.values())
+        validation = graph.validate()
         if not validation:
             messages = "; ".join(issue.message for issue in validation.issues)
             raise SpeckleImportError(f"imported Speckle graph is invalid: {messages}")
-        return model
+        return graph
 
     def _walk(self, value: object) -> None:
         if isinstance(value, Base):

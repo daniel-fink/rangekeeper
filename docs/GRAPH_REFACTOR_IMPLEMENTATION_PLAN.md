@@ -97,7 +97,7 @@ Status at `8502817` on 2026-08-22:
 | ----- | -------- | --------------------------------------------------------------------------------------------------------- |
 | 0     | Complete | Baseline and legacy behavior characterized.                                                               |
 | 1     | Complete | Domain value objects and classifications implemented.                                                     |
-| 2     | Complete | Model, registries, View, traversal, and validation implemented.                                           |
+| 2     | Complete | Graph, registries, View, traversal, and validation implemented.                                           |
 | 3     | Complete | Graph aggregation implemented.                                                                            |
 | 4     | Complete | Snapshot, Record, Table, and arborescence materialization implemented.                                    |
 | 5     | Complete | JSON, pandas, CSV, Speckle, and visualization adapters implemented.                                       |
@@ -173,7 +173,7 @@ rangekeeper.graph
     Classification
     Characteristics
     Provenance
-    Model
+    Graph
     View
     traversal, validation, query, and graph aggregation operations
 
@@ -261,7 +261,7 @@ alias.
 - thin hierarchy-query delegates.
 
 `Taxonomy` owns the NetworkX hierarchy, enforces one root and taxonomy-local
-code uniqueness, and freezes when registered by a Model. Classification
+code uniqueness, and freezes when registered by a Graph. Classification
 identity is `(taxonomy.code, classification.code)` so codes from unrelated
 taxonomies cannot collide.
 
@@ -365,7 +365,7 @@ class Relationship:
     provenance: Provenance | None
 ```
 
-The ergonomic `model.relationships.connect()` method accepts either Entity
+The ergonomic `graph.relationships.connect()` method accepts either Entity
 instances or IDs, resolves and validates them, and stores IDs.
 
 ### 9. Assembly semantics
@@ -393,7 +393,7 @@ create synthetic `member_of` edges. Characteristics and Provenance belong to
 the Assembly, its contained Entities, and its contained Relationships. There
 is no separate membership object or per-membership metadata.
 
-The sets contain the same object instances registered in Model. Snapshot and
+The sets contain the same object instances registered in Graph. Snapshot and
 adapter representations store their stable IDs rather than recursive copies.
 This permits the same Entity or Relationship to appear in multiple Assemblies
 without duplication.
@@ -408,20 +408,20 @@ An Assembly may contain another Assembly because Assembly is an Entity subtype.
 Recursive Assembly containment cycles are rejected. Traversal of nested
 Assemblies must still use a visited set as defensive protection.
 
-Model is the mutation and validation boundary after registration. Assembly
+Graph is the mutation and validation boundary after registration. Assembly
 constructor inputs are copied, public collection properties are read-only, and
-the model-bound `model.assemblies` service updates registered Assembly contents
-atomically. Direct collection mutation must not bypass Model validation.
+the Graph-bound `graph.assemblies` service updates registered Assembly contents
+atomically. Direct collection mutation must not bypass Graph validation.
 
-`model.assemblies.add(assembly)` atomically registers the Assembly, recursively
+`graph.assemblies.add(assembly)` atomically registers the Assembly, recursively
 registers any contained Assemblies and their contents, and registers its other
 contained Entities and Relationships. An Assembly can also participate as an
 endpoint in arbitrary classified Relationships; those Relationships describe
 domain meaning such as spatial containment or service, not membership.
 
-### 10. Model
+### 10. Graph
 
-`Model` is the complete domain graph. It contains, but does not inherit from, an
+`Graph` is the complete domain graph. It contains, but does not inherit from, an
 `nx.MultiDiGraph`.
 
 Canonical NetworkX representation:
@@ -433,7 +433,7 @@ edge key                         relationship.relationship_id
 edge attribute "relationship"   exact Relationship instance
 ```
 
-No public mutation path may bypass Model validation.
+No public mutation path may bypass Graph validation.
 
 ### 11. View
 
@@ -442,7 +442,7 @@ Call the transient selected subgraph `View`, not `Selection` or `ModelView`.
 ```python
 @dataclass(frozen=True)
 class View:
-    model: Model
+    graph: Graph
     entity_ids: frozenset[str]
     relationship_ids: frozenset[str]
 ```
@@ -458,7 +458,7 @@ never create an Assembly implicitly.
 Call the hierarchical graph operation `aggregate`, not `rollup`.
 
 Expose aggregation on `View`, which already owns both the selected graph and its
-Model. The public notebook-facing form should be concise, for example:
+Graph. The public notebook-facing form should be concise, for example:
 
 ```python
 spatial_containment.aggregate(
@@ -471,7 +471,7 @@ This is distinct from table-style group-by aggregation in materialization.
 
 ## Core invariants
 
-Enforce these at every Model mutation boundary:
+Enforce these at every Graph mutation boundary:
 
 1. Entity IDs are non-empty strings and immutable after construction.
 2. Entity equality and hashing are based on immutable entity ID.
@@ -479,21 +479,21 @@ Enforce these at every Model mutation boundary:
 4. No two different entity objects may occupy one entity ID.
 5. A graph node key always equals `entity.entity_id`.
 6. Every graph node has an Entity/Assembly in its `entity` attribute.
-7. Relationship IDs are non-empty and unique within a Model.
-8. Relationship endpoint IDs must already exist in the Model.
+7. Relationship IDs are non-empty and unique within a Graph.
+8. Relationship endpoint IDs must already exist in the Graph.
 9. An edge key always equals `relationship.relationship_id`.
 10. Every edge has a Relationship in its `relationship` attribute.
 11. Relationship classification is required.
 12. Assembly contents reference the exact canonical objects registered in the
-    Model.
+    Graph.
 13. Every contained Relationship endpoint is contained by the Assembly or is
     the Assembly itself.
 14. Recursive Assembly containment cycles are rejected.
-15. Batch additions validate completely before mutating the Model.
+15. Batch additions validate completely before mutating the Graph.
 16. Public filtered graph results are Views, not mutable NetworkX views.
 17. NetworkX graph objects are never serialized directly.
 
-Add a full `Model.validate()` that reports all invariant violations, while
+Add a full `Graph.validate()` that reports all invariant violations, while
 normal mutation methods fail fast on the first invalid operation.
 
 ## Proposed file layout
@@ -507,7 +507,7 @@ src/rangekeeper/graph/
     classification.py
     characteristics.py
     provenance.py
-    model.py
+    graph.py
     view.py
     traversal.py
     aggregation.py
@@ -640,7 +640,7 @@ The Assembly sketch illustrates contained object references, not the final
 constructor mechanics. Copy incoming iterables before validation, detect
 different objects sharing an ID before constructing the sets, and expose
 read-only collection properties. Once an Assembly is registered, content
-changes go through Model so its canonical registries and graph remain in sync.
+changes go through Graph so its canonical registries and graph remain in sync.
 
 ### Relationship
 
@@ -671,18 +671,18 @@ constructor.
 Relationship identity should also be immutable. Relationship equality semantics
 must be explicit and use relationship-ID equality so canonical Relationships
 can participate in Assembly sets. Endpoint IDs and classification must also be
-immutable after registration so Assembly and Model invariants cannot be changed
-behind Model's back.
+immutable after registration so Assembly and Graph invariants cannot be changed
+behind Graph's back.
 
-### Model
+### Graph
 
-Model owns graph state and atomic transactions. Its public graph API is grouped
+Graph owns graph state and atomic transactions. Its public graph API is grouped
 into stable, read-only service properties. Registry services do not own
-independent dictionaries and cannot mutate state except through Model's private
+independent dictionaries and cannot mutate state except through Graph's private
 transaction kernel.
 
 ```python
-class Model:
+class Graph:
     def __init__(self) -> None:
         self._graph = nx.MultiDiGraph()
         self._entities: dict[str, Entity] = {}
@@ -708,55 +708,55 @@ class Model:
 The public services use a small consistent vocabulary:
 
 ```python
-model.entities.add(entity)
-model.entities.add_all(entities)
-model.entities[entity_id]
-model.entities.get(entity_id)
-model.entities.all()
+graph.entities.add(entity)
+graph.entities.add_all(entities)
+graph.entities[entity_id]
+graph.entities.get(entity_id)
+graph.entities.all()
 
-model.relationships.add(relationship)
-model.relationships.add_all(relationships)
-model.relationships.connect(source, target, classification)
+graph.relationships.add(relationship)
+graph.relationships.add_all(relationships)
+graph.relationships.connect(source, target, classification)
 
-model.assemblies.add(assembly)
-model.assemblies.include(assembly, entity, relationship)
-model.assemblies.exclude(assembly, entity, relationship)
-model.assemblies.containing(entity_or_relationship)
+graph.assemblies.add(assembly)
+graph.assemblies.include(assembly, entity, relationship)
+graph.assemblies.exclude(assembly, entity, relationship)
+graph.assemblies.containing(entity_or_relationship)
 
-model.taxonomies.add(taxonomy)
-View(model, ...)
+graph.taxonomies.add(taxonomy)
+View(graph, ...)
 ```
 
 `EntityRegistry`, `RelationshipRegistry`, `AssemblyRegistry`, and
-`TaxonomyRegistry` are model-bound registry facades. Views are immutable derived
-values constructed directly with `View(model, ...)`; they are not registered
-objects and do not require a model-bound factory. No service exposes
+`TaxonomyRegistry` are graph-bound registry facades. Views are immutable derived
+values constructed directly with `View(graph, ...)`; they are not registered
+objects and do not require a graph-bound factory. No service exposes
 `__setitem__`, `__delitem__`, or object deletion.
 
 Assembly targets may be an Assembly or assembly ID. Positional members passed
 to `include()` and `exclude()` must be Entity or Relationship instances;
 strings are rejected because their registry is ambiguous. Exclusion removes
-only membership and leaves the objects registered with Model.
+only membership and leaves the objects registered with Graph.
 
 Taxonomy registration adopts the complete Taxonomy, registers all of its
 Classifications, and freezes it. Classifications are accessed through their
-owning Taxonomy rather than a separate public Model registry.
+owning Taxonomy rather than a separate public Graph registry.
 
 Avoid an overly clever fluent query language in this refactor. Add only the
 query arguments exercised by tests and notebooks.
 
-`model.assemblies.add()` validates and registers the Assembly, its contained
+`graph.assemblies.add()` validates and registers the Assembly, its contained
 Entities, and its contained Relationships as one atomic operation.
 Assembly-scoped View selection includes the Assembly itself plus exactly its
 contained entities and relationships. `include()` and `exclude()` validate the
-complete proposed result before modifying either the Assembly or Model.
+complete proposed result before modifying either the Assembly or Graph.
 
 ### View
 
 ```python
 @dataclass(frozen=True)
 class View:
-    model: Model
+    graph: Graph
     entity_ids: frozenset[str]
     relationship_ids: frozenset[str]
 
@@ -780,7 +780,7 @@ class View:
 
 If a NetworkX representation is required for an advanced external algorithm,
 provide an explicit frozen copy such as `view.to_networkx()`. Do not expose the
-Model's mutable internal graph.
+Graph's mutable internal graph.
 
 ## Graph aggregation requirements
 
@@ -851,9 +851,9 @@ class Snapshot:
 Provide:
 
 ```python
-snapshot(model: Model) -> Snapshot
+snapshot(graph: Graph) -> Snapshot
 snapshot(view: View) -> Snapshot
-restore(snapshot: Snapshot) -> Model
+restore(snapshot: Snapshot) -> Graph
 ```
 
 Snapshot must preserve:
@@ -896,7 +896,7 @@ Projection owns:
 - handling of multiple classifications;
 - tabular group-by aggregation.
 
-CSV and pandas adapters consume Table. They do not query Model directly.
+CSV and pandas adapters consume Table. They do not query Graph directly.
 
 ## Adapters
 
@@ -905,8 +905,8 @@ CSV and pandas adapters consume Table. They do not query Model directly.
 Final high-level API:
 
 ```python
-load(base: specklepy.objects.Base) -> Model
-dump(model_or_view: Model | View) -> specklepy.objects.Base
+load(base: specklepy.objects.Base) -> Graph
+dump(graph_or_view: Graph | View) -> specklepy.objects.Base
 ```
 
 It is acceptable for these to use lower-level `decode() -> Snapshot` and
@@ -1051,7 +1051,7 @@ in either final notebook.
 
 Do not preserve the old synthetic root Assembly merely because the old parser
 returned an Assembly that owned the entire graph. The imported object graph is
-now the Model. Preserve actual source Assemblies as Assembly entities.
+now the Graph. Preserve actual source Assemblies as Assembly entities.
 
 Use the visualization adapter for the HTML graph.
 
@@ -1076,9 +1076,9 @@ Direct migration map:
 | -------------------------------- | --------------------------------------------------------------- |
 | `rk.api.Speckle.parse()`         | Phase 6 baseline characterization only; removed afterward       |
 | `rk.api.Speckle.to_rk()`         | `graph.adapter.speckle.load()` on the newly generated package   |
-| `property.filter_by_type(...)`   | `View(model, ...)`                                              |
-| `entity.get_relatives(...)`      | `model.entities.successors()` / `model.entities.predecessors()` |
-| `property.get_entities()`        | `model.entities.all()`                                          |
+| `property.filter_by_type(...)`   | `View(graph, ...)`                                              |
+| `entity.get_relatives(...)`      | `graph.entities.successors()` / `graph.entities.predecessors()` |
+| `property.get_entities()`        | `graph.entities.all()`                                          |
 | `filtered.get_entities()`        | `view.entities()`                                               |
 | `property.get_roots()`           | `view.roots()`                                                  |
 | `nx.is_arborescence(view.graph)` | `view.is_arborescence()`                                        |
@@ -1161,22 +1161,22 @@ lost.
 Gate: value objects and domain records pass without importing SpecklePy or
 NetworkX from Entity/Relationship modules.
 
-### Phase 2: Model and View
+### Phase 2: Graph and View
 
-1. Implement Model with private `nx.MultiDiGraph`.
+1. Implement Graph with private `nx.MultiDiGraph`.
 2. Implement validated atomic entity and relationship insertion.
-3. Implement model-bound registry lookup and enumeration.
-4. Implement `model.relationships.connect()` accepting instance or ID endpoints.
+3. Implement graph-bound registry lookup and enumeration.
+4. Implement `graph.relationships.connect()` accepting instance or ID endpoints.
 5. Implement atomic Assembly insertion from contained Entity and Relationship
    sets, plus validated Assembly content mutation.
 6. Implement View selection by entity classification, relationship
    classification, assembly, and predicate.
 7. Implement predecessor/successor, roots/leaves, traversal, and arborescence.
-8. Implement `Model.validate()` and typed errors/results.
+8. Implement `Graph.validate()` and typed errors/results.
 9. Add tests for collisions, dangling endpoints, duplicate edge IDs, overlapping
    assemblies, exact relationship inclusion, and nested Assembly containment.
 
-Gate: the graph model cannot reach an invalid state through its public API.
+Gate: the graph cannot reach an invalid state through its public API.
 
 ### Phase 3: graph aggregation
 
@@ -1193,7 +1193,7 @@ Gate: GFA and flux aggregation behavior is deterministic and notebook-ready.
 ### Phase 4: materialization (complete)
 
 1. Implement Record and Snapshot.
-2. Implement Snapshot creation from Model and View.
+2. Implement Snapshot creation from Graph and View.
 3. Implement restore with reference resolution and full validation.
 4. Add JSON-compatible encoding for core fields, Classification,
    Characteristics, Provenance, Measure, and Pint quantities.
@@ -1203,7 +1203,7 @@ Gate: GFA and flux aggregation behavior is deterministic and notebook-ready.
    parent-before-child ordering, and projection of aggregate feature values.
 8. Implement table grouping/aggregation only as exercised by tests.
 
-Gate: a supported Model snapshot round-trips exactly; View projection produces
+Gate: a supported Graph snapshot round-trips exactly; View projection produces
 the expected table rows and parent links.
 
 ### Phase 5: adapters (complete)
@@ -1217,7 +1217,7 @@ the expected table rows and parent links.
 6. Confirm no adapter silently stringifies unsupported objects.
 7. Implement visualization adapter for graph HTML, sunburst, and treemap.
 
-Gate: the sanitized/synthetic Speckle fixture imports into the expected Model;
+Gate: the sanitized/synthetic Speckle fixture imports into the expected Graph;
 supported Snapshot data round-trips through Speckle and JSON; Table round-trips
 through pandas/CSV as defined.
 
@@ -1311,10 +1311,10 @@ through pandas/CSV as defined.
 #### 6F. Migrate and execute the walkthroughs
 
 1. Update `load_design.ipynb` to load only the newly published explicit package
-   and use Model queries plus the visualization adapter.
+   and use Graph queries plus the visualization adapter.
 2. Add concise assertion cells for the imported structure, relationship counts,
    and `buildingA` traversal.
-3. Update `drive_model_from_design.ipynb` to View, Model aggregation,
+3. Update `drive_model_from_design.ipynb` to View, Graph aggregation,
    Characteristics access, Table/pandas projection, and visualization adapter.
 4. Preserve calculations and explanatory flow; replace direct NetworkX access
    with View methods.
@@ -1398,7 +1398,7 @@ the two required notebooks.
 - Relationship ID immutability and equality.
 - Relationship endpoint and classification validation.
 
-### Model tests
+### Graph tests
 
 - Node key/attribute invariant.
 - Edge key/attribute invariant.
@@ -1419,7 +1419,7 @@ the two required notebooks.
 - Assembly View.
 - Roots, leaves, predecessor, successor.
 - View immutability/read-only behavior.
-- Complete `Model.validate()` diagnostics.
+- Complete `Graph.validate()` diagnostics.
 
 ### Aggregation tests
 
@@ -1444,7 +1444,7 @@ the two required notebooks.
 - Provenance preservation.
 - Labels, measures, features preservation for supported types.
 - Unsupported feature produces precise error.
-- Model Snapshot round trip.
+- Graph Snapshot round trip.
 - View Snapshot includes required endpoints/classifications.
 - Entity Table projection.
 - Parent column projection.
@@ -1552,7 +1552,7 @@ rg -n \
 ```
 
 Review matches individually; `.graph` may legitimately appear in the package
-namespace or internal Model implementation.
+namespace or internal Graph implementation.
 
 ## Completion criteria
 
@@ -1561,7 +1561,7 @@ The implementation is complete only when all of these are true:
 1. Core Entity/Assembly/Relationship classes no longer inherit Speckle Base.
 2. `Classification` fully replaces `Kind` in the supported API.
 3. Entity and relationship IDs are immutable.
-4. Model is the sole owner of the mutable NetworkX graph.
+4. Graph is the sole owner of the mutable NetworkX graph.
 5. Relationship endpoints are stored as IDs.
 6. Assemblies preserve explicit Entity and Relationship sets and support
    overlapping contents without object duplication.

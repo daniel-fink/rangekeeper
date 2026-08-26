@@ -10,7 +10,7 @@ from .errors import (
     MissingEntityError,
     MissingRelationshipError,
 )
-from .model import Model
+from .graph import Graph
 from .registry import (
     AssemblyRegistry,
     EntityRegistry,

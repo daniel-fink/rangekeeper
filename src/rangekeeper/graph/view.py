@@ -14,20 +14,20 @@ from .relationship import Relationship
 
 if TYPE_CHECKING:
     from .aggregation import AggregationCallback
-    from .model import Model
+    from .graph import Graph
 
 
 @dataclass(frozen=True, init=False)
 class View:
-    """An immutable selection of registered Model entity and relationship IDs."""
+    """An immutable selection of registered Graph entity and relationship IDs."""
 
-    model: Model
+    graph: Graph
     entity_ids: frozenset[str]
     relationship_ids: frozenset[str]
 
     def __init__(
         self,
-        model: Model,
+        graph: Graph,
         *,
         entity_ids: Iterable[str] | None = None,
         relationship_ids: Iterable[str] | None = None,
@@ -36,10 +36,10 @@ class View:
         assembly: Assembly | str | None = None,
         predicate: Callable[[Entity], bool] | None = None,
     ) -> None:
-        from .model import Model
+        from .graph import Graph
 
-        if not isinstance(model, Model):
-            raise TypeError("model must be a Model")
+        if not isinstance(graph, Graph):
+            raise TypeError("graph must be a Graph")
         has_entity_ids = entity_ids is not None
         has_relationship_ids = relationship_ids is not None
         if has_entity_ids != has_relationship_ids:
@@ -51,7 +51,7 @@ class View:
 
         preserve_entity_id: str | None = None
         if assembly is not None:
-            canonical = model._resolve_assembly(assembly)
+            canonical = graph._resolve_assembly(assembly)
             base_entity_ids = frozenset(
                 {
                     canonical.entity_id,
@@ -68,11 +68,11 @@ class View:
             base_entity_ids = frozenset(entity_ids)
             base_relationship_ids = frozenset(relationship_ids)
         else:
-            base_entity_ids = frozenset(model._entities)
-            base_relationship_ids = frozenset(model._relationships)
+            base_entity_ids = frozenset(graph._entities)
+            base_relationship_ids = frozenset(graph._relationships)
 
-        self._validate_selection(model, base_entity_ids, base_relationship_ids)
-        selected_entity_ids, selected_relationship_ids = model._filter_view_ids(
+        self._validate_selection(graph, base_entity_ids, base_relationship_ids)
+        selected_entity_ids, selected_relationship_ids = graph._filter_view_ids(
             entity_ids=base_entity_ids,
             relationship_ids=base_relationship_ids,
             entity_classification=entity_classification,
@@ -80,20 +80,20 @@ class View:
             predicate=predicate,
             preserve_entity_id=preserve_entity_id,
         )
-        object.__setattr__(self, "model", model)
+        object.__setattr__(self, "graph", graph)
         object.__setattr__(self, "entity_ids", selected_entity_ids)
         object.__setattr__(self, "relationship_ids", selected_relationship_ids)
 
     @staticmethod
     def _validate_selection(
-        model: Model,
+        graph: Graph,
         entity_ids: frozenset[str],
         relationship_ids: frozenset[str],
     ) -> None:
         for entity_id in entity_ids:
-            model.entities[entity_id]
+            graph.entities[entity_id]
         for relationship_id in relationship_ids:
-            relationship = model.relationships[relationship_id]
+            relationship = graph.relationships[relationship_id]
             if (
                 relationship.source_id not in entity_ids
                 or relationship.target_id not in entity_ids
@@ -105,14 +105,14 @@ class View:
     def entities(self) -> tuple[Entity, ...]:
         return tuple(
             entity
-            for entity in self.model.entities.all()
+            for entity in self.graph.entities.all()
             if entity.entity_id in self.entity_ids
         )
 
     def relationships(self) -> tuple[Relationship, ...]:
         return tuple(
             relationship
-            for relationship in self.model.relationships.all()
+            for relationship in self.graph.relationships.all()
             if relationship.relationship_id in self.relationship_ids
         )
 
@@ -124,7 +124,7 @@ class View:
         predicate: Callable[[Entity], bool] | None = None,
     ) -> View:
         return View(
-            self.model,
+            self.graph,
             entity_ids=self.entity_ids,
             relationship_ids=self.relationship_ids,
             entity_classification=entity_classification,
@@ -139,13 +139,13 @@ class View:
         outgoing: bool = True,
         incoming: bool = True,
     ) -> View:
-        self.model._classification_matches(None, relationship)
+        self.graph._classification_matches(None, relationship)
         if not outgoing and not incoming:
             raise ValueError("expand requires outgoing or incoming relationships")
         expanded_entity_ids = set(self.entity_ids)
         expanded_relationship_ids = set(self.relationship_ids)
-        for edge in self.model.relationships.all():
-            if not self.model._classification_matches(
+        for edge in self.graph.relationships.all():
+            if not self.graph._classification_matches(
                 edge.classification, relationship
             ):
                 continue
@@ -156,7 +156,7 @@ class View:
                 expanded_entity_ids.add(edge.source_id)
                 expanded_relationship_ids.add(edge.relationship_id)
         return View(
-            self.model,
+            self.graph,
             entity_ids=frozenset(expanded_entity_ids),
             relationship_ids=frozenset(expanded_relationship_ids),
         )
@@ -167,7 +167,7 @@ class View:
         relationship: Classification | str | None = None,
     ) -> tuple[Entity, ...]:
         entity_id = self._resolve_view_entity_id(entity)
-        return self.model._predecessors(
+        return self.graph._predecessors(
             entity_id,
             relationship,
             entity_ids=self.entity_ids,
@@ -180,7 +180,7 @@ class View:
         relationship: Classification | str | None = None,
     ) -> tuple[Entity, ...]:
         entity_id = self._resolve_view_entity_id(entity)
-        return self.model._successors(
+        return self.graph._successors(
             entity_id,
             relationship,
             entity_ids=self.entity_ids,
@@ -240,7 +240,7 @@ class View:
         return nx.freeze(graph)
 
     def _resolve_view_entity_id(self, entity: Entity | str) -> str:
-        canonical = self.model._resolve_entity(entity)
+        canonical = self.graph._resolve_entity(entity)
         if canonical.entity_id not in self.entity_ids:
             raise MissingEntityError(canonical.entity_id)
         return canonical.entity_id

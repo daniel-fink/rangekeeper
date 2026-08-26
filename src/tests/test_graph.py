@@ -10,8 +10,9 @@ def test_graph_package_exports_phase_one_domain_classes():
     assert rk.graph.Provenance.__module__ == "rangekeeper.graph.provenance"
 
 
-def test_graph_package_exports_phase_two_model_types():
-    assert rk.graph.Model.__module__ == "rangekeeper.graph.model"
+def test_graph_package_exports_phase_two_graph_types():
+    assert rk.graph.Graph.__module__ == "rangekeeper.graph.graph"
+    assert not hasattr(rk.graph, "Model")
     assert rk.graph.View.__module__ == "rangekeeper.graph.view"
     assert rk.graph.EntityRegistry.__module__ == "rangekeeper.graph.registry"
     assert rk.graph.RelationshipRegistry.__module__ == "rangekeeper.graph.registry"
