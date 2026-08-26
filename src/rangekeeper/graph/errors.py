@@ -7,11 +7,11 @@ class IdentityConflictError(GraphError, ValueError):
 
 
 class MissingEntityError(GraphError, KeyError):
-    """Raised when an entity ID is not registered in a Model."""
+    """Raised when an entity ID is not registered in a Graph."""
 
 
 class MissingRelationshipError(GraphError, KeyError):
-    """Raised when a relationship ID is not registered in a Model."""
+    """Raised when a relationship ID is not registered in a Graph."""
 
 
 class InvalidAssemblyError(GraphError, ValueError):

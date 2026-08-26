@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 ClassificationKey = tuple[str, str]
 
 
-class Model:
+class Graph:
     """The validated mutation boundary for a complete domain graph."""
 
     def __init__(self) -> None:
@@ -72,7 +72,7 @@ class Model:
         snapshot: Snapshot,
         *,
         registry: pint.UnitRegistry | None = None,
-    ) -> Model:
+    ) -> Graph:
         from ..measure import Index
         from .materialization.serialization import from_snapshot as deserialize
 

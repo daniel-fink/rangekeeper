@@ -44,7 +44,7 @@ def aggregate(
 
     results: dict[str, object] = {}
     for entity_id in reversed(tuple(nx.topological_sort(graph))):
-        entity = view.model.entities[entity_id]
+        entity = view.graph.entities[entity_id]
         values = tuple(
             value
             for value in (

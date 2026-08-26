@@ -11,7 +11,7 @@ from ..assembly import Assembly
 from ..characteristics import Characteristics
 from ..classification import Classification
 from ..entity import Entity
-from ..model import Model
+from ..graph import Graph
 from ..provenance import Provenance
 from ..relationship import Relationship
 from ..taxonomy import Taxonomy
@@ -28,9 +28,9 @@ RECORD_TYPES = frozenset(
 )
 
 
-def to_snapshot(source: Model | View) -> Snapshot:
+def to_snapshot(source: Graph | View) -> Snapshot:
     entities, relationships = _graph_closure(source)
-    if isinstance(source, Model):
+    if isinstance(source, Graph):
         taxonomies = source.taxonomies.all()
         classifications = tuple(
             classification
@@ -64,14 +64,14 @@ def to_snapshot(source: Model | View) -> Snapshot:
 
 
 def _graph_closure(
-    source: Model | View,
+    source: Graph | View,
 ) -> tuple[tuple[Entity, ...], tuple[Relationship, ...]]:
-    if isinstance(source, Model):
+    if isinstance(source, Graph):
         return source.entities.all(), source.relationships.all()
     if not isinstance(source, View):
-        raise TypeError("source must be a Model or View")
+        raise TypeError("source must be a Graph or View")
 
-    model = source.model
+    graph = source.graph
     entity_ids: set[str] = set()
     relationship_ids: set[str] = set()
     pending_entities = list(source.entity_ids)
@@ -83,7 +83,7 @@ def _graph_closure(
             if entity_id in entity_ids:
                 continue
             entity_ids.add(entity_id)
-            entity = model.entities[entity_id]
+            entity = graph.entities[entity_id]
             if isinstance(entity, Assembly):
                 pending_entities.extend(item.entity_id for item in entity.entities)
                 pending_relationships.extend(
@@ -95,16 +95,16 @@ def _graph_closure(
         if relationship_id in relationship_ids:
             continue
         relationship_ids.add(relationship_id)
-        relationship = model.relationships[relationship_id]
+        relationship = graph.relationships[relationship_id]
         pending_entities.extend((relationship.source_id, relationship.target_id))
 
     return (
         tuple(
-            entity for entity in model.entities.all() if entity.entity_id in entity_ids
+            entity for entity in graph.entities.all() if entity.entity_id in entity_ids
         ),
         tuple(
             relationship
-            for relationship in model.relationships.all()
+            for relationship in graph.relationships.all()
             if relationship.relationship_id in relationship_ids
         ),
     )
@@ -142,14 +142,14 @@ def from_snapshot(
     snapshot: Snapshot,
     *,
     registry: pint.UnitRegistry,
-) -> Model:
+) -> Graph:
     if not isinstance(snapshot, Snapshot):
         raise TypeError("snapshot must be a Snapshot")
     if snapshot.schema_version != SCHEMA_VERSION:
         raise SnapshotError(
             f"unsupported Snapshot schema version {snapshot.schema_version}"
         )
-    return _Deserializer(registry).to_model(snapshot.records)
+    return _Deserializer(registry).to_graph(snapshot.records)
 
 
 @dataclass
@@ -162,7 +162,7 @@ class _Deserializer:
     relationships: dict[str, Relationship] = field(default_factory=dict)
     assembly_records: dict[str, Record] = field(default_factory=dict)
 
-    def to_model(self, records: Iterable[Record]) -> Model:
+    def to_graph(self, records: Iterable[Record]) -> Graph:
         by_type = self._partition(records)
         self._load_taxonomies(by_type["taxonomy"])
         self._load_classifications(by_type["classification"])
@@ -171,7 +171,7 @@ class _Deserializer:
         for record in by_type["relationship"]:
             self._add_relationship(record)
         self._populate_assemblies()
-        return self._build_model()
+        return self._build_graph()
 
     @staticmethod
     def _partition(records: Iterable[Record]) -> dict[str, list[Record]]:
@@ -351,20 +351,20 @@ class _Deserializer:
                     f"{fields.owner} contents are invalid: {error}"
                 ) from error
 
-    def _build_model(self) -> Model:
-        model = Model()
+    def _build_graph(self) -> Graph:
+        graph = Graph()
         try:
             for taxonomy in self.taxonomies.values():
-                model.taxonomies.add(taxonomy)
-            model.entities.add_all(self.entities.values())
-            model.relationships.add_all(self.relationships.values())
+                graph.taxonomies.add(taxonomy)
+            graph.entities.add_all(self.entities.values())
+            graph.relationships.add_all(self.relationships.values())
         except (TypeError, ValueError, KeyError) as error:
             raise SnapshotError(f"Snapshot graph is invalid: {error}") from error
-        validation = model.validate()
+        validation = graph.validate()
         if not validation:
             messages = "; ".join(issue.message for issue in validation.issues)
-            raise SnapshotError(f"restored Model is invalid: {messages}")
-        return model
+            raise SnapshotError(f"restored Graph is invalid: {messages}")
+        return graph
 
     def _classification(
         self,

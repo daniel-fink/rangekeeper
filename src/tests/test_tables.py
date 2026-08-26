@@ -10,7 +10,7 @@ materialization = rk.graph.materialization
 units = rk.measure.Index.registry
 
 
-def table_model():
+def table_graph():
     entity_types = rk.graph.Taxonomy(code="project.entity", name="Entity Types").define(
         code="entity", name="Entity"
     )
@@ -67,9 +67,9 @@ def table_model():
         ),
     )
     building._replace_contents(entities=(office, mixed), relationships=relationships)
-    model = rk.graph.Model()
-    model.assemblies.add(building)
-    return model, building, office, mixed, contains, area
+    graph = rk.graph.Graph()
+    graph.assemblies.add(building)
+    return graph, building, office, mixed, contains, area
 
 
 def test_table_is_rectangular_read_only_and_column_addressable():
@@ -88,10 +88,10 @@ def test_table_is_rectangular_read_only_and_column_addressable():
 
 
 def test_table_from_view_owns_column_order_and_selected_fields():
-    model, *_ = table_model()
+    graph, *_ = table_graph()
 
     table = materialization.Table.from_view(
-        rk.graph.View(model),
+        rk.graph.View(graph),
         fields=(
             "entity_id",
             "name",
@@ -118,9 +118,9 @@ def test_table_from_view_owns_column_order_and_selected_fields():
 
 
 def test_label_projection_is_scheme_aware_and_preserves_all_values():
-    model, _, office, mixed, *_ = table_model()
+    graph, _, office, mixed, *_ = table_graph()
 
-    table = materialization.Table.from_view(rk.graph.View(model), labels=("use",))
+    table = materialization.Table.from_view(rk.graph.View(graph), labels=("use",))
     rows = {row["entity_id"]: row for row in table.rows}
 
     assert rows[office.entity_id]["labels.use"] == (("ABS FCB", "231"),)
@@ -131,10 +131,10 @@ def test_label_projection_is_scheme_aware_and_preserves_all_values():
 
 
 def test_measure_projection_converts_to_target_units_and_uses_numeric_cells():
-    model, building, office, _, _, area = table_model()
+    graph, building, office, _, _, area = table_graph()
 
     table = materialization.Table.from_view(
-        rk.graph.View(model), measures={area: units.sqft}
+        rk.graph.View(graph), measures={area: units.sqft}
     )
     column = "measure.project.area [squarefoot]"
     rows = {row["entity_id"]: row for row in table.rows}
@@ -147,9 +147,9 @@ def test_measure_projection_converts_to_target_units_and_uses_numeric_cells():
 
 
 def test_default_measure_target_uses_the_measure_definition_units():
-    model, _, office, _, _, area = table_model()
+    graph, _, office, _, _, area = table_graph()
 
-    table = materialization.Table.from_view(rk.graph.View(model), measures={area: None})
+    table = materialization.Table.from_view(rk.graph.View(graph), measures={area: None})
     column = "measure.project.area [squaremeter]"
     rows = {row["entity_id"]: row for row in table.rows}
 
@@ -157,9 +157,9 @@ def test_default_measure_target_uses_the_measure_definition_units():
 
 
 def test_view_projection_remains_scoped_to_the_view():
-    model, building, office, *_ = table_model()
+    graph, building, office, *_ = table_graph()
     view = rk.graph.View(
-        model, predicate=lambda entity: entity.entity_id in {"building", "office"}
+        graph, predicate=lambda entity: entity.entity_id in {"building", "office"}
     )
 
     table = materialization.Table.from_view(view, features=("rating",))
@@ -169,11 +169,11 @@ def test_view_projection_remains_scoped_to_the_view():
 
 
 def test_feature_projection_preserves_rich_runtime_values():
-    model, _, office, *_ = table_model()
+    graph, _, office, *_ = table_graph()
     runtime_value = object()
     office.features["runtime"] = runtime_value
 
-    table = materialization.Table.from_view(rk.graph.View(model), features=("runtime",))
+    table = materialization.Table.from_view(rk.graph.View(graph), features=("runtime",))
     rows = {row["entity_id"]: row for row in table.rows}
 
     assert rows[office.entity_id]["feature.runtime"] is runtime_value
@@ -194,9 +194,9 @@ def test_arborescence_projection_adds_parent_ids_and_uses_stable_preorder():
         )
         for entity_id in ("root", "zulu", "alpha", "alpha-child")
     )
-    model = rk.graph.Model()
-    model.entities.add_all(entities)
-    model.relationships.add_all(
+    graph = rk.graph.Graph()
+    graph.entities.add_all(entities)
+    graph.relationships.add_all(
         (
             rk.graph.Relationship(
                 "root", "zulu", contains, relationship_id="root-zulu"
@@ -214,7 +214,7 @@ def test_arborescence_projection_adds_parent_ids_and_uses_stable_preorder():
     )
 
     table = materialization.Table.from_arborescence(
-        rk.graph.View(model), fields=("name", "entity_id")
+        rk.graph.View(graph), fields=("name", "entity_id")
     )
 
     assert table.columns == ("name", "entity_id", "parent_id")
@@ -228,10 +228,10 @@ def test_arborescence_projection_adds_parent_ids_and_uses_stable_preorder():
 
 
 def test_arborescence_projection_preserves_values_including_aggregates():
-    model, building, office, mixed, _, area = table_model()
+    graph, building, office, mixed, _, area = table_graph()
     office.features["area"] = 10
     mixed.features["area"] = 20
-    view = rk.graph.View(model)
+    view = rk.graph.View(graph)
     view.aggregate(feature="area", into="total_area")
 
     table = materialization.Table.from_arborescence(
@@ -252,37 +252,37 @@ def test_arborescence_projection_preserves_values_including_aggregates():
 
 
 def test_single_entity_is_an_arborescence_table():
-    model = rk.graph.Model()
-    model.entities.add(rk.graph.Entity(entity_id="only"))
+    graph = rk.graph.Graph()
+    graph.entities.add(rk.graph.Entity(entity_id="only"))
 
-    table = materialization.Table.from_arborescence(rk.graph.View(model))
+    table = materialization.Table.from_arborescence(rk.graph.View(graph))
 
     assert table.column("entity_id") == ("only",)
     assert table.column("parent_id") == (None,)
 
 
 def test_arborescence_projection_rejects_invalid_views_and_missing_entity_id():
-    model, *_ = table_model()
-    view = rk.graph.View(model)
+    graph, *_ = table_graph()
+    view = rk.graph.View(graph)
 
     with pytest.raises(TypeError, match="view must be a View"):
-        materialization.Table.from_arborescence(model)
+        materialization.Table.from_arborescence(graph)
     with pytest.raises(materialization.TableError, match="require.*entity_id"):
         materialization.Table.from_arborescence(view, fields=("name",))
 
-    empty_view = rk.graph.View(rk.graph.Model())
+    empty_view = rk.graph.View(rk.graph.Graph())
     with pytest.raises(materialization.TableError, match="non-empty"):
         materialization.Table.from_arborescence(empty_view)
 
-    disconnected_model = rk.graph.Model()
-    disconnected_model.entities.add_all(
+    disconnected_graph = rk.graph.Graph()
+    disconnected_graph.entities.add_all(
         (
             rk.graph.Entity(entity_id="first"),
             rk.graph.Entity(entity_id="second"),
         )
     )
     with pytest.raises(materialization.TableError, match="arborescence"):
-        materialization.Table.from_arborescence(rk.graph.View(disconnected_model))
+        materialization.Table.from_arborescence(rk.graph.View(disconnected_graph))
 
 
 @pytest.mark.parametrize(
@@ -297,11 +297,11 @@ def test_arborescence_projection_rejects_cycles_and_multiple_parents(edges):
         code="project.relationship", name="Relationship Types"
     ).define(code="contains", name="Contains")
     entity_ids = {entity_id for edge in edges for entity_id in edge}
-    model = rk.graph.Model()
-    model.entities.add_all(
+    graph = rk.graph.Graph()
+    graph.entities.add_all(
         rk.graph.Entity(entity_id=entity_id) for entity_id in entity_ids
     )
-    model.relationships.add_all(
+    graph.relationships.add_all(
         rk.graph.Relationship(
             source_id,
             target_id,
@@ -312,7 +312,7 @@ def test_arborescence_projection_rejects_cycles_and_multiple_parents(edges):
     )
 
     with pytest.raises(materialization.TableError, match="arborescence"):
-        materialization.Table.from_arborescence(rk.graph.View(model))
+        materialization.Table.from_arborescence(rk.graph.View(graph))
 
 
 def test_arborescence_projection_uses_only_relationships_selected_by_the_view():
@@ -322,12 +322,12 @@ def test_arborescence_projection_uses_only_relationships_selected_by_the_view():
     relationship = relationship_types.define(code="relationship", name="Relationship")
     contains = relationship.define(code="contains", name="Contains")
     services = relationship.define(code="services", name="Services")
-    model = rk.graph.Model()
-    model.entities.add_all(
+    graph = rk.graph.Graph()
+    graph.entities.add_all(
         rk.graph.Entity(entity_id=entity_id)
         for entity_id in ("root", "child", "external")
     )
-    model.relationships.add_all(
+    graph.relationships.add_all(
         (
             rk.graph.Relationship(
                 "root", "child", contains, relationship_id="root-child"
@@ -337,7 +337,7 @@ def test_arborescence_projection_uses_only_relationships_selected_by_the_view():
             ),
         )
     )
-    view = rk.graph.View(model, relationship_classification=contains)
+    view = rk.graph.View(graph, relationship_classification=contains)
 
     table = materialization.Table.from_arborescence(view)
 
@@ -372,11 +372,11 @@ def test_group_by_uses_explicit_functions_and_preserves_first_seen_order():
 
 
 def test_table_selection_validation_is_precise():
-    model, *_, area = table_model()
-    view = rk.graph.View(model)
+    graph, *_, area = table_graph()
+    view = rk.graph.View(graph)
 
     with pytest.raises(TypeError, match="view must be a View"):
-        materialization.Table.from_view(model)
+        materialization.Table.from_view(graph)
     with pytest.raises(materialization.TableError, match="unknown entity fields"):
         materialization.Table.from_view(view, fields=("unknown",))
     with pytest.raises(TypeError, match="not a string"):

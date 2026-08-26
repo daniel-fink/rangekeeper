@@ -51,7 +51,7 @@ class Assembly(Entity):
         entities: Iterable[Entity],
         relationships: Iterable[Relationship],
     ) -> None:
-        """Validate and atomically replace contents for the future Model boundary."""
+        """Validate and atomically replace contents for the future Graph boundary."""
         prepared_entities, prepared_relationships = self._prepare_contents(
             entities=entities,
             relationships=relationships,
