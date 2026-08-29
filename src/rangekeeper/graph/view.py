@@ -34,8 +34,8 @@ class View:
         *,
         entities: Iterable[str | UUID | Entity] | None = None,
         relationships: Iterable[UUID | Relationship] | None = None,
-        entity_classification: str | UUID | Classification | None = None,
-        relationship_classification: str | UUID | Classification | None = None,
+        entity_classification: UUID | Classification | None = None,
+        relationship_classification: UUID | Classification | None = None,
         assembly: str | UUID | Assembly | None = None,
         predicate: Callable[[Entity], bool] | None = None,
     ) -> None:
@@ -171,8 +171,8 @@ class View:
     def filter(
         self,
         *,
-        entity_classification: str | UUID | Classification | None = None,
-        relationship_classification: str | UUID | Classification | None = None,
+        entity_classification: UUID | Classification | None = None,
+        relationship_classification: UUID | Classification | None = None,
         predicate: Callable[[Entity], bool] | None = None,
     ) -> View:
         return View(
@@ -186,7 +186,7 @@ class View:
 
     def expand(
         self,
-        via: str | UUID | Classification | None = None,
+        via: UUID | Classification | None = None,
         *,
         outgoing: bool = True,
         incoming: bool = True,

@@ -5,7 +5,6 @@ from .classification import Classification
 from .definitions import Definitions
 from .entity import Entity
 from .errors import (
-    AmbiguousDefinitionError,
     AmbiguousLookupError,
     GraphError,
     IdentityConflictError,
@@ -48,7 +47,6 @@ __all__ = [
     "AssemblyState",
     "Aggregation",
     "AggregationRule",
-    "AmbiguousDefinitionError",
     "AmbiguousLookupError",
     "ChangeSet",
     "Characteristics",

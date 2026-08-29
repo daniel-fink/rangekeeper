@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-import warnings
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from types import MappingProxyType
 from uuid import UUID, uuid4
@@ -9,25 +8,38 @@ from uuid import UUID, uuid4
 import networkx as nx
 
 from .. import validate
-from ._index import Catalog
+from ._index import Catalog, catalog_values
 from .classification import Classification
 
 
-@dataclass(frozen=True, slots=True, kw_only=True)
+@dataclass(frozen=True, slots=True, init=False)
 class Taxonomy:
-    id: UUID = field(default_factory=uuid4)
+    id: UUID
     code: str
     name: str
-    classifications: tuple[Classification, ...]
-    definition: str | None = None
-    _classification_catalog: Catalog[Classification] = field(
-        init=False, repr=False, compare=False
-    )
+    classifications: Catalog[Classification]
+    definition: str | None
     _children_index: Mapping[UUID, tuple[UUID, ...]] = field(
         init=False, repr=False, compare=False
     )
 
-    def __post_init__(self) -> None:
+    def __init__(
+        self,
+        *,
+        code: str,
+        name: str,
+        classifications: Iterable[Classification] | Mapping[str, Classification],
+        id: UUID | None = None,
+        definition: str | None = None,
+    ) -> None:
+        object.__setattr__(self, "id", uuid4() if id is None else id)
+        object.__setattr__(self, "code", code)
+        object.__setattr__(self, "name", name)
+        object.__setattr__(self, "classifications", classifications)
+        object.__setattr__(self, "definition", definition)
+        self._validate_and_index()
+
+    def _validate_and_index(self) -> None:
         if not isinstance(self.id, UUID):
             raise TypeError("id must be a UUID")
         if not validate.is_text(self.code):
@@ -40,7 +52,7 @@ class Taxonomy:
             raise ValueError("Taxonomy.name must not be empty")
         if self.definition is not None and not isinstance(self.definition, str):
             raise TypeError("definition must be a string or None")
-        classifications = tuple(self.classifications)
+        classifications = catalog_values(self.classifications)
         if any(not isinstance(item, Classification) for item in classifications):
             raise TypeError("classifications must contain only Classification objects")
         catalog = Catalog(
@@ -54,11 +66,11 @@ class Taxonomy:
         for item in classifications:
             if item.parent is None:
                 continue
-            if not catalog.contains_id(item.parent.id):
+            if not catalog._contains_identifier(item.parent.id):
                 raise ValueError(
                     f"classification {item.code!r} references a missing parent"
                 )
-            canonical_parent = catalog.by_id(item.parent.id)
+            canonical_parent = catalog._by_identifier(item.parent.id)
             if canonical_parent is not item.parent:
                 raise ValueError(
                     f"classification {item.code!r} parent is not the canonical "
@@ -73,12 +85,11 @@ class Taxonomy:
         )
         if not nx.is_directed_acyclic_graph(graph):
             raise ValueError("taxonomy classifications must form an acyclic hierarchy")
-        object.__setattr__(self, "classifications", classifications)
+        object.__setattr__(self, "classifications", catalog)
         children: dict[UUID, list[UUID]] = {}
         for item in classifications:
             if item.parent is not None:
                 children.setdefault(item.parent.id, []).append(item.id)
-        object.__setattr__(self, "_classification_catalog", catalog)
         object.__setattr__(
             self,
             "_children_index",
@@ -92,60 +103,22 @@ class Taxonomy:
 
     @property
     def root(self) -> Classification:
-        return next(item for item in self.classifications if item.parent is None)
+        return next(
+            item for item in self.classifications.values() if item.parent is None
+        )
 
-    def classification(self, reference: str | UUID | Classification) -> Classification:
-        if isinstance(reference, str):
-            return self._classification_catalog.by_code(reference)
-        if isinstance(reference, UUID):
-            warnings.warn(
-                "Taxonomy.classification(UUID) is deprecated; use "
-                "classification_by_id()",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            return self.classification_by_id(reference)
-        if isinstance(reference, Classification):
-            warnings.warn(
-                "Taxonomy.classification(Classification) is deprecated; use "
-                "canonical_classification()",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            return self.canonical_classification(reference)
-        raise TypeError("classification lookup requires a code")
-
-    def classification_by_id(self, identifier: UUID) -> Classification:
-        return self._classification_catalog.by_id(identifier)
-
-    def canonical_classification(
-        self, classification: Classification
-    ) -> Classification:
-        if not isinstance(classification, Classification):
-            raise TypeError("classification must be a Classification")
-        return self._classification_catalog.canonical(classification)
-
-    def find(self, code: str) -> Classification | None:
-        return self._classification_catalog.find(code)
-
-    def parent(
-        self, classification: str | UUID | Classification
-    ) -> Classification | None:
-        canonical = self._resolve_classification(classification)
+    def parent(self, classification: Classification) -> Classification | None:
+        canonical = self._canonical(classification)
         return canonical.parent
 
-    def children(
-        self, classification: str | UUID | Classification
-    ) -> tuple[Classification, ...]:
-        canonical = self._resolve_classification(classification)
+    def children(self, classification: Classification) -> tuple[Classification, ...]:
+        canonical = self._canonical(classification)
         return tuple(
-            self._classification_catalog.by_id(id)
+            self.classifications._by_identifier(id)
             for id in self._children_index.get(canonical.id, ())
         )
 
-    def ancestors(
-        self, classification: str | UUID | Classification
-    ) -> tuple[Classification, ...]:
+    def ancestors(self, classification: Classification) -> tuple[Classification, ...]:
         current = self.parent(classification)
         result: list[Classification] = []
         while current is not None:
@@ -153,10 +126,8 @@ class Taxonomy:
             current = self.parent(current)
         return tuple(reversed(result))
 
-    def descendants(
-        self, classification: str | UUID | Classification
-    ) -> tuple[Classification, ...]:
-        canonical = self._resolve_classification(classification)
+    def descendants(self, classification: Classification) -> tuple[Classification, ...]:
+        canonical = self._canonical(classification)
         result: list[Classification] = []
         pending = list(self.children(canonical))
         while pending:
@@ -167,11 +138,11 @@ class Taxonomy:
 
     def is_a(
         self,
-        classification: str | UUID | Classification,
-        ancestor: str | UUID | Classification,
+        classification: Classification,
+        ancestor: Classification,
     ) -> bool:
-        canonical = self._resolve_classification(classification)
-        canonical_ancestor = self._resolve_classification(ancestor)
+        canonical = self._canonical(classification)
+        canonical_ancestor = self._canonical(ancestor)
         return canonical == canonical_ancestor or canonical_ancestor in self.ancestors(
             canonical
         )
@@ -179,22 +150,17 @@ class Taxonomy:
     def to_networkx(self) -> nx.DiGraph:
         graph = nx.DiGraph()
         graph.add_nodes_from(
-            (item.id, {"classification": item}) for item in self.classifications
+            (item.id, {"classification": item})
+            for item in self.classifications.values()
         )
         graph.add_edges_from(
             (item.parent.id, item.id)
-            for item in self.classifications
+            for item in self.classifications.values()
             if item.parent is not None
         )
         return nx.freeze(graph)
 
-    def _resolve_classification(
-        self, reference: str | UUID | Classification
-    ) -> Classification:
-        if isinstance(reference, str):
-            return self._classification_catalog.by_code(reference)
-        if isinstance(reference, UUID):
-            return self.classification_by_id(reference)
-        if isinstance(reference, Classification):
-            return self.canonical_classification(reference)
-        raise TypeError("classification reference requires a code, UUID, or object")
+    def _canonical(self, classification: Classification) -> Classification:
+        if not isinstance(classification, Classification):
+            raise TypeError("classification must be a Classification")
+        return self.classifications._canonical(classification)

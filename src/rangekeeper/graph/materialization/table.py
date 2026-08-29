@@ -255,9 +255,9 @@ def _measurement_columns(
     columns = []
     for reference, target in measurements.items():
         measure = (
-            view.graph.definitions.measure(reference)
+            view.graph.definitions.measures[reference]
             if isinstance(reference, str)
-            else view.graph.definitions.canonical_measure(reference)
+            else view.graph.definitions.measures._canonical(reference)
         )
         if target is None:
             target_unit = measure.units
@@ -295,5 +295,5 @@ def _entity_field(entity: Entity, field: str, *, view: View) -> object:
     if field == "classification_taxonomy":
         if entity.classification is None:
             return None
-        return view.graph.definitions.taxonomy_of(entity.classification).code
+        return view.graph._taxonomy_of(entity.classification).code
     raise TableError(f"unknown entity field {field!r}")

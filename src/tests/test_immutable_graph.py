@@ -11,6 +11,7 @@ import pytest
 
 import rangekeeper as rk
 import rangekeeper.graph.aggregation as aggregation_module
+import rangekeeper.graph.definitions as definitions_module
 from rangekeeper.measure import AggregationRule, Index, Measure, QuantityKind
 
 
@@ -122,6 +123,8 @@ def test_retired_mutable_and_embedded_provenance_apis_are_absent():
     assert not hasattr(rk.graph.Aggregation, "by_feature")
     assert not hasattr(aggregation_module, "AggregationSpec")
     assert not hasattr(aggregation_module, "_BoundAggregation")
+    assert not hasattr(definitions_module, "_DefinitionsIndex")
+    assert not hasattr(rk.graph, "Catalog")
     assert isinstance(rk.graph.reduce, ModuleType)
 
 
@@ -209,6 +212,53 @@ def test_definitions_and_measure_validation(model):
     duplicate = replace(measure, id=uuid4())
     with pytest.raises(ValueError, match="measure codes"):
         rk.graph.Definitions(measures=(measure, duplicate))
+    duplicate_id = replace(measure, id=model["definitions"].taxonomies["entity"].id)
+    with pytest.raises(rk.graph.IdentityConflictError, match="definition UUID"):
+        rk.graph.Definitions(
+            taxonomies=model["definitions"].taxonomies,
+            measures=(duplicate_id,),
+        )
+    with pytest.raises(TypeError, match="Taxonomy objects"):
+        rk.graph.Definitions(taxonomies=(measure,))
+    with pytest.raises(TypeError, match="Measure objects"):
+        rk.graph.Definitions(measures=(model["definitions"].taxonomies["entity"],))
+    with pytest.raises(TypeError, match="Classification objects"):
+        rk.graph.Taxonomy(
+            code="invalid",
+            name="Invalid",
+            classifications=(measure,),
+        )
+
+
+def test_catalog_inputs_normalize_from_iterables_and_mappings(model):
+    definitions = model["definitions"]
+    copied = rk.graph.Definitions(
+        taxonomies=(item for item in definitions.taxonomies.values()),
+        measures=definitions.measures,
+    )
+    assert copied.taxonomies == definitions.taxonomies
+    assert copied.measures == definitions.measures
+
+    original = definitions.taxonomies["entity"]
+    copied_taxonomy = rk.graph.Taxonomy(
+        id=original.id,
+        code=original.code,
+        name=original.name,
+        definition=original.definition,
+        classifications=original.classifications,
+    )
+    assert copied_taxonomy.classifications == original.classifications
+
+
+def test_classification_codes_are_unique_within_a_taxonomy(model):
+    root = model["space"]
+    duplicate = replace(model["apartment"], id=uuid4())
+    with pytest.raises(ValueError, match="classification codes"):
+        rk.graph.Taxonomy(
+            code="invalid",
+            name="Invalid",
+            classifications=(root, model["apartment"], duplicate),
+        )
 
 
 def test_identifiable_characteristics_and_keyed_views(model):
@@ -314,27 +364,42 @@ def test_private_indexes_are_immutable_and_preserve_order():
 
 def test_semantic_definition_and_entity_lookup(model):
     definitions = model["definitions"]
-    entity_taxonomy = definitions.taxonomy("entity")
-    assert entity_taxonomy.code == "entity"
-    assert definitions.taxonomy_by_id(entity_taxonomy.id) is entity_taxonomy
-    assert definitions.canonical_taxonomy(entity_taxonomy) is entity_taxonomy
-    assert definitions.classification("entity", "space.apartment") is model["apartment"]
-    assert definitions.classification_by_id(model["apartment"].id) is model["apartment"]
-    assert (
-        definitions.canonical_classification(model["apartment"]) is model["apartment"]
+    entity_taxonomy = definitions.taxonomies["entity"]
+    assert definitions.taxonomies.get("entity") is entity_taxonomy
+    assert definitions.taxonomies.get("missing") is None
+    assert tuple(definitions.taxonomies) == ("entity", "relationship")
+    assert tuple(definitions.taxonomies.values()) == (
+        entity_taxonomy,
+        definitions.taxonomies["relationship"],
     )
-    assert definitions.measure("area.nsa.internal") is model["internal_area"]
-    assert (
-        definitions.measure_by_id(model["internal_area"].id) is model["internal_area"]
+    assert tuple(definitions.taxonomies.items()) == (
+        ("entity", entity_taxonomy),
+        ("relationship", definitions.taxonomies["relationship"]),
     )
-    assert (
-        definitions.canonical_measure(model["internal_area"]) is model["internal_area"]
+    assert len(definitions.taxonomies) == 2
+    assert entity_taxonomy.classifications["space.apartment"] is model["apartment"]
+    assert definitions.measures["area.nsa.internal"] is model["internal_area"]
+    assert definitions._lookup[entity_taxonomy.id] == (entity_taxonomy, None)
+    assert definitions._lookup[model["apartment"].id] == (
+        model["apartment"],
+        entity_taxonomy,
     )
-    assert definitions.taxonomy_of(model["apartment"]).code == "entity"
-    assert definitions.taxonomy("entity").children("space") == (
+    assert definitions._lookup[model["internal_area"].id] == (
+        model["internal_area"],
+        None,
+    )
+    with pytest.raises(TypeError):
+        definitions._lookup[uuid4()] = (entity_taxonomy, None)
+    assert not hasattr(definitions, "_definition_by_id")
+    assert not hasattr(definitions, "_taxonomy_by_classification_id")
+    assert entity_taxonomy.children(model["space"]) == (
         model["apartment"],
         model["parking"],
     )
+    with pytest.raises(TypeError):
+        definitions.taxonomies["other"] = entity_taxonomy
+    assert not hasattr(definitions.taxonomies, "by_id")
+    assert not hasattr(definitions.taxonomies, "canonical")
 
     first = apartment(model, code="27.05")
     repeated = apartment(model, code="27.05")
@@ -351,10 +416,13 @@ def test_semantic_definition_and_entity_lookup(model):
         named,
     )
     assert graph.find_entities(classification=model["apartment"]) == expected_apartments
-    with pytest.warns(DeprecationWarning, match="Definitions.classification"):
-        assert (
-            graph.find_entities(classification="space.apartment") == expected_apartments
-        )
+    assert (
+        graph.find_entities(classification=model["apartment"].id) == expected_apartments
+    )
+    with pytest.raises(rk.graph.NonCanonicalDefinitionError):
+        graph.find_entities(classification=replace(model["apartment"]))
+    with pytest.raises(TypeError, match="UUID, Classification, or None"):
+        graph.find_entities(classification="space.apartment")
     with pytest.raises(rk.graph.AmbiguousLookupError):
         graph.entity("27.05")
     assert graph.entity("27.06") is named
@@ -371,32 +439,45 @@ def test_classification_codes_are_scoped_to_taxonomy(model):
         code="other", name="Other", classifications=(root, duplicate)
     )
     definitions = rk.graph.Definitions(
-        taxonomies=(*model["definitions"].taxonomies, taxonomy),
+        taxonomies=(*model["definitions"].taxonomies.values(), taxonomy),
         measures=model["definitions"].measures,
     )
-    assert definitions.classification("entity", "space.apartment") is model["apartment"]
-    assert definitions.classification("other", "space.apartment") is duplicate
-    with pytest.warns(DeprecationWarning), pytest.raises(
-        rk.graph.AmbiguousDefinitionError, match="2 matches"
-    ):
-        definitions.classification("space.apartment")
+    assert (
+        definitions.taxonomies["entity"].classifications["space.apartment"]
+        is model["apartment"]
+    )
+    assert (
+        definitions.taxonomies["other"].classifications["space.apartment"] is duplicate
+    )
 
 
-def test_legacy_definition_lookup_forms_warn(model):
+def test_definition_lookup_facades_are_absent(model):
     definitions = model["definitions"]
-    entity_taxonomy = definitions.taxonomy("entity")
-    with pytest.warns(DeprecationWarning, match="taxonomy_by_id"):
-        assert definitions.taxonomy(entity_taxonomy.id) is entity_taxonomy
-    with pytest.warns(DeprecationWarning, match="classification"):
-        assert definitions.classification("space.apartment") is model["apartment"]
-    with pytest.warns(DeprecationWarning, match="taxonomy_for"):
-        assert definitions.taxonomy_for(model["apartment"]).code == "entity"
-    with pytest.warns(DeprecationWarning, match="measure_by_id"):
-        assert definitions.measure(model["internal_area"].id) is model["internal_area"]
-    with pytest.warns(DeprecationWarning, match="classification_by_id"):
-        assert (
-            entity_taxonomy.classification(model["apartment"].id) is model["apartment"]
-        )
+    for name in (
+        "taxonomy",
+        "taxonomy_by_id",
+        "canonical_taxonomy",
+        "find_taxonomy",
+        "classification",
+        "classification_by_id",
+        "canonical_classification",
+        "find_classification",
+        "measure",
+        "measure_by_id",
+        "canonical_measure",
+        "find_measure",
+        "taxonomy_of",
+        "taxonomy_for",
+        "contains_definition_id",
+    ):
+        assert not hasattr(definitions, name)
+    for name in (
+        "classification",
+        "classification_by_id",
+        "canonical_classification",
+        "find",
+    ):
+        assert not hasattr(definitions.taxonomies["entity"], name)
 
 
 def test_definition_lookup_errors_include_kind_and_scope(model):
@@ -405,12 +486,20 @@ def test_definition_lookup_errors_include_kind_and_scope(model):
         rk.graph.UnknownDefinitionError,
         match="unknown taxonomy 'missing' in Definitions",
     ):
-        definitions.taxonomy("missing")
+        definitions.taxonomies["missing"]
     with pytest.raises(
         rk.graph.NonCanonicalDefinitionError,
-        match="classification .* is not canonical in Definitions",
+        match="classification .* is not canonical in taxonomy 'entity'",
     ):
-        definitions.canonical_classification(replace(model["apartment"]))
+        definitions.taxonomies["entity"].children(replace(model["apartment"]))
+
+
+def test_taxonomy_hierarchy_requires_canonical_classifications(model):
+    taxonomy = model["definitions"].taxonomies["entity"]
+    with pytest.raises(TypeError, match="Classification"):
+        taxonomy.children("space")
+    with pytest.raises(TypeError, match="Classification"):
+        taxonomy.children(model["space"].id)
 
 
 def test_relationship_and_assembly_validation(model):
@@ -922,7 +1011,7 @@ def test_measurement_aggregation_rules(model, rule, expected):
     )
     definitions = rk.graph.Definitions(
         taxonomies=model["definitions"].taxonomies,
-        measures=(*model["definitions"].measures, aggregate_area),
+        measures=(*model["definitions"].measures.values(), aggregate_area),
     )
     root = rk.graph.Entity(name="Root", classification=model["space"])
     first = apartment(
@@ -998,7 +1087,7 @@ def test_measurement_without_aggregation_rule_is_rejected(model):
     )
     definitions = rk.graph.Definitions(
         taxonomies=model["definitions"].taxonomies,
-        measures=(*model["definitions"].measures, non_aggregating),
+        measures=(*model["definitions"].measures.values(), non_aggregating),
     )
     measurement = rk.graph.Measurement(
         measure=non_aggregating, quantity=10 * Index.registry.squaremeter
@@ -1170,7 +1259,7 @@ def test_definition_replacement_is_validated_and_diffed(model):
         measures=(revised_measure,),
     )
     child = parent.apply(rk.graph.GraphChange(definitions=definitions))
-    assert child.definitions.measure_by_id(revised_measure.id) is revised_measure
+    assert child.definitions.measures[revised_measure.code] is revised_measure
     assert child.changes_since(parent).measures.modified == (
         rk.graph.Modification(before=model["internal_area"], after=revised_measure),
     )
