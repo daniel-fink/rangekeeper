@@ -44,7 +44,7 @@ def graph_html(
         classification = entity.classification
         taxonomy_code = None
         if classification is not None:
-            taxonomy_code = view.graph.definitions.taxonomy_of(classification).code
+            taxonomy_code = view.graph._taxonomy_of(classification).code
         network.add_node(
             str(entity.id),
             label=entity.name or entity.code or str(entity.id),

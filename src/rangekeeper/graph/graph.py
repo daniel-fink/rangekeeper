@@ -20,6 +20,8 @@ from .errors import (
     InvalidAssemblyError,
     MissingEntityError,
     MissingRelationshipError,
+    NonCanonicalDefinitionError,
+    UnknownDefinitionError,
 )
 from .provenance import (
     Claim,
@@ -31,6 +33,7 @@ from .provenance import (
     values_equivalent,
 )
 from .relationship import Relationship
+from .taxonomy import Taxonomy
 
 CharacteristicItem = Label | Measurement | Feature
 
@@ -148,7 +151,7 @@ class Graph:
         overlap = {
             identifier
             for identifier in target_store
-            if self.definitions.contains_definition_id(identifier)
+            if identifier in self.definitions._lookup
         }
         if overlap:
             raise IdentityConflictError(
@@ -408,7 +411,7 @@ class Graph:
         *,
         code: str | None = None,
         name: str | None = None,
-        classification: str | UUID | Classification | None = None,
+        classification: UUID | Classification | None = None,
     ) -> tuple[Entity, ...]:
         for value, label in ((code, "code"), (name, "name")):
             if value is not None and not isinstance(value, str):
@@ -439,7 +442,7 @@ class Graph:
         self,
         entity: str | UUID | Entity,
         *,
-        classification: str | UUID | Classification | None = None,
+        classification: UUID | Classification | None = None,
     ) -> tuple[Relationship, ...]:
         canonical = self.entity(entity)
         requested = self._resolve_classification(classification)
@@ -457,7 +460,7 @@ class Graph:
         self,
         entity: str | UUID | Entity,
         *,
-        classification: str | UUID | Classification | None = None,
+        classification: UUID | Classification | None = None,
     ) -> tuple[Relationship, ...]:
         canonical = self.entity(entity)
         requested = self._resolve_classification(classification)
@@ -476,7 +479,7 @@ class Graph:
         source: str | UUID | Entity,
         target: str | UUID | Entity,
         *,
-        classification: str | UUID | Classification | None = None,
+        classification: UUID | Classification | None = None,
     ) -> tuple[Relationship, ...]:
         source_entity = self.entity(source)
         target_entity = self.entity(target)
@@ -513,8 +516,8 @@ class Graph:
         *,
         entities: Iterable[str | UUID | Entity] | None = None,
         relationships: Iterable[UUID | Relationship] | None = None,
-        entity_classification: str | UUID | Classification | None = None,
-        relationship_classification: str | UUID | Classification | None = None,
+        entity_classification: UUID | Classification | None = None,
+        relationship_classification: UUID | Classification | None = None,
         assembly: str | UUID | Assembly | None = None,
         predicate: Callable[[Entity], bool] | None = None,
     ):
@@ -552,17 +555,15 @@ class Graph:
         return GraphDiff.between(parent, self)
 
     def _resolve_classification(
-        self, classification: str | UUID | Classification | None
+        self, classification: UUID | Classification | None
     ) -> Classification | None:
         if classification is None:
             return None
-        if isinstance(classification, str):
-            return self.definitions.classification(classification)
         if isinstance(classification, UUID):
-            return self.definitions.classification_by_id(classification)
+            return self._classification_by_id(classification)
         if isinstance(classification, Classification):
-            return self.definitions.canonical_classification(classification)
-        raise TypeError("classification must be a code, UUID, Classification, or None")
+            return self._canonical_classification(classification)
+        raise TypeError("classification must be a UUID, Classification, or None")
 
     def _classification_matches(
         self,
@@ -573,13 +574,10 @@ class Graph:
             return True
         if actual is None:
             return False
-        canonical_requested = self.definitions.canonical_classification(requested)
-        canonical_actual = self.definitions.canonical_classification(actual)
-        try:
-            taxonomy = self.definitions.taxonomy_of(canonical_actual)
-        except KeyError:
-            return False
-        if self.definitions.taxonomy_of(canonical_requested) is not taxonomy:
+        canonical_requested = self._canonical_classification(requested)
+        canonical_actual = self._canonical_classification(actual)
+        taxonomy = self._taxonomy_of(canonical_actual)
+        if self._taxonomy_of(canonical_requested) is not taxonomy:
             return False
         return taxonomy.is_a(canonical_actual, canonical_requested)
 
@@ -595,19 +593,59 @@ class Graph:
                 for classification in label.classifications:
                     self._require_canonical_classification(classification)
             for measurement in owner.characteristics.measurements.values():
-                canonical = self.definitions.measure_by_id(measurement.measure.id)
+                canonical = self.definitions.measures._by_identifier(
+                    measurement.measure.id
+                )
                 if canonical is not measurement.measure:
                     raise ValueError("measurement references a non-canonical Measure")
 
     def _require_canonical_classification(self, classification: Classification) -> None:
         try:
-            canonical = self.definitions.classification_by_id(classification.id)
+            canonical = self._classification_by_id(classification.id)
         except KeyError as error:
             raise ValueError(
                 f"classification {classification.id} is not defined"
             ) from error
         if canonical is not classification:
             raise ValueError("classification reference is not canonical")
+
+    def _classification_by_id(self, identifier: UUID) -> Classification:
+        classification, _ = self._classification_entry(identifier)
+        return classification
+
+    def _canonical_classification(
+        self, classification: Classification
+    ) -> Classification:
+        if not isinstance(classification, Classification):
+            raise TypeError("classification must be a Classification")
+        canonical, taxonomy = self._classification_entry(classification.id)
+        if canonical is not classification:
+            raise NonCanonicalDefinitionError(
+                "classification",
+                classification.id,
+                scope=f"taxonomy {taxonomy.code!r}",
+            )
+        return canonical
+
+    def _taxonomy_of(self, classification: Classification) -> Taxonomy:
+        canonical = self._canonical_classification(classification)
+        _, taxonomy = self._classification_entry(canonical.id)
+        return taxonomy
+
+    def _classification_entry(
+        self, identifier: UUID
+    ) -> tuple[Classification, Taxonomy]:
+        entry = self.definitions._lookup.get(identifier)
+        if entry is None:
+            raise UnknownDefinitionError(
+                "classification", identifier, scope="Definitions"
+            )
+        definition, taxonomy = entry
+        if not isinstance(definition, Classification) or taxonomy is None:
+            raise UnknownDefinitionError(
+                "classification", identifier, scope="Definitions"
+            )
+        return definition, taxonomy
 
     @staticmethod
     def _validate_relationships(

@@ -71,9 +71,9 @@ class _MeasureReduction(Reduction[pint.Quantity]):
 
     def _execute(self, view: View) -> Aggregation[pint.Quantity]:
         measure = (
-            view.graph.definitions.measure(self.reference)
+            view.graph.definitions.measures[self.reference]
             if isinstance(self.reference, str)
-            else view.graph.definitions.canonical_measure(self.reference)
+            else view.graph.definitions.measures._canonical(self.reference)
         )
         reducer = _MEASUREMENT_REDUCERS.get(measure.aggregation)
         if reducer is None:

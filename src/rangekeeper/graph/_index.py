@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Hashable, Iterable, Mapping
+from collections.abc import Callable, Hashable, Iterable, Iterator, Mapping
 from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import Generic, Protocol, TypeVar
 from uuid import UUID
 
 from .errors import (
-    AmbiguousDefinitionError,
     IdentityConflictError,
     NonCanonicalDefinitionError,
     UnknownDefinitionError,
@@ -27,75 +26,72 @@ C = TypeVar("C", bound=CodedIdentified)
 K = TypeVar("K", bound=Hashable)
 
 
-@dataclass(frozen=True, slots=True)
-class Catalog(Generic[C]):
-    """Immutable UUID and code indexes for one definition kind."""
+def catalog_values(values: Iterable[C] | Mapping[str, C]) -> tuple[C, ...]:
+    """Normalize catalog constructor input without iterating mapping keys."""
+    return tuple(values.values() if isinstance(values, Mapping) else values)
 
-    items: tuple[C, ...]
+
+@dataclass(frozen=True, slots=True, repr=False)
+class Catalog(Mapping[str, C], Generic[C]):
+    """Immutable, insertion-ordered definitions keyed by code."""
+
+    _values: tuple[C, ...]
     kind: str
-    unique_codes: bool = field(default=True, repr=False)
     scope: str | None = field(default=None, repr=False)
-    _by_id: Mapping[UUID, C] = field(init=False, repr=False, compare=False)
-    _by_code: Mapping[str, tuple[UUID, ...]] = field(
-        init=False, repr=False, compare=False
-    )
+    _values_by_id: Mapping[UUID, C] = field(init=False, repr=False, compare=False)
+    _by_code: Mapping[str, C] = field(init=False, repr=False, compare=False)
 
     def __post_init__(self) -> None:
-        items = tuple(self.items)
-        by_id = index_by_id(items, self.kind)
-        by_code = multi_index(items, lambda item: item.code)
-        if self.unique_codes:
-            for code, identifiers in by_code.items():
-                if len(identifiers) > 1:
-                    raise ValueError(f"{self.kind} codes must be unique: {code!r}")
-        object.__setattr__(self, "items", items)
-        object.__setattr__(self, "_by_id", by_id)
-        object.__setattr__(self, "_by_code", by_code)
+        values = tuple(self._values)
+        by_id = index_by_id(values, self.kind)
+        by_code: dict[str, C] = {}
+        for value in values:
+            if value.code in by_code:
+                raise ValueError(f"{self.kind} codes must be unique: {value.code!r}")
+            by_code[value.code] = value
+        object.__setattr__(self, "_values", values)
+        object.__setattr__(self, "_values_by_id", by_id)
+        object.__setattr__(self, "_by_code", MappingProxyType(by_code))
 
-    def by_id(self, identifier: UUID) -> C:
+    def __getitem__(self, code: str) -> C:
+        if not isinstance(code, str):
+            raise TypeError(f"{self.kind} code must be a string")
+        try:
+            return self._by_code[code]
+        except KeyError as error:
+            raise UnknownDefinitionError(self.kind, code, scope=self.scope) from error
+
+    def __iter__(self) -> Iterator[str]:
+        return iter(self._by_code)
+
+    def __len__(self) -> int:
+        return len(self._by_code)
+
+    def __repr__(self) -> str:
+        return repr(dict(self.items()))
+
+    def _by_identifier(self, identifier: UUID) -> C:
         if not isinstance(identifier, UUID):
             raise TypeError(f"{self.kind} id must be a UUID")
         try:
-            return self._by_id[identifier]
+            return self._values_by_id[identifier]
         except KeyError as error:
             raise UnknownDefinitionError(
                 self.kind, identifier, scope=self.scope
             ) from error
 
-    def by_code(self, code: str) -> C:
-        if not isinstance(code, str):
-            raise TypeError(f"{self.kind} code must be a string")
-        identifiers = self._by_code.get(code, ())
-        if not identifiers:
-            raise UnknownDefinitionError(self.kind, code, scope=self.scope)
-        if len(identifiers) > 1:
-            raise AmbiguousDefinitionError(
-                self.kind, code, len(identifiers), scope=self.scope
-            )
-        return self._by_id[identifiers[0]]
-
-    def find(self, code: str) -> C | None:
-        if not isinstance(code, str):
-            raise TypeError(f"{self.kind} code must be a string")
-        identifiers = self._by_code.get(code, ())
-        if not identifiers:
-            return None
-        if len(identifiers) > 1:
-            raise AmbiguousDefinitionError(
-                self.kind, code, len(identifiers), scope=self.scope
-            )
-        return self._by_id[identifiers[0]]
-
-    def canonical(self, value: C) -> C:
-        canonical = self._by_id.get(value.id)
+    def _canonical(self, value: C) -> C:
+        if not hasattr(value, "id"):
+            raise TypeError(f"value must be a {self.kind}")
+        canonical = self._values_by_id.get(value.id)
         if canonical is None:
             raise UnknownDefinitionError(self.kind, value.id, scope=self.scope)
         if canonical is not value:
             raise NonCanonicalDefinitionError(self.kind, value.id, scope=self.scope)
         return canonical
 
-    def contains_id(self, identifier: UUID) -> bool:
-        return identifier in self._by_id
+    def _contains_identifier(self, identifier: UUID) -> bool:
+        return identifier in self._values_by_id
 
 
 def index_by_id(items: Iterable[T], kind: str) -> Mapping[UUID, T]:

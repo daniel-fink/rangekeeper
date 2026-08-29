@@ -83,13 +83,13 @@ class GraphDiff:
         child_characteristics = _characteristic_items(child)
         return cls(
             taxonomies=_changes(
-                {item.id: item for item in parent.definitions.taxonomies},
-                {item.id: item for item in child.definitions.taxonomies},
+                {item.id: item for item in parent.definitions.taxonomies.values()},
+                {item.id: item for item in child.definitions.taxonomies.values()},
             ),
             classifications=_changes(_classifications(parent), _classifications(child)),
             measures=_changes(
-                {item.id: item for item in parent.definitions.measures},
-                {item.id: item for item in child.definitions.measures},
+                {item.id: item for item in parent.definitions.measures.values()},
+                {item.id: item for item in child.definitions.measures.values()},
             ),
             entities=_changes(parent._entity_store, child._entity_store),
             labels=_changes(parent_characteristics[0], child_characteristics[0]),
@@ -163,8 +163,8 @@ def _equal(left: object, right: object) -> bool:
 def _classifications(graph: Graph) -> dict[UUID, Classification]:
     return {
         item.id: item
-        for taxonomy in graph.definitions.taxonomies
-        for item in taxonomy.classifications
+        for taxonomy in graph.definitions.taxonomies.values()
+        for item in taxonomy.classifications.values()
     }
 
 
