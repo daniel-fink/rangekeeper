@@ -1,90 +1,130 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Mapping
 from dataclasses import dataclass, field
+from types import MappingProxyType
+from typing import Generic, TypeVar
+from uuid import UUID, uuid4
 
 import pint
 
+from .. import validate
 from ..measure import Measure
 from .classification import Classification
 
 
-@dataclass
-class Characteristics:
-    labels: dict[str, tuple[Classification, ...]] = field(default_factory=dict)
-    measures: dict[Measure, pint.Quantity] = field(default_factory=dict)
-    features: dict[str, object] = field(default_factory=dict)
+T = TypeVar("T")
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class Label:
+    id: UUID = field(default_factory=uuid4)
+    key: str
+    classifications: tuple[Classification, ...]
 
     def __post_init__(self) -> None:
-        initial_labels = dict(self.labels)
-        initial_measures = dict(self.measures)
-        self.labels = {}
-        self.measures = {}
-        self.features = dict(self.features)
-        for key, classifications in initial_labels.items():
-            self.set_labels(key, classifications)
-        for measure, quantity in initial_measures.items():
-            self.set_measure(measure, quantity)
+        if not isinstance(self.id, UUID):
+            raise TypeError("id must be a UUID")
+        if not validate.is_text(self.key):
+            raise TypeError("Label.key must be a string")
+        if not validate.is_text(self.key, empty=False):
+            raise ValueError("Label.key must not be empty")
+        classifications = tuple(self.classifications)
+        if any(not isinstance(item, Classification) for item in classifications):
+            raise TypeError("classifications must contain only Classification objects")
+        ids = tuple(item.id for item in classifications)
+        if len(ids) != len(set(ids)):
+            raise ValueError("a label cannot repeat a classification")
+        object.__setattr__(self, "classifications", classifications)
 
-    def set_labels(
-        self,
-        key: str,
-        classifications: Iterable[Classification],
-    ) -> None:
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class Measurement:
+    id: UUID = field(default_factory=uuid4)
+    measure: Measure
+    quantity: pint.Quantity
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.id, UUID):
+            raise TypeError("id must be a UUID")
+        if not isinstance(self.measure, Measure):
+            raise TypeError("measure must be a Measure")
+        self.measure.validate_quantity(self.quantity)
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class Feature(Generic[T]):
+    """A named value with shallow immutability and reference semantics."""
+
+    id: UUID = field(default_factory=uuid4)
+    name: str
+    value: T | None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.id, UUID):
+            raise TypeError("id must be a UUID")
+        if not validate.is_text(self.name):
+            raise TypeError("Feature.name must be a string")
+        if not validate.is_text(self.name, empty=False):
+            raise ValueError("Feature.name must not be empty")
+
+
+@dataclass(frozen=True, slots=True)
+class Characteristics:
+    labels: Mapping[str, Label] = field(default_factory=dict)
+    measurements: Mapping[str, Measurement] = field(default_factory=dict)
+    features: Mapping[str, Feature] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        for value, name in (
+            (self.labels, "labels"),
+            (self.measurements, "measurements"),
+            (self.features, "features"),
+        ):
+            if not isinstance(value, Mapping):
+                raise TypeError(f"{name} must be a mapping")
+
+        labels = dict(self.labels)
+        measurements = dict(self.measurements)
+        features = dict(self.features)
+
+        if any(not isinstance(item, Label) for item in labels.values()):
+            raise TypeError("labels must contain only Label objects")
+        if any(key != item.key for key, item in labels.items()):
+            raise ValueError("label mapping keys must match Label.key")
+        if any(not isinstance(item, Measurement) for item in measurements.values()):
+            raise TypeError("measurements must contain only Measurement objects")
+        if any(code != item.measure.code for code, item in measurements.items()):
+            raise ValueError("measurement mapping keys must match Measure.code")
+        if any(not isinstance(item, Feature) for item in features.values()):
+            raise TypeError("features must contain only Feature objects")
+        if any(name != item.name for name, item in features.items()):
+            raise ValueError("feature mapping keys must match Feature.name")
+
+        object.__setattr__(self, "labels", MappingProxyType(labels))
+        object.__setattr__(self, "measurements", MappingProxyType(measurements))
+        object.__setattr__(self, "features", MappingProxyType(features))
+
+    def label(self, key: str) -> Label | None:
         if not isinstance(key, str):
-            raise TypeError("label key must be a string")
-        if not key.strip():
-            raise ValueError("label key must not be empty")
-        if isinstance(classifications, (Classification, str, bytes)):
-            raise TypeError("label values must be an iterable of Classifications")
-        try:
-            values = tuple(classifications)
-        except TypeError as error:
-            raise TypeError(
-                "label values must be an iterable of Classifications"
-            ) from error
-        if not all(isinstance(value, Classification) for value in values):
-            raise TypeError("label values must contain only Classifications")
-        classification_keys = [value.key for value in values]
-        if len(classification_keys) != len(set(classification_keys)):
-            raise ValueError("label values must not repeat a classification key")
-        self.labels[key] = values
+            raise TypeError("key must be a string")
+        return self.labels.get(key)
 
-    def remove_labels(self, key: str) -> tuple[Classification, ...]:
-        return self.labels.pop(key)
+    def measurement(self, measure: Measure | str) -> Measurement | None:
+        measure_code = measure.code if isinstance(measure, Measure) else measure
+        if not isinstance(measure_code, str):
+            raise TypeError("measure must be a Measure or code")
+        return self.measurements.get(measure_code)
 
-    def get_measure(self, measure: Measure) -> pint.Quantity | None:
-        stored_measure = self._resolve_measure(measure)
-        if stored_measure is None:
-            return None
-        return self.measures[stored_measure]
+    def feature(self, name: str) -> Feature | None:
+        if not isinstance(name, str):
+            raise TypeError("name must be a string")
+        return self.features.get(name)
 
-    def require_measure(self, measure: Measure) -> pint.Quantity:
-        quantity = self.get_measure(measure)
-        if quantity is None:
-            raise KeyError(f"measure {measure.code!r} is not available")
-        return quantity
-
-    def set_measure(self, measure: Measure, quantity: pint.Quantity) -> None:
-        if not isinstance(measure, Measure):
-            raise TypeError("measure must be a Measure")
-        measure.validate_quantity(quantity)
-
-        stored_measure = self._resolve_measure(measure)
-        key = measure if stored_measure is None else stored_measure
-        self.measures[key] = quantity
-
-    def remove_measure(self, measure: Measure) -> pint.Quantity:
-        stored_measure = self._resolve_measure(measure)
-        if stored_measure is None:
-            raise KeyError(f"measure {measure.code!r} is not available")
-        return self.measures.pop(stored_measure)
-
-    def _resolve_measure(self, measure: Measure) -> Measure | None:
-        if not isinstance(measure, Measure):
-            raise TypeError("measure must be a Measure")
-        for stored_measure in self.measures:
-            if stored_measure == measure:
-                stored_measure.assert_consistent_with(measure)
-                return stored_measure
-        return None
+    @property
+    def items(self) -> tuple[Label | Measurement | Feature, ...]:
+        return (
+            *self.labels.values(),
+            *self.measurements.values(),
+            *self.features.values(),
+        )

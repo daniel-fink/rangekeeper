@@ -1,90 +1,69 @@
 from __future__ import annotations
 
-from uuid import uuid4
+from collections.abc import Mapping
+from dataclasses import dataclass, field
+from uuid import UUID, uuid4
 
-from .characteristics import Characteristics
+from .characteristics import Characteristics, Feature, Label, Measurement
 from .classification import Classification
-from .provenance import Provenance
+from .entity import Entity
 
 
-def new_relationship_id() -> str:
-    return str(uuid4())
-
-
+@dataclass(frozen=True, slots=True, kw_only=True)
 class Relationship:
-    """A classified directed relationship between two stable entity IDs."""
+    id: UUID = field(default_factory=uuid4)
+    source_id: UUID
+    target_id: UUID
+    classification: Classification
+    characteristics: Characteristics = field(default_factory=Characteristics)
 
-    __slots__ = (
-        "__relationship_id",
-        "__source_id",
-        "__target_id",
-        "__classification",
-        "characteristics",
-        "provenance",
-    )
-
-    def __init__(
-        self,
-        source_id: str,
-        target_id: str,
-        classification: Classification,
-        *,
-        relationship_id: str | None = None,
-        characteristics: Characteristics | None = None,
-        provenance: Provenance | None = None,
-    ) -> None:
-        self.__relationship_id = self._validate_id(
-            new_relationship_id() if relationship_id is None else relationship_id,
-            "relationship_id",
-        )
-        self.__source_id = self._validate_id(source_id, "source_id")
-        self.__target_id = self._validate_id(target_id, "target_id")
-        if not isinstance(classification, Classification):
+    def __post_init__(self) -> None:
+        if not isinstance(self.id, UUID):
+            raise TypeError("id must be a UUID")
+        if not isinstance(self.source_id, UUID):
+            raise TypeError("source_id must be a UUID")
+        if not isinstance(self.target_id, UUID):
+            raise TypeError("target_id must be a UUID")
+        if not isinstance(self.classification, Classification):
             raise TypeError("classification must be a Classification")
-        self.__classification = classification
-        if characteristics is None:
-            characteristics = Characteristics()
-        elif not isinstance(characteristics, Characteristics):
-            raise TypeError("characteristics must be Characteristics or None")
-        if provenance is not None and not isinstance(provenance, Provenance):
-            raise TypeError("provenance must be Provenance or None")
-        self.characteristics = characteristics
-        self.provenance = provenance
-
-    @staticmethod
-    def _validate_id(value: str, field: str) -> str:
-        if not isinstance(value, str):
-            raise TypeError(f"{field} must be a string")
-        if not value.strip():
-            raise ValueError(f"{field} must not be empty")
-        return value
+        if not isinstance(self.characteristics, Characteristics):
+            raise TypeError("characteristics must be Characteristics")
 
     @property
-    def relationship_id(self) -> str:
-        return self.__relationship_id
+    def labels(self) -> Mapping[str, Label]:
+        return self.characteristics.labels
 
     @property
-    def source_id(self) -> str:
-        return self.__source_id
+    def measurements(self) -> Mapping[str, Measurement]:
+        return self.characteristics.measurements
 
     @property
-    def target_id(self) -> str:
-        return self.__target_id
+    def features(self) -> Mapping[str, Feature]:
+        return self.characteristics.features
 
-    @property
-    def classification(self) -> Classification:
-        return self.__classification
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, Relationship):
-            return NotImplemented
-        return self.relationship_id == other.relationship_id
-
-    def __hash__(self) -> int:
-        return hash(self.relationship_id)
-
-    def __repr__(self) -> str:
-        return (
-            f"Relationship(relationship_id={self.relationship_id!r}, "
-            f"source_id={self.source_id!r}, target_id={self.target_id!r})"
+    @classmethod
+    def between(
+        cls,
+        source: Entity,
+        target: Entity,
+        *,
+        classification: Classification,
+        characteristics: Characteristics | None = None,
+        id: UUID | None = None,
+    ) -> Relationship:
+        if not isinstance(source, Entity) or not isinstance(target, Entity):
+            raise TypeError("source and target must be Entity objects")
+        if id is None:
+            return cls(
+                source_id=source.id,
+                target_id=target.id,
+                classification=classification,
+                characteristics=characteristics or Characteristics(),
+            )
+        return cls(
+            id=id,
+            source_id=source.id,
+            target_id=target.id,
+            classification=classification,
+            characteristics=characteristics or Characteristics(),
         )

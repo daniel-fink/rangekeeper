@@ -2,131 +2,183 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeVar
+from uuid import UUID
 
 import networkx as nx
 
 from .assembly import Assembly
+from .aggregation import Aggregation
 from .classification import Classification
 from .entity import Entity
 from .errors import MissingEntityError
+from .reduce import Reduction
 from .relationship import Relationship
 
 if TYPE_CHECKING:
-    from .aggregation import AggregationCallback
     from .graph import Graph
 
 
-@dataclass(frozen=True, init=False)
-class View:
-    """An immutable selection of registered Graph entity and relationship IDs."""
+T = TypeVar("T")
 
+
+@dataclass(frozen=True, init=False, slots=True)
+class View:
     graph: Graph
-    entity_ids: frozenset[str]
-    relationship_ids: frozenset[str]
+    _entity_ids: frozenset[UUID]
+    _relationship_ids: frozenset[UUID]
 
     def __init__(
         self,
         graph: Graph,
         *,
-        entity_ids: Iterable[str] | None = None,
-        relationship_ids: Iterable[str] | None = None,
-        entity_classification: Classification | str | None = None,
-        relationship_classification: Classification | str | None = None,
-        assembly: Assembly | str | None = None,
+        entities: Iterable[str | UUID | Entity] | None = None,
+        relationships: Iterable[UUID | Relationship] | None = None,
+        entity_classification: str | UUID | Classification | None = None,
+        relationship_classification: str | UUID | Classification | None = None,
+        assembly: str | UUID | Assembly | None = None,
         predicate: Callable[[Entity], bool] | None = None,
     ) -> None:
         from .graph import Graph
 
         if not isinstance(graph, Graph):
             raise TypeError("graph must be a Graph")
-        has_entity_ids = entity_ids is not None
-        has_relationship_ids = relationship_ids is not None
-        if has_entity_ids != has_relationship_ids:
-            raise ValueError(
-                "entity_ids and relationship_ids must be supplied together"
-            )
-        if assembly is not None and has_entity_ids:
-            raise ValueError("assembly and explicit IDs are mutually exclusive")
+        if assembly is not None and (entities is not None or relationships is not None):
+            raise ValueError("assembly and explicit selections are mutually exclusive")
+        if predicate is not None and not callable(predicate):
+            raise TypeError("predicate must be callable or None")
 
-        preserve_entity_id: str | None = None
+        preserve_entity_id: UUID | None = None
         if assembly is not None:
-            canonical = graph._resolve_assembly(assembly)
-            base_entity_ids = frozenset(
-                {
-                    canonical.entity_id,
-                    *(entity.entity_id for entity in canonical.entities),
-                }
-            )
-            base_relationship_ids = frozenset(
-                relationship.relationship_id for relationship in canonical.relationships
-            )
-            preserve_entity_id = canonical.entity_id
-        elif has_entity_ids:
-            assert entity_ids is not None
-            assert relationship_ids is not None
-            base_entity_ids = frozenset(entity_ids)
-            base_relationship_ids = frozenset(relationship_ids)
+            candidate = graph.entity(assembly)
+            if not isinstance(candidate, Assembly):
+                raise TypeError("assembly must resolve to an Assembly")
+            preserve_entity_id = candidate.id
+            selected_entity_ids = {candidate.id, *candidate.entity_ids}
+            selected_relationship_ids = set(candidate.relationship_ids)
+        elif entities is None and relationships is None:
+            selected_entity_ids = set(graph._entity_store)
+            selected_relationship_ids = set(graph._relationship_store)
+        elif entities is not None and relationships is None:
+            selected_entity_ids = {graph.entity(item).id for item in entities}
+            selected_relationship_ids = {
+                relationship.id
+                for relationship in graph.relationships
+                if relationship.source_id in selected_entity_ids
+                and relationship.target_id in selected_entity_ids
+            }
+        elif entities is None:
+            selected_relationship_ids = {
+                graph.relationship(item).id for item in relationships or ()
+            }
+            selected_entity_ids = {
+                endpoint
+                for id in selected_relationship_ids
+                for endpoint in (
+                    graph._relationship_store[id].source_id,
+                    graph._relationship_store[id].target_id,
+                )
+            }
         else:
-            base_entity_ids = frozenset(graph._entities)
-            base_relationship_ids = frozenset(graph._relationships)
+            selected_entity_ids = {graph.entity(item).id for item in entities}
+            selected_relationship_ids = {
+                graph.relationship(item).id for item in relationships or ()
+            }
 
-        self._validate_selection(graph, base_entity_ids, base_relationship_ids)
-        selected_entity_ids, selected_relationship_ids = graph._filter_view_ids(
-            entity_ids=base_entity_ids,
-            relationship_ids=base_relationship_ids,
-            entity_classification=entity_classification,
-            relationship_classification=relationship_classification,
-            predicate=predicate,
-            preserve_entity_id=preserve_entity_id,
-        )
-        object.__setattr__(self, "graph", graph)
-        object.__setattr__(self, "entity_ids", selected_entity_ids)
-        object.__setattr__(self, "relationship_ids", selected_relationship_ids)
-
-    @staticmethod
-    def _validate_selection(
-        graph: Graph,
-        entity_ids: frozenset[str],
-        relationship_ids: frozenset[str],
-    ) -> None:
-        for entity_id in entity_ids:
-            graph.entities[entity_id]
-        for relationship_id in relationship_ids:
-            relationship = graph.relationships[relationship_id]
+        for relationship_id in selected_relationship_ids:
+            relationship = graph.relationship(relationship_id)
             if (
-                relationship.source_id not in entity_ids
-                or relationship.target_id not in entity_ids
+                relationship.source_id not in selected_entity_ids
+                or relationship.target_id not in selected_entity_ids
             ):
                 raise ValueError(
-                    f"view relationship {relationship_id!r} has an endpoint outside the View"
+                    "a View relationship cannot have an endpoint outside the View"
                 )
 
-    def entities(self) -> tuple[Entity, ...]:
-        return tuple(
-            entity
-            for entity in self.graph.entities.all()
-            if entity.entity_id in self.entity_ids
+        requested_entity_classification = graph._resolve_classification(
+            entity_classification
+        )
+        requested_relationship_classification = graph._resolve_classification(
+            relationship_classification
+        )
+        if requested_entity_classification is not None or predicate is not None:
+            selected_entity_ids = {
+                entity_id
+                for entity_id in selected_entity_ids
+                if graph._classification_matches(
+                    graph.entity(entity_id).classification,
+                    requested_entity_classification,
+                )
+                and (predicate is None or predicate(graph.entity(entity_id)))
+            }
+        selected_relationship_ids = {
+            relationship_id
+            for relationship_id in selected_relationship_ids
+            if graph.relationship(relationship_id).source_id in selected_entity_ids
+            and graph.relationship(relationship_id).target_id in selected_entity_ids
+            and graph._classification_matches(
+                graph.relationship(relationship_id).classification,
+                requested_relationship_classification,
+            )
+        }
+        if requested_relationship_classification is not None:
+            endpoint_ids = {
+                endpoint_id
+                for relationship_id in selected_relationship_ids
+                for endpoint_id in (
+                    graph.relationship(relationship_id).source_id,
+                    graph.relationship(relationship_id).target_id,
+                )
+            }
+            selected_entity_ids.intersection_update(endpoint_ids)
+            if preserve_entity_id is not None:
+                selected_entity_ids.add(preserve_entity_id)
+        object.__setattr__(self, "graph", graph)
+        object.__setattr__(self, "_entity_ids", frozenset(selected_entity_ids))
+        object.__setattr__(
+            self, "_relationship_ids", frozenset(selected_relationship_ids)
         )
 
+    @property
+    def entities(self) -> tuple[Entity, ...]:
+        return tuple(
+            entity for entity in self.graph.entities if entity.id in self._entity_ids
+        )
+
+    @property
     def relationships(self) -> tuple[Relationship, ...]:
         return tuple(
             relationship
-            for relationship in self.graph.relationships.all()
-            if relationship.relationship_id in self.relationship_ids
+            for relationship in self.graph.relationships
+            if relationship.id in self._relationship_ids
         )
+
+    @property
+    def roots(self) -> tuple[Entity, ...]:
+        targets = {relationship.target_id for relationship in self.relationships}
+        return tuple(entity for entity in self.entities if entity.id not in targets)
+
+    @property
+    def leaves(self) -> tuple[Entity, ...]:
+        sources = {relationship.source_id for relationship in self.relationships}
+        return tuple(entity for entity in self.entities if entity.id not in sources)
+
+    @property
+    def is_arborescence(self) -> bool:
+        graph = self.to_networkx()
+        return bool(graph) and nx.is_arborescence(graph)
 
     def filter(
         self,
         *,
-        entity_classification: Classification | str | None = None,
-        relationship_classification: Classification | str | None = None,
+        entity_classification: str | UUID | Classification | None = None,
+        relationship_classification: str | UUID | Classification | None = None,
         predicate: Callable[[Entity], bool] | None = None,
     ) -> View:
         return View(
             self.graph,
-            entity_ids=self.entity_ids,
-            relationship_ids=self.relationship_ids,
+            entities=self.entities,
+            relationships=self.relationships,
             entity_classification=entity_classification,
             relationship_classification=relationship_classification,
             predicate=predicate,
@@ -134,113 +186,86 @@ class View:
 
     def expand(
         self,
-        relationship: Classification | str | None = None,
+        via: str | UUID | Classification | None = None,
         *,
         outgoing: bool = True,
         incoming: bool = True,
     ) -> View:
-        self.graph._classification_matches(None, relationship)
         if not outgoing and not incoming:
             raise ValueError("expand requires outgoing or incoming relationships")
-        expanded_entity_ids = set(self.entity_ids)
-        expanded_relationship_ids = set(self.relationship_ids)
-        for edge in self.graph.relationships.all():
-            if not self.graph._classification_matches(
-                edge.classification, relationship
-            ):
+        requested = self.graph._resolve_classification(via)
+        entity_ids = set(self._entity_ids)
+        relationship_ids = set(self._relationship_ids)
+        for edge in self.graph.relationships:
+            if not self.graph._classification_matches(edge.classification, requested):
                 continue
-            if outgoing and edge.source_id in self.entity_ids:
-                expanded_entity_ids.add(edge.target_id)
-                expanded_relationship_ids.add(edge.relationship_id)
-            if incoming and edge.target_id in self.entity_ids:
-                expanded_entity_ids.add(edge.source_id)
-                expanded_relationship_ids.add(edge.relationship_id)
+            if outgoing and edge.source_id in self._entity_ids:
+                entity_ids.add(edge.target_id)
+                relationship_ids.add(edge.id)
+            if incoming and edge.target_id in self._entity_ids:
+                entity_ids.add(edge.source_id)
+                relationship_ids.add(edge.id)
         return View(
             self.graph,
-            entity_ids=frozenset(expanded_entity_ids),
-            relationship_ids=frozenset(expanded_relationship_ids),
+            entities=entity_ids,
+            relationships=relationship_ids,
         )
 
     def predecessors(
         self,
-        entity: Entity | str,
-        relationship: Classification | str | None = None,
+        entity: str | UUID | Entity,
+        *,
+        via: str | UUID | Classification | None = None,
     ) -> tuple[Entity, ...]:
         entity_id = self._resolve_view_entity_id(entity)
-        return self.graph._predecessors(
-            entity_id,
-            relationship,
-            entity_ids=self.entity_ids,
-            relationship_ids=self.relationship_ids,
-        )
+        requested = self.graph._resolve_classification(via)
+        predecessor_ids = {
+            edge.source_id
+            for edge in self.relationships
+            if edge.target_id == entity_id
+            and self.graph._classification_matches(edge.classification, requested)
+        }
+        return tuple(item for item in self.entities if item.id in predecessor_ids)
 
     def successors(
         self,
-        entity: Entity | str,
-        relationship: Classification | str | None = None,
+        entity: str | UUID | Entity,
+        *,
+        via: str | UUID | Classification | None = None,
     ) -> tuple[Entity, ...]:
         entity_id = self._resolve_view_entity_id(entity)
-        return self.graph._successors(
-            entity_id,
-            relationship,
-            entity_ids=self.entity_ids,
-            relationship_ids=self.relationship_ids,
-        )
+        requested = self.graph._resolve_classification(via)
+        successor_ids = {
+            edge.target_id
+            for edge in self.relationships
+            if edge.source_id == entity_id
+            and self.graph._classification_matches(edge.classification, requested)
+        }
+        return tuple(item for item in self.entities if item.id in successor_ids)
 
-    def roots(self) -> tuple[Entity, ...]:
-        targets = {relationship.target_id for relationship in self.relationships()}
-        return tuple(
-            entity for entity in self.entities() if entity.entity_id not in targets
-        )
-
-    def leaves(self) -> tuple[Entity, ...]:
-        sources = {relationship.source_id for relationship in self.relationships()}
-        return tuple(
-            entity for entity in self.entities() if entity.entity_id not in sources
-        )
-
-    def is_arborescence(self) -> bool:
-        graph = self.to_networkx()
-        return bool(graph) and nx.is_arborescence(graph)
-
-    def aggregate(
-        self,
-        *,
-        feature: str,
-        into: str | None = None,
-        reduce: AggregationCallback | None = None,
-    ) -> dict[str, object]:
-        """Aggregate a feature bottom-up through this parent-to-child View.
-
-        Without ``reduce``, non-None values are added. A custom reducer receives
-        the current entity and a tuple containing its own value followed by its
-        child aggregates. Results remain pure unless ``into`` names a distinct
-        destination feature.
-        """
-        from .aggregation import aggregate
-
-        return aggregate(
-            view=self,
-            feature=feature,
-            into=into,
-            reducer=reduce,
-        )
+    def aggregate(self, reduction: Reduction[T]) -> Aggregation[T]:
+        if not isinstance(reduction, Reduction):
+            raise TypeError("reduction must be a Reduction")
+        return reduction._execute(self)
 
     def to_networkx(self) -> nx.MultiDiGraph:
         graph = nx.MultiDiGraph()
-        for entity in self.entities():
-            graph.add_node(entity.entity_id, entity=entity)
-        for relationship in self.relationships():
-            graph.add_edge(
+        graph.add_nodes_from(
+            (entity.id, {"entity": entity}) for entity in self.entities
+        )
+        graph.add_edges_from(
+            (
                 relationship.source_id,
                 relationship.target_id,
-                key=relationship.relationship_id,
-                relationship=relationship,
+                relationship.id,
+                {"relationship": relationship},
             )
+            for relationship in self.relationships
+        )
         return nx.freeze(graph)
 
-    def _resolve_view_entity_id(self, entity: Entity | str) -> str:
-        canonical = self.graph._resolve_entity(entity)
-        if canonical.entity_id not in self.entity_ids:
-            raise MissingEntityError(canonical.entity_id)
-        return canonical.entity_id
+    def _resolve_view_entity_id(self, entity: str | UUID | Entity) -> UUID:
+        canonical = self.graph.entity(entity)
+        if canonical.id not in self._entity_ids:
+            raise MissingEntityError(canonical.id)
+        return canonical.id
