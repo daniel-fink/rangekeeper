@@ -1,25 +1,365 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import date, datetime
+from enum import Enum
+from typing import Any, Generic, TypeAlias, TypeVar
+from uuid import UUID, uuid4
+
+import pint
+
+from .. import validate
+from .assembly import Assembly
+from .characteristics import Feature, Label, Measurement
+from .classification import Classification
+from .entity import Entity
+from .relationship import Relationship
 
 
-@dataclass
-class Provenance:
-    source: str
-    identifiers: dict[str, str] = field(default_factory=dict)
+T = TypeVar("T")
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class SourceEdition:
+    id: UUID = field(default_factory=uuid4)
+    name: str
+    checksum: str
+    issued_at: date | datetime | None = None
+    received_at: date | datetime | None = None
+    author: str | None = None
 
     def __post_init__(self) -> None:
-        self.source = self._validate_text(self.source, "source")
-        identifiers = dict(self.identifiers)
-        for key, value in identifiers.items():
-            self._validate_text(key, "identifier key")
-            self._validate_text(value, f"identifier {key!r}")
-        self.identifiers = identifiers
+        if not isinstance(self.id, UUID):
+            raise TypeError("id must be a UUID")
+        if not validate.is_text(self.name):
+            raise TypeError("SourceEdition.name must be a string")
+        if not validate.is_text(self.name, empty=False):
+            raise ValueError("SourceEdition.name must not be empty")
+        if not validate.is_text(self.checksum):
+            raise TypeError("SourceEdition.checksum must be a string")
+        if not validate.is_text(self.checksum, empty=False):
+            raise ValueError("SourceEdition.checksum must not be empty")
+        for value, field_name in (
+            (self.issued_at, "issued_at"),
+            (self.received_at, "received_at"),
+        ):
+            if value is not None and not isinstance(value, (date, datetime)):
+                raise TypeError(f"{field_name} must be a date, datetime, or None")
+        if self.author is not None:
+            if not validate.is_text(self.author):
+                raise TypeError("SourceEdition.author must be a string or None")
+            if not validate.is_text(self.author, empty=False):
+                raise ValueError("SourceEdition.author must not be empty")
 
-    @staticmethod
-    def _validate_text(value: str, field: str) -> str:
-        if not isinstance(value, str):
-            raise TypeError(f"{field} must be a string")
-        if not value.strip():
-            raise ValueError(f"{field} must not be empty")
-        return value
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class SpreadsheetLocation:
+    edition: SourceEdition
+    worksheet: str
+    range: str
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.edition, SourceEdition):
+            raise TypeError("edition must be a SourceEdition")
+        if not validate.is_text(self.worksheet):
+            raise TypeError("SpreadsheetLocation.worksheet must be a string")
+        if not validate.is_text(self.worksheet, empty=False):
+            raise ValueError("SpreadsheetLocation.worksheet must not be empty")
+        if not validate.is_text(self.range):
+            raise TypeError("SpreadsheetLocation.range must be a string")
+        if not validate.is_text(self.range, empty=False):
+            raise ValueError("SpreadsheetLocation.range must not be empty")
+
+
+class ClaimKind(Enum):
+    SOURCED = "sourced"
+    DERIVED = "derived"
+    ASSERTED = "asserted"
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class Method:
+    code: str
+    version: str | None = None
+    description: str | None = None
+
+    def __post_init__(self) -> None:
+        if not validate.is_text(self.code):
+            raise TypeError("Method.code must be a string")
+        if not validate.is_text(self.code, empty=False):
+            raise ValueError("Method.code must not be empty")
+        if self.version is not None:
+            if not validate.is_text(self.version):
+                raise TypeError("Method.version must be a string or None")
+            if not validate.is_text(self.version, empty=False):
+                raise ValueError("Method.version must not be empty")
+        if self.description is not None:
+            if not validate.is_text(self.description):
+                raise TypeError("Method.description must be a string or None")
+            if not validate.is_text(self.description, empty=False):
+                raise ValueError("Method.description must not be empty")
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class Claim(Generic[T]):
+    id: UUID = field(default_factory=uuid4)
+    value: T
+    kind: ClaimKind
+    sources: tuple[SpreadsheetLocation | Claim[Any], ...] = ()
+    method: Method | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.id, UUID):
+            raise TypeError("id must be a UUID")
+        if not isinstance(self.kind, ClaimKind):
+            raise TypeError("kind must be a ClaimKind")
+        sources = tuple(self.sources)
+        if any(not isinstance(item, (SpreadsheetLocation, Claim)) for item in sources):
+            raise TypeError("sources must contain SpreadsheetLocation or Claim objects")
+        if self.method is not None and not isinstance(self.method, Method):
+            raise TypeError("method must be a Method or None")
+        if self.kind is ClaimKind.SOURCED and not any(
+            isinstance(item, SpreadsheetLocation) for item in sources
+        ):
+            raise ValueError("a sourced claim requires a SpreadsheetLocation")
+        if self.kind is ClaimKind.DERIVED:
+            if not any(isinstance(item, Claim) for item in sources):
+                raise ValueError("a derived claim requires an upstream Claim")
+            if self.method is None:
+                raise ValueError("a derived claim requires a method")
+        if self.kind is ClaimKind.ASSERTED and self.method is None:
+            raise ValueError("an asserted claim requires a method")
+        object.__setattr__(self, "sources", sources)
+
+    @classmethod
+    def sourced(
+        cls,
+        value: T,
+        *,
+        at: SpreadsheetLocation,
+        method: Method | None = None,
+        id: UUID | None = None,
+    ) -> Claim[T]:
+        values = {
+            "value": value,
+            "kind": ClaimKind.SOURCED,
+            "sources": (at,),
+            "method": method,
+        }
+        if id is not None:
+            values["id"] = id
+        return cls(**values)
+
+    @classmethod
+    def derived(
+        cls,
+        value: T,
+        *,
+        from_claims: tuple[Claim[Any], ...],
+        method: Method,
+        id: UUID | None = None,
+    ) -> Claim[T]:
+        values = {
+            "value": value,
+            "kind": ClaimKind.DERIVED,
+            "sources": tuple(from_claims),
+            "method": method,
+        }
+        if id is not None:
+            values["id"] = id
+        return cls(**values)
+
+    @classmethod
+    def asserted(
+        cls,
+        value: T,
+        *,
+        method: Method,
+        id: UUID | None = None,
+    ) -> Claim[T]:
+        values = {
+            "value": value,
+            "kind": ClaimKind.ASSERTED,
+            "method": method,
+        }
+        if id is not None:
+            values["id"] = id
+        return cls(**values)
+
+
+ClaimSource: TypeAlias = SpreadsheetLocation | Claim[Any]
+
+
+@dataclass(frozen=True, slots=True)
+class EntityState:
+    code: str | None
+    name: str | None
+    classification: Classification | None
+
+    @classmethod
+    def from_entity(cls, entity: Entity) -> EntityState:
+        if not isinstance(entity, Entity):
+            raise TypeError("entity must be an Entity")
+        return cls(
+            code=entity.code,
+            name=entity.name,
+            classification=entity.classification,
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class AssemblyState(EntityState):
+    entity_ids: frozenset[UUID]
+    relationship_ids: frozenset[UUID]
+
+    @classmethod
+    def from_assembly(cls, assembly: Assembly) -> AssemblyState:
+        if not isinstance(assembly, Assembly):
+            raise TypeError("assembly must be an Assembly")
+        return cls(
+            code=assembly.code,
+            name=assembly.name,
+            classification=assembly.classification,
+            entity_ids=assembly.entity_ids,
+            relationship_ids=assembly.relationship_ids,
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class RelationshipState:
+    source_id: UUID
+    target_id: UUID
+    classification: Classification
+
+    @classmethod
+    def from_relationship(cls, relationship: Relationship) -> RelationshipState:
+        if not isinstance(relationship, Relationship):
+            raise TypeError("relationship must be a Relationship")
+        return cls(
+            source_id=relationship.source_id,
+            target_id=relationship.target_id,
+            classification=relationship.classification,
+        )
+
+
+class ReconciliationStatus(Enum):
+    PROVISIONAL = "provisional"
+    CONFIRMED = "confirmed"
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class Reconciliation(Generic[T]):
+    selected: Claim[T]
+    status: ReconciliationStatus
+    method: Method | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.selected, Claim):
+            raise TypeError("selected must be a Claim")
+        if not isinstance(self.status, ReconciliationStatus):
+            raise TypeError("status must be a ReconciliationStatus")
+        if self.method is not None and not isinstance(self.method, Method):
+            raise TypeError("method must be a Method or None")
+
+
+class FactStatus(Enum):
+    SINGLE_SOURCE = "single-source"
+    MATCHED = "matched"
+    CONFLICT = "conflict"
+    PROVISIONAL = "provisional"
+    RESOLVED = "resolved"
+
+
+FactTarget: TypeAlias = Entity | Relationship | Label | Measurement | Feature
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class Fact(Generic[T]):
+    target: FactTarget
+    claims: tuple[Claim[T], ...]
+    reconciliation: Reconciliation[T] | None = None
+
+    def __post_init__(self) -> None:
+        if not isinstance(
+            self.target, (Entity, Relationship, Label, Measurement, Feature)
+        ):
+            raise TypeError(
+                "target must be an Entity, Relationship, Label, Measurement, or Feature"
+            )
+        claims = tuple(self.claims)
+        if not claims:
+            raise ValueError("a Fact requires at least one claim")
+        if any(not isinstance(item, Claim) for item in claims):
+            raise TypeError("claims must contain only Claim objects")
+        if len({item.id for item in claims}) != len(claims):
+            raise ValueError("a Fact cannot repeat a Claim UUID")
+        if self.reconciliation is not None:
+            if not isinstance(self.reconciliation, Reconciliation):
+                raise TypeError("reconciliation must be a Reconciliation or None")
+            if not any(item is self.reconciliation.selected for item in claims):
+                raise ValueError(
+                    "the selected reconciliation claim must belong to the Fact"
+                )
+        object.__setattr__(self, "claims", claims)
+
+    @property
+    def status(self) -> FactStatus:
+        if self.reconciliation is not None:
+            if self.reconciliation.status is ReconciliationStatus.PROVISIONAL:
+                return FactStatus.PROVISIONAL
+            return FactStatus.RESOLVED
+        if len(self.claims) == 1:
+            return FactStatus.SINGLE_SOURCE
+        if _all_equivalent(tuple(claim.value for claim in self.claims)):
+            return FactStatus.MATCHED
+        return FactStatus.CONFLICT
+
+    @property
+    def current_claim(self) -> Claim[T] | None:
+        if self.reconciliation is not None:
+            return self.reconciliation.selected
+        if len(self.claims) == 1 or _all_equivalent(
+            tuple(claim.value for claim in self.claims)
+        ):
+            return self.claims[0]
+        return None
+
+
+def target_value(target: FactTarget) -> object:
+    if isinstance(target, Measurement):
+        return target.quantity
+    if isinstance(target, Label):
+        return target.classifications
+    if isinstance(target, Feature):
+        return target.value
+    if isinstance(target, Assembly):
+        return AssemblyState.from_assembly(target)
+    if isinstance(target, Entity):
+        return EntityState.from_entity(target)
+    if isinstance(target, Relationship):
+        return RelationshipState.from_relationship(target)
+    raise TypeError("unsupported Fact target")
+
+
+def values_equivalent(left: object, right: object) -> bool:
+    if isinstance(left, pint.Quantity) and isinstance(right, pint.Quantity):
+        try:
+            converted = right.to(left.units)
+        except (pint.DimensionalityError, ValueError):
+            return False
+        comparison = left.magnitude == converted.magnitude
+        try:
+            return bool(comparison)
+        except ValueError:
+            return bool(comparison.all())
+    try:
+        comparison = left == right
+        return bool(comparison)
+    except (TypeError, ValueError):
+        return False
+
+
+def _all_equivalent(values: tuple[object, ...]) -> bool:
+    if not values:
+        return True
+    return all(values_equivalent(values[0], item) for item in values[1:])

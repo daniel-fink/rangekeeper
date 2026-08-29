@@ -257,21 +257,30 @@ def test_speckle_snapshot_package_round_trip_is_lossless():
 
 
 def visualization_fixture():
-    relationships = rk.graph.Taxonomy(
-        code="relationship", name="Relationship Types"
-    ).define(code="contains", name="Contains")
-    graph = rk.graph.Graph()
-    graph.entities.add_all(
-        (
-            rk.graph.Entity(entity_id="root", name="Root"),
-            rk.graph.Entity(entity_id="child", name="Child"),
-        )
+    relationship_root = rk.graph.Classification(
+        code="relationship", name="Relationship"
     )
-    graph.relationships.connect(
-        "root",
-        "child",
-        relationships,
-        relationship_id="root-child",
+    contains = rk.graph.Classification(
+        code="relationship.contains",
+        name="Contains",
+        parent=relationship_root,
+    )
+    taxonomy = rk.graph.Taxonomy(
+        code="relationship",
+        name="Relationship Types",
+        classifications=(relationship_root, contains),
+    )
+    root = rk.graph.Entity(code="root", name="Root")
+    child = rk.graph.Entity(code="child", name="Child")
+    edge = rk.graph.Relationship(
+        source_id=root.id,
+        target_id=child.id,
+        classification=contains,
+    )
+    graph = rk.graph.Graph(
+        definitions=rk.graph.Definitions(taxonomies=(taxonomy,)),
+        entities=(root, child),
+        relationships=(edge,),
     )
     view = rk.graph.View(graph)
     table = materialization.Table(
@@ -296,9 +305,9 @@ def test_graph_html_visualization_writes_the_selected_view(tmp_path):
 
     contents = path.read_text(encoding="utf-8")
     assert path == tmp_path / "graph.html"
-    assert "root-child" not in contents
-    assert "root" in contents
-    assert "child" in contents
+    assert str(view.relationships[0].id) not in contents
+    assert "Root" in contents
+    assert "Child" in contents
 
 
 def test_arborescence_visualizations_return_plotly_traces():
@@ -306,11 +315,16 @@ def test_arborescence_visualizations_return_plotly_traces():
 
     sunburst = adapter.visualization.sunburst(table, value="total")
     treemap = adapter.visualization.treemap(table, value="total")
+    icicle = adapter.visualization.icicle(table, value="total")
 
     assert tuple(sunburst.ids) == ("root", "child")
     assert tuple(sunburst.parents) == ("", "root")
     assert tuple(sunburst.values) == (2.0, 2.0)
     assert tuple(treemap.labels) == ("Root", "Child")
+    assert tuple(icicle.ids) == ("root", "child")
+    assert tuple(icicle.parents) == ("", "root")
+    assert tuple(icicle.labels) == ("Root", "Child")
+    assert tuple(icicle.values) == (2.0, 2.0)
 
 
 def test_arborescence_visualization_rejects_rich_or_invalid_values():

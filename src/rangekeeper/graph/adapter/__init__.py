@@ -1,8 +1,9 @@
-from . import csv as csv
-from . import json as json
-from . import pandas as pandas
-from . import speckle as speckle
-from . import visualization as visualization
+"""Graph adapters.
+
+Only visualization is wired to the immutable core. Snapshot, JSON, and Speckle
+adapters intentionally await their version-3 migration.
+"""
+
 from .errors import (
     AdapterEncodingError,
     AdapterError,
@@ -10,15 +11,9 @@ from .errors import (
     SpeckleImportError,
 )
 
-
 __all__ = [
     "AdapterEncodingError",
     "AdapterError",
     "SpeckleConflictError",
     "SpeckleImportError",
-    "csv",
-    "json",
-    "pandas",
-    "speckle",
-    "visualization",
 ]

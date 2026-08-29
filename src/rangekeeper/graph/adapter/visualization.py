@@ -40,27 +40,29 @@ def graph_html(
         notebook=False,
         cdn_resources="in_line",
     )
-    for entity in view.entities():
+    for entity in view.entities:
         classification = entity.classification
+        taxonomy_code = None
+        if classification is not None:
+            taxonomy_code = view.graph.definitions.taxonomy_of(classification).code
         network.add_node(
-            entity.entity_id,
-            label=entity.name or entity.entity_id,
+            str(entity.id),
+            label=entity.name or entity.code or str(entity.id),
             title=(
-                entity.entity_id
+                str(entity.id)
                 if classification is None
-                else f"{entity.entity_id}<br>{classification.taxonomy.code}:"
-                f"{classification.code}"
+                else f"{entity.id}<br>{taxonomy_code}:{classification.code}"
             ),
             group=(
                 None
                 if classification is None
-                else f"{classification.taxonomy.code}:{classification.code}"
+                else f"{taxonomy_code}:{classification.code}"
             ),
         )
-    for relationship in view.relationships():
+    for relationship in view.relationships:
         network.add_edge(
-            relationship.source_id,
-            relationship.target_id,
+            str(relationship.source_id),
+            str(relationship.target_id),
             label=relationship.classification.code,
             title=relationship.classification.name,
         )
@@ -112,6 +114,24 @@ def treemap(
     return go.Treemap(**arguments)
 
 
+def icicle(
+    table: Table,
+    *,
+    label: str = "name",
+    value: str | None = None,
+) -> go.Icicle:
+    """Create a Plotly Icicle trace from an arborescence Table."""
+    projection = _tree_projection(table, label=label, value=value)
+    arguments = {
+        "ids": projection.ids,
+        "labels": projection.labels,
+        "parents": projection.parents,
+    }
+    if projection.values is not None:
+        arguments.update(values=projection.values, branchvalues="total")
+    return go.Icicle(**arguments)
+
+
 class _TreeProjection:
     def __init__(
         self,
@@ -148,13 +168,14 @@ def _tree_projection(
             f"arborescence Table is missing columns: {sorted(missing)}"
         )
 
-    ids = tuple(row["entity_id"] for row in table.rows)
-    if not all(isinstance(entity_id, str) and entity_id.strip() for entity_id in ids):
-        raise AdapterEncodingError("entity_id values must be non-empty strings")
+    ids = tuple(str(row["entity_id"]) for row in table.rows)
     if len(ids) != len(set(ids)):
         raise AdapterEncodingError("entity_id values must be unique")
     id_set = set(ids)
-    raw_parents = tuple(row["parent_id"] for row in table.rows)
+    raw_parents = tuple(
+        None if row["parent_id"] is None else str(row["parent_id"])
+        for row in table.rows
+    )
     if not all(
         parent is None or isinstance(parent, str) and parent in id_set
         for parent in raw_parents

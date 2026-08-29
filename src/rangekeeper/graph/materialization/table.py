@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass
 from types import MappingProxyType
+from uuid import UUID
 
 import pint
 
@@ -18,6 +19,7 @@ GroupFunction = Callable[[tuple[object, ...]], object]
 ENTITY_FIELDS = frozenset(
     {
         "entity_id",
+        "code",
         "name",
         "entity_type",
         "classification_code",
@@ -73,7 +75,7 @@ class Table:
         *,
         fields: Iterable[str] = DEFAULT_ENTITY_FIELDS,
         labels: Iterable[str] = (),
-        measures: Mapping[Measure, pint.Unit | str | None] | None = None,
+        measurements: Mapping[Measure | str, pint.Unit | str | None] | None = None,
         features: Iterable[str] = (),
     ) -> Table:
         if not isinstance(view, View):
@@ -84,11 +86,11 @@ class Table:
             raise TableError(f"unknown entity fields: {sorted(unknown_fields)}")
         label_keys = _validated_names(labels, "labels")
         feature_names = _validated_names(features, "features")
-        measure_columns = _measure_columns(measures)
+        measure_columns = _measurement_columns(view, measurements)
 
         columns = (
             *selected_fields,
-            *(f"labels.{key}" for key in label_keys),
+            *(f"label.{key}" for key in label_keys),
             *(column for _, _, column in measure_columns),
             *(f"feature.{name}" for name in feature_names),
         )
@@ -96,19 +98,29 @@ class Table:
             raise TableError("selected Table columns collide")
 
         rows = []
-        for entity in view.entities():
-            row = {field: _entity_field(entity, field) for field in selected_fields}
+        for entity in view.entities:
+            row = {
+                field: _entity_field(entity, field, view=view)
+                for field in selected_fields
+            }
             for key in label_keys:
-                row[f"labels.{key}"] = tuple(
-                    classification.key for classification in entity.labels.get(key, ())
+                label = entity.labels.get(key)
+                row[f"label.{key}"] = (
+                    ()
+                    if label is None
+                    else tuple(
+                        classification.code for classification in label.classifications
+                    )
                 )
             for measure, target_unit, column in measure_columns:
-                quantity = entity.characteristics.get_measure(measure)
+                measurement = entity.characteristics.measurement(measure)
+                quantity = None if measurement is None else measurement.quantity
                 row[column] = (
                     None if quantity is None else quantity.to(target_unit).magnitude
                 )
             for name in feature_names:
-                row[f"feature.{name}"] = entity.features.get(name)
+                feature = entity.features.get(name)
+                row[f"feature.{name}"] = None if feature is None else feature.value
             rows.append(row)
         return cls(columns=columns, rows=tuple(rows))
 
@@ -119,7 +131,7 @@ class Table:
         *,
         fields: Iterable[str] = DEFAULT_ENTITY_FIELDS,
         labels: Iterable[str] = (),
-        measures: Mapping[Measure, pint.Unit | str | None] | None = None,
+        measurements: Mapping[Measure | str, pint.Unit | str | None] | None = None,
         features: Iterable[str] = (),
     ) -> Table:
         """Project a parent-to-child arborescence with explicit parent IDs."""
@@ -128,25 +140,25 @@ class Table:
         selected_fields = _validated_names(fields, "fields")
         if "entity_id" not in selected_fields:
             raise TableError("arborescence Tables require the 'entity_id' field")
-        if not view.is_arborescence():
+        if not view.is_arborescence:
             raise TableError("view must be a non-empty parent-to-child arborescence")
 
         projected = cls.from_view(
             view,
             fields=selected_fields,
             labels=labels,
-            measures=measures,
+            measurements=measurements,
             features=features,
         )
         parent_by_entity = {
             relationship.target_id: relationship.source_id
-            for relationship in view.relationships()
+            for relationship in view.relationships
         }
-        children_by_parent: dict[str, list[str]] = {}
+        children_by_parent: dict[UUID, list[UUID]] = {}
         for child_id, parent_id in parent_by_entity.items():
             children_by_parent.setdefault(parent_id, []).append(child_id)
 
-        root_id = view.roots()[0].entity_id
+        root_id = view.roots[0].id
         entity_order = _arborescence_preorder(root_id, children_by_parent)
         projected_by_entity = {row["entity_id"]: row for row in projected.rows}
         entity_id_index = projected.columns.index("entity_id")
@@ -220,9 +232,9 @@ def _validated_names(values: Iterable[str], field: str) -> tuple[str, ...]:
 
 
 def _arborescence_preorder(
-    root_id: str,
-    children_by_parent: Mapping[str, Iterable[str]],
-) -> tuple[str, ...]:
+    root_id: UUID,
+    children_by_parent: Mapping[UUID, Iterable[UUID]],
+) -> tuple[UUID, ...]:
     ordered = []
     pending = [root_id]
     while pending:
@@ -232,17 +244,21 @@ def _arborescence_preorder(
     return tuple(ordered)
 
 
-def _measure_columns(
-    measures: Mapping[Measure, pint.Unit | str | None] | None,
+def _measurement_columns(
+    view: View,
+    measurements: Mapping[Measure | str, pint.Unit | str | None] | None,
 ) -> tuple[tuple[Measure, pint.Unit, str], ...]:
-    if measures is None:
+    if measurements is None:
         return ()
-    if not isinstance(measures, Mapping):
-        raise TypeError("measures must be a mapping or None")
+    if not isinstance(measurements, Mapping):
+        raise TypeError("measurements must be a mapping or None")
     columns = []
-    for measure, target in measures.items():
-        if not isinstance(measure, Measure):
-            raise TypeError("measure selections must use Measure keys")
+    for reference, target in measurements.items():
+        measure = (
+            view.graph.definitions.measure(reference)
+            if isinstance(reference, str)
+            else view.graph.definitions.canonical_measure(reference)
+        )
         if target is None:
             target_unit = measure.units
         elif isinstance(target, pint.Unit):
@@ -257,15 +273,17 @@ def _measure_columns(
             (
                 measure,
                 target_unit,
-                f"measure.{measure.code} [{target_unit}]",
+                f"measurement.{measure.code}",
             )
         )
     return tuple(columns)
 
 
-def _entity_field(entity: Entity, field: str) -> object:
+def _entity_field(entity: Entity, field: str, *, view: View) -> object:
     if field == "entity_id":
-        return entity.entity_id
+        return entity.id
+    if field == "code":
+        return entity.code
     if field == "name":
         return entity.name
     if field == "entity_type":
@@ -275,5 +293,7 @@ def _entity_field(entity: Entity, field: str) -> object:
     if field == "classification_name":
         return entity.classification.name if entity.classification else None
     if field == "classification_taxonomy":
-        return entity.classification.taxonomy.code if entity.classification else None
+        if entity.classification is None:
+            return None
+        return view.graph.definitions.taxonomy_of(entity.classification).code
     raise TableError(f"unknown entity field {field!r}")

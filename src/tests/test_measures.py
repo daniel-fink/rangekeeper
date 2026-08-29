@@ -33,7 +33,7 @@ class TestMeasures:
         assert TestMeasures.currency.units == "AUD"
         assert TestMeasures.currency.units.dimensionality == "[currency]"
 
-    def test_identity_is_based_on_code(self):
+    def test_identity_is_uuid_based(self):
         original = rk.measure.Measure(
             code="project.area",
             name="Area",
@@ -52,10 +52,9 @@ class TestMeasures:
             units=units.sqm,
         )
 
-        assert original == renamed
-        assert hash(original) == hash(renamed)
+        assert original != renamed
         assert original != different
-        original.assert_consistent_with(renamed)
+        assert original.id != renamed.id
 
     def test_measure_is_immutable(self):
         measure = rk.measure.Measure(
@@ -69,7 +68,7 @@ class TestMeasures:
         with pytest.raises(FrozenInstanceError):
             measure.name = "Changed"
 
-    def test_conflicting_definitions_are_rejected(self):
+    def test_duplicate_measure_codes_are_rejected_by_definitions(self):
         measure = rk.measure.Measure(
             code="project.area",
             name="Area",
@@ -89,10 +88,10 @@ class TestMeasures:
             definition="Measured externally",
         )
 
-        with pytest.raises(ValueError, match="units"):
-            measure.assert_consistent_with(conflicting_units)
-        with pytest.raises(ValueError, match="definition"):
-            measure.assert_consistent_with(conflicting_definition)
+        with pytest.raises(ValueError, match="measure codes"):
+            rk.graph.Definitions(measures=(measure, conflicting_units))
+        with pytest.raises(ValueError, match="measure codes"):
+            rk.graph.Definitions(measures=(measure, conflicting_definition))
 
     def test_quantity_validation(self):
         measure = rk.measure.Measure(
@@ -106,29 +105,6 @@ class TestMeasures:
             measure.validate_quantity(100 * units.meter)
         with pytest.raises(TypeError, match="Pint Quantity"):
             measure.validate_quantity(100)
-
-    def test_serialization_round_trip(self):
-        measure = rk.measure.Measure(
-            code="project.area",
-            name="Area",
-            units=units.sqm,
-            definition="Total floor area",
-            tags={"reporting", "physical"},
-        )
-
-        record = measure.to_record()
-        reconstructed = rk.measure.Measure.from_record(record)
-
-        assert record == {
-            "code": "project.area",
-            "name": "Area",
-            "units": "squaremeter",
-            "definition": "Total floor area",
-            "tags": ["physical", "reporting"],
-        }
-        assert reconstructed == measure
-        assert reconstructed.to_record() == record
-        reconstructed.assert_consistent_with(measure)
 
     gfa = rk.measure.Measure(
         code="project.gfa",
