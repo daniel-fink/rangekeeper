@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from enum import Enum
+from types import MappingProxyType
 from typing import Any, Generic, TypeAlias, TypeVar
 from uuid import UUID, uuid4
 
@@ -13,6 +15,7 @@ from .assembly import Assembly
 from .characteristics import Feature, Label, Measurement
 from .classification import Classification
 from .entity import Entity
+from .errors import IdentityConflictError
 from .relationship import Relationship
 
 
@@ -338,3 +341,76 @@ def _all_equivalent(values: tuple[object, ...]) -> bool:
     if not values:
         return True
     return all(values_equivalent(values[0], item) for item in values[1:])
+
+
+def _index_claims(facts: Iterable[Fact[Any]]) -> Mapping[UUID, Claim[Any]]:
+    claims_by_id: dict[UUID, Claim[Any]] = {}
+    source_editions_by_id: dict[UUID, SourceEdition] = {}
+    visited: set[int] = set()
+    visiting: set[int] = set()
+
+    def visit(claim: Claim[Any]) -> None:
+        identity = id(claim)
+        if identity in visiting:
+            raise ValueError("claim dependency graph must be acyclic")
+        registered = claims_by_id.get(claim.id)
+        if registered is not None and registered is not claim:
+            raise IdentityConflictError(f"different Claims share UUID {claim.id}")
+        claims_by_id[claim.id] = claim
+        if identity in visited:
+            return
+        visiting.add(identity)
+        for source in claim.sources:
+            if isinstance(source, Claim):
+                visit(source)
+            elif isinstance(source, SpreadsheetLocation):
+                edition = source.edition
+                registered_edition = source_editions_by_id.get(edition.id)
+                if registered_edition is not None and registered_edition is not edition:
+                    raise IdentityConflictError(
+                        f"different SourceEditions share UUID {edition.id}"
+                    )
+                source_editions_by_id[edition.id] = edition
+        visiting.remove(identity)
+        visited.add(identity)
+
+    for fact in facts:
+        for claim in fact.claims:
+            visit(claim)
+    return MappingProxyType(claims_by_id)
+
+
+def _index_graph_provenance(
+    facts: Iterable[Fact[Any]],
+    targets_by_id: Mapping[UUID, FactTarget],
+) -> Mapping[UUID, Fact[Any]]:
+    facts = tuple(facts)
+    facts_by_target_id: dict[UUID, Fact[Any]] = {}
+    for fact in facts:
+        target_id = fact.target.id
+        if target_id in facts_by_target_id:
+            raise ValueError(f"more than one Fact targets UUID {target_id}")
+        registered = targets_by_id.get(target_id)
+        if registered is None:
+            raise ValueError(
+                f"Fact targets graph object {target_id} that is not present"
+            )
+        if registered is not fact.target:
+            raise ValueError(
+                f"Fact target {target_id} is not the registered Graph instance"
+            )
+        if fact.status is FactStatus.CONFLICT:
+            raise ValueError(
+                "conflicting claims require a provisional or confirmed reconciliation"
+            )
+        current_claim = fact.current_claim
+        if current_claim is None or not values_equivalent(
+            target_value(fact.target), current_claim.value
+        ):
+            raise ValueError(
+                "the current Fact target value does not match its selected claim"
+            )
+        facts_by_target_id[target_id] = fact
+
+    _index_claims(facts)
+    return MappingProxyType(facts_by_target_id)

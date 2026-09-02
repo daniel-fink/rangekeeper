@@ -110,6 +110,7 @@ def test_retired_mutable_and_embedded_provenance_apis_are_absent():
     assert not hasattr(rk.graph.Classification, "child_of")
     assert not hasattr(rk.graph.Graph(), "connect")
     assert not hasattr(rk.graph.Graph(), "validate")
+    assert not hasattr(rk.graph.Graph(), "changes_since")
     assert not hasattr(rk.graph.Characteristics(), "measures")
     assert not hasattr(rk.graph.View, "aggregate_measurement")
     assert not hasattr(rk.graph.View, "aggregate_feature")
@@ -182,12 +183,12 @@ def test_taxonomy_is_frozen_single_root_and_acyclic():
             classifications=(root, rk.graph.Classification(code="other", name="Other")),
         )
     equivalent_root = replace(root)
-    noncanonical_child = replace(child, parent=equivalent_root)
+    unregistered_child = replace(child, parent=equivalent_root)
     with pytest.raises(ValueError, match="registered taxonomy instance"):
         rk.graph.Taxonomy(
-            code="noncanonical",
-            name="Noncanonical",
-            classifications=(root, noncanonical_child),
+            code="unregistered",
+            name="Unregistered",
+            classifications=(root, unregistered_child),
         )
     first_id, second_id = uuid4(), uuid4()
     with pytest.raises(ValueError, match="acyclic"):
@@ -356,15 +357,26 @@ def test_characteristic_uuid_uniqueness_is_enforced_by_graph(model):
         )
 
 
-def test_graph_requires_canonical_definitions(model):
+def test_graph_requires_registered_definition_instances(model):
     entity = apartment(model)
     graph = rk.graph.Graph(definitions=model["definitions"], entities=(entity,))
     assert graph.entity(entity.id) is entity
-    noncanonical = replace(model["apartment"])
-    with pytest.raises(ValueError, match="canonical"):
+    unregistered = replace(model["apartment"])
+    with pytest.raises(rk.graph.CatalogInstanceError, match="registered instance"):
         rk.graph.Graph(
             definitions=model["definitions"],
-            entities=(replace(entity, classification=noncanonical),),
+            entities=(replace(entity, classification=unregistered),),
+        )
+
+    unregistered_measure = replace(model["internal_area"])
+    measurement = rk.graph.Measurement(
+        measure=unregistered_measure,
+        quantity=10 * Index.registry.squaremeter,
+    )
+    with pytest.raises(rk.graph.CatalogInstanceError, match="registered instance"):
+        rk.graph.Graph(
+            definitions=model["definitions"],
+            entities=(apartment(model, measurement=measurement),),
         )
 
 
@@ -477,6 +489,14 @@ def test_semantic_definition_and_entity_lookup(model):
         definitions=definitions,
         entities=(first, repeated, named),
     )
+    for name in (
+        "_target_store",
+        "_source_edition_store",
+        "_claim_store",
+        "_entity_code_index",
+        "_entity_name_index",
+    ):
+        assert not hasattr(graph, name)
     assert graph.find_entities(code="27.05") == (first, repeated)
     assert graph.find_entities(name="Apartment 27.05") == (first, repeated)
     expected_apartments = (
@@ -490,6 +510,8 @@ def test_semantic_definition_and_entity_lookup(model):
     )
     with pytest.raises(rk.graph.CatalogInstanceError):
         graph.find_entities(classification=replace(model["apartment"]))
+    with pytest.raises(rk.graph.UnknownDefinitionError, match="Definitions"):
+        graph.find_entities(classification=uuid4())
     with pytest.raises(TypeError, match="UUID, Classification, or None"):
         graph.find_entities(classification="space.apartment")
     with pytest.raises(rk.graph.AmbiguousLookupError):
@@ -563,7 +585,7 @@ def test_definition_lookup_errors_include_kind_and_scope(model):
         definitions.taxonomies["entity"].children(replace(model["apartment"]))
 
 
-def test_taxonomy_hierarchy_requires_canonical_classifications(model):
+def test_taxonomy_hierarchy_requires_registered_classifications(model):
     taxonomy = model["definitions"].taxonomies["entity"]
     with pytest.raises(TypeError, match="Classification"):
         taxonomy.children("space")
@@ -711,7 +733,7 @@ def test_claim_uuid_uniqueness_is_global_in_graph(model):
         )
 
 
-def test_source_edition_uuid_references_are_canonical(model):
+def test_source_edition_uuid_references_are_registered_instances(model):
     edition = rk.graph.SourceEdition(name="JLL", checksum="sha256:abc")
     conflicting_edition = replace(edition, name="Different JLL edition")
     first_feature = rk.graph.Feature(name="bedrooms", value=3)
@@ -835,7 +857,7 @@ def test_apply_is_atomic_and_requires_fact_replacement(model):
             features={"bathrooms": changed_feature}
         ),
     )
-    with pytest.raises(ValueError, match="canonical"):
+    with pytest.raises(ValueError, match="registered Graph instance"):
         graph.apply(rk.graph.GraphChange(replace_entities=(changed_entity,)))
     assert graph.entity(entity.id) is entity
     changed_fact = rk.graph.Fact(target=changed_feature, claims=(asserted(3),))
@@ -1303,7 +1325,7 @@ def test_diff_reports_changed_claims_and_reconciliation(model):
         ),
     )
     child = parent.apply(rk.graph.GraphChange(replace_facts=(resolved,)))
-    diff = child.changes_since(parent)
+    diff = rk.graph.GraphDiff.between(parent, child)
     assert diff.claims.modified == (
         rk.graph.Modification(before=alternative, after=revised_alternative),
     )
@@ -1329,7 +1351,7 @@ def test_definition_replacement_is_validated_and_diffed(model):
     )
     child = parent.apply(rk.graph.GraphChange(definitions=definitions))
     assert child.definitions.measures[revised_measure.code] is revised_measure
-    assert child.changes_since(parent).measures.modified == (
+    assert rk.graph.GraphDiff.between(parent, child).measures.modified == (
         rk.graph.Modification(before=model["internal_area"], after=revised_measure),
     )
 

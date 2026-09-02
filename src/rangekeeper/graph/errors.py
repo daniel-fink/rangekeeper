@@ -1,3 +1,7 @@
+from collections.abc import Iterable
+from uuid import UUID
+
+
 class GraphError(Exception):
     """Base class for graph-domain errors."""
 
@@ -52,3 +56,7 @@ class InvalidAssemblyError(GraphError, ValueError):
 
 class InvalidAggregationError(GraphError, ValueError):
     """Raised when a View or aggregation request cannot be aggregated safely."""
+
+
+def _format_ids(ids: Iterable[UUID]) -> str:
+    return ", ".join(str(item) for item in sorted(ids, key=str))
