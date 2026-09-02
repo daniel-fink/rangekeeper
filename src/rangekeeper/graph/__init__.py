@@ -30,7 +30,7 @@ from .provenance import (
     RelationshipState,
 )
 from .relationship import Relationship
-from .revision import ChangeSet, GraphDiff, GraphRevision, Modification
+from . import revision as revision
 from .taxonomy import Taxonomy
 from . import reduce as reduce
 from . import update as update
@@ -49,7 +49,6 @@ __all__ = [
     "AggregationRule",
     "AmbiguousLookupError",
     "CatalogInstanceError",
-    "ChangeSet",
     "Characteristics",
     "Claim",
     "ClaimKind",
@@ -61,9 +60,7 @@ __all__ = [
     "FactStatus",
     "Feature",
     "Graph",
-    "GraphDiff",
     "GraphError",
-    "GraphRevision",
     "IdentityConflictError",
     "InvalidAggregationError",
     "InvalidAssemblyError",
@@ -71,7 +68,6 @@ __all__ = [
     "Measurement",
     "Measure",
     "Method",
-    "Modification",
     "MissingEntityError",
     "MissingRelationshipError",
     "QuantityKind",
@@ -87,6 +83,7 @@ __all__ = [
     "mode",
     "provenance",
     "reduce",
+    "revision",
     "update",
     "visualization",
 ]

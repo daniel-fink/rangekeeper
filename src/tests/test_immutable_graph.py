@@ -117,12 +117,21 @@ def test_retired_mutable_and_embedded_provenance_apis_are_absent():
     assert not hasattr(rk.graph, "SpreadsheetLocation")
     assert not hasattr(rk.graph, "Source")
     assert not hasattr(rk.graph, "Location")
+    assert not hasattr(rk.graph, "GraphRevision")
+    assert not hasattr(rk.graph, "GraphDiff")
+    assert not hasattr(rk.graph, "ChangeSet")
+    assert not hasattr(rk.graph, "Modification")
     assert not hasattr(rk.graph.provenance, "SourceEdition")
     assert not hasattr(rk.graph.provenance, "SpreadsheetLocation")
     assert not hasattr(rk.graph.update, "GraphChange")
     assert hasattr(rk.graph.update, "Update")
     assert hasattr(rk.graph.provenance, "Source")
     assert hasattr(rk.graph.provenance, "Location")
+    assert hasattr(rk.graph.revision, "Revision")
+    assert hasattr(rk.graph.revision, "Diff")
+    assert not hasattr(rk.graph.revision, "Changes")
+    assert hasattr(rk.graph.revision, "Delta")
+    assert hasattr(rk.graph.revision, "Modification")
     assert not hasattr(rk.graph.Characteristics(), "measures")
     assert not hasattr(rk.graph.View, "aggregate_measurement")
     assert not hasattr(rk.graph.View, "aggregate_feature")
@@ -1543,21 +1552,57 @@ def test_revision_diff_infers_deletions_and_provenance_changes(model):
         definitions=model["definitions"], entities=(entity,), provenance=(fact,)
     )
     child_graph = parent_graph.without_entities(entity.id, cascade=True)
-    parent = rk.graph.GraphRevision(
+    parent = rk.graph.revision.Revision(
         graph=parent_graph,
         created_by="importer",
         created_at=datetime.now(timezone.utc),
     )
-    child = rk.graph.GraphRevision(
+    child = rk.graph.revision.Revision(
         graph=child_graph,
         parent_ids=(parent.id,),
         created_by="reviewer",
     )
-    diff = child.changes_since(parent)
+    diff = child.diff(parent)
     assert diff.entities.removed == (entity,)
     assert diff.features.removed == (feature,)
     assert diff.facts.removed == (fact,)
     assert fact in parent.graph.provenance
+
+
+def test_revision_requires_aware_timestamp_and_non_empty_metadata(model):
+    graph = rk.graph.Graph(definitions=model["definitions"])
+
+    with pytest.raises(ValueError, match="timezone-aware"):
+        rk.graph.revision.Revision(
+            graph=graph,
+            created_by="importer",
+            created_at=datetime.now(),
+        )
+    with pytest.raises(ValueError, match="Revision.created_by must not be empty"):
+        rk.graph.revision.Revision(graph=graph, created_by=" ")
+    with pytest.raises(ValueError, match="Revision.message must not be empty"):
+        rk.graph.revision.Revision(
+            graph=graph,
+            created_by="importer",
+            message=" ",
+        )
+
+
+def test_revision_diff_requires_parent_and_reports_no_changes(model):
+    graph = rk.graph.Graph(definitions=model["definitions"])
+    parent = rk.graph.revision.Revision(graph=graph, created_by="importer")
+    child = rk.graph.revision.Revision(
+        graph=graph,
+        parent_ids=(parent.id,),
+        created_by="reviewer",
+    )
+    unrelated = rk.graph.revision.Revision(graph=graph, created_by="importer")
+
+    diff = child.diff(parent)
+    assert not diff.changed
+    assert not diff.entities.changed
+    with pytest.raises(ValueError, match="not a parent"):
+        child.diff(unrelated)
 
 
 def test_diff_reports_changed_claims_and_reconciliation(model):
@@ -1593,12 +1638,15 @@ def test_diff_reports_changed_claims_and_reconciliation(model):
         ),
     )
     child = parent.apply(rk.graph.update.Update(replace_facts=(resolved,)))
-    diff = rk.graph.GraphDiff.between(parent, child)
+    diff = rk.graph.revision.Diff.between(parent, child)
     assert diff.claims.modified == (
-        rk.graph.Modification(before=alternative, after=revised_alternative),
+        rk.graph.revision.Modification(
+            before=alternative,
+            after=revised_alternative,
+        ),
     )
     assert diff.facts.modified == (
-        rk.graph.Modification(before=provisional, after=resolved),
+        rk.graph.revision.Modification(before=provisional, after=resolved),
     )
     assert (
         diff.facts.modified[0].before.reconciliation.status
@@ -1619,8 +1667,11 @@ def test_definition_replacement_is_validated_and_diffed(model):
     )
     child = parent.apply(rk.graph.update.Update(definitions=definitions))
     assert child.definitions.measures[revised_measure.code] is revised_measure
-    assert rk.graph.GraphDiff.between(parent, child).measures.modified == (
-        rk.graph.Modification(before=model["internal_area"], after=revised_measure),
+    assert rk.graph.revision.Diff.between(parent, child).measures.modified == (
+        rk.graph.revision.Modification(
+            before=model["internal_area"],
+            after=revised_measure,
+        ),
     )
 
 
