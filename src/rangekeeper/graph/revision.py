@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from typing import Any, Generic, TypeVar
 from uuid import UUID, uuid4
 
+from .. import validate
 from ..measure import Measure
 from .characteristics import Feature, Label, Measurement
 from .classification import Classification
@@ -26,7 +27,7 @@ class Modification(Generic[T]):
 
 
 @dataclass(frozen=True, slots=True)
-class ChangeSet(Generic[T]):
+class Delta(Generic[T]):
     added: tuple[T, ...] = ()
     removed: tuple[T, ...] = ()
     modified: tuple[Modification[T], ...] = ()
@@ -45,17 +46,17 @@ class ChangeSet(Generic[T]):
 
 
 @dataclass(frozen=True, slots=True)
-class GraphDiff:
-    taxonomies: ChangeSet[Taxonomy]
-    classifications: ChangeSet[Classification]
-    measures: ChangeSet[Measure]
-    entities: ChangeSet[Entity]
-    labels: ChangeSet[Label]
-    measurements: ChangeSet[Measurement]
-    features: ChangeSet[Feature]
-    relationships: ChangeSet[Relationship]
-    facts: ChangeSet[Fact[Any]]
-    claims: ChangeSet[Claim[Any]]
+class Diff:
+    taxonomies: Delta[Taxonomy]
+    classifications: Delta[Classification]
+    measures: Delta[Measure]
+    entities: Delta[Entity]
+    labels: Delta[Label]
+    measurements: Delta[Measurement]
+    features: Delta[Feature]
+    relationships: Delta[Relationship]
+    facts: Delta[Fact[Any]]
+    claims: Delta[Claim[Any]]
 
     @property
     def changed(self) -> bool:
@@ -76,25 +77,30 @@ class GraphDiff:
         )
 
     @classmethod
-    def between(cls, parent: Graph, child: Graph) -> GraphDiff:
+    def between(cls, parent: Graph, child: Graph) -> Diff:
         if not isinstance(parent, Graph) or not isinstance(child, Graph):
-            raise TypeError("GraphDiff.between requires two Graph objects")
-        parent_characteristics = _characteristic_items(parent)
-        child_characteristics = _characteristic_items(child)
+            raise TypeError("Diff.between requires two Graph objects")
+        parent_labels, parent_measurements, parent_features = _characteristics_by_id(
+            parent
+        )
+        child_labels, child_measurements, child_features = _characteristics_by_id(child)
         return cls(
             taxonomies=_changes(
                 {item.id: item for item in parent.definitions.taxonomies.values()},
                 {item.id: item for item in child.definitions.taxonomies.values()},
             ),
-            classifications=_changes(_classifications(parent), _classifications(child)),
+            classifications=_changes(
+                _classifications_by_id(parent),
+                _classifications_by_id(child),
+            ),
             measures=_changes(
                 {item.id: item for item in parent.definitions.measures.values()},
                 {item.id: item for item in child.definitions.measures.values()},
             ),
             entities=_changes(parent._entities_by_id, child._entities_by_id),
-            labels=_changes(parent_characteristics[0], child_characteristics[0]),
-            measurements=_changes(parent_characteristics[1], child_characteristics[1]),
-            features=_changes(parent_characteristics[2], child_characteristics[2]),
+            labels=_changes(parent_labels, child_labels),
+            measurements=_changes(parent_measurements, child_measurements),
+            features=_changes(parent_features, child_features),
             relationships=_changes(
                 parent._relationships_by_id, child._relationships_by_id
             ),
@@ -107,7 +113,7 @@ class GraphDiff:
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
-class GraphRevision:
+class Revision:
     id: UUID = field(default_factory=uuid4)
     graph: Graph
     parent_ids: tuple[UUID, ...] = ()
@@ -116,8 +122,7 @@ class GraphRevision:
     message: str | None = None
 
     def __post_init__(self) -> None:
-        if not isinstance(self.id, UUID):
-            raise TypeError("id must be a UUID")
+        validate.require_uuid(self.id, "Revision.id")
         if not isinstance(self.graph, Graph):
             raise TypeError("graph must be a Graph")
         parent_ids = tuple(self.parent_ids)
@@ -129,22 +134,22 @@ class GraphRevision:
             raise ValueError("a revision cannot be its own parent")
         if not isinstance(self.created_at, datetime):
             raise TypeError("created_at must be a datetime")
-        if not isinstance(self.created_by, str) or not self.created_by.strip():
-            raise ValueError("created_by must be a non-empty string")
-        if self.message is not None and not isinstance(self.message, str):
-            raise TypeError("message must be a string or None")
+        if self.created_at.tzinfo is None or self.created_at.utcoffset() is None:
+            raise ValueError("created_at must be timezone-aware")
+        validate.require_text(self.created_by, "Revision.created_by")
+        validate.optional_text(self.message, "Revision.message", empty=False)
         object.__setattr__(self, "parent_ids", parent_ids)
 
-    def changes_since(self, parent: GraphRevision) -> GraphDiff:
-        if not isinstance(parent, GraphRevision):
-            raise TypeError("parent must be a GraphRevision")
+    def diff(self, parent: Revision) -> Diff:
+        if not isinstance(parent, Revision):
+            raise TypeError("parent must be a Revision")
         if parent.id not in self.parent_ids:
             raise ValueError("the supplied revision is not a parent of this revision")
-        return GraphDiff.between(parent.graph, self.graph)
+        return Diff.between(parent.graph, self.graph)
 
 
-def _changes(parent: Mapping[UUID, T], child: Mapping[UUID, T]) -> ChangeSet[T]:
-    return ChangeSet(
+def _changes(parent: Mapping[UUID, T], child: Mapping[UUID, T]) -> Delta[T]:
+    return Delta(
         added=tuple(
             value for identifier, value in child.items() if identifier not in parent
         ),
@@ -167,7 +172,7 @@ def _equal(left: object, right: object) -> bool:
         return False
 
 
-def _classifications(graph: Graph) -> dict[UUID, Classification]:
+def _classifications_by_id(graph: Graph) -> dict[UUID, Classification]:
     return {
         item.id: item
         for taxonomy in graph.definitions.taxonomies.values()
@@ -175,7 +180,7 @@ def _classifications(graph: Graph) -> dict[UUID, Classification]:
     }
 
 
-def _characteristic_items(
+def _characteristics_by_id(
     graph: Graph,
 ) -> tuple[dict[UUID, Label], dict[UUID, Measurement], dict[UUID, Feature]]:
     owners = (*graph.entities, *graph.relationships)
