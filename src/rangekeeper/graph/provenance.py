@@ -23,7 +23,7 @@ T = TypeVar("T")
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
-class SourceEdition:
+class Source:
     id: UUID = field(default_factory=uuid4)
     name: str
     checksum: str
@@ -33,8 +33,8 @@ class SourceEdition:
 
     def __post_init__(self) -> None:
         validate.require_uuid(self.id, "id")
-        validate.require_text(self.name, "SourceEdition.name")
-        validate.require_text(self.checksum, "SourceEdition.checksum")
+        validate.require_text(self.name, "Source.name")
+        validate.require_text(self.checksum, "Source.checksum")
         for value, field_name in (
             (self.issued_at, "issued_at"),
             (self.received_at, "received_at"),
@@ -43,22 +43,26 @@ class SourceEdition:
                 raise TypeError(f"{field_name} must be a date, datetime, or None")
         validate.optional_text(
             self.author,
-            "SourceEdition.author",
+            "Source.author",
             empty=False,
         )
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
-class SpreadsheetLocation:
-    edition: SourceEdition
-    worksheet: str
-    range: str
+class Location:
+    source: Source
+    reference: Mapping[str, str] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
-        if not isinstance(self.edition, SourceEdition):
-            raise TypeError("edition must be a SourceEdition")
-        validate.require_text(self.worksheet, "SpreadsheetLocation.worksheet")
-        validate.require_text(self.range, "SpreadsheetLocation.range")
+        if not isinstance(self.source, Source):
+            raise TypeError("source must be a Source")
+        if not isinstance(self.reference, Mapping):
+            raise TypeError("reference must be a mapping")
+        reference = dict(self.reference)
+        for key, value in reference.items():
+            validate.require_text(key, "Location.reference key")
+            validate.require_text(value, f"Location.reference[{key!r}]")
+        object.__setattr__(self, "reference", MappingProxyType(reference))
 
 
 class ClaimKind(Enum):
@@ -84,7 +88,7 @@ class Claim(Generic[T]):
     id: UUID = field(default_factory=uuid4)
     value: T
     kind: ClaimKind
-    sources: tuple[SpreadsheetLocation | Claim[Any], ...] = ()
+    sources: tuple[Location | Claim[Any], ...] = ()
     method: Method | None = None
 
     def __post_init__(self) -> None:
@@ -92,14 +96,14 @@ class Claim(Generic[T]):
         if not isinstance(self.kind, ClaimKind):
             raise TypeError("kind must be a ClaimKind")
         sources = tuple(self.sources)
-        if any(not isinstance(item, (SpreadsheetLocation, Claim)) for item in sources):
-            raise TypeError("sources must contain SpreadsheetLocation or Claim objects")
+        if any(not isinstance(item, (Location, Claim)) for item in sources):
+            raise TypeError("sources must contain Location or Claim objects")
         if self.method is not None and not isinstance(self.method, Method):
             raise TypeError("method must be a Method or None")
         if self.kind is ClaimKind.SOURCED and not any(
-            isinstance(item, SpreadsheetLocation) for item in sources
+            isinstance(item, Location) for item in sources
         ):
-            raise ValueError("a sourced claim requires a SpreadsheetLocation")
+            raise ValueError("a sourced claim requires a Location")
         if self.kind is ClaimKind.DERIVED:
             if not any(isinstance(item, Claim) for item in sources):
                 raise ValueError("a derived claim requires an upstream Claim")
@@ -114,19 +118,17 @@ class Claim(Generic[T]):
         cls,
         value: T,
         *,
-        at: SpreadsheetLocation,
+        at: Location,
         method: Method | None = None,
         id: UUID | None = None,
     ) -> Claim[T]:
-        values = {
-            "value": value,
-            "kind": ClaimKind.SOURCED,
-            "sources": (at,),
-            "method": method,
-        }
-        if id is not None:
-            values["id"] = id
-        return cls(**values)
+        return cls(
+            id=uuid4() if id is None else id,
+            value=value,
+            kind=ClaimKind.SOURCED,
+            sources=(at,),
+            method=method,
+        )
 
     @classmethod
     def derived(
@@ -137,15 +139,13 @@ class Claim(Generic[T]):
         method: Method,
         id: UUID | None = None,
     ) -> Claim[T]:
-        values = {
-            "value": value,
-            "kind": ClaimKind.DERIVED,
-            "sources": tuple(from_claims),
-            "method": method,
-        }
-        if id is not None:
-            values["id"] = id
-        return cls(**values)
+        return cls(
+            id=uuid4() if id is None else id,
+            value=value,
+            kind=ClaimKind.DERIVED,
+            sources=tuple(from_claims),
+            method=method,
+        )
 
     @classmethod
     def asserted(
@@ -155,17 +155,12 @@ class Claim(Generic[T]):
         method: Method,
         id: UUID | None = None,
     ) -> Claim[T]:
-        values = {
-            "value": value,
-            "kind": ClaimKind.ASSERTED,
-            "method": method,
-        }
-        if id is not None:
-            values["id"] = id
-        return cls(**values)
-
-
-ClaimSource: TypeAlias = SpreadsheetLocation | Claim[Any]
+        return cls(
+            id=uuid4() if id is None else id,
+            value=value,
+            kind=ClaimKind.ASSERTED,
+            method=method,
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -241,11 +236,9 @@ class Reconciliation(Generic[T]):
 
 
 class FactStatus(Enum):
-    SINGLE_SOURCE = "single-source"
-    MATCHED = "matched"
+    DETERMINATE = "determinate"
     CONFLICT = "conflict"
-    PROVISIONAL = "provisional"
-    RESOLVED = "resolved"
+    RECONCILED = "reconciled"
 
 
 FactTarget: TypeAlias = Entity | Relationship | Label | Measurement | Feature
@@ -283,43 +276,24 @@ class Fact(Generic[T]):
     @property
     def status(self) -> FactStatus:
         if self.reconciliation is not None:
-            if self.reconciliation.status is ReconciliationStatus.PROVISIONAL:
-                return FactStatus.PROVISIONAL
-            return FactStatus.RESOLVED
-        if len(self.claims) == 1:
-            return FactStatus.SINGLE_SOURCE
-        if _all_equivalent(tuple(claim.value for claim in self.claims)):
-            return FactStatus.MATCHED
-        return FactStatus.CONFLICT
+            return FactStatus.RECONCILED
+        return (
+            FactStatus.DETERMINATE
+            if self.current_claim is not None
+            else FactStatus.CONFLICT
+        )
 
     @property
     def current_claim(self) -> Claim[T] | None:
         if self.reconciliation is not None:
             return self.reconciliation.selected
-        if len(self.claims) == 1 or _all_equivalent(
-            tuple(claim.value for claim in self.claims)
-        ):
-            return self.claims[0]
+        first, *others = self.claims
+        if all(_values_equal(first.value, claim.value) for claim in others):
+            return first
         return None
 
 
-def target_value(target: FactTarget) -> object:
-    if isinstance(target, Measurement):
-        return target.quantity
-    if isinstance(target, Label):
-        return target.classifications
-    if isinstance(target, Feature):
-        return target.value
-    if isinstance(target, Assembly):
-        return AssemblyState.from_assembly(target)
-    if isinstance(target, Entity):
-        return EntityState.from_entity(target)
-    if isinstance(target, Relationship):
-        return RelationshipState.from_relationship(target)
-    raise TypeError("unsupported Fact target")
-
-
-def values_equivalent(left: object, right: object) -> bool:
+def _values_equal(left: object, right: object) -> bool:
     if isinstance(left, pint.Quantity) and isinstance(right, pint.Quantity):
         try:
             converted = right.to(left.units)
@@ -337,15 +311,9 @@ def values_equivalent(left: object, right: object) -> bool:
         return False
 
 
-def _all_equivalent(values: tuple[object, ...]) -> bool:
-    if not values:
-        return True
-    return all(values_equivalent(values[0], item) for item in values[1:])
-
-
-def _index_claims(facts: Iterable[Fact[Any]]) -> Mapping[UUID, Claim[Any]]:
+def _claims_by_id(facts: Iterable[Fact[Any]]) -> Mapping[UUID, Claim[Any]]:
     claims_by_id: dict[UUID, Claim[Any]] = {}
-    source_editions_by_id: dict[UUID, SourceEdition] = {}
+    sources_by_id: dict[UUID, Source] = {}
     visited: set[int] = set()
     visiting: set[int] = set()
 
@@ -363,14 +331,16 @@ def _index_claims(facts: Iterable[Fact[Any]]) -> Mapping[UUID, Claim[Any]]:
         for source in claim.sources:
             if isinstance(source, Claim):
                 visit(source)
-            elif isinstance(source, SpreadsheetLocation):
-                edition = source.edition
-                registered_edition = source_editions_by_id.get(edition.id)
-                if registered_edition is not None and registered_edition is not edition:
+            elif isinstance(source, Location):
+                registered_source = sources_by_id.get(source.source.id)
+                if (
+                    registered_source is not None
+                    and registered_source is not source.source
+                ):
                     raise IdentityConflictError(
-                        f"different SourceEditions share UUID {edition.id}"
+                        f"different Sources share UUID {source.source.id}"
                     )
-                source_editions_by_id[edition.id] = edition
+                sources_by_id[source.source.id] = source.source
         visiting.remove(identity)
         visited.add(identity)
 
@@ -380,37 +350,31 @@ def _index_claims(facts: Iterable[Fact[Any]]) -> Mapping[UUID, Claim[Any]]:
     return MappingProxyType(claims_by_id)
 
 
-def _index_graph_provenance(
-    facts: Iterable[Fact[Any]],
-    targets_by_id: Mapping[UUID, FactTarget],
-) -> Mapping[UUID, Fact[Any]]:
+def _validate(facts: Iterable[Fact[Any]]) -> None:
     facts = tuple(facts)
-    facts_by_target_id: dict[UUID, Fact[Any]] = {}
     for fact in facts:
-        target_id = fact.target.id
-        if target_id in facts_by_target_id:
-            raise ValueError(f"more than one Fact targets UUID {target_id}")
-        registered = targets_by_id.get(target_id)
-        if registered is None:
-            raise ValueError(
-                f"Fact targets graph object {target_id} that is not present"
-            )
-        if registered is not fact.target:
-            raise ValueError(
-                f"Fact target {target_id} is not the registered Graph instance"
-            )
-        if fact.status is FactStatus.CONFLICT:
+        current_claim = fact.current_claim
+        if current_claim is None:
             raise ValueError(
                 "conflicting claims require a provisional or confirmed reconciliation"
             )
-        current_claim = fact.current_claim
-        if current_claim is None or not values_equivalent(
-            target_value(fact.target), current_claim.value
-        ):
+        target = fact.target
+        if isinstance(target, Measurement):
+            target_value = target.quantity
+        elif isinstance(target, Label):
+            target_value = target.classifications
+        elif isinstance(target, Feature):
+            target_value = target.value
+        elif isinstance(target, Assembly):
+            target_value = AssemblyState.from_assembly(target)
+        elif isinstance(target, Entity):
+            target_value = EntityState.from_entity(target)
+        elif isinstance(target, Relationship):
+            target_value = RelationshipState.from_relationship(target)
+        else:
+            raise TypeError("unsupported Fact target")
+        if not _values_equal(target_value, current_claim.value):
             raise ValueError(
                 "the current Fact target value does not match its selected claim"
             )
-        facts_by_target_id[target_id] = fact
-
-    _index_claims(facts)
-    return MappingProxyType(facts_by_target_id)
+    _claims_by_id(facts)

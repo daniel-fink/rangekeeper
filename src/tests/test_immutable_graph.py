@@ -113,8 +113,16 @@ def test_retired_mutable_and_embedded_provenance_apis_are_absent():
     assert not hasattr(rk.graph.Graph(), "changes_since")
     assert not hasattr(rk.graph, "GraphChange")
     assert not hasattr(rk.graph, "Update")
+    assert not hasattr(rk.graph, "SourceEdition")
+    assert not hasattr(rk.graph, "SpreadsheetLocation")
+    assert not hasattr(rk.graph, "Source")
+    assert not hasattr(rk.graph, "Location")
+    assert not hasattr(rk.graph.provenance, "SourceEdition")
+    assert not hasattr(rk.graph.provenance, "SpreadsheetLocation")
     assert not hasattr(rk.graph.update, "GraphChange")
     assert hasattr(rk.graph.update, "Update")
+    assert hasattr(rk.graph.provenance, "Source")
+    assert hasattr(rk.graph.provenance, "Location")
     assert not hasattr(rk.graph.Characteristics(), "measures")
     assert not hasattr(rk.graph.View, "aggregate_measurement")
     assert not hasattr(rk.graph.View, "aggregate_feature")
@@ -650,11 +658,10 @@ def test_assembly_factory_retains_uuid_membership(model):
 
 
 def test_claim_kind_requirements_and_direct_dependencies():
-    edition = rk.graph.SourceEdition(name="JLL pricing", checksum="sha256:abc")
-    location = rk.graph.SpreadsheetLocation(
-        edition=edition,
-        worksheet="Unit Pricing",
-        range="F302",
+    source = rk.graph.provenance.Source(name="JLL pricing", checksum="sha256:abc")
+    location = rk.graph.provenance.Location(
+        source=source,
+        reference={"worksheet": "Unit Pricing", "range": "F302"},
     )
     sourced = rk.graph.Claim(
         value=153,
@@ -668,7 +675,7 @@ def test_claim_kind_requirements_and_direct_dependencies():
         method=rk.graph.Method(code="sum.nsa.components", version="1"),
     )
     assert derived.sources == (sourced,)
-    with pytest.raises(ValueError, match="SpreadsheetLocation"):
+    with pytest.raises(ValueError, match="Location"):
         rk.graph.Claim(value=1, kind=rk.graph.ClaimKind.SOURCED)
     with pytest.raises(ValueError, match="method"):
         rk.graph.Claim(
@@ -678,10 +685,38 @@ def test_claim_kind_requirements_and_direct_dependencies():
         )
 
 
+def test_location_references_are_generic_and_immutable():
+    source = rk.graph.provenance.Source(name="JLL", checksum="sha256:abc")
+    whole_source = rk.graph.provenance.Location(source=source)
+    reference = {"worksheet": "Units", "range": "A1"}
+    location = rk.graph.provenance.Location(
+        source=source,
+        reference=reference,
+    )
+    reference["range"] = "B2"
+    assert whole_source.reference == {}
+    assert location.reference == {"worksheet": "Units", "range": "A1"}
+    with pytest.raises(TypeError):
+        location.reference["range"] = "B2"
+
+    invalid_locations = (
+        ({"source": object()}, "source must be a Source"),
+        ({"source": source, "reference": []}, "reference must be a mapping"),
+        ({"source": source, "reference": {1: "page"}}, "reference key"),
+        ({"source": source, "reference": {" ": "page"}}, "must not be empty"),
+        ({"source": source, "reference": {"page": 1}}, "Location.reference"),
+        ({"source": source, "reference": {"page": " "}}, "must not be empty"),
+    )
+    for values, message in invalid_locations:
+        with pytest.raises((TypeError, ValueError), match=message):
+            rk.graph.provenance.Location(**values)
+
+
 def test_claim_and_state_factories(model):
-    edition = rk.graph.SourceEdition(name="JLL pricing", checksum="sha256:abc")
-    location = rk.graph.SpreadsheetLocation(
-        edition=edition, worksheet="Unit Pricing", range="F302"
+    source = rk.graph.provenance.Source(name="JLL pricing", checksum="sha256:abc")
+    location = rk.graph.provenance.Location(
+        source=source,
+        reference={"worksheet": "Unit Pricing", "range": "F302"},
     )
     method = rk.graph.Method(code="parse.jll", version="1")
     sourced = rk.graph.Claim.sourced(153, at=location, method=method)
@@ -737,9 +772,32 @@ def test_claim_uuid_uniqueness_is_global_in_graph(model):
         )
 
 
-def test_source_edition_uuid_references_are_registered_instances(model):
-    edition = rk.graph.SourceEdition(name="JLL", checksum="sha256:abc")
-    conflicting_edition = replace(edition, name="Different JLL edition")
+def test_graph_registers_one_fact_per_target_instance(model):
+    feature = rk.graph.Feature(name="bedrooms", value=3)
+    entity = apartment(model, feature=feature)
+    fact = rk.graph.Fact(target=feature, claims=(asserted(3),))
+    duplicate = rk.graph.Fact(target=feature, claims=(asserted(3),))
+    with pytest.raises(ValueError, match="more than one Fact targets"):
+        rk.graph.Graph(
+            definitions=model["definitions"],
+            entities=(entity,),
+            provenance=(fact, duplicate),
+        )
+
+    unregistered_target = replace(feature)
+    with pytest.raises(ValueError, match="registered Graph instance"):
+        rk.graph.Graph(
+            definitions=model["definitions"],
+            entities=(entity,),
+            provenance=(
+                rk.graph.Fact(target=unregistered_target, claims=(asserted(3),)),
+            ),
+        )
+
+
+def test_source_uuid_references_are_registered_instances(model):
+    source = rk.graph.provenance.Source(name="JLL", checksum="sha256:abc")
+    conflicting_source = replace(source, name="Different JLL source")
     first_feature = rk.graph.Feature(name="bedrooms", value=3)
     second_feature = rk.graph.Feature(name="bathrooms", value=2)
     entity = apartment(model)
@@ -751,15 +809,19 @@ def test_source_edition_uuid_references_are_registered_instances(model):
     )
     first_claim = rk.graph.Claim.sourced(
         3,
-        at=rk.graph.SpreadsheetLocation(edition=edition, worksheet="Units", range="A1"),
+        at=rk.graph.provenance.Location(
+            source=source,
+            reference={"worksheet": "Units", "range": "A1"},
+        ),
     )
     second_claim = rk.graph.Claim.sourced(
         2,
-        at=rk.graph.SpreadsheetLocation(
-            edition=conflicting_edition, worksheet="Units", range="B1"
+        at=rk.graph.provenance.Location(
+            source=conflicting_source,
+            reference={"worksheet": "Units", "range": "B1"},
         ),
     )
-    with pytest.raises(rk.graph.IdentityConflictError, match="SourceEditions"):
+    with pytest.raises(rk.graph.IdentityConflictError, match="Sources"):
         rk.graph.Graph(
             definitions=model["definitions"],
             entities=(entity,),
@@ -794,12 +856,21 @@ def test_fact_states_and_reconciliation(model):
     entity = apartment(model, feature=feature)
     first = asserted(2, code="jll")
     second = asserted(2, code="m3")
-    matched = rk.graph.Fact(target=feature, claims=(first, second))
+    determinate = rk.graph.Fact(target=feature, claims=(first, second))
     graph = rk.graph.Graph(
-        definitions=model["definitions"], entities=(entity,), provenance=(matched,)
+        definitions=model["definitions"],
+        entities=(entity,),
+        provenance=(determinate,),
     )
-    assert graph.fact_for(feature) is matched
-    assert matched.status is rk.graph.FactStatus.MATCHED
+    assert graph.fact_for(feature) is determinate
+    assert determinate.status is rk.graph.FactStatus.DETERMINATE
+    single = rk.graph.Fact(target=feature, claims=(first,))
+    assert single.status is rk.graph.FactStatus.DETERMINATE
+    assert not hasattr(rk.graph.FactStatus, "SINGLE_SOURCE")
+    assert not hasattr(rk.graph.FactStatus, "SINGLE_CLAIM")
+    assert not hasattr(rk.graph.FactStatus, "MATCHED")
+    assert not hasattr(rk.graph.FactStatus, "PROVISIONAL")
+    assert not hasattr(rk.graph.FactStatus, "RESOLVED")
     conflicting = rk.graph.Fact(target=feature, claims=(first, asserted(3)))
     assert conflicting.status is rk.graph.FactStatus.CONFLICT
     with pytest.raises(ValueError, match="conflicting claims"):
@@ -817,7 +888,39 @@ def test_fact_states_and_reconciliation(model):
         ),
     )
     graph = replace(graph, provenance=(provisional,))
-    assert graph.fact_for(feature).status is rk.graph.FactStatus.PROVISIONAL
+    assert graph.fact_for(feature).status is rk.graph.FactStatus.RECONCILED
+    assert (
+        graph.fact_for(feature).reconciliation.status
+        is rk.graph.ReconciliationStatus.PROVISIONAL
+    )
+
+
+def test_measurement_claims_compare_compatible_units(model):
+    measurement = rk.graph.Measurement(
+        measure=model["internal_area"],
+        quantity=1 * Index.registry.squaremeter,
+    )
+    entity = apartment(model, measurement=measurement)
+    determinate = rk.graph.Fact(
+        target=measurement,
+        claims=(
+            asserted(10_000 * Index.registry.centimeter**2),
+            asserted(1 * Index.registry.squaremeter),
+        ),
+    )
+    graph = rk.graph.Graph(
+        definitions=model["definitions"],
+        entities=(entity,),
+        provenance=(determinate,),
+    )
+    assert graph.fact_for(measurement).status is rk.graph.FactStatus.DETERMINATE
+
+    incompatible = rk.graph.Fact(
+        target=measurement,
+        claims=(asserted(1 * Index.registry.second),),
+    )
+    with pytest.raises(ValueError, match="does not match"):
+        replace(graph, provenance=(incompatible,))
 
 
 def test_measurement_and_entity_state_facts(model):

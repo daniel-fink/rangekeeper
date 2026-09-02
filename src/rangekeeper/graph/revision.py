@@ -11,7 +11,7 @@ from .characteristics import Feature, Label, Measurement
 from .classification import Classification
 from .entity import Entity
 from .graph import Graph
-from .provenance import Claim, Fact, _index_claims
+from .provenance import Claim, Fact, _claims_by_id
 from .relationship import Relationship
 from .taxonomy import Taxonomy
 
@@ -100,8 +100,8 @@ class GraphDiff:
             ),
             facts=_changes(parent._facts_by_target_id, child._facts_by_target_id),
             claims=_changes(
-                _index_claims(parent.provenance),
-                _index_claims(child.provenance),
+                _claims_by_id(parent.provenance),
+                _claims_by_id(child.provenance),
             ),
         )
 
