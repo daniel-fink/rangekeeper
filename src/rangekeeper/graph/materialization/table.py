@@ -295,5 +295,5 @@ def _entity_field(entity: Entity, field: str, *, view: View) -> object:
     if field == "classification_taxonomy":
         if entity.classification is None:
             return None
-        return view.graph._taxonomy_of(entity.classification).code
+        return view.graph.definitions.taxonomy_for(entity.classification).code
     raise TableError(f"unknown entity field {field!r}")

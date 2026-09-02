@@ -267,13 +267,16 @@ class Graph:
         for value, label in ((code, "code"), (name, "name")):
             if value is not None and not isinstance(value, str):
                 raise TypeError(f"{label} must be a string or None")
-        requested = self._resolve_classification(classification)
+        requested = self.definitions._resolve_classification(classification)
         return tuple(
             entity
             for entity in self.entities
             if (code is None or entity.code == code)
             and (name is None or entity.name == name)
-            and self._classification_matches(entity.classification, requested)
+            and self.definitions._classification_matches(
+                entity.classification,
+                requested,
+            )
         )
 
     def source_of(self, relationship: UUID | Relationship) -> Entity:
@@ -289,7 +292,7 @@ class Graph:
         classification: UUID | Classification | None = None,
     ) -> tuple[Relationship, ...]:
         registered = self.entity(entity)
-        requested = self._resolve_classification(classification)
+        requested = self.definitions._resolve_classification(classification)
         relationships = tuple(
             self._relationships_by_id[identifier]
             for identifier in self._relationship_ids_by_source.get(registered.id, ())
@@ -297,7 +300,10 @@ class Graph:
         return tuple(
             relationship
             for relationship in relationships
-            if self._classification_matches(relationship.classification, requested)
+            if self.definitions._classification_matches(
+                relationship.classification,
+                requested,
+            )
         )
 
     def incoming(
@@ -307,7 +313,7 @@ class Graph:
         classification: UUID | Classification | None = None,
     ) -> tuple[Relationship, ...]:
         registered = self.entity(entity)
-        requested = self._resolve_classification(classification)
+        requested = self.definitions._resolve_classification(classification)
         relationships = tuple(
             self._relationships_by_id[identifier]
             for identifier in self._relationship_ids_by_target.get(registered.id, ())
@@ -315,7 +321,10 @@ class Graph:
         return tuple(
             relationship
             for relationship in relationships
-            if self._classification_matches(relationship.classification, requested)
+            if self.definitions._classification_matches(
+                relationship.classification,
+                requested,
+            )
         )
 
     def relationships_between(
@@ -379,38 +388,6 @@ class Graph:
 
     def to_networkx(self) -> nx.MultiDiGraph:
         return _to_networkx(self.entities, self.relationships)
-
-    def _resolve_classification(
-        self, classification: UUID | Classification | None
-    ) -> Classification | None:
-        if classification is None:
-            return None
-        if isinstance(classification, UUID):
-            registered, _ = self.definitions._lookup_classification(classification)
-            return registered
-        if isinstance(classification, Classification):
-            registered, _ = self.definitions._require_classification_instance(
-                classification
-            )
-            return registered
-        raise TypeError("classification must be a UUID, Classification, or None")
-
-    def _classification_matches(
-        self,
-        actual: Classification | None,
-        requested: Classification | None,
-    ) -> bool:
-        if requested is None:
-            return True
-        if actual is None:
-            return False
-        _, requested_taxonomy = self.definitions._require_classification_instance(
-            requested
-        )
-        _, actual_taxonomy = self.definitions._require_classification_instance(actual)
-        if requested_taxonomy is not actual_taxonomy:
-            return False
-        return actual_taxonomy.is_a(actual, requested)
 
     def _validate_definition_references(
         self,

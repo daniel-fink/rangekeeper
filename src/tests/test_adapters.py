@@ -119,6 +119,17 @@ def test_csv_rejects_non_finite_numbers(tmp_path):
 
 
 def visualization_fixture():
+    entity_root = rk.graph.Classification(code="entity", name="Entity")
+    node = rk.graph.Classification(
+        code="entity.node",
+        name="Node",
+        parent=entity_root,
+    )
+    entity_taxonomy = rk.graph.Taxonomy(
+        code="entity",
+        name="Entity Types",
+        classifications=(entity_root, node),
+    )
     relationship_root = rk.graph.Classification(
         code="relationship", name="Relationship"
     )
@@ -132,15 +143,15 @@ def visualization_fixture():
         name="Relationship Types",
         classifications=(relationship_root, contains),
     )
-    root = rk.graph.Entity(code="root", name="Root")
-    child = rk.graph.Entity(code="child", name="Child")
+    root = rk.graph.Entity(code="root", name="Root", classification=node)
+    child = rk.graph.Entity(code="child", name="Child", classification=node)
     edge = rk.graph.Relationship(
         source_id=root.id,
         target_id=child.id,
         classification=contains,
     )
     graph = rk.graph.Graph(
-        definitions=rk.graph.Definitions(taxonomies=(taxonomy,)),
+        definitions=rk.graph.Definitions(taxonomies=(entity_taxonomy, taxonomy)),
         entities=(root, child),
         relationships=(edge,),
     )
@@ -170,6 +181,18 @@ def test_graph_html_visualization_writes_the_selected_view(tmp_path):
     assert str(view.relationships[0].id) not in contents
     assert "Root" in contents
     assert "Child" in contents
+    assert "entity:entity.node" in contents
+
+
+def test_view_materialization_includes_classification_taxonomy():
+    view, _ = visualization_fixture()
+
+    table = materialization.Table.from_view(
+        view,
+        fields=("entity_id", "classification_taxonomy"),
+    )
+
+    assert table.column("classification_taxonomy") == ("entity", "entity")
 
 
 def test_arborescence_visualizations_return_plotly_traces():

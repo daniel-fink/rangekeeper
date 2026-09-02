@@ -39,96 +39,37 @@ class View:
     ) -> None:
         if not isinstance(graph, Graph):
             raise TypeError("graph must be a Graph")
-        if assembly is not None and (entities is not None or relationships is not None):
-            raise ValueError("assembly and explicit selections are mutually exclusive")
+        if assembly is not None and any(
+            value is not None
+            for value in (
+                entities,
+                relationships,
+                entity_classification,
+                relationship_classification,
+                predicate,
+            )
+        ):
+            raise ValueError(
+                "assembly and selections or filters are mutually exclusive"
+            )
         if predicate is not None and not callable(predicate):
             raise TypeError("predicate must be callable or None")
 
-        preserve_entity_id: UUID | None = None
-        if assembly is not None:
-            candidate = graph.entity(assembly)
-            if not isinstance(candidate, Assembly):
-                raise TypeError("assembly must resolve to an Assembly")
-            preserve_entity_id = candidate.id
-            selected_entity_ids = {candidate.id, *candidate.entity_ids}
-            selected_relationship_ids = set(candidate.relationship_ids)
-        elif entities is None and relationships is None:
-            selected_entity_ids = set(graph._entities_by_id)
-            selected_relationship_ids = set(graph._relationships_by_id)
-        elif entities is not None and relationships is None:
-            selected_entity_ids = {graph.entity(item).id for item in entities}
-            selected_relationship_ids = {
-                relationship.id
-                for relationship in graph.relationships
-                if relationship.source_id in selected_entity_ids
-                and relationship.target_id in selected_entity_ids
-            }
-        elif entities is None:
-            selected_relationship_ids = {
-                graph.relationship(item).id for item in relationships or ()
-            }
-            selected_entity_ids = {
-                endpoint
-                for identifier in selected_relationship_ids
-                for endpoint in (
-                    graph._relationships_by_id[identifier].source_id,
-                    graph._relationships_by_id[identifier].target_id,
-                )
-            }
-        else:
-            selected_entity_ids = {graph.entity(item).id for item in entities}
-            selected_relationship_ids = {
-                graph.relationship(item).id for item in relationships or ()
-            }
-
-        for relationship_id in selected_relationship_ids:
-            relationship = graph.relationship(relationship_id)
-            if (
-                relationship.source_id not in selected_entity_ids
-                or relationship.target_id not in selected_entity_ids
-            ):
-                raise ValueError(
-                    "a View relationship cannot have an endpoint outside the View"
-                )
-
-        requested_entity_classification = graph._resolve_classification(
-            entity_classification
+        selected_entity_ids, selected_relationship_ids = _select(
+            graph,
+            entities=entities,
+            relationships=relationships,
+            assembly=assembly,
         )
-        requested_relationship_classification = graph._resolve_classification(
-            relationship_classification
+        _validate(graph, selected_entity_ids, selected_relationship_ids)
+        selected_entity_ids, selected_relationship_ids = _filter(
+            graph,
+            selected_entity_ids,
+            selected_relationship_ids,
+            entity_classification=entity_classification,
+            relationship_classification=relationship_classification,
+            predicate=predicate,
         )
-        if requested_entity_classification is not None or predicate is not None:
-            selected_entity_ids = {
-                entity_id
-                for entity_id in selected_entity_ids
-                if graph._classification_matches(
-                    graph.entity(entity_id).classification,
-                    requested_entity_classification,
-                )
-                and (predicate is None or predicate(graph.entity(entity_id)))
-            }
-        selected_relationship_ids = {
-            relationship_id
-            for relationship_id in selected_relationship_ids
-            if graph.relationship(relationship_id).source_id in selected_entity_ids
-            and graph.relationship(relationship_id).target_id in selected_entity_ids
-            and graph._classification_matches(
-                graph.relationship(relationship_id).classification,
-                requested_relationship_classification,
-            )
-        }
-        if requested_relationship_classification is not None:
-            endpoint_ids = {
-                endpoint_id
-                for relationship_id in selected_relationship_ids
-                for endpoint_id in (
-                    graph.relationship(relationship_id).source_id,
-                    graph.relationship(relationship_id).target_id,
-                )
-            }
-            selected_entity_ids.intersection_update(endpoint_ids)
-            if preserve_entity_id is not None:
-                selected_entity_ids.add(preserve_entity_id)
         object.__setattr__(self, "graph", graph)
         object.__setattr__(self, "_entity_ids", frozenset(selected_entity_ids))
         object.__setattr__(
@@ -180,46 +121,17 @@ class View:
             predicate=predicate,
         )
 
-    def expand(
-        self,
-        via: UUID | Classification | None = None,
-        *,
-        outgoing: bool = True,
-        incoming: bool = True,
-    ) -> View:
-        if not outgoing and not incoming:
-            raise ValueError("expand requires outgoing or incoming relationships")
-        requested = self.graph._resolve_classification(via)
-        entity_ids = set(self._entity_ids)
-        relationship_ids = set(self._relationship_ids)
-        for edge in self.graph.relationships:
-            if not self.graph._classification_matches(edge.classification, requested):
-                continue
-            if outgoing and edge.source_id in self._entity_ids:
-                entity_ids.add(edge.target_id)
-                relationship_ids.add(edge.id)
-            if incoming and edge.target_id in self._entity_ids:
-                entity_ids.add(edge.source_id)
-                relationship_ids.add(edge.id)
-        return View(
-            self.graph,
-            entities=entity_ids,
-            relationships=relationship_ids,
-        )
-
     def predecessors(
         self,
         entity: str | UUID | Entity,
         *,
-        via: str | UUID | Classification | None = None,
+        via: UUID | Classification | None = None,
     ) -> tuple[Entity, ...]:
         entity_id = self._resolve_view_entity_id(entity)
-        requested = self.graph._resolve_classification(via)
         predecessor_ids = {
             edge.source_id
-            for edge in self.relationships
-            if edge.target_id == entity_id
-            and self.graph._classification_matches(edge.classification, requested)
+            for edge in self.graph.incoming(entity_id, classification=via)
+            if edge.id in self._relationship_ids
         }
         return tuple(item for item in self.entities if item.id in predecessor_ids)
 
@@ -227,15 +139,13 @@ class View:
         self,
         entity: str | UUID | Entity,
         *,
-        via: str | UUID | Classification | None = None,
+        via: UUID | Classification | None = None,
     ) -> tuple[Entity, ...]:
         entity_id = self._resolve_view_entity_id(entity)
-        requested = self.graph._resolve_classification(via)
         successor_ids = {
             edge.target_id
-            for edge in self.relationships
-            if edge.source_id == entity_id
-            and self.graph._classification_matches(edge.classification, requested)
+            for edge in self.graph.outgoing(entity_id, classification=via)
+            if edge.id in self._relationship_ids
         }
         return tuple(item for item in self.entities if item.id in successor_ids)
 
@@ -252,3 +162,110 @@ class View:
         if registered.id not in self._entity_ids:
             raise MissingEntityError(registered.id)
         return registered.id
+
+
+def _select(
+    graph: Graph,
+    *,
+    entities: Iterable[str | UUID | Entity] | None,
+    relationships: Iterable[UUID | Relationship] | None,
+    assembly: str | UUID | Assembly | None,
+) -> tuple[set[UUID], set[UUID]]:
+    if assembly is not None:
+        candidate = graph.entity(assembly)
+        if not isinstance(candidate, Assembly):
+            raise TypeError("assembly must resolve to an Assembly")
+        return (
+            {candidate.id, *candidate.entity_ids},
+            set(candidate.relationship_ids),
+        )
+    if entities is None and relationships is None:
+        return set(graph._entities_by_id), set(graph._relationships_by_id)
+    if entities is not None and relationships is None:
+        entity_ids = {graph.entity(item).id for item in entities}
+        relationship_ids = {
+            relationship.id
+            for relationship in graph.relationships
+            if relationship.source_id in entity_ids
+            and relationship.target_id in entity_ids
+        }
+        return entity_ids, relationship_ids
+    if entities is None:
+        relationship_ids = {graph.relationship(item).id for item in relationships or ()}
+        entity_ids = {
+            endpoint
+            for identifier in relationship_ids
+            for endpoint in (
+                graph._relationships_by_id[identifier].source_id,
+                graph._relationships_by_id[identifier].target_id,
+            )
+        }
+        return entity_ids, relationship_ids
+    return (
+        {graph.entity(item).id for item in entities},
+        {graph.relationship(item).id for item in relationships or ()},
+    )
+
+
+def _filter(
+    graph: Graph,
+    entity_ids: set[UUID],
+    relationship_ids: set[UUID],
+    *,
+    entity_classification: UUID | Classification | None,
+    relationship_classification: UUID | Classification | None,
+    predicate: Callable[[Entity], bool] | None,
+) -> tuple[set[UUID], set[UUID]]:
+    requested_entity_classification = graph.definitions._resolve_classification(
+        entity_classification
+    )
+    requested_relationship_classification = graph.definitions._resolve_classification(
+        relationship_classification
+    )
+    if requested_entity_classification is not None or predicate is not None:
+        entity_ids = {
+            identifier
+            for identifier in entity_ids
+            if graph.definitions._classification_matches(
+                graph._entities_by_id[identifier].classification,
+                requested_entity_classification,
+            )
+            and (predicate is None or predicate(graph._entities_by_id[identifier]))
+        }
+    relationship_ids = {
+        identifier
+        for identifier in relationship_ids
+        if graph._relationships_by_id[identifier].source_id in entity_ids
+        and graph._relationships_by_id[identifier].target_id in entity_ids
+        and graph.definitions._classification_matches(
+            graph._relationships_by_id[identifier].classification,
+            requested_relationship_classification,
+        )
+    }
+    if requested_relationship_classification is not None:
+        endpoint_ids = {
+            endpoint
+            for identifier in relationship_ids
+            for endpoint in (
+                graph._relationships_by_id[identifier].source_id,
+                graph._relationships_by_id[identifier].target_id,
+            )
+        }
+        entity_ids.intersection_update(endpoint_ids)
+    return entity_ids, relationship_ids
+
+
+def _validate(
+    graph: Graph,
+    entity_ids: set[UUID],
+    relationship_ids: set[UUID],
+) -> None:
+    for identifier in relationship_ids:
+        relationship = graph._relationships_by_id[identifier]
+        if (
+            relationship.source_id not in entity_ids
+            or relationship.target_id not in entity_ids
+        ):
+            raise ValueError(
+                "a View relationship cannot have an endpoint outside the View"
+            )
