@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, TypeVar
+from typing import TypeVar
 from uuid import UUID
 
 import networkx as nx
@@ -12,11 +12,9 @@ from .aggregation import Aggregation
 from .classification import Classification
 from .entity import Entity
 from .errors import MissingEntityError
+from .graph import Graph, _to_networkx
 from .reduce import Reduction
 from .relationship import Relationship
-
-if TYPE_CHECKING:
-    from .graph import Graph
 
 
 T = TypeVar("T")
@@ -39,8 +37,6 @@ class View:
         assembly: str | UUID | Assembly | None = None,
         predicate: Callable[[Entity], bool] | None = None,
     ) -> None:
-        from .graph import Graph
-
         if not isinstance(graph, Graph):
             raise TypeError("graph must be a Graph")
         if assembly is not None and (entities is not None or relationships is not None):
@@ -57,8 +53,8 @@ class View:
             selected_entity_ids = {candidate.id, *candidate.entity_ids}
             selected_relationship_ids = set(candidate.relationship_ids)
         elif entities is None and relationships is None:
-            selected_entity_ids = set(graph._entity_store)
-            selected_relationship_ids = set(graph._relationship_store)
+            selected_entity_ids = set(graph._entities_by_id)
+            selected_relationship_ids = set(graph._relationships_by_id)
         elif entities is not None and relationships is None:
             selected_entity_ids = {graph.entity(item).id for item in entities}
             selected_relationship_ids = {
@@ -73,10 +69,10 @@ class View:
             }
             selected_entity_ids = {
                 endpoint
-                for id in selected_relationship_ids
+                for identifier in selected_relationship_ids
                 for endpoint in (
-                    graph._relationship_store[id].source_id,
-                    graph._relationship_store[id].target_id,
+                    graph._relationships_by_id[identifier].source_id,
+                    graph._relationships_by_id[identifier].target_id,
                 )
             }
         else:
@@ -249,23 +245,10 @@ class View:
         return reduction._execute(self)
 
     def to_networkx(self) -> nx.MultiDiGraph:
-        graph = nx.MultiDiGraph()
-        graph.add_nodes_from(
-            (entity.id, {"entity": entity}) for entity in self.entities
-        )
-        graph.add_edges_from(
-            (
-                relationship.source_id,
-                relationship.target_id,
-                relationship.id,
-                {"relationship": relationship},
-            )
-            for relationship in self.relationships
-        )
-        return nx.freeze(graph)
+        return _to_networkx(self.entities, self.relationships)
 
     def _resolve_view_entity_id(self, entity: str | UUID | Entity) -> UUID:
-        canonical = self.graph.entity(entity)
-        if canonical.id not in self._entity_ids:
-            raise MissingEntityError(canonical.id)
-        return canonical.id
+        registered = self.graph.entity(entity)
+        if registered.id not in self._entity_ids:
+            raise MissingEntityError(registered.id)
+        return registered.id

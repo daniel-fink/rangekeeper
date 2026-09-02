@@ -11,7 +11,7 @@ from .characteristics import Feature, Label, Measurement
 from .classification import Classification
 from .entity import Entity
 from .graph import Graph
-from .provenance import Claim, Fact
+from .provenance import Claim, Fact, _index_claims
 from .relationship import Relationship
 from .taxonomy import Taxonomy
 
@@ -91,15 +91,18 @@ class GraphDiff:
                 {item.id: item for item in parent.definitions.measures.values()},
                 {item.id: item for item in child.definitions.measures.values()},
             ),
-            entities=_changes(parent._entity_store, child._entity_store),
+            entities=_changes(parent._entities_by_id, child._entities_by_id),
             labels=_changes(parent_characteristics[0], child_characteristics[0]),
             measurements=_changes(parent_characteristics[1], child_characteristics[1]),
             features=_changes(parent_characteristics[2], child_characteristics[2]),
             relationships=_changes(
-                parent._relationship_store, child._relationship_store
+                parent._relationships_by_id, child._relationships_by_id
             ),
-            facts=_changes(parent._fact_store, child._fact_store),
-            claims=_changes(parent._claim_store, child._claim_store),
+            facts=_changes(parent._facts_by_target_id, child._facts_by_target_id),
+            claims=_changes(
+                _index_claims(parent.provenance),
+                _index_claims(child.provenance),
+            ),
         )
 
 
@@ -142,12 +145,16 @@ class GraphRevision:
 
 def _changes(parent: Mapping[UUID, T], child: Mapping[UUID, T]) -> ChangeSet[T]:
     return ChangeSet(
-        added=tuple(value for id, value in child.items() if id not in parent),
-        removed=tuple(value for id, value in parent.items() if id not in child),
+        added=tuple(
+            value for identifier, value in child.items() if identifier not in parent
+        ),
+        removed=tuple(
+            value for identifier, value in parent.items() if identifier not in child
+        ),
         modified=tuple(
-            Modification(before=parent[id], after=value)
-            for id, value in child.items()
-            if id in parent and not _equal(parent[id], value)
+            Modification(before=parent[identifier], after=value)
+            for identifier, value in child.items()
+            if identifier in parent and not _equal(parent[identifier], value)
         ),
     )
 

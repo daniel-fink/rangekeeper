@@ -15,7 +15,7 @@ from .errors import (
     MissingRelationshipError,
     UnknownDefinitionError,
 )
-from .graph import Graph, GraphChange
+from .graph import Graph
 from .provenance import (
     AssemblyState,
     Claim,
@@ -33,6 +33,7 @@ from .provenance import (
 from .relationship import Relationship
 from .revision import ChangeSet, GraphDiff, GraphRevision, Modification
 from .taxonomy import Taxonomy
+from .update import GraphChange
 from . import reduce as reduce
 from .reduce import collect, distinct, mode
 from .view import View

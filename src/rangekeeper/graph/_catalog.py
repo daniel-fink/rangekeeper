@@ -10,7 +10,7 @@ from .errors import (
     CatalogInstanceError,
     IdentityConflictError,
     UnknownDefinitionError,
-)
+    )
 
 
 class CodedIdentified(Protocol):
@@ -110,6 +110,9 @@ class Catalog(Mapping[str, C], Generic[C]):
                 self.kind, identifier, scope=self.scope
             ) from error
 
+    def _contains_id(self, identifier: UUID) -> bool:
+        return identifier in self._by_id
+
     def _require_catalog_instance(self, value: C) -> C:
         if not hasattr(value, "id"):
             raise TypeError(f"value must be a {self.kind}")
@@ -119,6 +122,3 @@ class Catalog(Mapping[str, C], Generic[C]):
         if registered is not value:
             raise CatalogInstanceError(self.kind, value.id, scope=self.scope)
         return registered
-
-    def _contains_id(self, identifier: UUID) -> bool:
-        return identifier in self._by_id
