@@ -16,6 +16,7 @@ from .errors import (
     UnknownDefinitionError,
 )
 from .graph import Graph
+from . import provenance as provenance
 from .provenance import (
     AssemblyState,
     Claim,
@@ -27,8 +28,6 @@ from .provenance import (
     Reconciliation,
     ReconciliationStatus,
     RelationshipState,
-    SourceEdition,
-    SpreadsheetLocation,
 )
 from .relationship import Relationship
 from .revision import ChangeSet, GraphDiff, GraphRevision, Modification
@@ -80,14 +79,13 @@ __all__ = [
     "ReconciliationStatus",
     "Relationship",
     "RelationshipState",
-    "SourceEdition",
-    "SpreadsheetLocation",
     "Taxonomy",
     "UnknownDefinitionError",
     "View",
     "collect",
     "distinct",
     "mode",
+    "provenance",
     "reduce",
     "update",
     "visualization",

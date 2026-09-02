@@ -23,7 +23,7 @@ from .errors import (
 from .provenance import (
     Fact,
     FactTarget,
-    _index_graph_provenance,
+    _validate as _validate_provenance,
 )
 from .relationship import Relationship
 from .update import Update, _apply
@@ -136,14 +136,31 @@ class Graph:
         self._validate_definition_references(entities, relationships)
         self._validate_relationships(relationships, entities_by_id)
         self._validate_assemblies(entities, relationships_by_id, entities_by_id)
-        facts_by_target_id = _index_graph_provenance(provenance, targets_by_id)
+        facts_by_target_id: dict[UUID, Fact[Any]] = {}
+        for fact in provenance:
+            target_id = fact.target.id
+            if target_id in facts_by_target_id:
+                raise ValueError(f"more than one Fact targets UUID {target_id}")
+            registered = targets_by_id.get(target_id)
+            if registered is None:
+                raise ValueError(
+                    f"Fact targets graph object {target_id} that is not present"
+                )
+            if registered is not fact.target:
+                raise ValueError(
+                    f"Fact target {target_id} is not the registered Graph instance"
+                )
+            facts_by_target_id[target_id] = fact
+        _validate_provenance(provenance)
 
         object.__setattr__(self, "entities", entities)
         object.__setattr__(self, "relationships", relationships)
         object.__setattr__(self, "provenance", provenance)
         object.__setattr__(self, "_entities_by_id", entities_by_id)
         object.__setattr__(self, "_relationships_by_id", relationships_by_id)
-        object.__setattr__(self, "_facts_by_target_id", facts_by_target_id)
+        object.__setattr__(
+            self, "_facts_by_target_id", MappingProxyType(facts_by_target_id)
+        )
         object.__setattr__(
             self,
             "_relationship_ids_by_source",
