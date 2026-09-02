@@ -11,7 +11,7 @@ import networkx as nx
 import plotly.graph_objects as go
 from pyvis.network import Network
 
-from ..materialization import Table
+from ..table import Table
 from ..view import View
 from .errors import AdapterEncodingError
 

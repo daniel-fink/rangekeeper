@@ -1806,11 +1806,9 @@ def test_tabular_and_icicle_projection_use_uuid_graph(model):
         entities=(root, leaf),
         relationships=(edge,),
     )
-    from rangekeeper.graph.materialization import Table
-
-    table = Table.from_arborescence(
+    table = rk.graph.table.Table.from_arborescence(
         graph.view(),
-        fields=("entity_id", "code", "name"),
+        entity_fields=("entity_id", "code", "name"),
         measurements={"area.nsa.internal": None},
     )
     assert "measurement.area.nsa.internal" in table.columns

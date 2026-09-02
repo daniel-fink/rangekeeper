@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from ..materialization import Table
+from ..table import Table
 from .errors import AdapterEncodingError
 from .pandas import from_dataframe, to_dataframe
 

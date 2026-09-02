@@ -32,6 +32,7 @@ from .provenance import (
 from .relationship import Relationship
 from . import revision as revision
 from .taxonomy import Taxonomy
+from . import table as table
 from . import reduce as reduce
 from . import update as update
 from .reduce import collect, distinct, mode
@@ -84,6 +85,7 @@ __all__ = [
     "provenance",
     "reduce",
     "revision",
+    "table",
     "update",
     "visualization",
 ]
