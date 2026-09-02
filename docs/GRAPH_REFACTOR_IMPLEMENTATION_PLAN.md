@@ -177,15 +177,11 @@ rangekeeper.graph
     View
     traversal, validation, query, and graph aggregation operations
 
-rangekeeper.graph.materialization
-    Record
-    Snapshot
+rangekeeper.graph.table
     Table
-    projection, grouping, and table aggregation operations
+    tabular View projection
 
 rangekeeper.graph.adapter
-    speckle
-    json
     csv
     pandas
     visualization
@@ -196,13 +192,13 @@ Use the singular package name `adapter`, matching this approved design.
 ### 2. Dependency direction
 
 ```text
-graph <- materialization <- adapter
+graph <- table <- adapter
 ```
 
 - `rangekeeper.graph` must not import SpecklePy, pandas, Plotly, PyVis, Jupyter,
-  CSV writers, or materialization modules.
-- `materialization` may import graph domain types.
-- adapters may import materialization, graph types, and their external library.
+  or CSV writers.
+- `table` may import graph domain types.
+- adapters may import Table, graph types, and their external library.
 - NetworkX is permitted inside the graph engine, but raw NetworkX objects must
   not be persisted or exposed as the primary public API.
 
@@ -519,19 +515,10 @@ src/rangekeeper/graph/
     traversal.py
     aggregation.py
     validation.py
-
-    materialization/
-        __init__.py
-        record.py
-        snapshot.py
-        table.py
-        projection.py
-        aggregation.py
+    table.py
 
     adapter/
         __init__.py
-        speckle.py
-        json.py
         csv.py
         pandas.py
         visualization.py
@@ -876,10 +863,8 @@ Snapshot must preserve:
 
 NetworkX objects are reconstructed from records and never stored in Snapshot.
 
-Arbitrary rich feature values require an explicit value encoder. Initially,
-either support known Rangekeeper types or raise a precise
-`MaterializationError` naming the entity, feature, and unsupported type. Never
-silently call `str()` as SpecklePy currently does for unsupported objects.
+Table preserves arbitrary in-memory feature values by reference. Text adapters
+must reject unsupported rich cells rather than silently calling `str()`.
 
 ### Table
 
@@ -1196,36 +1181,22 @@ Gate: the graph cannot reach an invalid state through its public API.
 
 Gate: GFA and flux aggregation behavior is deterministic and notebook-ready.
 
-### Phase 4: materialization (complete)
+### Phase 4: Table projection (complete)
 
-1. Implement Record and Snapshot.
-2. Implement Snapshot creation from Graph and View.
-3. Implement restore with reference resolution and full validation.
-4. Add JSON-compatible encoding for core fields, Classification,
-   Characteristics, Provenance, Measure, and Pint quantities.
-5. Define clear errors for unsupported rich feature values.
-6. Implement Table and the projections required by the notebook DataFrame.
-7. Implement `Table.from_arborescence()` including parent IDs, deterministic
+1. Implement Table and the projections required by the notebook DataFrame.
+2. Implement `Table.from_arborescence()` including parent IDs, deterministic
    parent-before-child ordering, and projection of aggregate feature values.
-8. Implement table grouping/aggregation only as exercised by tests.
 
-Gate: a supported Graph snapshot round-trips exactly; View projection produces
-the expected table rows and parent links.
+Gate: View projection produces the expected table rows and parent links.
 
 ### Phase 5: adapters (complete)
 
-1. Implement JSON Snapshot round trip.
-2. Implement pandas Table conversion.
-3. Implement CSV Table conversion.
-4. Implement Speckle inbound conversion first, including duplicate logical
-   entity reconciliation.
-5. Implement explicit outbound Speckle records and graph package root.
-6. Confirm no adapter silently stringifies unsupported objects.
-7. Implement visualization adapter for graph HTML, sunburst, and treemap.
+1. Implement pandas Table conversion.
+2. Implement CSV Table conversion.
+3. Confirm no adapter silently stringifies unsupported objects.
+4. Implement visualization adapter for graph HTML, sunburst, and treemap.
 
-Gate: the sanitized/synthetic Speckle fixture imports into the expected Graph;
-supported Snapshot data round-trips through Speckle and JSON; Table round-trips
-through pandas/CSV as defined.
+Gate: Table round-trips through pandas/CSV as defined.
 
 ### Phase 6: migrate walkthroughs
 
@@ -1367,7 +1338,7 @@ the two required notebooks.
 ### Phase 8: final verification and commits
 
 1. Run formatting and linting configured by the repository.
-2. Run focused graph/materialization/adapter tests.
+2. Run focused graph/Table/adapter tests.
 3. Run all non-live tests.
 4. Run C# domain and Grasshopper component tests.
 5. Run the Windows Rhino/Grasshopper/Speckle v3 acceptance procedure and retain

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from ..materialization import Table
+from ..table import Table, TableError
 
 
 def to_dataframe(table: Table) -> pd.DataFrame:
@@ -21,7 +21,7 @@ def from_dataframe(frame: pd.DataFrame) -> Table:
         raise TypeError("frame must be a pandas DataFrame")
     columns = tuple(frame.columns)
     if len(columns) != len(set(columns)):
-        raise ValueError("DataFrame columns must be unique")
+        raise TableError("DataFrame columns must be unique")
     return Table(
         columns=columns,
         rows=tuple(frame.to_dict(orient="records")),

@@ -14,7 +14,7 @@ new component assembly has passed the complete acceptance procedure.
 
 | Capability | macOS development host | Windows acceptance host |
 |---|---:|---:|
-| Python graph/materialization/adapter tests | Yes | Yes |
+| Python graph/Table/adapter tests | Yes | Yes |
 | Speckle-independent C# domain tests | Yes | Yes |
 | Cross-language Snapshot fixture tests | Yes | Yes |
 | Grasshopper assembly build | Optional | Required |

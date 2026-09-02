@@ -1,14 +1,17 @@
+from dataclasses import FrozenInstanceError
+
 import pandas as pd
+import pint
 import pytest
 
 import rangekeeper as rk
 
 
 adapter = rk.graph.adapter
-materialization = rk.graph.materialization
+table_module = rk.graph.table
 
 
-def test_supported_adapter_and_materialization_surfaces_are_explicit():
+def test_supported_adapter_and_table_surfaces_are_explicit():
     assert adapter.__all__ == [
         "AdapterEncodingError",
         "AdapterError",
@@ -16,20 +19,59 @@ def test_supported_adapter_and_materialization_surfaces_are_explicit():
         "pandas",
         "visualization",
     ]
-    assert materialization.__all__ == [
-        "MaterializationError",
-        "Table",
-        "TableError",
-    ]
+    assert table_module.__all__ == ["Table", "TableError"]
     for retired in ("json", "speckle", "SpeckleImportError", "SpeckleConflictError"):
         assert not hasattr(adapter, retired)
-    for retired in ("Snapshot", "SnapshotError", "UnsupportedValueError"):
-        assert not hasattr(materialization, retired)
+    assert not hasattr(rk.graph, "materialization")
+    for retired in (
+        "MaterializationError",
+        "Snapshot",
+        "SnapshotError",
+        "UnsupportedValueError",
+    ):
+        assert not hasattr(table_module, retired)
+
+
+def test_table_normalizes_and_freezes_columns_and_rows():
+    table = table_module.Table(
+        columns=["name", "value"],
+        rows=[{"value": 1, "name": "First"}],
+    )
+
+    assert table.columns == ("name", "value")
+    assert tuple(table.rows[0]) == table.columns
+    assert table.column("value") == (1,)
+    assert not hasattr(table, "group_by")
+    with pytest.raises(TypeError):
+        table.rows[0]["value"] = 2
+    with pytest.raises(FrozenInstanceError):
+        table.columns = ("changed",)
+
+
+@pytest.mark.parametrize(
+    ("columns", "rows", "message"),
+    (
+        (("",), (), "non-empty strings"),
+        (("name", "name"), (), "duplicates"),
+        (("name",), ({"name": "First", "extra": 1},), "extra"),
+        (("name", "value"), ({"name": "First"},), "missing"),
+    ),
+)
+def test_table_rejects_invalid_columns_and_rows(columns, rows, message):
+    with pytest.raises(table_module.TableError, match=message):
+        table_module.Table(columns=columns, rows=rows)
+
+
+def test_table_rejects_string_columns_and_non_mapping_rows():
+    with pytest.raises(TypeError, match="iterable of strings"):
+        table_module.Table(columns="name", rows=())
+    with pytest.raises(TypeError, match="only mappings"):
+        table_module.Table(columns=("name",), rows=("First",))
 
 
 def test_pandas_table_round_trip_preserves_columns_rows_and_runtime_values():
     runtime_value = object()
-    table = materialization.Table(
+    table = table_module.Table(
         columns=("entity_id", "value"),
         rows=(
             {"entity_id": "first", "value": runtime_value},
@@ -57,7 +99,7 @@ def test_pandas_adapter_ignores_index_and_preserves_empty_columns():
 
 
 def test_csv_composes_table_and_dataframe_adapters_with_pandas_inference(tmp_path):
-    table = materialization.Table(
+    table = table_module.Table(
         columns=("name", "code", "status", "count", "active", "missing"),
         rows=(
             {
@@ -86,7 +128,7 @@ def test_csv_composes_table_and_dataframe_adapters_with_pandas_inference(tmp_pat
 
 
 def test_csv_rejects_rich_values_instead_of_stringifying_them(tmp_path):
-    table = materialization.Table(
+    table = table_module.Table(
         columns=("labels",),
         rows=({"labels": (("taxonomy", "code"),)},),
     )
@@ -96,11 +138,11 @@ def test_csv_rejects_rich_values_instead_of_stringifying_them(tmp_path):
 
 
 def test_csv_preserves_empty_tables_and_single_column_none_rows(tmp_path):
-    empty = materialization.Table(columns=("name", "value"), rows=())
+    empty = table_module.Table(columns=("name", "value"), rows=())
     empty_path = tmp_path / "empty.csv"
     adapter.csv.write(empty, empty_path)
 
-    missing = materialization.Table(columns=("value",), rows=({"value": None},))
+    missing = table_module.Table(columns=("value",), rows=({"value": None},))
     missing_path = tmp_path / "missing.csv"
     adapter.csv.write(missing, missing_path)
 
@@ -109,7 +151,7 @@ def test_csv_preserves_empty_tables_and_single_column_none_rows(tmp_path):
 
 
 def test_csv_rejects_non_finite_numbers(tmp_path):
-    table = materialization.Table(
+    table = table_module.Table(
         columns=("value",),
         rows=({"value": float("nan")},),
     )
@@ -156,7 +198,7 @@ def visualization_fixture():
         relationships=(edge,),
     )
     view = rk.graph.View(graph)
-    table = materialization.Table(
+    table = table_module.Table(
         columns=("entity_id", "parent_id", "name", "total"),
         rows=(
             {"entity_id": "root", "parent_id": None, "name": "Root", "total": 2},
@@ -184,15 +226,143 @@ def test_graph_html_visualization_writes_the_selected_view(tmp_path):
     assert "entity:entity.node" in contents
 
 
-def test_view_materialization_includes_classification_taxonomy():
+def test_view_table_includes_taxonomy_code():
     view, _ = visualization_fixture()
 
-    table = materialization.Table.from_view(
+    table = table_module.Table.from_view(
         view,
-        fields=("entity_id", "classification_taxonomy"),
+        entity_fields=("entity_id", "taxonomy_code"),
     )
 
-    assert table.column("classification_taxonomy") == ("entity", "entity")
+    assert table.column("taxonomy_code") == ("entity", "entity")
+
+
+def test_view_table_projects_qualified_labels_features_and_missing_values():
+    root = rk.graph.Classification(code="entity", name="Entity")
+    apartment = rk.graph.Classification(
+        code="space.apartment",
+        name="Apartment",
+        parent=root,
+    )
+    taxonomy = rk.graph.Taxonomy(
+        code="entity",
+        name="Entity Types",
+        classifications=(root, apartment),
+    )
+    label = rk.graph.Label(key="use", classifications=(apartment,))
+    feature = rk.graph.Feature(name="status", value="active")
+    classified = rk.graph.Entity(
+        code="classified",
+        classification=apartment,
+        characteristics=rk.graph.Characteristics(
+            labels={"use": label},
+            features={"status": feature},
+        ),
+    )
+    missing = rk.graph.Entity(code="missing", classification=root)
+    view = rk.graph.Graph(
+        definitions=rk.graph.Definitions(taxonomies=(taxonomy,)),
+        entities=(classified, missing),
+    ).view()
+
+    table = table_module.Table.from_view(
+        view,
+        entity_fields=("entity_id", "code"),
+        labels=("use",),
+        features=("status",),
+    )
+
+    assert table.rows[0]["label.use"] == (("entity", "space.apartment"),)
+    assert table.rows[0]["feature.status"] == "active"
+    assert table.rows[1]["label.use"] == ()
+    assert table.rows[1]["feature.status"] is None
+
+
+def test_view_table_converts_measurement_units_and_rejects_incompatible_units():
+    measure = rk.graph.Measure(
+        code="area.internal",
+        name="Internal area",
+        units=rk.measure.Index.registry.squaremeter,
+    )
+    measurement = rk.graph.Measurement(
+        measure=measure,
+        quantity=1 * rk.measure.Index.registry.squaremeter,
+    )
+    entity = rk.graph.Entity(
+        characteristics=rk.graph.Characteristics(
+            measurements={measure.code: measurement}
+        )
+    )
+    view = rk.graph.Graph(
+        definitions=rk.graph.Definitions(measures=(measure,)),
+        entities=(entity,),
+    ).view()
+
+    table = table_module.Table.from_view(
+        view,
+        measurements={measure: "squarefoot"},
+    )
+
+    assert table.rows[0]["measurement.area.internal"] == pytest.approx(10.7639104167)
+    with pytest.raises(pint.DimensionalityError):
+        table_module.Table.from_view(view, measurements={measure: "second"})
+
+
+def test_arborescence_table_preserves_relationship_insertion_order():
+    relationship = rk.graph.Classification(code="relationship", name="Relationship")
+    contains = rk.graph.Classification(
+        code="relationship.contains",
+        name="Contains",
+        parent=relationship,
+    )
+    taxonomy = rk.graph.Taxonomy(
+        code="relationship",
+        name="Relationship Types",
+        classifications=(relationship, contains),
+    )
+    root = rk.graph.Entity(code="root")
+    first = rk.graph.Entity(code="first")
+    second = rk.graph.Entity(code="second")
+    to_second = rk.graph.Relationship.between(
+        root,
+        second,
+        classification=contains,
+    )
+    to_first = rk.graph.Relationship.between(
+        root,
+        first,
+        classification=contains,
+    )
+    graph = rk.graph.Graph(
+        definitions=rk.graph.Definitions(taxonomies=(taxonomy,)),
+        entities=(root, first, second),
+        relationships=(to_second, to_first),
+    )
+
+    table = table_module.Table.from_arborescence(
+        graph.view(),
+        entity_fields=("code", "entity_id"),
+    )
+
+    assert table.columns == ("code", "entity_id", "parent_id")
+    assert table.column("entity_id") == (root.id, second.id, first.id)
+    assert table.column("parent_id") == (None, root.id, root.id)
+
+
+def test_arborescence_table_rejects_invalid_views_and_missing_entity_id():
+    empty = rk.graph.Graph().view()
+    disconnected = rk.graph.Graph(
+        entities=(rk.graph.Entity(), rk.graph.Entity()),
+    ).view()
+
+    for view in (empty, disconnected):
+        with pytest.raises(table_module.TableError, match="arborescence"):
+            table_module.Table.from_arborescence(view)
+    with pytest.raises(table_module.TableError, match="entity_id"):
+        table_module.Table.from_arborescence(
+            rk.graph.Graph(entities=(rk.graph.Entity(),)).view(),
+            entity_fields=("name",),
+        )
 
 
 def test_arborescence_visualizations_return_plotly_traces():
@@ -214,7 +384,7 @@ def test_arborescence_visualizations_return_plotly_traces():
 
 def test_arborescence_visualization_rejects_rich_or_invalid_values():
     _, table = visualization_fixture()
-    rich = materialization.Table(
+    rich = table_module.Table(
         columns=("entity_id", "parent_id", "name", "total"),
         rows=(
             {
@@ -230,5 +400,5 @@ def test_arborescence_visualization_rejects_rich_or_invalid_values():
         adapter.visualization.sunburst(rich, value="total")
     with pytest.raises(adapter.AdapterEncodingError, match="missing columns"):
         adapter.visualization.treemap(
-            materialization.Table(columns=("entity_id",), rows=()),
+            table_module.Table(columns=("entity_id",), rows=()),
         )
