@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 
 
 @dataclass(frozen=True, slots=True)
-class GraphChange:
+class Update:
     definitions: Definitions | None = None
     add_entities: tuple[Entity, ...] = ()
     replace_entities: tuple[Entity, ...] = ()
@@ -35,82 +35,114 @@ class GraphChange:
     cascade: bool = False
 
     def __post_init__(self) -> None:
-        tuple_fields = (
+        for name in (
             "add_entities",
             "replace_entities",
             "add_relationships",
             "replace_relationships",
             "add_facts",
             "replace_facts",
-        )
-        for name in tuple_fields:
+        ):
             object.__setattr__(self, name, tuple(getattr(self, name)))
-        for name in ("add_entities", "replace_entities"):
-            if any(not isinstance(item, Entity) for item in getattr(self, name)):
-                raise TypeError(f"{name} must contain only Entity objects")
-        for name in ("add_relationships", "replace_relationships"):
-            if any(not isinstance(item, Relationship) for item in getattr(self, name)):
-                raise TypeError(f"{name} must contain only Relationship objects")
-        for name in ("add_facts", "replace_facts"):
-            if any(not isinstance(item, Fact) for item in getattr(self, name)):
-                raise TypeError(f"{name} must contain only Fact objects")
-        set_fields = (
+        for name in (
             "remove_entity_ids",
             "remove_relationship_ids",
             "remove_fact_target_ids",
-        )
-        for name in set_fields:
-            values = frozenset(getattr(self, name))
-            if any(not isinstance(value, UUID) for value in values):
-                raise TypeError(f"{name} must contain only UUIDs")
-            object.__setattr__(self, name, values)
-        if self.definitions is not None and not isinstance(
-            self.definitions, Definitions
         ):
-            raise TypeError("definitions must be Definitions or None")
-        if not isinstance(self.cascade, bool):
-            raise TypeError("cascade must be a bool")
+            object.__setattr__(self, name, frozenset(getattr(self, name)))
+        _validate(self)
 
 
-def _apply_change(graph: Graph, change: GraphChange) -> Graph:
-    """Validate and apply one complete change without mutating the Graph."""
-    if not isinstance(change, GraphChange):
-        raise TypeError("change must be a GraphChange")
+def _validate(update: Update) -> None:
+    for name, expected in (
+        ("add_entities", Entity),
+        ("replace_entities", Entity),
+        ("add_relationships", Relationship),
+        ("replace_relationships", Relationship),
+        ("add_facts", Fact),
+        ("replace_facts", Fact),
+    ):
+        if any(not isinstance(item, expected) for item in getattr(update, name)):
+            raise TypeError(f"{name} must contain only {expected.__name__} objects")
+    for name in (
+        "remove_entity_ids",
+        "remove_relationship_ids",
+        "remove_fact_target_ids",
+    ):
+        if any(not isinstance(value, UUID) for value in getattr(update, name)):
+            raise TypeError(f"{name} must contain only UUIDs")
+    if update.definitions is not None and not isinstance(
+        update.definitions, Definitions
+    ):
+        raise TypeError("definitions must be Definitions or None")
+    if not isinstance(update.cascade, bool):
+        raise TypeError("cascade must be a bool")
+
+    operations = (
+        (
+            "entity",
+            tuple(item.id for item in update.add_entities),
+            tuple(item.id for item in update.replace_entities),
+            update.remove_entity_ids,
+        ),
+        (
+            "relationship",
+            tuple(item.id for item in update.add_relationships),
+            tuple(item.id for item in update.replace_relationships),
+            update.remove_relationship_ids,
+        ),
+        (
+            "Fact target",
+            tuple(item.target.id for item in update.add_facts),
+            tuple(item.target.id for item in update.replace_facts),
+            update.remove_fact_target_ids,
+        ),
+    )
+    for label, additions, replacements, removals in operations:
+        for operation, identifiers in (
+            ("addition", additions),
+            ("replacement", replacements),
+        ):
+            seen: set[UUID] = set()
+            for identifier in identifiers:
+                if identifier in seen:
+                    raise IdentityConflictError(
+                        f"{operation} repeats {label} UUID {identifier}"
+                    )
+                seen.add(identifier)
+        addition_ids = set(additions)
+        replacement_ids = set(replacements)
+        if addition_ids.intersection(replacement_ids):
+            raise ValueError(f"the same {label} UUID cannot be added and replaced")
+        if addition_ids.intersection(removals):
+            raise ValueError(f"the same {label} UUID cannot be added and removed")
+        if replacement_ids.intersection(removals):
+            raise ValueError(f"the same {label} UUID cannot be removed and replaced")
+
+
+def _apply(graph: Graph, update: Update) -> Graph:
+    """Apply one complete Update without mutating the Graph."""
+    if not isinstance(update, Update):
+        raise TypeError("update must be an Update")
     definitions = (
-        graph.definitions if change.definitions is None else change.definitions
+        graph.definitions if update.definitions is None else update.definitions
     )
     entities = dict(graph._entities_by_id)
     relationships = dict(graph._relationships_by_id)
     facts = dict(graph._facts_by_target_id)
 
-    _validate_operations(
-        additions={item.id for item in change.add_entities},
-        replacements={item.id for item in change.replace_entities},
-        removals=change.remove_entity_ids,
-        label="entity",
-    )
-    _validate_operations(
-        additions={item.id for item in change.add_relationships},
-        replacements={item.id for item in change.replace_relationships},
-        removals=change.remove_relationship_ids,
-        label="relationship",
-    )
-    _validate_operations(
-        additions={item.target.id for item in change.add_facts},
-        replacements={item.target.id for item in change.replace_facts},
-        removals=change.remove_fact_target_ids,
-        label="Fact",
-    )
-
-    relationship_removals = set(change.remove_relationship_ids)
-    fact_removals = set(change.remove_fact_target_ids)
-    entity_removals = set(change.remove_entity_ids)
+    entity_removals = update.remove_entity_ids
+    relationship_removals = set(update.remove_relationship_ids)
+    fact_removals = set(update.remove_fact_target_ids)
 
     missing_fact_targets = fact_removals.difference(facts)
     if missing_fact_targets:
         raise KeyError(
             f"cannot remove missing Fact targets: {_format_ids(missing_fact_targets)}"
         )
+    for relationship_id in update.remove_relationship_ids:
+        if relationship_id not in relationships:
+            raise MissingRelationshipError(relationship_id)
 
     for entity_id in entity_removals:
         if entity_id not in entities:
@@ -129,25 +161,21 @@ def _apply_change(graph: Graph, change: GraphChange) -> Graph:
             if isinstance(assembly, Assembly) and entity_id in assembly.entity_ids
         }
         dependent_facts = {entity_id, *characteristic_ids}.intersection(facts)
-        if not change.cascade and (incident or memberships or dependent_facts):
+        if not update.cascade and (incident or memberships or dependent_facts):
             raise ValueError(
                 f"entity {entity_id} has dependent relationships, assembly membership, or Facts; use cascade=True"
             )
-        if change.cascade:
+        if update.cascade:
             relationship_removals.update(incident)
             fact_removals.update({entity_id, *characteristic_ids})
 
     for relationship_id in relationship_removals:
-        if relationship_id not in relationships:
-            if relationship_id in change.remove_relationship_ids:
-                raise MissingRelationshipError(relationship_id)
-            continue
         relationship = relationships[relationship_id]
-        if change.cascade:
+        if update.cascade:
             fact_removals.add(relationship_id)
             fact_removals.update(item.id for item in relationship.characteristics.items)
 
-    if change.cascade and (entity_removals or relationship_removals):
+    if update.cascade and (entity_removals or relationship_removals):
         for entity_id, entity in tuple(entities.items()):
             if not isinstance(entity, Assembly) or entity_id in entity_removals:
                 continue
@@ -173,12 +201,41 @@ def _apply_change(graph: Graph, change: GraphChange) -> Graph:
     for identifier in fact_removals:
         facts.pop(identifier, None)
 
-    _apply_additions(entities, change.add_entities, "entity")
-    _apply_replacements(entities, change.replace_entities, "entity")
-    _apply_additions(relationships, change.add_relationships, "relationship")
-    _apply_replacements(relationships, change.replace_relationships, "relationship")
-    _apply_fact_additions(facts, change.add_facts)
-    _apply_fact_replacements(facts, change.replace_facts)
+    for entity in update.add_entities:
+        if entity.id in entities:
+            raise IdentityConflictError(f"cannot add existing entity UUID {entity.id}")
+    for entity in update.replace_entities:
+        if entity.id not in entities:
+            raise KeyError(f"cannot replace missing entity UUID {entity.id}")
+    for relationship in update.add_relationships:
+        if relationship.id in relationships:
+            raise IdentityConflictError(
+                f"cannot add existing relationship UUID {relationship.id}"
+            )
+    for relationship in update.replace_relationships:
+        if relationship.id not in relationships:
+            raise KeyError(
+                f"cannot replace missing relationship UUID {relationship.id}"
+            )
+    for fact in update.add_facts:
+        if fact.target.id in facts:
+            raise IdentityConflictError(
+                f"cannot add existing Fact target {fact.target.id}"
+            )
+    for fact in update.replace_facts:
+        if fact.target.id not in facts:
+            raise KeyError(f"cannot replace missing Fact target {fact.target.id}")
+
+    entities.update(
+        (item.id, item) for item in (*update.add_entities, *update.replace_entities)
+    )
+    relationships.update(
+        (item.id, item)
+        for item in (*update.add_relationships, *update.replace_relationships)
+    )
+    facts.update(
+        (item.target.id, item) for item in (*update.add_facts, *update.replace_facts)
+    )
 
     from .graph import Graph
 
@@ -188,62 +245,3 @@ def _apply_change(graph: Graph, change: GraphChange) -> Graph:
         relationships=tuple(relationships.values()),
         provenance=tuple(facts.values()),
     )
-
-
-def _apply_additions(
-    registry: dict[UUID, Any], additions: tuple[Any, ...], label: str
-) -> None:
-    seen: set[UUID] = set()
-    for item in additions:
-        if item.id in seen or item.id in registry:
-            raise IdentityConflictError(f"cannot add existing {label} UUID {item.id}")
-        seen.add(item.id)
-        registry[item.id] = item
-
-
-def _apply_replacements(
-    registry: dict[UUID, Any], replacements: tuple[Any, ...], label: str
-) -> None:
-    seen: set[UUID] = set()
-    for item in replacements:
-        if item.id in seen:
-            raise IdentityConflictError(f"replacement repeats {label} UUID {item.id}")
-        if item.id not in registry:
-            raise KeyError(f"cannot replace missing {label} UUID {item.id}")
-        seen.add(item.id)
-        registry[item.id] = item
-
-
-def _apply_fact_additions(
-    registry: dict[UUID, Fact[Any]], additions: tuple[Fact[Any], ...]
-) -> None:
-    for fact in additions:
-        if fact.target.id in registry:
-            raise IdentityConflictError(
-                f"cannot add existing Fact target {fact.target.id}"
-            )
-        registry[fact.target.id] = fact
-
-
-def _apply_fact_replacements(
-    registry: dict[UUID, Fact[Any]], replacements: tuple[Fact[Any], ...]
-) -> None:
-    for fact in replacements:
-        if fact.target.id not in registry:
-            raise KeyError(f"cannot replace missing Fact target {fact.target.id}")
-        registry[fact.target.id] = fact
-
-
-def _validate_operations(
-    *,
-    additions: set[UUID],
-    replacements: set[UUID],
-    removals: set[UUID] | frozenset[UUID],
-    label: str,
-) -> None:
-    if additions.intersection(replacements):
-        raise ValueError(f"the same {label} UUID cannot be added and replaced")
-    if additions.intersection(removals):
-        raise ValueError(f"the same {label} UUID cannot be added and removed")
-    if replacements.intersection(removals):
-        raise ValueError(f"the same {label} UUID cannot be removed and replaced")

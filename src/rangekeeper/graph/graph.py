@@ -26,7 +26,7 @@ from .provenance import (
     _index_graph_provenance,
 )
 from .relationship import Relationship
-from .update import GraphChange, _apply_change
+from .update import Update, _apply
 
 if TYPE_CHECKING:
     from .view import View
@@ -205,24 +205,24 @@ class Graph:
             raise TypeError("Fact lookup requires a graph object or UUID")
         return self._facts_by_target_id.get(target_id)
 
-    def apply(self, change: GraphChange) -> Graph:
-        """Return a new Graph with one validated change applied."""
-        return _apply_change(self, change)
+    def apply(self, update: Update) -> Graph:
+        """Return a new Graph with one validated update applied."""
+        return _apply(self, update)
 
     def with_entities(self, *entities: Entity) -> Graph:
-        return self.apply(GraphChange(add_entities=entities))
+        return self.apply(Update(add_entities=entities))
 
     def with_relationships(self, *relationships: Relationship) -> Graph:
-        return self.apply(GraphChange(add_relationships=relationships))
+        return self.apply(Update(add_relationships=relationships))
 
     def with_facts(self, *facts: Fact[Any]) -> Graph:
-        return self.apply(GraphChange(add_facts=facts))
+        return self.apply(Update(add_facts=facts))
 
     def without_entities(
         self, *entities: str | UUID | Entity, cascade: bool = False
     ) -> Graph:
         return self.apply(
-            GraphChange(
+            Update(
                 remove_entity_ids=frozenset(self.entity(item).id for item in entities),
                 cascade=cascade,
             )
@@ -232,7 +232,7 @@ class Graph:
         self, *relationships: UUID | Relationship, cascade: bool = False
     ) -> Graph:
         return self.apply(
-            GraphChange(
+            Update(
                 remove_relationship_ids=frozenset(
                     self.relationship(item).id for item in relationships
                 ),

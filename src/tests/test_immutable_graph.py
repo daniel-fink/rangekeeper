@@ -111,6 +111,10 @@ def test_retired_mutable_and_embedded_provenance_apis_are_absent():
     assert not hasattr(rk.graph.Graph(), "connect")
     assert not hasattr(rk.graph.Graph(), "validate")
     assert not hasattr(rk.graph.Graph(), "changes_since")
+    assert not hasattr(rk.graph, "GraphChange")
+    assert not hasattr(rk.graph, "Update")
+    assert not hasattr(rk.graph.update, "GraphChange")
+    assert hasattr(rk.graph.update, "Update")
     assert not hasattr(rk.graph.Characteristics(), "measures")
     assert not hasattr(rk.graph.View, "aggregate_measurement")
     assert not hasattr(rk.graph.View, "aggregate_feature")
@@ -843,6 +847,167 @@ def test_measurement_and_entity_state_facts(model):
     )
 
 
+def test_update_normalizes_and_validates_fields(model):
+    entity = apartment(model)
+    removal_id = uuid4()
+    update = rk.graph.update.Update(
+        add_entities=[entity],
+        remove_entity_ids={removal_id},
+    )
+    assert update.add_entities == (entity,)
+    assert update.remove_entity_ids == frozenset({removal_id})
+
+    invalid_fields = (
+        ({"add_entities": (object(),)}, "add_entities"),
+        ({"add_relationships": (object(),)}, "add_relationships"),
+        ({"add_facts": (object(),)}, "add_facts"),
+        ({"remove_entity_ids": {"not-a-uuid"}}, "remove_entity_ids"),
+        ({"definitions": object()}, "definitions"),
+        ({"cascade": 1}, "cascade"),
+    )
+    for values, message in invalid_fields:
+        with pytest.raises(TypeError, match=message):
+            rk.graph.update.Update(**values)
+
+
+def test_update_rejects_duplicate_and_conflicting_operations(model):
+    source = rk.graph.Entity(classification=model["space"])
+    target = apartment(model)
+    relationship = rk.graph.Relationship.between(
+        source,
+        target,
+        classification=model["contains"],
+    )
+    feature = rk.graph.Feature(name="bathrooms", value=2)
+    fact = rk.graph.Fact(target=feature, claims=(asserted(2),))
+    operations = (
+        (
+            "entity",
+            source,
+            source.id,
+            "add_entities",
+            "replace_entities",
+            "remove_entity_ids",
+        ),
+        (
+            "relationship",
+            relationship,
+            relationship.id,
+            "add_relationships",
+            "replace_relationships",
+            "remove_relationship_ids",
+        ),
+        (
+            "Fact target",
+            fact,
+            feature.id,
+            "add_facts",
+            "replace_facts",
+            "remove_fact_target_ids",
+        ),
+    )
+    for label, item, identifier, add, replace_, remove in operations:
+        with pytest.raises(
+            rk.graph.IdentityConflictError,
+            match=f"addition repeats {label} UUID",
+        ):
+            rk.graph.update.Update(**{add: (item, item)})
+        with pytest.raises(
+            rk.graph.IdentityConflictError,
+            match=f"replacement repeats {label} UUID",
+        ):
+            rk.graph.update.Update(**{replace_: (item, item)})
+        with pytest.raises(ValueError, match=f"{label} UUID cannot be added"):
+            rk.graph.update.Update(**{add: (item,), replace_: (item,)})
+        with pytest.raises(ValueError, match=f"{label} UUID cannot be added"):
+            rk.graph.update.Update(**{add: (item,), remove: {identifier}})
+        with pytest.raises(ValueError, match=f"{label} UUID cannot be removed"):
+            rk.graph.update.Update(**{replace_: (item,), remove: {identifier}})
+
+
+def test_apply_rejects_invalid_graph_operations(model):
+    feature = rk.graph.Feature(name="bathrooms", value=2)
+    source = rk.graph.Entity(
+        classification=model["space"],
+        characteristics=rk.graph.Characteristics(features={feature.name: feature}),
+    )
+    target = apartment(model)
+    relationship = rk.graph.Relationship.between(
+        source,
+        target,
+        classification=model["contains"],
+    )
+    fact = rk.graph.Fact(target=feature, claims=(asserted(2),))
+    graph = rk.graph.Graph(
+        definitions=model["definitions"],
+        entities=(source, target),
+        relationships=(relationship,),
+        provenance=(fact,),
+    )
+    missing_entity = apartment(model, code="missing")
+    missing_relationship = rk.graph.Relationship.between(
+        source,
+        target,
+        classification=model["allocated_to"],
+    )
+    missing_feature = rk.graph.Feature(name="missing", value=True)
+    missing_fact = rk.graph.Fact(target=missing_feature, claims=(asserted(True),))
+
+    with pytest.raises(TypeError, match="update must be an Update"):
+        graph.apply(object())
+
+    invalid_operations = (
+        (
+            rk.graph.update.Update(add_entities=(source,)),
+            rk.graph.IdentityConflictError,
+            "cannot add existing entity",
+        ),
+        (
+            rk.graph.update.Update(add_relationships=(relationship,)),
+            rk.graph.IdentityConflictError,
+            "cannot add existing relationship",
+        ),
+        (
+            rk.graph.update.Update(add_facts=(fact,)),
+            rk.graph.IdentityConflictError,
+            "cannot add existing Fact target",
+        ),
+        (
+            rk.graph.update.Update(replace_entities=(missing_entity,)),
+            KeyError,
+            "cannot replace missing entity",
+        ),
+        (
+            rk.graph.update.Update(replace_relationships=(missing_relationship,)),
+            KeyError,
+            "cannot replace missing relationship",
+        ),
+        (
+            rk.graph.update.Update(replace_facts=(missing_fact,)),
+            KeyError,
+            "cannot replace missing Fact target",
+        ),
+        (
+            rk.graph.update.Update(remove_entity_ids={uuid4()}),
+            rk.graph.MissingEntityError,
+            "UUID",
+        ),
+        (
+            rk.graph.update.Update(remove_relationship_ids={uuid4()}),
+            rk.graph.MissingRelationshipError,
+            "UUID",
+        ),
+        (
+            rk.graph.update.Update(remove_fact_target_ids={uuid4()}),
+            KeyError,
+            "cannot remove missing Fact targets",
+        ),
+    )
+    for update, error, message in invalid_operations:
+        with pytest.raises(error, match=message):
+            graph.apply(update)
+
+
 def test_apply_is_atomic_and_requires_fact_replacement(model):
     feature = rk.graph.Feature(name="bathrooms", value=2)
     entity = apartment(model, feature=feature)
@@ -858,11 +1023,11 @@ def test_apply_is_atomic_and_requires_fact_replacement(model):
         ),
     )
     with pytest.raises(ValueError, match="registered Graph instance"):
-        graph.apply(rk.graph.GraphChange(replace_entities=(changed_entity,)))
+        graph.apply(rk.graph.update.Update(replace_entities=(changed_entity,)))
     assert graph.entity(entity.id) is entity
     changed_fact = rk.graph.Fact(target=changed_feature, claims=(asserted(3),))
     updated = graph.apply(
-        rk.graph.GraphChange(
+        rk.graph.update.Update(
             replace_entities=(changed_entity,),
             replace_facts=(changed_fact,),
         )
@@ -1324,7 +1489,7 @@ def test_diff_reports_changed_claims_and_reconciliation(model):
             method=rk.graph.Method(code="review.confirmed"),
         ),
     )
-    child = parent.apply(rk.graph.GraphChange(replace_facts=(resolved,)))
+    child = parent.apply(rk.graph.update.Update(replace_facts=(resolved,)))
     diff = rk.graph.GraphDiff.between(parent, child)
     assert diff.claims.modified == (
         rk.graph.Modification(before=alternative, after=revised_alternative),
@@ -1349,7 +1514,7 @@ def test_definition_replacement_is_validated_and_diffed(model):
         taxonomies=model["definitions"].taxonomies,
         measures=(revised_measure,),
     )
-    child = parent.apply(rk.graph.GraphChange(definitions=definitions))
+    child = parent.apply(rk.graph.update.Update(definitions=definitions))
     assert child.definitions.measures[revised_measure.code] is revised_measure
     assert rk.graph.GraphDiff.between(parent, child).measures.modified == (
         rk.graph.Modification(before=model["internal_area"], after=revised_measure),
@@ -1362,7 +1527,7 @@ def test_batch_addition_is_one_atomic_change(model):
         for index in range(1_000)
     )
     empty = rk.graph.Graph(definitions=model["definitions"])
-    graph = empty.apply(rk.graph.GraphChange(add_entities=entities))
+    graph = empty.apply(rk.graph.update.Update(add_entities=entities))
     assert len(graph.entities) == 1_000
     assert empty.entities == ()
 
