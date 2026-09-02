@@ -1,10 +1,5 @@
-import json as json_library
-
 import pandas as pd
 import pytest
-from specklepy.api import operations
-from specklepy.objects import Base
-from specklepy.transports.memory import MemoryTransport
 
 import rangekeeper as rk
 
@@ -13,47 +8,23 @@ adapter = rk.graph.adapter
 materialization = rk.graph.materialization
 
 
-def adapter_graph():
-    kinds = rk.graph.Taxonomy(code="entity", name="Entity Types")
-    kind = kinds.define(code="entity", name="Entity")
-    entity = rk.graph.Entity(
-        entity_id="entity-1",
-        name="Entity One",
-        classification=kind,
-        characteristics=rk.graph.Characteristics(features={"values": (1, "two", None)}),
-    )
-    graph = rk.graph.Graph()
-    graph.entities.add(entity)
-    return graph
-
-
-def test_json_snapshot_text_round_trip_is_deterministic():
-    snapshot = materialization.to_snapshot(adapter_graph())
-
-    encoded = adapter.json.dumps(snapshot)
-    restored = adapter.json.loads(encoded)
-
-    assert restored == snapshot
-    assert adapter.json.dumps(restored) == encoded
-    assert json_library.loads(encoded)["schema_version"] == 2
-
-
-def test_json_snapshot_file_round_trip(tmp_path):
-    snapshot = materialization.to_snapshot(adapter_graph())
-    path = tmp_path / "graph.json"
-
-    adapter.json.dump(snapshot, path)
-
-    assert adapter.json.load(path) == snapshot
-
-
-def test_json_adapter_rejects_invalid_boundary_values():
-    with pytest.raises(TypeError, match="Snapshot"):
-        adapter.json.dumps(adapter_graph())
-    with pytest.raises(adapter.AdapterEncodingError, match="root"):
-        adapter.json.loads("[]")
-    with pytest.raises(adapter.AdapterEncodingError, match="invalid Snapshot JSON"):
-        adapter.json.loads("{")
+def test_supported_adapter_and_materialization_surfaces_are_explicit():
+    assert adapter.__all__ == [
+        "AdapterEncodingError",
+        "AdapterError",
+        "csv",
+        "pandas",
+        "visualization",
+    ]
+    assert materialization.__all__ == [
+        "MaterializationError",
+        "Table",
+        "TableError",
+    ]
+    for retired in ("json", "speckle", "SpeckleImportError", "SpeckleConflictError"):
+        assert not hasattr(adapter, retired)
+    for retired in ("Snapshot", "SnapshotError", "UnsupportedValueError"):
+        assert not hasattr(materialization, retired)
 
 
 def test_pandas_table_round_trip_preserves_columns_rows_and_runtime_values():
@@ -145,115 +116,6 @@ def test_csv_rejects_non_finite_numbers(tmp_path):
 
     with pytest.raises(adapter.AdapterEncodingError, match="float"):
         adapter.csv.write(table, tmp_path / "non-finite.csv")
-
-
-class LegacyEntity(Base):
-    pass
-
-
-class LegacyAssembly(LegacyEntity):
-    pass
-
-
-class LegacyRelationship(Base):
-    pass
-
-
-def legacy_design():
-    office_plain = LegacyEntity(id="office-object", applicationId="office-app")
-    office_plain["entityId"] = "office"
-    office_plain["name"] = "Office"
-    office_plain["type"] = "space"
-    office_plain["gfa"] = 100
-    office_plain["use"] = "office"
-
-    office_assembly = LegacyAssembly(applicationId="office-assembly-app")
-    office_assembly["entityId"] = "office"
-    office_assembly["name"] = "Office"
-    office_assembly["type"] = "space"
-    office_assembly["gfa"] = 100
-    office_assembly["use"] = "office"
-    office_assembly["relationships"] = []
-
-    building = LegacyAssembly(applicationId="building-app")
-    building["entityId"] = "building"
-    building["name"] = "Building"
-    building["type"] = "building"
-    relationship = LegacyRelationship(applicationId="contains-office")
-    relationship["source"] = None
-    relationship["target"] = office_assembly
-    relationship["type"] = "spatiallyContains"
-    building["relationships"] = [relationship]
-
-    root = Base()
-    root["entities"] = [building, office_plain]
-    return root
-
-
-def test_speckle_legacy_import_reconciles_entities_and_builds_domain_graph(capsys):
-    graph = adapter.speckle.load(
-        legacy_design(),
-        context={"project_id": "project", "version_id": "version"},
-    )
-
-    office = graph.entities["office"]
-    building = graph.entities["building"]
-    relationship = graph.relationships["contains-office"]
-
-    assert isinstance(office, rk.graph.Assembly)
-    assert isinstance(building, rk.graph.Assembly)
-    assert office.features["gfa"] == 100
-    assert office.classification.key == ("legacy.entity_type", "space")
-    assert office.labels["use"][0].key == ("legacy.labels.use", "office")
-    assert relationship.classification.key == (
-        "legacy.relationship_type",
-        "spatiallyContains",
-    )
-    assert relationship.source_id == "building"
-    assert relationship.target_id == "office"
-    assert office in building.entities
-    assert relationship in building.relationships
-    assert office.provenance.identifiers["project_id"] == "project"
-    assert capsys.readouterr().out == ""
-
-
-def test_speckle_legacy_import_rejects_conflicting_duplicate_features():
-    root = legacy_design()
-    duplicate = LegacyEntity()
-    duplicate["entityId"] = "office"
-    duplicate["name"] = "Office"
-    duplicate["type"] = "space"
-    duplicate["gfa"] = 200
-    root["entities"].append(duplicate)
-
-    with pytest.raises(adapter.SpeckleConflictError, match="feature 'gfa'"):
-        adapter.speckle.load(root)
-
-
-def test_speckle_legacy_import_rejects_unsupported_features_without_stringifying():
-    root = legacy_design()
-    root["entities"][0]["unsupported"] = object()
-
-    with pytest.raises(
-        adapter.SpeckleImportError, match="unsupported value type object"
-    ):
-        adapter.speckle.load(root)
-
-
-def test_speckle_snapshot_package_round_trip_is_lossless():
-    graph = adapter_graph()
-
-    package = adapter.speckle.dump(graph)
-    transport = MemoryTransport()
-    transported = operations.deserialize(
-        operations.serialize(package, write_transports=[transport]),
-        read_transport=transport,
-    )
-    restored = adapter.speckle.load(transported)
-
-    assert package.packageKind == "rangekeeper.snapshot"
-    assert not hasattr(package, "graph")
-    assert materialization.to_snapshot(restored) == materialization.to_snapshot(graph)
 
 
 def visualization_fixture():

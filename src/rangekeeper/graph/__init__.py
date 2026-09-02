@@ -6,13 +6,13 @@ from .definitions import Definitions
 from .entity import Entity
 from .errors import (
     AmbiguousLookupError,
+    CatalogInstanceError,
     GraphError,
     IdentityConflictError,
     InvalidAggregationError,
     InvalidAssemblyError,
     MissingEntityError,
     MissingRelationshipError,
-    NonCanonicalDefinitionError,
     UnknownDefinitionError,
 )
 from .graph import Graph, GraphChange
@@ -38,7 +38,7 @@ from .reduce import collect, distinct, mode
 from .view import View
 from ..measure import AggregationRule, Measure, QuantityKind
 
-# Visualization remains available while persistence and external adapters await v3.
+# Supported adapters for the immutable graph core.
 from .adapter import visualization as visualization
 
 
@@ -48,6 +48,7 @@ __all__ = [
     "Aggregation",
     "AggregationRule",
     "AmbiguousLookupError",
+    "CatalogInstanceError",
     "ChangeSet",
     "Characteristics",
     "Claim",
@@ -74,7 +75,6 @@ __all__ = [
     "Modification",
     "MissingEntityError",
     "MissingRelationshipError",
-    "NonCanonicalDefinitionError",
     "QuantityKind",
     "Reconciliation",
     "ReconciliationStatus",

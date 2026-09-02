@@ -23,12 +23,8 @@ class Label:
     classifications: tuple[Classification, ...]
 
     def __post_init__(self) -> None:
-        if not isinstance(self.id, UUID):
-            raise TypeError("id must be a UUID")
-        if not validate.is_text(self.key):
-            raise TypeError("Label.key must be a string")
-        if not validate.is_text(self.key, empty=False):
-            raise ValueError("Label.key must not be empty")
+        validate.require_uuid(self.id, "id")
+        validate.require_text(self.key, "Label.key")
         classifications = tuple(self.classifications)
         if any(not isinstance(item, Classification) for item in classifications):
             raise TypeError("classifications must contain only Classification objects")
@@ -45,8 +41,7 @@ class Measurement:
     quantity: pint.Quantity
 
     def __post_init__(self) -> None:
-        if not isinstance(self.id, UUID):
-            raise TypeError("id must be a UUID")
+        validate.require_uuid(self.id, "id")
         if not isinstance(self.measure, Measure):
             raise TypeError("measure must be a Measure")
         self.measure.validate_quantity(self.quantity)
@@ -61,12 +56,8 @@ class Feature(Generic[T]):
     value: T | None
 
     def __post_init__(self) -> None:
-        if not isinstance(self.id, UUID):
-            raise TypeError("id must be a UUID")
-        if not validate.is_text(self.name):
-            raise TypeError("Feature.name must be a string")
-        if not validate.is_text(self.name, empty=False):
-            raise ValueError("Feature.name must not be empty")
+        validate.require_uuid(self.id, "id")
+        validate.require_text(self.name, "Feature.name")
 
 
 @dataclass(frozen=True, slots=True)
