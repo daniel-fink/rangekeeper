@@ -33,8 +33,8 @@ from .provenance import (
 from .relationship import Relationship
 from .revision import ChangeSet, GraphDiff, GraphRevision, Modification
 from .taxonomy import Taxonomy
-from .update import GraphChange
 from . import reduce as reduce
+from . import update as update
 from .reduce import collect, distinct, mode
 from .view import View
 from ..measure import AggregationRule, Measure, QuantityKind
@@ -62,7 +62,6 @@ __all__ = [
     "FactStatus",
     "Feature",
     "Graph",
-    "GraphChange",
     "GraphDiff",
     "GraphError",
     "GraphRevision",
@@ -90,5 +89,6 @@ __all__ = [
     "distinct",
     "mode",
     "reduce",
+    "update",
     "visualization",
 ]
