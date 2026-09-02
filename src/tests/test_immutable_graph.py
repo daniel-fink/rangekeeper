@@ -150,14 +150,27 @@ def test_reduction_factories_validate_requests():
 def test_taxonomy_is_frozen_single_root_and_acyclic():
     root = rk.graph.Classification(code="root", name="Root")
     child = rk.graph.Classification(code="child", name="Child", parent=root)
+    grandchild = rk.graph.Classification(
+        code="grandchild",
+        name="Grandchild",
+        parent=child,
+    )
+    sibling = rk.graph.Classification(code="sibling", name="Sibling", parent=root)
     taxonomy = rk.graph.Taxonomy(
         code="example",
         name="Example",
-        classifications=(root, child),
+        classifications=(root, child, grandchild, sibling),
     )
     assert taxonomy.root is root
     assert taxonomy.is_a(child, root)
+    assert taxonomy.is_a(grandchild, root)
+    assert not taxonomy.is_a(sibling, child)
+    assert taxonomy.children(root) == (child, sibling)
+    assert taxonomy.ancestors(grandchild) == (root, child)
+    assert taxonomy.descendants(root) == (child, grandchild, sibling)
     assert child.parent is root
+    assert not hasattr(taxonomy, "parent")
+    assert not hasattr(taxonomy, "_children_index")
     with pytest.raises(TypeError, match="parent must be a Classification"):
         rk.graph.Classification(code="invalid", name="Invalid", parent=root.id)
     with pytest.raises(FrozenInstanceError):
@@ -170,7 +183,7 @@ def test_taxonomy_is_frozen_single_root_and_acyclic():
         )
     equivalent_root = replace(root)
     noncanonical_child = replace(child, parent=equivalent_root)
-    with pytest.raises(ValueError, match="canonical taxonomy object"):
+    with pytest.raises(ValueError, match="registered taxonomy instance"):
         rk.graph.Taxonomy(
             code="noncanonical",
             name="Noncanonical",
@@ -248,6 +261,17 @@ def test_catalog_inputs_normalize_from_iterables_and_mappings(model):
         classifications=original.classifications,
     )
     assert copied_taxonomy.classifications == original.classifications
+
+    with pytest.raises(ValueError, match="classification mapping key"):
+        rk.graph.Taxonomy(
+            code="invalid",
+            name="Invalid",
+            classifications={"wrong": original.root},
+        )
+    with pytest.raises(ValueError, match="taxonomy mapping key"):
+        rk.graph.Definitions(taxonomies={"wrong": original})
+    with pytest.raises(ValueError, match="measure mapping key"):
+        rk.graph.Definitions(measures={"wrong": model["internal_area"]})
 
 
 def test_classification_codes_are_unique_within_a_taxonomy(model):
@@ -344,22 +368,67 @@ def test_graph_requires_canonical_definitions(model):
         )
 
 
-def test_private_indexes_are_immutable_and_preserve_order():
-    from rangekeeper.graph._index import index_by_id, multi_index, unique_index
+def test_catalog_normalizes_validates_and_preserves_mapping_semantics():
+    from rangekeeper.graph._catalog import Catalog
 
-    first = rk.graph.Entity(code="A", name="Repeated")
-    second = rk.graph.Entity(code="B", name="Repeated")
-    store = index_by_id((first, second), "entity")
-    assert tuple(store) == (first.id, second.id)
+    first = rk.graph.Classification(code="A", name="First")
+    second = rk.graph.Classification(code="B", name="Second")
+    catalog = Catalog.from_input(
+        {"A": first, "B": second},
+        item_type=rk.graph.Classification,
+        field="classifications",
+        kind="classification",
+        scope="test catalog",
+    )
+
+    assert tuple(catalog) == ("A", "B")
+    assert tuple(catalog.values()) == (first, second)
+    assert not hasattr(catalog, "_values")
+    assert catalog["A"] is first
+    assert catalog == {"A": first, "B": second}
+    assert {"A": first, "B": second} == catalog
+
+    reordered = Catalog.from_input(
+        (second, first),
+        item_type=rk.graph.Classification,
+        field="classifications",
+        kind="classification",
+    )
+    assert reordered == catalog
+    assert hash(reordered) == hash(catalog)
+
+    assert catalog._lookup_id(first.id) is first
+    assert catalog._contains_id(first.id)
+    assert catalog._require_catalog_instance(first) is first
+    with pytest.raises(rk.graph.CatalogInstanceError):
+        catalog._require_catalog_instance(replace(first))
+    with pytest.raises(rk.graph.UnknownDefinitionError, match="test catalog"):
+        catalog._lookup_id(uuid4())
+    with pytest.raises(TypeError, match="classification id must be a UUID"):
+        catalog._lookup_id("A")
     with pytest.raises(TypeError):
-        store[first.id] = second
-    assert unique_index((first, second), lambda item: item.code, "entity codes") == {
-        "A": first.id,
-        "B": second.id,
-    }
-    assert multi_index((first, second), lambda item: item.name) == {
-        "Repeated": (first.id, second.id)
-    }
+        catalog["A"] = second
+
+    with pytest.raises(
+        TypeError,
+        match="classifications must contain only Classification objects",
+    ):
+        Catalog.from_input(
+            (first, object()),
+            item_type=rk.graph.Classification,
+            field="classifications",
+            kind="classification",
+        )
+    with pytest.raises(
+        ValueError,
+        match="classification mapping key 'wrong' does not match classification code 'A'",
+    ):
+        Catalog.from_input(
+            {"wrong": first},
+            item_type=rk.graph.Classification,
+            field="classifications",
+            kind="classification",
+        )
 
 
 def test_semantic_definition_and_entity_lookup(model):
@@ -419,7 +488,7 @@ def test_semantic_definition_and_entity_lookup(model):
     assert (
         graph.find_entities(classification=model["apartment"].id) == expected_apartments
     )
-    with pytest.raises(rk.graph.NonCanonicalDefinitionError):
+    with pytest.raises(rk.graph.CatalogInstanceError):
         graph.find_entities(classification=replace(model["apartment"]))
     with pytest.raises(TypeError, match="UUID, Classification, or None"):
         graph.find_entities(classification="space.apartment")
@@ -488,8 +557,8 @@ def test_definition_lookup_errors_include_kind_and_scope(model):
     ):
         definitions.taxonomies["missing"]
     with pytest.raises(
-        rk.graph.NonCanonicalDefinitionError,
-        match="classification .* is not canonical in taxonomy 'entity'",
+        rk.graph.CatalogInstanceError,
+        match="classification .* is not the registered instance in taxonomy 'entity'",
     ):
         definitions.taxonomies["entity"].children(replace(model["apartment"]))
 

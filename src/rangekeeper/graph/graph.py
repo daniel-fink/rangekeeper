@@ -1,26 +1,25 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable, Mapping
+from collections.abc import Callable, Hashable, Iterable, Mapping
 from dataclasses import dataclass, field, replace
 from types import MappingProxyType
-from typing import Any
+from typing import Any, Protocol, TypeVar
 from uuid import UUID
 
 import networkx as nx
 
 from .assembly import Assembly
-from ._index import index_by_id, multi_index
 from .characteristics import Feature, Label, Measurement
 from .classification import Classification
 from .definitions import Definitions
 from .entity import Entity
 from .errors import (
     AmbiguousLookupError,
+    CatalogInstanceError,
     IdentityConflictError,
     InvalidAssemblyError,
     MissingEntityError,
     MissingRelationshipError,
-    NonCanonicalDefinitionError,
     UnknownDefinitionError,
 )
 from .provenance import (
@@ -36,6 +35,35 @@ from .relationship import Relationship
 from .taxonomy import Taxonomy
 
 CharacteristicItem = Label | Measurement | Feature
+
+
+class _Identified(Protocol):
+    id: UUID
+
+
+I = TypeVar("I", bound=_Identified)
+H = TypeVar("H", bound=Hashable)
+
+
+def _index_by_id(items: Iterable[I], kind: str) -> Mapping[UUID, I]:
+    result: dict[UUID, I] = {}
+    for item in items:
+        if item.id in result:
+            raise IdentityConflictError(f"duplicate {kind} UUID {item.id}")
+        result[item.id] = item
+    return MappingProxyType(result)
+
+
+def _group_ids_by(
+    items: Iterable[I],
+    key: Callable[[I], H | None],
+) -> Mapping[H, tuple[UUID, ...]]:
+    result: dict[H, list[UUID]] = {}
+    for item in items:
+        value = key(item)
+        if value is not None:
+            result.setdefault(value, []).append(item.id)
+    return MappingProxyType({value: tuple(ids) for value, ids in result.items()})
 
 
 @dataclass(frozen=True, slots=True)
@@ -136,8 +164,8 @@ class Graph:
         if any(not isinstance(item, Fact) for item in provenance):
             raise TypeError("provenance must contain only Fact objects")
 
-        entity_store = index_by_id(entities, "entity")
-        relationship_store = index_by_id(relationships, "relationship")
+        entity_store = _index_by_id(entities, "entity")
+        relationship_store = _index_by_id(relationships, "relationship")
         items: tuple[Entity | Relationship | CharacteristicItem, ...] = (
             *entities,
             *relationships,
@@ -147,7 +175,7 @@ class Graph:
                 for item in owner.characteristics.items
             ),
         )
-        target_store = index_by_id(items, "graph object")
+        target_store = _index_by_id(items, "graph object")
         overlap = {
             identifier
             for identifier in target_store
@@ -190,20 +218,20 @@ class Graph:
         object.__setattr__(self, "_claim_store", claim_store)
         object.__setattr__(self, "_source_edition_store", source_edition_store)
         object.__setattr__(
-            self, "_entity_code_index", multi_index(entities, lambda item: item.code)
+            self, "_entity_code_index", _group_ids_by(entities, lambda item: item.code)
         )
         object.__setattr__(
-            self, "_entity_name_index", multi_index(entities, lambda item: item.name)
+            self, "_entity_name_index", _group_ids_by(entities, lambda item: item.name)
         )
         object.__setattr__(
             self,
             "_outgoing_index",
-            multi_index(relationships, lambda item: item.source_id),
+            _group_ids_by(relationships, lambda item: item.source_id),
         )
         object.__setattr__(
             self,
             "_incoming_index",
-            multi_index(relationships, lambda item: item.target_id),
+            _group_ids_by(relationships, lambda item: item.target_id),
         )
 
     @property
@@ -593,9 +621,7 @@ class Graph:
                 for classification in label.classifications:
                     self._require_canonical_classification(classification)
             for measurement in owner.characteristics.measurements.values():
-                canonical = self.definitions.measures._by_identifier(
-                    measurement.measure.id
-                )
+                canonical = self.definitions.measures._lookup_id(measurement.measure.id)
                 if canonical is not measurement.measure:
                     raise ValueError("measurement references a non-canonical Measure")
 
@@ -620,7 +646,7 @@ class Graph:
             raise TypeError("classification must be a Classification")
         canonical, taxonomy = self._classification_entry(classification.id)
         if canonical is not classification:
-            raise NonCanonicalDefinitionError(
+            raise CatalogInstanceError(
                 "classification",
                 classification.id,
                 scope=f"taxonomy {taxonomy.code!r}",

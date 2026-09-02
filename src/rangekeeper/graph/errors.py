@@ -23,8 +23,8 @@ class UnknownDefinitionError(GraphError, KeyError):
         super().__init__(f"unknown {kind} {reference!r}{location}")
 
 
-class NonCanonicalDefinitionError(GraphError, ValueError):
-    """Raised when an object is not the registered instance for its UUID."""
+class CatalogInstanceError(GraphError, ValueError):
+    """Raised when an object is not the instance registered in a catalog."""
 
     def __init__(
         self, kind: str, identifier: object, *, scope: str | None = None
@@ -33,7 +33,9 @@ class NonCanonicalDefinitionError(GraphError, ValueError):
         self.identifier = identifier
         self.scope = scope
         location = "" if scope is None else f" in {scope}"
-        super().__init__(f"{kind} {identifier!r} is not canonical{location}")
+        super().__init__(
+            f"{kind} {identifier!r} is not the registered instance{location}"
+        )
 
 
 class MissingEntityError(GraphError, KeyError):

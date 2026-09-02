@@ -29,27 +29,20 @@ class SourceEdition:
     author: str | None = None
 
     def __post_init__(self) -> None:
-        if not isinstance(self.id, UUID):
-            raise TypeError("id must be a UUID")
-        if not validate.is_text(self.name):
-            raise TypeError("SourceEdition.name must be a string")
-        if not validate.is_text(self.name, empty=False):
-            raise ValueError("SourceEdition.name must not be empty")
-        if not validate.is_text(self.checksum):
-            raise TypeError("SourceEdition.checksum must be a string")
-        if not validate.is_text(self.checksum, empty=False):
-            raise ValueError("SourceEdition.checksum must not be empty")
+        validate.require_uuid(self.id, "id")
+        validate.require_text(self.name, "SourceEdition.name")
+        validate.require_text(self.checksum, "SourceEdition.checksum")
         for value, field_name in (
             (self.issued_at, "issued_at"),
             (self.received_at, "received_at"),
         ):
             if value is not None and not isinstance(value, (date, datetime)):
                 raise TypeError(f"{field_name} must be a date, datetime, or None")
-        if self.author is not None:
-            if not validate.is_text(self.author):
-                raise TypeError("SourceEdition.author must be a string or None")
-            if not validate.is_text(self.author, empty=False):
-                raise ValueError("SourceEdition.author must not be empty")
+        validate.optional_text(
+            self.author,
+            "SourceEdition.author",
+            empty=False,
+        )
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -61,14 +54,8 @@ class SpreadsheetLocation:
     def __post_init__(self) -> None:
         if not isinstance(self.edition, SourceEdition):
             raise TypeError("edition must be a SourceEdition")
-        if not validate.is_text(self.worksheet):
-            raise TypeError("SpreadsheetLocation.worksheet must be a string")
-        if not validate.is_text(self.worksheet, empty=False):
-            raise ValueError("SpreadsheetLocation.worksheet must not be empty")
-        if not validate.is_text(self.range):
-            raise TypeError("SpreadsheetLocation.range must be a string")
-        if not validate.is_text(self.range, empty=False):
-            raise ValueError("SpreadsheetLocation.range must not be empty")
+        validate.require_text(self.worksheet, "SpreadsheetLocation.worksheet")
+        validate.require_text(self.range, "SpreadsheetLocation.range")
 
 
 class ClaimKind(Enum):
@@ -84,20 +71,9 @@ class Method:
     description: str | None = None
 
     def __post_init__(self) -> None:
-        if not validate.is_text(self.code):
-            raise TypeError("Method.code must be a string")
-        if not validate.is_text(self.code, empty=False):
-            raise ValueError("Method.code must not be empty")
-        if self.version is not None:
-            if not validate.is_text(self.version):
-                raise TypeError("Method.version must be a string or None")
-            if not validate.is_text(self.version, empty=False):
-                raise ValueError("Method.version must not be empty")
-        if self.description is not None:
-            if not validate.is_text(self.description):
-                raise TypeError("Method.description must be a string or None")
-            if not validate.is_text(self.description, empty=False):
-                raise ValueError("Method.description must not be empty")
+        validate.require_text(self.code, "Method.code")
+        validate.optional_text(self.version, "Method.version", empty=False)
+        validate.optional_text(self.description, "Method.description", empty=False)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -109,8 +85,7 @@ class Claim(Generic[T]):
     method: Method | None = None
 
     def __post_init__(self) -> None:
-        if not isinstance(self.id, UUID):
-            raise TypeError("id must be a UUID")
+        validate.require_uuid(self.id, "id")
         if not isinstance(self.kind, ClaimKind):
             raise TypeError("kind must be a ClaimKind")
         sources = tuple(self.sources)

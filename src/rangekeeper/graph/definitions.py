@@ -6,7 +6,7 @@ from types import MappingProxyType
 from uuid import UUID
 
 from ..measure import Measure
-from ._index import Catalog, catalog_values
+from ._catalog import Catalog
 from .classification import Classification
 from .errors import IdentityConflictError
 from .taxonomy import Taxonomy
@@ -20,7 +20,7 @@ class Definitions:
     taxonomies: Catalog[Taxonomy]
     measures: Catalog[Measure]
     _lookup: Mapping[UUID, tuple[Definition, Taxonomy | None]] = field(
-        init=False, repr=False, compare=False
+        init=False, repr=False, compare=False,
     )
 
     def __init__(
@@ -29,14 +29,22 @@ class Definitions:
         taxonomies: Iterable[Taxonomy] | Mapping[str, Taxonomy] = (),
         measures: Iterable[Measure] | Mapping[str, Measure] = (),
     ) -> None:
-        taxonomies = catalog_values(taxonomies)
-        measures = catalog_values(measures)
-        if any(not isinstance(item, Taxonomy) for item in taxonomies):
-            raise TypeError("taxonomies must contain only Taxonomy objects")
-        if any(not isinstance(item, Measure) for item in measures):
-            raise TypeError("measures must contain only Measure objects")
-        taxonomy_catalog = Catalog(taxonomies, "taxonomy", scope="Definitions")
-        measure_catalog = Catalog(measures, "measure", scope="Definitions")
+        taxonomy_catalog = Catalog.from_input(
+            taxonomies,
+            item_type=Taxonomy,
+            field="taxonomies",
+            kind="taxonomy",
+            scope="Definitions",
+        )
+        measure_catalog = Catalog.from_input(
+            measures,
+            item_type=Measure,
+            field="measures",
+            kind="measure",
+            scope="Definitions",
+        )
+        taxonomies = tuple(taxonomy_catalog.values())
+        measures = tuple(measure_catalog.values())
         lookup: dict[UUID, tuple[Definition, Taxonomy | None]] = {}
 
         def register(

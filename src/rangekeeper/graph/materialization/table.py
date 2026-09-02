@@ -257,7 +257,7 @@ def _measurement_columns(
         measure = (
             view.graph.definitions.measures[reference]
             if isinstance(reference, str)
-            else view.graph.definitions.measures._canonical(reference)
+            else view.graph.definitions.measures._require_catalog_instance(reference)
         )
         if target is None:
             target_unit = measure.units

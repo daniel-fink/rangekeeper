@@ -50,24 +50,16 @@ class Measure:
     tags: frozenset[str] = frozenset()
 
     def __post_init__(self) -> None:
-        if not isinstance(self.id, UUID):
-            raise TypeError("id must be a UUID")
-        if not validate.is_text(self.code):
-            raise TypeError("Measure.code must be a string")
-        if not validate.is_text(self.code, empty=False):
-            raise ValueError("Measure.code must not be empty")
-        if not validate.is_text(self.name):
-            raise TypeError("Measure.name must be a string")
-        if not validate.is_text(self.name, empty=False):
-            raise ValueError("Measure.name must not be empty")
+        validate.require_uuid(self.id, "id")
+        validate.require_text(self.code, "Measure.code")
+        validate.require_text(self.name, "Measure.name")
         if not isinstance(self.units, pint.Unit):
             raise TypeError("units must be a Pint Unit")
         if not isinstance(self.quantity_kind, QuantityKind):
             raise TypeError("quantity_kind must be a QuantityKind")
         if not isinstance(self.aggregation, AggregationRule):
             raise TypeError("aggregation must be an AggregationRule")
-        if self.definition is not None and not isinstance(self.definition, str):
-            raise TypeError("definition must be a string or None")
+        validate.optional_text(self.definition, "definition")
         tags = frozenset(self.tags)
         if any(not isinstance(tag, str) or not tag.strip() for tag in tags):
             raise ValueError("tags must contain only non-empty strings")
