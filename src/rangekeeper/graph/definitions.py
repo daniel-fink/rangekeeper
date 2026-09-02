@@ -74,6 +74,49 @@ class Definitions:
         object.__setattr__(self, "measures", measure_catalog)
         object.__setattr__(self, "_lookup", MappingProxyType(lookup))
 
+    def taxonomy_for(
+        self,
+        classification: UUID | Classification,
+    ) -> Taxonomy:
+        """Return the Taxonomy that owns a registered Classification."""
+        if isinstance(classification, UUID):
+            _, taxonomy = self._lookup_classification(classification)
+            return taxonomy
+        if isinstance(classification, Classification):
+            _, taxonomy = self._require_classification_instance(classification)
+            return taxonomy
+        raise TypeError("classification must be a UUID or Classification")
+
+    def _resolve_classification(
+        self,
+        classification: UUID | Classification | None,
+    ) -> Classification | None:
+        if classification is None:
+            return None
+        if isinstance(classification, UUID):
+            registered, _ = self._lookup_classification(classification)
+            return registered
+        if isinstance(classification, Classification):
+            registered, _ = self._require_classification_instance(classification)
+            return registered
+        raise TypeError("classification must be a UUID, Classification, or None")
+
+    def _classification_matches(
+        self,
+        actual: Classification | None,
+        requested: Classification | None,
+    ) -> bool:
+        if requested is None:
+            return True
+        if actual is None:
+            return False
+        requested_taxonomy = self.taxonomy_for(requested)
+        actual_taxonomy = self.taxonomy_for(actual)
+        return actual_taxonomy is requested_taxonomy and actual_taxonomy.is_a(
+            actual,
+            requested,
+        )
+
     def _lookup_classification(
         self, identifier: UUID
     ) -> tuple[Classification, Taxonomy]:

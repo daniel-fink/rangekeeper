@@ -133,6 +133,7 @@ def test_retired_mutable_and_embedded_provenance_apis_are_absent():
     assert hasattr(rk.graph.revision, "Delta")
     assert hasattr(rk.graph.revision, "Modification")
     assert not hasattr(rk.graph.Characteristics(), "measures")
+    assert not hasattr(rk.graph.View(rk.graph.Graph()), "expand")
     assert not hasattr(rk.graph.View, "aggregate_measurement")
     assert not hasattr(rk.graph.View, "aggregate_feature")
     assert not hasattr(rk.graph, "Result")
@@ -563,6 +564,20 @@ def test_classification_codes_are_scoped_to_taxonomy(model):
     )
 
 
+def test_definitions_return_the_taxonomy_owning_a_classification(model):
+    definitions = model["definitions"]
+    entity_taxonomy = definitions.taxonomies["entity"]
+
+    assert definitions.taxonomy_for(model["apartment"]) is entity_taxonomy
+    assert definitions.taxonomy_for(model["apartment"].id) is entity_taxonomy
+    with pytest.raises(rk.graph.CatalogInstanceError):
+        definitions.taxonomy_for(replace(model["apartment"]))
+    with pytest.raises(rk.graph.UnknownDefinitionError, match="Definitions"):
+        definitions.taxonomy_for(uuid4())
+    with pytest.raises(TypeError, match="UUID or Classification"):
+        definitions.taxonomy_for("space.apartment")
+
+
 def test_definition_lookup_facades_are_absent(model):
     definitions = model["definitions"]
     for name in (
@@ -579,7 +594,6 @@ def test_definition_lookup_facades_are_absent(model):
         "canonical_measure",
         "find_measure",
         "taxonomy_of",
-        "taxonomy_for",
         "contains_definition_id",
     ):
         assert not hasattr(definitions, name)
@@ -1344,20 +1358,109 @@ def test_view_infers_subgraph_and_aggregates_measurements(model):
 
     entity_view = graph.view(entities=(root, "27.05"))
     relationship_view = graph.view(relationships=(edge,))
+    exact_view = graph.view(entities=(leaf, root), relationships=(edge,))
+    complete_view = graph.view()
     assert entity_view.entities == (root, leaf)
     assert entity_view.relationships == (edge,)
     assert relationship_view.entities == (root, leaf)
     assert relationship_view.relationships == (edge,)
+    assert exact_view.entities == (root, leaf)
+    assert exact_view.relationships == (edge,)
+    assert complete_view.entities == (root, leaf)
+    assert complete_view.relationships == (edge,)
     assert entity_view.roots == (root,)
     assert entity_view.leaves == (leaf,)
     assert entity_view.is_arborescence
     assert entity_view.successors(root, via=model["contains"]) == (leaf,)
     assert entity_view.predecessors(leaf, via=model["contains"]) == (root,)
+    with pytest.raises(TypeError, match="UUID, Classification, or None"):
+        entity_view.successors(root, via="relationship.contains")
+    with pytest.raises(ValueError, match="endpoint outside the View"):
+        graph.view(entities=(root,), relationships=(edge,))
 
     result = entity_view.aggregate(rk.graph.reduce.by_measure("area.nsa.internal"))
     assert result[root] == 10 * Index.registry.squaremeter
     assert result["27.05"] == 10 * Index.registry.squaremeter
     assert result.root_value == 10 * Index.registry.squaremeter
+
+
+def test_view_filters_membership_and_relationship_endpoints(model):
+    root = rk.graph.Entity(code="root", classification=model["space"])
+    unit = apartment(model, code="unit")
+    parking = rk.graph.Entity(code="parking", classification=model["parking"])
+    contains = rk.graph.Relationship.between(
+        root,
+        unit,
+        classification=model["contains"],
+    )
+    allocation = rk.graph.Relationship.between(
+        parking,
+        unit,
+        classification=model["allocated_to"],
+    )
+    view = rk.graph.Graph(
+        definitions=model["definitions"],
+        entities=(root, unit, parking),
+        relationships=(contains, allocation),
+    ).view()
+
+    apartments = view.filter(entity_classification=model["apartment"])
+    containment = view.filter(relationship_classification=model["contains"])
+    parking_only = view.filter(predicate=lambda entity: entity is parking)
+    empty = view.filter(predicate=lambda entity: False)
+
+    assert apartments.entities == (unit,)
+    assert apartments.relationships == ()
+    assert containment.entities == (root, unit)
+    assert containment.relationships == (contains,)
+    assert parking_only.entities == (parking,)
+    assert parking_only.relationships == ()
+    assert empty.entities == ()
+    assert empty.relationships == ()
+    with pytest.raises(TypeError, match="predicate must be callable"):
+        view.filter(predicate=object())
+
+
+def test_assembly_view_is_exact_then_filters_normally(model):
+    root = rk.graph.Entity(code="root", classification=model["space"])
+    unit = apartment(model, code="unit")
+    unrelated = apartment(model, code="unrelated")
+    contains = rk.graph.Relationship.between(
+        root,
+        unit,
+        classification=model["contains"],
+    )
+    assembly = rk.graph.Assembly.of(
+        entities=(root, unit),
+        relationships=(contains,),
+        code="level",
+        classification=model["space"],
+    )
+    graph = rk.graph.Graph(
+        definitions=model["definitions"],
+        entities=(assembly, unrelated, root, unit),
+        relationships=(contains,),
+    )
+
+    view = graph.view(assembly=assembly)
+    assert view.entities == (assembly, root, unit)
+    assert view.relationships == (contains,)
+    assert unrelated not in view.entities
+
+    filtered = view.filter(relationship_classification=model["contains"])
+    assert filtered.entities == (root, unit)
+    assert filtered.relationships == (contains,)
+
+    conflicting_arguments = (
+        {"entities": (root,)},
+        {"relationships": (contains,)},
+        {"entity_classification": model["space"]},
+        {"relationship_classification": model["contains"]},
+        {"predicate": lambda entity: True},
+    )
+    for arguments in conflicting_arguments:
+        with pytest.raises(ValueError, match="selections or filters"):
+            graph.view(assembly=assembly, **arguments)
 
 
 @pytest.mark.parametrize(
