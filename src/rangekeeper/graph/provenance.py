@@ -21,9 +21,28 @@ from .relationship import Relationship
 
 T = TypeVar("T")
 
+__all__ = [
+    "AssemblyState",
+    "Claim",
+    "ClaimKind",
+    "EntityState",
+    "Fact",
+    "FactStatus",
+    "FactTarget",
+    "Location",
+    "Method",
+    "Provenance",
+    "Reconciliation",
+    "ReconciliationStatus",
+    "RelationshipState",
+    "Source",
+]
+
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Source:
+    """An externally identifiable evidence artifact."""
+
     id: UUID = field(default_factory=uuid4)
     name: str
     checksum: str
@@ -50,6 +69,8 @@ class Source:
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Location:
+    """A structured location within a Source."""
+
     source: Source
     reference: Mapping[str, str] = field(default_factory=dict)
 
@@ -66,6 +87,8 @@ class Location:
 
 
 class ClaimKind(Enum):
+    """How a Claim's value entered the evidence graph."""
+
     SOURCED = "sourced"
     DERIVED = "derived"
     ASSERTED = "asserted"
@@ -73,6 +96,8 @@ class ClaimKind(Enum):
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Method:
+    """The named process used to assert, derive, or reconcile evidence."""
+
     code: str
     version: str | None = None
     description: str | None = None
@@ -85,6 +110,8 @@ class Method:
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Claim(Generic[T]):
+    """A sourced, derived, or asserted candidate value."""
+
     id: UUID = field(default_factory=uuid4)
     value: T
     kind: ClaimKind
@@ -122,6 +149,8 @@ class Claim(Generic[T]):
         method: Method | None = None,
         id: UUID | None = None,
     ) -> Claim[T]:
+        """Create a value tied to a location in an external source."""
+
         return cls(
             id=uuid4() if id is None else id,
             value=value,
@@ -139,6 +168,8 @@ class Claim(Generic[T]):
         method: Method,
         id: UUID | None = None,
     ) -> Claim[T]:
+        """Create a value derived from upstream claims by a named method."""
+
         return cls(
             id=uuid4() if id is None else id,
             value=value,
@@ -155,6 +186,8 @@ class Claim(Generic[T]):
         method: Method,
         id: UUID | None = None,
     ) -> Claim[T]:
+        """Create a value asserted directly by a named method."""
+
         return cls(
             id=uuid4() if id is None else id,
             value=value,
@@ -165,12 +198,16 @@ class Claim(Generic[T]):
 
 @dataclass(frozen=True, slots=True)
 class EntityState:
+    """The state compared when a Fact targets an entire Entity."""
+
     code: str | None
     name: str | None
     classification: Classification | None
 
     @classmethod
     def from_entity(cls, entity: Entity) -> EntityState:
+        """Capture the fields represented by an entity-level Fact."""
+
         if not isinstance(entity, Entity):
             raise TypeError("entity must be an Entity")
         return cls(
@@ -182,11 +219,15 @@ class EntityState:
 
 @dataclass(frozen=True, slots=True)
 class AssemblyState(EntityState):
+    """Entity state plus the membership represented by an Assembly Fact."""
+
     entity_ids: frozenset[UUID]
     relationship_ids: frozenset[UUID]
 
     @classmethod
     def from_assembly(cls, assembly: Assembly) -> AssemblyState:
+        """Capture every field represented by an assembly-level Fact."""
+
         if not isinstance(assembly, Assembly):
             raise TypeError("assembly must be an Assembly")
         return cls(
@@ -200,12 +241,16 @@ class AssemblyState(EntityState):
 
 @dataclass(frozen=True, slots=True)
 class RelationshipState:
+    """The endpoint and classification state represented by a Relationship Fact."""
+
     source_id: UUID
     target_id: UUID
     classification: Classification
 
     @classmethod
     def from_relationship(cls, relationship: Relationship) -> RelationshipState:
+        """Capture the fields represented by a relationship-level Fact."""
+
         if not isinstance(relationship, Relationship):
             raise TypeError("relationship must be a Relationship")
         return cls(
@@ -216,12 +261,16 @@ class RelationshipState:
 
 
 class ReconciliationStatus(Enum):
+    """Whether a conflict resolution remains provisional or is confirmed."""
+
     PROVISIONAL = "provisional"
     CONFIRMED = "confirmed"
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Reconciliation(Generic[T]):
+    """The explicit selection of one Claim from a conflicting Fact."""
+
     selected: Claim[T]
     status: ReconciliationStatus
     method: Method | None = None
@@ -236,24 +285,27 @@ class Reconciliation(Generic[T]):
 
 
 class FactStatus(Enum):
+    """The current agreement or reconciliation state of a Fact."""
+
     DETERMINATE = "determinate"
     CONFLICT = "conflict"
     RECONCILED = "reconciled"
 
 
 FactTarget: TypeAlias = Entity | Relationship | Label | Measurement | Feature
+_FACT_TARGET_TYPES = (Entity, Relationship, Label, Measurement, Feature)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Fact(Generic[T]):
+    """Evidence binding one graph object or characteristic to candidate Claims."""
+
     target: FactTarget
     claims: tuple[Claim[T], ...]
     reconciliation: Reconciliation[T] | None = None
 
     def __post_init__(self) -> None:
-        if not isinstance(
-            self.target, (Entity, Relationship, Label, Measurement, Feature)
-        ):
+        if not isinstance(self.target, _FACT_TARGET_TYPES):
             raise TypeError(
                 "target must be an Entity, Relationship, Label, Measurement, or Feature"
             )
@@ -275,6 +327,8 @@ class Fact(Generic[T]):
 
     @property
     def status(self) -> FactStatus:
+        """Describe whether claims agree or required reconciliation."""
+
         if self.reconciliation is not None:
             return FactStatus.RECONCILED
         return (
@@ -285,6 +339,8 @@ class Fact(Generic[T]):
 
     @property
     def current_claim(self) -> Claim[T] | None:
+        """Return the selected or agreed Claim, or None while values conflict."""
+
         if self.reconciliation is not None:
             return self.reconciliation.selected
         first, *others = self.claims
@@ -311,7 +367,11 @@ def _values_equal(left: object, right: object) -> bool:
         return False
 
 
-def _claims_by_id(facts: Iterable[Fact[Any]]) -> Mapping[UUID, Claim[Any]]:
+def _index_evidence(
+    facts: Iterable[Fact[Any]],
+) -> tuple[Mapping[UUID, Claim[Any]], Mapping[UUID, Source]]:
+    """Index evidence once while preserving deterministic dependency discovery."""
+
     claims_by_id: dict[UUID, Claim[Any]] = {}
     sources_by_id: dict[UUID, Source] = {}
     visited: set[int] = set()
@@ -347,11 +407,12 @@ def _claims_by_id(facts: Iterable[Fact[Any]]) -> Mapping[UUID, Claim[Any]]:
     for fact in facts:
         for claim in fact.claims:
             visit(claim)
-    return MappingProxyType(claims_by_id)
+    return MappingProxyType(claims_by_id), MappingProxyType(sources_by_id)
 
 
-def _validate(facts: Iterable[Fact[Any]]) -> None:
-    facts = tuple(facts)
+def _validate_fact_values(facts: Iterable[Fact[Any]]) -> None:
+    """Ensure each current Claim describes the state embedded in its target."""
+
     for fact in facts:
         current_claim = fact.current_claim
         if current_claim is None:
@@ -377,4 +438,82 @@ def _validate(facts: Iterable[Fact[Any]]) -> None:
             raise ValueError(
                 "the current Fact target value does not match its selected claim"
             )
-    _claims_by_id(facts)
+
+
+@dataclass(frozen=True, slots=True)
+class Provenance:
+    """Immutable evidence explaining the current state of graph objects."""
+
+    facts: tuple[Fact[Any], ...] = ()
+    _facts_by_target_id: Mapping[UUID, Fact[Any]] = field(
+        init=False,
+        repr=False,
+        compare=False,
+    )
+    _claims_by_id: Mapping[UUID, Claim[Any]] = field(
+        init=False,
+        repr=False,
+        compare=False,
+    )
+    _sources_by_id: Mapping[UUID, Source] = field(
+        init=False,
+        repr=False,
+        compare=False,
+    )
+
+    def __post_init__(self) -> None:
+        facts = tuple(self.facts)
+        if any(not isinstance(fact, Fact) for fact in facts):
+            raise TypeError("facts must contain only Fact objects")
+
+        facts_by_target_id: dict[UUID, Fact[Any]] = {}
+        for fact in facts:
+            target_id = fact.target.id
+            if target_id in facts_by_target_id:
+                raise ValueError(f"more than one Fact targets UUID {target_id}")
+            facts_by_target_id[target_id] = fact
+
+        _validate_fact_values(facts)
+        claims_by_id, sources_by_id = _index_evidence(facts)
+
+        object.__setattr__(self, "facts", facts)
+        object.__setattr__(
+            self,
+            "_facts_by_target_id",
+            MappingProxyType(facts_by_target_id),
+        )
+        object.__setattr__(self, "_claims_by_id", claims_by_id)
+        object.__setattr__(self, "_sources_by_id", sources_by_id)
+
+    @property
+    def claims(self) -> tuple[Claim[Any], ...]:
+        """Return Claims in deterministic Fact and dependency discovery order."""
+
+        return tuple(self._claims_by_id.values())
+
+    @property
+    def sources(self) -> tuple[Source, ...]:
+        """Return Sources in first-discovered Claim dependency order."""
+
+        return tuple(self._sources_by_id.values())
+
+    def fact_for(self, target: UUID | FactTarget) -> Fact[Any] | None:
+        """Return the sole Fact for a target UUID or canonical target instance."""
+
+        if isinstance(target, UUID):
+            target_id = target
+        elif isinstance(target, _FACT_TARGET_TYPES):
+            target_id = target.id
+        else:
+            raise TypeError("Fact lookup requires a graph object or UUID")
+
+        fact = self._facts_by_target_id.get(target_id)
+        if (
+            fact is not None
+            and not isinstance(target, UUID)
+            and fact.target is not target
+        ):
+            raise IdentityConflictError(
+                "the supplied Fact target is not the registered Provenance instance"
+            )
+        return fact

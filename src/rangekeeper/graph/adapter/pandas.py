@@ -4,6 +4,8 @@ import pandas as pd
 
 from ..table import Table, TableError
 
+__all__ = ["from_dataframe", "to_dataframe"]
+
 
 def to_dataframe(table: Table) -> pd.DataFrame:
     """Create a DataFrame while preserving Table column and row order."""

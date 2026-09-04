@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable, Hashable, Iterable, Mapping
 from dataclasses import dataclass, field
 from types import MappingProxyType
-from typing import TYPE_CHECKING, Any, Protocol, TypeVar
+from typing import TYPE_CHECKING, Protocol, TypeVar
 from uuid import UUID
 
 import networkx as nx
@@ -20,16 +20,15 @@ from .errors import (
     MissingRelationshipError,
     _format_ids,
 )
-from .provenance import (
-    Fact,
-    FactTarget,
-    _validate as _validate_provenance,
-)
+from .provenance import FactTarget, Provenance
 from .relationship import Relationship
 from .update import Update, _apply
 
 if TYPE_CHECKING:
     from .view import View
+
+
+__all__ = ["Graph"]
 
 
 class _Identified(Protocol):
@@ -41,6 +40,8 @@ _H = TypeVar("_H", bound=Hashable)
 
 
 def _index_by_id(items: Iterable[_I], kind: str) -> Mapping[UUID, _I]:
+    """Build a frozen identity index and expose UUID collisions immediately."""
+
     result: dict[UUID, _I] = {}
     for item in items:
         if item.id in result:
@@ -53,6 +54,8 @@ def _group_ids_by(
     items: Iterable[_I],
     key: Callable[[_I], _H | None],
 ) -> Mapping[_H, tuple[UUID, ...]]:
+    """Group UUIDs without losing the source iterable's insertion order."""
+
     result: dict[_H, list[UUID]] = {}
     for item in items:
         value = key(item)
@@ -61,37 +64,21 @@ def _group_ids_by(
     return MappingProxyType({value: tuple(ids) for value, ids in result.items()})
 
 
-def _to_networkx(
-    entities: Iterable[Entity],
-    relationships: Iterable[Relationship],
-) -> nx.MultiDiGraph:
-    graph = nx.MultiDiGraph()
-    graph.add_nodes_from((entity.id, {"entity": entity}) for entity in entities)
-    graph.add_edges_from(
-        (
-            relationship.source_id,
-            relationship.target_id,
-            relationship.id,
-            {"relationship": relationship},
-        )
-        for relationship in relationships
-    )
-    return nx.freeze(graph)
-
-
 @dataclass(frozen=True, slots=True)
 class Graph:
+    """An immutable snapshot of canonical graph objects and their evidence."""
+
     definitions: Definitions = field(default_factory=Definitions)
     entities: tuple[Entity, ...] = ()
     relationships: tuple[Relationship, ...] = ()
-    provenance: tuple[Fact[Any], ...] = ()
+    provenance: Provenance = field(default_factory=Provenance)
     _entities_by_id: Mapping[UUID, Entity] = field(
         init=False, repr=False, compare=False
     )
     _relationships_by_id: Mapping[UUID, Relationship] = field(
         init=False, repr=False, compare=False
     )
-    _facts_by_target_id: Mapping[UUID, Fact[Any]] = field(
+    _graph_objects_by_id: Mapping[UUID, FactTarget] = field(
         init=False, repr=False, compare=False
     )
     _relationship_ids_by_source: Mapping[UUID, tuple[UUID, ...]] = field(
@@ -106,13 +93,13 @@ class Graph:
             raise TypeError("definitions must be Definitions")
         entities = tuple(self.entities)
         relationships = tuple(self.relationships)
-        provenance = tuple(self.provenance)
+        provenance = self.provenance
         if any(not isinstance(item, Entity) for item in entities):
             raise TypeError("entities must contain only Entity objects")
         if any(not isinstance(item, Relationship) for item in relationships):
             raise TypeError("relationships must contain only Relationship objects")
-        if any(not isinstance(item, Fact) for item in provenance):
-            raise TypeError("provenance must contain only Fact objects")
+        if not isinstance(provenance, Provenance):
+            raise TypeError("provenance must be Provenance")
 
         entities_by_id = _index_by_id(entities, "entity")
         relationships_by_id = _index_by_id(relationships, "relationship")
@@ -126,7 +113,7 @@ class Graph:
         overlap = {
             identifier
             for identifier in targets_by_id
-            if identifier in self.definitions._lookup
+            if identifier in self.definitions._definition_by_id
         }
         if overlap:
             raise IdentityConflictError(
@@ -136,11 +123,8 @@ class Graph:
         self._validate_definition_references(entities, relationships)
         self._validate_relationships(relationships, entities_by_id)
         self._validate_assemblies(entities, relationships_by_id, entities_by_id)
-        facts_by_target_id: dict[UUID, Fact[Any]] = {}
-        for fact in provenance:
+        for fact in provenance.facts:
             target_id = fact.target.id
-            if target_id in facts_by_target_id:
-                raise ValueError(f"more than one Fact targets UUID {target_id}")
             registered = targets_by_id.get(target_id)
             if registered is None:
                 raise ValueError(
@@ -150,17 +134,13 @@ class Graph:
                 raise ValueError(
                     f"Fact target {target_id} is not the registered Graph instance"
                 )
-            facts_by_target_id[target_id] = fact
-        _validate_provenance(provenance)
 
         object.__setattr__(self, "entities", entities)
         object.__setattr__(self, "relationships", relationships)
         object.__setattr__(self, "provenance", provenance)
         object.__setattr__(self, "_entities_by_id", entities_by_id)
         object.__setattr__(self, "_relationships_by_id", relationships_by_id)
-        object.__setattr__(
-            self, "_facts_by_target_id", MappingProxyType(facts_by_target_id)
-        )
+        object.__setattr__(self, "_graph_objects_by_id", targets_by_id)
         object.__setattr__(
             self,
             "_relationship_ids_by_source",
@@ -174,9 +154,13 @@ class Graph:
 
     @property
     def assemblies(self) -> tuple[Assembly, ...]:
+        """Return assemblies in entity insertion order."""
+
         return tuple(item for item in self.entities if isinstance(item, Assembly))
 
     def entity(self, entity: str | UUID | Entity) -> Entity:
+        """Resolve an entity code, UUID, or canonical instance."""
+
         if isinstance(entity, str):
             matches = tuple(item for item in self.entities if item.code == entity)
             if not matches:
@@ -201,6 +185,8 @@ class Graph:
         return registered
 
     def relationship(self, relationship: UUID | Relationship) -> Relationship:
+        """Resolve a relationship UUID or canonical instance."""
+
         relationship_id = (
             relationship.id if isinstance(relationship, Relationship) else relationship
         )
@@ -216,46 +202,9 @@ class Graph:
             )
         return registered
 
-    def fact_for(self, target: UUID | FactTarget) -> Fact[Any] | None:
-        target_id = target if isinstance(target, UUID) else target.id
-        if not isinstance(target_id, UUID):
-            raise TypeError("Fact lookup requires a graph object or UUID")
-        return self._facts_by_target_id.get(target_id)
-
     def apply(self, update: Update) -> Graph:
         """Return a new Graph with one validated update applied."""
         return _apply(self, update)
-
-    def with_entities(self, *entities: Entity) -> Graph:
-        return self.apply(Update(add_entities=entities))
-
-    def with_relationships(self, *relationships: Relationship) -> Graph:
-        return self.apply(Update(add_relationships=relationships))
-
-    def with_facts(self, *facts: Fact[Any]) -> Graph:
-        return self.apply(Update(add_facts=facts))
-
-    def without_entities(
-        self, *entities: str | UUID | Entity, cascade: bool = False
-    ) -> Graph:
-        return self.apply(
-            Update(
-                remove_entity_ids=frozenset(self.entity(item).id for item in entities),
-                cascade=cascade,
-            )
-        )
-
-    def without_relationships(
-        self, *relationships: UUID | Relationship, cascade: bool = False
-    ) -> Graph:
-        return self.apply(
-            Update(
-                remove_relationship_ids=frozenset(
-                    self.relationship(item).id for item in relationships
-                ),
-                cascade=cascade,
-            )
-        )
 
     def find_entities(
         self,
@@ -264,6 +213,8 @@ class Graph:
         name: str | None = None,
         classification: UUID | Classification | None = None,
     ) -> tuple[Entity, ...]:
+        """Find entities matching all supplied semantic fields."""
+
         for value, label in ((code, "code"), (name, "name")):
             if value is not None and not isinstance(value, str):
                 raise TypeError(f"{label} must be a string or None")
@@ -280,51 +231,41 @@ class Graph:
         )
 
     def source_of(self, relationship: UUID | Relationship) -> Entity:
+        """Return the canonical source entity for a relationship."""
+
         return self.entity(self.relationship(relationship).source_id)
 
     def target_of(self, relationship: UUID | Relationship) -> Entity:
+        """Return the canonical target entity for a relationship."""
+
         return self.entity(self.relationship(relationship).target_id)
 
-    def outgoing(
+    def outgoing_relationships(
         self,
         entity: str | UUID | Entity,
         *,
         classification: UUID | Classification | None = None,
     ) -> tuple[Relationship, ...]:
-        registered = self.entity(entity)
-        requested = self.definitions._resolve_classification(classification)
-        relationships = tuple(
-            self._relationships_by_id[identifier]
-            for identifier in self._relationship_ids_by_source.get(registered.id, ())
-        )
-        return tuple(
-            relationship
-            for relationship in relationships
-            if self.definitions._classification_matches(
-                relationship.classification,
-                requested,
-            )
+        """Return outgoing relationships, optionally including classification descendants."""
+
+        return self._relationships_for(
+            entity,
+            index=self._relationship_ids_by_source,
+            classification=classification,
         )
 
-    def incoming(
+    def incoming_relationships(
         self,
         entity: str | UUID | Entity,
         *,
         classification: UUID | Classification | None = None,
     ) -> tuple[Relationship, ...]:
-        registered = self.entity(entity)
-        requested = self.definitions._resolve_classification(classification)
-        relationships = tuple(
-            self._relationships_by_id[identifier]
-            for identifier in self._relationship_ids_by_target.get(registered.id, ())
-        )
-        return tuple(
-            relationship
-            for relationship in relationships
-            if self.definitions._classification_matches(
-                relationship.classification,
-                requested,
-            )
+        """Return incoming relationships, optionally including classification descendants."""
+
+        return self._relationships_for(
+            entity,
+            index=self._relationship_ids_by_target,
+            classification=classification,
         )
 
     def relationships_between(
@@ -334,17 +275,21 @@ class Graph:
         *,
         classification: UUID | Classification | None = None,
     ) -> tuple[Relationship, ...]:
+        """Return directed relationships from source to target."""
+
         source_entity = self.entity(source)
         target_entity = self.entity(target)
         return tuple(
             relationship
-            for relationship in self.outgoing(
+            for relationship in self.outgoing_relationships(
                 source_entity, classification=classification
             )
             if relationship.target_id == target_entity.id
         )
 
     def entities_in(self, assembly: str | UUID | Assembly) -> tuple[Entity, ...]:
+        """Return an assembly's entity members in Graph insertion order."""
+
         registered = self.entity(assembly)
         if not isinstance(registered, Assembly):
             raise TypeError("assembly must resolve to an Assembly")
@@ -355,6 +300,8 @@ class Graph:
     def relationships_in(
         self, assembly: str | UUID | Assembly
     ) -> tuple[Relationship, ...]:
+        """Return an assembly's relationship members in Graph insertion order."""
+
         registered = self.entity(assembly)
         if not isinstance(registered, Assembly):
             raise TypeError("assembly must resolve to an Assembly")
@@ -369,25 +316,36 @@ class Graph:
         *,
         entities: Iterable[str | UUID | Entity] | None = None,
         relationships: Iterable[UUID | Relationship] | None = None,
-        entity_classification: UUID | Classification | None = None,
-        relationship_classification: UUID | Classification | None = None,
         assembly: str | UUID | Assembly | None = None,
-        predicate: Callable[[Entity], bool] | None = None,
     ) -> View:
+        """Select graph membership; apply semantic constraints later with View.filter()."""
+
         from .view import View
 
         return View(
             self,
             entities=entities,
             relationships=relationships,
-            entity_classification=entity_classification,
-            relationship_classification=relationship_classification,
             assembly=assembly,
-            predicate=predicate,
         )
 
-    def to_networkx(self) -> nx.MultiDiGraph:
-        return _to_networkx(self.entities, self.relationships)
+    def _relationships_for(
+        self,
+        entity: str | UUID | Entity,
+        *,
+        index: Mapping[UUID, tuple[UUID, ...]],
+        classification: UUID | Classification | None,
+    ) -> tuple[Relationship, ...]:
+        registered = self.entity(entity)
+        requested = self.definitions._resolve_classification(classification)
+        return tuple(
+            relationship
+            for identifier in index.get(registered.id, ())
+            if self.definitions._classification_matches(
+                (relationship := self._relationships_by_id[identifier]).classification,
+                requested,
+            )
+        )
 
     def _validate_definition_references(
         self,
@@ -396,12 +354,12 @@ class Graph:
     ) -> None:
         for owner in (*entities, *relationships):
             if owner.classification is not None:
-                self.definitions._require_classification_instance(owner.classification)
+                self.definitions._resolve_classification(owner.classification)
             for label in owner.characteristics.labels.values():
                 for classification in label.classifications:
-                    self.definitions._require_classification_instance(classification)
+                    self.definitions._resolve_classification(classification)
             for measurement in owner.characteristics.measurements.values():
-                self.definitions.measures._require_catalog_instance(measurement.measure)
+                self.definitions._resolve_measure(measurement.measure)
 
     @staticmethod
     def _validate_relationships(
@@ -420,6 +378,8 @@ class Graph:
         relationships_by_id: Mapping[UUID, Relationship],
         entities_by_id: Mapping[UUID, Entity],
     ) -> None:
+        """Validate exact membership and reject recursive assembly ownership."""
+
         assemblies = tuple(item for item in entities if isinstance(item, Assembly))
         assembly_graph = nx.DiGraph()
         assembly_graph.add_nodes_from(item.id for item in assemblies)

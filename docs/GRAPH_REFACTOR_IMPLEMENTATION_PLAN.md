@@ -1,5 +1,141 @@
 # Rangekeeper Graph Refactor Implementation Plan
 
+## 2026-09 graph cohesion amendment
+
+This amendment records the implemented Graph cohesion refactor and supersedes
+the older namespace, provenance-container, View-filtering, mutation-helper, and
+adapter details later in this historical plan. The domain is organized around
+four responsibilities:
+
+```text
+Graph        canonical entities, relationships, definitions, and assemblies
+Provenance   evidence explaining the current state of graph objects
+View         transient graph selection and filtering
+Update       atomic construction of a replacement Graph
+```
+
+`provenance` deliberately remains the domain term. A Fact is one root record in
+the evidence graph; Provenance also includes Claims, Sources, Locations,
+Methods, upstream derivations, and reconciliations. Calling the aggregate
+`facts` would lose that distinction.
+
+### Implemented public surface
+
+Core graph objects and errors remain directly under `rangekeeper.graph`.
+Supporting APIs are grouped by responsibility:
+
+```text
+rangekeeper.graph.provenance.Provenance
+rangekeeper.graph.provenance.Fact
+rangekeeper.graph.provenance.Claim
+rangekeeper.graph.provenance.Source
+
+rangekeeper.graph.revision.Revision
+rangekeeper.graph.revision.Diff
+
+rangekeeper.graph.reduction.Aggregation
+rangekeeper.graph.reduction.by_measure
+rangekeeper.graph.reduction.by_feature
+
+rangekeeper.graph.update.Update
+rangekeeper.graph.table.Table
+
+rangekeeper.graph.adapter.csv
+rangekeeper.graph.adapter.pandas
+rangekeeper.graph.adapter.visualization
+```
+
+Measurements continue to use `rangekeeper.measure.Measure`,
+`AggregationRule`, and `QuantityKind`. Selective top-level aliases were removed,
+and every supported graph submodule declares an explicit `__all__`. Graph
+adapters are resolved lazily; importing `rangekeeper.graph` does not import
+pandas, Plotly, or PyVis.
+
+### Migration map
+
+| Before | After |
+| --- | --- |
+| `Graph(provenance=(fact,))` | `Graph(provenance=Provenance(facts=(fact,)))` |
+| `graph.provenance` tuple iteration | `graph.provenance.facts` |
+| `graph.fact_for(target)` | `graph.provenance.fact_for(target)` |
+| `rk.graph.Fact` | `rk.graph.provenance.Fact` |
+| `rk.graph.Claim` | `rk.graph.provenance.Claim` |
+| `rk.graph.Aggregation` | `rk.graph.reduction.Aggregation` |
+| `rk.graph.collect` | `rk.graph.reduction.collect` |
+| `rk.graph.reduce.*` | `rk.graph.reduction.*` |
+| `rk.graph.Measure` | `rk.measure.Measure` |
+| `rk.graph.visualization` | `rk.graph.adapter.visualization` |
+| `graph.outgoing(...)` | `graph.outgoing_relationships(...)` |
+| `graph.incoming(...)` | `graph.incoming_relationships(...)` |
+| `graph.view(...filters...)` | `graph.view(...).filter(...)` |
+| `via=` | `relationship_classification=` |
+| Table `entity_fields=` | `fields=` |
+| Table `label_keys=` | `labels=` |
+| Table `measurement_units=` or `measurements=` | `measures=` |
+| Table `feature_names=` | `features=` |
+
+The new construction shape is:
+
+```python
+provenance = rk.graph.provenance.Provenance(
+    facts=(
+        rk.graph.provenance.Fact(
+            target=area_measurement,
+            claims=(survey_claim, calculated_claim),
+            reconciliation=review,
+        ),
+    )
+)
+
+graph = rk.graph.Graph(
+    definitions=definitions,
+    entities=entities,
+    relationships=relationships,
+    provenance=provenance,
+)
+```
+
+`Provenance` owns Fact lookup and deterministic Claim and Source discovery.
+It validates evidence-local identity, dependency, reconciliation, and value
+invariants. `Graph` separately validates that every Fact target is the exact
+canonical graph object.
+
+### Intentional behavior changes
+
+- Optional Entity and Assembly `code` and `name` values still accept `None`,
+  but reject empty and whitespace-only strings instead of treating them as
+  absent.
+- `Graph.view()` now performs selection only. `View.filter()` applies entity
+  constraints first, removes relationships whose endpoints no longer survive,
+  and makes an explicit relationship-classification filter edge-induced. A
+  relationship filter with no matches therefore returns an empty View.
+- Bare strings are rejected for `entities=` and `relationships=` collections,
+  preventing accidental character-by-character selection.
+- All graph changes use `Graph.apply(Update(...))`; partial `Graph.with_*` and
+  `Graph.without_*` wrappers were removed.
+- Without cascade, a deletion succeeds when the Update explicitly supplies the
+  complete transaction, including relationship deletion, cleaned Assembly
+  replacement, and relevant Fact deletion or replacement. Dependencies that
+  survive the candidate transaction raise `GraphDependencyError` with stable,
+  inspectable dependency ID sets.
+- With cascade, existing incident relationships, stale Facts, and unmodified
+  Assembly memberships are cleaned. New or explicitly replaced caller input is
+  never silently discarded. Retaining provenance for a cleaned Assembly
+  requires an explicit Assembly replacement and matching replacement Fact.
+- Public NetworkX conversions were removed. View topology is frozen and private
+  to reductions and arborescence projections.
+- CSV writing creates parent directories, emits UTF-8 with `\n`, returns the
+  target `Path`, accepts only scalar textual/boolean/finite-real values, and
+  rejects rich values, UUIDs, quantities, NaN, and infinity.
+- Hierarchical visualizations fall back from missing or blank labels to the
+  entity ID. They reject non-string labels, invalid topology, boolean or
+  non-finite/negative numeric values, and parent totals below immediate-child
+  totals when using Plotly's `branchvalues="total"` behavior.
+
+These changes preserve immutable domain objects, UUID identity, canonical
+instance validation, declaration/insertion order, shallow Feature value
+semantics, and atomic source-Graph preservation on both success and failure.
+
 ## Execution handoff
 
 This document is the authoritative implementation brief for a deliberate
@@ -159,7 +295,11 @@ needed:
 There are very few library users. Prefer a clear new API, update the two named
 notebooks, and remove the old API in the same workstream.
 
-## Locked design decisions
+## Historical design decisions
+
+The sections below preserve the earlier implementation handoff. Where they
+conflict with the graph cohesion amendment above, the amendment is
+authoritative.
 
 ### 1. Core namespace
 
@@ -311,7 +451,7 @@ entity.labels
 Do not preserve Base-style arbitrary `entity["..."]` lookup as a compatibility
 shim. Migrate notebook usage to explicit domain fields.
 
-### 7. Provenance
+### 7. Historical minimal source provenance (superseded)
 
 Use the approved minimal shape:
 

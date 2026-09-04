@@ -10,7 +10,7 @@ from .errors import (
     CatalogInstanceError,
     IdentityConflictError,
     UnknownDefinitionError,
-    )
+)
 
 
 class CodedIdentified(Protocol):
@@ -27,12 +27,14 @@ class Catalog(Mapping[str, C], Generic[C]):
 
     _by_code: Mapping[str, C] = field(repr=False, compare=False)
     _by_id: Mapping[UUID, C] = field(repr=False, compare=False)
+    item_type: type[C] = field(repr=False, compare=False)
     kind: str
     scope: str | None = field(default=None, repr=False)
 
     def __init__(
         self,
         values: Iterable[C],
+        item_type: type[C],
         kind: str,
         scope: str | None = None,
     ) -> None:
@@ -49,6 +51,7 @@ class Catalog(Mapping[str, C], Generic[C]):
             by_code[value.code] = value
         object.__setattr__(self, "_by_code", MappingProxyType(by_code))
         object.__setattr__(self, "_by_id", MappingProxyType(by_id))
+        object.__setattr__(self, "item_type", item_type)
         object.__setattr__(self, "kind", kind)
         object.__setattr__(self, "scope", scope)
 
@@ -73,7 +76,7 @@ class Catalog(Mapping[str, C], Generic[C]):
                         f"{kind} mapping key {code!r} does not match "
                         f"{kind} code {item.code!r}"
                     )
-        return cls(items, kind, scope)
+        return cls(items, item_type, kind, scope)
 
     def __getitem__(self, code: str) -> C:
         if not isinstance(code, str):
@@ -100,7 +103,7 @@ class Catalog(Mapping[str, C], Generic[C]):
     def __hash__(self) -> int:
         return hash(frozenset(self.items()))
 
-    def _lookup_id(self, identifier: UUID) -> C:
+    def _by_id_lookup(self, identifier: UUID) -> C:
         if not isinstance(identifier, UUID):
             raise TypeError(f"{self.kind} id must be a UUID")
         try:
@@ -113,12 +116,28 @@ class Catalog(Mapping[str, C], Generic[C]):
     def _contains_id(self, identifier: UUID) -> bool:
         return identifier in self._by_id
 
-    def _require_catalog_instance(self, value: C) -> C:
-        if not hasattr(value, "id"):
-            raise TypeError(f"value must be a {self.kind}")
+    def _require_instance(self, value: C) -> C:
+        """Require object references to be the exact registered instance."""
+
+        if not isinstance(value, self.item_type):
+            raise TypeError(f"value must be a {self.item_type.__name__}")
         registered = self._by_id.get(value.id)
         if registered is None:
             raise UnknownDefinitionError(self.kind, value.id, scope=self.scope)
         if registered is not value:
             raise CatalogInstanceError(self.kind, value.id, scope=self.scope)
         return registered
+
+    def _resolve(self, reference: str | UUID | C) -> C:
+        """Resolve semantic codes, stable UUIDs, or canonical instances uniformly."""
+
+        if isinstance(reference, str):
+            return self[reference]
+        if isinstance(reference, UUID):
+            return self._by_id_lookup(reference)
+        if not isinstance(reference, self.item_type):
+            raise TypeError(
+                f"{self.kind} reference must be a string, UUID, "
+                f"or {self.item_type.__name__}"
+            )
+        return self._require_instance(reference)

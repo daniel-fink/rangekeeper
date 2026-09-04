@@ -1,10 +1,13 @@
+"""Pure hierarchical reductions and their immutable results."""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from collections import Counter
-from collections.abc import Callable
-from dataclasses import dataclass
+from collections.abc import Callable, Iterator, Mapping
+from dataclasses import dataclass, field
 from statistics import median
+from types import MappingProxyType
 from typing import TYPE_CHECKING, Generic, TypeVar
 from uuid import UUID
 
@@ -12,7 +15,6 @@ import networkx as nx
 import pint
 
 from ..measure import AggregationRule, Measure
-from .aggregation import Aggregation
 from .entity import Entity
 from .errors import InvalidAggregationError
 
@@ -24,6 +26,7 @@ T = TypeVar("T")
 R = TypeVar("R")
 
 __all__ = [
+    "Aggregation",
     "Reduction",
     "by_feature",
     "by_measure",
@@ -31,6 +34,47 @@ __all__ = [
     "distinct",
     "mode",
 ]
+
+
+@dataclass(frozen=True, slots=True)
+class Aggregation(Generic[T]):
+    """Immutable per-entity values aggregated over one hierarchical View."""
+
+    view: View
+    _values: Mapping[UUID, T | None] = field(repr=False)
+
+    def __post_init__(self) -> None:
+        from .view import View
+
+        if not isinstance(self.view, View):
+            raise TypeError("view must be a View")
+        values = dict(self._values)
+        if set(values) != {entity.id for entity in self.view.entities}:
+            raise ValueError("aggregation values must match the View entities")
+        object.__setattr__(self, "_values", MappingProxyType(values))
+
+    @property
+    def root_value(self) -> T | None:
+        """Return the aggregate value at the View's sole root."""
+
+        return self._values[self.view.roots[0].id]
+
+    def __getitem__(self, entity: str | UUID | Entity) -> T | None:
+        """Return an entity's aggregate through canonical View lookup."""
+
+        identifier = self.view._resolve_view_entity_id(entity)
+        return self._values[identifier]
+
+    def __len__(self) -> int:
+        return len(self._values)
+
+    def __iter__(self) -> Iterator[Entity]:
+        return iter(self.view.entities)
+
+    def items(self) -> tuple[tuple[Entity, T | None], ...]:
+        """Return entity-value pairs in View insertion order."""
+
+        return tuple((entity, self._values[entity.id]) for entity in self)
 
 
 class Reduction(ABC, Generic[R]):
@@ -70,13 +114,7 @@ class _MeasureReduction(Reduction[pint.Quantity]):
     reference: str | Measure
 
     def _execute(self, view: View) -> Aggregation[pint.Quantity]:
-        measure = (
-            view.graph.definitions.measures[self.reference]
-            if isinstance(self.reference, str)
-            else view.graph.definitions.measures._require_catalog_instance(
-                self.reference
-            )
-        )
+        measure = view.graph.definitions._resolve_measure(self.reference)
         reducer = _MEASUREMENT_REDUCERS.get(measure.aggregation)
         if reducer is None:
             raise InvalidAggregationError(
@@ -144,11 +182,7 @@ def _traverse(
 ) -> Aggregation[R]:
     if not view.entities:
         raise InvalidAggregationError("cannot aggregate an empty View")
-    graph = view.to_networkx()
-    if not nx.is_arborescence(graph):
-        raise InvalidAggregationError(
-            "aggregation requires a parent-to-child arborescence View"
-        )
+    graph = view._require_arborescence()
 
     subtree_values: dict[UUID, tuple[T, ...]] = {}
     results: dict[UUID, R | None] = {}

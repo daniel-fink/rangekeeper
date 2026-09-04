@@ -4,13 +4,17 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from uuid import UUID, uuid4
 
+from .. import validate
 from .characteristics import Characteristics, Feature, Label, Measurement
 from .classification import Classification
 
 
+__all__ = ["Entity"]
+
+
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Entity:
-    """An immutable domain object with UUID identity."""
+    """An immutable graph object whose UUID identifies it across revisions."""
 
     id: UUID = field(default_factory=uuid4)
     code: str | None = None
@@ -19,11 +23,9 @@ class Entity:
     characteristics: Characteristics = field(default_factory=Characteristics)
 
     def __post_init__(self) -> None:
-        if not isinstance(self.id, UUID):
-            raise TypeError("id must be a UUID")
-        for value, field_name in ((self.code, "code"), (self.name, "name")):
-            if value is not None and not isinstance(value, str):
-                raise TypeError(f"{field_name} must be a string or None")
+        validate.require_uuid(self.id, "Entity.id")
+        validate.optional_text(self.code, "Entity.code", empty=False)
+        validate.optional_text(self.name, "Entity.name", empty=False)
         if self.classification is not None and not isinstance(
             self.classification, Classification
         ):
@@ -33,12 +35,18 @@ class Entity:
 
     @property
     def labels(self) -> Mapping[str, Label]:
+        """Expose the entity's immutable labels mapping."""
+
         return self.characteristics.labels
 
     @property
     def measurements(self) -> Mapping[str, Measurement]:
+        """Expose the entity's immutable measurements mapping."""
+
         return self.characteristics.measurements
 
     @property
     def features(self) -> Mapping[str, Feature]:
+        """Expose the entity's immutable features mapping."""
+
         return self.characteristics.features

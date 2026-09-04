@@ -1,23 +1,33 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from types import MappingProxyType
 from uuid import UUID, uuid4
-
-import networkx as nx
 
 from .. import validate
 from ._catalog import Catalog
 from .classification import Classification
 
 
+__all__ = ["Taxonomy"]
+
+
 @dataclass(frozen=True, slots=True, init=False)
 class Taxonomy:
+    """An immutable, single-root classification hierarchy."""
+
     id: UUID
     code: str
     name: str
     classifications: Catalog[Classification]
     definition: str | None
+    _root_id: UUID = field(init=False, repr=False, compare=False)
+    _children_by_parent_id: Mapping[UUID, tuple[Classification, ...]] = field(
+        init=False,
+        repr=False,
+        compare=False,
+    )
 
     def __init__(
         self,
@@ -49,10 +59,14 @@ class Taxonomy:
         self._validate()
 
     def _validate(self) -> None:
+        """Build hierarchy indexes while validating parents without a graph library."""
+
         classifications = tuple(self.classifications.values())
         roots = tuple(item for item in classifications if item.parent is None)
         if len(roots) != 1:
             raise ValueError("taxonomy must contain exactly one root")
+        root = roots[0]
+        children: dict[UUID, list[Classification]] = {}
         for item in classifications:
             if item.parent is None:
                 continue
@@ -60,36 +74,52 @@ class Taxonomy:
                 raise ValueError(
                     f"classification {item.code!r} references a missing parent"
                 )
-            registered_parent = self.classifications._lookup_id(item.parent.id)
+            registered_parent = self.classifications._by_id_lookup(item.parent.id)
             if registered_parent is not item.parent:
                 raise ValueError(
                     f"classification {item.code!r} parent is not the registered "
                     "taxonomy instance"
                 )
-        graph = nx.DiGraph()
-        graph.add_nodes_from(item.id for item in classifications)
-        graph.add_edges_from(
-            (item.parent.id, item.id)
-            for item in classifications
-            if item.parent is not None
+            children.setdefault(item.parent.id, []).append(item)
+
+        for item in classifications:
+            current = item
+            seen: set[UUID] = set()
+            while current.parent is not None:
+                if current.id in seen:
+                    raise ValueError(
+                        "taxonomy classifications must form an acyclic hierarchy"
+                    )
+                seen.add(current.id)
+                current = current.parent
+            if current is not root:
+                raise ValueError("all classifications must descend from the root")
+
+        object.__setattr__(self, "_root_id", root.id)
+        object.__setattr__(
+            self,
+            "_children_by_parent_id",
+            MappingProxyType(
+                {identifier: tuple(items) for identifier, items in children.items()}
+            ),
         )
-        if not nx.is_directed_acyclic_graph(graph):
-            raise ValueError("taxonomy classifications must form an acyclic hierarchy")
 
     @property
     def root(self) -> Classification:
-        return next(
-            item for item in self.classifications.values() if item.parent is None
-        )
+        """Return the hierarchy's sole root classification."""
+
+        return self.classifications._by_id_lookup(self._root_id)
 
     def children(self, classification: Classification) -> tuple[Classification, ...]:
-        canonical = self._require_catalog_instance(classification)
-        return tuple(
-            item for item in self.classifications.values() if item.parent is canonical
-        )
+        """Return direct children in declaration order."""
+
+        canonical = self.classifications._require_instance(classification)
+        return self._children_by_parent_id.get(canonical.id, ())
 
     def ancestors(self, classification: Classification) -> tuple[Classification, ...]:
-        current = self._require_catalog_instance(classification).parent
+        """Return ancestors from root to immediate parent."""
+
+        current = self.classifications._require_instance(classification).parent
         result: list[Classification] = []
         while current is not None:
             result.append(current)
@@ -97,7 +127,9 @@ class Taxonomy:
         return tuple(reversed(result))
 
     def descendants(self, classification: Classification) -> tuple[Classification, ...]:
-        canonical = self._require_catalog_instance(classification)
+        """Return descendants in declaration-preserving preorder."""
+
+        canonical = self.classifications._require_instance(classification)
         result: list[Classification] = []
         pending = list(reversed(self.children(canonical)))
         while pending:
@@ -111,30 +143,14 @@ class Taxonomy:
         classification: Classification,
         ancestor: Classification,
     ) -> bool:
-        current: Classification | None = self._require_catalog_instance(classification)
-        canonical_ancestor = self._require_catalog_instance(ancestor)
+        """Return whether a classification equals or descends from the ancestor."""
+
+        current: Classification | None = self.classifications._require_instance(
+            classification
+        )
+        canonical_ancestor = self.classifications._require_instance(ancestor)
         while current is not None:
             if current is canonical_ancestor:
                 return True
             current = current.parent
         return False
-
-    def to_networkx(self) -> nx.DiGraph:
-        graph = nx.DiGraph()
-        graph.add_nodes_from(
-            (item.id, {"classification": item})
-            for item in self.classifications.values()
-        )
-        graph.add_edges_from(
-            (item.parent.id, item.id)
-            for item in self.classifications.values()
-            if item.parent is not None
-        )
-        return nx.freeze(graph)
-
-    def _require_catalog_instance(
-        self, classification: Classification
-    ) -> Classification:
-        if not isinstance(classification, Classification):
-            raise TypeError("classification must be a Classification")
-        return self.classifications._require_catalog_instance(classification)

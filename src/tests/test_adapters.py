@@ -1,5 +1,7 @@
 from dataclasses import FrozenInstanceError
+from uuid import uuid4
 
+import numpy as np
 import pandas as pd
 import pint
 import pytest
@@ -160,6 +162,33 @@ def test_csv_rejects_non_finite_numbers(tmp_path):
         adapter.csv.write(table, tmp_path / "non-finite.csv")
 
 
+def test_csv_accepts_real_scalars_creates_parents_and_returns_path(tmp_path):
+    table = table_module.Table(
+        columns=("integer", "floating", "boolean", "text", "missing"),
+        rows=(
+            {
+                "integer": np.int64(3),
+                "floating": np.float32(1.5),
+                "boolean": False,
+                "text": "value",
+                "missing": None,
+            },
+        ),
+    )
+    target = tmp_path / "nested" / "data.csv"
+
+    assert adapter.csv.write(table, target) == target
+    assert target.read_bytes().endswith(b"\n")
+
+
+@pytest.mark.parametrize("value", (float("inf"), float("-inf"), uuid4(), [1]))
+def test_csv_rejects_unsupported_scalar_boundaries(tmp_path, value):
+    table = table_module.Table(columns=("value",), rows=({"value": value},))
+
+    with pytest.raises(adapter.AdapterEncodingError):
+        adapter.csv.write(table, tmp_path / "invalid.csv")
+
+
 def visualization_fixture():
     entity_root = rk.graph.Classification(code="entity", name="Entity")
     node = rk.graph.Classification(
@@ -226,15 +255,46 @@ def test_graph_html_visualization_writes_the_selected_view(tmp_path):
     assert "entity:entity.node" in contents
 
 
+@pytest.mark.parametrize("options", ({"physics": float("nan")}, {"x": object()}))
+def test_graph_html_wraps_invalid_json_options(tmp_path, options):
+    view, _ = visualization_fixture()
+
+    with pytest.raises(adapter.AdapterEncodingError, match="invalid PyVis options"):
+        adapter.visualization.graph_html(
+            view,
+            tmp_path / "graph.html",
+            options=options,
+        )
+
+
 def test_view_table_includes_taxonomy_code():
     view, _ = visualization_fixture()
 
     table = table_module.Table.from_view(
         view,
-        entity_fields=("entity_id", "taxonomy_code"),
+        fields=("entity_id", "taxonomy_code"),
     )
 
     assert table.column("taxonomy_code") == ("entity", "entity")
+
+
+def test_view_table_default_schema_uses_qualified_domain_fields():
+    view, _ = visualization_fixture()
+
+    table = table_module.Table.from_view(view)
+
+    assert table.columns == (
+        "entity_id",
+        "name",
+        "entity_kind",
+        "classification_code",
+    )
+    assert table.column("name") == ("Root", "Child")
+    assert table.column("entity_kind") == ("entity", "entity")
+    assert table.column("classification_code") == (
+        "entity.node",
+        "entity.node",
+    )
 
 
 def test_view_table_projects_qualified_labels_features_and_missing_values():
@@ -267,7 +327,7 @@ def test_view_table_projects_qualified_labels_features_and_missing_values():
 
     table = table_module.Table.from_view(
         view,
-        entity_fields=("entity_id", "code"),
+        fields=("entity_id", "code"),
         labels=("use",),
         features=("status",),
     )
@@ -278,8 +338,8 @@ def test_view_table_projects_qualified_labels_features_and_missing_values():
     assert table.rows[1]["feature.status"] is None
 
 
-def test_view_table_converts_measurement_units_and_rejects_incompatible_units():
-    measure = rk.graph.Measure(
+def test_view_table_converts_measure_units_and_rejects_incompatible_units():
+    measure = rk.measure.Measure(
         code="area.internal",
         name="Internal area",
         units=rk.measure.Index.registry.squaremeter,
@@ -300,12 +360,12 @@ def test_view_table_converts_measurement_units_and_rejects_incompatible_units():
 
     table = table_module.Table.from_view(
         view,
-        measurements={measure: "squarefoot"},
+        measures={measure: "squarefoot"},
     )
 
     assert table.rows[0]["measurement.area.internal"] == pytest.approx(10.7639104167)
     with pytest.raises(pint.DimensionalityError):
-        table_module.Table.from_view(view, measurements={measure: "second"})
+        table_module.Table.from_view(view, measures={measure: "second"})
 
 
 def test_arborescence_table_preserves_relationship_insertion_order():
@@ -341,7 +401,7 @@ def test_arborescence_table_preserves_relationship_insertion_order():
 
     table = table_module.Table.from_arborescence(
         graph.view(),
-        entity_fields=("code", "entity_id"),
+        fields=("code", "entity_id"),
     )
 
     assert table.columns == ("code", "entity_id", "parent_id")
@@ -361,16 +421,16 @@ def test_arborescence_table_rejects_invalid_views_and_missing_entity_id():
     with pytest.raises(table_module.TableError, match="entity_id"):
         table_module.Table.from_arborescence(
             rk.graph.Graph(entities=(rk.graph.Entity(),)).view(),
-            entity_fields=("name",),
+            fields=("name",),
         )
 
 
 def test_arborescence_visualizations_return_plotly_traces():
     _, table = visualization_fixture()
 
-    sunburst = adapter.visualization.sunburst(table, value="total")
-    treemap = adapter.visualization.treemap(table, value="total")
-    icicle = adapter.visualization.icicle(table, value="total")
+    sunburst = adapter.visualization.sunburst(table, value_column="total")
+    treemap = adapter.visualization.treemap(table, value_column="total")
+    icicle = adapter.visualization.icicle(table, value_column="total")
 
     assert tuple(sunburst.ids) == ("root", "child")
     assert tuple(sunburst.parents) == ("", "root")
@@ -397,8 +457,100 @@ def test_arborescence_visualization_rejects_rich_or_invalid_values():
     )
 
     with pytest.raises(adapter.AdapterEncodingError, match="finite"):
-        adapter.visualization.sunburst(rich, value="total")
+        adapter.visualization.sunburst(rich, value_column="total")
     with pytest.raises(adapter.AdapterEncodingError, match="missing columns"):
         adapter.visualization.treemap(
             table_module.Table(columns=("entity_id",), rows=()),
         )
+
+
+def test_arborescence_visualization_label_fallback_and_validation():
+    table = table_module.Table(
+        columns=("entity_id", "parent_id", "name"),
+        rows=(
+            {"entity_id": "root", "parent_id": None, "name": " "},
+            {"entity_id": "child", "parent_id": "root", "name": None},
+        ),
+    )
+    trace = adapter.visualization.icicle(table)
+    assert tuple(trace.labels) == ("root", "child")
+
+    invalid = table_module.Table(
+        columns=("entity_id", "parent_id", "name"),
+        rows=({"entity_id": "root", "parent_id": None, "name": 42},),
+    )
+    with pytest.raises(adapter.AdapterEncodingError, match="strings"):
+        adapter.visualization.icicle(invalid)
+
+
+@pytest.mark.parametrize(
+    ("rows", "message"),
+    (
+        (
+            (
+                {"entity_id": "same", "parent_id": None, "name": "Root"},
+                {"entity_id": "same", "parent_id": "same", "name": "Child"},
+            ),
+            "unique",
+        ),
+        (
+            ({"entity_id": "root", "parent_id": "missing", "name": "Root"},),
+            "reference a row",
+        ),
+        (
+            (
+                {"entity_id": "first", "parent_id": None, "name": "First"},
+                {"entity_id": "second", "parent_id": None, "name": "Second"},
+            ),
+            "one arborescence",
+        ),
+        (
+            (
+                {"entity_id": "first", "parent_id": "second", "name": "First"},
+                {"entity_id": "second", "parent_id": "first", "name": "Second"},
+            ),
+            "one arborescence",
+        ),
+    ),
+)
+def test_arborescence_visualization_rejects_invalid_topology(rows, message):
+    table = table_module.Table(
+        columns=("entity_id", "parent_id", "name"),
+        rows=rows,
+    )
+    with pytest.raises(adapter.AdapterEncodingError, match=message):
+        adapter.visualization.treemap(table)
+
+
+@pytest.mark.parametrize("value", (True, -1, float("nan"), float("inf")))
+def test_arborescence_visualization_rejects_invalid_numeric_values(value):
+    table = table_module.Table(
+        columns=("entity_id", "parent_id", "name", "total"),
+        rows=(
+            {
+                "entity_id": "root",
+                "parent_id": None,
+                "name": "Root",
+                "total": value,
+            },
+        ),
+    )
+    with pytest.raises(adapter.AdapterEncodingError, match="non-negative"):
+        adapter.visualization.sunburst(table, value_column="total")
+
+
+def test_arborescence_visualization_rejects_child_totals_above_parent():
+    table = table_module.Table(
+        columns=("entity_id", "parent_id", "name", "total"),
+        rows=(
+            {"entity_id": "root", "parent_id": None, "name": "Root", "total": 1},
+            {
+                "entity_id": "child",
+                "parent_id": "root",
+                "name": "Child",
+                "total": 2,
+            },
+        ),
+    )
+    with pytest.raises(adapter.AdapterEncodingError, match="below child total"):
+        adapter.visualization.icicle(table, value_column="total")

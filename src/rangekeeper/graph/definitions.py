@@ -18,12 +18,21 @@ from .taxonomy import Taxonomy
 
 Definition = Taxonomy | Classification | Measure
 
+__all__ = ["Definitions"]
+
 
 @dataclass(frozen=True, slots=True, init=False)
 class Definitions:
+    """Canonical taxonomies and measures shared by every object in a Graph."""
+
     taxonomies: Catalog[Taxonomy]
     measures: Catalog[Measure]
-    _lookup: Mapping[UUID, tuple[Definition, Taxonomy | None]] = field(
+    _definition_by_id: Mapping[UUID, Definition] = field(
+        init=False,
+        repr=False,
+        compare=False,
+    )
+    _taxonomy_by_classification_id: Mapping[UUID, Taxonomy] = field(
         init=False,
         repr=False,
         compare=False,
@@ -51,61 +60,88 @@ class Definitions:
         )
         taxonomies = tuple(taxonomy_catalog.values())
         measures = tuple(measure_catalog.values())
-        lookup: dict[UUID, tuple[Definition, Taxonomy | None]] = {}
+        definition_by_id: dict[UUID, Definition] = {}
+        taxonomy_by_classification_id: dict[UUID, Taxonomy] = {}
 
-        def register(
-            definition: Definition,
-            taxonomy: Taxonomy | None = None,
-        ) -> None:
-            if definition.id in lookup:
+        def register(definition: Definition) -> None:
+            if definition.id in definition_by_id:
                 raise IdentityConflictError(
                     f"duplicate definition UUID {definition.id}"
                 )
-            lookup[definition.id] = (definition, taxonomy)
+            definition_by_id[definition.id] = definition
 
         for taxonomy in taxonomies:
             register(taxonomy)
             for classification in taxonomy.classifications.values():
-                register(classification, taxonomy)
+                register(classification)
+                taxonomy_by_classification_id[classification.id] = taxonomy
         for measure in measures:
             register(measure)
 
         object.__setattr__(self, "taxonomies", taxonomy_catalog)
         object.__setattr__(self, "measures", measure_catalog)
-        object.__setattr__(self, "_lookup", MappingProxyType(lookup))
+        object.__setattr__(
+            self,
+            "_definition_by_id",
+            MappingProxyType(definition_by_id),
+        )
+        object.__setattr__(
+            self,
+            "_taxonomy_by_classification_id",
+            MappingProxyType(taxonomy_by_classification_id),
+        )
 
     def taxonomy_for(
         self,
         classification: UUID | Classification,
     ) -> Taxonomy:
         """Return the Taxonomy that owns a registered Classification."""
-        if isinstance(classification, UUID):
-            _, taxonomy = self._lookup_classification(classification)
-            return taxonomy
-        if isinstance(classification, Classification):
-            _, taxonomy = self._require_classification_instance(classification)
-            return taxonomy
-        raise TypeError("classification must be a UUID or Classification")
+        registered = self._resolve_classification(classification)
+        assert registered is not None
+        return self._taxonomy_by_classification_id[registered.id]
 
     def _resolve_classification(
         self,
         classification: UUID | Classification | None,
     ) -> Classification | None:
+        """Resolve a classification and reject noncanonical object instances."""
+
         if classification is None:
             return None
-        if isinstance(classification, UUID):
-            registered, _ = self._lookup_classification(classification)
-            return registered
-        if isinstance(classification, Classification):
-            registered, _ = self._require_classification_instance(classification)
-            return registered
-        raise TypeError("classification must be a UUID, Classification, or None")
+        if not isinstance(classification, (UUID, Classification)):
+            raise TypeError("classification must be a UUID, Classification, or None")
+        identifier = (
+            classification if isinstance(classification, UUID) else classification.id
+        )
+        definition = self._definition_by_id.get(identifier)
+        if not isinstance(definition, Classification):
+            raise UnknownDefinitionError(
+                "classification", identifier, scope="Definitions"
+            )
+        if (
+            isinstance(classification, Classification)
+            and definition is not classification
+        ):
+            taxonomy = self._taxonomy_by_classification_id[identifier]
+            raise CatalogInstanceError(
+                "classification",
+                identifier,
+                scope=f"taxonomy {taxonomy.code!r}",
+            )
+        return definition
+
+    def _resolve_measure(self, measure: str | UUID | Measure) -> Measure:
+        """Resolve a measure code, UUID, or canonical instance."""
+
+        return self.measures._resolve(measure)
 
     def _classification_matches(
         self,
         actual: Classification | None,
         requested: Classification | None,
     ) -> bool:
+        """Match exact or descendant classifications within one taxonomy."""
+
         if requested is None:
             return True
         if actual is None:
@@ -116,34 +152,3 @@ class Definitions:
             actual,
             requested,
         )
-
-    def _lookup_classification(
-        self, identifier: UUID
-    ) -> tuple[Classification, Taxonomy]:
-        if not isinstance(identifier, UUID):
-            raise TypeError("classification id must be a UUID")
-        entry = self._lookup.get(identifier)
-        if entry is None:
-            raise UnknownDefinitionError(
-                "classification", identifier, scope="Definitions"
-            )
-        definition, taxonomy = entry
-        if not isinstance(definition, Classification) or taxonomy is None:
-            raise UnknownDefinitionError(
-                "classification", identifier, scope="Definitions"
-            )
-        return definition, taxonomy
-
-    def _require_classification_instance(
-        self, classification: Classification
-    ) -> tuple[Classification, Taxonomy]:
-        if not isinstance(classification, Classification):
-            raise TypeError("classification must be a Classification")
-        registered, taxonomy = self._lookup_classification(classification.id)
-        if registered is not classification:
-            raise CatalogInstanceError(
-                "classification",
-                classification.id,
-                scope=f"taxonomy {taxonomy.code!r}",
-            )
-        return registered, taxonomy

@@ -12,22 +12,28 @@ from .characteristics import Feature, Label, Measurement
 from .classification import Classification
 from .entity import Entity
 from .graph import Graph
-from .provenance import Claim, Fact, _claims_by_id
+from .provenance import Claim, Fact
 from .relationship import Relationship
 from .taxonomy import Taxonomy
 
 
 T = TypeVar("T")
 
+__all__ = ["Delta", "Diff", "Modification", "Revision"]
+
 
 @dataclass(frozen=True, slots=True)
 class Modification(Generic[T]):
+    """The before and after values for one stable UUID."""
+
     before: T
     after: T
 
 
 @dataclass(frozen=True, slots=True)
 class Delta(Generic[T]):
+    """Ordered additions, removals, and modifications for one object kind."""
+
     added: tuple[T, ...] = ()
     removed: tuple[T, ...] = ()
     modified: tuple[Modification[T], ...] = ()
@@ -42,11 +48,15 @@ class Delta(Generic[T]):
 
     @property
     def changed(self) -> bool:
+        """Return whether this object kind differs between Graphs."""
+
         return bool(self.added or self.removed or self.modified)
 
 
 @dataclass(frozen=True, slots=True)
 class Diff:
+    """A value-based comparison of two Graph snapshots by stable UUID."""
+
     taxonomies: Delta[Taxonomy]
     classifications: Delta[Classification]
     measures: Delta[Measure]
@@ -60,6 +70,8 @@ class Diff:
 
     @property
     def changed(self) -> bool:
+        """Return whether any compared graph object changed."""
+
         return any(
             section.changed
             for section in (
@@ -78,6 +90,8 @@ class Diff:
 
     @classmethod
     def between(cls, parent: Graph, child: Graph) -> Diff:
+        """Compare Graphs while reusing their canonical and provenance indexes."""
+
         if not isinstance(parent, Graph) or not isinstance(child, Graph):
             raise TypeError("Diff.between requires two Graph objects")
         parent_labels, parent_measurements, parent_features = _characteristics_by_id(
@@ -104,16 +118,21 @@ class Diff:
             relationships=_changes(
                 parent._relationships_by_id, child._relationships_by_id
             ),
-            facts=_changes(parent._facts_by_target_id, child._facts_by_target_id),
+            facts=_changes(
+                {item.target.id: item for item in parent.provenance.facts},
+                {item.target.id: item for item in child.provenance.facts},
+            ),
             claims=_changes(
-                _claims_by_id(parent.provenance),
-                _claims_by_id(child.provenance),
+                {item.id: item for item in parent.provenance.claims},
+                {item.id: item for item in child.provenance.claims},
             ),
         )
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Revision:
+    """A Graph snapshot with immutable authorship and parent metadata."""
+
     id: UUID = field(default_factory=uuid4)
     graph: Graph
     parent_ids: tuple[UUID, ...] = ()
@@ -141,6 +160,8 @@ class Revision:
         object.__setattr__(self, "parent_ids", parent_ids)
 
     def diff(self, parent: Revision) -> Diff:
+        """Compare this snapshot with one of its declared parents."""
+
         if not isinstance(parent, Revision):
             raise TypeError("parent must be a Revision")
         if parent.id not in self.parent_ids:
@@ -183,21 +204,20 @@ def _classifications_by_id(graph: Graph) -> dict[UUID, Classification]:
 def _characteristics_by_id(
     graph: Graph,
 ) -> tuple[dict[UUID, Label], dict[UUID, Measurement], dict[UUID, Feature]]:
-    owners = (*graph.entities, *graph.relationships)
     return (
         {
-            item.id: item
-            for owner in owners
-            for item in owner.characteristics.labels.values()
+            identifier: item
+            for identifier, item in graph._graph_objects_by_id.items()
+            if isinstance(item, Label)
         },
         {
-            item.id: item
-            for owner in owners
-            for item in owner.characteristics.measurements.values()
+            identifier: item
+            for identifier, item in graph._graph_objects_by_id.items()
+            if isinstance(item, Measurement)
         },
         {
-            item.id: item
-            for owner in owners
-            for item in owner.characteristics.features.values()
+            identifier: item
+            for identifier, item in graph._graph_objects_by_id.items()
+            if isinstance(item, Feature)
         },
     )

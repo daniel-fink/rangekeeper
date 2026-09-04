@@ -2,6 +2,21 @@ from collections.abc import Iterable
 from uuid import UUID
 
 
+__all__ = [
+    "AmbiguousLookupError",
+    "CatalogInstanceError",
+    "GraphDependencyError",
+    "GraphError",
+    "IdentityConflictError",
+    "InvalidAggregationError",
+    "InvalidAssemblyError",
+    "MissingEntityError",
+    "MissingFactError",
+    "MissingRelationshipError",
+    "UnknownDefinitionError",
+]
+
+
 class GraphError(Exception):
     """Base class for graph-domain errors."""
 
@@ -48,6 +63,39 @@ class MissingEntityError(GraphError, KeyError):
 
 class MissingRelationshipError(GraphError, KeyError):
     """Raised when a relationship ID is not registered in a Graph."""
+
+
+class MissingFactError(GraphError, KeyError):
+    """Raised when a Fact target ID is not registered in Provenance."""
+
+
+class GraphDependencyError(GraphError, ValueError):
+    """Raised when removal would leave references to a graph object."""
+
+    def __init__(
+        self,
+        target_kind: str,
+        target_id: UUID,
+        *,
+        relationship_ids: Iterable[UUID] = (),
+        assembly_ids: Iterable[UUID] = (),
+        fact_target_ids: Iterable[UUID] = (),
+    ) -> None:
+        self.target_kind = target_kind
+        self.target_id = target_id
+        self.relationship_ids = frozenset(relationship_ids)
+        self.assembly_ids = frozenset(assembly_ids)
+        self.fact_target_ids = frozenset(fact_target_ids)
+        dependencies = []
+        for label, identifiers in (
+            ("relationships", self.relationship_ids),
+            ("assemblies", self.assembly_ids),
+            ("Fact targets", self.fact_target_ids),
+        ):
+            if identifiers:
+                dependencies.append(f"{label}=[{_format_ids(identifiers)}]")
+        detail = ", ".join(dependencies) or "unknown dependencies"
+        super().__init__(f"cannot remove {target_kind} {target_id}; remaining {detail}")
 
 
 class InvalidAssemblyError(GraphError, ValueError):

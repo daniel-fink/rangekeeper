@@ -1,25 +1,60 @@
-from . import api as api
+from importlib import import_module
+from types import ModuleType
+
 from . import validate as validate
 from . import measure as measure
-from . import distribution as distribution
-from . import duration as duration
-from . import extrapolation as extrapolation
-from . import flux as flux
 from . import graph as graph
-from . import policy as policy
-from . import projection as projection
-from . import segmentation as segmentation
-
-# from . import space as space
-from . import dynamics as dynamics
-from . import formula as formula
-from . import format as format
 
 # Helper Methods:
 import functools
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-from matplotlib import cm
+
+
+_LAZY_MODULES = frozenset(
+    {
+        "api",
+        "distribution",
+        "duration",
+        "dynamics",
+        "extrapolation",
+        "flux",
+        "formula",
+        "format",
+        "policy",
+        "projection",
+        "segmentation",
+    }
+)
+
+__all__ = [
+    "api",
+    "distribution",
+    "duration",
+    "dynamics",
+    "extrapolation",
+    "flux",
+    "formula",
+    "format",
+    "graph",
+    "measure",
+    "policy",
+    "projection",
+    "rgba_from_cmap",
+    "segmentation",
+    "update_class",
+    "validate",
+]
+
+
+def __getattr__(name: str) -> ModuleType:
+    if name not in _LAZY_MODULES:
+        raise AttributeError(name)
+    module = import_module(f"{__name__}.{name}")
+    globals()[name] = module
+    return module
+
+
+def __dir__() -> list[str]:
+    return sorted({*globals(), *_LAZY_MODULES})
 
 
 def update_class(
@@ -48,6 +83,10 @@ def rgba_from_cmap(cmap_name, start_val, stop_val, val):
     Returns the rgb value of a color from a matplotlib colormap
     from https://stackoverflow.com/a/26109298
     """
+    import matplotlib as mpl
+    import matplotlib.pyplot as plt
+    from matplotlib import cm
+
     cmap = plt.get_cmap(cmap_name)
     norm = mpl.colors.Normalize(vmin=start_val, vmax=stop_val)
     scalar_map = cm.ScalarMappable(norm=norm, cmap=cmap)
