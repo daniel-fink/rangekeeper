@@ -3,8 +3,8 @@ from __future__ import annotations
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from types import MappingProxyType
-from uuid import UUID
 
+import networkx as nx
 import pint
 
 from ..measure import Measure
@@ -16,7 +16,7 @@ from .view import View
 __all__ = ["Table", "TableError"]
 
 
-_ENTITY_FIELD_NAMES = frozenset(
+_ENTITY_FIELDS = frozenset(
     {
         "entity_id",
         "code",
@@ -27,7 +27,7 @@ _ENTITY_FIELD_NAMES = frozenset(
         "taxonomy_code",
     }
 )
-_DEFAULT_ENTITY_FIELD_NAMES = (
+_DEFAULT_FIELDS = (
     "entity_id",
     "name",
     "entity_kind",
@@ -41,6 +41,8 @@ class TableError(ValueError):
 
 @dataclass(frozen=True, slots=True)
 class Table:
+    """An immutable ordered tabular projection with unconstrained cell values."""
+
     columns: tuple[str, ...]
     rows: tuple[Mapping[str, object], ...]
 
@@ -64,6 +66,8 @@ class Table:
         object.__setattr__(self, "rows", tuple(normalized_rows))
 
     def column(self, name: str) -> tuple[object, ...]:
+        """Return one column in row order."""
+
         if name not in self.columns:
             raise KeyError(name)
         return tuple(row[name] for row in self.rows)
@@ -73,26 +77,28 @@ class Table:
         cls,
         view: View,
         *,
-        entity_fields: Iterable[str] = _DEFAULT_ENTITY_FIELD_NAMES,
+        fields: Iterable[str] = _DEFAULT_FIELDS,
         labels: Iterable[str] = (),
-        measurements: Mapping[Measure | str, pint.Unit | str | None] | None = None,
+        measures: Mapping[Measure | str, pint.Unit | str | None] | None = None,
         features: Iterable[str] = (),
     ) -> Table:
+        """Project fields and characteristics; measure values select output units."""
+
         if not isinstance(view, View):
             raise TypeError("view must be a View")
-        entity_field_names = _validate_names(entity_fields, "entity_fields")
-        unknown_entity_fields = set(entity_field_names).difference(_ENTITY_FIELD_NAMES)
-        if unknown_entity_fields:
-            raise TableError(f"unknown entity fields: {sorted(unknown_entity_fields)}")
-        label_keys = _validate_names(labels, "labels")
-        feature_names = _validate_names(features, "features")
-        measurement_projections = _measurement_projections(view, measurements)
+        fields = _validate_names(fields, "fields")
+        unknown_fields = set(fields).difference(_ENTITY_FIELDS)
+        if unknown_fields:
+            raise TableError(f"unknown fields: {sorted(unknown_fields)}")
+        labels = _validate_names(labels, "labels")
+        features = _validate_names(features, "features")
+        measurement_projections = _measurement_projections(view, measures)
 
         columns = (
-            *entity_field_names,
-            *(f"label.{key}" for key in label_keys),
+            *fields,
+            *(f"label.{key}" for key in labels),
             *(column_name for _, _, column_name in measurement_projections),
-            *(f"feature.{name}" for name in feature_names),
+            *(f"feature.{name}" for name in features),
         )
         if len(columns) != len(set(columns)):
             raise TableError("selected Table columns collide")
@@ -101,9 +107,9 @@ class Table:
         for entity in view.entities:
             row = {
                 field_name: _entity_value(entity, field_name, view=view)
-                for field_name in entity_field_names
+                for field_name in fields
             }
-            for key in label_keys:
+            for key in labels:
                 label = entity.labels.get(key)
                 row[f"label.{key}"] = (
                     ()
@@ -122,7 +128,7 @@ class Table:
                 row[column_name] = (
                     None if quantity is None else quantity.to(target_units).magnitude
                 )
-            for name in feature_names:
+            for name in features:
                 feature = entity.features.get(name)
                 row[f"feature.{name}"] = None if feature is None else feature.value
             rows.append(row)
@@ -133,34 +139,32 @@ class Table:
         cls,
         view: View,
         *,
-        entity_fields: Iterable[str] = _DEFAULT_ENTITY_FIELD_NAMES,
+        fields: Iterable[str] = _DEFAULT_FIELDS,
         labels: Iterable[str] = (),
-        measurements: Mapping[Measure | str, pint.Unit | str | None] | None = None,
+        measures: Mapping[Measure | str, pint.Unit | str | None] | None = None,
         features: Iterable[str] = (),
     ) -> Table:
         """Project a parent-to-child arborescence with explicit parent IDs."""
+        if not isinstance(view, View):
+            raise TypeError("view must be a View")
+        if not view.is_arborescence:
+            raise TableError("view must be a non-empty parent-to-child arborescence")
         projected = cls.from_view(
             view,
-            entity_fields=entity_fields,
+            fields=fields,
             labels=labels,
-            measurements=measurements,
+            measures=measures,
             features=features,
         )
         if "entity_id" not in projected.columns:
             raise TableError("arborescence Tables require the 'entity_id' field")
-        if not view.is_arborescence:
-            raise TableError("view must be a non-empty parent-to-child arborescence")
 
         parent_by_entity = {
             relationship.target_id: relationship.source_id
             for relationship in view.relationships
         }
-        children_by_parent: dict[UUID, list[UUID]] = {}
-        for child_id, parent_id in parent_by_entity.items():
-            children_by_parent.setdefault(parent_id, []).append(child_id)
-
         root_id = view.roots[0].id
-        entity_order = _preorder(root_id, children_by_parent)
+        entity_order = tuple(nx.dfs_preorder_nodes(view._topology(), source=root_id))
         projected_by_entity = {row["entity_id"]: row for row in projected.rows}
         entity_id_index = projected.columns.index("entity_id")
         columns = (
@@ -187,36 +191,19 @@ def _validate_names(values: Iterable[str], field: str) -> tuple[str, ...]:
     return materialized
 
 
-def _preorder(
-    root_id: UUID,
-    children_by_parent: Mapping[UUID, Iterable[UUID]],
-) -> tuple[UUID, ...]:
-    ordered = []
-    pending = [root_id]
-    while pending:
-        entity_id = pending.pop()
-        ordered.append(entity_id)
-        pending.extend(reversed(tuple(children_by_parent.get(entity_id, ()))))
-    return tuple(ordered)
-
-
 def _measurement_projections(
     view: View,
-    measurements: Mapping[Measure | str, pint.Unit | str | None] | None,
+    measures: Mapping[Measure | str, pint.Unit | str | None] | None,
 ) -> tuple[tuple[Measure, pint.Unit, str], ...]:
-    if measurements is None:
+    """Resolve measures once and normalize requested units before row projection."""
+
+    if measures is None:
         return ()
-    if not isinstance(measurements, Mapping):
-        raise TypeError("measurements must be a mapping or None")
+    if not isinstance(measures, Mapping):
+        raise TypeError("measures must be a mapping or None")
     projections = []
-    for measure_reference, requested_units in measurements.items():
-        measure = (
-            view.graph.definitions.measures[measure_reference]
-            if isinstance(measure_reference, str)
-            else view.graph.definitions.measures._require_catalog_instance(
-                measure_reference
-            )
-        )
+    for measure_reference, requested_units in measures.items():
+        measure = view.graph.definitions._resolve_measure(measure_reference)
         if requested_units is None:
             target_units = measure.units
         elif isinstance(requested_units, pint.Unit):

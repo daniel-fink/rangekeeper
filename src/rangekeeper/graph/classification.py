@@ -6,8 +6,13 @@ from uuid import UUID, uuid4
 from .. import validate
 
 
+__all__ = ["Classification"]
+
+
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Classification:
+    """A named definition node in a taxonomy hierarchy."""
+
     id: UUID = field(default_factory=uuid4)
     code: str
     name: str

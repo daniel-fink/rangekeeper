@@ -1,5 +1,12 @@
+from importlib import import_module
+from types import ModuleType
+
+from . import provenance as provenance
+from . import reduction as reduction
+from . import revision as revision
+from . import table as table
+from . import update as update
 from .assembly import Assembly
-from .aggregation import Aggregation
 from .characteristics import Characteristics, Feature, Label, Measurement
 from .classification import Classification
 from .definitions import Definitions
@@ -7,85 +14,62 @@ from .entity import Entity
 from .errors import (
     AmbiguousLookupError,
     CatalogInstanceError,
+    GraphDependencyError,
     GraphError,
     IdentityConflictError,
     InvalidAggregationError,
     InvalidAssemblyError,
     MissingEntityError,
+    MissingFactError,
     MissingRelationshipError,
     UnknownDefinitionError,
 )
 from .graph import Graph
-from . import provenance as provenance
-from .provenance import (
-    AssemblyState,
-    Claim,
-    ClaimKind,
-    EntityState,
-    Fact,
-    FactStatus,
-    Method,
-    Reconciliation,
-    ReconciliationStatus,
-    RelationshipState,
-)
 from .relationship import Relationship
-from . import revision as revision
 from .taxonomy import Taxonomy
-from . import table as table
-from . import reduce as reduce
-from . import update as update
-from .reduce import collect, distinct, mode
 from .view import View
-from ..measure import AggregationRule, Measure, QuantityKind
-
-# Supported adapters for the immutable graph core.
-from .adapter import visualization as visualization
 
 
 __all__ = [
     "Assembly",
-    "AssemblyState",
-    "Aggregation",
-    "AggregationRule",
     "AmbiguousLookupError",
     "CatalogInstanceError",
     "Characteristics",
-    "Claim",
-    "ClaimKind",
     "Classification",
     "Definitions",
     "Entity",
-    "EntityState",
-    "Fact",
-    "FactStatus",
     "Feature",
     "Graph",
+    "GraphDependencyError",
     "GraphError",
     "IdentityConflictError",
     "InvalidAggregationError",
     "InvalidAssemblyError",
     "Label",
     "Measurement",
-    "Measure",
-    "Method",
     "MissingEntityError",
+    "MissingFactError",
     "MissingRelationshipError",
-    "QuantityKind",
-    "Reconciliation",
-    "ReconciliationStatus",
     "Relationship",
-    "RelationshipState",
     "Taxonomy",
     "UnknownDefinitionError",
     "View",
-    "collect",
-    "distinct",
-    "mode",
+    "adapter",
     "provenance",
-    "reduce",
+    "reduction",
     "revision",
     "table",
     "update",
-    "visualization",
 ]
+
+
+def __getattr__(name: str) -> ModuleType:
+    if name != "adapter":
+        raise AttributeError(name)
+    module = import_module(f"{__name__}.adapter")
+    globals()[name] = module
+    return module
+
+
+def __dir__() -> list[str]:
+    return sorted({*globals(), "adapter"})

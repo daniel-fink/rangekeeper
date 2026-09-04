@@ -1,3 +1,6 @@
+__all__ = ["AdapterEncodingError", "AdapterError"]
+
+
 class AdapterError(Exception):
     """Base class for graph adapter failures."""
 

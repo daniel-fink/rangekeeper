@@ -2,11 +2,16 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from dataclasses import dataclass
-from uuid import UUID
+from uuid import UUID, uuid4
 
+from .characteristics import Characteristics
+from .classification import Classification
 from .entity import Entity
 from .errors import InvalidAssemblyError
 from .relationship import Relationship
+
+
+__all__ = ["Assembly"]
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -35,8 +40,14 @@ class Assembly(Entity):
         *,
         entities: Iterable[Entity] = (),
         relationships: Iterable[Relationship] = (),
-        **values: object,
+        id: UUID | None = None,
+        code: str | None = None,
+        name: str | None = None,
+        classification: Classification | None = None,
+        characteristics: Characteristics | None = None,
     ) -> Assembly:
+        """Create an assembly from objects while retaining only stable membership IDs."""
+
         entity_items = tuple(entities)
         relationship_items = tuple(relationships)
         if any(not isinstance(item, Entity) for item in entity_items):
@@ -44,7 +55,13 @@ class Assembly(Entity):
         if any(not isinstance(item, Relationship) for item in relationship_items):
             raise TypeError("relationships must contain only Relationship objects")
         return cls(
+            id=uuid4() if id is None else id,
+            code=code,
+            name=name,
+            classification=classification,
+            characteristics=(
+                Characteristics() if characteristics is None else characteristics
+            ),
             entity_ids=frozenset(item.id for item in entity_items),
             relationship_ids=frozenset(item.id for item in relationship_items),
-            **values,
         )

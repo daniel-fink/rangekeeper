@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import math
 from collections.abc import Mapping
+from dataclasses import dataclass
 from numbers import Real
 from os import PathLike
 from pathlib import Path
@@ -14,6 +15,8 @@ from pyvis.network import Network
 from ..table import Table
 from ..view import View
 from .errors import AdapterEncodingError
+
+__all__ = ["graph_html", "icicle", "sunburst", "treemap"]
 
 
 def graph_html(
@@ -68,7 +71,7 @@ def graph_html(
         )
     if options is not None:
         try:
-            network.set_options(json.dumps(dict(options)))
+            network.set_options(json.dumps(dict(options), allow_nan=False))
         except (TypeError, ValueError) as error:
             raise AdapterEncodingError(f"invalid PyVis options: {error}") from error
 
@@ -81,87 +84,97 @@ def graph_html(
 def sunburst(
     table: Table,
     *,
-    label: str = "name",
-    value: str | None = None,
+    label_column: str = "name",
+    value_column: str | None = None,
 ) -> go.Sunburst:
     """Create a Plotly Sunburst trace from an arborescence Table."""
-    projection = _tree_projection(table, label=label, value=value)
-    arguments = {
-        "ids": projection.ids,
-        "labels": projection.labels,
-        "parents": projection.parents,
-    }
-    if projection.values is not None:
-        arguments.update(values=projection.values, branchvalues="total")
-    return go.Sunburst(**arguments)
+    return _tree_trace(
+        go.Sunburst,
+        table,
+        label_column=label_column,
+        value_column=value_column,
+    )
 
 
 def treemap(
     table: Table,
     *,
-    label: str = "name",
-    value: str | None = None,
+    label_column: str = "name",
+    value_column: str | None = None,
 ) -> go.Treemap:
     """Create a Plotly Treemap trace from an arborescence Table."""
-    projection = _tree_projection(table, label=label, value=value)
-    arguments = {
-        "ids": projection.ids,
-        "labels": projection.labels,
-        "parents": projection.parents,
-    }
-    if projection.values is not None:
-        arguments.update(values=projection.values, branchvalues="total")
-    return go.Treemap(**arguments)
+    return _tree_trace(
+        go.Treemap,
+        table,
+        label_column=label_column,
+        value_column=value_column,
+    )
 
 
 def icicle(
     table: Table,
     *,
-    label: str = "name",
-    value: str | None = None,
+    label_column: str = "name",
+    value_column: str | None = None,
 ) -> go.Icicle:
     """Create a Plotly Icicle trace from an arborescence Table."""
-    projection = _tree_projection(table, label=label, value=value)
-    arguments = {
+    return _tree_trace(
+        go.Icicle,
+        table,
+        label_column=label_column,
+        value_column=value_column,
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class _TreeProjection:
+    ids: tuple[str, ...]
+    labels: tuple[str, ...]
+    parents: tuple[str, ...]
+    values: tuple[float, ...] | None
+
+
+def _tree_trace(
+    trace_type: type[go.Sunburst] | type[go.Treemap] | type[go.Icicle],
+    table: Table,
+    *,
+    label_column: str,
+    value_column: str | None,
+) -> go.Sunburst | go.Treemap | go.Icicle:
+    projection = _tree_projection(
+        table,
+        label_column=label_column,
+        value_column=value_column,
+    )
+    arguments: dict[str, object] = {
         "ids": projection.ids,
         "labels": projection.labels,
         "parents": projection.parents,
     }
     if projection.values is not None:
         arguments.update(values=projection.values, branchvalues="total")
-    return go.Icicle(**arguments)
-
-
-class _TreeProjection:
-    def __init__(
-        self,
-        *,
-        ids: tuple[str, ...],
-        labels: tuple[str, ...],
-        parents: tuple[str, ...],
-        values: tuple[float, ...] | None,
-    ) -> None:
-        self.ids = ids
-        self.labels = labels
-        self.parents = parents
-        self.values = values
+    return trace_type(**arguments)
 
 
 def _tree_projection(
     table: Table,
     *,
-    label: str,
-    value: str | None,
+    label_column: str,
+    value_column: str | None,
 ) -> _TreeProjection:
+    """Validate hierarchy semantics before handing values to Plotly."""
+
     if not isinstance(table, Table):
         raise TypeError("table must be a Table")
-    if not isinstance(label, str) or not label.strip():
-        raise ValueError("label must be a non-empty column name")
-    if value is not None and (not isinstance(value, str) or not value.strip()):
-        raise ValueError("value must be a non-empty column name or None")
-    required = {"entity_id", "parent_id", label}
-    if value is not None:
-        required.add(value)
+    if not isinstance(label_column, str) or not label_column.strip():
+        raise ValueError("label_column must be a non-empty column name")
+    if value_column is not None and (
+        not isinstance(value_column, str) or not value_column.strip()
+    ):
+        raise ValueError("value_column must be a non-empty column name or None")
+    required = {"entity_id", "parent_id", label_column}
+    if value_column is not None:
+        required.add(value_column)
     missing = required.difference(table.columns)
     if missing:
         raise AdapterEncodingError(
@@ -192,13 +205,21 @@ def _tree_projection(
     if not graph or not nx.is_arborescence(graph):
         raise AdapterEncodingError("Table rows must form one arborescence")
 
-    labels = tuple(
-        row[label] if isinstance(row[label], str) and row[label] else entity_id
-        for entity_id, row in zip(ids, table.rows)
-    )
+    labels = []
+    for entity_id, row in zip(ids, table.rows):
+        label = row[label_column]
+        if label is None or isinstance(label, str) and not label.strip():
+            labels.append(entity_id)
+        elif isinstance(label, str):
+            labels.append(label)
+        else:
+            raise AdapterEncodingError(
+                f"visualization label column {label_column!r} must contain "
+                "strings or missing values"
+            )
     values = None
-    if value is not None:
-        selected_values = tuple(row[value] for row in table.rows)
+    if value_column is not None:
+        selected_values = tuple(row[value_column] for row in table.rows)
         if not all(
             isinstance(item, Real)
             and not isinstance(item, bool)
@@ -207,13 +228,31 @@ def _tree_projection(
             for item in selected_values
         ):
             raise AdapterEncodingError(
-                f"visualization value column {value!r} must contain finite, "
+                f"visualization value column {value_column!r} must contain finite, "
                 "non-negative numbers"
             )
         values = tuple(float(item) for item in selected_values)
+        values_by_id = dict(zip(ids, values))
+        for parent_id, parent_value in values_by_id.items():
+            child_total = math.fsum(
+                child_value
+                for child_value, parent in zip(values, raw_parents)
+                if parent == parent_id
+            )
+            if child_total > parent_value and not math.isclose(
+                child_total,
+                parent_value,
+                rel_tol=1e-9,
+                abs_tol=1e-12,
+            ):
+                raise AdapterEncodingError(
+                    f"visualization value column {value_column!r} has parent "
+                    f"{parent_id!r} total {parent_value} below child total "
+                    f"{child_total}"
+                )
     return _TreeProjection(
         ids=ids,
-        labels=labels,
+        labels=tuple(labels),
         parents=tuple("" if parent is None else parent for parent in raw_parents),
         values=values,
     )
