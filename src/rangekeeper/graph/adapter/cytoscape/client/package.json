@@ -1,0 +1,22 @@
+{
+  "name": "rangekeeper-cytoscape-viewer",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "build": "node build.cjs",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write *.ts",
+    "test": "node --test test/*.cjs"
+  },
+  "dependencies": {
+    "cytoscape": "3.34.3",
+    "cytoscape-fcose": "2.2.0"
+  },
+  "devDependencies": {
+    "@types/cytoscape": "3.21.9",
+    "esbuild": "0.25.12",
+    "playwright": "1.63.0",
+    "prettier": "3.6.2",
+    "typescript": "5.9.3"
+  }
+}

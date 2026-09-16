@@ -27,6 +27,7 @@ R = TypeVar("R")
 
 __all__ = [
     "Aggregation",
+    "Coverage",
     "Reduction",
     "by_feature",
     "by_measure",
@@ -37,11 +38,38 @@ __all__ = [
 
 
 @dataclass(frozen=True, slots=True)
+class Coverage:
+    """Coverage of recorded selected contributors; not physical population certification."""
+
+    selected: tuple[UUID, ...]
+    measured: tuple[UUID, ...]
+    missing: tuple[UUID, ...]
+
+    @property
+    def complete(self) -> bool:
+        return bool(self.selected) and not self.missing
+
+    @property
+    def status(self) -> str:
+        return (
+            "empty"
+            if not self.selected
+            else "complete"
+            if self.complete
+            else "incomplete"
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class Aggregation(Generic[T]):
     """Immutable per-entity values aggregated over one hierarchical View."""
 
     view: View
     _values: Mapping[UUID, T | None] = field(repr=False)
+
+    _coverage: Mapping[UUID, Coverage] = field(default_factory=dict, repr=False)
+    _known_values: Mapping[UUID, T | None] = field(default_factory=dict, repr=False)
+    _is_sum: bool = field(default=False, repr=False)
 
     def __post_init__(self) -> None:
         from .view import View
@@ -52,6 +80,11 @@ class Aggregation(Generic[T]):
         if set(values) != {entity.id for entity in self.view.entities}:
             raise ValueError("aggregation values must match the View entities")
         object.__setattr__(self, "_values", MappingProxyType(values))
+        for name in ("_coverage", "_known_values"):
+            items = dict(getattr(self, name))
+            if items and set(items) != set(values):
+                raise ValueError(f"{name} keys must match View entities")
+            object.__setattr__(self, name, MappingProxyType(items))
 
     @property
     def root_value(self) -> T | None:
@@ -76,6 +109,20 @@ class Aggregation(Generic[T]):
 
         return tuple((entity, self._values[entity.id]) for entity in self)
 
+    def coverage(self, entity: str | UUID | Entity) -> Coverage:
+        """Selected, measured and missing contributors below and including this node."""
+        return self._coverage[self.view._resolve_view_entity_id(entity)]
+
+    def available_value(self, entity: str | UUID | Entity) -> T | None:
+        """Reduction over available selected values, even when requirements are unmet."""
+        return self._known_values[self.view._resolve_view_entity_id(entity)]
+
+    def known_subtotal(self, entity: str | UUID | Entity) -> T | None:
+        """Known subtotal for SUM only; an empty population is unavailable, not zero."""
+        if not self._is_sum:
+            raise InvalidAggregationError("known_subtotal is only defined for SUM")
+        return self.available_value(entity)
+
 
 class Reduction(ABC, Generic[R]):
     """A characteristic reduction executed against a hierarchical View."""
@@ -85,13 +132,22 @@ class Reduction(ABC, Generic[R]):
         """Execute this reduction against a View."""
 
 
-def by_measure(reference: str | Measure) -> Reduction[pint.Quantity]:
+def by_measure(
+    reference: str | Measure,
+    *,
+    contributors: Callable[[Entity], bool] | None = None,
+    require_measurement: bool = False,
+) -> Reduction[pint.Quantity]:
     """Reduce entity measurements using their Measure's declared rule."""
     if not isinstance(reference, (str, Measure)):
         raise TypeError("reference must be a measure code or Measure")
     if isinstance(reference, str) and not reference.strip():
         raise ValueError("measure code must not be empty")
-    return _MeasureReduction(reference)
+    if contributors is not None and not callable(contributors):
+        raise TypeError("contributors must be callable or None")
+    if not isinstance(require_measurement, bool):
+        raise TypeError("require_measurement must be a bool")
+    return _MeasureReduction(reference, contributors, require_measurement)
 
 
 def by_feature(
@@ -112,6 +168,8 @@ def by_feature(
 @dataclass(frozen=True, slots=True)
 class _MeasureReduction(Reduction[pint.Quantity]):
     reference: str | Measure
+    contributors: Callable[[Entity], bool] | None = None
+    require_measurement: bool = False
 
     def _execute(self, view: View) -> Aggregation[pint.Quantity]:
         measure = view.graph.definitions._resolve_measure(self.reference)
@@ -127,7 +185,14 @@ class _MeasureReduction(Reduction[pint.Quantity]):
                 return None
             return measurement.quantity.to(measure.units)
 
-        return _traverse(view, extractor=extract, reducer=reducer)
+        return _traverse(
+            view,
+            extractor=extract,
+            reducer=reducer,
+            contributors=self.contributors,
+            require_value=self.require_measurement,
+            is_sum=measure.aggregation is AggregationRule.SUM,
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -179,6 +244,9 @@ def _traverse(
     *,
     extractor: Callable[[Entity], T | None],
     reducer: Callable[[tuple[T, ...]], R],
+    contributors: Callable[[Entity], bool] | None = None,
+    require_value: bool = False,
+    is_sum: bool = False,
 ) -> Aggregation[R]:
     if not view.entities:
         raise InvalidAggregationError("cannot aggregate an empty View")
@@ -186,20 +254,36 @@ def _traverse(
 
     subtree_values: dict[UUID, tuple[T, ...]] = {}
     results: dict[UUID, R | None] = {}
+    known: dict[UUID, R | None] = {}
+    coverage: dict[UUID, Coverage] = {}
     root_id = view.roots[0].id
     for identifier in nx.dfs_postorder_nodes(graph, source=root_id):
         entity = view.graph.entity(identifier)
-        own_value = extractor(entity)
+        eligible = contributors is None or contributors(entity)
+        own_value = extractor(entity) if eligible else None
+        selected = [identifier] if eligible else []
+        measured = [identifier] if eligible and own_value is not None else []
+        missing = [identifier] if eligible and own_value is None else []
         raw_values = [] if own_value is None else [own_value]
         for child_id in graph.successors(identifier):
             raw_values.extend(subtree_values[child_id])
-
+            selected.extend(coverage[child_id].selected)
+            measured.extend(coverage[child_id].measured)
+            missing.extend(coverage[child_id].missing)
         values = tuple(raw_values)
         subtree_values[identifier] = values
-        results[identifier] = None if not values else reducer(values)
+        coverage[identifier] = Coverage(
+            tuple(selected), tuple(measured), tuple(missing)
+        )
+        known[identifier] = None if not values else reducer(values)
+        results[identifier] = (
+            None
+            if require_value and not coverage[identifier].complete
+            else known[identifier]
+        )
 
     ordered = {entity.id: results[entity.id] for entity in view.entities}
-    return Aggregation(view=view, _values=ordered)
+    return Aggregation(view, ordered, coverage, known, is_sum)
 
 
 def _mean(values: tuple[pint.Quantity, ...]) -> pint.Quantity:

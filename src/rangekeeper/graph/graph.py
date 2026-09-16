@@ -287,15 +287,46 @@ class Graph:
             if relationship.target_id == target_entity.id
         )
 
-    def entities_in(self, assembly: str | UUID | Assembly) -> tuple[Entity, ...]:
-        """Return an assembly's entity members in Graph insertion order."""
+    def entities_in(
+        self, assembly: str | UUID | Assembly, *, recursive: bool = False
+    ) -> tuple[Entity, ...]:
+        """Return unique direct or transitive members in Graph insertion order.
 
+        Traverses recorded Assembly membership, not domain relationships.
+        """
         registered = self.entity(assembly)
         if not isinstance(registered, Assembly):
             raise TypeError("assembly must resolve to an Assembly")
-        return tuple(
-            entity for entity in self.entities if entity.id in registered.entity_ids
-        )
+        if not isinstance(recursive, bool):
+            raise TypeError("recursive must be a bool")
+        members = set(registered.entity_ids)
+        pending = list(members)
+        while recursive and pending:
+            member = self.entity(pending.pop())
+            if isinstance(member, Assembly):
+                unseen = member.entity_ids - members
+                members.update(unseen)
+                pending.extend(unseen)
+        return tuple(entity for entity in self.entities if entity.id in members)
+
+    def containing_assemblies(
+        self, entity: str | UUID | Entity, *, recursive: bool = False
+    ) -> tuple[Assembly, ...]:
+        """Return direct containers or all ancestors, preserving overlapping paths."""
+        registered = self.entity(entity)
+        if not isinstance(recursive, bool):
+            raise TypeError("recursive must be a bool")
+        found: set[UUID] = set()
+        frontier = {registered.id}
+        while frontier:
+            parents = {
+                assembly.id
+                for assembly in self.assemblies
+                if assembly.id not in found and assembly.entity_ids & frontier
+            }
+            found.update(parents)
+            frontier = parents if recursive else set()
+        return tuple(a for a in self.assemblies if a.id in found)
 
     def relationships_in(
         self, assembly: str | UUID | Assembly

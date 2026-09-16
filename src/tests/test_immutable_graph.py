@@ -235,6 +235,7 @@ def test_graph_namespace_exports_are_exact_and_adapters_load_lazily():
     ]
     assert rk.graph.reduction.__all__ == [
         "Aggregation",
+        "Coverage",
         "Reduction",
         "by_feature",
         "by_measure",
@@ -2165,3 +2166,54 @@ def test_tabular_and_icicle_projection_use_uuid_graph(model):
     assert table.rows[1]["parent_id"] == root.id
     trace = rk.graph.adapter.visualization.icicle(table, label_column="name")
     assert tuple(trace.ids) == (str(root.id), str(leaf.id))
+
+
+def test_selected_measurement_coverage_excludes_inapplicable_children(model):
+    root = rk.graph.Entity(code="level", classification=model["space"])
+    measured = apartment(model, code="a", measurement=rk.graph.Measurement(
+        measure=model["internal_area"], quantity=0 * Index.registry.squaremeter))
+    missing = apartment(model, code="b")
+    corridor = rk.graph.Entity(code="corridor", classification=model["space"])
+    graph = rk.graph.Graph(definitions=model["definitions"],
+        entities=(root, measured, missing, corridor), relationships=tuple(
+            rk.graph.Relationship.between(root, e, classification=model["contains"])
+            for e in (measured, missing, corridor)))
+    result = graph.view().aggregate(rk.graph.reduction.by_measure(
+        model["internal_area"], contributors=lambda e: e.classification == model["apartment"],
+        require_measurement=True))
+    assert result.root_value is None
+    assert result.known_subtotal(root) == 0 * Index.registry.squaremeter
+    assert result.coverage(root).selected == (measured.id, missing.id)
+    assert result.coverage(root).measured == (measured.id,)
+    assert result.coverage(root).missing == (missing.id,)
+    assert result.coverage(root).status == "incomplete"
+    assert result.coverage(corridor).status == "empty"
+    assert graph.view().aggregate(rk.graph.reduction.by_measure(model["internal_area"])).root_value == 0 * Index.registry.squaremeter
+    empty = graph.view().aggregate(rk.graph.reduction.by_measure(model["internal_area"], contributors=lambda e: False, require_measurement=True))
+    assert empty.root_value is None
+    assert empty.known_subtotal(root) is None
+    assert empty.coverage(root).status == "empty"
+
+
+def test_recursive_membership_preserves_direct_scope_and_shared_identity(model):
+    shared = apartment(model, code="shared")
+    left = rk.graph.Assembly(code="left", entity_ids={shared.id})
+    right = rk.graph.Assembly(code="right", entity_ids={shared.id})
+    root = rk.graph.Assembly(code="root", entity_ids={left.id, right.id})
+    graph = rk.graph.Graph(definitions=model["definitions"], entities=(root, left, right, shared))
+    assert graph.entities_in(root) == (left, right)
+    assert graph.entities_in(root, recursive=True) == (left, right, shared)
+    assert graph.containing_assemblies(shared) == (left, right)
+    assert graph.containing_assemblies(shared, recursive=True) == (root, left, right)
+    assert graph.view(assembly=root).entities == (root, left, right)
+    with pytest.raises(TypeError):
+        graph.entities_in(root, recursive="yes")
+
+
+def test_contributor_selection_does_not_bypass_tree_requirement(model):
+    a, b, c = (apartment(model, code=x) for x in ("a", "b", "c"))
+    graph = rk.graph.Graph(definitions=model["definitions"], entities=(a,b,c), relationships=(
+        rk.graph.Relationship.between(a,c,classification=model["contains"]),
+        rk.graph.Relationship.between(b,c,classification=model["contains"])))
+    with pytest.raises(rk.graph.InvalidAggregationError):
+        graph.view().aggregate(rk.graph.reduction.by_measure(model["internal_area"], contributors=lambda e: e.id == c.id, require_measurement=True))
