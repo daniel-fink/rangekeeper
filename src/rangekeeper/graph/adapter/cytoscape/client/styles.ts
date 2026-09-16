@@ -1,0 +1,121 @@
+import type cytoscape from "cytoscape";
+/** Pinned runtime accepts mapped gradient stops and numeric text dimensions.
+ * Community declarations lag those style properties. No custom canvas renderer. */
+export const styles = [
+  {
+    selector: "node",
+    style: {
+      shape: "round-rectangle",
+      width: 125,
+      height: 68,
+      "background-color": "#ffffff",
+      "border-color": "#94a6b9",
+      "border-width": 1.5,
+      label: "data(title)",
+      "text-wrap": "wrap",
+      "text-max-width": 115,
+      "font-size": 14,
+      "font-family": "sans-serif",
+      color: "#263d50",
+      "text-valign": "center",
+      "text-halign": "center",
+      "z-index-compare": "manual",
+      "z-index": 10,
+    },
+  },
+  {
+    selector: 'node[kind="assembly"]',
+    style: {
+      width: 170,
+      height: 42,
+      "text-max-width": 160,
+      "background-color": "#e3edf6",
+      "border-color": "#347ba7",
+      "font-weight": "bold",
+    },
+  },
+  {
+    selector: "node.shared",
+    style: {
+      "background-color": "#e7f6f1",
+      "border-color": "#278976",
+      "border-width": 3,
+    },
+  },
+  {
+    selector: "edge",
+    style: {
+      width: 1.5,
+      "curve-style": "bezier",
+      "control-point-step-size": 55,
+      "line-color": "#8c9dad",
+      "target-arrow-color": "#8c9dad",
+      "target-arrow-shape": "triangle",
+      label: "data(label)",
+      "font-size": 12,
+      "text-rotation": "autorotate",
+      "text-wrap": "ellipsis",
+      "text-background-color": "#ffffff",
+      "text-background-opacity": 0.9,
+      "text-background-padding": 2,
+      color: "#536c81",
+      "z-index-compare": "manual",
+      "z-index": 5,
+    },
+  },
+  {
+    selector: 'edge[connector="summary"]',
+    style: {
+      width: 4,
+      "line-color": "#65518c",
+      "target-arrow-color": "#65518c",
+    },
+  },
+  {
+    selector: 'edge[connector="membership"]',
+    style: {
+      width: 1.5,
+      "line-style": "dotted",
+      "target-arrow-shape": "none",
+      "line-color": "#508b78",
+      color: "#36705e",
+    },
+  },
+  {
+    selector: ".member",
+    style: {
+      "border-color": "#176897",
+      "border-width": 3,
+      "line-color": "#176897",
+      "target-arrow-color": "#176897",
+    },
+  },
+  { selector: "node.member", style: { "background-color": "#e5f2ff" } },
+  {
+    selector: ":selected",
+    style: {
+      "border-color": "#c48214",
+      "border-width": 4,
+      "line-color": "#c48214",
+      "target-arrow-color": "#c48214",
+    },
+  },
+  { selector: "edge:selected", style: { width: 5 } },
+  {
+    selector: "node.frame",
+    style: {
+      shape: "rectangle",
+      width: "data(boxWidth)",
+      height: "data(boxHeight)",
+      "text-max-width": "data(boxWidth)",
+      "text-valign": "top-inside",
+      "text-margin-y": 9,
+      "background-fill": "linear-gradient",
+      "background-gradient-stop-colors": "#d9e8f3 #d9e8f3 #f6f9fc #f6f9fc",
+      "background-gradient-stop-positions": "data(bandStops)",
+      "background-opacity": 0.45,
+      "z-index": "data(frameZ)",
+    },
+  },
+  { selector: ".hidden", style: { display: "none" } },
+] as unknown as cytoscape.StylesheetJson;

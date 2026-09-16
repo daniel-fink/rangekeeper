@@ -1,0 +1,19 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; font-src 'none'"><title>Assembly explorer · Graph review</title><style>/* STYLE */</style></head>
+<body>
+<header><div><p class="eyebrow">RANGEKEEPER / GRAPH REVIEW</p><h1>Assembly explorer</h1></div><div class="header-note">One object. Multiple memberships.<br><span>Read-only · Offline · Presentation is not geometry</span></div></header>
+<section class="toolbar" aria-label="Viewer controls">
+<label>Graph <select id="dataset"></select></label>
+<div class="view-toggle"><button id="membership">Membership</button><button id="outlines" class="active">Outlines</button></div>
+<div class="search-wrap"><input id="search" type="search" placeholder="Find a name, code or UUID…" aria-label="Search graph" autocomplete="off"><div id="results"></div></div>
+<button id="back" disabled>← Back</button><button id="focus" disabled>Focus selection</button><button id="reset">Whole graph</button>
+<button id="collapse-all">Collapse all</button><button id="expand-all">Expand all</button>
+<button id="fit">Fit</button><button id="restore">Restore arrangement</button><button id="relayout">Relayout · fCoSE</button>
+<label class="constraint"><input id="four-port-routing" type="checkbox" checked> Four-port routing</label>
+<label class="constraint"><input id="anchors" type="checkbox"> Keep anchors + alignment</label>
+</section>
+<main><section id="stage" aria-label="Graph canvas"><div id="cy"></div><div id="canvas-note">Outlines show selected visible scope, not ownership or physical boundaries.</div></section>
+<aside id="inspector"><div class="inspector-heading"><span class="eyebrow">INSPECT</span><button id="clear">Clear selection</button></div><div id="selection"></div></aside></main>
+<footer><span id="counts"></span><span id="timing">Reference arrangement</span></footer>
+<section class="below"><div><h2>Relationships</h2><div id="filters"></div><label><input id="member-links" type="checkbox" checked> Membership connectors</label><p><span class="legend-domain">→ Original</span> · <span class="legend-summary">➜ Collapsed summary</span> · <span class="legend-membership">··· Member of</span></p></div><div><h2>About this graph</h2><div id="notes"></div><div id="diagnostics" role="status"></div></div></section>
+<script id="graph-data" type="application/json">"__DATA__"</script><script>/* VENDOR */</script><script>/* PROJECTION */</script><script>/* ROUTING */</script><script>/* APP */</script>
+</body></html>

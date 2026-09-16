@@ -1,0 +1,30 @@
+[
+  {
+    "package": "cytoscape",
+    "version": "3.34.3",
+    "file": "cytoscape.js",
+    "sha256": "5f3b5b529546d5af1fc5628590af033b74511a5b6f789f5f4682845863228b91",
+    "license": "cytoscape.LICENSE"
+  },
+  {
+    "package": "layout-base",
+    "version": "2.0.1",
+    "file": "layout-base.js",
+    "sha256": "ec15ab5df9af3f20708f4faab994accf91cda71848cd5bb10a23432cc50b6745",
+    "license": "layout-base.LICENSE"
+  },
+  {
+    "package": "cose-base",
+    "version": "2.2.0",
+    "file": "cose-base.js",
+    "sha256": "7cae9509bd36235a63a85e71c8d9fa2cd0bc1d0c1ecc5b5a737976f39d040ddf",
+    "license": "cose-base.LICENSE"
+  },
+  {
+    "package": "cytoscape-fcose",
+    "version": "2.2.0",
+    "file": "cytoscape-fcose.js",
+    "sha256": "4b1cab218d74996aa59cd8473f9239cc6398b8c1774d84d7e59ad9a68959cb57",
+    "license": "cytoscape-fcose.LICENSE"
+  }
+]

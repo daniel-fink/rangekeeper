@@ -11,12 +11,13 @@ from .errors import (
 __all__ = [
     "AdapterEncodingError",
     "AdapterError",
+    "cytoscape",
     "csv",
     "pandas",
     "visualization",
 ]
 
-_SUBMODULES = frozenset({"csv", "pandas", "visualization"})
+_SUBMODULES = frozenset({"cytoscape", "csv", "pandas", "visualization"})
 
 
 def __getattr__(name: str) -> ModuleType:

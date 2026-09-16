@@ -33,3 +33,14 @@ dependencies = [
 
 [tool.ruff.format]
 preview = true  # Uses Black's experimental formatting rules
+
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["rangekeeper*"]
+exclude = ["*.node_modules*", "*.client*"]
+
+[tool.setuptools.package-data]
+"rangekeeper.graph.adapter.cytoscape" = ["assets/*.js", "assets/*.css", "assets/*.html", "assets/vendor/*.js", "assets/vendor/*.LICENSE", "assets/vendor/*.json"]
