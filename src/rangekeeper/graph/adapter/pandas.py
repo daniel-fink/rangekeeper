@@ -12,7 +12,7 @@ def to_dataframe(table: Table) -> pd.DataFrame:
     if not isinstance(table, Table):
         raise TypeError("table must be a Table")
     return pd.DataFrame.from_records(
-        (dict(row) for row in table.rows),
+        (dict(row.values) for row in table.rows),
         columns=table.columns,
     )
 
@@ -24,7 +24,11 @@ def from_dataframe(frame: pd.DataFrame) -> Table:
     columns = tuple(frame.columns)
     if len(columns) != len(set(columns)):
         raise TableError("DataFrame columns must be unique")
+    columns = Table(columns=columns, rows=()).columns
     return Table(
         columns=columns,
-        rows=tuple(frame.to_dict(orient="records")),
+        rows=tuple(
+            {column: record[column] for column in columns}
+            for record in frame.to_dict(orient="records")
+        ),
     )

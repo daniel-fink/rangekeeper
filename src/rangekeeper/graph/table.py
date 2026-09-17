@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from types import MappingProxyType
+from uuid import UUID
 
 import networkx as nx
 import pint
@@ -12,21 +13,18 @@ from .assembly import Assembly
 from .entity import Entity
 from .view import View
 
+__all__ = ["Row", "Table", "TableError"]
 
-__all__ = ["Table", "TableError"]
 
-
-_ENTITY_FIELDS = frozenset(
-    {
-        "entity_id",
-        "code",
-        "name",
-        "entity_kind",
-        "classification_code",
-        "classification_name",
-        "taxonomy_code",
-    }
-)
+_ENTITY_FIELDS = frozenset({
+    "entity_id",
+    "code",
+    "name",
+    "entity_kind",
+    "classification_code",
+    "classification_name",
+    "taxonomy_code",
+})
 _DEFAULT_FIELDS = (
     "entity_id",
     "name",
@@ -40,27 +38,57 @@ class TableError(ValueError):
 
 
 @dataclass(frozen=True, slots=True)
-class Table:
-    """An immutable ordered tabular projection with unconstrained cell values."""
+class Row:
+    """Cell values bundled with optional identity; values are shallowly frozen."""
 
-    columns: tuple[str, ...]
-    rows: tuple[Mapping[str, object], ...]
+    values: Mapping[str, object]
+    id: UUID | None = None
 
     def __post_init__(self) -> None:
-        columns = _validate_names(self.columns, "columns")
+        if not isinstance(self.values, Mapping):
+            raise TypeError("Row values must be a mapping")
+        _validate_names(self.values, "Row columns")
+        if self.id is not None and not isinstance(self.id, UUID):
+            raise TypeError("Row id must be a UUID or None")
+        object.__setattr__(self, "values", MappingProxyType(dict(self.values)))
+
+
+@dataclass(frozen=True, slots=True, init=False)
+class Table:
+    """Ordered Rows with optional identity and unconstrained cell values.
+
+    Construction accepts plain mappings as unidentified rows. Cell access is
+    through row.values; identity is metadata and never an implicit column.
+    """
+
+    columns: tuple[str, ...]
+    rows: tuple[Row, ...]
+
+    def __init__(
+        self,
+        columns: Iterable[str],
+        rows: Iterable[Row | Mapping[str, object]],
+    ) -> None:
+        columns = _validate_names(columns, "columns")
         normalized_rows = []
-        for row in tuple(self.rows):
-            if not isinstance(row, Mapping):
-                raise TypeError("rows must contain only mappings")
-            missing = tuple(column for column in columns if column not in row)
-            extra = tuple(column for column in row if column not in columns)
+        identities = set()
+        for item in rows:
+            row = item if isinstance(item, Row) else Row(values=item)
+            missing = tuple(column for column in columns if column not in row.values)
+            extra = tuple(column for column in row.values if column not in columns)
             if missing or extra:
                 raise TableError(
                     "row columns do not match Table columns: "
                     f"missing={list(missing)!r}, extra={list(extra)!r}"
                 )
+            if row.id is not None:
+                if row.id in identities:
+                    raise TableError("Row IDs must be unique")
+                identities.add(row.id)
             normalized_rows.append(
-                MappingProxyType({column: row[column] for column in columns})
+                Row(
+                    values={column: row.values[column] for column in columns}, id=row.id
+                )
             )
         object.__setattr__(self, "columns", columns)
         object.__setattr__(self, "rows", tuple(normalized_rows))
@@ -70,7 +98,7 @@ class Table:
 
         if name not in self.columns:
             raise KeyError(name)
-        return tuple(row[name] for row in self.rows)
+        return tuple(row.values[name] for row in self.rows)
 
     @classmethod
     def from_view(
@@ -131,8 +159,8 @@ class Table:
             for name in features:
                 feature = entity.features.get(name)
                 row[f"feature.{name}"] = None if feature is None else feature.value
-            rows.append(row)
-        return cls(columns=columns, rows=tuple(rows))
+            rows.append(Row(values=row, id=entity.id))
+        return cls(columns=columns, rows=rows)
 
     @classmethod
     def from_arborescence(
@@ -165,7 +193,7 @@ class Table:
         }
         root_id = view.roots[0].id
         entity_order = tuple(nx.dfs_preorder_nodes(view._topology(), source=root_id))
-        projected_by_entity = {row["entity_id"]: row for row in projected.rows}
+        projected_by_entity = {row.id: row for row in projected.rows}
         entity_id_index = projected.columns.index("entity_id")
         columns = (
             *projected.columns[: entity_id_index + 1],
@@ -174,10 +202,12 @@ class Table:
         )
         rows = []
         for entity_id in entity_order:
-            row = dict(projected_by_entity[entity_id])
+            row = dict(projected_by_entity[entity_id].values)
             row["parent_id"] = parent_by_entity.get(entity_id)
-            rows.append({column: row[column] for column in columns})
-        return cls(columns=columns, rows=tuple(rows))
+            rows.append(
+                Row(values={column: row[column] for column in columns}, id=entity_id)
+            )
+        return cls(columns=columns, rows=rows)
 
 
 def _validate_names(values: Iterable[str], field: str) -> tuple[str, ...]:
@@ -215,13 +245,11 @@ def _measurement_projections(
         if target_units.dimensionality != measure.units.dimensionality:
             raise pint.DimensionalityError(target_units, measure.units)
         column_name = f"measurement.{measure.code}"
-        projections.append(
-            (
-                measure,
-                target_units,
-                column_name,
-            )
-        )
+        projections.append((
+            measure,
+            target_units,
+            column_name,
+        ))
     return tuple(projections)
 
 

@@ -135,7 +135,7 @@ class _TreeProjection:
 
 
 def _tree_trace(
-    trace_type: type[go.Sunburst] | type[go.Treemap] | type[go.Icicle],
+    trace_type: type[go.Sunburst | go.Treemap | go.Icicle],
     table: Table,
     *,
     label_column: str,
@@ -181,12 +181,12 @@ def _tree_projection(
             f"arborescence Table is missing columns: {sorted(missing)}"
         )
 
-    ids = tuple(str(row["entity_id"]) for row in table.rows)
+    ids = tuple(str(row.values["entity_id"]) for row in table.rows)
     if len(ids) != len(set(ids)):
         raise AdapterEncodingError("entity_id values must be unique")
     id_set = set(ids)
     raw_parents = tuple(
-        None if row["parent_id"] is None else str(row["parent_id"])
+        None if row.values["parent_id"] is None else str(row.values["parent_id"])
         for row in table.rows
     )
     if not all(
@@ -207,7 +207,7 @@ def _tree_projection(
 
     labels = []
     for entity_id, row in zip(ids, table.rows):
-        label = row[label_column]
+        label = row.values[label_column]
         if label is None or isinstance(label, str) and not label.strip():
             labels.append(entity_id)
         elif isinstance(label, str):
@@ -219,7 +219,7 @@ def _tree_projection(
             )
     values = None
     if value_column is not None:
-        selected_values = tuple(row[value_column] for row in table.rows)
+        selected_values = tuple(row.values[value_column] for row in table.rows)
         if not all(
             isinstance(item, Real)
             and not isinstance(item, bool)
