@@ -11,7 +11,6 @@ from ..table import Table
 from .errors import AdapterEncodingError
 from .pandas import from_dataframe, to_dataframe
 
-
 __all__ = ["read", "write"]
 
 
@@ -21,7 +20,7 @@ def write(table: Table, path: str | PathLike[str]) -> Path:
         raise TypeError("table must be a Table")
     for row_index, row in enumerate(table.rows):
         for column in table.columns:
-            _validate_csv_scalar(row[column], row_index, column)
+            _validate_csv_scalar(row.values[column], row_index, column)
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
     to_dataframe(table).to_csv(

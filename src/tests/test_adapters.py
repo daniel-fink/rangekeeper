@@ -8,7 +8,6 @@ import pytest
 
 import rangekeeper as rk
 
-
 adapter = rk.graph.adapter
 table_module = rk.graph.table
 
@@ -18,10 +17,12 @@ def test_supported_adapter_and_table_surfaces_are_explicit():
         "AdapterEncodingError",
         "AdapterError",
         "csv",
+        "cytoscape",
+        "ingestion",
         "pandas",
         "visualization",
     ]
-    assert table_module.__all__ == ["Table", "TableError"]
+    assert table_module.__all__ == ["Row", "Table", "TableError"]
     for retired in ("json", "speckle", "SpeckleImportError", "SpeckleConflictError"):
         assert not hasattr(adapter, retired)
     assert not hasattr(rk.graph, "materialization")
@@ -41,11 +42,11 @@ def test_table_normalizes_and_freezes_columns_and_rows():
     )
 
     assert table.columns == ("name", "value")
-    assert tuple(table.rows[0]) == table.columns
+    assert tuple(table.rows[0].values) == table.columns
     assert table.column("value") == (1,)
     assert not hasattr(table, "group_by")
     with pytest.raises(TypeError):
-        table.rows[0]["value"] = 2
+        table.rows[0].values["value"] = 2
     with pytest.raises(FrozenInstanceError):
         table.columns = ("changed",)
 
@@ -67,7 +68,7 @@ def test_table_rejects_invalid_columns_and_rows(columns, rows, message):
 def test_table_rejects_string_columns_and_non_mapping_rows():
     with pytest.raises(TypeError, match="iterable of strings"):
         table_module.Table(columns="name", rows=())
-    with pytest.raises(TypeError, match="only mappings"):
+    with pytest.raises(TypeError, match="must be a mapping"):
         table_module.Table(columns=("name",), rows=("First",))
 
 
@@ -86,8 +87,8 @@ def test_pandas_table_round_trip_preserves_columns_rows_and_runtime_values():
 
     assert tuple(frame.columns) == table.columns
     assert restored.columns == table.columns
-    assert restored.rows[0]["value"] is runtime_value
-    assert restored.rows[1]["value"] is None
+    assert restored.rows[0].values["value"] is runtime_value
+    assert restored.rows[1].values["value"] is None
 
 
 def test_pandas_adapter_ignores_index_and_preserves_empty_columns():
@@ -120,7 +121,7 @@ def test_csv_composes_table_and_dataframe_adapters_with_pandas_inference(tmp_pat
     restored = adapter.csv.read(path)
 
     assert restored.columns == table.columns
-    row = restored.rows[0]
+    row = restored.rows[0].values
     assert row["name"] == "Office"
     assert row["code"] == 1
     assert pd.isna(row["status"])
@@ -332,10 +333,10 @@ def test_view_table_projects_qualified_labels_features_and_missing_values():
         features=("status",),
     )
 
-    assert table.rows[0]["label.use"] == (("entity", "space.apartment"),)
-    assert table.rows[0]["feature.status"] == "active"
-    assert table.rows[1]["label.use"] == ()
-    assert table.rows[1]["feature.status"] is None
+    assert table.rows[0].values["label.use"] == (("entity", "space.apartment"),)
+    assert table.rows[0].values["feature.status"] == "active"
+    assert table.rows[1].values["label.use"] == ()
+    assert table.rows[1].values["feature.status"] is None
 
 
 def test_view_table_converts_measure_units_and_rejects_incompatible_units():
@@ -363,7 +364,7 @@ def test_view_table_converts_measure_units_and_rejects_incompatible_units():
         measures={measure: "squarefoot"},
     )
 
-    assert table.rows[0]["measurement.area.internal"] == pytest.approx(10.7639104167)
+    assert table.rows[0].values["measurement.area.internal"] == pytest.approx(10.7639104167)
     with pytest.raises(pint.DimensionalityError):
         table_module.Table.from_view(view, measures={measure: "second"})
 
@@ -443,7 +444,7 @@ def test_arborescence_visualizations_return_plotly_traces():
 
 
 def test_arborescence_visualization_rejects_rich_or_invalid_values():
-    _, table = visualization_fixture()
+    _, _table = visualization_fixture()
     rich = table_module.Table(
         columns=("entity_id", "parent_id", "name", "total"),
         rows=(

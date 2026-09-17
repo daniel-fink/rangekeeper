@@ -18,7 +18,6 @@ from .entity import Entity
 from .errors import IdentityConflictError
 from .relationship import Relationship
 
-
 T = TypeVar("T")
 
 __all__ = [
@@ -370,7 +369,14 @@ def _values_equal(left: object, right: object) -> bool:
 def _index_evidence(
     facts: Iterable[Fact[Any]],
 ) -> tuple[Mapping[UUID, Claim[Any]], Mapping[UUID, Source]]:
-    """Index evidence once while preserving deterministic dependency discovery."""
+    """Index Fact evidence through the shared Claim/Source identity validator."""
+    return _index_claims(claim for fact in facts for claim in fact.claims)
+
+
+def _index_claims(
+    roots: Iterable[Claim[Any]],
+) -> tuple[Mapping[UUID, Claim[Any]], Mapping[UUID, Source]]:
+    """Index roots without requiring graph targets; preserve canonical identity."""
 
     claims_by_id: dict[UUID, Claim[Any]] = {}
     sources_by_id: dict[UUID, Source] = {}
@@ -404,9 +410,10 @@ def _index_evidence(
         visiting.remove(identity)
         visited.add(identity)
 
-    for fact in facts:
-        for claim in fact.claims:
-            visit(claim)
+    for claim in roots:
+        if not isinstance(claim, Claim):
+            raise TypeError("roots must contain Claim objects")
+        visit(claim)
     return MappingProxyType(claims_by_id), MappingProxyType(sources_by_id)
 
 

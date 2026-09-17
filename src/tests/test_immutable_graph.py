@@ -2162,8 +2162,8 @@ def test_tabular_and_icicle_projection_use_uuid_graph(model):
         measures={"area.nsa.internal": None},
     )
     assert "measurement.area.nsa.internal" in table.columns
-    assert table.rows[0]["entity_id"] == root.id
-    assert table.rows[1]["parent_id"] == root.id
+    assert table.rows[0].values["entity_id"] == root.id
+    assert table.rows[1].values["parent_id"] == root.id
     trace = rk.graph.adapter.visualization.icicle(table, label_column="name")
     assert tuple(trace.ids) == (str(root.id), str(leaf.id))
 
