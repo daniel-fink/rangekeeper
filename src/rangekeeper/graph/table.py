@@ -93,6 +93,15 @@ class Table:
         object.__setattr__(self, "columns", columns)
         object.__setattr__(self, "rows", tuple(normalized_rows))
 
+    def row(self, row_id: UUID) -> Row:
+        """Return an identified Row; unidentified rows do not match any key."""
+        if not isinstance(row_id, UUID):
+            raise TypeError("row_id must be UUID")
+        for row in self.rows:
+            if row.id == row_id:
+                return row
+        raise KeyError(row_id)
+
     def column(self, name: str) -> tuple[object, ...]:
         """Return one column in row order."""
 

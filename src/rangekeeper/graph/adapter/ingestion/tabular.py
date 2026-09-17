@@ -6,7 +6,7 @@ from uuid import UUID
 
 from ...provenance import Claim
 from ...table import Row, Table
-from ._profiles import _row_ids
+from ._encoding import encode
 from .errors import EvidenceValidationError
 from .evidence import Evidence, EvidenceKey, Issue, _applicable
 
@@ -58,13 +58,7 @@ def row(evidence: Evidence[Table], row_id: UUID) -> Row:
     """Resolve a row by UUID, never by display offset."""
     if not isinstance(evidence, Evidence) or not isinstance(evidence.data, Table):
         raise TypeError("Expected Evidence[Table]")
-    if not isinstance(row_id, UUID):
-        raise TypeError("row_id must be UUID")
-    try:
-        index = _row_ids(evidence.data).index(row_id)
-    except ValueError as exc:
-        raise KeyError(row_id) from exc
-    return evidence.data.rows[index]
+    return evidence.data.row(row_id)
 
 
 def claim(evidence: Evidence[Table], row_id: UUID, column: str) -> Claim[Any]:
@@ -92,4 +86,63 @@ def issues_for(
         for issue in evidence.issues
         if _applicable(issue, key)
         or (column is None and any(scope[:2] == key for scope in issue.at))
+    )
+
+
+def _row_ids(table: Table) -> tuple[UUID, ...]:
+    ids = []
+    for item in table.rows:
+        if item.id is None:
+            raise EvidenceValidationError(
+                "missing_row_ids", "Evidence requires an ID on every row"
+            )
+        ids.append(item.id)
+    return tuple(ids)
+
+
+def _validate_table(table: Table) -> None:
+    _row_ids(table)
+    for item in table.rows:
+        for value in item.values.values():
+            encode(value)
+
+
+def _addressed_row(table: Table, key: EvidenceKey) -> Row:
+    try:
+        identifier = UUID(key[1])
+        if str(identifier) != key[1]:
+            raise ValueError("Noncanonical UUID")
+        return table.row(identifier)
+    except (ValueError, IndexError, KeyError) as exc:
+        raise EvidenceValidationError(
+            "invalid_address", "Unknown/noncanonical row ID", key=key
+        ) from exc
+
+
+def _validate_scope(table: Table, key: EvidenceKey) -> None:
+    if not key:
+        return
+    if len(key) not in (2, 3) or key[0] != "rows":
+        raise EvidenceValidationError(
+            "invalid_address", "Expected row or cell address", key=key
+        )
+    _addressed_row(table, key)
+    if len(key) == 3 and key[2] not in table.columns:
+        raise EvidenceValidationError("invalid_address", "Unknown column", key=key)
+
+
+def _cell(table: Table, key: EvidenceKey) -> object:
+    _validate_scope(table, key)
+    if len(key) != 3:
+        raise EvidenceValidationError(
+            "invalid_address", "Claim must address a cell", key=key
+        )
+    return _addressed_row(table, key).values[key[2]]
+
+
+def _cell_keys(table: Table) -> Iterable[EvidenceKey]:
+    return (
+        ("rows", str(uid), column)
+        for uid in _row_ids(table)
+        for column in table.columns
     )
