@@ -6,7 +6,9 @@ provided here yet. Source values are evidence, never executable instructions.
 
 from . import tabular
 from .errors import EvidenceValidationError
-from .evidence import Evidence, EvidenceKey, Issue, IssueSeverity, fingerprint, validate
+from .evidence import Evidence, EvidenceKey, Issue, IssueSeverity
+from .fingerprint import fingerprint
+from .validation import validate
 
 __all__ = [
     "Evidence",

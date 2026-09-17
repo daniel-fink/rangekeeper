@@ -123,6 +123,10 @@ class Table:
 The tabular type is `Evidence[Table]`. Access cell values through
 `evidence.data.rows[i].values` and identity through `evidence.data.rows[i].id`.
 There is no parallel Table.row_ids field.
+`Table.row(row_id: UUID)` returns the stored Row, including in mixed ordinary
+Tables. It skips unidentified rows, raises TypeError for a non-UUID (including
+None), and KeyError for an absent UUID. `tabular.row(evidence, row_id)` delegates
+to it; evidence address failures are translated to `invalid_address` errors.
 
 - Table construction accepts Row objects or plain mappings, normalizing mappings
   to unidentified Rows. Existing mapping-based construction remains valid;
@@ -191,10 +195,10 @@ Unchanged outputs may reuse Claims. Decisions and specification rules enter
 lineage as existing Claims; user attribution must remain distinguishable from an
 LLM proposal. No acceptance is inferred from successful execution or silence.
 
-`None` means no resolved output value in this ingestion profile, not a domain
+`None` means no resolved output value in this ingestion contract, not a domain
 assertion of nonexistence. It requires an applicable explanatory Issue; the operation catalogue will define
 which codes explain which outcomes.
-This initial profile does not use a separate semantic-null domain value. If a
+This initial contract does not use a separate semantic-null domain value. If a
 future adapter needs that distinction, it must declare a typed value explicitly.
 
 | Situation | Terminal value | Issue code example |
@@ -307,25 +311,33 @@ issues onto resolved outputs or discard the record of why resolution occurred.
 
 ## Adapter validation and immutability
 
-The generic container must not hard-code Excel, IFC or GIS addressing. Each
-supported content type has a trusted registered adapter contract providing:
+Evidence defines the artifact contract. Structural validation lives in
+`validation.py`; deterministic artifact encoding lives in `fingerprint.py`.
+Both explicitly support the exact Table type today. Other types, including
+Table subclasses, fail with `unsupported_content`; there is no profile registry,
+plugin protocol or YAML registration mechanism. Evidence remains generic in its
+type parameter, but native IFC/GIS content support is deferred.
 
-- `validate_data(data)`: validate snapshot structure and immutability requirements.
-- `resolve_output(data, key)`: retrieve a declared output value.
-- `validate_scope(data, key)`: validate issue scopes such as a row or root.
-- A versioned address schema and deterministic content encoding/fingerprint.
+`tabular.py` owns Table evidence addressing, cell coverage and strict content
+checks. It uses `Table.row(UUID)` for identity lookup. Table owns its row/column
+invariants and provenance.py owns canonical Claim/Source identity and cycle
+checks. Neither graph module adopts ingestion's stricter payload restrictions.
 
-These are internal adapter responsibilities, not extra LLM tools. Project YAML
-cannot load arbitrary classes, execute Python or register new adapters.
+Generic validation checks valid scopes, complete terminal Claim coverage,
+Claim/value agreement, duplicate issues, provenance consistency and explanations
+for missing values. Agreement uses exact typed value semantics rather than a
+reconciliation tolerance. Issue severity never determines operation usability.
 
-Generic evidence validation verifies keys/scopes, terminal Claim/value agreement,
-Claim identity consistency, issue references and content-specific coverage. The
-tabular profile requires every cell to be covered; a native-model profile may
-cover only a declared subset. Agreement uses typed value semantics, including
-explicit quantity units; it does not use a reconciliation tolerance to excuse
-mismatched stored values.
+`Evidence.__post_init__` freezes fields then locally imports `validate` to avoid
+an import cycle. Public `validate(evidence)` returns None. Fingerprinting uses
+the same private validation pass and its resulting provenance indexes, without
+traversing provenance twice. Public package-level imports remain unchanged.
 
-`frozen=True` is shallow. The implemented snapshot profile accepts exact immutable
+The private `_encoding.py` module contains immutable-value encoding, canonical
+JSON and hashing. It depends only on the standard library and ingestion errors.
+Issue identity and artifact fingerprinting share these encoding rules.
+
+`frozen=True` is shallow. The implemented snapshot contract accepts exact immutable
 Python types: None, bool, int, finite float, str, UUID, date, datetime, time,
 timedelta, and recursively supported tuples/frozensets. Temporal timezone objects
 are restricted to built-in timezone and ZoneInfo. Mutable subclasses are not
@@ -333,19 +345,19 @@ accepted as values. Raw structured payloads use tuples of named values.
 
 Claim values may not contain mutable lists, dicts, arrays, live Pint quantities,
 openpyxl objects or CAD/GIS sessions. Container-owned mappings are defensively
-copied and frozen; Issue.details values follow the same immutable profile. This
+copied and frozen; Issue.details values follow the same immutable contract. This
 restriction does not limit ordinary Table cell payloads or change Feature, Claim
 or Measurement APIs.
 The agreed first implementation keeps area values numeric with unit declarations
 in rule evidence; Pint quantities are created later during graph composition.
 
-Native content needs a trusted profile that validates its immutable snapshot.
-Only Table is registered in production today; a synthetic object profile in the
-tests proves property-to-table extraction without new CAD/GIS dependencies.
+Native-source properties can already be represented by existing Source/Location
+and Claim objects, then projected into Table evidence with preserved lineage.
+This does not imply support for Evidence containing a native CAD/GIS object.
 
 `validate(evidence)` rechecks the contract without interpreting issue policies.
 `fingerprint(evidence)` returns a versioned SHA-256 content digest. It includes
-profile/data, ordered rows/columns, terminal and upstream Claims/Sources, and
+content encoding identifier, ordered rows/columns, terminal and upstream Claims/Sources, and
 issues. Names and explanatory messages are content and affect the fingerprint,
 although they do not determine row, Claim or Issue identity. Unordered mappings
 and sets are canonicalized; bool/int and temporal types retain their distinctions.
@@ -353,7 +365,9 @@ Source/rule bindings are represented through Claims and Sources; a complete run
 manifest belongs to the later workflow stage. No runtime timestamps are added.
 Existing Claim factories still default to UUID4: callers must supply deterministic
 IDs to reproduce independently created artifacts. No repr(), pickle or general
-persistence format is used.
+persistence format is used. The fingerprint encoding retains the existing
+`"profile": "rk.table-evidence/v1"` field as a version identifier; it no longer
+refers to a Python profile object. This refactor changes no fingerprint bytes.
 
 ## LLM-facing inspection
 
@@ -388,7 +402,8 @@ The first milestone implements the following, without IssueEffect:
 1. Bundle optional identity in Row, retaining mapping-based Table construction
    and ordinary CSV/pandas values; migrate row readers to row.values.
 2. Share the existing Claim/Source indexer between Provenance and Evidence.
-3. Implement Evidence, IssueSeverity, Issue, immutable values and trusted profiles.
+3. Implement Evidence, IssueSeverity, Issue and immutable values; keep contracts,
+   validation, encoding and tabular inspection in focused modules.
 4. Add tabular.from_claims, row, claim and issues_for; add validate/fingerprint.
 5. Test missing/conflicting values, identity, addressing, lineage and non-tabular
    conversion using synthetic fixtures. ERROR severity is not an execution gate.
@@ -436,7 +451,7 @@ operation catalogue or migrating all project code.
 Run `docs/examples/ingestion_evidence.py` from the RK src directory using an
 environment with this checkout installed. It constructs synthetic area, missing
 formula and conflicting/resolved bedroom evidence, and demonstrates reordering.
-It reads no project workbooks and writes no artifacts. The non-tabular profile and
+It reads no project workbooks and writes no artifacts. Native-source lineage and
 additional negative cases are exercised in `tests/test_ingestion_evidence.py`.
 
 The example uses existing Claim factories with explicit stable UUIDs. Its tiny
@@ -468,3 +483,15 @@ suites passed 226 tests after this refinement. The worked example retained its
 previous fingerprint. The earlier Mandarin viewer syntax error has been fixed
 in a separate user-authorized repair, so the compatibility copy is no longer
 needed. Readers, transformation execution and YAML migration remain deferred.
+
+### Validation and encoding separation
+
+The profile abstraction has been removed in favor of explicit Table validation.
+Contracts, validation and artifact fingerprinting now have separate modules;
+primitive encoding is in _encoding.py, and identity lookup is Table.row(UUID).
+
+Validation: 234 tests passed across ingestion evidence, adapters, immutable graph,
+Cytoscape and Mandarin. Captured pre-refactor available/missing fingerprints and
+an issue ID match exactly; the executable example also retains its fingerprint.
+Fresh-process imports and constructor validation pass. Ruff and focused ty checks
+pass. No project artifacts were regenerated.

@@ -6,9 +6,8 @@ from enum import Enum
 from types import MappingProxyType
 from typing import Any, Generic, TypeVar
 
-from ...provenance import Claim, Location, _index_claims
-from ._profiles import profile_for
-from ._values import digest, encode
+from ...provenance import Claim
+from ._encoding import digest, encode
 from .errors import EvidenceValidationError
 
 EvidenceKey = tuple[str, ...]
@@ -111,128 +110,10 @@ class Evidence(Generic[T]):
         claims = {_key(key): value for key, value in self.claims.items()}
         object.__setattr__(self, "claims", MappingProxyType(claims))
         object.__setattr__(self, "issues", tuple(self.issues))
+        from .validation import validate
+
         validate(self)
 
 
 def _applicable(issue: Issue, key: EvidenceKey) -> bool:
     return any(key[: len(scope)] == scope for scope in issue.at)
-
-
-def _validate(evidence: Evidence[Any]):
-    if not isinstance(evidence, Evidence):
-        raise TypeError("Expected Evidence")
-    profile = profile_for(evidence.data)
-    profile.validate_data(evidence.data)
-    if any(not isinstance(issue, Issue) for issue in evidence.issues):
-        raise TypeError("issues must contain Issue objects")
-    if len({issue.id for issue in evidence.issues}) != len(evidence.issues):
-        raise EvidenceValidationError("duplicate_issue", "Duplicate Issue IDs")
-    required = profile.required_outputs(evidence.data)
-    if required is not None and set(required) != set(evidence.claims):
-        raise EvidenceValidationError(
-            "claim_coverage", "Claims must match declared outputs exactly"
-        )
-    for issue in evidence.issues:
-        for scope in issue.at:
-            profile.validate_scope(evidence.data, scope)
-    roots = (
-        *evidence.claims.values(),
-        *(c for issue in evidence.issues for c in issue.related_claims),
-    )
-    # Share graph provenance's canonical-instance and cycle validation. Do not
-    # invent Facts for pre-graph claims or weaken identity rules.
-    claims, sources = _index_claims(roots)
-    for claim in claims.values():
-        encode(claim.value)
-    for source in sources.values():
-        encode(source.issued_at)
-        encode(source.received_at)
-    for key, claim in evidence.claims.items():
-        value = profile.resolve_output(evidence.data, key)
-        if encode(value) != encode(claim.value):
-            raise EvidenceValidationError(
-                "value_mismatch", "Output differs from terminal Claim", key=key
-            )
-        if value is None and not any(
-            _applicable(issue, key) for issue in evidence.issues
-        ):
-            raise EvidenceValidationError(
-                "unexplained_missing",
-                "None requires an applicable explanatory issue",
-                key=key,
-            )
-    return profile, claims, sources
-
-
-def validate(evidence: Evidence[Any]) -> None:
-    """Validate shape, immutable values, addressing and evidence associations.
-
-    Does not infer usability or execute an operation's missing-value policy.
-    """
-    _validate(evidence)
-
-
-def fingerprint(evidence: Evidence[Any]) -> str:
-    """Return a versioned SHA-256 content digest, not a persistence encoding.
-
-    Inputs must use stable explicit identities for repeatable independent builds.
-    Display names/messages are content and included; runtime/job metadata is not
-    represented here. Source/rule versions travel through their existing Claims.
-    """
-    profile, claims, sources = _validate(evidence)
-    source_rows = [
-        [
-            str(s.id),
-            s.name,
-            s.checksum,
-            encode(s.issued_at),
-            encode(s.received_at),
-            s.author,
-        ]
-        for s in sorted(sources.values(), key=lambda s: str(s.id))
-    ]
-    claim_rows = []
-    for claim in sorted(claims.values(), key=lambda c: str(c.id)):
-        inputs = [
-            ["location", str(x.source.id), sorted(x.reference.items())]
-            if isinstance(x, Location)
-            else ["claim", str(x.id)]
-            for x in claim.sources
-        ]
-        method = (
-            None
-            if claim.method is None
-            else [claim.method.code, claim.method.version, claim.method.description]
-        )
-        claim_rows.append([
-            str(claim.id),
-            claim.kind.value,
-            encode(claim.value),
-            inputs,
-            method,
-        ])
-    issues = [
-        [
-            issue.id,
-            issue.rule_id,
-            issue.code,
-            issue.severity.value,
-            issue.message,
-            sorted(issue.at),
-            sorted(str(c.id) for c in issue.related_claims),
-            [[k, encode(v)] for k, v in sorted(issue.details.items())],
-        ]
-        for issue in sorted(evidence.issues, key=lambda i: i.id)
-    ]
-    return "sha256:" + digest({
-        "format": "rk.evidence/v1",
-        "profile": profile.format,
-        "name": evidence.name,
-        "data": profile.encode_data(evidence.data),
-        "outputs": [
-            [key, str(claim.id)] for key, claim in sorted(evidence.claims.items())
-        ],
-        "sources": source_rows,
-        "claims": claim_rows,
-        "issues": issues,
-    })

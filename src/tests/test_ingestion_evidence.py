@@ -1,5 +1,7 @@
 """Contract proofs; these helpers are fixtures, not a production operation API."""
 
+import subprocess
+import sys
 from dataclasses import FrozenInstanceError, dataclass, replace
 from datetime import date, datetime, time, timedelta, timezone
 from uuid import NAMESPACE_URL, uuid5
@@ -21,12 +23,10 @@ from rangekeeper.graph.adapter.ingestion import (
     EvidenceValidationError,
     Issue,
     IssueSeverity,
-    _profiles,
     fingerprint,
     tabular,
     validate,
 )
-from rangekeeper.graph.adapter.ingestion._values import encode
 from rangekeeper.graph.errors import IdentityConflictError
 from rangekeeper.graph.provenance import Claim, Location, Method, Source
 from rangekeeper.graph.table import Row, Table, TableError
@@ -519,43 +519,12 @@ def test_mapping_insertion_order_not_content_order(source):
     assert fingerprint(forward) == fingerprint(backward)
 
 
-def test_non_tabular_property_to_table(monkeypatch):
+def test_native_source_property_to_table():
     @dataclass(frozen=True)
     class ObjectSnapshot:
         global_id: str
         properties: tuple[tuple[str, object], ...]
 
-    class Profile:
-        format = "synthetic-object/v1"
-
-        def validate_data(self, data):
-            encode((data.global_id, data.properties))
-
-        def resolve_output(self, data, key):
-            self.validate_scope(data, key)
-            if len(key) != 4:
-                raise EvidenceValidationError(
-                    "invalid_address", "Expected property", key=key
-                )
-            return dict(data.properties)[key[3]]
-
-        def validate_scope(self, data, key):
-            if key and not (
-                len(key) == 4
-                and key[:3] == ("objects", data.global_id, "properties")
-                and key[3] in dict(data.properties)
-            ):
-                raise EvidenceValidationError(
-                    "invalid_address", "Unknown property", key=key
-                )
-
-        def required_outputs(self, data):
-            return None
-
-        def encode_data(self, data):
-            return encode((data.global_id, data.properties))
-
-    monkeypatch.setitem(_profiles._PROFILES, ObjectSnapshot, Profile())
     native = ObjectSnapshot("native-001", (("NetFloorArea", 103), ("Unselected", 9)))
     source = Source(id=uid("ifc"), name="Synthetic IFC", checksum="c" * 64)
     raw = Claim.sourced(
@@ -566,13 +535,8 @@ def test_non_tabular_property_to_table(monkeypatch):
         ),
         id=uid("ifc-property"),
     )
-    original = Evidence(
-        name="native",
-        data=native,
-        claims={("objects", native.global_id, "properties", "NetFloorArea"): raw},
-    )
     projected = table_evidence(derived("property_projection", 103, raw))
-    assert fingerprint(original)
+    assert fingerprint(projected)
     assert projected.data.column("area") == (103,)
     assert (
         projected.claims[address()].sources[0].sources[0].reference["GlobalId"]
@@ -580,3 +544,70 @@ def test_non_tabular_property_to_table(monkeypatch):
     )
     with pytest.raises(EvidenceValidationError, match="unsupported_content"):
         Evidence(name="unsupported", data=object(), claims={})
+
+
+class UnsupportedTable(Table):
+    pass
+
+
+@pytest.mark.parametrize("data", [object(), UnsupportedTable(columns=(), rows=())])
+def test_unsupported_content_including_table_subclasses(data):
+    with pytest.raises(EvidenceValidationError, match="unsupported_content"):
+        Evidence(name="unsupported", data=data, claims={})
+
+
+def test_table_row_lookup_and_reordered_filtered_tables():
+    identified = Row(values={"a": 103}, id=uid("r1"))
+    table = Table(columns=("a",), rows=({"a": 97}, identified, {"a": 99}))
+    assert table.row(uid("r1")) is table.rows[1]
+    for invalid in (None, "r1", str(uid("r1")), 0):
+        with pytest.raises(TypeError, match="UUID"):
+            table.row(invalid)
+    for candidate in (table, Table(columns=("a",), rows=())):
+        with pytest.raises(KeyError):
+            candidate.row(uid("missing"))
+    reordered = replace(table, rows=reversed(table.rows))
+    filtered = replace(reordered, rows=(reordered.row(uid("r1")),))
+    assert filtered.row(uid("r1")) is filtered.rows[0]
+    assert filtered.row(uid("r1")).values["a"] == 103
+
+
+def test_fingerprint_and_issue_identity_match_before_refactor(source):
+    available = table_evidence(derived("parse", 103, sourced(source, "J8", 103)))
+    raw = sourced(source, "J9", None)
+    missing = table_evidence(raw, issues=(issue(raw),))
+    assert (
+        fingerprint(available)
+        == "sha256:2a00dac088cd731674683a5c6f77c325f259ab3de58a6e91ff7ecd4945cccd8c"
+    )
+    assert (
+        fingerprint(missing)
+        == "sha256:eb6b3d6ba2e6ac2f2e4e3e1085b39f1ae8b7a816169f0ee2ad89bd96cc2df92f"
+    )
+    assert (
+        missing.issues[0].id
+        == "I-8c5c46a5584af02759fc5464fb1a8cff7f427fa896fff50725486e3a26893150"
+    )
+
+
+@pytest.mark.parametrize("first", ["evidence", "validation", "fingerprint", "tabular"])
+def test_public_imports_and_constructor_validation_in_fresh_process(first):
+    script = f"""
+import importlib
+importlib.import_module('rangekeeper.graph.adapter.ingestion.' + {first!r})
+from rangekeeper.graph.adapter.ingestion import Evidence, fingerprint, validate, tabular, EvidenceValidationError
+from rangekeeper.graph.table import Table
+assert callable(fingerprint) and callable(validate) and callable(tabular.row)
+empty = Evidence(name='empty', data=Table(columns=(), rows=()), claims={{}})
+assert validate(empty) is None
+assert fingerprint(empty).startswith('sha256:')
+try:
+    Evidence(name='invalid', data=object(), claims={{}})
+except EvidenceValidationError as error:
+    assert error.code == 'unsupported_content'
+else:
+    raise AssertionError('Constructor did not validate')
+"""
+    subprocess.run(
+        [sys.executable, "-c", script], check=True, capture_output=True, text=True
+    )

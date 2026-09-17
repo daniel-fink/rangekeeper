@@ -1,4 +1,8 @@
-"""Executable Evidence examples: synthetic, no file I/O or graph changes."""
+"""Synthetic Evidence examples; no file I/O or graph changes.
+
+Table owns row identity/lookup. Ingestion owns content-to-Claim validation and
+fingerprints; package-level imports stay stable as implementation modules evolve.
+"""
 
 from uuid import NAMESPACE_URL, uuid5
 
@@ -73,7 +77,8 @@ def main():
     assert areas.data.column("area") == (103, None)
     assert reordered.data.column("area") == (None, 103)
     assert tabular.claim(reordered, rows[0], "area") is area
-    print("Area:", tabular.row(areas, rows[0]).values["area"], "(declared unit: m²)")
+    assert tabular.row(areas, rows[0]) is areas.data.row(rows[0])
+    print("Area:", areas.data.row(rows[0]).values["area"], "(declared unit: m²)")
     print("Missing:", tabular.issues_for(areas, rows[1])[0].code)
 
     candidates = tuple(
