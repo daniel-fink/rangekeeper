@@ -13,12 +13,24 @@ __all__ = [
     "AdapterError",
     "csv",
     "cytoscape",
+    "document",
+    "excel",
     "ingestion",
+    "operation",
     "pandas",
     "visualization",
 ]
 
-_SUBMODULES = frozenset({"cytoscape", "csv", "ingestion", "pandas", "visualization"})
+_SUBMODULES = frozenset({
+    "cytoscape",
+    "csv",
+    "document",
+    "excel",
+    "ingestion",
+    "operation",
+    "pandas",
+    "visualization",
+})
 
 
 def __getattr__(name: str) -> ModuleType:

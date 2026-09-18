@@ -31,6 +31,9 @@ dependencies = [
     "pandas-stubs~=2.3.2",
 ]
 
+[project.optional-dependencies]
+excel = ["openpyxl>=3.1.5,<4", "PyYAML>=6.0.2,<7"]
+
 [tool.ruff.format]
 preview = true  # Uses Black's experimental formatting rules
 

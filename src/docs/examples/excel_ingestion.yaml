@@ -1,0 +1,21 @@
+id: jll_apartments
+version: 1
+sheet: Unit Pricing
+expect:
+  comparison: trim
+  cells:
+    A7: Unit No
+    B7: Floor
+    J7: M²
+rows:
+  start: 8
+  stop_before:
+    column: A
+    equals: 'Assumptions:'
+    comparison: trim
+columns:
+  - {name: unit, column: A}
+  - {name: floor, column: B}
+  - {name: parking, column: G}
+  - {name: area, column: J}
+formula_values: cached

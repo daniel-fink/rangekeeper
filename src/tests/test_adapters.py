@@ -18,7 +18,10 @@ def test_supported_adapter_and_table_surfaces_are_explicit():
         "AdapterError",
         "csv",
         "cytoscape",
+        "document",
+        "excel",
         "ingestion",
+        "operation",
         "pandas",
         "visualization",
     ]
@@ -364,7 +367,9 @@ def test_view_table_converts_measure_units_and_rejects_incompatible_units():
         measures={measure: "squarefoot"},
     )
 
-    assert table.rows[0].values["measurement.area.internal"] == pytest.approx(10.7639104167)
+    assert table.rows[0].values["measurement.area.internal"] == pytest.approx(
+        10.7639104167
+    )
     with pytest.raises(pint.DimensionalityError):
         table_module.Table.from_view(view, measures={measure: "second"})
 
