@@ -1,11 +1,14 @@
 # Ingestion evidence contract
 
-Status: Evidence foundation implemented locally, 17 September 2026. Optional Row
-IDs, Evidence, Issue, validation, fingerprinting and tabular helpers are
-implemented. The transformation, execution-record and workflow sections also
-state requirements for later stages; production readers and YAML execution are
-not implemented yet. This is not a hosted service, full IFC/GIS adapter, or graph
-persistence format.
+Status: Evidence, document operations, Excel snapshots/extraction and shared
+table transformations are implemented as of 18 September 2026. The wider workflow
+sections also describe later stages; a general interpretation/composition YAML
+executor remains deferred. This is not a hosted service, full IFC/GIS adapter,
+or graph persistence format.
+
+The [declarative ingestion workflow](ingestion-workflow.md) defines the overall
+system and fresh-environment reproducibility requirement. This document specifies
+the detailed Evidence data/API contract within that workflow.
 
 ## Purpose and boundaries
 
@@ -261,8 +264,12 @@ value selection or control flow.
 `at` is nonempty and unique; `((),)` means the whole artifact. References are local
 to Evidence. Cross-input context uses related Claims. Issue scopes must resolve;
 an invalid source or unresolved output cannot become a fabricated address.
-Source-level issues before any output exists will belong to the later enclosing
-operation result with an explicit artifact scope; that result type is deferred.
+Problems before any output exists belong to Outcome.diagnostics, using existing
+source Locations where available. The implemented Operation/Outcome/Diagnostic and
+effective-specification normalization contracts are described in the
+[workflow specification](ingestion-workflow.md#operation-and-outcome-contracts).
+Structured operation specifications do not broaden
+the immutable payload types accepted in Evidence.
 
 Unknown rows/columns in tabular inspection raise KeyError. Invalid argument types
 raise TypeError. Invalid Evidence structure raises EvidenceValidationError with
@@ -495,3 +502,18 @@ Cytoscape and Mandarin. Captured pre-refactor available/missing fingerprints and
 an issue ID match exactly; the executable example also retains its fingerprint.
 Fresh-process imports and constructor validation pass. Ruff and focused ty checks
 pass. No project artifacts were regenerated.
+
+## Excel extraction integration
+
+The [Excel adapter](excel-ingestion.md) now has source-snapshot and physical-range
+extraction code targeting this existing Evidence contract. Its tests and executable
+example now pass; see the linked validation record and runtime limits. It reuses `Table`, `Row`, Claims,
+Locations, Issues and `tabular.from_claims`; it does not change Evidence payload
+restrictions, fingerprints or row lookup. Operation-level diagnostics stay separate
+from addressed Evidence issues. Mandarin now uses these contracts for its
+source-to-graph handoff.
+
+## Shared table operations
+
+See [Evidence table operations](tabular-operations.md) for `NumberSpec`, numeric
+interpretation, selection and concatenation using the existing Evidence contract.

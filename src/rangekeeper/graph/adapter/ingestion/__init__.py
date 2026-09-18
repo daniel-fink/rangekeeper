@@ -1,7 +1,8 @@
 """Evidence foundation for deterministic, specification-driven adapters.
 
-No source-reading, interpretation, workflow-service or graph-persistence API is
-provided here yet. Source values are evidence, never executable instructions.
+Includes numeric interpretation, selection and concatenation of table Evidence.
+Source values are evidence, never executable instructions; source reading and
+graph persistence remain separate concerns.
 """
 
 from . import tabular
