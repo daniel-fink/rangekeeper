@@ -6,15 +6,20 @@ from enum import Enum
 from types import MappingProxyType
 from typing import Any, Generic, TypeVar
 
-from ...provenance import Claim
-from ._encoding import digest, encode
-from .errors import EvidenceValidationError
+from rangekeeper.graph.provenance import Claim
+from rangekeeper.graph.workflow.ingestion._encoding import digest, encode
+from rangekeeper.graph.workflow.ingestion.errors import EvidenceValidationError
 
+# Stable address segments let Issue scopes survive row reordering and selection.
 EvidenceKey = tuple[str, ...]
 T = TypeVar("T")
 
 
 class IssueSeverity(str, Enum):
+    """Provides a display priority for explanations; availability is decided by the
+    consuming operation, not this ranking.
+    """
+
     INFO = "info"
     WARNING = "warning"
     ERROR = "error"
@@ -43,6 +48,10 @@ class Issue:
 
     Severity is presentational. No severity or code automatically blocks an
     operation or selects a value. Identity excludes prose, severity and details.
+
+    Keeps a limitation visible where it applies, including on otherwise usable
+    output. Consumers must not treat a warning as permission to replace missing
+    data with zero.
     """
 
     rule_id: str
@@ -96,7 +105,13 @@ class Issue:
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Evidence(Generic[T]):
-    """A supported snapshot with one terminal Claim per declared output."""
+    """A supported snapshot with one terminal Claim per declared output.
+
+    Keeps table values, their terminal Claims and explanations together so
+    transformations cannot silently detach values from support. Row UUIDs
+    preserve addressing through selection and reordering; validation currently
+    supports Table content only.
+    """
 
     name: str
     data: T
@@ -110,7 +125,7 @@ class Evidence(Generic[T]):
         claims = {_key(key): value for key, value in self.claims.items()}
         object.__setattr__(self, "claims", MappingProxyType(claims))
         object.__setattr__(self, "issues", tuple(self.issues))
-        from .validation import validate
+        from rangekeeper.graph.workflow.ingestion.validation import validate
 
         validate(self)
 

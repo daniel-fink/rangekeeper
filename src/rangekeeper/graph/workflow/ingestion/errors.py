@@ -1,6 +1,6 @@
 """Failures of the Evidence contract, distinct from source-data issues."""
 
-from ..errors import AdapterError
+from rangekeeper.graph.adapter.errors import AdapterError
 
 
 class EvidenceValidationError(AdapterError, ValueError):

@@ -15,8 +15,6 @@ __all__ = [
     "cytoscape",
     "document",
     "excel",
-    "ingestion",
-    "operation",
     "pandas",
     "visualization",
 ]
@@ -26,8 +24,6 @@ _SUBMODULES = frozenset({
     "csv",
     "document",
     "excel",
-    "ingestion",
-    "operation",
     "pandas",
     "visualization",
 })

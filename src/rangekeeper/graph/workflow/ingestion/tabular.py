@@ -8,15 +8,21 @@ from dataclasses import dataclass, replace
 from typing import TYPE_CHECKING, Any
 from uuid import UUID, uuid5
 
-from ...errors import IdentityConflictError
-from ...provenance import Claim, Method
-from ...table import Row, Table
-from ._encoding import encode
-from .errors import EvidenceValidationError
-from .evidence import Evidence, EvidenceKey, Issue, IssueSeverity, _applicable
+from rangekeeper.graph.errors import IdentityConflictError
+from rangekeeper.graph.provenance import Claim, Method
+from rangekeeper.graph.table import Row, Table
+from rangekeeper.graph.workflow.ingestion._encoding import encode
+from rangekeeper.graph.workflow.ingestion.errors import EvidenceValidationError
+from rangekeeper.graph.workflow.ingestion.evidence import (
+    Evidence,
+    EvidenceKey,
+    Issue,
+    IssueSeverity,
+    _applicable,
+)
 
 if TYPE_CHECKING:
-    from ..operation import Outcome
+    from rangekeeper.graph.operation import Outcome
 
 
 def from_claims(
@@ -27,7 +33,11 @@ def from_claims(
     claims: Mapping[EvidenceKey, Claim[Any]],
     issues: Iterable[Issue] = (),
 ) -> Evidence[Table]:
-    """Derive Table values from terminal Claims; reject missing/extra evidence."""
+    """Derive Table values from terminal Claims; reject missing/extra evidence.
+
+    Uses Claims as the single source of cell values, avoiding two independently
+    constructed representations that can disagree.
+    """
     # Delegate column and row identity normalization to Table, including its
     # existing errors, rather than maintaining a separate tabular schema.
     if isinstance(columns, (str, bytes)):
@@ -63,14 +73,22 @@ def from_claims(
 
 
 def row(evidence: Evidence[Table], row_id: UUID) -> Row:
-    """Resolve a row by UUID, never by display offset."""
+    """Resolve a row by UUID, never by display offset.
+
+    Keeps consumer access stable when a table is selected, concatenated or
+    displayed in a different order.
+    """
     if not isinstance(evidence, Evidence) or not isinstance(evidence.data, Table):
         raise TypeError("Expected Evidence[Table]")
     return evidence.data.row(row_id)
 
 
 def claim(evidence: Evidence[Table], row_id: UUID, column: str) -> Claim[Any]:
-    """Return the terminal Claim; traverse Claim.sources for its full lineage."""
+    """Return the terminal Claim; traverse Claim.sources for its full lineage.
+
+    Use this instead of reading a value alone when downstream work must preserve
+    the observation that supports it.
+    """
     selected = row(evidence, row_id)
     if not isinstance(column, str):
         raise TypeError("column must be str")
@@ -84,7 +102,11 @@ def issues_for(
     row_id: UUID,
     column: str | None = None,
 ) -> tuple[Issue, ...]:
-    """Include ancestor scopes; row inspection also includes its cell issues."""
+    """Include ancestor scopes; row inspection also includes its cell issues.
+
+    Collects the explanations a consumer needs at the chosen scope without
+    requiring it to interpret raw address prefixes.
+    """
     row(evidence, row_id)
     if column is not None:
         claim(evidence, row_id, column)
@@ -158,7 +180,12 @@ def _cell_keys(table: Table) -> Iterable[EvidenceKey]:
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class NumberSpec:
-    """Interpret a source column numerically without coercing text or units."""
+    """Interpret a source column numerically without coercing text or units.
+
+    Makes admissibility explicit so labels, booleans and missing markers cannot
+    silently become measurements. Integer and negative-value policies belong to
+    the field being interpreted.
+    """
 
     column: str
     integer: bool = False
@@ -178,6 +205,9 @@ class NumberSpec:
 
     @classmethod
     def from_mapping(cls, value: Mapping[str, object]) -> NumberSpec:
+        """Rejects misspelled or mistyped numeric policies at the declaration
+        boundary rather than silently applying different defaults.
+        """
         if not isinstance(value, Mapping):
             raise TypeError("NumberSpec must be a mapping")
         if set(value) - {"column", "integer", "nonnegative", "missing_markers"}:
@@ -188,6 +218,9 @@ class NumberSpec:
         return cls(**fields)
 
     def to_mapping(self) -> dict[str, object]:
+        """Records the effective numeric policy, including defaults, so its
+        derivation can be reproduced independently of the caller.
+        """
         return {
             "column": self.column,
             "integer": self.integer,
@@ -202,28 +235,18 @@ def _text(value: object, field: str) -> None:
 
 
 def _evidence(value: Evidence[Table]) -> None:
-    from .validation import validate
+    from rangekeeper.graph.workflow.ingestion.validation import validate
 
     if not isinstance(value, Evidence) or type(value.data) is not Table:
         raise TypeError("Expected Evidence[Table]")
     validate(value)
 
 
-def _unique_issues(issues: Iterable[Issue]) -> tuple[Issue, ...]:
-    from ..operation import _Failure
-
-    indexed: dict[str, Issue] = {}
-    for issue in issues:
-        if issue.id in indexed and indexed[issue.id] != issue:
-            raise _Failure(
-                "conflicting_issue", "Issues with the same identity disagree"
-            )
-        indexed.setdefault(issue.id, issue)
-    return tuple(indexed.values())
+from ._derivation import unique_issues as _unique_issues
 
 
 def _output(*, name, columns, row_ids, claims, issues) -> Evidence[Table]:
-    from ..operation import _Failure
+    from rangekeeper.graph.operation import _Failure
 
     try:
         return from_claims(
@@ -244,9 +267,14 @@ def select(
     columns: Iterable[str] | None = None,
     name: str | None = None,
 ) -> Outcome[Evidence[Table]]:
-    """Select/order outputs, preserving Claims and projecting Issue scopes."""
-    from ..operation import _Failure, _invoke
-    from .fingerprint import fingerprint
+    """Select/order outputs, preserving Claims and projecting Issue scopes.
+
+    Allows detail, notes or other row groups to be reviewed separately without
+    manufacturing new observations or retaining explanations for discarded
+    cells.
+    """
+    from rangekeeper.graph.operation import _Failure, _invoke
+    from rangekeeper.graph.workflow.ingestion.fingerprint import fingerprint
 
     _evidence(evidence)
     selected_ids = _row_ids(evidence.data) if row_ids is None else tuple(row_ids)
@@ -310,9 +338,14 @@ def select(
 def concat(
     evidences: Iterable[Evidence[Table]], *, name: str
 ) -> Outcome[Evidence[Table]]:
-    """Append compatible tables, confining global Issues to their input rows."""
-    from ..operation import _Failure, _invoke
-    from .fingerprint import fingerprint
+    """Append compatible tables, confining global Issues to their input rows.
+
+    Combines separate source ranges without losing their identities. Confining
+    each input-wide Issue prevents an explanation from leaking onto unrelated
+    appended rows.
+    """
+    from rangekeeper.graph.operation import _Failure, _invoke
+    from rangekeeper.graph.workflow.ingestion.fingerprint import fingerprint
 
     parts = tuple(evidences)
     if not parts:
@@ -399,10 +432,15 @@ def numbers(
     settings: Claim[str] | None = None,
     name: str | None = None,
 ) -> Outcome[Evidence[Table]]:
-    """Append numeric interpretations supported by existing source Claims."""
-    from ..operation import _Failure, _invoke
-    from ..operation import fingerprint as operation_fingerprint
-    from .fingerprint import fingerprint
+    """Append numeric interpretations supported by existing source Claims.
+
+    Keeps numeric interpretation separate from the original observation.
+    Appended Claims retain source and optional configuration lineage;
+    unavailable values remain explained instead of being coerced to zero.
+    """
+    from rangekeeper.graph.operation import _Failure, _invoke
+    from rangekeeper.graph.operation import fingerprint as operation_fingerprint
+    from rangekeeper.graph.workflow.ingestion.fingerprint import fingerprint
 
     _evidence(evidence)
     if not isinstance(specifications, Mapping):
@@ -419,16 +457,10 @@ def numbers(
     output_name = evidence.name if name is None else name
     _text(output_name, "name")
     inputs = {"evidence": fingerprint(evidence)}
-    if settings is not None:
-        # Use the existing Evidence encoder to fingerprint the complete settings lineage.
-        settings_evidence = from_claims(
-            name="numeric settings",
-            columns=("settings",),
-            row_ids=(settings.id,),
-            claims={("rows", str(settings.id), "settings"): settings},
-        )
-        inputs["settings"] = fingerprint(settings_evidence)
-    method = Method(code="rk.tabular.numbers", version="1")
+    from ._derivation import settings_inputs
+
+    inputs.update(settings_inputs(settings))
+    method = Method(code="rk.tabular.numbers", version="2")
 
     def execute(operation):
         if set(specs).intersection(evidence.data.columns):

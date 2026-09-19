@@ -108,7 +108,7 @@ belong in its owning module; content-to-Claim associations belong in ingestion.
 
 ## Operation and outcome contracts
 
-These runtime types are implemented in `adapter.operation`. All collections are
+These runtime types are implemented in `graph.operation`. All collections are
 immutable snapshots.
 
 ```python
@@ -293,9 +293,9 @@ text and conversation history cannot become undeclared graph inputs.
 - Optional format-specific dependencies, loaded only by the relevant adapter.
 - Comparison against JLL/Mandarin observations before replacing project parsing.
 
-Implementation placement is graph.adapter.operation and graph.adapter.document
+Implementation placement is graph.operation and graph.adapter.document
 for shared contracts, graph.adapter.excel for Excel behavior, and the existing
-adapter.ingestion package for Evidence. The concrete reader/extraction schema and
+workflow.ingestion package for Evidence. The concrete reader/extraction schema and
 snapshot identity encoding are documented in [Excel ingestion](excel-ingestion.md).
 This first slice has passed the checks recorded there; it does not implement
 project interpretation transforms or complete graph execution from these inputs.

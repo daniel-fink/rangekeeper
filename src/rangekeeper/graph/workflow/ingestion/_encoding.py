@@ -7,7 +7,7 @@ from hashlib import sha256
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
-from .errors import EvidenceValidationError
+from rangekeeper.graph.workflow.ingestion.errors import EvidenceValidationError
 
 
 def canonical_json(value: object) -> str:

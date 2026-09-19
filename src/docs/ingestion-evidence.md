@@ -30,7 +30,7 @@ target; source Claims may exist before a graph is constructed.
 
 ## Core container
 
-The public type in `rangekeeper.graph.adapter.ingestion` is:
+The public type in `rangekeeper.graph.workflow.ingestion` is:
 
 ```python
 from dataclasses import dataclass

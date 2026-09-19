@@ -13,8 +13,8 @@ from typing import TypeVar
 from uuid import NAMESPACE_URL
 
 from rangekeeper.graph.adapter import document, excel, operation
-from rangekeeper.graph.adapter.ingestion import fingerprint, tabular
-from rangekeeper.graph.adapter.operation import Outcome
+from rangekeeper.graph.workflow.ingestion import fingerprint, tabular
+from rangekeeper.graph.operation import Outcome
 from rangekeeper.graph.provenance import Location
 
 T = TypeVar("T")

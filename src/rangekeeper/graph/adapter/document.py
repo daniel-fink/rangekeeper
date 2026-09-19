@@ -8,10 +8,11 @@ from dataclasses import dataclass
 from itertools import islice
 from typing import Any, Generic, TypeVar
 
+from rangekeeper.graph import _structured
+from rangekeeper.graph.operation import Operation, Outcome, _Failure, _invoke
+
 from ... import validate
 from ..provenance import Location, Method, Source
-from . import _structured
-from .operation import Operation, Outcome, _Failure, _invoke
 
 __all__ = [
     "TEXT_PREVIEW_LIMIT",
