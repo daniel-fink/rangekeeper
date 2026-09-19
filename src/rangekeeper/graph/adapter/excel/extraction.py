@@ -3,16 +3,29 @@
 from typing import Any
 from uuid import UUID, uuid5
 
+from rangekeeper.graph import _structured
+from rangekeeper.graph.operation import (
+    Operation,
+    Outcome,
+    _Failure,
+    _invoke,
+    fingerprint,
+)
+from rangekeeper.graph.workflow.ingestion import (
+    Evidence,
+    EvidenceKey,
+    Issue,
+    IssueSeverity,
+    tabular,
+)
+from rangekeeper.graph.workflow.ingestion._encoding import encode
+
 from ...provenance import Claim, Method
 from ...table import Table
-from .. import _structured
-from ..ingestion import Evidence, EvidenceKey, Issue, IssueSeverity, tabular
-from ..ingestion._encoding import encode
-from ..operation import Operation, Outcome, _Failure, _invoke, fingerprint
 from .snapshot import Cell, Workbook, Worksheet
 from .specification import ExtractionSpec
 
-_METHOD = Method(code="rk.excel.extract_table", version="1")
+_METHOD = Method(code="rk.excel.extract_table", version="2")
 _VALUE_METHOD = Method(code="rk.excel.stored_value", version="1")
 
 
@@ -107,12 +120,21 @@ _MESSAGES = {
 
 
 def extract_table(
-    workbook: Workbook, specification: ExtractionSpec
+    workbook: Workbook, specification: ExtractionSpec, *, unique_stop: bool = False
 ) -> Outcome[Evidence[Table]]:
+    """Preserves source addresses and missing-value explanations as Claims and
+    Issues while applying the reviewed layout. Later interpretation can then
+    operate entirely on Evidence without reopening cells.
+    """
     if not isinstance(workbook, Workbook):
         raise TypeError("workbook must be Workbook")
     if not isinstance(specification, ExtractionSpec):
         raise TypeError("specification must be ExtractionSpec")
+
+    if type(unique_stop) is not bool:
+        raise TypeError("unique_stop must be boolean")
+    if unique_stop and specification.rows.stop_before is None:
+        raise ValueError("unique_stop requires a stopping marker")
 
     def execute(operation: Operation) -> Evidence[Table]:
         sheet = workbook._require_sheet(specification.sheet)
@@ -129,6 +151,16 @@ def extract_table(
                         "comparison": specification.expect.comparison,
                     },
                 )
+        if unique_stop:
+            # Whole native column, including rows before extraction starts.
+            stop = specification.rows.stop_before
+            assert stop is not None
+            hits = sum(
+                _matches(sheet.cell(f"{stop.column}{row}"), stop.equals, stop.comparison)
+                for row in range(1, sheet.declared_rows + 1)
+            )
+            if hits != 1:
+                raise _Failure("nonunique_stopping_marker", "Declared stopping marker must occur exactly once in its column")
         end = _last_row(sheet, specification)
         operation_key = fingerprint(operation)
         claims: dict[EvidenceKey, Claim[Any]] = {}
@@ -176,5 +208,5 @@ def extract_table(
         )
 
     return _invoke(
-        _METHOD, specification.to_mapping(), {"workbook": workbook.fingerprint}, execute
+        _METHOD, {**specification.to_mapping(), "unique_stop": unique_stop}, {"workbook": workbook.fingerprint}, execute
     )

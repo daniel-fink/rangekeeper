@@ -36,3 +36,14 @@ uv run pytest --show-plots
 1. First, remove any previously built packages: `rm -rf dist/`
 2. Build the package: `uv build`
 3. Then, publish it to PyPI with your `UV_PUBLISH_TOKEN` recorded in the .env file: `export $(grep -v '^#' .env | xargs) && uv publish --token $UV_PUBLISH_TOKEN`
+
+
+## Typed graph persistence and YAML workflows
+
+The optional `workflow` extra provides a bounded source-to-graph executor, strict
+YAML specifications and an explicit export CLI. Graph JSON supports reloadable
+canonical provenance. See [the API and schema guide](../docs/GRAPH_YAML_WORKFLOW.md)
+and [synthetic examples](examples/workflow/README.md).
+
+For ownership and API rationale, see [the adapter guide](../docs/GRAPH_ADAPTER_GUIDE.md)
+and [the ingestion/workflow boundary review](../docs/GRAPH_ADAPTER_REVIEW.md).

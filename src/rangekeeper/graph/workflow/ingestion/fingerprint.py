@@ -2,12 +2,12 @@
 
 from typing import Any
 
-from ...provenance import Location
-from ...table import Table
-from ._encoding import digest, encode
-from .errors import EvidenceValidationError
-from .evidence import Evidence
-from .validation import _validated_indexes
+from rangekeeper.graph.provenance import Location
+from rangekeeper.graph.table import Table
+from rangekeeper.graph.workflow.ingestion._encoding import digest, encode
+from rangekeeper.graph.workflow.ingestion.errors import EvidenceValidationError
+from rangekeeper.graph.workflow.ingestion.evidence import Evidence
+from rangekeeper.graph.workflow.ingestion.validation import _validated_indexes
 
 
 def _encode_content(data: object) -> object:
@@ -27,9 +27,13 @@ def _encode_content(data: object) -> object:
 def fingerprint(evidence: Evidence[Any]) -> str:
     """Return a versioned SHA-256 content digest, not a persistence encoding.
 
-    Inputs must use stable explicit identities for repeatable independent builds.
-    Display names/messages are content and included; runtime/job metadata is not
-    represented here. Source/rule versions travel through their existing Claims.
+    Inputs must use stable explicit identities for repeatable independent
+    builds. Display names/messages are content and included; runtime/job
+    metadata is not represented here. Source/rule versions travel through their
+    existing Claims.
+
+    Use this to detect changed inputs even when displayed values are unchanged
+    but their supporting Claims or explanations differ.
     """
     claims, sources = _validated_indexes(evidence)
     source_rows = [

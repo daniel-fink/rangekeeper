@@ -1,0 +1,134 @@
+version: 1
+namespace: urn:example:equipment
+steps:
+- id: book
+  operation: read
+  files:
+  - schedule.xlsx
+  source_key: Schedule
+- id: raw
+  operation: extract
+  input: book
+  unique_stop: true
+  specification:
+    id: raw
+    version: 1
+    sheet: Schedule
+    rows:
+      start: 2
+      stop_before:
+        column: A
+        equals: END
+    columns:
+    - name: code
+      column: A
+    - name: zone
+      column: B
+    - name: size
+      column: C
+    - name: label
+      column: D
+    - name: other
+      column: E
+    expect:
+      cells:
+        A1: ID
+- id: groups
+  operation: classify_rows
+  input: raw
+  workbook: book
+  specification:
+    identifier: code
+    pattern: P[0-9]+
+- id: selected
+  operation: select
+  input: groups
+  where:
+    column: row_group
+    equals: matched
+- id: numeric
+  operation: numbers
+  input: selected
+  specifications:
+    number_size:
+      column: size
+      nonnegative: true
+- id: assets
+  operation: transform
+  input: numeric
+  specifications:
+    normalized:
+      operation: normalize
+      columns:
+      - label
+      case: upper
+    label_count:
+      operation: capture_integer
+      columns:
+      - normalized
+      pattern: (\d+)C
+      group: 1
+    other_count:
+      operation: capture_integer
+      columns:
+      - other
+      pattern: (\d+)C
+      group: 1
+    count:
+      operation: agreement
+      columns:
+      - label_count
+      - other_count
+    product:
+      operation: lookup
+      columns:
+      - normalized
+      values:
+        2C: standard
+    fallback_label:
+      operation: fallback
+      columns:
+      - other
+      - label
+    display:
+      operation: format
+      columns:
+      - code
+      template: Item {code}
+    matched_label:
+      operation: match
+      columns:
+      - normalized
+      pattern: \d+C
+- id: zones
+  operation: extract
+  input: book
+  specification:
+    id: zones
+    version: 1
+    sheet: Schedule
+    rows:
+      start: 1
+      end: 2
+    columns:
+    - name: code
+      column: G
+- id: total_raw
+  operation: extract
+  input: book
+  specification:
+    id: total
+    version: 1
+    sheet: Schedule
+    rows:
+      start: 1
+      end: 1
+    columns:
+    - name: total
+      column: H
+- id: total
+  operation: numbers
+  input: total_raw
+  specifications:
+    number:
+      column: total

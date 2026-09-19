@@ -4,10 +4,10 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from typing import Generic, TypeVar
 
-from ... import validate
-from ..provenance import Location, Method
-from . import _structured
-from .ingestion import IssueSeverity
+from rangekeeper import validate
+from rangekeeper.graph import _structured
+from rangekeeper.graph.provenance import Location, Method
+from rangekeeper.graph.workflow.ingestion import IssueSeverity
 
 __all__ = ["Diagnostic", "Operation", "Outcome", "fingerprint"]
 T = TypeVar("T")
@@ -15,7 +15,12 @@ T = TypeVar("T")
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Operation:
-    """Effective invocation description, not an executable algorithm or run ID."""
+    """Effective invocation description, not an executable algorithm or run ID.
+
+    Separates reproducible computation identity from execution timing, allowing
+    a caller to explain exactly which parameters and input versions produced an
+    output.
+    """
 
     method: Method
     specification: Mapping[str, object]
@@ -41,7 +46,11 @@ class Operation:
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Diagnostic:
-    """Invocation-level explanation; Evidence issues belong to output addresses."""
+    """Invocation-level explanation; Evidence issues belong to output addresses.
+
+    Explains why a request could not be carried out when there may be no output
+    cell on which to place an Issue.
+    """
 
     code: str
     severity: IssueSeverity
@@ -63,7 +72,12 @@ class Diagnostic:
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Outcome(Generic[T]):
-    """An invocation and its optional output; severity never decides availability."""
+    """An invocation and its optional output; severity never decides availability.
+
+    Distinguishes an unavailable operation from a successful Evidence table
+    containing unavailable cells. Expected input incompatibilities remain
+    reviewable without pretending a result exists.
+    """
 
     operation: Operation
     output: T | None
@@ -81,6 +95,9 @@ class Outcome(Generic[T]):
 
 
 def fingerprint(operation: Operation) -> str:
+    """Identifies the effective computation for replay and derived-Claim identity.
+    Equal invocations share a digest rather than receiving a new job identity.
+    """
     if not isinstance(operation, Operation):
         raise TypeError("Expected Operation")
     return _structured.fingerprint({
@@ -92,7 +109,11 @@ def fingerprint(operation: Operation) -> str:
 
 
 class _Failure(Exception):
-    """Private control flow for an anticipated input/capability mismatch."""
+    """Private control flow for an anticipated input/capability mismatch.
+
+    Lets an operation report an expected source mismatch without converting
+    programmer errors into apparently normal Outcomes.
+    """
 
     def __init__(
         self,
@@ -118,6 +139,10 @@ def _invoke(
     inputs: Mapping[str, str | None],
     run: Callable[[Operation], T],
 ) -> Outcome[T]:
+    """Keeps anticipated failure-to-Outcome conversion consistent across operations
+    while leaving invalid arguments and unexpected exceptions visible to the
+    caller.
+    """
     operation = Operation(method=method, specification=specification, inputs=inputs)
     try:
         output = run(operation)
