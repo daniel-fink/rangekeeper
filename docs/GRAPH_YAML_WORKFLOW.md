@@ -110,6 +110,34 @@ Every derived Claim includes its source Claims and effective configuration Claim
 Unknown suffixes stay unknown. Source Issues remain available; unavailable derived
 outputs carry applicable explanations. Issue severity never chooses availability.
 
+### Shared numeric specifications
+
+`number_sets` in `sources.yaml` names complete ordered mappings of output columns
+to existing NumberSpec declarations. A `numbers` step chooses exactly one of
+inline `specifications` or `specifications_ref`:
+
+```yaml
+number_sets:
+  equipment_sizes:
+    number_size:
+      column: size
+      integer: false
+      nonnegative: true
+      missing_markers: ['-', '–', '—']
+steps:
+  # Earlier read/extract/select steps remain explicit.
+  - id: numeric
+    operation: numbers
+    input: selected
+    specifications_ref: equipment_sizes
+```
+
+This shares admissibility policy, not observations or Claim identities. Each use
+still derives its own Claims from its own input Evidence and configuration.
+Whole-set references preserve order. There is no inheritance, nested reference,
+merge, override, external include or executable substitution. Unused definitions
+are validated too. Existing inline version-1 documents remain valid.
+
 ### Model
 
 Declare `taxonomy`, ordered `classifications` (with optional parent code), `measures`
@@ -151,6 +179,52 @@ editions and measured values do not form part of business identity.
 Optional `findings`, supporting `deferred` row declarations and deferred `aggregates`
 retain limitations. Enabled aggregate calculations must be explicit check operands;
 a deferred model policy does not perform an allocation or alter Measure semantics.
+
+### Shared measurement bindings
+
+`measurement_sets` in `model.yaml` names ordered lists of the existing measurement
+declarations. A template or explicit object chooses inline `measurements` or a
+`measurements_ref`, never both:
+
+```yaml
+measurement_sets:
+  equipment_readings:
+    - measure: size
+      binding: {column: number_size}
+      on_unavailable:
+        topic: Unavailable measurement
+        explanation: No zero is inferred from absent source evidence.
+# Within an existing row-driven template:
+# measurements_ref: equipment_readings
+```
+
+By default relative bindings use the consumer's current row. Add
+`measurements_evidence: reported_total` beside `measurements_ref` to bind them to
+named single-row Evidence instead. This applies to the measurement value,
+conditions, additional supporting Evidence and on-unavailable bindings. Explicit
+`evidence` references and literal values retain their meaning. Each use receives
+an independent copy; assigning one total cannot mutate another consumer's policy.
+An explicit object must provide context for every relative binding. A multi-row
+named context returns the existing unavailable `ambiguous_evidence` Outcome when
+consumed; an unknown context is a declaration error. Duplicate measures within
+one measurement list are rejected, including conditional duplicates; use one
+explicit selection upstream rather than ambiguous declarations.
+
+Resolution belongs to `load`, before `WorkflowSpec` construction. Direct
+`StepSpec`, `NumbersSpec`, `WorkflowSpec` and composition APIs continue to receive
+effective inline declarations. Definitions and uses are frozen in
+`WorkflowSpec.declarations`, alongside the authored file hashes and resolved
+`to_mapping()` values. Definitions carry consumer/definition paths in `uses`, plus
+any explicitly supplied Evidence context. Unknown or malformed sets fail before
+source execution. Errors identify the definition or consumer and set name.
+
+For builds using sets, `manifest.json` includes `effective_specification` with
+resolved declarations, original definitions and reference origins. The review
+HTML exposes the same data under **Shared declarations and effective specification**.
+`schema()` describes shared definitions and use fields as well as the operation
+catalog; it does not yet describe the complete graph/check language. Configuration
+hashes and derived Claim IDs may change after re-authoring; business identity,
+source support and substantive results must be compared separately.
 
 ### Decisions
 

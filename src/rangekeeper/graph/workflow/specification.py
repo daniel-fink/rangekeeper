@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from types import MappingProxyType
 from typing import Any
@@ -338,6 +338,7 @@ class WorkflowSpec:
     decisions: Mapping[str, Any]
     checks: Mapping[str, Any]
     hashes: Mapping[str, str]
+    declarations: Mapping[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
         text(self.namespace)
@@ -355,7 +356,7 @@ class WorkflowSpec:
                     raise ValueError(f"{step.id} expects {expected} input {inp}")
             seen[step.id] = declaration.output
         object.__setattr__(self, "steps", tuple(self.steps))
-        for key in ("model", "decisions", "checks", "hashes"):
+        for key in ("model", "decisions", "checks", "hashes", "declarations"):
             object.__setattr__(
                 self, key, _structured.freeze_mapping(getattr(self, key))
             )
@@ -387,6 +388,7 @@ class WorkflowSpec:
             "decisions": self.decisions,
             "checks": self.checks,
             "hashes": self.hashes,
+            **({"declarations": self.declarations} if self.declarations else {}),
         }
 
 
@@ -416,16 +418,33 @@ def load(spec_directory: Path) -> WorkflowSpec:
             )
         documents[name] = dict(doc)
         documents[name].pop("version")
-    sources = fields(
-        documents["sources"], {"namespace", "steps"}, {"namespace", "steps"}
+    from ._shared import resolve_measurements, resolve_numbers
+
+    sources, numeric_origins = resolve_numbers(documents["sources"])
+    steps = tuple(StepSpec.from_mapping(v) for v in sequence(sources["steps"]))
+    seen = {step.id: _OPERATIONS[step.operation].output for step in steps}
+    model, measurement_origins = resolve_measurements(
+        documents["model"], seen, documents["decisions"]
     )
+    declarations = {}
+    if (
+        "number_sets" in documents["sources"]
+        or "measurement_sets" in documents["model"]
+    ):
+        declarations = {
+            "version": 1,
+            "number_sets": documents["sources"].get("number_sets", {}),
+            "measurement_sets": documents["model"].get("measurement_sets", {}),
+            "uses": [*numeric_origins, *measurement_origins],
+        }
     return WorkflowSpec(
         namespace=sources["namespace"],
-        steps=tuple(StepSpec.from_mapping(v) for v in sequence(sources["steps"])),
-        model=documents["model"],
+        steps=steps,
+        model=model,
         decisions=documents["decisions"],
         checks=documents["checks"],
         hashes=hashes,
+        declarations=declarations,
     )
 
 
@@ -540,6 +559,7 @@ def schema() -> Mapping[str, object]:
         },
         "numbers": {
             "input": string,
+            "specifications_ref": string,
             "specifications": {"type": "object", "additionalProperties": number},
         },
         "transform": {
@@ -575,6 +595,60 @@ def schema() -> Mapping[str, object]:
         },
     }
 
+    numeric = result["operations"]["numbers"]
+    numeric["required"].remove("specifications")
+    numeric["oneOf"] = [
+        {"required": ["specifications"]},
+        {"required": ["specifications_ref"]},
+    ]
+    binding = obj({"value": {}, "column": string, "evidence": string})
+    binding["oneOf"] = [
+        {
+            "required": ["value"],
+            "not": {"anyOf": [{"required": ["column"]}, {"required": ["evidence"]}]},
+        },
+        {"required": ["column"], "not": {"required": ["value"]}},
+    ]
+    condition = obj(
+        {
+            "binding": binding,
+            "equals": {},
+            "in": {"type": "array"},
+            "available": boolean,
+        },
+        ("binding",),
+    )
+    condition["oneOf"] = [{"required": [key]} for key in ("equals", "in", "available")]
+    measurement = obj(
+        {
+            "measure": string,
+            "binding": binding,
+            "when": condition,
+            "decisions": names,
+            "evidence": {"type": "array", "items": binding},
+            "on_unavailable": obj({
+                "feature": string,
+                "binding": binding,
+                "topic": string,
+                "explanation": string,
+            }),
+        },
+        ("measure", "binding"),
+    )
+    result["shared_declarations"] = {
+        "number_sets": {
+            "type": "object",
+            "additionalProperties": {"type": "object", "additionalProperties": number},
+        },
+        "measurement_sets": {
+            "type": "object",
+            "additionalProperties": {"type": "array", "items": measurement},
+        },
+        "measurement_use": obj(
+            {"measurements_ref": string, "measurements_evidence": string},
+            ("measurements_ref",),
+        ),
+    }
     result["operations"]["select"]["not"] = {
         "required": ["where", "row_ids"],
         "properties": {"where": {"type": "object"}, "row_ids": {"type": "array"}},

@@ -19,3 +19,10 @@ come from explicit relationships. The whole path includes graph JSON and shared
 review export. The contract tests also exercise concatenation, bad source layouts,
 wrong members with equal counts, shared memberships, missing formula caches and
 business identity stability.
+
+The equipment specification demonstrates named `equipment_sizes` numeric policies
+and `equipment_readings` measurement bindings. The accommodation example retains
+the inline form. Both resolve to ordinary RK requests; no external generator or
+project runtime is needed. The shared-declaration tests additionally exercise
+multiple consumers, explicit total contexts, isolation between uses and strict
+validation of unused definitions.
