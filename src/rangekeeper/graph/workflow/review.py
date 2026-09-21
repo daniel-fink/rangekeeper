@@ -114,6 +114,16 @@ def render(result, *, viewer_url: str = "viewer.html") -> str:
         + "</td></tr>"
         for c in result.source_checks
     )
+    effective = result.metadata.get("effective_specification")
+    declarations = ""
+    if effective:
+        declarations = (
+            "<details><summary>Shared declarations and effective specification</summary>"
+            "<p>Definitions and consumer paths retain the authored reference origins.</p>"
+            '<pre style="white-space:pre-wrap">'
+            + escape(json.dumps(plain(effective), ensure_ascii=False, indent=2))
+            + "</pre></details>"
+        )
     return (
         '<!doctype html><meta charset="utf-8"><title>Workflow review</title><style>body{font:15px system-ui;margin:2rem}table{border-collapse:collapse;width:100%}th{background:#f4f6f8}td{vertical-align:top;overflow-wrap:anywhere}summary{cursor:pointer}td details{margin:0}td ul{max-height:18rem;overflow:auto;padding-left:1.2rem}td,th{border:1px solid #ddd;padding:.4rem;text-align:left}details{margin:1rem 0}</style><h1>Workflow review</h1><ul>'
         + "".join(summaries)
@@ -127,7 +137,9 @@ def render(result, *, viewer_url: str = "viewer.html") -> str:
         + "".join(rows)
         + "</table><h2>Source checks</h2><table><tr><th>Name</th><th>Status</th><th>Count</th><th>Explanation</th><th>Sources</th></tr>"
         + sources
-        + "</table><h2>Evidence and lineage</h2>"
+        + "</table>"
+        + declarations
+        + "<h2>Evidence and lineage</h2>"
         + "".join(detail)
     )
 

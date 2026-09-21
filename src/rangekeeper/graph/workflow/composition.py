@@ -50,6 +50,42 @@ class Finding:
     references: tuple[str, ...] = ()
 
 
+def validate_measurements(values, seen, decision_ids, measures):
+    """Validate bindings equally at their definition and their point of use.
+
+    Sharing must not let an unused malformed policy escape review, or let a
+    repeated measure silently overwrite an earlier declaration.
+    """
+    codes = set()
+    for attr in sequence(values):
+        fields(
+            attr,
+            {"measure", "binding", "when", "decisions", "evidence", "on_unavailable"},
+            {"measure", "binding"},
+        )
+        code = text(attr["measure"])
+        if code not in measures:
+            raise ValueError(f"Unknown measure: {code}")
+        if code in codes:
+            raise ValueError(f"Duplicate measurement declaration: {code}")
+        codes.add(code)
+        if set(sequence(attr.get("decisions", ()))) - set(decision_ids):
+            raise ValueError("Unknown reviewed decision")
+        for b in sequence(attr.get("evidence", ())):
+            validate_binding(b, seen)
+        validate_binding(attr["binding"], seen)
+        validate_condition(attr.get("when"), seen)
+        if "on_unavailable" in attr:
+            missing = fields(
+                attr["on_unavailable"], {"feature", "binding", "topic", "explanation"}
+            )
+            if "binding" in missing:
+                validate_binding(missing["binding"], seen)
+            for key in ("feature", "topic", "explanation"):
+                if key in missing:
+                    text(missing[key])
+
+
 def validate_model(model, seen, decisions):
     fields(
         model,
@@ -170,6 +206,7 @@ def validate_model(model, seen, decisions):
             validate_binding(b, seen)
 
     def attributes(p):
+        validate_measurements(p.get("measurements", ()), seen, decision_ids, measures)
         for kind, required, allowed in [
             (
                 "features",
@@ -181,18 +218,6 @@ def validate_model(model, seen, decisions):
                     "decisions",
                     "evidence",
                     "omit_unavailable",
-                },
-            ),
-            (
-                "measurements",
-                {"measure", "binding"},
-                {
-                    "measure",
-                    "binding",
-                    "when",
-                    "decisions",
-                    "evidence",
-                    "on_unavailable",
                 },
             ),
             (
@@ -210,8 +235,6 @@ def validate_model(model, seen, decisions):
                         validate_binding(b, seen)
                 else:
                     validate_binding(attr["binding"], seen)
-                if kind == "measurements" and attr["measure"] not in measures:
-                    raise ValueError("Unknown measure")
                 if "on_unavailable" in attr:
                     fields(
                         attr["on_unavailable"],

@@ -1,4 +1,14 @@
 version: 1
+measurement_sets:
+  equipment_readings:
+  - measure: size
+    binding:
+      column: number_size
+    on_unavailable:
+      topic: Unavailable measurement
+  - measure: count
+    binding:
+      column: count
 taxonomy:
   code: example
   name: equipment
@@ -41,19 +51,11 @@ templates:
   - name: source_label
     binding:
       column: label
-  measurements:
-  - measure: size
-    binding:
-      column: number_size
-    on_unavailable:
-      topic: Unavailable measurement
-  - measure: count
-    binding:
-      column: count
   labels:
   - name: product
     bindings:
     - column: product
+  measurements_ref: equipment_readings
 - id: zones
   table: zones
   kind: assembly

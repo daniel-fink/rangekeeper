@@ -114,3 +114,14 @@ using the same error/cache-aware matcher as extraction.
 versioned semantic AST manifest. Comments, docstrings and presentation modules do
 not change semantic identities; executable changes in the declared computation
 modules do. `metadata.step_operations` associates dispatch/native records.
+
+## Named policy ownership
+
+Project YAML may share complete numeric specification sets and measurement binding
+sets. `workflow._shared` resolves those two forms at load time; it does not execute
+steps or add a template language. `composition.validate_measurements` validates
+both definitions and resolved uses so unused invalid policies are caught and
+measurement collisions cannot be silently overwritten. `WorkflowSpec.declarations`
+retains origins for review and configuration lineage. Existing ingestion and
+composition algorithms still consume explicit declarations. See the
+[shared policy contract](GRAPH_YAML_WORKFLOW.md#shared-numeric-specifications).

@@ -308,6 +308,8 @@ def run(spec: WorkflowSpec, *, input_root: Path) -> Outcome[WorkflowResult]:
             "deferred": spec.checks.get("deferred", ()),
             "notes": spec.checks.get("notes", ()),
         }
+        if spec.declarations:
+            metadata["effective_specification"] = spec.to_mapping()
         return Outcome(
             operation=operation,
             output=WorkflowResult(
