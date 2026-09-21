@@ -1,4 +1,4 @@
-"""Native workbook health and Evidence quality checks, with declared scopes."""
+"""Declared native source checks and format-independent Evidence quality checks."""
 
 from collections import Counter, defaultdict
 from dataclasses import dataclass
@@ -8,7 +8,8 @@ from rangekeeper.graph.provenance import locations
 from rangekeeper.graph.workflow.ingestion import tabular
 
 from ._declarations import fields, sequence
-from .references import references
+from .bindings import require_columns
+from .references import format_location, references
 
 
 @dataclass(frozen=True, slots=True)
@@ -31,8 +32,9 @@ def validate(specs, seen):
     from ._declarations import text
 
     common = {"id", "operation"}
+    from .catalog import SOURCE_CHECKS
+
     contracts = {
-        "workbook_health": ({"workbook"}, set()),
         "identities": ({"table", "column", "name", "explanation"}, set()),
         "occupied_rows": ({"table", "name", "explanation"}, {"columns"}),
         "numeric_issues": ({"tables"}, set()),
@@ -43,18 +45,19 @@ def validate(specs, seen):
         try:
             fields(s, set(s), common)
             op = text(s["operation"])
-            if op not in contracts:
+            if op not in contracts and op not in SOURCE_CHECKS:
                 raise ValueError("Unknown source check")
-            required, optional = contracts[op]
-            fields(s, common | required | optional, common | required)
             identifier = text(s["id"])
             if identifier in ids:
                 raise ValueError("Duplicate source check ID")
             ids.add(identifier)
+            if op in SOURCE_CHECKS:
+                SOURCE_CHECKS[op].validate(s, seen)
+                continue
+            required, optional = contracts[op]
+            fields(s, common | required | optional, common | required)
             for key in set(s) - {"columns", "tables"}:
                 text(s[key])
-            if "workbook" in s and seen.get(s["workbook"]) != "workbook":
-                raise ValueError("Source check references unknown workbook")
             if "table" in s and seen.get(s["table"]) != "table":
                 raise ValueError("Source check references unknown Evidence")
             for c in sequence(s.get("columns", ())):
@@ -69,47 +72,19 @@ def validate(specs, seen):
             raise type(exc)(f"source_checks[{index}]: {exc}") from exc
 
 
-def evaluate(specs, outputs):
-    """Reviews native workbook health and declared Evidence scopes without
+def evaluate(specs, outputs, *, source_ids=None):
+    """Reviews registered native health checks and declared Evidence scopes without
     inventing canonical graph objects for unsupported source material.
     """
+    from .catalog import SOURCE_CHECKS
+
     result = []
     for s in specs:
         op = s["operation"]
-        if op == "workbook_health":
-            book = outputs[s["workbook"]]
-            cells = [c for sheet in book.worksheets for c in sheet.cells.values()]
-            formulas = [c for c in cells if c.formula is not None]
-            missing = [c for c in formulas if not c.cache_present]
-            errors = [c for c in cells if c.data_type == "e" or c.cached_type == "e"]
-            for suffix, name, selected, explanation in [
-                (
-                    "cache",
-                    "Formula caches",
-                    missing,
-                    f"{len(formulas)} formulas inspected; caches are read, never calculated.",
-                ),
-                (
-                    "errors",
-                    "Excel errors",
-                    errors,
-                    "Includes stored formula results and literal error cells.",
-                ),
-            ]:
-                refs = tuple(
-                    f"{c.location.source.name} · {c.location.reference['sheet']}!{c.coordinate}"
-                    for c in selected
-                )
-                result.append(
-                    SourceCheck(
-                        s["id"] + "-" + suffix,
-                        book.source.name + ": " + name,
-                        "finding" if selected else "passed",
-                        len(selected),
-                        explanation,
-                        refs,
-                    )
-                )
+        if op in SOURCE_CHECKS:
+            declaration = SOURCE_CHECKS[op]
+            inputs = {s[key]: outputs[s[key]] for key, _ in declaration.inputs}
+            result.extend(declaration.evaluate(s, inputs))
         elif op == "deferred":
             result.append(
                 SourceCheck(
@@ -122,6 +97,12 @@ def evaluate(specs, outputs):
             )
         elif op in {"identities", "occupied_rows"}:
             table = outputs[s["table"]]
+            require_columns(
+                table,
+                (s["column"],)
+                if op == "identities"
+                else s.get("columns", table.data.columns),
+            )
             parents = []
             if op == "identities":
                 col = s["column"]
@@ -178,6 +159,7 @@ def evaluate(specs, outputs):
             }
             for selection in s["tables"]:
                 table = outputs[selection["table"]]
+                require_columns(table, selection["columns"])
                 for row in table.data.rows:
                     for col in selection["columns"]:
                         if col not in table.data.columns:
@@ -192,9 +174,10 @@ def evaluate(specs, outputs):
                         labels = [messages[c] for c in codes if c in messages]
                         label = labels[0] if labels else "unavailable"
                         for loc in locations(claim):
-                            if "cell" in loc.reference:
-                                ref = f"{loc.source.name} · {loc.reference['sheet']}!{loc.reference['cell']}"
-                                grouped[(loc.source.name, label)].add(ref)
+                            if source_ids is None or loc.source.id in source_ids:
+                                grouped[(loc.source.name, label)].add(
+                                    format_location(loc)
+                                )
             for (name, label), refs in sorted(grouped.items()):
                 result.append(
                     SourceCheck(

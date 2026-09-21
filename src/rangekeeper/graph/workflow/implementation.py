@@ -38,12 +38,13 @@ def semantic_digest(source: str) -> str:
     return hashlib.sha256(ast.dump(tree, include_attributes=False).encode()).hexdigest()
 
 
-def manifests(package: Path):
+def manifests(package: Path, *, modules: tuple[str, ...] = ()):
     """Audit every Python file; bind semantic identity to declared computation code.
 
     This conservative dependency set includes graph construction, provenance,
-    measures, ingestion and Excel. Presentation and CLI export do not compute
-    assertions and therefore cannot change their identities.
+    measures and ingestion, plus the selected handlers' declared native modules.
+    Presentation and CLI export do not compute assertions and therefore cannot
+    change their identities.
     """
     paths = sorted(package.rglob("*.py"))
     audit = {
@@ -57,10 +58,9 @@ def manifests(package: Path):
             "measure/",
             "graph/",
         ))
-        excluded = (
-            name.startswith("graph/adapter/")
-            and not name.startswith("graph/adapter/excel/")
-            and name not in {"graph/adapter/errors.py", "graph/adapter/json.py"}
+        excluded = name.startswith("graph/adapter/") and not (
+            any(name.startswith(prefix) for prefix in modules)
+            or name in {"graph/adapter/errors.py", "graph/adapter/json.py"}
         )
         excluded |= name in {
             "graph/workflow/review.py",
@@ -69,4 +69,4 @@ def manifests(package: Path):
         }
         if included and not excluded:
             semantic[name] = semantic_digest(p.read_text())
-    return audit, semantic, _structured.fingerprint({"version": 2, "modules": semantic})
+    return audit, semantic, _structured.fingerprint({"version": 3, "modules": semantic})

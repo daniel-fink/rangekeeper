@@ -83,3 +83,16 @@ def template(text_value, values):
         if key is not None and (key not in values or spec or conversion):
             raise ValueError("Only declared plain template keys are supported")
     return text_value.format_map(values)
+
+
+def require_columns(evidence, columns) -> None:
+    """Convert valid requests for absent input fields into an anticipated failure.
+
+    Check before iteration so an empty table cannot hide an incompatible schema.
+    """
+    missing = set(columns) - set(evidence.data.columns)
+    if missing:
+        raise _Failure(
+            "missing_column",
+            f"Evidence {evidence.name} has no columns {sorted(missing)}",
+        )

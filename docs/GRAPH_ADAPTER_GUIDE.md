@@ -4,6 +4,8 @@ This guide explains the purpose of the ingestion and workflow APIs. See the
 [YAML contract guide](GRAPH_YAML_WORKFLOW.md) for syntax and the
 [boundary review](GRAPH_ADAPTER_REVIEW.md) for the original findings and their resolution.
 The class and method docstrings explain the same ownership in the Python API.
+The later [format-independent execution refactor](GRAPH_WORKFLOW_FORMATS.md)
+records the catalog, native-handler boundaries and explanation fixes.
 
 ## Responsibilities
 
@@ -101,14 +103,18 @@ namespace=...)` takes explicit reviewed declarations and named Evidence.
 `checking.evaluate(checks, graph, by_key, outputs)` compares an existing graph.
 Neither API requires a `WorkflowSpec`. `bindings.py` owns bounded value/condition
 resolution; `references.py` owns presentation; `provenance.locations` owns generic
-lineage traversal. The runner only connects these capabilities.
+lineage traversal. The runner connects these capabilities through registered operation handlers.
+Excel workflow wiring and native source health/addressing belong to
+`adapter.excel.workflow`; the generic runner never inspects native objects.
 
 `ingestion.predicates.Predicate` and `select_where` provide exact-type filtering
 through existing selection semantics. `excel.extract_table(..., unique_stop=True)`
 checks the entire native marker column, including rows before extraction starts,
 using the same error/cache-aware matcher as extraction.
 
-`OperationDeclaration` is a closed parser/dependency descriptor, not a plugin API.
+`OperationDeclaration` joins parsing, dependencies, schema fields, execution and
+output description in one closed descriptor. The catalog explicitly assembles
+RK-owned handlers; it is not a plugin API.
 `schema()` describes steps only; model/check validation is performed by `load`.
 `implementation.manifests` retains full Python byte hashes for audit and a separate
 versioned semantic AST manifest. Comments, docstrings and presentation modules do

@@ -2,10 +2,10 @@
 
 from collections.abc import Mapping
 from dataclasses import dataclass, field
-from enum import Enum
 from types import MappingProxyType
 from typing import Any, Generic, TypeVar
 
+from rangekeeper.graph.operation import IssueSeverity
 from rangekeeper.graph.provenance import Claim
 from rangekeeper.graph.workflow.ingestion._encoding import digest, encode
 from rangekeeper.graph.workflow.ingestion.errors import EvidenceValidationError
@@ -13,16 +13,6 @@ from rangekeeper.graph.workflow.ingestion.errors import EvidenceValidationError
 # Stable address segments let Issue scopes survive row reordering and selection.
 EvidenceKey = tuple[str, ...]
 T = TypeVar("T")
-
-
-class IssueSeverity(str, Enum):
-    """Provides a display priority for explanations; availability is decided by the
-    consuming operation, not this ranking.
-    """
-
-    INFO = "info"
-    WARNING = "warning"
-    ERROR = "error"
 
 
 def _key(value: object) -> EvidenceKey:

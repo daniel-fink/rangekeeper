@@ -285,3 +285,17 @@ The AST encoder omits comments/docstrings, and presentation/CLI modules are outs
 the computation manifest. This is intentionally conservative: any executable
 change within the declared computation set invalidates derived identities.
 `step_operations` links workflow dispatch fingerprints to their native invocations.
+
+
+## Format-independent execution
+
+The existing operation names and YAML shape are unchanged by the format-boundary
+refactor. Operations are explicitly registered by RK code; their native input and
+output kinds are validated before execution. YAML cannot install a handler or
+select an import. See [ownership and extension guidance](GRAPH_WORKFLOW_FORMATS.md).
+
+Check results now retain both operands' missing contributors and known subtotals.
+The older `missing` and `known_subtotal` fields retain their left-side meaning.
+Review references include configuration and non-Excel locations. Native source
+metadata comes from producing handlers, and the manifest includes structured
+`deferred_evidence` alongside existing Excel deferred-record tokens.

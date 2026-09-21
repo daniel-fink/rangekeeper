@@ -2,15 +2,25 @@
 
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import Generic, TypeVar
 
 from rangekeeper import validate
 from rangekeeper.graph import _structured
 from rangekeeper.graph.provenance import Location, Method
-from rangekeeper.graph.workflow.ingestion import IssueSeverity
 
-__all__ = ["Diagnostic", "Operation", "Outcome", "fingerprint"]
+__all__ = ["Diagnostic", "IssueSeverity", "Operation", "Outcome", "fingerprint"]
 T = TypeVar("T")
+
+
+class IssueSeverity(str, Enum):
+    """Provides a display priority for explanations; availability is decided by the
+    consuming operation, not this ranking.
+    """
+
+    INFO = "info"
+    WARNING = "warning"
+    ERROR = "error"
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

@@ -1,5 +1,9 @@
 # Ingestion and workflow boundary review
 
+For the subsequent format-independent execution review and implementation, see
+[GRAPH_WORKFLOW_FORMATS.md](GRAPH_WORKFLOW_FORMATS.md). The dated findings below
+remain a historical record.
+
 Reviewed and refactored 18 September 2026 on the uncommitted
 `feature/mandarin-yaml-rebuild` implementation. The findings below describe the
 pre-refactor code. Their resolution is recorded here; Dagster remains outside scope.
