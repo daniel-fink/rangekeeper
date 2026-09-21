@@ -3,7 +3,6 @@
 import json
 from dataclasses import asdict
 from html import escape
-from importlib.metadata import version
 from pathlib import Path
 
 from rangekeeper.graph.adapter import json as graph_json
@@ -22,6 +21,32 @@ def _references(items) -> str:
         f"<details><summary>{len(items)} source references</summary><ul>"
         + "".join("<li>" + escape(item) + "</li>" for item in items)
         + "</ul></details>"
+    )
+
+
+def _completeness(check) -> str:
+    """Show each operand's missing contributors without suggesting a complete total."""
+    sides = []
+    for name in ("left", "right"):
+        missing = getattr(check, name + "_missing")
+        known = getattr(check, name + "_known_subtotal")
+        if missing:
+            sides.append(
+                "<li>"
+                + escape(
+                    f"{name.title()}: known subtotal {known}; missing contributors: "
+                    + ", ".join(missing)
+                )
+                + "</li>"
+            )
+    return (
+        (
+            "<details><summary>Incomplete operands</summary><ul>"
+            + "".join(sides)
+            + "</ul></details>"
+        )
+        if sides
+        else ""
     )
 
 
@@ -53,6 +78,7 @@ def render(result, *, viewer_url: str = "viewer.html") -> str:
             )
             + "<td>"
             + _references(c.references)
+            + _completeness(c)
             + "</td></tr>"
         )
     findings = "".join(
@@ -166,9 +192,6 @@ def export(result, destination: Path):
         json.dumps(checks, ensure_ascii=False, indent=2) + "\n"
     )
     metadata = plain(result.metadata)
-    metadata["dependencies"] = {
-        k: version(k) for k in ("rangekeeper", "openpyxl", "pyyaml", "pint")
-    }
     metadata["operation_records"] = [
         {
             "fingerprint": fingerprint(o),

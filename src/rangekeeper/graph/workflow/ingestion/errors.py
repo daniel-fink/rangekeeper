@@ -1,9 +1,9 @@
 """Failures of the Evidence contract, distinct from source-data issues."""
 
-from rangekeeper.graph.adapter.errors import AdapterError
+from rangekeeper.graph.errors import BoundaryError
 
 
-class EvidenceValidationError(AdapterError, ValueError):
+class EvidenceValidationError(BoundaryError, ValueError):
     """An invalid snapshot, address or evidence association."""
 
     def __init__(

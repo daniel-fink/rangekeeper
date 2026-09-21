@@ -9,11 +9,17 @@ from typing import Any
 
 from rangekeeper.graph import Assembly, Entity, Graph
 from rangekeeper.graph.operation import _Failure
-from rangekeeper.graph.workflow.ingestion import tabular
 
 from ._declarations import fields, sequence, text
-from .bindings import binding, condition, template, validate_binding, validate_condition
-from .ingestion.predicates import equal
+from ._operands import operand
+from .bindings import (
+    binding,
+    condition,
+    require_columns,
+    template,
+    validate_binding,
+    validate_condition,
+)
 from .references import references
 
 
@@ -39,6 +45,11 @@ class CheckResult:
     source: str = ""
     left_members: tuple[str, ...] = ()
     right_members: tuple[str, ...] = ()
+    # Legacy fields above retain their left-side meaning for existing consumers.
+    left_missing: tuple[str, ...] = ()
+    right_missing: tuple[str, ...] = ()
+    left_known_subtotal: int | float | None = None
+    right_known_subtotal: int | float | None = None
 
 
 _GRAPH_FILTERS = {"classification", "member_of", "codes"}
@@ -172,176 +183,11 @@ def evaluate(
     concealing different populations.
     """
 
-    def codes_of(entities):
-        codes = [e.code for e in entities]
-        if any(code is None for code in codes):
-            raise _Failure(
-                "missing_business_key", "Identity comparison requires object codes"
-            )
-        return tuple(sorted(code for code in codes if code is not None))
-
     results = []
-
-    def operand(op, row, table):
-        kind = op["kind"]
-        claims = []
-        targets = []
-        missing = []
-        known = None
-        if kind == "value":
-            return op["value"], claims, targets, known, missing
-        if kind in {"column", "evidence"}:
-            value, parents = binding(op["binding"], row, table, outputs)
-            return value, parents, targets, known, missing
-        if kind.startswith("table_"):
-            selected = outputs[op["table"]]
-            rows = list(selected.data.rows)
-            if "where" in op:
-                w = op["where"]
-                expected = (
-                    binding(w["binding"], row, table, outputs)[0]
-                    if "binding" in w
-                    else w["equals"]
-                )
-                rows = [r for r in rows if equal(r.values[w["column"]], expected)]
-            values = []
-            for r in rows:
-                c = tabular.claim(selected, r.id, op["column"])
-                claims.extend(
-                    tabular.claim(selected, r.id, col)
-                    for col in op.get("evidence_columns", (op["column"],))
-                )
-                values.append(c.value)
-                if c.value is None:
-                    missing.append(str(r.id))
-            if kind == "table_count":
-                value = len(rows)
-            elif kind == "table_keys":
-                value = tuple(sorted(values, key=repr)) if not missing else None
-            else:
-                available = [v for v in values if v is not None]
-                known = sum(available) if available else None
-                value = known if rows and not missing else None
-            return value, claims, targets, known, missing
-        if kind == "graph_measurement":
-            key, _upstream = binding(op["key"], row, table, outputs)
-            obj = by_key.get((op["identity_kind"], key))
-            item = obj.measurements.get(op["measure"]) if obj is not None else None
-            value = (
-                item.quantity.to(op.get("units", str(item.quantity.units))).magnitude
-                if item
-                else None
-            )
-            return (
-                value,
-                claims,
-                (
-                    []
-                    if obj is None
-                    or (item is None and op.get("missing_target", "omit") == "omit")
-                    else [str(item.id if item else obj.id)]
-                ),
-                known,
-                missing,
-            )
-        if kind == "membership_keys":
-            key, _upstream = binding(op["key"], row, table, outputs)
-            obj = by_key.get((op["identity_kind"], key))
-            if obj is None:
-                return (), claims, targets, known, missing
-            if not isinstance(obj, Assembly):
-                raise _Failure(
-                    "invalid_membership_target",
-                    "Membership comparison requires an Assembly",
-                )
-            targets = [str(obj.id)]
-            members = [graph.entity(uid) for uid in obj.entity_ids]
-            if "classification" in op:
-                members = [
-                    x
-                    for x in members
-                    if x.classification
-                    and x.classification.code == op["classification"]
-                ]
-            return (
-                codes_of(members),
-                claims,
-                targets,
-                known,
-                missing,
-            )
-        entities = list(graph.entities)
-        if "classification" in op:
-            entities = [
-                x
-                for x in entities
-                if x.classification and x.classification.code == op["classification"]
-            ]
-        if "member_of" in op:
-            m = op["member_of"]
-            key, _ = binding(m["key"], row, table, outputs)
-            parent = by_key.get((m["kind"], key))
-            if parent is not None and not isinstance(parent, Assembly):
-                raise _Failure(
-                    "invalid_membership_target",
-                    "Membership filter requires an Assembly",
-                )
-            entities = [
-                x for x in entities if parent is not None and x.id in parent.entity_ids
-            ]
-        if "measure" in op and kind in {"graph_keys", "graph_count"}:
-            expected = (
-                binding(op["binding"], row, table, outputs)[0]
-                if "binding" in op
-                else None
-            )
-            entities = [
-                x
-                for x in entities
-                if op["measure"] in x.measurements
-                and (
-                    expected is None
-                    or x.measurements[op["measure"]].quantity.magnitude == expected
-                )
-            ]
-        if "codes" in op:
-            codes = op["codes"]
-            evidence = outputs[codes["table"]]
-            wanted = {r.values[codes["column"]] for r in evidence.data.rows}
-            entities = [e for e in entities if e.code in wanted]
-            for r in evidence.data.rows:
-                claims.extend(
-                    tabular.claim(evidence, r.id, c)
-                    for c in codes.get("evidence_columns", ())
-                )
-            missing.extend(str(k) for k in wanted - {e.code for e in entities})
-        targets = [str(e.id) for e in entities]
-        if kind == "graph_count":
-            value = len(entities)
-        elif kind == "graph_keys":
-            value = codes_of(entities)
-        else:
-            values = []
-            targets = []
-            for e in entities:
-                m = e.measurements.get(op["measure"])
-                if m is None:
-                    missing.append(e.code)
-                else:
-                    values.append(
-                        m.quantity.to(op.get("units", str(m.quantity.units))).magnitude
-                    )
-                    targets.append(str(m.id))
-            known = sum(values) if values else None
-            value = (
-                known
-                if entities and (not missing or not op.get("require_complete", True))
-                else None
-            )
-        return value, claims, targets, known, missing
-
     for c in spec["comparisons"]:
         table = outputs[c["each"]] if "each" in c else None
+        if table is not None and "scope_column" in c:
+            require_columns(table, (c["scope_column"],))
         for row in table.data.rows if table is not None else (None,):
             if not condition(c.get("when"), row, table, outputs):
                 continue
@@ -350,11 +196,17 @@ def evaluate(
                 if row is not None and "scope_column" in c
                 else ""
             }
-            left, lc, lt, known, missing = operand(c["left"], row, table)
-            right, rc, rt, _, _ = operand(c["right"], row, table)
+            left_result = operand(c["left"], row, table, graph, by_key, outputs)
+            right_result = operand(c["right"], row, table, graph, by_key, outputs)
+            left, right = left_result.value, right_result.value
             if left is None or right is None:
                 status = "unavailable"
-            elif type(left) in (int, float) and type(right) in (int, float):
+            elif (
+                isinstance(left, (int, float))
+                and not isinstance(left, bool)
+                and isinstance(right, (int, float))
+                and not isinstance(right, bool)
+            ):
                 status = (
                     "agree"
                     if math.isclose(
@@ -366,17 +218,24 @@ def evaluate(
                 status = "agree" if left == right else "difference"
             if c.get("report_when") == "difference" and status != "difference":
                 continue
+            if c.get("report") == "counts" and any(
+                value is not None and not isinstance(value, tuple)
+                for value in (left, right)
+            ):
+                raise _Failure(
+                    "invalid_count_report", "Count reports require key collections"
+                )
             members_left = (
-                tuple(left) if c.get("report") == "counts" and left is not None else ()
+                left if c.get("report") == "counts" and isinstance(left, tuple) else ()
             )
             members_right = (
-                tuple(right)
-                if c.get("report") == "counts" and right is not None
+                right
+                if c.get("report") == "counts" and isinstance(right, tuple)
                 else ()
             )
             if c.get("report") == "counts":
-                left = None if left is None else len(left)
-                right = None if right is None else len(right)
+                left = None if left is None else len(members_left)
+                right = None if right is None else len(members_right)
             extra = [
                 claim
                 for b in c.get("evidence", ())
@@ -394,10 +253,20 @@ def evaluate(
                         "explanation",
                         "Compared the declared scopes; missing evidence remains unavailable.",
                     ),
-                    references=references((*lc, *rc, *extra)),
-                    targets=tuple(dict.fromkeys((*lt, *rt))),
-                    known_subtotal=known,
-                    missing=tuple(missing),
+                    references=references((
+                        *left_result.claims,
+                        *right_result.claims,
+                        *extra,
+                    )),
+                    targets=tuple(
+                        dict.fromkeys((*left_result.targets, *right_result.targets))
+                    ),
+                    known_subtotal=left_result.known_subtotal,
+                    missing=left_result.missing,
+                    left_missing=left_result.missing,
+                    right_missing=right_result.missing,
+                    left_known_subtotal=left_result.known_subtotal,
+                    right_known_subtotal=right_result.known_subtotal,
                     purpose=c.get("purpose", "comparison"),
                     category=c.get("category", "comparison"),
                     source=c.get("source", ""),
@@ -405,6 +274,12 @@ def evaluate(
                     right_members=members_right,
                 )
             )
+    results.extend(_invariants(spec, graph))
+    return tuple(results)
+
+
+def _invariants(spec, graph):
+    results = []
     targets = {f.target.id for f in graph.provenance.facts}
     for rule in spec.get("invariants", ()):
         if rule == "fact_coverage":
