@@ -13,10 +13,17 @@ from uuid import UUID, uuid5
 from xml.etree import ElementTree as ET
 from zipfile import BadZipFile, ZipFile
 
+from rangekeeper.graph import _structured
+from rangekeeper.graph.operation import (
+    Operation,
+    Outcome,
+    _Failure,
+    _invoke,
+    fingerprint,
+)
+
 from .... import validate
 from ...provenance import Location, Method, Source
-from .. import _structured
-from ..operation import Operation, Outcome, _Failure, _invoke, fingerprint
 from ._coordinates import address
 from .snapshot import Cell, Workbook, Worksheet
 
@@ -216,7 +223,12 @@ def read(
     name: str,
     expected_checksum: str | None = None,
 ) -> Outcome[Workbook]:
-    """Read a local .xlsx edition. Paths never contribute to semantic identity."""
+    """Read a local .xlsx edition. Paths never contribute to semantic identity.
+
+    Binds parsing to source bytes and an optional expected checksum before
+    interpretation. Consumers can reuse one snapshot rather than observe changes
+    between separate file reads.
+    """
     if not isinstance(path, (str, Path)):
         raise TypeError("path must be str or Path")
     validate.require_uuid(namespace, "namespace")

@@ -5,14 +5,14 @@ from uuid import NAMESPACE_URL, uuid5
 
 import pytest
 
-from rangekeeper.graph.adapter import operation
-from rangekeeper.graph.adapter.ingestion import (
+from rangekeeper.graph import operation
+from rangekeeper.graph.provenance import Claim, Location, Method, Source
+from rangekeeper.graph.workflow.ingestion import (
     Issue,
     IssueSeverity,
     fingerprint,
     tabular,
 )
-from rangekeeper.graph.provenance import Claim, Location, Method, Source
 
 
 def uid(value):

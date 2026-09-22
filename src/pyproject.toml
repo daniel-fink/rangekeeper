@@ -32,6 +32,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+workflow = ["openpyxl>=3.1.5,<4", "PyYAML>=6.0.2,<7"]
 excel = ["openpyxl>=3.1.5,<4", "PyYAML>=6.0.2,<7"]
 
 [tool.ruff.format]

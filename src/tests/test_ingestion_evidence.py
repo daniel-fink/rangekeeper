@@ -17,8 +17,12 @@ from rangekeeper.graph import (
     Relationship,
     Taxonomy,
 )
-from rangekeeper.graph.adapter import csv, ingestion, pandas
-from rangekeeper.graph.adapter.ingestion import (
+from rangekeeper.graph.adapter import csv, pandas
+from rangekeeper.graph.errors import IdentityConflictError
+from rangekeeper.graph.provenance import Claim, Location, Method, Source
+from rangekeeper.graph.table import Row, Table, TableError
+from rangekeeper.graph.workflow import ingestion
+from rangekeeper.graph.workflow.ingestion import (
     Evidence,
     EvidenceValidationError,
     Issue,
@@ -27,9 +31,6 @@ from rangekeeper.graph.adapter.ingestion import (
     tabular,
     validate,
 )
-from rangekeeper.graph.errors import IdentityConflictError
-from rangekeeper.graph.provenance import Claim, Location, Method, Source
-from rangekeeper.graph.table import Row, Table, TableError
 
 
 def uid(key):
@@ -594,8 +595,8 @@ def test_fingerprint_and_issue_identity_match_before_refactor(source):
 def test_public_imports_and_constructor_validation_in_fresh_process(first):
     script = f"""
 import importlib
-importlib.import_module('rangekeeper.graph.adapter.ingestion.' + {first!r})
-from rangekeeper.graph.adapter.ingestion import Evidence, fingerprint, validate, tabular, EvidenceValidationError
+importlib.import_module('rangekeeper.graph.workflow.ingestion.' + {first!r})
+from rangekeeper.graph.workflow.ingestion import Evidence, fingerprint, validate, tabular, EvidenceValidationError
 from rangekeeper.graph.table import Table
 assert callable(fingerprint) and callable(validate) and callable(tabular.row)
 empty = Evidence(name='empty', data=Table(columns=(), rows=()), claims={{}})

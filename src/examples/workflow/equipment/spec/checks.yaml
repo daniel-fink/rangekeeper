@@ -1,0 +1,48 @@
+version: 1
+comparisons:
+- id: population
+  group: Coverage
+  scope: Items
+  left:
+    kind: graph_keys
+    classification: asset
+  right:
+    kind: table_keys
+    table: assets
+    column: code
+  purpose: fidelity
+- id: total
+  group: Totals
+  scope: Sizes
+  left:
+    kind: graph_total
+    classification: asset
+    measure: size
+  right:
+    kind: evidence
+    binding:
+      evidence: total
+      column: number
+  purpose: reconciliation
+- id: fidelity
+  group: Values
+  scope: '{key}'
+  each: assets
+  scope_column: code
+  left:
+    kind: graph_measurement
+    identity_kind: asset
+    key:
+      column: code
+    measure: size
+  right:
+    kind: column
+    binding:
+      column: number_size
+  purpose: fidelity
+invariants:
+- fact_coverage
+- membership
+- defined_kinds
+deferred:
+- No allocation is inferred

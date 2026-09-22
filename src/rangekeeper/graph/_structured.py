@@ -3,9 +3,8 @@
 from collections.abc import Mapping
 from types import MappingProxyType
 
-from .errors import AdapterEncodingError
-from .ingestion._encoding import digest, encode
-from .ingestion.errors import EvidenceValidationError
+from rangekeeper.graph._encoding import digest, encode
+from rangekeeper.graph.errors import EncodingError, ValueEncodingError
 
 
 def freeze(value: object) -> object:
@@ -16,12 +15,12 @@ def freeze(value: object) -> object:
 def _freeze(value: object, active: set[int]) -> object:
     if isinstance(value, Mapping) or type(value) in (list, tuple):
         if id(value) in active:
-            raise AdapterEncodingError("Cyclic specification")
+            raise EncodingError("Cyclic specification")
         active.add(id(value))
         try:
             if isinstance(value, Mapping):
                 if any(type(key) is not str for key in value):
-                    raise AdapterEncodingError("Specification keys must be strings")
+                    raise EncodingError("Specification keys must be strings")
                 return MappingProxyType({
                     k: _freeze(v, active) for k, v in value.items()
                 })
@@ -31,8 +30,8 @@ def _freeze(value: object, active: set[int]) -> object:
             active.remove(id(value))
     try:
         encode(value)
-    except EvidenceValidationError as exc:
-        raise AdapterEncodingError(str(exc)) from exc
+    except ValueEncodingError as exc:
+        raise EncodingError(str(exc)) from exc
     return value
 
 

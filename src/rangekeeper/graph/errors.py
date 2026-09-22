@@ -1,7 +1,6 @@
 from collections.abc import Iterable
 from uuid import UUID
 
-
 __all__ = [
     "AmbiguousLookupError",
     "CatalogInstanceError",
@@ -108,3 +107,20 @@ class InvalidAggregationError(GraphError, ValueError):
 
 def _format_ids(ids: Iterable[UUID]) -> str:
     return ", ".join(str(item) for item in sorted(ids, key=str))
+
+
+class BoundaryError(GraphError):
+    """Base for invalid requests or representations crossing a graph API boundary."""
+
+
+class EncodingError(BoundaryError, ValueError):
+    """A value cannot be represented by the declared boundary contract."""
+
+
+class ValueEncodingError(EncodingError):
+    """Internal scalar encoding failure; consumers translate into their own errors."""
+
+    def __init__(self, code: str, message: str):
+        self.code = code
+        self.message = message
+        super().__init__(f"{code}: {message}")

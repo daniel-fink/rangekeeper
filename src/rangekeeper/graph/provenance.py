@@ -40,7 +40,11 @@ __all__ = [
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Source:
-    """An externally identifiable evidence artifact."""
+    """An externally identifiable evidence artifact.
+
+    Identifies the edition an observation came from so later interpretations can
+    be audited against the same evidence.
+    """
 
     id: UUID = field(default_factory=uuid4)
     name: str
@@ -68,7 +72,11 @@ class Source:
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Location:
-    """A structured location within a Source."""
+    """A structured location within a Source.
+
+    Keeps a source address separate from its displayed value, allowing a Claim
+    to remain traceable after extraction or reordering.
+    """
 
     source: Source
     reference: Mapping[str, str] = field(default_factory=dict)
@@ -109,7 +117,12 @@ class Method:
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Claim(Generic[T]):
-    """A sourced, derived, or asserted candidate value."""
+    """A sourced, derived, or asserted candidate value.
+
+    Retains a candidate value and its support before any decision about the
+    accepted graph state. Derived Claims preserve their inputs instead of
+    overwriting observations.
+    """
 
     id: UUID = field(default_factory=uuid4)
     value: T
@@ -148,7 +161,11 @@ class Claim(Generic[T]):
         method: Method | None = None,
         id: UUID | None = None,
     ) -> Claim[T]:
-        """Create a value tied to a location in an external source."""
+        """Create a value tied to a location in an external source.
+
+        Use this for an observation whose authority is an address in a source;
+        subsequent interpretation should derive another Claim.
+        """
 
         return cls(
             id=uuid4() if id is None else id,
@@ -167,7 +184,11 @@ class Claim(Generic[T]):
         method: Method,
         id: UUID | None = None,
     ) -> Claim[T]:
-        """Create a value derived from upstream claims by a named method."""
+        """Create a value derived from upstream claims by a named method.
+
+        Use this when a value depends on prior Claims so an explanation can
+        follow the calculation or interpretation back to its inputs.
+        """
 
         return cls(
             id=uuid4() if id is None else id,
@@ -185,7 +206,11 @@ class Claim(Generic[T]):
         method: Method,
         id: UUID | None = None,
     ) -> Claim[T]:
-        """Create a value asserted directly by a named method."""
+        """Create a value asserted directly by a named method.
+
+        Use this for a declared assertion with a named method, keeping it
+        distinguishable from a direct source observation or derivation.
+        """
 
         return cls(
             id=uuid4() if id is None else id,
@@ -297,7 +322,11 @@ _FACT_TARGET_TYPES = (Entity, Relationship, Label, Measurement, Feature)
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Fact(Generic[T]):
-    """Evidence binding one graph object or characteristic to candidate Claims."""
+    """Evidence binding one graph object or characteristic to candidate Claims.
+
+    Connects candidate evidence to the actual graph instance it supports. This
+    is the boundary between carrying observations and claiming a graph state.
+    """
 
     target: FactTarget
     claims: tuple[Claim[T], ...]
@@ -524,3 +553,25 @@ class Provenance:
                 "the supplied Fact target is not the registered Provenance instance"
             )
         return fact
+
+
+def locations(claim: Claim) -> tuple[Location, ...]:
+    """Return source locations once per lineage, independent of source format.
+
+    Shared ancestors are visited once so graph checks and adapters can inspect
+    provenance without depending on a reader or presentation implementation.
+    """
+    result = {}
+    visited = set()
+    def visit(item):
+        if item.id in visited:
+            return
+        visited.add(item.id)
+        for source in item.sources:
+            if isinstance(source, Location):
+                key = (source.source.id, tuple(sorted(source.reference.items())))
+                result.setdefault(key, source)
+            else:
+                visit(source)
+    visit(claim)
+    return tuple(result.values())

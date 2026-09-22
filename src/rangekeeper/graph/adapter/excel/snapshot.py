@@ -4,9 +4,12 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field, fields, replace
 from types import MappingProxyType
 
+from rangekeeper.graph import _structured
+from rangekeeper.graph.operation import _Failure
+from rangekeeper.graph.workflow.ingestion._encoding import encode
+
 from .... import validate
 from ...provenance import Location, Source
-from .. import _structured
 from ..document import (
     TEXT_PREVIEW_LIMIT,
     ContentItem,
@@ -14,8 +17,6 @@ from ..document import (
     Document,
     Inspection,
 )
-from ..ingestion._encoding import encode
-from ..operation import _Failure
 from ._coordinates import MAX_COLUMN, MAX_ROW, address, merged_bounds
 
 
@@ -29,6 +30,9 @@ def _short(value: object) -> object:
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Cell:
+    """Preserves native value, formula and cache state so missing data can be
+    explained without mistaking an uncached formula for a physically empty cell.
+    """
     location: Location
     raw: object = None
     formula: str | None = None
@@ -75,10 +79,17 @@ class Cell:
 
     @property
     def value(self) -> object:
+        """Exposes the stored observation for extraction without evaluating
+        formulas. Inspect formula/cache state separately when the reason for an
+        absent value matters.
+        """
         return self.cached if self.formula is not None else self.raw
 
     @property
     def populated(self) -> bool:
+        """Answers physical occupancy independently of value availability, so a
+        formula with no cached result still prevents blank-row classification.
+        """
         return self.raw is not None or self.formula is not None
 
     def observation(self) -> tuple[tuple[str, object], ...]:
@@ -92,6 +103,9 @@ class Cell:
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Worksheet:
+    """Keeps native cells and layout together for guarded extraction and
+    inspection, avoiding repeated reads of a potentially changed workbook.
+    """
     location: Location
     state: str
     declared_rows: int
@@ -177,7 +191,12 @@ class WorksheetInspection:
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Workbook(Document):
-    """A captured native workbook; Source remains its durable provenance identity."""
+    """A captured native workbook; Source remains its durable provenance identity.
+
+    Allows extraction, physical classification and review to share the same
+    captured edition. A plain table cannot preserve all native formula and
+    layout distinctions.
+    """
 
     source: Source
     worksheets: tuple[Worksheet, ...]
