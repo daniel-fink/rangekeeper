@@ -73,8 +73,11 @@ def project(graph: Graph | View, name: str, config: dict | None = None) -> dict:
         "initialFocus",
         "alignment",
         "containmentClassifications",
+        "reviewUrl",
     }:
         raise ValueError("Unknown viewer configuration fields")
+    if "reviewUrl" in config and config["reviewUrl"] != "review.html":
+        raise ValueError("Review links must target the sibling review.html")
     config["positions"] = dict(config.get("positions", {}))
     config.setdefault("positions", {})
     config.setdefault("notes", [])

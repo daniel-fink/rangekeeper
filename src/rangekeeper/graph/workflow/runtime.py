@@ -14,6 +14,7 @@ from rangekeeper.graph.provenance import Method
 
 from . import _audit
 from ._execution import Unavailable, execute_steps
+from ._progress import Observer, emit
 from .checking import CheckResult, evaluate
 from .composition import Finding, compose
 from .implementation import manifests
@@ -43,7 +44,9 @@ class WorkflowResult:
         object.__setattr__(self, "metadata", _structured.freeze_mapping(self.metadata))
 
 
-def run(spec: WorkflowSpec, *, input_root: Path) -> Outcome[WorkflowResult]:
+def run(
+    spec: WorkflowSpec, *, input_root: Path, on_progress: Observer | None = None
+) -> Outcome[WorkflowResult]:
     """Execute declared operations, compose, check and return without exporting files.
 
     Native values remain in execution storage; only table Evidence feeds the
@@ -51,6 +54,7 @@ def run(spec: WorkflowSpec, *, input_root: Path) -> Outcome[WorkflowResult]:
     """
     if not isinstance(spec, WorkflowSpec):
         raise TypeError("run requires WorkflowSpec")
+    emit(on_progress, "configuration", "running")
     modules, dependencies = _audit.capabilities(spec)
     audit, semantic, implementation_id = manifests(
         Path(__file__).resolve().parents[2], modules=modules
@@ -62,6 +66,8 @@ def run(spec: WorkflowSpec, *, input_root: Path) -> Outcome[WorkflowResult]:
     )
     namespace, settings, decisions = _audit.configuration(spec, operation)
     operations = []
+    phase = "execution"
+    emit(on_progress, "configuration", "completed")
     try:
         produced, step_records = execute_steps(
             spec.steps,
@@ -69,12 +75,15 @@ def run(spec: WorkflowSpec, *, input_root: Path) -> Outcome[WorkflowResult]:
             namespace=namespace,
             settings=settings,
             operations=operations,
+            on_progress=on_progress,
         )
         outputs = {key: item.value for key, item in produced.items()}
         evidence = {
             key: value for key, value in outputs.items() if isinstance(value, Evidence)
         }
         evidence_inputs = {key: produced[key].fingerprint for key in evidence}
+        phase = "composition"
+        emit(on_progress, phase, "running")
         composition = Operation(
             method=Method(code="rk.workflow.compose", version="2"),
             specification={"model": spec.model, "decisions": spec.decisions},
@@ -93,6 +102,9 @@ def run(spec: WorkflowSpec, *, input_root: Path) -> Outcome[WorkflowResult]:
             composition,
             namespace=spec.namespace,
         )
+        emit(on_progress, phase, "completed")
+        phase = "checks"
+        emit(on_progress, phase, "running")
         from rangekeeper.graph.adapter.json import dumps
 
         graph_hash = "sha256:" + hashlib.sha256(dumps(graph).encode()).hexdigest()
@@ -117,6 +129,7 @@ def run(spec: WorkflowSpec, *, input_root: Path) -> Outcome[WorkflowResult]:
         metadata = _audit.metadata(
             spec, produced, step_records, operations, audit, semantic, dependencies
         )
+        emit(on_progress, phase, "completed")
         return Outcome(
             operation=operation,
             output=WorkflowResult(
@@ -130,6 +143,8 @@ def run(spec: WorkflowSpec, *, input_root: Path) -> Outcome[WorkflowResult]:
             ),
         )
     except _Failure as exc:
+        emit(on_progress, phase, "failed")
         return Outcome(operation=operation, output=None, diagnostics=(exc.diagnostic,))
     except Unavailable as exc:
+        emit(on_progress, phase, "failed")
         return Outcome(operation=operation, output=None, diagnostics=exc.diagnostics)

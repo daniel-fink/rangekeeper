@@ -3,6 +3,7 @@
 Direct Excel APIs do not import this module. Only the workflow catalog selects it.
 """
 
+import hashlib
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -142,6 +143,39 @@ def request_properties():
     return properties
 
 
+def inspect_input(request, root):
+    """Read bytes and declared edition only; never recalculate or modify a workbook."""
+    from rangekeeper.graph.operation import _Failure
+
+    try:
+        path = resolve_file(root, request.files, request.source_key)
+        checksum = hashlib.sha256(path.read_bytes()).hexdigest()
+        expected = (
+            request.checksum.removeprefix("sha256:").lower()
+            if request.checksum
+            else None
+        )
+        return {
+            "name": request.source_key,
+            "path": str(path.resolve()),
+            "checksum": checksum,
+            "expected_checksum": expected,
+            "status": "ready" if expected is None or expected == checksum else "error",
+            "message": ""
+            if expected is None or expected == checksum
+            else "Source checksum differs from declared edition",
+        }
+    except (_Failure, OSError) as exc:
+        return {
+            "name": request.source_key,
+            "path": None,
+            "checksum": None,
+            "expected_checksum": request.checksum,
+            "status": "error",
+            "message": str(exc),
+        }
+
+
 def _read(request, inputs, context):
     path = resolve_file(context.input_root, request.files, request.source_key)
     return read(
@@ -187,6 +221,7 @@ OPERATIONS = {
         output="workbook",
         modules=MODULES,
         dependencies_used=("openpyxl",),
+        inspect_input=inspect_input,
     ),
     "extract": OperationDeclaration(
         ExtractSpec,
