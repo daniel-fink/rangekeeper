@@ -1,0 +1,83 @@
+version: 1
+measurement_sets:
+  equipment_readings:
+  - measure: size
+    binding:
+      column: number_size
+    on_unavailable:
+      topic: Unavailable measurement
+  - measure: count
+    binding:
+      column: count
+taxonomy:
+  code: example
+  name: equipment
+classifications:
+- code: asset
+  name: asset
+  parent: null
+- code: zone
+  name: zone
+  parent: asset
+- code: contains
+  name: contains
+  parent: asset
+- code: standard
+  name: standard
+  parent: asset
+measures:
+- code: size
+  name: size
+  units: meter**2
+  quantity_kind: AREA
+  aggregation: NONE
+- code: count
+  name: count
+  units: dimensionless
+  quantity_kind: COUNT
+  aggregation: NONE
+templates:
+- id: assets
+  table: assets
+  kind: entity
+  identity_kind: asset
+  key:
+    column: code
+  name: Pump {key}
+  classification: asset
+  decisions:
+  - D1
+  features:
+  - name: source_label
+    binding:
+      column: label
+  labels:
+  - name: product
+    bindings:
+    - column: product
+  measurements_ref: equipment_readings
+- id: zones
+  table: zones
+  kind: assembly
+  identity_kind: zone
+  key:
+    column: code
+  name: Zone {key}
+  classification: zone
+objects: []
+relationships:
+- id: containment
+  table: assets
+  source:
+    kind: zone
+    key:
+      column: zone
+  target:
+    kind: asset
+    key:
+      column: code
+  identity_kind: contains
+  key: '{source_key}:{target_key}'
+  classification: contains
+memberships:
+- contains

@@ -11,7 +11,7 @@ workflow described in [the workflow contract](ingestion-workflow.md).
 
 ## Ownership and public API
 
-`graph.adapter.operation` owns `Operation`, `Outcome[T]`, `Diagnostic` and
+`graph.operation` owns `Operation`, `Outcome[T]`, `Diagnostic` and
 `fingerprint(operation)`. `Method`, `Source` and `Location` remain graph-owned.
 `IssueSeverity` is reused from ingestion. `Issue` and `Evidence` retain their
 existing contracts and fingerprint format.

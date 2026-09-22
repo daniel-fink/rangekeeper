@@ -4,12 +4,17 @@ from collections.abc import Mapping
 from typing import Any
 from uuid import UUID
 
-from ...provenance import Claim, Source, _index_claims
-from ...table import Table
-from ._encoding import encode
-from .errors import EvidenceValidationError
-from .evidence import Evidence, Issue, _applicable
-from .tabular import _cell, _cell_keys, _validate_scope, _validate_table
+from rangekeeper.graph.provenance import Claim, Source, _index_claims
+from rangekeeper.graph.table import Table
+from rangekeeper.graph.workflow.ingestion._encoding import encode
+from rangekeeper.graph.workflow.ingestion.errors import EvidenceValidationError
+from rangekeeper.graph.workflow.ingestion.evidence import Evidence, Issue, _applicable
+from rangekeeper.graph.workflow.ingestion.tabular import (
+    _cell,
+    _cell_keys,
+    _validate_scope,
+    _validate_table,
+)
 
 
 def _validated_indexes(
@@ -68,5 +73,9 @@ def validate(evidence: Evidence[Any]) -> None:
     """Validate shape, immutable values, addressing and evidence associations.
 
     Does not infer usability or execute an operation's missing-value policy.
+
+    Establishes that an Evidence artifact is internally trustworthy before
+    another operation consumes it. Construction already invokes this check; it
+    does not establish business correctness.
     """
     _validated_indexes(evidence)

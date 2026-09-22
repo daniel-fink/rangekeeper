@@ -1,0 +1,81 @@
+version: 1
+taxonomy:
+  code: example
+  name: accommodation
+classifications:
+- code: item
+  name: item
+  parent: null
+- code: level
+  name: level
+  parent: item
+- code: contains
+  name: contains
+  parent: item
+- code: standard
+  name: standard
+  parent: item
+measures:
+- code: size
+  name: size
+  units: meter**2
+  quantity_kind: AREA
+  aggregation: NONE
+- code: count
+  name: count
+  units: dimensionless
+  quantity_kind: COUNT
+  aggregation: NONE
+templates:
+- id: items
+  table: items
+  kind: entity
+  identity_kind: item
+  key:
+    column: code
+  name: Item {key}
+  classification: item
+  decisions:
+  - D1
+  features:
+  - name: source_label
+    binding:
+      column: label
+  measurements:
+  - measure: size
+    binding:
+      column: number_size
+    on_unavailable:
+      topic: Unavailable measurement
+  - measure: count
+    binding:
+      column: count
+  labels:
+  - name: product
+    bindings:
+    - column: product
+- id: levels
+  table: levels
+  kind: assembly
+  identity_kind: level
+  key:
+    column: code
+  name: Group {key}
+  classification: level
+objects: []
+relationships:
+- id: containment
+  table: items
+  source:
+    kind: level
+    key:
+      column: level
+  target:
+    kind: item
+    key:
+      column: code
+  identity_kind: contains
+  key: '{source_key}:{target_key}'
+  classification: contains
+memberships:
+- contains

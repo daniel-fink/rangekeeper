@@ -5,8 +5,9 @@ from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import Any
 
+from rangekeeper.graph._structured import freeze
+
 from .... import validate
-from .._structured import freeze
 from ..errors import AdapterEncodingError
 from ._coordinates import MAX_ROW, address, column_number
 
@@ -40,7 +41,11 @@ def _fields(
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Column:
-    """Map one source column to a named output column; not stored Table data."""
+    """Map one source column to a named output column; not stored Table data.
+
+    Makes a layout-dependent source address explicit while giving downstream
+    Evidence a stable, meaningful column name.
+    """
 
     name: str
     column: str
@@ -52,7 +57,11 @@ class Column:
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Expectations:
-    """Layout guards evaluated before any output Claims are constructed."""
+    """Layout guards evaluated before any output Claims are constructed.
+
+    Detects a changed layout before a familiar coordinate silently supplies the
+    wrong observation.
+    """
 
     cells: Mapping[str, object] = field(default_factory=dict)
     comparison: str = "exact"
@@ -70,7 +79,11 @@ class Expectations:
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class StopBefore:
-    """Exclusive physical stopping marker, not a semantic row filter."""
+    """Exclusive physical stopping marker, not a semantic row filter.
+
+    Keeps a variable-length range bounded by a reviewed source marker without
+    embedding worksheet-scanning code in a project.
+    """
 
     column: str
     equals: object
@@ -84,7 +97,11 @@ class StopBefore:
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Rows:
-    """Physical extraction bounds; distinct from graph.table.Row values."""
+    """Physical extraction bounds; distinct from graph.table.Row values.
+
+    Records which physical region supplies evidence; semantic decisions about
+    which extracted records to retain belong to later selection.
+    """
 
     start: int
     end: int | None = None
@@ -107,7 +124,11 @@ class Rows:
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class ExtractionSpec:
-    """Complete versioned request for one physical worksheet extraction."""
+    """Complete versioned request for one physical worksheet extraction.
+
+    Makes source-layout assumptions reviewable and replayable outside Python,
+    while preserving the same extraction contract for direct callers.
+    """
 
     id: str
     version: int
@@ -136,6 +157,9 @@ class ExtractionSpec:
     @classmethod
     def from_mapping(cls, value: Mapping[str, object]) -> "ExtractionSpec":
         # Reject cyclic/mutable unsupported inputs before walking the schema.
+        """Establishes the typed layout contract at the configuration boundary so
+        unknown fields cannot silently alter extraction intent.
+        """
         normalized = freeze(value)
         fields = _fields(
             normalized,
@@ -169,6 +193,9 @@ class ExtractionSpec:
         return cls(**fields)
 
     def to_mapping(self) -> Mapping[str, object]:
+        """Exposes effective extraction settings for operation records and
+        reproducibility rather than relying on the original YAML spelling.
+        """
         rows: dict[str, object] = {"start": self.rows.start}
         if self.rows.stop_before is not None:
             stop = self.rows.stop_before
@@ -199,32 +226,9 @@ def load_specification(content: str) -> ExtractionSpec:
     """Decode YAML text; no includes, executable tags, duplicate keys or silent coercion."""
     if type(content) is not str:
         raise TypeError("YAML content must be str")
+    from rangekeeper.graph._yaml import decode
     try:
-        import yaml
-        from yaml.resolver import BaseResolver
-    except ImportError as exc:
-        raise ImportError("YAML specifications require Rangekeeper[excel]") from exc
-
-    class UniqueLoader(yaml.SafeLoader):
-        pass
-
-    def construct_mapping(loader, node, deep=False):
-        result = {}
-        for key_node, value_node in node.value:
-            key = loader.construct_object(key_node, deep=deep)
-            if type(key) is not str:
-                raise AdapterEncodingError("YAML mapping keys must be strings")
-            if key in result:
-                raise AdapterEncodingError(f"Duplicate YAML key: {key}")
-            result[key] = loader.construct_object(value_node, deep=deep)
-        return result
-
-    UniqueLoader.add_constructor(
-        BaseResolver.DEFAULT_MAPPING_TAG,
-        construct_mapping,
-    )
-    try:
-        supplied = yaml.load(content, Loader=UniqueLoader)
-    except yaml.YAMLError as exc:
+        supplied = decode(content)
+    except ValueError as exc:
         raise AdapterEncodingError(f"Invalid extraction YAML: {exc}") from exc
     return ExtractionSpec.from_mapping(supplied)

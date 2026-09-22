@@ -14,8 +14,8 @@ import pytest
 
 from rangekeeper.graph.adapter import document, excel
 from rangekeeper.graph.adapter.errors import AdapterEncodingError
-from rangekeeper.graph.adapter.ingestion import fingerprint, tabular
 from rangekeeper.graph.provenance import ClaimKind, Location
+from rangekeeper.graph.workflow.ingestion import fingerprint, tabular
 
 NS = {"s": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
 
@@ -386,7 +386,7 @@ def test_fresh_process_determinism_and_optional_import_isolation(workbook_path):
 import sys
 from uuid import NAMESPACE_URL
 from rangekeeper.graph.adapter import excel
-from rangekeeper.graph.adapter.ingestion import fingerprint
+from rangekeeper.graph.workflow.ingestion import fingerprint
 book = excel.read(sys.argv[1], namespace=NAMESPACE_URL, source_key="jll", name="JLL").output
 spec = excel.ExtractionSpec(id="one", version=1, sheet="Unit Pricing", rows=excel.Rows(start=8,end=8), columns=(excel.Column(name="unit",column="A"),))
 print(fingerprint(excel.extract_table(book,spec).output))
@@ -401,7 +401,9 @@ def guarded(name, *args, **kwargs):
         raise AssertionError("optional dependency eagerly imported")
     return original(name, *args, **kwargs)
 builtins.__import__ = guarded
-from rangekeeper.graph.adapter import document, operation, excel
+from rangekeeper.graph.adapter import document
+from rangekeeper.graph import operation
+from rangekeeper.graph.adapter import excel
 assert excel.ExtractionSpec
 """
     subprocess.run([sys.executable, "-c", isolated], check=True)
@@ -476,7 +478,7 @@ def test_missing_inspection_sheet_uses_actual_workbook_root(workbook_path):
 def test_resolved_defaults_and_yaml_mapping_order_have_identical_operations(
     workbook_path,
 ):
-    from rangekeeper.graph.adapter.operation import fingerprint as operation_fingerprint
+    from rangekeeper.graph.operation import fingerprint as operation_fingerprint
 
     book = read(workbook_path).output
     implicit = declaration()
