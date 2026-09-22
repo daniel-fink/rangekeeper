@@ -1,8 +1,11 @@
 # Format-independent workflow execution
 
-Implemented on the rebuild branch after RK `045f321`, paired with projects
-`17f9443`. The candidate is not committed. The existing YAML operation names and
-`load`, `run`, `schema` entry points are preserved.
+Implemented and pushed as RK `588b5b412e52f5b32919a72a19d31df423378edb`, paired
+with projects `68baa2b88324d9f7fcaf794f59512a8bce720c0a`. The existing YAML
+operation names and `load`, `run`, `schema` entry points are preserved.
+The paired delivery PRs are [RK #32](https://github.com/daniel-fink/rangekeeper/pull/32)
+into `feature/graph` and [Projects #1](https://github.com/daniel-fink/whirlwind-projects/pull/1)
+into `main`. These exact implementation checkpoints remain the reproduction pins.
 
 ## Ownership
 

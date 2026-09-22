@@ -2,7 +2,8 @@
 
 For the subsequent format-independent execution review and implementation, see
 [GRAPH_WORKFLOW_FORMATS.md](GRAPH_WORKFLOW_FORMATS.md). The dated findings below
-remain a historical record.
+remain a historical record. The initial refactor was subsequently committed as
+`7f7098c`; the format-independent follow-up is committed as `588b5b4`.
 
 Reviewed and refactored 18 September 2026 on the uncommitted
 `feature/mandarin-yaml-rebuild` implementation. The findings below describe the
