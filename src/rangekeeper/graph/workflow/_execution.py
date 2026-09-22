@@ -17,6 +17,7 @@ from rangekeeper.graph.operation import Operation, fingerprint
 from rangekeeper.graph.provenance import Method
 
 from ._contracts import ExecutionContext, Produced
+from ._progress import Observer, emit
 from .catalog import OPERATIONS
 
 
@@ -34,11 +35,20 @@ def execute_steps(
     namespace: UUID,
     settings: Claim[str],
     operations: list[Operation],
+    on_progress: Observer | None = None,
 ) -> tuple[dict[str, Produced], dict[str, object]]:
     """Only declared prerequisites are visible to a handler; outputs remain native."""
     produced = {}
     records = {}
-    for step in steps:
+    for index, step in enumerate(steps):
+        emit(
+            on_progress,
+            "execution",
+            "running",
+            step=step.id,
+            completed=index,
+            total=len(steps),
+        )
         handler = OPERATIONS[step.operation]
         inputs = MappingProxyType({name: produced[name].value for name in step.inputs})
         invocation = Operation(
@@ -52,10 +62,26 @@ def execute_steps(
         )
         operations.append(result.operation)
         if result.output is None:
+            emit(
+                on_progress,
+                "execution",
+                "failed",
+                step=step.id,
+                completed=index,
+                total=len(steps),
+            )
             raise Unavailable(result.diagnostics)
         produced[step.id] = handler.describe(result.output)
         records[step.id] = {
             "dispatch": fingerprint(invocation),
             "native": (fingerprint(result.operation),),
         }
+        emit(
+            on_progress,
+            "execution",
+            "completed",
+            step=step.id,
+            completed=index + 1,
+            total=len(steps),
+        )
     return produced, records

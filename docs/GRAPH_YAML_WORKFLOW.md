@@ -299,3 +299,47 @@ The older `missing` and `known_subtotal` fields retain their left-side meaning.
 Review references include configuration and non-Excel locations. Native source
 metadata comes from producing handlers, and the manifest includes structured
 `deferred_evidence` alongside existing Excel deferred-record tokens.
+
+## Explicit review workbench
+
+`rangekeeper.graph.workflow.workbench` adds a local, optional review lifecycle
+around the existing `load`, `run`, `render` and `export` API:
+
+```python
+from rangekeeper.graph.workflow import workbench
+inspection = workbench.inspect(spec_path, input_root=inputs, output_root=outputs)
+attempt = workbench.build(spec_path, input_root=inputs, output_root=outputs,
+                          on_progress=workbench.notebook_progress())
+```
+
+Inspection is read-only and timestamped. Native input inspection belongs to the
+operation declaration's optional `inspect_input` hook; the review layer consumes
+its source name, resolved path, checksum and readiness without inspecting Excel
+internals. Formats without a hook remain executable but their inputs are labelled
+unverified. Inspection compares YAML, Python implementation, viewer assets, runtime
+dependencies and adapter-reported input signatures with the last successful run.
+
+`run(..., on_progress=callback)` emits optional `Progress` events for stages and
+steps and remains free of filesystem writes. `notebook_progress` is an optional
+IPython observer; ordinary runtime/imports do not require IPython.
+
+The workbench exports each complete result to a new `runs/<id>` directory and
+atomically replaces `latest.json` only after all artifacts and their hash manifest
+exist. `latest-attempt.json` is separate from deterministic graph/check artifacts.
+An unsuccessful attempt returns diagnostics and no result, retaining links to the
+previous successful bundle. Keyboard interruption records its status and
+propagates; an abrupt process kill cannot publish a partial staging directory.
+Keep output directories ignored. No watcher, service or scheduler is involved.
+
+Review captures authored decisions and mappings in the result metadata. It indexes
+actual decision Claims through Fact lineage separately from declared use, links
+characteristics to their owning objects, and shows unresolved evidence independently
+of mapping approval. Graph provenance renders captured decisions and links to the
+matching sibling `review.html` anchor. Old graphs never load current YAML text.
+
+`render(result, viewer_url="viewer.html", compact=True)` gives a notebook-sized
+review prioritizing differing/unavailable checks. The full exported review retains
+successful checks and detailed Evidence. A decision without a graph assertion is
+shown without inventing a target. Run-to-run comparison happens after execution;
+previous artifacts never become build inputs. Saved notebook/HTML output remains
+a snapshot until the user explicitly reruns inspection or build.

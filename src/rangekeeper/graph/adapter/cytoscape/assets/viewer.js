@@ -569,6 +569,39 @@
     if (typeof value === "object") return JSON.stringify(value);
     return String(value);
   }
+  function decisionRecord(claim) {
+    if (claim?.method?.code !== "reviewed-decision") return null;
+    try {
+      const value = typeof claim.value === "string" ? JSON.parse(claim.value) : claim.value;
+      return value && typeof value.id === "string" && typeof value.text === "string" ? value : null;
+    } catch {
+      return null;
+    }
+  }
+  function renderDecision(ctx2, claim, host) {
+    const decision = decisionRecord(claim);
+    if (!decision) return false;
+    ctx2.make(
+      "h4",
+      `${decision.id} \xB7 ${decision.status || "Status not recorded"}`,
+      host
+    );
+    ctx2.make("p", decision.text, host);
+    ctx2.make(
+      "p",
+      `${decision.source || "Attribution not recorded"} \xB7 ${decision.date || "Date not recorded"}`,
+      host
+    );
+    if (ctx2.data.reviewUrl === "review.html") {
+      const link = document.createElement("a");
+      link.textContent = "Open decision and mapping review";
+      link.href = "review.html#decision-" + encodeURIComponent(decision.id);
+      link.target = "_blank";
+      link.rel = "noopener";
+      host.append(link);
+    }
+    return true;
+  }
   function evidence(ctx2, parent, fact) {
     if (!fact) {
       ctx2.make("p", "No Fact attached to this item.", parent, "code");
@@ -583,6 +616,27 @@
         box,
         "issue"
       );
+    const pending = [...fact.claims], seenDecisions = /* @__PURE__ */ new Set(), seenClaims = /* @__PURE__ */ new Set();
+    const decisions = [];
+    while (pending.length) {
+      const id = pending.pop();
+      if (seenClaims.has(id)) continue;
+      seenClaims.add(id);
+      const claim = ctx2.data.claims[id];
+      if (!claim) continue;
+      const record = decisionRecord(claim);
+      if (record && !seenDecisions.has(record.id)) {
+        seenDecisions.add(record.id);
+        decisions.push(claim);
+      }
+      for (const source of claim.sources)
+        if (source.claim) pending.push(source.claim);
+    }
+    if (decisions.length) {
+      const list = ctx2.make("details", void 0, box);
+      ctx2.make("summary", `Reviewed decisions \xB7 ${decisions.length}`, list);
+      for (const claim of decisions) renderDecision(ctx2, claim, list);
+    }
     const visited = /* @__PURE__ */ new Set();
     const appendClaim = (id, host, depth) => {
       if (visited.has(id)) {
@@ -598,7 +652,8 @@
         `${c.kind}${fact.selected === id ? " \xB7 selected" : ""}`,
         item
       );
-      ctx2.make("pre", JSON.stringify(c.value, null, 2), item);
+      if (!renderDecision(ctx2, c, item))
+        ctx2.make("pre", JSON.stringify(c.value, null, 2), item);
       if (c.method) ctx2.make("pre", JSON.stringify(c.method, null, 2), item);
       for (const source of c.sources) {
         if (source.claim) {

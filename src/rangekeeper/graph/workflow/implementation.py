@@ -64,6 +64,8 @@ def manifests(package: Path, *, modules: tuple[str, ...] = ()):
         )
         excluded |= name in {
             "graph/workflow/review.py",
+            "graph/workflow/_review.py",
+            "graph/workflow/workbench.py",
             "graph/workflow/references.py",
             "graph/workflow/__main__.py",
         }

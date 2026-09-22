@@ -90,6 +90,7 @@ export interface GraphDocument {
   alignment?: { vertical: string[][] };
   diagnostics: { ambiguousParents: string[]; containmentCycles: string[] };
   reviewItems?: ReviewItem[];
+  reviewUrl?: string;
 }
 export interface Projection {
   hiddenIds: string[];

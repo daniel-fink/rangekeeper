@@ -114,6 +114,7 @@ def metadata(
     )
     result = {
         "format": "rk.workflow/v1",
+        "review_specification": spec.to_mapping(),
         "implementation": implementation,
         "semantic_implementation": semantic,
         "semantic_version": 3,
