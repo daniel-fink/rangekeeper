@@ -1,0 +1,7 @@
+{
+  "top_level_mermaid_contains_none": true,
+  "model_class_diagram_present": true,
+  "model_constraints_row": [
+    "| [constraints](constraints.md) | 1..* <br/> [Constraint](Constraint.md) |  | direct |"
+  ]
+}

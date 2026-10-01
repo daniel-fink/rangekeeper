@@ -1,0 +1,39 @@
+id: https://daniel-fink.github.io/rangekeeper/schema/entity
+name: rangekeeper_entity
+title: Rangekeeper Entity
+version: 0.1.0
+description: Entities identify domain objects and describe them through a classification and characteristics.
+  Identity is independent of names and Model revisions.
+prefixes:
+  linkml: https://w3id.org/linkml/
+  rk: https://daniel-fink.github.io/rangekeeper/schema/
+imports:
+- linkml:types
+- classification
+- characteristics
+default_prefix: rk
+default_range: string
+classes:
+  Entity:
+    description: An identifiable domain object, such as an apartment, building, or actor. Its identity
+      persists across immutable Model revisions. Loading its definition does not execute calculations.
+    slots:
+    - classification
+    attributes:
+      id:
+        description: Stable identity of the Entity, distinct from a Model revision.
+        range: UUID
+        identifier: true
+        required: true
+      code:
+        description: Optional case-sensitive code unique among all Entities and Assemblies in the Model.
+          Renaming it preserves UUID identity and references.
+        range: Code
+      name:
+        description: Human-readable display name; not used as identity.
+        range: string
+        pattern: \S
+      characteristics:
+        description: The Entity's labels and named values.
+        range: Characteristics
+        inlined: true

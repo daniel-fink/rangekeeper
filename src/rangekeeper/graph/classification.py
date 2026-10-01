@@ -21,7 +21,7 @@ class Classification:
 
     def __post_init__(self) -> None:
         validate.require_uuid(self.id, "id")
-        validate.require_text(self.code, "Classification.code")
+        validate.require_code(self.code, "Classification.code")
         validate.require_text(self.name, "Classification.name")
         validate.optional_text(self.definition, "definition")
         if self.parent is not None and not isinstance(self.parent, Classification):

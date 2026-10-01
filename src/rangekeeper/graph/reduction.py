@@ -181,7 +181,7 @@ class _MeasureReduction(Reduction[pint.Quantity]):
 
         def extract(entity: Entity) -> pint.Quantity | None:
             measurement = entity.measurements.get(measure.code)
-            if measurement is None:
+            if measurement is None or measurement.quantity is None:
                 return None
             return measurement.quantity.to(measure.units)
 

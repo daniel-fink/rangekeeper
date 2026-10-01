@@ -1,0 +1,89 @@
+{
+  "version": "cue version v0.17.1\n\nCUE language version v0.17.1\n\nGo version go1.26.5\n      -buildmode exe\n       -compiler gc\n       -trimpath true\n     CGO_ENABLED 0\n          GOARCH arm64\n            GOOS darwin\n         GOARM64 v8.0\n",
+  "results": {
+    "valid": {
+      "#Model": "accept",
+      "#SemanticModel": "accept"
+    },
+    "missing_literal_value": {
+      "#Model": "reject",
+      "#SemanticModel": "reject"
+    },
+    "string_as_number": {
+      "#Model": "reject",
+      "#SemanticModel": "reject"
+    },
+    "bool_as_number": {
+      "#Model": "reject",
+      "#SemanticModel": "reject"
+    },
+    "null_as_number": {
+      "#Model": "reject",
+      "#SemanticModel": "reject"
+    },
+    "unknown_expression_kind": {
+      "#Model": "reject",
+      "#SemanticModel": "reject"
+    },
+    "missing_expression_kind": {
+      "#Model": "reject",
+      "#SemanticModel": "reject"
+    },
+    "missing_declaration_kind": {
+      "#Model": "reject",
+      "#SemanticModel": "reject"
+    },
+    "abstract_expression": {
+      "#Model": "reject",
+      "#SemanticModel": "reject"
+    },
+    "extra_literal_field": {
+      "#Model": "reject",
+      "#SemanticModel": "reject"
+    },
+    "missing_operand": {
+      "#Model": "reject",
+      "#SemanticModel": "reject"
+    },
+    "dangling_reference": {
+      "#Model": "accept",
+      "#SemanticModel": "reject"
+    },
+    "wrong_reference_kind": {
+      "#Model": "accept",
+      "#SemanticModel": "reject"
+    },
+    "numeric_constraint": {
+      "#Model": "accept",
+      "#SemanticModel": "reject"
+    },
+    "wrong_units": {
+      "#Model": "accept",
+      "#SemanticModel": "reject"
+    },
+    "duplicate_identity": {
+      "#Model": "accept",
+      "#SemanticModel": "reject"
+    },
+    "empty_constraints": {
+      "#Model": "accept",
+      "#SemanticModel": "accept"
+    },
+    "omitted_constraints": {
+      "#Model": "reject",
+      "#SemanticModel": "reject"
+    },
+    "null_constraints": {
+      "#Model": "reject",
+      "#SemanticModel": "reject"
+    },
+    "extra_model_field": {
+      "#Model": "reject",
+      "#SemanticModel": "reject"
+    }
+  },
+  "recursive_tree": {
+    "accepted": true,
+    "stderr": ""
+  }
+}

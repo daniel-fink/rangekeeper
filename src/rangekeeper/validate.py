@@ -22,6 +22,14 @@ def require_text(value: object, field: str) -> str:
     return value
 
 
+def require_code(value: object, field: str) -> str:
+    """Validate a case-sensitive code without silently normalizing it."""
+    result = require_text(value, field)
+    if result != result.strip():
+        raise ValueError(f"{field} must not have leading or trailing whitespace")
+    return result
+
+
 def optional_text(
     value: object,
     field: str,

@@ -1,0 +1,402 @@
+id: https://daniel-fink.github.io/rangekeeper/schema/expression
+name: rangekeeper_expression
+title: Rangekeeper Expressions
+version: 0.5.1
+description: Symbolic expressions composing literals, Value references, operators, function calls, selections,
+  and graph queries.
+prefixes:
+  linkml: https://w3id.org/linkml/
+  rk: https://daniel-fink.github.io/rangekeeper/schema/
+imports:
+- function
+- query
+default_prefix: rk
+default_range: string
+classes:
+  Expression:
+    description: An identified mathematical expression. Its kind determines its content; nested expressions
+      retain order and UUID references resolve in the applicable Model or composed Specification scope.
+    notes:
+    - Loading expressions does not execute them. Comparisons produce Boolean predicates; Constraints assert
+      predicates. A reference denotes a Value symbol rather than an instruction to substitute its recorded
+      content.
+    - Nested Expressions have distinct identities and form finite trees. Shared Value symbols may participate
+      in simultaneous equations. Dependencies derive from references, arguments, selections, and queries,
+      not an independently editable edge list.
+    - Arithmetic takes numerical operands. Addition, subtraction, and ordered comparisons require compatible
+      units and meanings. Multiplication and division derive result units; division by zero is undefined.
+      Power requires a dimensionless exponent and valid result units and domain.
+    - equal and not_equal accept compatible numerical content or two Booleans. Other equality domains
+      require an explicit future extension. Boolean operators take Boolean operands without numerical
+      coercion.
+    - logical_and and logical_or short-circuit left to right during evaluation, but both branches remain
+      part of the symbolic expression and dependency analysis. logical_not is unary. Backend compilation
+      must preserve the logical meaning.
+    - Member names are declared public members of the base content type, not unrestricted runtime attributes.
+      Index selection requires an ordered/indexed value and a valid index under its type contract.
+    - Function signatures describe meaning, not implementation or guaranteed inverse solvability. Rich
+      type names do not themselves provide serialized Value variants or a solver. Query results remain
+      collections of symbolic references.
+    - Domains, units, scope, unique identities, function binding, finite numbers, and backend support require
+      validation beyond record shape.
+    - Literal kinds are limited to Quantities and Booleans. Date and string literals are deferred;
+      result types of references, selections, and calls are independent of the available literal kinds.
+    attributes:
+      id:
+        description: Stable identity of this Expression across Model revisions.
+        range: UUID
+        identifier: true
+        required: true
+      kind:
+        range: ExpressionKind
+        required: true
+      quantity:
+        description: Numerical literal with an explicit magnitude and units, independent of any Measure.
+          Use dimensionless for unitless content. Zero is a literal, not absence.
+        range: Quantity
+        inlined: true
+        all_of:
+        - range: Quantity
+          inlined: true
+      boolean:
+        description: Boolean literal; false is a literal, not absence.
+        range: boolean
+        any_of:
+        - range: boolean
+      target:
+        description: Value symbol referenced by its stable UUID in the applicable Model or composed Specification scope.
+        range: Value
+        inlined: false
+        pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        any_of:
+        - range: Value
+          inlined: false
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      operator:
+        range: Operator
+      operands:
+        description: Two ordered operands of a binary operator. Unary operators use operand; Function
+          calls use their own signature.
+        range: Expression
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+        list_elements_ordered: true
+        minimum_cardinality: 2
+        maximum_cardinality: 2
+        any_of:
+        - range: Expression
+          inlined: true
+      operand:
+        range: Expression
+        description: Operand of unary negation or Boolean negation.
+        inlined: true
+        all_of:
+        - range: Expression
+          inlined: true
+      call:
+        range: Call
+        inlined: true
+        all_of:
+        - range: Call
+          inlined: true
+      selection:
+        range: Selection
+        inlined: true
+        all_of:
+        - range: Selection
+          inlined: true
+      query:
+        range: Query
+        inlined: true
+        all_of:
+        - range: Query
+          inlined: true
+    rules:
+    - preconditions:
+        slot_conditions:
+          kind:
+            equals_string: quantity
+      postconditions:
+        slot_conditions:
+          quantity:
+            required: true
+    - preconditions:
+        slot_conditions:
+          kind:
+            equals_string: boolean
+      postconditions:
+        slot_conditions:
+          boolean:
+            required: true
+    - preconditions:
+        slot_conditions:
+          kind:
+            equals_string: reference
+      postconditions:
+        slot_conditions:
+          target:
+            required: true
+    - preconditions:
+        slot_conditions:
+          kind:
+            equals_string: unary
+      postconditions:
+        slot_conditions:
+          operator:
+            required: true
+            equals_string_in:
+            - negate
+            - logical_not
+          operand:
+            required: true
+    - preconditions:
+        slot_conditions:
+          kind:
+            equals_string: binary
+      postconditions:
+        slot_conditions:
+          operator:
+            required: true
+            equals_string_in:
+            - add
+            - subtract
+            - multiply
+            - divide
+            - equal
+            - not_equal
+            - less_than
+            - less_than_or_equal
+            - greater_than
+            - greater_than_or_equal
+            - power
+            - logical_and
+            - logical_or
+          operands:
+            required: true
+    - preconditions:
+        slot_conditions:
+          kind:
+            equals_string: call
+      postconditions:
+        slot_conditions:
+          call:
+            required: true
+    - preconditions:
+        slot_conditions:
+          kind:
+            equals_string: selection
+      postconditions:
+        slot_conditions:
+          selection:
+            required: true
+    - preconditions:
+        slot_conditions:
+          kind:
+            equals_string: query
+      postconditions:
+        slot_conditions:
+          query:
+            required: true
+    - preconditions:
+        slot_conditions:
+          kind:
+            equals_string_in:
+            - quantity
+            - boolean
+            - reference
+            - call
+            - selection
+            - query
+      postconditions:
+        slot_conditions:
+          operator:
+            value_presence: ABSENT
+    exactly_one_of:
+    - slot_conditions:
+        quantity:
+          required: true
+    - slot_conditions:
+        boolean:
+          required: true
+    - slot_conditions:
+        target:
+          required: true
+    - slot_conditions:
+        operand:
+          required: true
+    - slot_conditions:
+        operands:
+          required: true
+    - slot_conditions:
+        call:
+          required: true
+    - slot_conditions:
+        selection:
+          required: true
+    - slot_conditions:
+        query:
+          required: true
+  Call:
+    description: Application of an identified Function to positional and named expression arguments.
+    notes:
+    - Positional arguments bind in signature order. Named arguments bind by parameter name. Unknown names,
+      duplicate names, multiple bindings of one parameter, absent required parameters, and extra positional
+      arguments are errors.
+    - Omission of argument collections denotes no arguments. All declared inputs must be accounted for;
+      functions cannot read ambient graph or session state.
+    attributes:
+      function:
+        range: Function
+        required: true
+        inlined: false
+        pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        any_of:
+        - range: Function
+          inlined: false
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      arguments:
+        range: Expression
+        description: Positional arguments, in order.
+        inlined: true
+        any_of:
+        - range: Expression
+          inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
+      named_arguments:
+        range: Argument
+        description: Named arguments with unique parameter names. Their order is retained for authoring,
+          not positional binding.
+        inlined: true
+        any_of:
+        - range: Argument
+          inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
+  Argument:
+    description: One named expression argument in a Function call.
+    attributes:
+      name:
+        range: Code
+        required: true
+      expression:
+        range: Expression
+        required: true
+        inlined: true
+        all_of:
+        - range: Expression
+          inlined: true
+  Selection:
+    description: Read a declared member or indexed element from structured expression content.
+    notes:
+    - Member selection returns the declared member type. It does not invoke a runtime method. When a characteristic
+      has its own Value UUID, reference that Value directly.
+    - Index expressions may be symbolic when the backend supports them. Sequence indices are zero-based
+      nonnegative integers; typed time-series indices follow the declared temporal type contract. Missing
+      members and out-of-range indices are errors. Sets and bags have no positional indices.
+    attributes:
+      kind:
+        range: SelectionKind
+        required: true
+      base:
+        range: Expression
+        required: true
+        inlined: true
+        all_of:
+        - range: Expression
+          inlined: true
+      member:
+        range: Code
+        description: Declared member name.
+      index:
+        range: Expression
+        description: Index expression.
+        inlined: true
+        all_of:
+        - range: Expression
+          inlined: true
+    rules:
+    - preconditions:
+        slot_conditions:
+          kind:
+            equals_string: member
+      postconditions:
+        slot_conditions:
+          member:
+            required: true
+        all_of:
+        - slot_conditions:
+            index:
+              value_presence: ABSENT
+    - preconditions:
+        slot_conditions:
+          kind:
+            equals_string: index
+      postconditions:
+        slot_conditions:
+          index:
+            required: true
+        all_of:
+        - slot_conditions:
+            member:
+              value_presence: ABSENT
+enums:
+  ExpressionKind:
+    permissible_values:
+      quantity:
+        description: A numerical literal with explicit magnitude and units.
+      boolean:
+        description: A Boolean literal.
+      reference:
+        description: A symbolic Value reference.
+      unary:
+        description: A unary operation.
+      binary:
+        description: A binary operation with ordered operands.
+      call:
+        description: A call to an identified Function.
+      selection:
+        description: Member or index selection from another expression.
+      query:
+        description: A query returning a collection of symbolic references.
+  Operator:
+    permissible_values:
+      add:
+        description: First operand plus second operand.
+      subtract:
+        description: First operand minus second operand.
+      multiply:
+        description: First operand multiplied by second operand.
+      divide:
+        description: First operand divided by second operand.
+      equal:
+        description: Whether the operands are equal; this is not assignment.
+      not_equal:
+        description: Whether the operands differ.
+      less_than:
+        description: Whether the first operand is less than the second.
+      less_than_or_equal:
+        description: Whether the first operand is less than or equal to the second.
+      greater_than:
+        description: Whether the first operand is greater than the second.
+      greater_than_or_equal:
+        description: Whether the first operand is greater than or equal to the second.
+      power:
+        description: First operand raised to the second.
+      negate:
+        description: Numerical negation of one operand.
+      logical_not:
+        description: Boolean negation of one operand.
+      logical_and:
+        description: Boolean conjunction, evaluated left to right with short-circuiting.
+      logical_or:
+        description: Boolean disjunction, evaluated left to right with short-circuiting.
+  SelectionKind:
+    permissible_values:
+      member:
+        description: Select one declared member.
+      index:
+        description: Select one indexed element.

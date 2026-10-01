@@ -1,0 +1,57 @@
+# Synthetic conformance fixture: hypothetical execution/output, not an observed solver result.
+metadata:
+  id: b3acf071-00c7-5651-a9c3-db0d896560a8
+  schema_version: 0.1.0
+  name: Synthetic inverse Run
+  description: Synthetic expected record for schema conformance only. No evaluator or numerical solver
+    was executed to produce this record.
+specification: abd75e4d-3e68-54b5-b446-2f3ea51d6c9c
+outputs:
+- 16cdb352-da46-51cc-bfbe-2b6aff920c42
+report:
+  status:
+    completion: completed
+    solution: feasible
+  runtime:
+    started_at: '2026-10-01T00:00:00Z'
+    finished_at: '2026-10-01T00:00:01Z'
+    implementations:
+    - kind: evaluator
+      name: synthetic-fixture
+      version: 0.1.0
+  diagnostics:
+  - severity: info
+    code: constraint_residual
+    message: 'Synthetic expected residual: left side minus right side in AUD/year, without scaling; acceptance
+      is absolute residual <= tolerance. Values are fixture expectations, not measured execution diagnostics.'
+    document: 16cdb352-da46-51cc-bfbe-2b6aff920c42
+    target: d526182d-2216-5862-88b9-b5bdd5e804a5
+    residual:
+      magnitude: 0
+      units: AUD/year
+    tolerance:
+      magnitude: 0.01
+      units: AUD/year
+  - severity: info
+    code: constraint_residual
+    message: 'Synthetic expected residual: left side minus right side in AUD/year, without scaling; acceptance
+      is absolute residual <= tolerance. Values are fixture expectations, not measured execution diagnostics.'
+    document: 16cdb352-da46-51cc-bfbe-2b6aff920c42
+    target: 02ff78c0-ec20-535d-b997-ac16d64fd944
+    residual:
+      magnitude: 0
+      units: AUD/year
+    tolerance:
+      magnitude: 0.01
+      units: AUD/year
+  trace:
+  - kind: validation
+    at: '2026-10-01T00:00:00Z'
+    message: Hypothetical validation of the composed scalar Specification.
+    document: abd75e4d-3e68-54b5-b446-2f3ea51d6c9c
+  - kind: solve
+    message: Hypothetical scalar resolution; this fixture does not claim observed execution.
+  - kind: publication
+    at: '2026-10-01T00:00:01Z'
+    message: Hypothetical acceptance of the expected scalar snapshot.
+    document: 16cdb352-da46-51cc-bfbe-2b6aff920c42

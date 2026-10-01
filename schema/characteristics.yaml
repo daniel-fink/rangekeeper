@@ -1,0 +1,93 @@
+id: https://daniel-fink.github.io/rangekeeper/schema/characteristics
+name: rangekeeper_characteristics
+title: Rangekeeper Characteristics
+version: 0.4.1
+description: Characteristics describe an Entity or Relationship through named Labels and Values. Labels
+  classify aspects of the object; Values represent typed properties whose content can be unresolved, supplied,
+  or calculated.
+prefixes:
+  linkml: https://w3id.org/linkml/
+  rk: https://daniel-fink.github.io/rangekeeper/schema/
+imports:
+- measure
+- classification
+default_prefix: rk
+default_range: string
+classes:
+  Characteristics:
+    description: A collection of Labels and Values belonging to an Entity or Relationship. Each Label
+      or Value has a stable UUID and a key unique within its collection.
+    attributes:
+      labels:
+        description: Identified labels with explicit owner-local keys, unique within this collection.
+        range: Label
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      values:
+        description: Identified values with explicit owner-local keys, unique within this collection.
+        range: Value
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+  Label:
+    description: A named set of Classifications describing an aspect of an Entity or Relationship.
+    attributes:
+      id:
+        description: Stable identity of the Label, used by provenance Facts.
+        range: UUID
+        required: true
+        identifier: true
+      key:
+        description: Name unique within the owner's characteristics.labels collection.
+        range: string
+        required: true
+        pattern: \S
+      classifications:
+        range: Classification
+        inlined: false
+        pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        multivalued: true
+        list_elements_unique: true
+        description: Unique UUID references to Classifications describing this aspect.
+  Value:
+    description: An identified, typed Value belonging to an Entity or Relationship's Characteristics,
+      or declared locally within a mathematical Formulation. Its key provides a name within the owner's values
+      collection; its UUID identifies the symbol independently of that name.
+    notes:
+    - Each record explicitly carries its stable UUID and owner-local key. The UUID is its reference identity
+      and provenance target.
+    - A Value has one canonical owner in a Model revision. Formulations may reference existing domain Values
+      or own local Values; referencing does not copy content or change ownership.
+    - Measurement is the first supported Value kind. Flows, Streams, Accounts, and temporal Values require
+      their own fields and validation rules.
+    - An absent or null Quantity is unresolved, not zero. A present Quantity has explicit units compatible
+      with the Measure's canonical units. Facts and Claims explain recorded content. Fixed and unknown
+      roles belong to Specifications; recorded content is not automatically a fixed input.
+    slots:
+    - measure
+    - quantity
+    attributes:
+      id:
+        description: Stable identity of the Value, used by provenance Facts.
+        range: UUID
+        required: true
+        identifier: true
+      key:
+        description: Nonblank name unique within the owner's values collection; not reference identity.
+        range: string
+        required: true
+        pattern: \S
+      kind:
+        description: The kind of content represented by this characteristic.
+        range: ValueKind
+        required: true
+      description:
+        description: Explanation of the meaning of this Value within its owner.
+        range: string
+enums:
+  ValueKind:
+    description: Supported kinds of Values.
+    permissible_values:
+      measurement:
+        description: A measurable property with a Measure and an optional Quantity.

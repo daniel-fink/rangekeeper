@@ -1,0 +1,226 @@
+id: https://daniel-fink.github.io/rangekeeper/schema/specification
+name: rangekeeper_specification
+title: Rangekeeper Specifications
+version: 0.4.0
+description: Immutable, additively composable investigation requirements and explicit batches of Specifications.
+prefixes:
+  linkml: https://w3id.org/linkml/
+  rk: https://daniel-fink.github.io/rangekeeper/schema/
+imports:
+- common
+- formulation
+- settings
+default_prefix: rk
+default_range: string
+classes:
+  Specification:
+    tree_root: true
+    description: An immutable contribution of investigation requirements, a composition of such contributions,
+      or a batch of separate Specifications. A concrete composition investigates one pinned Model revision.
+    notes:
+    - Metadata.id identifies this immutable Specification revision. A content change requires a new UUID.
+      Specification has no second identifier; Metadata.previous, when supplied, references another Specification revision.
+    - includes references other Specification revisions whose requirements accumulate with this record's local
+      requirements. There are no overrides, removals, implicit defaults, or precedence by list order. The combined
+      includes and cases reference graph must be acyclic. References pin exact immutable revision UUIDs; resolution
+      verifies document kind and supported schema version. Metadata.previous is lineage, not composition.
+    - Each distinct included revision contributes once, even when reached through several paths. Direct reference
+      lists are unique. Different revisions cannot independently supply the same assignment, unknown role, estimate,
+      or individual setting, even if their contents agree. An assigned Value cannot also be unknown. One contributor
+      supplies the entire nonempty ordered objectives list. New alternatives are sibling compositions, not overrides.
+    - Missing fields and empty collections contribute no requirements. Empty objectives do not suppress included
+      objectives. Completeness, estimate eligibility, and execution defaults are checked only after composition.
+      Partial records may omit model and solve roles; concrete compositions must identify exactly one input Model.
+      Repeated model references are scope assertions and must agree, not competing assignments.
+    - cases references separate investigations, which may themselves be batches. A batch has nonempty cases and
+      may contain only metadata, model, and cases with content. It cannot include contributions, supply local solve
+      requirements, or be included as a contribution. Each case explicitly supplies or includes its requirements.
+      A batch model, if present, asserts that every leaf uses that Model; it supplies no missing case model. Cases
+      have no priority or implied Cartesian product. Reaching a leaf through different case paths specifies separate
+      planned occurrences; includes deduplication applies within each occurrence, not across a batch.
+    - model references a Model through its Metadata UUID. Resolution must verify that the referenced document is
+      a Model of a supported version, not merely a record with the same UUID shape. A composition is a derived view
+      of its pinned contributors, not changed content published under the root Specification's UUID.
+    - The composed scope contains the pinned Model and all contributors' canonical declarations. New records
+      must not duplicate or shadow Model identities. Specification Formulations may reference the Model and each
+      other across contributors. Root Formulation codes are unique across the composed Specification collection.
+      Contributor metadata remains distinct and does not become inherited requirements. The input Model remains
+      self-contained and cannot depend on Specification-local declarations.
+    - All Model Constraints and all Constraints in this Specification's Formulations and their descendants are
+      imposed together. Specification additions cannot deactivate, override, or rewrite the Model's mathematics.
+      Graph structure and query membership are fixed by the input Model in this draft.
+    - Every Value required by imposed Constraints or any objective must occur in exactly one of assignments
+      or unknowns. Other Values may be assigned or declared unknown explicitly; a role does not guarantee
+      that equations determine a unique amount. Unrelated Values need no solve role.
+    - Assignments fix supplied Quantities for this investigation. Recorded Model or local Value content is
+      not an implicit assignment, estimate, or current solution. Estimates initialize unknowns without fixing
+      them. Neither assignments nor unknowns is an output selection; output inspection is a query concern.
+    - Each assignment target and each estimate target occurs at most once in its collection. Unknowns are
+      unique and disjoint from assignment targets. Every estimate targets an unknown. All role targets must
+      be eligible numerical Values; this draft supports whole measurement Values, not rich-content selectors.
+    - An effective composition with no objectives specifies an equation or feasibility investigation. Objectives
+      supply criteria for an optimization investigation using the same constraints and roles. There is no separate forward/inverse flag,
+      targets field, requested_results field, or implicit objective.
+    - Objectives are in decreasing order of preference. Implementations may use this order for automatic
+      selection; candidate exploration, filtering, and final selection are implementation responsibilities.
+      Order does not require every selected solution to be a strict lexicographic optimum. Implementations
+      may offer user choice among candidates or automatic selection; no handling field mandates a workflow.
+      Reordering objectives changes the Specification and requires a new revision identity.
+    - The Run must record the selected solution and the basis for selection, distinguishing user choice from
+      automatic selection and reporting the method and any optimality or completeness limitations. The Run
+      schema and selection implementation are separate work.
+    - Specification requirements remain traceable through the Specification and Run; they are not automatically promoted
+      into governing mathematics in the output Model. Publishing output content must preserve valid references
+      without silently imposing Specification-local constraints. Run and output-publication contracts are separate.
+    - Structural validation, reference checking, and role completeness do not prove feasibility, boundedness,
+      uniqueness, convergence, or backend support. Policy execution, sampling, temporal content, and structural
+      interventions are deferred; a dedicated Scenario or Evaluation class is not introduced.
+      The objectives collection preserves preference order. Other collections here are unordered; the child
+      schemas preserve order where mathematics requires it.
+    attributes:
+      metadata:
+        description: Identity and schema version of this Specification revision, with optional description and lineage.
+        range: Metadata
+        required: true
+        inlined: true
+        all_of:
+        - range: Metadata
+          inlined: true
+      model:
+        description: UUID of the exact input Model revision. Optional on a contribution; required after composing
+          a concrete investigation. On a batch it only asserts every case's independently supplied input Model.
+        range: Metadata
+        inlined: false
+        pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        any_of:
+        - range: Metadata
+          inlined: false
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      includes:
+        description: Unique Metadata UUIDs of Specification revisions contributing requirements to this investigation.
+        range: Metadata
+        multivalued: true
+        list_elements_unique: true
+        inlined: false
+        pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        any_of:
+        - range: Metadata
+          inlined: false
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      cases:
+        description: Unique Metadata UUIDs of separate Specifications in a batch, without implicit inheritance.
+        range: Metadata
+        multivalued: true
+        list_elements_unique: true
+        inlined: false
+        pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        any_of:
+        - range: Metadata
+          inlined: false
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      assignments:
+        description: Explicit Quantities held fixed on their target Values for this investigation.
+        range: Assignment
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      unknowns:
+        description: Unique Value UUIDs whose amounts may be determined, including intermediate unknowns.
+        range: Value
+        multivalued: true
+        list_elements_unique: true
+        inlined: false
+        pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        any_of:
+        - range: Value
+          inlined: false
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      estimates:
+        description: Initial numerical estimates for unknown Values, used to initialize a solve without fixing them.
+        range: Assignment
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      formulations:
+        description: Additional mathematical declarations and constraints owned by this Specification. Root codes
+          are unique within this collection, independently of the Model's root Formulation codes.
+        range: Formulation
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      objectives:
+        description: Objectives in decreasing order of preference. Implementations may use this order for
+          automatic selection; candidate exploration and final selection are implementation responsibilities.
+        range: Objective
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+        list_elements_ordered: true
+      settings:
+        description: Optional numerical requests. Choices still unspecified after composition are left to the
+          implementation; the Run records the effective settings.
+        range: Settings
+        inlined: true
+        all_of:
+        - range: Settings
+          inlined: true
+  Assignment:
+    description: Embedded association of a numerical Value reference with a supplied Quantity.
+    notes:
+    - This record has no independent identity. Its containing field supplies its role. In assignments the
+      Quantity is enforced; in estimates it initializes an unknown without imposing an equality.
+    - The target Value supplies its Measure and meaning. Quantity units must be compatible with the Measure's
+      canonical units under the agreed unit convention. Conversion must preserve magnitude and meaning.
+      A bare Quantity cannot change the target's Measure or kind, and finite zero is valid supplied content.
+    - Formulation.Binding names an alias to a shared symbol; Assignment supplies content to that symbol.
+      Neither record duplicates the Value declaration. Recorded content is reused only by supplying it explicitly.
+    attributes:
+      value:
+        description: UUID of the numerical Value receiving the supplied amount or estimate.
+        range: Value
+        required: true
+        inlined: false
+        pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        any_of:
+        - range: Value
+          inlined: false
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      quantity:
+        description: Explicit finite magnitude and compatible units; omission or null is not a supplied amount.
+        range: Quantity
+        required: true
+        inlined: true
+        all_of:
+        - range: Quantity
+          inlined: true
+  Objective:
+    description: A scalar numerical Expression and the sense in which its result is preferred.
+    notes:
+    - The Expression is owned by a Model or Specification Formulation, including nested Expression nodes.
+      Boolean and collection results are ineligible. An objective is not a constraint or a requested report.
+    - The containing objectives list supplies preference order. No numerical weights or strict lexicographic
+      optimization rule are implied. A weighted combination can be represented explicitly as one Expression
+      referenced by one Objective. An eligible objective does not imply a finite optimum or backend support.
+    attributes:
+      expression:
+        description: UUID of a scalar numerical Expression in the composed Model and Specification scope.
+        range: Expression
+        required: true
+        inlined: false
+        pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        any_of:
+        - range: Expression
+          inlined: false
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      sense:
+        description: Whether smaller or larger results are preferred.
+        range: ObjectiveKind
+        required: true
+
+enums:
+  ObjectiveKind:
+    permissible_values:
+      minimize:
+        description: Prefer smaller results of the objective Expression.
+      maximize:
+        description: Prefer larger results of the objective Expression.

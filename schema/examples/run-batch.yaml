@@ -1,0 +1,18 @@
+# Synthetic conformance fixture: hypothetical execution/output, not an observed solver result.
+metadata:
+  id: 8f430114-dbd1-53f7-9075-243e3a039d13
+  schema_version: 0.1.0
+  name: Synthetic batch Run
+  description: Synthetic expected record for schema conformance only. No evaluator or numerical solver
+    was executed to produce this record.
+specification: 25df750e-a766-5fdc-9de9-a22d779f135b
+spawns:
+- 7e763bde-01f1-5116-8e1d-59e08ad54178
+- b3acf071-00c7-5651-a9c3-db0d896560a8
+outputs:
+- 9a047e59-fa74-562f-97d7-050da3df62d6
+- 16cdb352-da46-51cc-bfbe-2b6aff920c42
+report:
+  status:
+    completion: completed
+    solution: not_applicable

@@ -40,7 +40,7 @@ class Taxonomy:
     ) -> None:
         identifier = uuid4() if id is None else id
         validate.require_uuid(identifier, "id")
-        validate.require_text(code, "Taxonomy.code")
+        validate.require_code(code, "Taxonomy.code")
         validate.require_text(name, "Taxonomy.name")
         validate.optional_text(definition, "definition")
         catalog = Catalog.from_input(

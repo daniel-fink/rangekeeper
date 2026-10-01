@@ -1,0 +1,171 @@
+# Expression/signature examples with fixture-only domain descriptions.
+# input_domains describes the domains of referenced Values; these entries
+# are not serialized domain Values or a Model. Flow/Span/Account payload schemas
+# and their member contracts remain separate future work. The checker supplies
+# illustrative Span.end_date and Account.transactions member domains.
+definitions:
+  measures:
+  - id: 9b32a207-5ddf-5e6b-82b4-f6e94c87e329
+    code: annual_rate
+    name: Annual rate
+    units: 1/year
+functions:
+- id: 36cc8bb4-b118-5cc1-bab7-93ef64ac416d
+  code: flow.total
+  name: Flow total
+  version: '1'
+  parameters:
+  - name: flow
+    domain:
+      kind: flow
+    kind: positional_or_named
+    required: true
+  result:
+    kind: measurement
+  semantics: Sum the dated amounts of the Flow. An empty Flow returns zero in the Flow declared units.
+    Missing amounts remain unresolved.
+  unit_rule: The result uses the Flow amount units.
+- id: 8add1e97-a74d-5d17-8ae1-9140e87adece
+  code: flow.irr.annual
+  name: Annual internal rate of return
+  version: '1'
+  parameters:
+  - name: flow
+    domain:
+      kind: flow
+    kind: positional_or_named
+    required: true
+  - name: guess
+    domain:
+      kind: number
+    kind: named_only
+    required: false
+  result:
+    kind: measurement
+    measure: 9b32a207-5ddf-5e6b-82b4-f6e94c87e329
+  semantics: For equally spaced annual cash flows, determine r such that sum(c[t] / (1 + r * one_year)^t)
+    = 0, with r greater than -1/year. No root or multiple admissible roots is an error. A guess is only
+    a numerical starting point; when omitted use 0.1 as the annual-rate magnitude. This contract does
+    not specify a root-finding algorithm or prove uniqueness.
+  unit_rule: The result is an annual rate in 1/year; the dimensionless guess is its magnitude under that
+    annual convention.
+input_domains:
+- id: 2f4c2712-ec46-5e6c-aeae-adbb61402f1e
+  name: Cash flow
+  domain:
+    kind: flow
+- id: 27f3346f-d7be-5f3c-9725-c90c748b3204
+  name: Construction span
+  domain:
+    kind: span
+- id: 422fb026-e55f-50a0-a710-c7c43a040bd2
+  name: Loan account
+  domain:
+    kind: account
+- id: 15a45df9-73a4-532e-bd86-6ed8867cd0c3
+  name: Ordered balances
+  domain:
+    kind: collection
+    collection_kind: sequence
+    item_domain:
+      kind: measurement
+expressions:
+- id: 5c8df235-7943-5f91-ae83-29ab24cee75c
+  kind: call
+  call:
+    function: 36cc8bb4-b118-5cc1-bab7-93ef64ac416d
+    arguments:
+    - id: becf1d0b-c393-58fd-9b83-1c24c80fd3a0
+      kind: reference
+      target: 2f4c2712-ec46-5e6c-aeae-adbb61402f1e
+- id: 80103a02-d823-51c6-8641-47b22cbe6a5a
+  kind: call
+  call:
+    function: 8add1e97-a74d-5d17-8ae1-9140e87adece
+    named_arguments:
+    - name: flow
+      expression:
+        id: b406fde2-7f98-5b1b-9f98-a0f17cead26d
+        kind: reference
+        target: 2f4c2712-ec46-5e6c-aeae-adbb61402f1e
+    - name: guess
+      expression:
+        id: 15ee6ecf-7a79-518a-8a7f-6b5c1dbe82ab
+        kind: quantity
+        quantity:
+          magnitude: 0.125
+          units: dimensionless
+- id: b8abb753-0e3d-53c3-90bc-16ba3b41a144
+  kind: selection
+  selection:
+    kind: member
+    base:
+      id: 6fa8f24f-0a5c-50a3-b7ac-9cfe6d6cdf78
+      kind: reference
+      target: 27f3346f-d7be-5f3c-9725-c90c748b3204
+    member: end_date
+- id: d17e4783-10bb-5356-a3ab-dc8792fccbe6
+  kind: call
+  call:
+    function: 36cc8bb4-b118-5cc1-bab7-93ef64ac416d
+    arguments:
+    - id: d3b7164b-0225-5898-8251-3e9a41797912
+      kind: selection
+      selection:
+        kind: member
+        base:
+          id: fa4ad267-b9ee-52f1-a47f-efe694a16bea
+          kind: reference
+          target: 422fb026-e55f-50a0-a710-c7c43a040bd2
+        member: transactions
+- id: 4f5e0c00-1f67-59bf-b44d-f6badc50b96d
+  kind: selection
+  selection:
+    kind: index
+    base:
+      id: 2c7fa2d7-dee1-5c6a-8e5e-279f58ffaddd
+      kind: reference
+      target: 15a45df9-73a4-532e-bd86-6ed8867cd0c3
+    index:
+      id: bea8b267-bf5f-5c97-bed7-0a39a69c27c8
+      kind: quantity
+      quantity:
+        magnitude: 0
+        units: dimensionless
+- id: a542eff0-232c-5e96-b9f3-a6a58d76b7c1
+  kind: unary
+  operator: negate
+  operand:
+    id: d92afe5d-6bd7-5f8c-a24d-7a0ffb854fae
+    kind: quantity
+    quantity:
+      magnitude: 10
+      units: dimensionless
+- id: 95272cd2-77f0-5292-a933-dcec5b018ce7
+  kind: binary
+  operator: power
+  operands:
+  - id: 94fbc123-68e5-52eb-9168-7bcf08cdbcbe
+    kind: quantity
+    quantity:
+      magnitude: 2
+      units: dimensionless
+  - id: 4e55f0eb-403c-5be0-bdbd-8a8944523ff9
+    kind: quantity
+    quantity:
+      magnitude: 3
+      units: dimensionless
+- id: 9e41b14a-6c84-5463-b0b5-63a5300736ca
+  kind: binary
+  operator: logical_and
+  operands:
+  - id: 7d7170e1-89c5-5d5a-86e8-30ddb8f79d0d
+    kind: boolean
+    boolean: true
+  - id: 211ce942-15c8-5261-bc7e-83da428a6170
+    kind: unary
+    operator: logical_not
+    operand:
+      id: e79930e6-25d6-59ef-92d7-803375300eef
+      kind: boolean
+      boolean: false

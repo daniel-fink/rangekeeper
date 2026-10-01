@@ -1,0 +1,403 @@
+id: https://daniel-fink.github.io/rangekeeper/schema/run
+name: rangekeeper_run
+title: Rangekeeper Runs
+version: 0.1.0
+description: Finalized immutable execution records, spawned executions, accepted Model outputs, and supporting
+  reports.
+prefixes:
+  linkml: https://w3id.org/linkml/
+  rk: https://daniel-fink.github.io/rangekeeper/schema/
+imports:
+- settings
+- measure
+default_prefix: rk
+default_range: string
+classes:
+  Run:
+    tree_root: true
+    description: The finalized record of one execution attempt against an exact Specification revision.
+    notes:
+    - Metadata identifies this immutable Run revision. Content changes require new revision identities. Only
+      finalized records are covered; live progress is runtime state. A repeated execution is a distinct Run,
+      not an update to the prior execution. Metadata.previous is record lineage, not execution containment
+      or retry scheduling.
+    - specification pins the attempted Specification. Its includes identify exact contributions and its composition
+      identifies the input Model. These documents must remain available. No copied effective Specification
+      or second authoritative input Model field is introduced. A failed attempt may reference an incomplete
+      or semantically invalid Specification; it cannot claim an accepted solution.
+    - spawns identifies direct subordinate Run records created for this execution, including failed or skipped
+      cases. It is unordered and may be absent when empty. It implies neither parallelism, execution order,
+      nor separate processes. The resolved spawn graph is acyclic; within an execution tree each non-root Run
+      has one spawning parent. Reuse of results is not another spawning relationship.
+    - A batch Run accounts for every direct Specification.cases entry with exactly one spawned Run referencing
+      that case, including skipped cases. Nested batches recurse. The same case reached along different case
+      paths has distinct Run identities. This initial batch contract excludes additional unpaired spawns and
+      implicit retries. A non-batch Run may record subsidiary executions without treating their outputs as
+      its own.
+    - Batch outputs are exactly the unique union of direct spawned Runs outputs, without copying Models. Leaf
+      or other non-batch outputs are newly published Model revisions, each with one producing Run. Publishing
+      the input revision itself is invalid. Each output must retain the required definitions and valid references,
+      with identity-preserving lineage to its input.
+    - outputs contains accepted snapshots only. A non-batch feasible outcome publishes at least one output;
+      other solution statuses publish none. A failed, cancelled, or skipped non-batch attempt has no outputs.
+      A limited attempt may retain accepted feasible output with its limitations reported. Batch outcomes may
+      retain accepted child outputs even when other cases fail.
+    - All values represented as solved must be recorded, and imposed requirements must be checked before acceptance.
+      Recorded quantities never become permanent assignments in later Specifications. Temporary Specification
+      constraints, roles, and objectives must not be silently promoted into output governing mathematics. Partial
+      or unvalidated snapshots are not accepted outputs in this draft.
+    - Document and target pairs in reports preserve revision scope. Document references resolve to available
+      Models, Specifications, or Runs. A target requires its document and must identify a canonical record
+      in that document; arbitrary payload keys are not declarations. Missing references can be described in
+      messages without pretending that an unresolved diagnostic target resolved.
+    - Status and report evidence are declarations about execution. Structural and reference validation alone
+      do not prove constraint satisfaction, optimality, numerical reproducibility, or that execution actually
+      occurred. Policy-specific traces, temporal histories, solver-specific options, retry coordination, and
+      partial snapshot publication require further contracts.
+    attributes:
+      metadata:
+        description: Identity and schema version of this immutable Run record.
+        range: Metadata
+        inlined: true
+        required: true
+        all_of:
+        - range: Metadata
+          inlined: true
+      specification:
+        description: Exact attempted Specification revision, resolved as a Specification document.
+        range: Metadata
+        inlined: false
+        pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        any_of:
+        - range: Metadata
+          inlined: false
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        required: true
+      spawns:
+        description: Unique references to directly spawned Run revisions.
+        range: Metadata
+        inlined: false
+        pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        any_of:
+        - range: Metadata
+          inlined: false
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        multivalued: true
+        list_elements_unique: true
+      outputs:
+        description: Unique accepted output Model revision references, or their union for a batch.
+        range: Metadata
+        inlined: false
+        pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        any_of:
+        - range: Metadata
+          inlined: false
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        multivalued: true
+        list_elements_unique: true
+      report:
+        description: Execution outcome and supporting evidence.
+        range: Report
+        inlined: true
+        required: true
+        all_of:
+        - range: Report
+          inlined: true
+  Report:
+    description: Outcome, actual runtime, findings, and ordered execution trace of a Run.
+    attributes:
+      status:
+        description: Required execution and mathematical outcome.
+        range: Status
+        inlined: true
+        required: true
+        all_of:
+        - range: Status
+          inlined: true
+      runtime:
+        description: Actual runtime when known; may be absent for a skipped or pre-execution failure.
+        range: Runtime
+        inlined: true
+        all_of:
+        - range: Runtime
+          inlined: true
+      diagnostics:
+        description: Unordered findings supporting interpretation of the outcome.
+        range: Diagnostic
+        inlined: true
+        multivalued: true
+        inlined_as_list: true
+      trace:
+        description: Ordered execution and selection records; list order is preserved.
+        range: Step
+        inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
+  Status:
+    description: Execution completion and mathematical conclusion, recorded independently.
+    notes:
+    - For a non-batch Run, completed permits feasible, infeasible, or unknown; limited permits feasible or
+      unknown; failed and cancelled permit unknown or not_assessed; skipped requires not_assessed. partial
+      is reserved for batches. feasible asserts acceptance, not optimality; infeasible requires evidence rather
+      than inference from numerical failure.
+    - 'Batch solution is not_applicable: conclusions belong to individual cases. Batch completion summarizes
+      direct spawns: all completed gives completed; some completed and some not gives partial; otherwise choose
+      failed if any failed or partial, then limited if any limited, then cancelled if any cancelled, otherwise
+      skipped. Thus nested incomplete batches remain visible. Skipped batches contain only skipped cases.'
+    - Every non-completed completion and every infeasible or unknown non-batch conclusion requires an explanatory
+      diagnostic. Completed non-batch executions with feasible or infeasible conclusions and limited attempts
+      require runtime evidence. A skipped Run has no runtime evidence. Status combinations do not by themselves
+      demonstrate the reported mathematical claim.
+    attributes:
+      completion:
+        description: How this attempt ended, or the aggregate completion of a batch.
+        range: CompletionStatus
+        required: true
+      solution:
+        description: Mathematical conclusion; batches use not_applicable.
+        range: SolutionStatus
+        required: true
+  Runtime:
+    description: Observed timing, implementation identities, and effective numerical settings.
+    notes:
+    - Implementations identify the actual evaluator, compiler, or solver used, including versions. This record
+      is not a request to select a backend. Multiple implementations may have the same kind; duplicate kind/name/version
+      tuples are invalid. Version strings alone are not a guarantee of reproducibility.
+    - Timestamps are timezone-qualified instants. Record only observed times; when both exist, finished_at
+      must not precede started_at. Missing observations are not invented. Trace times, when given, are consistent
+      with the runtime interval and trace order.
+    - 'settings reuses the Settings content contract for effective values, including resolved defaults. Every
+      requested numerical setting must be accounted for: a changed or unapplied request requires an explanatory
+      diagnostic. Solver-specific options and complete environment or random-state manifests are deferred.'
+    attributes:
+      started_at:
+        description: Observed start instant with an explicit timezone.
+        range: datetime
+      finished_at:
+        description: Observed finish instant with an explicit timezone.
+        range: datetime
+      implementations:
+        description: Actual implementation identities; nonempty when Runtime is present.
+        range: Implementation
+        inlined: true
+        required: true
+        multivalued: true
+        inlined_as_list: true
+        minimum_cardinality: 1
+      settings:
+        description: Effective numerical settings, rather than merely copied requests.
+        range: Settings
+        inlined: true
+        all_of:
+        - range: Settings
+          inlined: true
+  Implementation:
+    description: An implementation role and its reproducible software identity as reported for this execution.
+    attributes:
+      kind:
+        description: Role performed by the implementation.
+        range: ImplementationKind
+        required: true
+      name:
+        description: Nonblank implementation name.
+        range: string
+        required: true
+        pattern: \S
+      version:
+        description: Nonblank version or immutable build identifier.
+        range: string
+        required: true
+        pattern: \S
+  Diagnostic:
+    description: A coded finding and optional numerical evidence, qualified by document revision.
+    notes:
+    - code identifies a finding convention, not a global object identity. message explains the finding and
+      the meaning of any numerical evidence. Residuals require both document and target; tolerances require
+      a residual. Magnitudes are finite, tolerances nonnegative, and their units compatible. Signed residuals
+      and zero tolerances are permitted.
+    - For numerical evidence, message states the residual definition, scaling, and acceptance comparison. This
+      draft does not prescribe a universal residual formula, absolute threshold, or unit registry. Informational
+      findings cannot replace required acceptance checks.
+    - Use code settings_adjusted to explain each requested setting changed or not applied, naming it and its
+      disposition in message. Other diagnostic codes are application-defined.
+    attributes:
+      severity:
+        description: Importance of the finding.
+        range: Severity
+        required: true
+      code:
+        description: Nonblank finding code.
+        range: Code
+        required: true
+      message:
+        description: Explanation and, for numerical findings, the checking convention.
+        range: string
+        required: true
+        pattern: \S
+      document:
+        description: Revision containing the referenced target, or the document addressed as a whole.
+        range: Metadata
+        inlined: false
+        pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        any_of:
+        - range: Metadata
+          inlined: false
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      target:
+        description: UUID of a canonical record in document; never an unqualified cross-revision reference.
+        range: UUID
+        pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      residual:
+        description: Finite signed residual under the stated convention.
+        range: Quantity
+        inlined: true
+        all_of:
+        - range: Quantity
+          inlined: true
+      tolerance:
+        description: Finite nonnegative tolerance in compatible units.
+        range: Quantity
+        inlined: true
+        all_of:
+        - range: Quantity
+          inlined: true
+    rules:
+    - preconditions:
+        slot_conditions:
+          target:
+            value_presence: PRESENT
+      postconditions:
+        slot_conditions:
+          document:
+            required: true
+    - preconditions:
+        slot_conditions:
+          residual:
+            value_presence: PRESENT
+      postconditions:
+        slot_conditions:
+          document:
+            required: true
+          target:
+            required: true
+    - preconditions:
+        slot_conditions:
+          tolerance:
+            value_presence: PRESENT
+      postconditions:
+        slot_conditions:
+          residual:
+            required: true
+  Step:
+    description: One ordered record of execution activity, without prescribing scheduling or policy logic.
+    notes:
+    - Trace list order records event order, not a dependency or scheduling instruction. Supplied timestamps
+      must be nondecreasing and timezone-qualified. Several steps can share a timestamp.
+    - A publication step references an accepted output Model through document. A selection step also references
+      an accepted output and states the method, automatic versus user selection, basis, and limitations in
+      message. When objectives lead to accepted non-batch outputs, each output requires a selection step. No
+      mandatory winner is implied for a batch comparison.
+    - This initial trace uses explanatory messages and scoped references. It is not a complete machine-readable
+      policy/action language, numerical proof, or external artifact manifest.
+    attributes:
+      kind:
+        description: Kind of recorded execution activity.
+        range: StepKind
+        required: true
+      at:
+        description: Observed event instant with an explicit timezone.
+        range: datetime
+      message:
+        description: What occurred and the basis for any selection.
+        range: string
+        required: true
+        pattern: \S
+      document:
+        description: Revision containing the referenced target, or the document addressed as a whole.
+        range: Metadata
+        inlined: false
+        pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        any_of:
+        - range: Metadata
+          inlined: false
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      target:
+        description: UUID of a canonical record in document; never an unqualified cross-revision reference.
+        range: UUID
+        pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+    rules:
+    - preconditions:
+        slot_conditions:
+          target:
+            value_presence: PRESENT
+      postconditions:
+        slot_conditions:
+          document:
+            required: true
+    - preconditions:
+        slot_conditions:
+          kind:
+            equals_string_in:
+            - publication
+            - selection
+      postconditions:
+        slot_conditions:
+          document:
+            required: true
+enums:
+  CompletionStatus:
+    permissible_values:
+      completed:
+        description: The attempt completed normally; this does not imply mathematical feasibility.
+      limited:
+        description: An execution limit stopped the attempt.
+      partial:
+        description: Some direct batch cases completed and others did not.
+      failed:
+        description: An error or unsupported capability prevented completion.
+      cancelled:
+        description: The attempt was cancelled.
+      skipped:
+        description: The attempt was not started.
+  SolutionStatus:
+    permissible_values:
+      feasible:
+        description: Published output satisfies the investigation requirements under recorded checking conventions;
+          optimality is not implied.
+      infeasible:
+        description: The investigation was established to be infeasible by the recorded method.
+      unknown:
+        description: No accepted mathematical conclusion was established.
+      not_assessed:
+        description: Mathematical feasibility was not assessed.
+      not_applicable:
+        description: The Run aggregates case outcomes rather than asserting one mathematical conclusion.
+  ImplementationKind:
+    permissible_values:
+      evaluator:
+        description: Evaluates a supported formulation or computation.
+      compiler:
+        description: Translates definitions into an executable or solver representation.
+      solver:
+        description: Attempts a numerical solution or optimization.
+  Severity:
+    permissible_values:
+      info:
+        description: Informational finding.
+      warning:
+        description: Limitation or condition affecting interpretation.
+      error:
+        description: Failure requiring attention.
+  StepKind:
+    permissible_values:
+      validation:
+        description: Validation of inputs, requirements, or results.
+      formulation:
+        description: Construction or translation of the executable mathematics.
+      solve:
+        description: Execution of a numerical evaluation or solve.
+      publication:
+        description: Publication of an accepted output Model.
+      selection:
+        description: Selection of an accepted candidate, with method and basis.
