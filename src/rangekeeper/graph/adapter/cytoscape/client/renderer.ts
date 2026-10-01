@@ -1,3 +1,8 @@
+import {
+  initialPresentation,
+  movingRectangles,
+  translate,
+} from "./presentation";
 import { styles } from "./styles";
 import type cytoscape from "cytoscape";
 import type { ViewerContext } from "./context";
@@ -115,10 +120,26 @@ export function setupFilters(ctx: ViewerContext) {
 export function loadDataset(ctx: ViewerContext, index) {
   const start = performance.now();
   ctx.updating = true;
+  if (ctx.dragFrame != null) cancelAnimationFrame(ctx.dragFrame);
+  ctx.dragFrame = null;
   if (ctx.cy) ctx.cy.destroy();
   ctx.portChoices = new Map();
   ctx.routes = new Map();
   ctx.data = ctx.datasets[index];
+  ctx.presentation = initialPresentation(ctx.data);
+  ctx.showSpacingAdvisories = false;
+  ctx.$("spacing-advisories").checked = false;
+  ctx.$("spacing-advisory-control").hidden = !ctx.data.savedLayout;
+  ctx.$("presentation-conflicts")?.replaceChildren();
+  if (ctx.$("presentation-conflicts"))
+    delete ctx.$("presentation-conflicts").dataset.signature;
+  ctx.mode = "outlines";
+  ctx.HEADER = ctx.data.savedLayout?.problem.header ?? 36;
+  ctx.$("relayout").disabled = Boolean(ctx.data.savedLayout);
+  ctx.$("membership").disabled = Boolean(ctx.data.savedLayout);
+  ctx.$("restore").textContent = ctx.data.savedLayout
+    ? "Restore saved layout"
+    : "Restore arrangement";
   ctx.inspected = null;
   ctx.collapsed = new Set();
   ctx.history = [];
@@ -143,11 +164,28 @@ export function loadDataset(ctx: ViewerContext, index) {
     elements,
     layout: { name: "preset" },
     selectionType: "single",
+    autoungrabify: false,
     minZoom: 0.04,
     maxZoom: 4,
     wheelSensitivity: 0.2,
     style: styles,
   });
+  if (ctx.data.savedLayout) {
+    for (const n of ctx.cy.nodes()) {
+      const r = ctx.data.savedLayout.geometry.rectangles[n.id()];
+      n.data({
+        savedWidth: r.width - 3,
+        savedHeight: r.height - 3,
+        savedTextWidth: r.width - 16,
+      });
+    }
+    ctx.cy.nodes().addClass("saved");
+  }
+  ctx.$("outlines").classList.add("active");
+  ctx.$("membership").classList.remove("active");
+  ctx.$("canvas-note").textContent = ctx.data.savedLayout
+    ? "Drag nodes or assembly headers to arrange · boxes fit visible members · changes are session-only."
+    : "Outlines show selected visible scope, not ownership or physical boundaries.";
   for (const [id] of Object.entries(ctx.data.assemblies))
     ctx.cy
       .getElementById(id)
@@ -175,6 +213,9 @@ export function loadDataset(ctx: ViewerContext, index) {
     ctx.drag = {
       id: n.id(),
       start: { ...n.position() },
+      rectangles: ctx.presentation
+        ? movingRectangles(ctx.data, ctx.presentation, n.id())
+        : undefined,
       members:
         a && !ctx.collapsed.has(n.id())
           ? descendants(ctx.data, n.id())
@@ -186,6 +227,15 @@ export function loadDataset(ctx: ViewerContext, index) {
   });
   ctx.cy.on("drag", "node", (ev) => {
     if (ctx.drag?.id !== ev.target.id()) return;
+    if (ctx.presentation) {
+      ctx.drag.latest = { ...ev.target.position() };
+      if (ctx.dragFrame == null)
+        ctx.dragFrame = requestAnimationFrame(() => {
+          ctx.dragFrame = null;
+          flushPresentationDrag(ctx);
+        });
+      return;
+    }
     const pos = ev.target.position(),
       dx = pos.x - ctx.drag.start.x,
       dy = pos.y - ctx.drag.start.y;
@@ -203,6 +253,9 @@ export function loadDataset(ctx: ViewerContext, index) {
     ctx.syncBoxes();
   });
   ctx.cy.on("free", "node", () => {
+    if (ctx.dragFrame != null) cancelAnimationFrame(ctx.dragFrame);
+    ctx.dragFrame = null;
+    flushPresentationDrag(ctx);
     ctx.drag = null;
     ctx.syncBoxes();
   });
@@ -210,10 +263,20 @@ export function loadDataset(ctx: ViewerContext, index) {
     if (ctx.syncing || ctx.updating || ctx.drag || ctx.layoutMode) return;
     if (ctx.data.assemblies[ev.target.id()] && !ev.target.hasClass("frame"))
       ctx.compactPositions[ev.target.id()] = { ...ev.target.position() };
+    if (ctx.presentation) {
+      const n = ev.target,
+        r = ctx.presentation.rectangles[n.id()];
+      ctx.presentation.rectangles[n.id()] = {
+        ...r,
+        x: n.position().x - r.width / 2,
+        y: n.position().y - r.height / 2,
+      };
+      ctx.presentation.adjusted = true;
+    }
     ctx.syncBoxes();
   });
   ctx.setupFilters();
-  ctx.showMembership = true;
+  ctx.showMembership = !ctx.data.savedLayout;
   ctx.syncFilters();
   ctx.focusIds = ctx.data.initialFocus
     ? new Set([
@@ -241,14 +304,16 @@ export function loadDataset(ctx: ViewerContext, index) {
     ]))
       ctx.nav(host, ctx.label(id), id);
   }
-  ctx.$("anchors").disabled = !ctx.data.anchors.length;
+  ctx.$("anchors").disabled =
+    Boolean(ctx.data.savedLayout) || !ctx.data.anchors.length;
   ctx.$("anchors").checked = false;
   ctx.selectLinkedObject();
   ctx.metrics.loadMs = performance.now() - start;
   ctx.$("timing").textContent =
-    `Loaded in ${ctx.metrics.loadMs.toFixed(0)} ms · reference arrangement`;
+    `Loaded in ${ctx.metrics.loadMs.toFixed(0)} ms · ${ctx.data.savedLayout ? "saved starting layout · draggable" : "reference arrangement"}`;
 }
 export async function relayout(ctx: ViewerContext) {
+  if (ctx.data.savedLayout) return;
   const start = performance.now();
   ctx.$("relayout").disabled = true;
   ctx.layoutMode = true;
@@ -310,8 +375,21 @@ export async function relayout(ctx: ViewerContext) {
   }
 }
 export function setMode(ctx: ViewerContext, next) {
+  if (ctx.data.savedLayout && next !== "outlines") return;
   ctx.mode = next;
   ctx.$("outlines").classList.toggle("active", next === "outlines");
   ctx.$("membership").classList.toggle("active", next === "membership");
+  ctx.syncBoxes();
+}
+
+function flushPresentationDrag(ctx: ViewerContext) {
+  const d = ctx.drag;
+  if (!ctx.presentation || !d?.latest) return;
+  translate(
+    ctx.presentation,
+    d.rectangles,
+    d.latest.x - d.start.x,
+    d.latest.y - d.start.y,
+  );
   ctx.syncBoxes();
 }

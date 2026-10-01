@@ -16,14 +16,14 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// projection.ts
+// src/rangekeeper/graph/adapter/cytoscape/client/projection.ts
 var projection_exports = {};
 __export(projection_exports, {
   projectCollapse: () => projectCollapse
 });
 module.exports = __toCommonJS(projection_exports);
 
-// membership.ts
+// src/rangekeeper/graph/adapter/cytoscape/client/membership.ts
 function parents(graph) {
   const result = Object.fromEntries(
     graph.elements.filter((e) => !("source" in e.data)).map((e) => [e.data.id, []])
@@ -49,10 +49,10 @@ function assemblyOrder(graph) {
   return ordered;
 }
 
-// document.ts
+// src/rangekeeper/graph/adapter/cytoscape/client/document.ts
 var isEdge = (data) => "source" in data;
 
-// projection.ts
+// src/rangekeeper/graph/adapter/cytoscape/client/projection.ts
 function projectCollapse(graph, collapsedIds, allowedTypes = null) {
   assemblyOrder(graph);
   const collapsed = new Set(collapsedIds), memberships = parents(graph);

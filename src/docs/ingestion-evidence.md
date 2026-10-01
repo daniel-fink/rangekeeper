@@ -414,8 +414,8 @@ The first milestone implements the following, without IssueEffect:
 4. Add tabular.from_claims, row, claim and issues_for; add validate/fingerprint.
 5. Test missing/conflicting values, identity, addressing, lineage and non-tabular
    conversion using synthetic fixtures. ERROR severity is not an execution gate.
-6. Run RK regressions and Mandarin's synthetic suite; leave project imports,
-   viewer/notebook artifacts and existing project modifications unchanged.
+6. Run RK regressions with synthetic fixtures; keep consumer acceptance in the
+   consuming repository.
 
 There is no new RecordSet, quantity class, spreadsheet reader, transformation
 catalogue, YAML executor, service/tool transport or graph persistence layer in
@@ -425,7 +425,7 @@ future operation behavior rather than claiming production operations exist.
 Contract acceptance across milestones:
 
 The foundation tests cover the evidence invariants and synthetic examples below.
-Production joins/groups, bounded operation-tool inspection and full Mandarin
+Production joins/groups, bounded operation-tool inspection and consumer
 migration remain acceptance work for subsequent milestones.
 
 1. Valid numeric area, real zero/False, blank, missing formula cache and invalid
@@ -445,7 +445,7 @@ migration remain acceptance work for subsequent milestones.
 7. A synthetic non-tabular property can become tabular evidence while preserving
    its native Source/Location and transformation lineage.
 8. Tool inspection is bounded and read-only; export limitations are explicit.
-9. Mandarin migration preserves existing graph identities, values, memberships
+9. Consumer migration must preserve existing graph identities, values, memberships
    and review meanings. Changes to provenance encoding, if necessary, are
    documented and compared separately from domain changes.
 
@@ -464,44 +464,18 @@ additional negative cases are exercised in `tests/test_ingestion_evidence.py`.
 The example uses existing Claim factories with explicit stable UUIDs. Its tiny
 helpers are demonstrations, not a separately supported parsing/identity API.
 
-## Foundation validation — 17 September 2026
+## Validation and representation
 
-- 151 RK tests passed across ingestion evidence, adapters, immutable graph and
-  Cytoscape adapter suites. Ruff and ty checks passed for the changed foundation.
-- The worked example produced identical output and fingerprints in two separate
-  Python processes. New package files also passed Python 3.10 syntax parsing;
-  runtime tests used Python 3.13.
-- 76 Mandarin tests passed in a temporary compatibility copy using current project
-  code and specifications, with only its viewer module replaced by the committed
-  version. The actual workspace suite could not collect because a pre-existing
-  local graph_viewer.py edit has an indentation error. That edit was preserved.
+Synthetic tests cover missing/conflicting values, source lineage, deterministic
+fingerprints, addressing, constructor validation and fresh-process imports.
 
-This validates the foundation and compatibility, not a completed reader,
-operation catalogue or Mandarin ingestion migration.
+Row owns its optional ID alongside values; Table has no parallel row_ids field.
+Ordinary Tables can mix identified and unidentified rows. Evidence requires every
+row to be identified, with empty Tables valid by default.
 
-### Bundled-row refinement
-
-Row now owns its optional ID alongside values; Table has no parallel row_ids
-field. Ordinary Tables can mix identified and unidentified rows. Evidence
-requires every row to be identified, with empty Tables valid by default.
-
-The combined RK foundation/adapter/graph/viewer and actual Mandarin workspace
-suites passed 226 tests after this refinement. The worked example retained its
-previous fingerprint. The earlier Mandarin viewer syntax error has been fixed
-in a separate user-authorized repair, so the compatibility copy is no longer
-needed. Readers, transformation execution and YAML migration remain deferred.
-
-### Validation and encoding separation
-
-The profile abstraction has been removed in favor of explicit Table validation.
-Contracts, validation and artifact fingerprinting now have separate modules;
-primitive encoding is in _encoding.py, and identity lookup is Table.row(UUID).
-
-Validation: 234 tests passed across ingestion evidence, adapters, immutable graph,
-Cytoscape and Mandarin. Captured pre-refactor available/missing fingerprints and
-an issue ID match exactly; the executable example also retains its fingerprint.
-Fresh-process imports and constructor validation pass. Ruff and focused ty checks
-pass. No project artifacts were regenerated.
+Contracts, validation and artifact fingerprinting have separate modules; primitive
+encoding is in `_encoding.py`, and identity lookup is `Table.row(UUID)`.
+Consumer compatibility and migration records belong outside RK.
 
 ## Excel extraction integration
 
@@ -510,8 +484,7 @@ extraction code targeting this existing Evidence contract. Its tests and executa
 example now pass; see the linked validation record and runtime limits. It reuses `Table`, `Row`, Claims,
 Locations, Issues and `tabular.from_claims`; it does not change Evidence payload
 restrictions, fingerprints or row lookup. Operation-level diagnostics stay separate
-from addressed Evidence issues. Mandarin now uses these contracts for its
-source-to-graph handoff.
+from addressed Evidence issues. Consumers use these contracts for source-to-graph handoff.
 
 ## Shared table operations
 

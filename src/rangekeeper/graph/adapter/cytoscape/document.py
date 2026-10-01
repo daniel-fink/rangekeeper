@@ -77,3 +77,8 @@ def validate_document(document: dict) -> None:
         raise ValueError("Initial focus must reference a projected Assembly")
     if not set(document["anchors"]) <= nodes:
         raise ValueError("Layout anchor outside display scope")
+
+    if "savedLayout" in document:
+        from .layout.viewer import validate_saved_layout
+
+        validate_saved_layout(document)

@@ -91,6 +91,23 @@ export interface GraphDocument {
   diagnostics: { ambiguousParents: string[]; containmentCycles: string[] };
   reviewItems?: ReviewItem[];
   reviewUrl?: string;
+  savedLayout?: {
+    schema: "rk-saved-layout-v1";
+    problem: {
+      header: number;
+      padding: number;
+      gap?: number;
+      assemblies?: Array<{ id: string; min_width: number }>;
+    };
+    geometry: {
+      rectangles: Record<
+        string,
+        { x: number; y: number; width: number; height: number }
+      >;
+    };
+    geometryFingerprint: string;
+    displayFingerprint: string;
+  };
 }
 export interface Projection {
   hiddenIds: string[];

@@ -1,11 +1,10 @@
 # Format-independent workflow execution
 
-Implemented and pushed as RK `588b5b412e52f5b32919a72a19d31df423378edb`, paired
-with projects `68baa2b88324d9f7fcaf794f59512a8bce720c0a`. The existing YAML
-operation names and `load`, `run`, `schema` entry points are preserved.
-The paired delivery PRs are [RK #32](https://github.com/daniel-fink/rangekeeper/pull/32)
-into `feature/graph` and [Projects #1](https://github.com/daniel-fink/whirlwind-projects/pull/1)
-into `main`. These exact implementation checkpoints remain the reproduction pins.
+The format-independent implementation checkpoint is RK
+`588b5b412e52f5b32919a72a19d31df423378edb`, delivered through
+[RK #32](https://github.com/daniel-fink/rangekeeper/pull/32).
+Existing YAML operation names and `load`, `run`, `schema` entry points are preserved.
+Consumer configurations and their reproduction pins belong to their own repositories.
 
 ## Ownership
 
@@ -63,9 +62,8 @@ RK implementation assembly, not public runtime extension APIs.
 - Missing check columns produce `missing_column` Diagnostics, including on empty
   table scopes. Unexpected programming errors are not converted into Outcomes.
 - Review references now also show configuration and non-cell Locations. Existing
-  source references remain present. The historical Mandarin comparator excludes
-  only configuration locations verified against the recorded run fingerprint;
-  arbitrary added or removed source references still fail comparison.
+  source references remain present. Consumer comparisons must verify any normalized configuration locations against
+  the recorded run fingerprint; arbitrary source-reference changes must not be ignored.
 - Deferred metadata adds `deferred_evidence`, containing table/row identity and
   structured source locations. Excel's existing deferred tokens remain unchanged;
   other formats have a row-identity fallback.
@@ -81,12 +79,5 @@ The RK graph/serialization/operation/Excel/ingestion/workflow suite passes 291
 checks, including 12 new format-boundary regressions. Before fixes, the six initial
 regression cases failed as expected. Ruff and focused type checks pass.
 
-Mandarin and both East Whisman scenarios retain complete graph content and each
-Fact's source-cell and reviewed-decision support. Existing check operands, outcomes,
-scopes, source checks, findings and deferred records remain equivalent. Only the
-explicit additions above are normalized during cross-implementation comparison.
-
-Project validation, clean-environment checks and notebook evidence are recorded in
-the projects repository's `docs/format-independent-workflow.md` and ignored
-`artifacts/format-refactor/` directories. No source interpretation is resolved by
-this architectural change. No project YAML or handwritten notebook content changes.
+Consumer graph equivalence, notebook and clean-environment acceptance are owned
+by the consuming repository. RK tests use synthetic fixtures.

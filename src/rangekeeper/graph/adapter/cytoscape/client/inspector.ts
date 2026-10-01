@@ -236,7 +236,7 @@ export function renderSelection(ctx: ViewerContext) {
       ctx.changeCollapse([ctx.inspected], !ctx.collapsed.has(ctx.inspected));
     ctx.make(
       "p",
-      `${assembly.entities.length} recorded members. Highlighting identifies exact membership; rectangles may also enclose nonmembers.`,
+      `${assembly.entities.length} recorded members. ${ctx.data.savedLayout ? "Boxes fit visible members and resize as you arrange or change scope. Highlighting identifies direct membership; red outlines flag presentation conflicts." : "Highlighting identifies exact membership; rectangles may also enclose nonmembers."}`,
       host,
     );
     const list = ctx.make("details", undefined, host);
