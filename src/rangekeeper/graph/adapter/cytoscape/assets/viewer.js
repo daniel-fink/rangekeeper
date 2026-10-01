@@ -1,5 +1,165 @@
 (() => {
-  // routing.ts
+  // src/rangekeeper/graph/adapter/cytoscape/client/membership.ts
+  function parents(graph) {
+    const result = Object.fromEntries(
+      graph.elements.filter((e) => !("source" in e.data)).map((e) => [e.data.id, []])
+    );
+    for (const [id, a] of Object.entries(graph.assemblies))
+      for (const member of a.entities) result[member].push(id);
+    for (const list of Object.values(result)) list.sort();
+    return result;
+  }
+  function descendants(graph, id) {
+    const found = /* @__PURE__ */ new Set();
+    const visit = (current) => {
+      for (const child of graph.assemblies[current]?.entities || [])
+        if (!found.has(child)) {
+          found.add(child);
+          visit(child);
+        }
+    };
+    visit(id);
+    found.delete(id);
+    return [...found];
+  }
+  function assemblyOrder(graph) {
+    const ordered = [], active = /* @__PURE__ */ new Set(), seen = /* @__PURE__ */ new Set();
+    const visit = (id) => {
+      if (seen.has(id)) return;
+      if (active.has(id)) throw new Error("Assembly membership cycle");
+      active.add(id);
+      for (const child of graph.assemblies[id].entities)
+        if (graph.assemblies[child]) visit(child);
+      active.delete(id);
+      seen.add(id);
+      ordered.push(id);
+    };
+    Object.keys(graph.assemblies).forEach(visit);
+    return ordered;
+  }
+  function revealPath(graph, id) {
+    const owners = parents(graph), path = [];
+    while (owners[id]?.length) {
+      id = owners[id][0];
+      path.push(id);
+    }
+    return path;
+  }
+
+  // src/rangekeeper/graph/adapter/cytoscape/client/presentation.ts
+  function initialPresentation(graph) {
+    if (!graph.savedLayout) return null;
+    return {
+      rectangles: structuredClone(graph.savedLayout.geometry.rectangles),
+      display: structuredClone(graph.savedLayout.geometry.rectangles),
+      adjusted: false,
+      visibility: "",
+      conflicts: []
+    };
+  }
+  function translate(state, originals, dx, dy) {
+    for (const [id, r] of Object.entries(originals))
+      state.rectangles[id] = { ...r, x: r.x + dx, y: r.y + dy };
+    if (dx || dy) state.adjusted = true;
+  }
+  function movingRectangles(graph, state, id) {
+    return Object.fromEntries(
+      [id, ...descendants(graph, id)].map((i) => [i, { ...state.rectangles[i] }])
+    );
+  }
+  function resizePresentation(graph, state, visible, collapsed, dragging, showSpacing = false) {
+    const signature = JSON.stringify([
+      [...visible].sort(),
+      [...collapsed].sort()
+    ]);
+    if (state.visibility && state.visibility !== signature) state.adjusted = true;
+    state.visibility = signature;
+    const boxes = structuredClone(state.rectangles), p = graph.savedLayout.problem;
+    for (const id of assemblyOrder(graph)) {
+      if (!visible.has(id)) continue;
+      const members = graph.assemblies[id].entities.filter((i) => visible.has(i));
+      if (collapsed.has(id) || !members.length) {
+        boxes[id] = { ...boxes[id], height: p.header };
+      } else if (state.adjusted && id !== dragging) {
+        const rs = members.map((i) => boxes[i]);
+        const left = Math.min(...rs.map((r) => r.x)), top = Math.min(...rs.map((r) => r.y));
+        const right = Math.max(...rs.map((r) => r.x + r.width)), bottom = Math.max(...rs.map((r) => r.y + r.height));
+        const min = p.assemblies?.find((a) => a.id === id)?.min_width ?? 180;
+        const width = Math.max(min, right - left + 2 * p.padding);
+        boxes[id] = {
+          x: (left + right - width) / 2,
+          y: top - p.padding - p.header,
+          width,
+          height: bottom - top + 2 * p.padding + p.header
+        };
+        state.rectangles[id] = { ...boxes[id] };
+      }
+    }
+    state.display = boxes;
+    state.conflicts = visibleConflicts(graph, boxes, visible, showSpacing);
+  }
+  var EPS = 0.01;
+  function separated(a, b, gap = 0) {
+    return a.x + a.width + gap <= b.x + EPS || b.x + b.width + gap <= a.x + EPS || a.y + a.height + gap <= b.y + EPS || b.y + b.height + gap <= a.y + EPS;
+  }
+  function visibleConflicts(graph, boxes, visible, showSpacing = false) {
+    const groups = Object.keys(graph.assemblies).filter((i) => visible.has(i)).sort();
+    const nodes = [...visible].filter((i) => !graph.assemblies[i]).sort();
+    const result = [], gap = graph.savedLayout.problem.gap ?? 0, header = graph.savedLayout.problem.header;
+    for (const outer of groups) {
+      const members = new Set(descendants(graph, outer)), r = boxes[outer];
+      for (const n of nodes) {
+        if (members.has(n)) continue;
+        if (!separated(boxes[n], r))
+          result.push({
+            code: "exclusion",
+            objects: [n, outer],
+            message: "Nonmember overlaps assembly"
+          });
+        else if (showSpacing && !separated(boxes[n], r, gap))
+          result.push({
+            code: "clearance",
+            objects: [n, outer],
+            message: `Spacing advisory: less than ${gap} layout units between nonmember and assembly`
+          });
+      }
+      for (const inner of groups) {
+        if (inner === outer || members.has(inner)) continue;
+        const c = boxes[inner];
+        if (r.x <= c.x + EPS && r.y <= c.y + EPS && c.x + c.width <= r.x + r.width + EPS && c.y + c.height <= r.y + r.height + EPS)
+          result.push({
+            code: "exclusion",
+            objects: [inner, outer],
+            message: "Unrelated assembly fully enclosed"
+          });
+      }
+    }
+    const obstacles = [
+      ...nodes.map((i) => [i, boxes[i]]),
+      ...groups.map((i) => [i, { ...boxes[i], height: header }])
+    ].sort((a, b) => a[0].localeCompare(b[0]));
+    for (let i = 0; i < obstacles.length; i++)
+      for (let j = i + 1; j < obstacles.length; j++) {
+        const [a, ra] = obstacles[i], [b, rb] = obstacles[j];
+        if (!separated(ra, rb))
+          result.push({
+            code: "collision",
+            objects: [a, b],
+            message: "Node or assembly header overlaps another footprint"
+          });
+        else if (showSpacing && !separated(ra, rb, gap))
+          result.push({
+            code: "clearance",
+            objects: [a, b],
+            message: `Spacing advisory: less than ${gap} layout units between node/header footprints`
+          });
+      }
+    return result.sort(
+      (a, b) => Number(a.code === "clearance") - Number(b.code === "clearance")
+    );
+  }
+
+  // src/rangekeeper/graph/adapter/cytoscape/client/routing.ts
   var names = ["top", "right", "bottom", "left"];
   var normals = {
     top: { x: 0, y: -1 },
@@ -237,54 +397,7 @@
     };
   }
 
-  // membership.ts
-  function parents(graph) {
-    const result = Object.fromEntries(
-      graph.elements.filter((e) => !("source" in e.data)).map((e) => [e.data.id, []])
-    );
-    for (const [id, a] of Object.entries(graph.assemblies))
-      for (const member of a.entities) result[member].push(id);
-    for (const list of Object.values(result)) list.sort();
-    return result;
-  }
-  function descendants(graph, id) {
-    const found = /* @__PURE__ */ new Set();
-    const visit = (current) => {
-      for (const child of graph.assemblies[current]?.entities || [])
-        if (!found.has(child)) {
-          found.add(child);
-          visit(child);
-        }
-    };
-    visit(id);
-    found.delete(id);
-    return [...found];
-  }
-  function assemblyOrder(graph) {
-    const ordered = [], active = /* @__PURE__ */ new Set(), seen = /* @__PURE__ */ new Set();
-    const visit = (id) => {
-      if (seen.has(id)) return;
-      if (active.has(id)) throw new Error("Assembly membership cycle");
-      active.add(id);
-      for (const child of graph.assemblies[id].entities)
-        if (graph.assemblies[child]) visit(child);
-      active.delete(id);
-      seen.add(id);
-      ordered.push(id);
-    };
-    Object.keys(graph.assemblies).forEach(visit);
-    return ordered;
-  }
-  function revealPath(graph, id) {
-    const owners = parents(graph), path = [];
-    while (owners[id]?.length) {
-      id = owners[id][0];
-      path.push(id);
-    }
-    return path;
-  }
-
-  // geometry.ts
+  // src/rangekeeper/graph/adapter/cytoscape/client/geometry.ts
   function connectionCentre(ctx2, node) {
     const p = node.position();
     return {
@@ -420,6 +533,43 @@
   function syncBoxes(ctx2) {
     if (ctx2.syncing || !ctx2.cy) return;
     ctx2.syncing = true;
+    if (ctx2.data.savedLayout) {
+      const saved = ctx2.data.savedLayout, state = ctx2.presentation;
+      const visible = new Set(
+        ctx2.visible().nodes().map((n) => n.id())
+      );
+      resizePresentation(
+        ctx2.data,
+        state,
+        visible,
+        ctx2.collapsed,
+        ctx2.drag?.id,
+        ctx2.showSpacingAdvisories
+      );
+      for (const n of ctx2.cy.nodes()) {
+        const r = state.display[n.id()], assembly = ctx2.data.assemblies[n.id()];
+        const frame = Boolean(
+          assembly && !ctx2.collapsed.has(n.id()) && assembly.entities.some((i) => visible.has(i)) && visible.has(n.id())
+        );
+        const stop = Math.min(100, saved.problem.header / r.height * 100);
+        n.toggleClass("frame", frame);
+        n.data({
+          savedWidth: r.width - 3,
+          savedHeight: r.height - 3,
+          savedTextWidth: r.width - 16,
+          boxWidth: r.width - 3,
+          boxHeight: r.height - 3,
+          bandStops: `0% ${stop}% ${stop}% 100%`,
+          frameZ: Math.min(4, revealPath(ctx2.data, n.id()).length),
+          title: assembly ? `${ctx2.collapsed.has(n.id()) ? "\u25B8" : "\u25BE"} ${assembly.name}` : n.data("label")
+        });
+        n.position({ x: r.x + r.width / 2, y: r.y + r.height / 2 });
+      }
+      renderConflicts(ctx2);
+      ctx2.updateConnections();
+      ctx2.syncing = false;
+      return;
+    }
     {
       for (const id of assemblyOrder(ctx2.data)) {
         const assembly = ctx2.data.assemblies[id];
@@ -462,11 +612,61 @@
     ctx2.updateConnections();
     ctx2.syncing = false;
   }
+  function renderConflicts(ctx2) {
+    const state = ctx2.presentation, conflicts = state.conflicts;
+    const errors = conflicts.filter((c) => c.code !== "clearance"), advisories = conflicts.filter((c) => c.code === "clearance");
+    const affected = new Set(errors.flatMap((c) => c.objects));
+    const nearby = new Set(advisories.flatMap((c) => c.objects));
+    ctx2.cy.nodes().forEach((n) => {
+      n.toggleClass("presentation-conflict", affected.has(n.id()));
+      n.toggleClass(
+        "presentation-advisory",
+        nearby.has(n.id()) && !affected.has(n.id())
+      );
+    });
+    const host = ctx2.$("presentation-conflicts");
+    if (!host) return;
+    const signature = JSON.stringify([
+      state.adjusted,
+      conflicts,
+      ctx2.showSpacingAdvisories
+    ]);
+    if (host.dataset.signature === signature) return;
+    host.dataset.signature = signature;
+    host.replaceChildren();
+    ctx2.make(
+      "p",
+      `${state.adjusted ? "Adjusted presentation" : "Saved starting layout"} \xB7 ${errors.length} visible enclosure/collision conflict(s).${ctx2.showSpacingAdvisories ? ` ${advisories.length} spacing ${advisories.length === 1 ? "advisory" : "advisories"} (amber).` : ""}`,
+      host
+    );
+    if (state.adjusted)
+      ctx2.make(
+        "p",
+        "Grid, ordering and compactness have not been revalidated. Changes last until reload or dataset switch.",
+        host
+      );
+    if (conflicts.length) {
+      const details = ctx2.make("details", void 0, host);
+      ctx2.make("summary", "Inspect conflicts and advisories", details);
+      for (const c of conflicts.slice(0, 50)) {
+        const row = ctx2.make("p", c.message + ": ", details);
+        for (const id of c.objects) {
+          const b = ctx2.make("button", ctx2.label(id), row);
+          b.onclick = () => {
+            ctx2.select(id);
+            ctx2.cy.center(ctx2.cy.getElementById(id));
+          };
+        }
+      }
+      if (conflicts.length > 50)
+        ctx2.make("p", `Showing 50 of ${conflicts.length} findings.`, details);
+    }
+  }
 
-  // document.ts
+  // src/rangekeeper/graph/adapter/cytoscape/client/document.ts
   var isEdge = (data) => "source" in data;
 
-  // navigation.ts
+  // src/rangekeeper/graph/adapter/cytoscape/client/navigation.ts
   function pushHistory(ctx2) {
     ctx2.history.push(ctx2.snapshot());
     ctx2.$("back").disabled = false;
@@ -513,6 +713,17 @@
     ctx2.fit();
   }
   function restore(ctx2) {
+    if (ctx2.data.savedLayout) {
+      if (ctx2.dragFrame != null) cancelAnimationFrame(ctx2.dragFrame);
+      ctx2.dragFrame = null;
+      ctx2.drag = null;
+      ctx2.presentation = initialPresentation(ctx2.data);
+      ctx2.collapsed.clear();
+      ctx2.focusIds = null;
+      ctx2.applyVisibility();
+      ctx2.$("timing").textContent = "Checked saved layout restored";
+      return;
+    }
     ctx2.updating = true;
     ctx2.cy.batch(
       () => ctx2.cy.nodes().forEach((n) => {
@@ -561,7 +772,7 @@
     ctx2.select(ids[0]);
   }
 
-  // inspector.ts
+  // src/rangekeeper/graph/adapter/cytoscape/client/inspector.ts
   function valueText(ctx2, value) {
     if (value === null) return "Unknown / not supplied";
     if (value && typeof value === "object" && "units" in value)
@@ -774,7 +985,7 @@
       b.onclick = () => ctx2.changeCollapse([ctx2.inspected], !ctx2.collapsed.has(ctx2.inspected));
       ctx2.make(
         "p",
-        `${assembly.entities.length} recorded members. Highlighting identifies exact membership; rectangles may also enclose nonmembers.`,
+        `${assembly.entities.length} recorded members. ${ctx2.data.savedLayout ? "Boxes fit visible members and resize as you arrange or change scope. Highlighting identifies direct membership; red outlines flag presentation conflicts." : "Highlighting identifies exact membership; rectangles may also enclose nonmembers."}`,
         host
       );
       const list = ctx2.make("details", void 0, host);
@@ -871,7 +1082,7 @@
     }
   }
 
-  // styles.ts
+  // src/rangekeeper/graph/adapter/cytoscape/client/styles.ts
   var styles = [
     {
       selector: "node",
@@ -988,10 +1199,32 @@
         "z-index": "data(frameZ)"
       }
     },
+    {
+      selector: "node.saved",
+      style: {
+        width: "data(savedWidth)",
+        height: "data(savedHeight)",
+        padding: 0,
+        "border-width": 1,
+        "font-size": 12,
+        "font-family": "monospace",
+        "text-wrap": "ellipsis",
+        "text-max-width": "data(savedTextWidth)",
+        "text-outline-width": 0
+      }
+    },
+    {
+      selector: "node.presentation-conflict",
+      style: { "border-color": "#c83232", color: "#a12222" }
+    },
+    {
+      selector: "node.presentation-advisory",
+      style: { "border-color": "#b7791f", color: "#946015" }
+    },
     { selector: ".hidden", style: { display: "none" } }
   ];
 
-  // projection.ts
+  // src/rangekeeper/graph/adapter/cytoscape/client/projection.ts
   function projectCollapse(graph, collapsedIds, allowedTypes = null) {
     assemblyOrder(graph);
     const collapsed = new Set(collapsedIds), memberships = parents(graph);
@@ -1075,7 +1308,7 @@
     };
   }
 
-  // renderer.ts
+  // src/rangekeeper/graph/adapter/cytoscape/client/renderer.ts
   function updateCounts(ctx2) {
     ctx2.$("counts").textContent = `${ctx2.visible().nodes().length} / ${ctx2.cy.nodes().length} objects \xB7 ${ctx2.visible().edges().length} displayed connections`;
   }
@@ -1169,10 +1402,24 @@
   function loadDataset(ctx2, index) {
     const start = performance.now();
     ctx2.updating = true;
+    if (ctx2.dragFrame != null) cancelAnimationFrame(ctx2.dragFrame);
+    ctx2.dragFrame = null;
     if (ctx2.cy) ctx2.cy.destroy();
     ctx2.portChoices = /* @__PURE__ */ new Map();
     ctx2.routes = /* @__PURE__ */ new Map();
     ctx2.data = ctx2.datasets[index];
+    ctx2.presentation = initialPresentation(ctx2.data);
+    ctx2.showSpacingAdvisories = false;
+    ctx2.$("spacing-advisories").checked = false;
+    ctx2.$("spacing-advisory-control").hidden = !ctx2.data.savedLayout;
+    ctx2.$("presentation-conflicts")?.replaceChildren();
+    if (ctx2.$("presentation-conflicts"))
+      delete ctx2.$("presentation-conflicts").dataset.signature;
+    ctx2.mode = "outlines";
+    ctx2.HEADER = ctx2.data.savedLayout?.problem.header ?? 36;
+    ctx2.$("relayout").disabled = Boolean(ctx2.data.savedLayout);
+    ctx2.$("membership").disabled = Boolean(ctx2.data.savedLayout);
+    ctx2.$("restore").textContent = ctx2.data.savedLayout ? "Restore saved layout" : "Restore arrangement";
     ctx2.inspected = null;
     ctx2.collapsed = /* @__PURE__ */ new Set();
     ctx2.history = [];
@@ -1197,11 +1444,26 @@
       elements,
       layout: { name: "preset" },
       selectionType: "single",
+      autoungrabify: false,
       minZoom: 0.04,
       maxZoom: 4,
       wheelSensitivity: 0.2,
       style: styles
     });
+    if (ctx2.data.savedLayout) {
+      for (const n of ctx2.cy.nodes()) {
+        const r = ctx2.data.savedLayout.geometry.rectangles[n.id()];
+        n.data({
+          savedWidth: r.width - 3,
+          savedHeight: r.height - 3,
+          savedTextWidth: r.width - 16
+        });
+      }
+      ctx2.cy.nodes().addClass("saved");
+    }
+    ctx2.$("outlines").classList.add("active");
+    ctx2.$("membership").classList.remove("active");
+    ctx2.$("canvas-note").textContent = ctx2.data.savedLayout ? "Drag nodes or assembly headers to arrange \xB7 boxes fit visible members \xB7 changes are session-only." : "Outlines show selected visible scope, not ownership or physical boundaries.";
     for (const [id] of Object.entries(ctx2.data.assemblies))
       ctx2.cy.getElementById(id).data({ boxWidth: 170, boxHeight: 42, bandStops: "0% 85% 85% 100%" });
     ctx2.cy.nodes().forEach((n) => {
@@ -1226,11 +1488,21 @@
       ctx2.drag = {
         id: n.id(),
         start: { ...n.position() },
+        rectangles: ctx2.presentation ? movingRectangles(ctx2.data, ctx2.presentation, n.id()) : void 0,
         members: a && !ctx2.collapsed.has(n.id()) ? descendants(ctx2.data, n.id()).map((id) => ctx2.cy.getElementById(id)).filter((m) => m.length && !m.hasClass("hidden")).map((m) => ({ id: m.id(), position: { ...m.position() } })) : []
       };
     });
     ctx2.cy.on("drag", "node", (ev) => {
       if (ctx2.drag?.id !== ev.target.id()) return;
+      if (ctx2.presentation) {
+        ctx2.drag.latest = { ...ev.target.position() };
+        if (ctx2.dragFrame == null)
+          ctx2.dragFrame = requestAnimationFrame(() => {
+            ctx2.dragFrame = null;
+            flushPresentationDrag(ctx2);
+          });
+        return;
+      }
       const pos = ev.target.position(), dx = pos.x - ctx2.drag.start.x, dy = pos.y - ctx2.drag.start.y;
       ctx2.updating = true;
       ctx2.cy.batch(
@@ -1246,6 +1518,9 @@
       ctx2.syncBoxes();
     });
     ctx2.cy.on("free", "node", () => {
+      if (ctx2.dragFrame != null) cancelAnimationFrame(ctx2.dragFrame);
+      ctx2.dragFrame = null;
+      flushPresentationDrag(ctx2);
       ctx2.drag = null;
       ctx2.syncBoxes();
     });
@@ -1253,10 +1528,19 @@
       if (ctx2.syncing || ctx2.updating || ctx2.drag || ctx2.layoutMode) return;
       if (ctx2.data.assemblies[ev.target.id()] && !ev.target.hasClass("frame"))
         ctx2.compactPositions[ev.target.id()] = { ...ev.target.position() };
+      if (ctx2.presentation) {
+        const n = ev.target, r = ctx2.presentation.rectangles[n.id()];
+        ctx2.presentation.rectangles[n.id()] = {
+          ...r,
+          x: n.position().x - r.width / 2,
+          y: n.position().y - r.height / 2
+        };
+        ctx2.presentation.adjusted = true;
+      }
       ctx2.syncBoxes();
     });
     ctx2.setupFilters();
-    ctx2.showMembership = true;
+    ctx2.showMembership = !ctx2.data.savedLayout;
     ctx2.syncFilters();
     ctx2.focusIds = ctx2.data.initialFocus ? /* @__PURE__ */ new Set([
       ctx2.data.initialFocus,
@@ -1282,13 +1566,14 @@
       ]))
         ctx2.nav(host, ctx2.label(id), id);
     }
-    ctx2.$("anchors").disabled = !ctx2.data.anchors.length;
+    ctx2.$("anchors").disabled = Boolean(ctx2.data.savedLayout) || !ctx2.data.anchors.length;
     ctx2.$("anchors").checked = false;
     ctx2.selectLinkedObject();
     ctx2.metrics.loadMs = performance.now() - start;
-    ctx2.$("timing").textContent = `Loaded in ${ctx2.metrics.loadMs.toFixed(0)} ms \xB7 reference arrangement`;
+    ctx2.$("timing").textContent = `Loaded in ${ctx2.metrics.loadMs.toFixed(0)} ms \xB7 ${ctx2.data.savedLayout ? "saved starting layout \xB7 draggable" : "reference arrangement"}`;
   }
   async function relayout(ctx2) {
+    if (ctx2.data.savedLayout) return;
     const start = performance.now();
     ctx2.$("relayout").disabled = true;
     ctx2.layoutMode = true;
@@ -1338,13 +1623,25 @@
     }
   }
   function setMode(ctx2, next) {
+    if (ctx2.data.savedLayout && next !== "outlines") return;
     ctx2.mode = next;
     ctx2.$("outlines").classList.toggle("active", next === "outlines");
     ctx2.$("membership").classList.toggle("active", next === "membership");
     ctx2.syncBoxes();
   }
+  function flushPresentationDrag(ctx2) {
+    const d = ctx2.drag;
+    if (!ctx2.presentation || !d?.latest) return;
+    translate(
+      ctx2.presentation,
+      d.rectangles,
+      d.latest.x - d.start.x,
+      d.latest.y - d.start.y
+    );
+    ctx2.syncBoxes();
+  }
 
-  // app.ts
+  // src/rangekeeper/graph/adapter/cytoscape/client/app.ts
   var ctx = {};
   ctx.connectionCentre = (...args) => connectionCentre(ctx, ...args);
   ctx.headerEndpoint = (...args) => headerEndpoint(ctx, ...args);
@@ -1400,6 +1697,9 @@
   ctx.fourPorts = true;
   ctx.compactPositions = {};
   ctx.drag = null;
+  ctx.presentation = null;
+  ctx.showSpacingAdvisories = false;
+  ctx.dragFrame = null;
   ctx.syncing = false;
   ctx.updating = false;
   ctx.layoutMode = false;
@@ -1427,6 +1727,10 @@
   ctx.$("outlines").onclick = () => ctx.setMode("outlines");
   ctx.$("four-port-routing").onchange = () => {
     ctx.fourPorts = ctx.$("four-port-routing").checked;
+    ctx.syncBoxes();
+  };
+  ctx.$("spacing-advisories").onchange = () => {
+    ctx.showSpacingAdvisories = ctx.$("spacing-advisories").checked;
     ctx.syncBoxes();
   };
   ctx.$("fit").onclick = ctx.fit;
@@ -1508,6 +1812,9 @@
     },
     get projection() {
       return ctx.projection;
+    },
+    get presentation() {
+      return structuredClone(ctx.presentation);
     },
     get metrics() {
       return { ...ctx.metrics };

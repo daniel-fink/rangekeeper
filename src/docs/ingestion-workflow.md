@@ -1,13 +1,8 @@
 # Reproducible ingestion workflow
 
-Status: target architecture agreed 17 September 2026. The Evidence foundation is
-implemented. Shared operation/document contracts and the first Excel reader and
-extraction slice have passed focused validation, including synthetic and local
-JLL examples and RK/Mandarin regressions. See [Excel ingestion](excel-ingestion.md)
-for the concrete API/schema. Retained Mandarin adapters now apply this boundary
-to JLL, GFA and MGP; notebooks and composition consume their Evidence.
-Compatibility is checked against a pre-migration snapshot. No new RK API was
-introduced by that project migration.
+The Evidence foundation and Excel source adapter implement the shared contracts.
+See [Excel ingestion](excel-ingestion.md) for the concrete API and schema.
+Source-specific layouts, meanings and migration evidence belong to consumers.
 
 ## Reproducibility requirement
 
@@ -208,8 +203,7 @@ columns:
 
 This refines the earlier illustrative column mapping: output column order must
 not depend on mapping insertion order that fingerprinting intentionally ignores.
-Mandarin's current column mappings are unchanged until the migration explicitly
-converts them to the new schema while preserving their declared output order.
+Consumers migrating column mappings must preserve their declared output order.
 
 ## Documents and format boundaries
 
@@ -291,7 +285,7 @@ text and conversation history cannot become undeclared graph inputs.
   ordered columns and cached-formula-value policy; no formula recalculation.
 - Claims, issues and diagnostics preserving blank, error and formula-cache states.
 - Optional format-specific dependencies, loaded only by the relevant adapter.
-- Comparison against JLL/Mandarin observations before replacing project parsing.
+- Comparison against independently captured source observations before replacing project parsing.
 
 Implementation placement is graph.operation and graph.adapter.document
 for shared contracts, graph.adapter.excel for Excel behavior, and the existing
@@ -338,11 +332,6 @@ explicit unresolved choices, and stale/missing intermediates. Verify that no
 fallback introduces an undeclared input. A declared blocking condition must
 produce a reproducible failure outcome instead of reusing an older graph.
 
-Mandarin is the proving project. Its JLL and GFA/MGP adapters now feed RK Evidence
-into source review, graph composition and reconciliation. The duplicate Excel
-decoder was removed; review records are presentation views. A captured baseline
-checks source values, graph identities, topology, characteristics and review
-meanings, while handoff tests check the intentionally richer Claim lineage.
 The reviewed `NumberSpec`, `tabular.numbers`, `tabular.select` and `tabular.concat`
 operations now provide reusable table transformations; see
 [their API contract](tabular-operations.md). Project interpretation remains local.

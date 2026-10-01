@@ -47,7 +47,7 @@ def declaration(**overrides):
 
 def read(path, **kwargs):
     return excel.read(
-        path, namespace=NAMESPACE_URL, source_key="jll", name="JLL", **kwargs
+        path, namespace=NAMESPACE_URL, source_key="primary", name="Primary", **kwargs
     )
 
 
@@ -387,7 +387,7 @@ import sys
 from uuid import NAMESPACE_URL
 from rangekeeper.graph.adapter import excel
 from rangekeeper.graph.workflow.ingestion import fingerprint
-book = excel.read(sys.argv[1], namespace=NAMESPACE_URL, source_key="jll", name="JLL").output
+book = excel.read(sys.argv[1], namespace=NAMESPACE_URL, source_key="primary", name="Primary").output
 spec = excel.ExtractionSpec(id="one", version=1, sheet="Unit Pricing", rows=excel.Rows(start=8,end=8), columns=(excel.Column(name="unit",column="A"),))
 print(fingerprint(excel.extract_table(book,spec).output))
 """

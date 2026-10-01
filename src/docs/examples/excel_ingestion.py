@@ -1,8 +1,8 @@
 """Executable extraction companion for synthetic and checksum-bound local sources.
 
 Default: create an isolated synthetic workbook in a temporary directory.
-Optional: --workbook PATH --checksum HEX reads a pinned local JLL edition.
-Neither mode modifies source files or regenerates Mandarin artifacts.
+Optional: --workbook PATH --checksum HEX reads a pinned local workbook with the example schema.
+Neither mode modifies source files.
 """
 
 import argparse
@@ -13,9 +13,9 @@ from typing import TypeVar
 from uuid import NAMESPACE_URL
 
 from rangekeeper.graph.adapter import document, excel, operation
-from rangekeeper.graph.workflow.ingestion import fingerprint, tabular
 from rangekeeper.graph.operation import Outcome
 from rangekeeper.graph.provenance import Location
+from rangekeeper.graph.workflow.ingestion import fingerprint, tabular
 
 T = TypeVar("T")
 
@@ -53,8 +53,8 @@ def review(path: Path, checksum: str, specification_path: Path) -> None:
         return excel.read(
             path,
             namespace=NAMESPACE_URL,
-            source_key="jll-example",
-            name="JLL example",
+            source_key="example",
+            name="Synthetic pricing example",
             expected_checksum=checksum,
         )
 
@@ -103,7 +103,7 @@ def review(path: Path, checksum: str, specification_path: Path) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--workbook", type=Path)
-    parser.add_argument("--checksum", help="Expected SHA-256 of the local JLL workbook")
+    parser.add_argument("--checksum", help="Expected SHA-256 of the local workbook")
     parser.add_argument(
         "--specification", type=Path, default=Path(__file__).with_suffix(".yaml")
     )

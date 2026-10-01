@@ -101,7 +101,7 @@ def evidence(*facts):
 
 
 def test_uuid_defaults_and_deterministic_uuid5(model):
-    deterministic = uuid5(NAMESPACE_URL, "mandarin/apartment/27.05")
+    deterministic = uuid5(NAMESPACE_URL, "example/object/item-27")
     entity = rk.graph.Entity(id=deterministic)
     assert isinstance(rk.graph.Entity().id, UUID)
     assert entity.id == deterministic
@@ -807,7 +807,7 @@ def test_assembly_factory_retains_uuid_membership(model):
 
 
 def test_claim_kind_requirements_and_direct_dependencies():
-    source = rk.graph.provenance.Source(name="JLL pricing", checksum="sha256:abc")
+    source = rk.graph.provenance.Source(name="Primary pricing", checksum="sha256:abc")
     location = rk.graph.provenance.Location(
         source=source,
         reference={"worksheet": "Unit Pricing", "range": "F302"},
@@ -835,7 +835,7 @@ def test_claim_kind_requirements_and_direct_dependencies():
 
 
 def test_location_references_are_generic_and_immutable():
-    source = rk.graph.provenance.Source(name="JLL", checksum="sha256:abc")
+    source = rk.graph.provenance.Source(name="Primary", checksum="sha256:abc")
     whole_source = rk.graph.provenance.Location(source=source)
     reference = {"worksheet": "Units", "range": "A1"}
     location = rk.graph.provenance.Location(
@@ -862,12 +862,12 @@ def test_location_references_are_generic_and_immutable():
 
 
 def test_claim_and_state_factories(model):
-    source = rk.graph.provenance.Source(name="JLL pricing", checksum="sha256:abc")
+    source = rk.graph.provenance.Source(name="Primary pricing", checksum="sha256:abc")
     location = rk.graph.provenance.Location(
         source=source,
         reference={"worksheet": "Unit Pricing", "range": "F302"},
     )
-    method = rk.graph.provenance.Method(code="parse.jll", version="1")
+    method = rk.graph.provenance.Method(code="parse.primary", version="1")
     sourced = rk.graph.provenance.Claim.sourced(153, at=location, method=method)
     derived = rk.graph.provenance.Claim.derived(
         164,
@@ -953,8 +953,8 @@ def test_graph_registers_one_fact_per_target_instance(model):
 
 
 def test_source_uuid_references_are_registered_instances(model):
-    source = rk.graph.provenance.Source(name="JLL", checksum="sha256:abc")
-    conflicting_source = replace(source, name="Different JLL source")
+    source = rk.graph.provenance.Source(name="Primary", checksum="sha256:abc")
+    conflicting_source = replace(source, name="Different Primary source")
     first_feature = rk.graph.Feature(name="bedrooms", value=3)
     second_feature = rk.graph.Feature(name="bathrooms", value=2)
     entity = apartment(model)
@@ -1051,7 +1051,7 @@ def test_claim_dependency_cycles_are_rejected(model):
 def test_fact_states_and_reconciliation(model):
     feature = rk.graph.Feature(name="bathrooms", value=2)
     entity = apartment(model, feature=feature)
-    first = asserted(2, code="jll")
+    first = asserted(2, code="primary")
     second = asserted(2, code="m3")
     determinate = rk.graph.provenance.Fact(target=feature, claims=(first, second))
     graph = rk.graph.Graph(
@@ -1085,7 +1085,7 @@ def test_fact_states_and_reconciliation(model):
         reconciliation=rk.graph.provenance.Reconciliation(
             selected=first,
             status=rk.graph.provenance.ReconciliationStatus.PROVISIONAL,
-            method=rk.graph.provenance.Method(code="prefer.jll"),
+            method=rk.graph.provenance.Method(code="prefer.primary"),
         ),
     )
     graph = replace(
@@ -2059,7 +2059,7 @@ def test_revision_diff_requires_parent_and_reports_no_changes(model):
 def test_diff_reports_changed_claims_and_reconciliation(model):
     feature = rk.graph.Feature(name="bedrooms", value=3)
     entity = apartment(model, feature=feature)
-    selected = asserted(3, code="jll")
+    selected = asserted(3, code="primary")
     alternative = asserted(4, code="m3")
     provisional = rk.graph.provenance.Fact(
         target=feature,

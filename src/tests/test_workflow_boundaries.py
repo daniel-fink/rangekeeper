@@ -1,4 +1,4 @@
-"""Standalone contracts at the format/workflow boundary, independent of Mandarin."""
+"""Standalone contracts at the format/workflow boundary."""
 
 import subprocess
 import sys

@@ -1,3 +1,4 @@
+import { resizePresentation } from "./presentation";
 import type cytoscape from "cytoscape";
 import type { ViewerContext } from "./context";
 import * as fourPortRouting from "./routing";
@@ -161,6 +162,53 @@ export function updateConnections(ctx: ViewerContext) {
 export function syncBoxes(ctx: ViewerContext) {
   if (ctx.syncing || !ctx.cy) return;
   ctx.syncing = true;
+  if (ctx.data.savedLayout) {
+    const saved = ctx.data.savedLayout,
+      state = ctx.presentation;
+    const visible = new Set(
+      ctx
+        .visible()
+        .nodes()
+        .map((n) => n.id()),
+    );
+    resizePresentation(
+      ctx.data,
+      state,
+      visible,
+      ctx.collapsed,
+      ctx.drag?.id,
+      ctx.showSpacingAdvisories,
+    );
+    for (const n of ctx.cy.nodes()) {
+      const r = state.display[n.id()],
+        assembly = ctx.data.assemblies[n.id()];
+      const frame = Boolean(
+        assembly &&
+          !ctx.collapsed.has(n.id()) &&
+          assembly.entities.some((i) => visible.has(i)) &&
+          visible.has(n.id()),
+      );
+      const stop = Math.min(100, (saved.problem.header / r.height) * 100);
+      n.toggleClass("frame", frame);
+      n.data({
+        savedWidth: r.width - 3,
+        savedHeight: r.height - 3,
+        savedTextWidth: r.width - 16,
+        boxWidth: r.width - 3,
+        boxHeight: r.height - 3,
+        bandStops: `0% ${stop}% ${stop}% 100%`,
+        frameZ: Math.min(4, revealPath(ctx.data, n.id()).length),
+        title: assembly
+          ? `${ctx.collapsed.has(n.id()) ? "▸" : "▾"} ${assembly.name}`
+          : n.data("label"),
+      });
+      n.position({ x: r.x + r.width / 2, y: r.y + r.height / 2 });
+    }
+    renderConflicts(ctx);
+    ctx.updateConnections();
+    ctx.syncing = false;
+    return;
+  }
   {
     for (const id of assemblyOrder(ctx.data)) {
       const assembly = ctx.data.assemblies[id];
@@ -212,4 +260,57 @@ export function syncBoxes(ctx: ViewerContext) {
   // Cytoscape defers mapped style updates until the preceding batch ends.
   ctx.updateConnections();
   ctx.syncing = false;
+}
+
+function renderConflicts(ctx: ViewerContext) {
+  const state = ctx.presentation,
+    conflicts = state.conflicts;
+  const errors = conflicts.filter((c) => c.code !== "clearance"),
+    advisories = conflicts.filter((c) => c.code === "clearance");
+  const affected = new Set(errors.flatMap((c) => c.objects));
+  const nearby = new Set(advisories.flatMap((c) => c.objects));
+  ctx.cy.nodes().forEach((n) => {
+    n.toggleClass("presentation-conflict", affected.has(n.id()));
+    n.toggleClass(
+      "presentation-advisory",
+      nearby.has(n.id()) && !affected.has(n.id()),
+    );
+  });
+  const host = ctx.$("presentation-conflicts");
+  if (!host) return;
+  const signature = JSON.stringify([
+    state.adjusted,
+    conflicts,
+    ctx.showSpacingAdvisories,
+  ]);
+  if (host.dataset.signature === signature) return;
+  host.dataset.signature = signature;
+  host.replaceChildren();
+  ctx.make(
+    "p",
+    `${state.adjusted ? "Adjusted presentation" : "Saved starting layout"} · ${errors.length} visible enclosure/collision conflict(s).${ctx.showSpacingAdvisories ? ` ${advisories.length} spacing ${advisories.length === 1 ? "advisory" : "advisories"} (amber).` : ""}`,
+    host,
+  );
+  if (state.adjusted)
+    ctx.make(
+      "p",
+      "Grid, ordering and compactness have not been revalidated. Changes last until reload or dataset switch.",
+      host,
+    );
+  if (conflicts.length) {
+    const details = ctx.make("details", undefined, host);
+    ctx.make("summary", "Inspect conflicts and advisories", details);
+    for (const c of conflicts.slice(0, 50)) {
+      const row = ctx.make("p", c.message + ": ", details);
+      for (const id of c.objects) {
+        const b = ctx.make("button", ctx.label(id), row);
+        b.onclick = () => {
+          ctx.select(id);
+          ctx.cy.center(ctx.cy.getElementById(id));
+        };
+      }
+    }
+    if (conflicts.length > 50)
+      ctx.make("p", `Showing 50 of ${conflicts.length} findings.`, details);
+  }
 }

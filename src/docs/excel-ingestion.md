@@ -1,13 +1,8 @@
 # Excel source ingestion
 
-Status: first Excel slice validated on 17 September 2026. The synthetic and
-checksum-bound local JLL examples, relevant RK/Mandarin regressions and focused
-code checks passed. No Mandarin source reader has been replaced and no project
-artifacts have been regenerated. See the validation record below for limits.
-
-This slice implements source snapshots, inspection and physical extraction from
-`.xlsx`. It does not yet execute the complete interpretation/composition YAML
-workflow described in [the workflow contract](ingestion-workflow.md).
+The Excel adapter implements immutable source snapshots, inspection and physical
+extraction from `.xlsx`. The [workflow contract](ingestion-workflow.md) describes
+how extracted Evidence participates in declarative execution.
 
 ## Ownership and public API
 
@@ -31,8 +26,8 @@ from rangekeeper.graph.adapter import document, excel
 outcome = excel.read(
     path,
     namespace=UUID("f7d7363f-b1c0-4e28-93dc-59c6f7eedc4d"),
-    source_key="jll",
-    name="JLL pricing",
+    source_key="pricing",
+    name="Pricing",
     expected_checksum=expected_sha256,
 )
 if outcome.output is not None:
@@ -74,11 +69,9 @@ and immutable snapshot construction. Only decoding-boundary errors are converted
 to invalid-workbook diagnostics; programming defects during snapshot construction
 propagate. A single resource scope closes both parser workbooks.
 
-Mandarin's `sources.py` now projects these snapshots into notebook review views;
-its duplicate Excel decoder has been removed. Retained project adapters interpret
-JLL, GFA and MGP and pass their Evidence to composition. Project-specific numeric
-policies and labels remain outside RK. Shared numeric interpretation, selection
-and concatenation use the reviewed [table operations](tabular-operations.md).
+Source-specific numeric policies and labels belong to the consumer's specification.
+Shared numeric interpretation, selection and concatenation use the reviewed
+[table operations](tabular-operations.md).
 The existing CSV adapter remains a simple
 Table projection API; it does not yet provide source-bound Document/Evidence
 reading. The Cytoscape `document.py` validates display data, not source documents.
@@ -253,15 +246,15 @@ Unexpected programming errors are not silently converted to empty results.
 ## Example and verification
 
 The [executable companion](examples/excel_ingestion.py) creates a synthetic
-workbook by default, inspects it and extracts the adjacent YAML. It asserts JLL's
-illustrative row values and repeat Evidence/Issue identities. An optional local
-JLL workbook requires an explicit checksum and is only read.
+workbook by default, inspects it and extracts the adjacent YAML. It asserts synthetic
+row values and repeat Evidence/Issue identities. An optional local
+workbook matching the example schema requires an explicit checksum and is only read.
 
 Example commands (run from the RK Python project, `src`):
 
 ```sh
 python docs/examples/excel_ingestion.py
-python docs/examples/excel_ingestion.py --workbook /absolute/path/to/jll.xlsx --checksum SHA256
+python docs/examples/excel_ingestion.py --workbook /absolute/path/to/example.xlsx --checksum SHA256
 pytest tests/test_document_operations.py tests/test_excel_ingestion.py tests/test_ingestion_evidence.py
 ```
 
@@ -270,35 +263,9 @@ mismatches, strict YAML, non-Excel Document fixtures and optional-import isolati
 Use the project's pinned environment; invoking an unpinned global interpreter is
 not a reproducibility guarantee.
 
-## Validation — 17 September 2026
+## Validation
 
-- 211 RK tests passed: the 48 new operation/document/Excel tests plus ingestion
-  Evidence, adapters, immutable graph, Cytoscape adapter and shared validation.
-- 81 Mandarin tests and 27 Cytoscape JavaScript tests passed. Mandarin source
-  parsing and viewer behavior were not migrated or redesigned.
-- Ruff lint/format checks passed on the changed Python files. Focused ty checks
-  passed for the new adapter code and executable example. Mandarin Ruff checks
-  and focused source-reader/viewer type checks also passed.
-- The synthetic demo passed, including repeated extraction with identical Evidence
-  fingerprints and Issue IDs. Fresh-process identity and optional-import isolation
-  tests passed.
-- The checksum-bound local JLL demo passed. All previously retained cells matched
-  Mandarin's current reader across raw/formula/cache/type/format/XML fields. The
-  new snapshot additionally retains explicit unpopulated cell observations. Source
-  checksums before and after matched; no project artifact was regenerated.
-- The original Evidence example retained its baseline fingerprint:
-  `sha256:e2d03a8472a7db27cae45f5c9388bd93d5673106056d444eb22a6d99c33260e9`.
-- Runtime: Python 3.13.15, openpyxl 3.1.5, PyYAML 6.0.3, pytest 9.1.1,
-  Ruff 0.16.6 and ty 0.0.79. Ten new adapter/example files also passed Python
-  3.10 syntax parsing. Python 3.10–3.12 runtime execution was not performed.
-
-Validation corrected typing at the immutable-container and optional-row-ID
-boundaries, made the YAML resolver import explicit, aligned import/export ordering,
-and updated the existing adapter export-list regression for the three new modules.
-No source interpretation or graph model was changed.
-
-This validates the first reader/extraction slice, not full declarative graph
-execution. Those first-slice results preceded the later Mandarin migration, which
-now uses the existing RK APIs for all three workbooks. See the project
-`docs/source-adapters.md` for its separate compatibility checks and ownership review.
-Other document adapters remain deferred.
+RK tests use synthetic workbooks, including explicit XML formula caches, missing
+cells, source mismatches and repeated extraction. Consumer-owned workbooks and
+compatibility records belong outside the library. The executable companion reads
+an optional caller-provided workbook only with its explicit checksum.

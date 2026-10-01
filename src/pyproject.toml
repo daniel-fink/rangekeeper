@@ -32,6 +32,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+layout-prototype = ["z3-solver==5.1.0.0"]
 workflow = ["openpyxl>=3.1.5,<4", "PyYAML>=6.0.2,<7"]
 excel = ["openpyxl>=3.1.5,<4", "PyYAML>=6.0.2,<7"]
 
@@ -48,3 +49,5 @@ exclude = ["*.node_modules*", "*.client*"]
 
 [tool.setuptools.package-data]
 "rangekeeper.graph.adapter.cytoscape" = ["assets/*.js", "assets/*.css", "assets/*.html", "assets/vendor/*.js", "assets/vendor/*.LICENSE", "assets/vendor/*.json"]
+
+"rangekeeper.graph.adapter.cytoscape.layout" = ["*.mzn"]
