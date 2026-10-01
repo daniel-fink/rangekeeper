@@ -27,3 +27,18 @@ This repository is comprised of three separate, but inter-dependent projects:
 3. McNeel Rhinoceros 3D Grasshopper components (to assist the creation of Rangekeeper-compliant objects from 3D models, in C#)
 
 Each project has its own readme to assist setup and dependency resolution.
+
+## Design notes
+
+- [Graph LinkML schema drafts](schema/README.md):
+  Definitions, Entities, Relationships, Assemblies, Characteristics, and Provenance, with a
+  shared structural example and conformance checks.
+- [Schema tooling evaluation](docs/SCHEMA_TOOLING_EVALUATION.md):
+  LinkML alternatives, executed comparison probes, and a scoped recommendation
+  for the next object-model specification.
+- [Model, Specification, and Run object model](docs/MODEL_SPECIFICATION_RUN.md):
+  current object-model decisions, proposed child schemas, requirements, and staged
+  acceptance examples.
+- [Project definitions, execution, and policy optimization](docs/PROJECT_DEFINITION_AND_POLICY_EXAMPLE.md):
+  the two-pad redevelopment example, illustrative assumptions, and references for
+  a subsequent executable test.

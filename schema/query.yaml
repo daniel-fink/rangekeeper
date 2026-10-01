@@ -1,0 +1,274 @@
+id: https://daniel-fink.github.io/rangekeeper/schema/query
+name: rangekeeper_query
+title: Rangekeeper Queries
+version: 0.4.0
+description: Declarative traversal, filtering, and projection within one immutable Model revision.
+prefixes:
+  linkml: https://w3id.org/linkml/
+  rk: https://daniel-fink.github.io/rangekeeper/schema/
+imports:
+- assembly
+default_prefix: rk
+default_range: string
+classes:
+  Traversal:
+    description: One traversal step over domain Relationships or Assembly membership.
+    notes:
+    - direct traverses one edge; transitive traverses one or more edges. The input itself is not a result
+      of a traversal step.
+    - 'For transitive traversal, paths are simple: an Entity cannot recur within one path. Multiple paths
+      may reach the same Entity; final Query duplicate handling determines whether repeated projected
+      identities survive.'
+    - Relationship traversal uses exactly the specified Classification and direction. Membership follows
+      Assembly.entities outward, never inferring physical containment. Non-Assembly inputs have no outgoing
+      membership edges.
+    attributes:
+      kind:
+        range: TraversalKind
+        required: true
+      depth:
+        range: Depth
+        required: true
+      classification:
+        range: Classification
+        description: Exact Classification of Relationships to follow.
+        inlined: false
+        pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        any_of:
+        - range: Classification
+          inlined: false
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      direction:
+        range: Direction
+    rules:
+    - preconditions:
+        slot_conditions:
+          kind:
+            equals_string: relationship
+      postconditions:
+        slot_conditions:
+          classification:
+            required: true
+          direction:
+            required: true
+    - preconditions:
+        slot_conditions:
+          kind:
+            equals_string: membership
+      postconditions:
+        slot_conditions: {}
+        all_of:
+        - slot_conditions:
+            classification:
+              value_presence: ABSENT
+        - slot_conditions:
+            direction:
+              value_presence: ABSENT
+  Criterion:
+    description: Require an Entity Label with this owner-local key to include the exact Classification.
+    attributes:
+      key:
+        range: string
+        description: Owner-local Label key.
+        required: true
+        any_of:
+        - range: string
+        pattern: \S
+      classification:
+        range: Classification
+        required: true
+        inlined: false
+        pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        any_of:
+        - range: Classification
+          inlined: false
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+  Filter:
+    description: Conjunctive filters over fixed Entity metadata. No numerical expression or solved amount
+      determines membership.
+    notes:
+    - classification matches exactly, without implicit taxonomy-descendant expansion. All Label filters
+      must match. An absent classification or Label does not match. An empty filter matches every candidate.
+    attributes:
+      classification:
+        range: Classification
+        inlined: false
+        pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        any_of:
+        - range: Classification
+          inlined: false
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      labels:
+        range: Criterion
+        description: All listed Label conditions must hold.
+        inlined: true
+        any_of:
+        - range: Criterion
+          inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
+  Projection:
+    description: Select Entity identities or Values belonging to each matching Entity.
+    notes:
+    - Value projection uses either an exact owner-local key or a Measure UUID. A key is not a cross-Model
+      identity; projection resolves it to identified Values in this revision.
+    - With cardinality one, more than one match is an error. With cardinality many, all matches are retained.
+      Zero matches follow missing, independently of cardinality.
+    - A Value with an unresolved Quantity still exists and is included. missing applies only to the absence
+      of a matching Value, never to its numerical content.
+    attributes:
+      kind:
+        range: ProjectionKind
+        required: true
+      key:
+        range: string
+        description: Exact owner-local Value key.
+        any_of:
+        - range: string
+        pattern: \S
+      measure:
+        range: Measure
+        description: Select Values with this exact Measure.
+        inlined: false
+        pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        any_of:
+        - range: Measure
+          inlined: false
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      cardinality:
+        range: Cardinality
+      missing:
+        range: MissingHandling
+    rules:
+    - preconditions:
+        slot_conditions:
+          kind:
+            equals_string: entity
+      postconditions:
+        slot_conditions: {}
+        all_of:
+        - slot_conditions:
+            key:
+              value_presence: ABSENT
+        - slot_conditions:
+            measure:
+              value_presence: ABSENT
+        - slot_conditions:
+            cardinality:
+              value_presence: ABSENT
+        - slot_conditions:
+            missing:
+              value_presence: ABSENT
+    - preconditions:
+        slot_conditions:
+          kind:
+            equals_string: value
+      postconditions:
+        slot_conditions:
+          cardinality:
+            required: true
+          missing:
+            required: true
+        exactly_one_of:
+        - slot_conditions:
+            key:
+              required: true
+        - slot_conditions:
+            measure:
+              required: true
+  Query:
+    description: A non-executing query specification returning Entity or Value identities from the containing
+      Model revision.
+    notes:
+    - starting_at must identify an Entity in the containing Model revision. Queries never fetch live external
+      state. An embedded Query is owned by its Expression; no second identity is required.
+    - Apply traversal steps in order, then the filter, then projection, then duplicate handling. With
+      no steps, the starting Entity is the candidate.
+    - Query results are symbolic references. Projecting Values preserves their mathematical roles and
+      unresolved content; it does not freeze stored amounts.
+    - distinct yields a set keyed by projected UUID; preserve yields a bag with one occurrence per matching
+      traversal path and projected match. Neither promises ordering; positional indexing requires an ordered
+      collection.
+    - A valid query with no matching Entities returns an empty collection. Aggregating that collection
+      follows the Function contract. Fixed metadata may determine membership; unknown numerical values
+      may not.
+    attributes:
+      starting_at:
+        range: Entity
+        required: true
+        inlined: false
+        pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        any_of:
+        - range: Entity
+          inlined: false
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      steps:
+        range: Traversal
+        description: Ordered traversal steps; omission selects the starting Entity.
+        inlined: true
+        any_of:
+        - range: Traversal
+          inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
+      filter:
+        range: Filter
+        inlined: true
+        all_of:
+        - range: Filter
+          inlined: true
+      projection:
+        range: Projection
+        required: true
+        inlined: true
+        all_of:
+        - range: Projection
+          inlined: true
+      duplicates:
+        range: DuplicateHandling
+        required: true
+enums:
+  TraversalKind:
+    permissible_values:
+      relationship:
+        description: Traverse classified domain Relationships.
+      membership:
+        description: Traverse Assembly entity membership.
+  Depth:
+    permissible_values:
+      direct:
+        description: Exactly one edge.
+      transitive:
+        description: One or more edges along finite simple paths.
+  Direction:
+    permissible_values:
+      outgoing:
+        description: Follow source to target.
+      incoming:
+        description: Follow target to source.
+  ProjectionKind:
+    permissible_values:
+      entity:
+        description: Return matching Entity identities.
+      value:
+        description: Return identified Values selected from matching Entities.
+  Cardinality:
+    permissible_values:
+      one:
+        description: At most one Value per Entity; multiple matches are an error.
+      many:
+        description: All matching Values per Entity.
+  MissingHandling:
+    permissible_values:
+      error:
+        description: Reject an Entity with no matching Value.
+      omit:
+        description: Explicitly omit an Entity with no matching Value.
+  DuplicateHandling:
+    permissible_values:
+      distinct:
+        description: Return each projected UUID once.
+      preserve:
+        description: Retain repeated projected UUIDs from distinct traversal paths.

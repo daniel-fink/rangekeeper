@@ -1,0 +1,190 @@
+# Example records, not a Model envelope. All rent amounts are unresolved.
+# Apartment A is reachable by two paths. Distinct projection counts its Value once.
+# Workspace A is excluded by classification. Expected rent symbols: Apartment A and B.
+# The membership count is a separate query; it does not infer containment.
+definitions:
+  taxonomies:
+  - id: 7242e8f1-4db1-56e5-bebe-b26c5032ebc7
+    code: spaces
+    name: Spaces
+    classifications:
+    - id: 479d2c37-7049-56ba-863b-b1028fccbdbf
+      code: space
+      name: Space
+    - id: bf7a208c-8a22-533e-8868-fe0173b2ac2b
+      code: building
+      name: Building
+      parent: 479d2c37-7049-56ba-863b-b1028fccbdbf
+    - id: ea2a4cda-97d8-541b-802a-9e0afc219122
+      code: floor
+      name: Floor
+      parent: 479d2c37-7049-56ba-863b-b1028fccbdbf
+    - id: c8743346-1b0d-577d-b7e1-fec288b22569
+      code: apartment
+      name: Apartment
+      parent: 479d2c37-7049-56ba-863b-b1028fccbdbf
+    - id: 99878385-f48f-55dc-96ec-bdf27940d021
+      code: workspace
+      name: Workspace
+      parent: 479d2c37-7049-56ba-863b-b1028fccbdbf
+  - id: 24ac45f8-3efe-549a-b1c5-2db12a8edff1
+    code: relations
+    name: Relations
+    classifications:
+    - id: 72c6fd40-ca6d-5763-9469-463f231a9dce
+      code: contains
+      name: Contains
+  measures:
+  - id: 0a77e5ed-a736-51b1-96ba-1ebea93b03b2
+    code: annual_rent
+    name: Annual rent
+    units: AUD/year
+entities:
+- id: e0a837b9-76de-56fa-8eec-1eeb6978af8b
+  code: floor-a
+  name: Floor A
+  classification: ea2a4cda-97d8-541b-802a-9e0afc219122
+- id: f2046a2f-fe09-5398-9bed-5b267576b0a5
+  code: apartment-a
+  name: Apartment A
+  classification: c8743346-1b0d-577d-b7e1-fec288b22569
+  characteristics:
+    values:
+    - id: faaa5f34-7983-5ac4-8605-94170e8f0ae2
+      key: annual_rent
+      kind: measurement
+      measure: 0a77e5ed-a736-51b1-96ba-1ebea93b03b2
+- id: 2286f4b4-2f5b-5828-b07c-7595b5c8024c
+  code: apartment-b
+  name: Apartment B
+  classification: c8743346-1b0d-577d-b7e1-fec288b22569
+  characteristics:
+    values:
+    - id: 335c33a7-9a45-5809-b00c-7fcf4821b7c8
+      key: annual_rent
+      kind: measurement
+      measure: 0a77e5ed-a736-51b1-96ba-1ebea93b03b2
+- id: bf3c8ad4-7e86-532a-b0f0-e6836cd2983c
+  code: workspace-a
+  name: Workspace A
+  classification: 99878385-f48f-55dc-96ec-bdf27940d021
+  characteristics:
+    values:
+    - id: 309dbfc0-8161-5738-8e51-cd6bb13c5d2e
+      key: annual_rent
+      kind: measurement
+      measure: 0a77e5ed-a736-51b1-96ba-1ebea93b03b2
+relationships:
+- id: 3a82b99d-adbb-5b3c-8e88-e8f1411894cb
+  source: 26bc52ac-ac41-5d1c-961d-d9f4f6c8fc50
+  target: e0a837b9-76de-56fa-8eec-1eeb6978af8b
+  classification: 72c6fd40-ca6d-5763-9469-463f231a9dce
+- id: 509c1754-d8e6-55b3-85ad-5a3e84b2f469
+  source: e0a837b9-76de-56fa-8eec-1eeb6978af8b
+  target: f2046a2f-fe09-5398-9bed-5b267576b0a5
+  classification: 72c6fd40-ca6d-5763-9469-463f231a9dce
+- id: 234b032d-10f8-52e9-8916-e551d453cff0
+  source: e0a837b9-76de-56fa-8eec-1eeb6978af8b
+  target: 2286f4b4-2f5b-5828-b07c-7595b5c8024c
+  classification: 72c6fd40-ca6d-5763-9469-463f231a9dce
+- id: adca6433-7362-5a1e-9e5b-e9c14e5fa313
+  source: e0a837b9-76de-56fa-8eec-1eeb6978af8b
+  target: bf3c8ad4-7e86-532a-b0f0-e6836cd2983c
+  classification: 72c6fd40-ca6d-5763-9469-463f231a9dce
+- id: a66d6cd6-7114-513e-be27-b3d1809ecfbc
+  source: 26bc52ac-ac41-5d1c-961d-d9f4f6c8fc50
+  target: f2046a2f-fe09-5398-9bed-5b267576b0a5
+  classification: 72c6fd40-ca6d-5763-9469-463f231a9dce
+assemblies:
+- id: 26bc52ac-ac41-5d1c-961d-d9f4f6c8fc50
+  code: building-a
+  name: Building A
+  classification: bf7a208c-8a22-533e-8868-fe0173b2ac2b
+  entities:
+  - e0a837b9-76de-56fa-8eec-1eeb6978af8b
+  - f2046a2f-fe09-5398-9bed-5b267576b0a5
+  - 2286f4b4-2f5b-5828-b07c-7595b5c8024c
+  - bf3c8ad4-7e86-532a-b0f0-e6836cd2983c
+  relationships:
+  - 3a82b99d-adbb-5b3c-8e88-e8f1411894cb
+  - 509c1754-d8e6-55b3-85ad-5a3e84b2f469
+  - 234b032d-10f8-52e9-8916-e551d453cff0
+  - adca6433-7362-5a1e-9e5b-e9c14e5fa313
+  - a66d6cd6-7114-513e-be27-b3d1809ecfbc
+functions:
+- id: f3827f2b-2f45-5032-b067-89e8ff73f0fa
+  code: collection.sum
+  name: Sum measurements
+  version: '1'
+  parameters:
+  - name: items
+    domain:
+      kind: collection
+      item_domain:
+        kind: measurement
+    kind: positional_or_named
+    required: true
+  result:
+    kind: measurement
+  semantics: Sum every element, retaining multiplicity. Members must have compatible units and measurement
+    meaning. Unresolved members remain symbolic; none are dropped. An empty collection is rejected because
+    this signature does not establish result units without a member.
+  unit_rule: The result has the common measurement units of the members.
+  empty_collection: error
+- id: e101eef7-62ac-5a3e-ab82-e84b5e19d58e
+  code: collection.count
+  name: Count entities
+  version: '1'
+  parameters:
+  - name: items
+    domain:
+      kind: collection
+      item_domain:
+        kind: entity
+    kind: positional_or_named
+    required: true
+  result:
+    kind: number
+  semantics: Count collection members, retaining multiplicity. An empty collection has count zero.
+  unit_rule: Dimensionless integer result.
+  empty_collection: zero
+expressions:
+- id: 036482a3-534e-5d02-a526-988464b55b99
+  kind: call
+  call:
+    function: f3827f2b-2f45-5032-b067-89e8ff73f0fa
+    arguments:
+    - id: 7f067f2e-ec9a-503e-9982-d967ad820dcc
+      kind: query
+      query:
+        starting_at: 26bc52ac-ac41-5d1c-961d-d9f4f6c8fc50
+        steps:
+        - kind: relationship
+          depth: transitive
+          classification: 72c6fd40-ca6d-5763-9469-463f231a9dce
+          direction: outgoing
+        filter:
+          classification: c8743346-1b0d-577d-b7e1-fec288b22569
+        projection:
+          kind: value
+          key: annual_rent
+          cardinality: one
+          missing: error
+        duplicates: distinct
+- id: dbf87705-dc84-5bbd-9bfd-eca6917cac43
+  kind: call
+  call:
+    function: e101eef7-62ac-5a3e-ab82-e84b5e19d58e
+    named_arguments:
+    - name: items
+      expression:
+        id: 36b8b97c-b433-5e9f-9d89-89cd53cfbb99
+        kind: query
+        query:
+          starting_at: 26bc52ac-ac41-5d1c-961d-d9f4f6c8fc50
+          steps:
+          - kind: membership
+            depth: direct
+          projection:
+            kind: entity
+          duplicates: distinct

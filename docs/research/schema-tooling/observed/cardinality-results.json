@@ -1,0 +1,28 @@
+{
+  "0": {
+    "empty_constraints_accepted": true,
+    "doc_rows": [
+      "| [constraints](constraints.md) | 1..* <br/> [Constraint](Constraint.md) |  | direct |"
+    ],
+    "schema_constraints": {
+      "items": {
+        "$ref": "#/$defs/Constraint"
+      },
+      "minItems": 0,
+      "type": "array"
+    }
+  },
+  "1": {
+    "empty_constraints_accepted": false,
+    "doc_rows": [
+      "| [constraints](constraints.md) | 1..* <br/> [Constraint](Constraint.md) |  | direct |"
+    ],
+    "schema_constraints": {
+      "items": {
+        "$ref": "#/$defs/Constraint"
+      },
+      "minItems": 1,
+      "type": "array"
+    }
+  }
+}

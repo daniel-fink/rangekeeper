@@ -1,0 +1,298 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "probe.schema.json",
+    "$defs": {
+        "ValueDeclaration": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "ValueDeclaration.json",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "kind": {
+                    "type": "string",
+                    "const": "ValueDeclaration"
+                },
+                "unit": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "id",
+                "kind",
+                "unit"
+            ],
+            "unevaluatedProperties": {
+                "not": {}
+            }
+        },
+        "EntityDeclaration": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "EntityDeclaration.json",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "kind": {
+                    "type": "string",
+                    "const": "EntityDeclaration"
+                }
+            },
+            "required": [
+                "id",
+                "kind"
+            ],
+            "unevaluatedProperties": {
+                "not": {}
+            }
+        },
+        "NumericLiteral": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "NumericLiteral.json",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "kind": {
+                    "type": "string",
+                    "const": "NumericLiteral"
+                },
+                "value": {
+                    "type": "number"
+                },
+                "unit": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "id",
+                "kind",
+                "value",
+                "unit"
+            ],
+            "unevaluatedProperties": {
+                "not": {}
+            }
+        },
+        "BooleanLiteral": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "BooleanLiteral.json",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "kind": {
+                    "type": "string",
+                    "const": "BooleanLiteral"
+                },
+                "value": {
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "id",
+                "kind",
+                "value"
+            ],
+            "unevaluatedProperties": {
+                "not": {}
+            }
+        },
+        "Reference": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "Reference.json",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "kind": {
+                    "type": "string",
+                    "const": "Reference"
+                },
+                "target": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "id",
+                "kind",
+                "target"
+            ],
+            "unevaluatedProperties": {
+                "not": {}
+            }
+        },
+        "LessEqual": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "LessEqual.json",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "kind": {
+                    "type": "string",
+                    "const": "LessEqual"
+                },
+                "left": {
+                    "type": "string"
+                },
+                "right": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "id",
+                "kind",
+                "left",
+                "right"
+            ],
+            "unevaluatedProperties": {
+                "not": {}
+            }
+        },
+        "Constraint": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "Constraint.json",
+            "type": "object",
+            "properties": {
+                "predicate": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "predicate"
+            ],
+            "unevaluatedProperties": {
+                "not": {}
+            }
+        },
+        "Model": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "Model.json",
+            "type": "object",
+            "properties": {
+                "declarations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "Declaration.json"
+                    }
+                },
+                "expressions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "Expression.json"
+                    }
+                },
+                "constraints": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "Constraint.json"
+                    }
+                }
+            },
+            "required": [
+                "declarations",
+                "expressions",
+                "constraints"
+            ],
+            "unevaluatedProperties": {
+                "not": {}
+            },
+            "description": "A small document containing project declarations, symbolic expressions and asserted predicates."
+        },
+        "Declaration": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "Declaration.json",
+            "anyOf": [
+                {
+                    "$ref": "ValueDeclaration.json"
+                },
+                {
+                    "$ref": "EntityDeclaration.json"
+                }
+            ]
+        },
+        "Expression": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "Expression.json",
+            "anyOf": [
+                {
+                    "$ref": "NumericLiteral.json"
+                },
+                {
+                    "$ref": "BooleanLiteral.json"
+                },
+                {
+                    "$ref": "Reference.json"
+                },
+                {
+                    "$ref": "LessEqual.json"
+                }
+            ]
+        },
+        "TreeLiteral": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "TreeLiteral.json",
+            "type": "object",
+            "properties": {
+                "kind": {
+                    "type": "string",
+                    "const": "literal"
+                },
+                "value": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "kind",
+                "value"
+            ],
+            "unevaluatedProperties": {
+                "not": {}
+            }
+        },
+        "TreeAdd": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "TreeAdd.json",
+            "type": "object",
+            "properties": {
+                "kind": {
+                    "type": "string",
+                    "const": "add"
+                },
+                "left": {
+                    "$ref": "Tree.json"
+                },
+                "right": {
+                    "$ref": "Tree.json"
+                }
+            },
+            "required": [
+                "kind",
+                "left",
+                "right"
+            ],
+            "unevaluatedProperties": {
+                "not": {}
+            }
+        },
+        "Tree": {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "Tree.json",
+            "anyOf": [
+                {
+                    "$ref": "TreeLiteral.json"
+                },
+                {
+                    "$ref": "TreeAdd.json"
+                }
+            ]
+        }
+    }
+}

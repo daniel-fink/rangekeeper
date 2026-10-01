@@ -1,0 +1,102 @@
+id: https://daniel-fink.github.io/rangekeeper/schema/measure
+name: rangekeeper_measure
+title: Rangekeeper Quantities, Measures, and Measurements
+version: 0.2.0
+description: Quantities carry numerical magnitudes and units. Measures define measurement meaning and
+  canonical units. Measurements identify measurable properties with optional recorded quantities.
+prefixes:
+  linkml: https://w3id.org/linkml/
+  rk: https://daniel-fink.github.io/rangekeeper/schema/
+imports:
+- common
+default_prefix: rk
+default_range: string
+classes:
+  Quantity:
+    description: Numerical content consisting of a finite magnitude and explicit units.
+    notes:
+    - A Quantity is embedded content with no independent identity or Measure reference. Its containing
+      Expression or Measurement supplies identity and context.
+    - Use dimensionless for unitless content. Units must resolve under the shared unit convention;
+      nonblank text alone does not establish a valid unit. Magnitudes must be finite.
+    - Zero is resolved content. An unresolved Measurement omits its Quantity or records null; a present
+      Quantity always has both magnitude and units.
+    attributes:
+      magnitude:
+        description: Finite numerical magnitude expressed in the accompanying units.
+        range: decimal
+        required: true
+      units:
+        description: Explicit units for this magnitude, such as m^2, AUD/year, or dimensionless.
+        range: string
+        required: true
+        pattern: \S
+  Measure:
+    description: An identified definition of a measurable characteristic and its canonical units.
+    notes:
+    - Unit expressions must resolve under a shared unit convention. Their grammar and registry are not
+      specified by this draft. Nonblank text alone does not establish a valid unit.
+    - Unit compatibility and the meaning of measurements require semantic validation. Compatible dimensions
+      alone do not make distinct currencies or measurement meanings interchangeable.
+    attributes:
+      id:
+        description: Stable identity of this Measure definition.
+        range: UUID
+        required: true
+        identifier: true
+      code:
+        description: Case-sensitive code unique within the Model’s Measure collection; not reference identity.
+        range: Code
+        required: true
+      name:
+        description: Nonblank human-readable name of the measured characteristic.
+        range: string
+        required: true
+        pattern: \S
+      units:
+        description: Nonblank expression specifying the canonical units for quantities interpreted through
+          this Measure, such as m^2 or AUD/year. Unitless quantities must have an explicit dimensionless
+          convention.
+        range: string
+        required: true
+        pattern: \S
+      definition:
+        description: Optional explanatory text describing the measurement convention.
+        range: string
+      tags:
+        description: Unordered, nonblank descriptive terms, with no duplicates.
+        range: string
+        multivalued: true
+        list_elements_unique: true
+        pattern: \S
+  Measurement:
+    description: An identified measurable property with a Measure and an optional Quantity.
+    notes:
+    - A Quantity's units must be compatible with the Measure's canonical units; they need not use the
+      same unit spelling or scale. Conversion changes magnitude and units together. An absent or null
+      Quantity is unresolved; a zero magnitude is resolved content.
+    - Identity persists across Model snapshots. Resolving a Quantity produces a new snapshot without changing
+      the input characteristic.
+    - Facts target the characteristic by its identity. Claims explain supplied or calculated content;
+      a recorded Quantity does not fix a later Specification.
+    slots:
+    - measure
+    - quantity
+    attributes:
+      id:
+        description: Stable identity of the Measurement, used by provenance Facts.
+        range: UUID
+        identifier: true
+        required: true
+slots:
+  measure:
+    range: Measure
+    inlined: false
+    pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+    required: true
+    description: Measure defining meaning and canonical units, referenced by its stable UUID.
+  quantity:
+    description: Optional recorded numerical content. Its units must be compatible with the Measure's
+      canonical units. Omission or null denotes unresolved content.
+    range: Quantity
+    inlined: true

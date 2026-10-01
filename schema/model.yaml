@@ -1,0 +1,103 @@
+id: https://daniel-fink.github.io/rangekeeper/schema/model
+name: rangekeeper_model
+title: Rangekeeper Model
+version: 0.3.0
+description: An immutable revision containing metadata, reusable definitions, a represented system,
+  and provenance for its recorded content.
+prefixes:
+  linkml: https://w3id.org/linkml/
+  rk: https://daniel-fink.github.io/rangekeeper/schema/
+imports:
+- definitions
+- formulation
+- provenance
+default_prefix: rk
+default_range: string
+classes:
+  Model:
+    tree_root: true
+    description: A self-contained snapshot of a system's declarations, mathematical formulations,
+      and recorded content, identified by its Metadata.
+    notes:
+    - Metadata.id identifies this Model revision. Model has no second identifier slot; native LinkML
+      revision references target the identified Metadata record. Metadata and System do not create
+      additional domain or mathematical reference scopes.
+    - Every identified record has one canonical occurrence within the snapshot, including nested records.
+      Domain and mathematical UUID references resolve within this Model. Previous-revision references
+      and external evidence artifacts are exceptions; history is not needed to interpret current content.
+    - Changing snapshot content requires a new Metadata.id. Declarations that retain their identity
+      across revisions retain their UUIDs. Immutability and revision history require implementation
+      enforcement; record validation alone cannot establish them.
+    - Unresolved Values are valid. Recorded content does not fix a Value in a subsequent Specification.
+      Loading or validating a Model does not evaluate expressions, assert solver success, or execute policies.
+    - Definitions, System, and Provenance may be absent when empty. Collections are unordered except
+      where their child schemas explicitly preserve mathematical order.
+    - All Constraints in System.formulations and their descendant Formulations form the Model's governing
+      mathematics. Expressions do not assert themselves. Specification-specific constraints, solve roles,
+      objectives, policies, and execution settings remain outside this snapshot contract.
+    attributes:
+      metadata:
+        description: Required identity, schema contract version, and optional descriptive/history fields.
+        range: Metadata
+        required: true
+        inlined: true
+        all_of:
+        - range: Metadata
+          inlined: true
+      definitions:
+        description: Canonical Taxonomy, Measure, and Function definitions referenced by this snapshot.
+        range: Definitions
+        inlined: true
+        all_of:
+        - range: Definitions
+          inlined: true
+      system:
+        description: The domain objects and explicit mathematical formulations represented by this Model.
+        range: System
+        inlined: true
+        all_of:
+        - range: System
+          inlined: true
+      provenance:
+        description: Evidence and reasoning supporting recorded domain and Value content in this snapshot.
+        range: Provenance
+        inlined: true
+        all_of:
+        - range: Provenance
+          inlined: true
+  System:
+    description: The Entities, Relationships, Assemblies, and mathematical formulations of a Model.
+    notes:
+    - System is an embedded container without independent identity. UUID references resolve throughout
+      its containing Model, not just within the collection that contains a record.
+    - An Assembly is stored once in assemblies and is an eligible target of Entity references. Do not
+      duplicate it in entities. Entity codes are unique across entities and assemblies when supplied.
+    - formulations contains explicit Formulation instances. The name describes the mathematical relationships
+      they impose, without assigning a solving direction. Reusable templates and instantiation are deferred.
+    - Root Formulation codes are unique within formulations. Child Formulation codes and other local names retain
+      the scopes specified by Formulation. Nested children continue to use Formulation.formulations.
+    attributes:
+      entities:
+        description: Canonical domain Entities, excluding Assemblies stored in their own collection.
+        range: Entity
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      relationships:
+        description: Canonical directed connections between Entities, including Assemblies.
+        range: Relationship
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      assemblies:
+        description: Canonical Assemblies with UUID references to shared domain members.
+        range: Assembly
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      formulations:
+        description: Canonical root Formulations containing governing mathematical declarations and constraints.
+        range: Formulation
+        multivalued: true
+        inlined: true
+        inlined_as_list: true

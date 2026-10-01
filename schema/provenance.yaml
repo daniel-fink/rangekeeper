@@ -1,0 +1,236 @@
+id: https://daniel-fink.github.io/rangekeeper/schema/provenance
+name: rangekeeper_provenance
+title: Rangekeeper Provenance
+version: 0.3.0
+description: Evidence and reasoning supporting the recorded state of graph objects.
+prefixes:
+  linkml: https://w3id.org/linkml/
+  rk: https://daniel-fink.github.io/rangekeeper/schema/
+imports:
+- assembly
+default_prefix: rk
+default_range: string
+classes:
+  Provenance:
+    description: Facts connecting graph objects to supporting Claims, with the Sources and upstream Claims
+      needed to follow their lineage.
+    notes:
+    - UUID references resolve in this provenance collection and its containing Model. Claim dependencies
+      must be acyclic. Source and Claim records are stored once and shared by reference.
+    attributes:
+      sources:
+        range: Source
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      claims:
+        range: Claim
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      facts:
+        range: Fact
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+  Source:
+    description: An identifiable edition of an external evidence artifact.
+    attributes:
+      id:
+        range: UUID
+        identifier: true
+        required: true
+      name:
+        range: string
+        required: true
+        pattern: \S
+      checksum:
+        description: Content checksum identifying the evidence edition.
+        range: string
+        required: true
+        pattern: \S
+      issued_at:
+        range: Content
+        any_of:
+        - range: date
+        - range: datetime
+      received_at:
+        range: Content
+        any_of:
+        - range: date
+        - range: datetime
+      author:
+        range: string
+        pattern: \S
+  Location:
+    description: An address within a specific Source edition.
+    attributes:
+      source:
+        range: Source
+        inlined: false
+        required: true
+        pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      address:
+        description: Named address parts, such as sheet and cell, with nonblank text values.
+        range: Entry
+        multivalued: true
+        inlined: true
+        inlined_as_list: false
+  Entry:
+    description: A named text component of a source address.
+    attributes:
+      key:
+        range: string
+        key: true
+        required: true
+        pattern: \S
+      value:
+        range: string
+        required: true
+        pattern: \S
+  Method:
+    description: The named process used to assert, derive, or reconcile evidence.
+    attributes:
+      code:
+        range: string
+        required: true
+        pattern: \S
+      version:
+        range: string
+        pattern: \S
+      description:
+        range: string
+        pattern: \S
+  Content:
+    class_uri: linkml:Any
+    description: Candidate content whose structure and meaning depend on the supported target. Content
+      must be validated against that target before a Fact is accepted; this generic envelope does not
+      make arbitrary content executable.
+  Claim:
+    description: Sourced, asserted, or derived candidate content and its supporting lineage.
+    notes:
+    - A sourced Claim requires at least one Location. A derived Claim requires at least one upstream Claim
+      and a Method. An asserted Claim requires a Method.
+    - Measurement content records a Measure UUID and optional Quantity with compatible units. Label content records
+      Classification UUIDs. Content does not introduce another characteristic identity.
+    - Claim content is a generic boundary. Payload structure, required support kinds, and dependency cycles
+      require semantic validation in addition to structural validation of this envelope.
+    attributes:
+      id:
+        range: UUID
+        identifier: true
+        required: true
+      content:
+        range: Content
+        required: true
+        inlined: true
+      kind:
+        range: ClaimKind
+        required: true
+      sources:
+        description: Source Locations or UUID references to upstream Claims.
+        range: Content
+        multivalued: true
+        any_of:
+        - range: Location
+          inlined: true
+        - range: Claim
+          inlined: false
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      method:
+        range: Method
+        inlined: true
+    rules:
+    - preconditions:
+        slot_conditions:
+          kind:
+            equals_string_in:
+            - asserted
+            - derived
+      postconditions:
+        slot_conditions:
+          method:
+            required: true
+    - preconditions:
+        slot_conditions:
+          kind:
+            equals_string_in:
+            - sourced
+            - derived
+      postconditions:
+        slot_conditions:
+          sources:
+            required: true
+            minimum_cardinality: 1
+  Fact:
+    description: Supporting Claims for the recorded state of one graph object or characteristic.
+    notes:
+    - There is at most one Fact per target in a snapshot. Its target must be an Entity, Assembly, Relationship,
+      Label, or Value present in that snapshot.
+    - The agreed or explicitly selected Claim must match the target's recorded content. Conflicting Claims
+      require reconciliation before the Fact is accepted into Provenance. Missing provenance does not
+      imply unresolved content.
+    attributes:
+      target:
+        description: The actual graph object or characteristic being supported, referenced by its stable
+          UUID.
+        range: Content
+        required: true
+        any_of:
+        - range: Entity
+          inlined: false
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        - range: Relationship
+          inlined: false
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        - range: Label
+          inlined: false
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        - range: Value
+          inlined: false
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        - range: Measurement
+          inlined: false
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      claims:
+        description: Unique UUIDs of supporting Claims; at least one is required.
+        range: Claim
+        multivalued: true
+        inlined: false
+        required: true
+        minimum_cardinality: 1
+        list_elements_unique: true
+        pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      reconciliation:
+        range: Reconciliation
+        inlined: true
+  Reconciliation:
+    description: Explicit selection of one supporting Claim when evidence conflicts.
+    attributes:
+      selected:
+        description: UUID of a Claim included in the Fact's claims.
+        range: Claim
+        inlined: false
+        required: true
+        pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      status:
+        range: ReconciliationStatus
+        required: true
+      method:
+        range: Method
+        inlined: true
+enums:
+  ClaimKind:
+    permissible_values:
+      sourced:
+        description: Content obtained at a source location.
+      asserted:
+        description: Content supplied through a named method.
+      derived:
+        description: Content derived from upstream Claims through a named method.
+  ReconciliationStatus:
+    permissible_values:
+      provisional:
+        description: The selection remains provisional.
+      confirmed:
+        description: The selection is confirmed.

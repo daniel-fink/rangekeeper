@@ -1,0 +1,41 @@
+id: https://daniel-fink.github.io/rangekeeper/schema/settings
+name: rangekeeper_settings
+title: Rangekeeper Numerical Settings
+version: 0.1.0
+description: Shared numerical settings content for requested and effective execution settings.
+prefixes:
+  linkml: https://w3id.org/linkml/
+  rk: https://daniel-fink.github.io/rangekeeper/schema/
+imports:
+- common
+default_prefix: rk
+default_range: string
+classes:
+  Settings:
+    description: Numerical convergence and resource settings; the containing record distinguishes requested
+      from effective values.
+    notes:
+    - All fields are optional and have no schema defaults. Present limits must be positive and finite. A backend
+      must report an unsupported request rather than silently ignore or reinterpret it.
+    - relative_tolerance is a dimensionless convergence request, not an absolute tolerance in every Value's
+      units or a proof of Constraint satisfaction. The backend must define its criterion, scaling, and mapping
+      to effective settings; the Run records those semantics and numerical diagnostics. No universal residual
+      normalization is prescribed here. Requests for absolute per-constraint tolerances are deferred.
+    - Reaching a limit describes execution termination, not mathematical infeasibility. Actual elapsed time,
+      iteration counts, implementation versions, and effective options belong to the Run.
+    attributes:
+      relative_tolerance:
+        description: Positive finite dimensionless convergence tolerance, strictly less than one.
+        range: decimal
+        minimum_value: 0
+        maximum_value: 1
+      iteration_limit:
+        description: Maximum number of solver iterations requested, interpreted by the backend's documented
+          algorithm.
+        range: integer
+        minimum_value: 1
+      time_limit:
+        description: Positive finite execution time limit in seconds, using the backend's documented timing
+          convention.
+        range: decimal
+        minimum_value: 0

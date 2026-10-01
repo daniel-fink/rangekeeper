@@ -1,0 +1,39 @@
+id: https://daniel-fink.github.io/rangekeeper/schema/assembly
+name: rangekeeper_assembly
+title: Rangekeeper Assembly
+version: 0.2.0
+description: Entities that identify shared collections of graph members.
+prefixes:
+  linkml: https://w3id.org/linkml/
+  rk: https://daniel-fink.github.io/rangekeeper/schema/
+imports:
+  - relationship
+default_prefix: rk
+default_range: string
+classes:
+  Assembly:
+    is_a: Entity
+    description: >-
+      An Entity identifying a collection of Entities and Relationships. Members
+      are referenced by identity and may belong to more than one Assembly.
+      Membership does not imply spatial containment or duplicate its members.
+    notes:
+      - >-
+        Members must exist in the same Model scope. An Assembly cannot contain
+        itself, directly or through nested Assembly membership.
+      - A member Relationship's endpoints must be direct Entity members or the Assembly itself.
+    attributes:
+      entities:
+        description: Unordered, unique UUIDs of member Entities, including nested Assemblies.
+        range: Entity
+        multivalued: true
+        inlined: false
+        list_elements_unique: true
+        pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+      relationships:
+        description: Unordered, unique UUIDs of member Relationships.
+        range: Relationship
+        multivalued: true
+        inlined: false
+        list_elements_unique: true
+        pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'

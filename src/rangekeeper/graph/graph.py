@@ -102,6 +102,12 @@ class Graph:
             raise TypeError("provenance must be Provenance")
 
         entities_by_id = _index_by_id(entities, "entity")
+        codes: set[str] = set()
+        for entity in entities:
+            if entity.code is not None:
+                if entity.code in codes:
+                    raise ValueError(f"entity codes must be unique: {entity.code!r}")
+                codes.add(entity.code)
         relationships_by_id = _index_by_id(relationships, "relationship")
         owners = (*entities, *relationships)
         targets: tuple[FactTarget, ...] = (

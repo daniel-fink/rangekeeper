@@ -1,0 +1,40 @@
+id: https://daniel-fink.github.io/rangekeeper/schema/definitions
+name: rangekeeper_definitions
+title: Rangekeeper Definitions
+version: 0.2.0
+description: Scoped catalogues of reusable Taxonomies, Measures, and Functions.
+prefixes:
+  linkml: https://w3id.org/linkml/
+  rk: https://daniel-fink.github.io/rangekeeper/schema/
+imports:
+- classification
+- measure
+- function
+default_prefix: rk
+default_range: string
+classes:
+  Definitions:
+    description: Reusable Taxonomies, Measures, and Functions identified by stable UUIDs within a Model.
+    notes:
+    - Taxonomy codes, Measure codes, and Function codes are unique within their respective collections.
+      Duplicate UUIDs are invalid across the containing Model.
+    - Codes and names are descriptive metadata. Renaming them does not change identity or require updating
+      UUID references.
+    attributes:
+      taxonomies:
+        range: Taxonomy
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      measures:
+        range: Measure
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      functions:
+        description: Exact versioned Function contracts used by calls in this Model. Implementations
+          and their capabilities are selected separately.
+        range: Function
+        multivalued: true
+        inlined: true
+        inlined_as_list: true

@@ -1,0 +1,198 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$defs": {
+        "BooleanLiteral": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "kind": {
+                    "const": "BooleanLiteral"
+                },
+                "value": {
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "id",
+                "kind",
+                "value"
+            ]
+        },
+        "Constraint": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "predicate": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "predicate"
+            ]
+        },
+        "Declaration": {
+            "anyOf": [
+                {
+                    "$ref": "#/$defs/ValueDeclaration"
+                },
+                {
+                    "$ref": "#/$defs/EntityDeclaration"
+                }
+            ]
+        },
+        "EntityDeclaration": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "kind": {
+                    "const": "EntityDeclaration"
+                }
+            },
+            "required": [
+                "id",
+                "kind"
+            ]
+        },
+        "Expression": {
+            "anyOf": [
+                {
+                    "$ref": "#/$defs/NumericLiteral"
+                },
+                {
+                    "$ref": "#/$defs/BooleanLiteral"
+                },
+                {
+                    "$ref": "#/$defs/Reference"
+                },
+                {
+                    "$ref": "#/$defs/LessEqual"
+                }
+            ]
+        },
+        "LessEqual": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "kind": {
+                    "const": "LessEqual"
+                },
+                "left": {
+                    "type": "string"
+                },
+                "right": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "id",
+                "kind",
+                "left",
+                "right"
+            ]
+        },
+        "Model": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "constraints": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/Constraint"
+                    }
+                },
+                "declarations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/Declaration"
+                    }
+                },
+                "expressions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/Expression"
+                    }
+                }
+            },
+            "required": [
+                "constraints",
+                "declarations",
+                "expressions"
+            ]
+        },
+        "NumericLiteral": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "kind": {
+                    "const": "NumericLiteral"
+                },
+                "unit": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "id",
+                "kind",
+                "unit",
+                "value"
+            ]
+        },
+        "Reference": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "kind": {
+                    "const": "Reference"
+                },
+                "target": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "id",
+                "kind",
+                "target"
+            ]
+        },
+        "ValueDeclaration": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "kind": {
+                    "const": "ValueDeclaration"
+                },
+                "unit": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "id",
+                "kind",
+                "unit"
+            ]
+        }
+    },
+    "description": "Extra rules over the whole graph, written deliberately; not automatic semantics.",
+    "$ref": "#/$defs/Model"
+}

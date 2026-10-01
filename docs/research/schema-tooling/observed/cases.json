@@ -1,0 +1,736 @@
+{
+  "valid": {
+    "declarations": [
+      {
+        "id": "cost",
+        "kind": "ValueDeclaration",
+        "unit": "AUD"
+      },
+      {
+        "id": "site",
+        "kind": "EntityDeclaration"
+      }
+    ],
+    "expressions": [
+      {
+        "id": "cost_ref",
+        "kind": "Reference",
+        "target": "cost"
+      },
+      {
+        "id": "limit",
+        "kind": "NumericLiteral",
+        "value": 100.0,
+        "unit": "AUD"
+      },
+      {
+        "id": "within_budget",
+        "kind": "LessEqual",
+        "left": "cost_ref",
+        "right": "limit"
+      }
+    ],
+    "constraints": [
+      {
+        "predicate": "within_budget"
+      }
+    ]
+  },
+  "missing_literal_value": {
+    "declarations": [
+      {
+        "id": "cost",
+        "kind": "ValueDeclaration",
+        "unit": "AUD"
+      },
+      {
+        "id": "site",
+        "kind": "EntityDeclaration"
+      }
+    ],
+    "expressions": [
+      {
+        "id": "cost_ref",
+        "kind": "Reference",
+        "target": "cost"
+      },
+      {
+        "id": "limit",
+        "kind": "NumericLiteral",
+        "unit": "AUD"
+      },
+      {
+        "id": "within_budget",
+        "kind": "LessEqual",
+        "left": "cost_ref",
+        "right": "limit"
+      }
+    ],
+    "constraints": [
+      {
+        "predicate": "within_budget"
+      }
+    ]
+  },
+  "string_as_number": {
+    "declarations": [
+      {
+        "id": "cost",
+        "kind": "ValueDeclaration",
+        "unit": "AUD"
+      },
+      {
+        "id": "site",
+        "kind": "EntityDeclaration"
+      }
+    ],
+    "expressions": [
+      {
+        "id": "cost_ref",
+        "kind": "Reference",
+        "target": "cost"
+      },
+      {
+        "id": "limit",
+        "kind": "NumericLiteral",
+        "value": "100",
+        "unit": "AUD"
+      },
+      {
+        "id": "within_budget",
+        "kind": "LessEqual",
+        "left": "cost_ref",
+        "right": "limit"
+      }
+    ],
+    "constraints": [
+      {
+        "predicate": "within_budget"
+      }
+    ]
+  },
+  "bool_as_number": {
+    "declarations": [
+      {
+        "id": "cost",
+        "kind": "ValueDeclaration",
+        "unit": "AUD"
+      },
+      {
+        "id": "site",
+        "kind": "EntityDeclaration"
+      }
+    ],
+    "expressions": [
+      {
+        "id": "cost_ref",
+        "kind": "Reference",
+        "target": "cost"
+      },
+      {
+        "id": "limit",
+        "kind": "NumericLiteral",
+        "value": true,
+        "unit": "AUD"
+      },
+      {
+        "id": "within_budget",
+        "kind": "LessEqual",
+        "left": "cost_ref",
+        "right": "limit"
+      }
+    ],
+    "constraints": [
+      {
+        "predicate": "within_budget"
+      }
+    ]
+  },
+  "null_as_number": {
+    "declarations": [
+      {
+        "id": "cost",
+        "kind": "ValueDeclaration",
+        "unit": "AUD"
+      },
+      {
+        "id": "site",
+        "kind": "EntityDeclaration"
+      }
+    ],
+    "expressions": [
+      {
+        "id": "cost_ref",
+        "kind": "Reference",
+        "target": "cost"
+      },
+      {
+        "id": "limit",
+        "kind": "NumericLiteral",
+        "value": null,
+        "unit": "AUD"
+      },
+      {
+        "id": "within_budget",
+        "kind": "LessEqual",
+        "left": "cost_ref",
+        "right": "limit"
+      }
+    ],
+    "constraints": [
+      {
+        "predicate": "within_budget"
+      }
+    ]
+  },
+  "unknown_expression_kind": {
+    "declarations": [
+      {
+        "id": "cost",
+        "kind": "ValueDeclaration",
+        "unit": "AUD"
+      },
+      {
+        "id": "site",
+        "kind": "EntityDeclaration"
+      }
+    ],
+    "expressions": [
+      {
+        "id": "cost_ref",
+        "kind": "Reference",
+        "target": "cost"
+      },
+      {
+        "id": "limit",
+        "kind": "Unknown",
+        "value": 100.0,
+        "unit": "AUD"
+      },
+      {
+        "id": "within_budget",
+        "kind": "LessEqual",
+        "left": "cost_ref",
+        "right": "limit"
+      }
+    ],
+    "constraints": [
+      {
+        "predicate": "within_budget"
+      }
+    ]
+  },
+  "missing_expression_kind": {
+    "declarations": [
+      {
+        "id": "cost",
+        "kind": "ValueDeclaration",
+        "unit": "AUD"
+      },
+      {
+        "id": "site",
+        "kind": "EntityDeclaration"
+      }
+    ],
+    "expressions": [
+      {
+        "id": "cost_ref",
+        "kind": "Reference",
+        "target": "cost"
+      },
+      {
+        "id": "limit",
+        "value": 100.0,
+        "unit": "AUD"
+      },
+      {
+        "id": "within_budget",
+        "kind": "LessEqual",
+        "left": "cost_ref",
+        "right": "limit"
+      }
+    ],
+    "constraints": [
+      {
+        "predicate": "within_budget"
+      }
+    ]
+  },
+  "missing_declaration_kind": {
+    "declarations": [
+      {
+        "id": "cost",
+        "unit": "AUD"
+      },
+      {
+        "id": "site",
+        "kind": "EntityDeclaration"
+      }
+    ],
+    "expressions": [
+      {
+        "id": "cost_ref",
+        "kind": "Reference",
+        "target": "cost"
+      },
+      {
+        "id": "limit",
+        "kind": "NumericLiteral",
+        "value": 100.0,
+        "unit": "AUD"
+      },
+      {
+        "id": "within_budget",
+        "kind": "LessEqual",
+        "left": "cost_ref",
+        "right": "limit"
+      }
+    ],
+    "constraints": [
+      {
+        "predicate": "within_budget"
+      }
+    ]
+  },
+  "abstract_expression": {
+    "declarations": [
+      {
+        "id": "cost",
+        "kind": "ValueDeclaration",
+        "unit": "AUD"
+      },
+      {
+        "id": "site",
+        "kind": "EntityDeclaration"
+      }
+    ],
+    "expressions": [
+      {
+        "id": "cost_ref",
+        "kind": "Reference",
+        "target": "cost"
+      },
+      {
+        "id": "limit",
+        "kind": "NumericLiteral",
+        "value": 100.0,
+        "unit": "AUD"
+      },
+      {
+        "id": "within_budget",
+        "kind": "LessEqual",
+        "left": "cost_ref",
+        "right": "limit"
+      },
+      {
+        "id": "abstract",
+        "kind": "Expression"
+      }
+    ],
+    "constraints": [
+      {
+        "predicate": "within_budget"
+      }
+    ]
+  },
+  "extra_literal_field": {
+    "declarations": [
+      {
+        "id": "cost",
+        "kind": "ValueDeclaration",
+        "unit": "AUD"
+      },
+      {
+        "id": "site",
+        "kind": "EntityDeclaration"
+      }
+    ],
+    "expressions": [
+      {
+        "id": "cost_ref",
+        "kind": "Reference",
+        "target": "cost"
+      },
+      {
+        "id": "limit",
+        "kind": "NumericLiteral",
+        "value": 100.0,
+        "unit": "AUD",
+        "target": "cost"
+      },
+      {
+        "id": "within_budget",
+        "kind": "LessEqual",
+        "left": "cost_ref",
+        "right": "limit"
+      }
+    ],
+    "constraints": [
+      {
+        "predicate": "within_budget"
+      }
+    ]
+  },
+  "missing_operand": {
+    "declarations": [
+      {
+        "id": "cost",
+        "kind": "ValueDeclaration",
+        "unit": "AUD"
+      },
+      {
+        "id": "site",
+        "kind": "EntityDeclaration"
+      }
+    ],
+    "expressions": [
+      {
+        "id": "cost_ref",
+        "kind": "Reference",
+        "target": "cost"
+      },
+      {
+        "id": "limit",
+        "kind": "NumericLiteral",
+        "value": 100.0,
+        "unit": "AUD"
+      },
+      {
+        "id": "within_budget",
+        "kind": "LessEqual",
+        "left": "cost_ref"
+      }
+    ],
+    "constraints": [
+      {
+        "predicate": "within_budget"
+      }
+    ]
+  },
+  "dangling_reference": {
+    "declarations": [
+      {
+        "id": "cost",
+        "kind": "ValueDeclaration",
+        "unit": "AUD"
+      },
+      {
+        "id": "site",
+        "kind": "EntityDeclaration"
+      }
+    ],
+    "expressions": [
+      {
+        "id": "cost_ref",
+        "kind": "Reference",
+        "target": "absent"
+      },
+      {
+        "id": "limit",
+        "kind": "NumericLiteral",
+        "value": 100.0,
+        "unit": "AUD"
+      },
+      {
+        "id": "within_budget",
+        "kind": "LessEqual",
+        "left": "cost_ref",
+        "right": "limit"
+      }
+    ],
+    "constraints": [
+      {
+        "predicate": "within_budget"
+      }
+    ]
+  },
+  "wrong_reference_kind": {
+    "declarations": [
+      {
+        "id": "cost",
+        "kind": "ValueDeclaration",
+        "unit": "AUD"
+      },
+      {
+        "id": "site",
+        "kind": "EntityDeclaration"
+      }
+    ],
+    "expressions": [
+      {
+        "id": "cost_ref",
+        "kind": "Reference",
+        "target": "site"
+      },
+      {
+        "id": "limit",
+        "kind": "NumericLiteral",
+        "value": 100.0,
+        "unit": "AUD"
+      },
+      {
+        "id": "within_budget",
+        "kind": "LessEqual",
+        "left": "cost_ref",
+        "right": "limit"
+      }
+    ],
+    "constraints": [
+      {
+        "predicate": "within_budget"
+      }
+    ]
+  },
+  "numeric_constraint": {
+    "declarations": [
+      {
+        "id": "cost",
+        "kind": "ValueDeclaration",
+        "unit": "AUD"
+      },
+      {
+        "id": "site",
+        "kind": "EntityDeclaration"
+      }
+    ],
+    "expressions": [
+      {
+        "id": "cost_ref",
+        "kind": "Reference",
+        "target": "cost"
+      },
+      {
+        "id": "limit",
+        "kind": "NumericLiteral",
+        "value": 100.0,
+        "unit": "AUD"
+      },
+      {
+        "id": "within_budget",
+        "kind": "LessEqual",
+        "left": "cost_ref",
+        "right": "limit"
+      }
+    ],
+    "constraints": [
+      {
+        "predicate": "limit"
+      }
+    ]
+  },
+  "wrong_units": {
+    "declarations": [
+      {
+        "id": "cost",
+        "kind": "ValueDeclaration",
+        "unit": "AUD"
+      },
+      {
+        "id": "site",
+        "kind": "EntityDeclaration"
+      }
+    ],
+    "expressions": [
+      {
+        "id": "cost_ref",
+        "kind": "Reference",
+        "target": "cost"
+      },
+      {
+        "id": "limit",
+        "kind": "NumericLiteral",
+        "value": 100.0,
+        "unit": "m2"
+      },
+      {
+        "id": "within_budget",
+        "kind": "LessEqual",
+        "left": "cost_ref",
+        "right": "limit"
+      }
+    ],
+    "constraints": [
+      {
+        "predicate": "within_budget"
+      }
+    ]
+  },
+  "duplicate_identity": {
+    "declarations": [
+      {
+        "id": "cost",
+        "kind": "ValueDeclaration",
+        "unit": "AUD"
+      },
+      {
+        "id": "site",
+        "kind": "EntityDeclaration"
+      },
+      {
+        "id": "cost",
+        "kind": "ValueDeclaration",
+        "unit": "AUD"
+      }
+    ],
+    "expressions": [
+      {
+        "id": "cost_ref",
+        "kind": "Reference",
+        "target": "cost"
+      },
+      {
+        "id": "limit",
+        "kind": "NumericLiteral",
+        "value": 100.0,
+        "unit": "AUD"
+      },
+      {
+        "id": "within_budget",
+        "kind": "LessEqual",
+        "left": "cost_ref",
+        "right": "limit"
+      }
+    ],
+    "constraints": [
+      {
+        "predicate": "within_budget"
+      }
+    ]
+  },
+  "empty_constraints": {
+    "declarations": [
+      {
+        "id": "cost",
+        "kind": "ValueDeclaration",
+        "unit": "AUD"
+      },
+      {
+        "id": "site",
+        "kind": "EntityDeclaration"
+      }
+    ],
+    "expressions": [
+      {
+        "id": "cost_ref",
+        "kind": "Reference",
+        "target": "cost"
+      },
+      {
+        "id": "limit",
+        "kind": "NumericLiteral",
+        "value": 100.0,
+        "unit": "AUD"
+      },
+      {
+        "id": "within_budget",
+        "kind": "LessEqual",
+        "left": "cost_ref",
+        "right": "limit"
+      }
+    ],
+    "constraints": []
+  },
+  "omitted_constraints": {
+    "declarations": [
+      {
+        "id": "cost",
+        "kind": "ValueDeclaration",
+        "unit": "AUD"
+      },
+      {
+        "id": "site",
+        "kind": "EntityDeclaration"
+      }
+    ],
+    "expressions": [
+      {
+        "id": "cost_ref",
+        "kind": "Reference",
+        "target": "cost"
+      },
+      {
+        "id": "limit",
+        "kind": "NumericLiteral",
+        "value": 100.0,
+        "unit": "AUD"
+      },
+      {
+        "id": "within_budget",
+        "kind": "LessEqual",
+        "left": "cost_ref",
+        "right": "limit"
+      }
+    ]
+  },
+  "null_constraints": {
+    "declarations": [
+      {
+        "id": "cost",
+        "kind": "ValueDeclaration",
+        "unit": "AUD"
+      },
+      {
+        "id": "site",
+        "kind": "EntityDeclaration"
+      }
+    ],
+    "expressions": [
+      {
+        "id": "cost_ref",
+        "kind": "Reference",
+        "target": "cost"
+      },
+      {
+        "id": "limit",
+        "kind": "NumericLiteral",
+        "value": 100.0,
+        "unit": "AUD"
+      },
+      {
+        "id": "within_budget",
+        "kind": "LessEqual",
+        "left": "cost_ref",
+        "right": "limit"
+      }
+    ],
+    "constraints": null
+  },
+  "extra_model_field": {
+    "declarations": [
+      {
+        "id": "cost",
+        "kind": "ValueDeclaration",
+        "unit": "AUD"
+      },
+      {
+        "id": "site",
+        "kind": "EntityDeclaration"
+      }
+    ],
+    "expressions": [
+      {
+        "id": "cost_ref",
+        "kind": "Reference",
+        "target": "cost"
+      },
+      {
+        "id": "limit",
+        "kind": "NumericLiteral",
+        "value": 100.0,
+        "unit": "AUD"
+      },
+      {
+        "id": "within_budget",
+        "kind": "LessEqual",
+        "left": "cost_ref",
+        "right": "limit"
+      }
+    ],
+    "constraints": [
+      {
+        "predicate": "within_budget"
+      }
+    ],
+    "surprise": 1
+  }
+}

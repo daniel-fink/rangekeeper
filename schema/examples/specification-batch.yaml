@@ -1,0 +1,11 @@
+# Synthetic Specification; no execution or output Model is asserted.
+metadata:
+  id: 25df750e-a766-5fdc-9de9-a22d779f135b
+  schema_version: 0.4.0
+  name: Forward and inverse valuation batch
+  description: Two independent investigations. Cases explicitly include their shared contribution; this
+    batch supplies no solve requirements.
+model: 396b03f6-1ebb-59f4-b520-231242ffd645
+cases:
+- 6415f03f-f1a4-5ff2-b4f8-b4faaafd027e
+- abd75e4d-3e68-54b5-b446-2f3ea51d6c9c

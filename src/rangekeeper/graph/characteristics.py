@@ -59,17 +59,18 @@ class Label:
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Measurement:
-    """A quantity interpreted through its canonical Measure definition."""
+    """An identified measurable property, optionally carrying a resolved quantity."""
 
     id: UUID = field(default_factory=uuid4)
     measure: Measure
-    quantity: pint.Quantity
+    quantity: pint.Quantity | None = None
 
     def __post_init__(self) -> None:
         validate.require_uuid(self.id, "id")
         if not isinstance(self.measure, Measure):
             raise TypeError("measure must be a Measure")
-        self.measure.validate_quantity(self.quantity)
+        if self.quantity is not None:
+            self.measure.validate_quantity(self.quantity)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

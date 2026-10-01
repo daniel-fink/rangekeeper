@@ -1,0 +1,113 @@
+{
+  "versions": {
+    "@typespec/compiler": "1.16.0",
+    "@typespec/json-schema": "1.16.0"
+  },
+  "results": {
+    "valid": {
+      "typespec_json_schema": "accept",
+      "cue_json_schema": "accept",
+      "cue_semantic_export": "accept"
+    },
+    "missing_literal_value": {
+      "typespec_json_schema": "reject",
+      "cue_json_schema": "reject",
+      "cue_semantic_export": "reject"
+    },
+    "string_as_number": {
+      "typespec_json_schema": "reject",
+      "cue_json_schema": "reject",
+      "cue_semantic_export": "reject"
+    },
+    "bool_as_number": {
+      "typespec_json_schema": "reject",
+      "cue_json_schema": "reject",
+      "cue_semantic_export": "reject"
+    },
+    "null_as_number": {
+      "typespec_json_schema": "reject",
+      "cue_json_schema": "reject",
+      "cue_semantic_export": "reject"
+    },
+    "unknown_expression_kind": {
+      "typespec_json_schema": "reject",
+      "cue_json_schema": "reject",
+      "cue_semantic_export": "reject"
+    },
+    "missing_expression_kind": {
+      "typespec_json_schema": "reject",
+      "cue_json_schema": "reject",
+      "cue_semantic_export": "reject"
+    },
+    "missing_declaration_kind": {
+      "typespec_json_schema": "reject",
+      "cue_json_schema": "reject",
+      "cue_semantic_export": "reject"
+    },
+    "abstract_expression": {
+      "typespec_json_schema": "reject",
+      "cue_json_schema": "reject",
+      "cue_semantic_export": "reject"
+    },
+    "extra_literal_field": {
+      "typespec_json_schema": "reject",
+      "cue_json_schema": "reject",
+      "cue_semantic_export": "reject"
+    },
+    "missing_operand": {
+      "typespec_json_schema": "reject",
+      "cue_json_schema": "reject",
+      "cue_semantic_export": "reject"
+    },
+    "dangling_reference": {
+      "typespec_json_schema": "accept",
+      "cue_json_schema": "accept",
+      "cue_semantic_export": "accept"
+    },
+    "wrong_reference_kind": {
+      "typespec_json_schema": "accept",
+      "cue_json_schema": "accept",
+      "cue_semantic_export": "accept"
+    },
+    "numeric_constraint": {
+      "typespec_json_schema": "accept",
+      "cue_json_schema": "accept",
+      "cue_semantic_export": "accept"
+    },
+    "wrong_units": {
+      "typespec_json_schema": "accept",
+      "cue_json_schema": "accept",
+      "cue_semantic_export": "accept"
+    },
+    "duplicate_identity": {
+      "typespec_json_schema": "accept",
+      "cue_json_schema": "accept",
+      "cue_semantic_export": "accept"
+    },
+    "empty_constraints": {
+      "typespec_json_schema": "accept",
+      "cue_json_schema": "accept",
+      "cue_semantic_export": "accept"
+    },
+    "omitted_constraints": {
+      "typespec_json_schema": "reject",
+      "cue_json_schema": "reject",
+      "cue_semantic_export": "reject"
+    },
+    "null_constraints": {
+      "typespec_json_schema": "reject",
+      "cue_json_schema": "reject",
+      "cue_semantic_export": "reject"
+    },
+    "extra_model_field": {
+      "typespec_json_schema": "reject",
+      "cue_json_schema": "reject",
+      "cue_semantic_export": "reject"
+    }
+  },
+  "typespec_recursive_tree": "accept",
+  "cue_inverse": {
+    "exit_code": 1,
+    "stderr": "x: incomplete value number:\n    ../../../../private/tmp/rk-schema-review.2FDWet/inverse.cue:3:4\ny: non-concrete value number in operand to *:\n    ../../../../private/tmp/rk-schema-review.2FDWet/inverse.cue:4:4\n    ../../../../private/tmp/rk-schema-review.2FDWet/inverse.cue:3:4\n"
+  }
+}

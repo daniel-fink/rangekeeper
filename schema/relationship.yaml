@@ -1,0 +1,47 @@
+id: https://daniel-fink.github.io/rangekeeper/schema/relationship
+name: rangekeeper_relationship
+title: Rangekeeper Relationship
+version: 0.2.0
+description: Classified directed connections between Entities.
+prefixes:
+  linkml: https://w3id.org/linkml/
+  rk: https://daniel-fink.github.io/rangekeeper/schema/
+imports:
+  - entity
+default_prefix: rk
+default_range: string
+classes:
+  Relationship:
+    description: >-
+      An identified, directed connection from one Entity to another. Its
+      classification describes the connection; its characteristics describe
+      properties of the connection itself.
+    notes:
+      - Endpoints must resolve to Entities in the same Model scope, including Assemblies.
+    slots:
+      - classification
+    slot_usage:
+      classification:
+        required: true
+    attributes:
+      id:
+        description: Stable identity of the Relationship across Model revisions.
+        range: UUID
+        identifier: true
+        required: true
+      source:
+        description: UUID of the source Entity.
+        range: Entity
+        inlined: false
+        required: true
+        pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+      target:
+        description: UUID of the target Entity.
+        range: Entity
+        inlined: false
+        required: true
+        pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+      characteristics:
+        description: Labels and Values describing this connection.
+        range: Characteristics
+        inlined: true

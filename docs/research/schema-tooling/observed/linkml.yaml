@@ -1,0 +1,110 @@
+id: https://example.org/rk-schema-probe
+name: rk_schema_probe
+prefixes:
+  linkml: https://w3id.org/linkml/
+  probe: https://example.org/rk-schema-probe/
+default_prefix: probe
+imports:
+- linkml:types
+default_range: string
+classes:
+  Declaration:
+    abstract: true
+    attributes:
+      id:
+        identifier: true
+      kind:
+        required: true
+        designates_type: true
+  ValueDeclaration:
+    is_a: Declaration
+    slot_usage:
+      kind:
+        equals_string: ValueDeclaration
+    attributes:
+      unit:
+        required: true
+  EntityDeclaration:
+    is_a: Declaration
+    slot_usage:
+      kind:
+        equals_string: EntityDeclaration
+  Expression:
+    abstract: true
+    attributes:
+      id:
+        identifier: true
+      kind:
+        required: true
+        designates_type: true
+  NumericLiteral:
+    is_a: Expression
+    slot_usage:
+      kind:
+        equals_string: NumericLiteral
+    attributes:
+      value:
+        range: float
+        required: true
+      unit:
+        required: true
+  BooleanLiteral:
+    is_a: Expression
+    slot_usage:
+      kind:
+        equals_string: BooleanLiteral
+    attributes:
+      value:
+        range: boolean
+        required: true
+  Reference:
+    is_a: Expression
+    slot_usage:
+      kind:
+        equals_string: Reference
+    attributes:
+      target:
+        range: ValueDeclaration
+        required: true
+        inlined: false
+  LessEqual:
+    is_a: Expression
+    slot_usage:
+      kind:
+        equals_string: LessEqual
+    attributes:
+      left:
+        range: Expression
+        required: true
+        inlined: false
+      right:
+        range: Expression
+        required: true
+        inlined: false
+  Constraint:
+    attributes:
+      predicate:
+        range: Expression
+        required: true
+        inlined: false
+  Model:
+    tree_root: true
+    attributes:
+      declarations:
+        range: Declaration
+        required: true
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      expressions:
+        range: Expression
+        required: true
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      constraints:
+        range: Constraint
+        required: true
+        multivalued: true
+        inlined: true
+        inlined_as_list: true

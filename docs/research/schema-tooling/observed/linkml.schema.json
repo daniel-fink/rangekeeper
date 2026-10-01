@@ -1,0 +1,324 @@
+{
+    "$defs": {
+        "BooleanLiteral": {
+            "additionalProperties": false,
+            "description": "",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "kind": {
+                    "const": "BooleanLiteral",
+                    "enum": [
+                        "BooleanLiteral"
+                    ],
+                    "type": "string"
+                },
+                "value": {
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "value",
+                "id",
+                "kind"
+            ],
+            "title": "BooleanLiteral",
+            "type": "object"
+        },
+        "Constraint": {
+            "additionalProperties": false,
+            "description": "",
+            "properties": {
+                "predicate": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "predicate"
+            ],
+            "title": "Constraint",
+            "type": "object"
+        },
+        "Declaration": {
+            "additionalProperties": false,
+            "description": "",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "kind": {
+                    "enum": [
+                        "Declaration"
+                    ],
+                    "type": "string"
+                }
+            },
+            "required": [
+                "id",
+                "kind"
+            ],
+            "title": "Declaration",
+            "type": "object"
+        },
+        "EntityDeclaration": {
+            "additionalProperties": false,
+            "description": "",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "kind": {
+                    "const": "EntityDeclaration",
+                    "enum": [
+                        "EntityDeclaration"
+                    ],
+                    "type": "string"
+                }
+            },
+            "required": [
+                "id",
+                "kind"
+            ],
+            "title": "EntityDeclaration",
+            "type": "object"
+        },
+        "Expression": {
+            "additionalProperties": false,
+            "description": "",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "kind": {
+                    "enum": [
+                        "Expression"
+                    ],
+                    "type": "string"
+                }
+            },
+            "required": [
+                "id",
+                "kind"
+            ],
+            "title": "Expression",
+            "type": "object"
+        },
+        "LessEqual": {
+            "additionalProperties": false,
+            "description": "",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "kind": {
+                    "const": "LessEqual",
+                    "enum": [
+                        "LessEqual"
+                    ],
+                    "type": "string"
+                },
+                "left": {
+                    "type": "string"
+                },
+                "right": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "left",
+                "right",
+                "id",
+                "kind"
+            ],
+            "title": "LessEqual",
+            "type": "object"
+        },
+        "Model": {
+            "additionalProperties": false,
+            "description": "",
+            "properties": {
+                "constraints": {
+                    "items": {
+                        "$ref": "#/$defs/Constraint"
+                    },
+                    "type": "array"
+                },
+                "declarations": {
+                    "items": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/$defs/ValueDeclaration"
+                            },
+                            {
+                                "$ref": "#/$defs/EntityDeclaration"
+                            }
+                        ]
+                    },
+                    "type": "array"
+                },
+                "expressions": {
+                    "items": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/$defs/NumericLiteral"
+                            },
+                            {
+                                "$ref": "#/$defs/BooleanLiteral"
+                            },
+                            {
+                                "$ref": "#/$defs/Reference"
+                            },
+                            {
+                                "$ref": "#/$defs/LessEqual"
+                            }
+                        ]
+                    },
+                    "type": "array"
+                }
+            },
+            "required": [
+                "declarations",
+                "expressions",
+                "constraints"
+            ],
+            "title": "Model",
+            "type": "object"
+        },
+        "NumericLiteral": {
+            "additionalProperties": false,
+            "description": "",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "kind": {
+                    "const": "NumericLiteral",
+                    "enum": [
+                        "NumericLiteral"
+                    ],
+                    "type": "string"
+                },
+                "unit": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "value",
+                "unit",
+                "id",
+                "kind"
+            ],
+            "title": "NumericLiteral",
+            "type": "object"
+        },
+        "Reference": {
+            "additionalProperties": false,
+            "description": "",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "kind": {
+                    "const": "Reference",
+                    "enum": [
+                        "Reference"
+                    ],
+                    "type": "string"
+                },
+                "target": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "target",
+                "id",
+                "kind"
+            ],
+            "title": "Reference",
+            "type": "object"
+        },
+        "ValueDeclaration": {
+            "additionalProperties": false,
+            "description": "",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "kind": {
+                    "const": "ValueDeclaration",
+                    "enum": [
+                        "ValueDeclaration"
+                    ],
+                    "type": "string"
+                },
+                "unit": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "unit",
+                "id",
+                "kind"
+            ],
+            "title": "ValueDeclaration",
+            "type": "object"
+        }
+    },
+    "$id": "https://example.org/rk-schema-probe",
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "additionalProperties": false,
+    "description": "",
+    "metamodel_version": "1.11.0",
+    "properties": {
+        "constraints": {
+            "items": {
+                "$ref": "#/$defs/Constraint"
+            },
+            "type": "array"
+        },
+        "declarations": {
+            "items": {
+                "anyOf": [
+                    {
+                        "$ref": "#/$defs/ValueDeclaration"
+                    },
+                    {
+                        "$ref": "#/$defs/EntityDeclaration"
+                    }
+                ]
+            },
+            "type": "array"
+        },
+        "expressions": {
+            "items": {
+                "anyOf": [
+                    {
+                        "$ref": "#/$defs/NumericLiteral"
+                    },
+                    {
+                        "$ref": "#/$defs/BooleanLiteral"
+                    },
+                    {
+                        "$ref": "#/$defs/Reference"
+                    },
+                    {
+                        "$ref": "#/$defs/LessEqual"
+                    }
+                ]
+            },
+            "type": "array"
+        }
+    },
+    "required": [
+        "declarations",
+        "expressions",
+        "constraints"
+    ],
+    "title": "rk_schema_probe",
+    "type": "object",
+    "version": null
+}

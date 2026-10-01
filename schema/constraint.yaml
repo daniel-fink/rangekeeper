@@ -1,0 +1,55 @@
+id: https://daniel-fink.github.io/rangekeeper/schema/constraint
+name: rangekeeper_constraint
+title: Rangekeeper Constraints
+version: 0.1.0
+description: Identified assertions that Boolean Expressions must hold.
+prefixes:
+  linkml: https://w3id.org/linkml/
+  rk: https://daniel-fink.github.io/rangekeeper/schema/
+imports:
+- expression
+default_prefix: rk
+default_range: string
+classes:
+  Constraint:
+    description: An identified requirement that a referenced Boolean Expression be true in the context
+      where the Constraint is imposed.
+    notes:
+    - The predicate resolves to an Expression in the applicable reference scope. It may be a root or
+      nested Expression. Multiple Constraints may reference the same predicate without duplicating it.
+    - The predicate must have a Boolean result domain. Comparisons, logical combinations, and other
+      Boolean-valued expressions are eligible; a numerical expression is not implicitly a truth value.
+    - A literal false predicate is well-formed but cannot be satisfied when imposed. Structural and
+      domain validation do not establish satisfaction, feasibility, or backend support.
+    - Assertion does not assign a calculation direction or fix any referenced Value. Fixed and unknown
+      roles belong to the Specification; loading this record does not evaluate or solve the predicate.
+    - Model and Specification composition determine where a Constraint is imposed. Numerical tolerances and
+      Run diagnostics are specified separately; they do not change the mathematical predicate.
+    attributes:
+      id:
+        description: Stable identity of the Constraint across Model revisions.
+        range: UUID
+        identifier: true
+        required: true
+      code:
+        description: Optional case-sensitive code unique within its Constraint collection; not reference
+          identity. Renaming it preserves UUID references.
+        range: Code
+      name:
+        description: Human-readable display name; not used as identity.
+        range: string
+        pattern: \S
+      description:
+        description: Explanation of the requirement and its purpose.
+        range: string
+      predicate:
+        description: UUID reference to the Expression required to be true. Reference existence and a
+          Boolean result domain require semantic validation beyond record shape.
+        range: Expression
+        required: true
+        inlined: false
+        pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        any_of:
+        - range: Expression
+          inlined: false
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$

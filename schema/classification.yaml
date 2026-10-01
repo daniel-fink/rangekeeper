@@ -1,0 +1,77 @@
+id: https://daniel-fink.github.io/rangekeeper/schema/classification
+name: rangekeeper_classification
+title: Rangekeeper Classification
+version: 0.1.0
+description: A Classification is a named definition node in a taxonomy hierarchy. Classifications are
+  named by codes within a Taxonomy and retain UUID identity.
+prefixes:
+  linkml: https://w3id.org/linkml/
+  rk: https://daniel-fink.github.io/rangekeeper/schema/
+imports:
+- common
+default_prefix: rk
+default_range: string
+classes:
+  Classification:
+    description: A named definition node in a taxonomy hierarchy.
+    notes:
+    - Serialized records must carry their UUID identity explicitly.
+    - Taxonomy membership, parent resolution, a single root, and absence of cycles require graph-level
+      validation beyond this structural schema.
+    attributes:
+      id:
+        description: Stable identity across code changes and Model revisions.
+        range: UUID
+        required: true
+        identifier: true
+      code:
+        description: Case-sensitive code unique within its Taxonomy; descriptive metadata, not reference
+          identity.
+        range: Code
+        required: true
+      name:
+        description: Nonblank human-readable name.
+        range: string
+        required: true
+        pattern: \S
+      definition:
+        description: Optional explanatory text; an empty string is permitted.
+        range: string
+      parent:
+        range: Classification
+        inlined: false
+        pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        description: Parent Classification in the same Taxonomy, referenced by UUID. An absent or null
+          parent denotes a root candidate.
+  Taxonomy:
+    description: A named, single-root hierarchy of Classifications.
+    attributes:
+      id:
+        range: UUID
+        required: true
+        identifier: true
+      code:
+        description: Case-sensitive code unique in the Model's taxonomy catalogue.
+        range: Code
+        required: true
+      name:
+        range: string
+        required: true
+        pattern: \S
+      definition:
+        range: string
+      classifications:
+        description: Identified Classifications belonging to this Taxonomy; codes are unique within the
+          collection.
+        range: Classification
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+        required: true
+        minimum_cardinality: 1
+slots:
+  classification:
+    range: Classification
+    inlined: false
+    pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+    description: Classification describing the object, referenced by its stable UUID.

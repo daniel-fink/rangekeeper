@@ -1,0 +1,67 @@
+id: https://daniel-fink.github.io/rangekeeper/schema/common
+name: rangekeeper_common
+title: Rangekeeper Common Types
+version: 0.2.0
+description: Shared primitive types and revision metadata for Rangekeeper documents.
+prefixes:
+  linkml: https://w3id.org/linkml/
+  rk: https://daniel-fink.github.io/rangekeeper/schema/
+  xsd: http://www.w3.org/2001/XMLSchema#
+imports:
+- linkml:types
+default_prefix: rk
+default_range: string
+classes:
+  Metadata:
+    description: Identity, description, and optional lineage of one immutable document revision.
+    notes:
+    - The UUID identifies the enclosing document revision, not a second independent business object.
+      Model, Specification, and Run use this common envelope. The enclosing document determines its kind and the
+      interpretation of schema_version; Metadata alone does not distinguish these document kinds.
+    - Native revision references target Metadata UUIDs. Their containing fields specify the required
+      document kind, which must be checked when resolving a reference. Referencing a revision does not
+      implicitly import its predecessor or any live external state.
+    - previous references the immediately preceding revision of the same document kind. Missing history
+      is permitted; self-predecessors and cycles in available history are invalid. Revision lineage does
+      not define merge semantics.
+    - A content change requires a new id. schema_version identifies the enclosing document's serialization
+      contract and imported schema bundle, separately from document identity and Function/runtime versions.
+      Implementations must report unsupported versions. Validation alone cannot enforce storage immutability.
+    attributes:
+      id:
+        description: UUID identifying the enclosing immutable document revision.
+        range: UUID
+        identifier: true
+        required: true
+      schema_version:
+        description: Version of the enclosing document's schema contract.
+        range: Code
+        required: true
+      name:
+        description: Optional human-readable name of this revision.
+        range: string
+        pattern: \S
+      description:
+        description: Optional explanation of this revision and its purpose.
+        range: string
+      previous:
+        description: UUID of the preceding revision of the same document kind, referencing its Metadata.
+        range: Metadata
+        inlined: false
+        pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        any_of:
+        - range: Metadata
+          inlined: false
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+types:
+  Code:
+    description: A case-sensitive name unique within its declared collection. Leading and trailing whitespace
+      are forbidden; codes are not silently normalized.
+    typeof: string
+    uri: xsd:string
+    pattern: ^\S(?:[\s\S]*\S)?$(?![\s\S])
+  UUID:
+    description: A universally unique identifier in hyphenated hexadecimal form.
+    typeof: string
+    uri: xsd:string
+    pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$

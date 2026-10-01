@@ -1,0 +1,240 @@
+{
+  "$defs": {
+    "BooleanLiteral": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "const": "BooleanLiteral",
+          "title": "Kind",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "value"
+      ],
+      "title": "BooleanLiteral",
+      "type": "object"
+    },
+    "Constraint": {
+      "additionalProperties": false,
+      "properties": {
+        "predicate": {
+          "title": "Predicate",
+          "type": "string"
+        }
+      },
+      "required": [
+        "predicate"
+      ],
+      "title": "Constraint",
+      "type": "object"
+    },
+    "EntityDeclaration": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "const": "EntityDeclaration",
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind"
+      ],
+      "title": "EntityDeclaration",
+      "type": "object"
+    },
+    "LessEqual": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "const": "LessEqual",
+          "title": "Kind",
+          "type": "string"
+        },
+        "left": {
+          "title": "Left",
+          "type": "string"
+        },
+        "right": {
+          "title": "Right",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "left",
+        "right"
+      ],
+      "title": "LessEqual",
+      "type": "object"
+    },
+    "NumericLiteral": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "const": "NumericLiteral",
+          "title": "Kind",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "value",
+        "unit"
+      ],
+      "title": "NumericLiteral",
+      "type": "object"
+    },
+    "Reference": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "const": "Reference",
+          "title": "Kind",
+          "type": "string"
+        },
+        "target": {
+          "title": "Target",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "target"
+      ],
+      "title": "Reference",
+      "type": "object"
+    },
+    "ValueDeclaration": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "const": "ValueDeclaration",
+          "title": "Kind",
+          "type": "string"
+        },
+        "unit": {
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "unit"
+      ],
+      "title": "ValueDeclaration",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "declarations": {
+      "items": {
+        "discriminator": {
+          "mapping": {
+            "EntityDeclaration": "#/$defs/EntityDeclaration",
+            "ValueDeclaration": "#/$defs/ValueDeclaration"
+          },
+          "propertyName": "kind"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/$defs/ValueDeclaration"
+          },
+          {
+            "$ref": "#/$defs/EntityDeclaration"
+          }
+        ]
+      },
+      "title": "Declarations",
+      "type": "array"
+    },
+    "expressions": {
+      "items": {
+        "discriminator": {
+          "mapping": {
+            "BooleanLiteral": "#/$defs/BooleanLiteral",
+            "LessEqual": "#/$defs/LessEqual",
+            "NumericLiteral": "#/$defs/NumericLiteral",
+            "Reference": "#/$defs/Reference"
+          },
+          "propertyName": "kind"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/$defs/NumericLiteral"
+          },
+          {
+            "$ref": "#/$defs/BooleanLiteral"
+          },
+          {
+            "$ref": "#/$defs/Reference"
+          },
+          {
+            "$ref": "#/$defs/LessEqual"
+          }
+        ]
+      },
+      "title": "Expressions",
+      "type": "array"
+    },
+    "constraints": {
+      "items": {
+        "$ref": "#/$defs/Constraint"
+      },
+      "title": "Constraints",
+      "type": "array"
+    }
+  },
+  "required": [
+    "declarations",
+    "expressions",
+    "constraints"
+  ],
+  "title": "SemanticModel",
+  "type": "object"
+}

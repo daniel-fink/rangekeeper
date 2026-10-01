@@ -1,0 +1,222 @@
+{
+  "definitions": {
+    "taxonomies": [
+      {
+        "id": "fa1d6a4d-d7b5-5c8c-a30e-a65a2c90517c",
+        "name": "Example",
+        "classifications": [
+          {
+            "id": "e80c90bf-6f6e-5009-94e6-431abf72128d",
+            "name": "Object",
+            "code": "object"
+          },
+          {
+            "id": "7b24f4bb-59a8-5b1f-a0f8-7064a9a37e84",
+            "name": "Apartment",
+            "parent": "e80c90bf-6f6e-5009-94e6-431abf72128d",
+            "code": "apartment"
+          },
+          {
+            "id": "e379d877-f81a-527c-a45a-bd4523bbb209",
+            "name": "Adjacent to",
+            "parent": "e80c90bf-6f6e-5009-94e6-431abf72128d",
+            "code": "adjacent"
+          }
+        ],
+        "code": "example"
+      }
+    ],
+    "measures": [
+      {
+        "id": "92f1db7c-ffa7-5a82-8283-a9a989490d28",
+        "name": "Area",
+        "units": "m^2",
+        "code": "area"
+      }
+    ]
+  },
+  "entities": [
+    {
+      "id": "e85e5cbc-c696-5af2-8bb5-5e2038f7e533",
+      "code": "A",
+      "name": "Apartment A",
+      "classification": "7b24f4bb-59a8-5b1f-a0f8-7064a9a37e84",
+      "characteristics": {
+        "labels": [
+          {
+            "id": "7a0b1867-a5c9-5fcb-8cb3-bacf6cfb1cf4",
+            "classifications": [
+              "7b24f4bb-59a8-5b1f-a0f8-7064a9a37e84"
+            ],
+            "key": "use"
+          }
+        ],
+        "values": [
+          {
+            "id": "d6df3bce-3cb6-5aa6-b1ea-dd77c45f4bcc",
+            "kind": "measurement",
+            "measure": "92f1db7c-ffa7-5a82-8283-a9a989490d28",
+            "key": "floor_area"
+          }
+        ]
+      }
+    },
+    {
+      "id": "047cdc45-3b0a-5591-a576-edb2ca88a086",
+      "code": "B",
+      "name": "Apartment B",
+      "classification": "7b24f4bb-59a8-5b1f-a0f8-7064a9a37e84",
+      "characteristics": {
+        "values": [
+          {
+            "id": "9d86011c-1658-5c10-87c1-94d281b74e96",
+            "kind": "measurement",
+            "measure": "92f1db7c-ffa7-5a82-8283-a9a989490d28",
+            "key": "floor_area",
+            "quantity": {
+              "magnitude": 85.5,
+              "units": "m^2"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "id": "2ca16dca-8dd0-5414-9b90-4a84e43a179a",
+      "classification": "e379d877-f81a-527c-a45a-bd4523bbb209",
+      "characteristics": {
+        "labels": [
+          {
+            "id": "bd3d93cc-09f7-59d6-92da-be619c4fa11c",
+            "classifications": [
+              "e379d877-f81a-527c-a45a-bd4523bbb209"
+            ],
+            "key": "connection"
+          }
+        ]
+      },
+      "source": "e85e5cbc-c696-5af2-8bb5-5e2038f7e533",
+      "target": "047cdc45-3b0a-5591-a576-edb2ca88a086"
+    }
+  ],
+  "assemblies": [
+    {
+      "id": "1536e7d7-80f9-5597-8bcb-9cda9db5eb63",
+      "code": "FLOOR",
+      "name": "Floor",
+      "entities": [
+        "e85e5cbc-c696-5af2-8bb5-5e2038f7e533",
+        "047cdc45-3b0a-5591-a576-edb2ca88a086"
+      ],
+      "relationships": [
+        "2ca16dca-8dd0-5414-9b90-4a84e43a179a"
+      ]
+    },
+    {
+      "id": "02fa46d6-c89f-5cad-8fb0-ae506864b4cb",
+      "code": "REVIEW",
+      "name": "Review set",
+      "entities": [
+        "047cdc45-3b0a-5591-a576-edb2ca88a086"
+      ],
+      "relationships": []
+    }
+  ],
+  "provenance": {
+    "sources": [
+      {
+        "id": "3f518a2a-242e-531f-850e-1539e051235a",
+        "name": "structural-evidence.txt",
+        "checksum": "c974fc62779c74d05ee40b7c9ea45228ca1d09608c5bb7a0ad7fff9307cdb370"
+      }
+    ],
+    "claims": [
+      {
+        "id": "017b5c03-bbbe-503e-a5f0-36b6c8fc5163",
+        "kind": "sourced",
+        "sources": [
+          {
+            "source": "3f518a2a-242e-531f-850e-1539e051235a",
+            "address": {
+              "line": "1"
+            }
+          }
+        ],
+        "content": {
+          "measure": "92f1db7c-ffa7-5a82-8283-a9a989490d28",
+          "quantity": {
+            "magnitude": 80.5,
+            "units": "m^2"
+          }
+        }
+      },
+      {
+        "id": "42c83e7b-df05-5ac2-81de-6cdf1c8e95f6",
+        "kind": "asserted",
+        "method": {
+          "code": "area.adjustment",
+          "version": "1"
+        },
+        "content": {
+          "measure": "92f1db7c-ffa7-5a82-8283-a9a989490d28",
+          "quantity": {
+            "magnitude": 5,
+            "units": "m^2"
+          }
+        }
+      },
+      {
+        "id": "542eae18-ab89-52af-a9f7-f484eb73e2c1",
+        "kind": "derived",
+        "sources": [
+          "017b5c03-bbbe-503e-a5f0-36b6c8fc5163",
+          "42c83e7b-df05-5ac2-81de-6cdf1c8e95f6"
+        ],
+        "method": {
+          "code": "area.add",
+          "version": "1"
+        },
+        "content": {
+          "measure": "92f1db7c-ffa7-5a82-8283-a9a989490d28",
+          "quantity": {
+            "magnitude": 85.5,
+            "units": "m^2"
+          }
+        }
+      },
+      {
+        "id": "f72d11ad-73d5-53c4-8d48-3b7c0c52656f",
+        "kind": "sourced",
+        "sources": [
+          {
+            "source": "3f518a2a-242e-531f-850e-1539e051235a",
+            "address": {
+              "line": "2"
+            }
+          }
+        ],
+        "content": {
+          "classifications": [
+            "7b24f4bb-59a8-5b1f-a0f8-7064a9a37e84"
+          ]
+        }
+      }
+    ],
+    "facts": [
+      {
+        "target": "9d86011c-1658-5c10-87c1-94d281b74e96",
+        "claims": [
+          "542eae18-ab89-52af-a9f7-f484eb73e2c1"
+        ]
+      },
+      {
+        "target": "7a0b1867-a5c9-5fcb-8cb3-bacf6cfb1cf4",
+        "claims": [
+          "f72d11ad-73d5-53c4-8d48-3b7c0c52656f"
+        ]
+      }
+    ]
+  }
+}

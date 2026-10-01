@@ -1,0 +1,2 @@
+Apartment B measured area: 80.5 m^2
+Apartment A classification: Apartment

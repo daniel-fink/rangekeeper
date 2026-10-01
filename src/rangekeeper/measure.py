@@ -51,7 +51,7 @@ class Measure:
 
     def __post_init__(self) -> None:
         validate.require_uuid(self.id, "id")
-        validate.require_text(self.code, "Measure.code")
+        validate.require_code(self.code, "Measure.code")
         validate.require_text(self.name, "Measure.name")
         if not isinstance(self.units, pint.Unit):
             raise TypeError("units must be a Pint Unit")

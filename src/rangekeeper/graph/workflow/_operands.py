@@ -102,7 +102,10 @@ def graph_operand(op, row, table, graph, by_key, outputs) -> OperandResult:
             if op["measure"] in x.measurements
             and (
                 expected is None
-                or x.measurements[op["measure"]].quantity.magnitude == expected
+                or (
+                    x.measurements[op["measure"]].quantity is not None
+                    and x.measurements[op["measure"]].quantity.magnitude == expected
+                )
             )
         ]
     if "codes" in op:
@@ -127,7 +130,7 @@ def graph_operand(op, row, table, graph, by_key, outputs) -> OperandResult:
         targets = []
         for e in entities:
             m = e.measurements.get(op["measure"])
-            if m is None:
+            if m is None or m.quantity is None:
                 missing.append(e.code)
             else:
                 values.append(
@@ -162,7 +165,7 @@ def operand(op, row, table, graph, by_key, outputs) -> OperandResult:
         item = obj.measurements.get(op["measure"]) if obj is not None else None
         value = (
             item.quantity.to(op.get("units", str(item.quantity.units))).magnitude
-            if item
+            if item is not None and item.quantity is not None
             else None
         )
         return OperandResult(

@@ -196,7 +196,7 @@ def test_csv_rejects_unsupported_scalar_boundaries(tmp_path, value):
 def visualization_fixture():
     entity_root = rk.graph.Classification(code="entity", name="Entity")
     node = rk.graph.Classification(
-        code="entity.node",
+        code="node",
         name="Node",
         parent=entity_root,
     )
@@ -209,7 +209,7 @@ def visualization_fixture():
         code="relationship", name="Relationship"
     )
     contains = rk.graph.Classification(
-        code="relationship.contains",
+        code="contains",
         name="Contains",
         parent=relationship_root,
     )
@@ -256,7 +256,7 @@ def test_graph_html_visualization_writes_the_selected_view(tmp_path):
     assert str(view.relationships[0].id) not in contents
     assert "Root" in contents
     assert "Child" in contents
-    assert "entity:entity.node" in contents
+    assert "entity:node" in contents
 
 
 @pytest.mark.parametrize("options", ({"physics": float("nan")}, {"x": object()}))
@@ -296,15 +296,15 @@ def test_view_table_default_schema_uses_qualified_domain_fields():
     assert table.column("name") == ("Root", "Child")
     assert table.column("entity_kind") == ("entity", "entity")
     assert table.column("classification_code") == (
-        "entity.node",
-        "entity.node",
+        "node",
+        "node",
     )
 
 
 def test_view_table_projects_qualified_labels_features_and_missing_values():
     root = rk.graph.Classification(code="entity", name="Entity")
     apartment = rk.graph.Classification(
-        code="space.apartment",
+        code="apartment",
         name="Apartment",
         parent=root,
     )
@@ -336,7 +336,7 @@ def test_view_table_projects_qualified_labels_features_and_missing_values():
         features=("status",),
     )
 
-    assert table.rows[0].values["label.use"] == (("entity", "space.apartment"),)
+    assert table.rows[0].values["label.use"] == (("entity", "apartment"),)
     assert table.rows[0].values["feature.status"] == "active"
     assert table.rows[1].values["label.use"] == ()
     assert table.rows[1].values["feature.status"] is None
@@ -377,7 +377,7 @@ def test_view_table_converts_measure_units_and_rejects_incompatible_units():
 def test_arborescence_table_preserves_relationship_insertion_order():
     relationship = rk.graph.Classification(code="relationship", name="Relationship")
     contains = rk.graph.Classification(
-        code="relationship.contains",
+        code="contains",
         name="Contains",
         parent=relationship,
     )

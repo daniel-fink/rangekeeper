@@ -1,0 +1,274 @@
+id: https://daniel-fink.github.io/rangekeeper/schema/function
+name: rangekeeper_function
+title: Rangekeeper Functions
+version: 0.5.0
+description: Versioned function signatures and the domains of their arguments and results.
+prefixes:
+  linkml: https://w3id.org/linkml/
+  rk: https://daniel-fink.github.io/rangekeeper/schema/
+imports:
+- measure
+default_prefix: rk
+default_range: string
+classes:
+  Domain:
+    description: The permitted content of an argument or result, including its kind, compatible units,
+      measurement meaning, and collection elements where applicable.
+    notes:
+    - A Domain describes admissible content; it does not hold an observed or calculated value, or assign
+      a fixed or unknown role in a Specification.
+    - Domain kinds name admissible categories, not definitions of serialized Flow, Span, Stream, or Account
+      content. Their Value variants require separate schemas.
+    - A quantity is numerical content with units; a number requires dimensionless numerical content.
+      A measurement additionally carries measurement meaning. Quantities and Measurements with compatible
+      dimensionless units may satisfy a number argument. Boolean content is never implicitly numerical.
+    - A quantity argument accepts numerical content without requiring a Measure. Optional units constrain
+      unit compatibility. A measurement argument requires measurement meaning, which a bare Quantity
+      does not supply. Arithmetic result units do not by themselves identify a Measure.
+    - Collection element domains are recursive. A collection without a collection_kind accepts sets, bags,
+      or sequences; an explicit kind restricts the shape.
+    attributes:
+      kind:
+        description: The category of content permitted by this Domain.
+        range: DomainKind
+        required: true
+      units:
+        description: Optional compatible units required for Quantity content. Omission leaves units
+          unconstrained by the signature; a concrete Quantity still requires explicit units.
+        range: string
+        pattern: \S
+      measure:
+        range: Measure
+        description: Optional exact measurement meaning required for a measurement or Flow.
+        inlined: false
+        pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        any_of:
+        - range: Measure
+          inlined: false
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      item_domain:
+        range: Domain
+        description: Domain of each collection element.
+        inlined: true
+        all_of:
+        - range: Domain
+          inlined: true
+      collection_kind:
+        range: CollectionKind
+        description: Optional collection shape required by this signature.
+    rules:
+    - preconditions:
+        slot_conditions:
+          kind:
+            equals_string: collection
+      postconditions:
+        slot_conditions:
+          item_domain:
+            required: true
+    - preconditions:
+        slot_conditions:
+          kind:
+            equals_string_in:
+            - number
+            - quantity
+            - measurement
+            - boolean
+            - string
+            - date
+            - span
+            - flow
+            - stream
+            - account
+            - entity
+      postconditions:
+        all_of:
+        - slot_conditions:
+            item_domain:
+              value_presence: ABSENT
+        - slot_conditions:
+            collection_kind:
+              value_presence: ABSENT
+    - preconditions:
+        slot_conditions:
+          kind:
+            equals_string_in:
+            - number
+            - quantity
+            - boolean
+            - string
+            - date
+            - span
+            - stream
+            - account
+            - entity
+            - collection
+      postconditions:
+        slot_conditions:
+          measure:
+            value_presence: ABSENT
+    - preconditions:
+        slot_conditions:
+          kind:
+            equals_string_in:
+            - number
+            - measurement
+            - boolean
+            - string
+            - date
+            - span
+            - flow
+            - stream
+            - account
+            - entity
+            - collection
+      postconditions:
+        slot_conditions:
+          units:
+            value_presence: ABSENT
+  Parameter:
+    description: A named argument in a Function signature. List order determines positional argument order.
+    notes:
+    - Names are unique within the Function. Positional parameters precede named-only parameters; required
+      positional parameters precede optional positional parameters.
+    - Omitting an optional argument is permitted only as described by the Function semantics. Omission
+      never means an unresolved argument or an implicit zero. Collections use one collection argument
+      rather than an implicit variable number of scalar arguments.
+    attributes:
+      name:
+        range: Code
+        required: true
+      domain:
+        description: Content permitted for this argument.
+        range: Domain
+        required: true
+        inlined: true
+        all_of:
+        - range: Domain
+          inlined: true
+      kind:
+        description: How a call may supply this parameter.
+        range: ParameterKind
+        required: true
+      required:
+        range: boolean
+        description: Whether a call must supply this argument.
+        required: true
+        any_of:
+        - range: boolean
+  Function:
+    description: An identified, versioned contract for a pure mathematical or domain function, independent
+      of a particular runtime implementation.
+    notes:
+    - All arguments are expressions. Applying a Function constructs a symbolic call; it does not make
+      arguments fixed or substitute recorded results.
+    - Functions do not mutate Models or depend on undeclared runtime state. Implementations, evaluator
+      versions, and solver capabilities are selected and recorded separately.
+    - Code is a human-facing name, not reference identity. A Model revision pins the exact Function record
+      and its version.
+    - Functions taking collections must specify empty-input behaviour. Unresolved members remain symbolic;
+      implementations may not silently drop them or replace them with zero.
+    - Codes are unique within the Model Function collection. If any collection argument is empty, empty_collection
+      applies; zero requires a numerical result with established units.
+    attributes:
+      id:
+        range: UUID
+        required: true
+        identifier: true
+      code:
+        range: Code
+        required: true
+      name:
+        range: string
+        description: Human-readable function name.
+        required: true
+        any_of:
+        - range: string
+        pattern: \S
+      version:
+        range: Code
+        required: true
+      parameters:
+        range: Parameter
+        description: Ordered signature. Omission denotes no parameters.
+        inlined: true
+        any_of:
+        - range: Parameter
+          inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
+      result:
+        range: Domain
+        description: Domain of the result.
+        required: true
+        inlined: true
+        all_of:
+        - range: Domain
+          inlined: true
+      semantics:
+        range: string
+        description: Mathematical meaning, argument conventions, domain restrictions, and exceptional
+          cases.
+        required: true
+        any_of:
+        - range: string
+        pattern: \S
+      unit_rule:
+        range: string
+        description: How result units follow from the arguments, or why units do not apply. This rule
+          requires semantic implementation; prose is not an executable unit checker.
+        required: true
+        any_of:
+        - range: string
+        pattern: \S
+      empty_collection:
+        range: EmptyHandling
+        description: Required for functions with collection arguments. Zero is permitted only when the
+          result domain and units can be established without reading a member.
+enums:
+  DomainKind:
+    permissible_values:
+      number:
+        description: Dimensionless numerical content.
+      quantity:
+        description: Numerical content with units, without a required Measure.
+      measurement:
+        description: Numerical content with a Measure.
+      boolean:
+        description: Boolean content.
+      string:
+        description: Text content.
+      date:
+        description: A calendar date.
+      span:
+        description: A time interval with defined endpoint members.
+      flow:
+        description: A time-indexed flow.
+      stream:
+        description: A collection of flows with declared combination semantics.
+      account:
+        description: A financial account with declared members.
+      entity:
+        description: An Entity identity.
+      collection:
+        description: A collection of elements within the specified item domain.
+  CollectionKind:
+    permissible_values:
+      set:
+        description: Unordered distinct elements.
+      bag:
+        description: Unordered elements retaining multiplicity.
+      sequence:
+        description: Ordered elements retaining multiplicity.
+  ParameterKind:
+    permissible_values:
+      positional_or_named:
+        description: Supply by position or by name, but not both.
+      named_only:
+        description: Supply by name only.
+  EmptyHandling:
+    permissible_values:
+      error:
+        description: Reject an empty collection.
+      zero:
+        description: Return zero in the declared or otherwise established result units.

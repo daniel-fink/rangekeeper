@@ -24,7 +24,8 @@ class Entity:
 
     def __post_init__(self) -> None:
         validate.require_uuid(self.id, "Entity.id")
-        validate.optional_text(self.code, "Entity.code", empty=False)
+        if self.code is not None:
+            validate.require_code(self.code, "Entity.code")
         validate.optional_text(self.name, "Entity.name", empty=False)
         if self.classification is not None and not isinstance(
             self.classification, Classification

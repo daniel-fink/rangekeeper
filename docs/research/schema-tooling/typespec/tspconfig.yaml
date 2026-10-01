@@ -1,0 +1,7 @@
+emit:
+  - "@typespec/json-schema"
+options:
+  "@typespec/json-schema":
+    file-type: json
+    seal-object-schemas: true
+    bundleId: "probe.schema.json"

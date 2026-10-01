@@ -1,0 +1,111 @@
+id: https://daniel-fink.github.io/rangekeeper/schema/formulation
+name: rangekeeper_formulations
+title: Rangekeeper Mathematical Formulations
+version: 0.3.0
+description: Mathematical containers owning local Values, Expressions, Constraints, and child Formulations,
+  with named references to shared Values.
+prefixes:
+  linkml: https://w3id.org/linkml/
+  rk: https://daniel-fink.github.io/rangekeeper/schema/
+imports:
+- constraint
+default_prefix: rk
+default_range: string
+classes:
+  Binding:
+    description: A name within a Formulation that refers to an existing Value by UUID.
+    notes:
+    - A binding shares the target symbol. It neither copies content nor asserts equality between distinct
+      Values, fixes an amount, or assigns a calculation direction.
+    - Names are unique within the Formulation's bindings collection. Multiple distinct names may refer to the
+      same Value. Names are not an alternative Expression reference syntax.
+    - Bindings have no independent identity. Expressions reference Value UUIDs directly. Targets may
+      belong to an Entity, Relationship, or Formulation in the applicable Model or composed Specification scope.
+    attributes:
+      name:
+        description: Case-sensitive local interface name; not reference identity.
+        range: Code
+        required: true
+      value:
+        description: UUID of the shared Value. Its declaration supplies its kind, Measure, and content.
+        range: Value
+        required: true
+        inlined: false
+        pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        any_of:
+        - range: Value
+          inlined: false
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+  Formulation:
+    description: An identified mathematical container with explicit local declarations, expressions,
+      and asserted constraints. Formulations may contain child Formulations and bind names to shared Values.
+    notes:
+    - Every identified record has one canonical occurrence in its owning document. A child Formulation has one
+      owner; the containment hierarchy is finite and acyclic. Shared mathematics is referenced by UUID,
+      not copied into each participating Entity or Formulation.
+    - All UUID references resolve in the applicable Model or composed Specification scope, including references across sibling
+      Formulations. Containment defines ownership and local name scopes, not private visibility, an execution
+      order, or a requirement that the mathematical dependencies form a DAG.
+    - Bindings are optional interface names, not an exhaustive dependency list. Expressions may refer
+      directly to any eligible Value in scope. Renaming a binding or Value key leaves UUID references intact.
+    - Value keys are unique within values. Binding names are unique within bindings; these are separate
+      collections. Constraint codes are unique within constraints. Child Formulation codes are unique within
+      formulations, and root Formulation codes are unique within System.formulations or Specification.formulations,
+      when supplied. Those root collections have separate code scopes; UUIDs remain unique across the composed scope.
+    - Including a Formulation's mathematics imposes its Constraints and those of its descendants together.
+      Expressions alone do not assert themselves. Loading a Formulation does not execute or solve anything.
+      Activation, alternatives, objectives, and solver settings are not fields of this draft.
+    - Fixed and unknown roles belong to a Specification. Local Value content is recorded content, not an implicit
+      fixed binding. A shared UUID denotes one mathematical symbol even when several Formulations use it.
+    - An empty Formulation or a Formulation containing only children is permitted. Collections are unordered; only
+      the order specified within Expressions or Function calls carries mathematical meaning.
+    - Reusable Formulation templates and instantiation are deferred. This contract contains explicit
+      mathematics and does not guarantee numerical evaluation or inverse solver support.
+    attributes:
+      id:
+        description: Stable identity of this Formulation across Model revisions.
+        range: UUID
+        required: true
+        identifier: true
+      code:
+        description: Optional case-sensitive code unique among sibling Formulations; not reference identity.
+        range: Code
+      name:
+        description: Human-readable display name.
+        range: string
+        pattern: \S
+      description:
+        description: Explanation of the mathematical purpose of this Formulation.
+        range: string
+      bindings:
+        description: Local interface names referring to existing Values, including local Values.
+        range: Binding
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      values:
+        description: Canonical declarations owned by this Formulation. Values already owned elsewhere are
+          referenced, not repeated here.
+        range: Value
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      expressions:
+        description: Root Expressions owned by this Formulation; their nested operands remain owned within
+          their expression trees. Constraints may reference any eligible Expression in the applicable scope.
+        range: Expression
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      constraints:
+        description: Canonical assertions owned by this Formulation, referencing Boolean Expressions by UUID.
+        range: Constraint
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      formulations:
+        description: Canonical child Formulations owned by this Formulation. Repeated or cyclic containment is invalid.
+        range: Formulation
+        multivalued: true
+        inlined: true
+        inlined_as_list: true

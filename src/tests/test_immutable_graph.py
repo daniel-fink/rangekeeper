@@ -20,12 +20,12 @@ from rangekeeper.measure import AggregationRule, Index, Measure, QuantityKind
 def model():
     space = rk.graph.Classification(code="space", name="Space")
     apartment = rk.graph.Classification(
-        code="space.apartment",
+        code="apartment",
         name="Apartment",
         parent=space,
     )
     parking = rk.graph.Classification(
-        code="space.parking",
+        code="parking",
         name="Parking space",
         parent=space,
     )
@@ -36,12 +36,12 @@ def model():
     )
     relationship = rk.graph.Classification(code="relationship", name="Relationship")
     contains = rk.graph.Classification(
-        code="relationship.contains",
+        code="contains",
         name="Contains",
         parent=relationship,
     )
     allocated_to = rk.graph.Classification(
-        code="relationship.allocated_to",
+        code="allocated_to",
         name="Allocated to",
         parent=relationship,
     )
@@ -120,9 +120,9 @@ def test_entity_and_assembly_reject_blank_optional_text(field, value):
 
 @pytest.mark.parametrize("field", ("code", "name"))
 def test_entity_and_assembly_reject_non_text_optional_text(field):
-    with pytest.raises(TypeError, match="string or None"):
+    with pytest.raises(TypeError, match="must be a string"):
         rk.graph.Entity(**{field: 42})
-    with pytest.raises(TypeError, match="string or None"):
+    with pytest.raises(TypeError, match="must be a string"):
         rk.graph.Assembly(**{field: 42})
 
 
@@ -603,7 +603,7 @@ def test_semantic_definition_and_entity_lookup(model):
         ("relationship", definitions.taxonomies["relationship"]),
     )
     assert len(definitions.taxonomies) == 2
-    assert entity_taxonomy.classifications["space.apartment"] is model["apartment"]
+    assert entity_taxonomy.classifications["apartment"] is model["apartment"]
     assert definitions.measures["area.nsa.internal"] is model["internal_area"]
     assert definitions._definition_by_id[entity_taxonomy.id] is entity_taxonomy
     assert definitions._definition_by_id[model["apartment"].id] is model["apartment"]
@@ -629,6 +629,9 @@ def test_semantic_definition_and_entity_lookup(model):
     first = apartment(model, code="27.05")
     repeated = apartment(model, code="27.05")
     named = apartment(model, code="27.06")
+    with pytest.raises(ValueError, match="entity codes must be unique"):
+        rk.graph.Graph(definitions=definitions, entities=(first, repeated))
+    repeated = replace(repeated, code="27.05B")
     graph = rk.graph.Graph(
         definitions=definitions,
         entities=(first, repeated, named),
@@ -641,7 +644,7 @@ def test_semantic_definition_and_entity_lookup(model):
         "_entity_name_index",
     ):
         assert not hasattr(graph, name)
-    assert graph.find_entities(code="27.05") == (first, repeated)
+    assert graph.find_entities(code="27.05") == (first,)
     assert graph.find_entities(name="Apartment 27.05") == (first, repeated)
     expected_apartments = (
         first,
@@ -657,16 +660,15 @@ def test_semantic_definition_and_entity_lookup(model):
     with pytest.raises(rk.graph.UnknownDefinitionError, match="Definitions"):
         graph.find_entities(classification=uuid4())
     with pytest.raises(TypeError, match="UUID, Classification, or None"):
-        graph.find_entities(classification="space.apartment")
-    with pytest.raises(rk.graph.AmbiguousLookupError):
-        graph.entity("27.05")
+        graph.find_entities(classification="apartment")
+    assert graph.entity("27.05") is first
     assert graph.entity("27.06") is named
 
 
 def test_classification_codes_are_scoped_to_taxonomy(model):
     root = rk.graph.Classification(code="other", name="Other")
     duplicate = rk.graph.Classification(
-        code="space.apartment",
+        code="apartment",
         name="Duplicate apartment",
         parent=root,
     )
@@ -678,11 +680,11 @@ def test_classification_codes_are_scoped_to_taxonomy(model):
         measures=model["definitions"].measures,
     )
     assert (
-        definitions.taxonomies["entity"].classifications["space.apartment"]
+        definitions.taxonomies["entity"].classifications["apartment"]
         is model["apartment"]
     )
     assert (
-        definitions.taxonomies["other"].classifications["space.apartment"] is duplicate
+        definitions.taxonomies["other"].classifications["apartment"] is duplicate
     )
 
 
@@ -697,10 +699,10 @@ def test_definitions_return_the_taxonomy_owning_a_classification(model):
     with pytest.raises(rk.graph.UnknownDefinitionError, match="Definitions"):
         definitions.taxonomy_for(uuid4())
     with pytest.raises(TypeError, match="UUID, Classification, or None"):
-        definitions.taxonomy_for("space.apartment")
+        definitions.taxonomy_for("apartment")
 
 
-def test_definition_lookup_facades_are_absent(model):
+def test_redundant_definition_lookup_facades_are_absent(model):
     definitions = model["definitions"]
     for name in (
         "taxonomy",
@@ -720,6 +722,7 @@ def test_definition_lookup_facades_are_absent(model):
     ):
         assert not hasattr(definitions, name)
     for name in (
+        "classification",
         "classification",
         "classification_by_id",
         "canonical_classification",
@@ -1703,7 +1706,7 @@ def test_view_infers_subgraph_and_aggregates_measurements(model):
     ) == (root,)
     with pytest.raises(TypeError, match="UUID, Classification, or None"):
         entity_view.successors(
-            root, relationship_classification="relationship.contains"
+            root, relationship_classification="contains"
         )
     with pytest.raises(ValueError, match="endpoint outside the View"):
         graph.view(entities=(root,), relationships=(edge,))
