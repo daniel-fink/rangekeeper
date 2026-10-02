@@ -1,0 +1,8 @@
+{
+  "validate_function_signature": true,
+  "validate_domain_references": true,
+  "get_numerical_units": true,
+  "matches_domain": true,
+  "infer_query_domain": true,
+  "infer_expression_domain": true
+}

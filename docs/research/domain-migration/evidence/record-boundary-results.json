@@ -1,0 +1,41 @@
+{
+  "checks": {
+    "native_record_is_mutable": true,
+    "input_is_detached": true,
+    "export_is_detached": true,
+    "nested_mutations_rejected": true,
+    "typed_reference": true,
+    "no_dynamic_getattr": true,
+    "explicit_constructor": true,
+    "type_hints_resolve": true,
+    "nested_authoring": true,
+    "omission_null_zero_distinct": true,
+    "opaque_values_preserved": true,
+    "opaque_content_frozen": true,
+    "fixture_roundtrips": true,
+    "all_fixture_properties_accessible": true
+  },
+  "generated_classes": 50,
+  "fixtures": [
+    "model.yaml",
+    "model-forward-output.yaml",
+    "model-inverse-output.yaml",
+    "specification-common.yaml",
+    "specification-forward.yaml",
+    "specification-inverse.yaml",
+    "specification-composed-forward.yaml",
+    "specification-composed-inverse.yaml",
+    "specification-batch.yaml",
+    "run-forward.yaml",
+    "run-inverse.yaml",
+    "run-batch.yaml",
+    "run-failed.yaml",
+    "run-skipped.yaml"
+  ],
+  "limitations": [
+    "Prototype validates document structure externally; does not implement semantic entrypoints, store, canonical indexing, or public behavior mixins.",
+    "Constructor annotations demonstrate explicit typing; static type checker not run.",
+    "Readonly projection generation is a required maintained generator, not stock LinkML gen-python output.",
+    "Required-field and union annotations need production generation rules; prototype constructors permit Unset for all fields."
+  ]
+}

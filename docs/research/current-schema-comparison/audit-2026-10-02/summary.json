@@ -1,0 +1,73 @@
+{
+  "date": "2026-10-02",
+  "commit": "c91a76c941bac0a26fa18ad5a3105ab4641f22f0",
+  "source_fingerprints_matched": 55,
+  "all_seven_suites_passed": true,
+  "schema_count": 20,
+  "case_count": 713,
+  "bounded_reproduced_case_for_case": true,
+  "bounded_outcomes": {
+    "match": 476,
+    "difference": 21,
+    "timeout": 3,
+    "unmeasured_after_schema_timeout": 208,
+    "non_json_numeric_input": 5
+  },
+  "full_outcomes": {
+    "match": 572,
+    "difference": 28,
+    "timeout": 106,
+    "non_json_numeric_input": 7
+  },
+  "previously_unmeasured": {
+    "timeout": 103,
+    "match": 96,
+    "non_json_numeric_input": 2,
+    "difference": 7
+  },
+  "full_workers": 2,
+  "full_timeout_seconds": 5,
+  "matching_acceptances": 309,
+  "matching_nonacceptances": 263,
+  "matching_nonacceptances_with_cycle_diagnostics": 27,
+  "invalid_accepted": 16,
+  "valid_not_accepted": 12,
+  "all_28_differences_reproduced_sequentially": true,
+  "longer_timeout_confirmations": [
+    {
+      "identity": "11252be1322e6a0b",
+      "schema": "3f8a921b0f2b2d57",
+      "baseline": true,
+      "original_outcome": "timeout",
+      "timeout_seconds": 30,
+      "returncode": null,
+      "seconds": 30.3752832080354
+    },
+    {
+      "identity": "123218a340710815",
+      "schema": "d9fdf363941a42d5",
+      "baseline": true,
+      "original_outcome": "timeout",
+      "timeout_seconds": 30,
+      "returncode": null,
+      "seconds": 30.311268124962226
+    },
+    {
+      "identity": "62a66272983ffacf",
+      "schema": "ec2cd926b22be0db",
+      "baseline": true,
+      "original_outcome": "timeout",
+      "timeout_seconds": 30,
+      "returncode": 0,
+      "seconds": 11.250893833988812
+    }
+  ],
+  "python": "3.10.19",
+  "prior_python": "3.10.21",
+  "linkml": "1.11.1",
+  "linkml_runtime": "1.11.1",
+  "jsonschema": "4.26.0",
+  "cue": "0.17.1",
+  "scope": "JSON Schema import only; not native CUE evaluation",
+  "evidence_archive_sha256": "2e4671d7d07c22eb58c49028b5e26dbc3c9fb025125c42ad0ca0b29be1294bfa"
+}

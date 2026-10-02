@@ -1,5 +1,12 @@
 # Rangekeeper Graph Refactor Implementation Plan
 
+**Historical implementation plan:** the current acausal-modelling plan is
+[LIBRARY_ARCHITECTURE.md](LIBRARY_ARCHITECTURE.md). The graph domain core described
+here is being assessed for substantial replacement by schema-backed Model records;
+graph algorithms and numerical behavior are candidates for reuse. The dated
+phases, layouts, handoff instructions, and test counts below document the earlier
+graph work and do not define the current implementation sequence.
+
 ## 2026-09 graph cohesion amendment
 
 This amendment records the implemented Graph cohesion refactor and supersedes
@@ -138,8 +145,9 @@ semantics, and atomic source-Graph preservation on both success and failure.
 
 ## Execution handoff
 
-This document is the authoritative implementation brief for a deliberate
-breaking refactor of Rangekeeper's entity/relationship graph system. Rhino 8,
+This was the implementation brief for the earlier deliberate breaking refactor
+of Rangekeeper's entity/relationship graph system. Its remaining phases are
+historical; the current sequence is in [the library plan](LIBRARY_ARCHITECTURE.md). Rhino 8,
 Grasshopper, the official Speckle v3 connector, and end-to-end publication are
 tested on a dedicated **Windows host**. See
 [`grasshopper/WINDOWS_DEVELOPMENT.md`](../grasshopper/WINDOWS_DEVELOPMENT.md) for
@@ -225,7 +233,7 @@ src/.env
 The file contains `SPECKLE_TOKEN` and is ignored by `src/.gitignore`. Never print,
 copy into a fixture, commit, or include the token in command output.
 
-## Current status
+## Historical status at the recorded checkpoint
 
 Status at `8502817` on 2026-08-22:
 

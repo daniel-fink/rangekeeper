@@ -30,12 +30,20 @@ Each project has its own readme to assist setup and dependency resolution.
 
 ## Design notes
 
+- [Implemented domain core and revision storage](docs/RUN_AND_STORAGE.md):
+  public Model/Specification/Run roots, strict codecs and immutable stores; scalar
+  execution is the next checkpoint. These branch changes have not been released.
+
+- [Documentation index and current work plan](docs/README.md):
+  accepted decisions, current state, next steps, and historical-document scope.
+- [Library architecture and migration plan](docs/LIBRARY_ARCHITECTURE.md):
+  agreed schema, domain-model, mathematical-library, compiler, and execution
+  boundaries; target repository layout and staged route to the scalar checkpoint.
 - [Graph LinkML schema drafts](schema/README.md):
   Definitions, Entities, Relationships, Assemblies, Characteristics, and Provenance, with a
   shared structural example and conformance checks.
 - [Schema tooling evaluation](docs/SCHEMA_TOOLING_EVALUATION.md):
-  LinkML alternatives, executed comparison probes, and a scoped recommendation
-  for the next object-model specification.
+  historical comparisons and executed probes; the current decision retains LinkML.
 - [Model, Specification, and Run object model](docs/MODEL_SPECIFICATION_RUN.md):
   current object-model decisions, proposed child schemas, requirements, and staged
   acceptance examples.

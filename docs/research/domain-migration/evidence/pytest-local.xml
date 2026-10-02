@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="3" failures="0" skipped="0" tests="3" time="14.166" timestamp="2026-10-02T11:32:10.688379+10:00" hostname="Daniels-Mac-Studio.local"><testcase classname="" name="tests.test_workflow" time="0.000"><error message="collection failure">ImportError while importing test module '/Volumes/Data/Projects/Rangekeeper/src/tests/test_workflow.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Users/daniel/.local/share/uv/python/cpython-3.10.19-macos-aarch64-none/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_workflow.py:4: in &lt;module&gt;
+    import yaml
+E   ModuleNotFoundError: No module named 'yaml'</error></testcase><testcase classname="" name="tests.test_workflow_formats" time="0.000"><error message="collection failure">ImportError while importing test module '/Volumes/Data/Projects/Rangekeeper/src/tests/test_workflow_formats.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Users/daniel/.local/share/uv/python/cpython-3.10.19-macos-aarch64-none/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_workflow_formats.py:12: in &lt;module&gt;
+    from .test_workflow import example
+tests/test_workflow.py:4: in &lt;module&gt;
+    import yaml
+E   ModuleNotFoundError: No module named 'yaml'</error></testcase><testcase classname="" name="tests.test_workflow_shared" time="0.000"><error message="collection failure">ImportError while importing test module '/Volumes/Data/Projects/Rangekeeper/src/tests/test_workflow_shared.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Users/daniel/.local/share/uv/python/cpython-3.10.19-macos-aarch64-none/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_workflow_shared.py:14: in &lt;module&gt;
+    from .test_workflow import example, rewrite
+tests/test_workflow.py:4: in &lt;module&gt;
+    import yaml
+E   ModuleNotFoundError: No module named 'yaml'</error></testcase></testsuite></testsuites>

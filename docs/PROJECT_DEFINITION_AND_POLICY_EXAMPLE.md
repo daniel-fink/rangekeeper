@@ -3,8 +3,9 @@
 Status: agreed design direction and representative example, recorded 2026-09-22;
 equation-oriented modelling and progressive examples agreed 2026-09-23; aligned
 with the immutable Model/Specification/Run contract on 2026-09-24.
-The example is not implemented or numerically validated. Type names, schemas,
-serialization formats, and runtime interfaces remain to be specified. The financial
+The example is not implemented or numerically validated. Scalar Model,
+Specification, and Run record contracts are drafted in LinkML; richer policy and
+temporal schemas and their runtime interfaces remain to be specified. The financial
 figures below are illustrative inputs, not calibrated estimates or predicted results.
 
 The current object-model reference is
@@ -34,12 +35,13 @@ different market scenarios; and compare the resulting physical projects and
 financial outcomes. Users should eventually be able to search for policies suited
 to their anticipated markets, site, permitted uses, design constraints, and objectives.
 
-The agreed sequence is:
+The current [library plan](LIBRARY_ARCHITECTURE.md) retains LinkML and builds the
+canonical core directly in the library. The agreed sequence is:
 
-1. Specify the core definition, Specification, reference, value, execution, and provenance
-   contracts using small equation models; then choose appropriate schema tooling.
-2. Formulate and implement progressively more complex tests against those contracts,
-   culminating in the two-pad policy example.
+1. Use the completed [domain migration map](DOMAIN_MIGRATION_MAP.md), then implement the minimal
+   schema-backed records, validation, and immutable storage in the library.
+2. Execute the scalar forward/inverse model with Pyomo/HiGHS, then formulate and
+   implement progressively richer tests, culminating in the two-pad policy example.
 3. Validate the policy example with readable scenarios before evaluating and
    optimizing policies across larger scenario ensembles.
 4. Subsequently connect the approach to EstateMaster reconstruction and Twenty
@@ -77,8 +79,9 @@ Model₀ + Specification → Run → {Model₁, …, Modelₙ}
 ```
 
 The [core specification](MODEL_SPECIFICATION_RUN.md) defines the root
-responsibilities and proposes child schemas. Names, fields, and their correspondence
-to existing RK classes remain to be settled.
+responsibilities and drafted scalar child schemas. Richer policy/temporal
+extensions and the migration from existing RK classes still require implementation
+design; the current scalar root names and field contracts are already defined.
 
 The project graph, equation structure, and execution plan have different semantics.
 The equation structure relates quantities to equations and need not be a DAG. The
@@ -147,7 +150,8 @@ acceptance examples now live in
 [Model, Specification, and Run: object model and requirements](MODEL_SPECIFICATION_RUN.md).
 They distinguish value/entity/component declarations, expressions, domain
 relationships, mathematical constraints, bindings, resolutions, and Specification-owned
-policies. These are semantic proposals, not approved class names or an implemented API.
+policies. Scalar record names and shapes are drafted in LinkML; richer extensions
+remain proposals, and the schema-backed runtime API is not yet implemented.
 
 Begin with the scalar forward/inverse example there while reviewing a small
 entity/component/overlapping-Assembly example on paper. Richer RK types follow
@@ -168,7 +172,8 @@ as subsequent stages require them.
 At each stage, first specify the Model, Specification variants, expected outcomes, and
 failure cases; then implement and validate that stage. The full two-pad example
 below remains the destination and a check against designing a scalar-only dead end.
-Schema tools, serialization syntax, and solver backends remain open choices.
+LinkML and Pyomo with HiGHS are selected for the scalar stage. Richer-stage
+execution capabilities remain to be established as their examples are specified.
 
 ## Representative example: two-pad carpark redevelopment
 

@@ -1,0 +1,23 @@
+name: Schema records
+on: [push, pull_request]
+jobs:
+  conformance:
+    runs-on: ubuntu-latest
+    env:
+      PYSTOW_HOME: ${{ runner.temp }}/pystow
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - run: python -m pip install -r tools/schema/requirements.txt mypy==1.18.2 pint==0.24.4 'pytest>=8,<9' 'setuptools>=77'
+      - run: python tools/schema/generate.py --check
+      - run: python tools/schema/typecheck.py
+      - run: python tools/schema/verify_native.py
+      - run: PYTHONPATH=src python -m pytest --noconftest src/tests/test_records.py src/tests/test_domain_model.py src/tests/test_domain_specification.py src/tests/test_validation_composition.py src/tests/test_domain_run.py src/tests/test_domain_io.py -q
+      - run: python tools/schema/verify_install.py
+      - name: Existing conformance suites
+        run: |
+          for suite in validate native_roundtrip expressions formulations models specifications runs; do
+            python schema/checks/$suite.py
+          done

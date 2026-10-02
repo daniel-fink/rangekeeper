@@ -1,0 +1,147 @@
+{
+  "cue_version": "cue version v0.17.1\n\nCUE language version v0.17.1\n\nGo version go1.26.5\n      -buildmode exe\n       -compiler gc\n       -trimpath true\n     CGO_ENABLED 0\n          GOARCH arm64\n            GOOS darwin\n         GOARM64 v8.0\n",
+  "schema_count": 20,
+  "case_count": 713,
+  "suites": {
+    "expressions.py": {
+      "cases": 218,
+      "accepted": 115
+    },
+    "formulations.py": {
+      "cases": 65,
+      "accepted": 33
+    },
+    "models.py": {
+      "cases": 60,
+      "accepted": 34
+    },
+    "runs.py": {
+      "cases": 123,
+      "accepted": 95
+    },
+    "specifications.py": {
+      "cases": 158,
+      "accepted": 112
+    },
+    "validate.py": {
+      "cases": 100,
+      "accepted": 20
+    }
+  },
+  "bounded_raw": true,
+  "outcomes": {
+    "difference": 21,
+    "match": 476,
+    "non_json_numeric_input": 5,
+    "timeout": 3,
+    "unmeasured_after_schema_timeout": 208
+  },
+  "imports": {
+    "11624519fe901af7": {
+      "accepted": true,
+      "seconds": 0.016643332986859605,
+      "stderr": ""
+    },
+    "ef40cfab2b67db81": {
+      "accepted": true,
+      "seconds": 0.014336332998936996,
+      "stderr": ""
+    },
+    "ec2cd926b22be0db": {
+      "accepted": true,
+      "seconds": 0.030626833002315834,
+      "stderr": ""
+    },
+    "8dd6734926b83745": {
+      "accepted": true,
+      "seconds": 0.02839295800367836,
+      "stderr": ""
+    },
+    "6c18c0d023cf2501": {
+      "accepted": true,
+      "seconds": 0.014456083008553833,
+      "stderr": ""
+    },
+    "79245041459cbc7b": {
+      "accepted": true,
+      "seconds": 0.01575625000987202,
+      "stderr": ""
+    },
+    "73c847d65a318887": {
+      "accepted": true,
+      "seconds": 0.015567124995868653,
+      "stderr": ""
+    },
+    "c3866c270a57783a": {
+      "accepted": true,
+      "seconds": 0.01647337499889545,
+      "stderr": ""
+    },
+    "c2f1625e04d0ef0a": {
+      "accepted": true,
+      "seconds": 0.019603792010457255,
+      "stderr": ""
+    },
+    "3f8a921b0f2b2d57": {
+      "accepted": true,
+      "seconds": 0.029075291997287422,
+      "stderr": ""
+    },
+    "54e32847b60cb214": {
+      "accepted": true,
+      "seconds": 0.02921412499563303,
+      "stderr": ""
+    },
+    "d9fdf363941a42d5": {
+      "accepted": true,
+      "seconds": 0.03353279198927339,
+      "stderr": ""
+    },
+    "fd290209386655e7": {
+      "accepted": true,
+      "seconds": 0.01641475000360515,
+      "stderr": ""
+    },
+    "aa6f5bce6bf20b59": {
+      "accepted": true,
+      "seconds": 0.03181625000433996,
+      "stderr": ""
+    },
+    "b8d7eae55d0fc765": {
+      "accepted": true,
+      "seconds": 0.018474999989848584,
+      "stderr": ""
+    },
+    "56ceea9d9bc3f7fb": {
+      "accepted": true,
+      "seconds": 0.01131349999923259,
+      "stderr": ""
+    },
+    "19a02b0ea22f945e": {
+      "accepted": true,
+      "seconds": 0.010997499994118698,
+      "stderr": ""
+    },
+    "455aed171d33dc98": {
+      "accepted": true,
+      "seconds": 0.013204959002905525,
+      "stderr": ""
+    },
+    "f20a41bcf70772d9": {
+      "accepted": true,
+      "seconds": 0.011499207990709692,
+      "stderr": ""
+    },
+    "b06e65f14ad29296": {
+      "accepted": true,
+      "seconds": 0.011688875005347654,
+      "stderr": ""
+    }
+  },
+  "process_validation_seconds": {
+    "median": 0.01887758400698658,
+    "maximum": 5.047499332998996,
+    "total": 73.34301253881131
+  },
+  "description": "CUE import route only; no maintained native CUE schema or native semantic parity established."
+}

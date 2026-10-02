@@ -1,0 +1,6 @@
+WARNING:linkml.utils.generator:Duplicate tree_root: Specification with Model
+WARNING:linkml.utils.generator:Duplicate tree_root: Run with Model
+Traceback (most recent call last):
+  File "/Volumes/Data/Projects/Rangekeeper/docs/research/domain-migration/evidence/record_boundary_probe.py", line 119, in <module>
+    checks['opaque_values_preserved']=opaque.content['false'] is False and opaque.to_data()['content']['zero']==0
+TypeError: 'Content' object is not subscriptable

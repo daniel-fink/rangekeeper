@@ -1,0 +1,8 @@
+id: https://daniel-fink.github.io/rangekeeper/schema/bundle
+name: rangekeeper_records
+imports:
+- model
+- specification
+- run
+prefixes:
+  linkml: https://w3id.org/linkml/

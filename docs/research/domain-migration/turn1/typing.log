@@ -1,0 +1,13 @@
+Success: no issues found in 7 source files
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_invalid.py:5: error: Missing named argument "id" for "Entity"  [call-arg]
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_invalid.py:6: error: Argument "id" to "Entity" has incompatible type "str"; expected "UUID"  [arg-type]
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_invalid.py:7: error: Unexpected keyword argument "unknown" for "Entity"  [call-arg]
+rangekeeper/_schema/records.py: note: "Entity" defined here
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_invalid.py:8: error: Argument "magnitude" to "Quantity" has incompatible type "str"; expected "int | float"  [arg-type]
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_invalid.py:9: error: Argument "kind" to "Expression" has incompatible type "Literal['unknown']"; expected "Literal['quantity', 'boolean', 'reference', 'unary', 'binary', 'call', 'selection', 'query']"  [arg-type]
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_invalid.py:10: error: Argument "quantity" to "Expression" has incompatible type "Entity"; expected "Quantity | Unset"  [arg-type]
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_invalid.py:11: error: Argument "address" to "Location" has incompatible type "tuple[str]"; expected "Mapping[str, Mapping[str, JSONValue] | str] | Unset | None"  [arg-type]
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_invalid.py:13: error: Property "name" defined in "Entity" is read-only  [misc]
+Found 8 errors in 1 file (checked 1 source file)
+
+Verified eight intended static rejections

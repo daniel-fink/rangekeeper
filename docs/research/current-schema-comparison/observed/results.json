@@ -1,0 +1,7793 @@
+[
+  {
+    "identity": "010bca782dc85262",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013642207995872013,
+    "outcome": "match"
+  },
+  {
+    "identity": "01229c023ccb9fd5",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.01147237500117626,
+    "outcome": "match"
+  },
+  {
+    "identity": "0214b97df8b822db",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.030662791992654093,
+    "outcome": "match"
+  },
+  {
+    "identity": "024b5d7937eb6663",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": false,
+    "seconds": 0.2618450000009034,
+    "outcome": "difference",
+    "document": {
+      "id": "036482a3-534e-5d02-a526-988464b55b99",
+      "kind": "call",
+      "call": {
+        "function": "f3827f2b-2f45-5032-b067-89e8ff73f0fa",
+        "arguments": [
+          {
+            "id": "7f067f2e-ec9a-503e-9982-d967ad820dcc",
+            "kind": "query",
+            "query": {
+              "starting_at": "26bc52ac-ac41-5d1c-961d-d9f4f6c8fc50",
+              "projection": {
+                "kind": "value",
+                "key": "annual_rent",
+                "cardinality": "one",
+                "missing": "error"
+              },
+              "duplicates": "distinct",
+              "steps": [
+                {
+                  "kind": "relationship",
+                  "depth": "transitive",
+                  "classification": "72c6fd40-ca6d-5763-9469-463f231a9dce",
+                  "direction": "outgoing"
+                }
+              ],
+              "filter": {
+                "classification": "c8743346-1b0d-577d-b7e1-fec288b22569"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "stderr": "call.arguments: 9 errors in empty disjunction:\ncall.arguments: conflicting values [{id:\"7f067f2e-ec9a-503e-9982-d967ad820dcc\",kind:\"query\",query:{starting_at:\"26bc52ac-ac41-5d1c-961d-d9f4f6c8fc50\",projection:{kind:\"value\",key:\"annual_rent\",cardinality:\"one\",missing:\"error\"},duplicates:\"distinct\",steps:[{kind:\"relationship\",depth:\"transitive\",classification:\"72c6fd40-ca6d-5763-9469-463f231a9dce\",direction:\"outgoing\"}],filter:{classification:\"c8743346-1b0d-577d-b7e1-fec288b22569\"}}}] and null (mismatched types list and null):\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/024b5d7937eb6663.case.json:1:138\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/ec2cd926b22be0db.cue:12:1\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/ec2cd926b22be0db.cue:116:9\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/ec2cd926b22be0db.cue:184:14\ninvalid value {id:\"036482a3-534e-5d02-a526-988464b55b99\",kind:\"call\",call:_|_(call: invalid value {function:\"f3827f2b-2f45-5032-b067-89e8ff73f0fa\",arguments:_|_(call.arguments: 9 errors in empty disjunction: (and 9 more errors)),named_arguments?:null | []} (does not satisfy matchN): 0 matched, expected >=1 (and 11 more errors)),#Argument:{expression!:~(#Expression),name!:string},#Assembly:{characteristics?:matchN(>=1, [#Characteristics,null]),classification?:null | =~\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",code?:null | string,entities?:null | [],id!:=~\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",name?:null | =~\"\\\\S\",relationships?:null | []},#Call:{arguments?:null | [],function!:=~\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",named_arguments?:null | []},#Cardinality:\"one\" | \"many\",#Characteristics:{labels?:null | [],values?:null | []},#Classification:{code!:string,definition?:null | string,id!:=~\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",name!:=~\"\\\\S\",parent?:null | =~\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\"},#CollectionKind:\"set\" | \"bag\" | \"sequence\",#Criterion:{classification!:=~\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",key!:=~\"\\\\S\"},#Depth:\"direct\" | \"transitive\",#Direction:\"outgoing\" | \"incoming\",#Domain:{collection_kind?:\"set\" | \"bag\" | \"sequence\",item_domain?:_|_(#Domain.item_domain: structural cycle),kind!:\"number\" | \"quantity\" | \"measurement\" | \"boolean\" | \"string\" | \"date\" | \"span\" | \"flow\" | \"stream\" | \"account\" | \"entity\" | \"collection\",measure?:=~\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",units?:null | =~\"\\\\S\"},#DomainKind:\"number\" | \"quantity\" | \"measurement\" | \"boolean\" | \"string\" | \"date\" | \"span\" | \"flow\" | \"stream\" | \"account\" | \"entity\" | \"collection\",#DuplicateHandling:\"distinct\" | \"preserve\",#EmptyHandling:\"error\" | \"zero\",#Entity:{characteristics?:matchN(>=1, [#Characteristics,null]),classification?:null | =~\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",code?:null | string,id!:=~\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",name?:null | =~\"\\\\S\"},#Expression:_|_(#Expression: invalid value {boolean?:bool,call?:_|_(#Expression.call: invalid value {arguments?:null | [],function!:=~\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",named_arguments?:null | []} (does not satisfy matchN): 0 matched, expected >=1 (and 1 more errors)),id!:=~\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",kind!:\"quantity\" | \"boolean\" | \"reference\" | \"unary\" | \"binary\" | \"call\" | \"selection\" | \"query\",operand?:_|_(#Expression.operand: structural cycle),operands?:null,operator?:\"add\" | \"subtract\" | \"multiply\" | \"divide\" | \"equal\" | \"not_equal\" | \"less_than\" | \"less_than_or_equal\" | \"greater_than\" | \"greater_than_or_equal\" | \"power\" | \"negate\" | \"logical_not\" | \"logical_and\" | \"logical_or\",quantity?:_|_(#Expression.quantity: invalid value {magnitude!:number,units!:=~\"\\\\S\"} (does not satisfy matchN): 0 matched, expected >=1 (and 2 more errors)),query?:_|_(#Expression.query: invalid value {duplicates!:\"distinct\" | \"preserve\",filter?:{classification?:=~\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",labels?:null | []},projection!:~(#Projection),starting_at!:=~\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",steps?:null | []} (does not satisfy matchN): 0 matched, expected >=1 (and 3 more errors)),selection?:_|_(#Expression.selection.base: structural cycle),target?:=~\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\"} (does not satisfy matchN): 0 matched, expected 1 (and 8 more errors)),#ExpressionKind:\"quantity\" | \"boolean\" | \"reference\" | \"unary\" | \"binary\" | \"call\" | \"selection\" | \"query\",#Filter:{classification?:=~\"^[0-9a-fA-F]{8}-[0-9a-fA-"
+  },
+  {
+    "identity": "0277ff45ab691278",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.012914624996483326,
+    "outcome": "match"
+  },
+  {
+    "identity": "02bbca00ef044a6f",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.389265207995777,
+    "outcome": "match"
+  },
+  {
+    "identity": "02f3d386a2e06a94",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.37624116700317245,
+    "outcome": "match"
+  },
+  {
+    "identity": "030c9eb2d2478464",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.014745166990906,
+    "outcome": "match"
+  },
+  {
+    "identity": "032ce0a3226ebfd0",
+    "schema": "c3866c270a57783a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.01883720900514163,
+    "outcome": "match"
+  },
+  {
+    "identity": "0431ec865034ed1c",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.014079667002079077,
+    "outcome": "match"
+  },
+  {
+    "identity": "04439bcf0fcdd2c2",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.2222615000064252,
+    "outcome": "match"
+  },
+  {
+    "identity": "04aebb72f2024085",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.030832916003419086,
+    "outcome": "match"
+  },
+  {
+    "identity": "04cf5dfdbae5a228",
+    "schema": "11624519fe901af7",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.011496000006445684,
+    "outcome": "match"
+  },
+  {
+    "identity": "04da668d3d70ec94",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013533666002331302,
+    "outcome": "match"
+  },
+  {
+    "identity": "0611987bf37510a1",
+    "schema": "ef40cfab2b67db81",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": true,
+    "seconds": 0.010971999989124015,
+    "outcome": "difference",
+    "document": {
+      "id": "e85e5cbc-c696-5af2-8bb5-5e2038f7e533",
+      "code": " ",
+      "name": "Apartment A",
+      "classification": "7b24f4bb-59a8-5b1f-a0f8-7064a9a37e84",
+      "characteristics": {
+        "labels": [
+          {
+            "id": "7a0b1867-a5c9-5fcb-8cb3-bacf6cfb1cf4",
+            "classifications": [
+              "7b24f4bb-59a8-5b1f-a0f8-7064a9a37e84"
+            ],
+            "key": "use"
+          }
+        ],
+        "values": [
+          {
+            "id": "d6df3bce-3cb6-5aa6-b1ea-dd77c45f4bcc",
+            "kind": "measurement",
+            "measure": "92f1db7c-ffa7-5a82-8283-a9a989490d28",
+            "key": "floor_area"
+          }
+        ]
+      }
+    },
+    "stderr": ""
+  },
+  {
+    "identity": "06bf45dcbf56c8cd",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.013864667009329423,
+    "outcome": "match"
+  },
+  {
+    "identity": "06db08cec5248dff",
+    "schema": "54e32847b60cb214",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.03034566598944366,
+    "outcome": "match"
+  },
+  {
+    "identity": "06fa3561ed4b0ceb",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.2237633329932578,
+    "outcome": "match"
+  },
+  {
+    "identity": "07af97be9b718b8c",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.2216035000019474,
+    "outcome": "match"
+  },
+  {
+    "identity": "07c1b7099c643d74",
+    "schema": "455aed171d33dc98",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010665207999409176,
+    "outcome": "match"
+  },
+  {
+    "identity": "0831570738411234",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.389295332992333,
+    "outcome": "match"
+  },
+  {
+    "identity": "083c54b13f7d8aac",
+    "schema": "c3866c270a57783a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.020468833987251855,
+    "outcome": "match"
+  },
+  {
+    "identity": "087f51ed7809178f",
+    "schema": "ef40cfab2b67db81",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010628916003042832,
+    "outcome": "match"
+  },
+  {
+    "identity": "092ec820d363d2fd",
+    "schema": "8dd6734926b83745",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.02877962500497233,
+    "outcome": "match"
+  },
+  {
+    "identity": "0948b8853db19f3b",
+    "schema": "8dd6734926b83745",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.030282957988674752,
+    "outcome": "match"
+  },
+  {
+    "identity": "095b42831d67b054",
+    "schema": "6c18c0d023cf2501",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.010537708993069828,
+    "outcome": "match"
+  },
+  {
+    "identity": "099659880f9f8ca7",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": false,
+    "cue": true,
+    "seconds": 0.029116833000443876,
+    "outcome": "difference",
+    "document": {
+      "id": "8afe86c8-ee61-5841-9dfd-5670b7032f1a",
+      "code": " "
+    },
+    "stderr": ""
+  },
+  {
+    "identity": "09f8bd34015b42e7",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 1.9322630830138223,
+    "outcome": "match"
+  },
+  {
+    "identity": "0a048c465c94e612",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.030889582994859666,
+    "outcome": "match"
+  },
+  {
+    "identity": "0b96a31932908674",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 1.0656674580095569,
+    "outcome": "match"
+  },
+  {
+    "identity": "0c15350832b04af3",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "runs.py",
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.031219666998367757,
+    "outcome": "match"
+  },
+  {
+    "identity": "0c4348a2061693f6",
+    "schema": "8dd6734926b83745",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.03007195799727924,
+    "outcome": "match"
+  },
+  {
+    "identity": "0c50635da3b501fd",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.03161770799488295,
+    "outcome": "match"
+  },
+  {
+    "identity": "0ca6212236a72e4d",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.3889171670016367,
+    "outcome": "match"
+  },
+  {
+    "identity": "0cc2c29bf00b34a8",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013674375004484318,
+    "outcome": "match"
+  },
+  {
+    "identity": "0cf8f018095ad36c",
+    "schema": "56ceea9d9bc3f7fb",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.009819833998335525,
+    "outcome": "match"
+  },
+  {
+    "identity": "0d7daa499378c796",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": false,
+    "outcome": "timeout",
+    "seconds": 5.039940957998624
+  },
+  {
+    "identity": "0e624e2f78fbb1bc",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.3846130410092883,
+    "outcome": "match"
+  },
+  {
+    "identity": "0eda6067e41bb1fa",
+    "schema": "ef40cfab2b67db81",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": true,
+    "seconds": 0.010489125008461997,
+    "outcome": "difference",
+    "document": {
+      "id": "e85e5cbc-c696-5af2-8bb5-5e2038f7e533",
+      "code": " A",
+      "name": "Apartment A",
+      "classification": "7b24f4bb-59a8-5b1f-a0f8-7064a9a37e84",
+      "characteristics": {
+        "labels": [
+          {
+            "id": "7a0b1867-a5c9-5fcb-8cb3-bacf6cfb1cf4",
+            "classifications": [
+              "7b24f4bb-59a8-5b1f-a0f8-7064a9a37e84"
+            ],
+            "key": "use"
+          }
+        ],
+        "values": [
+          {
+            "id": "d6df3bce-3cb6-5aa6-b1ea-dd77c45f4bcc",
+            "kind": "measurement",
+            "measure": "92f1db7c-ffa7-5a82-8283-a9a989490d28",
+            "key": "floor_area"
+          }
+        ]
+      }
+    },
+    "stderr": ""
+  },
+  {
+    "identity": "0eec84d8da9b9de4",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.030648915999336168,
+    "outcome": "match"
+  },
+  {
+    "identity": "0efcd9ef8d0a54f7",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.3747363750007935,
+    "outcome": "match"
+  },
+  {
+    "identity": "0f450d2d750bdedd",
+    "schema": "ef40cfab2b67db81",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.010694208991480991,
+    "outcome": "match"
+  },
+  {
+    "identity": "0f8fbe032c1ee13f",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.3756246670091059,
+    "outcome": "match"
+  },
+  {
+    "identity": "0fcc87a64d25cf75",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.2529131250048522,
+    "outcome": "match"
+  },
+  {
+    "identity": "1050141a1803aca9",
+    "schema": "73c847d65a318887",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013687124999705702,
+    "outcome": "match"
+  },
+  {
+    "identity": "1063ad66053897ac",
+    "schema": "8dd6734926b83745",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.029631375000462867,
+    "outcome": "match"
+  },
+  {
+    "identity": "10e6ebd9ea1f42b7",
+    "schema": "56ceea9d9bc3f7fb",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010294125007931143,
+    "outcome": "match"
+  },
+  {
+    "identity": "1114172e1e0c5ca9",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.21513558299920987,
+    "outcome": "match"
+  },
+  {
+    "identity": "11252be1322e6a0b",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": true,
+    "outcome": "timeout",
+    "seconds": 5.047499332998996
+  },
+  {
+    "identity": "123218a340710815",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "1273bcf304358193",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "135829de358162df",
+    "schema": "b8d7eae55d0fc765",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.014778584009036422,
+    "outcome": "match"
+  },
+  {
+    "identity": "13725b54d2099d1f",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013388833001954481,
+    "outcome": "match"
+  },
+  {
+    "identity": "148e96e3974c1314",
+    "schema": "8dd6734926b83745",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.02956212499702815,
+    "outcome": "match"
+  },
+  {
+    "identity": "14bb2da9bcd0839c",
+    "schema": "ef40cfab2b67db81",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.01068808299896773,
+    "outcome": "match"
+  },
+  {
+    "identity": "152c8e0c144c1d3b",
+    "schema": "79245041459cbc7b",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010359541993238963,
+    "outcome": "match"
+  },
+  {
+    "identity": "15420ef7f3b36239",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "1559b682b03bc6e0",
+    "schema": "6c18c0d023cf2501",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010007749995565973,
+    "outcome": "match"
+  },
+  {
+    "identity": "17204d797719fec9",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.395751707997988,
+    "outcome": "match"
+  },
+  {
+    "identity": "172f96d13d45919b",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.4040890420001233,
+    "outcome": "match"
+  },
+  {
+    "identity": "1772d4b7e1b160b4",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.2525257909874199,
+    "outcome": "match"
+  },
+  {
+    "identity": "17e547745b119e92",
+    "schema": "b8d7eae55d0fc765",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.014669541007606313,
+    "outcome": "match"
+  },
+  {
+    "identity": "18489d6b337f0c29",
+    "schema": "ef40cfab2b67db81",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010668000002624467,
+    "outcome": "match"
+  },
+  {
+    "identity": "1a9d96b43b16aac3",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.41936274999170564,
+    "outcome": "match"
+  },
+  {
+    "identity": "1acfbaac4dbd24b3",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "1ae97e4a4aa85ccd",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013669624997419305,
+    "outcome": "match"
+  },
+  {
+    "identity": "1b509921f885a45c",
+    "schema": "8dd6734926b83745",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.029862665993277915,
+    "outcome": "match"
+  },
+  {
+    "identity": "1c2072b77c4ef008",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.3755841249949299,
+    "outcome": "match"
+  },
+  {
+    "identity": "1c3b861db7408e90",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.03213383399997838,
+    "outcome": "match"
+  },
+  {
+    "identity": "1cae0ec090bccd96",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.030104999998002313,
+    "outcome": "match"
+  },
+  {
+    "identity": "1cb9dcf6a2d72faf",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.014030791004188359,
+    "outcome": "match"
+  },
+  {
+    "identity": "1cdea25501a4ef6d",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.38294537500769366,
+    "outcome": "match"
+  },
+  {
+    "identity": "1d8679640ef9dd6f",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.38964429100451525,
+    "outcome": "match"
+  },
+  {
+    "identity": "1dbbc187f0b9b578",
+    "schema": "ef40cfab2b67db81",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": true,
+    "seconds": 0.010870833997614682,
+    "outcome": "difference",
+    "document": {
+      "id": "e85e5cbc-c696-5af2-8bb5-5e2038f7e533",
+      "code": "A\n",
+      "name": "Apartment A",
+      "classification": "7b24f4bb-59a8-5b1f-a0f8-7064a9a37e84",
+      "characteristics": {
+        "labels": [
+          {
+            "id": "7a0b1867-a5c9-5fcb-8cb3-bacf6cfb1cf4",
+            "classifications": [
+              "7b24f4bb-59a8-5b1f-a0f8-7064a9a37e84"
+            ],
+            "key": "use"
+          }
+        ],
+        "values": [
+          {
+            "id": "d6df3bce-3cb6-5aa6-b1ea-dd77c45f4bcc",
+            "kind": "measurement",
+            "measure": "92f1db7c-ffa7-5a82-8283-a9a989490d28",
+            "key": "floor_area"
+          }
+        ]
+      }
+    },
+    "stderr": ""
+  },
+  {
+    "identity": "1dc16778f757be4a",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.22141937501146458,
+    "outcome": "match"
+  },
+  {
+    "identity": "1dcf5ccc67f05ec8",
+    "schema": "6c18c0d023cf2501",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010907417003181763,
+    "outcome": "match"
+  },
+  {
+    "identity": "1dcfc19285c3f5f2",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "1e572e5934e01fe3",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.013295083001139574,
+    "outcome": "match"
+  },
+  {
+    "identity": "1ebd2467bf6530f1",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "1ece6abd94bb0fe7",
+    "schema": "6c18c0d023cf2501",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.01063012499071192,
+    "outcome": "match"
+  },
+  {
+    "identity": "1ed0cd2c1887ddc6",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.3700825830019312,
+    "outcome": "match"
+  },
+  {
+    "identity": "1ed670a04221c40b",
+    "schema": "8dd6734926b83745",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.02997087500989437,
+    "outcome": "match"
+  },
+  {
+    "identity": "1fb50d10a7ee012c",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "1ff2b428bd0986ad",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "20523cd5e928ecb6",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013377084003877826,
+    "outcome": "match"
+  },
+  {
+    "identity": "20b7c702e34d0045",
+    "schema": "79245041459cbc7b",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010592207996523939,
+    "outcome": "match"
+  },
+  {
+    "identity": "21b497d2caad7846",
+    "schema": "19a02b0ea22f945e",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.01056395900377538,
+    "outcome": "match"
+  },
+  {
+    "identity": "223f0c6ec133f087",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "224127941831270d",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "22a2583625ab6209",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013815208003506996,
+    "outcome": "match"
+  },
+  {
+    "identity": "22a32b68c7499b0e",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.25541941699339077,
+    "outcome": "match"
+  },
+  {
+    "identity": "235687c9d3892dd5",
+    "schema": "73c847d65a318887",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.021213875006651506,
+    "outcome": "match"
+  },
+  {
+    "identity": "2400fdb467af9d90",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013348374995985068,
+    "outcome": "match"
+  },
+  {
+    "identity": "25b3ad23e94a67ed",
+    "schema": "54e32847b60cb214",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.03021154200541787,
+    "outcome": "match"
+  },
+  {
+    "identity": "25c390eb6662dd65",
+    "schema": "8dd6734926b83745",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.030460250010946766,
+    "outcome": "match"
+  },
+  {
+    "identity": "25d2999fb2a65b5b",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.030494000006001443,
+    "outcome": "match"
+  },
+  {
+    "identity": "25e8a823ea2e110b",
+    "schema": "56ceea9d9bc3f7fb",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010306541997124441,
+    "outcome": "match"
+  },
+  {
+    "identity": "264daee2491f6b80",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.2194290839979658,
+    "outcome": "match"
+  },
+  {
+    "identity": "272deda71807f413",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.01253970799734816,
+    "outcome": "match"
+  },
+  {
+    "identity": "272f34894b1a29c1",
+    "schema": "56ceea9d9bc3f7fb",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.010303875009412877,
+    "outcome": "match"
+  },
+  {
+    "identity": "2748b58daa5791f7",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "27585c3a0801c89b",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.3770135829981882,
+    "outcome": "match"
+  },
+  {
+    "identity": "277f1d905c621376",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "27c76c1d3469481d",
+    "schema": "455aed171d33dc98",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010625292008626275,
+    "outcome": "match"
+  },
+  {
+    "identity": "27d9ade03b9da7fa",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.03141529099957552,
+    "outcome": "match"
+  },
+  {
+    "identity": "27f9cf74a863e894",
+    "schema": "b8d7eae55d0fc765",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.013668832994881086,
+    "outcome": "match"
+  },
+  {
+    "identity": "29806c83de78e55b",
+    "schema": "c2f1625e04d0ef0a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.011615041003096849,
+    "outcome": "match"
+  },
+  {
+    "identity": "2a1d5dc619ef00bc",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "2a1e37be769c970f",
+    "schema": "54e32847b60cb214",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.029028125005424954,
+    "outcome": "match"
+  },
+  {
+    "identity": "2a1fa2c5ed74ba19",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "2ac30c6aa8c2849b",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013386832986725494,
+    "outcome": "match"
+  },
+  {
+    "identity": "2acdde853087c03c",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.25236779199622106,
+    "outcome": "match"
+  },
+  {
+    "identity": "2add14c3fa4505dd",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.011928041989449412,
+    "outcome": "match"
+  },
+  {
+    "identity": "2ae441bfd0d1a250",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.3790023339970503,
+    "outcome": "match"
+  },
+  {
+    "identity": "2b4a7daddb0fc5ea",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.2209427079942543,
+    "outcome": "match"
+  },
+  {
+    "identity": "2bc3c8db90802025",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 1.8786208749952493,
+    "outcome": "match"
+  },
+  {
+    "identity": "2c2b5ccbeac639dd",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.22175616699678358,
+    "outcome": "match"
+  },
+  {
+    "identity": "2d6ba59144da408d",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "2dac31db846139eb",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013103542005410418,
+    "outcome": "match"
+  },
+  {
+    "identity": "2df9095d805e7b98",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 1.9433572499983711,
+    "outcome": "match"
+  },
+  {
+    "identity": "2e17e9118469f233",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "2e3998720302fa97",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "runs.py",
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.0318390409956919,
+    "outcome": "match"
+  },
+  {
+    "identity": "2e5491a38c676781",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013882583996746689,
+    "outcome": "match"
+  },
+  {
+    "identity": "2e8e2ae4052a5b2d",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.24897666700417176,
+    "outcome": "match"
+  },
+  {
+    "identity": "2ef7d720dfb7ede9",
+    "schema": "19a02b0ea22f945e",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010732624999945983,
+    "outcome": "match"
+  },
+  {
+    "identity": "2f8c51b16f3b5920",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.3839291670010425,
+    "outcome": "match"
+  },
+  {
+    "identity": "2fd9c7fb36f98012",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.38682183298806194,
+    "outcome": "match"
+  },
+  {
+    "identity": "2fedc11acb425764",
+    "schema": "56ceea9d9bc3f7fb",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.01011533300334122,
+    "outcome": "match"
+  },
+  {
+    "identity": "300abe1dbcb315eb",
+    "schema": "73c847d65a318887",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.01591862499481067,
+    "outcome": "match"
+  },
+  {
+    "identity": "30142ffe8af04edb",
+    "schema": "c3866c270a57783a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.02062729198951274,
+    "outcome": "match"
+  },
+  {
+    "identity": "30283f2a94245507",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013684665987966582,
+    "outcome": "match"
+  },
+  {
+    "identity": "3075a965c1c0fe89",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.22375345800537616,
+    "outcome": "match"
+  },
+  {
+    "identity": "30776bc5d439d884",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.03110816699336283,
+    "outcome": "match"
+  },
+  {
+    "identity": "309f8cadb3f0c506",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.03097162500489503,
+    "outcome": "match"
+  },
+  {
+    "identity": "30a531b70e3aefa8",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "30bb2221f0b24acb",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013047915999777615,
+    "outcome": "match"
+  },
+  {
+    "identity": "30e1d4a79dde5330",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.012005791999399662,
+    "outcome": "match"
+  },
+  {
+    "identity": "313a24b6e8aa69fd",
+    "schema": "8dd6734926b83745",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.031059583998285234,
+    "outcome": "match"
+  },
+  {
+    "identity": "31db355adf0f9eac",
+    "schema": "c3866c270a57783a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.020523125000181608,
+    "outcome": "match"
+  },
+  {
+    "identity": "320fcc6ac4e5b5a4",
+    "schema": "c2f1625e04d0ef0a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": false,
+    "seconds": 0.011604666986386292,
+    "outcome": "difference",
+    "document": {
+      "starting_at": "26bc52ac-ac41-5d1c-961d-d9f4f6c8fc50",
+      "projection": {
+        "kind": "value",
+        "measure": "0a77e5ed-a736-51b1-96ba-1ebea93b03b2",
+        "cardinality": "many",
+        "missing": "omit"
+      },
+      "duplicates": "distinct",
+      "steps": [
+        {
+          "kind": "relationship",
+          "depth": "transitive",
+          "classification": "72c6fd40-ca6d-5763-9469-463f231a9dce",
+          "direction": "outgoing"
+        }
+      ],
+      "filter": {
+        "classification": "c8743346-1b0d-577d-b7e1-fec288b22569"
+      }
+    },
+    "stderr": "projection: invalid value {kind:\"value\",measure:\"0a77e5ed-a736-51b1-96ba-1ebea93b03b2\",cardinality:\"many\",missing:\"omit\",key?:=~\"\\\\S\"} (does not satisfy matchN): 1 matched, expected 2:\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:218:14\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/320fcc6ac4e5b5a4.case.json:1:71\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:12:16\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:218:21\nprojection: invalid value {kind:\"value\",measure:\"0a77e5ed-a736-51b1-96ba-1ebea93b03b2\",cardinality:\"many\",missing:\"omit\"} (does not satisfy matchIf): field is required but not present:\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:247:4\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/320fcc6ac4e5b5a4.case.json:1:71\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:12:16\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:250:4\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:251:2\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:260:4\nprojection: invalid value {kind:\"value\",measure:\"0a77e5ed-a736-51b1-96ba-1ebea93b03b2\",cardinality:\"many\",missing:\"omit\"} (does not satisfy matchIf): invalid value {cardinality!:_,missing!:_} (does not satisfy matchN): 0 matched, expected 1:\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:247:4\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/320fcc6ac4e5b5a4.case.json:1:71\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:12:16\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:250:4\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:250:11\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:260:4\n"
+  },
+  {
+    "identity": "32257727cd6be1d2",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.011956875008763745,
+    "outcome": "match"
+  },
+  {
+    "identity": "329a04d5fb0bab10",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013783083006273955,
+    "outcome": "match"
+  },
+  {
+    "identity": "32ab34b57d54a9cf",
+    "schema": "c3866c270a57783a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.0198334999877261,
+    "outcome": "match"
+  },
+  {
+    "identity": "330ef2802c677dff",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 1.8124153749959078,
+    "outcome": "match"
+  },
+  {
+    "identity": "3319c45b2c10a103",
+    "schema": "73c847d65a318887",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.017075374998967163,
+    "outcome": "match"
+  },
+  {
+    "identity": "335800e2f402d0f4",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "344ae57e61424513",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.3903480829903856,
+    "outcome": "match"
+  },
+  {
+    "identity": "34964b38aaaae364",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "34acb432e0992b7c",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.013248916002339683,
+    "outcome": "match"
+  },
+  {
+    "identity": "34c4f9651d5db539",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "outcome": "non_json_numeric_input"
+  },
+  {
+    "identity": "350eb5ee1d33cfbe",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.012929208009154536,
+    "outcome": "match"
+  },
+  {
+    "identity": "35377c7d97326235",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.013494750004610978,
+    "outcome": "match"
+  },
+  {
+    "identity": "35404c3db55f3e82",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.3816860000079032,
+    "outcome": "match"
+  },
+  {
+    "identity": "360a1e5e38f2d282",
+    "schema": "8dd6734926b83745",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.03073241600941401,
+    "outcome": "match"
+  },
+  {
+    "identity": "371f336ac9963e18",
+    "schema": "73c847d65a318887",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.017206250005983748,
+    "outcome": "match"
+  },
+  {
+    "identity": "378d895804628d70",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.39323491699178703,
+    "outcome": "match"
+  },
+  {
+    "identity": "37df08b22370684f",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 1.8027677500067512,
+    "outcome": "match"
+  },
+  {
+    "identity": "37fab64366cd79ed",
+    "schema": "455aed171d33dc98",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010747833002824336,
+    "outcome": "match"
+  },
+  {
+    "identity": "38351a56b7bb4e23",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.3716634169977624,
+    "outcome": "match"
+  },
+  {
+    "identity": "386595a7c43bfa79",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "3870dc1a4b52154b",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.3776891669986071,
+    "outcome": "match"
+  },
+  {
+    "identity": "38e0366c861b17d9",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013293249998241663,
+    "outcome": "match"
+  },
+  {
+    "identity": "392396dd8eea02e2",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.01353895801003091,
+    "outcome": "match"
+  },
+  {
+    "identity": "393795cb93084f37",
+    "schema": "b8d7eae55d0fc765",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.014795457987929694,
+    "outcome": "match"
+  },
+  {
+    "identity": "396d8409c62c8b1b",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.38603016699198633,
+    "outcome": "match"
+  },
+  {
+    "identity": "39fd70328d3ffa83",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.39349583399598487,
+    "outcome": "match"
+  },
+  {
+    "identity": "3a438710ca96f6a4",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "non_json_numeric_input"
+  },
+  {
+    "identity": "3aabda7ee1e7c025",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.22341362498991657,
+    "outcome": "match"
+  },
+  {
+    "identity": "3b3bc3d55a4a5bab",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 1.8492494999954943,
+    "outcome": "match"
+  },
+  {
+    "identity": "3b3da28860a08ecd",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.38888604199746624,
+    "outcome": "match"
+  },
+  {
+    "identity": "3b9d2246d48247a6",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.40869825000118,
+    "outcome": "match"
+  },
+  {
+    "identity": "3bdb3dcf3aa88253",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.38152558299771044,
+    "outcome": "match"
+  },
+  {
+    "identity": "3c4efb98a00b3e3e",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.24802062500384636,
+    "outcome": "match"
+  },
+  {
+    "identity": "3c6c32682454e8db",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.014497416996164247,
+    "outcome": "match"
+  },
+  {
+    "identity": "3ccb492e86d0ef18",
+    "schema": "c2f1625e04d0ef0a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.011402749994886108,
+    "outcome": "match"
+  },
+  {
+    "identity": "3d112a791f752f83",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.21861445900867693,
+    "outcome": "match"
+  },
+  {
+    "identity": "3d4eab295355b526",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "timeout",
+    "seconds": 5.037428458002978
+  },
+  {
+    "identity": "3def8a96d7b61774",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "3e466af6ac5f52fb",
+    "schema": "ef40cfab2b67db81",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": true,
+    "seconds": 0.01100412500090897,
+    "outcome": "difference",
+    "document": {
+      "id": "e85e5cbc-c696-5af2-8bb5-5e2038f7e533",
+      "code": "\tA",
+      "name": "Apartment A",
+      "classification": "7b24f4bb-59a8-5b1f-a0f8-7064a9a37e84",
+      "characteristics": {
+        "labels": [
+          {
+            "id": "7a0b1867-a5c9-5fcb-8cb3-bacf6cfb1cf4",
+            "classifications": [
+              "7b24f4bb-59a8-5b1f-a0f8-7064a9a37e84"
+            ],
+            "key": "use"
+          }
+        ],
+        "values": [
+          {
+            "id": "d6df3bce-3cb6-5aa6-b1ea-dd77c45f4bcc",
+            "kind": "measurement",
+            "measure": "92f1db7c-ffa7-5a82-8283-a9a989490d28",
+            "key": "floor_area"
+          }
+        ]
+      }
+    },
+    "stderr": ""
+  },
+  {
+    "identity": "3e4ba6de75b4e07f",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.3774942500022007,
+    "outcome": "match"
+  },
+  {
+    "identity": "3e5e24a70f6cf0af",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "3e65e1422b24f900",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "3eef9e97535c4ab0",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.030479790992103517,
+    "outcome": "match"
+  },
+  {
+    "identity": "3f012d489dd47111",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "3f76ea759bf9c02c",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "outcome": "non_json_numeric_input"
+  },
+  {
+    "identity": "3fe406833a20a5df",
+    "schema": "11624519fe901af7",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.011650874992483296,
+    "outcome": "match"
+  },
+  {
+    "identity": "404c3b3fd9606f36",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "40a13d0cd6716c9c",
+    "schema": "b8d7eae55d0fc765",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013635499999509193,
+    "outcome": "match"
+  },
+  {
+    "identity": "40de46cff00090ba",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013641999990795739,
+    "outcome": "match"
+  },
+  {
+    "identity": "41b205d2da33701b",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.3783474160009064,
+    "outcome": "match"
+  },
+  {
+    "identity": "41e4eb543670e952",
+    "schema": "8dd6734926b83745",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.02935908400104381,
+    "outcome": "match"
+  },
+  {
+    "identity": "4222465e854450f7",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "42c4e0fe059ece5c",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013690916006453335,
+    "outcome": "match"
+  },
+  {
+    "identity": "42c9f5f69c46de49",
+    "schema": "6c18c0d023cf2501",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.01101504200778436,
+    "outcome": "match"
+  },
+  {
+    "identity": "42d2807618910f5b",
+    "schema": "8dd6734926b83745",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.03015525000228081,
+    "outcome": "match"
+  },
+  {
+    "identity": "42f82dbadfc2edae",
+    "schema": "8dd6734926b83745",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": true,
+    "seconds": 0.030498416992486455,
+    "outcome": "difference",
+    "document": {
+      "id": "1ca4c0da-eb16-5815-b4a5-4193bde658fc",
+      "predicate": "8c9b169a-c9ee-51f6-ab09-ee9fb24f0dda",
+      "code": " trailing "
+    },
+    "stderr": ""
+  },
+  {
+    "identity": "42fccebc390049b6",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.3852792079997016,
+    "outcome": "match"
+  },
+  {
+    "identity": "433148274c76af88",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "4342a50c9ebc2729",
+    "schema": "73c847d65a318887",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.01891795900883153,
+    "outcome": "match"
+  },
+  {
+    "identity": "442dd0a1e88b779e",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.03191408299608156,
+    "outcome": "match"
+  },
+  {
+    "identity": "443fde47f40ab43b",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.031769291003001854,
+    "outcome": "match"
+  },
+  {
+    "identity": "444288410650bac3",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "runs.py",
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.03096083301352337,
+    "outcome": "match"
+  },
+  {
+    "identity": "445fd77f8a3b2c7f",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.38288404200284276,
+    "outcome": "match"
+  },
+  {
+    "identity": "446d0e607d0769bb",
+    "schema": "73c847d65a318887",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.017036666002240963,
+    "outcome": "match"
+  },
+  {
+    "identity": "44d56aa6d0cf3f00",
+    "schema": "79245041459cbc7b",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.009921374992700294,
+    "outcome": "match"
+  },
+  {
+    "identity": "44debf8204efeec3",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.014039957997738384,
+    "outcome": "match"
+  },
+  {
+    "identity": "452f791982c11304",
+    "schema": "73c847d65a318887",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.016713208009605296,
+    "outcome": "match"
+  },
+  {
+    "identity": "4604cc9ab438a59d",
+    "schema": "b8d7eae55d0fc765",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.013720625007408671,
+    "outcome": "match"
+  },
+  {
+    "identity": "47b85d9e9e116828",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.03139941699919291,
+    "outcome": "match"
+  },
+  {
+    "identity": "47b87254b46ed095",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "47d775111bf2257a",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "4823c394ea885d84",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.3739388329995563,
+    "outcome": "match"
+  },
+  {
+    "identity": "48765e362012a4d9",
+    "schema": "455aed171d33dc98",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010782416997244582,
+    "outcome": "match"
+  },
+  {
+    "identity": "4881c8d8d2dd084e",
+    "schema": "c3866c270a57783a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.020766417001141235,
+    "outcome": "match"
+  },
+  {
+    "identity": "4924056bccda6f03",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.030053583992412314,
+    "outcome": "match"
+  },
+  {
+    "identity": "49d6f12d993a8fb3",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.013674708010512404,
+    "outcome": "match"
+  },
+  {
+    "identity": "4a135f246bd06ce2",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "4a39b9ee423d33ad",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.39044808300968725,
+    "outcome": "match"
+  },
+  {
+    "identity": "4a6fe9ecedd2d20e",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "4ad7901bab72e354",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "4bca5354dd0a3001",
+    "schema": "56ceea9d9bc3f7fb",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010135832999367267,
+    "outcome": "match"
+  },
+  {
+    "identity": "4c56f871fefad843",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "4ce902c6380ada12",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.03042983300110791,
+    "outcome": "match"
+  },
+  {
+    "identity": "4d4ee4bde2987164",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.39138208399526775,
+    "outcome": "match"
+  },
+  {
+    "identity": "4d57f137d3a44ade",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.39314525001100264,
+    "outcome": "match"
+  },
+  {
+    "identity": "4dc122bee2dd95f1",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.01926120900316164,
+    "outcome": "match"
+  },
+  {
+    "identity": "4e1d6311468c68f7",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "4e9a35eed319ad81",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "4ea1598fc4f8e691",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "4f3b33fe38490ec0",
+    "schema": "b06e65f14ad29296",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.01099666699883528,
+    "outcome": "match"
+  },
+  {
+    "identity": "4f89211153ee5188",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "5006c97b820e6426",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013186708005378023,
+    "outcome": "match"
+  },
+  {
+    "identity": "502d997811257971",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.03455241600750014,
+    "outcome": "match"
+  },
+  {
+    "identity": "50351be9daa23b16",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.1625291670061415,
+    "outcome": "match"
+  },
+  {
+    "identity": "503d991187c78c85",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.019698208998306654,
+    "outcome": "match"
+  },
+  {
+    "identity": "51ceefa29ebf6b03",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.026796625010319985,
+    "outcome": "match"
+  },
+  {
+    "identity": "52325f570160add7",
+    "schema": "ef40cfab2b67db81",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010912249999819323,
+    "outcome": "match"
+  },
+  {
+    "identity": "5276a9402955d9b6",
+    "schema": "56ceea9d9bc3f7fb",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010301417001755908,
+    "outcome": "match"
+  },
+  {
+    "identity": "532baa4d1a1eeb72",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013712750005652197,
+    "outcome": "match"
+  },
+  {
+    "identity": "534bfce34c15ce4b",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013266708003357053,
+    "outcome": "match"
+  },
+  {
+    "identity": "53b41a27d062a60b",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.38242662500124425,
+    "outcome": "match"
+  },
+  {
+    "identity": "53bc150dfbd6aed6",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "552d9160bc006baf",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "5598cdcda655943c",
+    "schema": "c2f1625e04d0ef0a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.012373709003441036,
+    "outcome": "match"
+  },
+  {
+    "identity": "55fa74e2b0077635",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.013493915990693495,
+    "outcome": "match"
+  },
+  {
+    "identity": "560494e0ccad4135",
+    "schema": "ef40cfab2b67db81",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010340957989683375,
+    "outcome": "match"
+  },
+  {
+    "identity": "568f4b95df0c2dc0",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "5871597f695dd4b4",
+    "schema": "8dd6734926b83745",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.03144645800057333,
+    "outcome": "match"
+  },
+  {
+    "identity": "58ffe71e470c9f46",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "59069d2a37663a4d",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.014078291002078913,
+    "outcome": "match"
+  },
+  {
+    "identity": "591d060132e7089b",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "592e00658a5c7fd0",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.37915854100720026,
+    "outcome": "match"
+  },
+  {
+    "identity": "5a26ea0448c5e4dd",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "runs.py",
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.38413195799512323,
+    "outcome": "match"
+  },
+  {
+    "identity": "5a6dd36b02a9170a",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.014244499994674698,
+    "outcome": "match"
+  },
+  {
+    "identity": "5a7168379ea93bdb",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.3817612499988172,
+    "outcome": "match"
+  },
+  {
+    "identity": "5a8f1b606fb0bf2c",
+    "schema": "c3866c270a57783a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.020230207999702543,
+    "outcome": "match"
+  },
+  {
+    "identity": "5af8c2d99a7515dd",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.031789875007234514,
+    "outcome": "match"
+  },
+  {
+    "identity": "5bb62994ae3e97b0",
+    "schema": "79245041459cbc7b",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.010699917009333149,
+    "outcome": "match"
+  },
+  {
+    "identity": "5c3406517000da95",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.011105124998721294,
+    "outcome": "match"
+  },
+  {
+    "identity": "5c6a141a521ac145",
+    "schema": "8dd6734926b83745",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.0299450829916168,
+    "outcome": "match"
+  },
+  {
+    "identity": "5caf8686f9ba270d",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.031133875003433786,
+    "outcome": "match"
+  },
+  {
+    "identity": "5d3027f32a3c129f",
+    "schema": "ef40cfab2b67db81",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": true,
+    "seconds": 0.010299041008693166,
+    "outcome": "difference",
+    "document": {
+      "id": "e85e5cbc-c696-5af2-8bb5-5e2038f7e533",
+      "code": "",
+      "name": "Apartment A",
+      "classification": "7b24f4bb-59a8-5b1f-a0f8-7064a9a37e84",
+      "characteristics": {
+        "labels": [
+          {
+            "id": "7a0b1867-a5c9-5fcb-8cb3-bacf6cfb1cf4",
+            "classifications": [
+              "7b24f4bb-59a8-5b1f-a0f8-7064a9a37e84"
+            ],
+            "key": "use"
+          }
+        ],
+        "values": [
+          {
+            "id": "d6df3bce-3cb6-5aa6-b1ea-dd77c45f4bcc",
+            "kind": "measurement",
+            "measure": "92f1db7c-ffa7-5a82-8283-a9a989490d28",
+            "key": "floor_area"
+          }
+        ]
+      }
+    },
+    "stderr": ""
+  },
+  {
+    "identity": "5e02588fd90069f6",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "5e70d389b200a360",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.031115625009988435,
+    "outcome": "match"
+  },
+  {
+    "identity": "5ed1448c2c43ef13",
+    "schema": "8dd6734926b83745",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.030103958008112386,
+    "outcome": "match"
+  },
+  {
+    "identity": "5f844cd2f800d054",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013440916009130888,
+    "outcome": "match"
+  },
+  {
+    "identity": "60bf1690cfaaeb2e",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "60da4ca9425923b7",
+    "schema": "b8d7eae55d0fc765",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.014863167001749389,
+    "outcome": "match"
+  },
+  {
+    "identity": "614952f0838ab13c",
+    "schema": "c2f1625e04d0ef0a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": false,
+    "seconds": 0.012386000002152286,
+    "outcome": "difference",
+    "document": {
+      "starting_at": "26bc52ac-ac41-5d1c-961d-d9f4f6c8fc50",
+      "projection": {
+        "kind": "value",
+        "key": "annual_rent",
+        "cardinality": "one",
+        "missing": "error"
+      },
+      "duplicates": "preserve",
+      "steps": [
+        {
+          "kind": "relationship",
+          "depth": "transitive",
+          "classification": "72c6fd40-ca6d-5763-9469-463f231a9dce",
+          "direction": "outgoing"
+        }
+      ],
+      "filter": {
+        "classification": "c8743346-1b0d-577d-b7e1-fec288b22569"
+      }
+    },
+    "stderr": "projection: invalid value {kind:\"value\",key:\"annual_rent\",cardinality:\"one\",missing:\"error\",measure?:=~\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\"} (does not satisfy matchN): 1 matched, expected 2:\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:218:14\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/614952f0838ab13c.case.json:1:71\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:12:16\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:218:21\nprojection: invalid value {kind:\"value\",key:\"annual_rent\",cardinality:\"one\",missing:\"error\"} (does not satisfy matchIf): field is required but not present:\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:247:4\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/614952f0838ab13c.case.json:1:71\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:12:16\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:250:4\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:251:2\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:260:4\nprojection: invalid value {kind:\"value\",key:\"annual_rent\",cardinality:\"one\",missing:\"error\"} (does not satisfy matchIf): invalid value {cardinality!:_,missing!:_} (does not satisfy matchN): 0 matched, expected 1:\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:247:4\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/614952f0838ab13c.case.json:1:71\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:12:16\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:250:4\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:250:11\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:260:4\n"
+  },
+  {
+    "identity": "615e8cb7c872c681",
+    "schema": "ef40cfab2b67db81",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010777291987324134,
+    "outcome": "match"
+  },
+  {
+    "identity": "617e4568657d8a24",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "6265e3ce36006ed2",
+    "schema": "54e32847b60cb214",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.03072437499940861,
+    "outcome": "match"
+  },
+  {
+    "identity": "62a66272983ffacf",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "62ed3fa192c2549f",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.031032416998641565,
+    "outcome": "match"
+  },
+  {
+    "identity": "6379a0f8c97ad448",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.03224404099455569,
+    "outcome": "match"
+  },
+  {
+    "identity": "638bbd92e18a594a",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "6454f974d56cec4a",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "64ebf9c606d13865",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "651573f09423af82",
+    "schema": "ef40cfab2b67db81",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": true,
+    "seconds": 0.0101426250039367,
+    "outcome": "difference",
+    "document": {
+      "id": "e85e5cbc-c696-5af2-8bb5-5e2038f7e533",
+      "code": "A ",
+      "name": "Apartment A",
+      "classification": "7b24f4bb-59a8-5b1f-a0f8-7064a9a37e84",
+      "characteristics": {
+        "labels": [
+          {
+            "id": "7a0b1867-a5c9-5fcb-8cb3-bacf6cfb1cf4",
+            "classifications": [
+              "7b24f4bb-59a8-5b1f-a0f8-7064a9a37e84"
+            ],
+            "key": "use"
+          }
+        ],
+        "values": [
+          {
+            "id": "d6df3bce-3cb6-5aa6-b1ea-dd77c45f4bcc",
+            "kind": "measurement",
+            "measure": "92f1db7c-ffa7-5a82-8283-a9a989490d28",
+            "key": "floor_area"
+          }
+        ]
+      }
+    },
+    "stderr": ""
+  },
+  {
+    "identity": "659e781c71145b6d",
+    "schema": "56ceea9d9bc3f7fb",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.009882750004180707,
+    "outcome": "match"
+  },
+  {
+    "identity": "65e72f0acb45b4dc",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "67bda24f3f58e76f",
+    "schema": "73c847d65a318887",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.01672058299300261,
+    "outcome": "match"
+  },
+  {
+    "identity": "693685dfdd94b6e8",
+    "schema": "8dd6734926b83745",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.029223666002508253,
+    "outcome": "match"
+  },
+  {
+    "identity": "69a47484659c1b94",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.3819407080009114,
+    "outcome": "match"
+  },
+  {
+    "identity": "69f6ff6b4cf07435",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "6a51f7512a6f4636",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013748334007686935,
+    "outcome": "match"
+  },
+  {
+    "identity": "6b299bd20330def5",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "6bbc01058e00e85b",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.40894566698989365,
+    "outcome": "match"
+  },
+  {
+    "identity": "6bf0a05c67440b50",
+    "schema": "ef40cfab2b67db81",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.011091249994933605,
+    "outcome": "match"
+  },
+  {
+    "identity": "6d305298fd86d814",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.41459962500084657,
+    "outcome": "match"
+  },
+  {
+    "identity": "6d64eefaf0847192",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "6d72ea94b69f9977",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.014657541003543884,
+    "outcome": "match"
+  },
+  {
+    "identity": "6e1b46fa67053379",
+    "schema": "8dd6734926b83745",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": true,
+    "seconds": 0.029646875002072193,
+    "outcome": "difference",
+    "document": {
+      "id": "1ca4c0da-eb16-5815-b4a5-4193bde658fc",
+      "predicate": "8c9b169a-c9ee-51f6-ab09-ee9fb24f0dda",
+      "code": " "
+    },
+    "stderr": ""
+  },
+  {
+    "identity": "6ee09f675722e802",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "6f048687fec38e4d",
+    "schema": "19a02b0ea22f945e",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010505166996154003,
+    "outcome": "match"
+  },
+  {
+    "identity": "6f2cb36d2be49ca8",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "6f8a3ca85f5a5aef",
+    "schema": "c2f1625e04d0ef0a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.011300040991045535,
+    "outcome": "match"
+  },
+  {
+    "identity": "6fe02d02d7e428ec",
+    "schema": "455aed171d33dc98",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010809333005454391,
+    "outcome": "match"
+  },
+  {
+    "identity": "700593a8c4000065",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.013196874991990626,
+    "outcome": "match"
+  },
+  {
+    "identity": "702dc2c70186e126",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "709a8212ae7b5e63",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "71a0c018b8846a2e",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013799624997773208,
+    "outcome": "match"
+  },
+  {
+    "identity": "72450cb271b9d65b",
+    "schema": "19a02b0ea22f945e",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010283333002007566,
+    "outcome": "match"
+  },
+  {
+    "identity": "72758a6fac25b672",
+    "schema": "11624519fe901af7",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.011335083006997593,
+    "outcome": "match"
+  },
+  {
+    "identity": "728bd20bc7b49809",
+    "schema": "b8d7eae55d0fc765",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013994041990372352,
+    "outcome": "match"
+  },
+  {
+    "identity": "72a5acb2ba874380",
+    "schema": "c2f1625e04d0ef0a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": false,
+    "seconds": 0.011925875005545095,
+    "outcome": "difference",
+    "document": {
+      "starting_at": "26bc52ac-ac41-5d1c-961d-d9f4f6c8fc50",
+      "projection": {
+        "kind": "value",
+        "key": "annual_rent",
+        "cardinality": "one",
+        "missing": "error"
+      },
+      "duplicates": "distinct",
+      "steps": [
+        {
+          "kind": "relationship",
+          "depth": "transitive",
+          "classification": "72c6fd40-ca6d-5763-9469-463f231a9dce",
+          "direction": "outgoing"
+        }
+      ],
+      "filter": {
+        "classification": "c8743346-1b0d-577d-b7e1-fec288b22569"
+      }
+    },
+    "stderr": "projection: invalid value {kind:\"value\",key:\"annual_rent\",cardinality:\"one\",missing:\"error\",measure?:=~\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\"} (does not satisfy matchN): 1 matched, expected 2:\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:218:14\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/72a5acb2ba874380.case.json:1:71\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:12:16\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:218:21\nprojection: invalid value {kind:\"value\",key:\"annual_rent\",cardinality:\"one\",missing:\"error\"} (does not satisfy matchIf): field is required but not present:\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:247:4\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/72a5acb2ba874380.case.json:1:71\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:12:16\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:250:4\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:251:2\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:260:4\nprojection: invalid value {kind:\"value\",key:\"annual_rent\",cardinality:\"one\",missing:\"error\"} (does not satisfy matchIf): invalid value {cardinality!:_,missing!:_} (does not satisfy matchN): 0 matched, expected 1:\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:247:4\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/72a5acb2ba874380.case.json:1:71\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:12:16\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:250:4\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:250:11\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:260:4\n"
+  },
+  {
+    "identity": "7456062d7da0fadf",
+    "schema": "c2f1625e04d0ef0a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.011750999998184852,
+    "outcome": "match"
+  },
+  {
+    "identity": "746bc5d0b034f29a",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "746e8a2a49be1bb3",
+    "schema": "73c847d65a318887",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.016744708002079278,
+    "outcome": "match"
+  },
+  {
+    "identity": "74ade5b59660c232",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "74b8f49be29c3de9",
+    "schema": "455aed171d33dc98",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.01063929199881386,
+    "outcome": "match"
+  },
+  {
+    "identity": "74f1bf697f81a726",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "758935842d84d782",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "75d0d5b2fee9d1e6",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.3934843749884749,
+    "outcome": "match"
+  },
+  {
+    "identity": "760d952be20fd4c8",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.38784945900260936,
+    "outcome": "match"
+  },
+  {
+    "identity": "766e9dfd410f916b",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "766fe7ecf7b63372",
+    "schema": "455aed171d33dc98",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.01075687499542255,
+    "outcome": "match"
+  },
+  {
+    "identity": "76d89fd2f523cf11",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "76dc0dad2431cfc8",
+    "schema": "b8d7eae55d0fc765",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.014087709001614712,
+    "outcome": "match"
+  },
+  {
+    "identity": "770252b22e64d90d",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "776e837dc0b1c371",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "77c31671f64f5ac2",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.030127582998829894,
+    "outcome": "match"
+  },
+  {
+    "identity": "7849151cb2967c54",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "78565916f21d9b01",
+    "schema": "54e32847b60cb214",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.03021387499757111,
+    "outcome": "match"
+  },
+  {
+    "identity": "79a13045a5208fc8",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "79b58e8415f558c6",
+    "schema": "6c18c0d023cf2501",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.009865290994639508,
+    "outcome": "match"
+  },
+  {
+    "identity": "79c8ae705675bb70",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.3845525000069756,
+    "outcome": "match"
+  },
+  {
+    "identity": "7a37ef43c3f0a2f5",
+    "schema": "8dd6734926b83745",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.030212083001970313,
+    "outcome": "match"
+  },
+  {
+    "identity": "7ae0d1d9508f7ba2",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "7b22237f19f4f799",
+    "schema": "ef40cfab2b67db81",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.011210083001060411,
+    "outcome": "match"
+  },
+  {
+    "identity": "7b2bf8c13f247957",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013900584002840333,
+    "outcome": "match"
+  },
+  {
+    "identity": "7b39207814e13117",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.012483291997341439,
+    "outcome": "match"
+  },
+  {
+    "identity": "7bcbfff4ecae9dc4",
+    "schema": "ef40cfab2b67db81",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.010412082992843352,
+    "outcome": "match"
+  },
+  {
+    "identity": "7c2f17fe7ea24b34",
+    "schema": "c2f1625e04d0ef0a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.011209082993445918,
+    "outcome": "match"
+  },
+  {
+    "identity": "7c3a02af77325a22",
+    "schema": "ef40cfab2b67db81",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.011014290997991338,
+    "outcome": "match"
+  },
+  {
+    "identity": "7d4ac8005c1d85e5",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.013141207993612625,
+    "outcome": "match"
+  },
+  {
+    "identity": "7d6b81053b45f6fc",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "7d7e44eae78a38a1",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.013344040999072604,
+    "outcome": "match"
+  },
+  {
+    "identity": "7eb48cdaaa227e11",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "7eeb54229b6bfe77",
+    "schema": "c2f1625e04d0ef0a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.01150062499800697,
+    "outcome": "match"
+  },
+  {
+    "identity": "7f71a09a09ee7a76",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.38018154200108256,
+    "outcome": "match"
+  },
+  {
+    "identity": "7f985d5f0b5a357c",
+    "schema": "c3866c270a57783a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.021311999997124076,
+    "outcome": "match"
+  },
+  {
+    "identity": "800f9359f1006235",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "80309ef3b4815943",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "80b0df3079cfa1f9",
+    "schema": "455aed171d33dc98",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010567957986495458,
+    "outcome": "match"
+  },
+  {
+    "identity": "80eca4976fc9db8c",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "82c1cae60f01fde2",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.3808699159999378,
+    "outcome": "match"
+  },
+  {
+    "identity": "832137ee0fe031ef",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "83da6c5bd7a48dd7",
+    "schema": "6c18c0d023cf2501",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.010303333998308517,
+    "outcome": "match"
+  },
+  {
+    "identity": "846d28a132caa968",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.013924290993600152,
+    "outcome": "match"
+  },
+  {
+    "identity": "84ba99c45640c988",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "84e9ffd6624cf415",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.011767832998884842,
+    "outcome": "match"
+  },
+  {
+    "identity": "8529e28f6b24b008",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.012123000007704832,
+    "outcome": "match"
+  },
+  {
+    "identity": "852b37c89228329b",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.3822712080000201,
+    "outcome": "match"
+  },
+  {
+    "identity": "8534d7e3b7411b9a",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.3947667499887757,
+    "outcome": "match"
+  },
+  {
+    "identity": "8571334000c1b708",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "85b2a77e0adf1ba6",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.03109333399333991,
+    "outcome": "match"
+  },
+  {
+    "identity": "86c4b1fd00101770",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "86e341e68bf547ce",
+    "schema": "11624519fe901af7",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.011639042000751942,
+    "outcome": "match"
+  },
+  {
+    "identity": "87d4c556851a80c6",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013797250008792616,
+    "outcome": "match"
+  },
+  {
+    "identity": "88775084e99e5f75",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "8a3828960cd51ee4",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "8a43f36e11a90cbc",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013401125004747882,
+    "outcome": "match"
+  },
+  {
+    "identity": "8b65f89e3086e91f",
+    "schema": "54e32847b60cb214",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": false,
+    "cue": true,
+    "seconds": 0.029235708992928267,
+    "outcome": "difference",
+    "document": {
+      "name": " leading",
+      "value": "9324f928-cfc8-50bb-ba99-fe8c02a6dbd2"
+    },
+    "stderr": ""
+  },
+  {
+    "identity": "8b6fd17cd16d0d0d",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.013721375013119541,
+    "outcome": "match"
+  },
+  {
+    "identity": "8bd73ac448e41f4e",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "8c0e78a4702da853",
+    "schema": "ef40cfab2b67db81",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.010741334001068026,
+    "outcome": "match"
+  },
+  {
+    "identity": "8c408f870b6ac959",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.030280874998425134,
+    "outcome": "match"
+  },
+  {
+    "identity": "8c97885337382f44",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.03131962500629015,
+    "outcome": "match"
+  },
+  {
+    "identity": "8e0a954c32a454f3",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "8e50e4cb27dd63f3",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "8e6cd44631046f14",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.014086124996538274,
+    "outcome": "match"
+  },
+  {
+    "identity": "8ef97d32ea6c3b4c",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.031277333007892594,
+    "outcome": "match"
+  },
+  {
+    "identity": "8f43257d02b815d6",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.3803250829951139,
+    "outcome": "match"
+  },
+  {
+    "identity": "8f64c747c326a3f1",
+    "schema": "6c18c0d023cf2501",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.01121854200027883,
+    "outcome": "match"
+  },
+  {
+    "identity": "8f886337958cea52",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.02993054200487677,
+    "outcome": "match"
+  },
+  {
+    "identity": "8fa08d5745de4928",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "8fe9112d146c10c0",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "901059a78e5f9dae",
+    "schema": "79245041459cbc7b",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.010625584007357247,
+    "outcome": "match"
+  },
+  {
+    "identity": "9084e97f03c311db",
+    "schema": "11624519fe901af7",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.011355458002071828,
+    "outcome": "match"
+  },
+  {
+    "identity": "90e937e6c8dd0d27",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.030390415995498188,
+    "outcome": "match"
+  },
+  {
+    "identity": "914bc6046767a4ea",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.030943833000492305,
+    "outcome": "match"
+  },
+  {
+    "identity": "91bc04d4b3824dd4",
+    "schema": "455aed171d33dc98",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010845416996744461,
+    "outcome": "match"
+  },
+  {
+    "identity": "91ec95da455d8121",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "920331066b0bd670",
+    "schema": "19a02b0ea22f945e",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010190332992351614,
+    "outcome": "match"
+  },
+  {
+    "identity": "9281c6aa072ca694",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013178458000766113,
+    "outcome": "match"
+  },
+  {
+    "identity": "93129a57704562ea",
+    "schema": "f20a41bcf70772d9",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.009778209001524374,
+    "outcome": "match"
+  },
+  {
+    "identity": "9388840ad8fe47d2",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "runs.py",
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.3864325419999659,
+    "outcome": "match"
+  },
+  {
+    "identity": "93bb8f9c8bcb214e",
+    "schema": "8dd6734926b83745",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.030169625009875745,
+    "outcome": "match"
+  },
+  {
+    "identity": "93cf1ffbb0d2a058",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "93f1149dea81852c",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013202750007621944,
+    "outcome": "match"
+  },
+  {
+    "identity": "94232bb9ab6f9fe4",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.01424087499617599,
+    "outcome": "match"
+  },
+  {
+    "identity": "943e7f151e8f023a",
+    "schema": "56ceea9d9bc3f7fb",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010212250010226853,
+    "outcome": "match"
+  },
+  {
+    "identity": "9448610ad70b5781",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "948f29bd57379f2e",
+    "schema": "455aed171d33dc98",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010764542006654665,
+    "outcome": "match"
+  },
+  {
+    "identity": "94b48c974809e1ee",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "9549fbc45ce3db50",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.38260770800116006,
+    "outcome": "match"
+  },
+  {
+    "identity": "955cc3bc4e47bf15",
+    "schema": "c2f1625e04d0ef0a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.012000500006251968,
+    "outcome": "match"
+  },
+  {
+    "identity": "957838c4eee9c81f",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "9598550c3196ebe6",
+    "schema": "73c847d65a318887",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.020265624989406206,
+    "outcome": "match"
+  },
+  {
+    "identity": "95a0ddad40bb6a3c",
+    "schema": "c3866c270a57783a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.02245858300011605,
+    "outcome": "match"
+  },
+  {
+    "identity": "95b1dfd553545cd1",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "9620a04f43097285",
+    "schema": "c2f1625e04d0ef0a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": false,
+    "seconds": 0.011693915992509574,
+    "outcome": "difference",
+    "document": {
+      "starting_at": "26bc52ac-ac41-5d1c-961d-d9f4f6c8fc50",
+      "projection": {
+        "kind": "value",
+        "key": "annual_rent",
+        "cardinality": "one",
+        "missing": "error"
+      },
+      "duplicates": "distinct",
+      "steps": [
+        {
+          "kind": "relationship",
+          "depth": "transitive",
+          "classification": "72c6fd40-ca6d-5763-9469-463f231a9dce",
+          "direction": "outgoing"
+        }
+      ],
+      "filter": {
+        "classification": "c8743346-1b0d-577d-b7e1-fec288b22569",
+        "labels": [
+          {
+            "key": "use",
+            "classification": "c8743346-1b0d-577d-b7e1-fec288b22569"
+          }
+        ]
+      }
+    },
+    "stderr": "projection: invalid value {kind:\"value\",key:\"annual_rent\",cardinality:\"one\",missing:\"error\",measure?:=~\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\"} (does not satisfy matchN): 1 matched, expected 2:\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:218:14\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/9620a04f43097285.case.json:1:71\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:12:16\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:218:21\nprojection: invalid value {kind:\"value\",key:\"annual_rent\",cardinality:\"one\",missing:\"error\"} (does not satisfy matchIf): field is required but not present:\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:247:4\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/9620a04f43097285.case.json:1:71\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:12:16\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:250:4\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:251:2\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:260:4\nprojection: invalid value {kind:\"value\",key:\"annual_rent\",cardinality:\"one\",missing:\"error\"} (does not satisfy matchIf): invalid value {cardinality!:_,missing!:_} (does not satisfy matchN): 0 matched, expected 1:\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:247:4\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/9620a04f43097285.case.json:1:71\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:12:16\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:250:4\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:250:11\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:260:4\n"
+  },
+  {
+    "identity": "966b3135094f2a9f",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.029885000010835938,
+    "outcome": "match"
+  },
+  {
+    "identity": "969d2f7dcdbaee03",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "97138072e3f5ac0b",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "973197294ec3c690",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.012753124989103526,
+    "outcome": "match"
+  },
+  {
+    "identity": "976de95bc6ce1aef",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.013255207988549955,
+    "outcome": "match"
+  },
+  {
+    "identity": "979828346e914cf6",
+    "schema": "54e32847b60cb214",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": false,
+    "cue": true,
+    "seconds": 0.029516874987166375,
+    "outcome": "difference",
+    "document": {
+      "name": " ",
+      "value": "9324f928-cfc8-50bb-ba99-fe8c02a6dbd2"
+    },
+    "stderr": ""
+  },
+  {
+    "identity": "983d14402b59f13e",
+    "schema": "11624519fe901af7",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.011822667001979426,
+    "outcome": "match"
+  },
+  {
+    "identity": "985acf8405fe2c13",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.3915125839994289,
+    "outcome": "match"
+  },
+  {
+    "identity": "9873ebcb8be3f1dc",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.013639707991387695,
+    "outcome": "match"
+  },
+  {
+    "identity": "988fea565d823b42",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.01303245899907779,
+    "outcome": "match"
+  },
+  {
+    "identity": "98bf7b60bc136c94",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.030220625005313195,
+    "outcome": "match"
+  },
+  {
+    "identity": "98e938dc400d2636",
+    "schema": "ef40cfab2b67db81",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.01030933299625758,
+    "outcome": "match"
+  },
+  {
+    "identity": "98ef0d40565427e8",
+    "schema": "c2f1625e04d0ef0a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010843208990991116,
+    "outcome": "match"
+  },
+  {
+    "identity": "99198d638d313ae1",
+    "schema": "b8d7eae55d0fc765",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.01409974999842234,
+    "outcome": "match"
+  },
+  {
+    "identity": "9961930901792b34",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "9a0aae36744b9540",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.02974908299802337,
+    "outcome": "match"
+  },
+  {
+    "identity": "9a9e838c0120c649",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.39673770900117233,
+    "outcome": "match"
+  },
+  {
+    "identity": "9ad980c66ecf4be8",
+    "schema": "8dd6734926b83745",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.030244459005189128,
+    "outcome": "match"
+  },
+  {
+    "identity": "9b0addc0fe3faeeb",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.3954692910047015,
+    "outcome": "match"
+  },
+  {
+    "identity": "9c5598ca2fabf1b7",
+    "schema": "ef40cfab2b67db81",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.008967041998403147,
+    "outcome": "match"
+  },
+  {
+    "identity": "9ce30315c394ddb5",
+    "schema": "56ceea9d9bc3f7fb",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.009919707998051308,
+    "outcome": "match"
+  },
+  {
+    "identity": "9d14778e09578690",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.014931500001694076,
+    "outcome": "match"
+  },
+  {
+    "identity": "9d8b32d898116acc",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "9dd6252faa2247eb",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.028948916005901992,
+    "outcome": "match"
+  },
+  {
+    "identity": "9dfb971e63062f76",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.011919625001610257,
+    "outcome": "match"
+  },
+  {
+    "identity": "9e016d6336050d17",
+    "schema": "11624519fe901af7",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.011419707996537909,
+    "outcome": "match"
+  },
+  {
+    "identity": "9e164a9c312ace59",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.013169541998649947,
+    "outcome": "match"
+  },
+  {
+    "identity": "9e989c247a3907cc",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "9edd64e6f6ba9816",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "9f61746139513dcf",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.012263957993127406,
+    "outcome": "match"
+  },
+  {
+    "identity": "9fe74814e9280332",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "a043f16450a807ef",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "a048a081a7c80acc",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013533291989006102,
+    "outcome": "match"
+  },
+  {
+    "identity": "a04ad934497353cf",
+    "schema": "6c18c0d023cf2501",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.009793459001230076,
+    "outcome": "match"
+  },
+  {
+    "identity": "a07eff5599240ee1",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.4082225830061361,
+    "outcome": "match"
+  },
+  {
+    "identity": "a0ad4978dae7db6d",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.030249167000874877,
+    "outcome": "match"
+  },
+  {
+    "identity": "a0bcf39bdfc16257",
+    "schema": "73c847d65a318887",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.017928125002072193,
+    "outcome": "match"
+  },
+  {
+    "identity": "a131ffbcd8748920",
+    "schema": "79245041459cbc7b",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.010386750000179745,
+    "outcome": "match"
+  },
+  {
+    "identity": "a14aa09623dba243",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.3974562090006657,
+    "outcome": "match"
+  },
+  {
+    "identity": "a21989f52ed775c9",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "a21cd0c651a03aa8",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "a282646b4349c3bd",
+    "schema": "ef40cfab2b67db81",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.011227833005250432,
+    "outcome": "match"
+  },
+  {
+    "identity": "a2882831eb8f91c7",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.39947312499862164,
+    "outcome": "match"
+  },
+  {
+    "identity": "a2a3efbab71092b2",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "a3a0bf105bc228d5",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "a3afd0721c1d4130",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.0139944580005249,
+    "outcome": "match"
+  },
+  {
+    "identity": "a3e5abec0ae2c130",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.032843499997397885,
+    "outcome": "match"
+  },
+  {
+    "identity": "a48084db0f155224",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.39759616600349545,
+    "outcome": "match"
+  },
+  {
+    "identity": "a4c00c51561fe83d",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.03105208300985396,
+    "outcome": "match"
+  },
+  {
+    "identity": "a51a62b9d61dab7f",
+    "schema": "c3866c270a57783a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.020300834003137425,
+    "outcome": "match"
+  },
+  {
+    "identity": "a571d62a197ffbbb",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.01316808299452532,
+    "outcome": "match"
+  },
+  {
+    "identity": "a591cfbdcfa3dfbf",
+    "schema": "8dd6734926b83745",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.03004549999604933,
+    "outcome": "match"
+  },
+  {
+    "identity": "a5a15f7e26f5a916",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.39625183401221875,
+    "outcome": "match"
+  },
+  {
+    "identity": "a5d500ddd9a1c397",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "a5dd08217d18c615",
+    "schema": "56ceea9d9bc3f7fb",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.009057999996002764,
+    "outcome": "match"
+  },
+  {
+    "identity": "a604321e9bd1c01c",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.011608000000705943,
+    "outcome": "match"
+  },
+  {
+    "identity": "a649f951d17b549c",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.030460750000202097,
+    "outcome": "match"
+  },
+  {
+    "identity": "a653d5efc03cd662",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "a66a46d3cce7d718",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013707291989703663,
+    "outcome": "match"
+  },
+  {
+    "identity": "a75e82030004746b",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "a7952c830d139c63",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "a80df2138e190d16",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.3948304170044139,
+    "outcome": "match"
+  },
+  {
+    "identity": "a8890ff87fe81883",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013550666990340687,
+    "outcome": "match"
+  },
+  {
+    "identity": "a8c99f2b5ca986b4",
+    "schema": "19a02b0ea22f945e",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010444209008710459,
+    "outcome": "match"
+  },
+  {
+    "identity": "a90f0f93f39cc16f",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.39980470899899956,
+    "outcome": "match"
+  },
+  {
+    "identity": "a97e53a383be1d14",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "aa7034a57f06e1d5",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "aab88232b96b98e0",
+    "schema": "54e32847b60cb214",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.030314707997604273,
+    "outcome": "match"
+  },
+  {
+    "identity": "aabbddccef9b0402",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "aae8d09376dd7a3a",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.39748241601046175,
+    "outcome": "match"
+  },
+  {
+    "identity": "ab89a99b23a4f954",
+    "schema": "8dd6734926b83745",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.0313617920037359,
+    "outcome": "match"
+  },
+  {
+    "identity": "abb7b49982517140",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013747749995673075,
+    "outcome": "match"
+  },
+  {
+    "identity": "ac55d994105a3139",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "ac656fc52c2205b1",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.030011791997822,
+    "outcome": "match"
+  },
+  {
+    "identity": "acca36b6ce2b182c",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.03219429099408444,
+    "outcome": "match"
+  },
+  {
+    "identity": "ad03810752c45a8f",
+    "schema": "c2f1625e04d0ef0a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": false,
+    "seconds": 0.011619707991485484,
+    "outcome": "difference",
+    "document": {
+      "starting_at": "e0a837b9-76de-56fa-8eec-1eeb6978af8b",
+      "projection": {
+        "kind": "entity"
+      },
+      "duplicates": "distinct"
+    },
+    "stderr": "projection: invalid value {kind:\"entity\",cardinality?:\"one\" | \"many\",key?:=~\"\\\\S\",measure?:=~\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",missing?:\"error\" | \"omit\"} (does not satisfy matchN): 1 matched, expected 2:\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:218:14\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/ad03810752c45a8f.case.json:1:71\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:12:16\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:218:21\nprojection: invalid value {kind:\"entity\"} (does not satisfy matchIf): field is required but not present:\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:247:4\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/ad03810752c45a8f.case.json:1:71\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:12:16\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:250:4\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:251:2\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:260:4\nprojection: invalid value {kind:\"entity\"} (does not satisfy matchIf): invalid value {cardinality!:_,missing!:_} (does not satisfy matchN): 0 matched, expected 1:\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:247:4\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/ad03810752c45a8f.case.json:1:71\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:12:16\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:250:4\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:250:11\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:260:4\n"
+  },
+  {
+    "identity": "ad5ebf60000d458c",
+    "schema": "c2f1625e04d0ef0a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.01059608299692627,
+    "outcome": "match"
+  },
+  {
+    "identity": "adc07c38360f0778",
+    "schema": "c2f1625e04d0ef0a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010711124996305443,
+    "outcome": "match"
+  },
+  {
+    "identity": "ade87448c13645e8",
+    "schema": "6c18c0d023cf2501",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.010022542002843693,
+    "outcome": "match"
+  },
+  {
+    "identity": "ae2a16c92de66bb1",
+    "schema": "8dd6734926b83745",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.030132874991977587,
+    "outcome": "match"
+  },
+  {
+    "identity": "aef66072e15824ca",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.011384500001440756,
+    "outcome": "match"
+  },
+  {
+    "identity": "af2cb5d49e791114",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "b024f7e1eaec13a3",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "runs.py",
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.029455124997184612,
+    "outcome": "match"
+  },
+  {
+    "identity": "b08d70d03abfd58c",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.030371166998520494,
+    "outcome": "match"
+  },
+  {
+    "identity": "b0fd5e6ad54bd9af",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "b108d37a523326cd",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.03004095799406059,
+    "outcome": "match"
+  },
+  {
+    "identity": "b16716fa43056824",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "b1f8d02781923ea7",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.012898624991066754,
+    "outcome": "match"
+  },
+  {
+    "identity": "b231c729ef686426",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "runs.py",
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.03083908300322946,
+    "outcome": "match"
+  },
+  {
+    "identity": "b2a30b6a9caf51e7",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "b2e5cae7b960699a",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.40379512500658166,
+    "outcome": "match"
+  },
+  {
+    "identity": "b35249c659e9f17a",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.013351582994800992,
+    "outcome": "match"
+  },
+  {
+    "identity": "b401c5c94ab11d3a",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "b42a4a2ada912135",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.40083595900796354,
+    "outcome": "match"
+  },
+  {
+    "identity": "b45dc0f572238128",
+    "schema": "c2f1625e04d0ef0a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010958541999571025,
+    "outcome": "match"
+  },
+  {
+    "identity": "b4f4c26a5ef650c4",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "b50231c832f9fc21",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013239082996733487,
+    "outcome": "match"
+  },
+  {
+    "identity": "b5459770daaa6330",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "b55235c31751cec0",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.3969110420002835,
+    "outcome": "match"
+  },
+  {
+    "identity": "b56efc4fb544e07e",
+    "schema": "ef40cfab2b67db81",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.010433749994263053,
+    "outcome": "match"
+  },
+  {
+    "identity": "b5a628ee54e2500b",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.011630041990429163,
+    "outcome": "match"
+  },
+  {
+    "identity": "b5b96ec0c9a43978",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "b682a09dd3d9983f",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "b744f4fbee964f5a",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "b78baacbcf8228ac",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.012319333996856585,
+    "outcome": "match"
+  },
+  {
+    "identity": "b7c34857b1af699c",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "b7d9014b10835174",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "b7f9292c07761cf4",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "b878b0d3bd679f2a",
+    "schema": "6c18c0d023cf2501",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.010944959009066224,
+    "outcome": "match"
+  },
+  {
+    "identity": "b8827058abd0089a",
+    "schema": "19a02b0ea22f945e",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.011214291997021064,
+    "outcome": "match"
+  },
+  {
+    "identity": "b8aef7f27a063a2c",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.06285037499037571,
+    "outcome": "match"
+  },
+  {
+    "identity": "b98f76380e77459a",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "b99ecf196da3870b",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "b9c4fe3e36ba8148",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "b9cc60874ef3f5d2",
+    "schema": "19a02b0ea22f945e",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010062250003102235,
+    "outcome": "match"
+  },
+  {
+    "identity": "ba0c41f9ce6b6e5e",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "outcome": "non_json_numeric_input"
+  },
+  {
+    "identity": "bad830d839e42e33",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "bb8780f6143cbdbd",
+    "schema": "8dd6734926b83745",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.030624042003182694,
+    "outcome": "match"
+  },
+  {
+    "identity": "bb8784f7e5ba3ba1",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.40055908300564624,
+    "outcome": "match"
+  },
+  {
+    "identity": "bb9aedcf437b04ea",
+    "schema": "455aed171d33dc98",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010212624998530373,
+    "outcome": "match"
+  },
+  {
+    "identity": "bbf8e1ffb221e89b",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "bc468c99c3ad3787",
+    "schema": "6c18c0d023cf2501",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.010420749997138046,
+    "outcome": "match"
+  },
+  {
+    "identity": "bc7bc174b9a14ec8",
+    "schema": "c3866c270a57783a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.019572791003156453,
+    "outcome": "match"
+  },
+  {
+    "identity": "bcd9c8b5f221b101",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "bcf96b92119e874f",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "bd0634f0111c3bd8",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "bd646d0747fdfdab",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "bd81f2dd276f114f",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "bdc5c4d5550f2f00",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.012937166000483558,
+    "outcome": "match"
+  },
+  {
+    "identity": "be1d12c2370c30f9",
+    "schema": "11624519fe901af7",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010613749996991828,
+    "outcome": "match"
+  },
+  {
+    "identity": "be722b4d544b5e7f",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "be9e22bb37dfef85",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.4053757919900818,
+    "outcome": "match"
+  },
+  {
+    "identity": "bfe605f9dedd1218",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.03203229200153146,
+    "outcome": "match"
+  },
+  {
+    "identity": "c15212af2511d6c8",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "c1ae9d99248a5f99",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013596249991678633,
+    "outcome": "match"
+  },
+  {
+    "identity": "c21762ccffb9bccd",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.38855070900171995,
+    "outcome": "match"
+  },
+  {
+    "identity": "c25df04ffe6dc89c",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.3774155840073945,
+    "outcome": "match"
+  },
+  {
+    "identity": "c2daffc196fab817",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.03183487500064075,
+    "outcome": "match"
+  },
+  {
+    "identity": "c34399ee3d70c98a",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "c3b877ac839b2f92",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.4055293330020504,
+    "outcome": "match"
+  },
+  {
+    "identity": "c412a3beffe98cda",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "c49ba655ddd1cd84",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "c5a872e31d5eb0ad",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.03189129200472962,
+    "outcome": "match"
+  },
+  {
+    "identity": "c5ced7d0e13b69a5",
+    "schema": "c3866c270a57783a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.019886374997440726,
+    "outcome": "match"
+  },
+  {
+    "identity": "c5dc2dec98b97f95",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.013324874991667457,
+    "outcome": "match"
+  },
+  {
+    "identity": "c76a5d96f1077600",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "c79415dd0de3f555",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.029817707996699028,
+    "outcome": "match"
+  },
+  {
+    "identity": "c7bc44a1d43bead1",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.013003540996578522,
+    "outcome": "match"
+  },
+  {
+    "identity": "c81a92e4987527ca",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "c85f701d5b28efb7",
+    "schema": "11624519fe901af7",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.011150375008583069,
+    "outcome": "match"
+  },
+  {
+    "identity": "c8be333023055e24",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "c9184a4bd43b091d",
+    "schema": "56ceea9d9bc3f7fb",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.01001108399941586,
+    "outcome": "match"
+  },
+  {
+    "identity": "c9b8c63a59cd0331",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.37750762500218116,
+    "outcome": "match"
+  },
+  {
+    "identity": "c9c0918fe80492d9",
+    "schema": "73c847d65a318887",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.017902167004649527,
+    "outcome": "match"
+  },
+  {
+    "identity": "c9dd4e538bb92155",
+    "schema": "8dd6734926b83745",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.03151516699290369,
+    "outcome": "match"
+  },
+  {
+    "identity": "ca103bb9a30d98b8",
+    "schema": "c3866c270a57783a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.020452875003684312,
+    "outcome": "match"
+  },
+  {
+    "identity": "ca6b37fcfadff361",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "cac3b7a4004b8989",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "cb7dd58a56cdb357",
+    "schema": "ef40cfab2b67db81",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.010385792003944516,
+    "outcome": "match"
+  },
+  {
+    "identity": "cbdb3abe44f38885",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "cc1d642cea96ab83",
+    "schema": "79245041459cbc7b",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.011070332999224775,
+    "outcome": "match"
+  },
+  {
+    "identity": "cd3e06de175eca3b",
+    "schema": "455aed171d33dc98",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010740415993495844,
+    "outcome": "match"
+  },
+  {
+    "identity": "cd6eade8902aa43c",
+    "schema": "b8d7eae55d0fc765",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.014243541998439468,
+    "outcome": "match"
+  },
+  {
+    "identity": "cda3df238a113f8a",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "cdbd908869f0ecf4",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "ce489b13d6270742",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "ce8c65002dbac289",
+    "schema": "8dd6734926b83745",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.029793791996780783,
+    "outcome": "match"
+  },
+  {
+    "identity": "ce92c9810d36a03d",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "cf6d645a85ac984a",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "cf82e0d8d45d154a",
+    "schema": "c2f1625e04d0ef0a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": false,
+    "seconds": 0.012095999991288409,
+    "outcome": "difference",
+    "document": {
+      "starting_at": "26bc52ac-ac41-5d1c-961d-d9f4f6c8fc50",
+      "projection": {
+        "kind": "entity"
+      },
+      "duplicates": "distinct",
+      "steps": [
+        {
+          "kind": "membership",
+          "depth": "direct"
+        }
+      ]
+    },
+    "stderr": "projection: invalid value {kind:\"entity\",cardinality?:\"one\" | \"many\",key?:=~\"\\\\S\",measure?:=~\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\",missing?:\"error\" | \"omit\"} (does not satisfy matchN): 1 matched, expected 2:\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:218:14\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:12:16\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:218:21\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/cf82e0d8d45d154a.case.json:1:71\nprojection: invalid value {kind:\"entity\"} (does not satisfy matchIf): field is required but not present:\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:247:4\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:12:16\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:250:4\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:251:2\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:260:4\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/cf82e0d8d45d154a.case.json:1:71\nprojection: invalid value {kind:\"entity\"} (does not satisfy matchIf): invalid value {cardinality!:_,missing!:_} (does not satisfy matchN): 0 matched, expected 1:\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:247:4\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:12:16\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:250:4\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:250:11\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:260:4\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/cf82e0d8d45d154a.case.json:1:71\n"
+  },
+  {
+    "identity": "cfa27758d9685df9",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "cfdd15085d492fa5",
+    "schema": "c3866c270a57783a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.019424833997618407,
+    "outcome": "match"
+  },
+  {
+    "identity": "d0bca8e8678328fa",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "outcome": "non_json_numeric_input"
+  },
+  {
+    "identity": "d106df15dfc62b4b",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "d1a67d9a1aeec860",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.013127957994583994,
+    "outcome": "match"
+  },
+  {
+    "identity": "d1c1ebe2065f71b3",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.013873040996259078,
+    "outcome": "match"
+  },
+  {
+    "identity": "d25d16c6d01ec8d7",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.3916274590010289,
+    "outcome": "match"
+  },
+  {
+    "identity": "d3448a5698c7374c",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "d3611ac03a3970a6",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "d42b3d38d633e3de",
+    "schema": "8dd6734926b83745",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.029422374995192513,
+    "outcome": "match"
+  },
+  {
+    "identity": "d49b87bce095f4f5",
+    "schema": "c3866c270a57783a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.01990250000380911,
+    "outcome": "match"
+  },
+  {
+    "identity": "d4d62f9931132578",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "d51fa22415ec95f9",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "d576d30abeddacc0",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "d62e84688269401b",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.0309852090140339,
+    "outcome": "match"
+  },
+  {
+    "identity": "d6379d076dfc0491",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "d65df957f5436a85",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "d65ecdbcb08a1d44",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.030066416002227925,
+    "outcome": "match"
+  },
+  {
+    "identity": "d66f3e3fa498da36",
+    "schema": "8dd6734926b83745",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.030783791007706895,
+    "outcome": "match"
+  },
+  {
+    "identity": "d6d860d8e8e8adf1",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "d71c37021729abf6",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "d740a5445ebbcfda",
+    "schema": "8dd6734926b83745",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.031276583002181724,
+    "outcome": "match"
+  },
+  {
+    "identity": "d7714175be5a6f96",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "d79557026c86c7ed",
+    "schema": "b8d7eae55d0fc765",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.013428540987661108,
+    "outcome": "match"
+  },
+  {
+    "identity": "d7ec0922503cb23a",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "d8a0c49ddbf02c30",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "d8bf503467cba631",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "d9020654da735eb4",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "d928410a7aa697fc",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.03093429199361708,
+    "outcome": "match"
+  },
+  {
+    "identity": "d9311d6f5e9af941",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "d95756474cdc7b12",
+    "schema": "455aed171d33dc98",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.01049724999757018,
+    "outcome": "match"
+  },
+  {
+    "identity": "da9036d1ef1bd94d",
+    "schema": "ef40cfab2b67db81",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010835416993359104,
+    "outcome": "match"
+  },
+  {
+    "identity": "dc626d6a33df0f19",
+    "schema": "73c847d65a318887",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.014217874995665625,
+    "outcome": "match"
+  },
+  {
+    "identity": "dd033121ed18ec13",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "dd0f9de8a0e6c828",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.3953676670062123,
+    "outcome": "match"
+  },
+  {
+    "identity": "dd2c5fa9b6d5ee84",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "dd4f290f9c6786eb",
+    "schema": "11624519fe901af7",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.011357583993230946,
+    "outcome": "match"
+  },
+  {
+    "identity": "dd87b50a2b47f382",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.031124291999731213,
+    "outcome": "match"
+  },
+  {
+    "identity": "dd95dc3f8a2e980e",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "de2ec973910b65e8",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "de80ea91521bbb3a",
+    "schema": "19a02b0ea22f945e",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010321915993699804,
+    "outcome": "match"
+  },
+  {
+    "identity": "df1f390b98176b00",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.3877118749951478,
+    "outcome": "match"
+  },
+  {
+    "identity": "df3644d6cb49392f",
+    "schema": "8dd6734926b83745",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.029136500001186505,
+    "outcome": "match"
+  },
+  {
+    "identity": "df840b534af98671",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "dfbec33d09fd2b6c",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "runs.py",
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.030949583000619896,
+    "outcome": "match"
+  },
+  {
+    "identity": "dfe2184013ef4134",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.3823260419885628,
+    "outcome": "match"
+  },
+  {
+    "identity": "dff6d0ef5d9e68cc",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.3918403749994468,
+    "outcome": "match"
+  },
+  {
+    "identity": "e001feb2f8bf0de7",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.030619666998973116,
+    "outcome": "match"
+  },
+  {
+    "identity": "e02bce00f40ca940",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "e0a42de378daaa33",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "e0e6c46117c9fec3",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.01365129199984949,
+    "outcome": "match"
+  },
+  {
+    "identity": "e10345c5b76abbfe",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.3754547089920379,
+    "outcome": "match"
+  },
+  {
+    "identity": "e131a4aaa79c69b2",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "e1d181b252f6c4b7",
+    "schema": "ef40cfab2b67db81",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010783334000734612,
+    "outcome": "match"
+  },
+  {
+    "identity": "e200bb400217787e",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.38615554200077895,
+    "outcome": "match"
+  },
+  {
+    "identity": "e245108e00b46c09",
+    "schema": "54e32847b60cb214",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.029649500007508323,
+    "outcome": "match"
+  },
+  {
+    "identity": "e255af2ec3f5ebd9",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "e34bfc85a793810b",
+    "schema": "8dd6734926b83745",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.031044624993228354,
+    "outcome": "match"
+  },
+  {
+    "identity": "e3b72364beba30fa",
+    "schema": "ef40cfab2b67db81",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.011274250005953945,
+    "outcome": "match"
+  },
+  {
+    "identity": "e44ddce434f50cbc",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.012842374999308959,
+    "outcome": "match"
+  },
+  {
+    "identity": "e4bcb2dba1831dac",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "e4beac4d0eafeac2",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "e4fb7edac1cf689b",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "e5c98bb9db77a307",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "e5d009da45fe95af",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.38395375000254717,
+    "outcome": "match"
+  },
+  {
+    "identity": "e5ea13a684f912d5",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.013532708995626308,
+    "outcome": "match"
+  },
+  {
+    "identity": "e6c79220c469831e",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "e6ecb967bc69361f",
+    "schema": "19a02b0ea22f945e",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.010143124993192032,
+    "outcome": "match"
+  },
+  {
+    "identity": "e743048f10910036",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.37214945899904706,
+    "outcome": "match"
+  },
+  {
+    "identity": "e744465fad8156f5",
+    "schema": "c2f1625e04d0ef0a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": false,
+    "seconds": 0.011418916008551605,
+    "outcome": "difference",
+    "document": {
+      "starting_at": "26bc52ac-ac41-5d1c-961d-d9f4f6c8fc50",
+      "projection": {
+        "kind": "value",
+        "key": "annual_rent",
+        "cardinality": "one",
+        "missing": "error"
+      },
+      "duplicates": "distinct",
+      "steps": [
+        {
+          "kind": "relationship",
+          "depth": "transitive",
+          "classification": "72c6fd40-ca6d-5763-9469-463f231a9dce",
+          "direction": "incoming"
+        }
+      ],
+      "filter": {
+        "classification": "c8743346-1b0d-577d-b7e1-fec288b22569"
+      }
+    },
+    "stderr": "projection: invalid value {kind:\"value\",key:\"annual_rent\",cardinality:\"one\",missing:\"error\",measure?:=~\"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$\"} (does not satisfy matchN): 1 matched, expected 2:\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:218:14\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:12:16\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:218:21\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/e744465fad8156f5.case.json:1:71\nprojection: invalid value {kind:\"value\",key:\"annual_rent\",cardinality:\"one\",missing:\"error\"} (does not satisfy matchIf): field is required but not present:\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:247:4\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:12:16\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:250:4\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:251:2\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:260:4\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/e744465fad8156f5.case.json:1:71\nprojection: invalid value {kind:\"value\",key:\"annual_rent\",cardinality:\"one\",missing:\"error\"} (does not satisfy matchIf): invalid value {cardinality!:_,missing!:_} (does not satisfy matchN): 0 matched, expected 1:\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:247:4\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:12:16\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:250:4\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:250:11\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/c2f1625e04d0ef0a.cue:260:4\n    ../../../../private/tmp/rk-cue-current-study/raw-bounded-compared/e744465fad8156f5.case.json:1:71\n"
+  },
+  {
+    "identity": "e74b0f62ef0440a2",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "e782532274d0440c",
+    "schema": "ef40cfab2b67db81",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.01044995900883805,
+    "outcome": "match"
+  },
+  {
+    "identity": "e7b5e61b956a9daa",
+    "schema": "73c847d65a318887",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.014331874990602955,
+    "outcome": "match"
+  },
+  {
+    "identity": "e815347de8105c9e",
+    "schema": "19a02b0ea22f945e",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.010266415993100964,
+    "outcome": "match"
+  },
+  {
+    "identity": "e83b812a12c4d476",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.030339833989273757,
+    "outcome": "match"
+  },
+  {
+    "identity": "e92607c8f6408a6d",
+    "schema": "11624519fe901af7",
+    "suites": [
+      "expressions.py",
+      "formulations.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.011690083003486507,
+    "outcome": "match"
+  },
+  {
+    "identity": "e9689aa82cc3aabd",
+    "schema": "ef40cfab2b67db81",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010576417000265792,
+    "outcome": "match"
+  },
+  {
+    "identity": "e99e67206a31d8aa",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.02951104201201815,
+    "outcome": "match"
+  },
+  {
+    "identity": "e9a295a0e67e6a21",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.029288042002008297,
+    "outcome": "match"
+  },
+  {
+    "identity": "e9f8604f0a510205",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "e9f9e7552eb896a4",
+    "schema": "11624519fe901af7",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.011453332990640774,
+    "outcome": "match"
+  },
+  {
+    "identity": "ea8771be2760dbdc",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "eb1da2d4cac77b56",
+    "schema": "56ceea9d9bc3f7fb",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.009692249994259328,
+    "outcome": "match"
+  },
+  {
+    "identity": "ec94594e8fe775ea",
+    "schema": "ef40cfab2b67db81",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.010727374989073724,
+    "outcome": "match"
+  },
+  {
+    "identity": "ee26a45784c93a71",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.0137199589953525,
+    "outcome": "match"
+  },
+  {
+    "identity": "ee3024c506ff15a7",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.38168962499185,
+    "outcome": "match"
+  },
+  {
+    "identity": "ee47b274eae9a19c",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "ee52960c41d7c452",
+    "schema": "73c847d65a318887",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.01724649999232497,
+    "outcome": "match"
+  },
+  {
+    "identity": "ef623647331ab6ea",
+    "schema": "54e32847b60cb214",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": false,
+    "cue": true,
+    "seconds": 0.030314959003590047,
+    "outcome": "difference",
+    "document": {
+      "name": "",
+      "value": "9324f928-cfc8-50bb-ba99-fe8c02a6dbd2"
+    },
+    "stderr": ""
+  },
+  {
+    "identity": "efa3131c9c857427",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.38802070799283683,
+    "outcome": "match"
+  },
+  {
+    "identity": "efc7356825c21d98",
+    "schema": "8dd6734926b83745",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.029771375004202127,
+    "outcome": "match"
+  },
+  {
+    "identity": "f029b2b06a024e87",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "f044a84aecafb6cd",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.012806749989977106,
+    "outcome": "match"
+  },
+  {
+    "identity": "f07ec2bc75ae633d",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.3845266249991255,
+    "outcome": "match"
+  },
+  {
+    "identity": "f0b33ba8f3c07c02",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.03134408300684299,
+    "outcome": "match"
+  },
+  {
+    "identity": "f1218e902e6bd060",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.38965083299262915,
+    "outcome": "match"
+  },
+  {
+    "identity": "f177ae57e05e9ca8",
+    "schema": "b8d7eae55d0fc765",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.011959583003772423,
+    "outcome": "match"
+  },
+  {
+    "identity": "f18e2b9bea4960f9",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.3881424160063034,
+    "outcome": "match"
+  },
+  {
+    "identity": "f28ccb753dcde4f0",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "f2d084b576d7d8a8",
+    "schema": "c2f1625e04d0ef0a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.011838541002362035,
+    "outcome": "match"
+  },
+  {
+    "identity": "f31d7729011ec2c3",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "f3db575c81a7d0ea",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.39787320799950976,
+    "outcome": "match"
+  },
+  {
+    "identity": "f44e137b7c40db2d",
+    "schema": "c2f1625e04d0ef0a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.012309083991567604,
+    "outcome": "match"
+  },
+  {
+    "identity": "f5087fd672eb4289",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "f580d7caedaaf9d3",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.37981062500330154,
+    "outcome": "match"
+  },
+  {
+    "identity": "f5a1f3be4d7339cd",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "f5c1a0ade3b74d7f",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.011583333005546592,
+    "outcome": "match"
+  },
+  {
+    "identity": "f5e1fbcbfde18338",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.06131224999262486,
+    "outcome": "match"
+  },
+  {
+    "identity": "f5eda670ebacb56e",
+    "schema": "ef40cfab2b67db81",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010713791998568922,
+    "outcome": "match"
+  },
+  {
+    "identity": "f74f1d3d7af7f188",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.03006291700876318,
+    "outcome": "match"
+  },
+  {
+    "identity": "f754d9f7fd6a4c94",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py",
+      "runs.py",
+      "specifications.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "f75c83c3669aa252",
+    "schema": "8dd6734926b83745",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.031144541993853636,
+    "outcome": "match"
+  },
+  {
+    "identity": "f7b6198abcc72cc0",
+    "schema": "aa6f5bce6bf20b59",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "cue": true,
+    "seconds": 0.06252024999412242,
+    "outcome": "match"
+  },
+  {
+    "identity": "f7e5201756c8d202",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "f861622720d9ba76",
+    "schema": "c2f1625e04d0ef0a",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.011840374994790182,
+    "outcome": "match"
+  },
+  {
+    "identity": "f8a94bffeba9fefd",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "f8c607a7ab095c07",
+    "schema": "11624519fe901af7",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.01122620899695903,
+    "outcome": "match"
+  },
+  {
+    "identity": "f97a7694aaeda1a3",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "f9b54887670d4682",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "f9bf457a7d796814",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "f9f19d28dd795335",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "fa09c4f823625877",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "fab308c7ac911e26",
+    "schema": "ef40cfab2b67db81",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010332624995498918,
+    "outcome": "match"
+  },
+  {
+    "identity": "facef403c228217f",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "fafacc2e6d96faab",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "fbd1d07f98595900",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "specifications.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "fbe9e2d9eb8ba8ba",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "fc67023a6cf7fc1e",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": false,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "fc70a85a9755995a",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "fcbc9f3901501c94",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "fcefbb03dcc956e7",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "fd49c2196b38e711",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.01305375000811182,
+    "outcome": "match"
+  },
+  {
+    "identity": "fd62d738cb3ffeed",
+    "schema": "d9fdf363941a42d5",
+    "suites": [
+      "models.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "fdc399eb71d4a100",
+    "schema": "3f8a921b0f2b2d57",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "fdcf0dde66768465",
+    "schema": "ec2cd926b22be0db",
+    "suites": [
+      "expressions.py"
+    ],
+    "baseline": true,
+    "outcome": "unmeasured_after_schema_timeout"
+  },
+  {
+    "identity": "fe23480218c3eaf8",
+    "schema": "56ceea9d9bc3f7fb",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.009693625004729256,
+    "outcome": "match"
+  },
+  {
+    "identity": "fe42ecb2ff05f095",
+    "schema": "fd290209386655e7",
+    "suites": [
+      "runs.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.012395457990351133,
+    "outcome": "match"
+  },
+  {
+    "identity": "fe9752daf7cad28b",
+    "schema": "54e32847b60cb214",
+    "suites": [
+      "formulations.py"
+    ],
+    "baseline": false,
+    "cue": true,
+    "seconds": 0.029323917013243772,
+    "outcome": "difference",
+    "document": {
+      "name": "trailing ",
+      "value": "9324f928-cfc8-50bb-ba99-fe8c02a6dbd2"
+    },
+    "stderr": ""
+  },
+  {
+    "identity": "ff550e59093643bb",
+    "schema": "ef40cfab2b67db81",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.010628707997966558,
+    "outcome": "match"
+  },
+  {
+    "identity": "ff8e11918952ef15",
+    "schema": "ef40cfab2b67db81",
+    "suites": [
+      "validate.py"
+    ],
+    "baseline": false,
+    "cue": false,
+    "seconds": 0.011172333004651591,
+    "outcome": "match"
+  }
+]

@@ -1,0 +1,68 @@
+F....................................................................... [ 12%]
+........................................................................ [ 24%]
+F....................................................................... [ 36%]
+........................................................................ [ 48%]
+........................................................................ [ 60%]
+........................................................................ [ 72%]
+........................................................................ [ 84%]
+........................................................................ [ 96%]
+...................                                                      [100%]
+=================================== FAILURES ===================================
+____________ test_supported_adapter_and_table_surfaces_are_explicit ____________
+tests/test_adapters.py:16: in test_supported_adapter_and_table_surfaces_are_explicit
+    assert adapter.__all__ == [
+E   AssertionError: assert ['AdapterEnco... 'excel', ...] == ['AdapterEnco... 'excel', ...]
+E     
+E     At index 6 diff: 'pandas' != 'ingestion'
+E     Right contains 2 more items, first extra item: 'pandas'
+E     Use -v to get more diff
+___________________________ TestSolver.test_residual ___________________________
+tests/test_formulas.py:441: in test_residual
+    assert solution.x[3] == approx(241049.33)
+E   assert np.float64(239654.64258295443) == 241049.33 ± 0.241049
+E     
+E     comparison failed
+E     Obtained: 239654.64258295443
+E     Expected: 241049.33 ± 0.241049
+----------------------------- Captured stdout call -----------------------------
+
+Solution:
+loan: $487,500.00
+equity: $262,500.00
+profit: $250,000.00
+rlv: $239,654.64
+=============================== warnings summary ===============================
+rangekeeper/duration.py:27
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/duration.py:27: FutureWarning: 'Y' is deprecated and will be removed in a future version, please use 'YE' instead.
+    if value in ("10Y", "10Y-DEC"):
+
+rangekeeper/duration.py:27
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/duration.py:27: FutureWarning: 'Y-DEC' is deprecated and will be removed in a future version, please use 'YE-DEC' instead.
+    if value in ("10Y", "10Y-DEC"):
+
+rangekeeper/duration.py:29
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/duration.py:29: FutureWarning: 'Y' is deprecated and will be removed in a future version, please use 'YE' instead.
+    if value in ("5Y", "5Y-DEC"):
+
+rangekeeper/duration.py:29
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/duration.py:29: FutureWarning: 'Y-DEC' is deprecated and will be removed in a future version, please use 'YE-DEC' instead.
+    if value in ("5Y", "5Y-DEC"):
+
+rangekeeper/duration.py:31
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/duration.py:31: FutureWarning: 'Y' is deprecated and will be removed in a future version, please use 'YE' instead.
+    if value in ("2Y", "2Y-DEC"):
+
+rangekeeper/duration.py:31
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/duration.py:31: FutureWarning: 'Y-DEC' is deprecated and will be removed in a future version, please use 'YE-DEC' instead.
+    if value in ("2Y", "2Y-DEC"):
+
+rangekeeper/duration.py:33
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/duration.py:33: FutureWarning: 'Y' is deprecated and will be removed in a future version, please use 'YE' instead.
+    if value in ("Y", "YE", "YE-DEC", "Y-DEC", "A-DEC"):
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: /Volumes/Data/Projects/Rangekeeper/docs/research/domain-migration/validation-refactor/pytest-final.xml -
+=========================== short test summary info ============================
+FAILED tests/test_adapters.py::test_supported_adapter_and_table_surfaces_are_explicit
+FAILED tests/test_formulas.py::TestSolver::test_residual - assert np.float64(...
+2 failed, 593 passed, 7 warnings in 29.47s

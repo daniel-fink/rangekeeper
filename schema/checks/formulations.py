@@ -20,8 +20,10 @@ from linkml_runtime.loaders import json_loader
 from linkml_runtime.utils.schemaview import SchemaView
 import yaml
 
-from formulation_contract import validate_formulations
-from expression_contract import ContractError
+import _library
+
+from rangekeeper.model._formulation import validate_formulations
+from rangekeeper.errors import ContractError
 
 SCHEMA = Path(__file__).resolve().parents[1]
 BIN = Path(sys.executable).parent
@@ -41,16 +43,7 @@ for name, file in (
     ("Assembly", "assembly"),
 ):
     generated = json.loads(
-        subprocess.check_output(
-            [
-                str(BIN / "gen-json-schema"),
-                "--closed",
-                "--top-class",
-                name,
-                str(SCHEMA / f"{file}.yaml"),
-            ],
-            text=True,
-        )
+        _library.schema_json(name)
     )
     cls = validator_for(generated)
     cls.check_schema(generated)
