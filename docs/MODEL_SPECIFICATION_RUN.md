@@ -1,14 +1,26 @@
 # Model, Specification, and Run: object model and requirements
 
-Status: initial semantic specification, 2026-09-24. This consolidates the discussion;
-it is not an implemented API or a machine-readable schema.
+Status: semantic specification with drafted scalar record contracts; implementation
+plan updated 2026-10-02. Initially recorded 2026-09-24. The authoritative record
+shapes are in `schema/`. Generated records and the
+[Model/Specification library APIs](DOMAIN_CORE.md) and
+[Run/storage APIs](RUN_AND_STORAGE.md), including final root exports, are implemented.
+Numerical execution and consumer migration remain pending. Historical updates below explain how the current contract evolved.
 
-**Agreed** below records decisions established in the discussion. **Proposed** marks
-the object decomposition, field groups, terminology, and acceptance examples to
-review next. **Open** identifies decisions still required. Field names are illustrative.
-LinkML is now being used for the initial Entity schema draft. The wider serialization
-contract, solver backend, and class hierarchy remain open. Backwards compatibility
-does not determine the new design.
+**Agreed** records established semantics. **Proposed** and **Open** identify
+extensions or unresolved implementation details; earlier proposals do not override
+the drafted schemas and explicit later decisions.
+
+**Current architecture decisions, 2026-10-02:** retain
+[LinkML](research/current-schema-comparison/DECISION.md) as the record authority;
+use Pyomo with HiGHS for the first affine scalar execution. The
+[library architecture](LIBRARY_ARCHITECTURE.md) now incorporates the completed
+[domain replacement map](DOMAIN_MIGRATION_MAP.md), followed by the minimal schema-backed core
+directly in the intended library packages before implementing execution. Graph
+algorithms and numerical routines are assessed for reuse; existing consumers
+migrate incrementally. The earlier temporary repository executor and later
+library-promotion sequence is superseded. Solver integration and dependency
+versions still need an executable probe.
 
 **2026-09-29 update (corrected):** the agreed high-level Entity structure is `id`,
 `code`, `name`, `classification`, and `characteristics`. The optional `code` is a
@@ -584,8 +596,10 @@ sketches are not solver runs.
 
 ## 3. First-level child schemas
 
-This decomposition is **proposed**. It intentionally distinguishes semantic kinds
-before deciding Python inheritance or file encoding.
+This section combines drafted scalar concepts with explicitly proposed richer
+extensions. The schema files and root contracts above determine current fields;
+these conceptual categories do not prescribe Python inheritance. Temporal,
+policy, and reusable-template extensions remain deferred.
 
 ### 3.1 Declarations
 
@@ -822,7 +836,8 @@ Represent unsupported problems, underdetermination, inconsistency, numerical fai
 and proven infeasibility accurately. Do not claim uniqueness or optimality without
 supporting analysis. A schema validator does not perform these mathematical checks.
 
-**Open:** backend selection and capability registration. Scalar/indexed variables,
+**Selected:** Pyomo with HiGHS for the affine scalar checkpoint. Integration,
+version pinning, and capability registration remain implementation work. Scalar/indexed variables,
 constraints, components, and finite choices have familiar mathematical representations;
 arbitrary entity constructors do not automatically have one.
 
@@ -855,7 +870,9 @@ Keep implementation mechanics in code. Supported formulations need symbolic
 construction as well as numerical evaluation where both are offered; their agreement
 must be checked on shared examples, with residuals and documented tolerances.
 Unsupported argument roles or operations must be reported explicitly. The runtime
-capability-registry format and solver choice remain open.
+capability-registry format remains to be implemented. Pyomo with HiGHS is selected
+for the affine scalar slice; backends for later nonlinear or discrete capabilities
+require separate evidence and decisions.
 
 ### 5.2 Scenarios, inverse questions, and policy optimization
 
@@ -922,40 +939,46 @@ Model₀ and Model₁ remain unchanged. Declaration identities and symbolic equa
 survive both Runs. The expected values above follow directly from the equations;
 they are not results from an implemented adapter.
 
-## 7. What to specify next
+## 7. Next implementation and later specification work
 
-Proceed top-down, recording each child's purpose, fields, references, invariants,
-small valid/invalid examples, and required capability. The structural schemas and
-initial Expression, Constraint, Formulation, Model, Specification, and Run schemas are
-now drafted. Continue with:
+The scalar Entity, Value, Expression, Constraint, Formulation, Model,
+Specification, and Run contracts have drafts and bounded conformance checks.
+[LinkML is selected](research/current-schema-comparison/DECISION.md); completing
+native CUE research is no longer a prerequisite.
 
-1. Implement the smallest scalar execution adapter for S1. Use the composed
-   Specification, preserve input definitions, and perform actual numerical
-   acceptance checks before publishing a new Model and finalized Run.
-2. Produce authentic forward and inverse execution records corresponding to the
-   synthetic Run/output fixtures. Reuse a recorded output with different solve roles
-   without inheriting old assignments or interpreting recorded amounts as constraints.
-3. Connect derived provenance and broaden publication only as required, keeping
-   temporary Specification requirements outside permanent Model mathematics.
-4. Extend temporal and financial Value schemas, deterministic formulations,
-   scenario evaluation, and policies in the order described in section 5.1 and
-   the staged acceptance examples. Add reusable template contracts when repeated
-   Formulation instantiation requires them; do not wait for market-generator inversion.
+Follow the [library migration sequence](LIBRARY_ARCHITECTURE.md#migration-checkpoints):
 
-Open design decisions include exact names/field cardinalities;
-relationship/constraint storage; type and unit vocabulary;
-component interfaces; identity across generated objects and scenarios; provenance
-references; failure/partial/stale resolution states; and backend capability contracts.
+1. **Completed:** map replacement of the current graph domain core, defining canonical records,
+   UUID resolution, generated-record access, immutability, public interfaces,
+   and the consumers that must migrate. Distinguish reusable algorithms from
+   obsolete data-model assumptions.
+2. Build the minimal schema-backed core directly in `src/rangekeeper/`: private
+   generated records/validators, domain APIs, composition, codecs, and immutable
+   revision storage. Check packaged use before relying on it for execution.
+3. Probe and pin Pyomo/HiGHS, then implement scalar execution in
+   `rangekeeper.execution` against this core. Use the actual composed
+   Specifications and declared expressions; independently verify candidates
+   before publishing authentic forward/inverse Runs and new Model revisions.
+4. Reuse a genuine output with new solve roles; check failures, numerical limits,
+   units, settings, provenance, and direct batch accounting. Temporary
+   Specification mathematics does not become permanent Model mathematics.
+5. Migrate graph operations and consumers incrementally; then add temporal and
+   financial Value schemas, indexed formulations, scenario evaluation, committed
+   choices, and policies in the order described in section 5.1. Reusable
+   templates follow demonstrated requirements.
 
-The first Entity draft uses LinkML; JSON Schema is a generated structural check.
-File-format/schema version, Model revision, and evaluator/operator version have
-different meanings and must not be conflated. The remaining child-schema and
-execution choices are not settled by selecting LinkML for this draft.
+The generated-record/domain API boundary and initial unit policy are specified in
+the migration map; production generation and verification remain to be implemented.
+Remaining design work includes additional unit profiles and backend capabilities,
+rich Value payloads, policy/intervention
+semantics, structural publication, and full derived-provenance linkage. Scalar
+root names, UUID identity, Formulation ownership, and accepted-only output rules
+are already defined and should not be presented as wholly open questions.
 
-The subsequent [schema tooling evaluation](SCHEMA_TOOLING_EVALUATION.md) compares
-these options with TypeSpec, Protobuf/CEL, and modelling-language alternatives.
-It includes executed synthetic probes and a scoped LinkML recommendation for
-discussion; it does not adopt a production schema or implement this specification.
+File schema version, Model revision, and evaluator/operator version have different
+meanings. The earlier [schema tooling evaluation](SCHEMA_TOOLING_EVALUATION.md)
+retains its historical comparisons; the accepted decision and architecture govern
+current implementation.
 
 ## 8. Precedents and related documents
 

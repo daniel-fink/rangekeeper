@@ -1,5 +1,10 @@
 # Ingestion and workflow boundary review
 
+**Scope, 2026-10-02:** this is a dated review and resolution record for existing
+graph ingestion. Follow [LIBRARY_ARCHITECTURE.md](LIBRARY_ARCHITECTURE.md) for the
+current domain replacement and migration sequence. Historical recommendations
+below are not additional prerequisites for the scalar executor.
+
 For the subsequent format-independent execution review and implementation, see
 [GRAPH_WORKFLOW_FORMATS.md](GRAPH_WORKFLOW_FORMATS.md). The dated findings below
 remain a historical record. The initial refactor was subsequently committed as
@@ -39,7 +44,8 @@ focused ty checks. An isolated checkout with a newly synchronized locked environ
 repeats those checks and runs the thin notebook in a fresh kernel. Graph JSON,
 checks, manifest, review HTML and viewer HTML are byte-identical to the working
 candidate. All 54 archived files and original source-workbook hashes remain intact.
-No commits or publication were performed.
+No commits or publication were performed during that validation pass; subsequent
+delivery commits are recorded at the top of this document.
 
 ## Assessment
 

@@ -8,9 +8,11 @@ from linkml_runtime.dumpers import json_dumper
 from linkml_runtime.loaders import json_loader
 import yaml
 
-from expression_contract import ContractError
-from specification_composition import compose_specification, specification_catalogue
-from specification_contract import validate_batch, validate_specification
+import _library
+
+from rangekeeper.errors import ContractError
+from rangekeeper.specification._composition import compose_specification, specification_catalogue
+from rangekeeper.specification._validation import validate_batch, validate_specification
 
 
 def check_composition(schema, validators, module, model, version, model_version):

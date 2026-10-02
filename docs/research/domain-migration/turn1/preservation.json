@@ -1,0 +1,33 @@
+{
+  "protected_tracked_files": 179,
+  "protected_changed": [],
+  "semantic_module_bodies_unchanged": [
+    "expression_contract",
+    "formulation_contract",
+    "model_contract",
+    "specification_contract",
+    "specification_composition",
+    "run_contract"
+  ],
+  "changed_since_initial_baseline": [
+    "docs/MODEL_SPECIFICATION_RUN.md",
+    "docs/PROJECT_DEFINITION_AND_POLICY_EXAMPLE.md",
+    "schema/README.md",
+    "schema/checks/expression_contract.py",
+    "schema/checks/expressions.py",
+    "schema/checks/formulation_contract.py",
+    "schema/checks/formulations.py",
+    "schema/checks/model_contract.py",
+    "schema/checks/models.py",
+    "schema/checks/run_contract.py",
+    "schema/checks/runs.py",
+    "schema/checks/specification_composition.py",
+    "schema/checks/specification_composition_cases.py",
+    "schema/checks/specification_contract.py",
+    "schema/checks/specifications.py",
+    "schema/checks/validate.py",
+    "src/pyproject.toml",
+    "src/rangekeeper/__init__.py",
+    "src/uv.lock"
+  ]
+}

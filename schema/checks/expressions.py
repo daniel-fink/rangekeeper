@@ -21,7 +21,20 @@ from linkml_runtime.loaders import json_loader
 from linkml_runtime.utils.schemaview import SchemaView
 import yaml
 
-from expression_contract import Scope, ContractError
+import _library
+
+from rangekeeper.errors import ContractError
+from rangekeeper._validation import require_unique
+from rangekeeper.model._expression import (
+    build_scope, infer_expression_domain, matches_domain, validate_constraint_predicates,
+)
+
+
+def validate_fixture_constraints(constraints, expressions, *, scope):
+    """Expression fixtures have one owning collection for Constraint codes."""
+    require_unique(constraints, "code", "Constraint code", path="/constraints")
+    validate_constraint_predicates(constraints, expressions, scope=scope)
+
 
 SCHEMA = Path(__file__).resolve().parents[1]
 BIN = Path(sys.executable).parent
@@ -38,16 +51,7 @@ for name, file in [
     ("Assembly", "assembly"),
 ]:
     document = json.loads(
-        subprocess.check_output(
-            [
-                str(BIN / "gen-json-schema"),
-                "--closed",
-                "--top-class",
-                name,
-                str(SCHEMA / f"{file}.yaml"),
-            ],
-            text=True,
-        )
+        _library.schema_json(name)
     )
     cls = validator_for(document)
     cls.check_schema(document)
@@ -88,12 +92,12 @@ for name in ("valuation-expressions", "query-aggregation", "function-expressions
     for record in fixture.get("input_domains", []):
         validators["Domain"].validate(record["domain"])
         valid.append(("Domain", record["domain"]))
-    scope = Scope(fixture)
-    scope.validate_constraints(fixture.get("constraints", []), fixture["expressions"])
+    scope = build_scope(fixture)
+    validate_fixture_constraints(fixture.get("constraints", []), fixture["expressions"], scope=scope)
 
 scalar, graph, rich = fixtures
 # A date result remains valid without a date literal node.
-assert Scope(rich).expression(rich["expressions"][2]) == dict(kind="date")
+assert infer_expression_domain(rich["expressions"][2], scope=build_scope(rich)) == dict(kind="date")
 readme = [
     yaml.safe_load(block)
     for block in re.findall(
@@ -102,7 +106,7 @@ readme = [
     if "kind: binary" in block
 ]
 assert len(readme) == 1
-Scope(scalar).expression(readme[0])
+infer_expression_domain(readme[0], scope=build_scope(scalar))
 valid.extend(("Expression", item) for item in readme)
 readme_constraints = [
     yaml.safe_load(block)
@@ -112,7 +116,7 @@ readme_constraints = [
     if "\npredicate: " in block
 ]
 assert len(readme_constraints) == 1
-Scope(scalar).validate_constraints(readme_constraints, scalar["expressions"])
+validate_fixture_constraints(readme_constraints, scalar["expressions"], scope=build_scope(scalar))
 valid.extend(("Constraint", item) for item in readme_constraints)
 valid.extend(
     ("Domain", record)
@@ -179,7 +183,7 @@ for operator in view.get_enum("Operator").permissible_values:
             else [left, right]
         )
         node = expression(operator, "binary", operator=operator, operands=operands)
-    Scope(scalar).expression(node)
+    infer_expression_domain(node, scope=build_scope(scalar))
     valid.append(("Expression", node))
 repeated = copy.deepcopy(reference)
 repeated["id"] = expression("repeated", "reference")["id"]
@@ -235,7 +239,7 @@ def constraint(name, predicate, **metadata):
 
 
 minimal = constraint("minimal", scalar["expressions"][0]["id"])
-Scope(scalar).validate_constraints([minimal], scalar["expressions"])
+validate_fixture_constraints([minimal], scalar["expressions"], scope=build_scope(scalar))
 valid.append(("Constraint", minimal))
 
 # Predicate validity is independent of current truth and expression syntax form.
@@ -277,7 +281,7 @@ for label, root, targets in [
     fixture = copy.deepcopy(scalar)
     fixture["functions"] = [boolean_function]
     records = [constraint(f"{label}-{i}", target) for i, target in enumerate(targets)]
-    Scope(fixture).validate_constraints(records, [root])
+    validate_fixture_constraints(records, [root], scope=build_scope(fixture))
     valid.append(("Expression", root))
     valid.extend(("Constraint", record) for record in records)
 
@@ -442,17 +446,17 @@ def semantic_case(fixture, node, message):
     semantic.append((fixture, node, message))
 
 
-scope = Scope(scalar)
-area_domain = scope.expression(quantity("area", 20, "m^2"))
+scope = build_scope(scalar)
+area_domain = infer_expression_domain(quantity("area", 20, "m^2"), scope=scope)
 assert area_domain == dict(kind="quantity", units="m^2")
-assert not scope.matches(area_domain, dict(kind="number"))
-assert not scope.matches(area_domain, dict(kind="measurement"))
-assert scope.matches(area_domain, dict(kind="quantity", units="m^2"))
-assert scope.matches(scope.expression(left), dict(kind="number"))
+assert not matches_domain(area_domain, dict(kind="number"), scope=scope)
+assert not matches_domain(area_domain, dict(kind="measurement"), scope=scope)
+assert matches_domain(area_domain, dict(kind="quantity", units="m^2"), scope=scope)
+assert matches_domain(infer_expression_domain(left, scope=scope), dict(kind="number"), scope=scope)
 product = expression(
     "product", "binary", operator="multiply", operands=[reference, right]
 )
-assert Scope(scalar).expression(product) == dict(kind="quantity")
+assert infer_expression_domain(product, scope=build_scope(scalar)) == dict(kind="quantity")
 for magnitude in (float("nan"), float("inf")):
     semantic_case(scalar, quantity("nonfinite", magnitude), "non-finite magnitude")
 
@@ -516,7 +520,7 @@ semantic_case(graph, bad, "starting Entity")
 for fixture, node, message in semantic:
     validators["Expression"].validate(node)
     try:
-        Scope(fixture).expression(node)
+        infer_expression_domain(node, scope=build_scope(fixture))
     except ContractError as error:
         assert message in str(error), (message, str(error))
     else:
@@ -543,7 +547,7 @@ for mutate in (
         function.pop("empty_collection")
     validators["Function"].validate(function)
     try:
-        Scope(bad)
+        build_scope(bad)
     except ContractError:
         pass
     else:
@@ -614,7 +618,7 @@ for fixture, roots, records, message in constraint_semantic:
     for record in records:
         validators["Constraint"].validate(record)
     try:
-        Scope(fixture).validate_constraints(records, roots)
+        validate_fixture_constraints(records, roots, scope=build_scope(fixture))
     except ContractError as error:
         assert message in str(error), (message, str(error))
     else:

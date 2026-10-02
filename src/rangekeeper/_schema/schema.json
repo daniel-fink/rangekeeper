@@ -1,0 +1,3503 @@
+{
+  "$defs": {
+    "Argument": {
+      "additionalProperties": false,
+      "description": "One named expression argument in a Function call.",
+      "properties": {
+        "expression": {
+          "$ref": "#/$defs/Expression",
+          "allOf": [
+            {
+              "$ref": "#/$defs/Expression"
+            }
+          ]
+        },
+        "name": {
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "expression"
+      ],
+      "title": "Argument",
+      "type": "object"
+    },
+    "Assembly": {
+      "additionalProperties": false,
+      "description": "An Entity identifying a collection of Entities and Relationships. Members are referenced by identity and may belong to more than one Assembly. Membership does not imply spatial containment or duplicate its members.",
+      "properties": {
+        "characteristics": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Characteristics"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The Entity's labels and named values."
+        },
+        "classification": {
+          "description": "Classification describing the object, referenced by its stable UUID.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "code": {
+          "description": "Optional case-sensitive code unique among all Entities and Assemblies in the Model. Renaming it preserves UUID identity and references.",
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "entities": {
+          "description": "Unordered, unique UUIDs of member Entities, including nested Assemblies.",
+          "items": {
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "id": {
+          "description": "Stable identity of the Entity, distinct from a Model revision.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "name": {
+          "description": "Human-readable display name; not used as identity.",
+          "pattern": "\\S",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "relationships": {
+          "description": "Unordered, unique UUIDs of member Relationships.",
+          "items": {
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "Assembly",
+      "type": "object"
+    },
+    "Assignment": {
+      "additionalProperties": false,
+      "description": "Embedded association of a numerical Value reference with a supplied Quantity.",
+      "properties": {
+        "quantity": {
+          "$ref": "#/$defs/Quantity",
+          "allOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            }
+          ],
+          "description": "Explicit finite magnitude and compatible units; omission or null is not a supplied amount."
+        },
+        "value": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "type": "string"
+            }
+          ],
+          "description": "UUID of the numerical Value receiving the supplied amount or estimate.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "quantity"
+      ],
+      "title": "Assignment",
+      "type": "object"
+    },
+    "Binding": {
+      "additionalProperties": false,
+      "description": "A name within a Formulation that refers to an existing Value by UUID.",
+      "properties": {
+        "name": {
+          "description": "Case-sensitive local interface name; not reference identity.",
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "type": "string"
+            }
+          ],
+          "description": "UUID of the shared Value. Its declaration supplies its kind, Measure, and content.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "value"
+      ],
+      "title": "Binding",
+      "type": "object"
+    },
+    "Call": {
+      "additionalProperties": false,
+      "description": "Application of an identified Function to positional and named expression arguments.",
+      "properties": {
+        "arguments": {
+          "description": "Positional arguments, in order.",
+          "items": {
+            "$ref": "#/$defs/Expression",
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Expression"
+              }
+            ]
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "function": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "type": "string"
+            }
+          ],
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "named_arguments": {
+          "description": "Named arguments with unique parameter names. Their order is retained for authoring, not positional binding.",
+          "items": {
+            "$ref": "#/$defs/Argument",
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Argument"
+              }
+            ]
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "function"
+      ],
+      "title": "Call",
+      "type": "object"
+    },
+    "Cardinality": {
+      "description": "",
+      "enum": [
+        "one",
+        "many"
+      ],
+      "title": "Cardinality",
+      "type": "string"
+    },
+    "Characteristics": {
+      "additionalProperties": false,
+      "description": "A collection of Labels and Values belonging to an Entity or Relationship. Each Label or Value has a stable UUID and a key unique within its collection.",
+      "properties": {
+        "labels": {
+          "description": "Identified labels with explicit owner-local keys, unique within this collection.",
+          "items": {
+            "$ref": "#/$defs/Label"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "values": {
+          "description": "Identified values with explicit owner-local keys, unique within this collection.",
+          "items": {
+            "$ref": "#/$defs/Value"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "title": "Characteristics",
+      "type": "object"
+    },
+    "Claim": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "enum": [
+                  "asserted",
+                  "derived"
+                ]
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "method": {}
+            },
+            "required": [
+              "method"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "enum": [
+                  "sourced",
+                  "derived"
+                ]
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "sources": {}
+            },
+            "required": [
+              "sources"
+            ]
+          }
+        }
+      ],
+      "description": "Sourced, asserted, or derived candidate content and its supporting lineage.",
+      "properties": {
+        "content": {
+          "$ref": "#/$defs/Content"
+        },
+        "id": {
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ClaimKind"
+        },
+        "method": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Method"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sources": {
+          "description": "Source Locations or UUID references to upstream Claims.",
+          "items": {
+            "$ref": "#/$defs/Content",
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Location"
+              },
+              {
+                "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+                "type": "string"
+              }
+            ]
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "content",
+        "kind"
+      ],
+      "title": "Claim",
+      "type": "object"
+    },
+    "ClaimKind": {
+      "description": "",
+      "enum": [
+        "sourced",
+        "asserted",
+        "derived"
+      ],
+      "title": "ClaimKind",
+      "type": "string"
+    },
+    "Classification": {
+      "additionalProperties": false,
+      "description": "A named definition node in a taxonomy hierarchy.",
+      "properties": {
+        "code": {
+          "description": "Case-sensitive code unique within its Taxonomy; descriptive metadata, not reference identity.",
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
+          "type": "string"
+        },
+        "definition": {
+          "description": "Optional explanatory text; an empty string is permitted.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "description": "Stable identity across code changes and Model revisions.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "name": {
+          "description": "Nonblank human-readable name.",
+          "pattern": "\\S",
+          "type": "string"
+        },
+        "parent": {
+          "description": "Parent Classification in the same Taxonomy, referenced by UUID. An absent or null parent denotes a root candidate.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "code",
+        "name"
+      ],
+      "title": "Classification",
+      "type": "object"
+    },
+    "CollectionKind": {
+      "description": "",
+      "enum": [
+        "set",
+        "bag",
+        "sequence"
+      ],
+      "title": "CollectionKind",
+      "type": "string"
+    },
+    "CompletionStatus": {
+      "description": "",
+      "enum": [
+        "completed",
+        "limited",
+        "partial",
+        "failed",
+        "cancelled",
+        "skipped"
+      ],
+      "title": "CompletionStatus",
+      "type": "string"
+    },
+    "Constraint": {
+      "additionalProperties": false,
+      "description": "An identified requirement that a referenced Boolean Expression be true in the context where the Constraint is imposed.",
+      "properties": {
+        "code": {
+          "description": "Optional case-sensitive code unique within its Constraint collection; not reference identity. Renaming it preserves UUID references.",
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "description": "Explanation of the requirement and its purpose.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "description": "Stable identity of the Constraint across Model revisions.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "name": {
+          "description": "Human-readable display name; not used as identity.",
+          "pattern": "\\S",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "predicate": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "type": "string"
+            }
+          ],
+          "description": "UUID reference to the Expression required to be true. Reference existence and a Boolean result domain require semantic validation beyond record shape.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "predicate"
+      ],
+      "title": "Constraint",
+      "type": "object"
+    },
+    "Content": {
+      "additionalProperties": true,
+      "description": "Candidate content whose structure and meaning depend on the supported target. Content must be validated against that target before a Fact is accepted; this generic envelope does not make arbitrary content executable.",
+      "title": "Content",
+      "type": [
+        "null",
+        "boolean",
+        "object",
+        "number",
+        "string"
+      ]
+    },
+    "Criterion": {
+      "additionalProperties": false,
+      "description": "Require an Entity Label with this owner-local key to include the exact Classification.",
+      "properties": {
+        "classification": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "type": "string"
+            }
+          ],
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "key": {
+          "anyOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "description": "Owner-local Label key.",
+          "pattern": "\\S",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "classification"
+      ],
+      "title": "Criterion",
+      "type": "object"
+    },
+    "Definitions": {
+      "additionalProperties": false,
+      "description": "Reusable Taxonomies, Measures, and Functions identified by stable UUIDs within a Model.",
+      "properties": {
+        "functions": {
+          "description": "Exact versioned Function contracts used by calls in this Model. Implementations and their capabilities are selected separately.",
+          "items": {
+            "$ref": "#/$defs/Function"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "measures": {
+          "items": {
+            "$ref": "#/$defs/Measure"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "taxonomies": {
+          "items": {
+            "$ref": "#/$defs/Taxonomy"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "title": "Definitions",
+      "type": "object"
+    },
+    "Depth": {
+      "description": "",
+      "enum": [
+        "direct",
+        "transitive"
+      ],
+      "title": "Depth",
+      "type": "string"
+    },
+    "Diagnostic": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "target": {}
+            },
+            "required": [
+              "target"
+            ]
+          },
+          "then": {
+            "properties": {
+              "document": {}
+            },
+            "required": [
+              "document"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "residual": {}
+            },
+            "required": [
+              "residual"
+            ]
+          },
+          "then": {
+            "properties": {
+              "document": {},
+              "target": {}
+            },
+            "required": [
+              "document",
+              "target"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "tolerance": {}
+            },
+            "required": [
+              "tolerance"
+            ]
+          },
+          "then": {
+            "properties": {
+              "residual": {}
+            },
+            "required": [
+              "residual"
+            ]
+          }
+        }
+      ],
+      "description": "A coded finding and optional numerical evidence, qualified by document revision.",
+      "properties": {
+        "code": {
+          "description": "Nonblank finding code.",
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
+          "type": "string"
+        },
+        "document": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Revision containing the referenced target, or the document addressed as a whole.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "message": {
+          "description": "Explanation and, for numerical findings, the checking convention.",
+          "pattern": "\\S",
+          "type": "string"
+        },
+        "residual": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            }
+          ],
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Finite signed residual under the stated convention."
+        },
+        "severity": {
+          "$ref": "#/$defs/Severity",
+          "description": "Importance of the finding."
+        },
+        "target": {
+          "description": "UUID of a canonical record in document; never an unqualified cross-revision reference.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "tolerance": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            }
+          ],
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Finite nonnegative tolerance in compatible units."
+        }
+      },
+      "required": [
+        "severity",
+        "code",
+        "message"
+      ],
+      "title": "Diagnostic",
+      "type": "object"
+    },
+    "Direction": {
+      "description": "",
+      "enum": [
+        "outgoing",
+        "incoming"
+      ],
+      "title": "Direction",
+      "type": "string"
+    },
+    "Domain": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "collection"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "item_domain": {}
+            },
+            "required": [
+              "item_domain"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "enum": [
+                  "number",
+                  "quantity",
+                  "measurement",
+                  "boolean",
+                  "string",
+                  "date",
+                  "span",
+                  "flow",
+                  "stream",
+                  "account",
+                  "entity"
+                ]
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "not": {
+                  "required": [
+                    "item_domain"
+                  ]
+                },
+                "properties": {
+                  "item_domain": {}
+                }
+              },
+              {
+                "not": {
+                  "required": [
+                    "collection_kind"
+                  ]
+                },
+                "properties": {
+                  "collection_kind": {}
+                }
+              }
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "enum": [
+                  "number",
+                  "quantity",
+                  "boolean",
+                  "string",
+                  "date",
+                  "span",
+                  "stream",
+                  "account",
+                  "entity",
+                  "collection"
+                ]
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "not": {
+              "required": [
+                "measure"
+              ]
+            },
+            "properties": {
+              "measure": {}
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "enum": [
+                  "number",
+                  "measurement",
+                  "boolean",
+                  "string",
+                  "date",
+                  "span",
+                  "flow",
+                  "stream",
+                  "account",
+                  "entity",
+                  "collection"
+                ]
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "not": {
+              "required": [
+                "units"
+              ]
+            },
+            "properties": {
+              "units": {}
+            }
+          }
+        }
+      ],
+      "description": "The permitted content of an argument or result, including its kind, compatible units, measurement meaning, and collection elements where applicable.",
+      "properties": {
+        "collection_kind": {
+          "$ref": "#/$defs/CollectionKind",
+          "description": "Optional collection shape required by this signature."
+        },
+        "item_domain": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Domain"
+            }
+          ],
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Domain"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Domain of each collection element."
+        },
+        "kind": {
+          "$ref": "#/$defs/DomainKind",
+          "description": "The category of content permitted by this Domain."
+        },
+        "measure": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Optional exact measurement meaning required for a measurement or Flow.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "units": {
+          "description": "Optional compatible units required for Quantity content. Omission leaves units unconstrained by the signature; a concrete Quantity still requires explicit units.",
+          "pattern": "\\S",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "Domain",
+      "type": "object"
+    },
+    "DomainKind": {
+      "description": "",
+      "enum": [
+        "number",
+        "quantity",
+        "measurement",
+        "boolean",
+        "string",
+        "date",
+        "span",
+        "flow",
+        "stream",
+        "account",
+        "entity",
+        "collection"
+      ],
+      "title": "DomainKind",
+      "type": "string"
+    },
+    "DuplicateHandling": {
+      "description": "",
+      "enum": [
+        "distinct",
+        "preserve"
+      ],
+      "title": "DuplicateHandling",
+      "type": "string"
+    },
+    "EmptyHandling": {
+      "description": "",
+      "enum": [
+        "error",
+        "zero"
+      ],
+      "title": "EmptyHandling",
+      "type": "string"
+    },
+    "Entity": {
+      "additionalProperties": false,
+      "description": "An identifiable domain object, such as an apartment, building, or actor. Its identity persists across immutable Model revisions. Loading its definition does not execute calculations.",
+      "properties": {
+        "characteristics": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Characteristics"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The Entity's labels and named values."
+        },
+        "classification": {
+          "description": "Classification describing the object, referenced by its stable UUID.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "code": {
+          "description": "Optional case-sensitive code unique among all Entities and Assemblies in the Model. Renaming it preserves UUID identity and references.",
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "description": "Stable identity of the Entity, distinct from a Model revision.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "name": {
+          "description": "Human-readable display name; not used as identity.",
+          "pattern": "\\S",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "Entity",
+      "type": "object"
+    },
+    "Entry": {
+      "additionalProperties": false,
+      "description": "A named text component of a source address.",
+      "properties": {
+        "key": {
+          "pattern": "\\S",
+          "type": "string"
+        },
+        "value": {
+          "pattern": "\\S",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "title": "Entry",
+      "type": "object"
+    },
+    "Entry__identifier_optional": {
+      "additionalProperties": false,
+      "description": "A named text component of a source address.",
+      "properties": {
+        "key": {
+          "pattern": "\\S",
+          "type": "string"
+        },
+        "value": {
+          "pattern": "\\S",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value"
+      ],
+      "title": "Entry",
+      "type": "object"
+    },
+    "Expression": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "quantity"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "quantity": {}
+            },
+            "required": [
+              "quantity"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "boolean"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "boolean": {}
+            },
+            "required": [
+              "boolean"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "reference"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "target": {}
+            },
+            "required": [
+              "target"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "unary"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "operand": {},
+              "operator": {
+                "enum": [
+                  "negate",
+                  "logical_not"
+                ]
+              }
+            },
+            "required": [
+              "operator",
+              "operand"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "binary"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "operands": {
+                "items": {},
+                "type": "array"
+              },
+              "operator": {
+                "enum": [
+                  "add",
+                  "subtract",
+                  "multiply",
+                  "divide",
+                  "equal",
+                  "not_equal",
+                  "less_than",
+                  "less_than_or_equal",
+                  "greater_than",
+                  "greater_than_or_equal",
+                  "power",
+                  "logical_and",
+                  "logical_or"
+                ]
+              }
+            },
+            "required": [
+              "operator",
+              "operands"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "call"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "call": {}
+            },
+            "required": [
+              "call"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "selection"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "selection": {}
+            },
+            "required": [
+              "selection"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "query"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "query": {}
+            },
+            "required": [
+              "query"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "enum": [
+                  "quantity",
+                  "boolean",
+                  "reference",
+                  "call",
+                  "selection",
+                  "query"
+                ]
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "not": {
+              "required": [
+                "operator"
+              ]
+            },
+            "properties": {
+              "operator": {}
+            }
+          }
+        }
+      ],
+      "description": "An identified mathematical expression. Its kind determines its content; nested expressions retain order and UUID references resolve in the applicable Model or composed Specification scope.",
+      "oneOf": [
+        {
+          "properties": {
+            "quantity": {}
+          },
+          "required": [
+            "quantity"
+          ]
+        },
+        {
+          "properties": {
+            "boolean": {}
+          },
+          "required": [
+            "boolean"
+          ]
+        },
+        {
+          "properties": {
+            "target": {}
+          },
+          "required": [
+            "target"
+          ]
+        },
+        {
+          "properties": {
+            "operand": {}
+          },
+          "required": [
+            "operand"
+          ]
+        },
+        {
+          "properties": {
+            "operands": {
+              "items": {},
+              "type": "array"
+            }
+          },
+          "required": [
+            "operands"
+          ]
+        },
+        {
+          "properties": {
+            "call": {}
+          },
+          "required": [
+            "call"
+          ]
+        },
+        {
+          "properties": {
+            "selection": {}
+          },
+          "required": [
+            "selection"
+          ]
+        },
+        {
+          "properties": {
+            "query": {}
+          },
+          "required": [
+            "query"
+          ]
+        }
+      ],
+      "properties": {
+        "boolean": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Boolean literal; false is a literal, not absence.",
+          "type": "boolean"
+        },
+        "call": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Call"
+            }
+          ],
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Call"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "id": {
+          "description": "Stable identity of this Expression across Model revisions.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ExpressionKind"
+        },
+        "operand": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Expression"
+            }
+          ],
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Expression"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Operand of unary negation or Boolean negation."
+        },
+        "operands": {
+          "description": "Two ordered operands of a binary operator. Unary operators use operand; Function calls use their own signature.",
+          "items": {
+            "$ref": "#/$defs/Expression",
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Expression"
+              }
+            ]
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "operator": {
+          "$ref": "#/$defs/Operator"
+        },
+        "quantity": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            }
+          ],
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Numerical literal with an explicit magnitude and units, independent of any Measure. Use dimensionless for unitless content. Zero is a literal, not absence."
+        },
+        "query": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Query"
+            }
+          ],
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Query"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "selection": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Selection"
+            }
+          ],
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Selection"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "target": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Value symbol referenced by its stable UUID in the applicable Model or composed Specification scope.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind"
+      ],
+      "title": "Expression",
+      "type": "object"
+    },
+    "ExpressionKind": {
+      "description": "",
+      "enum": [
+        "quantity",
+        "boolean",
+        "reference",
+        "unary",
+        "binary",
+        "call",
+        "selection",
+        "query"
+      ],
+      "title": "ExpressionKind",
+      "type": "string"
+    },
+    "Fact": {
+      "additionalProperties": false,
+      "description": "Supporting Claims for the recorded state of one graph object or characteristic.",
+      "properties": {
+        "claims": {
+          "description": "Unique UUIDs of supporting Claims; at least one is required.",
+          "items": {
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "reconciliation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Reconciliation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "target": {
+          "$ref": "#/$defs/Content",
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "type": "string"
+            },
+            {
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "type": "string"
+            },
+            {
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "type": "string"
+            },
+            {
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "type": "string"
+            },
+            {
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "type": "string"
+            }
+          ],
+          "description": "The actual graph object or characteristic being supported, referenced by its stable UUID."
+        }
+      },
+      "required": [
+        "target",
+        "claims"
+      ],
+      "title": "Fact",
+      "type": "object"
+    },
+    "Filter": {
+      "additionalProperties": false,
+      "description": "Conjunctive filters over fixed Entity metadata. No numerical expression or solved amount determines membership.",
+      "properties": {
+        "classification": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "labels": {
+          "description": "All listed Label conditions must hold.",
+          "items": {
+            "$ref": "#/$defs/Criterion",
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Criterion"
+              }
+            ]
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "title": "Filter",
+      "type": "object"
+    },
+    "Formulation": {
+      "additionalProperties": false,
+      "description": "An identified mathematical container with explicit local declarations, expressions, and asserted constraints. Formulations may contain child Formulations and bind names to shared Values.",
+      "properties": {
+        "bindings": {
+          "description": "Local interface names referring to existing Values, including local Values.",
+          "items": {
+            "$ref": "#/$defs/Binding"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "code": {
+          "description": "Optional case-sensitive code unique among sibling Formulations; not reference identity.",
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "constraints": {
+          "description": "Canonical assertions owned by this Formulation, referencing Boolean Expressions by UUID.",
+          "items": {
+            "$ref": "#/$defs/Constraint"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "description": {
+          "description": "Explanation of the mathematical purpose of this Formulation.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "expressions": {
+          "description": "Root Expressions owned by this Formulation; their nested operands remain owned within their expression trees. Constraints may reference any eligible Expression in the applicable scope.",
+          "items": {
+            "$ref": "#/$defs/Expression"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "formulations": {
+          "description": "Canonical child Formulations owned by this Formulation. Repeated or cyclic containment is invalid.",
+          "items": {
+            "$ref": "#/$defs/Formulation"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "id": {
+          "description": "Stable identity of this Formulation across Model revisions.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "name": {
+          "description": "Human-readable display name.",
+          "pattern": "\\S",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "values": {
+          "description": "Canonical declarations owned by this Formulation. Values already owned elsewhere are referenced, not repeated here.",
+          "items": {
+            "$ref": "#/$defs/Value"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "Formulation",
+      "type": "object"
+    },
+    "Function": {
+      "additionalProperties": false,
+      "description": "An identified, versioned contract for a pure mathematical or domain function, independent of a particular runtime implementation.",
+      "properties": {
+        "code": {
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
+          "type": "string"
+        },
+        "empty_collection": {
+          "$ref": "#/$defs/EmptyHandling",
+          "description": "Required for functions with collection arguments. Zero is permitted only when the result domain and units can be established without reading a member."
+        },
+        "id": {
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "description": "Human-readable function name.",
+          "pattern": "\\S",
+          "type": "string"
+        },
+        "parameters": {
+          "description": "Ordered signature. Omission denotes no parameters.",
+          "items": {
+            "$ref": "#/$defs/Parameter",
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Parameter"
+              }
+            ]
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "result": {
+          "$ref": "#/$defs/Domain",
+          "allOf": [
+            {
+              "$ref": "#/$defs/Domain"
+            }
+          ],
+          "description": "Domain of the result."
+        },
+        "semantics": {
+          "anyOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "description": "Mathematical meaning, argument conventions, domain restrictions, and exceptional cases.",
+          "pattern": "\\S",
+          "type": "string"
+        },
+        "unit_rule": {
+          "anyOf": [
+            {
+              "type": "string"
+            }
+          ],
+          "description": "How result units follow from the arguments, or why units do not apply. This rule requires semantic implementation; prose is not an executable unit checker.",
+          "pattern": "\\S",
+          "type": "string"
+        },
+        "version": {
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "code",
+        "name",
+        "version",
+        "result",
+        "semantics",
+        "unit_rule"
+      ],
+      "title": "Function",
+      "type": "object"
+    },
+    "Implementation": {
+      "additionalProperties": false,
+      "description": "An implementation role and its reproducible software identity as reported for this execution.",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/ImplementationKind",
+          "description": "Role performed by the implementation."
+        },
+        "name": {
+          "description": "Nonblank implementation name.",
+          "pattern": "\\S",
+          "type": "string"
+        },
+        "version": {
+          "description": "Nonblank version or immutable build identifier.",
+          "pattern": "\\S",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "name",
+        "version"
+      ],
+      "title": "Implementation",
+      "type": "object"
+    },
+    "ImplementationKind": {
+      "description": "",
+      "enum": [
+        "evaluator",
+        "compiler",
+        "solver"
+      ],
+      "title": "ImplementationKind",
+      "type": "string"
+    },
+    "Label": {
+      "additionalProperties": false,
+      "description": "A named set of Classifications describing an aspect of an Entity or Relationship.",
+      "properties": {
+        "classifications": {
+          "description": "Unique UUID references to Classifications describing this aspect.",
+          "items": {
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "id": {
+          "description": "Stable identity of the Label, used by provenance Facts.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "key": {
+          "description": "Name unique within the owner's characteristics.labels collection.",
+          "pattern": "\\S",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "key"
+      ],
+      "title": "Label",
+      "type": "object"
+    },
+    "Location": {
+      "additionalProperties": false,
+      "description": "An address within a specific Source edition.",
+      "properties": {
+        "address": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Entry__identifier_optional"
+              },
+              {
+                "pattern": "\\S",
+                "type": "string"
+              }
+            ]
+          },
+          "description": "Named address parts, such as sheet and cell, with nonblank text values.",
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "source": {
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source"
+      ],
+      "title": "Location",
+      "type": "object"
+    },
+    "Measure": {
+      "additionalProperties": false,
+      "description": "An identified definition of a measurable characteristic and its canonical units.",
+      "properties": {
+        "code": {
+          "description": "Case-sensitive code unique within the Model’s Measure collection; not reference identity.",
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
+          "type": "string"
+        },
+        "definition": {
+          "description": "Optional explanatory text describing the measurement convention.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "description": "Stable identity of this Measure definition.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "name": {
+          "description": "Nonblank human-readable name of the measured characteristic.",
+          "pattern": "\\S",
+          "type": "string"
+        },
+        "tags": {
+          "description": "Unordered, nonblank descriptive terms, with no duplicates.",
+          "items": {
+            "pattern": "\\S",
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "units": {
+          "description": "Nonblank expression specifying the canonical units for quantities interpreted through this Measure, such as m^2 or AUD/year. Unitless quantities must have an explicit dimensionless convention.",
+          "pattern": "\\S",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "code",
+        "name",
+        "units"
+      ],
+      "title": "Measure",
+      "type": "object"
+    },
+    "Measurement": {
+      "additionalProperties": false,
+      "description": "An identified measurable property with a Measure and an optional Quantity.",
+      "properties": {
+        "id": {
+          "description": "Stable identity of the Measurement, used by provenance Facts.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "measure": {
+          "description": "Measure defining meaning and canonical units, referenced by its stable UUID.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "quantity": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Optional recorded numerical content. Its units must be compatible with the Measure's canonical units. Omission or null denotes unresolved content."
+        }
+      },
+      "required": [
+        "measure",
+        "id"
+      ],
+      "title": "Measurement",
+      "type": "object"
+    },
+    "Metadata": {
+      "additionalProperties": false,
+      "description": "Identity, description, and optional lineage of one immutable document revision.",
+      "properties": {
+        "description": {
+          "description": "Optional explanation of this revision and its purpose.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "description": "UUID identifying the enclosing immutable document revision.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "name": {
+          "description": "Optional human-readable name of this revision.",
+          "pattern": "\\S",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "previous": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "UUID of the preceding revision of the same document kind, referencing its Metadata.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "schema_version": {
+          "description": "Version of the enclosing document's schema contract.",
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "schema_version"
+      ],
+      "title": "Metadata",
+      "type": "object"
+    },
+    "Method": {
+      "additionalProperties": false,
+      "description": "The named process used to assert, derive, or reconcile evidence.",
+      "properties": {
+        "code": {
+          "pattern": "\\S",
+          "type": "string"
+        },
+        "description": {
+          "pattern": "\\S",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "version": {
+          "pattern": "\\S",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "code"
+      ],
+      "title": "Method",
+      "type": "object"
+    },
+    "MissingHandling": {
+      "description": "",
+      "enum": [
+        "error",
+        "omit"
+      ],
+      "title": "MissingHandling",
+      "type": "string"
+    },
+    "Model": {
+      "additionalProperties": false,
+      "description": "A self-contained snapshot of a system's declarations, mathematical formulations, and recorded content, identified by its Metadata.",
+      "properties": {
+        "definitions": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Definitions"
+            }
+          ],
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Definitions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Canonical Taxonomy, Measure, and Function definitions referenced by this snapshot."
+        },
+        "metadata": {
+          "$ref": "#/$defs/Metadata",
+          "allOf": [
+            {
+              "$ref": "#/$defs/Metadata"
+            }
+          ],
+          "description": "Required identity, schema contract version, and optional descriptive/history fields."
+        },
+        "provenance": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Provenance"
+            }
+          ],
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Provenance"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Evidence and reasoning supporting recorded domain and Value content in this snapshot."
+        },
+        "system": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/System"
+            }
+          ],
+          "anyOf": [
+            {
+              "$ref": "#/$defs/System"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The domain objects and explicit mathematical formulations represented by this Model."
+        }
+      },
+      "required": [
+        "metadata"
+      ],
+      "title": "Model",
+      "type": "object"
+    },
+    "Objective": {
+      "additionalProperties": false,
+      "description": "A scalar numerical Expression and the sense in which its result is preferred.",
+      "properties": {
+        "expression": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "type": "string"
+            }
+          ],
+          "description": "UUID of a scalar numerical Expression in the composed Model and Specification scope.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "sense": {
+          "$ref": "#/$defs/ObjectiveKind",
+          "description": "Whether smaller or larger results are preferred."
+        }
+      },
+      "required": [
+        "expression",
+        "sense"
+      ],
+      "title": "Objective",
+      "type": "object"
+    },
+    "ObjectiveKind": {
+      "description": "",
+      "enum": [
+        "minimize",
+        "maximize"
+      ],
+      "title": "ObjectiveKind",
+      "type": "string"
+    },
+    "Operator": {
+      "description": "",
+      "enum": [
+        "add",
+        "subtract",
+        "multiply",
+        "divide",
+        "equal",
+        "not_equal",
+        "less_than",
+        "less_than_or_equal",
+        "greater_than",
+        "greater_than_or_equal",
+        "power",
+        "negate",
+        "logical_not",
+        "logical_and",
+        "logical_or"
+      ],
+      "title": "Operator",
+      "type": "string"
+    },
+    "Parameter": {
+      "additionalProperties": false,
+      "description": "A named argument in a Function signature. List order determines positional argument order.",
+      "properties": {
+        "domain": {
+          "$ref": "#/$defs/Domain",
+          "allOf": [
+            {
+              "$ref": "#/$defs/Domain"
+            }
+          ],
+          "description": "Content permitted for this argument."
+        },
+        "kind": {
+          "$ref": "#/$defs/ParameterKind",
+          "description": "How a call may supply this parameter."
+        },
+        "name": {
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
+          "type": "string"
+        },
+        "required": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            }
+          ],
+          "description": "Whether a call must supply this argument.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name",
+        "domain",
+        "kind",
+        "required"
+      ],
+      "title": "Parameter",
+      "type": "object"
+    },
+    "ParameterKind": {
+      "description": "",
+      "enum": [
+        "positional_or_named",
+        "named_only"
+      ],
+      "title": "ParameterKind",
+      "type": "string"
+    },
+    "Projection": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "entity"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "not": {
+                  "required": [
+                    "key"
+                  ]
+                },
+                "properties": {
+                  "key": {}
+                }
+              },
+              {
+                "not": {
+                  "required": [
+                    "measure"
+                  ]
+                },
+                "properties": {
+                  "measure": {}
+                }
+              },
+              {
+                "not": {
+                  "required": [
+                    "cardinality"
+                  ]
+                },
+                "properties": {
+                  "cardinality": {}
+                }
+              },
+              {
+                "not": {
+                  "required": [
+                    "missing"
+                  ]
+                },
+                "properties": {
+                  "missing": {}
+                }
+              }
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "value"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "oneOf": [
+              {
+                "properties": {
+                  "key": {}
+                },
+                "required": [
+                  "key"
+                ]
+              },
+              {
+                "properties": {
+                  "measure": {}
+                },
+                "required": [
+                  "measure"
+                ]
+              }
+            ],
+            "properties": {
+              "cardinality": {},
+              "missing": {}
+            },
+            "required": [
+              "cardinality",
+              "missing"
+            ]
+          }
+        }
+      ],
+      "description": "Select Entity identities or Values belonging to each matching Entity.",
+      "properties": {
+        "cardinality": {
+          "$ref": "#/$defs/Cardinality"
+        },
+        "key": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Exact owner-local Value key.",
+          "pattern": "\\S",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ProjectionKind"
+        },
+        "measure": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Select Values with this exact Measure.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "missing": {
+          "$ref": "#/$defs/MissingHandling"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "Projection",
+      "type": "object"
+    },
+    "ProjectionKind": {
+      "description": "",
+      "enum": [
+        "entity",
+        "value"
+      ],
+      "title": "ProjectionKind",
+      "type": "string"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "description": "Facts connecting graph objects to supporting Claims, with the Sources and upstream Claims needed to follow their lineage.",
+      "properties": {
+        "claims": {
+          "items": {
+            "$ref": "#/$defs/Claim"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "facts": {
+          "items": {
+            "$ref": "#/$defs/Fact"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "sources": {
+          "items": {
+            "$ref": "#/$defs/Source"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "title": "Provenance",
+      "type": "object"
+    },
+    "Quantity": {
+      "additionalProperties": false,
+      "description": "Numerical content consisting of a finite magnitude and explicit units.",
+      "properties": {
+        "magnitude": {
+          "description": "Finite numerical magnitude expressed in the accompanying units.",
+          "type": "number"
+        },
+        "units": {
+          "description": "Explicit units for this magnitude, such as m^2, AUD/year, or dimensionless.",
+          "pattern": "\\S",
+          "type": "string"
+        }
+      },
+      "required": [
+        "magnitude",
+        "units"
+      ],
+      "title": "Quantity",
+      "type": "object"
+    },
+    "Query": {
+      "additionalProperties": false,
+      "description": "A non-executing query specification returning Entity or Value identities from the containing Model revision.",
+      "properties": {
+        "duplicates": {
+          "$ref": "#/$defs/DuplicateHandling"
+        },
+        "filter": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Filter"
+            }
+          ],
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Filter"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "projection": {
+          "$ref": "#/$defs/Projection",
+          "allOf": [
+            {
+              "$ref": "#/$defs/Projection"
+            }
+          ]
+        },
+        "starting_at": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "type": "string"
+            }
+          ],
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "steps": {
+          "description": "Ordered traversal steps; omission selects the starting Entity.",
+          "items": {
+            "$ref": "#/$defs/Traversal",
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Traversal"
+              }
+            ]
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "starting_at",
+        "projection",
+        "duplicates"
+      ],
+      "title": "Query",
+      "type": "object"
+    },
+    "Reconciliation": {
+      "additionalProperties": false,
+      "description": "Explicit selection of one supporting Claim when evidence conflicts.",
+      "properties": {
+        "method": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Method"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "selected": {
+          "description": "UUID of a Claim included in the Fact's claims.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/ReconciliationStatus"
+        }
+      },
+      "required": [
+        "selected",
+        "status"
+      ],
+      "title": "Reconciliation",
+      "type": "object"
+    },
+    "ReconciliationStatus": {
+      "description": "",
+      "enum": [
+        "provisional",
+        "confirmed"
+      ],
+      "title": "ReconciliationStatus",
+      "type": "string"
+    },
+    "Relationship": {
+      "additionalProperties": false,
+      "description": "An identified, directed connection from one Entity to another. Its classification describes the connection; its characteristics describe properties of the connection itself.",
+      "properties": {
+        "characteristics": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Characteristics"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Labels and Values describing this connection."
+        },
+        "classification": {
+          "description": "Classification describing the object, referenced by its stable UUID.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "id": {
+          "description": "Stable identity of the Relationship across Model revisions.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "source": {
+          "description": "UUID of the source Entity.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "target": {
+          "description": "UUID of the target Entity.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "classification",
+        "id",
+        "source",
+        "target"
+      ],
+      "title": "Relationship",
+      "type": "object"
+    },
+    "Report": {
+      "additionalProperties": false,
+      "description": "Outcome, actual runtime, findings, and ordered execution trace of a Run.",
+      "properties": {
+        "diagnostics": {
+          "description": "Unordered findings supporting interpretation of the outcome.",
+          "items": {
+            "$ref": "#/$defs/Diagnostic"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "runtime": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Runtime"
+            }
+          ],
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Runtime"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Actual runtime when known; may be absent for a skipped or pre-execution failure."
+        },
+        "status": {
+          "$ref": "#/$defs/Status",
+          "allOf": [
+            {
+              "$ref": "#/$defs/Status"
+            }
+          ],
+          "description": "Required execution and mathematical outcome."
+        },
+        "trace": {
+          "description": "Ordered execution and selection records; list order is preserved.",
+          "items": {
+            "$ref": "#/$defs/Step"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "Report",
+      "type": "object"
+    },
+    "Run": {
+      "additionalProperties": false,
+      "description": "The finalized record of one execution attempt against an exact Specification revision.",
+      "properties": {
+        "metadata": {
+          "$ref": "#/$defs/Metadata",
+          "allOf": [
+            {
+              "$ref": "#/$defs/Metadata"
+            }
+          ],
+          "description": "Identity and schema version of this immutable Run record."
+        },
+        "outputs": {
+          "description": "Unique accepted output Model revision references, or their union for a batch.",
+          "items": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+                "type": "string"
+              }
+            ],
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "report": {
+          "$ref": "#/$defs/Report",
+          "allOf": [
+            {
+              "$ref": "#/$defs/Report"
+            }
+          ],
+          "description": "Execution outcome and supporting evidence."
+        },
+        "spawns": {
+          "description": "Unique references to directly spawned Run revisions.",
+          "items": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+                "type": "string"
+              }
+            ],
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "specification": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "type": "string"
+            }
+          ],
+          "description": "Exact attempted Specification revision, resolved as a Specification document.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "metadata",
+        "specification",
+        "report"
+      ],
+      "title": "Run",
+      "type": "object"
+    },
+    "Runtime": {
+      "additionalProperties": false,
+      "description": "Observed timing, implementation identities, and effective numerical settings.",
+      "properties": {
+        "finished_at": {
+          "description": "Observed finish instant with an explicit timezone.",
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "implementations": {
+          "description": "Actual implementation identities; nonempty when Runtime is present.",
+          "items": {
+            "$ref": "#/$defs/Implementation"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "settings": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Settings"
+            }
+          ],
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Settings"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Effective numerical settings, rather than merely copied requests."
+        },
+        "started_at": {
+          "description": "Observed start instant with an explicit timezone.",
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "implementations"
+      ],
+      "title": "Runtime",
+      "type": "object"
+    },
+    "Selection": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "member"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "not": {
+                  "required": [
+                    "index"
+                  ]
+                },
+                "properties": {
+                  "index": {}
+                }
+              }
+            ],
+            "properties": {
+              "member": {}
+            },
+            "required": [
+              "member"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "index"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "not": {
+                  "required": [
+                    "member"
+                  ]
+                },
+                "properties": {
+                  "member": {}
+                }
+              }
+            ],
+            "properties": {
+              "index": {}
+            },
+            "required": [
+              "index"
+            ]
+          }
+        }
+      ],
+      "description": "Read a declared member or indexed element from structured expression content.",
+      "properties": {
+        "base": {
+          "$ref": "#/$defs/Expression",
+          "allOf": [
+            {
+              "$ref": "#/$defs/Expression"
+            }
+          ]
+        },
+        "index": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Expression"
+            }
+          ],
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Expression"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Index expression."
+        },
+        "kind": {
+          "$ref": "#/$defs/SelectionKind"
+        },
+        "member": {
+          "description": "Declared member name.",
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "base"
+      ],
+      "title": "Selection",
+      "type": "object"
+    },
+    "SelectionKind": {
+      "description": "",
+      "enum": [
+        "member",
+        "index"
+      ],
+      "title": "SelectionKind",
+      "type": "string"
+    },
+    "Settings": {
+      "additionalProperties": false,
+      "description": "Numerical convergence and resource settings; the containing record distinguishes requested from effective values.",
+      "properties": {
+        "iteration_limit": {
+          "description": "Maximum number of solver iterations requested, interpreted by the backend's documented algorithm.",
+          "minimum": 1,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "relative_tolerance": {
+          "description": "Positive finite dimensionless convergence tolerance, strictly less than one.",
+          "maximum": 1,
+          "minimum": 0,
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "time_limit": {
+          "description": "Positive finite execution time limit in seconds, using the backend's documented timing convention.",
+          "minimum": 0,
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "title": "Settings",
+      "type": "object"
+    },
+    "Severity": {
+      "description": "",
+      "enum": [
+        "info",
+        "warning",
+        "error"
+      ],
+      "title": "Severity",
+      "type": "string"
+    },
+    "SolutionStatus": {
+      "description": "",
+      "enum": [
+        "feasible",
+        "infeasible",
+        "unknown",
+        "not_assessed",
+        "not_applicable"
+      ],
+      "title": "SolutionStatus",
+      "type": "string"
+    },
+    "Source": {
+      "additionalProperties": false,
+      "description": "An identifiable edition of an external evidence artifact.",
+      "properties": {
+        "author": {
+          "pattern": "\\S",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "checksum": {
+          "description": "Content checksum identifying the evidence edition.",
+          "pattern": "\\S",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "issued_at": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "name": {
+          "pattern": "\\S",
+          "type": "string"
+        },
+        "received_at": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "checksum"
+      ],
+      "title": "Source",
+      "type": "object"
+    },
+    "Specification": {
+      "additionalProperties": false,
+      "description": "An immutable contribution of investigation requirements, a composition of such contributions, or a batch of separate Specifications. A concrete composition investigates one pinned Model revision.",
+      "properties": {
+        "assignments": {
+          "description": "Explicit Quantities held fixed on their target Values for this investigation.",
+          "items": {
+            "$ref": "#/$defs/Assignment"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "cases": {
+          "description": "Unique Metadata UUIDs of separate Specifications in a batch, without implicit inheritance.",
+          "items": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+                "type": "string"
+              }
+            ],
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "estimates": {
+          "description": "Initial numerical estimates for unknown Values, used to initialize a solve without fixing them.",
+          "items": {
+            "$ref": "#/$defs/Assignment"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "formulations": {
+          "description": "Additional mathematical declarations and constraints owned by this Specification. Root codes are unique within this collection, independently of the Model's root Formulation codes.",
+          "items": {
+            "$ref": "#/$defs/Formulation"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "includes": {
+          "description": "Unique Metadata UUIDs of Specification revisions contributing requirements to this investigation.",
+          "items": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+                "type": "string"
+              }
+            ],
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "metadata": {
+          "$ref": "#/$defs/Metadata",
+          "allOf": [
+            {
+              "$ref": "#/$defs/Metadata"
+            }
+          ],
+          "description": "Identity and schema version of this Specification revision, with optional description and lineage."
+        },
+        "model": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "UUID of the exact input Model revision. Optional on a contribution; required after composing a concrete investigation. On a batch it only asserts every case's independently supplied input Model.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "objectives": {
+          "description": "Objectives in decreasing order of preference. Implementations may use this order for automatic selection; candidate exploration and final selection are implementation responsibilities.",
+          "items": {
+            "$ref": "#/$defs/Objective"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "settings": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Settings"
+            }
+          ],
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Settings"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Optional numerical requests. Choices still unspecified after composition are left to the implementation; the Run records the effective settings."
+        },
+        "unknowns": {
+          "description": "Unique Value UUIDs whose amounts may be determined, including intermediate unknowns.",
+          "items": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+                "type": "string"
+              }
+            ],
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "metadata"
+      ],
+      "title": "Specification",
+      "type": "object"
+    },
+    "Status": {
+      "additionalProperties": false,
+      "description": "Execution completion and mathematical conclusion, recorded independently.",
+      "properties": {
+        "completion": {
+          "$ref": "#/$defs/CompletionStatus",
+          "description": "How this attempt ended, or the aggregate completion of a batch."
+        },
+        "solution": {
+          "$ref": "#/$defs/SolutionStatus",
+          "description": "Mathematical conclusion; batches use not_applicable."
+        }
+      },
+      "required": [
+        "completion",
+        "solution"
+      ],
+      "title": "Status",
+      "type": "object"
+    },
+    "Step": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "target": {}
+            },
+            "required": [
+              "target"
+            ]
+          },
+          "then": {
+            "properties": {
+              "document": {}
+            },
+            "required": [
+              "document"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "enum": [
+                  "publication",
+                  "selection"
+                ]
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "document": {}
+            },
+            "required": [
+              "document"
+            ]
+          }
+        }
+      ],
+      "description": "One ordered record of execution activity, without prescribing scheduling or policy logic.",
+      "properties": {
+        "at": {
+          "description": "Observed event instant with an explicit timezone.",
+          "format": "date-time",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "document": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Revision containing the referenced target, or the document addressed as a whole.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/StepKind",
+          "description": "Kind of recorded execution activity."
+        },
+        "message": {
+          "description": "What occurred and the basis for any selection.",
+          "pattern": "\\S",
+          "type": "string"
+        },
+        "target": {
+          "description": "UUID of a canonical record in document; never an unqualified cross-revision reference.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "message"
+      ],
+      "title": "Step",
+      "type": "object"
+    },
+    "StepKind": {
+      "description": "",
+      "enum": [
+        "validation",
+        "formulation",
+        "solve",
+        "publication",
+        "selection"
+      ],
+      "title": "StepKind",
+      "type": "string"
+    },
+    "System": {
+      "additionalProperties": false,
+      "description": "The Entities, Relationships, Assemblies, and mathematical formulations of a Model.",
+      "properties": {
+        "assemblies": {
+          "description": "Canonical Assemblies with UUID references to shared domain members.",
+          "items": {
+            "$ref": "#/$defs/Assembly"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "entities": {
+          "description": "Canonical domain Entities, excluding Assemblies stored in their own collection.",
+          "items": {
+            "$ref": "#/$defs/Entity"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "formulations": {
+          "description": "Canonical root Formulations containing governing mathematical declarations and constraints.",
+          "items": {
+            "$ref": "#/$defs/Formulation"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "relationships": {
+          "description": "Canonical directed connections between Entities, including Assemblies.",
+          "items": {
+            "$ref": "#/$defs/Relationship"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "title": "System",
+      "type": "object"
+    },
+    "Taxonomy": {
+      "additionalProperties": false,
+      "description": "A named, single-root hierarchy of Classifications.",
+      "properties": {
+        "classifications": {
+          "description": "Identified Classifications belonging to this Taxonomy; codes are unique within the collection.",
+          "items": {
+            "$ref": "#/$defs/Classification"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "code": {
+          "description": "Case-sensitive code unique in the Model's taxonomy catalogue.",
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
+          "type": "string"
+        },
+        "definition": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "name": {
+          "pattern": "\\S",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "code",
+        "name",
+        "classifications"
+      ],
+      "title": "Taxonomy",
+      "type": "object"
+    },
+    "Traversal": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "relationship"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "classification": {},
+              "direction": {}
+            },
+            "required": [
+              "classification",
+              "direction"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "membership"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "allOf": [
+              {
+                "not": {
+                  "required": [
+                    "classification"
+                  ]
+                },
+                "properties": {
+                  "classification": {}
+                }
+              },
+              {
+                "not": {
+                  "required": [
+                    "direction"
+                  ]
+                },
+                "properties": {
+                  "direction": {}
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "description": "One traversal step over domain Relationships or Assembly membership.",
+      "properties": {
+        "classification": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Exact Classification of Relationships to follow.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "depth": {
+          "$ref": "#/$defs/Depth"
+        },
+        "direction": {
+          "$ref": "#/$defs/Direction"
+        },
+        "kind": {
+          "$ref": "#/$defs/TraversalKind"
+        }
+      },
+      "required": [
+        "kind",
+        "depth"
+      ],
+      "title": "Traversal",
+      "type": "object"
+    },
+    "TraversalKind": {
+      "description": "",
+      "enum": [
+        "relationship",
+        "membership"
+      ],
+      "title": "TraversalKind",
+      "type": "string"
+    },
+    "Value": {
+      "additionalProperties": false,
+      "description": "An identified, typed Value belonging to an Entity or Relationship's Characteristics, or declared locally within a mathematical Formulation. Its key provides a name within the owner's values collection; its UUID identifies the symbol independently of that name.",
+      "properties": {
+        "description": {
+          "description": "Explanation of the meaning of this Value within its owner.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "description": "Stable identity of the Value, used by provenance Facts.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "key": {
+          "description": "Nonblank name unique within the owner's values collection; not reference identity.",
+          "pattern": "\\S",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/ValueKind",
+          "description": "The kind of content represented by this characteristic."
+        },
+        "measure": {
+          "description": "Measure defining meaning and canonical units, referenced by its stable UUID.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "quantity": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Optional recorded numerical content. Its units must be compatible with the Measure's canonical units. Omission or null denotes unresolved content."
+        }
+      },
+      "required": [
+        "measure",
+        "id",
+        "key",
+        "kind"
+      ],
+      "title": "Value",
+      "type": "object"
+    },
+    "ValueKind": {
+      "description": "Supported kinds of Values.",
+      "enum": [
+        "measurement"
+      ],
+      "title": "ValueKind",
+      "type": "string"
+    }
+  },
+  "$id": "https://daniel-fink.github.io/rangekeeper/schema/bundle",
+  "$schema": "https://json-schema.org/draft/2019-09/schema"
+}

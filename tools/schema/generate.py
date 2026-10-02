@@ -1,0 +1,319 @@
+"""Generate the shared record boundary. Run with the pinned requirements.txt.
+
+--check compares artifacts without changing the checkout. No runtime imports of
+LinkML are required by the immutable records or their packaged validators.
+"""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import importlib.metadata
+import json
+from pathlib import Path
+import tempfile
+
+import yaml
+from jsonschema import Draft202012Validator
+from linkml.generators.jsonschemagen import JsonSchemaGenerator
+from linkml.generators.pythongen import PythonGenerator
+from linkml_runtime.utils.schemaview import SchemaView
+
+ROOT = Path(__file__).resolve().parents[2]
+DESTINATION = ROOT / "src/rangekeeper/_schema"
+PINNED = {
+    "linkml": "1.11.1",
+    "linkml-runtime": "1.11.1",
+    "jsonschema": "4.26.0",
+    "PyYAML": "6.0.3",
+}
+
+
+def encoded(value):
+    return json.dumps(value, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
+
+
+def generate():
+    versions = {name: importlib.metadata.version(name) for name in PINNED}
+    if versions != PINNED:
+        raise SystemExit(f"Use tools/schema/requirements.txt; observed {versions}")
+    sources = {
+        f"schema/{p.name}": p.read_bytes()
+        for p in sorted((ROOT / "schema").glob("*.yaml"))
+    }
+    sources["tools/schema/bundle.yaml"] = (
+        Path(__file__).with_name("bundle.yaml").read_bytes()
+    )
+    sources["tools/schema/generate.py"] = Path(__file__).read_bytes()
+    sources["tools/schema/requirements.txt"] = (
+        Path(__file__).with_name("requirements.txt").read_bytes()
+    )
+    with tempfile.TemporaryDirectory(prefix="rk-generate-") as directory:
+        directory = Path(directory)
+        for name, value in sources.items():
+            if name.startswith("schema/"):
+                (directory / Path(name).name).write_bytes(value)
+        bundle = directory / "bundle.yaml"
+        bundle.write_bytes(sources["tools/schema/bundle.yaml"])
+        view = SchemaView(str(bundle))
+        classes = view.all_classes()
+        enums = view.all_enums()
+        schema = json.loads(
+            JsonSchemaGenerator(
+                str(bundle), top_class="Model", not_closed=False
+            ).serialize()
+        )
+        # Every root uses the same complete definitions; no inferred tree-root choice.
+        shared = {
+            "$schema": schema["$schema"],
+            "$id": schema["$id"],
+            "$defs": schema["$defs"],
+        }
+        Draft202012Validator.check_schema(shared)
+        opaque = {
+            name
+            for name, cls in classes.items()
+            if str(cls.class_uri) in ("linkml:Any", "https://w3id.org/linkml/Any")
+        }
+        native = PythonGenerator(str(bundle), metadata=False).serialize()
+        if str(directory) in native or str(directory) in encoded(shared):
+            raise ValueError("Generator leaked temporary source path")
+        slots = {}
+        for name in sorted(classes):
+            slots[name] = {}
+            for field in view.class_induced_slots(name):
+                variants = field.any_of or [field]
+                options = []
+                for variant in variants:
+                    kind = variant.range or field.range or "string"
+                    inline = (
+                        variant.inlined
+                        if variant.inlined is not None
+                        else field.inlined
+                    )
+                    inline = bool(
+                        inline or variant.inlined_as_list or field.inlined_as_list
+                    )
+                    category = (
+                        "opaque"
+                        if kind in opaque
+                        else (
+                            "uuid"
+                            if kind == "UUID" or kind in classes and not inline
+                            else (
+                                "record"
+                                if kind in classes
+                                else "enum" if kind in enums else "primitive"
+                            )
+                        )
+                    )
+                    option = {"kind": kind, "category": category}
+                    if option not in options:
+                        options.append(option)
+                prop = shared["$defs"][name].get("properties", {}).get(field.name, {})
+                mapping = bool(field.multivalued and "additionalProperties" in prop)
+                if mapping:
+                    # LinkML keyed collections may use reduced dictionaries or scalar
+                    # values. Preserve both wire forms rather than inventing Entry IDs.
+                    options = []
+                    for variant in prop["additionalProperties"].get("anyOf", []):
+                        if "$ref" in variant:
+                            options.append({"kind": field.range, "category": "keyed"})
+                        elif "type" in variant:
+                            options.append(
+                                {"kind": variant["type"], "category": "primitive"}
+                            )
+                        else:
+                            raise ValueError(
+                                f"Unsupported keyed collection: {name}.{field.name}"
+                            )
+                    if not options:
+                        raise ValueError(
+                            f"Unsupported keyed collection: {name}.{field.name}"
+                        )
+                nullable = Draft202012Validator({**shared, **prop}).is_valid(None)
+                slots[name][field.name] = dict(
+                    options=options,
+                    required=bool(field.required),
+                    many=bool(field.multivalued),
+                    mapping=mapping,
+                    nullable=nullable,
+                    ordered=bool(field.list_elements_ordered),
+                )
+        lines = [
+            "# Generated by tools/schema/generate.py; do not edit.",
+            "from __future__ import annotations",
+            "",
+            "from typing import Literal, cast",
+            "from collections.abc import Mapping",
+            "from uuid import UUID",
+            "from .._records import Record, Unset, UNSET, FrozenJSONValue, JSONValue",
+            "",
+        ]
+        for name in sorted(enums):
+            values = list(enums[name].permissible_values)
+            lines += [f'{name} = Literal[{", ".join(repr(v) for v in values)}]']
+        for name in sorted(opaque):
+            lines += [f"{name} = FrozenJSONValue"]
+        lines += [""]
+
+        def field_type(meta, argument=False):
+            variants = []
+            for option in meta["options"]:
+                kind, category = option["kind"], option["category"]
+                if category == "uuid":
+                    typ = "UUID"
+                elif category == "opaque":
+                    typ = "JSONValue" if argument else "FrozenJSONValue"
+                elif category == "keyed":
+                    typ = (
+                        "Mapping[str, JSONValue]"
+                        if argument
+                        else "Mapping[str, FrozenJSONValue]"
+                    )
+                elif category in ("record", "enum"):
+                    typ = kind
+                else:
+                    typ = {
+                        "string": "str",
+                        "Code": "str",
+                        "URI": "str",
+                        "integer": "int",
+                        "decimal": "int | float",
+                        "double": "int | float",
+                        "float": "int | float",
+                        "boolean": "bool",
+                        "date": "str",
+                        "datetime": "str",
+                    }.get(kind)
+                    if typ is None:
+                        raise ValueError(f"Unsupported primitive {kind}")
+                if typ not in variants:
+                    variants.append(typ)
+            typ = " | ".join(variants)
+            if meta["mapping"]:
+                typ = f"Mapping[str, {typ}]"
+            elif meta["many"]:
+                typ = f"tuple[{typ}, ...]"
+            if (
+                meta["nullable"]
+                or not argument
+                and not meta["required"]
+                and not meta["many"]
+            ):
+                typ += " | None"
+            if argument and not meta["required"]:
+                typ += " | Unset"
+            return typ
+
+        done = set(opaque)
+
+        def emit(name):
+            if name in done:
+                return
+            parent = classes[name].is_a
+            if parent:
+                emit(str(parent))
+            fields = slots[name]
+            lines.extend(
+                [
+                    f'class {name}({parent or "Record"}):',
+                    "    __slots__ = ()",
+                    f"    _kind = {name!r}",
+                    "",
+                ]
+            )
+            args = []
+            for field, meta in fields.items():
+                args.append(
+                    f"        {field}: {field_type(meta, True)}"
+                    + ("" if meta["required"] else " = UNSET")
+                    + ","
+                )
+            lines.extend(
+                [
+                    "    def __init__(self, *,",
+                    *args,
+                    "    ) -> None:",
+                    "        self._initialize({",
+                ]
+            )
+            lines.extend([f"            {field!r}: {field}," for field in fields])
+            lines.extend(["        })", ""])
+            for field, meta in fields.items():
+                typ = field_type(meta)
+                lines.extend(
+                    [
+                        "    @property",
+                        f"    def {field}(self) -> {typ}:",
+                        f"        return cast({typ!r}, self._field({field!r}))",
+                        "",
+                    ]
+                )
+            lines.append("")
+            done.add(name)
+
+        for name in sorted(classes):
+            emit(name)
+        lines.extend(
+            [
+                "_TYPES = {",
+                *[f"    {n!r}: {n}," for n in sorted(classes) if n not in opaque],
+                "}",
+                "",
+                "__all__ = " + repr(sorted(set(classes) | set(enums))),
+                "",
+            ]
+        )
+        files = {
+            "records.py": "\n".join(lines),
+            "native.py": native,
+            "schema.json": encoded(shared),
+            "slots.json": encoded(slots),
+        }
+        manifest = {
+            "generator_version": 1,
+            "dependencies": versions,
+            "sources": {
+                name: hashlib.sha256(data).hexdigest() for name, data in sources.items()
+            },
+            "document_versions": {
+                kind: yaml.safe_load(sources[f"schema/{kind.lower()}.yaml"])["version"]
+                for kind in ("Model", "Specification", "Run")
+            },
+            "classes": sorted(classes),
+            "opaque_classes": sorted(opaque),
+            "artifacts": {
+                name: hashlib.sha256(data.encode()).hexdigest()
+                for name, data in files.items()
+            },
+        }
+        files["manifest.json"] = encoded(manifest)
+        return files
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--check", action="store_true")
+    parser.add_argument("--output", type=Path, default=DESTINATION)
+    args = parser.parse_args()
+    files = generate()
+    changed = [
+        name
+        for name, data in files.items()
+        if not (args.output / name).exists() or (args.output / name).read_text() != data
+    ]
+    if args.check:
+        if changed:
+            raise SystemExit("Generated artifacts differ: " + ", ".join(changed))
+    else:
+        args.output.mkdir(parents=True, exist_ok=True)
+        for name, data in files.items():
+            (args.output / name).write_text(data)
+    print(
+        f'{"Verified" if args.check else "Generated"} {len(files)} artifacts, 50 schema classes'
+    )
+
+
+if __name__ == "__main__":
+    main()

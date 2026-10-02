@@ -20,9 +20,11 @@ from linkml_runtime.loaders import json_loader
 from linkml_runtime.utils.schemaview import SchemaView
 import yaml
 
-from expression_contract import ContractError
-from run_contract import instant, validate_run
-from specification_contract import records
+import _library
+
+from rangekeeper.errors import ContractError
+from rangekeeper.run._validation import instant, validate_run
+from rangekeeper.specification._validation import records
 
 SCHEMA = Path(__file__).resolve().parents[1]
 BIN = Path(sys.executable).parent
@@ -51,16 +53,7 @@ for cls in (
 ):
     schema_name = {"Model": "model", "Specification": "specification"}.get(cls, "run")
     generated = json.loads(
-        subprocess.check_output(
-            [
-                str(BIN / "gen-json-schema"),
-                "--closed",
-                "--top-class",
-                cls,
-                str(SCHEMA / f"{schema_name}.yaml"),
-            ],
-            text=True,
-        )
+        _library.schema_json(cls)
     )
     validator = validator_for(generated)
     validator.check_schema(generated)

@@ -1,8 +1,15 @@
 # Typed graph persistence and YAML workflows
 
 For the purpose of each API, read [Why the adapter APIs exist](GRAPH_ADAPTER_GUIDE.md).
-The [boundary review](GRAPH_ADAPTER_REVIEW.md) records current refactoring opportunities
-and known validation/lineage gaps; it is not an implemented redesign.
+The [boundary review](GRAPH_ADAPTER_REVIEW.md) records historical findings and
+implemented resolutions. The [format-independent follow-up](GRAPH_WORKFLOW_FORMATS.md)
+records the later delivery.
+
+**Scope, 2026-10-02:** these are the existing graph persistence and source-building
+APIs. Their `model.yaml`, `WorkflowSpec`, and workflow `run` are not the new
+schema Model, mathematical Specification, or finalized Run. The graph JSON format
+below is not the new Model interchange contract. Follow the
+[library plan](LIBRARY_ARCHITECTURE.md) for their staged migration.
 
 Install `rangekeeper[workflow]` for the bounded Excel/YAML workflow. YAML support is
 optional and uses PyYAML's safe loader with duplicate-key and alias rejection. No

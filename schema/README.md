@@ -11,7 +11,9 @@ UUID directly. Taxonomies, Classifications, Measures, Labels, and Values are
 serialized as lists with explicit codes/local keys. The custom taxonomy/code
 reference parser has been removed. Both examples pass generated record validation
 and generated Python round trips; the runtime conformance fixture checks their
-graph meaning. Full production import/export and calculation execution remain pending.
+graph meaning. Canonical Model/Specification/Run codecs and immutable revision stores
+are now implemented: see [Run and storage](../docs/RUN_AND_STORAGE.md). Legacy consumer
+format migration and calculation execution remain pending.
 
 ## Schema, project definitions, and project objects
 
@@ -1062,7 +1064,7 @@ Its temporary wrapper groups test records and is not a new Model schema.
 The expression check validates valuation, query/aggregation, function, and Constraint examples.
 It rejects malformed kinds, mixed content, null literals, invalid reference syntax,
 wrong operator forms, and invalid query projections. Bounded semantic checks in
-`checks/expression_contract.py` reject dangling references, argument-binding
+`src/rangekeeper/model/_expression.py` reject dangling references, argument-binding
 errors, coarse domain mismatches, and duplicate identities. These are conformance
 fixtures, not a production compiler, query executor, or unit checker.
 Generated Python round trips preserve operand and argument order, repeated Value
@@ -1074,7 +1076,7 @@ JSON dumping uses `inject_type=False` for plain instance JSON. Generated Python
 construction alone does not enforce all conditional schema rules.
 
 The Formulation check validates the valuation fixture and generated Python round trips.
-Bounded checks in `checks/formulation_contract.py` reject repeated ownership, containment
+Bounded checks in `src/rangekeeper/model/_formulation.py` reject repeated ownership, containment
 cycles, duplicate local names/codes, dangling or wrong-kind references, and non-Boolean
 Constraint predicates. They accept sibling references, aliases to shared Values,
 repeated local codes in different Formulations, zero content, and unresolved Values.
@@ -1083,7 +1085,7 @@ do not compile Formulations, infer units, evaluate Constraints, or prove solvabi
 
 The Model check generates validators for Model, Metadata, and System, and checks a
 complete document and native Python round trips. Bounded checks in
-`checks/model_contract.py` reuse Formulation checks and add catalogue/name scopes, domain
+`src/rangekeeper/model/_validation.py` reuse Formulation checks and add catalogue/name scopes, domain
 and evidence references, Assembly/Classification/Claim cycles, and available revision
 history. Previous content is not imported for reference resolution. Arbitrary Claim
 content stays opaque; generic Fact/content agreement and full unit inference are
@@ -1091,8 +1093,8 @@ outside this check. Optional empty containers can be omitted by the native dumpe
 
 The Specification check generates structural validators and native Python records, then
 checks the standalone examples, composed examples, batch, and variants.
-`checks/specification_composition.py` checks additive accumulation and batch references;
-`checks/specification_contract.py` validates pinned
+`src/rangekeeper/specification/_composition.py` checks additive accumulation and batch references;
+`src/rangekeeper/specification/_validation.py` validates pinned
 revision references, composed ownership, additional mathematics, role completeness,
 estimate eligibility, every scalar objective, finite content, and numerical request bounds.
 Round trips preserve objective preference order in both directions; a secondary
@@ -1136,13 +1138,37 @@ Known limits of this checkpoint:
   agreement require validation beyond record shapes.
 - The fixture maps local Value names to Python's Measure-code dictionary. Multiple
   Values using the same Measure cannot yet be represented in that runtime collection.
-- Generic Claim payloads, rich Value kinds, complete schema-based import/export,
-  and calculation execution remain incomplete.
+- These are limits of the legacy graph fixture bridge. The canonical Model supports
+  multiple owner-local Values using one Measure and has schema-based JSON/YAML codecs.
+  Generic Claim/Fact-content agreement, richer executable Value semantics, legacy
+  consumer migration and calculation execution remain incomplete.
 
 ## Next work
 
-1. **Implement the smallest scalar execution adapter.** Model, Specification, and
-   finalized Run contracts now have inspectable fixtures and bounded validation.
+Work units 2A/2B are implemented: see the [record boundary](../docs/RECORD_BOUNDARY.md)
+and [verification](../docs/research/domain-migration/turn1/README.md). Structural suites
+now load packaged schemas; run `python tools/schema/generate.py --check` from the
+repository root to verify freshness, or regenerate after intentional schema changes.
+Standalone checks reject stale schema-source fingerprints. Semantic checks live in
+the library, and the conformance scripts call them. The canonical domain APIs,
+codecs and revision stores are implemented; execution remains subsequent work.
+
+
+The [library architecture and migration plan](../docs/LIBRARY_ARCHITECTURE.md)
+records the [2026-10-02 decision](../docs/research/current-schema-comparison/DECISION.md)
+to retain LinkML and close the CUE comparison for this stage. The
+[domain replacement map](../docs/DOMAIN_MIGRATION_MAP.md) and
+[baseline](../docs/research/domain-migration/BASELINE.md) complete Step 1. The immutable record boundary and [Model/Specification core](../docs/DOMAIN_CORE.md)
+are implemented, together with [Run, codecs and revision persistence](../docs/RUN_AND_STORAGE.md).
+The [Turn 3 evidence](../docs/research/domain-migration/turn3/README.md) verifies these
+public APIs in an isolated installed wheel. Next implement `rangekeeper.execution`
+using Pyomo with HiGHS. The temporary `schema/execution/` and later promotion plan
+is superseded. Execution and graph-view portions of the target layout remain future work.
+
+1. **Implement scalar execution on the canonical core.** Model,
+   Specification, and finalized Run contracts have inspectable fixtures and bounded
+   validation. Domain behavior, codecs and immutable storage are available in the
+   library; verify and pin the selected numerical backend before wiring execution.
    Execute forward and inverse valuation, perform actual acceptance checks, and
    publish immutable Models with authentic runtime and diagnostic evidence.
 2. **Connect publication and provenance.** Exercise reuse of recorded outputs with
@@ -1161,9 +1187,9 @@ schema contracts from proposed extensions and unimplemented capabilities. Values
 components have separate responsibilities. Numerical and symbolic implementations
 must be checked for agreement; a Formulation does not confer general inverse solvability.
 
-Production import/export, the Characteristics/Value runtime migration, remaining
+Legacy import/export conversion, Characteristics/Value consumer migration, remaining
 typed Claim payloads, and document interpretation remain separate work. They do
-not need to be completed before drafting the execution schemas. New project
+not need to be completed before scalar execution. New project
 vocabulary should continue to require records rather than schema edits.
 
 The [Model–Specification–Run specification](../docs/MODEL_SPECIFICATION_RUN.md)

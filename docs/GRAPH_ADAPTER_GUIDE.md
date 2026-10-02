@@ -1,5 +1,11 @@
 # Why the graph adapter APIs exist
 
+**Scope, 2026-10-02:** this guide describes the existing graph ingestion APIs.
+The [library plan](LIBRARY_ARCHITECTURE.md) replaces canonical domain records
+first, then migrates these adapters and workflows. `WorkflowSpec` remains a
+source-building configuration, distinct from the new mathematical `Specification`.
+The APIs below are not evidence that the new Model executor is implemented.
+
 This guide explains the purpose of the ingestion and workflow APIs. See the
 [YAML contract guide](GRAPH_YAML_WORKFLOW.md) for syntax and the
 [boundary review](GRAPH_ADAPTER_REVIEW.md) for the original findings and their resolution.

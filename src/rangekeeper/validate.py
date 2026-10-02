@@ -1,7 +1,10 @@
+"""Small Python argument guards, separate from document semantic validation."""
+
+from typing import TypeGuard
 from uuid import UUID
 
 
-def is_text(value: object, *, empty: bool = True) -> bool:
+def is_text(value: object, *, empty: bool = True) -> TypeGuard[str]:
     """Return whether a value is text, optionally excluding empty text."""
     return isinstance(value, str) and (empty or bool(value.strip()))
 

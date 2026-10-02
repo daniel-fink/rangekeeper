@@ -7,6 +7,7 @@ conformance fixture; generated JSON Schema alone cannot establish referential in
 import copy
 import json
 from pathlib import Path
+import _library
 import subprocess
 import sys
 
@@ -33,16 +34,7 @@ for name, file in (
     ("Provenance", "provenance"),
 ):
     schema = json.loads(
-        subprocess.check_output(
-            [
-                str(GENERATE),
-                "--closed",
-                "--top-class",
-                name,
-                str(SCHEMA / f"{file}.yaml"),
-            ],
-            text=True,
-        )
+        _library.schema_json(name)
     )
     cls = validator_for(schema)
     cls.check_schema(schema)

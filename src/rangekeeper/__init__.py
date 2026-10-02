@@ -2,8 +2,9 @@ from importlib import import_module
 from types import ModuleType
 
 from . import validate as validate
-from . import measure as measure
-from . import graph as graph
+from .model import Model as Model
+from .specification import Specification as Specification
+from .run import Run as Run
 
 # Helper Methods:
 import functools
@@ -12,6 +13,10 @@ import functools
 _LAZY_MODULES = frozenset(
     {
         "api",
+        "io",
+        "units",
+        "graph",
+        "measure",
         "distribution",
         "duration",
         "dynamics",
@@ -26,6 +31,7 @@ _LAZY_MODULES = frozenset(
 )
 
 __all__ = [
+    "Model", "Specification", "Run", "model", "specification", "run", "io", "units",
     "api",
     "distribution",
     "duration",

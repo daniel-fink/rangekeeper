@@ -1,5 +1,11 @@
 # Format-independent workflow execution
 
+**Scope, 2026-10-02:** the implementation and validation below concern the
+existing source-to-Graph workflow. The [library architecture](LIBRARY_ARCHITECTURE.md)
+plans its later migration to canonical Model objects. This workflow executor is
+separate from the planned equation-solving `rangekeeper.execution` service;
+its delivery counts are historical acceptance evidence.
+
 Implemented and pushed as RK `588b5b412e52f5b32919a72a19d31df423378edb`, paired
 with projects `68baa2b88324d9f7fcaf794f59512a8bce720c0a`. The existing YAML
 operation names and `load`, `run`, `schema` entry points are preserved.

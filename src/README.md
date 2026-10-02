@@ -5,6 +5,16 @@ This directory holds the source code for the Rangekeeper Library
 The library is offered through PyPI, and so its installation in other projects can be performed by:
 `pip install rangekeeper`, `poetry add rangekeeper`, or `uv add rangekeeper`, depending on your virtual environment manager.
 
+## Current branch domain core
+
+This checkout exposes `rangekeeper.Model`, `Specification`, and `Run`, with JSON/YAML
+codecs and append-only memory/filesystem stores. See the [Run and storage guide](../docs/RUN_AND_STORAGE.md)
+for a complete example. These branch changes have not been released to PyPI.
+Install this checkout with `pip install .`; use `pip install '.[yaml]'` for YAML IO.
+Graph/numerical APIs remain available, and their existing dependency metadata remains.
+Core imports do not initialize graph, plotting, service or solver integrations.
+No new-schema executor has produced authentic outputs yet.
+
 ## Development
 If you wish to contribute to its development, it is recommended to use [uv](https://docs.astral.sh/uv/) for 
 environment and dependency management:

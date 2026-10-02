@@ -1,0 +1,119 @@
+{
+  "by_module": {
+    "test_adapters": {
+      "passed": 38,
+      "failed": 1,
+      "skipped": 0
+    },
+    "test_cytoscape_adapter": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_document_operations": {
+      "passed": 17,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_dynamics": {
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_excel_ingestion": {
+      "passed": 31,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_formulas": {
+      "passed": 6,
+      "failed": 1,
+      "skipped": 0
+    },
+    "test_graph_json": {
+      "passed": 20,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_immutable_graph": {
+      "passed": 71,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_ingestion_evidence": {
+      "passed": 46,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_measures": {
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_models": {
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_modules": {
+      "passed": 29,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_projections": {
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_schema_graph_contract": {
+      "passed": 58,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_scoped_codes": {
+      "passed": 37,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_tabular_operations": {
+      "passed": 13,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_unresolved_measurements": {
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_validate": {
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_workflow": {
+      "passed": 22,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_workflow_boundaries": {
+      "passed": 37,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_workflow_formats": {
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0
+    },
+    "test_workflow_shared": {
+      "passed": 20,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "excluded_live_api_tests": [
+    "test_connection",
+    "test_model",
+    "test_conversion"
+  ]
+}

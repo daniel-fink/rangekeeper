@@ -1,0 +1,3 @@
+Passed 3 generated schemas, 6 valid Models, 26 structural rejections,
+24 bounded semantic rejections, and 6 native Model round trips.
+Storage immutability, generic Fact/content agreement, unit inference, and execution remain outside this check.
