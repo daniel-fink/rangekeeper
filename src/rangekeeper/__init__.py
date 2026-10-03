@@ -13,6 +13,12 @@ import functools
 _LAZY_MODULES = frozenset(
     {
         "api",
+        "execution",
+        "adapters",
+        "workflow",
+        "table",
+        "evidence",
+        "operation",
         "io",
         "units",
         "graph",
@@ -31,8 +37,21 @@ _LAZY_MODULES = frozenset(
 )
 
 __all__ = [
-    "Model", "Specification", "Run", "model", "specification", "run", "io", "units",
+    "Model",
+    "Specification",
+    "Run",
+    "model",
+    "specification",
+    "run",
+    "io",
+    "units",
     "api",
+    "execution",
+    "adapters",
+    "workflow",
+    "table",
+    "evidence",
+    "operation",
     "distribution",
     "duration",
     "dynamics",

@@ -25,7 +25,7 @@ from .relationship import Relationship
 from .update import Update, _apply
 
 if TYPE_CHECKING:
-    from .view import View
+    from .legacy.view import View
 
 
 __all__ = ["Graph"]
@@ -357,7 +357,7 @@ class Graph:
     ) -> View:
         """Select graph membership; apply semantic constraints later with View.filter()."""
 
-        from .view import View
+        from .legacy.view import View
 
         return View(
             self,

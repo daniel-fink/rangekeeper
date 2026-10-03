@@ -5,9 +5,9 @@ from uuid import NAMESPACE_URL, uuid5
 
 import pytest
 
-from rangekeeper.graph import operation
-from rangekeeper.graph.provenance import Claim, Location, Method, Source
-from rangekeeper.graph.workflow.ingestion import (
+from rangekeeper import operation
+from rangekeeper.evidence import Claim, Location, Method, Source
+from rangekeeper.workflow.ingestion import (
     Issue,
     IssueSeverity,
     fingerprint,

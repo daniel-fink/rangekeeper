@@ -8,8 +8,8 @@ import pytest
 
 import rangekeeper as rk
 
-adapter = rk.graph.adapter
-table_module = rk.graph.table
+adapter = rk.adapters
+table_module = rk.table
 
 
 def test_supported_adapter_and_table_surfaces_are_explicit():
@@ -20,8 +20,6 @@ def test_supported_adapter_and_table_surfaces_are_explicit():
         "cytoscape",
         "document",
         "excel",
-        "ingestion",
-        "operation",
         "pandas",
         "visualization",
     ]
@@ -185,7 +183,7 @@ def test_csv_accepts_real_scalars_creates_parents_and_returns_path(tmp_path):
     assert target.read_bytes().endswith(b"\n")
 
 
-@pytest.mark.parametrize("value", (float("inf"), float("-inf"), uuid4(), [1]))
+@pytest.mark.parametrize("value", (float("inf"), float("-inf"), [1]))
 def test_csv_rejects_unsupported_scalar_boundaries(tmp_path, value):
     table = table_module.Table(columns=("value",), rows=({"value": value},))
 
@@ -194,43 +192,42 @@ def test_csv_rejects_unsupported_scalar_boundaries(tmp_path, value):
 
 
 def visualization_fixture():
-    entity_root = rk.graph.Classification(code="entity", name="Entity")
-    node = rk.graph.Classification(
-        code="node",
-        name="Node",
-        parent=entity_root,
+    from rangekeeper.model import (
+        Model,
+        Metadata,
+        Definitions,
+        System,
+        Entity,
+        Relationship,
+        Classification,
+        Taxonomy,
     )
-    entity_taxonomy = rk.graph.Taxonomy(
-        code="entity",
-        name="Entity Types",
-        classifications=(entity_root, node),
+    from rangekeeper.graph import View
+
+    node = Classification(id=uuid4(), code="node", name="Node")
+    contains = Classification(
+        id=uuid4(), code="contains", name="Contains", parent=node.id
     )
-    relationship_root = rk.graph.Classification(
-        code="relationship", name="Relationship"
+    root = Entity(id=uuid4(), code="root", name="Root", classification=node.id)
+    child = Entity(id=uuid4(), code="child", name="Child", classification=node.id)
+    edge = Relationship(
+        id=uuid4(), source=root.id, target=child.id, classification=contains.id
     )
-    contains = rk.graph.Classification(
-        code="contains",
-        name="Contains",
-        parent=relationship_root,
+    model = Model.create(
+        metadata=Metadata(id=uuid4(), schema_version="0.3.0"),
+        definitions=Definitions(
+            taxonomies=(
+                Taxonomy(
+                    id=uuid4(),
+                    code="entity",
+                    name="Entity Types",
+                    classifications=(node, contains),
+                ),
+            )
+        ),
+        system=System(entities=(root, child), relationships=(edge,)),
     )
-    taxonomy = rk.graph.Taxonomy(
-        code="relationship",
-        name="Relationship Types",
-        classifications=(relationship_root, contains),
-    )
-    root = rk.graph.Entity(code="root", name="Root", classification=node)
-    child = rk.graph.Entity(code="child", name="Child", classification=node)
-    edge = rk.graph.Relationship(
-        source_id=root.id,
-        target_id=child.id,
-        classification=contains,
-    )
-    graph = rk.graph.Graph(
-        definitions=rk.graph.Definitions(taxonomies=(entity_taxonomy, taxonomy)),
-        entities=(root, child),
-        relationships=(edge,),
-    )
-    view = rk.graph.View(graph)
+    view = View(model)
     table = table_module.Table(
         columns=("entity_id", "parent_id", "name", "total"),
         rows=(
@@ -256,7 +253,7 @@ def test_graph_html_visualization_writes_the_selected_view(tmp_path):
     assert str(view.relationships[0].id) not in contents
     assert "Root" in contents
     assert "Child" in contents
-    assert "entity:node" in contents
+    assert ":node" in contents
 
 
 @pytest.mark.parametrize("options", ({"physics": float("nan")}, {"x": object()}))
@@ -268,166 +265,6 @@ def test_graph_html_wraps_invalid_json_options(tmp_path, options):
             view,
             tmp_path / "graph.html",
             options=options,
-        )
-
-
-def test_view_table_includes_taxonomy_code():
-    view, _ = visualization_fixture()
-
-    table = table_module.Table.from_view(
-        view,
-        fields=("entity_id", "taxonomy_code"),
-    )
-
-    assert table.column("taxonomy_code") == ("entity", "entity")
-
-
-def test_view_table_default_schema_uses_qualified_domain_fields():
-    view, _ = visualization_fixture()
-
-    table = table_module.Table.from_view(view)
-
-    assert table.columns == (
-        "entity_id",
-        "name",
-        "entity_kind",
-        "classification_code",
-    )
-    assert table.column("name") == ("Root", "Child")
-    assert table.column("entity_kind") == ("entity", "entity")
-    assert table.column("classification_code") == (
-        "node",
-        "node",
-    )
-
-
-def test_view_table_projects_qualified_labels_features_and_missing_values():
-    root = rk.graph.Classification(code="entity", name="Entity")
-    apartment = rk.graph.Classification(
-        code="apartment",
-        name="Apartment",
-        parent=root,
-    )
-    taxonomy = rk.graph.Taxonomy(
-        code="entity",
-        name="Entity Types",
-        classifications=(root, apartment),
-    )
-    label = rk.graph.Label(key="use", classifications=(apartment,))
-    feature = rk.graph.Feature(name="status", value="active")
-    classified = rk.graph.Entity(
-        code="classified",
-        classification=apartment,
-        characteristics=rk.graph.Characteristics(
-            labels={"use": label},
-            features={"status": feature},
-        ),
-    )
-    missing = rk.graph.Entity(code="missing", classification=root)
-    view = rk.graph.Graph(
-        definitions=rk.graph.Definitions(taxonomies=(taxonomy,)),
-        entities=(classified, missing),
-    ).view()
-
-    table = table_module.Table.from_view(
-        view,
-        fields=("entity_id", "code"),
-        labels=("use",),
-        features=("status",),
-    )
-
-    assert table.rows[0].values["label.use"] == (("entity", "apartment"),)
-    assert table.rows[0].values["feature.status"] == "active"
-    assert table.rows[1].values["label.use"] == ()
-    assert table.rows[1].values["feature.status"] is None
-
-
-def test_view_table_converts_measure_units_and_rejects_incompatible_units():
-    measure = rk.measure.Measure(
-        code="area.internal",
-        name="Internal area",
-        units=rk.measure.Index.registry.squaremeter,
-    )
-    measurement = rk.graph.Measurement(
-        measure=measure,
-        quantity=1 * rk.measure.Index.registry.squaremeter,
-    )
-    entity = rk.graph.Entity(
-        characteristics=rk.graph.Characteristics(
-            measurements={measure.code: measurement}
-        )
-    )
-    view = rk.graph.Graph(
-        definitions=rk.graph.Definitions(measures=(measure,)),
-        entities=(entity,),
-    ).view()
-
-    table = table_module.Table.from_view(
-        view,
-        measures={measure: "squarefoot"},
-    )
-
-    assert table.rows[0].values["measurement.area.internal"] == pytest.approx(
-        10.7639104167
-    )
-    with pytest.raises(pint.DimensionalityError):
-        table_module.Table.from_view(view, measures={measure: "second"})
-
-
-def test_arborescence_table_preserves_relationship_insertion_order():
-    relationship = rk.graph.Classification(code="relationship", name="Relationship")
-    contains = rk.graph.Classification(
-        code="contains",
-        name="Contains",
-        parent=relationship,
-    )
-    taxonomy = rk.graph.Taxonomy(
-        code="relationship",
-        name="Relationship Types",
-        classifications=(relationship, contains),
-    )
-    root = rk.graph.Entity(code="root")
-    first = rk.graph.Entity(code="first")
-    second = rk.graph.Entity(code="second")
-    to_second = rk.graph.Relationship.between(
-        root,
-        second,
-        classification=contains,
-    )
-    to_first = rk.graph.Relationship.between(
-        root,
-        first,
-        classification=contains,
-    )
-    graph = rk.graph.Graph(
-        definitions=rk.graph.Definitions(taxonomies=(taxonomy,)),
-        entities=(root, first, second),
-        relationships=(to_second, to_first),
-    )
-
-    table = table_module.Table.from_arborescence(
-        graph.view(),
-        fields=("code", "entity_id"),
-    )
-
-    assert table.columns == ("code", "entity_id", "parent_id")
-    assert table.column("entity_id") == (root.id, second.id, first.id)
-    assert table.column("parent_id") == (None, root.id, root.id)
-
-
-def test_arborescence_table_rejects_invalid_views_and_missing_entity_id():
-    empty = rk.graph.Graph().view()
-    disconnected = rk.graph.Graph(
-        entities=(rk.graph.Entity(), rk.graph.Entity()),
-    ).view()
-
-    for view in (empty, disconnected):
-        with pytest.raises(table_module.TableError, match="arborescence"):
-            table_module.Table.from_arborescence(view)
-    with pytest.raises(table_module.TableError, match="entity_id"):
-        table_module.Table.from_arborescence(
-            rk.graph.Graph(entities=(rk.graph.Entity(),)).view(),
-            fields=("name",),
         )
 
 
@@ -560,3 +397,15 @@ def test_arborescence_visualization_rejects_child_totals_above_parent():
     )
     with pytest.raises(adapter.AdapterEncodingError, match="below child total"):
         adapter.visualization.icicle(table, value_column="total")
+
+
+def test_csv_projects_revision_and_entity_uuids_as_text(tmp_path):
+    from rangekeeper.graph.projection import to_table
+
+    view, _ = visualization_fixture()
+    table = to_table(view)
+    path = adapter.csv.write(table, tmp_path / "model.csv")
+    restored = adapter.csv.read(path)
+    assert restored.column("model_id") == (str(view.model.id), str(view.model.id))
+    assert restored.column("entity_id") == tuple(str(e.id) for e in view.entities)
+    assert all(row.id is None for row in restored.rows)

@@ -9,7 +9,14 @@ is now implemented: see the [record boundary](RECORD_BOUNDARY.md) and
 are also implemented: [Model/Specification APIs](DOMAIN_CORE.md) and
 [Turn 2 verification](research/domain-migration/turn2/README.md). Work units 3C/4
 are now implemented: [Run and storage](RUN_AND_STORAGE.md) and
-[Turn 3 evidence](research/domain-migration/turn3/README.md). No scalar executor exists.
+[Turn 3 evidence](research/domain-migration/turn3/README.md). Step 5 is now implemented:
+[scalar execution](SCALAR_EXECUTION.md) and [observed evidence](research/scalar-execution/README.md).
+Step 6A/6B are now implemented: [Model-backed graph operations](GRAPH_MODEL.md).
+[Step 6C/6D](CONSUMER_MIGRATION.md) now implements shared tables, presentation
+adapters, and source workflows. Step 6E, external consumer migration, is next.
+[Consumer verification](research/consumer-migration/README.md): 798 Python tests
+pass, one unchanged numerical baseline failure remains, and schema, static,
+installed-package, and actual workflow/execution checks pass. The graph guide records the six bounded Step 6 slices.
 The approved [validation factoring refinement](DOMAIN_CORE.md#composable-validation)
 was implemented and verified before 3C/4; it adds no new execution work.
 
@@ -241,6 +248,7 @@ The resulting inventory, interfaces, and ordered work units are in
 [BASELINE.md](research/domain-migration/BASELINE.md). All 1A–F deliverables are covered.
 Work units 2A/2B, 3A/3B, and 3C/4 are now implemented. Review the
 [Model/Specification APIs](DOMAIN_CORE.md) and [Run/storage APIs](RUN_AND_STORAGE.md),
-then continue to scalar execution in Step 5. The three implementation turns completed
+and the implemented [scalar executor](SCALAR_EXECUTION.md), then continue with [Step 6E](GRAPH_MODEL.md#remaining-step-6-implementation-slices).
+The three domain implementation turns completed
 checkpoints 2–4; they do not renumber the six checkpoints above.
 Commit/push/release remain separate actions.

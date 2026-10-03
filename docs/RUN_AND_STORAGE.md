@@ -4,8 +4,9 @@ Implemented 2026-10-02: work units **3C and 4** in the
 [migration map](DOMAIN_MIGRATION_MAP.md). `rangekeeper.Model`, `Specification` and
 `Run` are now public root imports. The [Model/Specification guide](DOMAIN_CORE.md)
 and [record boundary](RECORD_BOUNDARY.md) describe their foundations. Run construction,
-reference validation, interchange and storage are implemented; no new-schema solver
-has executed or produced authentic valuation outputs. This branch checkpoint is unreleased.
+reference validation, interchange and storage are implemented. The subsequent
+[Step 5 scalar executor](SCALAR_EXECUTION.md) now produces authentic valuation outputs.
+This branch checkpoint is unreleased.
 
 ## Ownership and interfaces
 
@@ -107,10 +108,12 @@ references must still resolve before store publication. Local Specification vali
 is still required for every saved contribution.
 
 These checks **do not prove equation satisfaction, optimality, numerical reproduction,
-or that execution happened**. Existing bounded numerical evidence/publication checks
-require canonical matching unit spellings; general conversion, independent numerical
-acceptance, Specification-local Value publication and structural interventions still
-need execution/adapters. This turn introduces no second evaluator or new schema.
+or that execution happened**. The public Run validator now converts physically
+compatible assignments explicitly; the raw conformance entrypoint retains strict
+unit-spelling defaults. [Scalar execution](SCALAR_EXECUTION.md) independently
+evaluates original expressions on serialized candidates before publication.
+Specification-local Value publication and structural interventions remain unsupported
+by that adapter. No record schema was changed.
 
 ## Interchange contract
 
@@ -183,9 +186,11 @@ for every document fixture. They do not claim that all legacy integration depend
 or external service consumers have been exercised. Remote CI and other platforms remain
 unverified; two known legacy baseline tests still fail.
 
-The three implementation turns are complete. Next is **Step 5: scalar execution**:
-probe/pin Pyomo with HiGHS, prepare declared equations and roles, solve both directions,
-independently check candidates, and publish authentic immutable outputs and finalized
-Runs through these interfaces. The scalar checkpoint must still produce 11,000,000 AUD
-forward and 27,500 AUD/dwelling/year inverse, reuse a genuine forward output, and satisfy
-the existing failure, limit, provenance and batch acceptance requirements.
+The three domain implementation turns are complete. **Step 5 is also implemented**:
+[scalar execution](SCALAR_EXECUTION.md) prepares declared equations and roles, solves
+both directions with pinned Pyomo/HiGHS, independently checks candidates, and publishes
+authentic immutable outputs and finalized Runs through these interfaces. See its
+[separate evidence](research/scalar-execution/README.md) for 11,000,000 AUD forward,
+27,500 AUD/dwelling/year inverse, genuine output reuse, failures, limits and batches.
+[Step 6A/6B graph operations](GRAPH_MODEL.md) are now implemented; Step 6C
+tables and presentation adapters are next.

@@ -4,10 +4,12 @@ import pytest
 import yaml
 from openpyxl import Workbook
 
-from rangekeeper.graph.adapter import json as graph_json
-from rangekeeper.graph.revision import Diff
-from rangekeeper.graph.workflow import load, run, schema
-from rangekeeper.graph.workflow.review import export
+from rangekeeper.io import json as graph_json
+from rangekeeper import Model
+from rangekeeper.graph import View
+from rangekeeper.model.characteristics import value
+from rangekeeper.workflow import load, run, schema
+from rangekeeper.workflow.review import export
 
 
 def example(tmp_path, domain="accommodation"):
@@ -45,7 +47,7 @@ def example(tmp_path, domain="accommodation"):
         }
 
     source = {
-        "version": 1,
+        "version": 2,
         "namespace": "urn:example:" + domain,
         "steps": [
             {
@@ -169,7 +171,7 @@ def example(tmp_path, domain="accommodation"):
         ],
     }
     model = {
-        "version": 1,
+        "version": 2,
         "taxonomy": {"code": "example", "name": domain},
         "classifications": [
             {"code": k, "name": k, "parent": None if k == "item" else "item"}
@@ -180,8 +182,6 @@ def example(tmp_path, domain="accommodation"):
                 "code": k,
                 "name": k,
                 "units": u,
-                "quantity_kind": q,
-                "aggregation": "NONE",
             }
             for k, u, q in [
                 ("size", "meter**2", "AREA"),
@@ -198,14 +198,18 @@ def example(tmp_path, domain="accommodation"):
                 "name": "Item {key}",
                 "classification": "item",
                 "decisions": ["D1"],
-                "features": [{"name": "source_label", "binding": {"column": "label"}}],
                 "measurements": [
                     {
+                        "key": "size",
                         "measure": "size",
                         "binding": {"column": "number_size"},
                         "on_unavailable": {"topic": "Unavailable measurement"},
                     },
-                    {"measure": "count", "binding": {"column": "count"}},
+                    {
+                        "key": "count",
+                        "measure": "count",
+                        "binding": {"column": "count"},
+                    },
                 ],
                 "labels": [{"name": "product", "bindings": [{"column": "product"}]}],
             },
@@ -234,13 +238,13 @@ def example(tmp_path, domain="accommodation"):
         "memberships": ["contains"],
     }
     checks = {
-        "version": 1,
+        "version": 2,
         "comparisons": [
             {
                 "id": "population",
                 "group": "Coverage",
                 "scope": "Items",
-                "left": {"kind": "graph_keys", "classification": "item"},
+                "left": {"kind": "model_keys", "classification": "item"},
                 "right": {"kind": "table_keys", "table": "items", "column": "code"},
                 "purpose": "fidelity",
             },
@@ -249,9 +253,10 @@ def example(tmp_path, domain="accommodation"):
                 "group": "Totals",
                 "scope": "Sizes",
                 "left": {
-                    "kind": "graph_total",
+                    "kind": "model_total",
                     "classification": "item",
-                    "measure": "size",
+                    "value_key": "size",
+                    "units": "meter**2",
                 },
                 "right": {
                     "kind": "evidence",
@@ -266,10 +271,11 @@ def example(tmp_path, domain="accommodation"):
                 "each": "items",
                 "scope_column": "code",
                 "left": {
-                    "kind": "graph_measurement",
+                    "kind": "model_value",
                     "identity_kind": "item",
                     "key": {"column": "code"},
-                    "measure": "size",
+                    "value_key": "size",
+                    "units": "meter**2",
                 },
                 "right": {"kind": "column", "binding": {"column": "number_size"}},
                 "purpose": "fidelity",
@@ -279,7 +285,7 @@ def example(tmp_path, domain="accommodation"):
         "deferred": ["No allocation is inferred"],
     }
     decisions = {
-        "version": 1,
+        "version": 2,
         "decisions": [
             {
                 "id": "D1",
@@ -308,11 +314,14 @@ def test_synthetic_vertical_slice(tmp_path, domain):
     result = run(spec, input_root=root / "inputs")
     assert result.output is not None, result.diagnostics
     built = result.output
-    assert len(built.graph.entities) == 5 and len(built.graph.relationships) == 3
-    objects = {e.code: e for e in built.graph.entities}
-    assert objects["A1"].measurements["size"].quantity.magnitude == 0
-    assert "count" not in objects["A2"].measurements
-    assert "count" not in objects["A3"].measurements
+    assert (
+        len(View(built.model).entities) == 5
+        and len(built.model.system.relationships) == 3
+    )
+    objects = {e.code: e for e in View(built.model).entities}
+    assert value(objects["A1"].characteristics, "size").quantity.magnitude == 0
+    assert value(objects["A2"].characteristics, "count").quantity is None
+    assert value(objects["A3"].characteristics, "count").quantity is None
     assert any(i.code == "conflicting_values" for i in built.evidence["items"].issues)
     assert [r.values["row_group"] for r in built.evidence["groups"].data.rows] == [
         "matched",
@@ -323,10 +332,10 @@ def test_synthetic_vertical_slice(tmp_path, domain):
     ]
     assert next(c for c in built.checks if c.id == "total").status == "unavailable"
     assert next(c for c in built.checks if c.id == "total").known_subtotal == 12
-    encoded = graph_json.dumps(built.graph)
-    assert not Diff.between(built.graph, graph_json.loads(encoded)).changed
+    encoded = graph_json.dumps(built.model)
+    assert built.model.to_data() == graph_json.loads(encoded, kind=Model).to_data()
     assert encoded == graph_json.dumps(
-        run(spec, input_root=root / "inputs").output.graph
+        run(spec, input_root=root / "inputs").output.model
     )
     assert built.operations and all(o.method.version for o in built.operations)
     assert not (root / "artifacts").exists()
@@ -467,17 +476,19 @@ def test_valid_requests_with_incompatible_sources_return_unavailable(
             "column": "absent"
         }
     else:
-        docs["model"]["relationships"].extend([
-            {
-                "id": f"cycle-{left}",
-                "source": {"kind": "level", "key": {"value": left}},
-                "target": {"kind": "level", "key": {"value": right}},
-                "identity_kind": "contains",
-                "key": "{source_key}:{target_key}",
-                "classification": "contains",
-            }
-            for left, right in [("L1", "L2"), ("L2", "L1")]
-        ])
+        docs["model"]["relationships"].extend(
+            [
+                {
+                    "id": f"cycle-{left}",
+                    "source": {"kind": "level", "key": {"value": left}},
+                    "target": {"kind": "level", "key": {"value": right}},
+                    "identity_kind": "contains",
+                    "key": "{source_key}:{target_key}",
+                    "classification": "contains",
+                }
+                for left, right in [("L1", "L2"), ("L2", "L1")]
+            ]
+        )
     rewrite(root, docs)
     outcome = run(load(root / "spec"), input_root=root / "inputs")
     assert outcome.output is None
@@ -508,18 +519,20 @@ def test_formula_without_cache_is_occupied_and_marker_must_be_unique(tmp_path):
 
 def test_shared_membership_does_not_double_count_atomic_total(tmp_path):
     root, docs = example(tmp_path)
-    docs["model"]["relationships"].append({
-        "id": "shared",
-        "source": {"kind": "level", "key": {"value": "L2"}},
-        "target": {"kind": "item", "key": {"value": "A1"}},
-        "identity_kind": "contains",
-        "key": "{source_key}:{target_key}",
-        "classification": "contains",
-    })
+    docs["model"]["relationships"].append(
+        {
+            "id": "shared",
+            "source": {"kind": "level", "key": {"value": "L2"}},
+            "target": {"kind": "item", "key": {"value": "A1"}},
+            "identity_kind": "contains",
+            "key": "{source_key}:{target_key}",
+            "classification": "contains",
+        }
+    )
     rewrite(root, docs)
     result = run(load(root / "spec"), input_root=root / "inputs").output
-    objects = {x.code: x for x in result.graph.entities}
-    assert objects["A1"].id in objects["L1"].entity_ids & objects["L2"].entity_ids
+    objects = {x.code: x for x in View(result.model).entities}
+    assert objects["A1"].id in set(objects["L1"].entities) & set(objects["L2"].entities)
     assert next(c for c in result.checks if c.id == "total").known_subtotal == 12
 
 
@@ -528,7 +541,7 @@ def test_business_identity_independent_of_row_edition_and_value(tmp_path):
 
     root, _docs = example(tmp_path)
     spec = load(root / "spec")
-    before = run(spec, input_root=root / "inputs").output.graph
+    before = run(spec, input_root=root / "inputs").output.model
     path = root / "inputs/schedule.xlsx"
     book = load_workbook(path)
     sheet = book.active
@@ -540,8 +553,10 @@ def test_business_identity_independent_of_row_edition_and_value(tmp_path):
         sheet.cell(4, c, value)
     sheet["C4"] = 1
     book.save(path)
-    after = run(spec, input_root=root / "inputs").output.graph
-    assert {x.code: x.id for x in before.entities} == {
-        x.code: x.id for x in after.entities
+    after = run(spec, input_root=root / "inputs").output.model
+    assert {x.code: x.id for x in before.system.entities} == {
+        x.code: x.id for x in after.system.entities
     }
-    assert {x.id for x in before.relationships} == {x.id for x in after.relationships}
+    assert {x.id for x in before.system.relationships} == {
+        x.id for x in after.system.relationships
+    }

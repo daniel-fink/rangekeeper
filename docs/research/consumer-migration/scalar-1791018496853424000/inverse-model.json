@@ -1,0 +1,382 @@
+{
+  "metadata": {
+    "id": "495ad0e3-e5a3-42fa-979f-beffd9ee2f49",
+    "schema_version": "0.3.0",
+    "name": "Source-to-solver example",
+    "previous": "2cd65501-300f-41cd-96bc-66c597f0e1a2"
+  },
+  "definitions": {
+    "taxonomies": [
+      {
+        "id": "94deff5f-e8db-576e-8887-bb94bf0ab3a1",
+        "code": "example",
+        "name": "Source-to-solver example",
+        "classifications": [
+          {
+            "id": "16c2c059-2c70-594b-ab09-505613cd24bc",
+            "code": "asset",
+            "name": "Asset",
+            "definition": null,
+            "parent": null
+          }
+        ]
+      }
+    ],
+    "measures": [
+      {
+        "id": "e71ece43-233a-54e4-9851-a0a34e7be6a4",
+        "code": "area",
+        "name": "Area",
+        "units": "meter**2",
+        "definition": null,
+        "tags": []
+      }
+    ]
+  },
+  "system": {
+    "entities": [
+      {
+        "classification": "16c2c059-2c70-594b-ab09-505613cd24bc",
+        "id": "e20cddf8-d43d-584c-b7bc-4befa9a56275",
+        "code": "A",
+        "name": "Asset A",
+        "characteristics": {
+          "labels": [],
+          "values": [
+            {
+              "measure": "e71ece43-233a-54e4-9851-a0a34e7be6a4",
+              "quantity": {
+                "magnitude": 25.0,
+                "units": "meter**2"
+              },
+              "id": "d5df501d-e447-5e55-8327-879975bb86e1",
+              "key": "net",
+              "kind": "measurement"
+            },
+            {
+              "measure": "e71ece43-233a-54e4-9851-a0a34e7be6a4",
+              "quantity": {
+                "magnitude": 50.0,
+                "units": "meter**2"
+              },
+              "id": "7e01ea6c-be5c-564c-8376-8daacf6196dd",
+              "key": "gross",
+              "kind": "measurement"
+            }
+          ]
+        }
+      }
+    ],
+    "relationships": [],
+    "assemblies": [],
+    "formulations": [
+      {
+        "id": "b5c2b4f2-cef8-41c4-b94c-dc127aff2cfc",
+        "code": "area",
+        "name": "Gross area is twice net area",
+        "bindings": [
+          {
+            "name": "net",
+            "value": "d5df501d-e447-5e55-8327-879975bb86e1"
+          },
+          {
+            "name": "gross",
+            "value": "7e01ea6c-be5c-564c-8376-8daacf6196dd"
+          }
+        ],
+        "expressions": [
+          {
+            "id": "4001676d-9d45-44fd-92ef-4841ed1b7e45",
+            "kind": "binary",
+            "operator": "equal",
+            "operands": [
+              {
+                "id": "38c447b5-34f3-4061-a1df-f571c3bbc55a",
+                "kind": "reference",
+                "target": "7e01ea6c-be5c-564c-8376-8daacf6196dd"
+              },
+              {
+                "id": "9d4dba7b-f09b-46b4-a52a-14e5d91a1323",
+                "kind": "binary",
+                "operator": "add",
+                "operands": [
+                  {
+                    "id": "ad73a3ee-efb1-4604-9c93-a4d31e9c0183",
+                    "kind": "reference",
+                    "target": "d5df501d-e447-5e55-8327-879975bb86e1"
+                  },
+                  {
+                    "id": "a262289d-15b4-437c-96fe-65ca292d4111",
+                    "kind": "reference",
+                    "target": "d5df501d-e447-5e55-8327-879975bb86e1"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "constraints": [
+          {
+            "id": "09f214e1-9701-4aea-89b2-4fb8d379ea73",
+            "code": "equation",
+            "name": "Area equation",
+            "predicate": "4001676d-9d45-44fd-92ef-4841ed1b7e45"
+          }
+        ]
+      }
+    ]
+  },
+  "provenance": {
+    "sources": [
+      {
+        "id": "71b67443-faee-589b-8743-a486281bf0c1",
+        "name": "area",
+        "checksum": "5aeff606f1e81e203f54494b6cc79d5cd5063349589d634cdcb9a45a8c4154b2",
+        "issued_at": null,
+        "received_at": null,
+        "author": null
+      },
+      {
+        "id": "6adbe65e-c6b3-5fdd-a391-0f0709d7c62b",
+        "name": "workflow specification",
+        "checksum": "sha256:9d35b6ebaaa3c8f61abc120d524663614dce4da3112dc9b048a267a1766f512a",
+        "issued_at": null,
+        "received_at": null,
+        "author": null
+      }
+    ],
+    "claims": [
+      {
+        "id": "9b9d7764-a1a4-5ca5-853e-8261175cc28a",
+        "content": {
+          "encoding": "rk.source-value/v1",
+          "value": [
+            "int",
+            "10"
+          ]
+        },
+        "kind": "sourced",
+        "sources": [
+          {
+            "source": "71b67443-faee-589b-8743-a486281bf0c1",
+            "address": {
+              "sheet": "Schedule",
+              "cell": "A1"
+            }
+          }
+        ],
+        "method": {
+          "code": "rk.excel.extract_table",
+          "version": "2",
+          "description": null
+        }
+      },
+      {
+        "id": "66b4d693-277a-55f2-81d9-6da0f0d2c987",
+        "content": {
+          "encoding": "rk.source-value/v1",
+          "value": [
+            "str",
+            "{\"checks\": {\"comparisons\": [], \"invariants\": [\"fact_coverage\"]}, \"decisions\": {\"decisions\": []}, \"hashes\": {}, \"model\": {\"classifications\": [{\"code\": \"asset\", \"name\": \"Asset\"}], \"measures\": [{\"code\": \"area\", \"name\": \"Area\", \"units\": \"meter**2\"}], \"memberships\": [], \"objects\": [{\"classification\": \"asset\", \"id\": \"asset\", \"identity_kind\": \"asset\", \"key\": {\"value\": \"A\"}, \"kind\": \"entity\", \"measurements\": [{\"binding\": {\"column\": \"parsed_area\", \"evidence\": \"numbers\"}, \"key\": \"net\", \"measure\": \"area\"}, {\"binding\": {\"value\": null}, \"key\": \"gross\", \"measure\": \"area\"}], \"name\": \"Asset {key}\"}], \"relationships\": [], \"taxonomy\": {\"code\": \"example\", \"name\": \"Source-to-solver example\"}, \"templates\": []}, \"namespace\": \"urn:rk:workflow-scalar\", \"steps\": [{\"checksum\": null, \"files\": [\"source.xlsx\"], \"id\": \"source\", \"operation\": \"read\", \"source_key\": \"area\"}, {\"id\": \"raw\", \"input\": \"source\", \"operation\": \"extract\", \"specification\": {\"columns\": [{\"column\": \"A\", \"name\": \"area\"}], \"expect\": {\"cells\": {}, \"comparison\": \"exact\"}, \"formula_values\": \"cached\", \"id\": \"area\", \"rows\": {\"end\": 1, \"start\": 1}, \"sheet\": \"Schedule\", \"version\": 1}, \"unique_stop\": false}, {\"id\": \"numbers\", \"input\": \"raw\", \"operation\": \"numbers\", \"specifications\": {\"parsed_area\": {\"column\": \"area\", \"integer\": false, \"missing_markers\": [], \"nonnegative\": false}}}]}"
+          ]
+        },
+        "kind": "sourced",
+        "sources": [
+          {
+            "source": "6adbe65e-c6b3-5fdd-a391-0f0709d7c62b",
+            "address": {
+              "configuration": "direct API"
+            }
+          }
+        ],
+        "method": null
+      },
+      {
+        "id": "d2a5758b-1972-51df-8510-0524d7270600",
+        "content": {
+          "encoding": "rk.source-value/v1",
+          "value": [
+            "int",
+            "10"
+          ]
+        },
+        "kind": "derived",
+        "sources": [
+          "9b9d7764-a1a4-5ca5-853e-8261175cc28a",
+          "66b4d693-277a-55f2-81d9-6da0f0d2c987"
+        ],
+        "method": {
+          "code": "rk.tabular.numbers",
+          "version": "2",
+          "description": null
+        }
+      },
+      {
+        "id": "f73e4654-91eb-5a92-97e7-0a0462ba69ac",
+        "content": {
+          "measure": "e71ece43-233a-54e4-9851-a0a34e7be6a4",
+          "quantity": {
+            "magnitude": 10,
+            "units": "meter**2"
+          },
+          "id": "d5df501d-e447-5e55-8327-879975bb86e1",
+          "key": "net",
+          "kind": "measurement"
+        },
+        "kind": "derived",
+        "sources": [
+          "d2a5758b-1972-51df-8510-0524d7270600",
+          "66b4d693-277a-55f2-81d9-6da0f0d2c987"
+        ],
+        "method": {
+          "code": "rk.workflow.compose",
+          "version": "3",
+          "description": null
+        }
+      },
+      {
+        "id": "36ba0ca5-804a-5088-9b64-2822c516b819",
+        "content": {
+          "measure": "e71ece43-233a-54e4-9851-a0a34e7be6a4",
+          "quantity": null,
+          "id": "7e01ea6c-be5c-564c-8376-8daacf6196dd",
+          "key": "gross",
+          "kind": "measurement"
+        },
+        "kind": "derived",
+        "sources": [
+          "66b4d693-277a-55f2-81d9-6da0f0d2c987"
+        ],
+        "method": {
+          "code": "rk.workflow.compose",
+          "version": "3",
+          "description": null
+        }
+      },
+      {
+        "id": "45ca4be0-1d11-5b7f-9397-ef19c212eba6",
+        "content": {
+          "classification": "16c2c059-2c70-594b-ab09-505613cd24bc",
+          "id": "e20cddf8-d43d-584c-b7bc-4befa9a56275",
+          "code": "A",
+          "name": "Asset A",
+          "characteristics": {
+            "labels": [],
+            "values": [
+              {
+                "measure": "e71ece43-233a-54e4-9851-a0a34e7be6a4",
+                "quantity": {
+                  "magnitude": 10,
+                  "units": "meter**2"
+                },
+                "id": "d5df501d-e447-5e55-8327-879975bb86e1",
+                "key": "net",
+                "kind": "measurement"
+              },
+              {
+                "measure": "e71ece43-233a-54e4-9851-a0a34e7be6a4",
+                "quantity": null,
+                "id": "7e01ea6c-be5c-564c-8376-8daacf6196dd",
+                "key": "gross",
+                "kind": "measurement"
+              }
+            ]
+          }
+        },
+        "kind": "derived",
+        "sources": [
+          "66b4d693-277a-55f2-81d9-6da0f0d2c987"
+        ],
+        "method": {
+          "code": "rk.workflow.compose",
+          "version": "3",
+          "description": null
+        }
+      },
+      {
+        "id": "dab1d068-9be6-4340-bdaa-5e487aec6c3d",
+        "kind": "asserted",
+        "content": {
+          "measure": "e71ece43-233a-54e4-9851-a0a34e7be6a4",
+          "quantity": {
+            "magnitude": 10.0,
+            "units": "meter**2"
+          }
+        },
+        "method": {
+          "code": "rangekeeper.scalar.assignment",
+          "version": "1",
+          "description": "Run 52759a73-b5c8-41d5-abb3-2a47f9f479a2; Specification 5de9f8a3-ebc6-413a-847d-51b90da924fa; independently checked scalar publication."
+        }
+      },
+      {
+        "id": "3462d393-2785-4295-8401-7046b907f73a",
+        "kind": "asserted",
+        "content": {
+          "measure": "e71ece43-233a-54e4-9851-a0a34e7be6a4",
+          "quantity": {
+            "magnitude": 20.0,
+            "units": "meter**2"
+          }
+        },
+        "method": {
+          "code": "rangekeeper.scalar.solution",
+          "version": "1",
+          "description": "Run 52759a73-b5c8-41d5-abb3-2a47f9f479a2; Specification 5de9f8a3-ebc6-413a-847d-51b90da924fa; independently checked scalar publication."
+        }
+      },
+      {
+        "id": "721d1435-8b80-4030-8c42-c714ad611534",
+        "kind": "asserted",
+        "content": {
+          "measure": "e71ece43-233a-54e4-9851-a0a34e7be6a4",
+          "quantity": {
+            "magnitude": 50.0,
+            "units": "meter**2"
+          }
+        },
+        "method": {
+          "code": "rangekeeper.scalar.assignment",
+          "version": "1",
+          "description": "Run 8101b0a3-6ffb-49ee-ac7e-2da3cbc74cac; Specification 83a6acf6-57cf-468f-a0e1-f5b10d88c1f5; independently checked scalar publication."
+        }
+      },
+      {
+        "id": "f8dcc412-a4cc-45b6-bbd5-80c4827932fc",
+        "kind": "asserted",
+        "content": {
+          "measure": "e71ece43-233a-54e4-9851-a0a34e7be6a4",
+          "quantity": {
+            "magnitude": 25.0,
+            "units": "meter**2"
+          }
+        },
+        "method": {
+          "code": "rangekeeper.scalar.solution",
+          "version": "1",
+          "description": "Run 8101b0a3-6ffb-49ee-ac7e-2da3cbc74cac; Specification 83a6acf6-57cf-468f-a0e1-f5b10d88c1f5; independently checked scalar publication."
+        }
+      }
+    ],
+    "facts": [
+      {
+        "target": "e20cddf8-d43d-584c-b7bc-4befa9a56275",
+        "claims": [
+          "45ca4be0-1d11-5b7f-9397-ef19c212eba6"
+        ]
+      },
+      {
+        "target": "7e01ea6c-be5c-564c-8376-8daacf6196dd",
+        "claims": [
+          "721d1435-8b80-4030-8c42-c714ad611534"
+        ]
+      },
+      {
+        "target": "d5df501d-e447-5e55-8327-879975bb86e1",
+        "claims": [
+          "f8dcc412-a4cc-45b6-bbd5-80c4827932fc"
+        ]
+      }
+    ]
+  }
+}

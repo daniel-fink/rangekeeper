@@ -6,7 +6,7 @@ fingerprints; package-level imports stay stable as implementation modules evolve
 
 from uuid import NAMESPACE_URL, uuid5
 
-from rangekeeper.graph.workflow.ingestion import (
+from rangekeeper.workflow.ingestion import (
     Issue,
     IssueSeverity,
     fingerprint,

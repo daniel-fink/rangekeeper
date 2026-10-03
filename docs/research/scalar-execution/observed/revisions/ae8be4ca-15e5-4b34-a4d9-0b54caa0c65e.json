@@ -1,0 +1,130 @@
+{
+  "kind": "Run",
+  "document": {
+    "metadata": {
+      "id": "ae8be4ca-15e5-4b34-a4d9-0b54caa0c65e",
+      "schema_version": "0.1.0"
+    },
+    "specification": "f7578367-28c5-440f-a99d-977f607aa7b3",
+    "outputs": [
+      "149647e3-e9ba-47d9-b223-27865d536fe2"
+    ],
+    "report": {
+      "status": {
+        "completion": "completed",
+        "solution": "feasible"
+      },
+      "runtime": {
+        "started_at": "2026-10-02T14:13:19.887145+00:00",
+        "finished_at": "2026-10-02T14:13:21.262719+00:00",
+        "implementations": [
+          {
+            "kind": "compiler",
+            "name": "rangekeeper.scalar",
+            "version": "1"
+          },
+          {
+            "kind": "compiler",
+            "name": "Pyomo",
+            "version": "6.10.1"
+          },
+          {
+            "kind": "solver",
+            "name": "HiGHS",
+            "version": "1.15.1"
+          },
+          {
+            "kind": "evaluator",
+            "name": "rangekeeper.scalar.original_expressions",
+            "version": "1"
+          }
+        ],
+        "settings": {
+          "iteration_limit": 100000,
+          "time_limit": 30.0
+        }
+      },
+      "diagnostics": [
+        {
+          "severity": "info",
+          "code": "estimates_unused",
+          "message": "Simplex feasibility uses no initial primal estimate; estimates are not assignments."
+        },
+        {
+          "severity": "info",
+          "code": "solver_scaling",
+          "message": "[{\"constraint\": \"d526182d-2216-5862-88b9-b5bdd5e804a5\", \"divisor\": 20.0, \"residual_units\": \"AUD/year\"}, {\"constraint\": \"02ff78c0-ec20-535d-b997-ac16d64fd944\", \"divisor\": 1.0, \"residual_units\": \"(AUD) * (1/year)\"}]"
+        },
+        {
+          "severity": "info",
+          "code": "solver_termination",
+          "message": "{\"termination\": \"convergenceCriteriaSatisfied\", \"solution_status\": \"optimal\", \"simplex_iterations\": 0, \"highs_seconds\": 0.00024112500250339508, \"worker_seconds\": 0.20547533401986584, \"solver_time_limit\": 29.358770332939457, \"solver_options\": {\"solver\": \"simplex\", \"presolve\": \"on\", \"parallel\": \"off\", \"random_seed\": 0, \"simplex_iteration_limit\": 100000, \"small_matrix_value\": 1e-12, \"primal_feasibility_tolerance\": 1e-07, \"dual_feasibility_tolerance\": 1e-07, \"output_flag\": false}, \"threads\": 1, \"equality_rank\": 2, \"unknown_count\": 2, \"has_bounds\": false, \"unconstrained_values_initialized_to_zero\": []}"
+        },
+        {
+          "severity": "info",
+          "code": "constraint_residual",
+          "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+          "document": "1c9dbb73-d5ab-4fa5-83fc-ad42c9bf7825",
+          "target": "d526182d-2216-5862-88b9-b5bdd5e804a5",
+          "residual": {
+            "magnitude": 0.0,
+            "units": "AUD/year"
+          },
+          "tolerance": {
+            "magnitude": 0.0005000100000000001,
+            "units": "AUD/year"
+          }
+        },
+        {
+          "severity": "info",
+          "code": "constraint_residual",
+          "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+          "document": "1c9dbb73-d5ab-4fa5-83fc-ad42c9bf7825",
+          "target": "02ff78c0-ec20-535d-b997-ac16d64fd944",
+          "residual": {
+            "magnitude": 0.0,
+            "units": "(AUD) * (1/year)"
+          },
+          "tolerance": {
+            "magnitude": 0.0005000100000000001,
+            "units": "(AUD) * (1/year)"
+          }
+        },
+        {
+          "severity": "info",
+          "code": "feasible_candidate",
+          "message": "Original expressions, assignments and bounds accepted. No uniqueness or optimization claim is made."
+        },
+        {
+          "severity": "info",
+          "code": "attempt_timing",
+          "message": "Elapsed monotonic time before persistence: 1.375120292 seconds."
+        }
+      ],
+      "trace": [
+        {
+          "kind": "validation",
+          "at": "2026-10-02T14:13:20.324562+00:00",
+          "message": "Validated additive composition, exact Model pin, scalar roles and recorded units.",
+          "document": "f7578367-28c5-440f-a99d-977f607aa7b3"
+        },
+        {
+          "kind": "formulation",
+          "at": "2026-10-02T14:13:20.331222+00:00",
+          "message": "Compiled 2 affine equality/bound rows after explicit assignments."
+        },
+        {
+          "kind": "solve",
+          "at": "2026-10-02T14:13:20.675719+00:00",
+          "message": "Backend returned convergenceCriteriaSatisfied; independent acceptance follows when a candidate exists."
+        },
+        {
+          "kind": "publication",
+          "at": "2026-10-02T14:13:21.262052+00:00",
+          "message": "Accepted serialized immutable Model; store output before finalized Run.",
+          "document": "149647e3-e9ba-47d9-b223-27865d536fe2"
+        }
+      ]
+    }
+  }
+}

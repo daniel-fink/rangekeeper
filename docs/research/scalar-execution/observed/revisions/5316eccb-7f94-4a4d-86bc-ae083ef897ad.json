@@ -1,0 +1,14 @@
+{
+  "kind": "Specification",
+  "document": {
+    "metadata": {
+      "id": "5316eccb-7f94-4a4d-86bc-ae083ef897ad",
+      "schema_version": "0.4.0",
+      "name": "Sequential scalar investigations"
+    },
+    "cases": [
+      "6415f03f-f1a4-5ff2-b4f8-b4faaafd027e",
+      "f7578367-28c5-440f-a99d-977f607aa7b3"
+    ]
+  }
+}

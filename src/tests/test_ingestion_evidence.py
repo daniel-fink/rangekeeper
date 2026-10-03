@@ -17,12 +17,12 @@ from rangekeeper.graph import (
     Relationship,
     Taxonomy,
 )
-from rangekeeper.graph.adapter import csv, pandas
-from rangekeeper.graph.errors import IdentityConflictError
-from rangekeeper.graph.provenance import Claim, Location, Method, Source
-from rangekeeper.graph.table import Row, Table, TableError
-from rangekeeper.graph.workflow import ingestion
-from rangekeeper.graph.workflow.ingestion import (
+from rangekeeper.adapters import csv, pandas
+from rangekeeper.errors import IdentityConflictError
+from rangekeeper.evidence import Claim, Location, Method, Source
+from rangekeeper.table import Row, Table, TableError
+from rangekeeper.workflow import ingestion
+from rangekeeper.workflow.ingestion import (
     Evidence,
     EvidenceValidationError,
     Issue,
@@ -164,6 +164,7 @@ def test_reorder_and_filter_bundle_identity_with_values(source):
 
 
 def test_graph_projection_identity_and_arborescence_order():
+    from rangekeeper.graph.table import Table
     kind = Classification(id=uid("contains"), code="contains", name="Contains")
     taxonomy = Taxonomy(
         id=uid("taxonomy"), code="test", name="Test", classifications=(kind,)
@@ -595,9 +596,9 @@ def test_fingerprint_and_issue_identity_match_before_refactor(source):
 def test_public_imports_and_constructor_validation_in_fresh_process(first):
     script = f"""
 import importlib
-importlib.import_module('rangekeeper.graph.workflow.ingestion.' + {first!r})
-from rangekeeper.graph.workflow.ingestion import Evidence, fingerprint, validate, tabular, EvidenceValidationError
-from rangekeeper.graph.table import Table
+importlib.import_module('rangekeeper.workflow.ingestion.' + {first!r})
+from rangekeeper.workflow.ingestion import Evidence, fingerprint, validate, tabular, EvidenceValidationError
+from rangekeeper.table import Table
 assert callable(fingerprint) and callable(validate) and callable(tabular.row)
 empty = Evidence(name='empty', data=Table(columns=(), rows=()), claims={{}})
 assert validate(empty) is None

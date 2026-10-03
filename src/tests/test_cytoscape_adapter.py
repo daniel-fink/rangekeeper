@@ -3,41 +3,61 @@ from copy import deepcopy
 
 import pytest
 
-from rangekeeper.graph import (
+from uuid import uuid4
+from rangekeeper.graph import View
+from rangekeeper.model import (
+    Model,
+    Metadata,
+    System,
     Assembly,
     Classification,
     Definitions,
     Entity,
-    Graph,
     Relationship,
     Taxonomy,
 )
-from rangekeeper.graph.adapter.cytoscape import project, validate_document, write_viewer
+from rangekeeper.adapters.cytoscape import project, validate_document, write_viewer
 
 
 def fixture():
     a, b = (
-        Entity(code="a", name="</script><img src=x onerror=alert(1)>"),
-        Entity(code="b"),
+        Entity(id=uuid4(), code="a", name="</script><img src=x onerror=alert(1)>"),
+        Entity(id=uuid4(), code="b"),
     )
     x, y = (
-        Classification(code="links", name="First"),
-        Classification(code="links", name="Second"),
+        Classification(id=uuid4(), code="links", name="First"),
+        Classification(id=uuid4(), code="links", name="Second"),
     )
     defs = Definitions(
         taxonomies=(
-            Taxonomy(code="one", name="First taxonomy", classifications=(x,)),
-            Taxonomy(code="two", name="Second taxonomy", classifications=(y,)),
+            Taxonomy(
+                id=uuid4(), code="one", name="First taxonomy", classifications=(x,)
+            ),
+            Taxonomy(
+                id=uuid4(), code="two", name="Second taxonomy", classifications=(y,)
+            ),
         )
     )
     edges = (
-        Relationship.between(a, b, classification=x),
-        Relationship.between(b, a, classification=y),
+        Relationship(id=uuid4(), source=a.id, target=b.id, classification=x.id),
+        Relationship(id=uuid4(), source=b.id, target=a.id, classification=y.id),
     )
     box = Assembly(
-        code="box", entity_ids={a.id, b.id}, relationship_ids={e.id for e in edges}
+        id=uuid4(),
+        code="box",
+        entities=(a.id, b.id),
+        relationships=tuple(e.id for e in edges),
     )
-    return Graph(definitions=defs, entities=(box, a, b), relationships=edges), box, a, b
+    return (
+        Model.create(
+            metadata=Metadata(id=uuid4(), schema_version="0.3.0"),
+            definitions=defs,
+            system=System(assemblies=(box,), entities=(a, b), relationships=edges),
+        ),
+        box,
+        a,
+        b,
+    )
 
 
 def test_projection_uses_uuids_preserves_membership_and_exports_view(tmp_path):
@@ -49,11 +69,13 @@ def test_projection_uses_uuids_preserves_membership_and_exports_view(tmp_path):
         == 2
     )
     assert document["diagnostics"]["ambiguousParents"] == []
-    assert document["assemblies"][str(box.id)]["entities"] == sorted([
-        str(a.id),
-        str(b.id),
-    ])
-    view = project(graph.view(entities=(box, a)), "View")
+    assert document["assemblies"][str(box.id)]["entities"] == sorted(
+        [
+            str(a.id),
+            str(b.id),
+        ]
+    )
+    view = project(View(graph, entities=(box.id, a.id)), "View")
     assert view["assemblies"][str(box.id)]["entities"] == [str(a.id)]
     assert set(view["details"]) == {str(a.id), str(box.id)}
     text = write_viewer([document], tmp_path / "viewer.html").read_text()

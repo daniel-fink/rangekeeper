@@ -1,9 +1,14 @@
 # Format-independent workflow execution
 
+> Historical source/Graph contract, superseded for new builds on 2026-10-03.
+> Use [Model consumer migration](CONSUMER_MIGRATION.md) for the current packages,
+> workflow version 2, Value keys, and Model export. The earlier API names and
+> acceptance results below remain evidence for the external migration gate (6E).
+
 **Scope, 2026-10-02:** the implementation and validation below concern the
 existing source-to-Graph workflow. The [library architecture](LIBRARY_ARCHITECTURE.md)
 plans its later migration to canonical Model objects. This workflow executor is
-separate from the planned equation-solving `rangekeeper.execution` service;
+separate from the implemented equation-solving `rangekeeper.execution` service;
 its delivery counts are historical acceptance evidence.
 
 Implemented and pushed as RK `588b5b412e52f5b32919a72a19d31df423378edb`, paired

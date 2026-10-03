@@ -1,0 +1,59 @@
+{
+  "input_model": "396b03f6-1ebb-59f4-b520-231242ffd645",
+  "forward_run": "186d0643-869e-4bf0-8354-3c284ccd4889",
+  "forward_output": "1c9dbb73-d5ab-4fa5-83fc-ad42c9bf7825",
+  "inverse_run": "801f0366-f568-4c41-b0d2-58aa7528973f",
+  "inverse_output": "0c3b8ef2-a7bc-4b12-a754-cf1dc10ef4e1",
+  "batch_run": "c1a937d6-bf74-478a-b1f7-f8b5fcf94029",
+  "batch_children": [
+    "3b42658b-b68b-4dca-89a1-7c9b798554d9",
+    "ae8be4ca-15e5-4b34-a4d9-0b54caa0c65e"
+  ],
+  "batch_outputs": [
+    "cc9578b2-3764-4a72-87a5-626aa7b1968b",
+    "149647e3-e9ba-47d9-b223-27865d536fe2"
+  ],
+  "quantities": {
+    "forward_capital_value": {
+      "magnitude": 11000000.0,
+      "units": "AUD"
+    },
+    "forward_noi": {
+      "magnitude": 550000.0,
+      "units": "AUD/year"
+    },
+    "inverse_rent": {
+      "magnitude": 27500.0,
+      "units": "AUD/dwelling/year"
+    },
+    "inverse_noi": {
+      "magnitude": 500000.0,
+      "units": "AUD/year"
+    }
+  },
+  "implementations": [
+    {
+      "kind": "compiler",
+      "name": "rangekeeper.scalar",
+      "version": "1"
+    },
+    {
+      "kind": "compiler",
+      "name": "Pyomo",
+      "version": "6.10.1"
+    },
+    {
+      "kind": "solver",
+      "name": "HiGHS",
+      "version": "1.15.1"
+    },
+    {
+      "kind": "evaluator",
+      "name": "rangekeeper.scalar.original_expressions",
+      "version": "1"
+    }
+  ],
+  "started_at": "2026-10-02T14:13:11.900251+00:00",
+  "finished_at": "2026-10-02T14:13:15.964309+00:00",
+  "scope": "Actual affine feasibility solves with independent candidate acceptance; no uniqueness or optimality claim."
+}

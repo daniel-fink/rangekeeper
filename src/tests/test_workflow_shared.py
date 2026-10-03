@@ -5,11 +5,13 @@ from dataclasses import replace
 
 import pytest
 
-from rangekeeper.graph.adapter import json as graph_json
-from rangekeeper.graph.provenance import locations
-from rangekeeper.graph.workflow import load, run, schema
-from rangekeeper.graph.workflow._shared import resolve_measurements
-from rangekeeper.graph.workflow.review import export
+from rangekeeper.io import json as graph_json
+from rangekeeper.model.provenance import locations
+from rangekeeper.model.characteristics import value
+from rangekeeper.model.definitions import classification
+from rangekeeper.workflow import load, run, schema
+from rangekeeper.workflow._shared import resolve_measurements
+from rangekeeper.workflow.review import export
 
 from .test_workflow import example, rewrite
 
@@ -44,11 +46,11 @@ def test_named_sets_match_inline_and_remain_auditable(tmp_path):
     equivalent = replace(shared, hashes=inline.hashes, declarations={})
     a = run(inline, input_root=root / "inputs").output
     b = run(equivalent, input_root=root / "inputs").output
-    assert graph_json.dumps(a.graph) == graph_json.dumps(b.graph)
+    assert graph_json.dumps(a.model) == graph_json.dumps(b.model)
     assert a.checks == b.checks
     real = run(shared, input_root=root / "inputs").output
     repeat = run(load(root / "spec"), input_root=root / "inputs").output
-    assert graph_json.dumps(real.graph) == graph_json.dumps(repeat.graph)
+    assert graph_json.dumps(real.model) == graph_json.dumps(repeat.model)
     assert real.metadata == repeat.metadata
     assert real.checks == a.checks
     assert real.findings == a.findings
@@ -62,11 +64,12 @@ def test_named_sets_match_inline_and_remain_auditable(tmp_path):
     assert shared.declarations["uses"][0]["definition"] == "sources.number_sets.sizes"
     assert all(
         any(
-            loc.source.name == "workflow specification"
+            next(s for s in real.model.provenance.sources if s.id == loc.source).name
+            == "workflow specification"
             for c in f.claims
-            for loc in locations(c)
+            for loc in locations(real.model, c)
         )
-        for f in real.graph.provenance.facts
+        for f in real.model.provenance.facts
     )
     export(real, root / "output")
     assert "effective_specification" in (root / "output/manifest.json").read_text()
@@ -148,11 +151,12 @@ def test_context_rebinding_is_explicit_and_does_not_mutate_definitions(tmp_path)
     binding = {"column": "number"}
     model["measurement_sets"]["readings"] = [
         {
+            "key": "size",
             "measure": "size",
             "binding": binding,
             "when": {"binding": {"column": "number"}, "available": True},
             "evidence": [{"column": "number"}, {"evidence": "items", "column": "size"}],
-            "on_unavailable": {"feature": "missing", "binding": {"column": "number"}},
+            "on_unavailable": {"topic": "missing", "binding": {"column": "number"}},
         }
     ]
     model["templates"][0]["measurements_evidence"] = "total"
@@ -177,7 +181,7 @@ def test_context_rebinding_is_explicit_and_does_not_mutate_definitions(tmp_path)
 def test_named_context_uses_existing_single_row_contract(tmp_path, context, available):
     root, docs = shared_example(tmp_path)
     docs["model"]["measurement_sets"]["readings"] = [
-        {"measure": "size", "binding": {"column": "number"}}
+        {"key": "size", "measure": "size", "binding": {"column": "number"}}
     ]
     docs["model"]["templates"][0]["measurements_evidence"] = context
     rewrite(root, docs)
@@ -185,9 +189,14 @@ def test_named_context_uses_existing_single_row_contract(tmp_path, context, avai
     if available:
         assert result.output is not None
         items = [
-            e for e in result.output.graph.entities if e.classification.code == "item"
+            e
+            for e in result.output.model.system.entities
+            if classification(result.output.model.definitions, e.classification).code
+            == "item"
         ]
-        assert all(e.measurements["size"].quantity.magnitude == 12 for e in items)
+        assert all(
+            value(e.characteristics, "size").quantity.magnitude == 12 for e in items
+        )
     else:
         assert result.output is None
         assert result.diagnostics[0].code == "ambiguous_evidence"
@@ -195,12 +204,14 @@ def test_named_context_uses_existing_single_row_contract(tmp_path, context, avai
 
 def test_shared_policy_edit_updates_only_declared_consumers(tmp_path):
     root, docs = shared_example(tmp_path)
-    docs["sources"]["steps"].append({
-        "id": "second_numeric",
-        "operation": "numbers",
-        "input": "selected",
-        "specifications_ref": "sizes",
-    })
+    docs["sources"]["steps"].append(
+        {
+            "id": "second_numeric",
+            "operation": "numbers",
+            "input": "selected",
+            "specifications_ref": "sizes",
+        }
+    )
     rewrite(root, docs)
     before = load(root / "spec")
     docs["sources"]["number_sets"]["sizes"]["number_size"]["nonnegative"] = False
@@ -220,5 +231,5 @@ def test_shared_schema_and_duplicate_inline_measurements(tmp_path):
     attrs = docs["model"]["templates"][0]["measurements"]
     attrs.append(deepcopy(attrs[0]))
     rewrite(root, docs)
-    with pytest.raises(ValueError, match="Duplicate measurement"):
+    with pytest.raises(ValueError, match="Duplicate Value key"):
         load(root / "spec")

@@ -50,7 +50,7 @@ from ..provenance import (
     RelationshipState,
     Source,
 )
-from .errors import AdapterEncodingError
+from rangekeeper.adapters.errors import AdapterEncodingError
 
 __all__ = ["dumps", "loads", "read", "write"]
 _TYPES = {

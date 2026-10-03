@@ -1,0 +1,696 @@
+{
+  "format": "rk.workflow/v2",
+  "implementation": {
+    "__init__.py": "75bd658d433901129fec622e25ca1a05e8e63f32ff731c563eb701b8b7856dff",
+    "_comparison.py": "30ae22bebaec492d4f0f214f2b742111b22fdb1082378540c8f1003cc8ae1af2",
+    "_encoding.py": "e8ad33d10fc77ffa3b9fc1ec3454c4328aac78e7fa1a255b36fe079fc1eb80ae",
+    "_records.py": "4dadadf514107f55a702bfbfeb909632c5ecd72de159eaba057beb9a25acd810",
+    "_schema/__init__.py": "8df77318307b4bcc83605c9f716412f2c18eacdf546dc8c6654cb487cbfa406f",
+    "_schema/native.py": "c28cf18b668cd31d12ac09a36b8b755981e76ee4a4139db43a68c15c150619c7",
+    "_schema/records.py": "76b17bfc4744df0455ac8288586008b89c4df6d46bb568894588769e49a6a716",
+    "_schema/validation.py": "a665fe79eef6b8d81e69ed8a786cd6b5a0400de7e2e6731db4895c8e78564c33",
+    "_structured.py": "7b33a9dcad4bbc772e3cfd48dceaf08fd3d2237569a0945373933b2c6240252a",
+    "_validation.py": "a62ef1eb91a0a10b2994ffa37bd726135c65a6a84387b2fa3283ff81361adbbf",
+    "_yaml.py": "f866bdb2c8fd9584c06756c0499e20c65707c747b266ac9e14b0402897faf13b",
+    "adapters/__init__.py": "0f128a786d1b712376c1770cfcb64eac942af6ac4737e2850afe95cb44df6ae7",
+    "adapters/csv.py": "8aa7fe801ad9d94db76701f4820db950654e411a30e0eee4ab521fd2a762ef76",
+    "adapters/cytoscape/__init__.py": "4ed3bf7a73c1234b63e3c6c34cf51fea9d068a66c2864016c49c4407ae376154",
+    "adapters/cytoscape/document.py": "1eb576e596a445c3a78d73434ecf198ac2516c27c9ca0e4f521c16339e952ed6",
+    "adapters/document.py": "bc7034d1a0709d2a6c836e7066394d0334a59872a0549ac2aaed60ffe01a32fa",
+    "adapters/errors.py": "0a95a06eab3eb01c0d89c1b80404841d48a7fc4c3b60786944c6fe697c460d87",
+    "adapters/excel/__init__.py": "b58e913be2348cf2b3d4a606ca0388fcea3dcb0bcd5cad3ce26b42fe8910a1d7",
+    "adapters/excel/_coordinates.py": "1964d7d4e246fa9e9f7ed492b12f83a2961ca0e8a2a1beb4cbf9f044356fffc4",
+    "adapters/excel/classification.py": "d95b94f4eeac563c820ba21be4d698c49ae5b60ff1b6b2254f7fbd432e018974",
+    "adapters/excel/extraction.py": "7180a94ee54ff5cc9c129ab13bb3ed307554592ad613def8088e47e48aee45c8",
+    "adapters/excel/inspection.py": "15302575f0fdc6e932cf3552db72ae1b1a44793e098c36900ac60f8b8ff5d078",
+    "adapters/excel/reader.py": "ef14829df25611121c6bf17d03ca6fbbe575ee87fc99e094c2a300d350c1c2ac",
+    "adapters/excel/snapshot.py": "ce435fede55c3b1693253c2733cce7303309179c62e532df93df9ae6c7780008",
+    "adapters/excel/specification.py": "a6e607f6dd65d410877ad8aaf1305b4153a7597883bbda808a9e0555a1c12499",
+    "adapters/excel/workflow.py": "254d814833ce4f2f089de5910f20ff192409ef06c4ab00c7099e5599a1db8118",
+    "adapters/pandas.py": "f08b965e51ab6ec2d1ab1edf515f3caf966305bccc265a51f20860b6f2c4443b",
+    "adapters/visualization.py": "5f746e1b0185648cf4703ac09b642b6db1c527b3157f3ec8dcca1e77a59c5bb2",
+    "api.py": "03fc7bb21864bdf89844ad6c578f05ff2919c4bb397452753d5c668635268c20",
+    "diagnostics.py": "2472ed047cb6f08f9d8633075cb32452c3240f69d6cf27ad023cc76eb62b5930",
+    "distribution.py": "d82de3862d6b2c952cd2c781ced7506f5f7a84d85cd34b0a24418c905883a58b",
+    "duration.py": "7a861f4f4a9475e20af70532cd99da546b172196f0799bdc02435fe706d5f531",
+    "dynamics/__init__.py": "3e49e82de1cf09768d57f5d585691f248e640d115c223712e23d5f71b4256a45",
+    "dynamics/black_swan.py": "b46f3ca15075fdf34bc5f9b76623992411912a764a363e158fe554cf955d9ffa",
+    "dynamics/cyclicality.py": "d2269e6955cdb69f3a431518570e7794e9b4227c6bf7162a9a70df4195e2a0ef",
+    "dynamics/market.py": "bb592b9fa8409d78472e2600ba7b595e9bf6fe4364a6a59ae9eba5c8443445bc",
+    "dynamics/noise.py": "4a36806291d7fe823255aac7eafe4329cd90bf098f33d23ed0029e97e045fac1",
+    "dynamics/trend.py": "f96aab46f9a64e3da6136e0fcfe0e5e655c4a4b5e70d432781a7d4fff7a6fda7",
+    "dynamics/volatility.py": "3060cbceb235b8ffc2e872fea62809c168a41e0d4a35b7c1ff49b402487e2f60",
+    "errors.py": "dbd9b9431e05658bb9a82e7e5d1258a5314a076b484b96e074ee5b95088a8f07",
+    "evidence.py": "3599ce57a56d3242d2687bc93025ef46f80c6ebf8e0a5e94128a53507f6f7137",
+    "execution/__init__.py": "8a7be1d8536fded1070973a53b169addd5dc09b90a0d9b0d37d1231497c30db4",
+    "execution/acceptance.py": "3266479d7b8f13e77e24f233da03235aab96f81fb3b00c6879fdca7f976096e1",
+    "execution/backends/__init__.py": "8b423e3c12c6ace430cec1089b32df5c2ed6991ebb323ef50bbfd9a83e15f40f",
+    "execution/backends/_worker.py": "7d4d8f0d8b022d021e7450f6a66077c0ece5e196c55d658fed999ba773695670",
+    "execution/backends/base.py": "e9f6902b31e71b798aceaa378d4f4f71f0c78d16af13476b1f88665fafa65803",
+    "execution/backends/pyomo.py": "d31ff2081759ad6881f0e1e988524614b1ef433d0eadf53e52ec57b26dcd72b4",
+    "execution/compiler.py": "1c99bcd5eaf8ee9eaf065d5a007febe075b019d40a88306c7543f9fa89f499fd",
+    "execution/errors.py": "a37ca3142807b5ce457daf0a65ebea42cbadcb0364fe5ac96be69096d60e3f4a",
+    "execution/evaluator.py": "111a69734f23fef666c47bc036d0649175caefc8edd78defca5049e6c7321eda",
+    "execution/executor.py": "fbd5aa70c5c0d193761c144f107e3506b6453efa4d31131bdfe00da4b28b4a1d",
+    "execution/preparation.py": "4ce92adf5fc4dc18348d56c52020af834fa56c2ca3bac48631a9eca5f4e540a8",
+    "execution/publication.py": "d132d95ef5f575862abf54b9cd0487a9e06e7d285aa3ac1f45272dc1a9e8d744",
+    "execution/settings.py": "7d34278c77484c447b1c5d3447c482c5712cd0d3eb412cceefea54636e95a2ce",
+    "extrapolation.py": "65fb33d8ac24226c4430c08d65a17c469890c652207a64b57509129e3962614e",
+    "flux.py": "dc05846389578709306fa4dac5b5b9491b79a83a377e9694f68ceb86d795d319",
+    "format.py": "c06c83887133117071ccd718f2b9781dff9dab73f4f33d6470e6e05c83c96a8e",
+    "formula/__init__.py": "e0e5f37490180c1c5078e3332d1e4c66f223c7121f14e4c4f5a36ef7316bc801",
+    "formula/financial.py": "857eb71b3de025fe9b52d0cd0c6162b506a3e707968dda692bc349fd5182795d",
+    "graph/__init__.py": "9463691029022dbdfd8ce61729d72ec8482b6cb35288a11ce73b6fdf277f75e0",
+    "graph/_catalog.py": "39ef602fa1a08a21647b5a40520f552a1ea9383be491a2a367a528514f4e32b8",
+    "graph/adapter/__init__.py": "2bbdff8aa8a39434c70854649421a0104b2551c1634696cc88c96e41dbd0a220",
+    "graph/adapter/json.py": "8812751a14286ed882084c69dfed891136bcf598a67be0dcea42df3864e02695",
+    "graph/assembly.py": "68ba95f2ad77321be1a1a9ae9932ef02b5d89b43eef0ef2d2595de5c22799da4",
+    "graph/characteristics.py": "9485bbba77163a2186194f640de6e91eeac5a5d5484f04eb2004a4f53d4e1015",
+    "graph/classification.py": "2b6b6c997b8399823274bbed98e5cf378dce4cc268a80a863751a13984a47571",
+    "graph/definitions.py": "d2aeb2931ee67d6bdfef7daf78f0a255e37dbb6d8276271b6de09212ec715dd4",
+    "graph/entity.py": "c53e460ce321c9a82258ea1926b949c4f4f7a593de79f2f2a4dae20047a51fb2",
+    "graph/errors.py": "32766288df59f8ef3a6668b75fc79614e9dea305aae4a5fbfbc190c8d5fb6bc5",
+    "graph/graph.py": "e5cbde7cc7699ab3a86b1675787e34cc73f30e321fd335298a4aab917069b605",
+    "graph/hierarchy.py": "374d790a92437333b0865a023bcf58bd24af70d489f47b26dcbb5f655fead392",
+    "graph/legacy/__init__.py": "323f558ed263a69678365dba6a4d5d9448d37e38d12a343c2a157117f82ab401",
+    "graph/legacy/reduction.py": "608fb355afc4db4e3e63856279cfeabc481688d682a2243eb90c901683d20b83",
+    "graph/legacy/view.py": "aa5dfd5de880fd295723019ea65d2604ea55b0837db9a3bf72a4c7b21df17cf9",
+    "graph/membership.py": "59ce33ecc93b2e98decd9c9f50437575a688757272aea1e32e4d65f42597b57e",
+    "graph/projection.py": "1c0f699fd9134b2500cd706ece9097a1290f7fe1348ecbcdf4d3e63df545591b",
+    "graph/provenance.py": "d5b510183da0bf0316c94b66369e0d76427d769060e7eca39501c264691adeeb",
+    "graph/reducers.py": "d689a3787f93edbff78c01210920dbae67119665fadfd7960d556503270bc405",
+    "graph/reduction.py": "b0c15b103821b62f0c4882efdb3e304b3b428b314df97329dded479e6e41312e",
+    "graph/relationship.py": "6e17b57526d7e64f51cee1256d16e7a1aabbb9c4a7c382d89e0669f8b29c2042",
+    "graph/revision.py": "cd7ed307a219ad7f9dc7747ede7903f639d093c795842f6f341db3020d1ee3d8",
+    "graph/selection.py": "b892b7076782c80bcbee77d1200b1200529f67b59e467348934c5b62815561cc",
+    "graph/table.py": "9ec1616d4848777e419daaee3e1626c0399d9941f93bffa8b1c35ac554edeb37",
+    "graph/taxonomy.py": "bc4d2c647ba6cb6ffd3cf896934c1fb1656533a3dde0329e650e7c5cbd230d32",
+    "graph/update.py": "90eb14f894ef7a284cd7f11c02f32b45880318274d27d8a743d572ea2c58d461",
+    "graph/view.py": "6522d67e6053f11df7c79cc98ebdae400ccc758bf8bc6c222e3a1e6ca74367f2",
+    "io/__init__.py": "249de8e1bff8346438e2519ceb87b5d08f81e04c37da6edf76d08878ab2693cd",
+    "io/_atomic.py": "4fcd167e7e95789c1e4039515c94c63e6f664a699337aeb104b1a2a68ee99dda",
+    "io/_document.py": "2ee06e4761965c4260d8c9e3521eacbad59d2ca912a50204df0f7e9dfbdf2d66",
+    "io/directory.py": "5999c4eef934b5f8ec1f1ddef10215e7d27e1a99861ec8d84726adf16631d871",
+    "io/json.py": "9633ac095f4c42067ba41cc023de8c0aa5b45afffa2e3daf4944d1849a9ce4f8",
+    "io/memory.py": "b66beb43b84b2268a2a9df1224a593a42495cfc988a357afaf92c72ae084cd68",
+    "io/store.py": "56c108d370ba9f0f51ea32942073a8e5d55cdfce162460a0f1c2ad36071b4c7b",
+    "io/yaml.py": "b768bd136be36828e2f45e8cacea5d87c9d776a0edbcf609330272269c39447a",
+    "measure.py": "882595350f13a2e977ef677c0bfff38cb7db4bc907db4f73addd9970ae77cc66",
+    "metadata.py": "338ce0fb5dab2adfd83c5a889a2e7437dbcecc568bee0021db50984ecd24804a",
+    "model/__init__.py": "a71133fee90be991832b55bde22dcb4267cdfa9104c2db349ce209eb1778959c",
+    "model/_expression.py": "f07d180e983377b24888c5b10edbd3aa80376f7f1034a108378b223457fcea56",
+    "model/_formulation.py": "0f67a0c23a048d10526a87a9181c09b45f396ef7cef7ac66309b7b146a8f6d8e",
+    "model/_index.py": "fd98161525be2fba06c82981ad526c5b65c18449d981a987cb1631e9c2fe586d",
+    "model/_unit_validation.py": "c8b4dc1acd700d21c7870505901130793c698c8409ad4db0805c76dd68cf4cba",
+    "model/_validation.py": "211bf940c12c730c4e6f74b4ccdeba2417d6fa56a8628c2a0d2a24c9a6d8b6e6",
+    "model/assembly.py": "63d381b57c00641bb304221e1bdd589036a23630e95501dc3f01bb7fe6746168",
+    "model/characteristics.py": "bac4d7ef303d9bc4901062986b9a519dd424b81fde514545fc5e480114fce972",
+    "model/definitions.py": "03db223a87dd6f6282212b43b5f2028bd950c6a75b16b2754a703560926ce21f",
+    "model/diff.py": "24eacf3549388fab042c324b6c43cda26fc11b2c25fc9109357f07bd5436dd17",
+    "model/entity.py": "2bef1bc1d479b85050e93ab2dd2a0542149137e057f7effd3042c4176f0a8d38",
+    "model/expression.py": "dd427dd2ccc6b7df8a77b12b7335dd739c43fa82d9490af65636cc60d4b3d960",
+    "model/formulation.py": "0bd9d0ea7379eadbf657e0592081bc6f590589caedaddd55a5e97ccf5fef804b",
+    "model/measure.py": "36a2af3a8b21c85e078e4fa9b2b36d769c0f768a9c14cc2d5f6285167a8722db",
+    "model/model.py": "da8d2857f4ed91b6501e3f341a8276ae846885bf117df733f001eb6b3f2e2e70",
+    "model/provenance.py": "282e0f44da2720376941fc65e586301f9ff5f7c0e52d9031f904a8abc4083974",
+    "model/relationship.py": "582d82bd1e9aa730cd0585bde799c13a9d7a57405f4e5a1968a81ce3f508b295",
+    "model/system.py": "be2eb286a91a8e9e8d1a719e33e65ae15823d717b2fdd08052107fc1fd928c69",
+    "model/update.py": "daf5d1ea2974319277bdce1a05d5a0245bdbe3c9e6f6e141d0d732a8574c4956",
+    "model/validation.py": "27a26a8d60ef74361372abfc298d2ca8378a91be5bb172e0b27d6dd586a3cda0",
+    "operation.py": "f0a22c7a6c185d626571754bbf070d6dc09143d0008a7ec81ea7df0082b3cd13",
+    "policy.py": "f29fac97b4a9704fc54f0a7047ac11f023a8b4d212cc3e1b72a66a3c7a090902",
+    "projection.py": "af97c70dea1b08cbd0905aa8842211e127c7d5f9a4578690525cf1985e36f665",
+    "references.py": "c0cb21cff55418136333f573c9fc8e614c44a6006b5c5c63c997c4d8d92365ad",
+    "run/__init__.py": "a9a2576b2b7fa249340490bb1127d29bde6aaf7cf9298681723ad797bf070ce8",
+    "run/_resolve.py": "7a03668047daec6464fd34bb3dccf766298750d7344a7bb2972f9ba505188e72",
+    "run/_validation.py": "187f0df77ebbcd8bc550fa0b84f7ad92020e54240c35134456b383d0fbb2f5d0",
+    "run/run.py": "f7357929b5fa6554eb9cb77097af074c8bdcaff254dbf4a2700cc60d2a75e619",
+    "run/validation.py": "25112db31c360c457382c1ec482a54951e1fe9063e795c0409540299ce2130bf",
+    "segmentation.py": "faa6645d0ec96d22a9fe9b0e4688374c83fcc9a83aa287bd8460fdbaeca57129",
+    "space.py": "8a5909be4c612d3e1fbcb712b6250585ab1015488f9cff9978006cba7c216ce6",
+    "specification/__init__.py": "ff5f342bd6e8ffd964b2b8b9f8da2ec37cf1440700399df9bfb19188339046d3",
+    "specification/_composition.py": "74e1fab7f5787b0ad93ce1dd106634a443f34f87c0eb5d86d60e19f935257991",
+    "specification/_validation.py": "48533616d70a6970f85990c9cf1c6bc3daca3404ffa2f4fa2d9f071d7c257d77",
+    "specification/composition.py": "140b8246d1cf0a506a441a7b94c968c711a95cbeb823c945c6e0d4307da6bce7",
+    "specification/specification.py": "90e198547d67ee56b19d4f08c28116dfd2a72150736acc10868a5afe997db4f0",
+    "specification/validation.py": "81804fe8430c5326eb94784e4f887a5644337d1153f38a9a13baf32bcf7d3c4f",
+    "table.py": "b1edd6b116d728a77a3bb4dbe93f48f111d58ecb6f64361bae8c3d31fbc6fd66",
+    "units.py": "844d375c7c6b1feee7a02a2b4df7f890b1bb0229f9ea6f5e889b60a237bdc403",
+    "validate.py": "b960db5cf6cd40e23bad6442dae9c57972cfa2ede7c940477155e01353050a2e",
+    "workflow/__init__.py": "b9f6681677408409d0d663936feeff9947d6555bbea4dde84503c409691c2311",
+    "workflow/__main__.py": "f66007dca2ed1813e930a008e53465824093301823a43c8aafc22368a109630d",
+    "workflow/_audit.py": "17639c1c0cf4b60b25d1c94964a5c86cfcb61608d6bb57814247588bb01bc0fd",
+    "workflow/_contracts.py": "573564f74a8a5387c12e0c4a1699e435f365f2be385163561a07be07e981ecc4",
+    "workflow/_declarations.py": "6a9ea18fcafc070f3bc7f37f636eb7ec871da3e6c655020a34f9cac37dbb2017",
+    "workflow/_execution.py": "8f854018440ec324a0e050a8cf5467b13437d79d046f59505f25908ae1ba7cde",
+    "workflow/_model_validation.py": "da0b7cdeceb2679a69b122dff9c8e9c2563e586c2841f331e23a1a30f6c64208",
+    "workflow/_operands.py": "c732c4ad9f510e19e9c24049fd2c25992172482fb6ec762d07844db4eb36634e",
+    "workflow/_schema.py": "f7efc53e78485fe42c5a8f79db4ab33829a6bbb560ed5d9d970ced2243335958",
+    "workflow/_shared.py": "65a2e81b4a45fae43e004717857ec79185fc45736ff5e93820c4ecaa80966227",
+    "workflow/_table_operations.py": "5ba2ff3d2e8dced1e8df5c660ee067731ed8662434768fbb6564f3dda631425b",
+    "workflow/bindings.py": "094a8f5cd6a0c00488186ccc7cda737255dd344f0c3c6038a867bfaa9cd076e5",
+    "workflow/catalog.py": "eae0d432fc946809177698a5e394e6f61f6fd8f0c95a3290f167594d9acd4ac3",
+    "workflow/checking.py": "eeb8b7f34e14d6438e736d175949ffe9f64cd975bc04390c008dd005a9afc494",
+    "workflow/composition.py": "a8ebe0d2bd912794be415138a904a678134872653e257b5bf439648586d76b24",
+    "workflow/implementation.py": "fb39eb7e15ae42ddcc9fbc4afc2ec6ce6c667aa4bd4a23f7c85c6daa84662616",
+    "workflow/ingestion/__init__.py": "0585db031737b23aaedcac13eb071ec1088c863ab6b16ee1848f1e4290cc029c",
+    "workflow/ingestion/_derivation.py": "d421f9b90fc8c78c99e06597ae23755e422521f31a2dc8cf0810b061ed38f348",
+    "workflow/ingestion/_encoding.py": "702bec405575c626ac1226c1641f08ae1e414a030a409ae51df31197e6ae38db",
+    "workflow/ingestion/errors.py": "fb35b3ee0b2e143052ba33eba8a74029add190eba4d6bdb76a7e2f8bbe9da0d7",
+    "workflow/ingestion/evidence.py": "09ab2c9a0f0e35bcd115006ad107ed2814287f92d958368aaa26d9c1fbbcb226",
+    "workflow/ingestion/fingerprint.py": "1d31b58f2d84eaf2a0ae0639a2ed20470de2a475bd250eb7f13ae04d7a16b6e4",
+    "workflow/ingestion/predicates.py": "33de9cefef5355f7cac6b9d8a216688af3a4f635a3b989035b8e7c654e6ded6e",
+    "workflow/ingestion/tabular.py": "827f1ab0a0e7d8a6dc88c133a9f1cb4153a3ef06b970ae9326857ce0a306a13c",
+    "workflow/ingestion/transform.py": "98254fb6646c7526083ddccdb477856b83bf8a3d8cfe3c3715ba359aa0013ea7",
+    "workflow/ingestion/validation.py": "6158073cb9d7d8d95e9251a93a90dc6c628b4307441a056424166c22292e59bf",
+    "workflow/provenance.py": "2b895a71aa7ede216b261f2c3ca4992aec731a0c9ee9aa8bfcc392617a4132f1",
+    "workflow/references.py": "9b35bd633b725e18a31b4c0bb5ced9f928b232cc680dc58db119dac4b47b8392",
+    "workflow/review.py": "52083b18bd22e0c3c08ba4179a6dfd1b18354bf3c36ac18d41563bcb0c62d172",
+    "workflow/runtime.py": "bbd42d6c89b2a4e0d84eedddabf7a5fa9b16812b5800a97988ab61948fe97620",
+    "workflow/source_checks.py": "0bb8675403ccdf05d771d204c09202d76b0ad9d1adb1c67b8893ee6f2f3e03b2",
+    "workflow/sources.py": "2273048d491a46a5f9f02956718f7cb75641f562e833324d81fecd5b6fc9ef69",
+    "workflow/specification.py": "4155b1a80f4c42ec9f3bd0887374a1b872f444ad27c97b0bcbc66b6587d7e42f",
+    "_currencies.json": "61d5bc70bc57bb988024d48b8c2176c20fb464147fd3555daf8c6e43227f8095",
+    "_schema/manifest.json": "187c93bd740fe968ece0c65c28896790a775abf6641e01c5a8caf2deae8b7b4f",
+    "_schema/schema.json": "e383743bf6d4c37b17221765f176e1c2068decafd1b81c32ba48613d01b9a6fb",
+    "_schema/slots.json": "1e2955113bae4649ca409cb94efd14a67ab338a2cdc86867ebe09b88c91d6dc4"
+  },
+  "semantic_implementation": {
+    "_comparison.py": "bfd5782f0692b0ec0b92ae613df84490d59c4f5e3259f4f758efefdc7dc68fc6",
+    "_encoding.py": "7d6a185bf1f853ad5bbc9e784e0d78bce469704de0525a9ff79f9cd753b09102",
+    "_records.py": "3cac84985cd03979258e56015bd7a64333d29819768da06773efed440ff24c32",
+    "_schema/__init__.py": "3543b4693a36a1098850b8bc928887694ed59a6deb7d3dfd0339de01f55a77b6",
+    "_schema/native.py": "67b50600661e4da86bcc8c67f57eee044b6ce20747436c36561fa2f99455ac8e",
+    "_schema/records.py": "e0984307f97130d361cfaf8a93f87f699ec70aec71862c86b406b38bd38d5e53",
+    "_schema/validation.py": "0649e665a32e628e741b5f2a920f8ad5255866be6f36dd9c411d6b1a3d10e057",
+    "_structured.py": "2bbf47328e00813c40ee670f539da4f2e23f17fe57839b4e1b6df0b89a1d5e6f",
+    "_validation.py": "d49afa3c598bdd5c4741170a7918e83e9bc202563f93fd5088744d55dc7de288",
+    "adapters/errors.py": "9f4d8355b20cf1a38e982270cc078c19d58153f2e61274b2ac54d767e3d44b2b",
+    "adapters/excel/__init__.py": "1dbd8a1d845e826387ee254e6dc015e2a9ff83d055ce222659ef3b189b1bc528",
+    "adapters/excel/_coordinates.py": "7b2a657c0e5eb715a40e218ccd5a27c89972ae9c5f4db7f201a851ac488522f7",
+    "adapters/excel/classification.py": "c2d04960dd31fba7983d9b0314ce9538e665d5a2af2ed5c5c12cc8a16af1a5ee",
+    "adapters/excel/extraction.py": "f2ba06efd6a0442e788c28075cd4fe2f864b1b8f6b97b5ba19feab5c337a0907",
+    "adapters/excel/inspection.py": "35ddfdd4d6d173c1b553dfcafb3ed68126be96bc0b331a8b6dae6255242c1cd2",
+    "adapters/excel/reader.py": "047b9a66e94e5600ce7adf741e842d7719865d99fce374c88c8719184dcadf77",
+    "adapters/excel/snapshot.py": "a6eac67fc0e53f8c8cf24fb447f29f7e8891040b41ccd8974ec272821cb10c0f",
+    "adapters/excel/specification.py": "fa3423cfecf935a5e77c0703dd50fb323077ac2761a1824663484798334c68fc",
+    "adapters/excel/workflow.py": "6045a3a9c21c830e4da24f0c64bc2ae0c51813209470f3760da5ed003c3d6848",
+    "diagnostics.py": "08858d122693989ebae03a23fe250ab08528776f567709d9f65e8dd799d78e26",
+    "errors.py": "a456c0649f760ad574583472a8fbcafc6a8e279ae2f3212b6250c8f326506a72",
+    "evidence.py": "c92e67498ad46f08c8af4257ae1de1d16abee7b028c87b19ecf319e0030ffe7f",
+    "graph/errors.py": "5c4b4b3dc21ef2157ee8f00e6ac935022a68082243b0c1f2af9dee9c0b7d9148",
+    "graph/hierarchy.py": "082577bf2219f0ef034f4f511285f68be8c50bb5806109b361688da08dd5f4ff",
+    "graph/membership.py": "569c5705f3d9bd38422610cca64ecdb6881d5adb38fdbe6b234e5f45b2098817",
+    "graph/view.py": "0142d7fc754288a8e10b9aeb4c36d947d2bf7dcc25c9548294994aa6300437dc",
+    "io/__init__.py": "b333f6e6db2e218e72e1d7156cc22ba86624c1fdcd28a85d70dcfa004dbad613",
+    "io/_atomic.py": "996e4c677d883f87102f5effea544fef67fb07f010c4d0a7e324a3016cafc2db",
+    "io/_document.py": "c6b1d374aacecf0f76560ffe35bb7436123a47ffcaabb8489a3b75577113c318",
+    "io/directory.py": "335ed030fa5f5434d6ab93ef1e12f5c32bf2b0ff29f734fa6b697499fe5b501e",
+    "io/json.py": "0f69e67ab83669cd3568207491c97f02689199c016cfbf341973d3b9ece89fd0",
+    "io/memory.py": "dafa5b64a45b905d61741ca2d5cd35d4a24b9e328a7872d487e2929db4383575",
+    "io/store.py": "5e311ccb45ecd09c4f45e54d6935a4c5a701412f7cf161e492c6f02c230dcfb6",
+    "io/yaml.py": "776d35c2a08b40b741aa9578449a44fb97be9716e637335f5b359783c974002b",
+    "model/__init__.py": "53ba4752b36b1ff6b34fe47b6bed928896af3a2c682e12b67371e0b5200fa5e0",
+    "model/_expression.py": "d13aaf833988a14812365a28caea8671f578203d9fa0d8d4c4b6a325ee9ab02a",
+    "model/_formulation.py": "26a0c97a565f33d5445a248890c7a9237debddd089c431ee8fb5815bd7136e73",
+    "model/_index.py": "8a482b2f02521b684447499b80d454d5b99a0b89d2c4a77b3227c5eaca7253a2",
+    "model/_unit_validation.py": "206b74a52b030a758cdc2b6df583c50b96286370319df8a5a065947121cc9a03",
+    "model/_validation.py": "8be43fa14fab66903b21aa8c23d1461bec09289ffdec0d99542af5aabbf4e30e",
+    "model/assembly.py": "abead059a81a67211ff5b27ce841042f1519e06c44a833950c5f863bda629e26",
+    "model/characteristics.py": "a6728fc9de64597b739ac2bf352be518dac401e5e48fc186e06fe8e81d9378c4",
+    "model/definitions.py": "27d8ffed8b39977aa2840d8c9046cccac9633177465329e6060ec8b5001fd533",
+    "model/diff.py": "4b15d1c469625f9eb9a7dd6d5aa3c3fe8dbfb4366414698c5f03e589cc38b7f9",
+    "model/entity.py": "c0d23789d4f6877330f66dd518c0d60de10a15226bed835d44c10045ccba158c",
+    "model/expression.py": "820d561a427746bdfc240c70ca184674fe0462a5c2df46efa6fe6ce79a4e5abb",
+    "model/formulation.py": "c33db340405bb28929af45b34e9601738c723dd8da2197fdbaecbdd39375a202",
+    "model/measure.py": "28a034626cef2c48d398698d3b4e30b7576e2ddeb960790e7e69b989f8013771",
+    "model/model.py": "3ee381a1867336eefe1d33e05ff8ca1aa42fed6eda1fb5e6bda493e507b55efc",
+    "model/provenance.py": "8ea412cbc8cc05937f8f3081bdc2c4c1a122ca2d7831435fe401e4b3df35a938",
+    "model/relationship.py": "9531da50193b2a9f5fd91c2a63f3a40ed144dbd55f43ec681bfe12e1e68fd001",
+    "model/system.py": "84dd71d0d2786f735d74066e503ef2abae804ff0b2673e13b3c93ec7b1001807",
+    "model/update.py": "c86ecfa47ddaca5812b2a2a7d94ed5e7029aa1f205a7f082332faf4ef6e12b51",
+    "model/validation.py": "6af513b48c643d85aea4444da4d0705353b5a6c2fbaefd73e7573eddbedca31c",
+    "operation.py": "1f3a5d73ec7e10e56044fafe0b1becaa7a0dfbd5fecd15dabd3dfd00128b646d",
+    "table.py": "be1f11472d3268fa671b518e798a792a1b03c79dc36525a79cab8c6f77c625ec",
+    "units.py": "d45a7521cb2449949ccd64e3e8eac2047f185daef760f0c25315615eeb35a64d",
+    "validate.py": "9fbcaff649e8ee82c926df4eb0adf22c60dd1ba493cf3cebb2cc5352384eaecc",
+    "workflow/__init__.py": "aad3e724e5a007f31d2192dd61589577f1586c0561b0ea79c6df809ea2682f75",
+    "workflow/_audit.py": "3eda8156abc835fd9fee3c6740b9bede62af711483bb71487693365a27f32a33",
+    "workflow/_contracts.py": "d97a16904f23385f0fe19b1b759875facd225bab2c5fa47ba6ed8adc3bddb87b",
+    "workflow/_declarations.py": "f6d79dd1a356847d53d106bade32ff3667799b6aa8b8f6543e710676a980d40e",
+    "workflow/_execution.py": "d466056be3f44a50f1e54f2d58443193c41e815ba5fa21ade521f97ce0e4150d",
+    "workflow/_model_validation.py": "d491181def4ed468316da47a53bf9b0bb1dae8959d6570bb486ac5125a225508",
+    "workflow/_operands.py": "20ad571487e42b764f4490d1b30b77ee10f7c3258861c4df8a25988fd92acbe1",
+    "workflow/_schema.py": "7cd81d47e1672dfc7b7b4b43a923f5428d755312b72c07b4c858c3022c4fb0d9",
+    "workflow/_shared.py": "5acc1b91299c7a7306248fa774e2ebde4d26d6e855653bc7543bf5b443f4b626",
+    "workflow/_table_operations.py": "40f2e796fc6ff1ff0416c0e2ef965a7d4ae38fa9bfd8600bacbc09f9b89e8c6b",
+    "workflow/bindings.py": "12f925f85ff9a7aded92d0005cccec28a3793df79817502bf980c601ea2a3e30",
+    "workflow/catalog.py": "850ddef79cf5beaba80c3cd2f597f96bf0d6edcd47c03b00d236f3d7361a0228",
+    "workflow/checking.py": "4eeb27ed89f808c0b9d7bfbc0daffdfb0ea2eb26c3c98470ed43843797edbfef",
+    "workflow/composition.py": "39426652bbd47e802da9f8623c138e081c3c2548698c9ec4a7187796faf57553",
+    "workflow/implementation.py": "9343e3835d0663e243fd2526e379555469111e7d0d51ba9ac0fd77432d178a72",
+    "workflow/ingestion/__init__.py": "6e89f243770f0f313918ac04479b90866d99203268a066b930cac4a21b2afe32",
+    "workflow/ingestion/_derivation.py": "5250675c0fc7b7a54dbcdee13ce28f4787beb5b9132b57f5ef6318f18c2f7b31",
+    "workflow/ingestion/_encoding.py": "0129ddbabba262dbb92c6d598a5cc06106b1e222a72d29a5a08fb30c3e354d61",
+    "workflow/ingestion/errors.py": "9a520c05c7992d8f418126470e18e033e2b80000c87f9823b5c2fb9818c35383",
+    "workflow/ingestion/evidence.py": "93fbe9eeebc3e8cb3fd5975ccbb60cbebd17484c00c338f93e787ca867bf1071",
+    "workflow/ingestion/fingerprint.py": "3019906c994baa83251b4f2c74e7c25e82336959cc3096aab4e6311390fd30dd",
+    "workflow/ingestion/predicates.py": "867499d1d76c02a7170bc7f2564de9ef0f7029a26b9d802c36695f3e1fcdefff",
+    "workflow/ingestion/tabular.py": "2dde58c1920405d6ebd6683558142390f20292a122429cae2b46386a3b248abc",
+    "workflow/ingestion/transform.py": "5078139a66dae5141fa1c5408c4cb572ccc593b5fd9661257c31e802c3063a86",
+    "workflow/ingestion/validation.py": "5338a0cd6a7cdaf7d6f9814dc3bfa62dc657726b63fc8d4cd2585d77d11b9c8d",
+    "workflow/provenance.py": "4b920b399cec066d5f01d0467f51fc4807dace50157c7b7171653e8801bccca6",
+    "workflow/runtime.py": "4b818292247c267580b8245e6c0c677d7657071ddaf9c0d2355af428f434d537",
+    "workflow/source_checks.py": "8e98bfead063ada8c53ffe1cc9bb6d3ee5ba80430374755b1a4ce1159401622a",
+    "workflow/sources.py": "ae85e05e246c4cc6961356c639395ad47dacf78444850baacc7b504369c80bce",
+    "workflow/specification.py": "79ba472cd24170685fa86f02118797a390f92a94fd4cbb2d3263a3daaad0c319",
+    "_currencies.json": "61d5bc70bc57bb988024d48b8c2176c20fb464147fd3555daf8c6e43227f8095",
+    "_schema/manifest.json": "187c93bd740fe968ece0c65c28896790a775abf6641e01c5a8caf2deae8b7b4f",
+    "_schema/schema.json": "e383743bf6d4c37b17221765f176e1c2068decafd1b81c32ba48613d01b9a6fb",
+    "_schema/slots.json": "1e2955113bae4649ca409cb94efd14a67ab338a2cdc86867ebe09b88c91d6dc4"
+  },
+  "semantic_version": 4,
+  "step_operations": {
+    "source": {
+      "dispatch": "sha256:036e30d0086bbc31cf07cc9527fe97273e70d9a92f1117583c75fc7981ddcb51",
+      "native": [
+        "sha256:58416c95c78dd462c540ad0dff18a07139e5f23c9ab40bddfca7380a9cfa5d06"
+      ]
+    },
+    "raw": {
+      "dispatch": "sha256:38f0fc46bc70443b06209c0ffbd6b7eea993362e68e55d76fbb1f99d0ccbc99b",
+      "native": [
+        "sha256:19bf978e23b32481fd8f9233b3ff50f15913a48308d95b90dfbb34691a9cd7d1"
+      ]
+    },
+    "numbers": {
+      "dispatch": "sha256:3396288b52a016657b3c7c1e139edb723d6dfb24b09caffff4bfcd22cf3138f9",
+      "native": [
+        "sha256:afe93d380a6f0779846ccc09d9b109b9594faf76525f8a372b3b0d8be8a49faf"
+      ]
+    }
+  },
+  "python": "3.10.19",
+  "dependencies": {
+    "openpyxl": "3.1.5",
+    "pint": "0.24.4",
+    "pyyaml": "6.0.3",
+    "rangekeeper": "0.8.71"
+  },
+  "deferred_records": [],
+  "deferred_evidence": [],
+  "aggregation_policies": [],
+  "specification": {},
+  "sources": {
+    "source": {
+      "id": "71b67443-faee-589b-8743-a486281bf0c1",
+      "name": "area",
+      "checksum": "5aeff606f1e81e203f54494b6cc79d5cd5063349589d634cdcb9a45a8c4154b2",
+      "fingerprint": "sha256:0b62a3eafc7107bee68b00f423a39f798d5379eecd7e0a5df54b60a0d1e4835c"
+    }
+  },
+  "operations": [
+    "sha256:036e30d0086bbc31cf07cc9527fe97273e70d9a92f1117583c75fc7981ddcb51",
+    "sha256:58416c95c78dd462c540ad0dff18a07139e5f23c9ab40bddfca7380a9cfa5d06",
+    "sha256:38f0fc46bc70443b06209c0ffbd6b7eea993362e68e55d76fbb1f99d0ccbc99b",
+    "sha256:19bf978e23b32481fd8f9233b3ff50f15913a48308d95b90dfbb34691a9cd7d1",
+    "sha256:3396288b52a016657b3c7c1e139edb723d6dfb24b09caffff4bfcd22cf3138f9",
+    "sha256:afe93d380a6f0779846ccc09d9b109b9594faf76525f8a372b3b0d8be8a49faf",
+    "sha256:c26d38a45bc44184a5df35b61d534ad5229aeb8d5793841c1588837a9398eeef",
+    "sha256:29913168728c6b321033ac041f54076aaf1758a003ad80c8e80fb3330f5ee06c",
+    "sha256:9d35b6ebaaa3c8f61abc120d524663614dce4da3112dc9b048a267a1766f512a"
+  ],
+  "deferred": [],
+  "notes": [],
+  "operation_records": [
+    {
+      "fingerprint": "sha256:036e30d0086bbc31cf07cc9527fe97273e70d9a92f1117583c75fc7981ddcb51",
+      "method": {
+        "code": "rk.workflow.read",
+        "version": "1"
+      },
+      "specification": {
+        "id": "source",
+        "operation": "read",
+        "files": [
+          "source.xlsx"
+        ],
+        "source_key": "area",
+        "checksum": null
+      },
+      "inputs": {}
+    },
+    {
+      "fingerprint": "sha256:58416c95c78dd462c540ad0dff18a07139e5f23c9ab40bddfca7380a9cfa5d06",
+      "method": {
+        "code": "rk.excel.read",
+        "version": "1"
+      },
+      "specification": {
+        "namespace": {
+          "uuid": "b2f20d49-fcf0-5471-a078-b8c3ec6cda55"
+        },
+        "source_key": "area",
+        "name": "area",
+        "expected_checksum": null,
+        "format": "xlsx",
+        "parser": {
+          "name": "openpyxl",
+          "version": "3.1.5"
+        },
+        "formula_values": "preserve",
+        "external_links": "do_not_load"
+      },
+      "inputs": {
+        "source": "sha256:5aeff606f1e81e203f54494b6cc79d5cd5063349589d634cdcb9a45a8c4154b2"
+      }
+    },
+    {
+      "fingerprint": "sha256:38f0fc46bc70443b06209c0ffbd6b7eea993362e68e55d76fbb1f99d0ccbc99b",
+      "method": {
+        "code": "rk.workflow.extract",
+        "version": "1"
+      },
+      "specification": {
+        "id": "raw",
+        "operation": "extract",
+        "input": "source",
+        "specification": {
+          "id": "area",
+          "version": 1,
+          "sheet": "Schedule",
+          "rows": {
+            "start": 1,
+            "end": 1
+          },
+          "columns": [
+            {
+              "name": "area",
+              "column": "A"
+            }
+          ],
+          "expect": {
+            "cells": {},
+            "comparison": "exact"
+          },
+          "formula_values": "cached"
+        },
+        "unique_stop": false
+      },
+      "inputs": {
+        "source": "sha256:0b62a3eafc7107bee68b00f423a39f798d5379eecd7e0a5df54b60a0d1e4835c"
+      }
+    },
+    {
+      "fingerprint": "sha256:19bf978e23b32481fd8f9233b3ff50f15913a48308d95b90dfbb34691a9cd7d1",
+      "method": {
+        "code": "rk.excel.extract_table",
+        "version": "2"
+      },
+      "specification": {
+        "id": "area",
+        "version": 1,
+        "sheet": "Schedule",
+        "rows": {
+          "start": 1,
+          "end": 1
+        },
+        "columns": [
+          {
+            "name": "area",
+            "column": "A"
+          }
+        ],
+        "expect": {
+          "cells": {},
+          "comparison": "exact"
+        },
+        "formula_values": "cached",
+        "unique_stop": false
+      },
+      "inputs": {
+        "workbook": "sha256:0b62a3eafc7107bee68b00f423a39f798d5379eecd7e0a5df54b60a0d1e4835c"
+      }
+    },
+    {
+      "fingerprint": "sha256:3396288b52a016657b3c7c1e139edb723d6dfb24b09caffff4bfcd22cf3138f9",
+      "method": {
+        "code": "rk.workflow.numbers",
+        "version": "1"
+      },
+      "specification": {
+        "id": "numbers",
+        "operation": "numbers",
+        "input": "raw",
+        "specifications": {
+          "parsed_area": {
+            "column": "area",
+            "integer": false,
+            "nonnegative": false,
+            "missing_markers": []
+          }
+        }
+      },
+      "inputs": {
+        "raw": "sha256:1a5e340c37960bc0228c2ea3a328389a2a456fe2f5cfa761d07a9b2b48360667"
+      }
+    },
+    {
+      "fingerprint": "sha256:afe93d380a6f0779846ccc09d9b109b9594faf76525f8a372b3b0d8be8a49faf",
+      "method": {
+        "code": "rk.tabular.numbers",
+        "version": "2"
+      },
+      "specification": {
+        "name": "numbers",
+        "specifications": [
+          [
+            "parsed_area",
+            {
+              "column": "area",
+              "integer": false,
+              "nonnegative": false,
+              "missing_markers": []
+            }
+          ]
+        ]
+      },
+      "inputs": {
+        "evidence": "sha256:1a5e340c37960bc0228c2ea3a328389a2a456fe2f5cfa761d07a9b2b48360667",
+        "settings": "sha256:bdc0102d81a891c5595e62b60d9fab5662cd1e6abd811696da1a05c1f7c75179"
+      }
+    },
+    {
+      "fingerprint": "sha256:c26d38a45bc44184a5df35b61d534ad5229aeb8d5793841c1588837a9398eeef",
+      "method": {
+        "code": "rk.workflow.compose",
+        "version": "3"
+      },
+      "specification": {
+        "model": {
+          "taxonomy": {
+            "code": "example",
+            "name": "Source-to-solver example"
+          },
+          "classifications": [
+            {
+              "code": "asset",
+              "name": "Asset"
+            }
+          ],
+          "measures": [
+            {
+              "code": "area",
+              "name": "Area",
+              "units": "meter**2"
+            }
+          ],
+          "templates": [],
+          "objects": [
+            {
+              "id": "asset",
+              "kind": "entity",
+              "identity_kind": "asset",
+              "key": {
+                "value": "A"
+              },
+              "name": "Asset {key}",
+              "classification": "asset",
+              "measurements": [
+                {
+                  "key": "net",
+                  "measure": "area",
+                  "binding": {
+                    "evidence": "numbers",
+                    "column": "parsed_area"
+                  }
+                },
+                {
+                  "key": "gross",
+                  "measure": "area",
+                  "binding": {
+                    "value": null
+                  }
+                }
+              ]
+            }
+          ],
+          "relationships": [],
+          "memberships": []
+        },
+        "decisions": {
+          "decisions": []
+        }
+      },
+      "inputs": {
+        "raw": "sha256:1a5e340c37960bc0228c2ea3a328389a2a456fe2f5cfa761d07a9b2b48360667",
+        "numbers": "sha256:b3ac5a6ccd54f919d689ec47ee84af7b779761882845463edbfb6181bf2cb9e2",
+        "implementation": "sha256:463f85fe757280fc7a37931f52bdc8c336788f032d8406b19caac89ebb40c68b",
+        "configuration": "66b4d693-277a-55f2-81d9-6da0f0d2c987"
+      }
+    },
+    {
+      "fingerprint": "sha256:29913168728c6b321033ac041f54076aaf1758a003ad80c8e80fb3330f5ee06c",
+      "method": {
+        "code": "rk.workflow.checks",
+        "version": "3"
+      },
+      "specification": {
+        "comparisons": [],
+        "invariants": [
+          "fact_coverage"
+        ]
+      },
+      "inputs": {
+        "raw": "sha256:1a5e340c37960bc0228c2ea3a328389a2a456fe2f5cfa761d07a9b2b48360667",
+        "numbers": "sha256:b3ac5a6ccd54f919d689ec47ee84af7b779761882845463edbfb6181bf2cb9e2",
+        "model": "sha256:9de3744897bb2295273edda32ef8eda00046c011c4a6900f845a4ff7e17e8d8d",
+        "implementation": "sha256:463f85fe757280fc7a37931f52bdc8c336788f032d8406b19caac89ebb40c68b"
+      }
+    },
+    {
+      "fingerprint": "sha256:9d35b6ebaaa3c8f61abc120d524663614dce4da3112dc9b048a267a1766f512a",
+      "method": {
+        "code": "rk.workflow.run",
+        "version": "4"
+      },
+      "specification": {
+        "namespace": "urn:rk:workflow-scalar",
+        "steps": [
+          {
+            "id": "source",
+            "operation": "read",
+            "files": [
+              "source.xlsx"
+            ],
+            "source_key": "area",
+            "checksum": null
+          },
+          {
+            "id": "raw",
+            "operation": "extract",
+            "input": "source",
+            "specification": {
+              "id": "area",
+              "version": 1,
+              "sheet": "Schedule",
+              "rows": {
+                "start": 1,
+                "end": 1
+              },
+              "columns": [
+                {
+                  "name": "area",
+                  "column": "A"
+                }
+              ],
+              "expect": {
+                "cells": {},
+                "comparison": "exact"
+              },
+              "formula_values": "cached"
+            },
+            "unique_stop": false
+          },
+          {
+            "id": "numbers",
+            "operation": "numbers",
+            "input": "raw",
+            "specifications": {
+              "parsed_area": {
+                "column": "area",
+                "integer": false,
+                "nonnegative": false,
+                "missing_markers": []
+              }
+            }
+          }
+        ],
+        "model": {
+          "taxonomy": {
+            "code": "example",
+            "name": "Source-to-solver example"
+          },
+          "classifications": [
+            {
+              "code": "asset",
+              "name": "Asset"
+            }
+          ],
+          "measures": [
+            {
+              "code": "area",
+              "name": "Area",
+              "units": "meter**2"
+            }
+          ],
+          "templates": [],
+          "objects": [
+            {
+              "id": "asset",
+              "kind": "entity",
+              "identity_kind": "asset",
+              "key": {
+                "value": "A"
+              },
+              "name": "Asset {key}",
+              "classification": "asset",
+              "measurements": [
+                {
+                  "key": "net",
+                  "measure": "area",
+                  "binding": {
+                    "evidence": "numbers",
+                    "column": "parsed_area"
+                  }
+                },
+                {
+                  "key": "gross",
+                  "measure": "area",
+                  "binding": {
+                    "value": null
+                  }
+                }
+              ]
+            }
+          ],
+          "relationships": [],
+          "memberships": []
+        },
+        "decisions": {
+          "decisions": []
+        },
+        "checks": {
+          "comparisons": [],
+          "invariants": [
+            "fact_coverage"
+          ]
+        },
+        "hashes": {}
+      },
+      "inputs": {
+        "implementation": "sha256:463f85fe757280fc7a37931f52bdc8c336788f032d8406b19caac89ebb40c68b"
+      }
+    }
+  ]
+}

@@ -1,0 +1,682 @@
+{
+  "metadata": {
+    "id": "1c9dbb73-d5ab-4fa5-83fc-ad42c9bf7825",
+    "schema_version": "0.3.0",
+    "previous": "396b03f6-1ebb-59f4-b520-231242ffd645",
+    "name": "Residential project",
+    "description": "Structural and valuation conformance example with unresolved inputs; no solve has been run."
+  },
+  "definitions": {
+    "taxonomies": [
+      {
+        "id": "fa1d6a4d-d7b5-5c8c-a30e-a65a2c90517c",
+        "name": "Example",
+        "classifications": [
+          {
+            "id": "e80c90bf-6f6e-5009-94e6-431abf72128d",
+            "name": "Object",
+            "code": "object"
+          },
+          {
+            "id": "7b24f4bb-59a8-5b1f-a0f8-7064a9a37e84",
+            "name": "Apartment",
+            "parent": "e80c90bf-6f6e-5009-94e6-431abf72128d",
+            "code": "apartment"
+          },
+          {
+            "id": "e379d877-f81a-527c-a45a-bd4523bbb209",
+            "name": "Adjacent to",
+            "parent": "e80c90bf-6f6e-5009-94e6-431abf72128d",
+            "code": "adjacent"
+          }
+        ],
+        "code": "example"
+      }
+    ],
+    "measures": [
+      {
+        "id": "92f1db7c-ffa7-5a82-8283-a9a989490d28",
+        "name": "Area",
+        "units": "m^2",
+        "code": "area"
+      },
+      {
+        "id": "c78938f5-aa17-51e5-80a0-55fbb002cbbc",
+        "code": "homes",
+        "name": "Homes",
+        "units": "dwelling",
+        "definition": "Number of dwellings."
+      },
+      {
+        "id": "6e727e6e-faf0-5c6b-bdaf-3524270c5044",
+        "code": "annual_rent_per_home",
+        "name": "Annual rent per home",
+        "units": "AUD/dwelling/year",
+        "definition": "Annual rent per dwelling; multiplied by the dwelling count."
+      },
+      {
+        "id": "ec1bade4-648a-5997-8271-afe5697163a1",
+        "code": "annual_operating_cost",
+        "name": "Annual operating cost",
+        "units": "AUD/year"
+      },
+      {
+        "id": "fce8ccd1-99a8-51aa-b701-698550f7acd2",
+        "code": "NOI",
+        "name": "Net operating income",
+        "units": "AUD/year"
+      },
+      {
+        "id": "b948be16-6e79-5592-8bb7-ad56f547053a",
+        "code": "capital_value",
+        "name": "Capital value",
+        "units": "AUD"
+      },
+      {
+        "id": "bf21ffb8-5ecc-5e45-974f-8f4e6f5c2cb5",
+        "code": "capitalization_rate",
+        "name": "Capitalization rate",
+        "units": "1/year",
+        "definition": "Annual income divided by capital value; 0.05/year is the annual five percent convention."
+      }
+    ],
+    "functions": [
+      {
+        "id": "f3827f2b-2f45-5032-b067-89e8ff73f0fa",
+        "code": "collection.sum",
+        "name": "Sum measurements",
+        "version": "1",
+        "parameters": [
+          {
+            "name": "items",
+            "domain": {
+              "kind": "collection",
+              "item_domain": {
+                "kind": "measurement"
+              }
+            },
+            "kind": "positional_or_named",
+            "required": true
+          }
+        ],
+        "result": {
+          "kind": "measurement"
+        },
+        "semantics": "Sum every element, retaining multiplicity. Members must have compatible units and measurement meaning. Unresolved members remain symbolic; none are dropped. An empty collection is rejected because this signature does not establish result units without a member.",
+        "unit_rule": "The result has the common measurement units of the members.",
+        "empty_collection": "error"
+      }
+    ]
+  },
+  "system": {
+    "entities": [
+      {
+        "id": "e85e5cbc-c696-5af2-8bb5-5e2038f7e533",
+        "code": "A",
+        "name": "Apartment A",
+        "classification": "7b24f4bb-59a8-5b1f-a0f8-7064a9a37e84",
+        "characteristics": {
+          "labels": [
+            {
+              "id": "7a0b1867-a5c9-5fcb-8cb3-bacf6cfb1cf4",
+              "classifications": [
+                "7b24f4bb-59a8-5b1f-a0f8-7064a9a37e84"
+              ],
+              "key": "use"
+            }
+          ],
+          "values": [
+            {
+              "id": "d6df3bce-3cb6-5aa6-b1ea-dd77c45f4bcc",
+              "kind": "measurement",
+              "measure": "92f1db7c-ffa7-5a82-8283-a9a989490d28",
+              "key": "floor_area"
+            }
+          ]
+        }
+      },
+      {
+        "id": "047cdc45-3b0a-5591-a576-edb2ca88a086",
+        "code": "B",
+        "name": "Apartment B",
+        "classification": "7b24f4bb-59a8-5b1f-a0f8-7064a9a37e84",
+        "characteristics": {
+          "values": [
+            {
+              "id": "9d86011c-1658-5c10-87c1-94d281b74e96",
+              "kind": "measurement",
+              "measure": "92f1db7c-ffa7-5a82-8283-a9a989490d28",
+              "key": "floor_area",
+              "quantity": {
+                "magnitude": 85.5,
+                "units": "m^2"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "264d5b9f-0c97-58a6-abee-00ccdf782a19",
+        "code": "VALUATION",
+        "name": "Residential valuation",
+        "characteristics": {
+          "values": [
+            {
+              "id": "194afc26-3e2e-507b-ad0c-a73a4b0b2ccd",
+              "key": "homes",
+              "kind": "measurement",
+              "measure": "c78938f5-aa17-51e5-80a0-55fbb002cbbc",
+              "quantity": {
+                "magnitude": 20.0,
+                "units": "dwelling"
+              }
+            },
+            {
+              "id": "e3fb1434-5371-5bcb-b0b8-e3af2bf65022",
+              "key": "annual_rent_per_home",
+              "kind": "measurement",
+              "measure": "6e727e6e-faf0-5c6b-bdaf-3524270c5044",
+              "quantity": {
+                "magnitude": 30000.0,
+                "units": "AUD/dwelling/year"
+              }
+            },
+            {
+              "id": "cbe37d0a-79ce-5d1b-b0cb-8d2a42acc991",
+              "key": "annual_operating_cost",
+              "kind": "measurement",
+              "measure": "ec1bade4-648a-5997-8271-afe5697163a1",
+              "quantity": {
+                "magnitude": 50000.0,
+                "units": "AUD/year"
+              }
+            },
+            {
+              "id": "a947d40b-d9b0-54cb-a2a4-f8f598405ac2",
+              "key": "capital_value",
+              "kind": "measurement",
+              "measure": "b948be16-6e79-5592-8bb7-ad56f547053a",
+              "quantity": {
+                "magnitude": 11000000.0,
+                "units": "AUD"
+              }
+            },
+            {
+              "id": "0ceeb0d5-91b7-53b7-b823-2234e2262a4f",
+              "key": "capitalization_rate",
+              "kind": "measurement",
+              "measure": "bf21ffb8-5ecc-5e45-974f-8f4e6f5c2cb5",
+              "quantity": {
+                "magnitude": 0.05,
+                "units": "1/year"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "relationships": [
+      {
+        "id": "2ca16dca-8dd0-5414-9b90-4a84e43a179a",
+        "classification": "e379d877-f81a-527c-a45a-bd4523bbb209",
+        "characteristics": {
+          "labels": [
+            {
+              "id": "bd3d93cc-09f7-59d6-92da-be619c4fa11c",
+              "classifications": [
+                "e379d877-f81a-527c-a45a-bd4523bbb209"
+              ],
+              "key": "connection"
+            }
+          ]
+        },
+        "source": "e85e5cbc-c696-5af2-8bb5-5e2038f7e533",
+        "target": "047cdc45-3b0a-5591-a576-edb2ca88a086"
+      }
+    ],
+    "assemblies": [
+      {
+        "id": "1536e7d7-80f9-5597-8bcb-9cda9db5eb63",
+        "code": "FLOOR",
+        "name": "Floor",
+        "entities": [
+          "e85e5cbc-c696-5af2-8bb5-5e2038f7e533",
+          "047cdc45-3b0a-5591-a576-edb2ca88a086"
+        ],
+        "relationships": [
+          "2ca16dca-8dd0-5414-9b90-4a84e43a179a"
+        ]
+      },
+      {
+        "id": "02fa46d6-c89f-5cad-8fb0-ae506864b4cb",
+        "code": "REVIEW",
+        "name": "Review set",
+        "entities": [
+          "047cdc45-3b0a-5591-a576-edb2ca88a086"
+        ],
+        "relationships": []
+      }
+    ],
+    "formulations": [
+      {
+        "id": "960374d3-385f-5abf-a046-0010d81a60dd",
+        "code": "valuation",
+        "name": "Residential valuation",
+        "description": "Shared valuation Values with income and capitalization equations in child Formulations.",
+        "bindings": [
+          {
+            "name": "homes",
+            "value": "194afc26-3e2e-507b-ad0c-a73a4b0b2ccd"
+          },
+          {
+            "name": "annual_rent_per_home",
+            "value": "e3fb1434-5371-5bcb-b0b8-e3af2bf65022"
+          },
+          {
+            "name": "annual_operating_cost",
+            "value": "cbe37d0a-79ce-5d1b-b0cb-8d2a42acc991"
+          },
+          {
+            "name": "capital_value",
+            "value": "a947d40b-d9b0-54cb-a2a4-f8f598405ac2"
+          },
+          {
+            "name": "capitalization_rate",
+            "value": "0ceeb0d5-91b7-53b7-b823-2234e2262a4f"
+          }
+        ],
+        "values": [
+          {
+            "id": "9324f928-cfc8-50bb-ba99-fe8c02a6dbd2",
+            "key": "NOI",
+            "kind": "measurement",
+            "measure": "fce8ccd1-99a8-51aa-b701-698550f7acd2",
+            "quantity": {
+              "magnitude": 550000.0,
+              "units": "AUD/year"
+            }
+          }
+        ],
+        "formulations": [
+          {
+            "id": "0a0a7ab8-c9f1-53b9-9bde-89087e641712",
+            "code": "income",
+            "name": "Net operating income",
+            "bindings": [
+              {
+                "name": "income",
+                "value": "9324f928-cfc8-50bb-ba99-fe8c02a6dbd2"
+              }
+            ],
+            "expressions": [
+              {
+                "id": "8c9b169a-c9ee-51f6-ab09-ee9fb24f0dda",
+                "kind": "binary",
+                "operator": "equal",
+                "operands": [
+                  {
+                    "id": "1fb80684-6104-5434-98f6-1c85916326f0",
+                    "kind": "reference",
+                    "target": "9324f928-cfc8-50bb-ba99-fe8c02a6dbd2"
+                  },
+                  {
+                    "id": "d6969b54-363e-56d1-9178-8f902f77b99b",
+                    "kind": "binary",
+                    "operator": "subtract",
+                    "operands": [
+                      {
+                        "id": "794b5340-d253-5d54-9828-2d80b8741a4b",
+                        "kind": "binary",
+                        "operator": "multiply",
+                        "operands": [
+                          {
+                            "id": "170ff22d-dd17-5bc2-ab54-651ce5b66c80",
+                            "kind": "reference",
+                            "target": "194afc26-3e2e-507b-ad0c-a73a4b0b2ccd"
+                          },
+                          {
+                            "id": "4e1bb38a-8a38-5b8e-af81-739fcf45ecfb",
+                            "kind": "reference",
+                            "target": "e3fb1434-5371-5bcb-b0b8-e3af2bf65022"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "b29af982-81b4-5697-92ca-1faa0ee2a4d8",
+                        "kind": "reference",
+                        "target": "cbe37d0a-79ce-5d1b-b0cb-8d2a42acc991"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "constraints": [
+              {
+                "id": "d526182d-2216-5862-88b9-b5bdd5e804a5",
+                "code": "equation",
+                "name": "Net operating income",
+                "description": "Net operating income equals annual rent less annual operating cost.",
+                "predicate": "8c9b169a-c9ee-51f6-ab09-ee9fb24f0dda"
+              }
+            ]
+          },
+          {
+            "id": "f1c4f798-cc6b-58a5-a776-43bec536cc39",
+            "code": "capitalization",
+            "name": "Capital valuation",
+            "bindings": [
+              {
+                "name": "income",
+                "value": "9324f928-cfc8-50bb-ba99-fe8c02a6dbd2"
+              }
+            ],
+            "expressions": [
+              {
+                "id": "6e20a24c-d2d2-5bbf-bf91-5f81884641ee",
+                "kind": "binary",
+                "operator": "equal",
+                "operands": [
+                  {
+                    "id": "d4479630-554a-5c78-9dca-9636ff17a287",
+                    "kind": "binary",
+                    "operator": "multiply",
+                    "operands": [
+                      {
+                        "id": "65f40df5-96f0-59b3-8ce4-122dea47f0ca",
+                        "kind": "reference",
+                        "target": "a947d40b-d9b0-54cb-a2a4-f8f598405ac2"
+                      },
+                      {
+                        "id": "19b0ad63-2b65-529f-8970-dc554dd9f9b3",
+                        "kind": "reference",
+                        "target": "0ceeb0d5-91b7-53b7-b823-2234e2262a4f"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "251fe406-e76e-5f27-b858-3a27df290f46",
+                    "kind": "reference",
+                    "target": "9324f928-cfc8-50bb-ba99-fe8c02a6dbd2"
+                  }
+                ]
+              }
+            ],
+            "constraints": [
+              {
+                "id": "02ff78c0-ec20-535d-b997-ac16d64fd944",
+                "code": "equation",
+                "name": "Capital valuation",
+                "description": "Capital value multiplied by the annual capitalization rate equals net operating income.",
+                "predicate": "6e20a24c-d2d2-5bbf-bf91-5f81884641ee"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "f3e01d59-4e43-58e8-b80d-054c3e242a16",
+        "code": "area",
+        "name": "Total floor area",
+        "expressions": [
+          {
+            "id": "036482a3-534e-5d02-a526-988464b55b99",
+            "kind": "call",
+            "call": {
+              "function": "f3827f2b-2f45-5032-b067-89e8ff73f0fa",
+              "arguments": [
+                {
+                  "id": "7f067f2e-ec9a-503e-9982-d967ad820dcc",
+                  "kind": "query",
+                  "query": {
+                    "starting_at": "1536e7d7-80f9-5597-8bcb-9cda9db5eb63",
+                    "steps": [
+                      {
+                        "kind": "membership",
+                        "depth": "direct"
+                      }
+                    ],
+                    "projection": {
+                      "kind": "value",
+                      "key": "floor_area",
+                      "cardinality": "one",
+                      "missing": "error"
+                    },
+                    "duplicates": "distinct"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "provenance": {
+    "sources": [
+      {
+        "id": "3f518a2a-242e-531f-850e-1539e051235a",
+        "name": "structural-evidence.txt",
+        "checksum": "c974fc62779c74d05ee40b7c9ea45228ca1d09608c5bb7a0ad7fff9307cdb370"
+      }
+    ],
+    "claims": [
+      {
+        "id": "017b5c03-bbbe-503e-a5f0-36b6c8fc5163",
+        "kind": "sourced",
+        "sources": [
+          {
+            "source": "3f518a2a-242e-531f-850e-1539e051235a",
+            "address": {
+              "line": "1"
+            }
+          }
+        ],
+        "content": {
+          "measure": "92f1db7c-ffa7-5a82-8283-a9a989490d28",
+          "quantity": {
+            "magnitude": 80.5,
+            "units": "m^2"
+          }
+        }
+      },
+      {
+        "id": "42c83e7b-df05-5ac2-81de-6cdf1c8e95f6",
+        "kind": "asserted",
+        "method": {
+          "code": "area.adjustment",
+          "version": "1"
+        },
+        "content": {
+          "measure": "92f1db7c-ffa7-5a82-8283-a9a989490d28",
+          "quantity": {
+            "magnitude": 5,
+            "units": "m^2"
+          }
+        }
+      },
+      {
+        "id": "542eae18-ab89-52af-a9f7-f484eb73e2c1",
+        "kind": "derived",
+        "sources": [
+          "017b5c03-bbbe-503e-a5f0-36b6c8fc5163",
+          "42c83e7b-df05-5ac2-81de-6cdf1c8e95f6"
+        ],
+        "method": {
+          "code": "area.add",
+          "version": "1"
+        },
+        "content": {
+          "measure": "92f1db7c-ffa7-5a82-8283-a9a989490d28",
+          "quantity": {
+            "magnitude": 85.5,
+            "units": "m^2"
+          }
+        }
+      },
+      {
+        "id": "f72d11ad-73d5-53c4-8d48-3b7c0c52656f",
+        "kind": "sourced",
+        "sources": [
+          {
+            "source": "3f518a2a-242e-531f-850e-1539e051235a",
+            "address": {
+              "line": "2"
+            }
+          }
+        ],
+        "content": {
+          "classifications": [
+            "7b24f4bb-59a8-5b1f-a0f8-7064a9a37e84"
+          ]
+        }
+      },
+      {
+        "id": "6e3f8b2d-72f4-4924-8da8-84f2d66d0dbf",
+        "kind": "asserted",
+        "content": {
+          "measure": "c78938f5-aa17-51e5-80a0-55fbb002cbbc",
+          "quantity": {
+            "magnitude": 20.0,
+            "units": "dwelling"
+          }
+        },
+        "method": {
+          "code": "rangekeeper.scalar.assignment",
+          "version": "1",
+          "description": "Run 186d0643-869e-4bf0-8354-3c284ccd4889; Specification 6415f03f-f1a4-5ff2-b4f8-b4faaafd027e; independently checked scalar publication."
+        }
+      },
+      {
+        "id": "b3deafb1-4adb-4381-abba-17f54c1c4749",
+        "kind": "asserted",
+        "content": {
+          "measure": "ec1bade4-648a-5997-8271-afe5697163a1",
+          "quantity": {
+            "magnitude": 50000.0,
+            "units": "AUD/year"
+          }
+        },
+        "method": {
+          "code": "rangekeeper.scalar.assignment",
+          "version": "1",
+          "description": "Run 186d0643-869e-4bf0-8354-3c284ccd4889; Specification 6415f03f-f1a4-5ff2-b4f8-b4faaafd027e; independently checked scalar publication."
+        }
+      },
+      {
+        "id": "5a1d3ca5-f59e-4c1a-bb71-c07a6d3d8c0b",
+        "kind": "asserted",
+        "content": {
+          "measure": "bf21ffb8-5ecc-5e45-974f-8f4e6f5c2cb5",
+          "quantity": {
+            "magnitude": 0.05,
+            "units": "1/year"
+          }
+        },
+        "method": {
+          "code": "rangekeeper.scalar.assignment",
+          "version": "1",
+          "description": "Run 186d0643-869e-4bf0-8354-3c284ccd4889; Specification 6415f03f-f1a4-5ff2-b4f8-b4faaafd027e; independently checked scalar publication."
+        }
+      },
+      {
+        "id": "c135baca-e81d-43e0-b06f-c805684dabde",
+        "kind": "asserted",
+        "content": {
+          "measure": "6e727e6e-faf0-5c6b-bdaf-3524270c5044",
+          "quantity": {
+            "magnitude": 30000.0,
+            "units": "AUD/dwelling/year"
+          }
+        },
+        "method": {
+          "code": "rangekeeper.scalar.assignment",
+          "version": "1",
+          "description": "Run 186d0643-869e-4bf0-8354-3c284ccd4889; Specification 6415f03f-f1a4-5ff2-b4f8-b4faaafd027e; independently checked scalar publication."
+        }
+      },
+      {
+        "id": "e2f9e185-1e0c-43f8-b28c-a8e92979eac1",
+        "kind": "asserted",
+        "content": {
+          "measure": "fce8ccd1-99a8-51aa-b701-698550f7acd2",
+          "quantity": {
+            "magnitude": 550000.0,
+            "units": "AUD/year"
+          }
+        },
+        "method": {
+          "code": "rangekeeper.scalar.solution",
+          "version": "1",
+          "description": "Run 186d0643-869e-4bf0-8354-3c284ccd4889; Specification 6415f03f-f1a4-5ff2-b4f8-b4faaafd027e; independently checked scalar publication."
+        }
+      },
+      {
+        "id": "906641d3-cb94-4dee-bfac-3289ec4ccb66",
+        "kind": "asserted",
+        "content": {
+          "measure": "b948be16-6e79-5592-8bb7-ad56f547053a",
+          "quantity": {
+            "magnitude": 11000000.0,
+            "units": "AUD"
+          }
+        },
+        "method": {
+          "code": "rangekeeper.scalar.solution",
+          "version": "1",
+          "description": "Run 186d0643-869e-4bf0-8354-3c284ccd4889; Specification 6415f03f-f1a4-5ff2-b4f8-b4faaafd027e; independently checked scalar publication."
+        }
+      }
+    ],
+    "facts": [
+      {
+        "target": "9d86011c-1658-5c10-87c1-94d281b74e96",
+        "claims": [
+          "542eae18-ab89-52af-a9f7-f484eb73e2c1"
+        ]
+      },
+      {
+        "target": "7a0b1867-a5c9-5fcb-8cb3-bacf6cfb1cf4",
+        "claims": [
+          "f72d11ad-73d5-53c4-8d48-3b7c0c52656f"
+        ]
+      },
+      {
+        "target": "194afc26-3e2e-507b-ad0c-a73a4b0b2ccd",
+        "claims": [
+          "6e3f8b2d-72f4-4924-8da8-84f2d66d0dbf"
+        ]
+      },
+      {
+        "target": "cbe37d0a-79ce-5d1b-b0cb-8d2a42acc991",
+        "claims": [
+          "b3deafb1-4adb-4381-abba-17f54c1c4749"
+        ]
+      },
+      {
+        "target": "0ceeb0d5-91b7-53b7-b823-2234e2262a4f",
+        "claims": [
+          "5a1d3ca5-f59e-4c1a-bb71-c07a6d3d8c0b"
+        ]
+      },
+      {
+        "target": "e3fb1434-5371-5bcb-b0b8-e3af2bf65022",
+        "claims": [
+          "c135baca-e81d-43e0-b06f-c805684dabde"
+        ]
+      },
+      {
+        "target": "9324f928-cfc8-50bb-ba99-fe8c02a6dbd2",
+        "claims": [
+          "e2f9e185-1e0c-43f8-b28c-a8e92979eac1"
+        ]
+      },
+      {
+        "target": "a947d40b-d9b0-54cb-a2a4-f8f598405ac2",
+        "claims": [
+          "906641d3-cb94-4dee-bfac-3289ec4ccb66"
+        ]
+      }
+    ]
+  }
+}
