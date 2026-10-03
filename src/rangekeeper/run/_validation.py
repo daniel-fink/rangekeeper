@@ -186,12 +186,22 @@ def validate_local(run, schema_version):
 
 
 def validate_run(
-    root, runs, specifications, models, run_version, spec_version, model_version
+    root,
+    runs,
+    specifications,
+    models,
+    run_version,
+    spec_version,
+    model_version,
+    *,
+    units_compatible=None,
+    quantities_equal=None,
 ):
     """Validate the tree rooted at root; preserve all supplied documents.
 
-    Returns the reachable Run mapping. Residual and assignment checks use exact
-    canonical unit spellings, not dimensional inference or conversion. Invalid
+    Returns the reachable Run mapping. Residual units use exact canonical spellings;
+    optional unit-compatibility/equality callbacks support converted assignments.
+    The default raw conformance path retains exact spelling/content checks. Invalid
     Specification attempts may be recorded as failed/skipped/cancelled with
     not_assessed and an explanatory diagnostic. No success is inferred from logs.
     """
@@ -297,7 +307,15 @@ def validate_run(
                 )
             for assignment in effective.get("assignments") or []:
                 require(
-                    values[assignment["value"]]["quantity"] == assignment["quantity"],
+                    (
+                        quantities_equal(
+                            values[assignment["value"]]["quantity"],
+                            assignment["quantity"],
+                        )
+                        if quantities_equal is not None
+                        else values[assignment["value"]]["quantity"]
+                        == assignment["quantity"]
+                    ),
                     "output violates assignment",
                 )
             # Non-solve recorded values must not silently change during scalar publication.
@@ -365,9 +383,14 @@ def validate_run(
                         for sub in child.get("spawns") or []:
                             yield from inputs(catalogue[sub])
                     else:
-                        view = compose_specification(
-                            child_spec, specifications, spec_version
-                        ).effective
+                        try:
+                            view = compose_specification(
+                                child_spec, specifications, spec_version
+                            ).effective
+                        except ContractError:
+                            # visit() already required failed/not_assessed evidence
+                            # for an invalid leaf. It supplies no valid Model assertion.
+                            return
                         if view.get("model") is not None:
                             yield view["model"]
 
@@ -394,6 +417,7 @@ def validate_run(
                     spec_version,
                     model_version,
                     specifications=specifications,
+                    units_compatible=units_compatible,
                 )
             except ContractError:
                 require(

@@ -7,18 +7,18 @@ from uuid import NAMESPACE_URL, uuid5
 
 import pytest
 
-from rangekeeper.graph import operation
-from rangekeeper.graph.adapter import excel
-from rangekeeper.graph.adapter.errors import AdapterEncodingError
-from rangekeeper.graph.provenance import Claim, Location, Method, Source, locations
-from rangekeeper.graph.workflow import source_checks
-from rangekeeper.graph.workflow.checking import evaluate, validate_checks
-from rangekeeper.graph.workflow.composition import compose
-from rangekeeper.graph.workflow.implementation import manifests, semantic_digest
-from rangekeeper.graph.workflow.ingestion import Issue, IssueSeverity, tabular
-from rangekeeper.graph.workflow.ingestion.predicates import Predicate, select_where
-from rangekeeper.graph.workflow.ingestion.transform import TransformSpec, transform
-from rangekeeper.graph.workflow.specification import StepSpec
+from rangekeeper import operation
+from rangekeeper.adapters import excel
+from rangekeeper.adapters.errors import AdapterEncodingError
+from rangekeeper.evidence import Claim, Location, Method, Source, locations
+from rangekeeper.workflow import source_checks
+from rangekeeper.workflow.checking import evaluate, validate_checks
+from rangekeeper.workflow.composition import compose
+from rangekeeper.workflow.implementation import manifests, semantic_digest
+from rangekeeper.workflow.ingestion import Issue, IssueSeverity, tabular
+from rangekeeper.workflow.ingestion.predicates import Predicate, select_where
+from rangekeeper.workflow.ingestion.transform import TransformSpec, transform
+from rangekeeper.workflow.specification import StepSpec
 
 METHOD = Method(code="synthetic", version="1")
 UID = uuid5(NAMESPACE_URL, "boundary-row")
@@ -141,8 +141,8 @@ def test_source_check_required_fields_fail_at_validation(op):
         "table_count",
         "table_keys",
         "table_total",
-        "graph_total",
-        "graph_measurement",
+        "model_total",
+        "model_value",
         "membership_keys",
     ],
 )
@@ -218,13 +218,15 @@ def native_book(extra=None):
 
 
 def extraction():
-    return excel.ExtractionSpec.from_mapping({
-        "id": "test",
-        "version": 1,
-        "sheet": "Data",
-        "rows": {"start": 1, "stop_before": {"column": "A", "equals": "END"}},
-        "columns": [{"name": "value", "column": "A"}],
-    })
+    return excel.ExtractionSpec.from_mapping(
+        {
+            "id": "test",
+            "version": 1,
+            "sheet": "Data",
+            "rows": {"start": 1, "stop_before": {"column": "A", "equals": "END"}},
+            "columns": [{"name": "value", "column": "A"}],
+        }
+    )
 
 
 @pytest.mark.parametrize(
@@ -261,7 +263,7 @@ def test_uniqueness_covers_column_before_extraction_start():
     "content", ["a: &a 1\nb: *a", "a: 1\na: 2", "a: !!python/name:os.system ''"]
 )
 def test_both_yaml_entrypoints_reject_unsafe_or_ambiguous_content(content):
-    from rangekeeper.graph._yaml import decode
+    from rangekeeper._yaml import decode
 
     with pytest.raises(ValueError):
         decode(content)
@@ -274,9 +276,9 @@ def test_semantic_identity_ignores_prose_but_tracks_executable_changes(tmp_path)
         '"""two"""\nx = 1 # b'
     )
     assert semantic_digest("x = 1") != semantic_digest("x = 2")
-    (tmp_path / "graph/workflow").mkdir(parents=True)
-    computation = tmp_path / "graph/workflow/composition.py"
-    renderer = tmp_path / "graph/workflow/review.py"
+    (tmp_path / "workflow").mkdir(parents=True)
+    computation = tmp_path / "workflow/composition.py"
+    renderer = tmp_path / "workflow/review.py"
     computation.write_text('"""first"""\nx = 1')
     renderer.write_text("x = 1")
     audit, semantic, identity = manifests(tmp_path)
@@ -295,7 +297,7 @@ def test_excel_import_does_not_load_workflow_runner():
         [
             sys.executable,
             "-c",
-            "import sys; from rangekeeper.graph.adapter import excel; assert 'rangekeeper.graph.workflow.runtime' not in sys.modules; assert 'rangekeeper.graph.workflow.specification' not in sys.modules",
+            "import sys; from rangekeeper.adapters import excel; assert 'rangekeeper.workflow.runtime' not in sys.modules; assert 'rangekeeper.workflow.specification' not in sys.modules",
         ],
         check=True,
     )
@@ -325,7 +327,7 @@ def test_direct_composition_and_checking_without_workflow_spec():
     graph, findings, keys = compose(
         model, {}, settings, {}, invocation, namespace="urn:factory"
     )
-    assert len(graph.entities) == 1 and findings == ()
+    assert len(graph.system.entities) == 1 and findings == ()
     checks = evaluate(
         {
             "comparisons": [
@@ -333,7 +335,7 @@ def test_direct_composition_and_checking_without_workflow_spec():
                     "id": "count",
                     "group": "inventory",
                     "scope": "all",
-                    "left": {"kind": "graph_count"},
+                    "left": {"kind": "model_count"},
                     "right": {"kind": "value", "value": 1},
                 }
             ]
@@ -343,7 +345,7 @@ def test_direct_composition_and_checking_without_workflow_spec():
         {},
     )
     assert checks[0].status == "agree"
-    assert all(f.target is graph.entity(f.target.id) for f in graph.provenance.facts)
+    assert all(graph.entity(f.target).id == f.target for f in graph.provenance.facts)
 
 
 def test_generic_locations_preserve_shared_ancestors():

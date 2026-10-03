@@ -16,6 +16,16 @@ import rangekeeper.graph.definitions as definitions_module
 from rangekeeper.measure import AggregationRule, Index, Measure, QuantityKind
 
 
+def test_new_and_legacy_views_have_explicit_domain_boundaries():
+    from rangekeeper import Model
+    from rangekeeper.model import Metadata
+    model = Model.create(metadata=Metadata(id=uuid4(), schema_version="0.3.0"))
+    with pytest.raises(TypeError):
+        rk.graph.View(rk.graph.Graph())
+    with pytest.raises(TypeError):
+        rk.graph.legacy.View(model)
+
+
 @pytest.fixture
 def model():
     space = rk.graph.Classification(code="space", name="Space")
@@ -155,17 +165,17 @@ def test_retired_mutable_and_embedded_provenance_apis_are_absent():
     assert hasattr(rk.graph.revision, "Delta")
     assert hasattr(rk.graph.revision, "Modification")
     assert not hasattr(rk.graph.Characteristics(), "measures")
-    assert not hasattr(rk.graph.View(rk.graph.Graph()), "expand")
-    assert not hasattr(rk.graph.View, "aggregate_measurement")
-    assert not hasattr(rk.graph.View, "aggregate_feature")
+    assert not hasattr(rk.graph.legacy.View(rk.graph.Graph()), "expand")
+    assert not hasattr(rk.graph.legacy.View, "aggregate_measurement")
+    assert not hasattr(rk.graph.legacy.View, "aggregate_feature")
     assert not hasattr(rk.graph, "Result")
     assert not hasattr(rk.graph, "FeatureAggregationRule")
-    assert not hasattr(rk.graph, "Aggregation")
+    assert hasattr(rk.graph, "Aggregation")  # Model-backed result; old result is in graph.legacy
     assert not hasattr(rk.graph, "reduce")
-    assert hasattr(rk.graph.reduction, "Aggregation")
+    assert hasattr(rk.graph.legacy.reduction, "Aggregation")
     assert not hasattr(rk.graph.Graph, "fact_for")
     assert not hasattr(rk.graph.Graph, "to_networkx")
-    assert not hasattr(rk.graph.View, "to_networkx")
+    assert not hasattr(rk.graph.legacy.View, "to_networkx")
     assert not hasattr(rk.graph.Taxonomy, "to_networkx")
     for name in (
         "with_entities",
@@ -178,11 +188,11 @@ def test_retired_mutable_and_embedded_provenance_apis_are_absent():
     assert not hasattr(rk.graph, "AggregationResult")
     assert not hasattr(rk.graph, "measurement")
     assert not hasattr(rk.graph, "feature")
-    assert not hasattr(rk.graph.reduction.Aggregation, "by_measure")
-    assert not hasattr(rk.graph.reduction.Aggregation, "by_feature")
+    assert not hasattr(rk.graph.legacy.reduction.Aggregation, "by_measure")
+    assert not hasattr(rk.graph.legacy.reduction.Aggregation, "by_feature")
     assert not hasattr(definitions_module, "_DefinitionsIndex")
     assert not hasattr(rk.graph, "Catalog")
-    assert isinstance(rk.graph.reduction, ModuleType)
+    assert isinstance(rk.graph.legacy.reduction, ModuleType)
 
 
 def test_graph_namespace_exports_are_exact_and_adapters_load_lazily():
@@ -210,6 +220,18 @@ def test_graph_namespace_exports_are_exact_and_adapters_load_lazily():
         "Taxonomy",
         "UnknownDefinitionError",
         "View",
+        "Hierarchy",
+        "Reduction",
+        "Aggregation",
+        "Coverage",
+        "SelectionError",
+        "HierarchyError",
+        "AggregationError",
+        "projection",
+        "membership",
+        "selection",
+        "reducers",
+        "legacy",
         "adapter",
         "provenance",
         "reduction",
@@ -233,7 +255,7 @@ def test_graph_namespace_exports_are_exact_and_adapters_load_lazily():
         "RelationshipState",
         "Source",
     ]
-    assert rk.graph.reduction.__all__ == [
+    assert rk.graph.legacy.reduction.__all__ == [
         "Aggregation",
         "Coverage",
         "Reduction",
@@ -263,19 +285,19 @@ assert 'pyvis' not in sys.modules
 
 def test_reduction_factories_validate_requests():
     assert isinstance(
-        rk.graph.reduction.by_feature("value", reducer=rk.graph.reduction.collect),
-        rk.graph.reduction.Reduction,
+        rk.graph.legacy.reduction.by_feature("value", reducer=rk.graph.legacy.reduction.collect),
+        rk.graph.legacy.reduction.Reduction,
     )
     with pytest.raises(TypeError, match="measure code or Measure"):
-        rk.graph.reduction.by_measure(42)
+        rk.graph.legacy.reduction.by_measure(42)
     with pytest.raises(ValueError, match="measure code must not be empty"):
-        rk.graph.reduction.by_measure(" ")
+        rk.graph.legacy.reduction.by_measure(" ")
     with pytest.raises(TypeError, match="feature name must be a string"):
-        rk.graph.reduction.by_feature(42, reducer=any)
+        rk.graph.legacy.reduction.by_feature(42, reducer=any)
     with pytest.raises(ValueError, match="feature name must not be empty"):
-        rk.graph.reduction.by_feature(" ", reducer=any)
+        rk.graph.legacy.reduction.by_feature(" ", reducer=any)
     with pytest.raises(TypeError, match="feature reducer must be callable"):
-        rk.graph.reduction.by_feature("value", reducer=None)
+        rk.graph.legacy.reduction.by_feature("value", reducer=None)
     with pytest.raises(TypeError, match="must be a Reduction"):
         rk.graph.Graph().view().aggregate(object())
 
@@ -284,9 +306,9 @@ def test_aggregation_requires_exact_view_entity_keys():
     entity = rk.graph.Entity()
     view = rk.graph.Graph(entities=(entity,)).view()
     with pytest.raises(ValueError, match="match the View entities"):
-        rk.graph.reduction.Aggregation(view=view, _values={})
+        rk.graph.legacy.reduction.Aggregation(view=view, _values={})
 
-    aggregation = rk.graph.reduction.Aggregation(view=view, _values={entity.id: 0})
+    aggregation = rk.graph.legacy.reduction.Aggregation(view=view, _values={entity.id: 0})
     assert aggregation.root_value == 0
     with pytest.raises(TypeError):
         aggregation._values[entity.id] = 1
@@ -1545,7 +1567,7 @@ def test_view_traversal_and_pure_aggregation(model):
     view = graph.view().filter(relationship_classification=model["contains"])
     assert view.entities == (root, leaf)
     results = view.aggregate(
-        rk.graph.reduction.by_feature("requires_review", reducer=any)
+        rk.graph.legacy.reduction.by_feature("requires_review", reducer=any)
     )
     assert results[root] is True
     assert results[leaf] is True
@@ -1553,7 +1575,7 @@ def test_view_traversal_and_pure_aggregation(model):
     assert results.root_value is True
     assert results.items() == ((root, True), (leaf, True))
     unanimous = view.aggregate(
-        rk.graph.reduction.by_feature("requires_review", reducer=all)
+        rk.graph.legacy.reduction.by_feature("requires_review", reducer=all)
     )
     assert unanimous[root] is False
     assert unanimous[leaf] is True
@@ -1592,11 +1614,11 @@ def test_feature_aggregation_collects_raw_subtree_values(model):
     ).view()
 
     collected = view.aggregate(
-        rk.graph.reduction.by_feature(
-            "planning_zone", reducer=rk.graph.reduction.collect
+        rk.graph.legacy.reduction.by_feature(
+            "planning_zone", reducer=rk.graph.legacy.reduction.collect
         )
     )
-    assert isinstance(collected, rk.graph.reduction.Aggregation)
+    assert isinstance(collected, rk.graph.legacy.reduction.Aggregation)
     assert collected.root_value == ("commercial", "commercial", "residential")
     assert collected[first] == ("commercial",)
     assert collected.items() == (
@@ -1606,19 +1628,19 @@ def test_feature_aggregation_collects_raw_subtree_values(model):
     )
 
     unique = view.aggregate(
-        rk.graph.reduction.by_feature(
-            "planning_zone", reducer=rk.graph.reduction.distinct
+        rk.graph.legacy.reduction.by_feature(
+            "planning_zone", reducer=rk.graph.legacy.reduction.distinct
         )
     )
     assert unique.root_value == ("commercial", "residential")
 
     most_common = view.aggregate(
-        rk.graph.reduction.by_feature("planning_zone", reducer=rk.graph.reduction.mode)
+        rk.graph.legacy.reduction.by_feature("planning_zone", reducer=rk.graph.legacy.reduction.mode)
     )
     assert most_common.root_value == "commercial"
 
     joined = view.aggregate(
-        rk.graph.reduction.by_feature(
+        rk.graph.legacy.reduction.by_feature(
             "planning_zone",
             reducer=lambda values: " / ".join(values),
         )
@@ -1627,9 +1649,9 @@ def test_feature_aggregation_collects_raw_subtree_values(model):
 
 
 def test_distinct_uses_normal_python_equality():
-    assert rk.graph.reduction.distinct(([1], [1], [2])) == ([1], [2])
+    assert rk.graph.legacy.reduction.distinct(([1], [1], [2])) == ([1], [2])
     with pytest.raises(ValueError, match="truth value of a Series is ambiguous"):
-        rk.graph.reduction.distinct((pd.Series((1, 2)), pd.Series((1, 2))))
+        rk.graph.legacy.reduction.distinct((pd.Series((1, 2)), pd.Series((1, 2))))
 
 
 def test_feature_mode_rejects_ties_and_missing_subtrees_are_none(model):
@@ -1656,15 +1678,15 @@ def test_feature_mode_rejects_ties_and_missing_subtrees_are_none(model):
     ).view()
 
     collected = view.aggregate(
-        rk.graph.reduction.by_feature(
-            "planning_zone", reducer=rk.graph.reduction.collect
+        rk.graph.legacy.reduction.by_feature(
+            "planning_zone", reducer=rk.graph.legacy.reduction.collect
         )
     )
     assert collected[missing] is None
     with pytest.raises(rk.graph.InvalidAggregationError, match="unique mode"):
         view.aggregate(
-            rk.graph.reduction.by_feature(
-                "planning_zone", reducer=rk.graph.reduction.mode
+            rk.graph.legacy.reduction.by_feature(
+                "planning_zone", reducer=rk.graph.legacy.reduction.mode
             )
         )
 
@@ -1715,7 +1737,7 @@ def test_view_infers_subgraph_and_aggregates_measurements(model):
     with pytest.raises(TypeError, match="iterable of relationship references"):
         graph.view(relationships=str(edge.id))
 
-    result = entity_view.aggregate(rk.graph.reduction.by_measure("area.nsa.internal"))
+    result = entity_view.aggregate(rk.graph.legacy.reduction.by_measure("area.nsa.internal"))
     assert result[root] == 10 * Index.registry.squaremeter
     assert result["27.05"] == 10 * Index.registry.squaremeter
     assert result.root_value == 10 * Index.registry.squaremeter
@@ -1854,7 +1876,7 @@ def test_measurement_aggregation_rules(model, rule, expected):
         relationships=relationships,
     ).view()
 
-    result = view.aggregate(rk.graph.reduction.by_measure(aggregate_area))
+    result = view.aggregate(rk.graph.legacy.reduction.by_measure(aggregate_area))
     assert result.root_value == expected * Index.registry.squaremeter
 
 
@@ -1886,7 +1908,7 @@ def test_measurement_aggregation_normalizes_canonical_units(model):
         relationships=relationships,
     ).view()
 
-    result = view.aggregate(rk.graph.reduction.by_measure(model["internal_area"]))
+    result = view.aggregate(rk.graph.legacy.reduction.by_measure(model["internal_area"]))
     assert result.root_value.units == Index.registry.squaremeter
     assert result.root_value.magnitude == pytest.approx(2)
 
@@ -1915,7 +1937,7 @@ def test_measurement_without_aggregation_rule_is_rejected(model):
     )
     graph = rk.graph.Graph(definitions=definitions, entities=(entity,))
     with pytest.raises(rk.graph.InvalidAggregationError, match="no aggregation rule"):
-        graph.view().aggregate(rk.graph.reduction.by_measure(non_aggregating))
+        graph.view().aggregate(rk.graph.legacy.reduction.by_measure(non_aggregating))
 
 
 def test_feature_aggregation_supports_rich_values_without_mutating_them(model):
@@ -1963,7 +1985,7 @@ def test_feature_aggregation_supports_rich_values_without_mutating_them(model):
             name="aggregate",
         )
 
-    result = view.aggregate(rk.graph.reduction.by_feature("cashflow", reducer=combine))
+    result = view.aggregate(rk.graph.legacy.reduction.by_feature("cashflow", reducer=combine))
 
     pd.testing.assert_series_equal(
         result.root_value.movements,
@@ -1977,7 +1999,7 @@ def test_aggregation_rejects_empty_and_non_arborescent_views(model):
     empty = rk.graph.Graph(definitions=model["definitions"]).view()
     with pytest.raises(rk.graph.InvalidAggregationError, match="empty View"):
         empty.aggregate(
-            rk.graph.reduction.by_feature("value", reducer=rk.graph.reduction.collect)
+            rk.graph.legacy.reduction.by_feature("value", reducer=rk.graph.legacy.reduction.collect)
         )
 
     first = apartment(model, code="A")
@@ -1988,7 +2010,7 @@ def test_aggregation_rejects_empty_and_non_arborescent_views(model):
     ).view()
     with pytest.raises(rk.graph.InvalidAggregationError, match="arborescence"):
         disconnected.aggregate(
-            rk.graph.reduction.by_feature("value", reducer=rk.graph.reduction.collect)
+            rk.graph.legacy.reduction.by_feature("value", reducer=rk.graph.legacy.reduction.collect)
         )
 
 
@@ -2167,7 +2189,7 @@ def test_tabular_and_icicle_projection_use_uuid_graph(model):
     assert "measurement.area.nsa.internal" in table.columns
     assert table.rows[0].values["entity_id"] == root.id
     assert table.rows[1].values["parent_id"] == root.id
-    trace = rk.graph.adapter.visualization.icicle(table, label_column="name")
+    trace = rk.adapters.visualization.icicle(table, label_column="name")
     assert tuple(trace.ids) == (str(root.id), str(leaf.id))
 
 
@@ -2181,7 +2203,7 @@ def test_selected_measurement_coverage_excludes_inapplicable_children(model):
         entities=(root, measured, missing, corridor), relationships=tuple(
             rk.graph.Relationship.between(root, e, classification=model["contains"])
             for e in (measured, missing, corridor)))
-    result = graph.view().aggregate(rk.graph.reduction.by_measure(
+    result = graph.view().aggregate(rk.graph.legacy.reduction.by_measure(
         model["internal_area"], contributors=lambda e: e.classification == model["apartment"],
         require_measurement=True))
     assert result.root_value is None
@@ -2191,8 +2213,8 @@ def test_selected_measurement_coverage_excludes_inapplicable_children(model):
     assert result.coverage(root).missing == (missing.id,)
     assert result.coverage(root).status == "incomplete"
     assert result.coverage(corridor).status == "empty"
-    assert graph.view().aggregate(rk.graph.reduction.by_measure(model["internal_area"])).root_value == 0 * Index.registry.squaremeter
-    empty = graph.view().aggregate(rk.graph.reduction.by_measure(model["internal_area"], contributors=lambda e: False, require_measurement=True))
+    assert graph.view().aggregate(rk.graph.legacy.reduction.by_measure(model["internal_area"])).root_value == 0 * Index.registry.squaremeter
+    empty = graph.view().aggregate(rk.graph.legacy.reduction.by_measure(model["internal_area"], contributors=lambda e: False, require_measurement=True))
     assert empty.root_value is None
     assert empty.known_subtotal(root) is None
     assert empty.coverage(root).status == "empty"
@@ -2219,4 +2241,4 @@ def test_contributor_selection_does_not_bypass_tree_requirement(model):
         rk.graph.Relationship.between(a,c,classification=model["contains"]),
         rk.graph.Relationship.between(b,c,classification=model["contains"])))
     with pytest.raises(rk.graph.InvalidAggregationError):
-        graph.view().aggregate(rk.graph.reduction.by_measure(model["internal_area"], contributors=lambda e: e.id == c.id, require_measurement=True))
+        graph.view().aggregate(rk.graph.legacy.reduction.by_measure(model["internal_area"], contributors=lambda e: e.id == c.id, require_measurement=True))

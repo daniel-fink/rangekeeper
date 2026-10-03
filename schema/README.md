@@ -12,8 +12,9 @@ serialized as lists with explicit codes/local keys. The custom taxonomy/code
 reference parser has been removed. Both examples pass generated record validation
 and generated Python round trips; the runtime conformance fixture checks their
 graph meaning. Canonical Model/Specification/Run codecs and immutable revision stores
-are now implemented: see [Run and storage](../docs/RUN_AND_STORAGE.md). Legacy consumer
-format migration and calculation execution remain pending.
+are now implemented: see [Run and storage](../docs/RUN_AND_STORAGE.md).
+[Affine scalar execution](../docs/SCALAR_EXECUTION.md) is also implemented.
+Legacy consumer format migration and richer calculation capabilities remain pending.
 
 ## Schema, project definitions, and project objects
 
@@ -1141,7 +1142,8 @@ Known limits of this checkpoint:
 - These are limits of the legacy graph fixture bridge. The canonical Model supports
   multiple owner-local Values using one Measure and has schema-based JSON/YAML codecs.
   Generic Claim/Fact-content agreement, richer executable Value semantics, legacy
-  consumer migration and calculation execution remain incomplete.
+  consumer migration and richer calculation execution remain incomplete. The bounded
+  affine scalar adapter now produces genuine accepted output Models.
 
 ## Next work
 
@@ -1151,7 +1153,7 @@ now load packaged schemas; run `python tools/schema/generate.py --check` from th
 repository root to verify freshness, or regenerate after intentional schema changes.
 Standalone checks reject stale schema-source fingerprints. Semantic checks live in
 the library, and the conformance scripts call them. The canonical domain APIs,
-codecs and revision stores are implemented; execution remains subsequent work.
+codecs, revision stores and affine scalar execution are implemented.
 
 
 The [library architecture and migration plan](../docs/LIBRARY_ARCHITECTURE.md)
@@ -1161,20 +1163,22 @@ to retain LinkML and close the CUE comparison for this stage. The
 [baseline](../docs/research/domain-migration/BASELINE.md) complete Step 1. The immutable record boundary and [Model/Specification core](../docs/DOMAIN_CORE.md)
 are implemented, together with [Run, codecs and revision persistence](../docs/RUN_AND_STORAGE.md).
 The [Turn 3 evidence](../docs/research/domain-migration/turn3/README.md) verifies these
-public APIs in an isolated installed wheel. Next implement `rangekeeper.execution`
-using Pyomo with HiGHS. The temporary `schema/execution/` and later promotion plan
-is superseded. Execution and graph-view portions of the target layout remain future work.
+public APIs in an isolated installed wheel. [Step 5 evidence](../docs/research/scalar-execution/README.md)
+also verifies `rangekeeper.execution` with Pyomo 6.10.1 and HiGHS 1.15.1 outside
+the checkout. The temporary `schema/execution/` and later promotion plan is
+superseded. [Model-backed views and reductions](../docs/GRAPH_MODEL.md) now implement Step 6A/6B.
+Table/projection and source-workflow migration remain next.
 
-1. **Implement scalar execution on the canonical core.** Model,
-   Specification, and finalized Run contracts have inspectable fixtures and bounded
-   validation. Domain behavior, codecs and immutable storage are available in the
-   library; verify and pin the selected numerical backend before wiring execution.
-   Execute forward and inverse valuation, perform actual acceptance checks, and
-   publish immutable Models with authentic runtime and diagnostic evidence.
-2. **Connect publication and provenance.** Exercise reuse of recorded outputs with
-   new solve roles; specify retention of Specification-local Values and derived
-   evidence without making temporary constraints permanent. Extend supported
-   diagnostics and backend settings only when the adapter requires them.
+1. **Migrate graph operations and consumers.** The scalar checkpoint now executes
+   forward/inverse valuation, reuses genuine outputs with new roles, independently
+   checks candidates and publishes immutable Models and authentic Runs. Adapt
+   graph views, traversal/reduction, tables and source workflows to that canonical
+   core under the [consumer map](../docs/DOMAIN_MIGRATION_MAP.md).
+2. **Extend publication and provenance as required.** The scalar adapter preserves
+   previous Claims and records new method-labelled quantity evidence. Specification-local
+   Value publication and typed derived evidence remain bounded extensions; temporary
+   constraints must not become permanent. Extend settings and diagnostics only
+   when the selected adapter supports them.
 3. **Extend in stages.** Start with deterministic valuation on fixed calendars and
    supplied scenarios. Add temporal and financial Value kinds, evaluate many saved
    futures, then introduce committed choices and adaptive policies. Numerical market

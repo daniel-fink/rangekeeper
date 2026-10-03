@@ -12,10 +12,10 @@ from zipfile import ZipFile
 
 import pytest
 
-from rangekeeper.graph.adapter import document, excel
-from rangekeeper.graph.adapter.errors import AdapterEncodingError
-from rangekeeper.graph.provenance import ClaimKind, Location
-from rangekeeper.graph.workflow.ingestion import fingerprint, tabular
+from rangekeeper.adapters import document, excel
+from rangekeeper.adapters.errors import AdapterEncodingError
+from rangekeeper.evidence import ClaimKind, Location
+from rangekeeper.workflow.ingestion import fingerprint, tabular
 
 NS = {"s": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
 
@@ -385,8 +385,8 @@ def test_fresh_process_determinism_and_optional_import_isolation(workbook_path):
     program = """
 import sys
 from uuid import NAMESPACE_URL
-from rangekeeper.graph.adapter import excel
-from rangekeeper.graph.workflow.ingestion import fingerprint
+from rangekeeper.adapters import excel
+from rangekeeper.workflow.ingestion import fingerprint
 book = excel.read(sys.argv[1], namespace=NAMESPACE_URL, source_key="jll", name="JLL").output
 spec = excel.ExtractionSpec(id="one", version=1, sheet="Unit Pricing", rows=excel.Rows(start=8,end=8), columns=(excel.Column(name="unit",column="A"),))
 print(fingerprint(excel.extract_table(book,spec).output))
@@ -401,16 +401,16 @@ def guarded(name, *args, **kwargs):
         raise AssertionError("optional dependency eagerly imported")
     return original(name, *args, **kwargs)
 builtins.__import__ = guarded
-from rangekeeper.graph.adapter import document
-from rangekeeper.graph import operation
-from rangekeeper.graph.adapter import excel
+from rangekeeper.adapters import document
+from rangekeeper import operation
+from rangekeeper.adapters import excel
 assert excel.ExtractionSpec
 """
     subprocess.run([sys.executable, "-c", isolated], check=True)
 
 
 def test_reader_uses_one_captured_byte_sequence(workbook_path, monkeypatch):
-    from rangekeeper.graph.adapter.excel import reader
+    from rangekeeper.adapters.excel import reader
 
     original = workbook_path.read_bytes()
     real_parse = reader._parse
@@ -437,7 +437,7 @@ def test_reader_uses_one_captured_byte_sequence(workbook_path, monkeypatch):
 def test_missing_optional_reader_dependency_is_explicit(workbook_path, monkeypatch):
     from importlib.metadata import PackageNotFoundError
 
-    from rangekeeper.graph.adapter.excel import reader
+    from rangekeeper.adapters.excel import reader
 
     def unavailable(name):
         raise PackageNotFoundError(name)
@@ -451,7 +451,7 @@ def test_missing_optional_reader_dependency_is_explicit(workbook_path, monkeypat
 
 
 def test_canonical_coordinates_and_single_cell_merge(workbook_path):
-    from rangekeeper.graph.adapter.excel._coordinates import address
+    from rangekeeper.adapters.excel._coordinates import address
 
     assert address("XFD1048576") == (1048576, 16384)
     for coordinate in ("a1", "$A$1", "A0", "A01", "XFE1", "A1048577", "A1:B2"):
@@ -478,7 +478,7 @@ def test_missing_inspection_sheet_uses_actual_workbook_root(workbook_path):
 def test_resolved_defaults_and_yaml_mapping_order_have_identical_operations(
     workbook_path,
 ):
-    from rangekeeper.graph.operation import fingerprint as operation_fingerprint
+    from rangekeeper.operation import fingerprint as operation_fingerprint
 
     book = read(workbook_path).output
     implicit = declaration()
@@ -494,7 +494,7 @@ def test_resolved_defaults_and_yaml_mapping_order_have_identical_operations(
 
 
 def test_snapshot_construction_defects_propagate(workbook_path, monkeypatch):
-    from rangekeeper.graph.adapter.excel import reader
+    from rangekeeper.adapters.excel import reader
 
     def broken_cell(*args, **kwargs):
         raise ValueError("snapshot construction defect")

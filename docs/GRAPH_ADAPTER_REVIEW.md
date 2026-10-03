@@ -1,5 +1,10 @@
 # Ingestion and workflow boundary review
 
+> Historical source/Graph contract, superseded for new builds on 2026-10-03.
+> Use [Model consumer migration](CONSUMER_MIGRATION.md) for the current packages,
+> workflow version 2, Value keys, and Model export. The earlier API names and
+> acceptance results below remain evidence for the external migration gate (6E).
+
 **Scope, 2026-10-02:** this is a dated review and resolution record for existing
 graph ingestion. Follow [LIBRARY_ARCHITECTURE.md](LIBRARY_ARCHITECTURE.md) for the
 current domain replacement and migration sequence. Historical recommendations

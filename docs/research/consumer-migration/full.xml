@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="1" failures="0" skipped="0" tests="1" time="6.682" timestamp="2026-10-03T19:00:12.494148+10:00" hostname="Daniels-Mac-Studio.local"><testcase classname="" name="tests.test_unresolved_measurements" time="0.000"><error message="collection failure">ImportError while importing test module '/Volumes/Data/Projects/Rangekeeper/src/tests/test_unresolved_measurements.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Users/daniel/.local/share/uv/python/cpython-3.10.19-macos-aarch64-none/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_unresolved_measurements.py:10: in &lt;module&gt;
+    from rangekeeper.workflow._operands import graph_operand, operand
+E   ImportError: cannot import name 'graph_operand' from 'rangekeeper.workflow._operands' (/Volumes/Data/Projects/Rangekeeper/src/rangekeeper/workflow/_operands.py)</error></testcase></testsuite></testsuites>

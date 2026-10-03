@@ -1,34 +1,66 @@
+"""Model-backed graph operations with explicit remaining Graph retirement boundaries.
+
+Presentation lives at rangekeeper.adapters and source building at rangekeeper.workflow.
+Old domain classes, Graph JSON, Graph-only table projection and graph.legacy remain
+for external consumer migration. No new constructor accepts both domain models.
+"""
+
 from importlib import import_module
-from types import ModuleType
-
-from . import provenance as provenance
-from . import reduction as reduction
-from . import revision as revision
-from . import table as table
-from . import update as update
-from .assembly import Assembly
-from .characteristics import Characteristics, Feature, Label, Measurement
-from .classification import Classification
-from .definitions import Definitions
-from .entity import Entity
-from .errors import (
-    AmbiguousLookupError,
-    CatalogInstanceError,
-    GraphDependencyError,
-    GraphError,
-    IdentityConflictError,
-    InvalidAggregationError,
-    InvalidAssemblyError,
-    MissingEntityError,
-    MissingFactError,
-    MissingRelationshipError,
-    UnknownDefinitionError,
+from .view import View as View
+from .hierarchy import Hierarchy as Hierarchy
+from .reduction import (
+    Reduction as Reduction,
+    Aggregation as Aggregation,
+    Coverage as Coverage,
 )
-from .graph import Graph
-from .relationship import Relationship
-from .taxonomy import Taxonomy
-from .view import View
+from .errors import (
+    SelectionError as SelectionError,
+    HierarchyError as HierarchyError,
+    AggregationError as AggregationError,
+)
 
+_LEGACY_EXPORTS = {
+    "Assembly": "assembly",
+    "Characteristics": "characteristics",
+    "Feature": "characteristics",
+    "Label": "characteristics",
+    "Measurement": "characteristics",
+    "Classification": "classification",
+    "Definitions": "definitions",
+    "Entity": "entity",
+    "Graph": "graph",
+    "Relationship": "relationship",
+    "Taxonomy": "taxonomy",
+    **{
+        name: "errors"
+        for name in (
+            "AmbiguousLookupError",
+            "CatalogInstanceError",
+            "GraphDependencyError",
+            "GraphError",
+            "IdentityConflictError",
+            "InvalidAggregationError",
+            "InvalidAssemblyError",
+            "MissingEntityError",
+            "MissingFactError",
+            "MissingRelationshipError",
+            "UnknownDefinitionError",
+        )
+    },
+}
+_MODULES = {
+    "adapter",
+    "provenance",
+    "reduction",
+    "revision",
+    "table",
+    "update",
+    "projection",
+    "membership",
+    "selection",
+    "reducers",
+    "legacy",
+}
 
 __all__ = [
     "Assembly",
@@ -54,6 +86,18 @@ __all__ = [
     "Taxonomy",
     "UnknownDefinitionError",
     "View",
+    "Hierarchy",
+    "Reduction",
+    "Aggregation",
+    "Coverage",
+    "SelectionError",
+    "HierarchyError",
+    "AggregationError",
+    "projection",
+    "membership",
+    "selection",
+    "reducers",
+    "legacy",
     "adapter",
     "provenance",
     "reduction",
@@ -63,13 +107,16 @@ __all__ = [
 ]
 
 
-def __getattr__(name: str) -> ModuleType:
-    if name != "adapter":
+def __getattr__(name: str):
+    if name in _MODULES:
+        value = import_module(f"{__name__}.{name}")
+    elif name in _LEGACY_EXPORTS:
+        value = getattr(import_module(f"{__name__}.{_LEGACY_EXPORTS[name]}"), name)
+    else:
         raise AttributeError(name)
-    module = import_module(f"{__name__}.adapter")
-    globals()[name] = module
-    return module
+    globals()[name] = value
+    return value
 
 
 def __dir__() -> list[str]:
-    return sorted({*globals(), "adapter"})
+    return sorted({*globals(), *__all__})

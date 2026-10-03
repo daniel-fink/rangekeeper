@@ -1,7 +1,27 @@
 from collections.abc import Iterable
 from uuid import UUID
 
+
+class SelectionError(ValueError):
+    """A Model selection or Value selector disagrees with its declared scope."""
+
+
+class HierarchyError(ValueError):
+    """A selected graph is not one rooted tree; IDs identify the offending scope."""
+
+    def __init__(self, code: str, message: str, *, ids: Iterable[UUID] = ()) -> None:
+        self.code = code
+        self.ids = tuple(ids)
+        super().__init__(f"{code}: {message}; ids={self.ids}")
+
+
+class AggregationError(ValueError):
+    """A recorded-quantity reduction cannot produce a meaningful finite result."""
+
 __all__ = [
+    "SelectionError",
+    "HierarchyError",
+    "AggregationError",
     "AmbiguousLookupError",
     "CatalogInstanceError",
     "GraphDependencyError",
@@ -109,18 +129,4 @@ def _format_ids(ids: Iterable[UUID]) -> str:
     return ", ".join(str(item) for item in sorted(ids, key=str))
 
 
-class BoundaryError(GraphError):
-    """Base for invalid requests or representations crossing a graph API boundary."""
-
-
-class EncodingError(BoundaryError, ValueError):
-    """A value cannot be represented by the declared boundary contract."""
-
-
-class ValueEncodingError(EncodingError):
-    """Internal scalar encoding failure; consumers translate into their own errors."""
-
-    def __init__(self, code: str, message: str):
-        self.code = code
-        self.message = message
-        super().__init__(f"{code}: {message}")
+from ..errors import BoundaryError, EncodingError, ValueEncodingError

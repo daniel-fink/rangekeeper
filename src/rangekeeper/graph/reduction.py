@@ -1,52 +1,46 @@
-"""Pure hierarchical reductions and their immutable results."""
+"""Explicit recorded-Value reductions, coverage, and immutable results.
 
-from __future__ import annotations
+These operations neither solve equations nor write quantities into Models.
+"""
 
-from abc import ABC, abstractmethod
-from collections import Counter
-from collections.abc import Callable, Iterator, Mapping
-from dataclasses import dataclass, field
-from statistics import median
+from collections.abc import Callable, Mapping
+from dataclasses import dataclass
 from types import MappingProxyType
-from typing import TYPE_CHECKING, Generic, TypeVar
 from uuid import UUID
-
-import networkx as nx
-import pint
-
-from ..measure import AggregationRule, Measure
-from .entity import Entity
-from .errors import InvalidAggregationError
-
-if TYPE_CHECKING:
-    from .view import View
+from ..model import Entity, Value, Quantity
+from ..units import UnitSystem, default_units
+from .errors import AggregationError, SelectionError
+from .hierarchy import Hierarchy
+from .selection import ValueSelector
+from .reducers import sum_quantities
 
 
-T = TypeVar("T")
-R = TypeVar("R")
-
-__all__ = [
-    "Aggregation",
-    "Coverage",
-    "Reduction",
-    "by_feature",
-    "by_measure",
-    "collect",
-    "distinct",
-    "mode",
-]
-
-
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class Coverage:
-    """Coverage of recorded selected contributors; not physical population certification."""
+    """Selected, measured and missing owner UUIDs; not population certification."""
 
     selected: tuple[UUID, ...]
     measured: tuple[UUID, ...]
     missing: tuple[UUID, ...]
 
+    def __post_init__(self) -> None:
+        for name in ("selected", "measured", "missing"):
+            items = tuple(getattr(self, name))
+            if any(not isinstance(id, UUID) for id in items) or len(set(items)) != len(
+                items
+            ):
+                raise AggregationError("coverage must contain unique UUIDs")
+            object.__setattr__(self, name, items)
+        if set(self.measured) & set(self.missing) or set(self.selected) != set(
+            self.measured
+        ) | set(self.missing):
+            raise AggregationError(
+                "measured and missing must partition selected contributors"
+            )
+
     @property
     def complete(self) -> bool:
+        """Whether a nonempty selected population is fully measured."""
         return bool(self.selected) and not self.missing
 
     @property
@@ -54,253 +48,185 @@ class Coverage:
         return (
             "empty"
             if not self.selected
-            else "complete"
-            if self.complete
-            else "incomplete"
+            else "complete" if self.complete else "incomplete"
         )
 
 
-@dataclass(frozen=True, slots=True)
-class Aggregation(Generic[T]):
-    """Immutable per-entity values aggregated over one hierarchical View."""
+@dataclass(frozen=True)
+class Aggregation:
+    """One result per selected Entity, pinned through its immutable hierarchy.
 
-    view: View
-    _values: Mapping[UUID, T | None] = field(repr=False)
+    value_ids records actual owner-to-Value choices, including unresolved Values.
+    Missing keys have no Value ID. Outputs are schema Quantities, never live Pint
+    objects; no mutable solver or Model state is retained.
+    """
 
-    _coverage: Mapping[UUID, Coverage] = field(default_factory=dict, repr=False)
-    _known_values: Mapping[UUID, T | None] = field(default_factory=dict, repr=False)
-    _is_sum: bool = field(default=False, repr=False)
+    hierarchy: Hierarchy
+    _values: Mapping[UUID, Quantity | None]
+    _coverage: Mapping[UUID, Coverage]
+    _available: Mapping[UUID, Quantity | None]
+    value_ids: Mapping[UUID, UUID]
+    _is_sum: bool = False
 
     def __post_init__(self) -> None:
-        from .view import View
-
-        if not isinstance(self.view, View):
-            raise TypeError("view must be a View")
-        values = dict(self._values)
-        if set(values) != {entity.id for entity in self.view.entities}:
-            raise ValueError("aggregation values must match the View entities")
-        object.__setattr__(self, "_values", MappingProxyType(values))
-        for name in ("_coverage", "_known_values"):
+        if not isinstance(self.hierarchy, Hierarchy):
+            raise TypeError("hierarchy must be a Hierarchy")
+        ids = set(self.hierarchy.preorder())
+        for name in ("_values", "_coverage", "_available"):
             items = dict(getattr(self, name))
-            if items and set(items) != set(values):
-                raise ValueError(f"{name} keys must match View entities")
+            if set(items) != ids:
+                raise AggregationError(
+                    "aggregation entries must exactly match the hierarchy"
+                )
+            if name == "_coverage":
+                if any(not isinstance(item, Coverage) for item in items.values()):
+                    raise TypeError("coverage entries must be Coverage objects")
+            elif any(
+                item is not None and not isinstance(item, Quantity)
+                for item in items.values()
+            ):
+                raise TypeError("result entries must be schema Quantities or None")
             object.__setattr__(self, name, MappingProxyType(items))
+        for owner, value_id in self.value_ids.items():
+            self.hierarchy.view.entity(owner)
+            self.hierarchy.view.model.value(value_id)
+            if self.hierarchy.view.model.owner_of(value_id) != owner:
+                raise AggregationError(
+                    "value_ids must record selected owners' local Values"
+                )
+        object.__setattr__(self, "value_ids", MappingProxyType(dict(self.value_ids)))
 
     @property
-    def root_value(self) -> T | None:
-        """Return the aggregate value at the View's sole root."""
+    def root_value(self) -> Quantity | None:
+        """The result at the sole root, subject to the reduction's coverage policy."""
+        return self.value(self.hierarchy.root)
 
-        return self._values[self.view.roots[0].id]
+    def value(self, id: UUID) -> Quantity | None:
+        """Resolve a result by selected Entity UUID; no code/name fallback."""
+        self.hierarchy.view.entity(id)
+        return self._values[id]
 
-    def __getitem__(self, entity: str | UUID | Entity) -> T | None:
-        """Return an entity's aggregate through canonical View lookup."""
+    def __getitem__(self, id: UUID) -> Quantity | None:
+        return self.value(id)
 
-        identifier = self.view._resolve_view_entity_id(entity)
-        return self._values[identifier]
+    def coverage(self, id: UUID) -> Coverage:
+        """Report actual selected contributors below and including this Entity."""
+        self.hierarchy.view.entity(id)
+        return self._coverage[id]
 
-    def __len__(self) -> int:
-        return len(self._values)
+    def available_value(self, id: UUID) -> Quantity | None:
+        """Reduce measured contributors even when complete coverage is required."""
+        self.hierarchy.view.entity(id)
+        return self._available[id]
 
-    def __iter__(self) -> Iterator[Entity]:
-        return iter(self.view.entities)
-
-    def items(self) -> tuple[tuple[Entity, T | None], ...]:
-        """Return entity-value pairs in View insertion order."""
-
-        return tuple((entity, self._values[entity.id]) for entity in self)
-
-    def coverage(self, entity: str | UUID | Entity) -> Coverage:
-        """Selected, measured and missing contributors below and including this node."""
-        return self._coverage[self.view._resolve_view_entity_id(entity)]
-
-    def available_value(self, entity: str | UUID | Entity) -> T | None:
-        """Reduction over available selected values, even when requirements are unmet."""
-        return self._known_values[self.view._resolve_view_entity_id(entity)]
-
-    def known_subtotal(self, entity: str | UUID | Entity) -> T | None:
-        """Known subtotal for SUM only; an empty population is unavailable, not zero."""
+    def known_subtotal(self, id: UUID) -> Quantity | None:
+        """Return available sum; this interpretation applies only to sum_quantities."""
         if not self._is_sum:
-            raise InvalidAggregationError("known_subtotal is only defined for SUM")
-        return self.available_value(entity)
+            raise AggregationError("known_subtotal requires sum_quantities")
+        return self.available_value(id)
 
 
-class Reduction(ABC, Generic[R]):
-    """A characteristic reduction executed against a hierarchical View."""
+@dataclass(frozen=True, kw_only=True)
+class Reduction:
+    """Choose one Value per eligible Entity, normalize units, then combine explicitly.
 
-    @abstractmethod
-    def _execute(self, view: View) -> Aggregation[R]:
-        """Execute this reduction against a View."""
-
-
-def by_measure(
-    reference: str | Measure,
-    *,
-    contributors: Callable[[Entity], bool] | None = None,
-    require_measurement: bool = False,
-) -> Reduction[pint.Quantity]:
-    """Reduce entity measurements using their Measure's declared rule."""
-    if not isinstance(reference, (str, Measure)):
-        raise TypeError("reference must be a measure code or Measure")
-    if isinstance(reference, str) and not reference.strip():
-        raise ValueError("measure code must not be empty")
-    if contributors is not None and not callable(contributors):
-        raise TypeError("contributors must be callable or None")
-    if not isinstance(require_measurement, bool):
-        raise TypeError("require_measurement must be a bool")
-    return _MeasureReduction(reference, contributors, require_measurement)
-
-
-def by_feature(
-    name: str,
-    *,
-    reducer: Callable[[tuple[T, ...]], R],
-) -> Reduction[R]:
-    """Reduce a named Feature using one pure callable."""
-    if not isinstance(name, str):
-        raise TypeError("feature name must be a string")
-    if not name.strip():
-        raise ValueError("feature name must not be empty")
-    if not callable(reducer):
-        raise TypeError("feature reducer must be callable")
-    return _FeatureReduction(name, reducer)
-
-
-@dataclass(frozen=True, slots=True)
-class _MeasureReduction(Reduction[pint.Quantity]):
-    reference: str | Measure
-    contributors: Callable[[Entity], bool] | None = None
-    require_measurement: bool = False
-
-    def _execute(self, view: View) -> Aggregation[pint.Quantity]:
-        measure = view.graph.definitions._resolve_measure(self.reference)
-        reducer = _MEASUREMENT_REDUCERS.get(measure.aggregation)
-        if reducer is None:
-            raise InvalidAggregationError(
-                f"measure {measure.code!r} has no aggregation rule"
-            )
-
-        def extract(entity: Entity) -> pint.Quantity | None:
-            measurement = entity.measurements.get(measure.code)
-            if measurement is None or measurement.quantity is None:
-                return None
-            return measurement.quantity.to(measure.units)
-
-        return _traverse(
-            view,
-            extractor=extract,
-            reducer=reducer,
-            contributors=self.contributors,
-            require_value=self.require_measurement,
-            is_sum=measure.aggregation is AggregationRule.SUM,
-        )
-
-
-@dataclass(frozen=True, slots=True)
-class _FeatureReduction(Reduction[R], Generic[T, R]):
-    name: str
-    reducer: Callable[[tuple[T, ...]], R]
-
-    def _execute(self, view: View) -> Aggregation[R]:
-        def extract(entity: Entity) -> T | None:
-            feature = entity.features.get(self.name)
-            return None if feature is None else feature.value
-
-        return _traverse(view, extractor=extract, reducer=self.reducer)
-
-
-def collect(values: tuple[T, ...]) -> tuple[T, ...]:
-    """Return every value in deterministic traversal order."""
-    return values
-
-
-def distinct(values: tuple[T, ...]) -> tuple[T, ...]:
-    """Return first-seen unique values in deterministic traversal order."""
-    result: list[T] = []
-    for value in values:
-        if value not in result:
-            result.append(value)
-    return tuple(result)
-
-
-def mode(values: tuple[T, ...]) -> T:
-    """Return the unique most-common value, rejecting ties and empty input."""
-    if not values:
-        raise InvalidAggregationError("feature values have no unique mode")
-    try:
-        counts = Counter(values)
-    except TypeError as error:
-        raise InvalidAggregationError(
-            "mode requires hashable feature values"
-        ) from error
-    frequency = max(counts.values())
-    modes = tuple(value for value, count in counts.items() if count == frequency)
-    if len(modes) != 1:
-        raise InvalidAggregationError("feature values have no unique mode")
-    return modes[0]
-
-
-def _traverse(
-    view: View,
-    *,
-    extractor: Callable[[Entity], T | None],
-    reducer: Callable[[tuple[T, ...]], R],
-    contributors: Callable[[Entity], bool] | None = None,
-    require_value: bool = False,
-    is_sum: bool = False,
-) -> Aggregation[R]:
-    if not view.entities:
-        raise InvalidAggregationError("cannot aggregate an empty View")
-    graph = view._require_arborescence()
-
-    subtree_values: dict[UUID, tuple[T, ...]] = {}
-    results: dict[UUID, R | None] = {}
-    known: dict[UUID, R | None] = {}
-    coverage: dict[UUID, Coverage] = {}
-    root_id = view.roots[0].id
-    for identifier in nx.dfs_postorder_nodes(graph, source=root_id):
-        entity = view.graph.entity(identifier)
-        eligible = contributors is None or contributors(entity)
-        own_value = extractor(entity) if eligible else None
-        selected = [identifier] if eligible else []
-        measured = [identifier] if eligible and own_value is not None else []
-        missing = [identifier] if eligible and own_value is None else []
-        raw_values = [] if own_value is None else [own_value]
-        for child_id in graph.successors(identifier):
-            raw_values.extend(subtree_values[child_id])
-            selected.extend(coverage[child_id].selected)
-            measured.extend(coverage[child_id].measured)
-            missing.extend(coverage[child_id].missing)
-        values = tuple(raw_values)
-        subtree_values[identifier] = values
-        coverage[identifier] = Coverage(
-            tuple(selected), tuple(measured), tuple(missing)
-        )
-        known[identifier] = None if not values else reducer(values)
-        results[identifier] = (
-            None
-            if require_value and not coverage[identifier].complete
-            else known[identifier]
-        )
-
-    ordered = {entity.id: results[entity.id] for entity in view.entities}
-    return Aggregation(view, ordered, coverage, known, is_sum)
-
-
-def _mean(values: tuple[pint.Quantity, ...]) -> pint.Quantity:
-    """Average Pint quantities without losing their units.
-
-    ``statistics.mean`` reconstructs Pint values through its numeric ratio
-    machinery and can return a dimensionless Quantity.
+    The default includes every selected Entity with complete coverage required.
+    Supply contributors to select leaves or a classification when parent values
+    represent totals. Nothing infers physical population or additive semantics.
+    Callbacks must be pure; all records supplied to them are immutable.
     """
-    return sum(values) / len(values)
+
+    select: ValueSelector
+    reducer: Callable[[tuple[Quantity, ...]], Quantity]
+    units: str
+    contributors: Callable[[Entity], bool] | None = None
+    require_complete: bool = True
+    unit_system: UnitSystem = default_units
+
+    def __post_init__(self) -> None:
+        if not callable(self.select) or not callable(self.reducer):
+            raise TypeError("select and reducer must be callable")
+        if self.contributors is not None and not callable(self.contributors):
+            raise TypeError("contributors must be callable")
+        if not isinstance(self.require_complete, bool):
+            raise TypeError("require_complete must be a bool")
+        if not isinstance(self.unit_system, UnitSystem):
+            raise TypeError("unit_system must be a UnitSystem")
+        self.unit_system.compatible(self.units, self.units)
+
+    def execute(self, hierarchy: Hierarchy) -> Aggregation:
+        """Return a detached derived result; never revise, persist, or execute a Model.
+
+        Selectors must return a Value actually owned by the supplied Entity in this
+        revision. That rejects stale, cross-owner and Formulation-local shortcuts.
+        Raw contributors are combined at each subtree so means remain correctly
+        weighted. Missing keys and unresolved quantities count as missing, not zero.
+        """
+        if not isinstance(hierarchy, Hierarchy):
+            raise TypeError("hierarchy must be a Hierarchy")
+        model = hierarchy.view.model
+        raw: dict[UUID, tuple[Quantity, ...]] = {}
+        coverage: dict[UUID, Coverage] = {}
+        available: dict[UUID, Quantity | None] = {}
+        results: dict[UUID, Quantity | None] = {}
+        value_ids: dict[UUID, UUID] = {}
+        for id in hierarchy.postorder():
+            entity = hierarchy.view.entity(id)
+            eligible = True if self.contributors is None else self.contributors(entity)
+            if not isinstance(eligible, bool):
+                raise TypeError("contributors must return bool")
+            selected = self.select(model, entity) if eligible else None
+            own = None
+            if selected is not None:
+                if not isinstance(selected, Value):
+                    raise TypeError("select must return a schema Value or None")
+                canonical = model.value(selected.id)
+                if (
+                    model.owner_of(selected.id) != id
+                    or canonical.to_data() != selected.to_data()
+                ):
+                    raise SelectionError(
+                        f"selector returned a stale or nonlocal Value {selected.id} for {id}"
+                    )
+                value_ids[id] = selected.id
+                if selected.kind != "measurement":
+                    raise AggregationError(
+                        "only scalar Measurement Values are supported"
+                    )
+                if selected.quantity is not None:
+                    own = self.unit_system.convert(selected.quantity, to=self.units)
+            selected_ids = [id] if eligible else []
+            measured_ids = [id] if own is not None else []
+            missing_ids = [id] if eligible and own is None else []
+            values = [] if own is None else [own]
+            for child in hierarchy.children(id):
+                values.extend(raw[child])
+                selected_ids.extend(coverage[child].selected)
+                measured_ids.extend(coverage[child].measured)
+                missing_ids.extend(coverage[child].missing)
+            raw[id] = tuple(values)
+            coverage[id] = Coverage(
+                tuple(selected_ids), tuple(measured_ids), tuple(missing_ids)
+            )
+            reduced = self.reducer(raw[id]) if values else None
+            if reduced is not None:
+                if not isinstance(reduced, Quantity):
+                    raise TypeError("reducer must return a schema Quantity")
+                reduced = self.unit_system.convert(reduced, to=self.units)
+            elif values:
+                raise TypeError("reducer must return a schema Quantity")
+            available[id] = reduced
+            results[id] = (
+                None if self.require_complete and not coverage[id].complete else reduced
+            )
+        return Aggregation(
+            hierarchy,
+            results,
+            coverage,
+            available,
+            value_ids,
+            self.reducer is sum_quantities,
+        )
 
 
-_MEASUREMENT_REDUCERS: dict[
-    AggregationRule, Callable[[tuple[pint.Quantity, ...]], pint.Quantity]
-] = {
-    AggregationRule.SUM: sum,
-    AggregationRule.MEAN: _mean,
-    AggregationRule.MEDIAN: median,
-    AggregationRule.MINIMUM: min,
-    AggregationRule.MAXIMUM: max,
-}
+__all__ = ["Aggregation", "Coverage", "Reduction"]

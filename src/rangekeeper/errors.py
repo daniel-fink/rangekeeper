@@ -54,3 +54,20 @@ class UnitError(ValueError):
 
 class DecodeError(ValueError):
     """Interchange text or a storage envelope cannot be decoded unambiguously."""
+
+
+class BoundaryError(Exception):
+    """Base for invalid requests or representations crossing an API boundary."""
+
+
+class EncodingError(BoundaryError, ValueError):
+    """A value cannot be represented by the declared boundary contract."""
+
+
+class ValueEncodingError(EncodingError):
+    """Internal scalar encoding failure; consumers translate into their own errors."""
+
+    def __init__(self, code: str, message: str):
+        self.code = code
+        self.message = message
+        super().__init__(f"{code}: {message}")

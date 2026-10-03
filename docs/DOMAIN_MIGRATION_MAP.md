@@ -1,11 +1,18 @@
 # Domain migration map and Python interface contract
 
+**2026-10-03 update:** [Step 6C/6D](CONSUMER_MIGRATION.md) is implemented.
+The responsibility inventory below retains its Step 1 baseline; current consumers
+use `table`, `adapters`, and `workflow`, with `WorkflowResult.model`. External
+consumer migration (6E) and old-domain retirement (6F) remain.
+
 Status: Step 1 design and baseline completed 2026-10-02. This is the recommended
 implementation contract for Steps 2–4. Work units 2A/2B are now implemented;
 see [record boundary](RECORD_BOUNDARY.md) for working APIs and verified limits.
 Work units 3A/3B are also implemented; [domain APIs](DOMAIN_CORE.md) records the
-working facade/resolver interfaces and their bounded semantics. Run/store/final-root
-interfaces below remain proposed. Read together with
+working facade/resolver interfaces and their bounded semantics.
+[Run/storage](RUN_AND_STORAGE.md), [scalar execution](SCALAR_EXECUTION.md) and
+[Model-backed graph operations](GRAPH_MODEL.md) are now implemented. Those guides
+record current APIs; remaining consumer interfaces below are migration contracts. Read together with
 [the observed baseline](research/domain-migration/BASELINE.md), the
 [work plan](DOMAIN_MIGRATION_PLAN.md), and [architecture](LIBRARY_ARCHITECTURE.md).
 The baseline inspected 93 Python modules, seven walkthrough notebooks, and the
@@ -116,7 +123,7 @@ This is a creation sequence, not an instruction to move the existing tree at onc
 | `io/{json,yaml,store,memory,directory}.py` | Format codecs; writable `RecordStore`; `MemoryStore`, `DirectoryStore`. |
 | `units.py` | `UnitSystem`, `default_units`; no schema authority or solving. |
 | `graph/{view,traversal,reduction,table}.py` | Model-backed View and graph algorithms, migrated after core. |
-| `execution/`, `formulations/` | Future preparation/compiler/evaluator/acceptance/publication/backend orchestration and mathematical construction. No implementation in Steps 2–4. |
+| `execution/`, `formulations/` | Step 5 implements preparation/compiler/evaluator/acceptance/publication/backend orchestration; see [scalar execution](SCALAR_EXECUTION.md). Richer mathematical construction remains future work. No execution implementation was part of Steps 2–4. |
 | Root and package `__init__.py`, `py.typed` | Small explicit public exports, lazy optional integrations, packaged typing. |
 
 Dependency order: generated records/private record support → document facades and
@@ -328,8 +335,8 @@ The future executor consumes a pinned Model, validated Composition, and immutabl
 unit settings; it receives `DocumentResolver`/`RecordStore` through injection.
 Prepared equations, backend state, candidate quantities and acceptance results are
 runtime-only objects. The acceptance evaluator traverses original expressions and
-must not import the Pyomo adapter. `Executor.execute(specification) -> Run` belongs
-to Step 5; it does not expand the Step 2–4 implementation scope.
+must not import the Pyomo adapter. `Executor.execute(specification) -> Run` is now
+implemented in [Step 5](SCALAR_EXECUTION.md), separately from the Step 2–4 scope.
 
 ## Usage contracts
 
@@ -380,7 +387,7 @@ store.put(spec)
 composition = compose(spec, resolver=store)
 rk.specification.validate(composition, resolver=store).raise_if_invalid()
 value = model.value(rent_value_id)  # recorded quantity does not assign a solve role
-view = rk.graph.View(model, assembly=assembly_id)  # after graph migration
+view = rk.graph.View(model, assembly=assembly_id)  # implemented in Step 6A
 children = view.successors(parent_id)
 ```
 
@@ -431,5 +438,5 @@ check transactional behavior and useful diagnostic paths, not just exception cla
 
 The two reproduced baseline failures are not part of these implementation units.
 No core design decision is left as an option menu. Full consumer migration, rich
-Values, external-service acceptance, numerical solver diagnosis, and scalar backend
-implementation are explicit later work. No commit, push, or release was performed.
+Values, external-service acceptance and numerical solver diagnosis remain later work.
+Scalar execution and Step 6A/6B graph operations now have separate implementation evidence. No commit, push, or release was performed.

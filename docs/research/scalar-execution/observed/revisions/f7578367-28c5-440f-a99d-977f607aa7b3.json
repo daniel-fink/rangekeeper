@@ -1,0 +1,36 @@
+{
+  "kind": "Specification",
+  "document": {
+    "metadata": {
+      "id": "f7578367-28c5-440f-a99d-977f607aa7b3",
+      "schema_version": "0.4.0",
+      "name": "Inverse investigation of the accepted forward output",
+      "description": "Combines shared requirements with investigation-specific roles. Equivalent to the standalone inverse example; no solver has been run.",
+      "previous": "abd75e4d-3e68-54b5-b446-2f3ea51d6c9c"
+    },
+    "includes": [
+      "2ea74bd1-0aea-4a2c-95a4-9d63012e9b78"
+    ],
+    "assignments": [
+      {
+        "value": "a947d40b-d9b0-54cb-a2a4-f8f598405ac2",
+        "quantity": {
+          "magnitude": 10000000,
+          "units": "AUD"
+        }
+      }
+    ],
+    "unknowns": [
+      "e3fb1434-5371-5bcb-b0b8-e3af2bf65022"
+    ],
+    "estimates": [
+      {
+        "value": "e3fb1434-5371-5bcb-b0b8-e3af2bf65022",
+        "quantity": {
+          "magnitude": 30000,
+          "units": "AUD/dwelling/year"
+        }
+      }
+    ]
+  }
+}

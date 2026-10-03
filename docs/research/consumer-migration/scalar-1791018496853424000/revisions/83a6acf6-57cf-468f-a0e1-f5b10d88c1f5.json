@@ -1,0 +1,22 @@
+{
+  "kind": "Specification",
+  "document": {
+    "metadata": {
+      "id": "83a6acf6-57cf-468f-a0e1-f5b10d88c1f5",
+      "schema_version": "0.4.0"
+    },
+    "model": "2cd65501-300f-41cd-96bc-66c597f0e1a2",
+    "assignments": [
+      {
+        "value": "7e01ea6c-be5c-564c-8376-8daacf6196dd",
+        "quantity": {
+          "magnitude": 50,
+          "units": "meter**2"
+        }
+      }
+    ],
+    "unknowns": [
+      "d5df501d-e447-5e55-8327-879975bb86e1"
+    ]
+  }
+}

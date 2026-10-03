@@ -1,5 +1,10 @@
 # Typed graph persistence and YAML workflows
 
+> Historical source/Graph contract, superseded for new builds on 2026-10-03.
+> Use [Model consumer migration](CONSUMER_MIGRATION.md) for the current packages,
+> workflow version 2, Value keys, and Model export. The earlier API names and
+> acceptance results below remain evidence for the external migration gate (6E).
+
 For the purpose of each API, read [Why the adapter APIs exist](GRAPH_ADAPTER_GUIDE.md).
 The [boundary review](GRAPH_ADAPTER_REVIEW.md) records historical findings and
 implemented resolutions. The [format-independent follow-up](GRAPH_WORKFLOW_FORMATS.md)

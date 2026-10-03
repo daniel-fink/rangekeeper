@@ -1,0 +1,58 @@
+{
+  "starting_head": "53f5d3e72f97b7099bcc7973386ba47ccb4b7784",
+  "executed": 785,
+  "passed": 783,
+  "failures": [
+    "tests.test_adapters::test_supported_adapter_and_table_surfaces_are_explicit",
+    "tests.test_formulas.TestSolver::test_residual"
+  ],
+  "new_model_graph_cases": 37,
+  "protected_files_unchanged": 141,
+  "verified_source_files": 269,
+  "legacy_algorithm_changes": "Only relative imports changed when relocating View and reduction.",
+  "latest_logs": {
+    "environment": "environment-1791013476669881000.log",
+    "schema-environment": "schema-environment-1791013476908599000.log",
+    "generation": "generation-1791013476983716000.log",
+    "typing": "typing-1791013478688768000.log",
+    "native": "native-1791013480939028000.log",
+    "installed": "installed-1791013508863957000.log",
+    "pytest": "pytest-1791013534616291000.log"
+  },
+  "changed_existing_files": [
+    ".github/workflows/schema-records.yml",
+    "README.md",
+    "docs/DOMAIN_MIGRATION_MAP.md",
+    "docs/DOMAIN_MIGRATION_PLAN.md",
+    "docs/GRAPH_ADAPTER_GUIDE.md",
+    "docs/GRAPH_REFACTOR_IMPLEMENTATION_PLAN.md",
+    "docs/GRAPH_WORKFLOW_FORMATS.md",
+    "docs/LIBRARY_ARCHITECTURE.md",
+    "docs/MODEL_SPECIFICATION_RUN.md",
+    "docs/README.md",
+    "docs/RUN_AND_STORAGE.md",
+    "docs/SCALAR_EXECUTION.md",
+    "docs/handoffs/2026-10-02-acausal-modelling.md",
+    "schema/README.md",
+    "src/README.md",
+    "src/rangekeeper/graph/__init__.py",
+    "src/rangekeeper/graph/adapter/cytoscape/__init__.py",
+    "src/rangekeeper/graph/adapter/visualization.py",
+    "src/rangekeeper/graph/errors.py",
+    "src/rangekeeper/graph/graph.py",
+    "src/rangekeeper/graph/reduction.py",
+    "src/rangekeeper/graph/table.py",
+    "src/rangekeeper/graph/view.py",
+    "src/tests/test_adapters.py",
+    "src/tests/test_immutable_graph.py",
+    "src/tests/test_unresolved_measurements.py",
+    "tools/schema/typecheck.py",
+    "tools/schema/verify_install.py"
+  ],
+  "limitations": [
+    "Three live API tests excluded.",
+    "No remote CI or external project/host acceptance.",
+    "Step 6C-F remain; legacy table/adapters/workflows still use the old domain.",
+    "No staging, commit or push commands issued; pre-existing index state preserved."
+  ]
+}

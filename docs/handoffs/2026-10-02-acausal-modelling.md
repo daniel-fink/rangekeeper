@@ -4,12 +4,15 @@ Prepared 2026-10-02 for continuation on Daniel's Mac Studio.
 
 ## Resume here
 
-**Continuation update, 2026-10-02:** Daniel decided to retain LinkML after the
+**Continuation update, 2026-10-03:** Daniel decided to retain LinkML after the
 independent audit and discussion of native CUE's benefits and costs. The
 [schema decision](../research/current-schema-comparison/DECISION.md) closes the
 comparison for this stage. Do not resume native CUE implementation. Step 1 has now
 mapped replacement of the graph domain core. The minimal schema-backed core is now
-implemented directly in its library packages; next execute against it. The earlier
+implemented directly in its library packages, together with scalar execution.
+Step 6A/6B now implements [Model-backed graph operations](../GRAPH_MODEL.md).
+[Step 6C/6D](../CONSUMER_MIGRATION.md) now implements tables, presentation
+adapters, and source workflows. Next is 6E, external consumer migration. The earlier
 `schema/execution/` prototype and later promotion plan is superseded. Native CUE suitability remains untested; the decision is an accepted
 trade-off rather than a completed native-language evaluation.
 
@@ -36,7 +39,29 @@ shared and expression checks consume an explicit lookup scope. Turn 3 is now imp
 All three public roots, strict codecs, revision stores and installed-core checks are in place.
 Final Turn 3 verification: 702 tests pass, the same two baseline failures remain,
 and all seven schema suites, static checks and installed-wheel checks pass.
-Next is Step 5, scalar execution using the selected Pyomo/HiGHS backend. No new-schema executor or migrated graph consumer exists yet.
+**Step 5 is implemented:** read [scalar execution](../SCALAR_EXECUTION.md) and its
+[retained evidence](../research/scalar-execution/README.md). Authentic forward,
+inverse and batch Runs now publish independently accepted immutable Models.
+Final verification: **745 passed, the same two baseline failures**, all seven
+schema suites, static checks and installed-wheel execution checks passed.
+This implementation began at `53f5d3e` on `acausal-modelling` and remains local;
+no commit or push was performed. The unrelated `.gitignore` edit is preserved.
+Model-backed View, Hierarchy and explicit Value reductions are now implemented;
+read [graph evidence](../research/graph-migration/README.md). That historical
+checkpoint precedes the [6C/6D consumer migration](../CONSUMER_MIGRATION.md).
+New adapters/workflows use Model; external projects remain unverified.
+Graph-slice verification: **783 passed, the same two baseline failures**; seven
+schema suites, 74-file static checking and installed graph/scalar checks pass.
+
+**Step 6C/6D verification:** [consumer evidence](../research/consumer-migration/README.md)
+records **798 passed and one unchanged numerical baseline failure**, all seven
+schema suites, 80-file static checks, 27 viewer bundle tests, and installed-package
+source-to-Model-to-solver acceptance. `WorkflowResult.model` and workflow version 2
+are intentional breaks. Source observations keep their support chains; unsupported
+Feature declarations fail explicitly. No external project was migrated or run.
+No commit or push was performed. Continue with 6E, then remove the remaining old
+Graph domain and codec in 6F after consumer acceptance. TypeScript rebuilding and
+interactive browser acceptance remain unverified; the moved viewer bundles pass.
 
 The original source-machine, transfer, and environment sections below are a
 historical snapshot. The destination has since been observed on `acausal-modelling`
@@ -44,8 +69,8 @@ at the stated HEAD, with the documented dirty files. Recheck live state before
 implementation. The independent audit and decision are additional local work.
 
 Daniel has selected **Pyomo with HiGHS** as the primary algebraic backend. This
-choice is settled; dependency versions and executable integration are not yet
-established. The eventual checkpoint is:
+choice is settled; Pyomo **6.10.1** and HiGHS **1.15.1** are pinned and verified.
+The implemented affine checkpoint is:
 
 ```text
 Model₀ + Specification → execute → finalized Run + accepted immutable output Model(s)
@@ -274,10 +299,11 @@ does not add publication authorization. No agents have been delegated work.
 
 > Continue the Rangekeeper acausal modelling work from
 > `docs/handoffs/2026-10-02-acausal-modelling.md`. Verify the Rangekeeper checkout
-> and preserve existing work. LinkML and Pyomo with HiGHS are selected. Step 1 is
-> complete: read `docs/DOMAIN_MIGRATION_MAP.md` and its linked baseline. Begin
-> work unit 2A, then build the minimal schema-backed core directly in the intended library
-> packages and implement `rangekeeper.execution` against it. Verify genuine
-> forward/inverse Runs, immutable outputs, independent numerical acceptance,
-> output reuse, and batch/failure accounting. Migrate graph consumers incrementally.
+> and preserve existing work. LinkML and Pyomo with HiGHS are selected. Steps 1–5
+> are implemented, plus Step 6A/6B: read `docs/DOMAIN_MIGRATION_MAP.md`,
+> `docs/SCALAR_EXECUTION.md`, `docs/GRAPH_MODEL.md` and their retained evidence.
+> Step 6C/6D is implemented: read `docs/CONSUMER_MIGRATION.md`.
+> Continue with Step 6E: migrate external consumers in
+> bounded slices with acceptance checks before retiring old domain code.
+> Preserve genuine forward/inverse execution, independent acceptance and batch accounting.
 > Do not reopen native CUE research or create a temporary `schema/execution/` core.

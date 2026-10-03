@@ -1,8 +1,12 @@
 # Rangekeeper documentation and current work plan
 
-Updated 2026-10-02. This index distinguishes the active acausal-modelling plan,
+Updated 2026-10-03. This index distinguishes the active acausal-modelling plan,
 existing graph APIs, and historical research. A planned API is not evidence of
 an implemented runtime.
+
+Current consumer checkpoint: [Model tables, adapters, and source workflows](CONSUMER_MIGRATION.md)
+(6C/6D), with [verification](research/consumer-migration/README.md). Next: 6E,
+external consumer migration, then 6F retirement of the remaining old Graph code.
 
 ## Overall goal
 
@@ -23,8 +27,8 @@ development choices and adaptive policies across market scenarios.
 - **Retain LinkML.** Daniel closed the CUE comparison for this stage after reviewing
   the evidence and integration trade-offs. Native CUE suitability was not fully
   evaluated; this is a deliberate choice, not proof that CUE cannot meet the contract.
-- **Use Pyomo with HiGHS.** Backend selection is settled; tested versions and actual
-  execution integration still need to be established.
+- **Use Pyomo with HiGHS.** Pyomo 6.10.1 and HiGHS 1.15.1 are pinned and verified
+  through actual scalar execution and installed-wheel checks.
 - **Replace the domain foundation before execution.** The existing Graph container,
   Characteristics/Value representation, identity resolution, revision machinery,
   and persistence do not implement the complete schema contract. Build the minimal
@@ -44,17 +48,23 @@ development choices and adaptive policies across market scenarios.
   [retained verification](research/domain-migration/validation-refactor/README.md).
   [Turn 3](RUN_AND_STORAGE.md) implements Run, codecs, revision stores and root exports;
   [verification](research/domain-migration/turn3/README.md) covers installed-core operations.
-  Scalar execution is next. No new
-  schema-backed library executor has produced the synthetic Run/output fixtures.
+  [Step 5](SCALAR_EXECUTION.md) implements actual affine scalar execution with
+  independent acceptance, immutable publication and sequential batches; its
+  [evidence](research/scalar-execution/README.md) is separate from synthetic fixtures.
+  [Step 6A/6B](GRAPH_MODEL.md) now implements Model-backed views, explicit hierarchy
+  and Value reductions. [Graph verification](research/graph-migration/README.md)
+  records 783 passing tests, the same two baseline failures, and passing schema,
+  typing and installed-package checks.
 - **The CUE audit is complete within its stated scope.** All seven schema suites
   passed again. The original bounded import probe reproduced case for case; the
   full five-second pass produced 572 matching outcomes, 28 differences, 106
   timeouts, and seven non-JSON inputs across 713 pairs. These are import-route
   observations, not native CUE or semantic-parity results.
-- This checkpoint contains the documentation/research and Turn 1–3 implementation
-  on `acausal-modelling`, built from `c91a76c`. Retained verification snapshots record
-  the pre-commit state. The unrelated `.gitignore` edit is excluded from the checkpoint.
-  Recheck live state before implementation; preserve unrelated work.
+- The core checkpoint was committed as `53f5d3e` on `acausal-modelling`. Step 5
+  builds on it as local work, with 745 passing tests and the same two baseline
+  failures. Retained verification snapshots record the tested sources. No commit
+  or push is part of Step 5; the unrelated `.gitignore` edit is preserved.
+  Recheck live state before continuing.
 
 ## Implementation sequence and next step
 
@@ -71,10 +81,12 @@ development choices and adaptive policies across market scenarios.
 4. **Complete the first usable library checkpoint.** Expose the public API and
    verify the installed core outside the checkout, with optional solver dependencies.
    **Completed:** work unit 4; external consumer acceptance remains later.
-5. **Next: implement and verify scalar execution.** Probe/pin Pyomo/HiGHS, execute the
+5. **Implement and verify scalar execution — completed.** Probe/pin Pyomo/HiGHS, execute the
    declared mathematics, independently check candidates, and publish authentic Runs.
-6. **Migrate consumers and retire the old domain implementation.** Adapt graph
-   operations, adapters, workflows, integrations, and walkthroughs with acceptance checks.
+6. **Consumer migration is underway.** [Step 6A/6B](GRAPH_MODEL.md) implements
+   Model-backed selections, hierarchy and reductions. [6C/6D](CONSUMER_MIGRATION.md)
+   adds tables, presentation adapters, and source workflows. Next is 6E: external
+   consumer migration.
 
 The [domain migration plan](DOMAIN_MIGRATION_PLAN.md) records these six checkpoints
 and the detailed Step 1 work plan. Steps 1–4 form the first implementation slice.
@@ -99,6 +111,8 @@ contains the full acceptance boundary.
 | --- | --- |
 | [Library architecture](LIBRARY_ARCHITECTURE.md) | Current package responsibilities, replacement map, implementation sequence, and acceptance criteria. |
 | [Run and storage](RUN_AND_STORAGE.md) | Implemented Turn 3 public roots, finalized Runs, strict codecs, immutable stores and execution boundary. |
+| [Model-backed graph operations](GRAPH_MODEL.md) | Implemented 6A/6B APIs, explicit legacy transition, and remaining Step 6 slices. |
+| [Scalar execution](SCALAR_EXECUTION.md) | Implemented Step 5 API, affine capability, solver/acceptance separation, settings, limits, provenance and actual execution evidence. |
 | [Model/Specification APIs](DOMAIN_CORE.md) | Implemented Turn 2 domain operations, docstrings, examples and limits. |
 | [Record boundary](RECORD_BOUNDARY.md) | Implemented Turn 1 APIs, examples, factoring and verification links. |
 | [Domain migration plan](DOMAIN_MIGRATION_PLAN.md) | Six implementation checkpoints and retained Step 1 work queue; Step 1 is complete. |

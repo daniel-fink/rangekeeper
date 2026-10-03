@@ -4,10 +4,10 @@ from dataclasses import replace
 
 import pytest
 
-from rangekeeper.graph.provenance import Claim, Location, Source
-from rangekeeper.graph.workflow import load, run
-from rangekeeper.graph.workflow.checking import evaluate
-from rangekeeper.graph.workflow.references import references
+from rangekeeper.evidence import Claim, Location, Source
+from rangekeeper.workflow import load, run
+from rangekeeper.workflow.checking import evaluate
+from rangekeeper.workflow.references import references
 
 from .test_workflow import example
 
@@ -38,14 +38,14 @@ def comparison(left, right):
 def test_operand_missingness_retains_both_sides(built):
     _, _, result = built
     total = {"kind": "table_total", "table": "items", "column": "number_size"}
-    checks = evaluate(comparison(total, total), result.graph, {}, result.evidence)
+    checks = evaluate(comparison(total, total), result.model, {}, result.evidence)
     check = checks[0]
     assert check.status == "unavailable"
     assert check.left_missing == check.right_missing and len(check.right_missing) == 1
     assert check.left_known_subtotal == check.right_known_subtotal == 12
     reverse = evaluate(
         comparison({"kind": "value", "value": 12}, total),
-        result.graph,
+        result.model,
         {},
         result.evidence,
     )[0]
@@ -87,19 +87,19 @@ def test_non_excel_capability_runs_without_runner_changes(tmp_path, monkeypatch)
     from dataclasses import dataclass
     from uuid import uuid5
 
-    from rangekeeper.graph import _structured
-    from rangekeeper.graph.adapter.json import dumps
-    from rangekeeper.graph.operation import _Failure, _invoke
-    from rangekeeper.graph.provenance import Method
-    from rangekeeper.graph.workflow import _audit, catalog, schema
-    from rangekeeper.graph.workflow._contracts import (
+    from rangekeeper import _structured
+    from rangekeeper.io.json import dumps
+    from rangekeeper.operation import _Failure, _invoke
+    from rangekeeper.evidence import Method
+    from rangekeeper.workflow import _audit, catalog, schema
+    from rangekeeper.workflow._contracts import (
         OperationDeclaration,
         Produced,
         SourceCheckDeclaration,
     )
-    from rangekeeper.graph.workflow.ingestion import fingerprint, tabular
-    from rangekeeper.graph.workflow.source_checks import SourceCheck
-    from rangekeeper.graph.workflow.specification import StepSpec, WorkflowSpec
+    from rangekeeper.workflow.ingestion import fingerprint, tabular
+    from rangekeeper.workflow.source_checks import SourceCheck
+    from rangekeeper.workflow.specification import StepSpec, WorkflowSpec
 
     @dataclass(frozen=True)
     class ReadRecords:
@@ -267,7 +267,10 @@ def test_non_excel_capability_runs_without_runner_changes(tmp_path, monkeypatch)
     )
     result = run(spec, input_root=tmp_path).output
     assert result is not None
-    assert len(result.graph.entities) == 1 and result.graph.entities[0].code == "P1"
+    assert (
+        len(result.model.system.entities) == 1
+        and result.model.system.entities[0].code == "P1"
+    )
     assert result.source_checks[0].status == "passed"
     assert result.metadata["sources"]["native"]["name"] == "Inventory"
     assert ":row:" in result.metadata["deferred_records"][0]
@@ -281,7 +284,7 @@ def test_non_excel_capability_runs_without_runner_changes(tmp_path, monkeypatch)
     ]
     assert "openpyxl" not in result.metadata["dependencies"]
     repeat = run(spec, input_root=tmp_path).output
-    assert dumps(result.graph) == dumps(repeat.graph)
+    assert dumps(result.model) == dumps(repeat.model)
     assert result.metadata == repeat.metadata
     before = len(visits)
     failed = replace(
@@ -306,7 +309,7 @@ def test_foundations_do_not_load_workflow_or_adapters():
         [
             sys.executable,
             "-c",
-            "import sys; from rangekeeper.graph import operation, _structured; assert not any(n.startswith(('rangekeeper.graph.workflow', 'rangekeeper.graph.adapter')) for n in sys.modules)",
+            "import sys; from rangekeeper import operation, _structured; assert not any(n.startswith(('rangekeeper.workflow', 'rangekeeper.adapters')) for n in sys.modules)",
         ],
         check=True,
     )
@@ -320,29 +323,29 @@ def test_adapter_registration_does_not_load_runner():
         [
             sys.executable,
             "-c",
-            "import sys; from rangekeeper.graph.adapter.excel import workflow; assert 'rangekeeper.graph.workflow.runtime' not in sys.modules; assert 'rangekeeper.graph.workflow.catalog' not in sys.modules",
+            "import sys; from rangekeeper.adapters.excel import workflow; assert 'rangekeeper.workflow.runtime' not in sys.modules; assert 'rangekeeper.workflow.catalog' not in sys.modules",
         ],
         check=True,
     )
 
 
 def test_native_code_fingerprints_are_declared(tmp_path):
-    from rangekeeper.graph.workflow.implementation import manifests
+    from rangekeeper.workflow.implementation import manifests
 
-    adapter = tmp_path / "graph/adapter/records"
+    adapter = tmp_path / "adapters/records"
     adapter.mkdir(parents=True)
     module = adapter / "reader.py"
     module.write_text("value = 1")
     unused = manifests(tmp_path)[2]
-    used = manifests(tmp_path, modules=("graph/adapter/records/",))[2]
+    used = manifests(tmp_path, modules=("adapters/records/",))[2]
     module.write_text("value = 2")
     assert manifests(tmp_path)[2] == unused
-    assert manifests(tmp_path, modules=("graph/adapter/records/",))[2] != used
+    assert manifests(tmp_path, modules=("adapters/records/",))[2] != used
 
 
 def test_catalog_schema_and_parsing_agree(tmp_path):
-    from rangekeeper.graph.workflow import catalog, schema
-    from rangekeeper.graph.workflow.specification import StepSpec
+    from rangekeeper.workflow import catalog, schema
+    from rangekeeper.workflow.specification import StepSpec
 
     _, docs = example(tmp_path)
     schemas = schema()["operations"]
@@ -364,8 +367,8 @@ def test_catalog_schema_and_parsing_agree(tmp_path):
 def test_generic_numeric_source_check(built):
     from uuid import uuid4
 
-    from rangekeeper.graph.workflow.ingestion import Issue, IssueSeverity, tabular
-    from rangekeeper.graph.workflow.source_checks import evaluate
+    from rangekeeper.workflow.ingestion import Issue, IssueSeverity, tabular
+    from rangekeeper.workflow.source_checks import evaluate
 
     uid = uuid4()
     claim = Claim.sourced(

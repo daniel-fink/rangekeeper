@@ -1,0 +1,349 @@
+{
+  "branch": "acausal-modelling",
+  "head": "53f5d3e72f97b7099bcc7973386ba47ccb4b7784",
+  "tests": 799,
+  "passed": 798,
+  "failures": [
+    "tests.test_formulas.TestSolver::test_residual"
+  ],
+  "errors": 0,
+  "skipped": 0,
+  "live_api_tests_excluded": 3,
+  "preserved_core_files": 57,
+  "preserved_schema_and_fixture_files": 56,
+  "static_checked_sources": 80,
+  "schema_suites": 7,
+  "viewer_bundle_tests": 27,
+  "scalar_example": "scalar-1791018496853424000",
+  "scalar_results": {
+    "source_model": "bc121ef7-14a4-5a5c-9347-b6b9bea5ee47",
+    "authored_model": "bc1ef8f0-6c44-4930-8825-5d76dfb6a33e",
+    "forward_run": "52759a73-b5c8-41d5-abb3-2a47f9f479a2",
+    "inverse_run": "8101b0a3-6ffb-49ee-ac7e-2da3cbc74cac",
+    "forward_gross": {
+      "magnitude": 20.0,
+      "units": "meter**2"
+    },
+    "inverse_net": {
+      "magnitude": 25.0,
+      "units": "meter**2"
+    }
+  },
+  "latest_checks": {
+    "environment": {
+      "argv": [
+        "/private/tmp/rk-scalar-runtime/bin/python",
+        "-c",
+        "import sys,platform,importlib.metadata as m,json,rangekeeper;print(sys.version);print(platform.platform());print(rangekeeper.__file__);print(json.dumps({d.metadata['Name']:d.version for d in m.distributions()},sort_keys=True))"
+      ],
+      "cwd": "/Volumes/Data/Projects/Rangekeeper/src",
+      "exit_code": 0,
+      "log": "environment-1791018280961591000.log",
+      "elapsed_seconds": 0.3059904580004513,
+      "environment": {
+        "PYTHONPATH": null,
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYSTOW_HOME": "/private/tmp/rk-domain-migration-pystow",
+        "MPLBACKEND": "Agg",
+        "MPLCONFIGDIR": "/private/tmp/rk-mpl-cache"
+      }
+    },
+    "schema-environment": {
+      "argv": [
+        "/private/tmp/rk-probe-audit-venv/bin/python",
+        "-c",
+        "import sys,importlib.metadata as m,json;print(sys.version);print(json.dumps({name:m.version(name) for name in ('linkml','linkml-runtime','jsonschema','PyYAML')},sort_keys=True))"
+      ],
+      "cwd": "/Volumes/Data/Projects/Rangekeeper",
+      "exit_code": 0,
+      "log": "schema-environment-1791018281268380000.log",
+      "elapsed_seconds": 0.04644275002647191,
+      "environment": {
+        "PYTHONPATH": null,
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYSTOW_HOME": "/private/tmp/rk-domain-migration-pystow",
+        "MPLBACKEND": "Agg",
+        "MPLCONFIGDIR": "/private/tmp/rk-mpl-cache"
+      }
+    },
+    "generation": {
+      "argv": [
+        "/private/tmp/rk-probe-audit-venv/bin/python",
+        "tools/schema/generate.py",
+        "--check"
+      ],
+      "cwd": "/Volumes/Data/Projects/Rangekeeper",
+      "exit_code": 0,
+      "log": "generation-1791018281315229000.log",
+      "elapsed_seconds": 1.765301792009268,
+      "environment": {
+        "PYTHONPATH": null,
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYSTOW_HOME": "/private/tmp/rk-domain-migration-pystow",
+        "MPLBACKEND": "Agg",
+        "MPLCONFIGDIR": "/private/tmp/rk-mpl-cache"
+      }
+    },
+    "typing": {
+      "argv": [
+        "/private/tmp/rk-probe-audit-venv/bin/python",
+        "tools/schema/typecheck.py"
+      ],
+      "cwd": "/Volumes/Data/Projects/Rangekeeper",
+      "exit_code": 0,
+      "log": "typing-1791018455700759000.log",
+      "elapsed_seconds": 3.2687979170004837,
+      "environment": {
+        "PYTHONPATH": "/private/tmp/rk-record-typecheck",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYSTOW_HOME": "/private/tmp/rk-domain-migration-pystow",
+        "MPLBACKEND": "Agg",
+        "MPLCONFIGDIR": "/private/tmp/rk-mpl-cache"
+      }
+    },
+    "native": {
+      "argv": [
+        "/private/tmp/rk-probe-audit-venv/bin/python",
+        "tools/schema/verify_native.py"
+      ],
+      "cwd": "/Volumes/Data/Projects/Rangekeeper",
+      "exit_code": 0,
+      "log": "native-1791018286279806000.log",
+      "elapsed_seconds": 0.5920836249715649,
+      "environment": {
+        "PYTHONPATH": null,
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYSTOW_HOME": "/private/tmp/rk-domain-migration-pystow",
+        "MPLBACKEND": "Agg",
+        "MPLCONFIGDIR": "/private/tmp/rk-mpl-cache"
+      }
+    },
+    "schema-validate": {
+      "argv": [
+        "/private/tmp/rk-probe-audit-venv/bin/python",
+        "schema/checks/validate.py"
+      ],
+      "cwd": "/Volumes/Data/Projects/Rangekeeper",
+      "exit_code": 0,
+      "log": "schema-validate-1791018286872404000.log",
+      "elapsed_seconds": 1.699693083006423,
+      "environment": {
+        "PYTHONPATH": null,
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYSTOW_HOME": "/private/tmp/rk-domain-migration-pystow",
+        "MPLBACKEND": "Agg",
+        "MPLCONFIGDIR": "/private/tmp/rk-mpl-cache"
+      }
+    },
+    "schema-native_roundtrip": {
+      "argv": [
+        "/private/tmp/rk-probe-audit-venv/bin/python",
+        "schema/checks/native_roundtrip.py"
+      ],
+      "cwd": "/Volumes/Data/Projects/Rangekeeper",
+      "exit_code": 0,
+      "log": "schema-native_roundtrip-1791018288572582000.log",
+      "elapsed_seconds": 1.180522791983094,
+      "environment": {
+        "PYTHONPATH": null,
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYSTOW_HOME": "/private/tmp/rk-domain-migration-pystow",
+        "MPLBACKEND": "Agg",
+        "MPLCONFIGDIR": "/private/tmp/rk-mpl-cache"
+      }
+    },
+    "schema-expressions": {
+      "argv": [
+        "/private/tmp/rk-probe-audit-venv/bin/python",
+        "schema/checks/expressions.py"
+      ],
+      "cwd": "/Volumes/Data/Projects/Rangekeeper",
+      "exit_code": 0,
+      "log": "schema-expressions-1791018289753491000.log",
+      "elapsed_seconds": 2.6969666659715585,
+      "environment": {
+        "PYTHONPATH": null,
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYSTOW_HOME": "/private/tmp/rk-domain-migration-pystow",
+        "MPLBACKEND": "Agg",
+        "MPLCONFIGDIR": "/private/tmp/rk-mpl-cache"
+      }
+    },
+    "schema-formulations": {
+      "argv": [
+        "/private/tmp/rk-probe-audit-venv/bin/python",
+        "schema/checks/formulations.py"
+      ],
+      "cwd": "/Volumes/Data/Projects/Rangekeeper",
+      "exit_code": 0,
+      "log": "schema-formulations-1791018292450989000.log",
+      "elapsed_seconds": 2.3434126659994945,
+      "environment": {
+        "PYTHONPATH": null,
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYSTOW_HOME": "/private/tmp/rk-domain-migration-pystow",
+        "MPLBACKEND": "Agg",
+        "MPLCONFIGDIR": "/private/tmp/rk-mpl-cache"
+      }
+    },
+    "schema-models": {
+      "argv": [
+        "/private/tmp/rk-probe-audit-venv/bin/python",
+        "schema/checks/models.py"
+      ],
+      "cwd": "/Volumes/Data/Projects/Rangekeeper",
+      "exit_code": 0,
+      "log": "schema-models-1791018294794900000.log",
+      "elapsed_seconds": 2.8452960409922525,
+      "environment": {
+        "PYTHONPATH": null,
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYSTOW_HOME": "/private/tmp/rk-domain-migration-pystow",
+        "MPLBACKEND": "Agg",
+        "MPLCONFIGDIR": "/private/tmp/rk-mpl-cache"
+      }
+    },
+    "schema-specifications": {
+      "argv": [
+        "/private/tmp/rk-probe-audit-venv/bin/python",
+        "schema/checks/specifications.py"
+      ],
+      "cwd": "/Volumes/Data/Projects/Rangekeeper",
+      "exit_code": 0,
+      "log": "schema-specifications-1791018297640648000.log",
+      "elapsed_seconds": 3.852576582983602,
+      "environment": {
+        "PYTHONPATH": null,
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYSTOW_HOME": "/private/tmp/rk-domain-migration-pystow",
+        "MPLBACKEND": "Agg",
+        "MPLCONFIGDIR": "/private/tmp/rk-mpl-cache"
+      }
+    },
+    "schema-runs": {
+      "argv": [
+        "/private/tmp/rk-probe-audit-venv/bin/python",
+        "schema/checks/runs.py"
+      ],
+      "cwd": "/Volumes/Data/Projects/Rangekeeper",
+      "exit_code": 0,
+      "log": "schema-runs-1791018301493663000.log",
+      "elapsed_seconds": 12.286650750029366,
+      "environment": {
+        "PYTHONPATH": null,
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYSTOW_HOME": "/private/tmp/rk-domain-migration-pystow",
+        "MPLBACKEND": "Agg",
+        "MPLCONFIGDIR": "/private/tmp/rk-mpl-cache"
+      }
+    },
+    "installed": {
+      "argv": [
+        "/private/tmp/rk-probe-audit-venv/bin/python",
+        "tools/schema/verify_install.py",
+        "--runtime-python=/private/tmp/rk-scalar-runtime/bin/python",
+        "--execution-python=/private/tmp/rk-scalar-runtime/bin/python",
+        "--workflow-python=/private/tmp/rk-scalar-runtime/bin/python"
+      ],
+      "cwd": "/Volumes/Data/Projects/Rangekeeper",
+      "exit_code": 0,
+      "log": "installed-1791018458970160000.log",
+      "elapsed_seconds": 30.41867441602517,
+      "environment": {
+        "PYTHONPATH": null,
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYSTOW_HOME": "/private/tmp/rk-domain-migration-pystow",
+        "MPLBACKEND": "Agg",
+        "MPLCONFIGDIR": "/private/tmp/rk-mpl-cache"
+      }
+    },
+    "pytest-inventory": {
+      "argv": [
+        "/private/tmp/rk-scalar-runtime/bin/python",
+        "-m",
+        "pytest",
+        "tests",
+        "--collect-only",
+        "-q",
+        "--ignore=tests/test_api.py"
+      ],
+      "cwd": "/Volumes/Data/Projects/Rangekeeper/src",
+      "exit_code": 0,
+      "log": "pytest-inventory-1791018489390349000.log",
+      "elapsed_seconds": 7.037653666979168,
+      "environment": {
+        "PYTHONPATH": null,
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYSTOW_HOME": "/private/tmp/rk-domain-migration-pystow",
+        "MPLBACKEND": "Agg",
+        "MPLCONFIGDIR": "/private/tmp/rk-mpl-cache"
+      }
+    },
+    "viewer-tests": {
+      "argv": [
+        "npm",
+        "test"
+      ],
+      "cwd": "/Volumes/Data/Projects/Rangekeeper/src/rangekeeper/adapters/cytoscape/client",
+      "exit_code": 0,
+      "log": "viewer-tests-1791018496429370000.log",
+      "elapsed_seconds": 0.42344241600949317,
+      "environment": {
+        "PYTHONPATH": null,
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYSTOW_HOME": "/private/tmp/rk-domain-migration-pystow",
+        "MPLBACKEND": "Agg",
+        "MPLCONFIGDIR": "/private/tmp/rk-mpl-cache"
+      }
+    },
+    "workflow-scalar": {
+      "argv": [
+        "/private/tmp/rk-scalar-runtime/bin/python",
+        "/Volumes/Data/Projects/Rangekeeper/tools/workflow/scalar.py",
+        "--output",
+        "/Volumes/Data/Projects/Rangekeeper/docs/research/consumer-migration/scalar-1791018496853424000"
+      ],
+      "cwd": "/Volumes/Data/Projects/Rangekeeper/src",
+      "exit_code": 0,
+      "log": "workflow-scalar-1791018496853460000.log",
+      "elapsed_seconds": 3.768456707999576,
+      "environment": {
+        "PYTHONPATH": "/Volumes/Data/Projects/Rangekeeper/src",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYSTOW_HOME": "/private/tmp/rk-domain-migration-pystow",
+        "MPLBACKEND": "Agg",
+        "MPLCONFIGDIR": "/private/tmp/rk-mpl-cache"
+      }
+    },
+    "pytest": {
+      "argv": [
+        "/private/tmp/rk-scalar-runtime/bin/python",
+        "-m",
+        "pytest",
+        "tests",
+        "-q",
+        "--tb=short",
+        "--ignore=tests/test_api.py",
+        "-o",
+        "cache_dir=/private/tmp/rk-consumers-pytest-cache",
+        "--junitxml=/Volumes/Data/Projects/Rangekeeper/docs/research/consumer-migration/pytest.xml"
+      ],
+      "cwd": "/Volumes/Data/Projects/Rangekeeper/src",
+      "exit_code": 1,
+      "log": "pytest-1791018500622764000.log",
+      "elapsed_seconds": 129.98381812497973,
+      "environment": {
+        "PYTHONPATH": null,
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYSTOW_HOME": "/private/tmp/rk-domain-migration-pystow",
+        "MPLBACKEND": "Agg",
+        "MPLCONFIGDIR": "/private/tmp/rk-mpl-cache"
+      }
+    }
+  },
+  "limits": [
+    "External projects, notebooks and live services were not executed.",
+    "Browser interaction was not tested; Python viewer export and installed assets passed.",
+    "TypeScript rebuilding was not verified: compiler dependencies were absent and offline npm installation lacked cached packages. Existing unchanged viewer bundles passed 27 tests."
+  ]
+}

@@ -19,7 +19,7 @@ from rangekeeper.graph import (
     Taxonomy,
 )
 from rangekeeper.graph.adapter import json as adapter
-from rangekeeper.graph.adapter.errors import AdapterEncodingError
+from rangekeeper.adapters.errors import AdapterEncodingError
 from rangekeeper.graph.provenance import (
     Claim,
     Fact,

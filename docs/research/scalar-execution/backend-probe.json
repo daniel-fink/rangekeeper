@@ -1,0 +1,12 @@
+{
+  "pyomo": "6.10.1",
+  "highspy": "1.15.1",
+  "termination": "convergenceCriteriaSatisfied",
+  "solution": "optimal",
+  "values": [
+    550000.0,
+    11000000.0
+  ],
+  "iterations": 0,
+  "highs_time": 0.002633000025525689
+}

@@ -1,11 +1,14 @@
 # Model, Specification, and Run: object model and requirements
 
 Status: semantic specification with drafted scalar record contracts; implementation
-plan updated 2026-10-02. Initially recorded 2026-09-24. The authoritative record
+plan updated 2026-10-03. Initially recorded 2026-09-24. The authoritative record
 shapes are in `schema/`. Generated records and the
 [Model/Specification library APIs](DOMAIN_CORE.md) and
 [Run/storage APIs](RUN_AND_STORAGE.md), including final root exports, are implemented.
-Numerical execution and consumer migration remain pending. Historical updates below explain how the current contract evolved.
+[Affine scalar execution](SCALAR_EXECUTION.md) and
+[Model-backed graph selection/reduction](GRAPH_MODEL.md) are implemented.
+Table, adapter and source-consumer migration follow. Historical updates below
+explain how the current contract evolved.
 
 **Agreed** records established semantics. **Proposed** and **Open** identify
 extensions or unresolved implementation details; earlier proposals do not override
@@ -19,8 +22,8 @@ use Pyomo with HiGHS for the first affine scalar execution. The
 directly in the intended library packages before implementing execution. Graph
 algorithms and numerical routines are assessed for reuse; existing consumers
 migrate incrementally. The earlier temporary repository executor and later
-library-promotion sequence is superseded. Solver integration and dependency
-versions still need an executable probe.
+library-promotion sequence is superseded. Pyomo 6.10.1 and HiGHS 1.15.1 are now
+pinned and verified through actual forward/inverse execution and installed-wheel checks.
 
 **2026-09-29 update (corrected):** the agreed high-level Entity structure is `id`,
 `code`, `name`, `classification`, and `characteristics`. The optional `code` is a
@@ -836,8 +839,8 @@ Represent unsupported problems, underdetermination, inconsistency, numerical fai
 and proven infeasibility accurately. Do not claim uniqueness or optimality without
 supporting analysis. A schema validator does not perform these mathematical checks.
 
-**Selected:** Pyomo with HiGHS for the affine scalar checkpoint. Integration,
-version pinning, and capability registration remain implementation work. Scalar/indexed variables,
+**Implemented:** Pyomo 6.10.1 with HiGHS 1.15.1 for the affine scalar checkpoint,
+with explicit capability checks and independent candidate acceptance. Scalar/indexed variables,
 constraints, components, and finite choices have familiar mathematical representations;
 arbitrary entity constructors do not automatically have one.
 
@@ -860,8 +863,9 @@ if both are unknown. A module-wide compatibility flag would hide that distinctio
 | Later | Full overdraft/threshold logic, min/max, variable timing, use choices, changing index sets or structure | Require explicit piecewise, discrete, or structural formulations and suitable backend support. |
 | Separate numerical stage initially | Random draws and market-path generation; arbitrary policy callbacks | Supply saved scenarios to the valuation model. A callback is not automatically an algebraic formulation. |
 
-These are mathematical assessments from source review, not executed solver
-compatibility results. Distribution-based allocation with fixed parameters can
+The broader priorities above are mathematical assessments from source review.
+Only the [bounded affine scalar subset](SCALAR_EXECUTION.md#supported-mathematics)
+has executed solver evidence. Distribution-based allocation with fixed parameters can
 provide deterministic weights even when sampling from that distribution remains
 outside the algebraic solve. Precomputing a quantity that depends on an unknown
 would incorrectly remove its dependency and is not an allowed shortcut.
@@ -902,9 +906,10 @@ generator for Monte Carlo evaluation is not.
 
 ## 6. Progressive specification and acceptance examples
 
-These are **proposed future checks**, not implemented tests. At each stage, first
-write the input Model, Specification variants, expected output Model properties, and failure
-cases. Then settle the required child schema and implement that stage.
+S1 and the bounded affine portion of S2 now have [executed checks](research/scalar-execution/README.md).
+The later stages remain proposed. At each new stage, first write the input Model,
+Specification variants, expected output Model properties, and failure cases.
+Then settle the required child schema and implement that stage.
 
 | Stage | Example | Required evidence |
 | --- | --- | --- |
@@ -936,8 +941,9 @@ illustrative arithmetic inputs, not calibrated financial assumptions.
 
 P2 must not inherit P1's fixed-rent role or enforce the previous NOI/value resolutions.
 Model₀ and Model₁ remain unchanged. Declaration identities and symbolic equations
-survive both Runs. The expected values above follow directly from the equations;
-they are not results from an implemented adapter.
+survive both Runs. The values above are now also observed results from the
+implemented adapter, with genuine forward-output reuse and retained
+[Run and Model evidence](research/scalar-execution/README.md).
 
 ## 7. Next implementation and later specification work
 
@@ -952,23 +958,23 @@ Follow the [library migration sequence](LIBRARY_ARCHITECTURE.md#migration-checkp
    UUID resolution, generated-record access, immutability, public interfaces,
    and the consumers that must migrate. Distinguish reusable algorithms from
    obsolete data-model assumptions.
-2. Build the minimal schema-backed core directly in `src/rangekeeper/`: private
+2. **Completed:** build the minimal schema-backed core directly in `src/rangekeeper/`: private
    generated records/validators, domain APIs, composition, codecs, and immutable
    revision storage. Check packaged use before relying on it for execution.
-3. Probe and pin Pyomo/HiGHS, then implement scalar execution in
+3. **Completed:** probe and pin Pyomo/HiGHS, then implement scalar execution in
    `rangekeeper.execution` against this core. Use the actual composed
    Specifications and declared expressions; independently verify candidates
    before publishing authentic forward/inverse Runs and new Model revisions.
-4. Reuse a genuine output with new solve roles; check failures, numerical limits,
+4. **Completed for the affine slice:** reuse a genuine output with new solve roles; check failures, numerical limits,
    units, settings, provenance, and direct batch accounting. Temporary
    Specification mathematics does not become permanent Model mathematics.
-5. Migrate graph operations and consumers incrementally; then add temporal and
+5. **Next:** migrate graph operations and consumers incrementally; then add temporal and
    financial Value schemas, indexed formulations, scenario evaluation, committed
    choices, and policies in the order described in section 5.1. Reusable
    templates follow demonstrated requirements.
 
 The generated-record/domain API boundary and initial unit policy are specified in
-the migration map; production generation and verification remain to be implemented.
+the migration map; production generation and verification are implemented.
 Remaining design work includes additional unit profiles and backend capabilities,
 rich Value payloads, policy/intervention
 semantics, structural publication, and full derived-provenance linkage. Scalar

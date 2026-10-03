@@ -1,0 +1,31 @@
+{
+  "checks": [
+    {
+      "id": "fact_coverage",
+      "group": "Invariants",
+      "scope": "fact_coverage",
+      "left": true,
+      "right": true,
+      "status": "agree",
+      "explanation": "Model structural invariant",
+      "references": [],
+      "targets": [],
+      "known_subtotal": null,
+      "missing": [],
+      "purpose": "invariant",
+      "category": "invariant",
+      "source": "",
+      "left_members": [],
+      "right_members": [],
+      "left_missing": [],
+      "right_missing": [],
+      "left_known_subtotal": null,
+      "right_known_subtotal": null
+    }
+  ],
+  "source_checks": [],
+  "deferred_records": [],
+  "findings": [],
+  "deferred": [],
+  "notes": []
+}

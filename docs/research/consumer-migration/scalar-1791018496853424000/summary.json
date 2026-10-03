@@ -1,0 +1,14 @@
+{
+  "source_model": "bc121ef7-14a4-5a5c-9347-b6b9bea5ee47",
+  "authored_model": "bc1ef8f0-6c44-4930-8825-5d76dfb6a33e",
+  "forward_run": "52759a73-b5c8-41d5-abb3-2a47f9f479a2",
+  "inverse_run": "8101b0a3-6ffb-49ee-ac7e-2da3cbc74cac",
+  "forward_gross": {
+    "magnitude": 20.0,
+    "units": "meter**2"
+  },
+  "inverse_net": {
+    "magnitude": 25.0,
+    "units": "meter**2"
+  }
+}

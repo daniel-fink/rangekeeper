@@ -1,0 +1,107 @@
+{
+  "metadata": {
+    "id": "52759a73-b5c8-41d5-abb3-2a47f9f479a2",
+    "schema_version": "0.1.0"
+  },
+  "specification": "5de9f8a3-ebc6-413a-847d-51b90da924fa",
+  "outputs": [
+    "2cd65501-300f-41cd-96bc-66c597f0e1a2"
+  ],
+  "report": {
+    "status": {
+      "completion": "completed",
+      "solution": "feasible"
+    },
+    "runtime": {
+      "started_at": "2026-10-03T09:08:17.894926+00:00",
+      "finished_at": "2026-10-03T09:08:18.633057+00:00",
+      "implementations": [
+        {
+          "kind": "compiler",
+          "name": "rangekeeper.scalar",
+          "version": "1"
+        },
+        {
+          "kind": "compiler",
+          "name": "Pyomo",
+          "version": "6.10.1"
+        },
+        {
+          "kind": "solver",
+          "name": "HiGHS",
+          "version": "1.15.1"
+        },
+        {
+          "kind": "evaluator",
+          "name": "rangekeeper.scalar.original_expressions",
+          "version": "1"
+        }
+      ],
+      "settings": {
+        "iteration_limit": 100000,
+        "time_limit": 30.0
+      }
+    },
+    "diagnostics": [
+      {
+        "severity": "info",
+        "code": "solver_scaling",
+        "message": "[{\"constraint\": \"09f214e1-9701-4aea-89b2-4fb8d379ea73\", \"divisor\": 1.0, \"residual_units\": \"meter**2\"}]"
+      },
+      {
+        "severity": "info",
+        "code": "solver_termination",
+        "message": "{\"termination\": \"convergenceCriteriaSatisfied\", \"solution_status\": \"optimal\", \"simplex_iterations\": 0, \"highs_seconds\": 0.0009934590198099613, \"worker_seconds\": 0.29289904196048155, \"solver_time_limit\": 29.599899999040645, \"solver_options\": {\"solver\": \"simplex\", \"presolve\": \"on\", \"parallel\": \"off\", \"random_seed\": 0, \"simplex_iteration_limit\": 100000, \"small_matrix_value\": 1e-12, \"primal_feasibility_tolerance\": 1e-07, \"dual_feasibility_tolerance\": 1e-07, \"output_flag\": false}, \"threads\": 1, \"equality_rank\": 1, \"unknown_count\": 1, \"has_bounds\": false, \"unconstrained_values_initialized_to_zero\": []}"
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "bc1ef8f0-6c44-4930-8825-5d76dfb6a33e",
+        "target": "09f214e1-9701-4aea-89b2-4fb8d379ea73",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "meter**2"
+        },
+        "tolerance": {
+          "magnitude": 3.0000000000000004e-08,
+          "units": "meter**2"
+        }
+      },
+      {
+        "severity": "info",
+        "code": "feasible_candidate",
+        "message": "Original expressions, assignments and bounds accepted. No uniqueness or optimization claim is made."
+      },
+      {
+        "severity": "info",
+        "code": "attempt_timing",
+        "message": "Elapsed monotonic time before persistence: 0.736392334 seconds."
+      }
+    ],
+    "trace": [
+      {
+        "kind": "validation",
+        "at": "2026-10-03T09:08:18.016656+00:00",
+        "message": "Validated additive composition, exact Model pin, scalar roles and recorded units.",
+        "document": "5de9f8a3-ebc6-413a-847d-51b90da924fa"
+      },
+      {
+        "kind": "formulation",
+        "at": "2026-10-03T09:08:18.021041+00:00",
+        "message": "Compiled 1 affine equality/bound rows after explicit assignments."
+      },
+      {
+        "kind": "solve",
+        "at": "2026-10-03T09:08:18.461972+00:00",
+        "message": "Backend returned convergenceCriteriaSatisfied; independent acceptance follows when a candidate exists."
+      },
+      {
+        "kind": "publication",
+        "at": "2026-10-03T09:08:18.631121+00:00",
+        "message": "Accepted serialized immutable Model; store output before finalized Run.",
+        "document": "2cd65501-300f-41cd-96bc-66c597f0e1a2"
+      }
+    ]
+  }
+}

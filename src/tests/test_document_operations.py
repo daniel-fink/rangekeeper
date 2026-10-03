@@ -6,17 +6,17 @@ from uuid import NAMESPACE_URL, uuid5
 
 import pytest
 
-from rangekeeper.graph import operation
-from rangekeeper.graph.adapter import document
-from rangekeeper.graph.adapter.document import (
+from rangekeeper import operation
+from rangekeeper.adapters import document
+from rangekeeper.adapters.document import (
     ContentItem,
     Description,
     Document,
     Inspection,
 )
-from rangekeeper.graph.adapter.errors import AdapterEncodingError
-from rangekeeper.graph.provenance import Location, Method, Source
-from rangekeeper.graph.workflow.ingestion import IssueSeverity
+from rangekeeper.adapters.errors import AdapterEncodingError
+from rangekeeper.evidence import Location, Method, Source
+from rangekeeper.workflow.ingestion import IssueSeverity
 
 
 def invocation(spec=None, **kwargs):

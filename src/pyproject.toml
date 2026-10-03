@@ -34,6 +34,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+execution = ["pyomo==6.10.1", "highspy==1.15.1"]
 yaml = ["PyYAML>=6.0.2,<7"]
 workflow = ["openpyxl>=3.1.5,<4", "PyYAML>=6.0.2,<7"]
 excel = ["openpyxl>=3.1.5,<4", "PyYAML>=6.0.2,<7"]
@@ -52,4 +53,4 @@ exclude = ["*.node_modules*", "*.client*"]
 [tool.setuptools.package-data]
 "rangekeeper" = ["py.typed", "_currencies.json"]
 "rangekeeper._schema" = ["*.json"]
-"rangekeeper.graph.adapter.cytoscape" = ["assets/*.js", "assets/*.css", "assets/*.html", "assets/vendor/*.js", "assets/vendor/*.LICENSE", "assets/vendor/*.json"]
+"rangekeeper.adapters.cytoscape" = ["assets/*.js", "assets/*.css", "assets/*.html", "assets/vendor/*.js", "assets/vendor/*.LICENSE", "assets/vendor/*.json"]

@@ -12,9 +12,9 @@ from tempfile import TemporaryDirectory
 from typing import TypeVar
 from uuid import NAMESPACE_URL
 
-from rangekeeper.graph.adapter import document, excel, operation
-from rangekeeper.graph.workflow.ingestion import fingerprint, tabular
-from rangekeeper.graph.operation import Outcome
+from rangekeeper.adapters import document, excel, operation
+from rangekeeper.workflow.ingestion import fingerprint, tabular
+from rangekeeper.operation import Outcome
 from rangekeeper.graph.provenance import Location
 
 T = TypeVar("T")

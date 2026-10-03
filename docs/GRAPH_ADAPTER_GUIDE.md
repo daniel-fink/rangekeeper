@@ -1,10 +1,17 @@
 # Why the graph adapter APIs exist
 
+> Historical source/Graph contract, superseded for new builds on 2026-10-03.
+> Use [Model consumer migration](CONSUMER_MIGRATION.md) for the current packages,
+> workflow version 2, Value keys, and Model export. The earlier API names and
+> acceptance results below remain evidence for the external migration gate (6E).
+
 **Scope, 2026-10-02:** this guide describes the existing graph ingestion APIs.
 The [library plan](LIBRARY_ARCHITECTURE.md) replaces canonical domain records
 first, then migrates these adapters and workflows. `WorkflowSpec` remains a
 source-building configuration, distinct from the new mathematical `Specification`.
-The APIs below are not evidence that the new Model executor is implemented.
+The APIs below remain old-Graph consumers. [Model-backed graph operations](GRAPH_MODEL.md)
+now implement Step 6A/6B; these adapters still use `graph.legacy.View` until their
+6C migration. The separate [scalar executor](SCALAR_EXECUTION.md) is implemented.
 
 This guide explains the purpose of the ingestion and workflow APIs. See the
 [YAML contract guide](GRAPH_YAML_WORKFLOW.md) for syntax and the

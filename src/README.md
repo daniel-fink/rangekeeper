@@ -1,4 +1,7 @@
 # Rangekeeper Source
+
+Current consumer API: [Model tables, adapters, and source workflows](../docs/CONSUMER_MIGRATION.md) (Step 6C/6D).
+Use `rangekeeper.adapters`, `rangekeeper.workflow`, and `WorkflowResult.model`.
 This directory holds the source code for the Rangekeeper Library
 
 ## Installation
@@ -13,7 +16,10 @@ for a complete example. These branch changes have not been released to PyPI.
 Install this checkout with `pip install .`; use `pip install '.[yaml]'` for YAML IO.
 Graph/numerical APIs remain available, and their existing dependency metadata remains.
 Core imports do not initialize graph, plotting, service or solver integrations.
-No new-schema executor has produced authentic outputs yet.
+[Scalar execution](../docs/SCALAR_EXECUTION.md) now produces authentic forward/inverse
+outputs through independent acceptance and immutable publication. Install it with
+`pip install '.[execution,yaml]'`; Pyomo/HiGHS remain optional. Model-backed graph selections, hierarchy and explicit Value reductions are available;
+tables/adapters and source-workflow migration remain next.
 
 ## Development
 If you wish to contribute to its development, it is recommended to use [uv](https://docs.astral.sh/uv/) for 

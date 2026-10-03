@@ -3,7 +3,10 @@
 Status: agreed architecture and revised implementation sequence, 2026-10-02. This document
 describes the target library and the route to its first executable checkpoint.
 The Model/Specification/Run core, codecs, revision stores and root exports are now
-implemented. The numerical executor and graph/consumer migration remain pending.
+implemented. [Step 5 scalar execution](SCALAR_EXECUTION.md) is also implemented;
+[Model-backed views, hierarchy and reductions](GRAPH_MODEL.md) now implement
+Step 6A/6B. [Tables, adapters, and source workflows](CONSUMER_MIGRATION.md)
+now implement 6C/6D. External consumer migration (6E) is next.
 Step 1 is complete: the [migration map](DOMAIN_MIGRATION_MAP.md) fixes the concrete
 interfaces and factoring; the [baseline](research/domain-migration/BASELINE.md)
 records observed results. Those detailed decisions refine the responsibility tree
@@ -12,7 +15,9 @@ and [verification](research/domain-migration/turn1/README.md). Work units 3A/3B 
 also implemented: [domain APIs](DOMAIN_CORE.md) and
 [Turn 2 evidence](research/domain-migration/turn2/README.md). Work units 3C/4 are also
 implemented: [Run and storage](RUN_AND_STORAGE.md) and
-[Turn 3 evidence](research/domain-migration/turn3/README.md). Scalar execution is next. The intervening
+[Turn 3 evidence](research/domain-migration/turn3/README.md). The
+[scalar evidence](research/scalar-execution/README.md) records actual forward/inverse
+solves and output reuse. The intervening
 [validation refactor](DOMAIN_CORE.md#composable-validation) is implemented: shared
 invariants are domain-independent, local naming rules are reused, and mathematical
 checks consume an explicit data scope.
@@ -35,8 +40,8 @@ boundaries, repository layout, and migration order. The
   evolves the current graph foundation to include the complete schema envelope.
   `Specification` and finalized `Run` are separate documents.
 - Pyomo with HiGHS is the selected primary algebraic backend for the first
-  affine scalar checkpoint. Dependency versions and actual integration must be
-  established by an executable probe. SymPy may support exact affine analysis
+  affine scalar checkpoint. Pyomo 6.10.1 and HiGHS 1.15.1 are now probed, pinned
+  and integrated as the optional execution extra. SymPy may support exact affine analysis
   and test oracles; it is not a competing production solve path.
 - Map replacement of the existing domain core before implementing execution.
   Build the minimal schema-backed core directly in its intended library packages,
@@ -57,10 +62,12 @@ from this work's changes. Creating this branch does not publish subsequent work.
 
 At this checkpoint, `schema/` contains the LinkML records, synthetic fixtures,
 and structural/semantic/native-round-trip checks. `src/rangekeeper/graph/`
-contains an immutable graph implementation, provenance, adapters, and source
-workflows. The numerical library includes distributions, extrapolations,
-projections, durations, Flows, Streams, and financial functions. No new-schema
-executor has produced the synthetic Run/output fixtures.
+retains the old domain pending consumer retirement and hosts the new Model graph
+algorithms. Model-backed adapters and source workflows now live at
+`src/rangekeeper/adapters/` and `src/rangekeeper/workflow/`. The numerical library includes distributions, extrapolations,
+projections, durations, Flows, Streams, and financial functions. The new executor
+produces separately retained authentic Runs/outputs; the original schema fixtures
+remain synthetic conformance expectations.
 
 ## Responsibility layers
 
@@ -195,6 +202,7 @@ Rangekeeper/
         backends/
           pyomo.py                # lowering and selected solver integration
       graph/                      # views and algorithms over canonical objects
+      table.py                    # planned shared Row/Table container for Step 6C
       io/                         # codecs and immutable revision storage
       adapters/                   # file, visualization, service integrations
       workflow/                   # source-to-Model construction workflows
@@ -273,7 +281,8 @@ Full consumer migration can follow the first scalar solve; the canonical replace
 The [schema decision](research/current-schema-comparison/DECISION.md) is settled:
 retain LinkML. The import probe and independent audit remain evidence; a complete
 native CUE evaluation was not performed and is no longer required for this stage.
-No schema-backed library core or scalar executor has yet been implemented.
+The schema-backed library core and affine scalar executor are implemented.
+The checkpoints below retain the agreed sequence; Steps 1–5 are complete locally.
 
 The [domain migration plan](DOMAIN_MIGRATION_PLAN.md) supplies the detailed work
 breakdown, Step 1 discovery procedure, deliverables, and completion criteria.

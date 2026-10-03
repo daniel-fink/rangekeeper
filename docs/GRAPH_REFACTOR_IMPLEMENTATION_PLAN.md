@@ -7,6 +7,10 @@ graph algorithms and numerical behavior are candidates for reuse. The dated
 phases, layouts, handoff instructions, and test counts below document the earlier
 graph work and do not define the current implementation sequence.
 
+The current [Model-backed graph APIs](GRAPH_MODEL.md) supersede the old View and
+reduction namespace described here. Retained old consumers explicitly use
+`rangekeeper.graph.legacy`; the names below remain historical.
+
 ## 2026-09 graph cohesion amendment
 
 This amendment records the implemented Graph cohesion refactor and supersedes

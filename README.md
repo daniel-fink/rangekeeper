@@ -1,5 +1,8 @@
 <img src="https://github.com/daniel-fink/rangekeeper/blob/v0.2.0/walkthrough/resources/rangekeeper.jpg?raw=true" width="300">
 
+Current consumer API: [Model tables, adapters, and source workflows](docs/CONSUMER_MIGRATION.md) (Step 6C/6D).
+Use `rangekeeper.adapters`, `rangekeeper.workflow`, and `WorkflowResult.model`.
+
 # Rangekeeper
 Rangekeeper is an open-source library for financial modelling in real estate 
 asset & development planning, decision-making, cashflow forecasting, and 
@@ -31,8 +34,11 @@ Each project has its own readme to assist setup and dependency resolution.
 ## Design notes
 
 - [Implemented domain core and revision storage](docs/RUN_AND_STORAGE.md):
-  public Model/Specification/Run roots, strict codecs and immutable stores; scalar
-  execution is the next checkpoint. These branch changes have not been released.
+  public Model/Specification/Run roots, strict codecs and immutable stores.
+  [Scalar execution](docs/SCALAR_EXECUTION.md) now solves declared affine equations
+  with Pyomo/HiGHS and publishes independently accepted outputs. These branch changes
+  have not been released. [Model-backed views and reductions](docs/GRAPH_MODEL.md)
+  now implement Step 6A/6B; tables and presentation adapters are next.
 
 - [Documentation index and current work plan](docs/README.md):
   accepted decisions, current state, next steps, and historical-document scope.
