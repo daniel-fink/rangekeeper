@@ -90,6 +90,7 @@ def prepare(
     value_units = {
         id: measure(model.definitions, value.measure).units
         for id, value in values.items()
+        if value.measure is not None
     }
     assignments = {
         item.value: units.convert(item.quantity, to=value_units[item.value])

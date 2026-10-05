@@ -267,6 +267,21 @@ class _Composition:
                         references(sources),
                     )
                 )
+        for attr in policy.get("properties", ()):
+            if not condition(attr.get("when"), row, table, self.outputs):
+                continue
+            from rangekeeper.model.content import encode
+
+            value, sources = binding(attr["binding"], row, table, self.outputs)
+            key = attr["key"]
+            item = Value(
+                id=self.identity("value", f"{uid}:{key}"),
+                key=key,
+                kind="property",
+                content=encode(value),
+            )
+            values.append(item)
+            self.attach(item, (*sources, *self.parents(attr, row, table), *base))
         for attr in policy.get("labels", ()):
             if not condition(attr.get("when"), row, table, self.outputs):
                 continue

@@ -1,5 +1,20 @@
 # Model tables, adapters, and source workflows
 
+**Flow semantics update, 2026-10-06:** Flows no longer carry semantic kinds or
+basis. The overall model logic owns their meaning and selects operations; units,
+dates, alignment and missingness remain checked. See the
+[current contract](FULL_MIGRATION_TURN1.md#flow-semantics-and-explicit-operations)
+and [verification](research/full-migration/flow-semantics/README.md).
+
+**Full migration update, 2026-10-04:** [Turn 1 foundations](FULL_MIGRATION_TURN1.md)
+implements Model 0.4.0 rich properties and Flow Values, `model.duration`,
+`temporal`, `calculations`, detached dataframe adapters, and explicit Graph conversion.
+The basic DCF notebook, financial test model and synthetic source workflows migrated.
+Read the [upgrade guide](LEGACY_UPGRADE_GUIDE.md) and [verification](research/full-migration/turn1/README.md).
+Next is Turn 2: temporal mathematics, scenarios/policies, and their consumers.
+Turns 3–4 finish remaining consumers and retire old modules. The six-checkpoint
+history below remains the scalar/core work record; full migration is not complete.
+
 Step 6C/6D, implemented locally on 2026-10-03. LinkML remains authoritative.
 These changes move presentation and source construction onto the canonical Model.
 They do not migrate external projects or remove the remaining old Graph domain.
@@ -189,10 +204,16 @@ remains in the accepted output Models.
 
 ## Remaining consumer gates
 
+The expanded [full migration review](FULL_MIGRATION_REVIEW.md) now inventories
+numerical/temporal consumers, formerly version-1 workflow examples and parallel RK
+workbench/layout features. It proposes the additional contracts and proof needed
+before complete consumer migration and retirement can be claimed.
+
 6E migrates Mandarin, East Whisman, notebooks, and other repository/host consumers
 in their own environments. Their old imports, workflow version 1, Feature content,
 and persisted Graph JSON need explicit changes. They were not run in this slice.
-Old Graph JSON is not Model JSON. No general Graph-to-Model converter is promised.
+Old Graph JSON is not Model JSON. Turn 1 now supplies an explicit bounded v1
+converter and migrated synthetic examples; this does not certify external consumers.
 
 6F removes the old domain and persistence implementations after consumer acceptance.
 For now `graph.table` retains its old Graph projection methods over the shared

@@ -1,12 +1,47 @@
 # Rangekeeper documentation and current work plan
 
-Updated 2026-10-03. This index distinguishes the active acausal-modelling plan,
+**Movement naming, 2026-10-06:** the current API uses `Movement` and
+`Flow.movements`. See the [naming contract](FULL_MIGRATION_TURN1.md#movement-naming)
+for the Python/wire-format change and upgrade requirements.
+
+**Flow semantics update, 2026-10-06:** Flows no longer carry semantic kinds or
+basis. The overall model logic owns their meaning and selects operations; units,
+dates, alignment and missingness remain checked. See the
+[current contract](FULL_MIGRATION_TURN1.md#flow-semantics-and-explicit-operations)
+and [verification](research/full-migration/flow-semantics/README.md).
+
+**Full migration update, 2026-10-04:** [Turn 1 foundations](FULL_MIGRATION_TURN1.md)
+implements Model 0.4.0 rich properties and Flow Values, `model.duration`,
+`temporal`, `calculations`, detached dataframe adapters, and explicit Graph conversion.
+The basic DCF notebook, financial test model and synthetic source workflows migrated.
+Read the [upgrade guide](LEGACY_UPGRADE_GUIDE.md) and [verification](research/full-migration/turn1/README.md).
+The [date-only correction](research/full-migration/date-only/README.md) removes
+TimePoint. Period movements store coverage; a separate date is optional and records
+an independent payment or observation. Dated valuation requires explicit timing
+when the movement has no recorded date.
+[Financial-library integration](research/full-migration/financial-library/README.md)
+now delegates PV, XNPV, IRR and day counts to PyXIRR. The draft mandatory IRR
+bracket is replaced by an optional initial guess.
+Next is Turn 2: temporal mathematics, scenarios/policies, and their consumers.
+Start with the [duration namespace migration](FULL_MIGRATION_TURN1.md#duration-namespace-migration):
+`temporal/` will become `duration/`, while `model.duration` remains the record module.
+The 2026-10-05 decision includes the old-caller transition and verification gates;
+the runtime rename is pending and adds no implementation turn.
+Turns 3–4 finish remaining consumers and retire old modules. The six-checkpoint
+history below remains the scalar/core work record; full migration is not complete.
+
+Updated 2026-10-06. This index distinguishes the active acausal-modelling plan,
 existing graph APIs, and historical research. A planned API is not evidence of
 an implemented runtime.
 
 Current consumer checkpoint: [Model tables, adapters, and source workflows](CONSUMER_MIGRATION.md)
-(6C/6D), with [verification](research/consumer-migration/README.md). Next: 6E,
-external consumer migration, then 6F retirement of the remaining old Graph code.
+(6C/6D), with [verification](research/consumer-migration/README.md), committed at
+`90c2e00`. The expanded [full migration scope](FULL_MIGRATION_REVIEW.md) now has
+a four-turn implementation sequence and a delivered Turn 1 foundation.
+It covers all remaining older behavior, numerical/temporal redesign, parallel
+workbench/layout features, consumer proof, retirement and future upgrade guidance.
+6E/6F remain open. Turn 1 schema/API implementations and remaining proposals
+are distinguished in [the current contract](FULL_MIGRATION_TURN1.md).
 
 ## Overall goal
 
@@ -60,11 +95,13 @@ development choices and adaptive policies across market scenarios.
   full five-second pass produced 572 matching outcomes, 28 differences, 106
   timeouts, and seven non-JSON inputs across 713 pairs. These are import-route
   observations, not native CUE or semantic-parity results.
-- The core checkpoint was committed as `53f5d3e` on `acausal-modelling`. Step 5
-  builds on it as local work, with 745 passing tests and the same two baseline
-  failures. Retained verification snapshots record the tested sources. No commit
-  or push is part of Step 5; the unrelated `.gitignore` edit is preserved.
-  Recheck live state before continuing.
+- The core checkpoint is `53f5d3e`; scalar execution and Model-backed consumers
+  followed in `90c2e00` on `acausal-modelling`. The separately requested 2026-10-06
+  foundations checkpoint includes Turn 1 and its date, financial-library, Flow
+  semantics and Movement corrections. [Current verification](research/full-migration/movement-naming/README.md)
+  records 946 local tests passing, all seven schema suites, typing and installed
+  acceptance. The unrelated `.gitignore` edit and Syncthing lock conflict copy
+  remain outside the checkpoint. Recheck live state before continuing.
 
 ## Implementation sequence and next step
 
@@ -85,13 +122,16 @@ development choices and adaptive policies across market scenarios.
    declared mathematics, independently check candidates, and publish authentic Runs.
 6. **Consumer migration is underway.** [Step 6A/6B](GRAPH_MODEL.md) implements
    Model-backed selections, hierarchy and reductions. [6C/6D](CONSUMER_MIGRATION.md)
-   adds tables, presentation adapters, and source workflows. Next is 6E: external
-   consumer migration.
+   adds tables, presentation adapters, and source workflows. Before 6E, review
+   the expanded numerical/temporal and consumer plan linked above.
 
 The [domain migration plan](DOMAIN_MIGRATION_PLAN.md) records these six checkpoints
 and the detailed Step 1 work plan. Steps 1–4 form the first implementation slice.
 Richer numerical/temporal Values, scenario evaluation, and adaptive policies follow
-the scalar checkpoint and the consumer interfaces they require.
+the scalar checkpoint and are now within the requested full-refactor scope.
+Their exact contracts need the linked engineering design work. The R1–R6 checklist
+is not a mandatory user-approval queue; ask only about concrete unresolved meaning
+or material scope tradeoffs after investigating the evidence.
 
 The former plan to implement under `schema/execution/` and later promote that
 runtime is superseded. The scalar checkpoint uses the foundation we intend to
@@ -109,6 +149,7 @@ contains the full acceptance boundary.
 
 | Document | Role |
 | --- | --- |
+| [Full migration review](FULL_MIGRATION_REVIEW.md), [static inventory](research/full-migration/README.md) | Proposed full-refactor scope, decisions to review, detailed legacy dispositions, temporal/numerical boundaries, consumer proof and retirement gates. |
 | [Library architecture](LIBRARY_ARCHITECTURE.md) | Current package responsibilities, replacement map, implementation sequence, and acceptance criteria. |
 | [Run and storage](RUN_AND_STORAGE.md) | Implemented Turn 3 public roots, finalized Runs, strict codecs, immutable stores and execution boundary. |
 | [Model-backed graph operations](GRAPH_MODEL.md) | Implemented 6A/6B APIs, explicit legacy transition, and remaining Step 6 slices. |

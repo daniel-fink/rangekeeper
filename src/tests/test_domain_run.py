@@ -161,7 +161,7 @@ def test_resolver_results_must_match_requested_kind_and_revision(problem, code):
         def load_specification(self, identity):
             if problem == "kind":
                 return rk.Model.from_data(
-                    {"metadata": {"id": str(identity), "schema_version": "0.3.0"}}
+                    {"metadata": {"id": str(identity), "schema_version": "0.4.0"}}
                 )
             return rk.Specification.from_data(
                 {"metadata": {"id": str(uuid4()), "schema_version": "0.4.0"}}
@@ -204,7 +204,7 @@ def test_spawn_cycle_is_detected_without_infinite_resolution():
 def test_scoped_report_documents_resolve_outside_the_input_tree():
     store = inputs()
     extra = rk.Model.from_data(
-        {"metadata": {"id": str(uuid4()), "schema_version": "0.3.0"}}
+        {"metadata": {"id": str(uuid4()), "schema_version": "0.4.0"}}
     )
     store.put(extra)
     data = load("run-failed")

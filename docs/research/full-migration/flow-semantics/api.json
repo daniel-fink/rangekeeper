@@ -1,0 +1,618 @@
+[
+  {
+    "module": "src/rangekeeper/adapters/pandas.py",
+    "symbol": "to_frame",
+    "arguments": "flow: Flow",
+    "returns": "pd.DataFrame",
+    "docstring": "Export all sample fields; nested objects are fresh copies of canonical content."
+  },
+  {
+    "module": "src/rangekeeper/adapters/pandas.py",
+    "symbol": "to_series",
+    "arguments": "flow: Flow, *, name: str | None=None, timing: PeriodTiming | None=None",
+    "returns": "pd.Series",
+    "docstring": "Project magnitudes onto dates for display; periods/Claims are omitted.\n\nUndated period samples require an explicit timing convention.\n\nThis projection is deliberately not the lossless interchange route. Use\nto_frame or Model JSON when provenance and bounded-period meaning must survive."
+  },
+  {
+    "module": "src/rangekeeper/adapters/pandas.py",
+    "symbol": "from_series",
+    "arguments": "series, *, units: str, keys=None",
+    "returns": "Flow",
+    "docstring": "Import observations, treating pandas NA/NaN as explicitly missing samples."
+  },
+  {
+    "module": "src/rangekeeper/adapters/pandas.py",
+    "symbol": "from_frame",
+    "arguments": "frame: pd.DataFrame, *, units: str",
+    "returns": "Flow",
+    "docstring": "Read the lossless sample-column format returned by to_frame."
+  },
+  {
+    "module": "src/rangekeeper/adapters/pandas.py",
+    "symbol": "to_dataframe",
+    "arguments": "table: Table",
+    "returns": "pd.DataFrame",
+    "docstring": "Create a DataFrame while preserving Table column and row order."
+  },
+  {
+    "module": "src/rangekeeper/adapters/pandas.py",
+    "symbol": "from_dataframe",
+    "arguments": "frame: pd.DataFrame",
+    "returns": "Table",
+    "docstring": "Create a Table from DataFrame columns, excluding the DataFrame index."
+  },
+  {
+    "module": "src/rangekeeper/adapters/polars.py",
+    "symbol": "to_frame",
+    "arguments": "flow: Flow",
+    "returns": "DataFrame",
+    "docstring": "Export sample fields, including coordinates, periods and Claim references.\n\nFlow units are an explicit argument to from_frame; a table alone does not\ncarry the complete domain contract. Empty tables retain their sample columns."
+  },
+  {
+    "module": "src/rangekeeper/adapters/polars.py",
+    "symbol": "from_frame",
+    "arguments": "frame: DataFrame, *, units: str",
+    "returns": "Flow",
+    "docstring": "Copy an explicit sample table; NaN is invalid rather than an alias for missing."
+  },
+  {
+    "module": "src/rangekeeper/calculations/_flow.py",
+    "symbol": "replace_samples",
+    "arguments": "flow: Flow, samples: Sequence[FlowSample], *, units=None",
+    "returns": "Flow",
+    "docstring": null
+  },
+  {
+    "module": "src/rangekeeper/calculations/_flow.py",
+    "symbol": "replace_sample",
+    "arguments": "sample: FlowSample, magnitude, *, claims=None",
+    "returns": "FlowSample",
+    "docstring": null
+  },
+  {
+    "module": "src/rangekeeper/calculations/_flow.py",
+    "symbol": "require_resolved",
+    "arguments": "flow: Flow",
+    "returns": "None",
+    "docstring": "Require valid coordinates, units and finite, known numerical entries.\n\nThe consuming operation defines how it interprets these entries. This check\ndoes not infer or restrict the meaning of a Flow."
+  },
+  {
+    "module": "src/rangekeeper/calculations/_flow.py",
+    "symbol": "magnitude",
+    "arguments": "sample: FlowSample",
+    "returns": "float",
+    "docstring": "Read a resolved sample for arithmetic; reject a missing or nonfinite value."
+  },
+  {
+    "module": "src/rangekeeper/calculations/account.py",
+    "symbol": "AccountResult.difference",
+    "arguments": "self",
+    "returns": "Flow",
+    "docstring": "Change in nonnegative account balance, excluding the separate overdraft."
+  },
+  {
+    "module": "src/rangekeeper/calculations/account.py",
+    "symbol": "calculate_account",
+    "arguments": "transactions: Flow, *, starting: Quantity, rate: float | Flow=0, method: str='simple', timing: str='advance'",
+    "returns": "AccountResult",
+    "docstring": "Calculate simple, compound or capitalized interest on positive principal.\n\nAdvance transactions enter before interest; arrears enter after interest.\nNegative principal is tracked separately as an overdraft balance. The overdraft\nmovement is its period change, including any negative initial balance at time 0,\nmatching the legacy consumer convention. rate supplies per-period interest as\na scalar ratio or an aligned dimensionless Flow (percent units are converted).\nThe caller assigns these roles; the input Flows carry no semantic kinds.\nNo input is mutated."
+  },
+  {
+    "module": "src/rangekeeper/calculations/distribution.py",
+    "symbol": "Distribution.__post_init__",
+    "arguments": "self",
+    "returns": null,
+    "docstring": null
+  },
+  {
+    "module": "src/rangekeeper/calculations/distribution.py",
+    "symbol": "Distribution._implementation",
+    "arguments": "self",
+    "returns": null,
+    "docstring": null
+  },
+  {
+    "module": "src/rangekeeper/calculations/distribution.py",
+    "symbol": "Distribution.sample",
+    "arguments": "self, *, size: int, generator",
+    "returns": "tuple[float, ...]",
+    "docstring": "Draw from an explicit numpy Generator; always return exactly size samples."
+  },
+  {
+    "module": "src/rangekeeper/calculations/distribution.py",
+    "symbol": "Distribution.cumulative_density",
+    "arguments": "self, values: Sequence[float]",
+    "returns": "tuple[float, ...]",
+    "docstring": null
+  },
+  {
+    "module": "src/rangekeeper/calculations/distribution.py",
+    "symbol": "Distribution.interval_mass",
+    "arguments": "self, boundaries: Sequence[float]",
+    "returns": "tuple[float, ...]",
+    "docstring": "Return mass in successive intervals; include a point mass at the first bound."
+  },
+  {
+    "module": "src/rangekeeper/calculations/distribution.py",
+    "symbol": "Distribution.uniform",
+    "arguments": "cls, *, lower: float=0, upper: float=1",
+    "returns": "Distribution",
+    "docstring": null
+  },
+  {
+    "module": "src/rangekeeper/calculations/distribution.py",
+    "symbol": "Distribution.triangular",
+    "arguments": "cls, *, lower: float=0, upper: float=1, mode: float=0.5",
+    "returns": "Distribution",
+    "docstring": null
+  },
+  {
+    "module": "src/rangekeeper/calculations/distribution.py",
+    "symbol": "Distribution.pert",
+    "arguments": "cls, *, lower: float=0, upper: float=1, mode: float=0.5, weighting: float=4",
+    "returns": "Distribution",
+    "docstring": null
+  },
+  {
+    "module": "src/rangekeeper/calculations/distribution.py",
+    "symbol": "Distribution.symmetric",
+    "arguments": "cls, *, kind: str, mean: float=0, residual: float=1",
+    "returns": "Distribution",
+    "docstring": null
+  },
+  {
+    "module": "src/rangekeeper/calculations/dynamics/cyclicality.py",
+    "symbol": "calculate_cycle",
+    "arguments": "*, count: int, period: float, phase: float, amplitude: float, asymmetry: float=0, tolerance: float=1e-10",
+    "returns": "tuple[float, ...]",
+    "docstring": "Evaluate a sine or the legacy sheared sine; zero asymmetry is exactly sine.\n\nRestrict shear to (-1, 1) so the implicit equation has a unique root. The\nbisection interval follows the sine bound and iteration count is finite."
+  },
+  {
+    "module": "src/rangekeeper/calculations/dynamics/noise.py",
+    "symbol": "sample_noise",
+    "arguments": "distribution: Distribution, *, count: int, generator",
+    "returns": "tuple[float, ...]",
+    "docstring": "Draw exactly count innovations from the supplied random generator."
+  },
+  {
+    "module": "src/rangekeeper/calculations/dynamics/shock.py",
+    "symbol": "calculate_shock",
+    "arguments": "events: Sequence[float], *, likelihood: float, dissipation: float, impact: float=1",
+    "returns": "tuple[float, ...]",
+    "docstring": "Trigger at the first draw below likelihood, then decay without retriggering.\n\nPassing impact=1 reproduces the old normalized event path. Apply the requested\namplitude here exactly once, rather than retaining an unused impact parameter."
+  },
+  {
+    "module": "src/rangekeeper/calculations/dynamics/trend.py",
+    "symbol": "calculate_trend",
+    "arguments": "*, count: int, growth_rate: float, cap_rate: float, initial_value: float | None=None, initial_price_factor: float=1",
+    "returns": "tuple[float, ...]",
+    "docstring": "Preserve the legacy initial-value convention when no explicit value is supplied."
+  },
+  {
+    "module": "src/rangekeeper/calculations/dynamics/volatility.py",
+    "symbol": "calculate_autoregression",
+    "arguments": "innovations: Sequence[float], *, parameter: float",
+    "returns": "tuple[float, ...]",
+    "docstring": null
+  },
+  {
+    "module": "src/rangekeeper/calculations/dynamics/volatility.py",
+    "symbol": "accumulate_volatility",
+    "arguments": "trend: Sequence[float], returns: Sequence[float], *, growth_rate: float, mean_reversion: float",
+    "returns": "tuple[float, ...]",
+    "docstring": "First level is the first trend value; subsequent returns affect each new level."
+  },
+  {
+    "module": "src/rangekeeper/calculations/financial.py",
+    "symbol": "_require_result",
+    "arguments": "value: float | None, operation: str",
+    "returns": "float",
+    "docstring": "Turn absent/nonfinite backend results into an explicit calculation failure."
+  },
+  {
+    "module": "src/rangekeeper/calculations/financial.py",
+    "symbol": "calculate_pv",
+    "arguments": "flow: Flow, *, rate: float, first_period: int=1",
+    "returns": "Flow",
+    "docstring": "Discount each movement with PyXIRR PV, retaining its coordinates and Claims.\n\nRate is per sample period; first_period=1 places the first payment one period\nafter valuation. No date convention is inferred from period coverage."
+  },
+  {
+    "module": "src/rangekeeper/calculations/financial.py",
+    "symbol": "calculate_xnpv",
+    "arguments": "flow: Flow, *, rate: float, valuation_date: date, day_count: DayCount='actual/365', timing: PeriodTiming | None=None",
+    "returns": "Quantity",
+    "docstring": "Use PyXIRR XNPV and PV to value movements on an explicit date.\n\nPyXIRR anchors XNPV at the earliest payment. PV moves that result to the\nrequested valuation date, before or after payment, under the same day count.\nUndated period samples require timing; recorded dates take precedence.\nEmpty Flows have zero value and never enter PyXIRR's empty-date path."
+  },
+  {
+    "module": "src/rangekeeper/calculations/financial.py",
+    "symbol": "calculate_irr",
+    "arguments": "flow: Flow, *, guess: float | None=None, valuation_date: date | None=None, day_count: DayCount='actual/365', timing: PeriodTiming | None=None",
+    "returns": "IrrResult",
+    "docstring": "Find one dated IRR through PyXIRR, optionally supplying an initial guess.\n\nThe library selects the root; a guess is not a search bound or a guarantee of\nthe nearest root. Multiple roots can exist. Reject absent/nonfinite results\nand residuals above 1e-8 of gross movements (with a one-unit scale floor).\nSame-day payments cannot determine an IRR. Undated periods require timing.\nvaluation_date controls residual reporting; it does not change the solver."
+  },
+  {
+    "module": "src/rangekeeper/calculations/interval.py",
+    "symbol": "Interval.__post_init__",
+    "arguments": "self",
+    "returns": null,
+    "docstring": null
+  },
+  {
+    "module": "src/rangekeeper/calculations/interval.py",
+    "symbol": "Interval.length",
+    "arguments": "self",
+    "returns": "float",
+    "docstring": null
+  },
+  {
+    "module": "src/rangekeeper/calculations/interval.py",
+    "symbol": "Interval.split",
+    "arguments": "self, proportion: float",
+    "returns": "tuple['Interval', 'Interval']",
+    "docstring": null
+  },
+  {
+    "module": "src/rangekeeper/calculations/interval.py",
+    "symbol": "Interval.subdivide",
+    "arguments": "self, divisions: int | Sequence[float]",
+    "returns": "tuple['Interval', ...]",
+    "docstring": "Partition into equal pieces or explicit positive fractions summing to one."
+  },
+  {
+    "module": "src/rangekeeper/calculations/projection.py",
+    "symbol": "project_values",
+    "arguments": "initial: float, *, count: int, method: str='recurring', rate: float=0, origin: int=0, factors: Sequence[float] | None=None",
+    "returns": "tuple[float, ...]",
+    "docstring": "Project known values: linear adds rate per index; compound multiplies (1+rate)^index."
+  },
+  {
+    "module": "src/rangekeeper/calculations/projection.py",
+    "symbol": "pad",
+    "arguments": "values: Sequence[float], *, before: int=0, after: int=0, left: str='nil', right: str='nil'",
+    "returns": "tuple[float, ...]",
+    "docstring": "Add exactly the requested rows: nil=0, unitize=1, extend=nearest endpoint."
+  },
+  {
+    "module": "src/rangekeeper/calculations/projection.py",
+    "symbol": "project",
+    "arguments": "initial: Quantity, *, periods: Sequence[Period], method: str='recurring', rate: float=0, origin: int=0, factors: Sequence[float] | None=None",
+    "returns": "Flow",
+    "docstring": "Evaluate a known Quantity path over caller-selected periods."
+  },
+  {
+    "module": "src/rangekeeper/calculations/projection.py",
+    "symbol": "allocate",
+    "arguments": "quantity: Quantity, *, periods: Sequence[Period], distribution: Distribution | None=None, weights: Sequence[float] | None=None",
+    "returns": "Flow",
+    "docstring": "Allocate a total without changing mass; explicit weights must already sum to one.\n\nA distribution allocates equal increments of its support, not equal durations.\nSupply explicit duration weights when allocation should follow elapsed time."
+  },
+  {
+    "module": "src/rangekeeper/calculations/series.py",
+    "symbol": "_polars",
+    "arguments": "",
+    "returns": null,
+    "docstring": null
+  },
+  {
+    "module": "src/rangekeeper/calculations/series.py",
+    "symbol": "_key",
+    "arguments": "sample: FlowSample",
+    "returns": "str",
+    "docstring": null
+  },
+  {
+    "module": "src/rangekeeper/calculations/series.py",
+    "symbol": "align",
+    "arguments": "flows: Sequence[Flow], *, join: str='exact', missing: Missing='error'",
+    "returns": "AlignmentResult",
+    "docstring": "Align on explicit coordinates; zero fills absent rows, never unresolved samples.\n\nExact alignment is the default. Union/intersection must be requested. Coverage\nrecords whether each input had a known sample before any requested filling."
+  },
+  {
+    "module": "src/rangekeeper/calculations/series.py",
+    "symbol": "convert",
+    "arguments": "flow: Flow, *, units: str, unit_system: UnitSystem=default_units",
+    "returns": "Flow",
+    "docstring": "Convert all known samples together; retain unresolved samples and evidence."
+  },
+  {
+    "module": "src/rangekeeper/calculations/series.py",
+    "symbol": "sum_flows",
+    "arguments": "flows: Sequence[Flow], *, units: str | None=None, missing: Missing='error', join: str='exact'",
+    "returns": "AggregateResult",
+    "docstring": "Add compatible quantities pointwise; all-missing results remain unresolved."
+  },
+  {
+    "module": "src/rangekeeper/calculations/series.py",
+    "symbol": "multiply_flows",
+    "arguments": "flows: Sequence[Flow]",
+    "returns": "Flow",
+    "docstring": "Multiply aligned known samples and units without removing time dimensions.\n\nNormalize dimensionless scales such as percent to ratios before multiplication.\nPhysical dimensions, including time, remain in the result. The calling model\ndetermines the meaning of the product; no semantic classification is inferred."
+  },
+  {
+    "module": "src/rangekeeper/calculations/series.py",
+    "symbol": "scale",
+    "arguments": "flow: Flow, factor: float",
+    "returns": "Flow",
+    "docstring": "Multiply by a finite dimensionless scalar, preserving missing samples."
+  },
+  {
+    "module": "src/rangekeeper/calculations/series.py",
+    "symbol": "negate",
+    "arguments": "flow: Flow",
+    "returns": "Flow",
+    "docstring": null
+  },
+  {
+    "module": "src/rangekeeper/calculations/series.py",
+    "symbol": "total",
+    "arguments": "flow: Flow, *, missing: Missing='error'",
+    "returns": "Quantity | None",
+    "docstring": "Sum entries over time, retaining their units.\n\nThis is a numerical sum. The model determines whether summation expresses\nthe intended quantity; no balance, rate or other interpretation is inferred."
+  },
+  {
+    "module": "src/rangekeeper/calculations/series.py",
+    "symbol": "integrate",
+    "arguments": "flow: Flow, *, exposures: Sequence[Quantity] | None=None, day_count: DayCount | None=None, units: str | None=None",
+    "returns": "Flow",
+    "docstring": "Multiply entries by supplied exposures or declared period year fractions.\n\nExplicit exposures support calendar-month conventions and non-time exposures.\nA day-count convention uses period boundaries and a quantity measured in years.\nCalling this operation supplies the integration rule; the Flow has no rate kind."
+  },
+  {
+    "module": "src/rangekeeper/calculations/series.py",
+    "symbol": "resample",
+    "arguments": "flow: Flow, *, periods: Sequence[Period], reduction: str, missing: Missing='error', weighting: Literal['observations', 'elapsed'] | None=None",
+    "returns": "AggregateResult",
+    "docstring": "Reduce observations into a complete period grid with explicit missing rules.\n\nThe caller selects sum, first, last, min, max or mean. Means require an explicit\nobservations/elapsed weighting choice; elapsed weighting requires bounded\nsamples. No reduction is inferred from the meaning of the data. Coverage is\nthe fraction of known samples, not continuous time coverage. Bounded samples\ncannot cross target periods; allocate them explicitly first. missing=\"zero\"\nfills empty target groups only, never unresolved entries in a populated group."
+  },
+  {
+    "module": "src/rangekeeper/calculations/series.py",
+    "symbol": "trim",
+    "arguments": "flow: Flow, *, start: date, end: date",
+    "returns": "Flow",
+    "docstring": "Select dates in [start, end) or whole periods contained in that interval.\n\nPartial period overlap raises ValueError; trimming must not silently allocate\na period quantity or substitute an assumed payment date for its coverage."
+  },
+  {
+    "module": "src/rangekeeper/calculations/series.py",
+    "symbol": "clean",
+    "arguments": "flow: Flow, *, remove_zeroes: bool=False",
+    "returns": "Flow",
+    "docstring": "Explicitly remove unresolved samples, and optionally zeroes; do not impute data."
+  },
+  {
+    "module": "src/rangekeeper/calculations/series.py",
+    "symbol": "difference",
+    "arguments": "flow: Flow, *, initial: float | None=None",
+    "returns": "Flow",
+    "docstring": "Return adjacent differences; a missing neighbour yields an unresolved sample.\n\nThe first sample is unresolved unless the caller supplies an initial value in\nthe Flow's units. The model determines what the changes represent."
+  },
+  {
+    "module": "src/rangekeeper/calculations/series.py",
+    "symbol": "collapse",
+    "arguments": "flow: Flow, *, on: date | None=None, timing: PeriodTiming | None=None, missing: Missing='error'",
+    "returns": "Flow",
+    "docstring": "Place one total on a selected date and retain input Claims.\n\nFor period content, supply on or a timing convention unless the final sample\nalready records a date. This explicit loss of temporal detail does not mutate\nthe source Flow. Empty input is returned unchanged."
+  },
+  {
+    "module": "src/rangekeeper/calculations/series.py",
+    "symbol": "reduce_flows",
+    "arguments": "flows: Sequence[Flow], *, reducer: str, units: str | None=None, missing: Missing='error', join: str='exact'",
+    "returns": "AggregateResult",
+    "docstring": "Reduce aligned compatible Flows with sum/min/max and explicit partial coverage."
+  },
+  {
+    "module": "src/rangekeeper/calculations/series.py",
+    "symbol": "find_extent",
+    "arguments": "flow: Flow, *, include_zeroes: bool=False",
+    "returns": "tuple[date, date] | None",
+    "docstring": "Return selected period coverage [start,end), or first/last dated events.\n\nUnresolved samples and, by default, zeroes are excluded. Period boundaries\ndescribe coverage even when independent payment dates are recorded."
+  },
+  {
+    "module": "src/rangekeeper/calculations/series.py",
+    "symbol": "trim_empty",
+    "arguments": "flow: Flow",
+    "returns": "Flow",
+    "docstring": "Remove leading/trailing zero or unresolved rows, retaining interior gaps."
+  },
+  {
+    "module": "src/rangekeeper/migration/__main__.py",
+    "symbol": "main",
+    "arguments": "",
+    "returns": "int",
+    "docstring": null
+  },
+  {
+    "module": "src/rangekeeper/migration/graph.py",
+    "symbol": "_unique",
+    "arguments": "pairs",
+    "returns": null,
+    "docstring": null
+  },
+  {
+    "module": "src/rangekeeper/migration/graph.py",
+    "symbol": "convert_graph",
+    "arguments": "text: str, *, revision_id: UUID | None=None, value_keys: dict[str, str] | None=None",
+    "returns": "ConversionResult",
+    "docstring": "Convert the supported v1 format; retain UUIDs and require explicit key conflicts.\n\nMeasurements use their old Measure code; Features use their name. ``value_keys``\nmaps old Value UUID strings to reviewed replacement keys when names collide.\nHistorical Measure quantity-kind and aggregation declarations survive as tags;\nthey do not silently select a new reducer. Existing claim payload wire tags are\nretained under an explicit encoding label rather than reinterpreted as equations."
+  },
+  {
+    "module": "src/rangekeeper/migration/graph.py",
+    "symbol": "upgrade_model",
+    "arguments": "data: dict, *, revision_id: UUID | None=None",
+    "returns": "Model",
+    "docstring": "Explicitly upgrade a scalar Model 0.3.0 to a new 0.4.0 revision.\n\nDeclaration UUIDs and source provenance stay intact. The old revision remains\nimmutable; previous points to it. Ordinary codecs reject the old version."
+  },
+  {
+    "module": "src/rangekeeper/model/content.py",
+    "symbol": "encode",
+    "arguments": "value: object",
+    "returns": "PropertyContent",
+    "docstring": "Copy a supported Python value to typed, immutable schema content.\n\nCycles, non-finite numbers, and unsupported classes raise ValueError/TypeError.\nMapping insertion order and list/tuple distinctions survive interchange."
+  },
+  {
+    "module": "src/rangekeeper/model/content.py",
+    "symbol": "decode",
+    "arguments": "content: PropertyContent",
+    "returns": "object",
+    "docstring": "Validate tagged content and return a detached Python representation."
+  },
+  {
+    "module": "src/rangekeeper/model/content.py",
+    "symbol": "validate_content",
+    "arguments": "content: PropertyContent",
+    "returns": "None",
+    "docstring": "Check conditional shape and scalar meaning beyond structural validation."
+  },
+  {
+    "module": "src/rangekeeper/model/flow.py",
+    "symbol": "sample_coordinate",
+    "arguments": "sample: FlowSample",
+    "returns": "tuple",
+    "docstring": "Return alignment identity; independently recorded dates must also agree."
+  },
+  {
+    "module": "src/rangekeeper/model/flow.py",
+    "symbol": "resolve_date",
+    "arguments": "sample: FlowSample, *, timing: PeriodTiming | None=None",
+    "returns": "date",
+    "docstring": "Use a recorded date, or derive one from a period with an explicit convention.\n\nRecorded dates take precedence over the fallback convention. No sample is\nchanged, and payment outside its coverage period is permitted."
+  },
+  {
+    "module": "src/rangekeeper/model/flow.py",
+    "symbol": "validate_flow",
+    "arguments": "flow: Flow, *, units: UnitSystem=default_units",
+    "returns": "None",
+    "docstring": "Check units, sample identity, date ordering and non-overlapping period coverage.\n\nAll samples in one Flow use either periods or dated events. Period order uses\ncoverage, not optional payment dates; those dates may lie outside the period."
+  },
+  {
+    "module": "src/rangekeeper/model/flow.py",
+    "symbol": "from_events",
+    "arguments": "dates: Sequence[date], magnitudes: Sequence[int | float | None], *, units: str, keys: Sequence[str] | None=None",
+    "returns": "Flow",
+    "docstring": "Construct ordered dated entries; repeated dates require distinct keys."
+  },
+  {
+    "module": "src/rangekeeper/model/flow.py",
+    "symbol": "from_periods",
+    "arguments": "periods: Sequence[Period], magnitudes: Sequence[int | float | None], *, units: str, dates: Sequence[date | None] | None=None",
+    "returns": "Flow",
+    "docstring": "Construct quantities over periods without inventing payment dates.\n\nSupply dates only for independently known payment/observation dates. Omitted\ndates remain absent; valuation and presentation can resolve a convention later."
+  },
+  {
+    "module": "src/rangekeeper/model/flow.py",
+    "symbol": "Stream.__post_init__",
+    "arguments": "self",
+    "returns": "None",
+    "docstring": null
+  },
+  {
+    "module": "src/rangekeeper/model/flow.py",
+    "symbol": "Stream.from_values",
+    "arguments": "cls, model: Model, value_ids: Iterable[UUID]",
+    "returns": "Stream",
+    "docstring": null
+  },
+  {
+    "module": "src/rangekeeper/model/flow.py",
+    "symbol": "Stream.values",
+    "arguments": "self",
+    "returns": "tuple[Value, ...]",
+    "docstring": null
+  },
+  {
+    "module": "src/rangekeeper/model/flow.py",
+    "symbol": "Stream.flows",
+    "arguments": "self",
+    "returns": "tuple[Flow, ...]",
+    "docstring": null
+  },
+  {
+    "module": "src/rangekeeper/model/flow.py",
+    "symbol": "Stream.select",
+    "arguments": "self, *, value_ids: Iterable[UUID]",
+    "returns": "Stream",
+    "docstring": null
+  },
+  {
+    "module": "src/rangekeeper/model/flow.py",
+    "symbol": "Stream.merge",
+    "arguments": "self, other: Stream",
+    "returns": "Stream",
+    "docstring": "Union selections in encounter order; different revisions cannot be merged."
+  },
+  {
+    "module": "src/rangekeeper/temporal/calendar.py",
+    "symbol": "require_date",
+    "arguments": "value: date",
+    "returns": "date",
+    "docstring": "Require a calendar date; never silently truncate a datetime or timezone."
+  },
+  {
+    "module": "src/rangekeeper/temporal/calendar.py",
+    "symbol": "offset",
+    "arguments": "value: date, *, frequency: Frequency, count: int=1, month_end: bool=False",
+    "returns": "date",
+    "docstring": "Shift a date; clamp invalid days or explicitly select the target month end."
+  },
+  {
+    "module": "src/rangekeeper/temporal/calendar.py",
+    "symbol": "elapsed_days",
+    "arguments": "start: date, end: date",
+    "returns": "int",
+    "docstring": "Return signed whole calendar days; both endpoints must be dates."
+  },
+  {
+    "module": "src/rangekeeper/temporal/calendar.py",
+    "symbol": "year_fraction",
+    "arguments": "start: date, end: date, *, convention: DayCount",
+    "returns": "float",
+    "docstring": "Calculate a signed accrual fraction through PyXIRR.\n\nactual/actual is ISDA; 30/360 is European 30E/360. Calendar offsets and\nperiod construction do not import the financial dependency."
+  },
+  {
+    "module": "src/rangekeeper/temporal/calendar.py",
+    "symbol": "resolve_day_count",
+    "arguments": "convention: DayCount",
+    "returns": "FinancialDayCount",
+    "docstring": "Map RK convention names to the same PyXIRR rules for accrual and valuation."
+  },
+  {
+    "module": "src/rangekeeper/temporal/period.py",
+    "symbol": "validate_period",
+    "arguments": "period: Period",
+    "returns": "None",
+    "docstring": "Require a positive date interval [start, end)."
+  },
+  {
+    "module": "src/rangekeeper/temporal/period.py",
+    "symbol": "resolve_period_date",
+    "arguments": "period: Period, *, timing: PeriodTiming",
+    "returns": "date",
+    "docstring": "Derive a date without storing a duplicate field.\n\nstart is the first included day; last_day is the final included day; end is\nthe exclusive boundary (for example, payment on the next month's first day)."
+  },
+  {
+    "module": "src/rangekeeper/temporal/period.py",
+    "symbol": "make_period",
+    "arguments": "start: date, end: date",
+    "returns": "Period",
+    "docstring": "Construct [start, end); convert old inclusive end dates explicitly."
+  },
+  {
+    "module": "src/rangekeeper/temporal/period.py",
+    "symbol": "make_periods",
+    "arguments": "start: date, *, frequency: Frequency, count: int, month_end: bool=False",
+    "returns": "tuple[Period, ...]",
+    "docstring": "Create adjacent date periods from one anchor, including irregular months."
+  },
+  {
+    "module": "src/rangekeeper/temporal/period.py",
+    "symbol": "periods_between",
+    "arguments": "start: date, end: date, *, frequency: Frequency, include_partial: bool=False",
+    "returns": "tuple[Period, ...]",
+    "docstring": "Partition [start, end); include a partial final period only when requested."
+  },
+  {
+    "module": "src/rangekeeper/temporal/period.py",
+    "symbol": "cover",
+    "arguments": "periods: Sequence[Period], *, name: str | None=None",
+    "returns": "Span",
+    "docstring": "Return a Span covering all intervals, including gaps between them."
+  }
+]

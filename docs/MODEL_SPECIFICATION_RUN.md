@@ -729,7 +729,7 @@ optimization. Forecasts and future realized observations must remain distinct.
 
 | Concept | Responsibility |
 | --- | --- |
-| Value | Identified, typed content that may be unresolved, supplied, or calculated. Flow, Stream, and Account content remain future Value kinds. |
+| Value | Identified content that may be unresolved, supplied, or calculated. Model 0.4.0 supports measurement, Flow and property content. Stream selects Flow Values at runtime; a persistent Account payload remains deferred. |
 | Formulation | An explicit mathematical container for related expressions, constraints, local declarations, and references to shared Values. |
 | Editor component | An authoring or inspection view. Mark8 chapters, blocks, and items do not determine mathematical ownership or solve semantics. |
 
@@ -792,14 +792,18 @@ formulation, not competing independently editable copies.
 
 ## 4. Rich types and project identity
 
-**Proposed extension points:** structured types, indexed values, reusable components,
-and explicit domain bindings. Their detailed schemas follow the scalar examples.
+Structured types, indexed values, reusable components and explicit domain bindings
+extend the scalar examples. Model 0.4.0 now implements date-only Period/Span and
+Flow content. The 2026-10-06 decision removes Flow semantic kinds: the overall
+model logic owns interpretation and operation selection. See the
+[current contract](FULL_MIGRATION_TURN1.md#flow-semantics-and-explicit-operations).
+Indexed execution and the remaining extension points are still later work.
 
 | Concept | Semantics to preserve |
 | --- | --- |
 | Span | Endpoints, calendar/duration conventions, and boundary inclusivity. |
-| Flow | Dated movement amounts; distinguish these from rates and stock balances. |
-| Stream | Named constituent flows and explicit alignment/aggregation rules. |
+| Flow | Ordered numerical entries with units, dates/periods, missingness and evidence. The model logic supplies their meaning; no semantic kind/basis is stored. |
+| Stream | Ordered selection of Flow Values in one Model revision; calculations use explicit alignment and aggregation rules. |
 | Account | Structured content for movements and balances; a mathematical Formulation supplies the governing balance, interest, and restriction equations. |
 | Entity lifecycle | Existing, proposed, committed, and realized structure; identity can persist through changes of use. |
 | Assembly | Shared membership with explicit traversal and aggregation rules; no implicit duplication or exclusive ownership. |

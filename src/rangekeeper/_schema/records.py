@@ -4,12 +4,14 @@ from __future__ import annotations
 from typing import Literal, cast
 from collections.abc import Mapping
 from uuid import UUID
+from datetime import date as Date
 from .._records import Record, Unset, UNSET, FrozenJSONValue, JSONValue
 
 Cardinality = Literal['one', 'many']
 ClaimKind = Literal['sourced', 'asserted', 'derived']
 CollectionKind = Literal['set', 'bag', 'sequence']
 CompletionStatus = Literal['completed', 'limited', 'partial', 'failed', 'cancelled', 'skipped']
+ContentKind = Literal['null', 'boolean', 'integer', 'float', 'string', 'uuid', 'date', 'datetime', 'time', 'duration', 'list', 'tuple', 'set', 'frozenset', 'mapping', 'mapping_proxy']
 Depth = Literal['direct', 'transitive']
 Direction = Literal['outgoing', 'incoming']
 DomainKind = Literal['number', 'quantity', 'measurement', 'boolean', 'string', 'date', 'span', 'flow', 'stream', 'account', 'entity', 'collection']
@@ -28,7 +30,7 @@ Severity = Literal['info', 'warning', 'error']
 SolutionStatus = Literal['feasible', 'infeasible', 'unknown', 'not_assessed', 'not_applicable']
 StepKind = Literal['validation', 'formulation', 'solve', 'publication', 'selection']
 TraversalKind = Literal['relationship', 'membership']
-ValueKind = Literal['measurement']
+ValueKind = Literal['measurement', 'flow', 'property']
 Content = FrozenJSONValue
 
 class Argument(Record):
@@ -359,6 +361,28 @@ class Constraint(Record):
         return cast('UUID', self._field('predicate'))
 
 
+class ContentEntry(Record):
+    __slots__ = ()
+    _kind = 'ContentEntry'
+
+    def __init__(self, *,
+        key: PropertyContent,
+        value: PropertyContent,
+    ) -> None:
+        self._initialize({
+            'key': key,
+            'value': value,
+        })
+
+    @property
+    def key(self) -> PropertyContent:
+        return cast('PropertyContent', self._field('key'))
+
+    @property
+    def value(self) -> PropertyContent:
+        return cast('PropertyContent', self._field('value'))
+
+
 class Criterion(Record):
     __slots__ = ()
     _kind = 'Criterion'
@@ -647,6 +671,28 @@ class Filter(Record):
     @property
     def labels(self) -> tuple[Criterion, ...] | None:
         return cast('tuple[Criterion, ...] | None', self._field('labels'))
+
+
+class Flow(Record):
+    __slots__ = ()
+    _kind = 'Flow'
+
+    def __init__(self, *,
+        units: str,
+        movements: tuple[Movement, ...],
+    ) -> None:
+        self._initialize({
+            'units': units,
+            'movements': movements,
+        })
+
+    @property
+    def units(self) -> str:
+        return cast('str', self._field('units'))
+
+    @property
+    def movements(self) -> tuple[Movement, ...]:
+        return cast('tuple[Movement, ...]', self._field('movements'))
 
 
 class Formulation(Record):
@@ -1031,6 +1077,46 @@ class Model(Record):
         return cast('Provenance | None', self._field('provenance'))
 
 
+class Movement(Record):
+    __slots__ = ()
+    _kind = 'Movement'
+
+    def __init__(self, *,
+        key: str,
+        date: Date | None | Unset = UNSET,
+        period: Period | None | Unset = UNSET,
+        magnitude: int | float | None | Unset = UNSET,
+        claims: tuple[UUID, ...] | None | Unset = UNSET,
+    ) -> None:
+        self._initialize({
+            'key': key,
+            'date': date,
+            'period': period,
+            'magnitude': magnitude,
+            'claims': claims,
+        })
+
+    @property
+    def key(self) -> str:
+        return cast('str', self._field('key'))
+
+    @property
+    def date(self) -> Date | None:
+        return cast('Date | None', self._field('date'))
+
+    @property
+    def period(self) -> Period | None:
+        return cast('Period | None', self._field('period'))
+
+    @property
+    def magnitude(self) -> int | float | None:
+        return cast('int | float | None', self._field('magnitude'))
+
+    @property
+    def claims(self) -> tuple[UUID, ...] | None:
+        return cast('tuple[UUID, ...] | None', self._field('claims'))
+
+
 class Objective(Record):
     __slots__ = ()
     _kind = 'Objective'
@@ -1087,6 +1173,28 @@ class Parameter(Record):
         return cast('bool', self._field('required'))
 
 
+class Period(Record):
+    __slots__ = ()
+    _kind = 'Period'
+
+    def __init__(self, *,
+        start: Date,
+        end: Date,
+    ) -> None:
+        self._initialize({
+            'start': start,
+            'end': end,
+        })
+
+    @property
+    def start(self) -> Date:
+        return cast('Date', self._field('start'))
+
+    @property
+    def end(self) -> Date:
+        return cast('Date', self._field('end'))
+
+
 class Projection(Record):
     __slots__ = ()
     _kind = 'Projection'
@@ -1125,6 +1233,52 @@ class Projection(Record):
     @property
     def missing(self) -> MissingHandling | None:
         return cast('MissingHandling | None', self._field('missing'))
+
+
+class PropertyContent(Record):
+    __slots__ = ()
+    _kind = 'PropertyContent'
+
+    def __init__(self, *,
+        kind: ContentKind,
+        text: str | None | Unset = UNSET,
+        zone: str | None | Unset = UNSET,
+        fold: int | None | Unset = UNSET,
+        items: tuple[PropertyContent, ...] | None | Unset = UNSET,
+        entries: tuple[ContentEntry, ...] | None | Unset = UNSET,
+    ) -> None:
+        self._initialize({
+            'kind': kind,
+            'text': text,
+            'zone': zone,
+            'fold': fold,
+            'items': items,
+            'entries': entries,
+        })
+
+    @property
+    def kind(self) -> ContentKind:
+        return cast('ContentKind', self._field('kind'))
+
+    @property
+    def text(self) -> str | None:
+        return cast('str | None', self._field('text'))
+
+    @property
+    def zone(self) -> str | None:
+        return cast('str | None', self._field('zone'))
+
+    @property
+    def fold(self) -> int | None:
+        return cast('int | None', self._field('fold'))
+
+    @property
+    def items(self) -> tuple[PropertyContent, ...] | None:
+        return cast('tuple[PropertyContent, ...] | None', self._field('items'))
+
+    @property
+    def entries(self) -> tuple[ContentEntry, ...] | None:
+        return cast('tuple[ContentEntry, ...] | None', self._field('entries'))
 
 
 class Provenance(Record):
@@ -1463,8 +1617,8 @@ class Source(Record):
         id: UUID,
         name: str,
         checksum: str,
-        issued_at: str | None | Unset = UNSET,
-        received_at: str | None | Unset = UNSET,
+        issued_at: Date | str | None | Unset = UNSET,
+        received_at: Date | str | None | Unset = UNSET,
         author: str | None | Unset = UNSET,
     ) -> None:
         self._initialize({
@@ -1489,16 +1643,44 @@ class Source(Record):
         return cast('str', self._field('checksum'))
 
     @property
-    def issued_at(self) -> str | None:
-        return cast('str | None', self._field('issued_at'))
+    def issued_at(self) -> Date | str | None:
+        return cast('Date | str | None', self._field('issued_at'))
 
     @property
-    def received_at(self) -> str | None:
-        return cast('str | None', self._field('received_at'))
+    def received_at(self) -> Date | str | None:
+        return cast('Date | str | None', self._field('received_at'))
 
     @property
     def author(self) -> str | None:
         return cast('str | None', self._field('author'))
+
+
+class Span(Period):
+    __slots__ = ()
+    _kind = 'Span'
+
+    def __init__(self, *,
+        name: str | None | Unset = UNSET,
+        start: Date,
+        end: Date,
+    ) -> None:
+        self._initialize({
+            'name': name,
+            'start': start,
+            'end': end,
+        })
+
+    @property
+    def name(self) -> str | None:
+        return cast('str | None', self._field('name'))
+
+    @property
+    def start(self) -> Date:
+        return cast('Date', self._field('start'))
+
+    @property
+    def end(self) -> Date:
+        return cast('Date', self._field('end'))
 
 
 class Specification(Record):
@@ -1746,12 +1928,14 @@ class Value(Record):
     _kind = 'Value'
 
     def __init__(self, *,
-        measure: UUID,
+        measure: UUID | None | Unset = UNSET,
         quantity: Quantity | None | Unset = UNSET,
         id: UUID,
         key: str,
         kind: ValueKind,
         description: str | None | Unset = UNSET,
+        flow: Flow | None | Unset = UNSET,
+        content: PropertyContent | None | Unset = UNSET,
     ) -> None:
         self._initialize({
             'measure': measure,
@@ -1760,11 +1944,13 @@ class Value(Record):
             'key': key,
             'kind': kind,
             'description': description,
+            'flow': flow,
+            'content': content,
         })
 
     @property
-    def measure(self) -> UUID:
-        return cast('UUID', self._field('measure'))
+    def measure(self) -> UUID | None:
+        return cast('UUID | None', self._field('measure'))
 
     @property
     def quantity(self) -> Quantity | None:
@@ -1786,6 +1972,14 @@ class Value(Record):
     def description(self) -> str | None:
         return cast('str | None', self._field('description'))
 
+    @property
+    def flow(self) -> Flow | None:
+        return cast('Flow | None', self._field('flow'))
+
+    @property
+    def content(self) -> PropertyContent | None:
+        return cast('PropertyContent | None', self._field('content'))
+
 
 _TYPES = {
     'Argument': Argument,
@@ -1797,6 +1991,7 @@ _TYPES = {
     'Claim': Claim,
     'Classification': Classification,
     'Constraint': Constraint,
+    'ContentEntry': ContentEntry,
     'Criterion': Criterion,
     'Definitions': Definitions,
     'Diagnostic': Diagnostic,
@@ -1806,6 +2001,7 @@ _TYPES = {
     'Expression': Expression,
     'Fact': Fact,
     'Filter': Filter,
+    'Flow': Flow,
     'Formulation': Formulation,
     'Function': Function,
     'Implementation': Implementation,
@@ -1816,9 +2012,12 @@ _TYPES = {
     'Metadata': Metadata,
     'Method': Method,
     'Model': Model,
+    'Movement': Movement,
     'Objective': Objective,
     'Parameter': Parameter,
+    'Period': Period,
     'Projection': Projection,
+    'PropertyContent': PropertyContent,
     'Provenance': Provenance,
     'Quantity': Quantity,
     'Query': Query,
@@ -1830,6 +2029,7 @@ _TYPES = {
     'Selection': Selection,
     'Settings': Settings,
     'Source': Source,
+    'Span': Span,
     'Specification': Specification,
     'Status': Status,
     'Step': Step,
@@ -1839,4 +2039,4 @@ _TYPES = {
     'Value': Value,
 }
 
-__all__ = ['Argument', 'Assembly', 'Assignment', 'Binding', 'Call', 'Cardinality', 'Characteristics', 'Claim', 'ClaimKind', 'Classification', 'CollectionKind', 'CompletionStatus', 'Constraint', 'Content', 'Criterion', 'Definitions', 'Depth', 'Diagnostic', 'Direction', 'Domain', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'Entity', 'Entry', 'Expression', 'ExpressionKind', 'Fact', 'Filter', 'Formulation', 'Function', 'Implementation', 'ImplementationKind', 'Label', 'Location', 'Measure', 'Measurement', 'Metadata', 'Method', 'MissingHandling', 'Model', 'Objective', 'ObjectiveKind', 'Operator', 'Parameter', 'ParameterKind', 'Projection', 'ProjectionKind', 'Provenance', 'Quantity', 'Query', 'Reconciliation', 'ReconciliationStatus', 'Relationship', 'Report', 'Run', 'Runtime', 'Selection', 'SelectionKind', 'Settings', 'Severity', 'SolutionStatus', 'Source', 'Specification', 'Status', 'Step', 'StepKind', 'System', 'Taxonomy', 'Traversal', 'TraversalKind', 'Value', 'ValueKind']
+__all__ = ['Argument', 'Assembly', 'Assignment', 'Binding', 'Call', 'Cardinality', 'Characteristics', 'Claim', 'ClaimKind', 'Classification', 'CollectionKind', 'CompletionStatus', 'Constraint', 'Content', 'ContentEntry', 'ContentKind', 'Criterion', 'Definitions', 'Depth', 'Diagnostic', 'Direction', 'Domain', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'Entity', 'Entry', 'Expression', 'ExpressionKind', 'Fact', 'Filter', 'Flow', 'Formulation', 'Function', 'Implementation', 'ImplementationKind', 'Label', 'Location', 'Measure', 'Measurement', 'Metadata', 'Method', 'MissingHandling', 'Model', 'Movement', 'Objective', 'ObjectiveKind', 'Operator', 'Parameter', 'ParameterKind', 'Period', 'Projection', 'ProjectionKind', 'PropertyContent', 'Provenance', 'Quantity', 'Query', 'Reconciliation', 'ReconciliationStatus', 'Relationship', 'Report', 'Run', 'Runtime', 'Selection', 'SelectionKind', 'Settings', 'Severity', 'SolutionStatus', 'Source', 'Span', 'Specification', 'Status', 'Step', 'StepKind', 'System', 'Taxonomy', 'Traversal', 'TraversalKind', 'Value', 'ValueKind']

@@ -35,7 +35,7 @@ FIXTURES = sorted(
 
 
 def minimal():
-    return rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.3.0"))
+    return rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.4.0"))
 
 
 @pytest.fixture(params=["memory", "directory"])
@@ -353,7 +353,7 @@ from rangekeeper import Model
 from rangekeeper.model import Metadata
 from rangekeeper.io import DirectoryStore, _atomic
 _atomic.os.link = lambda *args: os._exit(23)
-DirectoryStore(Path(sys.argv[1])).put(Model.create(metadata=Metadata(id=UUID(sys.argv[2]), schema_version="0.3.0")))
+DirectoryStore(Path(sys.argv[1])).put(Model.create(metadata=Metadata(id=UUID(sys.argv[2]), schema_version="0.4.0")))
 """
     identity = uuid4()
     result = subprocess.run(
@@ -365,7 +365,7 @@ DirectoryStore(Path(sys.argv[1])).put(Model.create(metadata=Metadata(id=UUID(sys
     store = DirectoryStore(tmp_path)
     with pytest.raises(MissingReferenceError):
         store.load_model(identity)
-    document = rk.Model.create(metadata=Metadata(id=identity, schema_version="0.3.0"))
+    document = rk.Model.create(metadata=Metadata(id=identity, schema_version="0.4.0"))
     store.put(document)
     assert store.load_model(identity).id == identity
 

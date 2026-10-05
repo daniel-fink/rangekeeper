@@ -1,4 +1,4 @@
-version: 1
+version: 2
 namespace: urn:example:equipment
 number_sets:
   equipment_sizes:

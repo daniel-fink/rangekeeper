@@ -1,0 +1,36 @@
+Traceback (most recent call last):
+  File "/Volumes/Data/Projects/Rangekeeper/docs/research/full-migration/turn1/run_notebook.py", line 21, in <module>
+    NotebookClient(notebook,km=manager,timeout=120,resources={'metadata':{'path':str(args.cwd)}}).execute()
+  File "/private/tmp/rk-full-runtime/lib/python3.10/site-packages/jupyter_core/utils/__init__.py", line 165, in wrapped
+    return loop.run_until_complete(inner)
+  File "/Users/daniel/.local/share/uv/python/cpython-3.10.19-macos-aarch64-none/lib/python3.10/asyncio/base_events.py", line 649, in run_until_complete
+    return future.result()
+  File "/private/tmp/rk-full-runtime/lib/python3.10/site-packages/nbclient/client.py", line 693, in async_execute
+    async with self.async_setup_kernel(**kwargs):
+  File "/Users/daniel/.local/share/uv/python/cpython-3.10.19-macos-aarch64-none/lib/python3.10/contextlib.py", line 199, in __aenter__
+    return await anext(self.gen)
+  File "/private/tmp/rk-full-runtime/lib/python3.10/site-packages/nbclient/client.py", line 648, in async_setup_kernel
+    await self.async_start_new_kernel(**kwargs)
+  File "/private/tmp/rk-full-runtime/lib/python3.10/site-packages/nbclient/client.py", line 550, in async_start_new_kernel
+    await ensure_async(self.km.start_kernel(extra_arguments=self.extra_arguments, **kwargs))
+  File "/private/tmp/rk-full-runtime/lib/python3.10/site-packages/jupyter_core/utils/__init__.py", line 171, in wrapped
+    return _runner_map[name].run(inner)
+  File "/private/tmp/rk-full-runtime/lib/python3.10/site-packages/jupyter_core/utils/__init__.py", line 128, in run
+    return fut.result(None)
+  File "/Users/daniel/.local/share/uv/python/cpython-3.10.19-macos-aarch64-none/lib/python3.10/concurrent/futures/_base.py", line 458, in result
+    return self.__get_result()
+  File "/Users/daniel/.local/share/uv/python/cpython-3.10.19-macos-aarch64-none/lib/python3.10/concurrent/futures/_base.py", line 403, in __get_result
+    raise self._exception
+  File "/private/tmp/rk-full-runtime/lib/python3.10/site-packages/jupyter_client/manager.py", line 116, in wrapper
+    raise e
+  File "/private/tmp/rk-full-runtime/lib/python3.10/site-packages/jupyter_client/manager.py", line 107, in wrapper
+    out = await method(self, *args, **kwargs)
+  File "/private/tmp/rk-full-runtime/lib/python3.10/site-packages/jupyter_client/manager.py", line 528, in _async_start_kernel
+    kernel_cmd, kw = await self._async_pre_start_kernel(**kw)
+  File "/private/tmp/rk-full-runtime/lib/python3.10/site-packages/jupyter_client/manager.py", line 493, in _async_pre_start_kernel
+    kw = await self.provisioner.pre_launch(**kw)
+  File "/private/tmp/rk-full-runtime/lib/python3.10/site-packages/jupyter_client/provisioning/local_provisioner.py", line 216, in pre_launch
+    km.shell_port = lpc.find_available_port(km.ip)
+  File "/private/tmp/rk-full-runtime/lib/python3.10/site-packages/jupyter_client/connect.py", line 755, in find_available_port
+    tmp_sock.bind((ip, 0))
+PermissionError: [Errno 1] Operation not permitted

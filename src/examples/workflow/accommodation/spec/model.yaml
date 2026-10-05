@@ -1,4 +1,4 @@
-version: 1
+version: 2
 taxonomy:
   code: example
   name: accommodation
@@ -19,13 +19,9 @@ measures:
 - code: size
   name: size
   units: meter**2
-  quantity_kind: AREA
-  aggregation: NONE
 - code: count
   name: count
   units: dimensionless
-  quantity_kind: COUNT
-  aggregation: NONE
 templates:
 - id: items
   table: items
@@ -37,23 +33,25 @@ templates:
   classification: item
   decisions:
   - D1
-  features:
-  - name: source_label
-    binding:
-      column: label
   measurements:
   - measure: size
     binding:
       column: number_size
     on_unavailable:
       topic: Unavailable measurement
+    key: size
   - measure: count
     binding:
       column: count
+    key: count
   labels:
   - name: product
     bindings:
     - column: product
+  properties:
+  - key: source_label
+    binding:
+      column: label
 - id: levels
   table: levels
   kind: assembly

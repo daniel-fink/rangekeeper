@@ -1,8 +1,49 @@
 # Rangekeeper acausal modelling handoff
 
+**Movement naming, 2026-10-06:** the current API uses `Movement` and
+`Flow.movements`. See the [naming contract](../FULL_MIGRATION_TURN1.md#movement-naming)
+for the Python/wire-format change and upgrade requirements.
+
+**Flow semantics update, 2026-10-06:** Flows no longer carry semantic kinds or
+basis. The overall model logic owns their meaning and selects operations; units,
+dates, alignment and missingness remain checked. See the
+[current contract](../FULL_MIGRATION_TURN1.md#flow-semantics-and-explicit-operations)
+and [verification](../research/full-migration/flow-semantics/README.md).
+
 Prepared 2026-10-02 for continuation on Daniel's Mac Studio.
 
 ## Resume here
+
+**Full migration update, 2026-10-04:** [Turn 1 foundations](../FULL_MIGRATION_TURN1.md)
+implements Model 0.4.0 rich properties and Flow Values, `model.duration`,
+`temporal`, `calculations`, detached dataframe adapters, and explicit Graph conversion.
+The basic DCF notebook, financial test model and synthetic source workflows migrated.
+Read the [upgrade guide](../LEGACY_UPGRADE_GUIDE.md) and [verification](../research/full-migration/turn1/README.md).
+The [date-only correction](../research/full-migration/date-only/README.md) removes
+TimePoint. Period movements store coverage; a separate date is optional and records
+an independent payment or observation. Dated valuation requires explicit timing
+when the movement has no recorded date.
+[Financial-library integration](../research/full-migration/financial-library/README.md)
+now delegates PV, XNPV, IRR and day counts to PyXIRR. The draft mandatory IRR
+bracket is replaced by an optional initial guess.
+Next is Turn 2: temporal mathematics, scenarios/policies, and their consumers.
+Begin with the [duration namespace migration](../FULL_MIGRATION_TURN1.md#duration-namespace-migration),
+recorded 2026-10-05. Move the old duration implementation to private migration
+support, then move `temporal/` to `duration/` and update callers, documentation and
+import checks together. Verify this slice before adding new consumers. The rename
+is planned only; `model.duration` and wire formats stay unchanged.
+Turns 3–4 finish remaining consumers and retire old modules. The six-checkpoint
+history below remains the scalar/core work record; full migration is not complete.
+
+Continue from the 2026-10-06 foundations checkpoint and retained evidence, whose
+parent is `90c2e00`. Daniel separately requested an interim commit and push after
+the Movement rename. The latest [verification](../research/full-migration/movement-naming/README.md)
+records 946 local tests passing, all seven schema suites, typing and installed
+acceptance; three live-service tests remain excluded. Earlier evidence snapshots
+describe their state before this checkpoint. Do not restart the CUE comparison,
+repeat the first domain migration, or remove old modules before consumer gates
+pass. Preserve the unrelated `.gitignore` edit and Syncthing lock conflict copy;
+the canonical `src/uv.lock` belongs to the verified dependency changes.
 
 **Continuation update, 2026-10-03:** Daniel decided to retain LinkML after the
 independent audit and discussion of native CUE's benefits and costs. The
@@ -12,7 +53,7 @@ mapped replacement of the graph domain core. The minimal schema-backed core is n
 implemented directly in its library packages, together with scalar execution.
 Step 6A/6B now implements [Model-backed graph operations](../GRAPH_MODEL.md).
 [Step 6C/6D](../CONSUMER_MIGRATION.md) now implements tables, presentation
-adapters, and source workflows. Next is 6E, external consumer migration. The earlier
+adapters, and source workflows. The full four-turn continuation now governs 6E/6F. The earlier
 `schema/execution/` prototype and later promotion plan is superseded. Native CUE suitability remains untested; the decision is an accepted
 trade-off rather than a completed native-language evaluation.
 

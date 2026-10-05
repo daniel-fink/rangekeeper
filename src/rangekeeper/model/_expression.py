@@ -60,16 +60,55 @@ def build_scope(document, local_values=()) -> Scope:
         identities.add(taxonomy["id"])
         for classification in taxonomy["classifications"]:
             add(classifications, classification)
+
+    def add_value(value):
+        from rangekeeper.model.content import validate_content
+        from rangekeeper.model.flow import validate_flow
+        from rangekeeper._schema.records import Flow, PropertyContent
+
+        add(values, value)
+        kind = value["kind"]
+        if kind in ("measurement", "flow"):
+            require(value.get("measure") in measures, "unknown Value Measure")
+            forbidden = (
+                ("flow", "content")
+                if kind == "measurement"
+                else ("quantity", "content")
+            )
+            require(
+                all(value.get(field) is None for field in forbidden),
+                "content incompatible with Value kind",
+            )
+            domains[value["id"]] = dict(kind=kind, measure=value["measure"])
+            if kind == "flow" and value.get("flow") is not None:
+                try:
+                    validate_flow(Flow.from_data(value["flow"]))
+                except (ValueError, TypeError) as error:
+                    require(False, str(error))
+        else:
+            require(kind == "property", "unsupported Value kind")
+            require(
+                all(
+                    value.get(field) is None
+                    for field in ("measure", "quantity", "flow")
+                ),
+                "property Value cannot carry measurement content",
+            )
+            if value.get("content") is not None:
+                try:
+                    validate_content(PropertyContent.from_data(value["content"]))
+                except (ValueError, TypeError) as error:
+                    require(False, str(error))
+            domains[value["id"]] = dict(
+                kind="property"
+            )  # Structured content is not a scalar mathematical domain.
+
     for entity in (document.get("entities") or []) + (document.get("assemblies") or []):
         add(entities, entity)
         for value in entity.get("characteristics", {}).get("values", []):
-            add(values, value)
-            require(value["measure"] in measures, "unknown Value Measure")
-            domains[value["id"]] = dict(kind="measurement", measure=value["measure"])
+            add_value(value)
     for value in local_values:
-        add(values, value)
-        require(value["measure"] in measures, "unknown Value Measure")
-        domains[value["id"]] = dict(kind="measurement", measure=value["measure"])
+        add_value(value)
     # Explicitly a fixture domain environment, not accepted domain Value records.
     for value in document.get("input_domains") or []:
         add(values, value)

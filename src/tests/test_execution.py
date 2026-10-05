@@ -579,7 +579,7 @@ def test_real_simplex_iteration_limit_has_no_infeasibility_claim():
         )
     model = Model.from_data(
         {
-            "metadata": {"id": str(uuid4()), "schema_version": "0.3.0"},
+            "metadata": {"id": str(uuid4()), "schema_version": "0.4.0"},
             "definitions": {
                 "measures": [
                     {
@@ -701,3 +701,24 @@ def test_nonfinite_or_boolean_backend_candidates_are_never_published(magnitude):
     assert run.report.status.completion == "failed"
     assert run.report.status.solution == "unknown"
     assert not run.record.outputs
+
+
+def test_scalar_execution_retains_unrelated_rich_content():
+    """New property/Flow content must not become implicit scalar solve variables."""
+    from rangekeeper.model.content import encode
+
+    payload = data("model")
+    identity = uuid4()
+    payload["system"]["entities"][0].setdefault("characteristics", {}).setdefault(
+        "values", []
+    ).append(
+        {
+            "id": str(identity),
+            "key": "source-note",
+            "kind": "property",
+            "content": encode("retained").to_data(),
+        }
+    )
+    store, model = setup(model_data=payload)
+    run = execute(store, spec(model=model))
+    assert output(store, run).value(identity).content == encode("retained")

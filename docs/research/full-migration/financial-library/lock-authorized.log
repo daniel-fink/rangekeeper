@@ -1,0 +1,16 @@
+WARN pyyaml==6.0.3 needs to be downloaded from a registry
+  × No solution found when resolving dependencies for split (markers:
+  │ python_full_version >= '3.12' and python_full_version < '3.14'):
+  ╰─▶ Because highspy was not found in the cache and rangekeeper[execution]
+      depends on highspy==1.15.1, we can conclude that
+      rangekeeper[execution]'s requirements are unsatisfiable.
+      And because your project requires rangekeeper[execution], we can
+      conclude that your project's requirements are unsatisfiable.
+
+      hint: Packages were unavailable because the network was disabled. When
+      the network is disabled, registry packages may only be read from the
+      cache.
+
+      hint: While the active Python version is 3.10, the resolution failed for
+      other Python versions supported by your project. Consider limiting your
+      project's supported Python versions using `requires-python`.

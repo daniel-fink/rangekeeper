@@ -1,0 +1,26 @@
+{
+  "runtime": {
+    "python": "3.10.19 (main, Jan 14 2026, 23:38:29) [Clang 21.1.4 ]",
+    "executable": "/private/tmp/rk-full-runtime/bin/python",
+    "packages": {
+      "pyxirr": "0.10.7",
+      "numpy": "2.2.6",
+      "pandas": "2.3.2",
+      "polars": "1.44.2",
+      "scipy": "1.15.3",
+      "pint": "0.24.4",
+      "pyomo": "6.10.1",
+      "highspy": "1.15.1"
+    }
+  },
+  "schema": {
+    "python": "3.10.19 (main, Jan 14 2026, 23:38:29) [Clang 21.1.4 ]",
+    "executable": "/private/tmp/rk-probe-audit-venv/bin/python",
+    "packages": {
+      "linkml": "1.11.1",
+      "linkml-runtime": "1.11.1",
+      "jsonschema": "4.26.0",
+      "PyYAML": "6.0.3"
+    }
+  }
+}

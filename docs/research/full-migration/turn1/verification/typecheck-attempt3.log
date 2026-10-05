@@ -1,0 +1,12 @@
+rangekeeper/temporal/calendar.py:81: error: No overload variant of "__sub__" of "datetime" matches argument type "date"  [operator]
+rangekeeper/temporal/calendar.py:81: note: Possible overload variants:
+rangekeeper/temporal/calendar.py:81: note:     def __sub__(self, datetime, /) -> timedelta
+rangekeeper/temporal/calendar.py:81: note:     def __sub__(self, timedelta, /) -> datetime
+rangekeeper/temporal/calendar.py:81: note: Both left and right operands are unions
+Found 1 error in 1 file (checked 104 source files)
+Traceback (most recent call last):
+  File "/Volumes/Data/Projects/Rangekeeper/src/../tools/schema/typecheck.py", line 52, in <module>
+    subprocess.run(
+  File "/Users/daniel/.local/share/uv/python/cpython-3.10.19-macos-aarch64-none/lib/python3.10/subprocess.py", line 526, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/private/tmp/rk-full-runtime/bin/python', '-m', 'mypy', '--follow-imports=silent', '--ignore-missing-imports', '--cache-dir=/var/folders/sk/cjq5zjks7gx_3tf9m67y43xr0000gn/T/rk-mypy-cw1fnfg4', 'rangekeeper/_schema/records.py', 'rangekeeper/_records.py', 'rangekeeper/diagnostics.py', 'rangekeeper/errors.py', 'rangekeeper/validate.py', 'rangekeeper/_validation.py', 'rangekeeper/model', 'rangekeeper/temporal', 'rangekeeper/calculations', 'rangekeeper/migration', 'rangekeeper/adapters/pandas.py', 'rangekeeper/adapters/polars.py', 'rangekeeper/specification', 'rangekeeper/units.py', 'rangekeeper/references.py', 'rangekeeper/_comparison.py', 'rangekeeper/run', 'rangekeeper/io', 'rangekeeper/execution', 'rangekeeper/graph/__init__.py', 'rangekeeper/graph/view.py', 'rangekeeper/graph/projection.py', 'rangekeeper/table.py', 'rangekeeper/workflow/runtime.py', 'rangekeeper/workflow/composition.py', 'rangekeeper/workflow/provenance.py', 'rangekeeper/graph/hierarchy.py', 'rangekeeper/graph/membership.py', 'rangekeeper/graph/selection.py', 'rangekeeper/graph/reduction.py', 'rangekeeper/graph/reducers.py', 'rangekeeper/__init__.py', '/Volumes/Data/Projects/Rangekeeper/src/../tools/schema/typing_valid.py', '/Volumes/Data/Projects/Rangekeeper/src/../tools/schema/typing_domain_valid.py', '/Volumes/Data/Projects/Rangekeeper/src/../tools/schema/typing_io_valid.py', '/Volumes/Data/Projects/Rangekeeper/src/../tools/schema/typing_execution_valid.py', '/Volumes/Data/Projects/Rangekeeper/src/../tools/schema/typing_graph_valid.py', '/Volumes/Data/Projects/Rangekeeper/src/../tools/schema/typing_consumers_valid.py']' returned non-zero exit status 1.

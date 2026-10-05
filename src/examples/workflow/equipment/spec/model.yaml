@@ -1,4 +1,4 @@
-version: 1
+version: 2
 measurement_sets:
   equipment_readings:
   - measure: size
@@ -6,9 +6,11 @@ measurement_sets:
       column: number_size
     on_unavailable:
       topic: Unavailable measurement
+    key: size
   - measure: count
     binding:
       column: count
+    key: count
 taxonomy:
   code: example
   name: equipment
@@ -29,13 +31,9 @@ measures:
 - code: size
   name: size
   units: meter**2
-  quantity_kind: AREA
-  aggregation: NONE
 - code: count
   name: count
   units: dimensionless
-  quantity_kind: COUNT
-  aggregation: NONE
 templates:
 - id: assets
   table: assets
@@ -47,15 +45,15 @@ templates:
   classification: asset
   decisions:
   - D1
-  features:
-  - name: source_label
-    binding:
-      column: label
   labels:
   - name: product
     bindings:
     - column: product
   measurements_ref: equipment_readings
+  properties:
+  - key: source_label
+    binding:
+      column: label
 - id: zones
   table: zones
   kind: assembly

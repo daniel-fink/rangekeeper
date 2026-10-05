@@ -1,0 +1,67 @@
+id: https://daniel-fink.github.io/rangekeeper/schema/content
+name: rangekeeper_content
+title: Rangekeeper Structured Property Content
+version: 0.1.0
+prefixes:
+  linkml: https://w3id.org/linkml/
+  rk: https://daniel-fink.github.io/rangekeeper/schema/
+imports:
+- common
+default_prefix: rk
+default_range: string
+classes:
+  PropertyContent:
+    description: Tagged inert content. Scalar text preserves exact type and representation, including negative zero. Containers never instantiate arbitrary Python classes. Conditional shape and canonical scalar grammar are checked semantically.
+    attributes:
+      kind:
+        range: ContentKind
+        required: true
+      text:
+        range: string
+      zone:
+        range: string
+      fold:
+        range: integer
+        minimum_value: 0
+        maximum_value: 1
+      items:
+        range: PropertyContent
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+        list_elements_ordered: true
+      entries:
+        range: ContentEntry
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+        list_elements_ordered: true
+  ContentEntry:
+    attributes:
+      key:
+        range: PropertyContent
+        required: true
+        inlined: true
+      value:
+        range: PropertyContent
+        required: true
+        inlined: true
+enums:
+  ContentKind:
+    permissible_values:
+      'null':
+      boolean:
+      integer:
+      float:
+      string:
+      uuid:
+      date:
+      datetime:
+      time:
+      duration:
+      list:
+      tuple:
+      set:
+      frozenset:
+      mapping:
+      mapping_proxy:

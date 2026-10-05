@@ -34,11 +34,16 @@ def recorded_unit_issues(
             if isinstance(item, (Domain, Measure, Quantity)) and item.units is not None:
                 units.compatible(item.units, item.units)
             if isinstance(item, Value) and item.quantity is not None:
+                assert item.measure is not None
                 expected = measure(item.measure)
                 if not units.compatible(item.quantity.units, expected.units):
                     raise UnitError(
                         "recorded Value quantity is incompatible with its Measure"
                     )
+            if isinstance(item, Value) and item.flow is not None:
+                assert item.measure is not None
+                if not units.compatible(item.flow.units, measure(item.measure).units):
+                    raise UnitError("recorded Flow is incompatible with its Measure")
         except UnitError as error:
             issues.append(Issue("semantic.units", str(error), document_id, path))
     return tuple(issues)

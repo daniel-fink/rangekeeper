@@ -214,7 +214,7 @@ def test_cycles_duplicate_keys_and_structure_diagnostics():
         )
     with pytest.raises(ValueError, match="duplicate JSON key"):
         r.Model.from_json('{"metadata":{"id":"a","id":"b"}}')
-    report = validate("Model", {"metadata": {"id": "bad", "schema_version": "0.3.0"}})
+    report = validate("Model", {"metadata": {"id": "bad", "schema_version": "0.4.0"}})
     assert not report.valid
     assert any(issue.path == "/metadata/id" for issue in report.issues)
     with pytest.raises(ValidationError) as raised:
@@ -274,7 +274,7 @@ import sys
 from rangekeeper._schema.records import Model, Metadata
 from rangekeeper.model.validation import validate
 from uuid import uuid4
-assert validate(Model(metadata=Metadata(id=uuid4(), schema_version="0.3.0"))).valid
+assert validate(Model(metadata=Metadata(id=uuid4(), schema_version="0.4.0"))).valid
 for prefix in ("linkml", "linkml_runtime", "numpy", "pandas", "matplotlib", "pint", "pyomo", "specklepy", "rangekeeper.graph"):
     assert not any(name == prefix or name.startswith(prefix + ".") for name in sys.modules), prefix
 """

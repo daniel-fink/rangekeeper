@@ -1,0 +1,269 @@
+# Upgrade older Rangekeeper consumers
+
+This guide covers the implemented **Turn 1** APIs in the full migration.
+Use [the ledger](FULL_MIGRATION_TURN1.md) to distinguish delivered replacements
+from work in Turns 2–4. The old runtime modules still exist for unmigrated consumers.
+Do not use their presence as evidence that old Graph JSON is canonical Model JSON.
+
+**Movement naming, 2026-10-06:** import `Movement` from `rangekeeper.model.flow`
+and use `Flow.movements`. These replace `FlowSample` and `Flow.samples` in Python
+and the `samples` field in JSON/YAML. Use `movement_coordinate` for alignment
+identity; keyword callers of `resolve_date` use `movement=`. There are no aliases.
+Old draft documents must rename `samples` to `movements` explicitly, preserving
+order, keys, dates/periods, magnitude presence and Claim references. Save changes
+as a new Model revision; do not overwrite historical snapshots. Old and mixed
+field names are rejected. See [the contract](FULL_MIGRATION_TURN1.md#movement-naming)
+and [verification](research/full-migration/movement-naming/README.md).
+
+**Flow semantics, 2026-10-06:** Flows have no semantic kind or basis. The overall
+model logic selects and interprets calculations. Units, coordinates, alignment,
+missingness and operation-specific numerical requirements remain checked. This
+removes the unreleased draft's `basis=` and `result_basis=` arguments. Saved draft
+payloads must have their `basis` field removed explicitly as part of a new Model
+revision; older snapshots remain historical. `Value.kind="flow"` still identifies
+the content shape. See the [contract](FULL_MIGRATION_TURN1.md#flow-semantics-and-explicit-operations)
+and [verification](research/full-migration/flow-semantics/README.md).
+
+**Planned namespace change, 2026-10-05:** Turn 2 will start by moving calendar
+operations from `rangekeeper.temporal` to `rangekeeper.duration`.
+`rangekeeper.model.duration` will continue to expose the canonical records.
+The examples below use the current, implemented `temporal` imports; update them
+with the code change. This is an intentional replacement of the old public
+`rk.duration.Type/Sequence/Span` API, not an import-only upgrade for old consumers.
+The temporary `_legacy_duration.py` will be private migration support, not a
+recommended import for downstream code. See the
+[sequence and acceptance checks](FULL_MIGRATION_TURN1.md#duration-namespace-migration).
+
+## Install and check the artifact
+
+From a checkout containing this change, build/install the package from `src`.
+Python 3.10 or later is required. The verification environment used Python 3.10.19,
+Polars 1.44.2 and the exact dependency list in the
+[verification report](research/full-migration/turn1/README.md).
+
+```sh
+python -m pip install './src[calculations,pandas,yaml,workflow]'
+python -c 'import rangekeeper; print(rangekeeper.__file__)'
+```
+
+Run notebooks from a fresh kernel using that environment. Execution dependencies
+remain a separate `execution` extra. Do not copy a notebook's stored output and
+call that an executed migration. Package version 0.8.71 is unchanged by this
+unreleased work; use the source revision/wheel hash, not that version alone.
+
+## Author canonical content
+
+```python
+from datetime import date
+from uuid import uuid4
+from rangekeeper import Model
+from rangekeeper.model import (
+    Metadata, Definitions, Measure, System, Entity, Characteristics, Value,
+)
+from rangekeeper.model.content import encode, decode
+from rangekeeper.model.flow import Stream, from_periods
+from rangekeeper.temporal import make_periods
+from rangekeeper.calculations import series
+
+periods = make_periods(date(2026, 1, 1), frequency="month", count=3)
+flow = from_periods(periods, (10, 0, None), units="meter")
+measure = Measure(id=uuid4(), code="length", name="Length", units="meter")
+reading = Value(id=uuid4(), key="delivered", kind="flow", measure=measure.id, flow=flow)
+note = Value(id=uuid4(), key="source", kind="property", content=encode({"checked": False}))
+owner = Entity(id=uuid4(), code="A", characteristics=Characteristics(values=(reading, note)))
+model = Model.create(
+    metadata=Metadata(id=uuid4(), schema_version="0.4.0"),
+    definitions=Definitions(measures=(measure,)), system=System(entities=(owner,)),
+)
+stream = Stream.from_values(model, (reading.id,))
+assert decode(model.value(note.id).content) == {"checked": False}
+assert series.total(stream.flows[0], missing="skip").magnitude == 10
+```
+
+`Model` owns the Value. `Stream` selects ordered Value UUIDs in that revision.
+Two Values may use one Measure and still have different keys and content. A name
+is not an identifier. Use Model UUID lookup and explicit `find`/selection APIs.
+An unresolved movement is not zero. `skip` is a deliberate incomplete aggregation;
+`sum_flows` and `resample` additionally return coverage. `total` returns a Quantity,
+not a new persistent Value or a Run.
+
+`PropertyContent` supports null, bool, int, finite float, str, UUID, date, datetime,
+time, timedelta, list, tuple, set, frozenset, dict, and MappingProxyType, recursively.
+Lists, tuples, mapping order, timezone/fold and negative zero retain their meaning.
+`decode` returns detached data. Arbitrary classes, callbacks, cyclic objects and
+nonfinite numbers fail. Pint objects in a legacy Feature require an explicit
+consumer mapping to a Measure/Value; the converter reports them as unsupported
+instead of changing their type. Pint quantities in Measurements remain supported.
+
+## Time, units, and arithmetic
+
+Flow coordinates have day resolution. Use Python `datetime.date` values; the wire
+format uses `YYYY-MM-DD` strings. `Period(start, end)` is half-open. There is no
+`TimePoint` record or intraday Flow support. Rich property content can still retain
+source timestamps; those are not Flow coordinates. Generated Source date fields
+now return Python dates; their timestamp alternatives still return strings. Both
+keep the same wire format.
+
+`from_periods` stores coverage only by default. Use its optional `dates=` argument
+only for independently known payment or observation dates. These dates may be
+outside the covered period. Resolve a missing date explicitly for a calculation
+or display; the convention does not become stored content:
+
+```python
+from rangekeeper.model.flow import resolve_date
+from rangekeeper.calculations.financial import calculate_xnpv
+assert flow.movements[0].date is None
+assert resolve_date(flow.movements[0], timing="last_day") == date(2026, 1, 31)
+paid = from_periods(periods[:1], (100,), units="AUD", dates=(date(2026, 2, 5),))
+assert resolve_date(paid.movements[0], timing="start") == date(2026, 2, 5)
+pv = calculate_xnpv(paid, rate=0.1, valuation_date=date(2026, 1, 1))
+```
+
+`start` selects the first included day; `last_day` selects the final included day;
+`end` selects the exclusive boundary. Recorded dates take precedence. Undated
+periods require `timing=` in `calculate_xnpv`, `calculate_irr` and pandas `to_series`.
+`collapse` requires a chosen `on=` date or a timing convention unless the final
+movement records a date. `calculate_pv` instead uses its explicit movement-index
+convention. Trimming keeps whole covered periods and rejects partial overlap.
+Resampling groups by coverage and produces period aggregates without payment dates;
+keep the original Flow when individual payment facts are required.
+
+| Old call or assumption | Replacement / deliberate change |
+|---|---|
+| `duration.Type` / pandas frequency inference | Explicit `frequency="month"` etc.; ten calendar frequencies in `temporal.calendar` |
+| Inclusive `Span.end_date` | Half-open `[start,end)` Period/Span; add one calendar day when mapping an inclusive date-only end |
+| `Flow.from_dict/from_sequence` | Explicit ordered dates/magnitudes in `model.flow.from_events`; duplicate dates need keys |
+| `Flow.from_projection` | `calculations.projection.project` or `allocate`, with Quantity and Periods |
+| Mutating Flow/Stream / `duplicate` | Immutable records; new calculation result; new Model revision for persisted changes |
+| `Stream.sum/min/max` | `series.sum_flows/reduce_flows`; exact alignment by default, explicit units/missing/join |
+| `Stream.product` | `series.multiply_flows`; dimensionless factors scale quantities; unit powers remain intact |
+| Period rates treated as amounts | `series.integrate`, with explicit exposures or period day-count convention |
+| `Flow.resample(frequency)` | Explicit complete target Period grid, reduction and missing policy; every mean requires weighting |
+| `Flow.clean/trim/diff/collapse` | `series.clean/trim/difference/collapse`; see docstrings for unresolved first differences and time bounds |
+| Mutable pandas content | `adapters.pandas.to_frame/from_frame`; Polars equivalents; detached `to_series` is a presentation projection |
+| Implicit global RNG | `Distribution.sample(size=..., generator=np.random.default_rng(seed))` |
+| `flow.pv` | `financial.calculate_pv(rate=..., first_period=1)`; rate is per observation period |
+| `flow.npv/irr` | `calculate_xnpv(valuation_date=..., day_count=...)`; `calculate_irr(guess=...)` returns one root and residual; guess is optional; both require `timing=` for undated periods |
+| Account constructor calculates silently | `account.calculate_account(..., method=..., timing=...)`; result has opening/closing/overdraft/interest Flows |
+
+Multiplying `AUD/year` by a dimensionless market factor leaves `AUD/year`.
+Multiplying two rates retains both time dimensions. No operation strips time to
+make a result appear valid. The model determines the meaning of the product.
+A rate-to-amount conversion requires an exposure:
+
+```python
+from rangekeeper.model.measure import Quantity
+rates = from_periods(periods, (120, 120, 120), units="AUD/year")
+amounts = series.integrate(rates, day_count="actual/365", units="AUD")
+assert abs(series.total(amounts).magnitude - 120 * 90 / 365) < 1e-9
+```
+
+Calendar-month accrual can instead supply explicit exposure Quantities. The model
+selects the resampling operation: for example, last for a closing balance, sum for
+receipts, or mean with a specified weighting. These choices are not inferred or
+restricted by a stored Flow kind. Bounded movements that cross target Periods fail;
+allocate them explicitly first. `missing="zero"` fills absent rows/empty target
+groups only; it does not turn an explicitly unresolved observation into zero.
+Fractional resampling coverage counts known observations, not continuous time coverage.
+
+Dataframe roundtrips require the adapter's `_present` metadata plus explicit units.
+This metadata preserves absent versus explicit-null movement fields.
+`to_series` omits Periods and Claims and is not a lossless storage format.
+`from_series` accepts date indices and naive midnight pandas timestamps. It rejects
+intraday or timezone-bearing indices instead of truncating them.
+
+Financial calculations delegate to PyXIRR. The earlier draft `bracket=` and
+solver `tolerance=` arguments are removed; no bounded-solver fallback is retained.
+`IrrResult` contains `rate`, `residual`, `guess`, and `method="pyxirr.xirr"`.
+A guess is an initial estimate, not a bound or a guarantee of a particular root.
+No result establishes that an IRR is unique. Failed/nonfinite library results
+raise `ValueError`; an IRR residual larger than 1e-8 of gross movements (with a
+one-unit floor) also fails. Empty Flows have zero XNPV but no IRR.
+
+```python
+from rangekeeper.model.flow import from_events
+from rangekeeper.calculations.financial import calculate_irr
+investment = from_events([date(2026, 1, 1), date(2027, 1, 1)], (-100, 110), units="AUD")
+result = calculate_irr(investment)  # optional guess=0.1
+assert abs(result.rate - 0.1) < 1e-9
+assert result.method == "pyxirr.xirr"
+```
+
+## Store and revise
+
+```python
+from rangekeeper.io import MemoryStore, json
+from rangekeeper.model import Update
+store = MemoryStore()
+store.put(model)
+loaded = json.loads(json.dumps(model), kind=Model)
+assert loaded.to_data() == model.to_data()
+reviewed_owner = Entity.from_data({**owner.to_data(), "name": "Reviewed delivery"})
+revised = model.revise(Update(system=System(entities=(reviewed_owner,))))
+assert revised.id != model.id and revised.metadata.previous == model.id
+store.put(revised)
+```
+
+Use `DirectoryStore` for filesystem persistence. Writes are append-only by revision
+UUID; conflicting content fails. A Flow calculation returns a detached result;
+author its result as a Value in a new Model revision when it must be retained.
+Changing a revision does not silently rewrite a Specification or historical Run.
+Model 0.3.0 upgrades require `migration.upgrade_model`; it creates a new UUID and
+`metadata.previous`. Re-author dependent Specifications against that new revision.
+Retain historical Runs with their original pinned documents and reader environment.
+
+## Convert an old persisted Graph
+
+```sh
+python -m rangekeeper.migration old-graph.json converted-review
+# Optional collision map: {"old-value-uuid": "reviewed-new-key"}
+python -m rangekeeper.migration old-graph.json converted-with-keys --value-keys keys.json
+```
+
+Both destinations must be new directories. Review `report.json`, its source SHA256,
+UUID map and issues. A successful conversion writes validated `model.json`.
+Unsupported fields/types, missing/cyclic references, conflicting owner keys and
+invalid units produce issues and **no Model**. Nothing overwrites the source.
+Keep the source file with the report. The new converter imports no old Graph code.
+
+The bounded reader supports `rk.graph` version 1, separate canonical Assembly
+storage, classifications, Labels, Measurements, supported Features, Sources,
+Claims, Facts and reconciliations. Measure quantity-kind/aggregation hints become
+explicit legacy tags; they do not choose new reducers. Historical Claim payloads
+retain their old inert wire encoding and referenced-object closure. They are
+source evidence, not executable or governing mathematics. Other format versions
+and executable objects are unsupported. Prefer rebuilding source workflows from
+original inputs and reviewed mappings when these are available.
+
+## Migrate source workflows separately
+
+The mathematical `Specification` is not `WorkflowSpec`. The synthetic
+`src/examples/workflow/{accommodation,equipment}` examples now use workflow version
+2, explicit measurement keys, canonical Measure declarations and `properties`.
+Each property Value retains source Claim/Fact lineage. Use
+`python -m rangekeeper.workflow`, not `rangekeeper.graph.workflow`.
+The original zero/missing/conflict/source-note examples remain covered.
+
+External Projects, workbench/layout review, service adapters and host integrations
+are Turn 3 work. A passing synthetic example does not certify them.
+
+## Corrections to retain during future ports
+
+- The residual land-value expectation `241049.33` did not satisfy its stated
+  finance equation. An independent cash/debt recurrence gives
+  **239654.64260783806** and finance **10345.35739216196**. The former expected
+  value leaves a residual of **1454.1535992423**. The migrated test asserts both
+  the independent root and the rejected expectation's residual.
+- The old test-only linear model restarted terminal discounting at period one.
+  Its replacement discounts terminal proceeds across the full holding period.
+  The basic DCF notebook's intended result remains **1000**, checked independently.
+- Distribution bounds are checked element by element. Degenerate distributions
+  return the requested sample count. Shock impact is applied once, explicitly.
+- Numerical kernels do not establish acausal support. Flow solve roles, indexed
+  equations and policy mathematics require Turn 2 capability and acceptance work.
+
+The complete worked snippet is executable in
+[`guide_example.py`](research/full-migration/financial-library/guide_example.py).
+The [current financial verification](research/full-migration/financial-library/README.md) records its
+installed-wheel run and the notebook and regression evidence. The
+[original Turn 1 report](research/full-migration/turn1/README.md) remains historical evidence.

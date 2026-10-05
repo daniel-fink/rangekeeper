@@ -1,5 +1,11 @@
 # Finalized Runs, codecs and revision stores — Turn 3
 
+**Flow semantics update, 2026-10-06:** Flows no longer carry semantic kinds or
+basis. The overall model logic owns their meaning and selects operations; units,
+dates, alignment and missingness remain checked. See the
+[current contract](FULL_MIGRATION_TURN1.md#flow-semantics-and-explicit-operations)
+and [verification](research/full-migration/flow-semantics/README.md).
+
 Implemented 2026-10-02: work units **3C and 4** in the
 [migration map](DOMAIN_MIGRATION_MAP.md). `rangekeeper.Model`, `Specification` and
 `Run` are now public root imports. The [Model/Specification guide](DOMAIN_CORE.md)
@@ -44,7 +50,7 @@ from rangekeeper.specification import SpecificationRecord, compose, validate as 
 from rangekeeper.run import RunRecord, Report, Status, Diagnostic, validate as validate_run
 from rangekeeper.io import MemoryStore, DirectoryStore, json
 
-model = rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.3.0"))
+model = rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.4.0"))
 specification = rk.Specification(SpecificationRecord(
     metadata=Metadata(id=uuid4(), schema_version="0.4.0"), model=model.id,
 ))

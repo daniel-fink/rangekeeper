@@ -1,7 +1,7 @@
 # Synthetic conformance fixture: hypothetical execution/output, not an observed solver result.
 metadata:
   id: 16cdb352-da46-51cc-bfbe-2b6aff920c42
-  schema_version: 0.3.0
+  schema_version: 0.4.0
   previous: 396b03f6-1ebb-59f4-b520-231242ffd645
   name: Synthetic inverse output
   description: Hypothetical accepted snapshot with expected scalar amounts; not a solver-produced Model.

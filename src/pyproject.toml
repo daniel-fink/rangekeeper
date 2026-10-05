@@ -15,7 +15,7 @@ dependencies = [
     "matplotlib>=3.10",
     "pandas>=2.2",
     "pint>=0.24",
-    "pyxirr>=0.9",
+    "pyxirr>=0.10.7,<0.11",
     "scipy>=1.12",
     "networkx>=3.1",
     "py-moneyed>=3.0",
@@ -34,6 +34,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+calculations = ["polars>=1.44,<2", "numpy>=1.24", "scipy>=1.12", "pint>=0.24", "pyxirr>=0.10.7,<0.11"]
+pandas = ["pandas>=2.2"]
 execution = ["pyomo==6.10.1", "highspy==1.15.1"]
 yaml = ["PyYAML>=6.0.2,<7"]
 workflow = ["openpyxl>=3.1.5,<4", "PyYAML>=6.0.2,<7"]

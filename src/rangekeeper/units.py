@@ -76,6 +76,14 @@ class UnitSystem:
         """
         return self._parse(left).dimensionality == self._parse(right).dimensionality
 
+    def multiply(self, left: str, right: str) -> str:
+        """Return product units without removing dimensions or changing magnitudes."""
+        return str(self._parse(left) * self._parse(right))
+
+    def divide(self, numerator: str, denominator: str) -> str:
+        """Return quotient units; callers remain responsible for quantity meaning."""
+        return str(self._parse(numerator) / self._parse(denominator))
+
     def convert(self, quantity: Quantity, *, to: str) -> Quantity:
         """Return a new finite Quantity; leave the original units and value untouched."""
         if not isinstance(quantity, Quantity):
