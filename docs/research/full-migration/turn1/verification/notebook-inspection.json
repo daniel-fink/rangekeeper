@@ -1,0 +1,33 @@
+{
+  "code_cells": 23,
+  "execution_counts": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23
+  ],
+  "html_tables": 2,
+  "pv": "1000",
+  "installed_import": "/private/tmp/rk-foundations-release-check/site/rangekeeper/__init__.py",
+  "visual_review": "unverified: browser URL policy blocks file URLs; no bypass attempted",
+  "documentation_build": "MyST directives/citations retained; full walkthrough rebuild remains Turn 4"
+}

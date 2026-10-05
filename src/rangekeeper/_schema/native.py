@@ -52,8 +52,8 @@ from rdflib import (
     URIRef
 )
 
-from linkml_runtime.linkml_model.types import Boolean, Datetime, Decimal, Integer, String
-from linkml_runtime.utils.metamodelcore import Bool, Decimal, XSDDateTime
+from linkml_runtime.linkml_model.types import Boolean, Date, Datetime, Decimal, Integer, String
+from linkml_runtime.utils.metamodelcore import Bool, Decimal, XSDDate, XSDDateTime
 
 metamodel_version = "1.11.0"
 version = None
@@ -1954,6 +1954,8 @@ class Value(YAMLRoot):
     kind: Union[str, "ValueKind"] = None
     quantity: Optional[Union[dict, Quantity]] = None
     description: Optional[str] = None
+    flow: Optional[Union[dict, "Flow"]] = None
+    content: Optional[Union[dict, "PropertyContent"]] = None
 
     def __post_init__(self, *_: str, **kwargs: Any):
         if self._is_empty(self.id):
@@ -1981,6 +1983,209 @@ class Value(YAMLRoot):
 
         if self.description is not None and not isinstance(self.description, str):
             self.description = str(self.description)
+
+        if self.flow is not None and not isinstance(self.flow, Flow):
+            self.flow = Flow(**as_dict(self.flow))
+
+        if self.content is not None and not isinstance(self.content, PropertyContent):
+            self.content = PropertyContent(**as_dict(self.content))
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class Flow(YAMLRoot):
+    """
+    Ordered temporal quantities owned by one Value. Dates are coordinates, not units. Empty, unresolved and zero
+    movements are distinct. The overall model logic defines the meaning of the quantities and selects their
+    calculations; a Flow carries no semantic kind or basis.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["Flow"]
+    class_class_curie: ClassVar[str] = "rk:Flow"
+    class_name: ClassVar[str] = "Flow"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Flow")
+
+    units: str = None
+    movements: Union[Union[dict, "Movement"], list[Union[dict, "Movement"]]] = None
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.units):
+            self.MissingRequiredField("units")
+        if not isinstance(self.units, str):
+            self.units = str(self.units)
+
+        if self._is_empty(self.movements):
+            self.MissingRequiredField("movements")
+        self._normalize_inlined_as_list(slot_name="movements", slot_type=Movement, key_name="key", keyed=False)
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class Movement(YAMLRoot):
+    """
+    One numerical entry in a Flow, associated with a date or period. The overall model logic determines its meaning.
+    At least one of date or period is required. With a period, date records an independent payment or observation date
+    and need not lie inside the period. Derived boundary dates are calculated, not stored. Key is stable within its
+    Flow; repeated event dates require distinct keys. Magnitude omission/null means unresolved. Claims retain source
+    or derivation evidence.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["Movement"]
+    class_class_curie: ClassVar[str] = "rk:Movement"
+    class_name: ClassVar[str] = "Movement"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Movement")
+
+    key: str = None
+    date: Optional[Union[str, XSDDate]] = None
+    period: Optional[Union[dict, "Period"]] = None
+    magnitude: Optional[Decimal] = None
+    claims: Optional[Union[Union[str, UUID], list[Union[str, UUID]]]] = empty_list()
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.key):
+            self.MissingRequiredField("key")
+        if not isinstance(self.key, str):
+            self.key = str(self.key)
+
+        if self.date is not None and not isinstance(self.date, XSDDate):
+            self.date = XSDDate(self.date)
+
+        if self.period is not None and not isinstance(self.period, Period):
+            self.period = Period(**as_dict(self.period))
+
+        if self.magnitude is not None and not isinstance(self.magnitude, Decimal):
+            self.magnitude = Decimal(self.magnitude)
+
+        if not isinstance(self.claims, list):
+            self.claims = [self.claims] if self.claims is not None else []
+        self.claims = [v if isinstance(v, UUID) else UUID(v) for v in self.claims]
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class PropertyContent(YAMLRoot):
+    """
+    Tagged inert content. Scalar text preserves exact type and representation, including negative zero. Containers
+    never instantiate arbitrary Python classes. Conditional shape and canonical scalar grammar are checked
+    semantically.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["PropertyContent"]
+    class_class_curie: ClassVar[str] = "rk:PropertyContent"
+    class_name: ClassVar[str] = "PropertyContent"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/PropertyContent")
+
+    kind: Union[str, "ContentKind"] = None
+    text: Optional[str] = None
+    zone: Optional[str] = None
+    fold: Optional[int] = None
+    items: Optional[Union[Union[dict, "PropertyContent"], list[Union[dict, "PropertyContent"]]]] = empty_list()
+    entries: Optional[Union[Union[dict, "ContentEntry"], list[Union[dict, "ContentEntry"]]]] = empty_list()
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.kind):
+            self.MissingRequiredField("kind")
+        if not isinstance(self.kind, ContentKind):
+            self.kind = ContentKind(self.kind)
+
+        if self.text is not None and not isinstance(self.text, str):
+            self.text = str(self.text)
+
+        if self.zone is not None and not isinstance(self.zone, str):
+            self.zone = str(self.zone)
+
+        if self.fold is not None and not isinstance(self.fold, int):
+            self.fold = int(self.fold)
+
+        self._normalize_inlined_as_list(slot_name="items", slot_type=PropertyContent, key_name="kind", keyed=False)
+
+        if not isinstance(self.entries, list):
+            self.entries = [self.entries] if self.entries is not None else []
+        self.entries = [v if isinstance(v, ContentEntry) else ContentEntry(**as_dict(v)) for v in self.entries]
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class ContentEntry(YAMLRoot):
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["ContentEntry"]
+    class_class_curie: ClassVar[str] = "rk:ContentEntry"
+    class_name: ClassVar[str] = "ContentEntry"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/ContentEntry")
+
+    key: Union[dict, PropertyContent] = None
+    value: Union[dict, PropertyContent] = None
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.key):
+            self.MissingRequiredField("key")
+        if not isinstance(self.key, PropertyContent):
+            self.key = PropertyContent(**as_dict(self.key))
+
+        if self._is_empty(self.value):
+            self.MissingRequiredField("value")
+        if not isinstance(self.value, PropertyContent):
+            self.value = PropertyContent(**as_dict(self.value))
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class Period(YAMLRoot):
+    """
+    Half-open interval [start, end). Date boundaries use the Gregorian calendar; start must precede end.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["Period"]
+    class_class_curie: ClassVar[str] = "rk:Period"
+    class_name: ClassVar[str] = "Period"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Period")
+
+    start: Union[str, XSDDate] = None
+    end: Union[str, XSDDate] = None
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.start):
+            self.MissingRequiredField("start")
+        if not isinstance(self.start, XSDDate):
+            self.start = XSDDate(self.start)
+
+        if self._is_empty(self.end):
+            self.MissingRequiredField("end")
+        if not isinstance(self.end, XSDDate):
+            self.end = XSDDate(self.end)
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class Span(Period):
+    """
+    Named extent, using the same half-open boundary convention as Period.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["Span"]
+    class_class_curie: ClassVar[str] = "rk:Span"
+    class_name: ClassVar[str] = "Span"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Span")
+
+    start: Union[str, XSDDate] = None
+    end: Union[str, XSDDate] = None
+    name: Optional[str] = None
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self.name is not None and not isinstance(self.name, str):
+            self.name = str(self.name)
 
         super().__post_init__(**kwargs)
 
@@ -2408,10 +2613,39 @@ class ValueKind(EnumDefinitionImpl):
     measurement = PermissibleValue(
         text="measurement",
         description="A measurable property with a Measure and an optional Quantity.")
+    flow = PermissibleValue(
+        text="flow",
+        description="Temporal quantities with a Measure and optional Flow.")
+    property = PermissibleValue(
+        text="property",
+        description="Inert typed property content with no Measure.")
 
     _defn = EnumDefinition(
         name="ValueKind",
         description="Supported kinds of Values.",
+    )
+
+class ContentKind(EnumDefinitionImpl):
+
+    null = PermissibleValue(text="null")
+    boolean = PermissibleValue(text="boolean")
+    integer = PermissibleValue(text="integer")
+    float = PermissibleValue(text="float")
+    string = PermissibleValue(text="string")
+    uuid = PermissibleValue(text="uuid")
+    date = PermissibleValue(text="date")
+    datetime = PermissibleValue(text="datetime")
+    time = PermissibleValue(text="time")
+    duration = PermissibleValue(text="duration")
+    list = PermissibleValue(text="list")
+    tuple = PermissibleValue(text="tuple")
+    set = PermissibleValue(text="set")
+    frozenset = PermissibleValue(text="frozenset")
+    mapping = PermissibleValue(text="mapping")
+    mapping_proxy = PermissibleValue(text="mapping_proxy")
+
+    _defn = EnumDefinition(
+        name="ContentKind",
     )
 
 # Slots
@@ -3092,6 +3326,72 @@ slots.value__kind = Slot(uri=RK.kind, name="value__kind", curie=RK.curie('kind')
 slots.value__description = Slot(uri=RK.description, name="value__description", curie=RK.curie('description'),
                    model_uri=DEFAULT_.value__description, domain=None, range=Optional[str])
 
+slots.value__flow = Slot(uri=RK.flow, name="value__flow", curie=RK.curie('flow'),
+                   model_uri=DEFAULT_.value__flow, domain=None, range=Optional[Union[dict, Flow]])
+
+slots.value__content = Slot(uri=RK.content, name="value__content", curie=RK.curie('content'),
+                   model_uri=DEFAULT_.value__content, domain=None, range=Optional[Union[dict, PropertyContent]])
+
+slots.flow__units = Slot(uri=RK.units, name="flow__units", curie=RK.curie('units'),
+                   model_uri=DEFAULT_.flow__units, domain=None, range=str,
+                   pattern=re.compile(r'\S'))
+
+slots.flow__movements = Slot(uri=RK.movements, name="flow__movements", curie=RK.curie('movements'),
+                   model_uri=DEFAULT_.flow__movements, domain=None, range=Union[Union[dict, Movement], list[Union[dict, Movement]]])
+
+slots.movement__key = Slot(uri=RK.key, name="movement__key", curie=RK.curie('key'),
+                   model_uri=DEFAULT_.movement__key, domain=None, range=str,
+                   pattern=re.compile(r'\S'))
+
+slots.movement__date = Slot(uri=RK.date, name="movement__date", curie=RK.curie('date'),
+                   model_uri=DEFAULT_.movement__date, domain=None, range=Optional[Union[str, XSDDate]])
+
+slots.movement__period = Slot(uri=RK.period, name="movement__period", curie=RK.curie('period'),
+                   model_uri=DEFAULT_.movement__period, domain=None, range=Optional[Union[dict, Period]])
+
+slots.movement__magnitude = Slot(uri=RK.magnitude, name="movement__magnitude", curie=RK.curie('magnitude'),
+                   model_uri=DEFAULT_.movement__magnitude, domain=None, range=Optional[Decimal])
+
+slots.movement__claims = Slot(uri=RK.claims, name="movement__claims", curie=RK.curie('claims'),
+                   model_uri=DEFAULT_.movement__claims, domain=None, range=Optional[Union[Union[str, UUID], list[Union[str, UUID]]]])
+
+slots.propertyContent__kind = Slot(uri=RK.kind, name="propertyContent__kind", curie=RK.curie('kind'),
+                   model_uri=DEFAULT_.propertyContent__kind, domain=None, range=Union[str, "ContentKind"])
+
+slots.propertyContent__text = Slot(uri=RK.text, name="propertyContent__text", curie=RK.curie('text'),
+                   model_uri=DEFAULT_.propertyContent__text, domain=None, range=Optional[str])
+
+slots.propertyContent__zone = Slot(uri=RK.zone, name="propertyContent__zone", curie=RK.curie('zone'),
+                   model_uri=DEFAULT_.propertyContent__zone, domain=None, range=Optional[str])
+
+slots.propertyContent__fold = Slot(uri=RK.fold, name="propertyContent__fold", curie=RK.curie('fold'),
+                   model_uri=DEFAULT_.propertyContent__fold, domain=None, range=Optional[int])
+
+slots.propertyContent__items = Slot(uri=RK.items, name="propertyContent__items", curie=RK.curie('items'),
+                   model_uri=DEFAULT_.propertyContent__items, domain=None, range=Optional[Union[Union[dict, PropertyContent], list[Union[dict, PropertyContent]]]])
+
+slots.propertyContent__entries = Slot(uri=RK.entries, name="propertyContent__entries", curie=RK.curie('entries'),
+                   model_uri=DEFAULT_.propertyContent__entries, domain=None, range=Optional[Union[Union[dict, ContentEntry], list[Union[dict, ContentEntry]]]])
+
+slots.contentEntry__key = Slot(uri=RK.key, name="contentEntry__key", curie=RK.curie('key'),
+                   model_uri=DEFAULT_.contentEntry__key, domain=None, range=Union[dict, PropertyContent])
+
+slots.contentEntry__value = Slot(uri=RK.value, name="contentEntry__value", curie=RK.curie('value'),
+                   model_uri=DEFAULT_.contentEntry__value, domain=None, range=Union[dict, PropertyContent])
+
+slots.period__start = Slot(uri=RK.start, name="period__start", curie=RK.curie('start'),
+                   model_uri=DEFAULT_.period__start, domain=None, range=Union[str, XSDDate])
+
+slots.period__end = Slot(uri=RK.end, name="period__end", curie=RK.curie('end'),
+                   model_uri=DEFAULT_.period__end, domain=None, range=Union[str, XSDDate])
+
+slots.span__name = Slot(uri=RK.name, name="span__name", curie=RK.curie('name'),
+                   model_uri=DEFAULT_.span__name, domain=None, range=Optional[str])
+
 slots.Relationship_classification = Slot(uri=RK.classification, name="Relationship_classification", curie=RK.curie('classification'),
                    model_uri=DEFAULT_.Relationship_classification, domain=Relationship, range=Union[str, ClassificationId],
+                   pattern=re.compile(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'))
+
+slots.Value_measure = Slot(uri=RK.measure, name="Value_measure", curie=RK.curie('measure'),
+                   model_uri=DEFAULT_.Value_measure, domain=Value, range=Union[str, MeasureId],
                    pattern=re.compile(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'))

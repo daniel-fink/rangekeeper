@@ -9,14 +9,15 @@ From an environment with `rangekeeper[workflow]` installed:
 
 ```sh
 python create_inputs.py /tmp/equipment-inputs --domain equipment
-python -m rangekeeper.graph.workflow \
+python -m rangekeeper.workflow \
   --spec equipment/spec --inputs /tmp/equipment-inputs --output /tmp/equipment-review
 ```
 
 Replace `equipment` with `accommodation` for the other domain. Original Claims are
 retained, configuration participates in derivation lineage, and graph memberships
-come from explicit relationships. The whole path includes graph JSON and shared
-review export. The contract tests also exercise concatenation, bad source layouts,
+come from explicit relationships. The whole path includes canonical Model JSON and shared
+review export. Both specifications use version 2, explicit Value keys and property
+Values with source Claim/Fact evidence. The contract tests also exercise concatenation, bad source layouts,
 wrong members with equal counts, shared memberships, missing formula caches and
 business identity stability.
 

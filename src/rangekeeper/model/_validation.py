@@ -4,7 +4,12 @@ Run generated structural validation first. Generic Claim content remains opaque;
 these checks validate evidence references, not arbitrary Fact/content agreement.
 """
 
-from rangekeeper._validation import require, require_unique, require_acyclic, require_ownership
+from rangekeeper._validation import (
+    require,
+    require_unique,
+    require_acyclic,
+    require_ownership,
+)
 from rangekeeper.model._formulation import validate_formulations
 from rangekeeper.errors import ContractError
 
@@ -57,11 +62,21 @@ def validate_model(model, schema_version, history=()):
     scope = validate_formulations(scope_document, path="/system")
 
     for collection in ("taxonomies", "measures", "functions"):
-        require_unique(definitions.get(collection) or [], "code", f"{collection} code", path=f"/definitions/{collection}")
+        require_unique(
+            definitions.get(collection) or [],
+            "code",
+            f"{collection} code",
+            path=f"/definitions/{collection}",
+        )
     for taxonomy_index, taxonomy in enumerate(definitions.get("taxonomies") or []):
         records = taxonomy["classifications"]
         require(bool(records), "empty Taxonomy")
-        require_unique(records, "code", "Classification code", path=f"/definitions/taxonomies/{taxonomy_index}/classifications")
+        require_unique(
+            records,
+            "code",
+            "Classification code",
+            path=f"/definitions/taxonomies/{taxonomy_index}/classifications",
+        )
         local = {r["id"] for r in records}
         parents = {}
         roots = []
@@ -87,8 +102,9 @@ def validate_model(model, schema_version, history=()):
         entity_count = len(system.get("entities") or [])
         collection = "entities" if position < entity_count else "assemblies"
         index = position if position < entity_count else position - entity_count
-        raise ContractError(str(error), code=error.code,
-                            path=f"/system/{collection}/{index}/code") from error
+        raise ContractError(
+            str(error), code=error.code, path=f"/system/{collection}/{index}/code"
+        ) from error
     targets = dict(entities, **relationships, **scope.values)
     for obj in list(entities.values()) + list(relationships.values()):
         if obj.get("classification") is not None:
@@ -134,6 +150,12 @@ def validate_model(model, schema_version, history=()):
 
     sources = {r["id"]: r for r in provenance.get("sources") or []}
     claims = {r["id"]: r for r in provenance.get("claims") or []}
+    for value in scope.values.values():
+        for movement in (value.get("flow") or {}).get("movements") or []:
+            require(
+                all(identity in claims for identity in movement.get("claims") or []),
+                "unknown movement Claim",
+            )
     parents = {}
     for claim in claims.values():
         support = claim.get("sources") or []

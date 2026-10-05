@@ -1,0 +1,47 @@
+rangekeeper/calculations/interval.py:23: error: Incompatible return value type (got "tuple[Interval, ...]", expected "tuple[Interval, Interval]")  [return-value]
+rangekeeper/calculations/interval.py:32: error: Argument 1 to "tuple" has incompatible type "int | Sequence[float]"; expected "Iterable[float]"  [arg-type]
+rangekeeper/calculations/dynamics/volatility.py:9: error: Need type annotation for "values" (hint: "values: list[<type>] = ...")  [var-annotated]
+rangekeeper/calculations/dynamics/volatility.py:20: error: Need type annotation for "result" (hint: "result: list[<type>] = ...")  [var-annotated]
+rangekeeper/temporal/calendar.py:49: error: Item "date" of "date | datetime" has no attribute "utcoffset"  [union-attr]
+rangekeeper/temporal/calendar.py:52: error: Item "date" of "date | datetime" has no attribute "astimezone"  [union-attr]
+rangekeeper/adapters/pandas.py:32: error: Argument "basis" to "from_events" has incompatible type "str"; expected "Literal['movement', 'rate', 'stock', 'factor']"  [arg-type]
+rangekeeper/calculations/projection.py:53: error: Argument "basis" to "from_periods" has incompatible type "str"; expected "Literal['movement', 'rate', 'stock', 'factor']"  [arg-type]
+rangekeeper/calculations/series.py:63: error: Need type annotation for "signatures" (hint: "signatures: set[<type>] = ...")  [var-annotated]
+rangekeeper/calculations/series.py:196: error: Item "None" of "Period | None" has no attribute "start"  [union-attr]
+rangekeeper/calculations/series.py:196: error: Item "None" of "Period | None" has no attribute "end"  [union-attr]
+rangekeeper/calculations/series.py:197: error: Argument "convention" to "year_fraction" has incompatible type "str | None"; expected "Literal['actual/365', 'actual/360', 'actual/actual', '30/360']"  [arg-type]
+rangekeeper/calculations/series.py:233: error: Need type annotation for "groups"  [var-annotated]
+rangekeeper/calculations/financial.py:21: error: Unsupported operand types for / ("None" and "float")  [operator]
+rangekeeper/calculations/financial.py:21: note: Left operand is of type "int | float | None"
+rangekeeper/calculations/financial.py:31: error: Argument "convention" to "year_fraction" has incompatible type "str"; expected "Literal['actual/365', 'actual/360', 'actual/actual', '30/360']"  [arg-type]
+rangekeeper/calculations/financial.py:54: error: Unsupported operand types for > ("int" and "None")  [operator]
+rangekeeper/calculations/financial.py:54: note: Left operand is of type "int | float | None"
+rangekeeper/calculations/financial.py:54: error: Unsupported operand types for < ("int" and "None")  [operator]
+rangekeeper/calculations/account.py:25: error: Unsupported operand types for - ("int" and "None")  [operator]
+rangekeeper/calculations/account.py:25: error: Unsupported operand types for - ("float" and "None")  [operator]
+rangekeeper/calculations/account.py:25: error: Unsupported operand types for - ("None" and "int")  [operator]
+rangekeeper/calculations/account.py:25: error: Unsupported operand types for - ("None" and "float")  [operator]
+rangekeeper/calculations/account.py:25: error: Unsupported left operand type for - ("None")  [operator]
+rangekeeper/calculations/account.py:25: note: Both left and right operands are unions
+rangekeeper/calculations/account.py:48: error: Argument 1 to "isfinite" has incompatible type "int | float | None"; expected "SupportsFloat | SupportsIndex"  [arg-type]
+rangekeeper/calculations/account.py:48: error: Unsupported operand types for >= ("int" and "None")  [operator]
+rangekeeper/calculations/account.py:48: note: Left operand is of type "int | float | None"
+rangekeeper/calculations/account.py:48: error: Unsupported operand types for <= ("int" and "None")  [operator]
+rangekeeper/calculations/account.py:54: error: Unsupported operand types for + ("int" and "None")  [operator]
+rangekeeper/calculations/account.py:54: error: Unsupported operand types for + ("float" and "None")  [operator]
+rangekeeper/calculations/account.py:54: note: Both left and right operands are unions
+rangekeeper/calculations/account.py:55: error: Unsupported operand types for * ("int" and "None")  [operator]
+rangekeeper/calculations/account.py:55: error: Unsupported operand types for * ("float" and "None")  [operator]
+rangekeeper/calculations/account.py:55: note: Both left and right operands are unions
+rangekeeper/calculations/account.py:57: error: Unsupported operand types for - ("int" and "None")  [operator]
+rangekeeper/calculations/account.py:57: note: Right operand is of type "int | float | None"
+rangekeeper/calculations/account.py:61: error: Unsupported operand types for + ("int" and "None")  [operator]
+rangekeeper/calculations/account.py:61: error: Unsupported operand types for + ("float" and "None")  [operator]
+rangekeeper/calculations/account.py:61: note: Both left and right operands are unions
+Found 32 errors in 8 files (checked 104 source files)
+Traceback (most recent call last):
+  File "/Volumes/Data/Projects/Rangekeeper/tools/schema/typecheck.py", line 52, in <module>
+    subprocess.run(
+  File "/Users/daniel/.local/share/uv/python/cpython-3.10.19-macos-aarch64-none/lib/python3.10/subprocess.py", line 526, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/private/tmp/rk-full-runtime/bin/python', '-m', 'mypy', '--follow-imports=silent', '--ignore-missing-imports', '--cache-dir=/var/folders/sk/cjq5zjks7gx_3tf9m67y43xr0000gn/T/rk-mypy-lqnaai4q', 'rangekeeper/_schema/records.py', 'rangekeeper/_records.py', 'rangekeeper/diagnostics.py', 'rangekeeper/errors.py', 'rangekeeper/validate.py', 'rangekeeper/_validation.py', 'rangekeeper/model', 'rangekeeper/temporal', 'rangekeeper/calculations', 'rangekeeper/migration', 'rangekeeper/adapters/pandas.py', 'rangekeeper/adapters/polars.py', 'rangekeeper/specification', 'rangekeeper/units.py', 'rangekeeper/references.py', 'rangekeeper/_comparison.py', 'rangekeeper/run', 'rangekeeper/io', 'rangekeeper/execution', 'rangekeeper/graph/__init__.py', 'rangekeeper/graph/view.py', 'rangekeeper/graph/projection.py', 'rangekeeper/table.py', 'rangekeeper/workflow/runtime.py', 'rangekeeper/workflow/composition.py', 'rangekeeper/workflow/provenance.py', 'rangekeeper/graph/hierarchy.py', 'rangekeeper/graph/membership.py', 'rangekeeper/graph/selection.py', 'rangekeeper/graph/reduction.py', 'rangekeeper/graph/reducers.py', 'rangekeeper/__init__.py', '/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_valid.py', '/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_domain_valid.py', '/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_io_valid.py', '/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_execution_valid.py', '/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_graph_valid.py', '/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_consumers_valid.py']' returned non-zero exit status 1.

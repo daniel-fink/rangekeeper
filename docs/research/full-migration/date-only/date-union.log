@@ -1,0 +1,15 @@
+F...............                                                         [100%]
+=================================== FAILURES ===================================
+________ test_schema_date_or_timestamp_union_retains_timestamp_support _________
+
+    def test_schema_date_or_timestamp_union_retains_timestamp_support():
+        from uuid import uuid4
+        from rangekeeper._schema.records import Source
+    
+>       source = Source(id=uuid4(), issued_at=date(2026, 1, 1), received_at="2026-01-02T09:30:00+11:00")
+E       TypeError: Source.__init__() missing 2 required keyword-only arguments: 'name' and 'checksum'
+
+tests/test_flow_dates.py:28: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_flow_dates.py::test_schema_date_or_timestamp_union_retains_timestamp_support
+1 failed, 15 passed in 0.89s

@@ -1,0 +1,6 @@
+{
+  "documentation_links": "passed",
+  "new_runtime_absolute_legacy_import_scan": "passed",
+  "scope": "new calculations/temporal/migration; relative imports reviewed in source",
+  "source_notebook_matches_verified_execution": true
+}

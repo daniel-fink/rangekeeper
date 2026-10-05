@@ -1,12 +1,50 @@
 # Rangekeeper library architecture and migration plan
 
+**Movement naming, 2026-10-06:** the current API uses `Movement` and
+`Flow.movements`. See the [naming contract](FULL_MIGRATION_TURN1.md#movement-naming)
+for the Python/wire-format change and upgrade requirements.
+
+**Flow semantics update, 2026-10-06:** Flows no longer carry semantic kinds or
+basis. The overall model logic owns their meaning and selects operations; units,
+dates, alignment and missingness remain checked. See the
+[current contract](FULL_MIGRATION_TURN1.md#flow-semantics-and-explicit-operations)
+and [verification](research/full-migration/flow-semantics/README.md).
+
+**Full migration update, 2026-10-04:** [Turn 1 foundations](FULL_MIGRATION_TURN1.md)
+implements Model 0.4.0 rich properties and Flow Values, `model.duration`,
+`temporal`, `calculations`, detached dataframe adapters, and explicit Graph conversion.
+The basic DCF notebook, financial test model and synthetic source workflows migrated.
+Read the [upgrade guide](LEGACY_UPGRADE_GUIDE.md) and [verification](research/full-migration/turn1/README.md).
+The [date-only correction](research/full-migration/date-only/README.md) removes
+TimePoint. Period movements store coverage; a separate date is optional and records
+an independent payment or observation. Dated valuation requires explicit timing
+when the movement has no recorded date.
+[Financial-library integration](research/full-migration/financial-library/README.md)
+now delegates PV, XNPV, IRR and day counts to PyXIRR. The draft mandatory IRR
+bracket is replaced by an optional initial guess.
+Next is Turn 2: temporal mathematics, scenarios/policies, and their consumers.
+Its opening slice is the [duration namespace migration](FULL_MIGRATION_TURN1.md#duration-namespace-migration),
+recorded 2026-10-05: `temporal/` becomes `duration/`; `model.duration` keeps the
+records. The old `duration.py` moves to temporary private migration support until
+its caller and comparison gates pass. This namespace change is planned, not implemented.
+Turns 3–4 finish remaining consumers and retire old modules. The six-checkpoint
+history below remains the scalar/core work record; full migration is not complete.
+
+**Full-refactor review, 2026-10-03:** [Full migration review](FULL_MIGRATION_REVIEW.md)
+expands the consumer/retirement scope to numerical, temporal, scenario and policy
+behavior. It proposes detailed ownership, a package tree and acceptance checks.
+`model.duration` and `formulations/flow.py` are the selected names; remaining
+details are engineering design work, with no current user-input blocker. The scalar architecture below
+remains implemented. Root numerical modules are retained code, not completed
+integration with the canonical Model.
+
 Status: agreed architecture and revised implementation sequence, 2026-10-02. This document
 describes the target library and the route to its first executable checkpoint.
 The Model/Specification/Run core, codecs, revision stores and root exports are now
 implemented. [Step 5 scalar execution](SCALAR_EXECUTION.md) is also implemented;
 [Model-backed views, hierarchy and reductions](GRAPH_MODEL.md) now implement
 Step 6A/6B. [Tables, adapters, and source workflows](CONSUMER_MIGRATION.md)
-now implement 6C/6D. External consumer migration (6E) is next.
+now implement 6C/6D. External consumer migration (6E) remains part of full migration Turn 3.
 Step 1 is complete: the [migration map](DOMAIN_MIGRATION_MAP.md) fixes the concrete
 interfaces and factoring; the [baseline](research/domain-migration/BASELINE.md)
 records observed results. Those detailed decisions refine the responsibility tree
@@ -101,8 +139,10 @@ the work. Mutable solver state and live progress remain private runtime state.
 
 ### Value content and governing mathematics
 
-A scalar Measurement, Flow, Stream, or Account describes Value content. Flow,
-Stream, and Account payload schemas remain deferred until their acceptance stages.
+A scalar measurement, Flow or property supplies Value content.
+Stream is a revision-pinned runtime selection of canonical Flow Values.
+Flow and duration content are implemented; persistent Account payloads remain
+subject to their later acceptance stage.
 A Formulation groups the governing Expressions, Constraints, local Values, and
 references to shared Values. An Account's balances and movements are content;
 balance continuity, interest, and repayment equations are mathematics.
@@ -325,10 +365,9 @@ Its six checkpoints refine and supersede the earlier migration numbering.
 
 Steps 1–4 form the first implementation slice. Consumer discovery begins in Step 1;
 particular consumers can migrate earlier when needed to verify a core interface.
-Rich temporal Values, indexed formulations, numerical Flow/Stream conversion, and
-policy evaluation follow the scalar checkpoint and the consumer interfaces they
-require. Check numerical/symbolic agreement with explicit calendars, units, and
-stock/flow conventions as those later capabilities are introduced.
+Full migration Turn 1 now supplies temporal Values, Flow/Stream content and known-data
+calculations. Indexed formulations and policy evaluation remain Turn 2 work. Check
+numerical/symbolic agreement with explicit calendars, units and stock/flow conventions.
 
 ## First executable acceptance boundary
 

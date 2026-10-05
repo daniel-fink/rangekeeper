@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/Volumes/Data/Projects/Rangekeeper/docs/research/full-migration/turn1/guide_example.py", line 39, in <module>
+    revised = model.revise(Update(system=System(entities=(owner,))))
+  File "/private/tmp/rk-foundations-final/site/rangekeeper/model/model.py", line 216, in revise
+    raise RevisionConflictError(
+rangekeeper.errors.RevisionConflictError: update changes no domain or descriptive content

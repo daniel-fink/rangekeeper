@@ -8,6 +8,7 @@ import math
 from types import MappingProxyType
 from typing import TypeAlias, TypeVar, Union
 from uuid import UUID
+from datetime import date as Date
 
 FrozenJSONValue: TypeAlias = Union[
     None,
@@ -138,6 +139,11 @@ class Record:
                     o["category"] == "uuid" for o in meta["options"]
                 ):
                     return str(item)
+                if type(item) is Date and any(
+                    o["category"] == "primitive" and o["kind"] == "date"
+                    for o in meta["options"]
+                ):
+                    return item.isoformat()
                 return _json_copy(item)
 
             data[name] = (
@@ -215,6 +221,17 @@ class Record:
             for option in meta["options"]:
                 if option["category"] == "uuid" and isinstance(item, str):
                     return UUID(item)
+                if (
+                    option["category"] == "primitive"
+                    and option["kind"] == "date"
+                    and isinstance(item, str)
+                ):
+                    # A schema union can also admit a timestamp string. Decode
+                    # only the date branch; retain other validated alternatives.
+                    try:
+                        return Date.fromisoformat(item)
+                    except ValueError:
+                        continue
                 if option["category"] == "record" and isinstance(item, Mapping):
                     cls = _TYPES[option["kind"]]
                     record = cls.__new__(cls)

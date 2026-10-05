@@ -50,7 +50,7 @@ def fixture():
     )
     return (
         Model.create(
-            metadata=Metadata(id=uuid4(), schema_version="0.3.0"),
+            metadata=Metadata(id=uuid4(), schema_version="0.4.0"),
             definitions=defs,
             system=System(assemblies=(box,), entities=(a, b), relationships=edges),
         ),

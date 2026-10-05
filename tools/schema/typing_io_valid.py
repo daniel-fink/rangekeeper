@@ -7,7 +7,7 @@ from rangekeeper.references import DocumentResolver, SpecificationResolver
 from rangekeeper.model import Metadata
 from rangekeeper.run import RunRecord, Report, Status, Diagnostic, validate
 
-model = rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.3.0"))
+model = rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.4.0"))
 loaded: rk.Model = json.loads(json.dumps(model), kind=rk.Model)
 yaml_model: rk.Model = yaml.loads(yaml.dumps(model), kind=rk.Model)
 store: RecordStore = MemoryStore()

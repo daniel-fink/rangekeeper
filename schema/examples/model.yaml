@@ -1,7 +1,7 @@
 # Complete Model instance. Synthetic conformance data, not a solved project.
 metadata:
   id: 396b03f6-1ebb-59f4-b520-231242ffd645
-  schema_version: 0.3.0
+  schema_version: 0.4.0
   previous: 31203564-5702-5b24-8451-28572252775d
   name: Residential project
   description: Structural and valuation conformance example with unresolved inputs; no solve has been

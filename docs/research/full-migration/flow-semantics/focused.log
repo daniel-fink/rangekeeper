@@ -1,0 +1,16 @@
+FF...................................................................... [ 49%]
+........................................................................ [ 99%]
+.                                                                        [100%]
+=================================== FAILURES ===================================
+________ test_flow_wire_contract_rejects_semantic_classification[basis] ________
+tests/test_flow_operations.py:20: in test_flow_wire_contract_rejects_semantic_classification
+    assert Flow.from_json(flow.to_json()) == flow
+E   AttributeError: 'Flow' object has no attribute 'to_json'. Did you mean: 'from_json'?
+________ test_flow_wire_contract_rejects_semantic_classification[kind] _________
+tests/test_flow_operations.py:20: in test_flow_wire_contract_rejects_semantic_classification
+    assert Flow.from_json(flow.to_json()) == flow
+E   AttributeError: 'Flow' object has no attribute 'to_json'. Did you mean: 'from_json'?
+=========================== short test summary info ============================
+FAILED tests/test_flow_operations.py::test_flow_wire_contract_rejects_semantic_classification[basis]
+FAILED tests/test_flow_operations.py::test_flow_wire_contract_rejects_semantic_classification[kind]
+2 failed, 143 passed in 8.06s

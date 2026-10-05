@@ -1,6 +1,7 @@
 """Static examples for the generated boundary; also valid executable authoring."""
 
 from uuid import UUID, uuid4
+from datetime import date
 
 from rangekeeper._schema.records import (
     Assembly,
@@ -8,11 +9,14 @@ from rangekeeper._schema.records import (
     Claim,
     Entity,
     Expression,
+    Flow,
     Location,
     Metadata,
     Method,
     Model,
     Quantity,
+    Period,
+    Movement,
     Value,
 )
 
@@ -25,7 +29,7 @@ value = Value(
     quantity=Quantity(magnitude=0, units="AUD/year"),
 )
 traits = Characteristics(values=(value,))
-model = Model(metadata=Metadata(id=uuid4(), schema_version="0.3.0"))
+model = Model(metadata=Metadata(id=uuid4(), schema_version="0.4.0"))
 identity: UUID = model.metadata.id
 claim = Claim(
     id=uuid4(),
@@ -36,3 +40,10 @@ claim = Claim(
 )
 expression = Expression(id=uuid4(), kind="boolean", boolean=False)
 restored: Model = Model.from_data(model.to_data())
+
+period = Period(start=date(2026, 1, 1), end=date(2026, 2, 1))
+start: date = period.start
+movement = Movement(key="january", period=period)
+payment_date: date | None = movement.date
+flow = Flow(units="AUD", movements=(movement,))
+movements: tuple[Movement, ...] = flow.movements

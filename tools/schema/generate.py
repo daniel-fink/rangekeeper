@@ -147,6 +147,7 @@ def generate():
             "from typing import Literal, cast",
             "from collections.abc import Mapping",
             "from uuid import UUID",
+            "from datetime import date as Date",
             "from .._records import Record, Unset, UNSET, FrozenJSONValue, JSONValue",
             "",
         ]
@@ -183,7 +184,7 @@ def generate():
                         "double": "int | float",
                         "float": "int | float",
                         "boolean": "bool",
-                        "date": "str",
+                        "date": "Date",
                         "datetime": "str",
                     }.get(kind)
                     if typ is None:
@@ -311,7 +312,8 @@ def main():
         for name, data in files.items():
             (args.output / name).write_text(data)
     print(
-        f'{"Verified" if args.check else "Generated"} {len(files)} artifacts, 50 schema classes'
+        f"{'Verified' if args.check else 'Generated'} {len(files)} artifacts, "
+        f"{len(json.loads(files['manifest.json'])['classes'])} schema classes"
     )
 
 

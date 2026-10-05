@@ -186,6 +186,20 @@ def validate_model(model, seen, decisions=None, *, decision_ids=None):
                 "Unsupported Feature declarations: retain source Evidence or author an explicit schema field"
             )
         validate_measurements(p.get("measurements", ()), seen, decision_ids, measures)
+        keys = {item["key"] for item in p.get("measurements", ())}
+        for attr in sequence(p.get("properties", ())):
+            fields(
+                attr,
+                {"key", "binding", "when", "decisions", "evidence"},
+                {"key", "binding"},
+            )
+            key = text(attr["key"])
+            if key in keys:
+                raise ValueError(f"Duplicate Value key: {key}")
+            keys.add(key)
+            policy(attr)
+            validate_binding(attr["binding"], seen)
+            validate_condition(attr.get("when"), seen)
         names = set()
         for attr in sequence(p.get("labels", ())):
             fields(
@@ -213,6 +227,7 @@ def validate_model(model, seen, decisions=None, *, decision_ids=None):
             "key",
             "table",
             "features",
+            "properties",
             "measurements",
             "labels",
             "evidence",

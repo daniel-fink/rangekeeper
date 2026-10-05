@@ -451,6 +451,34 @@
     }
   },
   "Content": {},
+  "ContentEntry": {
+    "key": {
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "record",
+          "kind": "PropertyContent"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "value": {
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "record",
+          "kind": "PropertyContent"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    }
+  },
   "Criterion": {
     "classification": {
       "many": false,
@@ -1003,6 +1031,34 @@
       ],
       "ordered": true,
       "required": false
+    }
+  },
+  "Flow": {
+    "movements": {
+      "many": true,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "record",
+          "kind": "Movement"
+        }
+      ],
+      "ordered": true,
+      "required": true
+    },
+    "units": {
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "string"
+        }
+      ],
+      "ordered": false,
+      "required": true
     }
   },
   "Formulation": {
@@ -1640,6 +1696,73 @@
       "required": false
     }
   },
+  "Movement": {
+    "claims": {
+      "many": true,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "uuid",
+          "kind": "UUID"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    },
+    "date": {
+      "many": false,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "date"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    },
+    "key": {
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "string"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "magnitude": {
+      "many": false,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "decimal"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    },
+    "period": {
+      "many": false,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "record",
+          "kind": "Period"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    }
+  },
   "Objective": {
     "expression": {
       "many": false,
@@ -1722,6 +1845,34 @@
       "required": true
     }
   },
+  "Period": {
+    "end": {
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "date"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "start": {
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "date"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    }
+  },
   "Projection": {
     "cardinality": {
       "many": false,
@@ -1783,6 +1934,86 @@
         {
           "category": "enum",
           "kind": "MissingHandling"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    }
+  },
+  "PropertyContent": {
+    "entries": {
+      "many": true,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "record",
+          "kind": "ContentEntry"
+        }
+      ],
+      "ordered": true,
+      "required": false
+    },
+    "fold": {
+      "many": false,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "integer"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    },
+    "items": {
+      "many": true,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "record",
+          "kind": "PropertyContent"
+        }
+      ],
+      "ordered": true,
+      "required": false
+    },
+    "kind": {
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "enum",
+          "kind": "ContentKind"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "text": {
+      "many": false,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "string"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    },
+    "zone": {
+      "many": false,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "string"
         }
       ],
       "ordered": false,
@@ -2391,6 +2622,47 @@
       "required": false
     }
   },
+  "Span": {
+    "end": {
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "date"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "name": {
+      "many": false,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "string"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    },
+    "start": {
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "date"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    }
+  },
   "Specification": {
     "assignments": {
       "many": true,
@@ -2794,6 +3066,19 @@
     }
   },
   "Value": {
+    "content": {
+      "many": false,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "record",
+          "kind": "PropertyContent"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    },
     "description": {
       "many": false,
       "mapping": false,
@@ -2802,6 +3087,19 @@
         {
           "category": "primitive",
           "kind": "string"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    },
+    "flow": {
+      "many": false,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "record",
+          "kind": "Flow"
         }
       ],
       "ordered": false,
@@ -2849,7 +3147,7 @@
     "measure": {
       "many": false,
       "mapping": false,
-      "nullable": false,
+      "nullable": true,
       "options": [
         {
           "category": "uuid",
@@ -2857,7 +3155,7 @@
         }
       ],
       "ordered": false,
-      "required": true
+      "required": false
     },
     "quantity": {
       "many": false,

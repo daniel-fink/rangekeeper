@@ -260,7 +260,7 @@ def test_model_and_partial_specification_share_local_naming_diagnostics():
     ]
     formulations = [{"id": str(uuid4()), "constraints": constraints}]
     model = {
-        "metadata": {"id": str(uuid4()), "schema_version": "0.3.0"},
+        "metadata": {"id": str(uuid4()), "schema_version": "0.4.0"},
         "system": {"formulations": formulations},
     }
     issue = validate_model(model).issues[0]
@@ -281,7 +281,7 @@ def test_combined_entity_assembly_namespace_reports_canonical_storage_path():
     from rangekeeper.model.validation import validate
 
     model = {
-        "metadata": {"id": str(uuid4()), "schema_version": "0.3.0"},
+        "metadata": {"id": str(uuid4()), "schema_version": "0.4.0"},
         "system": {
             "entities": [{"id": str(uuid4()), "code": "same"}],
             "assemblies": [{"id": str(uuid4()), "code": "same"}],
@@ -296,7 +296,7 @@ def test_flattened_constraint_diagnostic_returns_to_its_owning_formulation():
     from rangekeeper.model.validation import validate
 
     model = {
-        "metadata": {"id": str(uuid4()), "schema_version": "0.3.0"},
+        "metadata": {"id": str(uuid4()), "schema_version": "0.4.0"},
         "system": {
             "formulations": [
                 {
@@ -326,7 +326,7 @@ def test_model_ownership_diagnostic_uses_canonical_document_shape():
 
     identity = str(uuid4())
     model = {
-        "metadata": {"id": str(uuid4()), "schema_version": "0.3.0"},
+        "metadata": {"id": str(uuid4()), "schema_version": "0.4.0"},
         "system": {"entities": [{"id": identity}], "assemblies": [{"id": identity}]},
     }
     issue = validate(model).issues[0]

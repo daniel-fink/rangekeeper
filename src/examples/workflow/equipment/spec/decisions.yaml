@@ -1,4 +1,4 @@
-version: 1
+version: 2
 decisions:
 - id: D1
   status: accepted

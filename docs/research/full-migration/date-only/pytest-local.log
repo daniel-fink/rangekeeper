@@ -1,0 +1,53 @@
+........................................................................ [  8%]
+........................................................................ [ 16%]
+........................................................................ [ 24%]
+........................................................................ [ 32%]
+........................................................................ [ 40%]
+........................................................................ [ 48%]
+........................................................................ [ 56%]
+.............................................F.......................... [ 64%]
+........................................................................ [ 72%]
+........................................................................ [ 80%]
+........................................................................ [ 88%]
+........................................................................ [ 96%]
+..................................                                       [100%]
+=================================== FAILURES ===================================
+_________ test_source_dates_and_locations_survive_canonical_provenance _________
+tests/test_model_consumers.py:268: in test_source_dates_and_locations_survive_canonical_provenance
+    assert restored.provenance.sources[0].issued_at == "2026-10-03"
+E   AssertionError: assert datetime.date(2026, 10, 3) == '2026-10-03'
+E    +  where datetime.date(2026, 10, 3) = Source.from_data({'id': 'bed01fb3-5df1-4301-aeb8-39ccc61f1827', 'name': 'Schedule', 'checksum': 'abc', 'issued_at': '2026-10-03', 'received_at': None, 'author': None}).issued_at
+=============================== warnings summary ===============================
+rangekeeper/duration.py:27
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/duration.py:27: FutureWarning: 'Y' is deprecated and will be removed in a future version, please use 'YE' instead.
+    if value in ("10Y", "10Y-DEC"):
+
+rangekeeper/duration.py:27
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/duration.py:27: FutureWarning: 'Y-DEC' is deprecated and will be removed in a future version, please use 'YE-DEC' instead.
+    if value in ("10Y", "10Y-DEC"):
+
+rangekeeper/duration.py:29
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/duration.py:29: FutureWarning: 'Y' is deprecated and will be removed in a future version, please use 'YE' instead.
+    if value in ("5Y", "5Y-DEC"):
+
+rangekeeper/duration.py:29
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/duration.py:29: FutureWarning: 'Y-DEC' is deprecated and will be removed in a future version, please use 'YE-DEC' instead.
+    if value in ("5Y", "5Y-DEC"):
+
+rangekeeper/duration.py:31
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/duration.py:31: FutureWarning: 'Y' is deprecated and will be removed in a future version, please use 'YE' instead.
+    if value in ("2Y", "2Y-DEC"):
+
+rangekeeper/duration.py:31
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/duration.py:31: FutureWarning: 'Y-DEC' is deprecated and will be removed in a future version, please use 'YE-DEC' instead.
+    if value in ("2Y", "2Y-DEC"):
+
+rangekeeper/duration.py:33
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/duration.py:33: FutureWarning: 'Y' is deprecated and will be removed in a future version, please use 'YE' instead.
+    if value in ("Y", "YE", "YE-DEC", "Y-DEC", "A-DEC"):
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: /Volumes/Data/Projects/Rangekeeper/docs/research/full-migration/date-only/pytest-local.xml -
+=========================== short test summary info ============================
+FAILED tests/test_model_consumers.py::test_source_dates_and_locations_survive_canonical_provenance
+1 failed, 897 passed, 7 warnings in 139.97s (0:02:19)

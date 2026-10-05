@@ -1,5 +1,11 @@
 # Generated records and shared validation — Turn 1
 
+**Flow semantics update, 2026-10-06:** Flows no longer carry semantic kinds or
+basis. The overall model logic owns their meaning and selects operations; units,
+dates, alignment and missingness remain checked. See the
+[current contract](FULL_MIGRATION_TURN1.md#flow-semantics-and-explicit-operations)
+and [verification](research/full-migration/flow-semantics/README.md).
+
 Implemented 2026-10-02. This completes work units **2A and 2B** in
 the [migration map](DOMAIN_MIGRATION_MAP.md). The Python record
 boundary was reviewed before Turn 2. [Model/Specification domain behavior](DOMAIN_CORE.md)
@@ -50,7 +56,7 @@ assert entity.characteristics.values[0].quantity.magnitude == 0
 
 # A complete Model must declare every referenced Measure. Structural construction
 # of the child above cannot establish that document-wide ownership/reference rule.
-model = Model(metadata=Metadata(id=uuid4(), schema_version="0.3.0"))
+model = Model(metadata=Metadata(id=uuid4(), schema_version="0.4.0"))
 validate(model).raise_if_invalid()
 restored = Model.from_data(model.to_data())
 assert restored.metadata.id == model.metadata.id
@@ -69,13 +75,19 @@ The typed constructor surface prefers UUIDs and generated child records; `from_d
 accepts their serialized forms. Runtime construction also accepts schema-compatible
 plain child data and UUID strings, without numeric coercion.
 
+Schema `date` fields now accept and expose Python `datetime.date`. Their wire
+representation stays an ISO date string. This applies to Period boundaries,
+Movement dates, and the date branch of Source `issued_at`/`received_at`.
+The timestamp branch of those Source fields still returns its validated string.
+Datetime objects are not silently truncated into dates. Opaque content is unchanged.
+
 | Operation | Behavior and errors |
 | --- | --- |
 | `Record.from_data(data: Mapping[str, object]) -> Self` | Validate/copy/freeze. Invalid shape raises `ValidationError`; non-JSON objects, cycles and non-finite numbers raise `TypeError`/`ValueError`. |
 | `Record.from_json(text: str) -> Self` | Same path, rejecting duplicate keys at every depth. Parsing/duplicate failures are `ValueError`; this is not yet the planned public codec package. |
 | `record.to_data() -> dict[str, object]` | Detached JSON-compatible data; safe for callers to modify. No file IO. |
 | `record.has_field(name: str) -> bool` | Distinguishes omission from explicit null/empty. Unknown names raise `KeyError`. |
-| Generated properties | UUIDs, immutable embedded records, tuples, read-only mappings and JSON scalars. Assignment/deletion raises `AttributeError`; mapping mutation raises `TypeError`. |
+| Generated properties | UUIDs, dates, immutable embedded records, tuples, read-only mappings and JSON scalars. Assignment/deletion raises `AttributeError`; mapping mutation raises `TypeError`. |
 | Equality | Same generated class and same serialized representation, ignoring object-key order. Array order, null/omission, booleans versus numbers, and integer/float representation remain distinct. This is not the future domain diff API. Records are unhashable. |
 
 Absent optional scalar properties return `None`; absent collections return empty

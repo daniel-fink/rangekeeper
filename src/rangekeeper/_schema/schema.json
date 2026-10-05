@@ -484,6 +484,47 @@
         "string"
       ]
     },
+    "ContentEntry": {
+      "additionalProperties": false,
+      "description": "",
+      "properties": {
+        "key": {
+          "$ref": "#/$defs/PropertyContent"
+        },
+        "value": {
+          "$ref": "#/$defs/PropertyContent"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "title": "ContentEntry",
+      "type": "object"
+    },
+    "ContentKind": {
+      "description": "",
+      "enum": [
+        "null",
+        "boolean",
+        "integer",
+        "float",
+        "string",
+        "uuid",
+        "date",
+        "datetime",
+        "time",
+        "duration",
+        "list",
+        "tuple",
+        "set",
+        "frozenset",
+        "mapping",
+        "mapping_proxy"
+      ],
+      "title": "ContentKind",
+      "type": "string"
+    },
     "Criterion": {
       "additionalProperties": false,
       "description": "Require an Entity Label with this owner-local key to include the exact Classification.",
@@ -1569,6 +1610,28 @@
       "title": "Filter",
       "type": "object"
     },
+    "Flow": {
+      "additionalProperties": false,
+      "description": "Ordered temporal quantities owned by one Value. Dates are coordinates, not units. Empty, unresolved and zero movements are distinct. The overall model logic defines the meaning of the quantities and selects their calculations; a Flow carries no semantic kind or basis.",
+      "properties": {
+        "movements": {
+          "items": {
+            "$ref": "#/$defs/Movement"
+          },
+          "type": "array"
+        },
+        "units": {
+          "pattern": "\\S",
+          "type": "string"
+        }
+      },
+      "required": [
+        "units",
+        "movements"
+      ],
+      "title": "Flow",
+      "type": "object"
+    },
     "Formulation": {
       "additionalProperties": false,
       "description": "An identified mathematical container with explicit local declarations, expressions, and asserted constraints. Formulations may contain child Formulations and bind names to shared Values.",
@@ -2090,6 +2153,54 @@
       "title": "Model",
       "type": "object"
     },
+    "Movement": {
+      "additionalProperties": false,
+      "description": "One numerical entry in a Flow, associated with a date or period. The overall model logic determines its meaning. At least one of date or period is required. With a period, date records an independent payment or observation date and need not lie inside the period. Derived boundary dates are calculated, not stored. Key is stable within its Flow; repeated event dates require distinct keys. Magnitude omission/null means unresolved. Claims retain source or derivation evidence.",
+      "properties": {
+        "claims": {
+          "items": {
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "date": {
+          "format": "date",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "key": {
+          "pattern": "\\S",
+          "type": "string"
+        },
+        "magnitude": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "period": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Period"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "title": "Movement",
+      "type": "object"
+    },
     "Objective": {
       "additionalProperties": false,
       "description": "A scalar numerical Expression and the sense in which its result is preferred.",
@@ -2196,6 +2307,26 @@
       ],
       "title": "ParameterKind",
       "type": "string"
+    },
+    "Period": {
+      "additionalProperties": false,
+      "description": "Half-open interval [start, end). Date boundaries use the Gregorian calendar; start must precede end.",
+      "properties": {
+        "end": {
+          "format": "date",
+          "type": "string"
+        },
+        "start": {
+          "format": "date",
+          "type": "string"
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ],
+      "title": "Period",
+      "type": "object"
     },
     "Projection": {
       "additionalProperties": false,
@@ -2350,6 +2481,58 @@
       ],
       "title": "ProjectionKind",
       "type": "string"
+    },
+    "PropertyContent": {
+      "additionalProperties": false,
+      "description": "Tagged inert content. Scalar text preserves exact type and representation, including negative zero. Containers never instantiate arbitrary Python classes. Conditional shape and canonical scalar grammar are checked semantically.",
+      "properties": {
+        "entries": {
+          "items": {
+            "$ref": "#/$defs/ContentEntry"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "fold": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/PropertyContent"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "kind": {
+          "$ref": "#/$defs/ContentKind"
+        },
+        "text": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "zone": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "PropertyContent",
+      "type": "object"
     },
     "Provenance": {
       "additionalProperties": false,
@@ -2978,6 +3161,32 @@
       "title": "Source",
       "type": "object"
     },
+    "Span": {
+      "additionalProperties": false,
+      "description": "Named extent, using the same half-open boundary convention as Period.",
+      "properties": {
+        "end": {
+          "format": "date",
+          "type": "string"
+        },
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "start": {
+          "format": "date",
+          "type": "string"
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ],
+      "title": "Span",
+      "type": "object"
+    },
     "Specification": {
       "additionalProperties": false,
       "description": "An immutable contribution of investigation requirements, a composition of such contributions, or a batch of separate Specifications. A concrete composition investigates one pinned Model revision.",
@@ -3440,13 +3649,75 @@
     },
     "Value": {
       "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "measurement"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "measure": {}
+            },
+            "required": [
+              "measure"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "flow"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "measure": {}
+            },
+            "required": [
+              "measure"
+            ]
+          }
+        }
+      ],
       "description": "An identified, typed Value belonging to an Entity or Relationship's Characteristics, or declared locally within a mathematical Formulation. Its key provides a name within the owner's values collection; its UUID identifies the symbol independently of that name.",
       "properties": {
+        "content": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PropertyContent"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "description": {
           "description": "Explanation of the meaning of this Value within its owner.",
           "type": [
             "string",
             "null"
+          ]
+        },
+        "flow": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Flow"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "id": {
@@ -3466,7 +3737,10 @@
         "measure": {
           "description": "Measure defining meaning and canonical units, referenced by its stable UUID.",
           "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "type": "string"
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "quantity": {
           "anyOf": [
@@ -3481,7 +3755,6 @@
         }
       },
       "required": [
-        "measure",
         "id",
         "key",
         "kind"
@@ -3492,7 +3765,9 @@
     "ValueKind": {
       "description": "Supported kinds of Values.",
       "enum": [
-        "measurement"
+        "measurement",
+        "flow",
+        "property"
       ],
       "title": "ValueKind",
       "type": "string"

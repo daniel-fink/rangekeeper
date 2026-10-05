@@ -1,0 +1,3 @@
+Passed 6 generated schemas, 10 valid fixture scopes, 32 structural rejections,
+20 bounded semantic rejections, and 10 native Formulation round trips.
+Formulation compilation, constraint satisfaction, unit inference, and solving remain unimplemented.

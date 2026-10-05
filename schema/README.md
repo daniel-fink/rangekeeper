@@ -1,5 +1,32 @@
 # Rangekeeper schema: purpose, object model, and current draft
 
+**Movement naming, 2026-10-06:** `flow.yaml` defines `Movement` and ordered
+`Flow.movements`. They replace the unreleased `FlowSample`/`samples` names without
+aliases. Entry fields and behavior remain unchanged. See the
+[contract](../docs/FULL_MIGRATION_TURN1.md#movement-naming) and
+[verification](../docs/research/full-migration/movement-naming/README.md).
+
+**Flow semantics, 2026-10-06:** Flow contains units and ordered movements, without
+a semantic kind/basis. The overall model logic defines interpretation and selects
+calculations. Unit, coordinate, missing-value and reference checks remain. This
+corrects the unreleased 0.4.0 draft; it does not change `Value.kind="flow"`.
+See the [contract](../docs/FULL_MIGRATION_TURN1.md#flow-semantics-and-explicit-operations)
+and [verification](../docs/research/full-migration/flow-semantics/README.md).
+
+**Date-only Flow contract, 2026-10-04:** `duration.yaml` defines Period/Span
+boundaries as dates. `flow.yaml` requires a date or Period per Movement through
+semantic validation. An optional date on a period movement is an independent
+payment/observation fact; it need not lie within the Period. There is no TimePoint
+or intraday Flow coordinate. See the [contract](../docs/FULL_MIGRATION_TURN1.md)
+and [verification](../docs/research/full-migration/date-only/README.md).
+
+**Current extension (2026-10-04):** Model 0.4.0 imports `duration.yaml`,
+`flow.yaml` and `content.yaml` through Characteristics. Values now support
+measurement, flow and property content. See [Turn 1 contracts](../docs/FULL_MIGRATION_TURN1.md)
+and the [upgrade guide](../docs/LEGACY_UPGRADE_GUIDE.md). The original scalar
+contract discussion below remains useful; numerical kernels do not add Flow solve roles.
+
+
 This directory defines the kinds of information a Rangekeeper model can express:
 Entities, Classifications, Measures, characteristics, relationships, and evidence.
 The LinkML schema supplies the shared object contract. A document-interpretation

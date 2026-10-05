@@ -1,5 +1,33 @@
 # Domain migration map and Python interface contract
 
+**Movement naming, 2026-10-06:** the current API uses `Movement` and
+`Flow.movements`. See the [naming contract](FULL_MIGRATION_TURN1.md#movement-naming)
+for the Python/wire-format change and upgrade requirements.
+
+**Flow semantics update, 2026-10-06:** Flows no longer carry semantic kinds or
+basis. The overall model logic owns their meaning and selects operations; units,
+dates, alignment and missingness remain checked. See the
+[current contract](FULL_MIGRATION_TURN1.md#flow-semantics-and-explicit-operations)
+and [verification](research/full-migration/flow-semantics/README.md).
+
+**Full migration update, 2026-10-04:** [Turn 1 foundations](FULL_MIGRATION_TURN1.md)
+implements Model 0.4.0 rich properties and Flow Values, `model.duration`,
+`temporal`, `calculations`, detached dataframe adapters, and explicit Graph conversion.
+The basic DCF notebook, financial test model and synthetic source workflows migrated.
+Read the [upgrade guide](LEGACY_UPGRADE_GUIDE.md) and [verification](research/full-migration/turn1/README.md).
+Next is Turn 2: temporal mathematics, scenarios/policies, and their consumers.
+The [duration namespace migration](FULL_MIGRATION_TURN1.md#duration-namespace-migration),
+recorded 2026-10-05, opens that turn: canonical operations move from `temporal/`
+to `duration/`; retained old callers use temporary private migration support.
+The current runtime paths above remain in use until that slice is verified.
+Turns 3–4 finish remaining consumers and retire old modules. The six-checkpoint
+history below remains the scalar/core work record; full migration is not complete.
+
+**Expanded review:** [Full migration review](FULL_MIGRATION_REVIEW.md) now covers
+all remaining older modules, temporal/numerical redesign, consumer proof and
+upgrade guidance. Its [symbol inventory](research/full-migration/SYMBOLS.md)
+expands the earlier grouped numerical row; proposed APIs remain subject to review.
+
 **2026-10-03 update:** [Step 6C/6D](CONSUMER_MIGRATION.md) is implemented.
 The responsibility inventory below retains its Step 1 baseline; current consumers
 use `table`, `adapters`, and `workflow`, with `WorkflowResult.model`. External
@@ -357,7 +385,7 @@ from rangekeeper.specification import compose
 # Typed nested records come from generated fields; use a supported schema version.
 entity = Entity(id=uuid4(), code="A", characteristics=Characteristics(values=()))
 model = Model.create(
-    metadata=Metadata(id=uuid4(), schema_version="0.3.0"),
+    metadata=Metadata(id=uuid4(), schema_version="0.4.0"),
     system=System(entities=(entity,)),
 )
 loaded = json.loads(json.dumps(model), kind=rk.Model)

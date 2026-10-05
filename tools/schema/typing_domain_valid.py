@@ -14,7 +14,7 @@ from rangekeeper.specification import (
 
 entity = Entity(id=uuid4(), code="A")
 model = Model.create(
-    metadata=Metadata(id=uuid4(), schema_version="0.3.0"),
+    metadata=Metadata(id=uuid4(), schema_version="0.4.0"),
     system=System(entities=(entity,)),
 )
 identity: UUID = model.entity(entity.id).id

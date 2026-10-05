@@ -1,0 +1,1 @@
+{"files": 316, "callables": 86, "code_cells": 23, "errors": 0, "property_pv": 1000, "independent_oracle_passed": true, "wheel_site": "/private/tmp/rk-date-only-final/site", "nonsemantic_source_differences": ["src/rangekeeper/calculations/series.py"], "html_table_checked": true, "visual_review_completed": false, "unrelated_gitignore_preserved": true, "index_empty": true}

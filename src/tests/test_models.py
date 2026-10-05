@@ -24,35 +24,16 @@ currency = rk.measure.register_currency(registry=units)
 
 class TestLinear:
     def test_linear_model(self):
-        base_params = {
-            "units": currency.units,
-            "start_date": datetime.date(2020, 1, 1),
-            "num_periods": 10,
-            "acquisition_price": 1000,
-            "frequency": rk.duration.Type.YEAR,
-            "growth_rate": 0.02,
-            "initial_pgi": 100.0,
-            "vacancy_rate": 0.05,
-            "opex_pgi_ratio": 0.35,
-            "capex_pgi_ratio": 0.10,
-            "cap_rate": 0.05,
-            "discount_rate": 0.07,
-        }
-
-        linear = tests.models.linear.Model(base_params)
-
-        linear.ncf_disposition.display()
-        print(linear.operation_span)
-        linear.pv_sums.display()
-
-        linear.investment_cashflows.display()
-        linear.investment_cashflows.sum().display()
-        print("IRR: " + str(linear.irr))
-        # print("NPV @ Discount Rate: " + str(linear.))
-
-        assert math.isclose(
-            a=linear.disposition.movements.iloc[-1], b=1218.99, rel_tol=0.01
-        )
+        from rangekeeper.calculations import series
+        params = dict(units="AUD", start_date=datetime.date(2020,1,1), num_periods=10,
+                      acquisition_price=1000, frequency="year", growth_rate=.02,
+                      initial_pgi=100., vacancy_rate=.05, opex_pgi_ratio=.35,
+                      capex_pgi_ratio=.10, cap_rate=.05, discount_rate=.07)
+        model=tests.models.linear.Model(params)
+        assert math.isclose(model.disposition.movements[-1].magnitude,1218.99,rel_tol=.01)
+        assert math.isclose(series.total(model.pv_sums).magnitude,1000,rel_tol=1e-12)
+        assert abs(model.irr.residual.magnitude)<1e-7
+        assert len(model.investment_cashflows.movements)==11
 
 
 class TestDeterministic:

@@ -25,6 +25,10 @@ parser.add_argument(
     "--workflow-python",
     help="Verify source workflows; copy openpyxl dependencies from this interpreter",
 )
+parser.add_argument(
+    "--financial-python",
+    help="Verify the PyXIRR financial wrapper without SciPy or dataframe dependencies",
+)
 args = parser.parse_args()
 DEPENDENCIES = (
     "jsonschema",
@@ -105,13 +109,30 @@ from importlib.resources import files
 import importlib.util
 import sys
 from uuid import uuid4
+from datetime import date
 import rangekeeper
-from rangekeeper._schema.records import Model, Metadata, Runtime
+from rangekeeper._schema.records import Model, Metadata, Runtime, Period, Flow, Movement, Source
 from rangekeeper.model.validation import validate
+period = Period(start=date(2026, 1, 1), end=date(2026, 2, 1))
+movement = Movement(key="january", period=period)
+assert movement.date is None and "date" not in movement.to_data()
+flow = Flow(units="AUD", movements=(movement,))
+assert set(flow.to_data()) == {"units", "movements"}
+assert Flow.from_data(flow.to_data()) == flow
+assert type(flow.movements[0]) is Movement and not hasattr(flow, "samples")
+import rangekeeper.model.flow as flow_api
+assert flow_api.Movement is Movement and not hasattr(flow_api, "FlowSample")
+assert not hasattr(flow, "basis") and not hasattr(flow, "kind")
+assert type(Period.from_data(period.to_data()).start) is date
+source = Source(id=uuid4(), name="Schedule", checksum="abc",
+    issued_at=date(2026, 1, 1), received_at="2026-01-02T09:30:00+11:00")
+assert source.issued_at == date(2026, 1, 1)
+assert source.received_at == "2026-01-02T09:30:00+11:00"
+print("Installed wheel: date fields and source timestamp alternatives passed")
 from rangekeeper.errors import ValidationError
 assert 'stage' not in rangekeeper.__file__
 assert 'site-packages' in rangekeeper.__file__
-assert validate(Model(metadata=Metadata(id=uuid4(), schema_version='0.3.0'))).valid
+assert validate(Model(metadata=Metadata(id=uuid4(), schema_version='0.4.0'))).valid
 assert files('rangekeeper').joinpath('py.typed').is_file()
 assert files('rangekeeper').joinpath('_currencies.json').is_file()
 for name in ('schema.json', 'slots.json', 'manifest.json', 'native.py'):
@@ -131,7 +152,7 @@ assert 'rangekeeper.graph' not in sys.modules
 from rangekeeper.model import Model as DomainModel, Entity, System, Update
 from rangekeeper.specification import Specification, SpecificationRecord, compose, validate as validate_composition
 entity = Entity(id=uuid4(), code='A')
-domain = DomainModel.create(metadata=Metadata(id=uuid4(), schema_version='0.3.0'), system=System(entities=(entity,)))
+domain = DomainModel.create(metadata=Metadata(id=uuid4(), schema_version='0.4.0'), system=System(entities=(entity,)))
 assert domain.entity(entity.id).code == 'A'
 revised = domain.revise(Update(system=System()))
 assert revised.metadata.previous == domain.id
@@ -249,7 +270,7 @@ measure = Measure(id=uuid4(), code='area', name='Area', units='meter ** 2')
 value = Value(id=uuid4(), key='net', kind='measurement', measure=measure.id, quantity=Quantity(magnitude=12, units='meter ** 2'))
 entity = Entity(id=uuid4(), characteristics=Characteristics(values=(value,)))
 group = Assembly(id=uuid4(), entities=(entity.id,))
-model = rk.Model.create(metadata=Metadata(id=uuid4(), schema_version='0.3.0'), definitions=Definitions(measures=(measure,)), system=System(entities=(entity,), assemblies=(group,)))
+model = rk.Model.create(metadata=Metadata(id=uuid4(), schema_version='0.4.0'), definitions=Definitions(measures=(measure,)), system=System(entities=(entity,), assemblies=(group,)))
 hierarchy = Hierarchy.from_membership(View(model, assembly=group.id), root=group.id)
 result = Reduction(select=select_value('net'), reducer=sum_quantities, units='centimeter ** 2', contributors=lambda item: item.id == entity.id).execute(hierarchy)
 assert result.root_value.magnitude == 120000 and result.coverage(group.id).complete
@@ -260,6 +281,37 @@ for prefix in ('networkx', 'pandas', 'rangekeeper.graph.legacy', 'rangekeeper.gr
 print('Installed wheel: canonical membership, explicit Value reduction, coverage and conversion passed')
 """
     subprocess.run([str(python), "-I", "-c", script], cwd=temp, check=True)
+    if args.financial_python:
+        financial_dependencies = copy_dependencies.replace(
+            "('Pint', 'flexcache', 'flexparser', 'platformdirs', 'PyYAML')",
+            "('pyxirr',)",
+        )
+        subprocess.run(
+            [args.financial_python, "-c", financial_dependencies, str(site)],
+            cwd=temp,
+            check=True,
+        )
+        script = """
+from datetime import date
+import math, sys
+import pyxirr
+from rangekeeper.calculations.financial import calculate_pv, calculate_xnpv, calculate_irr
+from rangekeeper.model.flow import from_events, from_periods
+from rangekeeper.temporal import make_periods
+flow = from_events([date(2026, 1, 1), date(2027, 1, 1)], [-100, 110], units='AUD')
+assert abs(calculate_xnpv(flow, rate=.1, valuation_date=date(2026, 1, 1)).magnitude) < 1e-9
+result = calculate_irr(flow)
+assert math.isclose(result.rate, .1) and result.method == 'pyxirr.xirr'
+assert abs(result.residual.magnitude) < 1e-9
+future = from_periods(make_periods(date(2026, 1, 1), frequency='year', count=1), [110], units='AUD')
+assert math.isclose(calculate_pv(future, rate=.1).movements[0].magnitude, 100)
+assert math.isclose(calculate_xnpv(future, rate=.1, valuation_date=date(2026, 1, 1), timing='end').magnitude, 100)
+assert calculate_xnpv(from_events([], [], units='AUD'), rate=.1, valuation_date=date(2026, 1, 1)).magnitude == 0
+for prefix in ('scipy', 'pandas', 'polars', 'numpy', 'rangekeeper.flux', 'rangekeeper.duration'):
+    assert not any(name == prefix or name.startswith(prefix + '.') for name in sys.modules), prefix
+print('Installed wheel: PyXIRR', pyxirr.__version__, 'PV/XNPV/IRR passed without SciPy, dataframes or legacy imports')
+"""
+        subprocess.run([str(python), "-I", "-c", script], cwd=temp, check=True)
     if args.execution_python:
         execution_dependencies = copy_dependencies.replace(
             "('Pint', 'flexcache', 'flexparser', 'platformdirs', 'PyYAML')",

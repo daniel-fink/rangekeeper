@@ -1,10 +1,10 @@
-version: 1
+version: 2
 comparisons:
 - id: population
   group: Coverage
   scope: Items
   left:
-    kind: graph_keys
+    kind: model_keys
     classification: item
   right:
     kind: table_keys
@@ -15,9 +15,10 @@ comparisons:
   group: Totals
   scope: Sizes
   left:
-    kind: graph_total
+    kind: model_total
     classification: item
-    measure: size
+    value_key: size
+    units: meter**2
   right:
     kind: evidence
     binding:
@@ -30,11 +31,12 @@ comparisons:
   each: items
   scope_column: code
   left:
-    kind: graph_measurement
+    kind: model_value
     identity_kind: item
     key:
       column: code
-    measure: size
+    value_key: size
+    units: meter**2
   right:
     kind: column
     binding:

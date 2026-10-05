@@ -75,7 +75,7 @@ def model():
     first = Assembly(id=uuid4(), name="First", entities=(entity.id,))
     second = Assembly(id=uuid4(), name="Second", entities=(entity.id,))
     return Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.3.0"),
+        metadata=Metadata(id=uuid4(), schema_version="0.4.0"),
         definitions=Definitions(measures=(measure,), taxonomies=(taxonomy,)),
         system=System(entities=(entity,), assemblies=(first, second)),
     )
@@ -258,14 +258,15 @@ def test_source_dates_and_locations_survive_canonical_provenance():
         method=evidence.Method(code="test", version="1"),
     )
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.3.0"),
+        metadata=Metadata(id=uuid4(), schema_version="0.4.0"),
         system=System(entities=(entity,)),
         provenance=builder.finish(),
     )
     restored = json.loads(json.dumps(model), kind=Model)
     observed = next(c for c in restored.provenance.claims if c.id == observation.id)
     assert observed.content["value"] == ("date", "2026-10-02")
-    assert restored.provenance.sources[0].issued_at == "2026-10-03"
+    assert restored.provenance.sources[0].issued_at == date(2026, 10, 3)
+    assert restored.provenance.sources[0].to_data()["issued_at"] == "2026-10-03"
     assert locations(restored, support)[0].address["cell"] == "A1"
 
 

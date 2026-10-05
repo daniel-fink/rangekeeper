@@ -1,5 +1,11 @@
 # Model and Specification APIs — Turn 2
 
+**Flow semantics update, 2026-10-06:** Flows no longer carry semantic kinds or
+basis. The overall model logic owns their meaning and selects operations; units,
+dates, alignment and missingness remain checked. See the
+[current contract](FULL_MIGRATION_TURN1.md#flow-semantics-and-explicit-operations)
+and [verification](research/full-migration/flow-semantics/README.md).
+
 Implemented 2026-10-02: work units **3A and 3B** from the
 [migration map](DOMAIN_MIGRATION_MAP.md). The [record boundary](RECORD_BOUNDARY.md)
 remains the field authority. Public imports now live in `rangekeeper.model` and
@@ -97,7 +103,7 @@ gross = Value(id=uuid4(), key="gross", kind="measurement", measure=area.id,
 net = Value(id=uuid4(), key="net", kind="measurement", measure=area.id)
 entity = Entity(id=uuid4(), code="A", characteristics=Characteristics(values=(gross, net)))
 model = Model.create(
-    metadata=Metadata(id=uuid4(), schema_version="0.3.0"),
+    metadata=Metadata(id=uuid4(), schema_version="0.4.0"),
     definitions=Definitions(measures=(area,)), system=System(entities=(entity,)),
 )
 assert model.value(gross.id).quantity.magnitude == 100

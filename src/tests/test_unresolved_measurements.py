@@ -95,7 +95,7 @@ def test_workflow_operands_preserve_unresolved_and_zero():
         id=uuid4(), code="A", characteristics=Characteristics(values=(reading,))
     )
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.3.0"),
+        metadata=Metadata(id=uuid4(), schema_version="0.4.0"),
         definitions=Definitions(measures=(measure,)),
         system=System(entities=(entity,)),
     )
