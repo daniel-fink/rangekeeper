@@ -1,85 +1,41 @@
+"""Explicit projection origins, padding and mass allocation after API retirement."""
+
+from datetime import date
 import pytest
-from pytest import approx
-import pandas as pd
+from rangekeeper.calculations import projection, series
+from rangekeeper.duration import make_periods
+from rangekeeper.model.distribution import make_pert
+from rangekeeper.model.measure import Quantity
 
-import rangekeeper as rk
-from rangekeeper import _legacy_duration as legacy_duration
+
+def test_origin_replaces_implicit_range_index_offset():
+    assert projection.project_values(
+        0, count=12, method="linear", rate=1, origin=12
+    ) == tuple(range(12, 24))
 
 
-# Pytests file.
-# Note: gathers tests according to a naming convention.
-# By default any file that is to contain tests must be named starting with 'test_',
-# classes that hold tests must be named starting with 'Test',
-# and any function in a file that should be treated as a test must also start with 'test_'.
+def test_linear_recurring_and_compound_values():
+    assert projection.project_values(0, count=10, method="linear", rate=1) == tuple(
+        range(10)
+    )
+    assert projection.project_values(0, count=10) == (0,) * 10
+    assert projection.project_values(1, count=10, method="compound", rate=0.1)[
+        -1
+    ] == pytest.approx(2.357947691)
 
-class TestProjection:
-    def test_rangeindex(self):
-        sequence = legacy_duration.Sequence.from_bounds(
-            include_start=pd.Timestamp(2000, 1, 1),
-            frequency=legacy_duration.Type.MONTH,
-            bound=12)
-        range_index = legacy_duration.Sequence.to_range_index(
-            sequence=sequence,
-            start_period=pd.Period(value='1999-01'),
-            end_period=pd.Period(value='2010-01'))
-        assert range_index.values[0] == 12
-        assert range_index.values[-1] == 23
 
-    def test_form(self):
-        range = pd.RangeIndex(start=0, stop=10, step=1)
-        straightline = rk.extrapolation.StraightLine(slope=1)
-        straightline_factors = straightline.terms(range)
-        assert len(straightline_factors) == 10
-        assert straightline_factors[0] == 0
-        assert straightline_factors[9] == 9
+def test_padding_is_explicit_and_preserves_projection_origin():
+    values = projection.project_values(1, count=12, method="compound", rate=0.05)
+    padded = projection.pad(values, before=12, after=25, left="unitize", right="extend")
+    assert len(padded) == 49 and padded[:12] == (1,) * 12
+    assert padded[12:24] == values
+    assert padded[-1] == pytest.approx(1.710339358)
 
-        recurring = rk.extrapolation.Recurring()
-        recurring_factors = recurring.terms(range)
-        assert recurring_factors[0] == 0
-        assert recurring_factors[9] == 0
 
-        compounding = rk.extrapolation.Compounding(rate=0.1)
-        compounding_factors = compounding.terms(range)
-        assert compounding_factors[0] == 1
-        assert compounding_factors[9] == approx(2.357947691)
-
-    def test_extrapolation(self):
-        sequence = legacy_duration.Sequence.from_bounds(
-            include_start=pd.Timestamp(2000, 1, 1),
-            frequency=legacy_duration.Type.MONTH,
-            bound=12)
-
-        generic = rk.projection.Projection(sequence=sequence)
-        assert generic.bounds[0].year == 2000
-        assert generic.bounds[1].month == 12
-
-        extrapolation = rk.projection.Extrapolation(
-            form=rk.extrapolation.StraightLine(slope=1),
-            sequence=sequence)
-        assert extrapolation.terms().iloc[0] == 0
-        assert extrapolation.terms().iloc[9] == 9
-
-        extrapolation_padding = rk.projection.Extrapolation(
-            form=rk.extrapolation.Compounding(rate=0.05),
-            sequence=sequence,
-            bounds=(pd.Period(value='1999-01'), pd.Period(value='2003-01')),
-            padding=(rk.projection.Padding.UNITIZE, rk.projection.Padding.EXTEND))
-
-        factors = extrapolation_padding.terms()
-
-        assert factors.iloc[0] == 1
-        assert factors.iloc[-1] == approx(1.710339358)
-
-    def test_distribution(self):
-        sequence = legacy_duration.Sequence.from_bounds(
-            include_start=pd.Timestamp(2000, 1, 1),
-            frequency=legacy_duration.Type.MONTH,
-            bound=12)
-        bounds = (pd.Period(value='1999-01'), pd.Period(value='2003-01'))
-
-        uniform = rk.projection.Distribution(
-            form=rk.distribution.PERT(),
-            sequence=sequence,
-            bounds=bounds)
-
-        assert uniform.interval_density().sum() == 1
+def test_pert_allocation_preserves_mass_without_padding_observations():
+    periods = make_periods(date(2000, 1, 1), frequency="month", count=12)
+    flow = projection.allocate(
+        Quantity(magnitude=1, units="meter"), periods=periods, distribution=make_pert()
+    )
+    assert series.total(flow).magnitude == pytest.approx(1)
+    assert tuple(m.period for m in flow.movements) == periods

@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/Volumes/Data/Projects/Rangekeeper/src/../docs/research/full-migration/turn4/capture_reference.py", line 15, in <module>
+    from rangekeeper.formula.financial import Account
+ModuleNotFoundError: No module named 'rangekeeper'

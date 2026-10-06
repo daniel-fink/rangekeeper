@@ -4,40 +4,47 @@ from copy import deepcopy
 from pathlib import Path
 import importlib.util
 import json
-from uuid import uuid4
+from uuid import uuid4, UUID
+from datetime import datetime, time, timedelta
+from zoneinfo import ZoneInfo
+from types import MappingProxyType
 
 import pytest
 from rangekeeper import Model
 from rangekeeper.model.content import decode
 from rangekeeper.migration import convert_graph, upgrade_model
 from rangekeeper.workflow import load, run
-from tests.test_graph_json import example
-from rangekeeper.graph.adapter.json import dumps
 
 ROOT = Path(__file__).resolve().parents[2]
+FIXTURE = Path(__file__).parent / "fixtures/migration/graph-v1.json"
+EXPECTED = json.loads(FIXTURE.with_name("graph-v1-expected.json").read_text())
 
 
 def test_graph_upgrade_preserves_identity_properties_and_provenance():
-    old = example()
-    text = dumps(old)
+    text = FIXTURE.read_text()
     result = convert_graph(text)
     assert not result.issues and result.model is not None
     model = result.model
     assert len(model.system.assemblies) == 1 and len(model.system.entities) == 1
-    parent, child = old.entities
-    assert model.entity(parent.id).entities == (child.id,)
-    reading = child.measurements["length"]
-    feature = child.features["payload"]
-    assert model.value(reading.id).quantity.magnitude == 0
-    restored = decode(model.value(feature.id).content)
-    assert restored == feature.value and type(restored["tuple"]) is tuple
-    assert model.provenance.facts[0].target == reading.id
-    assert (
-        model.provenance.facts[0].reconciliation.selected
-        == old.provenance.facts[0].reconciliation.selected.id
+    assert model.entity(UUID(EXPECTED["assembly"])).entities == (
+        UUID(EXPECTED["entity"]),
+    )
+    assert model.value(UUID(EXPECTED["measurement"])).quantity.magnitude == 0
+    restored = decode(model.value(UUID(EXPECTED["property"])).content)
+    assert restored == {
+        "list": [False, 1, 1.0, UUID(EXPECTED["uuid_value"])],
+        "tuple": (None, timedelta(days=2, microseconds=3)),
+        "frozen": frozenset({"x", "y"}),
+        "mapping": MappingProxyType({"time": time(12, 30)}),
+        "date": datetime(2020, 7, 1, 12, tzinfo=ZoneInfo("Australia/Sydney")),
+    }
+    assert type(restored["tuple"]) is tuple
+    assert model.provenance.facts[0].target == UUID(EXPECTED["measurement"])
+    assert model.provenance.facts[0].reconciliation.selected == UUID(
+        EXPECTED["selected"]
     )
     assert all(a == b for a, b in result.identity_map)
-    assert dumps(old) == text
+    assert FIXTURE.read_text() == text
 
 
 @pytest.mark.parametrize(
@@ -50,7 +57,7 @@ def test_graph_upgrade_preserves_identity_properties_and_provenance():
     ],
 )
 def test_graph_upgrade_never_publishes_partial_output(change):
-    raw = json.loads(dumps(example()))
+    raw = json.loads(FIXTURE.read_text())
     change(raw)
     result = convert_graph(json.dumps(raw))
     assert result.model is None and result.issues and result.source_sha256
@@ -99,7 +106,7 @@ def test_converter_cli_retains_report_and_refuses_overwrite(tmp_path):
     import sys
 
     source = tmp_path / "old.json"
-    source.write_text(dumps(example()))
+    source.write_text(FIXTURE.read_text())
     out = tmp_path / "converted"
     command = [sys.executable, "-m", "rangekeeper.migration", str(source), str(out)]
     subprocess.run(command, check=True, capture_output=True)
@@ -115,7 +122,7 @@ def test_converter_cli_retains_report_and_refuses_overwrite(tmp_path):
 
 
 def test_quantity_feature_is_reported_not_silently_changed_to_a_mapping():
-    raw = json.loads(dumps(example()))
+    raw = json.loads(FIXTURE.read_text())
     feature = next(item for item in raw["objects"] if item["type"] == "Feature")
     feature["fields"]["value"] = {"quantity": [{"float": (1.0).hex()}, "meter"]}
     result = convert_graph(json.dumps(raw))

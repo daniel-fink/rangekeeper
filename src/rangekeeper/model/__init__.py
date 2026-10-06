@@ -1,6 +1,6 @@
 """Canonical Model revisions and schema-derived nested records.
 
-Legacy Graph APIs remain in rangekeeper.graph until their consumer migration.
+The held Graph predecessor is isolated in rangekeeper.legacy.graph.
 """
 
 from .model import Model as Model

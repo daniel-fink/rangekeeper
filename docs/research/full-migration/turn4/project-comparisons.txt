@@ -1,0 +1,5 @@
+Installed import: /private/tmp/rk-turn4-project-venv/lib/python3.13/site-packages/rangekeeper/__init__.py
+mandarin {'domain_equal': True, 'lineage_equal': True, 'checks_equal': True, 'facts_compared': 4617} new_nulls 6
+december {'domain_equal': True, 'lineage_equal': True, 'checks_equal': True, 'facts_compared': 565} new_nulls 2
+november-r2 {'domain_equal': True, 'lineage_equal': True, 'checks_equal': True, 'facts_compared': 250} new_nulls 34
+Original source bytes preserved

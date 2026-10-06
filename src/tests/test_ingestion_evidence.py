@@ -9,14 +9,6 @@ from uuid import NAMESPACE_URL, uuid5
 import pint
 import pytest
 
-from rangekeeper.graph import (
-    Classification,
-    Definitions,
-    Entity,
-    Graph,
-    Relationship,
-    Taxonomy,
-)
 from rangekeeper.adapters import csv, pandas
 from rangekeeper.errors import IdentityConflictError
 from rangekeeper.evidence import Claim, Location, Method, Source
@@ -161,31 +153,6 @@ def test_reorder_and_filter_bundle_identity_with_values(source):
     assert tabular.row(selected, uid("r2")).values["area"] == 97
     assert tabular.claim(selected, uid("r2"), "area") is evidence.claims[address("r2")]
     assert evidence.data.column("area") == (103, 97)
-
-
-def test_graph_projection_identity_and_arborescence_order():
-    from rangekeeper.graph.table import Table
-    kind = Classification(id=uid("contains"), code="contains", name="Contains")
-    taxonomy = Taxonomy(
-        id=uid("taxonomy"), code="test", name="Test", classifications=(kind,)
-    )
-    root, child = (
-        Entity(id=uid("root"), name="Root"),
-        Entity(id=uid("child"), name="Child"),
-    )
-    graph = Graph(
-        definitions=Definitions(taxonomies=(taxonomy,)),
-        entities=(child, root),
-        relationships=(
-            Relationship(source_id=root.id, target_id=child.id, classification=kind),
-        ),
-    )
-    plain = Table.from_view(graph.view(), fields=("name",))
-    assert tuple(row.id for row in plain.rows) == (child.id, root.id)
-    assert plain.columns == ("name",)
-    tree = Table.from_arborescence(graph.view())
-    assert tuple(row.id for row in tree.rows) == (root.id, child.id)
-    assert tree.column("entity_id") == tuple(row.id for row in tree.rows)
 
 
 def test_exports_do_not_invent_metadata_columns(tmp_path):

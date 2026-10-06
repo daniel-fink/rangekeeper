@@ -1,0 +1,17 @@
+Using Python 3.10.19 environment at: rk-turn4-core-venv
+Resolved 13 packages in 95ms
+Prepared 13 packages in 124ms
+Installed 13 packages in 16ms
+ + attrs==26.1.0
+ + flexcache==0.3
+ + flexparser==0.4
+ + jsonschema==4.26.0
+ + jsonschema-specifications==2025.9.1
+ + pint==0.24.4
+ + platformdirs==4.12.3
+ + rangekeeper==0.8.71 (from file:///private/tmp/rk-turn4-wheel/wheel/rangekeeper-0.8.71-py3-none-any.whl)
+ + referencing==0.37.0
+ + rfc3339-validator==0.1.4
+ + rpds-py==0.30.0
+ + six==1.17.0
+ + typing-extensions==4.16.0

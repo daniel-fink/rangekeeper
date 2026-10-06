@@ -1,0 +1,15 @@
+
+==================================== ERRORS ====================================
+____________________ ERROR collecting tests/test_modules.py ____________________
+ImportError while importing test module '/Volumes/Data/Projects/Rangekeeper/src/tests/test_modules.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Users/daniel/.local/share/uv/python/cpython-3.10.19-macos-aarch64-none/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_modules.py:18: in <module>
+    from rangekeeper.duration import make_periods, make_period, offset, elapsed_days
+E   ImportError: cannot import name 'elapsed_days' from 'rangekeeper.duration' (/Volumes/Data/Projects/Rangekeeper/src/rangekeeper/duration/__init__.py)
+=========================== short test summary info ============================
+ERROR tests/test_modules.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.56s

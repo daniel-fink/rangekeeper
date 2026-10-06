@@ -1,0 +1,14 @@
+/Users/daniel/.matplotlib is not a writable directory
+Matplotlib created a temporary cache directory at /var/folders/sk/cjq5zjks7gx_3tf9m67y43xr0000gn/T/matplotlib-cit4ppjd because there was an issue with the default path (/Users/daniel/.matplotlib); it is highly recommended to set the MPLCONFIGDIR environment variable to a writable directory, in particular to speed up the import of Matplotlib and to better support multiprocessing.
+
+Fontconfig error: No writable cache directories
+	/opt/homebrew/var/cache/fontconfig
+	/Users/daniel/.cache/fontconfig
+	/Users/daniel/.fontconfig
+
+Fontconfig error: No writable cache directories
+	/opt/homebrew/var/cache/fontconfig
+	/Users/daniel/.cache/fontconfig
+	/Users/daniel/.fontconfig
+Matplotlib is building the font cache; this may take a moment.
+Captured 18 account paths and 3 cycle paths

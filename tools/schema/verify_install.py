@@ -141,6 +141,12 @@ assert 'site-packages' in rangekeeper.__file__
 assert validate(Model(metadata=Metadata(id=uuid4(), schema_version='0.5.0'))).valid
 assert files('rangekeeper').joinpath('py.typed').is_file()
 assert files('rangekeeper').joinpath('_currencies.json').is_file()
+for name in ('api', 'measure', 'flux', '_legacy_duration', 'distribution', 'extrapolation', 'projection',
+             'formula', 'dynamics', 'segmentation', 'policy', 'format', 'space'):
+    assert importlib.util.find_spec('rangekeeper.' + name) is None, name
+    assert not hasattr(rangekeeper, name), name
+assert not hasattr(rangekeeper, 'update_class')
+assert not hasattr(rangekeeper, 'rgba_from_cmap')
 for resource in ('workflow/workbench.py', 'workflow/layout_review.py', 'adapters/cytoscape/assets/viewer.js', 'adapters/cytoscape/layout/assembly.mzn', 'adapters/speckle/contract.json', 'migration/layout.py', 'migration/speckle.py'):
     assert files('rangekeeper').joinpath(resource).is_file(), resource
 from rangekeeper.adapters.speckle import decode_model, encode_model
@@ -206,7 +212,7 @@ from rangekeeper.graph import View, Hierarchy
 view = View(domain)
 assert view.entity(entity.id) is domain.entity(entity.id)
 assert Hierarchy.from_relationships(view).preorder() == (entity.id,)
-for prefix in ('pint', 'numpy', 'networkx', 'pandas', 'pyomo', 'highspy', 'rangekeeper.graph.legacy', 'rangekeeper.graph.graph'):
+for prefix in ('pint', 'numpy', 'networkx', 'pandas', 'pyomo', 'highspy', 'rangekeeper.legacy', 'rangekeeper.graph.graph'):
     assert not any(name == prefix or name.startswith(prefix + '.') for name in sys.modules), prefix
 from rangekeeper.graph.projection import to_table, to_tree_table
 from rangekeeper.table import Table
@@ -216,7 +222,7 @@ assert to_tree_table(Hierarchy.from_relationships(view)).column('parent_id') == 
 with TemporaryDirectory() as destination:
     exported = write_viewer([project(domain, 'Installed Model')], Path(destination) / 'viewer.html')
     assert exported.is_file() and 'cytoscape' in exported.read_text()
-for prefix in ('pint', 'numpy', 'networkx', 'pandas', 'pyomo', 'highspy', 'rangekeeper.graph.legacy', 'rangekeeper.graph.graph'):
+for prefix in ('pint', 'numpy', 'networkx', 'pandas', 'pyomo', 'highspy', 'rangekeeper.legacy', 'rangekeeper.graph.graph'):
     assert not any(name == prefix or name.startswith(prefix + '.') for name in sys.modules), prefix
 print('Installed wheel: Model graph, tables and offline viewer assets passed without legacy or numerical imports')
 """
@@ -286,7 +292,7 @@ result = Reduction(select=select_value('net'), reducer=sum_quantities, units='ce
 assert result.root_value.magnitude == 120000 and result.coverage(group.id).complete
 assert result.value_ids[entity.id] == value.id
 assert json.loads(json.dumps(model), kind=rk.Model).to_data() == model.to_data()
-for prefix in ('networkx', 'pandas', 'rangekeeper.graph.legacy', 'rangekeeper.graph.graph', 'pyomo', 'highspy'):
+for prefix in ('networkx', 'pandas', 'rangekeeper.legacy', 'rangekeeper.graph.graph', 'pyomo', 'highspy'):
     assert not any(name == prefix or name.startswith(prefix + '.') for name in sys.modules), prefix
 print('Installed wheel: canonical membership, explicit Value reduction, coverage and conversion passed')
 """
@@ -385,7 +391,7 @@ from pathlib import Path
 summary = runpy.run_path('source-example.py')['run_example'](Path('source-example'))
 assert summary['forward_gross']['magnitude'] == 20
 assert summary['inverse_net']['magnitude'] == 25
-for prefix in ('rangekeeper.graph.legacy', 'rangekeeper.graph.graph', 'rangekeeper.graph.entity', 'rangekeeper.measure', 'networkx', 'pandas', 'pyomo', 'highspy'):
+for prefix in ('rangekeeper.legacy', 'rangekeeper.graph.graph', 'rangekeeper.graph.entity', 'rangekeeper.measure', 'networkx', 'pandas', 'pyomo', 'highspy'):
     assert not any(name == prefix or name.startswith(prefix + '.') for name in sys.modules), prefix
 print('Installed wheel: XLSX workflow, Model provenance, YAML/JSON, stores and real forward/inverse execution passed')
 """

@@ -1,14 +1,19 @@
 # Model-backed graph operations
 
-**Turn 3 update, 2026-10-06:** [Remaining consumers and design integrations](FULL_MIGRATION_TURN3.md)
-implements the canonical workbench/layout port, all three Projects source builds,
-Speckle mapping, both design walkthroughs and generated C# Rhino 8 authoring.
-See [current acceptance](research/full-migration/turn3/BASELINE.md),
-[consumer register](research/full-migration/turn3/CONSUMERS.md), and
-[Turn 4 retirement gates](research/full-migration/turn3/RETIREMENT.md).
-The Windows official connector gate remains open. Hypar support is retired;
-the future Browser/outliner importer remains on hold. Dated checkpoints below
-remain historical evidence and do not override this current scope.
+**Legacy isolation, 2026-10-06:** held Python code is now in `rangekeeper.legacy`,
+predecessor tests in `src/tests/legacy`, and excluded C# code in `grasshopper/legacy`.
+Old public paths have no aliases. See [the boundary and current checks](LEGACY_ISOLATION.md).
+The Windows gate remains open; earlier Turn 4 results below describe the preceding wheel.
+
+**Turn 4 update, 2026-10-06:** [Permitted legacy retirement](FULL_MIGRATION_TURN4.md)
+removes the superseded numerical/presentation modules and narrows optional
+dependencies. The paired Turn 3 checkpoint is pushed: RK `305f3ff`, Projects
+`6146ad2`. Turn 4 is uncommitted. [Current acceptance](research/full-migration/turn4/BASELINE.md)
+records 1,058 passing local tests, seven walkthroughs and all three real source
+builds. The [remaining retirement register](research/full-migration/turn4/RETIREMENT.md)
+holds old graph/Measure/Speckle API and excluded C# code for the Windows connector
+gate. Full retirement is not complete. Hypar is retired; Browser/outliner is on hold.
+Dated checkpoints below remain historical and do not override this current state.
 
 
 **Flow semantics update, 2026-10-06:** Flows no longer carry semantic kinds or
@@ -191,8 +196,8 @@ scalar executor for mathematical investigation.
 Graph inputs. New records come from `rangekeeper.model`. Tables, presentation,
 and source workflows have moved to the [6C/6D packages](CONSUMER_MIGRATION.md).
 
-The old Graph domain, `Graph.view()`, `graph.table` projection methods, Graph JSON,
-and `graph.legacy` reductions remain for the external migration/retirement gates.
+The old Graph domain, its View, table projection and JSON codec are isolated in
+`rangekeeper.legacy.graph` for the Windows migration/retirement gate.
 They do not sit behind the new constructors. No implicit Graph-to-Model conversion
 exists. The new adapters and source workflows do not import the old domain.
 
@@ -213,8 +218,9 @@ below retains the graph migration milestones; it is not the whole refactor plan.
 
 Mandarin/East Whisman Feature-rich content remains gated on an explicit supported
 contract. No generic Feature is silently stringified, dropped or hidden in Claim
-content. Speckle/Grasshopper need service/host acceptance; Hypar needs maintained
-source discovery. These consumers were not executed in this slice. Numerical
+content. Speckle/Grasshopper need service/host acceptance. Hypar was later retired;
+its local residue is now [removed](research/full-migration/hypar-removal/README.md),
+with no source-discovery task. These consumers were not executed in this slice. Numerical
 modules, temporal Values and rich mathematical capabilities now have explicit
 work in the expanded full migration. Turn 1 has delivered content and numerical
 foundations; indexed mathematics and scenario/policy execution remain Turn 2.

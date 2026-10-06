@@ -1,26 +1,46 @@
 # Rangekeeper acausal modelling handoff
 
-## Current continuation — full migration Turn 3, 6 October 2026
+**Hypar cleanup, 2026-10-06:** the user requested removal of `hypar/`. Its 831
+ignored build/editor files are removed; no tracked source existed. Keep the
+[removal record and hashes](../research/full-migration/hypar-removal/README.md).
+No Hypar migration remains. The Windows-gated legacy trees remain held.
 
-RK remains on `acausal-modelling` at base `b9de7fc`; this turn is uncommitted.
-Projects base is `5725cc0`; reference layout worktree `4e5aec4` was read only.
-[Turn 3 contract](../FULL_MIGRATION_TURN3.md), [acceptance evidence](../research/full-migration/turn3/BASELINE.md),
-and [exact retirement list](../research/full-migration/turn3/RETIREMENT.md) supersede
-the older continuation instructions below. Preserve both `.gitignore` changes,
-the RK Syncthing conflict file, original workbooks and original Rhino/GHX files.
-Do not infer commit, push or publication authorization from implementation.
+**Latest follow-up — legacy isolation:** all Windows-gated Python implementation
+is under `src/rangekeeper/legacy`, its tests under `src/tests/legacy`, and excluded
+C# source/resources under `grasshopper/legacy`. Old module paths have no aliases.
+[Current boundary and verification](../LEGACY_ISOLATION.md): 1,063 local tests pass,
+24 optional skips; typing, generation, installed checks and C# build pass. Use
+`--ignore=tests/legacy/test_api.py` for the three unverified live predecessor tests.
+The Windows gate remains open. The relocation and preceding Turn 4 changes are
+uncommitted; the earlier paired Turn 3 checkpoint remains the last push.
+For later removal, use the [cleanup checklist](../research/full-migration/turn4/RETIREMENT.md#cleanup-checklist-after-the-windows-gate-closes).
+It covers the exact directories, exports, dependencies, test instructions and
+preserved files. Keep the relocation evidence unchanged; record final removal separately.
 
-Local acceptance is complete: 1,061 RK tests passed, seven installed walkthroughs,
-three project rebuilds/comparisons, 168 typed sources, C# and Mac Rhino checks.
-Full-size design checks passed on Python 3.10 and 3.13; the earlier profiled native
-crash is retained as an unresolved, non-reproduced diagnostic event. See the report
-for the 24 optional MiniZinc skips and final wheel fingerprint.
+## Current continuation — full migration Turn 4, 6 October 2026
 
-Remaining work is the named Windows connector gate and
-Turn 4 retirement. Do not remove its held predecessor dependency group before the
-gate passes. Hypar is retired; Browser/outliner remains on hold. The older domain
-"Turn 3" below refers to Run/storage implementation, not this full-migration turn.
+The accepted Turn 3 checkpoint is committed and pushed: RK `305f3ff` on
+`acausal-modelling`, Projects `6146ad2` on `feature/mandarin-assembly-layout`.
+The layout reference stays at `4e5aec4`, read only. The Turn 4 retirement slice
+is implemented and uncommitted. Start with [the current report](../FULL_MIGRATION_TURN4.md),
+[acceptance](../research/full-migration/turn4/BASELINE.md), and
+[remaining removal gate](../research/full-migration/turn4/RETIREMENT.md).
 
+Local acceptance: 1,058 passed, 24 optional MiniZinc skips, seven schema suites,
+typing/generation, all seven installed walkthroughs, all three source builds and
+strict comparisons, Projects checks and fresh Mandarin review. Clean core and
+Python 3.13 source installations pass with the reduced dependencies. The new wheel
+also passes cross-language checks and validates the captured Mac Rhino export.
+No new Mac UI recomputation or live service publication is claimed.
+
+The remaining Windows connector gate holds the old graph, Measure, Speckle API
+and excluded C# code as one group, now under the legacy paths above. Do not remove
+it before the gate passes.
+Full retirement is not complete. Preserve both unrelated `.gitignore` edits,
+the Syncthing conflict copy, original workbooks, archives and Rhino/GHX sources.
+Hypar is retired; Browser/outliner remains on hold. Commit/push of the new Turn 4
+changes and external publication are separate actions. The Turn 3 profiled native
+crash remains unexplained; passing unprofiled runs are retained, not treated as a diagnosis.
 
 **Naming follow-up, 2026-10-06:** [RK vocabulary alignment](../RK_NAMING.md) is implemented.
 The historical Turn 2 naming checkpoint recorded 971 passing local tests, seven
@@ -66,14 +86,10 @@ Prepared 2026-10-02 for continuation on Daniel's Mac Studio.
 
 ## Resume here
 
-Continue with **Turn 3: remaining consumers and integrations**. Turn 2 and the
-RK naming alignment are complete, with 971 passing local tests and the acceptance
-evidence linked above. Port the remaining service/design notebooks and available
-external consumers, then verify them in their required environments. Keep old
-implementations until those consumer gates pass; Turn 4 owns their removal.
-See [consumer migration](../CONSUMER_MIGRATION.md) and the
-[full migration review](../FULL_MIGRATION_REVIEW.md) for the remaining scope.
-
+Review the uncommitted Turn 4 changes and its report. The next implementation gate
+is the Windows connector procedure, followed by removal of the held predecessor
+group. No other repository consumer is known to require the removed numerical APIs.
+Do not rerun historical research as current acceptance or restart earlier migration.
 The dated entries below describe earlier checkpoints, not the current work queue.
 
 ## Earlier checkpoints

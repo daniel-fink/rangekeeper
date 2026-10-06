@@ -53,8 +53,9 @@ Python validation remains the full semantic acceptance boundary. C# authoring
 checks cover the shared structural contract and local identity/reference rules;
 they do not duplicate the complete Python units and mathematics validators.
 
-The old .NET Framework/Speckle-inherited source files are excluded from the active
-projects and retained as historical material pending the retirement gate. The
+The old .NET Framework/Speckle-inherited source and resources are isolated in
+[legacy/](legacy/README.md), outside the active compile/resource lists, pending
+the Windows retirement gate. The
 original `exampleDesignConfig.ghx` remains unchanged.
 
 The official current Speckle connector is a separate Windows gate. See

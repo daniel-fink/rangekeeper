@@ -1,0 +1,4 @@
+Initial focused run: 258 passed, 2 failed.
+Command: MPLBACKEND=Agg MPLCONFIGDIR=/private/tmp/rk-legacy-isolation-mpl PYTHONDONTWRITEBYTECODE=1 /private/tmp/rk-full-runtime/bin/python -m pytest -q tests/legacy tests/test_migration_foundations.py tests/test_ingestion_evidence.py tests/test_unresolved_measurements.py --ignore=tests/legacy/test_api.py
+Working directory: /Volumes/Data/Projects/Rangekeeper/src
+Failures: old namespace expected-export list still included canonical operations; one CLI test still called the removed fixture builder after conversion to a fixed wire fixture. Both test migrations were corrected before the final suite.

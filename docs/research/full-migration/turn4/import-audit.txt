@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/Volumes/Data/Projects/Rangekeeper/docs/research/full-migration/turn4/audit_retirement.py", line 89, in <module>
+    for line, ref, disposition in references(source, path):
+  File "/Volumes/Data/Projects/Rangekeeper/docs/research/full-migration/turn4/audit_retirement.py", line 44, in references
+    tree = ast.parse(source)
+  File "/Users/daniel/.local/share/uv/python/cpython-3.10.19-macos-aarch64-none/lib/python3.10/ast.py", line 50, in parse
+    return compile(source, filename, mode, flags,
+  File "<unknown>", line 1
+    %matplotlib inline
+    ^
+SyntaxError: invalid syntax

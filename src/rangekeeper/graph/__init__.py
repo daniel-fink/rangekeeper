@@ -1,8 +1,7 @@
-"""Model-backed graph operations with explicit remaining Graph retirement boundaries.
+"""Graph views, traversal and reductions over canonical immutable Models.
 
-Presentation lives at rangekeeper.adapters and source building at rangekeeper.workflow.
-Old domain classes, Graph JSON, Graph-only table projection and graph.legacy remain
-for external consumer migration. No new constructor accepts both domain models.
+Domain records belong to rangekeeper.model. The temporary Graph predecessor is
+available only through rangekeeper.legacy.graph and is never imported here.
 """
 
 from importlib import import_module
@@ -19,72 +18,8 @@ from .errors import (
     AggregationError as AggregationError,
 )
 
-_LEGACY_EXPORTS = {
-    "Assembly": "assembly",
-    "Characteristics": "characteristics",
-    "Feature": "characteristics",
-    "Label": "characteristics",
-    "Measurement": "characteristics",
-    "Classification": "classification",
-    "Definitions": "definitions",
-    "Entity": "entity",
-    "Graph": "graph",
-    "Relationship": "relationship",
-    "Taxonomy": "taxonomy",
-    **{
-        name: "errors"
-        for name in (
-            "AmbiguousLookupError",
-            "CatalogInstanceError",
-            "GraphDependencyError",
-            "GraphError",
-            "IdentityConflictError",
-            "InvalidAggregationError",
-            "InvalidAssemblyError",
-            "MissingEntityError",
-            "MissingFactError",
-            "MissingRelationshipError",
-            "UnknownDefinitionError",
-        )
-    },
-}
-_MODULES = {
-    "adapter",
-    "provenance",
-    "reduction",
-    "revision",
-    "table",
-    "update",
-    "projection",
-    "membership",
-    "selection",
-    "reducers",
-    "legacy",
-}
-
+_MODULES = {"reduction", "projection", "membership", "selection", "reducers"}
 __all__ = [
-    "Assembly",
-    "AmbiguousLookupError",
-    "CatalogInstanceError",
-    "Characteristics",
-    "Classification",
-    "Definitions",
-    "Entity",
-    "Feature",
-    "Graph",
-    "GraphDependencyError",
-    "GraphError",
-    "IdentityConflictError",
-    "InvalidAggregationError",
-    "InvalidAssemblyError",
-    "Label",
-    "Measurement",
-    "MissingEntityError",
-    "MissingFactError",
-    "MissingRelationshipError",
-    "Relationship",
-    "Taxonomy",
-    "UnknownDefinitionError",
     "View",
     "Hierarchy",
     "Reduction",
@@ -93,29 +28,20 @@ __all__ = [
     "SelectionError",
     "HierarchyError",
     "AggregationError",
+    "reduction",
     "projection",
     "membership",
     "selection",
     "reducers",
-    "legacy",
-    "adapter",
-    "provenance",
-    "reduction",
-    "revision",
-    "table",
-    "update",
 ]
 
 
 def __getattr__(name: str):
-    if name in _MODULES:
-        value = import_module(f"{__name__}.{name}")
-    elif name in _LEGACY_EXPORTS:
-        value = getattr(import_module(f"{__name__}.{_LEGACY_EXPORTS[name]}"), name)
-    else:
+    if name not in _MODULES:
         raise AttributeError(name)
-    globals()[name] = value
-    return value
+    module = import_module(f"{__name__}.{name}")
+    globals()[name] = module
+    return module
 
 
 def __dir__() -> list[str]:

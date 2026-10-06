@@ -1,0 +1,18 @@
+{
+  "head": "305f3ff6d460834ea803bae2fa6ad5c48a1627c9",
+  "index_empty": true,
+  "protected_files_unchanged": 91,
+  "moves": 51,
+  "predecessor_errors_preserved": 12,
+  "other_runtime_and_csharp_inputs_unchanged": 377,
+  "wheel_sha256": "3df68252e3ed4dc9c654091ec248fe0fe8de32ac00685aae50d4d99af468fcc8",
+  "wheel_files_equal_to_source": 262,
+  "suite": {
+    "tests": 1087,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 24
+  },
+  "remaining_gate": "Official Windows connector acceptance",
+  "commit_push_or_publication": false
+}

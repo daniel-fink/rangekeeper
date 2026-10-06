@@ -1,0 +1,24 @@
+{
+  "predecessor_python_bodies_unchanged_except_imports": [
+    "src/rangekeeper/legacy/graph/_catalog.py",
+    "src/rangekeeper/legacy/graph/graph.py",
+    "src/rangekeeper/legacy/graph/entity.py",
+    "src/rangekeeper/legacy/graph/assembly.py",
+    "src/rangekeeper/legacy/graph/relationship.py",
+    "src/rangekeeper/legacy/graph/characteristics.py",
+    "src/rangekeeper/legacy/graph/classification.py",
+    "src/rangekeeper/legacy/graph/taxonomy.py",
+    "src/rangekeeper/legacy/graph/definitions.py",
+    "src/rangekeeper/legacy/graph/provenance.py",
+    "src/rangekeeper/legacy/graph/revision.py",
+    "src/rangekeeper/legacy/graph/update.py",
+    "src/rangekeeper/legacy/graph/table.py",
+    "src/rangekeeper/legacy/api.py",
+    "src/rangekeeper/legacy/measure.py",
+    "src/rangekeeper/legacy/graph/adapter/__init__.py",
+    "src/rangekeeper/legacy/graph/adapter/json.py",
+    "src/rangekeeper/legacy/graph/view.py",
+    "src/rangekeeper/legacy/graph/reduction.py"
+  ],
+  "csharp_and_resources_byte_identical": 25
+}

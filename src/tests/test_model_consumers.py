@@ -219,7 +219,7 @@ import sys
 from rangekeeper import workflow, adapters, table, evidence, operation
 from rangekeeper.workflow import run
 from rangekeeper.adapters import document, excel, cytoscape
-assert not any(n.startswith(('rangekeeper.graph.legacy', 'rangekeeper.graph.graph', 'rangekeeper.graph.entity', 'rangekeeper.measure', 'pyomo', 'highspy', 'networkx', 'pandas')) for n in sys.modules)
+assert not any(n.startswith(('rangekeeper.legacy', 'rangekeeper.graph.graph', 'rangekeeper.graph.entity', 'rangekeeper.measure', 'pyomo', 'highspy', 'networkx', 'pandas')) for n in sys.modules)
 """
     subprocess.run([sys.executable, "-c", code], check=True)
 

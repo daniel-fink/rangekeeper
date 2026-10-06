@@ -1,0 +1,153 @@
+FF.........F..................................                           [100%]
+=================================== FAILURES ===================================
+________________________ test_distribution_mass[spec0] _________________________
+
+spec = Distribution.from_data({'kind': 'uniform', 'lower': 0, 'upper': 1, 'units': 'dimensionless'})
+
+    @pytest.mark.parametrize("spec", [make_uniform(), make_pert(mode=0.75)])
+    def test_distribution_mass(spec):
+>       masses = distribution.calculate_interval_mass(spec, np.linspace(0, 1, 100))
+
+tests/test_modules.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+rangekeeper/calculations/distribution.py:82: in calculate_interval_mass
+    cumulative = calculate_cumulative_density(distribution, boundaries)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+distribution = Distribution.from_data({'kind': 'uniform', 'lower': 0, 'upper': 1, 'units': 'dimensionless'})
+values = array([0.        , 0.01010101, 0.02020202, 0.03030303, 0.04040404,
+       0.05050505, 0.06060606, 0.07070707, 0.080808...91, 0.91919192, 0.92929293, 0.93939394, 0.94949495,
+       0.95959596, 0.96969697, 0.97979798, 0.98989899, 1.        ])
+
+    def calculate_cumulative_density(
+        distribution: Distribution, values: Sequence[float]
+    ) -> tuple[float, ...]:
+        """Evaluate the CDF at finite coordinates in the distribution's declared units."""
+        if any(type(x) not in (float, int) or not math.isfinite(x) for x in values):
+>           raise ValueError("CDF coordinates must be finite")
+E           ValueError: CDF coordinates must be finite
+
+rangekeeper/calculations/distribution.py:63: ValueError
+________________________ test_distribution_mass[spec1] _________________________
+
+spec = Distribution.from_data({'kind': 'pert', 'lower': 0, 'upper': 1, 'mode': 0.75, 'weighting': 4, 'units': 'dimensionless'})
+
+    @pytest.mark.parametrize("spec", [make_uniform(), make_pert(mode=0.75)])
+    def test_distribution_mass(spec):
+>       masses = distribution.calculate_interval_mass(spec, np.linspace(0, 1, 100))
+
+tests/test_modules.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+rangekeeper/calculations/distribution.py:82: in calculate_interval_mass
+    cumulative = calculate_cumulative_density(distribution, boundaries)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+distribution = Distribution.from_data({'kind': 'pert', 'lower': 0, 'upper': 1, 'mode': 0.75, 'weighting': 4, 'units': 'dimensionless'})
+values = array([0.        , 0.01010101, 0.02020202, 0.03030303, 0.04040404,
+       0.05050505, 0.06060606, 0.07070707, 0.080808...91, 0.91919192, 0.92929293, 0.93939394, 0.94949495,
+       0.95959596, 0.96969697, 0.97979798, 0.98989899, 1.        ])
+
+    def calculate_cumulative_density(
+        distribution: Distribution, values: Sequence[float]
+    ) -> tuple[float, ...]:
+        """Evaluate the CDF at finite coordinates in the distribution's declared units."""
+        if any(type(x) not in (float, int) or not math.isfinite(x) for x in values):
+>           raise ValueError("CDF coordinates must be finite")
+E           ValueError: CDF coordinates must be finite
+
+rangekeeper/calculations/distribution.py:63: ValueError
+_______________ test_stream_selection_and_mixed_frequency_totals _______________
+
+    def test_stream_selection_and_mixed_frequency_totals():
+        measure = Measure(id=uuid4(), code="cash", name="Cash", units="AUD")
+        flows = [
+            projection.allocate(Quantity(magnitude=total, units="AUD"), periods=make_periods(
+                date(2020, 1, 1), frequency=freq, count=count,
+            ))
+            for total, freq, count in ((100, "year", 3), (-50, "week", 53), (-50, "biweek", 53))
+        ]
+        values = tuple(Value(id=uuid4(), key=f"flow-{i}", kind="flow", measure=measure.id, flow=flow) for i, flow in enumerate(flows))
+        owner = Entity(id=uuid4(), characteristics=Characteristics(values=values))
+        model = Model.create(metadata=Metadata(id=uuid4(), schema_version="0.5.0"), definitions=Definitions(measures=(measure,)), system=System(entities=(owner,)))
+        stream = Stream.from_values(model, tuple(v.id for v in values))
+        assert stream.merge(stream).values == stream.values
+        assert stream.select(value_ids=(values[1].id,)).values == (values[1],)
+        years = make_periods(date(2020, 1, 1), frequency="year", count=3)
+>       annual = tuple(series.resample(v.flow, periods=years, reduction="sum", missing="zero").flow for v in stream.values)
+
+tests/test_modules.py:115: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_modules.py:115: in <genexpr>
+    annual = tuple(series.resample(v.flow, periods=years, reduction="sum", missing="zero").flow for v in stream.values)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+flow = Flow.from_data({'units': 'AUD', 'movements': [{'key': '2020-01-01/2020-01-08', 'period': {'start': '2020-01-01', 'end'...: '2020-12-30/2021-01-06', 'period': {'start': '2020-12-30', 'end': '2021-01-06'}, 'magnitude': -0.9433962264150941}]})
+
+    def resample(
+        flow: Flow,
+        *,
+        periods: Sequence[Period],
+        reduction: str,
+        missing: Missing = "error",
+        weighting: Literal["observations", "elapsed"] | None = None,
+    ) -> AggregateResult:
+        """Reduce observations into a complete period grid with explicit missing rules.
+    
+        The caller selects sum, first, last, min, max or mean. Means require an explicit
+        observations/elapsed weighting choice; elapsed weighting requires bounded
+        movements. No reduction is inferred from the meaning of the data. Coverage is
+        the fraction of known movements, not continuous time coverage. Bounded movements
+        cannot cross target periods; allocate them explicitly first. missing="zero"
+        fills empty target groups only, never unresolved entries in a populated group.
+        """
+        from ..model.flow import from_periods
+    
+        validate_flow(flow)
+        if missing not in ("error", "propagate", "skip", "zero"):
+            raise ValueError("invalid missing policy")
+        if reduction not in {"sum", "first", "last", "mean", "min", "max"}:
+            raise ValueError("unsupported resampling reduction")
+        if (
+            weighting not in (None, "observations", "elapsed")
+            or weighting is not None
+            and reduction != "mean"
+        ):
+            raise ValueError("weighting applies only to means")
+        if reduction == "mean" and weighting is None:
+            raise ValueError("means require explicit weighting")
+        if weighting == "elapsed" and any(s.period is None for s in flow.movements):
+            raise ValueError("elapsed weighting requires bounded movements")
+        periods = tuple(periods)
+        for i, period in enumerate(periods):
+            validate_period(period)
+            if i and elapsed_days(periods[i - 1].end, period.start) < 0:
+                raise ValueError("resampling periods overlap or are unordered")
+        groups: list[list[Movement]] = [[] for _ in periods]
+        for movement in flow.movements:
+            if movement.period is not None:
+                # Resampling period content groups by coverage, not payment date.
+                matches = [
+                    i
+                    for i, period in enumerate(periods)
+                    if period.start <= movement.period.start
+                    and movement.period.end <= period.end
+                ]
+            else:
+                point = resolve_date(movement)
+                matches = [
+                    i
+                    for i, period in enumerate(periods)
+                    if period.start <= point < period.end
+                ]
+            if not matches:
+>               raise ValueError(
+                    f"movement is outside or crosses target periods: {movement.key}"
+                )
+E               ValueError: movement is outside or crosses target periods: 2020-12-30/2021-01-06
+
+rangekeeper/calculations/series.py:368: ValueError
+=========================== short test summary info ============================
+FAILED tests/test_modules.py::test_distribution_mass[spec0] - ValueError: CDF...
+FAILED tests/test_modules.py::test_distribution_mass[spec1] - ValueError: CDF...
+FAILED tests/test_modules.py::test_stream_selection_and_mixed_frequency_totals
+3 failed, 43 passed in 1.80s

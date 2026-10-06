@@ -1,0 +1,12 @@
+Executed 6 October 2026, cwd /Volumes/Data/Projects/Rangekeeper.
+UV_CACHE_DIR=/private/tmp/rk-turn4-uv-cache /Users/daniel/.local/bin/uv pip check --python /private/tmp/rk-turn4-core-venv/bin/python
+Using Python 3.10.19 environment at: /private/tmp/rk-turn4-core-venv
+Checked 13 packages in 3ms
+All installed packages are compatible
+Exit code: 0
+
+UV_CACHE_DIR=/private/tmp/rk-turn4-uv-cache /Users/daniel/.local/bin/uv pip check --python /private/tmp/rk-turn4-project-venv/bin/python
+Using Python 3.13.11 environment at: /private/tmp/rk-turn4-project-venv
+Checked 63 packages in 2ms
+All installed packages are compatible
+Exit code: 0

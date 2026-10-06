@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/Volumes/Data/Projects/Rangekeeper/docs/research/full-migration/turn4/verify_core.py", line 13, in <module>
+    from rangekeeper.graph.projection import QuantityColumn, to_table
+ImportError: cannot import name 'QuantityColumn' from 'rangekeeper.graph.projection' (/private/tmp/rk-turn4-core-venv/lib/python3.10/site-packages/rangekeeper/graph/projection.py)

@@ -1,14 +1,25 @@
 # Rangekeeper documentation and current work plan
 
-**Turn 3 update, 2026-10-06:** [Remaining consumers and design integrations](FULL_MIGRATION_TURN3.md)
-implements the canonical workbench/layout port, all three Projects source builds,
-Speckle mapping, both design walkthroughs and generated C# Rhino 8 authoring.
-See [current acceptance](research/full-migration/turn3/BASELINE.md),
-[consumer register](research/full-migration/turn3/CONSUMERS.md), and
-[Turn 4 retirement gates](research/full-migration/turn3/RETIREMENT.md).
-The Windows official connector gate remains open. Hypar support is retired;
-the future Browser/outliner importer remains on hold. Dated checkpoints below
-remain historical evidence and do not override this current scope.
+**Hypar cleanup, 2026-10-06:** the retired `hypar/` directory is removed. It held
+only ignored build/editor residue. See the [removal record and file hashes](research/full-migration/hypar-removal/README.md).
+The Windows-gated predecessor directories remain held.
+
+**Legacy isolation, 2026-10-06:** held Python code is now in `rangekeeper.legacy`,
+predecessor tests in `src/tests/legacy`, and excluded C# code in `grasshopper/legacy`.
+Old public paths have no aliases. See [the boundary and current checks](LEGACY_ISOLATION.md).
+The Windows gate remains open; earlier Turn 4 results below describe the preceding wheel.
+Use the [future cleanup checklist](research/full-migration/turn4/RETIREMENT.md#cleanup-checklist-after-the-windows-gate-closes)
+for exact removal steps, retained files and required acceptance evidence.
+
+**Turn 4 update, 2026-10-06:** [Permitted legacy retirement](FULL_MIGRATION_TURN4.md)
+removes the superseded numerical/presentation modules and narrows optional
+dependencies. The paired Turn 3 checkpoint is pushed: RK `305f3ff`, Projects
+`6146ad2`. Turn 4 is uncommitted. [Current acceptance](research/full-migration/turn4/BASELINE.md)
+records 1,058 passing local tests, seven walkthroughs and all three real source
+builds. The [remaining retirement register](research/full-migration/turn4/RETIREMENT.md)
+holds old graph/Measure/Speckle API and excluded C# code for the Windows connector
+gate. Full retirement is not complete. Hypar is retired; Browser/outliner is on hold.
+Dated checkpoints below remain historical and do not override this current state.
 
 
 **Turn 2 update, 2026-10-06:** [Temporal equations, scenarios and policies](FULL_MIGRATION_TURN2.md)
@@ -51,14 +62,10 @@ Updated 2026-10-06. This index distinguishes the active acausal-modelling plan,
 existing graph APIs, and historical research. A planned API is not evidence of
 an implemented runtime.
 
-Current consumer checkpoint: [Model tables, adapters, and source workflows](CONSUMER_MIGRATION.md)
-(6C/6D), with [verification](research/consumer-migration/README.md), committed at
-`90c2e00`. The expanded [full migration scope](FULL_MIGRATION_REVIEW.md) now has
-a four-turn implementation sequence with Turns 1 and 2 implemented.
-It covers all remaining older behavior, numerical/temporal redesign, parallel
-workbench/layout features, consumer proof, retirement and future upgrade guidance.
-6E/6F remain open. Turn 1 schema/API implementations and remaining proposals
-are distinguished in [the current contract](FULL_MIGRATION_TURN1.md).
+The current checkpoint and remaining gate are in [Turn 4](FULL_MIGRATION_TURN4.md).
+The [full migration review](FULL_MIGRATION_REVIEW.md) retains the approved four-turn
+scope. Local consumer migration and permitted numerical retirement are accepted;
+the Windows connector gate and its dependent old-domain removal remain open.
 
 ## Overall goal
 
@@ -74,7 +81,7 @@ requirements. The same equations serve different investigations; recorded result
 do not become permanent constraints. The eventual destination is evaluation of
 development choices and adaptive policies across market scenarios.
 
-## Current decisions and state
+## Decisions and earlier checkpoint evidence
 
 - **Retain LinkML.** Daniel closed the CUE comparison for this stage after reviewing
   the evidence and integration trade-offs. Native CUE suitability was not fully
@@ -137,16 +144,16 @@ development choices and adaptive policies across market scenarios.
    **Completed:** work unit 4; external consumer acceptance remains later.
 5. **Implement and verify scalar execution — completed.** Probe/pin Pyomo/HiGHS, execute the
    declared mathematics, independently check candidates, and publish authentic Runs.
-6. **Consumer migration is underway.** [Step 6A/6B](GRAPH_MODEL.md) implements
-   Model-backed selections, hierarchy and reductions. [6C/6D](CONSUMER_MIGRATION.md)
-   adds tables, presentation adapters, and source workflows. Before 6E, review
-   the expanded numerical/temporal and consumer plan linked above.
+6. **Local consumers and permitted retirement are accepted.** Model-backed graph
+   operations, tables, adapters, workflows, finite temporal execution, scenarios,
+   policies and the named consumers are implemented. The Windows connector and
+   held old-domain removal remain open; see [the exact gate](research/full-migration/turn4/RETIREMENT.md).
 
 The [domain migration plan](DOMAIN_MIGRATION_PLAN.md) records these six checkpoints
 and the detailed Step 1 work plan. Steps 1–4 form the first implementation slice.
-Richer numerical/temporal Values, scenario evaluation, and adaptive policies follow
-the scalar checkpoint and are now within the requested full-refactor scope.
-Their exact contracts need the linked engineering design work. The R1–R6 checklist
+Finite temporal Values, scenario evaluation and exogenous declarative policies
+followed the scalar checkpoint in Turns 1–2. Their implemented contracts and
+limits are recorded in those reports. The R1–R6 checklist
 is not a mandatory user-approval queue; ask only about concrete unresolved meaning
 or material scope tradeoffs after investigating the evidence.
 
@@ -166,6 +173,7 @@ contains the full acceptance boundary.
 
 | Document | Role |
 | --- | --- |
+| [Turn 4 retirement](FULL_MIGRATION_TURN4.md), [acceptance](research/full-migration/turn4/BASELINE.md) | Current removal state, verified consumers, reduced dependencies and held Windows group. |
 | [Full migration review](FULL_MIGRATION_REVIEW.md), [static inventory](research/full-migration/README.md) | Proposed full-refactor scope, decisions to review, detailed legacy dispositions, temporal/numerical boundaries, consumer proof and retirement gates. |
 | [Library architecture](LIBRARY_ARCHITECTURE.md) | Current package responsibilities, replacement map, implementation sequence, and acceptance criteria. |
 | [Run and storage](RUN_AND_STORAGE.md) | Implemented Turn 3 public roots, finalized Runs, strict codecs, immutable stores and execution boundary. |
@@ -180,7 +188,7 @@ contains the full acceptance boundary.
 | [Schema decision](research/current-schema-comparison/DECISION.md) | Accepted LinkML choice, trade-offs, and implementation consequences. |
 | [Current-schema research](research/current-schema-comparison/README.md), [audit](research/current-schema-comparison/audit-2026-10-02/README.md) | Reproducible observations and their limits; original evidence is preserved. |
 | [Policy example](PROJECT_DEFINITION_AND_POLICY_EXAMPLE.md) | Longer-term design test and illustrative assumptions; not implemented or numerically validated. |
-| [Adapter guide](GRAPH_ADAPTER_GUIDE.md), [YAML workflow guide](GRAPH_YAML_WORKFLOW.md), [format-independent workflow](GRAPH_WORKFLOW_FORMATS.md) | Existing source-to-Graph implementation, to be migrated. Workflow execution is distinct from mathematical execution. |
+| [Adapter guide](GRAPH_ADAPTER_GUIDE.md), [YAML workflow guide](GRAPH_YAML_WORKFLOW.md), [format-independent workflow](GRAPH_WORKFLOW_FORMATS.md) | Source workflow guides; canonical API notes supersede retained old Graph examples. Workflow execution is distinct from mathematical execution. |
 | [Adapter review](GRAPH_ADAPTER_REVIEW.md), [graph refactor plan](GRAPH_REFACTOR_IMPLEMENTATION_PLAN.md) | Historical implementation/review evidence; their old work queues do not override the current architecture. |
 | [Earlier tooling evaluation](SCHEMA_TOOLING_EVALUATION.md), [small-schema probes](research/schema-tooling/README.md) | Historical research; recommendations are superseded by the accepted decision. |
 

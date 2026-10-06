@@ -1,0 +1,257 @@
+[
+  {
+    "old": "src/rangekeeper/graph/_catalog.py",
+    "new": "src/rangekeeper/legacy/graph/_catalog.py",
+    "before_sha256": "39ef602fa1a08a21647b5a40520f552a1ea9383be491a2a367a528514f4e32b8"
+  },
+  {
+    "old": "src/rangekeeper/graph/graph.py",
+    "new": "src/rangekeeper/legacy/graph/graph.py",
+    "before_sha256": "e5cbde7cc7699ab3a86b1675787e34cc73f30e321fd335298a4aab917069b605"
+  },
+  {
+    "old": "src/rangekeeper/graph/entity.py",
+    "new": "src/rangekeeper/legacy/graph/entity.py",
+    "before_sha256": "c53e460ce321c9a82258ea1926b949c4f4f7a593de79f2f2a4dae20047a51fb2"
+  },
+  {
+    "old": "src/rangekeeper/graph/assembly.py",
+    "new": "src/rangekeeper/legacy/graph/assembly.py",
+    "before_sha256": "68ba95f2ad77321be1a1a9ae9932ef02b5d89b43eef0ef2d2595de5c22799da4"
+  },
+  {
+    "old": "src/rangekeeper/graph/relationship.py",
+    "new": "src/rangekeeper/legacy/graph/relationship.py",
+    "before_sha256": "6e17b57526d7e64f51cee1256d16e7a1aabbb9c4a7c382d89e0669f8b29c2042"
+  },
+  {
+    "old": "src/rangekeeper/graph/characteristics.py",
+    "new": "src/rangekeeper/legacy/graph/characteristics.py",
+    "before_sha256": "9485bbba77163a2186194f640de6e91eeac5a5d5484f04eb2004a4f53d4e1015"
+  },
+  {
+    "old": "src/rangekeeper/graph/classification.py",
+    "new": "src/rangekeeper/legacy/graph/classification.py",
+    "before_sha256": "2b6b6c997b8399823274bbed98e5cf378dce4cc268a80a863751a13984a47571"
+  },
+  {
+    "old": "src/rangekeeper/graph/taxonomy.py",
+    "new": "src/rangekeeper/legacy/graph/taxonomy.py",
+    "before_sha256": "bc4d2c647ba6cb6ffd3cf896934c1fb1656533a3dde0329e650e7c5cbd230d32"
+  },
+  {
+    "old": "src/rangekeeper/graph/definitions.py",
+    "new": "src/rangekeeper/legacy/graph/definitions.py",
+    "before_sha256": "d2aeb2931ee67d6bdfef7daf78f0a255e37dbb6d8276271b6de09212ec715dd4"
+  },
+  {
+    "old": "src/rangekeeper/graph/provenance.py",
+    "new": "src/rangekeeper/legacy/graph/provenance.py",
+    "before_sha256": "d5b510183da0bf0316c94b66369e0d76427d769060e7eca39501c264691adeeb"
+  },
+  {
+    "old": "src/rangekeeper/graph/revision.py",
+    "new": "src/rangekeeper/legacy/graph/revision.py",
+    "before_sha256": "cd7ed307a219ad7f9dc7747ede7903f639d093c795842f6f341db3020d1ee3d8"
+  },
+  {
+    "old": "src/rangekeeper/graph/update.py",
+    "new": "src/rangekeeper/legacy/graph/update.py",
+    "before_sha256": "90eb14f894ef7a284cd7f11c02f32b45880318274d27d8a743d572ea2c58d461"
+  },
+  {
+    "old": "src/rangekeeper/graph/table.py",
+    "new": "src/rangekeeper/legacy/graph/table.py",
+    "before_sha256": "9ec1616d4848777e419daaee3e1626c0399d9941f93bffa8b1c35ac554edeb37"
+  },
+  {
+    "old": "src/rangekeeper/api.py",
+    "new": "src/rangekeeper/legacy/api.py",
+    "before_sha256": "03fc7bb21864bdf89844ad6c578f05ff2919c4bb397452753d5c668635268c20"
+  },
+  {
+    "old": "src/rangekeeper/measure.py",
+    "new": "src/rangekeeper/legacy/measure.py",
+    "before_sha256": "882595350f13a2e977ef677c0bfff38cb7db4bc907db4f73addd9970ae77cc66"
+  },
+  {
+    "old": "src/rangekeeper/graph/adapter/__init__.py",
+    "new": "src/rangekeeper/legacy/graph/adapter/__init__.py",
+    "before_sha256": "2bbdff8aa8a39434c70854649421a0104b2551c1634696cc88c96e41dbd0a220"
+  },
+  {
+    "old": "src/rangekeeper/graph/adapter/json.py",
+    "new": "src/rangekeeper/legacy/graph/adapter/json.py",
+    "before_sha256": "8812751a14286ed882084c69dfed891136bcf598a67be0dcea42df3864e02695"
+  },
+  {
+    "old": "src/rangekeeper/graph/legacy/view.py",
+    "new": "src/rangekeeper/legacy/graph/view.py",
+    "before_sha256": "aa5dfd5de880fd295723019ea65d2604ea55b0837db9a3bf72a4c7b21df17cf9"
+  },
+  {
+    "old": "src/rangekeeper/graph/legacy/reduction.py",
+    "new": "src/rangekeeper/legacy/graph/reduction.py",
+    "before_sha256": "608fb355afc4db4e3e63856279cfeabc481688d682a2243eb90c901683d20b83"
+  },
+  {
+    "old": "grasshopper/Model/Assembly.cs",
+    "new": "grasshopper/legacy/Model/Assembly.cs",
+    "before_sha256": "beaf52db3619a8cfc770c4a33c948d94d380969b3216bfdb440a17472f9837f1"
+  },
+  {
+    "old": "grasshopper/Model/Entity.cs",
+    "new": "grasshopper/legacy/Model/Entity.cs",
+    "before_sha256": "6ac3a10245197f174eef717a4e944d6b2cd8948cead0ee567948dabdfe379a5b"
+  },
+  {
+    "old": "grasshopper/Model/Extensions.cs",
+    "new": "grasshopper/legacy/Model/Extensions.cs",
+    "before_sha256": "00b9f0136fe3152f5c79e79b0f5bb277be29bab3c9e454ce5bc96588ce8ca662"
+  },
+  {
+    "old": "grasshopper/Model/IEntity.cs",
+    "new": "grasshopper/legacy/Model/IEntity.cs",
+    "before_sha256": "6c4064d9cd5e82e70a245652ce1d3827327fcd6aa00589c331df4cc575d2a4ca"
+  },
+  {
+    "old": "grasshopper/Model/Relationship.cs",
+    "new": "grasshopper/legacy/Model/Relationship.cs",
+    "before_sha256": "34d1ef6c18faef376acb415497a4b11f84a4e556aaad6fef2d812a9ad34ca23b"
+  },
+  {
+    "old": "grasshopper/Components/AddRelationships.cs",
+    "new": "grasshopper/legacy/Components/AddRelationships.cs",
+    "before_sha256": "6ef1b41fd946c37745c6a265f4cd8e44c2be80e600c71f03a1076b4b58f25979"
+  },
+  {
+    "old": "grasshopper/Components/AssemblyParam.cs",
+    "new": "grasshopper/legacy/Components/AssemblyParam.cs",
+    "before_sha256": "f7463387efa1081dd7b0c1d0098f503c0c9d450eb4016c22517ae5ea80172704"
+  },
+  {
+    "old": "grasshopper/Components/CreateEntity.cs",
+    "new": "grasshopper/legacy/Components/CreateEntity.cs",
+    "before_sha256": "e5021bc12c7038fe0c50ffb6153977c48b5748b3180b0112be2b2b53f1ec3f7d"
+  },
+  {
+    "old": "grasshopper/Components/EntityParam.cs",
+    "new": "grasshopper/legacy/Components/EntityParam.cs",
+    "before_sha256": "2a5ac5fa686b00464257c2e337901252e3d7b5fc014f59940e7d4be39a285130"
+  },
+  {
+    "old": "grasshopper/Components/Extensions.cs",
+    "new": "grasshopper/legacy/Components/Extensions.cs",
+    "before_sha256": "f41bb94252a231ab8366b8ed7d38d42a1012f31bd58eb610dc21caeb69f785e5"
+  },
+  {
+    "old": "grasshopper/Components/GH_Assembly.cs",
+    "new": "grasshopper/legacy/Components/GH_Assembly.cs",
+    "before_sha256": "9c28cacd446a4f094c88241fcd78801dbb18d1a0b9221fcd52e91386d0ab8af5"
+  },
+  {
+    "old": "grasshopper/Components/GH_Entity.cs",
+    "new": "grasshopper/legacy/Components/GH_Entity.cs",
+    "before_sha256": "40b9c3b9bfb51b8d24dd921d8c0820b5986851f91bf50e6bd62577a27741c450"
+  },
+  {
+    "old": "grasshopper/Components/Resources.Designer.cs",
+    "new": "grasshopper/legacy/Components/Resources.Designer.cs",
+    "before_sha256": "a2172fff7fe789a8673e38ec83a2eca002acc872e7281b0e6c99bbc7d2e59a42"
+  },
+  {
+    "old": "grasshopper/Components/Resources.resx",
+    "new": "grasshopper/legacy/Components/Resources.resx",
+    "before_sha256": "0c1d5672a75b5def5ce5774ad30a56cfe807e4666f34a5494972e4e0b2efc24d"
+  },
+  {
+    "old": "grasshopper/Components/icons.ai",
+    "new": "grasshopper/legacy/Components/icons.ai",
+    "before_sha256": "c2055ad47893fadb32c77345d58dcfd2026727715919847903ba10ac03dea3a5"
+  },
+  {
+    "old": "grasshopper/Components/Resources/AddRelationships.png",
+    "new": "grasshopper/legacy/Components/Resources/AddRelationships.png",
+    "before_sha256": "d81b6f28895ab395bf6a01062422026f24d75b29102ec36aa8efaaef698998bc"
+  },
+  {
+    "old": "grasshopper/Components/Resources/AssemblyParamIcon.png",
+    "new": "grasshopper/legacy/Components/Resources/AssemblyParamIcon.png",
+    "before_sha256": "d140c4dd8ffb09622123650371d48f0ec86f8455aa21e40d19d349ae9addbeea"
+  },
+  {
+    "old": "grasshopper/Components/Resources/CreateEntity.png",
+    "new": "grasshopper/legacy/Components/Resources/CreateEntity.png",
+    "before_sha256": "097c432db93f7cdd60eb80a96e8470a1f2831b70567dfc2c46ec0be29d31c9f1"
+  },
+  {
+    "old": "grasshopper/Components/Resources/EntityParamIcon.png",
+    "new": "grasshopper/legacy/Components/Resources/EntityParamIcon.png",
+    "before_sha256": "eca421b32db7a4914167abd9983a45dd5ceb354e67f742e4137e36e585341254"
+  },
+  {
+    "old": "grasshopper/Components/Resources/icons.ai",
+    "new": "grasshopper/legacy/Components/Resources/icons.ai",
+    "before_sha256": "9f8b0be10edb23e7bd16660e0d01125975ff193fd7d03a3423139f5701600203"
+  },
+  {
+    "old": "grasshopper/Tests/TestEntities.cs",
+    "new": "grasshopper/legacy/Tests/TestEntities.cs",
+    "before_sha256": "beeea1228bf007db652a002b7eaa93629ac155da59c855540b1c10dc5418b52b"
+  },
+  {
+    "old": "grasshopper/Tests/Usings.cs",
+    "new": "grasshopper/legacy/Tests/Usings.cs",
+    "before_sha256": "e8de9b91579ba661cbfebd3912328c2dc917d2a519cc565b717446c7f39e6d33"
+  },
+  {
+    "old": "grasshopper/ARkR.jpg",
+    "new": "grasshopper/legacy/ARkR.jpg",
+    "before_sha256": "221ec689bfb7e9bf13c4758a8763fe9858703f97388b94a6fe29f292feeb3a66"
+  },
+  {
+    "old": "grasshopper/CRkE.jpg",
+    "new": "grasshopper/legacy/CRkE.jpg",
+    "before_sha256": "eadb90a60fd190e16bff8d97a356598a3ae2c4c9feb1aecf123b8edc389db45f"
+  },
+  {
+    "old": "src/tests/test_api.py",
+    "new": "src/tests/legacy/test_api.py",
+    "before_sha256": "404ec5f0513d943131c1449fdac82cd736e42350492bda605ee86b4cc5cea651"
+  },
+  {
+    "old": "src/tests/test_graph_json.py",
+    "new": "src/tests/legacy/test_graph_json.py",
+    "before_sha256": "c76bb0d55bd34c4b529016cf86fcf8f7fa4ee57d41fbe655fe136201939997da"
+  },
+  {
+    "old": "src/tests/test_immutable_graph.py",
+    "new": "src/tests/legacy/test_immutable_graph.py",
+    "before_sha256": "cb24849cacad3eda1d4233c7a85c4b990da71ed85e5f7e15933dfb5f34bf8b37"
+  },
+  {
+    "old": "src/tests/test_legacy_table.py",
+    "new": "src/tests/legacy/test_legacy_table.py",
+    "before_sha256": "05065a67ab21d2cd1d857157690697c8f34d63e3fbbc1714cb076c73f35436f7"
+  },
+  {
+    "old": "src/tests/test_measures.py",
+    "new": "src/tests/legacy/test_measures.py",
+    "before_sha256": "2aaa3ab4a745eaa1ea7e90619ceaf4be8d00cd99985a152ad1454dd3baf2cf59"
+  },
+  {
+    "old": "src/tests/test_schema_graph_contract.py",
+    "new": "src/tests/legacy/test_schema_graph_contract.py",
+    "before_sha256": "a203d3223f0c700e2c004adbb0ee0a89f21f2473321c0f7b2be62868f6348160"
+  },
+  {
+    "old": "src/tests/test_scoped_codes.py",
+    "new": "src/tests/legacy/test_scoped_codes.py",
+    "before_sha256": "a47cc82b47fe866334c4c252cedbb279557278f1f784ff571485a7369563ed8d"
+  },
+  {
+    "old": "grasshopper/Tests/unnamed.gh",
+    "new": "grasshopper/legacy/Tests/unnamed.gh",
+    "before_sha256": "429e9ab789287749061970626af0ff60b82b12f2800b3a7ef4d87b434c6a16c0"
+  }
+]

@@ -2,7 +2,14 @@
 
 The seven notebook sources use the canonical Model architecture. Run them with
 an installed RK wheel and the optional execution, calculation, dataframe, plotting
-and notebook dependencies used in the recorded acceptance environment.
+and notebook dependencies used in the recorded acceptance environment. For example:
+
+```sh
+python -m pip install "./src[calculations,pandas,workflow,execution,plotting,visualization]" nbclient nbformat nbconvert ipykernel
+```
+
+Run that install command from the repository root. Live design receive also needs
+the `speckle` extra; fixture mode needs no SDK.
 
 The five numerical notebooks use a visible routine scenario count of four during
 acceptance. Set `RK_SCENARIO_COUNT=2000` to select the retained full comparison.
@@ -17,5 +24,5 @@ The isolated book build disables another execution because those outputs have
 already passed fresh-kernel checks. It does not use the old Jupyter cache.
 
 See [the upgrade guide](../docs/LEGACY_UPGRADE_GUIDE.md) and
-[Turn 3 acceptance](../docs/research/full-migration/turn3/BASELINE.md).
+[current acceptance](../docs/research/full-migration/turn4/BASELINE.md).
 GitHub Pages publication is a separate action; rebuilding locally does not publish.

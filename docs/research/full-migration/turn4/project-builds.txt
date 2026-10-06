@@ -1,0 +1,5 @@
+Installed import: /private/tmp/rk-turn4-project-venv/lib/python3.13/site-packages/rangekeeper/__init__.py
+{"name": "mandarin", "directory": "/private/tmp/rk-turn4-project-bootstrap/results/mandarin/runs/9bd56a1a-fc81-4fde-aa76-b150663e8ce3", "objects": 377, "relationships": 376, "checks": {"agree": 776, "unavailable": 14, "difference": 28}}
+{"name": "december", "directory": "/private/tmp/rk-turn4-project-bootstrap/results/december/runs/bbc7bcfa-00d8-4165-b3e5-98e094e49881", "objects": 73, "relationships": 72, "checks": {"agree": 368, "unavailable": 6}}
+{"name": "november-r2", "directory": "/private/tmp/rk-turn4-project-bootstrap/results/november-r2/runs/408913c9-6011-4754-b049-ad62f60927e4", "objects": 37, "relationships": 36, "checks": {"agree": 144, "unavailable": 45}}
+Original source bytes preserved

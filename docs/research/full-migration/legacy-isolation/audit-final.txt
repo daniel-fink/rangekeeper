@@ -1,0 +1,1 @@
+{"scanned_files": 1408, "explicit_legacy_references": 2256, "canonical_to_legacy_imports": 0, "old_path_imports": 0, "symbols": 671}
