@@ -60,7 +60,11 @@ uv run pytest --ignore=tests/legacy/test_api.py
 ```
 
 The excluded module contains three old live-service tests. It is not part of
-local acceptance. Optional MiniZinc tests skip when that executable is absent.
+local acceptance. Optional solver tests skip when their engines are absent.
+The [strict layout acceptance command](../tools/layout/README.md) requires the
+pinned MiniZinc/CP-SAT and Z3 engines and fails on any skip. It also runs in the
+dedicated layout CI job. Installing the Python `layout` extra alone does not
+install MiniZinc.
 Use `--show-plots` only for an interactive Matplotlib test session.
 
 Schema generation uses the separate pinned LinkML tool environment. See

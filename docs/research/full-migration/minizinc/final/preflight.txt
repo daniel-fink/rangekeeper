@@ -1,0 +1,19 @@
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/Volumes/Data/Projects/Rangekeeper/src/tests/__init__.py", line 1, in <module>
+    from . import models as models
+  File "/Volumes/Data/Projects/Rangekeeper/src/tests/models/__init__.py", line 1, in <module>
+    from . import deterministic as deterministic
+  File "/Volumes/Data/Projects/Rangekeeper/src/tests/models/deterministic.py", line 3, in <module>
+    from rangekeeper.examples.investment import author, formulate, specify, report, values
+  File "/Volumes/Data/Projects/Rangekeeper/src/rangekeeper/__init__.py", line 11, in <module>
+    from .model import Model as Model
+  File "/Volumes/Data/Projects/Rangekeeper/src/rangekeeper/model/__init__.py", line 6, in <module>
+    from .model import Model as Model
+  File "/Volumes/Data/Projects/Rangekeeper/src/rangekeeper/model/model.py", line 7, in <module>
+    from .._comparison import canonical
+  File "/Volumes/Data/Projects/Rangekeeper/src/rangekeeper/_comparison.py", line 10, in <module>
+    from ._schema.validation import slots_for
+  File "/Volumes/Data/Projects/Rangekeeper/src/rangekeeper/_schema/validation.py", line 8, in <module>
+    from jsonschema import Draft202012Validator, FormatChecker
+ModuleNotFoundError: No module named 'jsonschema'

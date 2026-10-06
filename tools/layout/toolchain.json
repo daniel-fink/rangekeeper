@@ -1,0 +1,20 @@
+{
+  "minizinc": "2.10.1",
+  "cp-sat": "9.15",
+  "z3-solver": "5.1.0.0",
+  "release": "https://github.com/MiniZinc/MiniZincIDE/releases/tag/2.10.1",
+  "bundles": {
+    "Darwin-arm64": {
+      "url": "https://github.com/MiniZinc/MiniZincIDE/releases/download/2.10.1/MiniZincIDE-2.10.1-aarch64-apple-darwin.dmg",
+      "sha256": "6ab899c06a06bd7542f4df2b39e5afaa1658d6af30a65548a249048d1b3468bc"
+    },
+    "Darwin-x86_64": {
+      "url": "https://github.com/MiniZinc/MiniZincIDE/releases/download/2.10.1/MiniZincIDE-2.10.1-x86_64-apple-darwin.dmg",
+      "sha256": "c5b50d62ab493a354ae2caa5d7fb80ea51ae53a82942b3f358461e1a4a46a2c1"
+    },
+    "Linux-x86_64": {
+      "url": "https://github.com/MiniZinc/MiniZincIDE/releases/download/2.10.1/MiniZincIDE-2.10.1-x86_64-linux-gnu.tgz",
+      "sha256": "b63dd88491d47b05d0eb0ff4aa1112d1e6f77292c023800b20b98851458ce01c"
+    }
+  }
+}

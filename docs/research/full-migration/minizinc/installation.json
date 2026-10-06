@@ -1,0 +1,7 @@
+{
+  "platform": "Darwin-arm64",
+  "url": "https://github.com/MiniZinc/MiniZincIDE/releases/download/2.10.1/MiniZincIDE-2.10.1-aarch64-apple-darwin.dmg",
+  "sha256": "6ab899c06a06bd7542f4df2b39e5afaa1658d6af30a65548a249048d1b3468bc",
+  "executable": "/Users/daniel/Applications/rk-minizinc-2.10.1/MiniZincIDE.app/Contents/Resources/minizinc",
+  "method": "checksum verification, hdiutil read-only mount, ditto, hdiutil detach"
+}

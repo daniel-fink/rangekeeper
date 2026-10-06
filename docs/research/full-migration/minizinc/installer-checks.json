@@ -1,0 +1,10 @@
+{
+  "linux_archive_sha256": "b63dd88491d47b05d0eb0ff4aa1112d1e6f77292c023800b20b98851458ce01c",
+  "extraction": "passed",
+  "cp_sat": "9.15",
+  "executable_present": true,
+  "overwrite_refused": true,
+  "corrupted_archive_rejected_before_destination_creation": true,
+  "linux_execution": "not run on this macOS host",
+  "env": "export RK_MINIZINC=/private/tmp/rk-minizinc-linux-installer-check/bin/minizinc\nexport LD_LIBRARY_PATH=/private/tmp/rk-minizinc-linux-installer-check/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}\n"
+}

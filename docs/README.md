@@ -28,8 +28,8 @@ Start with [architecture](LIBRARY_ARCHITECTURE.md), then use the guide for your 
 The [schema guide](../schema/README.md) owns schema files and generation commands.
 The [Python README](../src/README.md) owns installation and extras.
 The [walkthroughs](../walkthrough/README.md) provide executable examples.
-The [viewer guide](../src/rangekeeper/adapters/cytoscape/README.md) covers offline
-presentation.
+The [viewer](../src/rangekeeper/adapters/cytoscape/README.md) and
+[strict layout procedure](../tools/layout/README.md) cover offline presentation.
 
 The official Windows connector acceptance gate remains open. The isolated
 predecessor trees remain for that gate; see [legacy isolation](LEGACY_ISOLATION.md)

@@ -1,3 +1,6 @@
+# Syncthing temporary downloads (keep conflict copies visible for review)
+.syncthing.*.tmp
+
 # ------------------------------------------------------------------------------
 # Python
 # Reference: https://raw.githubusercontent.com/github/gitignore/main/Python.gitignore

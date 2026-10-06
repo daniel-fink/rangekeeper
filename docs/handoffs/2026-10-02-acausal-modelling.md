@@ -1,5 +1,13 @@
 # Rangekeeper acausal modelling handoff
 
+**MiniZinc acceptance, 2026-10-06:** MiniZinc 2.10.1, CP-SAT 9.15 and Z3 5.1.0.0
+are configured for local layout acceptance. All **92 layout tests pass with zero
+skips**, including the previous 24 skipped cases. Full local regression passes
+**1,097 tests with zero skips**, excluding the three live predecessor service tests. Use the
+[strict acceptance guide](../../tools/layout/README.md) and
+[retained evidence](../research/full-migration/minizinc/README.md). The new CI job
+has not run remotely; commit and push remain separate actions.
+
 **Hypar cleanup, 2026-10-06:** the user requested removal of `hypar/`. Its 831
 ignored build/editor files are removed; no tracked source existed. Keep the
 [removal record and hashes](../research/full-migration/hypar-removal/README.md).

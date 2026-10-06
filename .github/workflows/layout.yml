@@ -1,0 +1,31 @@
+name: Layout acceptance
+on: [push, pull_request]
+jobs:
+  layout:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install layout test dependencies
+        run: python -m pip install './src[layout,workflow]' 'pytest==8.4.2' 'matplotlib>=3.10'
+      - name: Install viewer development dependencies
+        working-directory: src/rangekeeper/adapters/cytoscape/client
+        run: npm ci
+      - name: Install checksum-pinned MiniZinc with CP-SAT
+        run: python tools/layout/install.py --directory "$RUNNER_TEMP/minizinc"
+      - name: Run all layout tests with no skips
+        run: |
+          . "$RUNNER_TEMP/minizinc/env.sh"
+          python tools/layout/verify.py --output "$RUNNER_TEMP/layout-acceptance"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: layout-acceptance
+          path: ${{ runner.temp }}/layout-acceptance
+          if-no-files-found: warn
