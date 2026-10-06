@@ -3,7 +3,7 @@
 import math
 from datetime import date, timedelta
 from .._validation import require, require_unique
-from .distribution import Distribution, validate_distribution
+from .distribution import Distribution
 from ._references import resolve_reference, reference_key
 
 _MARKET = set(
@@ -53,7 +53,7 @@ def validate_plan(plan):
                 "normalized market parameters require dimensionless units",
             )
         if d:
-            validate_distribution(Distribution.from_data(d))
+            Distribution.from_data(d).check()
             require(
                 d["units"] == "dimensionless",
                 "normalized distribution requires dimensionless units",

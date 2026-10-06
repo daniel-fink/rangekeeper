@@ -1,16 +1,18 @@
 # Domain migration implementation plan
 
+> Historical design or implementation record. Names, commands and status below describe that checkpoint. Use the [current documentation](../README.md) for supported APIs.
+
 **Legacy isolation, 2026-10-06:** held Python code is now in `rangekeeper.legacy`,
 predecessor tests in `src/tests/legacy`, and excluded C# code in `grasshopper/legacy`.
-Old public paths have no aliases. See [the boundary and current checks](LEGACY_ISOLATION.md).
+Old public paths have no aliases. See [the boundary and current checks](../LEGACY_ISOLATION.md).
 The Windows gate remains open; earlier Turn 4 results below describe the preceding wheel.
 
 **Turn 4 update, 2026-10-06:** [Permitted legacy retirement](FULL_MIGRATION_TURN4.md)
 removes the superseded numerical/presentation modules and narrows optional
 dependencies. The paired Turn 3 checkpoint is pushed: RK `305f3ff`, Projects
-`6146ad2`. Turn 4 is uncommitted. [Current acceptance](research/full-migration/turn4/BASELINE.md)
+`6146ad2`. Turn 4 is uncommitted. [Current acceptance](../research/full-migration/turn4/BASELINE.md)
 records 1,058 passing local tests, seven walkthroughs and all three real source
-builds. The [remaining retirement register](research/full-migration/turn4/RETIREMENT.md)
+builds. The [remaining retirement register](../research/full-migration/turn4/RETIREMENT.md)
 holds old graph/Measure/Speckle API and excluded C# code for the Windows connector
 gate. Full retirement is not complete. Hypar is retired; Browser/outliner is on hold.
 Dated checkpoints below remain historical and do not override this current state.
@@ -21,8 +23,8 @@ now use Model/Specification 0.5.0 and Run 0.2.0. `ValueReference` addresses scal
 Values or owner-local Movement keys. The canonical calendar package is `duration/`;
 `temporal` has no public alias. Finite Flow formulations, captured scenario replay,
 exogenous declarative policies and the four numerical walkthroughs are implemented.
-See [verification](research/full-migration/turn2/README.md) and the
-[upgrade guide](LEGACY_UPGRADE_GUIDE.md). Turn 3 completes remaining consumers and
+See [verification](../research/full-migration/turn2/README.md) and the
+[upgrade guide](../LEGACY_UPGRADE_GUIDE.md). Turn 3 completes remaining consumers and
 integrations; Turn 4 retires obsolete code after their acceptance gates.
 The dated checkpoint descriptions below remain historical context.
 
@@ -34,18 +36,18 @@ for the Python/wire-format change and upgrade requirements.
 basis. The overall model logic owns their meaning and selects operations; units,
 dates, alignment and missingness remain checked. See the
 [current contract](FULL_MIGRATION_TURN1.md#flow-semantics-and-explicit-operations)
-and [verification](research/full-migration/flow-semantics/README.md).
+and [verification](../research/full-migration/flow-semantics/README.md).
 
 **Full migration update, 2026-10-04:** [Turn 1 foundations](FULL_MIGRATION_TURN1.md)
 implements Model 0.4.0 rich properties and Flow Values, `model.duration`,
 `temporal`, `calculations`, detached dataframe adapters, and explicit Graph conversion.
 The basic DCF notebook, financial test model and synthetic source workflows migrated.
-Read the [upgrade guide](LEGACY_UPGRADE_GUIDE.md) and [verification](research/full-migration/turn1/README.md).
-The [date-only correction](research/full-migration/date-only/README.md) removes
+Read the [upgrade guide](../LEGACY_UPGRADE_GUIDE.md) and [verification](../research/full-migration/turn1/README.md).
+The [date-only correction](../research/full-migration/date-only/README.md) removes
 TimePoint. Period movements store coverage; a separate date is optional and records
 an independent payment or observation. Dated valuation requires explicit timing
 when the movement has no recorded date.
-[Financial-library integration](research/full-migration/financial-library/README.md)
+[Financial-library integration](../research/full-migration/financial-library/README.md)
 now delegates PV, XNPV, IRR and day counts to PyXIRR. The draft mandatory IRR
 bracket is replaced by an optional initial guess.
 Turn 2 is implemented; see the current contract and verification linked above.
@@ -63,27 +65,27 @@ user question currently blocks that design work.
 
 Status: Step 1 completed 2026-10-02. The [migration map](DOMAIN_MIGRATION_MAP.md)
 records the concrete interface design and consumer sequence; the
-[baseline](research/domain-migration/BASELINE.md) records current checks and limits.
+[baseline](../research/domain-migration/BASELINE.md) records current checks and limits.
 The detailed work queue below is retained for traceability. Step 2 (work units 2A/2B)
-is now implemented: see the [record boundary](RECORD_BOUNDARY.md) and
-[Turn 1 verification](research/domain-migration/turn1/README.md). Work units 3A/3B
-are also implemented: [Model/Specification APIs](DOMAIN_CORE.md) and
-[Turn 2 verification](research/domain-migration/turn2/README.md). Work units 3C/4
-are now implemented: [Run and storage](RUN_AND_STORAGE.md) and
-[Turn 3 evidence](research/domain-migration/turn3/README.md). Step 5 is now implemented:
-[scalar execution](SCALAR_EXECUTION.md) and [observed evidence](research/scalar-execution/README.md).
-Step 6A/6B are now implemented: [Model-backed graph operations](GRAPH_MODEL.md).
-[Step 6C/6D](CONSUMER_MIGRATION.md) now implements shared tables, presentation
+is now implemented: see the [record boundary](../RECORD_BOUNDARY.md) and
+[Turn 1 verification](../research/domain-migration/turn1/README.md). Work units 3A/3B
+are also implemented: [Model/Specification APIs](../DOMAIN_CORE.md) and
+[Turn 2 verification](../research/domain-migration/turn2/README.md). Work units 3C/4
+are now implemented: [Run and storage](../RUN_AND_STORAGE.md) and
+[Turn 3 evidence](../research/domain-migration/turn3/README.md). Step 5 is now implemented:
+[scalar execution](../SCALAR_EXECUTION.md) and [observed evidence](../research/scalar-execution/README.md).
+Step 6A/6B are now implemented: [Model-backed graph operations](../GRAPH_MODEL.md).
+[Step 6C/6D](../CONSUMER_MIGRATION.md) now implements shared tables, presentation
 adapters, and source workflows. Step 6E continues through the full migration sequence above.
-[Consumer verification](research/consumer-migration/README.md): 798 Python tests
+[Consumer verification](../research/consumer-migration/README.md): 798 Python tests
 pass, one unchanged numerical baseline failure remains, and schema, static,
 installed-package, and actual workflow/execution checks pass. The graph guide records the six bounded Step 6 slices.
-The approved [validation factoring refinement](DOMAIN_CORE.md#composable-validation)
+The approved [validation factoring refinement](../DOMAIN_CORE.md#composable-validation)
 was implemented and verified before 3C/4; it adds no new execution work.
 
-[Library architecture](LIBRARY_ARCHITECTURE.md) owns package responsibilities and
-scalar acceptance. [Model, Specification, and Run](MODEL_SPECIFICATION_RUN.md)
-and the [schema reference](../schema/README.md) own record meaning. This document
+[Library architecture](../LIBRARY_ARCHITECTURE.md) owns package responsibilities and
+scalar acceptance. [Model, Specification, and Run](../MODEL_SPECIFICATION_RUN.md)
+and the [schema reference](../../schema/README.md) own record meaning. This document
 owns the implementation work breakdown and Step 1 deliverables. Earlier migration
 numbering is superseded by the six checkpoints here and in the architecture plan.
 
@@ -118,7 +120,7 @@ execution depends on them. A production database is outside this checkpoint.
 Step 5 must produce forward capital value of 11,000,000 AUD and inverse annual
 rent of 27,500 AUD/dwelling/year from declared mathematics. It must reuse a real
 forward output, independently check candidate quantities, and preserve immutable
-inputs and provenance. The [full acceptance boundary](LIBRARY_ARCHITECTURE.md#first-executable-acceptance-boundary)
+inputs and provenance. The [full acceptance boundary](../LIBRARY_ARCHITECTURE.md#validation-and-execution)
 also governs failures, settings, units, limits, and batch accounting. Synthetic
 fixtures remain expectations; observed outputs are stored separately.
 
@@ -218,9 +220,9 @@ Trace direct imports and attribute use, then inspect dynamic/lazy imports, persi
 formats, command-line entrypoints, notebook source cells, and integration boundaries.
 Text search is a starting point, not proof of complete coverage.
 
-Start with `src/rangekeeper/graph/adapter/`, `graph/workflow/`, root `api.py`,
+Start with `src/rangekeeper/adapters/`, `graph/workflow/`, root `api.py`,
 `src/tests/`, `walkthrough/`, and `grasshopper/`. Hypar was inspected, then retired;
-its ignored local residue is now [removed](research/full-migration/hypar-removal/README.md).
+its ignored local residue is now [removed](../research/full-migration/hypar-removal/README.md).
 It requires no migration. Check which remaining integrations
 are active, stale, generated, or independently versioned before assigning work.
 Known downstream project references should be listed with revision/availability
@@ -246,7 +248,7 @@ external or unavailable consumers marked unverified.
 ### 1E. Establish the behavioral baseline
 
 Run the seven existing schema suites listed in the
-[schema validation instructions](../schema/README.md#validation-and-known-limits):
+[schema validation instructions](../../schema/README.md#verification-and-limits):
 `validate.py`, `native_roundtrip.py`, `expressions.py`, `formulations.py`,
 `models.py`, `specifications.py`, and `runs.py` under `schema/checks/`.
 Use the appropriate pinned environment and record the exact invocation.
@@ -309,10 +311,10 @@ their impact on ordering. Keep rich temporal payloads and policy behavior deferr
 
 The resulting inventory, interfaces, and ordered work units are in
 [DOMAIN_MIGRATION_MAP.md](DOMAIN_MIGRATION_MAP.md), with observed run evidence in
-[BASELINE.md](research/domain-migration/BASELINE.md). All 1A–F deliverables are covered.
+[BASELINE.md](../research/domain-migration/BASELINE.md). All 1A–F deliverables are covered.
 Work units 2A/2B, 3A/3B, and 3C/4 are now implemented. Review the
-[Model/Specification APIs](DOMAIN_CORE.md) and [Run/storage APIs](RUN_AND_STORAGE.md),
-and the implemented [scalar executor](SCALAR_EXECUTION.md), then continue with [Step 6E](GRAPH_MODEL.md#remaining-step-6-implementation-slices).
+[Model/Specification APIs](../DOMAIN_CORE.md) and [Run/storage APIs](../RUN_AND_STORAGE.md),
+and the implemented [scalar executor](../SCALAR_EXECUTION.md), then continue with [Step 6E](../GRAPH_MODEL.md).
 The three domain implementation turns completed
 checkpoints 2–4; they do not renumber the six checkpoints above.
 Commit/push/release remain separate actions.

@@ -1,61 +1,32 @@
 <img src="https://github.com/daniel-fink/rangekeeper/blob/v0.2.0/walkthrough/resources/rangekeeper.jpg?raw=true" width="300">
 
-Current architecture: canonical Model/Specification/Run, explicit calculations and
-execution. [Turn 4 retirement](docs/FULL_MIGRATION_TURN4.md) removes the old numerical
-API; the Windows connector predecessor group is held in explicit `legacy` trees.
-See [legacy isolation](docs/LEGACY_ISOLATION.md). See the
-[upgrade guide](docs/LEGACY_UPGRADE_GUIDE.md).
-
 # Rangekeeper
-Rangekeeper is an open-source library for financial modelling in real estate 
-asset & development planning, decision-making, cashflow forecasting, and 
-scenario analysis.
 
-Rangekeeper enables real estate valuation at all stages and resolutions of 
-description — from early-stage ‘back-of-the-envelope’ models to detailed 
-commercial assessments, and can be completely synchronised with 3D design, 
-engineering, and logistics modelling.
+Rangekeeper is a Python library for real estate financial modelling, cashflow
+forecasting and scenario analysis. It separates project facts and equations in a
+`Model`, investigation choices in a `Specification`, and finalized evidence in a
+`Run`. Immutable revisions retain units, identity and provenance.
 
-It decomposes elements of the Discounted Cash Flow (DCF) Proforma modelling 
-approach into recomposable code functions that can be wired together to form a 
-full model. More elaborate and worked-through examples of these classes and 
-functions can be found in the [walkthrough documentation](https://daniel-fink.github.io/rangekeeper/).
+Known-data calculations support DCF analysis. The execution layer solves declared
+finite affine equations with Pyomo/HiGHS and independently checks candidate outputs.
+Source workflows and C# Grasshopper components connect reviewed source data and
+design models to canonical records. Polars serves detached tables and CSV.
 
-Development of the library follows the rigorous methodology established by 
-Profs Geltner and de Neufville in their book [Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers](https://doi.org/10.1002/9781119106470).
+This checkout contains a pre-1.0 redesign that is not yet the published PyPI API.
+Use the source installation instructions and the upgrade guide together.
 
+| Project or guide | Start here |
+| --- | --- |
+| Python package | [Installation and extras](src/README.md) |
+| Architecture and APIs | [Documentation index](docs/README.md) |
+| Executable examples | [Walkthroughs](walkthrough/README.md) |
+| Schema and generation | [Schema guide](schema/README.md) |
+| Rhino/Grasshopper | [C# authoring and host checks](grasshopper/README.md) |
+| Older consumers | [Upgrade guide](docs/LEGACY_UPGRADE_GUIDE.md) |
+| Verification | [Checks and limits](docs/VERIFICATION.md) |
 
-## Structure
-
-This repository is comprised of three separate, but inter-dependent projects:
-1. Rangekeeper library source (in Python) 
-2. Walkthrough documentation (a Jupyter Book)
-3. McNeel Rhinoceros 3D Grasshopper components (to assist the creation of Rangekeeper-compliant objects from 3D models, in C#)
-
-Each project has its own readme to assist setup and dependency resolution.
-
-## Design notes
-
-- [Implemented domain core and revision storage](docs/RUN_AND_STORAGE.md):
-  public Model/Specification/Run roots, strict codecs and immutable stores.
-  [Scalar execution](docs/SCALAR_EXECUTION.md) now solves declared affine equations
-  with Pyomo/HiGHS and publishes independently accepted outputs. These branch changes
-  have not been released. [Model-backed views and reductions](docs/GRAPH_MODEL.md)
-  include tables, presentation adapters, workbench and saved layouts.
-
-- [Documentation index and current work plan](docs/README.md):
-  accepted decisions, current state, next steps, and historical-document scope.
-- [Library architecture and migration plan](docs/LIBRARY_ARCHITECTURE.md):
-  agreed schema, domain-model, mathematical-library, compiler, and execution
-  boundaries; target repository layout and staged route to the scalar checkpoint.
-- [Graph LinkML schema drafts](schema/README.md):
-  Definitions, Entities, Relationships, Assemblies, Characteristics, and Provenance, with a
-  shared structural example and conformance checks.
-- [Schema tooling evaluation](docs/SCHEMA_TOOLING_EVALUATION.md):
-  historical comparisons and executed probes; the current decision retains LinkML.
-- [Model, Specification, and Run object model](docs/MODEL_SPECIFICATION_RUN.md):
-  current object-model decisions, proposed child schemas, requirements, and staged
-  acceptance examples.
-- [Project definitions, execution, and policy optimization](docs/PROJECT_DEFINITION_AND_POLICY_EXAMPLE.md):
-  the two-pad redevelopment example, illustrative assumptions, and references for
-  a subsequent executable test.
+The walkthroughs follow Geltner and de Neufville's
+[Flexibility and Real Estate Valuation under Uncertainty](https://doi.org/10.1002/9781119106470).
+Historical plans and captured acceptance results are linked from the documentation
+index. The [Windows connector gate](grasshopper/WINDOWS_DEVELOPMENT.md) remains
+open; the isolated predecessor trees remain until that gate closes.

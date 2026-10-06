@@ -1,5 +1,9 @@
 """Independent temporal/calculation oracles and explicit migration corrections."""
 
+from rangekeeper.calculations.account import Account
+from rangekeeper.model.distribution import Distribution
+from rangekeeper.model.flow import Flow
+
 from datetime import date, datetime, time, timedelta
 from types import MappingProxyType
 from uuid import uuid4
@@ -9,7 +13,7 @@ import numpy as np
 import pytest
 from rangekeeper import Model
 from rangekeeper.model.content import encode, decode
-from rangekeeper.model.flow import Stream, from_events, from_periods
+from rangekeeper.model.flow import Stream
 from rangekeeper._schema.records import (
     Metadata,
     Entity,
@@ -23,20 +27,14 @@ from rangekeeper._schema.records import (
 from rangekeeper.model.measure import Quantity
 from rangekeeper.model import distribution as distributions
 from rangekeeper.duration import make_periods, make_period, offset, year_fraction
-from rangekeeper.calculations import (
-    series,
-    projection,
-    financial,
-    account,
-    distribution,
-)
+from rangekeeper.calculations import series, projection, financial, account
 from rangekeeper.calculations.interval import Interval
 from rangekeeper.io import json as codec
 from rangekeeper.io.memory import MemoryStore
 
 
 def annual(values, *, units="AUD"):
-    return from_periods(
+    return Flow.from_periods(
         make_periods(date(2020, 1, 1), frequency="year", count=len(values)),
         values,
         units=units,
@@ -191,44 +189,44 @@ def test_month_anchor_and_leap_year():
 def test_duplicate_events_order_and_periods():
     today = date(2020, 1, 1)
     with pytest.raises(ValueError, match="duplicate"):
-        from_events([today, today], [1, 2], units="m")
-    flow = from_events(
+        Flow.from_events([today, today], [1, 2], units="m")
+    flow = Flow.from_events(
         [today, today], [1, 2], units="m", keys=["delivery-1", "delivery-2"]
     )
-    assert series.total(flow).magnitude == 3
+    assert flow.total().magnitude == 3
     with pytest.raises(ValueError):
-        from_events([date(2021, 1, 1), today], [1, 2], units="m")
+        Flow.from_events([date(2021, 1, 1), today], [1, 2], units="m")
     with pytest.raises(ValueError):
-        from_periods([make_period(today, date(2020, 2, 1))] * 2, [1, 2], units="m")
+        Flow.from_periods([make_period(today, date(2020, 2, 1))] * 2, [1, 2], units="m")
 
 
 def test_units_and_factor_product():
     rent = annual([100, 200], units="AUD/month")
     factor = annual([120, 50], units="percent")
-    result = series.convert(series.multiply_flows((rent, factor)), units="AUD/month")
+    result = series.multiply((rent, factor)).convert(units="AUD/month")
     assert [s.magnitude for s in result.movements] == [120, 100]
     amount = series.integrate(
         rent, exposures=(Quantity(magnitude=2, units="month"),) * 2, units="AUD"
     )
     assert [s.magnitude for s in amount.movements] == [200, 400]
     # Summation preserves units; the model decides whether it is meaningful.
-    assert series.total(rent).magnitude == 300
-    assert series.total(rent).units == "AUD/month"
+    assert rent.total().magnitude == 300
+    assert rent.total().units == "AUD/month"
     with pytest.raises(ValueError):
-        series.sum_flows((annual([1]), annual([1], units="USD")))
+        series.aggregate((annual([1]), annual([1], units="USD")))
     length = annual([1], units="m")
     assert (
-        series.sum_flows((length, annual([100], units="cm")))
+        series.aggregate((length, annual([100], units="cm")))
         .flow.movements[0]
         .magnitude
         == 2
     )
-    assert series.multiply_flows((length, length)).units == "meter ** 2"
+    assert series.multiply((length, length)).units == "meter ** 2"
 
 
 def test_explicit_calendar_integration():
     periods = make_periods(date(2020, 1, 1), frequency="month", count=2)
-    rates = from_periods(periods, [3660, 3660], units="AUD/year")
+    rates = Flow.from_periods(periods, [3660, 3660], units="AUD/year")
     assert [
         s.magnitude
         for s in series.integrate(
@@ -241,16 +239,16 @@ def test_missing_alignment_and_coverage():
     a = annual([1, None, 0])
     b = annual([2, 3, 4])
     with pytest.raises(ValueError):
-        series.sum_flows((a, b))
-    result = series.sum_flows((a, b), missing="propagate")
+        series.aggregate((a, b))
+    result = series.aggregate((a, b), missing="propagate")
     assert [s.magnitude for s in result.flow.movements] == [
         3,
         None,
         4,
     ] and result.coverage == (1, 0.5, 1)
-    assert series.sum_flows((a, b), missing="skip").flow.movements[1].magnitude == 3
+    assert series.aggregate((a, b), missing="skip").flow.movements[1].magnitude == 3
     assert (
-        series.sum_flows((annual([None]), annual([None])), missing="skip")
+        series.aggregate((annual([None]), annual([None])), missing="skip")
         .flow.movements[0]
         .magnitude
         is None
@@ -265,7 +263,7 @@ def test_missing_alignment_and_coverage():
 
 
 def test_resample_complete_calendar_and_explicit_reduction():
-    flow = from_events(
+    flow = Flow.from_events(
         [date(2020, 1, 1), date(2020, 1, 31), date(2020, 3, 1)],
         [10, 20, 40],
         units="kWh",
@@ -279,8 +277,10 @@ def test_resample_complete_calendar_and_explicit_reduction():
         0,
         40,
     ] and result.coverage == (1, 0, 1)
-    assert series.total(result.flow).magnitude == 70
-    stocks = from_events([date(2020, 1, 1), date(2020, 1, 31)], [10, 20], units="kWh")
+    assert result.flow.total().magnitude == 70
+    stocks = Flow.from_events(
+        [date(2020, 1, 1), date(2020, 1, 31)], [10, 20], units="kWh"
+    )
     assert (
         series.resample(stocks, periods=periods[:1], reduction="last")
         .flow.movements[0]
@@ -297,20 +297,16 @@ def test_resample_complete_calendar_and_explicit_reduction():
 
 @pytest.mark.parametrize("kind", ["uniform", "triangular", "pert"])
 def test_distribution_sampling_and_mass(kind):
-    dist = distributions.make_symmetric(kind=kind, mean=2, residual=1)
-    assert sum(
-        distribution.calculate_interval_mass(dist, [1, 1.5, 2, 2.5, 3])
-    ) == pytest.approx(1)
-    assert distribution.sample(
-        dist, size=5, generator=np.random.default_rng(7)
-    ) == distribution.sample(dist, size=5, generator=np.random.default_rng(7))
-    assert distribution.sample(
-        distributions.make_symmetric(kind=kind, mean=2, residual=0),
-        size=3,
-        generator=np.random.default_rng(7),
+    dist = Distribution.symmetric(kind=kind, mean=2, residual=1)
+    assert sum(dist.mass([1, 1.5, 2, 2.5, 3])) == pytest.approx(1)
+    assert dist.sample(size=5, generator=np.random.default_rng(7)) == dist.sample(
+        size=5, generator=np.random.default_rng(7)
+    )
+    assert Distribution.symmetric(kind=kind, mean=2, residual=0).sample(
+        size=3, generator=np.random.default_rng(7)
     ) == (2, 2, 2)
     with pytest.raises(ValueError):
-        distribution.calculate_interval_mass(dist, [1, 3, 2])
+        dist.mass([1, 3, 2])
 
 
 def test_projection_and_partition_invariants():
@@ -329,9 +325,9 @@ def test_projection_and_partition_invariants():
     flow = projection.allocate(
         Quantity(magnitude=100, units="kg"),
         periods=periods,
-        distribution=distributions.make_pert(),
+        distribution=Distribution.pert(),
     )
-    assert series.total(flow).magnitude == pytest.approx(100)
+    assert flow.total().magnitude == pytest.approx(100)
     pieces = Interval(3, 13).subdivide((0.2, 0.3, 0.5))
     assert sum(p.length for p in pieces) == 10 and pieces[0].right == pieces[1].left
     with pytest.raises(ValueError):
@@ -339,7 +335,9 @@ def test_projection_and_partition_invariants():
 
 
 def test_financial_independent_examples():
-    flow = from_events([date(2021, 1, 1), date(2022, 1, 1)], [-100, 110], units="AUD")
+    flow = Flow.from_events(
+        [date(2021, 1, 1), date(2022, 1, 1)], [-100, 110], units="AUD"
+    )
     assert financial.calculate_xnpv(
         flow, rate=0.1, valuation_date=date(2021, 1, 1)
     ).magnitude == pytest.approx(0, abs=1e-12)
@@ -358,7 +356,7 @@ def test_financial_independent_examples():
     [("simple", 100), ("compound", 121), ("capitalized", 100 / 0.9**2)],
 )
 def test_account_interest_modes(method, expected):
-    result = account.calculate_account(
+    result = Account.calculate(
         annual([0, 0]),
         starting=Quantity(magnitude=100, units="AUD"),
         rate=0.1,
@@ -366,18 +364,18 @@ def test_account_interest_modes(method, expected):
     )
     assert result.closing.movements[-1].magnitude == pytest.approx(expected)
     if method != "simple":
-        assert series.total(result.interest).magnitude == pytest.approx(expected - 100)
+        assert result.interest.total().magnitude == pytest.approx(expected - 100)
 
 
 def test_account_overdraft_and_timing():
-    result = account.calculate_account(
+    result = Account.calculate(
         annual([-150, 100, -200]), starting=Quantity(magnitude=100, units="AUD")
     )
     assert [s.magnitude for s in result.closing.movements] == [0, 50, 0]
     assert [s.magnitude for s in result.overdraft_balance.movements] == [-50, 0, -150]
     assert [s.magnitude for s in result.overdraft.movements] == [-50, 50, -150]
     for timing, interest in [("advance", 11), ("arrears", 10)]:
-        result = account.calculate_account(
+        result = Account.calculate(
             annual([10]),
             starting=Quantity(magnitude=100, units="AUD"),
             rate=0.1,
@@ -387,14 +385,13 @@ def test_account_overdraft_and_timing():
 
 
 def test_adapter_exports_are_detached():
-    from rangekeeper.adapters import pandas as pa, polars as po
+    from rangekeeper.adapters import polars as po
 
     flow = annual([0, None, 2])
     frame = po.to_frame(flow)
     assert po.from_frame(frame, units=flow.units) == flow
-    frame = pa.to_frame(flow)
-    assert pa.from_frame(frame, units=flow.units).movements[0].magnitude == 0
-    frame.at[0, "period"]["start"] = "2000-01-01"
+    cells = frame.to_dicts()
+    cells[0]["period"]["start"] = "2000-01-01"
     assert flow.movements[0].period.start == date(2020, 1, 1)
 
 
@@ -422,7 +419,7 @@ def test_weighted_rates_and_partial_period_helpers():
     from rangekeeper.duration import periods_between, cover
 
     periods = make_periods(date(2020, 1, 1), frequency="month", count=2)
-    rates = from_periods(periods, (10, 20), units="AUD/year")
+    rates = Flow.from_periods(periods, (10, 20), units="AUD/year")
     target = (make_period(date(2020, 1, 1), date(2020, 3, 1)),)
     with pytest.raises(ValueError, match="weighting"):
         series.resample(rates, periods=target, reduction="mean")
@@ -452,11 +449,13 @@ def test_weighted_rates_and_partial_period_helpers():
         )
         == 2
     )
-    assert [
-        s.magnitude for s in series.trim_empty(annual([0, 2, None, 3, 0])).movements
-    ] == [2, None, 3]
+    assert [s.magnitude for s in annual([0, 2, None, 3, 0]).trim_empty().movements] == [
+        2,
+        None,
+        3,
+    ]
     assert (
-        series.reduce_flows((annual([1, 4]), annual([3, 2])), reducer="min")
+        series.aggregate((annual([1, 4]), annual([3, 2])), reducer="min")
         .flow.movements[1]
         .magnitude
         == 2

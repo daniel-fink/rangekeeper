@@ -1,35 +1,13 @@
-# Finalized Runs, codecs and revision stores — Turn 3
+# Finalized Runs, codecs and revision stores
 
-**Turn 2 update, 2026-10-06:** [Temporal equations, scenarios and policies](FULL_MIGRATION_TURN2.md)
-now use Model/Specification 0.5.0 and Run 0.2.0. `ValueReference` addresses scalar
-Values or owner-local Movement keys. The canonical calendar package is `duration/`;
-`temporal` has no public alias. Finite Flow formulations, captured scenario replay,
-exogenous declarative policies and the four numerical walkthroughs are implemented.
-See [verification](research/full-migration/turn2/README.md) and the
-[upgrade guide](LEGACY_UPGRADE_GUIDE.md). Turn 3 completes remaining consumers and
-integrations; Turn 4 retires obsolete code after their acceptance gates.
-The dated checkpoint descriptions below remain historical context.
-
-**Flow semantics update, 2026-10-06:** Flows no longer carry semantic kinds or
-basis. The overall model logic owns their meaning and selects operations; units,
-dates, alignment and missingness remain checked. See the
-[current contract](FULL_MIGRATION_TURN1.md#flow-semantics-and-explicit-operations)
-and [verification](research/full-migration/flow-semantics/README.md).
-
-Implemented 2026-10-02: work units **3C and 4** in the
-[migration map](DOMAIN_MIGRATION_MAP.md). `rangekeeper.Model`, `Specification` and
-`Run` are now public root imports. The [Model/Specification guide](DOMAIN_CORE.md)
-and [record boundary](RECORD_BOUNDARY.md) describe their foundations. Run construction,
-reference validation, interchange and storage are implemented. The subsequent
-[Step 5 scalar executor](SCALAR_EXECUTION.md) now produces authentic valuation outputs.
-This branch checkpoint is unreleased.
+A Run records a finalized attempt. Strict codecs preserve field presence; stores publish immutable revisions. Resolver-backed validation checks references and publication evidence.
 
 ## Ownership and interfaces
 
 | Package/module | Responsibility |
 | --- | --- |
 | `run/run.py` | Frozen Run facade over the generated `RunRecord`, with `from_data`, `id`, `metadata`, `record`, `report`, and detached `to_data`. No revise method. |
-| `run/_validation.py` | Shared local status/report checks and existing bounded tree/publication semantics; conformance scripts use the same checks. |
+| `run/_report.py`, `_tree.py`, `_publication.py` | Shared local status/report checks and existing bounded tree/publication semantics; conformance scripts use the same checks. |
 | `run/_resolve.py`, `run/validation.py` | Resolve exact document revisions; public `validate(run, *, resolver) -> ValidationReport`. Raw catalogue checks are explicitly named `validate_records`. |
 | `references.py` | `SpecificationResolver` supplies Model/Specification reads; `DocumentResolver` extends it with Run reads. Domain code imports no IO implementation. |
 | `io/store.py` | `Document` union and `RecordStore` protocol: three typed reads plus `put(document) -> UUID`. |
@@ -40,15 +18,12 @@ This branch checkpoint is unreleased.
 Methods and helpers have docstrings documenting validation, error, mutation, and IO
 boundaries. Generated records remain the only field authority. Root imports expose
 the three facades explicitly; legacy graph/numerical integrations remain lazy. No
-solver backend is imported or newly required. Existing distribution dependencies
-remain until their consumer migration; lightweight imports do not mean the package's
-legacy dependency metadata has been removed.
+solver backend is imported or newly required. Optional dependencies follow the [installation guide](../src/README.md).
 
 ## A complete in-memory and filesystem example
 
 This deliberately records a **synthetic failed attempt**, not a claim that a solver ran.
-Public construction is useful for authoring and testing records; only the future
-execution layer will generate authentic execution evidence.
+Public construction is useful for authoring and testing records; the [execution layer](SCALAR_EXECUTION.md) generates authentic execution evidence.
 
 ```python
 from pathlib import Path
@@ -187,26 +162,15 @@ final revision. This implementation requires local filesystem support for those 
 it does not silently substitute an overwrite operation.
 
 IO failure after linking may leave a complete published record; callers can inspect and
-retry idempotently. There is no multi-document transaction: later execution publishes
+retry idempotently. There is no multi-document transaction: execution publishes
 outputs first, then its Run, and interruption can leave unreferenced complete outputs.
 Direct filesystem edits/deletion are outside the store's immutability contract. Loading a
 Run checks local consistency; explicit resolved validation can audit its references again.
 
-## Verification and next checkpoint
+## Verification
 
-The [Turn 3 verification](research/domain-migration/turn3/README.md) retains commands,
-input fingerprints, local acceptance, conformance and installed-wheel evidence. The
-installed tests exercise the core with only the needed declared domain dependencies,
-first without YAML/Pint for unit-free operations, then with Pint and the YAML extra
-for every document fixture. They do not claim that all legacy integration dependencies
-or external service consumers have been exercised. Remote CI and other platforms remain
-unverified; two known legacy baseline tests still fail.
-
-The three domain implementation turns are complete. **Step 5 is also implemented**:
-[scalar execution](SCALAR_EXECUTION.md) prepares declared equations and roles, solves
-both directions with pinned Pyomo/HiGHS, independently checks candidates, and publishes
-authentic immutable outputs and finalized Runs through these interfaces. See its
-[separate evidence](research/scalar-execution/README.md) for 11,000,000 AUD forward,
-27,500 AUD/dwelling/year inverse, genuine output reuse, failures, limits and batches.
-[Step 6A/6B graph operations](GRAPH_MODEL.md) are now implemented; Step 6C
-tables and presentation adapters are next.
+See [verification](VERIFICATION.md) for current commands and the distinction
+between local report checks, resolver-backed validation and real execution.
+The [executor](SCALAR_EXECUTION.md) uses these interfaces to persist accepted
+outputs before their finalized Runs. [Graph consumers](GRAPH_MODEL.md) and
+[source workflows](CONSUMER_MIGRATION.md) use the same canonical records.

@@ -45,7 +45,7 @@ public static class Codec
     /// <summary>Return a checked detached transport envelope. Does not publish or write.</summary>
     public static JsonObject Envelope(Records.Model model, JsonArray associations)
     {
-        Validation.Validate.Require(model);
+        Validation.Validator.Require(model);
         var data = model.ToData();
         var revision = Guid.Parse(data["metadata"]!["id"]!.GetValue<string>());
         var identities = new HashSet<Guid>();

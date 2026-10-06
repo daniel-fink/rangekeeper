@@ -180,9 +180,9 @@ def test_inputs_and_declared_equations_drive_results(change, expected):
     payload = fresh(data("specification-forward"))
     payload["model"] = str(model.id)
     if change == "input":
-        next(a for a in payload["assignments"] if a["target"]["value"] == str(RENT))["quantity"][
-            "magnitude"
-        ] = 32000
+        next(a for a in payload["assignments"] if a["target"]["value"] == str(RENT))[
+            "quantity"
+        ]["magnitude"] = 32000
     assert output(store, execute(store, Specification.from_data(payload))).value(
         CAPITAL
     ).quantity.magnitude == pytest.approx(expected)
@@ -191,7 +191,9 @@ def test_inputs_and_declared_equations_drive_results(change, expected):
 def test_assignment_unit_conversion_is_checked_and_published_canonically():
     store, model = setup()
     payload = fresh(data("specification-forward"))
-    next(a for a in payload["assignments"] if a["target"]["value"] == str(RENT))["quantity"] = {
+    next(a for a in payload["assignments"] if a["target"]["value"] == str(RENT))[
+        "quantity"
+    ] = {
         "magnitude": 2500,
         "units": "AUD/dwelling/month",
     }
@@ -337,7 +339,11 @@ def test_independent_acceptance_rejects_solver_claim_and_serialized_tampering():
         d.severity == "error" and d.code == "constraint_residual"
         for d in run.report.diagnostics
     )
-    prepared = preparation.prepare(specification, resolver=store)
+    from rangekeeper.specification import compose
+
+    prepared = preparation.prepare(
+        compose(specification, resolver=store), resolver=store
+    )
     proposed = publication.candidate(
         prepared, {str(NOI): 550000, str(CAPITAL): 11000000}, run_id=uuid4()
     )
@@ -723,3 +729,28 @@ def test_scalar_execution_retains_unrelated_rich_content():
     store, model = setup(model_data=payload)
     run = execute(store, spec(model=model))
     assert output(store, run).value(identity).content == encode("retained")
+
+
+def test_scalar_preparation_reuses_the_composed_requirements(monkeypatch):
+    from rangekeeper.execution import planning as implementation
+
+    store, _ = setup()
+    specification = spec()
+    compose, prepare = implementation.compose, preparation.prepare
+    views = []
+
+    def recorded(*args, **kwargs):
+        view = compose(*args, **kwargs)
+        views.append(view)
+        return view
+
+    def reused(view, **kwargs):
+        assert views == [view]
+        assert view is views[0]
+        return prepare(view, **kwargs)
+
+    monkeypatch.setattr(implementation, "compose", recorded)
+    monkeypatch.setattr(preparation, "prepare", reused)
+    run = execute(store, specification)
+    assert run.report.status.solution == "feasible"
+    assert len(views) == 1

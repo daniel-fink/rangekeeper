@@ -183,7 +183,7 @@ def test_native_backend_receives_warm_start_annotations(tmp_path):
     )
     seed = grid_seed(p)
     assert seed is not None
-    data, _, _ = minizinc_solver._data(p, seed)
+    data, _, _ = minizinc_solver.encode(p, seed)
     data.update(fixed=False, phase=9, incumbent_bound=seed.measurements["style_cost"])
     path = tmp_path / "data.json"
     path.write_text(json.dumps(data))

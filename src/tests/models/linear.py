@@ -1,8 +1,9 @@
 """Readable known-data DCF composition using canonical Flow content."""
+from rangekeeper.model.flow import Flow
 
 from dataclasses import dataclass
 from datetime import timedelta
-from rangekeeper.model.flow import Flow, from_periods
+
 from rangekeeper.model.measure import Quantity
 from rangekeeper.duration import make_periods, offset
 from rangekeeper.calculations import series, projection, financial
@@ -25,21 +26,19 @@ class Model:
             method="compound",
             rate=params["growth_rate"],
         )
-        self.vacancy = series.scale(self.pgi, -params["vacancy_rate"])
-        self.egi = series.sum_flows((self.pgi, self.vacancy)).flow
-        self.opex = series.scale(self.pgi, -params["opex_pgi_ratio"])
-        self.noi = series.sum_flows((self.egi, self.opex)).flow
-        self.capex = series.scale(self.pgi, -params["capex_pgi_ratio"])
-        projected_ncf = series.sum_flows((self.noi, self.capex)).flow
-        self.ncf = Flow(
-            units=units, movements=projected_ncf.movements[:-1]
-        )
-        self.disposition = from_periods(
+        self.vacancy = self.pgi.scale(-params["vacancy_rate"])
+        self.egi = series.aggregate((self.pgi, self.vacancy)).flow
+        self.opex = self.pgi.scale(-params["opex_pgi_ratio"])
+        self.noi = series.aggregate((self.egi, self.opex)).flow
+        self.capex = self.pgi.scale(-params["capex_pgi_ratio"])
+        projected_ncf = series.aggregate((self.noi, self.capex)).flow
+        self.ncf = Flow(units=units, movements=projected_ncf.movements[:-1])
+        self.disposition = Flow.from_periods(
             periods[-2:-1],
             (projected_ncf.movements[-1].magnitude / params["cap_rate"],),
             units=units,
         )
-        self.ncf_disposition = series.sum_flows(
+        self.ncf_disposition = series.aggregate(
             (self.ncf, self.disposition), join="union", missing="zero"
         ).flow
         # All proceeds share one valuation origin; terminal proceeds are discounted
@@ -50,10 +49,10 @@ class Model:
         acquisition_period = make_periods(
             params["start_date"], frequency="year", count=1
         )
-        self.acquisition = from_periods(
+        self.acquisition = Flow.from_periods(
             acquisition_period, (-abs(params["acquisition_price"]),), units=units
         )
-        self.investment_cashflows = series.sum_flows(
+        self.investment_cashflows = series.aggregate(
             (self.acquisition, self.ncf_disposition), join="union", missing="zero"
         ).flow
         self.irr = financial.calculate_irr(self.investment_cashflows, timing="last_day")

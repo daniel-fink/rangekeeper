@@ -61,14 +61,14 @@ separate responsibilities. Generated Python construction alone is insufficient.
 
 The subsequent 2026-10-02 architecture revision replaces the temporary executor
 and later promotion sequence. Step 1 is now complete: the
-[domain migration map](../../DOMAIN_MIGRATION_MAP.md) specifies canonical ownership,
+[domain migration map](../../history/DOMAIN_MIGRATION_MAP.md) specifies canonical ownership,
 the generated immutable record boundary, APIs and consumer migration; its linked
 baseline records observed checks. Next generate the shared record artifacts and
 build the minimal core directly in the intended library
 packages, including private generated artifacts, validation, codecs, and immutable
 revision storage. Then probe and pin Pyomo/HiGHS and implement
 `rangekeeper.execution` against that core, following the
-[architecture acceptance boundary](../../LIBRARY_ARCHITECTURE.md#first-executable-acceptance-boundary).
+[architecture acceptance boundary](../../LIBRARY_ARCHITECTURE.md#validation-and-execution).
 Load the actual Model and composed Specifications, lower their declared affine
 scalar mathematics, independently check candidates, and publish genuine Runs and
 immutable output Models.

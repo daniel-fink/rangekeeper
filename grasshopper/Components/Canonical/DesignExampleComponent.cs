@@ -142,6 +142,6 @@ public sealed class DesignExampleComponent : GH_Component
             ["definitions"]=new JsonObject{["taxonomies"]=new JsonArray(new JsonObject{["id"]=Id("taxonomy").ToString(),["code"]="design",["name"]="Design",["classifications"]=classes}),["measures"]=measures},
             ["system"]=new JsonObject{["entities"]=entities,["assemblies"]=new JsonArray(assemblies.Values.Select(x=>(JsonNode)x).ToArray()),["relationships"]=relationships},
             ["provenance"]=new JsonObject{["sources"]=new JsonArray(new JsonObject{["id"]=source.ToString(),["name"]=Path.GetFileName(path),["checksum"]=checksum}),["claims"]=claims,["facts"]=facts}};
-        var result=new ModelRecord(payload);Validation.Validate.Require(result);return(result,associations);
+        var result=new ModelRecord(payload);Validation.Validator.Require(result);return(result,associations);
     }
 }

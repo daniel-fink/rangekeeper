@@ -4,6 +4,10 @@ Old pandas container details and implicit time-unit removal are intentional API
 breaks. Dates, totals, allocation, partition meaning and detached results remain
 covered here. Plotting is tested by the installed walkthroughs and adapters.
 """
+from rangekeeper.model.flow import Flow
+
+from rangekeeper.model.distribution import Distribution
+
 
 from datetime import date, timedelta
 from uuid import uuid4
@@ -13,7 +17,7 @@ import numpy as np
 import pytest
 
 from rangekeeper import Model
-from rangekeeper.calculations import distribution, projection, series
+from rangekeeper.calculations import projection, series
 from rangekeeper.calculations.interval import Interval
 from rangekeeper.duration import make_periods, make_period, offset
 from rangekeeper.duration.calendar import elapsed_days
@@ -29,8 +33,8 @@ from rangekeeper.model import (
     Taxonomy,
 )
 from rangekeeper.model.content import encode, decode
-from rangekeeper.model.distribution import make_uniform, make_pert
-from rangekeeper.model.flow import Flow, Stream, from_events, from_periods, resolve_date
+
+from rangekeeper.model.flow import Stream
 from rangekeeper.model.measure import Measure, Quantity
 
 
@@ -38,11 +42,9 @@ def amounts(flow):
     return tuple(m.magnitude for m in flow.movements)
 
 
-@pytest.mark.parametrize("spec", [make_uniform(), make_pert(mode=0.75)])
+@pytest.mark.parametrize("spec", [Distribution.uniform(), Distribution.pert(mode=0.75)])
 def test_distribution_mass(spec):
-    masses = distribution.calculate_interval_mass(
-        spec, [float(x) for x in np.linspace(0, 1, 100)]
-    )
+    masses = spec.mass([float(x) for x in np.linspace(0, 1, 100)])
     assert sum(masses) == pytest.approx(1)
     assert all(x >= 0 for x in masses)
 
@@ -63,15 +65,15 @@ def test_month_end_is_explicit_and_period_end_is_exclusive():
 
 def test_flow_construction_detachment_and_negation():
     dates = (date(2000, 1, 2), date(2000, 2, 29), date(2000, 12, 31))
-    original = from_events(dates, (1, 2.3, 456), units="AUD")
+    original = Flow.from_events(dates, (1, 2.3, 456), units="AUD")
     assert original.movements[1].date == dates[1]
     assert original.movements[1].magnitude == 2.3
     detached = original.to_data()
     duplicate = Flow.from_data(detached)
     detached["movements"][0]["magnitude"] = 100
     assert duplicate == original
-    assert series.total(original).magnitude == pytest.approx(459.3)
-    assert amounts(series.negate(original)) == pytest.approx((-1, -2.3, -456))
+    assert original.total().magnitude == pytest.approx(459.3)
+    assert amounts(original.negate()) == pytest.approx((-1, -2.3, -456))
     assert original.movements[0].magnitude == 1
 
 
@@ -80,14 +82,14 @@ def test_allocation_and_annual_resampling_preserve_total():
     flow = projection.allocate(Quantity(magnitude=100, units="AUD"), periods=periods)
     assert amounts(flow) == pytest.approx((4,) * 25)
     years = make_periods(date(2020, 1, 1), frequency="year", count=3)
-    reduced = series.resample(series.negate(flow), periods=years, reduction="sum")
+    reduced = series.resample(flow.negate(), periods=years, reduction="sum")
     assert amounts(reduced.flow) == pytest.approx((-48, -48, -4))
-    assert series.total(reduced.flow).magnitude == pytest.approx(-100)
+    assert reduced.flow.total().magnitude == pytest.approx(-100)
 
 
 @pytest.mark.parametrize("frequency", ["day", "month", "quarter", "year"])
 def test_resampling_uses_declared_calendar_bins(frequency):
-    source = from_events(
+    source = Flow.from_events(
         (date(2020, 1, 31), date(2020, 2, 29), date(2020, 3, 31)),
         (1, 2, 3),
         units="meter",
@@ -95,20 +97,20 @@ def test_resampling_uses_declared_calendar_bins(frequency):
     count = {"day": 91, "month": 3, "quarter": 1, "year": 1}[frequency]
     periods = make_periods(date(2020, 1, 1), frequency=frequency, count=count)
     result = series.resample(source, periods=periods, reduction="sum", missing="zero")
-    assert series.total(result.flow).magnitude == 6
+    assert result.flow.total().magnitude == 6
     assert tuple(m.period for m in result.flow.movements) == periods
 
 
 def test_sampling_is_explicit_before_allocation():
-    spec = make_pert(lower=2, upper=8, mode=5, weighting=4, units="AUD")
-    draws = distribution.sample(spec, size=20, generator=np.random.default_rng(23))
+    spec = Distribution.pert(lower=2, upper=8, mode=5, weighting=4, units="AUD")
+    draws = spec.sample(size=20, generator=np.random.default_rng(23))
     assert all(2 <= x <= 8 for x in draws)
     periods = make_periods(date(2020, 1, 1), frequency="month", count=25)
     for amount in draws:
         flow = projection.allocate(
             Quantity(magnitude=amount, units="AUD"), periods=periods
         )
-        assert series.total(flow).magnitude == pytest.approx(amount)
+        assert flow.total().magnitude == pytest.approx(amount)
 
 
 def test_stream_selection_and_mixed_frequency_totals():
@@ -147,8 +149,8 @@ def test_stream_selection_and_mixed_frequency_totals():
     with pytest.raises(ValueError, match="crosses"):
         series.resample(flows[1], periods=years, reduction="sum", missing="zero")
     payments = tuple(
-        from_events(
-            [resolve_date(m, timing="last_day") for m in value.flow.movements],
+        Flow.from_events(
+            [m.resolve(timing="last_day") for m in value.flow.movements],
             amounts(value.flow),
             units=value.flow.units,
         )
@@ -158,17 +160,17 @@ def test_stream_selection_and_mixed_frequency_totals():
         series.resample(flow, periods=years, reduction="sum", missing="zero").flow
         for flow in payments
     )
-    assert series.total(series.sum_flows(annual).flow).magnitude == pytest.approx(
+    assert series.aggregate(annual).flow.total().magnitude == pytest.approx(
         0, abs=1e-12
     )
 
 
 def test_product_preserves_units_and_explicit_exposure_removes_time():
     periods = make_periods(date(2020, 1, 1), frequency="month", count=1)
-    rate = from_periods(periods, (math.pi,), units="AUD/meter**2/month")
-    factor = from_periods(periods, (2,), units="dimensionless")
-    product = series.multiply_flows((rate, factor))
-    assert series.convert(product, units="AUD/meter**2/month").movements[
+    rate = Flow.from_periods(periods, (math.pi,), units="AUD/meter**2/month")
+    factor = Flow.from_periods(periods, (2,), units="dimensionless")
+    product = series.multiply((rate, factor))
+    assert product.convert(units="AUD/meter**2/month").movements[
         0
     ].magnitude == pytest.approx(2 * math.pi)
     integrated = series.integrate(

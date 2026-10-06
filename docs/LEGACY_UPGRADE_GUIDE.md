@@ -1,7 +1,7 @@
 # Upgrade older Rangekeeper consumers
 
-This guide covers the implemented canonical APIs through full migration Turn 4.
-The [current retirement report](FULL_MIGRATION_TURN4.md) and
+This guide maps retired APIs to the maintained canonical operations.
+The [current retirement report](history/FULL_MIGRATION_TURN4.md) and
 [behaviour map](research/full-migration/turn4/BEHAVIOUR.md) identify removed names.
 Root numerical/presentation modules are removed without aliases. The old graph,
 Measure and Speckle API group remains temporarily held for Windows acceptance
@@ -11,12 +11,12 @@ Do not build new consumers on that group or treat old Graph JSON as Model JSON.
 
 **Movement naming, 2026-10-06:** import `Movement` from `rangekeeper.model.flow`
 and use `Flow.movements`. These replace `FlowSample` and `Flow.samples` in Python
-and the `samples` field in JSON/YAML. Use `movement_coordinate` for alignment
-identity; keyword callers of `resolve_date` use `movement=`. There are no aliases.
+and the `samples` field in JSON/YAML. Use `movement.coordinate` for alignment
+identity and `movement.resolve(timing=...)` for an explicit date convention. There are no aliases.
 Old draft documents must rename `samples` to `movements` explicitly, preserving
 order, keys, dates/periods, magnitude presence and Claim references. Save changes
 as a new Model revision; do not overwrite historical snapshots. Old and mixed
-field names are rejected. See [the contract](FULL_MIGRATION_TURN1.md#movement-naming)
+field names are rejected. See [the contract](CALCULATIONS.md#movement-naming)
 and [verification](research/full-migration/movement-naming/README.md).
 
 **Flow semantics, 2026-10-06:** Flows have no semantic kind or basis. The overall
@@ -25,7 +25,7 @@ missingness and operation-specific numerical requirements remain checked. This
 removes the unreleased draft's `basis=` and `result_basis=` arguments. Saved draft
 payloads must have their `basis` field removed explicitly as part of a new Model
 revision; older snapshots remain historical. `Value.kind="flow"` still identifies
-the content shape. See the [contract](FULL_MIGRATION_TURN1.md#flow-semantics-and-explicit-operations)
+the content shape. See the [contract](CALCULATIONS.md#flow-semantics-and-explicit-operations)
 and [verification](research/full-migration/flow-semantics/README.md).
 
 **Duration namespace, 2026-10-06:** use `rangekeeper.duration` for calendar
@@ -42,7 +42,7 @@ Install only the extras your consumer needs. Core records, units and JSON stores
 need none; source builds use `[workflow,excel]`.
 
 ```sh
-python -m pip install './src[calculations,pandas,yaml,workflow,execution,plotting,visualization]'
+python -m pip install './src[calculations,tables,yaml,workflow,execution,plotting,visualization]'
 python -c 'import rangekeeper; print(rangekeeper.__file__)'
 ```
 
@@ -53,9 +53,32 @@ are installed separately. The temporary `legacy` extra is only for the held old 
 call that an executed migration. Package version 0.8.71 is unchanged by this
 unreleased work; use the source revision/wheel hash, not that version alone.
 
+## Record methods and replacement
+
+The [record boundary](RECORD_BOUNDARY.md) defines the current method contracts.
+Use `movement.number` for finite numerical access, `flow.check(resolved=True)` to
+require complete numerical inputs, and `record.replace(...)` to create a validated
+copy. Replacement preserves omitted, null and empty fields. Persist meaningful
+changes through the document facade's `revise` method.
+
+`clean` removes unresolved movements; it does not validate or impute them. Single
+record operations now live on their owning classes. The old free-function names
+and private Flow helpers have no compatibility aliases.
+
+| Removed draft API | Current API |
+| --- | --- |
+| `magnitude(movement)` | `movement.number` |
+| `validate_flow(flow)` / `require_resolved(flow)` | `flow.check()` / `flow.check(resolved=True)` |
+| `movement_coordinate(movement)` / `resolve_date(movement, ...)` | `movement.coordinate` / `movement.resolve(...)` |
+| `replace_movement` / `replace_movements` | Typed `movement.replace(...)` / `flow.replace(...).check()` |
+| `AlignmentResult` / `AggregateResult` | `Alignment` / `Aggregation` |
+| `AccountResult` / `calculate_account(...)` | `Account` / `Account.calculate(...)` |
+| `calculate_cumulative_density` / `calculate_interval_mass` | `distribution.cdf(...)` / `distribution.mass(...)` |
+
 ## Author canonical content
 
 ```python
+from rangekeeper.model.flow import Flow
 from datetime import date
 from uuid import uuid4
 from rangekeeper import Model
@@ -63,12 +86,12 @@ from rangekeeper.model import (
     Metadata, Definitions, Measure, System, Entity, Characteristics, Value,
 )
 from rangekeeper.model.content import encode, decode
-from rangekeeper.model.flow import Stream, from_periods
+from rangekeeper.model.flow import Stream
 from rangekeeper.duration import make_periods
 from rangekeeper.calculations import series
 
 periods = make_periods(date(2026, 1, 1), frequency="month", count=3)
-flow = from_periods(periods, (10, 0, None), units="meter")
+flow = Flow.from_periods(periods, (10, 0, None), units='meter')
 measure = Measure(id=uuid4(), code="length", name="Length", units="meter")
 reading = Value(id=uuid4(), key="delivered", kind="flow", measure=measure.id, flow=flow)
 note = Value(id=uuid4(), key="source", kind="property", content=encode({"checked": False}))
@@ -79,14 +102,14 @@ model = Model.create(
 )
 stream = Stream.from_values(model, (reading.id,))
 assert decode(model.value(note.id).content) == {"checked": False}
-assert series.total(stream.flows[0], missing="skip").magnitude == 10
+assert stream.flows[0].total(missing='skip').magnitude == 10
 ```
 
 `Model` owns the Value. `Stream` selects ordered Value UUIDs in that revision.
 Two Values may use one Measure and still have different keys and content. A name
 is not an identifier. Use Model UUID lookup and explicit `find`/selection APIs.
 An unresolved movement is not zero. `skip` is a deliberate incomplete aggregation;
-`sum_flows` and `resample` additionally return coverage. `total` returns a Quantity,
+`aggregate` and `resample` additionally return coverage. `total` returns a Quantity,
 not a new persistent Value or a Run.
 
 `PropertyContent` supports null, bool, int, finite float, str, UUID, date, datetime,
@@ -106,24 +129,25 @@ source timestamps; those are not Flow coordinates. Generated Source date fields
 now return Python dates; their timestamp alternatives still return strings. Both
 keep the same wire format.
 
-`from_periods` stores coverage only by default. Use its optional `dates=` argument
+`Flow.from_periods` stores coverage only by default. Use its optional `dates=` argument
 only for independently known payment or observation dates. These dates may be
 outside the covered period. Resolve a missing date explicitly for a calculation
 or display; the convention does not become stored content:
 
 ```python
-from rangekeeper.model.flow import resolve_date
+from rangekeeper.model.flow import Flow
+
 from rangekeeper.calculations.financial import calculate_xnpv
 assert flow.movements[0].date is None
-assert resolve_date(flow.movements[0], timing="last_day") == date(2026, 1, 31)
-paid = from_periods(periods[:1], (100,), units="AUD", dates=(date(2026, 2, 5),))
-assert resolve_date(paid.movements[0], timing="start") == date(2026, 2, 5)
+assert flow.movements[0].resolve(timing='last_day') == date(2026, 1, 31)
+paid = Flow.from_periods(periods[:1], (100,), units='AUD', dates=(date(2026, 2, 5),))
+assert paid.movements[0].resolve(timing='start') == date(2026, 2, 5)
 pv = calculate_xnpv(paid, rate=0.1, valuation_date=date(2026, 1, 1))
 ```
 
 `start` selects the first included day; `last_day` selects the final included day;
 `end` selects the exclusive boundary. Recorded dates take precedence. Undated
-periods require `timing=` in `calculate_xnpv`, `calculate_irr` and pandas `to_series`.
+periods require `timing=` in `calculate_xnpv`, `calculate_irr` and Polars `dates`.
 `collapse` requires a chosen `on=` date or a timing convention unless the final
 movement records a date. `calculate_pv` instead uses its explicit movement-index
 convention. Trimming keeps whole covered periods and rejects partial overlap.
@@ -134,19 +158,19 @@ keep the original Flow when individual payment facts are required.
 |---|---|
 | `duration.Type` / pandas frequency inference | Explicit `frequency="month"` etc.; ten calendar frequencies in `duration.calendar` |
 | Inclusive `Span.end_date` | Half-open `[start,end)` Period/Span; add one calendar day when mapping an inclusive date-only end |
-| `Flow.from_dict/from_sequence` | Explicit ordered dates/magnitudes in `model.flow.from_events`; duplicate dates need keys |
+| `Flow.from_dict/from_sequence` | Explicit ordered dates/magnitudes in `Flow.from_events`; duplicate dates need keys |
 | `Flow.from_projection` | `calculations.projection.project` or `allocate`, with Quantity and Periods |
 | Mutating Flow/Stream / `duplicate` | Immutable records; new calculation result; new Model revision for persisted changes |
-| `Stream.sum/min/max` | `series.sum_flows/reduce_flows`; exact alignment by default, explicit units/missing/join |
-| `Stream.product` | `series.multiply_flows`; dimensionless factors scale quantities; unit powers remain intact |
+| `Stream.sum/min/max` | `series.aggregate(reducer="sum" | "min" | "max")`; exact alignment by default, explicit units/missing/join |
+| `Stream.product` | `series.multiply`; dimensionless factors scale quantities; unit powers remain intact |
 | Period rates treated as amounts | `series.integrate`, with explicit exposures or period day-count convention |
 | `Flow.resample(frequency)` | Explicit complete target Period grid, reduction and missing policy; every mean requires weighting |
-| `Flow.clean/trim/diff/collapse` | `series.clean/trim/difference/collapse`; see docstrings for unresolved first differences and time bounds |
-| Mutable pandas content | `adapters.pandas.to_frame/from_frame`; Polars equivalents; detached `to_series` is a presentation projection |
-| Implicit global RNG | `calculations.distribution.sample(distribution, size=..., generator=...)` |
+| `Flow.clean/trim/diff/collapse` | `flow.clean/trim/difference/collapse`; see docstrings for unresolved first differences and time bounds |
+| Mutable pandas content | `adapters.polars.to_frame/from_frame`; `dates` is a detached presentation projection |
+| Implicit global RNG | `distribution.sample(size=..., generator=...)` |
 | `flow.pv` | `financial.calculate_pv(rate=..., first_period=1)`; rate is per observation period |
 | `flow.npv/irr` | `calculate_xnpv(valuation_date=..., day_count=...)`; `calculate_irr(guess=...)` returns one root and residual; guess is optional; both require `timing=` for undated periods |
-| Account constructor calculates silently | `account.calculate_account(..., method=..., timing=...)`; result has opening/closing/overdraft/interest Flows |
+| Account constructor calculates silently | `Account.calculate(..., method=..., timing=...)`; result has opening/closing/overdraft/interest Flows |
 
 Multiplying `AUD/year` by a dimensionless market factor leaves `AUD/year`.
 Multiplying two rates retains both time dimensions. No operation strips time to
@@ -154,10 +178,11 @@ make a result appear valid. The model determines the meaning of the product.
 A rate-to-amount conversion requires an exposure:
 
 ```python
+from rangekeeper.model.flow import Flow
 from rangekeeper.model.measure import Quantity
-rates = from_periods(periods, (120, 120, 120), units="AUD/year")
+rates = Flow.from_periods(periods, (120, 120, 120), units='AUD/year')
 amounts = series.integrate(rates, day_count="actual/365", units="AUD")
-assert abs(series.total(amounts).magnitude - 120 * 90 / 365) < 1e-9
+assert abs(amounts.total().magnitude - 120 * 90 / 365) < 1e-9
 ```
 
 Calendar-month accrual can instead supply explicit exposure Quantities. The model
@@ -170,9 +195,10 @@ Fractional resampling coverage counts known observations, not continuous time co
 
 Dataframe roundtrips require the adapter's `_present` metadata plus explicit units.
 This metadata preserves absent versus explicit-null movement fields.
-`to_series` omits Periods and Claims and is not a lossless storage format.
-`from_series` accepts date indices and naive midnight pandas timestamps. It rejects
-intraday or timezone-bearing indices instead of truncating them.
+`polars.dates` omits Periods and Claims and is not a lossless storage format.
+`adapters.polars.dates` projects native calendar dates and magnitudes. Use
+`Flow.from_events` with native dates to author observations. Timestamps are not
+accepted as implicit dates.
 
 Financial calculations delegate to PyXIRR. The earlier draft `bracket=` and
 solver `tolerance=` arguments are removed; no bounded-solver fallback is retained.
@@ -183,9 +209,10 @@ raise `ValueError`; an IRR residual larger than 1e-8 of gross movements (with a
 one-unit floor) also fails. Empty Flows have zero XNPV but no IRR.
 
 ```python
-from rangekeeper.model.flow import from_events
+from rangekeeper.model.flow import Flow
+
 from rangekeeper.calculations.financial import calculate_irr
-investment = from_events([date(2026, 1, 1), date(2027, 1, 1)], (-100, 110), units="AUD")
+investment = Flow.from_events([date(2026, 1, 1), date(2027, 1, 1)], (-100, 110), units='AUD')
 result = calculate_irr(investment)  # optional guess=0.1
 assert abs(result.rate - 0.1) < 1e-9
 assert result.method == "pyxirr.xirr"
@@ -248,7 +275,7 @@ Each property Value retains source Claim/Fact lineage. Use
 The original zero/missing/conflict/source-note examples remain covered.
 
 External Projects, workbench/layout review, service adapters and host integrations
-are Turn 3 work. A passing synthetic example does not certify them.
+require their own acceptance checks. A passing synthetic example does not certify them.
 
 ## Corrections to retain during future ports
 
@@ -262,7 +289,7 @@ are Turn 3 work. A passing synthetic example does not certify them.
   The basic DCF notebook's intended result remains **1000**, checked independently.
 - Distribution bounds are checked element by element. Degenerate distributions
   return the requested sample count. Shock impact is applied once, explicitly.
-- Numerical kernels do not establish acausal support. Turn 2 adds finite Movement
+- Numerical kernels do not establish acausal support. The executor supports finite Movement
   equations and exogenous policies; unknown rates, nonlinear/piecewise symbolic
   accounts and endogenous sequential decisions remain outside affine execution.
 
@@ -354,8 +381,8 @@ available but routine acceptance uses four visible scenarios.
 
 The [naming guide](RK_NAMING.md) records the current vocabulary. `Market` is a
 read-only view of canonical Values, not another persistent document. Use
-`model.distribution.Distribution` and its `make_uniform`, `make_triangular`,
-`make_pert`, or `make_symmetric` constructors. Calculation functions consume the
+`model.distribution.Distribution` and its `uniform`, `triangular`,
+`pert`, or `symmetric` class methods. Instance calculation methods consume the
 same generated record; numerical methods are no longer attached to a second
 handwritten Distribution class.
 
@@ -367,7 +394,7 @@ identifiers. Codecs do not upgrade automatically. Old Runs keep their original
 Model pins and are not relabelled as new executions. Select the new Model revision
 explicitly when authoring a later Specification.
 
-## Workbench, design and external consumers (Turn 3)
+## Workbench, design and external consumers
 
 Use `rangekeeper.workflow`, not `rangekeeper.graph.workflow`. Outer Sources,
 Model, Decisions and Checks documents use version 2; nested extraction policies
@@ -413,3 +440,12 @@ full semantic validation. The [C# guide](../grasshopper/README.md) explains iden
 revisions, host acceptance and the separate Windows connector gate. See the
 [consumer register](research/full-migration/turn3/CONSUMERS.md) for proved consumers
 and the [retirement register](research/full-migration/turn3/RETIREMENT.md) for holds.
+
+## Dataframe migration
+
+Install the `tables` extra, or `calculations`, for Polars. The `pandas` extra and
+adapter are removed. Replace Table `to_dataframe` with `polars.to_frame`, and
+`from_dataframe` with `polars.to_table`. Replace Flow `to_series` with `polars.dates`;
+its date is an explicit column. Use canonical Flow records for arithmetic.
+CSV now preserves `NA` as text and represents missing cells with None. Supply
+`schema_overrides` when numeric-looking identifiers must remain text.

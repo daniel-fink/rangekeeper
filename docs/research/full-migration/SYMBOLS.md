@@ -1,6 +1,6 @@
 # Remaining-code symbol inventory
 
-Static capture only. The [review proposal](../../FULL_MIGRATION_REVIEW.md) owns dispositions.
+Static capture only. The [review proposal](../../history/FULL_MIGRATION_REVIEW.md) owns dispositions.
 Each symbol must receive a behavior-contract row before its implementation is retired.
 Private methods and fields are included to expose algorithms and mutation contracts.
 
@@ -321,13 +321,13 @@ Review group: `graph-domain`.
 - `_removed_graph_object_ids(graph: Graph, removals: _RemovalScope)` — callable, line 393.
 - `_validate_remaining_dependencies(graph: Graph, candidate: _Candidate, removals: _RemovalScope)` — callable, line 412.
 
-## `src/rangekeeper/graph/adapter/__init__.py`
+## `src/rangekeeper/adapters/__init__.py`
 
 Review group: `graph-domain`.
 
 No classes or functions; inspect imports, re-exports or commented residue.
 
-## `src/rangekeeper/graph/adapter/json.py`
+## `src/rangekeeper/adapters/json.py`
 
 Review group: `graph-domain`.
 
@@ -788,7 +788,7 @@ Review group: `scenarios`.
 - `Volatility.calculate_autoregression(parameter: float, volatility: numba.typed.List)` — callable, line 109.
 - `Volatility.calculate_volatility_accumulation(trend_rate: float, trend_values: numba.typed.List, mr_parameter: float, ar_returns: numba.typed.List)` — callable, line 122.
 
-## `src/rangekeeper/policy.py`
+## `src/rangekeeper/policies/replay.py`
 
 Review group: `policy`.
 

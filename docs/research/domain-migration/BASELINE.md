@@ -3,7 +3,7 @@
 Status: completed local baseline and bounded record-boundary feasibility review.
 No production Python, authoritative schema, existing test expectation, or consumer
 implementation was changed. This is not certification of the future runtime.
-The [migration map](../../DOMAIN_MIGRATION_MAP.md) contains the resulting design.
+The [migration map](../../history/DOMAIN_MIGRATION_MAP.md) contains the resulting design.
 This is the preserved pre-implementation baseline; subsequent production changes
 and verification are recorded separately in [Turn 1](turn1/README.md),
 [Turn 2](turn2/README.md), and [Turn 3](turn3/README.md).

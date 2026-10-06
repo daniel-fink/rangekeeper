@@ -1,7 +1,7 @@
 """Detached plotting adapters. Figures are returned; callers choose display or storage."""
 
 from collections.abc import Mapping, Sequence
-from ..model.flow import Flow, resolve_date
+from ..model.flow import Flow
 from ..duration.period import PeriodTiming
 
 
@@ -26,7 +26,7 @@ def plot_flows(
             raise ValueError("plot requires resolved magnitudes")
         axis = axes[units.index(flow.units), 0]
         axis.plot(
-            [resolve_date(m, timing=timing) for m in flow.movements],
+            [m.resolve(timing=timing) for m in flow.movements],
             [m.magnitude for m in flow.movements],
             label=label,
         )

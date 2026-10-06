@@ -134,7 +134,7 @@ with TemporaryDirectory(prefix="rk-native-") as temp:
         if content is not None:
             assert isinstance(record.quantity, module.Quantity)
     readme = yaml.safe_load(
-        (SCHEMA / "README.md").read_text().split("```yaml\n", 1)[1].split("```", 1)[0]
+        (SCHEMA.parent / "docs/SCHEMA_EXAMPLES.md").read_text().split("```yaml\n", 1)[1].split("```", 1)[0]
     )
     for example in (fixture, readme):
         record = json_loader.loads(json.dumps(example), target_class=module.Example)

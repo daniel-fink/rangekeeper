@@ -3,7 +3,7 @@
 Verification date: 6 October 2026. **Turn 3 implementation and available local
 acceptance are complete.** Official Windows connector acceptance remains open.
 This is an uncommitted candidate; no commit,
-push, release or external publication was made. The [implementation contract](../../../FULL_MIGRATION_TURN3.md),
+push, release or external publication was made. The [implementation contract](../../../history/FULL_MIGRATION_TURN3.md),
 [consumer register](CONSUMERS.md) and [Turn 4 removal list](RETIREMENT.md) describe
 scope and remaining obligations.
 

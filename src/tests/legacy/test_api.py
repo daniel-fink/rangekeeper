@@ -11,11 +11,9 @@ import dotenv
 
 # In addition, in order to enable pytest to find all modules,
 # run tests via a 'python -m pytest tests/<test_file>.py' command from the root directory of this project
-import pandas as pd
 from specklepy.api import operations, client
 
 
-pd.set_option("display.max_columns", None)
 
 import rangekeeper as rk
 
@@ -184,10 +182,8 @@ class TestApi:
 #             "\nGFA Aggregation: \n{0}".format(pp.pprint(spatial_containment.to_dict()))
 #         )
 #         #
-#         df = pd.DataFrame.from_dict(spatial_containment.to_dict(), orient="index")
 #         print(df)
 #
-#         foo = spatial_containment.to_DataFrame()
 #         #
 #
 #         fig = spatial_containment.sunburst("subtotal_gfa")

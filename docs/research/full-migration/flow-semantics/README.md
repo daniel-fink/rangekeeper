@@ -36,7 +36,7 @@ This report and its evidence preserve the earlier checkpoint's names and inputs.
   upgrade examples, architecture/contract documents and handoff. `FlowSample`
   remains the current entry name; renaming it was not part of this instruction.
 
-The [current contract](../../../FULL_MIGRATION_TURN1.md#flow-semantics-and-explicit-operations)
+The [current contract](../../../history/FULL_MIGRATION_TURN1.md#flow-semantics-and-explicit-operations)
 and [API catalog](api.json) define the resulting interfaces. Historical evidence
 retains the inputs and results of each prior checkpoint.
 

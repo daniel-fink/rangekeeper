@@ -11,7 +11,7 @@ from ..model import Model
 from ..model._index import walk
 from ..model.definitions import measure
 from ..references import SpecificationResolver
-from ..specification import Specification, Composition, compose, validate
+from ..specification import Composition, validate
 from ..units import UnitSystem, default_units
 from .errors import UnsupportedProblem
 from . import symbols
@@ -44,20 +44,19 @@ class Prepared:
 
 
 def prepare(
-    specification: Specification,
+    composition: Composition,
     *,
     resolver: SpecificationResolver,
     units: UnitSystem = default_units,
     checkpoint: Callable[[], None] = lambda: None,
 ) -> Prepared:
-    """Validate a concrete composition and normalize assignments to Measure units.
+    """Validate an existing composition and normalize assignments to Measure units.
 
     Only imposed mathematics is prepared. Unused reporting queries stay passive.
     Recorded quantities and estimates never supply missing fixed roles. This slice
     publishes Model-owned scalar Values; local Specification Values and ordered
     optimization objectives are rejected explicitly before invoking a backend.
     """
-    composition = compose(specification, resolver=resolver)
     validate(composition, resolver=resolver, units=units).raise_if_invalid()
     checkpoint()
     assert composition.model_id is not None

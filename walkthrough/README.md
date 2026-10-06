@@ -1,11 +1,11 @@
 # Rangekeeper walkthroughs
 
 The seven notebook sources use the canonical Model architecture. Run them with
-an installed RK wheel and the optional execution, calculation, dataframe, plotting
-and notebook dependencies used in the recorded acceptance environment. For example:
+the wheel built from this checkout and its optional execution, calculation, table,
+plotting and notebook dependencies. For example:
 
 ```sh
-python -m pip install "./src[calculations,pandas,workflow,execution,plotting,visualization]" nbclient nbformat nbconvert ipykernel
+python -m pip install "./src[calculations,tables,workflow,execution,plotting,visualization]" nbclient nbformat nbconvert ipykernel
 ```
 
 Run that install command from the repository root. Live design receive also needs
@@ -24,5 +24,8 @@ The isolated book build disables another execution because those outputs have
 already passed fresh-kernel checks. It does not use the old Jupyter cache.
 
 See [the upgrade guide](../docs/LEGACY_UPGRADE_GUIDE.md) and
-[current acceptance](../docs/research/full-migration/turn4/BASELINE.md).
+[verification guide](../docs/VERIFICATION.md).
 GitHub Pages publication is a separate action; rebuilding locally does not publish.
+
+Polars is the only dataframe dependency. The walkthrough lockfile resolves
+Rangekeeper from `../src`, so it cannot silently select an older published API.

@@ -457,7 +457,8 @@ document.write(`
 <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">date</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uuid</span><span class="w"> </span><span class="kn">import</span> <span class="n">uuid4</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span><span class="o">,</span><span class="w"> </span><span class="nn">sys</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>  <span class="c1"># Detached tables for presentation only.</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">polars</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pl</span>  <span class="c1"># Detached tables for presentation only.</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">set_tbl_cols</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">rangekeeper</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">rk</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.examples</span><span class="w"> </span><span class="kn">import</span> <span class="n">investment</span>
@@ -478,7 +479,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Installed package: /private/tmp/rk-turn4-wheel/site/rangekeeper/__init__.py
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Installed package: /private/tmp/rk-refactor2-notebook-site/rangekeeper/__init__.py
 </pre></div>
 </div>
 </div>
@@ -579,64 +580,19 @@ document.write(`
 <h3>5. Inspect decision evidence<a class="headerlink" href="#inspect-decision-evidence" title="Link to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([{</span><span class="s1">'Date'</span><span class="p">:</span> <span class="n">d</span><span class="o">.</span><span class="n">at</span><span class="p">,</span> <span class="s1">'Pricing factor'</span><span class="p">:</span> <span class="n">d</span><span class="o">.</span><span class="n">observations</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">quantity</span><span class="o">.</span><span class="n">magnitude</span><span class="p">,</span> <span class="s1">'Rule'</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">rule</span><span class="p">)</span> <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">rule</span> <span class="k">else</span> <span class="s1">'fallback'</span><span class="p">,</span> <span class="s1">'Terminated'</span><span class="p">:</span> <span class="n">d</span><span class="o">.</span><span class="n">terminated</span><span class="p">,</span> <span class="s1">'Reason'</span><span class="p">:</span> <span class="n">d</span><span class="o">.</span><span class="n">termination_reason</span><span class="p">}</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">flexible_run</span><span class="o">.</span><span class="n">report</span><span class="o">.</span><span class="n">decisions</span><span class="p">])</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([{</span><span class="s1">'Date'</span><span class="p">:</span> <span class="n">d</span><span class="o">.</span><span class="n">at</span><span class="p">,</span> <span class="s1">'Pricing factor'</span><span class="p">:</span> <span class="n">d</span><span class="o">.</span><span class="n">observations</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">quantity</span><span class="o">.</span><span class="n">magnitude</span><span class="p">,</span> <span class="s1">'Rule'</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">rule</span><span class="p">)</span> <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">rule</span> <span class="k">else</span> <span class="s1">'fallback'</span><span class="p">,</span> <span class="s1">'Terminated'</span><span class="p">:</span> <span class="n">d</span><span class="o">.</span><span class="n">terminated</span><span class="p">,</span> <span class="s1">'Reason'</span><span class="p">:</span> <span class="n">d</span><span class="o">.</span><span class="n">termination_reason</span><span class="p">}</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">flexible_run</span><span class="o">.</span><span class="n">report</span><span class="o">.</span><span class="n">decisions</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html"><div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
+<div class="output text_html"><div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
 </style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Date</th>
-      <th>Pricing factor</th>
-      <th>Rule</th>
-      <th>Terminated</th>
-      <th>Reason</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>2021-12-31</td>
-      <td>1.000000</td>
-      <td>fallback</td>
-      <td>False</td>
-      <td>None</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>2022-12-31</td>
-      <td>1.153078</td>
-      <td>fallback</td>
-      <td>False</td>
-      <td>None</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>2023-12-31</td>
-      <td>1.218242</td>
-      <td>7eeeaaee-d595-5ea2-93b9-c72bff932640</td>
-      <td>True</td>
-      <td>rule_matched</td>
-    </tr>
-  </tbody>
-</table>
-</div></div></div>
+<small>shape: (3, 5)</small><table border="1" class="dataframe"><thead><tr><th>Date</th><th>Pricing factor</th><th>Rule</th><th>Terminated</th><th>Reason</th></tr><tr><td>date</td><td>f64</td><td>str</td><td>bool</td><td>str</td></tr></thead><tbody><tr><td>2021-12-31</td><td>1.0</td><td>&quot;fallback&quot;</td><td>false</td><td>null</td></tr><tr><td>2022-12-31</td><td>1.153078</td><td>&quot;fallback&quot;</td><td>false</td><td>null</td></tr><tr><td>2023-12-31</td><td>1.218242</td><td>&quot;7207b777-d3c8-5cf4-82f3-e44597…</td><td>true</td><td>&quot;rule_matched&quot;</td></tr></tbody></table></div></div></div>
 </div>
 </section>
 <section id="compare-cashflows-and-results">
@@ -653,60 +609,19 @@ document.write(`
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">'Traditional'</span><span class="p">:</span> <span class="n">metrics</span><span class="p">(</span><span class="n">traditional</span><span class="p">),</span> <span class="s1">'Fixed horizon'</span><span class="p">:</span> <span class="n">metrics</span><span class="p">(</span><span class="n">fixed</span><span class="p">),</span> <span class="s1">'Policy'</span><span class="p">:</span> <span class="n">metrics</span><span class="p">(</span><span class="n">flexible</span><span class="p">)})</span><span class="o">.</span><span class="n">T</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([{</span><span class="s1">'Case'</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">metrics</span><span class="p">(</span><span class="n">result</span><span class="p">)}</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="p">[(</span><span class="s1">'Traditional'</span><span class="p">,</span> <span class="n">traditional</span><span class="p">),</span> <span class="p">(</span><span class="s1">'Fixed horizon'</span><span class="p">,</span> <span class="n">fixed</span><span class="p">),</span> <span class="p">(</span><span class="s1">'Policy'</span><span class="p">,</span> <span class="n">flexible</span><span class="p">)]])</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html"><div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
+<div class="output text_html"><div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
 </style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>PV (AUD)</th>
-      <th>NPV (AUD)</th>
-      <th>Dated IRR (%)</th>
-      <th>Sale date</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>Traditional</th>
-      <td>1000.0</td>
-      <td>-0.0</td>
-      <td>6.996148</td>
-      <td>2030-12-31</td>
-    </tr>
-    <tr>
-      <th>Fixed horizon</th>
-      <td>807.982737</td>
-      <td>-192.017263</td>
-      <td>4.081749</td>
-      <td>2030-12-31</td>
-    </tr>
-    <tr>
-      <th>Policy</th>
-      <td>1140.27799</td>
-      <td>140.27799</td>
-      <td>12.008884</td>
-      <td>2023-12-31</td>
-    </tr>
-  </tbody>
-</table>
-</div></div></div>
+<small>shape: (3, 5)</small><table border="1" class="dataframe"><thead><tr><th>Case</th><th>PV (AUD)</th><th>NPV (AUD)</th><th>Dated IRR (%)</th><th>Sale date</th></tr><tr><td>str</td><td>f64</td><td>f64</td><td>f64</td><td>date</td></tr></thead><tbody><tr><td>&quot;Traditional&quot;</td><td>1000.0</td><td>-3.4106e-13</td><td>6.996148</td><td>2030-12-31</td></tr><tr><td>&quot;Fixed horizon&quot;</td><td>807.982737</td><td>-192.017263</td><td>4.081749</td><td>2030-12-31</td></tr><tr><td>&quot;Policy&quot;</td><td>1140.27799</td><td>140.27799</td><td>12.008884</td><td>2023-12-31</td></tr></tbody></table></div></div></div>
 </div>
 <p>The policy may improve or reduce realized value. It observes a threshold, not the future peak. The full market path remains in both accepted Models. The horizon curve below is a hindsight comparison only.</p>
 <div class="cell docutils container">

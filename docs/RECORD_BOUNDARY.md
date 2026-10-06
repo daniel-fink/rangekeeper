@@ -1,171 +1,158 @@
-# Generated records and shared validation — Turn 1
+# Generated records and domain methods
 
-**Additional native-tooling limit:** the current stock LinkML 1.11.1 loader
-cannot load a single-field terminal policy Action in the new Policy record.
-The generated immutable production records/codecs preserve and validate it.
-The [ten-document probe](research/full-migration/turn2/final-notebooks/native-boundary.json)
-records 10 immutable passes and 9 stock-native passes; the stock-native failure
-is retained, not counted as successful migration of that private loader.
+LinkML owns each record's fields, types, inheritance and wire format. The Python
+generator emits one immutable class for each concrete schema class. It also emits
+typed constructors, properties, `replace` methods and docstrings from schema
+descriptions. The bundle contains 72 schema classes: 71 record classes and opaque
+`Content`, represented as JSON data.
 
-**Turn 2 update, 2026-10-06:** [Temporal equations, scenarios and policies](FULL_MIGRATION_TURN2.md)
-now use Model/Specification 0.5.0 and Run 0.2.0. `ValueReference` addresses scalar
-Values or owner-local Movement keys. The canonical calendar package is `duration/`;
-`temporal` has no public alias. Finite Flow formulations, captured scenario replay,
-exogenous declarative policies and the four numerical walkthroughs are implemented.
-See [verification](research/full-migration/turn2/README.md) and the
-[upgrade guide](LEGACY_UPGRADE_GUIDE.md). Turn 3 completes remaining consumers and
-integrations; Turn 4 retires obsolete code after their acceptance gates.
-The dated checkpoint descriptions below remain historical context.
+Use the [domain API](DOMAIN_CORE.md) for complete Model and Specification revisions,
+[Run and storage](RUN_AND_STORAGE.md) for execution evidence and persistence, and the
+[upgrade guide](LEGACY_UPGRADE_GUIDE.md) when migrating callers. This page defines
+the shared record layer and its method ownership.
 
-**Flow semantics update, 2026-10-06:** Flows no longer carry semantic kinds or
-basis. The overall model logic owns their meaning and selects operations; units,
-dates, alignment and missingness remain checked. See the
-[current contract](FULL_MIGRATION_TURN1.md#flow-semantics-and-explicit-operations)
-and [verification](research/full-migration/flow-semantics/README.md).
+## Ownership
 
-Implemented 2026-10-02. This completes work units **2A and 2B** in
-the [migration map](DOMAIN_MIGRATION_MAP.md). The Python record
-boundary was reviewed before Turn 2. [Model/Specification domain behavior](DOMAIN_CORE.md)
-is now implemented; this page documents the underlying record layer. The root `rk.Model`, `rk.Specification`
-and `rk.Run` facades are now available through [Turn 3](RUN_AND_STORAGE.md); imports below deliberately use the private
-generated bundle to demonstrate what now works.
-
-## Ownership and files
-
-| Files | Responsibility |
+| Location | Responsibility |
 | --- | --- |
-| `tools/schema/bundle.yaml`, `generate.py`, `requirements.txt` | Shared Model/Specification/Run imports, pinned generation and nonmutating `--check`. |
-| `src/rangekeeper/_schema/{records,native}.py` | Generated explicit immutable constructors/properties; stock mutable LinkML records used only for interoperability checks. Fifty LinkML classes are accounted for: 49 immutable classes and opaque `Content` represented as JSON data. |
-| `_schema/{schema,slots,manifest}.json` | Closed structural definitions, schema-derived conversion information, source/output fingerprints and tool versions. |
-| `_records.py` | Common strict JSON copying, recursive freezing, field presence, schema-directed UUID conversion and detached exports. No handwritten field inventory. |
-| `_schema/validation.py`, `diagnostics.py`, `errors.py` | Packaged structural validation and immutable reports/errors. |
-| `_validation.py`, `model/{_expression,_formulation,_validation}.py` | Shared semantic invariants plus bounded mathematical and Model rules. See the subsequent [validation refactor](DOMAIN_CORE.md#composable-validation) for current ownership. |
-| `specification/{_composition,_validation}.py`, `run/_validation.py` | Existing additive-composition, investigation and finalized-Run checks, moved without changing their algorithms. |
-| `{model,specification,run}/validation.py` | Typed report entrypoints: validate structure before invoking bounded semantics. |
-| `schema/checks/_library.py` | Standalone script bootstrap, packaged-schema access and stale-source fingerprint detection. Conformance scripts call library checks. |
+| `schema/*.yaml` | Authoritative field, enum, inheritance and description definitions |
+| `tools/schema/generate.py` | Explicit constructors, properties, typed replacement signatures and selected behaviour inheritance |
+| `rangekeeper/_schema/records.py` | Canonical immutable classes, including the registry used for nested decoding |
+| `rangekeeper/_records.py` | Shared field encoding, strict JSON copying, freezing, replacement and field presence |
+| `rangekeeper/_behaviors/` | Handwritten methods for Flow, Movement, Period and Distribution; no field declarations |
+| `rangekeeper/_schema/{schema,slots,manifest}.json` | Structural checks, conversion metadata and reproducible generation fingerprints |
+| `model`, `specification`, `run` | Document-wide validation, references and revision rules |
+| `calculations` | Operations that combine records or require an explicit financial or temporal interpretation |
 
-Generated records depend on the generic record mechanics and JSON Schema validation.
-Domain validation consumes detached document data. Neither imports a solver, graph
-implementation, filesystem store, plotting module or service adapter. `graph` and
-`measure` now use the root package's existing lazy-import mechanism; their existing
-names and implementations remain available. No graph consumer has been migrated.
+The generator explicitly attaches field-free behaviour mixins. It does not patch
+classes after import. Direct construction, `from_data`, `from_json` and nested
+property decoding therefore return the same class with the same methods. Schema
+inheritance remains intact: `Assembly` is an `Entity`; `Span` is a `Period`.
+Workflow computation fingerprints include the behaviour modules, so changes to
+these methods affect recorded computation identity.
 
-Runtime structural dependencies are `jsonschema>=4.26,<5` and
-`rfc3339-validator>=0.1.4,<0.2`. Explicit timestamp format checking prevents a minimal
-installation from silently ignoring `date-time`. Generation uses the exact versions
-in `tools/schema/requirements.txt`. LinkML is not a runtime dependency of these records.
+Handwritten methods use local imports for schema constructors and optional
+numerical libraries. Importing records does not load a solver, dataframe, plotting
+library or random generator. SciPy and NumPy load when a Distribution calculation
+needs them. Polars loads when an alignment or resampling operation needs it.
 
-## Working authoring and access
+## Construction and replacement
 
 ```python
-from uuid import uuid4
-from rangekeeper._schema.records import (
-    Characteristics, Entity, Metadata, Model, Quantity, System, Value,
-)
-from rangekeeper.model.validation import validate
+from datetime import date
+from rangekeeper.model.flow import Flow, Movement
 
-value = Value(
-    id=uuid4(), key="rent", kind="measurement", measure=uuid4(),
-    quantity=Quantity(magnitude=0, units="AUD/year"),
-)
-entity = Entity(id=uuid4(), characteristics=Characteristics(values=(value,)))
-assert entity.characteristics.values[0].quantity.magnitude == 0
-
-# A complete Model must declare every referenced Measure. Structural construction
-# of the child above cannot establish that document-wide ownership/reference rule.
-model = Model(metadata=Metadata(id=uuid4(), schema_version="0.5.0"))
-validate(model).raise_if_invalid()
-restored = Model.from_data(model.to_data())
-assert restored.metadata.id == model.metadata.id
+movement = Movement(key="delivery", date=date(2026, 1, 1))
+assert not movement.has_field("magnitude")
+resolved = movement.replace(magnitude=10, claims=())
+assert resolved.number == 10.0
+assert movement.magnitude is None
+flow = Flow(units="m", movements=(resolved,)).check(resolved=True)
+assert flow.total().magnitude == 10
 ```
 
-Constructors are keyword-only, with explicit required fields, enum Literal types,
-unions, UUID references and inherited fields. `Assembly` subclasses `Entity`.
-Type checking catches missing required arguments, unknown fields, wrong enum/record
-types and writes to read-only properties. Python considers `bool` a subtype of `int`;
-runtime structural checks still reject it for numerical fields.
+Constructors, `from_data` and `replace` validate structure. Generated signatures
+let type checkers reject unknown fields, wrong record types and invalid enum
+values. Runtime checks reject nonfinite numbers, cyclic data and invalid field
+shapes. Python `bool` is a subtype of `int`, but runtime numerical fields still
+reject it.
 
-The generated constructor and `from_data(data)` validate structure. They **do not**
-certify cross-record semantics. `Model.from_data` here means the generated record,
-not the separately implemented domain facade's factory. Call the appropriate validator explicitly.
-The typed constructor surface prefers UUIDs and generated child records; `from_data`
-accepts their serialized forms. Runtime construction also accepts schema-compatible
-plain child data and UUID strings, without numeric coercion.
+`replace` returns a new record. It uses the same field encoder and structural
+validation as construction. An omitted argument, or `UNSET`, retains the old
+field's presence and value. Explicit `None` records null where the schema permits
+it; `()` records an empty collection. A no-argument replacement preserves omitted,
+null and empty fields exactly. Replacement does not remove a present field;
+construct from an explicitly edited data mapping when that is required.
 
-Schema `date` fields now accept and expose Python `datetime.date`. Their wire
-representation stays an ISO date string. This applies to Period boundaries,
-Movement dates, and the date branch of Source `issued_at`/`received_at`.
-The timestamp branch of those Source fields still returns its validated string.
-Datetime objects are not silently truncated into dates. Opaque content is unchanged.
+Replacement does not mint a document revision or certify document-wide semantics.
+Use `Model.revise` or `Specification.revise` to check lineage and meaningful change.
+Both facades use the same revision comparison rules, but retain their own domain
+validation. A new UUID alone is not a meaningful revision.
 
-| Operation | Behavior and errors |
-| --- | --- |
-| `Record.from_data(data: Mapping[str, object]) -> Self` | Validate/copy/freeze. Invalid shape raises `ValidationError`; non-JSON objects, cycles and non-finite numbers raise `TypeError`/`ValueError`. |
-| `Record.from_json(text: str) -> Self` | Same path, rejecting duplicate keys at every depth. Parsing/duplicate failures are `ValueError`; this is not yet the planned public codec package. |
-| `record.to_data() -> dict[str, object]` | Detached JSON-compatible data; safe for callers to modify. No file IO. |
-| `record.has_field(name: str) -> bool` | Distinguishes omission from explicit null/empty. Unknown names raise `KeyError`. |
-| Generated properties | UUIDs, dates, immutable embedded records, tuples, read-only mappings and JSON scalars. Assignment/deletion raises `AttributeError`; mapping mutation raises `TypeError`. |
-| Equality | Same generated class and same serialized representation, ignoring object-key order. Array order, null/omission, booleans versus numbers, and integer/float representation remain distinct. This is not the future domain diff API. Records are unhashable. |
+`to_data` returns detached JSON-compatible data. Dates use ISO strings on the wire
+and `datetime.date` in typed fields. Datetimes are not truncated into dates. Source
+fields that also permit timestamp strings retain those strings. UUID conversion
+applies only to schema-declared references, never to opaque content.
 
-Absent optional scalar properties return `None`; absent collections return empty
-tuples or read-only mappings. Explicit null returns `None` only when the schema permits
-it. Export retains these distinctions. UUID normalization is limited to schema-declared
-slots: an `id` string inside opaque Claim content is left untouched.
+## Method contracts
 
-`Location.address` illustrates LinkML's keyed inline representation. Both
-`{"line": "1"}` and `{"line": {"value": "1"}}` are allowed, as is an explicit
-Entry key inside the latter form. Access exposes read-only mappings and scalar values;
-export preserves the supplied form exactly. It does not invent an absent Entry key or
-turn this dictionary into a tuple. Its generated annotation reflects the scalar/mapping
-alternatives; validation supplies the reduced Entry field constraints.
+```text
+Movement
+  number -> float                         finite magnitude; unresolved raises
+  coordinate -> tuple                     alignment identity
+  resolve(*, timing=None) -> date          recorded date, or explicit period rule
+  replace(*, ...) -> Movement              typed, immutable structural replacement
 
-## Shared validation entrypoints
+Flow
+  from_events(dates, magnitudes, *, units, keys=None)
+  from_periods(periods, magnitudes, *, units, dates=None)
+  check(*, resolved=False, units=None) -> Flow
+  convert(*, units, unit_system=None) / scale(factor) / negate()
+  total(*, missing="error") -> Quantity | None
+  trim(*, start, end) / clean(*, remove_zeroes=False)
+  difference(*, initial=None) / collapse(*, on=None, timing=None, missing="error")
+  extent(*, include_zeroes=False) / trim_empty()
 
-These are bounded, in-memory entrypoints for the record stage. Turn 2 adds the
-[facade/resolver interface](DOMAIN_CORE.md); its Composition operation is now named
-`specification.validation.validate`, while the catalogue entrypoint below is named
-`validate_records`. Both reuse the same bounded semantic implementation.
+Period (also inherited by Span)
+  check() -> Period
+  resolve(*, timing) -> date
 
-```python
-from rangekeeper.model.validation import validate as validate_model
-from rangekeeper.specification.validation import validate_records as validate_specification
-from rangekeeper.run.validation import validate as validate_run
-
-validate_model(model_record, history=())
-validate_specification(spec_record, models=models_by_revision,
-                       specifications=specifications_by_revision)
-validate_run(run_record, runs=runs_by_revision,
-             specifications=specifications_by_revision, models=models_by_revision)
+Distribution
+  uniform(...) / triangular(...) / pert(...) / symmetric(...)
+  check() -> Distribution
+  sample(*, size, generator) -> tuple[float, ...]
+  cdf(values) / mass(boundaries) -> tuple[float, ...]
 ```
 
-Inputs may be generated records or serialized mappings. Catalogue keys are canonical
-UUID strings. Results are `ValidationReport(issues: tuple[Issue, ...])` with `valid`
-and `raise_if_invalid()`. Each `Issue` has `code`, `message`, optional UUID
-`document_id`, and JSON pointer `path`. Structural diagnostics identify instance paths;
-the migrated semantic checks currently report `semantic.contract` at document level.
-They have not acquired fabricated field precision or specialized error classifications.
+`check` raises on invalid content and otherwise returns the same object. It does
+not repair data. `Flow.check(resolved=True)` additionally requires a finite number
+for every Movement. `Movement.number` provides a nonoptional float for arithmetic.
+`Flow.clean` is a transformation: it removes unresolved movements and, when
+requested, zeroes. It is not a validation step.
 
-Specification validation handles concrete investigations and batches against pinned
-Models. Partial contributions remain structurally constructible; validating a concrete
-investigation requires its Model and complete roles. The internal composition result
-remains private conformance state; Turn 2 exposes it through an immutable public
-Composition with contributor snapshots and a read-only resolver.
+Periods use `[start, end)`. Movement dates can record independent payment or
+observation dates outside their coverage period. Recorded dates take precedence;
+undated period movements require `start`, `last_day` or `end` when resolving a date.
+Flows carry units and coordinates. The calling model determines whether operations
+such as summation or integration express the intended quantity.
 
-Unit matching uses the bounded existing logic and an optional `units_compatible`
-callback. Expression unit inference, graph query evaluation, arbitrary Fact/content
-agreement, solver capability, numerical feasibility and independent solution acceptance
-remain outside these checks. Run examples remain synthetic conformance evidence.
+`Distribution.cdf` is the cumulative distribution function. `mass` returns interval
+probabilities. Samples use the declared units and advance only the supplied NumPy
+generator. Point masses retain the existing deterministic sampling convention.
 
-## Verification and next review
+## Operations across records
 
-The [Turn 1 verification record](research/domain-migration/turn1/README.md) contains
-commands, environments, fingerprints and logs. All seven existing schema suites pass;
-new boundary tests and positive/negative static examples pass. The generated native
-bundle is also checked separately. A wheel built in an isolated directory exercises
-the record boundary in a fresh environment outside the checkout, without LinkML,
-numerical packages or solver dependencies. This is not full installed consumer acceptance.
+`series.align(flows, join=..., missing=...)` returns `Alignment`, which retains
+aligned Flows, original known-value coverage and the selected missing policy.
+`Alignment.reduce(reducer="sum" | "min" | "max", units=...)` shares unit conversion,
+Claim collection and coverage calculation. `series.aggregate(...)` combines these
+two steps. Each reduction returns `Aggregation(flow, coverage)`.
 
-Review the explicit constructors, presence behavior, read-only access and separation
-between structural construction and document validation. Turn 2 now supplies Model indexing/lookup, owner-local access, revision construction
-and public Specification composition. Run, persistence and final public/package
-acceptance are now implemented in [Turn 3](RUN_AND_STORAGE.md). Execution remains a later checkpoint. No commit, push or release is included.
+Exact alignment is the default. Union and intersection are explicit. Zero filling
+applies to absent coordinates; an explicitly unresolved movement remains unresolved.
+Skip can reduce a partly known group; an entirely unknown group remains unresolved.
+Coverage reports the original known fraction, including after zero filling.
+
+`series.multiply`, `integrate` and `resample` retain explicit calculation contracts.
+`Account.calculate(...)` returns opening, closing, overdraft and interest Flows.
+Financial valuation remains in `calculations.financial`, with explicit timing and
+PyXIRR conventions. Calendar grids remain in `duration.period`.
+
+A Model facade builds its ownership index once and reuses it for validation and
+lookup. Scalar execution composes a Specification once, then passes that exact
+Composition to preparation. These changes avoid repeated work without caching
+across revisions or skipping validation.
+
+## Generation and verification
+
+Use the pinned `tools/schema/requirements.txt` environment. Run
+`python tools/schema/generate.py`, then `python tools/schema/generate.py --check`.
+Generated files must not be edited by hand. LinkML is not a runtime dependency.
+Run `tools/schema/typecheck.py` with mypy 1.18.2 for valid consumers and deliberate
+static rejection cases. `tools/schema/verify_install.py` checks a wheel outside the
+checkout, including lazy imports and nested record behaviour.
+
+The stock LinkML 1.11.1 loader still cannot load a single-field terminal policy
+Action. Production immutable records and codecs handle that contract. The
+[recorded native-tooling probe](research/full-migration/turn2/final-notebooks/native-boundary.json)
+documents this separate limitation.

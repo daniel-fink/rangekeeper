@@ -1,9 +1,8 @@
 # Isolated Windows-gated predecessor code
 
-The retained implementation now lives under explicit `legacy` directories. This
-is a relocation, not removal or acceptance of the Windows connector gate. The
-canonical schemas, mathematics, source meanings and active C# build inputs are
-unchanged. The relocation follows the uncommitted Turn 4 retirement slice.
+The retained predecessor implementation lives under explicit `legacy` directories.
+Canonical code uses independent records and operations. The official Windows
+connector gate remains open; these trees remain until that gate closes.
 
 ```text
 src/rangekeeper/
@@ -78,19 +77,15 @@ source lists. No legacy C# project or compatibility assembly was introduced.
 
 ## Verification and remaining gate
 
-[Fresh evidence](research/full-migration/legacy-isolation/README.md) records
-1,063 local tests passed, 24 optional MiniZinc skips, generation freshness, typing,
-installed core/execution/source checks, explicit predecessor roundtrips, and the
-C# build and cross-language checks. Import checks find no canonical-to-legacy or
-old-path imports. The schema files are unchanged; the seven prior schema-suite
-results remain the Turn 4 evidence, not claimed as newly rerun here.
+[Captured relocation evidence](research/full-migration/legacy-isolation/README.md)
+records the checks at that checkpoint. Use [verification](VERIFICATION.md) for
+current commands.
 
 The [Windows procedure](../grasshopper/WINDOWS_DEVELOPMENT.md) still controls final
 removal. Its publication/receive gate is open. All retained implementation is now
 in the isolated trees, so final deletion can remove those trees, their tests and
 the temporary extra without another domain move. Keep historical wire converters
-and original source evidence after that deletion. No commit, push or publication
-was performed for this relocation.
+and original source evidence after that deletion.
 
 ## Future cleanup
 

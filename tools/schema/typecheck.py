@@ -18,6 +18,7 @@ with tempfile.TemporaryDirectory(prefix="rk-mypy-") as cache:
     sources = [
         "rangekeeper/_schema/records.py",
         "rangekeeper/_records.py",
+        "rangekeeper/_behaviors",
         "rangekeeper/diagnostics.py",
         "rangekeeper/errors.py",
         "rangekeeper/validate.py",
@@ -31,7 +32,7 @@ with tempfile.TemporaryDirectory(prefix="rk-mypy-") as cache:
         "rangekeeper/examples",
         "rangekeeper/adapters/plotting.py",
         "rangekeeper/migration",
-        "rangekeeper/adapters/pandas.py",
+        "rangekeeper/adapters/csv.py",
         "rangekeeper/adapters/polars.py",
         "rangekeeper/specification",
         "rangekeeper/units.py",
@@ -72,6 +73,7 @@ with tempfile.TemporaryDirectory(prefix="rk-mypy-") as cache:
                 "typing_execution_valid.py",
                 "typing_graph_valid.py",
                 "typing_consumers_valid.py",
+                "typing_behavior_valid.py",
             )
         ],
         cwd=ROOT / "src",
@@ -139,3 +141,14 @@ with tempfile.TemporaryDirectory(prefix="rk-mypy-") as cache:
     assert result.returncode == 1, result.stderr
     assert result.stdout.count(": error:") == 3, result.stdout
     print("Verified three intended consumer API static rejections")
+
+    result = subprocess.run(
+        command + [str(Path(__file__).with_name("typing_behavior_invalid.py"))],
+        cwd=ROOT / "src",
+        text=True,
+        capture_output=True,
+    )
+    print(result.stdout)
+    assert result.returncode == 1, result.stderr
+    assert result.stdout.count(": error:") == 6, result.stdout
+    print("Verified six intended record behaviour static rejections")

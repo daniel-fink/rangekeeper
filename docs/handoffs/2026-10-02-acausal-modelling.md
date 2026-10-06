@@ -22,7 +22,7 @@ preserved files. Keep the relocation evidence unchanged; record final removal se
 The accepted Turn 3 checkpoint is committed and pushed: RK `305f3ff` on
 `acausal-modelling`, Projects `6146ad2` on `feature/mandarin-assembly-layout`.
 The layout reference stays at `4e5aec4`, read only. The Turn 4 retirement slice
-is implemented and uncommitted. Start with [the current report](../FULL_MIGRATION_TURN4.md),
+is implemented and uncommitted. Start with [the current report](../history/FULL_MIGRATION_TURN4.md),
 [acceptance](../research/full-migration/turn4/BASELINE.md), and
 [remaining removal gate](../research/full-migration/turn4/RETIREMENT.md).
 
@@ -48,7 +48,7 @@ schema suites, static and installed-package checks, and five executed walkthroug
 The Turn 3 acceptance report above supersedes those counts. Market methods use v2 names with an explicit draft upgrade.
 These are the acceptance results for the Turn 2 and naming checkpoint.
 
-**Turn 2 update, 2026-10-06:** [Temporal equations, scenarios and policies](../FULL_MIGRATION_TURN2.md)
+**Turn 2 update, 2026-10-06:** [Temporal equations, scenarios and policies](../history/FULL_MIGRATION_TURN2.md)
 now use Model/Specification 0.5.0 and Run 0.2.0. `ValueReference` addresses scalar
 Values or owner-local Movement keys. The canonical calendar package is `duration/`;
 `temporal` has no public alias. Finite Flow formulations, captured scenario replay,
@@ -73,13 +73,13 @@ routine notebook acceptance uses four declared scenarios. External-service proof
 and full legacy removal remain separate work.
 
 **Movement naming, 2026-10-06:** the current API uses `Movement` and
-`Flow.movements`. See the [naming contract](../FULL_MIGRATION_TURN1.md#movement-naming)
+`Flow.movements`. See the [naming contract](../history/FULL_MIGRATION_TURN1.md#movement-naming)
 for the Python/wire-format change and upgrade requirements.
 
 **Flow semantics update, 2026-10-06:** Flows no longer carry semantic kinds or
 basis. The overall model logic owns their meaning and selects operations; units,
 dates, alignment and missingness remain checked. See the
-[current contract](../FULL_MIGRATION_TURN1.md#flow-semantics-and-explicit-operations)
+[current contract](../history/FULL_MIGRATION_TURN1.md#flow-semantics-and-explicit-operations)
 and [verification](../research/full-migration/flow-semantics/README.md).
 
 Prepared 2026-10-02 for continuation on Daniel's Mac Studio.
@@ -94,7 +94,7 @@ The dated entries below describe earlier checkpoints, not the current work queue
 
 ## Earlier checkpoints
 
-**Full migration update, 2026-10-04:** [Turn 1 foundations](../FULL_MIGRATION_TURN1.md)
+**Full migration update, 2026-10-04:** [Turn 1 foundations](../history/FULL_MIGRATION_TURN1.md)
 implements Model 0.4.0 rich properties and Flow Values, `model.duration`,
 `temporal`, `calculations`, detached dataframe adapters, and explicit Graph conversion.
 The basic DCF notebook, financial test model and synthetic source workflows migrated.
@@ -107,7 +107,7 @@ when the movement has no recorded date.
 now delegates PV, XNPV, IRR and day counts to PyXIRR. The draft mandatory IRR
 bracket is replaced by an optional initial guess.
 Next is Turn 2: temporal mathematics, scenarios/policies, and their consumers.
-Begin with the [duration namespace migration](../FULL_MIGRATION_TURN1.md#duration-namespace-migration),
+Begin with the [duration namespace migration](../history/FULL_MIGRATION_TURN1.md#duration-namespace-migration),
 recorded 2026-10-05. Move the old duration implementation to private migration
 support, then move `temporal/` to `duration/` and update callers, documentation and
 import checks together. Verify this slice before adding new consumers. The rename
@@ -137,9 +137,9 @@ adapters, and source workflows. The full four-turn continuation now governs 6E/6
 `schema/execution/` prototype and later promotion plan is superseded. Native CUE suitability remains untested; the decision is an accepted
 trade-off rather than a completed native-language evaluation.
 
-The [domain migration plan](../DOMAIN_MIGRATION_PLAN.md) now records the accepted
+The [domain migration plan](../history/DOMAIN_MIGRATION_PLAN.md) now records the accepted
 six-checkpoint sequence and retained Step 1 work queue. Step 1 is complete: read the
-[interface/consumer map](../DOMAIN_MIGRATION_MAP.md) and
+[interface/consumer map](../history/DOMAIN_MIGRATION_MAP.md) and
 [initial baseline](../research/domain-migration/BASELINE.md). At that checkpoint,
 seven schema suites passed; 491 local tests passed and two baseline failures reproduced. Three live API tests and
 external consumer execution remain unverified.

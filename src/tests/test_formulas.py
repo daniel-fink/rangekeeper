@@ -1,11 +1,14 @@
 """Migrated financial examples with explicit periods, units and account equations."""
 
+from rangekeeper.calculations.account import Account
+from rangekeeper.model.flow import Flow
+
 from datetime import date
 import math
 import numpy_financial as npf
 from scipy.optimize import brentq
 from pytest import approx
-from rangekeeper.model.flow import from_periods
+
 from rangekeeper.model.measure import Quantity
 from rangekeeper.duration import make_periods
 from rangekeeper.calculations import series, account
@@ -15,34 +18,32 @@ from tests.models.financial import build_accounts
 class TestFinancial:
     def test_simple_interest(self):
         example = build_accounts()
-        transactions = series.sum_flows(
+        transactions = series.aggregate(
             (example.draws, example.payments), join="union", missing="zero"
         ).flow
-        result = account.calculate_account(
+        result = Account.calculate(
             transactions, starting=Quantity(magnitude=0, units="AUD"), rate=0.05 / 12
         )
         assert result.closing.movements[-1].magnitude == approx(500000)
-        assert series.total(result.interest).magnitude == approx(
-            694.44 + 2083.33, rel=1e-2
-        )
+        assert result.interest.total().magnitude == approx(694.44 + 2083.33, rel=1e-2)
 
     def test_compounded_interest(self):
         periods = make_periods(date(2020, 1, 1), frequency="month", count=12)
-        transactions = from_periods(periods, [500000] + [0] * 11, units="AUD")
-        result = account.calculate_account(
+        transactions = Flow.from_periods(periods, [500000] + [0] * 11, units="AUD")
+        result = Account.calculate(
             transactions,
             starting=Quantity(magnitude=0, units="AUD"),
             rate=0.05 / 12,
             method="compound",
         )
         assert result.closing.movements[-1].magnitude == approx(525580.95)
-        assert series.total(result.interest).magnitude == approx(25580.95)
+        assert result.interest.total().magnitude == approx(25580.95)
 
     def test_amortized_loan(self):
         periods = make_periods(date(2020, 1, 1), frequency="month", count=12)
         payments = [float(x) for x in npf.ppmt(0.05 / 12, range(1, 13), 12, -500000)]
-        result = account.calculate_account(
-            from_periods(periods, [-x for x in payments], units="AUD"),
+        result = Account.calculate(
+            Flow.from_periods(periods, [-x for x in payments], units="AUD"),
             starting=Quantity(magnitude=500000, units="AUD"),
             rate=0.05 / 12,
             timing="arrears",
@@ -51,33 +52,33 @@ class TestFinancial:
         assert payments[0] + result.interest.movements[0].magnitude == approx(
             npf.pmt(0.05 / 12, 12, -500000)
         )
-        assert series.total(result.interest).magnitude == approx(13644.89)
+        assert result.interest.total().magnitude == approx(13644.89)
 
     def test_capitalized_interest(self):
         example = build_accounts()
-        result = account.calculate_account(
-            series.negate(example.draws),
+        result = Account.calculate(
+            example.draws.negate(),
             starting=Quantity(magnitude=0, units="AUD"),
             rate=0.05 / 12,
             method="capitalized",
         )
         assert result.closing.movements[-1].magnitude == approx(510577.82)
-        assert series.total(result.interest).magnitude == approx(10577.82)
+        assert result.interest.total().magnitude == approx(10577.82)
 
     def test_balance(self):
         example = build_accounts()
         assert example.loan.overdraft.movements[-1].magnitude == approx(-333333.33)
-        assert series.total(example.loan.interest).magnitude == approx(11319.43)
+        assert example.loan.interest.total().magnitude == approx(11319.43)
 
     def test_balances(self):
         example = build_accounts(equity=176631.99)
         assert example.equity.closing.movements[2].magnitude == approx(9965.32)
-        profit = series.sum_flows(
-            (example.equity.difference(), series.negate(example.loan.overdraft)),
+        profit = series.aggregate(
+            (example.equity.difference(), example.loan.overdraft.negate()),
             join="union",
             missing="zero",
         ).flow
-        assert series.total(profit).magnitude == approx(495337.17)
+        assert profit.total().magnitude == approx(495337.17)
 
 
 def independent_finance(land):
@@ -103,7 +104,7 @@ class TestSolver:
 
         def residual(land):
             example = build_accounts(acquisition=land, equity=262500)
-            return land + series.total(example.loan.interest).magnitude - 250000
+            return land + example.loan.interest.total().magnitude - 250000
 
         result = brentq(residual, 0, 250000)
         assert result == approx(expected, abs=1e-6)

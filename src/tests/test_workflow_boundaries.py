@@ -271,13 +271,19 @@ def test_both_yaml_entrypoints_reject_unsafe_or_ambiguous_content(content):
         excel.load_specification(content)
 
 
-def test_semantic_identity_ignores_prose_but_tracks_executable_changes(tmp_path):
+@pytest.mark.parametrize(
+    "computation_path", ["workflow/composition.py", "_behaviors/flow.py"]
+)
+def test_semantic_identity_ignores_prose_but_tracks_executable_changes(
+    tmp_path, computation_path
+):
     assert semantic_digest('"""one"""\nx = 1 # a') == semantic_digest(
         '"""two"""\nx = 1 # b'
     )
     assert semantic_digest("x = 1") != semantic_digest("x = 2")
     (tmp_path / "workflow").mkdir(parents=True)
-    computation = tmp_path / "workflow/composition.py"
+    computation = tmp_path / computation_path
+    computation.parent.mkdir(parents=True, exist_ok=True)
     renderer = tmp_path / "workflow/review.py"
     computation.write_text('"""first"""\nx = 1')
     renderer.write_text("x = 1")

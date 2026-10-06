@@ -1,8 +1,10 @@
 # Turn 4 — Numerical retirement and dependency separation
 
+> Historical design or implementation record. Names, commands and status below describe that checkpoint. Use the [current documentation](../README.md) for supported APIs.
+
 **Legacy isolation, 2026-10-06:** held Python code is now in `rangekeeper.legacy`,
 predecessor tests in `src/tests/legacy`, and excluded C# code in `grasshopper/legacy`.
-Old public paths have no aliases. See [the boundary and current checks](LEGACY_ISOLATION.md).
+Old public paths have no aliases. See [the boundary and current checks](../LEGACY_ISOLATION.md).
 The Windows gate remains open; earlier Turn 4 results below describe the preceding wheel.
 
 The permitted retirement slice is implemented and locally accepted. **Full legacy
@@ -19,7 +21,7 @@ or external publication occurred.
 - Removed 18 superseded numerical, temporal, policy and presentation Python files,
   their old root exports, `update_class`, and `rgba_from_cmap`. Removed the
   commented-only linear graph test model and 11 obsolete walkthrough cache files.
-  [The exact inventory](research/full-migration/turn4/removed-files.json) records
+  [The exact inventory](../research/full-migration/turn4/removed-files.json) records
   their previous hashes. No compatibility aliases were added.
 - Converted remaining numerical API tests into canonical assertions. Preserved
   18 account cases and three cycle paths as a synthetic, hashed reference fixture
@@ -58,8 +60,8 @@ numerical, dataframe, plotting, service or solver implementation. `[workflow,exc
 runs the real source builds with no NumPy, pandas, Polars, networkx, Speckle, Pyomo
 or Plotly installed. Numerical helpers do not represent persistent content or
 infer Flow semantics. Removed names fail rather than dispatch to a second API.
-Use [the upgrade guide](LEGACY_UPGRADE_GUIDE.md) for construction, migration and
-explicit calculation examples. [Behaviour mapping](research/full-migration/turn4/BEHAVIOUR.md)
+Use [the upgrade guide](../LEGACY_UPGRADE_GUIDE.md) for construction, migration and
+explicit calculation examples. [Behaviour mapping](../research/full-migration/turn4/BEHAVIOUR.md)
 explains each retired responsibility and the deliberate changes.
 
 ## Acceptance
@@ -82,15 +84,15 @@ this work is unreleased; identify it by its hash and source state.
 - The AST audit assigns all 671 frozen symbols and 95 consumers. Remaining old
   runtime imports occur only inside the held predecessor group and its tests.
 
-See [baseline, exact results and limits](research/full-migration/turn4/BASELINE.md),
-[commands](research/full-migration/turn4/COMMANDS.md), and
-[the ledger](research/full-migration/turn4/ledger.json). Original workbooks,
+See [baseline, exact results and limits](../research/full-migration/turn4/BASELINE.md),
+[commands](../research/full-migration/turn4/COMMANDS.md), and
+[the ledger](../research/full-migration/turn4/ledger.json). Original workbooks,
 archives, unrelated ignore edits, conflict copy, Rhino/GHX sources and the layout
 reference worktree are preserved.
 
 ## Remaining work
 
-[The remaining retirement register](research/full-migration/turn4/RETIREMENT.md)
+[The remaining retirement register](../research/full-migration/turn4/RETIREMENT.md)
 is the next work queue. Provide the Windows host and approved publication destination,
 complete its connector roundtrip, then remove the held dependency group in one
 verified slice. This work does not create publication authority or claim that

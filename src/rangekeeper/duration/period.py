@@ -12,32 +12,10 @@ from .calendar import Frequency, elapsed_days, offset, require_date
 PeriodTiming = Literal["start", "last_day", "end"]
 
 
-def validate_period(period: Period) -> None:
-    """Require a positive date interval [start, end)."""
-    if elapsed_days(period.start, period.end) <= 0:
-        raise ValueError("period end must follow start")
-
-
-def resolve_period_date(period: Period, *, timing: PeriodTiming) -> date:
-    """Derive a date without storing a duplicate field.
-
-    start is the first included day; last_day is the final included day; end is
-    the exclusive boundary (for example, payment on the next month's first day).
-    """
-    validate_period(period)
-    if timing == "start":
-        return period.start
-    if timing == "last_day":
-        return period.end - timedelta(days=1)
-    if timing == "end":
-        return period.end
-    raise ValueError("timing must be start, last_day or end")
-
-
 def make_period(start: date, end: date) -> Period:
     """Construct [start, end); convert old inclusive end dates explicitly."""
     result = Period(start=require_date(start), end=require_date(end))
-    validate_period(result)
+    result.check()
     return result
 
 
@@ -78,7 +56,7 @@ def cover(periods: Sequence[Period], *, name: str | None = None) -> Span:
     if not periods:
         raise ValueError("cover requires at least one interval")
     for period in periods:
-        validate_period(period)
+        period.check()
     return Span(
         start=min(p.start for p in periods), end=max(p.end for p in periods), name=name
     )

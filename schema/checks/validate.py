@@ -69,11 +69,11 @@ def validate_example(example):
 
 
 validate_example(fixture)
-# The README's first YAML block is instance data under the same record profile.
+# The documented first YAML block is instance data under the same record profile.
 import yaml
 
 readme = yaml.safe_load(
-    (SCHEMA / "README.md").read_text().split("```yaml\n", 1)[1].split("```", 1)[0]
+    (SCHEMA.parent / "docs/SCHEMA_EXAMPLES.md").read_text().split("```yaml\n", 1)[1].split("```", 1)[0]
 )
 validate_example(readme)
 

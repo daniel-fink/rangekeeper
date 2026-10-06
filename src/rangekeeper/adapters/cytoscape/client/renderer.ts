@@ -5,20 +5,20 @@ import {
 } from "./presentation";
 import { styles } from "./styles";
 import type cytoscape from "cytoscape";
-import type { ViewerContext } from "./context";
+import type { Viewer } from "./context";
 import * as fourPortRouting from "./routing";
 import { projectCollapse } from "./projection";
 import { assemblyOrder, descendants, revealPath } from "./membership";
-export function updateCounts(ctx: ViewerContext) {
-  ctx.$("counts").textContent =
-    `${ctx.visible().nodes().length} / ${ctx.cy.nodes().length} objects · ${ctx.visible().edges().length} displayed connections`;
+export function updateCounts(viewer: Viewer) {
+  viewer.$("counts").textContent =
+    `${viewer.visible().nodes().length} / ${viewer.cy.nodes().length} objects · ${viewer.visible().edges().length} displayed connections`;
 }
-export function highlight(ctx: ViewerContext) {
-  ctx.cy.elements().removeClass("member");
-  const assembly = ctx.data.assemblies[ctx.inspected];
+export function highlight(viewer: Viewer) {
+  viewer.cy.elements().removeClass("member");
+  const assembly = viewer.data.assemblies[viewer.inspected];
   if (!assembly) return;
   const ids = new Set([...assembly.entities, ...assembly.relationships]);
-  ctx.cy.elements().forEach((e) => {
+  viewer.cy.elements().forEach((e) => {
     if (
       ids.has(e.id()) ||
       (e.data("connector") === "summary" &&
@@ -27,140 +27,140 @@ export function highlight(ctx: ViewerContext) {
       e.addClass("member");
   });
 }
-export function applyVisibility(ctx: ViewerContext) {
+export function applyVisibility(viewer: Viewer) {
   const start = performance.now();
-  ctx.updating = true;
-  ctx.projection = projectCollapse(ctx.data, ctx.collapsed, ctx.filters);
-  const hidden = new Set(ctx.projection.hiddenIds);
-  const edges = new Map(ctx.projection.edges.map((e) => [e.id, e]));
-  ctx.cy.batch(() => {
-    ctx.cy.edges("[?displayOnly]").remove();
-    ctx.cy.add(
-      ctx.projection.edges
+  viewer.updating = true;
+  viewer.projection = projectCollapse(viewer.data, viewer.collapsed, viewer.filters);
+  const hidden = new Set(viewer.projection.hiddenIds);
+  const edges = new Map(viewer.projection.edges.map((e) => [e.id, e]));
+  viewer.cy.batch(() => {
+    viewer.cy.edges("[?displayOnly]").remove();
+    viewer.cy.add(
+      viewer.projection.edges
         .filter((e) => e.displayOnly)
         .map((e) => ({ data: e })),
     );
-    ctx.cy.nodes().forEach((n) => {
+    viewer.cy.nodes().forEach((n) => {
       n.toggleClass(
         "hidden",
         hidden.has(n.id()) ||
-          Boolean(ctx.focusIds && !ctx.focusIds.has(n.id())),
+          Boolean(viewer.focusIds && !viewer.focusIds.has(n.id())),
       );
     });
-    ctx.cy.edges().forEach((e) => {
+    viewer.cy.edges().forEach((e) => {
       e.toggleClass(
         "hidden",
         !edges.has(e.id()) ||
           e.source().hasClass("hidden") ||
           e.target().hasClass("hidden") ||
-          (e.data("connector") === "membership" && !ctx.showMembership),
+          (e.data("connector") === "membership" && !viewer.showMembership),
       );
     });
-    ctx.cy.elements(":selected").unselect();
-    const selected = ctx.cy.getElementById(ctx.inspected || "");
+    viewer.cy.elements(":selected").unselect();
+    const selected = viewer.cy.getElementById(viewer.inspected || "");
     if (selected.length && !selected.hasClass("hidden")) selected.select();
-    if (ctx.inspected && !selected.length && !ctx.data.details[ctx.inspected])
-      ctx.inspected = null;
+    if (viewer.inspected && !selected.length && !viewer.data.details[viewer.inspected])
+      viewer.inspected = null;
   });
-  ctx.updating = false;
-  ctx.syncBoxes();
-  ctx.highlight();
-  ctx.renderSelection();
-  ctx.updateCounts();
-  ctx.metrics.filterMs = performance.now() - start;
+  viewer.updating = false;
+  viewer.syncBoxes();
+  viewer.highlight();
+  viewer.renderSelection();
+  viewer.updateCounts();
+  viewer.metrics.filterMs = performance.now() - start;
 }
-export function select(ctx: ViewerContext, id) {
+export function select(viewer: Viewer, id) {
   const start = performance.now(),
-    e = ctx.cy.getElementById(id);
+    e = viewer.cy.getElementById(id);
   if (!e.length) return;
-  ctx.updating = true;
-  ctx.cy.elements(":selected").unselect();
-  ctx.inspected = id;
+  viewer.updating = true;
+  viewer.cy.elements(":selected").unselect();
+  viewer.inspected = id;
   if (!e.hasClass("hidden")) e.select();
-  ctx.updating = false;
-  ctx.highlight();
-  ctx.renderSelection();
-  ctx.metrics.selectionMs = performance.now() - start;
+  viewer.updating = false;
+  viewer.highlight();
+  viewer.renderSelection();
+  viewer.metrics.selectionMs = performance.now() - start;
 }
-export function syncFilters(ctx: ViewerContext) {
+export function syncFilters(viewer: Viewer) {
   document
     .querySelectorAll<HTMLInputElement>("#filters input")
-    .forEach((i) => (i.checked = ctx.filters.has(i.value)));
-  ctx.$("member-links").checked = ctx.showMembership;
+    .forEach((i) => (i.checked = viewer.filters.has(i.value)));
+  viewer.$("member-links").checked = viewer.showMembership;
 }
-export function setupFilters(ctx: ViewerContext) {
-  ctx.$("filters").replaceChildren();
+export function setupFilters(viewer: Viewer) {
+  viewer.$("filters").replaceChildren();
   const types = [
     ...new Set(
-      ctx.data.elements
+      viewer.data.elements
         .filter((e) => "source" in e.data)
         .map((e) => e.data.type),
     ),
   ];
-  ctx.filters = new Set(types);
+  viewer.filters = new Set(types);
   for (const type of types) {
-    const l = ctx.make("label", undefined, ctx.$("filters")),
-      input = ctx.make("input", undefined, l);
+    const l = viewer.make("label", undefined, viewer.$("filters")),
+      input = viewer.make("input", undefined, l);
     input.type = "checkbox";
     input.value = type;
     input.checked = true;
-    ctx.make(
+    viewer.make(
       "span",
-      ctx.data.elements.find((e) => "source" in e.data && e.data.type === type)
+      viewer.data.elements.find((e) => "source" in e.data && e.data.type === type)
         .data.label,
       l,
     );
     input.onchange = () => {
-      ctx.pushHistory();
-      input.checked ? ctx.filters.add(type) : ctx.filters.delete(type);
-      ctx.applyVisibility();
+      viewer.remember();
+      input.checked ? viewer.filters.add(type) : viewer.filters.delete(type);
+      viewer.applyVisibility();
     };
   }
 }
-export function loadDataset(ctx: ViewerContext, index) {
+export function loadDataset(viewer: Viewer, index) {
   const start = performance.now();
-  ctx.updating = true;
-  if (ctx.dragFrame != null) cancelAnimationFrame(ctx.dragFrame);
-  ctx.dragFrame = null;
-  if (ctx.cy) ctx.cy.destroy();
-  ctx.portChoices = new Map();
-  ctx.routes = new Map();
-  ctx.data = ctx.datasets[index];
-  ctx.presentation = initialPresentation(ctx.data);
-  ctx.showSpacingAdvisories = false;
-  ctx.$("spacing-advisories").checked = false;
-  ctx.$("spacing-advisory-control").hidden = !ctx.data.savedLayout;
-  ctx.$("presentation-conflicts")?.replaceChildren();
-  if (ctx.$("presentation-conflicts"))
-    delete ctx.$("presentation-conflicts").dataset.signature;
-  ctx.mode = "outlines";
-  ctx.HEADER = ctx.data.savedLayout?.problem.header ?? 36;
-  ctx.$("relayout").disabled = Boolean(ctx.data.savedLayout);
-  ctx.$("membership").disabled = Boolean(ctx.data.savedLayout);
-  ctx.$("restore").textContent = ctx.data.savedLayout
+  viewer.updating = true;
+  if (viewer.dragFrame != null) cancelAnimationFrame(viewer.dragFrame);
+  viewer.dragFrame = null;
+  if (viewer.cy) viewer.cy.destroy();
+  viewer.portChoices = new Map();
+  viewer.routes = new Map();
+  viewer.data = viewer.datasets[index];
+  viewer.presentation = initialPresentation(viewer.data);
+  viewer.showSpacingAdvisories = false;
+  viewer.$("spacing-advisories").checked = false;
+  viewer.$("spacing-advisory-control").hidden = !viewer.data.savedLayout;
+  viewer.$("presentation-conflicts")?.replaceChildren();
+  if (viewer.$("presentation-conflicts"))
+    delete viewer.$("presentation-conflicts").dataset.signature;
+  viewer.mode = "outlines";
+  viewer.HEADER = viewer.data.savedLayout?.problem.header ?? 36;
+  viewer.$("relayout").disabled = Boolean(viewer.data.savedLayout);
+  viewer.$("membership").disabled = Boolean(viewer.data.savedLayout);
+  viewer.$("restore").textContent = viewer.data.savedLayout
     ? "Restore saved layout"
     : "Restore arrangement";
-  ctx.inspected = null;
-  ctx.collapsed = new Set();
-  ctx.history = [];
-  ctx.drag = null;
-  Object.keys(ctx.metrics).forEach((key) => (ctx.metrics[key] = 0));
-  ctx.$("dataset").value = String(index);
-  ctx.$("back").disabled = true;
-  ctx.$("search").value = "";
-  ctx.$("results").replaceChildren();
-  ctx.compactPositions = Object.fromEntries(
-    Object.keys(ctx.data.assemblies).map((id) => [
+  viewer.inspected = null;
+  viewer.collapsed = new Set();
+  viewer.history = [];
+  viewer.drag = null;
+  Object.keys(viewer.metrics).forEach((key) => (viewer.metrics[key] = 0));
+  viewer.$("dataset").value = String(index);
+  viewer.$("back").disabled = true;
+  viewer.$("search").value = "";
+  viewer.$("results").replaceChildren();
+  viewer.compactPositions = Object.fromEntries(
+    Object.keys(viewer.data.assemblies).map((id) => [
       id,
-      { ...ctx.data.positions[id] },
+      { ...viewer.data.positions[id] },
     ]),
   );
-  const elements = structuredClone(ctx.data.elements);
+  const elements = structuredClone(viewer.data.elements);
   for (const e of elements)
     if ("source" in e.data) e.data.connector = "domain";
     else e.data.title = e.data.label;
-  ctx.cy = (globalThis.cytoscape as typeof import("cytoscape"))({
-    container: ctx.$("cy"),
+  viewer.cy = (globalThis.cytoscape as typeof import("cytoscape"))({
+    container: viewer.$("cy"),
     elements,
     layout: { name: "preset" },
     selectionType: "single",
@@ -170,160 +170,160 @@ export function loadDataset(ctx: ViewerContext, index) {
     wheelSensitivity: 0.2,
     style: styles,
   });
-  if (ctx.data.savedLayout) {
-    for (const n of ctx.cy.nodes()) {
-      const r = ctx.data.savedLayout.geometry.rectangles[n.id()];
+  if (viewer.data.savedLayout) {
+    for (const n of viewer.cy.nodes()) {
+      const r = viewer.data.savedLayout.geometry.rectangles[n.id()];
       n.data({
         savedWidth: r.width - 3,
         savedHeight: r.height - 3,
         savedTextWidth: r.width - 16,
       });
     }
-    ctx.cy.nodes().addClass("saved");
+    viewer.cy.nodes().addClass("saved");
   }
-  ctx.$("outlines").classList.add("active");
-  ctx.$("membership").classList.remove("active");
-  ctx.$("canvas-note").textContent = ctx.data.savedLayout
+  viewer.$("outlines").classList.add("active");
+  viewer.$("membership").classList.remove("active");
+  viewer.$("canvas-note").textContent = viewer.data.savedLayout
     ? "Drag nodes or assembly headers to arrange · boxes fit visible members · changes are session-only."
     : "Outlines show selected visible scope, not ownership or physical boundaries.";
-  for (const [id] of Object.entries(ctx.data.assemblies))
-    ctx.cy
+  for (const [id] of Object.entries(viewer.data.assemblies))
+    viewer.cy
       .getElementById(id)
       .data({ boxWidth: 170, boxHeight: 42, bandStops: "0% 85% 85% 100%" });
-  ctx.cy.nodes().forEach((n) => {
-    if (ctx.memberships(n.id()).length > 1) n.addClass("shared");
+  viewer.cy.nodes().forEach((n) => {
+    if (viewer.memberships(n.id()).length > 1) n.addClass("shared");
   });
-  ctx.cy.on("select unselect", "node,edge", () => {
-    if (ctx.updating) return;
-    ctx.inspected = ctx.cy.$(":selected").first().id() || null;
-    ctx.highlight();
-    ctx.renderSelection();
+  viewer.cy.on("select unselect", "node,edge", () => {
+    if (viewer.updating) return;
+    viewer.inspected = viewer.cy.$(":selected").first().id() || null;
+    viewer.highlight();
+    viewer.renderSelection();
   });
-  ctx.cy.on("tap", (ev) => {
-    if (ev.target === ctx.cy) {
-      ctx.cy.elements(":selected").unselect();
-      ctx.inspected = null;
-      ctx.highlight();
-      ctx.renderSelection();
+  viewer.cy.on("tap", (ev) => {
+    if (ev.target === viewer.cy) {
+      viewer.cy.elements(":selected").unselect();
+      viewer.inspected = null;
+      viewer.highlight();
+      viewer.renderSelection();
     }
   });
-  ctx.cy.on("grab", "node", (ev) => {
+  viewer.cy.on("grab", "node", (ev) => {
     const n = ev.target,
-      a = ctx.data.assemblies[n.id()];
-    ctx.drag = {
+      a = viewer.data.assemblies[n.id()];
+    viewer.drag = {
       id: n.id(),
       start: { ...n.position() },
-      rectangles: ctx.presentation
-        ? movingRectangles(ctx.data, ctx.presentation, n.id())
+      rectangles: viewer.presentation
+        ? movingRectangles(viewer.data, viewer.presentation, n.id())
         : undefined,
       members:
-        a && !ctx.collapsed.has(n.id())
-          ? descendants(ctx.data, n.id())
-              .map((id) => ctx.cy.getElementById(id))
+        a && !viewer.collapsed.has(n.id())
+          ? descendants(viewer.data, n.id())
+              .map((id) => viewer.cy.getElementById(id))
               .filter((m) => m.length && !m.hasClass("hidden"))
               .map((m) => ({ id: m.id(), position: { ...m.position() } }))
           : [],
     };
   });
-  ctx.cy.on("drag", "node", (ev) => {
-    if (ctx.drag?.id !== ev.target.id()) return;
-    if (ctx.presentation) {
-      ctx.drag.latest = { ...ev.target.position() };
-      if (ctx.dragFrame == null)
-        ctx.dragFrame = requestAnimationFrame(() => {
-          ctx.dragFrame = null;
-          flushPresentationDrag(ctx);
+  viewer.cy.on("drag", "node", (ev) => {
+    if (viewer.drag?.id !== ev.target.id()) return;
+    if (viewer.presentation) {
+      viewer.drag.latest = { ...ev.target.position() };
+      if (viewer.dragFrame == null)
+        viewer.dragFrame = requestAnimationFrame(() => {
+          viewer.dragFrame = null;
+          flushPresentationDrag(viewer);
         });
       return;
     }
     const pos = ev.target.position(),
-      dx = pos.x - ctx.drag.start.x,
-      dy = pos.y - ctx.drag.start.y;
-    ctx.updating = true;
-    ctx.cy.batch(() =>
-      ctx.drag.members.forEach((m) => {
+      dx = pos.x - viewer.drag.start.x,
+      dy = pos.y - viewer.drag.start.y;
+    viewer.updating = true;
+    viewer.cy.batch(() =>
+      viewer.drag.members.forEach((m) => {
         const p = { x: m.position.x + dx, y: m.position.y + dy };
-        ctx.cy.getElementById(m.id).position(p);
-        if (ctx.data.assemblies[m.id]) ctx.compactPositions[m.id] = { ...p };
+        viewer.cy.getElementById(m.id).position(p);
+        if (viewer.data.assemblies[m.id]) viewer.compactPositions[m.id] = { ...p };
       }),
     );
-    if (ctx.data.assemblies[ctx.drag.id])
-      ctx.compactPositions[ctx.drag.id] = { ...pos };
-    ctx.updating = false;
-    ctx.syncBoxes();
+    if (viewer.data.assemblies[viewer.drag.id])
+      viewer.compactPositions[viewer.drag.id] = { ...pos };
+    viewer.updating = false;
+    viewer.syncBoxes();
   });
-  ctx.cy.on("free", "node", () => {
-    if (ctx.dragFrame != null) cancelAnimationFrame(ctx.dragFrame);
-    ctx.dragFrame = null;
-    flushPresentationDrag(ctx);
-    ctx.drag = null;
-    ctx.syncBoxes();
+  viewer.cy.on("free", "node", () => {
+    if (viewer.dragFrame != null) cancelAnimationFrame(viewer.dragFrame);
+    viewer.dragFrame = null;
+    flushPresentationDrag(viewer);
+    viewer.drag = null;
+    viewer.syncBoxes();
   });
-  ctx.cy.on("position", "node", (ev) => {
-    if (ctx.syncing || ctx.updating || ctx.drag || ctx.layoutMode) return;
-    if (ctx.data.assemblies[ev.target.id()] && !ev.target.hasClass("frame"))
-      ctx.compactPositions[ev.target.id()] = { ...ev.target.position() };
-    if (ctx.presentation) {
+  viewer.cy.on("position", "node", (ev) => {
+    if (viewer.syncing || viewer.updating || viewer.drag || viewer.layoutMode) return;
+    if (viewer.data.assemblies[ev.target.id()] && !ev.target.hasClass("frame"))
+      viewer.compactPositions[ev.target.id()] = { ...ev.target.position() };
+    if (viewer.presentation) {
       const n = ev.target,
-        r = ctx.presentation.rectangles[n.id()];
-      ctx.presentation.rectangles[n.id()] = {
+        r = viewer.presentation.rectangles[n.id()];
+      viewer.presentation.rectangles[n.id()] = {
         ...r,
         x: n.position().x - r.width / 2,
         y: n.position().y - r.height / 2,
       };
-      ctx.presentation.adjusted = true;
+      viewer.presentation.adjusted = true;
     }
-    ctx.syncBoxes();
+    viewer.syncBoxes();
   });
-  ctx.setupFilters();
-  ctx.showMembership = !ctx.data.savedLayout;
-  ctx.syncFilters();
-  ctx.focusIds = ctx.data.initialFocus
+  viewer.setupFilters();
+  viewer.showMembership = !viewer.data.savedLayout;
+  viewer.syncFilters();
+  viewer.focusIds = viewer.data.initialFocus
     ? new Set([
-        ctx.data.initialFocus,
-        ...ctx.data.assemblies[ctx.data.initialFocus].entities,
+        viewer.data.initialFocus,
+        ...viewer.data.assemblies[viewer.data.initialFocus].entities,
       ])
     : null;
-  ctx.updating = false;
-  ctx.applyVisibility();
-  ctx.fit();
-  ctx.$("notes").replaceChildren();
-  ctx.data.notes.forEach((n) => ctx.make("p", n, ctx.$("notes")));
-  ctx.$("diagnostics").replaceChildren();
-  const diag = ctx.data.diagnostics;
+  viewer.updating = false;
+  viewer.applyVisibility();
+  viewer.fit();
+  viewer.$("notes").replaceChildren();
+  viewer.data.notes.forEach((n) => viewer.make("p", n, viewer.$("notes")));
+  viewer.$("diagnostics").replaceChildren();
+  const diag = viewer.data.diagnostics;
   if (diag.ambiguousParents.length || diag.containmentCycles.length) {
-    const host = ctx.make(
+    const host = viewer.make(
       "p",
       `${diag.ambiguousParents.length} object(s) with multiple containment parents; ${diag.containmentCycles.length} in containment cycles. No display parent was chosen.`,
-      ctx.$("diagnostics"),
+      viewer.$("diagnostics"),
       "issue",
     );
     for (const id of new Set([
       ...diag.ambiguousParents,
       ...diag.containmentCycles,
     ]))
-      ctx.nav(host, ctx.label(id), id);
+      viewer.nav(host, viewer.label(id), id);
   }
-  ctx.$("anchors").disabled =
-    Boolean(ctx.data.savedLayout) || !ctx.data.anchors.length;
-  ctx.$("anchors").checked = false;
-  ctx.selectLinkedObject();
-  ctx.metrics.loadMs = performance.now() - start;
-  ctx.$("timing").textContent =
-    `Loaded in ${ctx.metrics.loadMs.toFixed(0)} ms · ${ctx.data.savedLayout ? "saved starting layout · draggable" : "reference arrangement"}`;
+  viewer.$("anchors").disabled =
+    Boolean(viewer.data.savedLayout) || !viewer.data.anchors.length;
+  viewer.$("anchors").checked = false;
+  viewer.selectLinkedObject();
+  viewer.metrics.loadMs = performance.now() - start;
+  viewer.$("timing").textContent =
+    `Loaded in ${viewer.metrics.loadMs.toFixed(0)} ms · ${viewer.data.savedLayout ? "saved starting layout · draggable" : "reference arrangement"}`;
 }
-export async function relayout(ctx: ViewerContext) {
-  if (ctx.data.savedLayout) return;
+export async function relayout(viewer: Viewer) {
+  if (viewer.data.savedLayout) return;
   const start = performance.now();
-  ctx.$("relayout").disabled = true;
-  ctx.layoutMode = true;
-  ctx.syncBoxes();
-  const anchors = ctx.$("anchors").checked
-    ? ctx.data.anchors
-        .filter((id) => !ctx.cy.getElementById(id).hasClass("hidden"))
+  viewer.$("relayout").disabled = true;
+  viewer.layoutMode = true;
+  viewer.syncBoxes();
+  const anchors = viewer.$("anchors").checked
+    ? viewer.data.anchors
+        .filter((id) => !viewer.cy.getElementById(id).hasClass("hidden"))
         .map((id) => ({
           nodeId: id,
-          position: { ...ctx.cy.getElementById(id).position() },
+          position: { ...viewer.cy.getElementById(id).position() },
         }))
     : [];
   const options: cytoscape.LayoutOptions & {
@@ -344,17 +344,17 @@ export async function relayout(ctx: ViewerContext) {
   };
   if (anchors.length) {
     options.fixedNodeConstraint = anchors;
-    if (ctx.data.alignment)
+    if (viewer.data.alignment)
       options.alignmentConstraint = {
-        vertical: ctx.data.alignment.vertical.filter((g) =>
-          g.every((id) => !ctx.cy.getElementById(id).hasClass("hidden")),
+        vertical: viewer.data.alignment.vertical.filter((g) =>
+          g.every((id) => !viewer.cy.getElementById(id).hasClass("hidden")),
         ),
       };
   }
   try {
     await new Promise((resolve, reject) => {
       try {
-        ctx
+        viewer
           .visible()
           .layout({ ...options, stop: resolve })
           .run();
@@ -362,34 +362,34 @@ export async function relayout(ctx: ViewerContext) {
         reject(e);
       }
     });
-    for (const id of Object.keys(ctx.data.assemblies))
-      ctx.compactPositions[id] = { ...ctx.cy.getElementById(id).position() };
-    ctx.metrics.layoutMs = performance.now() - start;
-    ctx.$("timing").textContent =
-      `fCoSE · ${ctx.metrics.layoutMs.toFixed(0)} ms${anchors.length ? " · fixed anchors" : ""}`;
+    for (const id of Object.keys(viewer.data.assemblies))
+      viewer.compactPositions[id] = { ...viewer.cy.getElementById(id).position() };
+    viewer.metrics.layoutMs = performance.now() - start;
+    viewer.$("timing").textContent =
+      `fCoSE · ${viewer.metrics.layoutMs.toFixed(0)} ms${anchors.length ? " · fixed anchors" : ""}`;
   } finally {
-    ctx.layoutMode = false;
-    ctx.syncBoxes();
-    ctx.fit();
-    ctx.$("relayout").disabled = false;
+    viewer.layoutMode = false;
+    viewer.syncBoxes();
+    viewer.fit();
+    viewer.$("relayout").disabled = false;
   }
 }
-export function setMode(ctx: ViewerContext, next) {
-  if (ctx.data.savedLayout && next !== "outlines") return;
-  ctx.mode = next;
-  ctx.$("outlines").classList.toggle("active", next === "outlines");
-  ctx.$("membership").classList.toggle("active", next === "membership");
-  ctx.syncBoxes();
+export function setMode(viewer: Viewer, next) {
+  if (viewer.data.savedLayout && next !== "outlines") return;
+  viewer.mode = next;
+  viewer.$("outlines").classList.toggle("active", next === "outlines");
+  viewer.$("membership").classList.toggle("active", next === "membership");
+  viewer.syncBoxes();
 }
 
-function flushPresentationDrag(ctx: ViewerContext) {
-  const d = ctx.drag;
-  if (!ctx.presentation || !d?.latest) return;
+function flushPresentationDrag(viewer: Viewer) {
+  const d = viewer.drag;
+  if (!viewer.presentation || !d?.latest) return;
   translate(
-    ctx.presentation,
+    viewer.presentation,
     d.rectangles,
     d.latest.x - d.start.x,
     d.latest.y - d.start.y,
   );
-  ctx.syncBoxes();
+  viewer.syncBoxes();
 }

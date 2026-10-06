@@ -457,7 +457,8 @@ document.write(`
 <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">date</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uuid</span><span class="w"> </span><span class="kn">import</span> <span class="n">uuid4</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span><span class="o">,</span><span class="w"> </span><span class="nn">sys</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>  <span class="c1"># Detached tables for presentation only.</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">polars</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pl</span>  <span class="c1"># Detached tables for presentation only.</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">set_tbl_cols</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">rangekeeper</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">rk</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.examples</span><span class="w"> </span><span class="kn">import</span> <span class="n">investment</span>
@@ -478,7 +479,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Installed package: /private/tmp/rk-turn4-wheel/site/rangekeeper/__init__.py
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Installed package: /private/tmp/rk-refactor2-notebook-site/rangekeeper/__init__.py
 </pre></div>
 </div>
 </div>
@@ -538,60 +539,19 @@ document.write(`
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">specifications</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">investment</span><span class="o">.</span><span class="n">specify</span><span class="p">(</span><span class="n">model</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
 <span class="n">results</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">execute</span><span class="p">(</span><span class="n">models</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">specifications</span><span class="p">[</span><span class="n">name</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">models</span><span class="p">}</span>
-<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="n">name</span><span class="p">:</span> <span class="n">metrics</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">()})</span><span class="o">.</span><span class="n">T</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([{</span><span class="s1">'Scenario'</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">metrics</span><span class="p">(</span><span class="n">result</span><span class="p">)}</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html"><div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
+<div class="output text_html"><div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
 </style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>PV (AUD)</th>
-      <th>NPV (AUD)</th>
-      <th>Dated IRR (%)</th>
-      <th>Sale date</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>base</th>
-      <td>1000.0</td>
-      <td>-0.0</td>
-      <td>6.996148</td>
-      <td>2030-12-31</td>
-    </tr>
-    <tr>
-      <th>optimistic</th>
-      <td>1294.078115</td>
-      <td>294.078115</td>
-      <td>10.415964</td>
-      <td>2030-12-31</td>
-    </tr>
-    <tr>
-      <th>pessimistic</th>
-      <td>705.921885</td>
-      <td>-294.078115</td>
-      <td>2.446045</td>
-      <td>2030-12-31</td>
-    </tr>
-  </tbody>
-</table>
-</div></div></div>
+<small>shape: (3, 5)</small><table border="1" class="dataframe"><thead><tr><th>Scenario</th><th>PV (AUD)</th><th>NPV (AUD)</th><th>Dated IRR (%)</th><th>Sale date</th></tr><tr><td>str</td><td>f64</td><td>f64</td><td>f64</td><td>date</td></tr></thead><tbody><tr><td>&quot;base&quot;</td><td>1000.0</td><td>-3.4106e-13</td><td>6.996148</td><td>2030-12-31</td></tr><tr><td>&quot;optimistic&quot;</td><td>1294.078115</td><td>294.078115</td><td>10.415964</td><td>2030-12-31</td></tr><tr><td>&quot;pessimistic&quot;</td><td>705.921885</td><td>-294.078115</td><td>2.446045</td><td>2030-12-31</td></tr></tbody></table></div></div></div>
 </div>
 </section>
 <section id="inspect-component-cashflows">
@@ -637,89 +597,21 @@ document.write(`
 <p>Use equal scenario probabilities for this teaching example. The maximum after seeing a complete path is a hindsight bound. It is not an implementable policy or a promise of peak sale timing.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">expected</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">series</span><span class="o">.</span><span class="n">sum_flows</span><span class="p">((</span><span class="n">curves</span><span class="p">[</span><span class="s1">'optimistic'</span><span class="p">],</span> <span class="n">curves</span><span class="p">[</span><span class="s1">'pessimistic'</span><span class="p">]))</span><span class="o">.</span><span class="n">flow</span><span class="p">,</span> <span class="mf">.5</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">expected</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">aggregate</span><span class="p">((</span><span class="n">curves</span><span class="p">[</span><span class="s1">'optimistic'</span><span class="p">],</span> <span class="n">curves</span><span class="p">[</span><span class="s1">'pessimistic'</span><span class="p">]))</span><span class="o">.</span><span class="n">flow</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
 <span class="n">hindsight</span> <span class="o">=</span> <span class="mf">.5</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">magnitude</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">curves</span><span class="p">[</span><span class="s1">'optimistic'</span><span class="p">]</span><span class="o">.</span><span class="n">movements</span><span class="p">)</span> <span class="o">+</span> <span class="mf">.5</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">magnitude</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">curves</span><span class="p">[</span><span class="s1">'pessimistic'</span><span class="p">]</span><span class="o">.</span><span class="n">movements</span><span class="p">)</span>
-<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">'Expected PV (AUD)'</span><span class="p">:</span> <span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">magnitude</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">expected</span><span class="o">.</span><span class="n">movements</span><span class="p">],</span> <span class="s1">'Sale date'</span><span class="p">:</span> <span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">date</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">expected</span><span class="o">.</span><span class="n">movements</span><span class="p">]})</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">'Expected PV (AUD)'</span><span class="p">:</span> <span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">magnitude</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">expected</span><span class="o">.</span><span class="n">movements</span><span class="p">],</span> <span class="s1">'Sale date'</span><span class="p">:</span> <span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">date</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">expected</span><span class="o">.</span><span class="n">movements</span><span class="p">]})</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html"><div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
+<div class="output text_html"><div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
 </style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Expected PV (AUD)</th>
-      <th>Sale date</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>1000.0</td>
-      <td>2021-12-31</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>1000.0</td>
-      <td>2022-12-31</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>1000.0</td>
-      <td>2023-12-31</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>1000.0</td>
-      <td>2024-12-31</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>1000.0</td>
-      <td>2025-12-31</td>
-    </tr>
-    <tr>
-      <th>5</th>
-      <td>1000.0</td>
-      <td>2026-12-31</td>
-    </tr>
-    <tr>
-      <th>6</th>
-      <td>1000.0</td>
-      <td>2027-12-31</td>
-    </tr>
-    <tr>
-      <th>7</th>
-      <td>1000.0</td>
-      <td>2028-12-31</td>
-    </tr>
-    <tr>
-      <th>8</th>
-      <td>1000.0</td>
-      <td>2029-12-31</td>
-    </tr>
-    <tr>
-      <th>9</th>
-      <td>1000.0</td>
-      <td>2030-12-31</td>
-    </tr>
-  </tbody>
-</table>
-</div></div></div>
+<small>shape: (10, 2)</small><table border="1" class="dataframe"><thead><tr><th>Expected PV (AUD)</th><th>Sale date</th></tr><tr><td>f64</td><td>date</td></tr></thead><tbody><tr><td>1000.0</td><td>2021-12-31</td></tr><tr><td>1000.0</td><td>2022-12-31</td></tr><tr><td>1000.0</td><td>2023-12-31</td></tr><tr><td>1000.0</td><td>2024-12-31</td></tr><tr><td>1000.0</td><td>2025-12-31</td></tr><tr><td>1000.0</td><td>2026-12-31</td></tr><tr><td>1000.0</td><td>2027-12-31</td></tr><tr><td>1000.0</td><td>2028-12-31</td></tr><tr><td>1000.0</td><td>2029-12-31</td></tr><tr><td>1000.0</td><td>2030-12-31</td></tr></tbody></table></div></div></div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">

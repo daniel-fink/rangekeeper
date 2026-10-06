@@ -42,7 +42,7 @@ def manifests(package: Path, *, modules: tuple[str, ...] = ()):
     """Audit every Python file; bind semantic identity to declared computation code.
 
     This conservative dependency set includes graph construction, provenance,
-    measures and ingestion, plus the selected handlers' declared native modules.
+    measures, record behaviour and ingestion, plus selected handlers' native modules.
     Presentation and CLI export do not compute assertions and therefore cannot
     change their identities.
     """
@@ -74,6 +74,7 @@ def manifests(package: Path, *, modules: tuple[str, ...] = ()):
         } or name.startswith(
             (
                 "model/",
+                "_behaviors/",
                 "_schema/",
                 "workflow/",
                 "adapters/",

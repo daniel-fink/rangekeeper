@@ -64,7 +64,7 @@ def build_scope(document, local_values=()) -> Scope:
 
     def add_value(value):
         from rangekeeper.model.content import validate_content
-        from rangekeeper.model.flow import validate_flow
+
         from rangekeeper._schema.records import Flow, PropertyContent
 
         add(values, value)
@@ -83,7 +83,7 @@ def build_scope(document, local_values=()) -> Scope:
             domains[value["id"]] = dict(kind=kind, measure=value["measure"])
             if kind == "flow" and value.get("flow") is not None:
                 try:
-                    validate_flow(Flow.from_data(value["flow"]))
+                    Flow.from_data(value["flow"]).check()
                 except (ValueError, TypeError) as error:
                     require(False, str(error))
         else:

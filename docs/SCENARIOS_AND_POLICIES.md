@@ -1,16 +1,6 @@
-# Full migration Turn 2: temporal equations, scenarios and policies
+# Temporal equations, scenarios and policies
 
-**Naming follow-up, 2026-10-06:** [RK vocabulary alignment](RK_NAMING.md) is implemented.
-The current check is 971 passing local tests, all seven schema suites, static
-and installed-package checks, and five executed walkthroughs. This supersedes
-older counts below. Market methods use v2 names with an explicit draft upgrade.
-No commit or push was made.
-
-Implemented from `7b8dcd4` on `acausal-modelling`. The required verification gates pass: 967 local tests, all seven schema suites,
-typing, installed-package checks, and all five numerical notebooks.
-The [evidence report](research/full-migration/turn2/README.md) records exact commands,
-environments, input hashes, intermediate failures and final results. No commit,
-push or release is part of this turn. Full legacy retirement remains open.
+See [architecture](LIBRARY_ARCHITECTURE.md) for ownership and [verification](VERIFICATION.md) for checks.
 
 ## Record contracts
 
@@ -92,11 +82,12 @@ rangekeeper/
     evaluator.py                independent original-expression evaluation
     acceptance.py               exact assignments, residuals, scoped evidence
     publication.py              new immutable output revisions
-    executor.py                 attempt limits, backend orchestration, storage
+    executor.py                 sequential batch traversal
+    planning.py                 resolved case graph and composed leaves
+    attempt.py                  leaf deadline, solver, acceptance and storage
   examples/investment.py        named author/formulate/specify/report operations
   adapters/plotting.py          detached Flow, distribution and paired plots
   migration/drafts.py           upgrade_model, upgrade_specification
-  _legacy_duration.py           temporary retained-caller support
 ```
 
 `formulations.build_formulation(id=, name=, equations=, values=)` supports explicit
@@ -230,39 +221,6 @@ first-match choice, declared actions and exactly-once coverage of control target
 Policy evaluation does not establish numerical feasibility. Acceptance still
 checks the resulting governing equations.
 
-## Consumer placement and intentional changes
 
-| Consumer | Delivered replacement and acceptance |
-|---|---|
-| `deterministic_scenarios.ipynb` | Explicit author/formulate/specify/execute/report; component cashflows, base/optimistic/pessimistic comparisons, PV and dated IRR; horizon selection is labelled hindsight |
-| `market_dynamics.ipynb` | Recorded plan/draws/paths, market components, delayed observations and replay |
-| `flexibility_intro.ipynb` | Traditional, fixed and threshold outcomes on the same realized market; explicit decision trace, one sale and no post-sale investment amounts |
-| `flexibility_under_uncertainty.ipynb` | Paired fixed/policy comparisons for identical scenario realizations; visible count, PV/IRR distributions, differences and sale dates |
-| Deterministic/probabilistic/flexible test models | Canonical named operations; no old Flow, dynamics, callback policy or constructor calculations |
-| Basic DCF and source workflow regression | Current reference/schema shape and duration imports; original accepted results retained |
-| Service/design notebooks, Projects/workbench, integrations | Turn 3: source/service-specific acceptance remains required |
-| Old numerical/domain implementations and comparison tests | Turn 4 removal after remaining caller proof and retained behavior evidence |
-
-The uncertainty notebook keeps `FULL_SCENARIO_COUNT = 2000`. Routine acceptance
-uses `RK_SCENARIO_COUNT=4`, shown in its output. That small run verifies execution,
-not distribution convergence or the performance of a 2,000-scenario study.
-`RK_SCENARIO_WORKERS` controls generation workers explicitly. A threshold policy
-can improve or reduce realized value; it does not guarantee sale at the market peak.
-
-Plotting consumes detached data and returns figures. There is no locale-dependent
-calculation, `update_class`, or hidden constructor execution in migrated consumers.
-See the [upgrade guide](LEGACY_UPGRADE_GUIDE.md) and the
-[retained-dependency inventory](research/full-migration/turn2/legacy-dependencies.json).
-
-## Verification and remaining work
-
-The fresh starting suite passed **946** local tests. Earlier counts remain historical.
-Final actual counts, all seven schema suites, typing, wheel checks, authentic
-outputs and five executed notebooks are recorded in the evidence report.
-External services and the full 2,000-scenario study are not claimed as verified.
-
-Next is Turn 3 of the agreed four-turn migration: finish remaining consumer and
-integration ports with explicit format/service acceptance. Turn 4 then removes
-superseded implementations and unused dependencies only after those retirement
-gates pass. The current public API has deliberate breaking draft changes; it does
-not make all existing downstream consumers compatible automatically.
+See [integrations](INTEGRATIONS.md) for workbench and design consumers, and
+[legacy isolation](LEGACY_ISOLATION.md) for the remaining external gate.

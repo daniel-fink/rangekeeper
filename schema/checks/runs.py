@@ -23,7 +23,8 @@ import yaml
 import _library
 
 from rangekeeper.errors import ContractError
-from rangekeeper.run._validation import instant, validate_run
+from rangekeeper.run._report import instant
+from rangekeeper.run._tree import Tree
 from rangekeeper.specification._validation import records
 
 SCHEMA = Path(__file__).resolve().parents[1]
@@ -52,9 +53,7 @@ for cls in (
     "Specification",
 ):
     schema_name = {"Model": "model", "Specification": "specification"}.get(cls, "run")
-    generated = json.loads(
-        _library.schema_json(cls)
-    )
+    generated = json.loads(_library.schema_json(cls))
     validator = validator_for(generated)
     validator.check_schema(generated)
     validators[cls] = validator(generated, format_checker=FormatChecker())
@@ -126,13 +125,13 @@ def shape(bundle):
 def check(root, bundle):
     before = deepcopy(bundle)
     shape(bundle)
-    visited = validate_run(
+    visited = Tree(
         bundle["runs"][root],
         **bundle,
         run_version=VERSIONS[0],
         spec_version=VERSIONS[1],
         model_version=VERSIONS[2],
-    )
+    ).check()
     assert bundle == before
     return visited
 
@@ -149,13 +148,13 @@ def bad(message, edit, root="forward"):
     edit(bundle, bundle["runs"][ids[root]])
     shape(bundle)
     try:
-        validate_run(
+        Tree(
             bundle["runs"][ids[root]],
             **bundle,
             run_version=VERSIONS[0],
             spec_version=VERSIONS[1],
             model_version=VERSIONS[2],
-        )
+        ).check()
     except ContractError as error:
         assert message in str(error), (message, str(error))
     else:

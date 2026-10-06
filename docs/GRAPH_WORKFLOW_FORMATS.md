@@ -1,22 +1,8 @@
-# Format-independent workflow execution
+# Format-independent source workflows
 
-> Historical source/Graph contract, superseded for new builds on 2026-10-03.
-> Use [Model consumer migration](CONSUMER_MIGRATION.md) for the current packages,
-> workflow version 2, Value keys, and Model export. The earlier API names and
-> acceptance results below remain evidence for the external migration gate (6E).
-
-**Scope, 2026-10-02:** the implementation and validation below concern the
-existing source-to-Graph workflow. The [library architecture](LIBRARY_ARCHITECTURE.md)
-plans its later migration to canonical Model objects. This workflow executor is
-separate from the implemented equation-solving `rangekeeper.execution` service;
-its delivery counts are historical acceptance evidence.
-
-Implemented and pushed as RK `588b5b412e52f5b32919a72a19d31df423378edb`, paired
-with projects `68baa2b88324d9f7fcaf794f59512a8bce720c0a`. The existing YAML
-operation names and `load`, `run`, `schema` entry points are preserved.
-The paired delivery PRs are [RK #32](https://github.com/daniel-fink/rangekeeper/pull/32)
-into `feature/graph` and [Projects #1](https://github.com/daniel-fink/whirlwind-projects/pull/1)
-into `main`. These exact implementation checkpoints remain the reproduction pins.
+The workflow catalog connects declared operations to format-owned handlers.
+Source workflows build canonical Models; the mathematical executor consumes
+Model and Specification revisions separately. See [consumer contracts](CONSUMER_MIGRATION.md).
 
 ## Ownership
 
@@ -85,19 +71,3 @@ RK implementation assembly, not public runtime extension APIs.
   not. Exact-code audits remain separate from conservative semantic fingerprints.
 - Export uses dependency metadata captured during the build, rather than imposing
   an Excel dependency list after execution.
-
-## Acceptance
-
-The RK graph/serialization/operation/Excel/ingestion/workflow suite passes 291
-checks, including 12 new format-boundary regressions. Before fixes, the six initial
-regression cases failed as expected. Ruff and focused type checks pass.
-
-Mandarin and both East Whisman scenarios retain complete graph content and each
-Fact's source-cell and reviewed-decision support. Existing check operands, outcomes,
-scopes, source checks, findings and deferred records remain equivalent. Only the
-explicit additions above are normalized during cross-implementation comparison.
-
-Project validation, clean-environment checks and notebook evidence are recorded in
-the projects repository's `docs/format-independent-workflow.md` and ignored
-`artifacts/format-refactor/` directories. No source interpretation is resolved by
-this architectural change. No project YAML or handwritten notebook content changes.

@@ -1,26 +1,6 @@
-# Model and Specification APIs — Turn 2
+# Model and Specification operations
 
-**Turn 2 update, 2026-10-06:** [Temporal equations, scenarios and policies](FULL_MIGRATION_TURN2.md)
-now use Model/Specification 0.5.0 and Run 0.2.0. `ValueReference` addresses scalar
-Values or owner-local Movement keys. The canonical calendar package is `duration/`;
-`temporal` has no public alias. Finite Flow formulations, captured scenario replay,
-exogenous declarative policies and the four numerical walkthroughs are implemented.
-See [verification](research/full-migration/turn2/README.md) and the
-[upgrade guide](LEGACY_UPGRADE_GUIDE.md). Turn 3 completes remaining consumers and
-integrations; Turn 4 retires obsolete code after their acceptance gates.
-The dated checkpoint descriptions below remain historical context.
-
-**Flow semantics update, 2026-10-06:** Flows no longer carry semantic kinds or
-basis. The overall model logic owns their meaning and selects operations; units,
-dates, alignment and missingness remain checked. See the
-[current contract](FULL_MIGRATION_TURN1.md#flow-semantics-and-explicit-operations)
-and [verification](research/full-migration/flow-semantics/README.md).
-
-Implemented 2026-10-02: work units **3A and 3B** from the
-[migration map](DOMAIN_MIGRATION_MAP.md). The [record boundary](RECORD_BOUNDARY.md)
-remains the field authority. Public imports now live in `rangekeeper.model` and
-`rangekeeper.specification`; root aliases, the Run facade, codecs and stores
-are now implemented in [Turn 3](RUN_AND_STORAGE.md). Graph consumers and execution have not been migrated.
+Model owns lookup and revision over canonical records. Specification owns partial requirements; composition combines contributions without solving. See [record methods](RECORD_BOUNDARY.md).
 
 ## Factoring and documentation
 
@@ -51,7 +31,7 @@ Claim content. Domain behavior imports neither legacy Graph nor storage/solver m
 
 The 2026-10-02 [validation refactor](research/domain-migration/validation-refactor/README.md)
 separates reusable invariants from domain rules while preserving the existing
-acceptance/rejection contract. It is implemented before Turn 3.
+acceptance/rejection contract.
 
 | Module | Responsibility and operations |
 | --- | --- |
@@ -219,7 +199,7 @@ Specification or an IO format. No UUID is minted during composition.
 `specification.validate(composition, resolver=..., units=...)` checks completeness and
 cross-document semantics against the exact Model pin. Resolution failures become
 `ValidationReport` issues. `validate_records` is the explicitly lower-level catalogue
-entrypoint from Turn 1, renamed to distinguish it from the public Composition operation.
+entrypoint, separate from the public Composition operation.
 Model validation still accepts a facade, generated record or serialized mapping.
 
 `Specification.revise` requires a complete generated replacement with explicit new
@@ -244,11 +224,3 @@ Supported recorded units are checked in Model and Specification-local mathematic
 Equation unit inference, generic Fact/Claim-content agreement, imposed graph-query
 evaluation, numerical feasibility and independent solution acceptance remain outside
 the bounded validators. Nothing has executed the synthetic valuation Runs.
-
-## Verification and continuation
-
-See [Turn 2 evidence](research/domain-migration/turn2/README.md) for commands, environments,
-tests and limits. Existing Graph/numerical consumers remain unchanged. Run factories,
-strict JSON/YAML codecs, revision stores, root exports and installed-core acceptance
-are now implemented in [Turn 3](RUN_AND_STORAGE.md) (work units 3C and 4). Execution and
-consumer retirement remain later checkpoints. No commit, push or release was performed.

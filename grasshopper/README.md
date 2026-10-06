@@ -6,10 +6,9 @@ code owns presence-preserving serialization, authoring, composition and diagnost
 The Components project uses the installed RhinoCommon, Grasshopper and GH_IO
 assemblies. Package dependencies are pinned in project files and lockfiles.
 
-On the accepted Mac, Rhino 8.35.26251.13002 uses .NET 8.0.14. The .NET SDK is
-10.0.401; it builds the net8 target. The host runtime is checked separately.
-[McNeel's runtime guidance](https://developer.rhino3d.com/en/guides/rhinocommon/moving-to-dotnet-core/)
-identifies net8 as the Rhino 8 target. A later Rhino generation needs its own gate.
+The active target is Rhino 8 on .NET 8. Build and record round-trip checks run
+separately from host loading and connector acceptance. A later Rhino generation
+needs its own host check. See the [Windows procedure](WINDOWS_DEVELOPMENT.md).
 
 ```sh
 python tools/schema/generate_csharp.py --check
@@ -59,5 +58,8 @@ the Windows retirement gate. The
 original `exampleDesignConfig.ghx` remains unchanged.
 
 The official current Speckle connector is a separate Windows gate. See
-[the procedure](WINDOWS_DEVELOPMENT.md) and the [Turn 3 contract](../docs/FULL_MIGRATION_TURN3.md).
+[the procedure](WINDOWS_DEVELOPMENT.md) and the [integration contract](../docs/INTEGRATIONS.md).
 Mac authoring and offline envelope tests do not claim Windows connector acceptance.
+
+`Validator.Check` overloads check structural records and local Model references.
+`Validator.Require` rejects invalid authoring before composition or export.

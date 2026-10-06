@@ -198,7 +198,7 @@ def test_explicit_flow_roles_preserve_missing_null_zero_and_unrelated_entries():
 
 
 def test_stable_references_builder_ids_and_coordinate_mismatch():
-    from rangekeeper.model.flow import Period
+    from rangekeeper.model.duration import Period
 
     model, ids = oracle()
     builder = uuid4()

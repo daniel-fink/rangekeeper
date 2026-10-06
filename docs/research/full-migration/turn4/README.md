@@ -9,7 +9,7 @@ The permitted numerical and presentation retirement is implemented and locally
 accepted. The Windows connector predecessor group remains present. Full retirement
 is therefore **not complete**.
 
-Start with [the completion report](../../../FULL_MIGRATION_TURN4.md),
+Start with [the completion report](../../../history/FULL_MIGRATION_TURN4.md),
 [baseline and acceptance](BASELINE.md), [commands](COMMANDS.md),
 [behaviour mapping](BEHAVIOUR.md), and [remaining removal gates](RETIREMENT.md).
 

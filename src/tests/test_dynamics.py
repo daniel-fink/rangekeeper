@@ -4,13 +4,14 @@ Full market realization, replay, paired financial models and declarative policy
 behaviour are covered by test_scenarios_policies, test_models and test_market_naming.
 """
 
+from rangekeeper.model.distribution import Distribution
+
 import numpy as np
 import pytest
 from rangekeeper.calculations.dynamics.trend import calculate_trend
 from rangekeeper.calculations.dynamics.noise import sample_noise
 from rangekeeper.calculations.dynamics.volatility import calculate_autoregression
 from rangekeeper.calculations.dynamics.shock import calculate_shock
-from rangekeeper.model.distribution import make_symmetric
 
 
 def test_trend_preserves_explicit_initial_value_and_default_price_factor():
@@ -31,7 +32,7 @@ def test_autoregression_from_fixed_innovations():
 
 
 def test_noise_uses_caller_generator_without_global_state():
-    spec = make_symmetric(kind="triangular", mean=0, residual=0.05)
+    spec = Distribution.symmetric(kind="triangular", mean=0, residual=0.05)
     np.random.seed(29)
     before = np.random.get_state()
     left = sample_noise(spec, count=25, generator=np.random.default_rng(13))

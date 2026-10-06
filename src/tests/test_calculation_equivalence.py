@@ -5,15 +5,18 @@ implementation, so a regression cannot silently change its own expected values.
 Cycle residuals also check the defining equation independently of that fixture.
 """
 
+from rangekeeper.calculations.account import Account
+from rangekeeper.model.flow import Flow
+
 from datetime import date
 import json
 import math
 from pathlib import Path
 import pytest
-from rangekeeper.model.flow import from_periods
+
 from rangekeeper.model.measure import Quantity
 from rangekeeper.duration import make_periods
-from rangekeeper.calculations.account import calculate_account
+
 from rangekeeper.calculations.dynamics.cyclicality import calculate_cycle
 
 
@@ -30,8 +33,8 @@ REFERENCE = json.loads(
 def test_account_numeric_recurrence_matches_reference(case):
 
     movements = [10.0, -200.0, 80.0, 400.0, -50.0]
-    actual = calculate_account(
-        from_periods(
+    actual = Account.calculate(
+        Flow.from_periods(
             make_periods(date(2020, 1, 1), frequency="month", count=5),
             movements,
             units="meter",

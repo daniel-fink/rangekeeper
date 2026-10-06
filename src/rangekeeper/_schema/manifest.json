@@ -1,7 +1,7 @@
 {
   "artifacts": {
     "native.py": "a4a785e0c18b93d06160ac8ffcbc0b6a3a8b9afb2700cf2c133a30b9f6eff333",
-    "records.py": "34e67e654033fcff355a9ad56e21e13452ccb0a70057c3851abfd7b172182c07",
+    "records.py": "567e9cd143915126e6c80bbfffc999342bb2bcfda3a0678b3dc2d6417d8af1a6",
     "schema.json": "4b288fdba16276a45721f944482653284a58fd76bc229c8cce369b825357e864",
     "slots.json": "19ffae84ef928d25b104af41165298d52063a97d1b4b17bb44e998018ecec412"
   },
@@ -122,7 +122,7 @@
     "schema/specification.yaml": "a18b66a649410773e8894feb5e87fe9443df2b0aac6e98531b47c022217b4fd8",
     "schema/value_reference.yaml": "805b702c9b2873bd54afea08837887041849e99fb50c92be0983a8424c1ca67e",
     "tools/schema/bundle.yaml": "695423eb5d5fc898f39afd1bedda5c6ccb29711f67008ed0dd1e89f91436e25a",
-    "tools/schema/generate.py": "42c2a672d10ed17084d4e2eb2281bc376eb08172733ea1aa77ab3081af58c755",
+    "tools/schema/generate.py": "dd2e81f25dcdb018f5d70bf200c04a2dab1f30b19dac9307aace1c4984ce06a9",
     "tools/schema/requirements.txt": "84ef01c513f5561fceb0d171c9b66fb2a6a05a1802c4d01c3f2429eb97778976"
   }
 }

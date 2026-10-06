@@ -6,7 +6,7 @@ The original logs and counts below are preserved as historical evidence.
 
 Date: 2026-10-04. Branch: `acausal-modelling`. Starting and final HEAD:
 `90c2e00ba7b942a8830960e3df3f3ff616f30fa1`. The implementation is uncommitted.
-The [contract and ledger](../../../FULL_MIGRATION_TURN1.md) describes delivered
+The [contract and ledger](../../../history/FULL_MIGRATION_TURN1.md) describes delivered
 scope and remaining work. The [upgrade guide](../../../LEGACY_UPGRADE_GUIDE.md)
 contains runnable examples and intentional changes.
 

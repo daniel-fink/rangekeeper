@@ -1,50 +1,6 @@
-# Model tables, adapters, and source workflows
+# Tables, adapters and source workflows
 
-**Legacy isolation, 2026-10-06:** held Python code is now in `rangekeeper.legacy`,
-predecessor tests in `src/tests/legacy`, and excluded C# code in `grasshopper/legacy`.
-Old public paths have no aliases. See [the boundary and current checks](LEGACY_ISOLATION.md).
-The Windows gate remains open; earlier Turn 4 results below describe the preceding wheel.
-
-**Turn 4 update, 2026-10-06:** [Permitted legacy retirement](FULL_MIGRATION_TURN4.md)
-removes the superseded numerical/presentation modules and narrows optional
-dependencies. The paired Turn 3 checkpoint is pushed: RK `305f3ff`, Projects
-`6146ad2`. Turn 4 is uncommitted. [Current acceptance](research/full-migration/turn4/BASELINE.md)
-records 1,058 passing local tests, seven walkthroughs and all three real source
-builds. The [remaining retirement register](research/full-migration/turn4/RETIREMENT.md)
-holds old graph/Measure/Speckle API and excluded C# code for the Windows connector
-gate. Full retirement is not complete. Hypar is retired; Browser/outliner is on hold.
-Dated checkpoints below remain historical and do not override this current state.
-
-
-**Turn 2 update, 2026-10-06:** [Temporal equations, scenarios and policies](FULL_MIGRATION_TURN2.md)
-now use Model/Specification 0.5.0 and Run 0.2.0. `ValueReference` addresses scalar
-Values or owner-local Movement keys. The canonical calendar package is `duration/`;
-`temporal` has no public alias. Finite Flow formulations, captured scenario replay,
-exogenous declarative policies and the four numerical walkthroughs are implemented.
-See [verification](research/full-migration/turn2/README.md) and the
-[upgrade guide](LEGACY_UPGRADE_GUIDE.md). Turn 3 completes remaining consumers and
-integrations; Turn 4 retires obsolete code after their acceptance gates.
-The dated checkpoint descriptions below remain historical context.
-
-**Flow semantics update, 2026-10-06:** Flows no longer carry semantic kinds or
-basis. The overall model logic owns their meaning and selects operations; units,
-dates, alignment and missingness remain checked. See the
-[current contract](FULL_MIGRATION_TURN1.md#flow-semantics-and-explicit-operations)
-and [verification](research/full-migration/flow-semantics/README.md).
-
-**Full migration update, 2026-10-04:** [Turn 1 foundations](FULL_MIGRATION_TURN1.md)
-implements Model 0.4.0 rich properties and Flow Values, `model.duration`,
-`temporal`, `calculations`, detached dataframe adapters, and explicit Graph conversion.
-The basic DCF notebook, financial test model and synthetic source workflows migrated.
-Read the [upgrade guide](LEGACY_UPGRADE_GUIDE.md) and [verification](research/full-migration/turn1/README.md).
-Turn 2 is implemented; see the current contract and verification linked above.
-Turns 3–4 finish remaining consumers and retire old modules. The six-checkpoint
-history below remains the scalar/core work record; full migration is not complete.
-
-Step 6C/6D, implemented locally on 2026-10-03. LinkML remains authoritative.
-These changes move presentation and source construction onto the canonical Model.
-They do not migrate external projects or remove the remaining old Graph domain.
-See the [verification record](research/consumer-migration/README.md).
+Source workflows build canonical Models from explicit evidence. Tables and dataframe projections support inspection and interchange; they do not replace Model persistence.
 
 ## Package ownership
 
@@ -59,7 +15,7 @@ rangekeeper/
                                  to_table, to_tree_table
     view.py, hierarchy.py        pinned Model selection and traversal
   adapters/
-    csv.py, pandas.py            Table interchange; not Model persistence
+    csv.py, polars.py            Table interchange; not Model persistence
     document.py, excel/          native source snapshots and evidence extraction
     visualization.py            Model-backed View and Table presentation
     cytoscape/                   Model/View projection and packaged offline viewer
@@ -91,7 +47,7 @@ from rangekeeper.graph import View, Hierarchy
 from rangekeeper.graph.projection import (
     FieldColumn, ValueColumn, LabelColumn, to_table, to_tree_table,
 )
-from rangekeeper.adapters import csv, pandas, cytoscape
+from rangekeeper.adapters import csv, polars, cytoscape
 
 columns = (
     FieldColumn("model_id", "model_id"),
@@ -102,7 +58,7 @@ columns = (
 )
 view = View(model)
 table = to_table(view, columns=columns)
-frame = pandas.to_dataframe(table)
+frame = polars.to_frame(table)
 csv.write(table, "areas.csv")
 cytoscape.write_viewer([cytoscape.project(model, "Review")], viewer_path)
 ```
@@ -125,7 +81,7 @@ Value from a declared Value without a quantity.
 `parent_id` and returns preorder rows. The caller first chooses relationship or
 membership hierarchy semantics. Shared membership is not forced into one parent.
 A Table is shallowly frozen and may hold native cells; it is not an immutable
-Model snapshot. CSV writes UUID cells as text and rejects rich cells. Pandas/CSV
+Model snapshot. CSV writes UUID cells as text and rejects rich cells. Polars/CSV
 readback does not restore Row identity or a Model. Canonical persistence remains
 `io.json` and `io.yaml`, with explicit `kind=Model` on reads.
 
@@ -228,22 +184,15 @@ The inverse investigation reuses that output, assigns gross **50 m²**, and solv
 net **25 m²**. Both Runs receive resolver-backed validation. Source provenance
 remains in the accepted output Models.
 
-## Remaining consumer gates
 
-The expanded [full migration review](FULL_MIGRATION_REVIEW.md) now inventories
-numerical/temporal consumers, formerly version-1 workflow examples and parallel RK
-workbench/layout features. It proposes the additional contracts and proof needed
-before complete consumer migration and retirement can be claimed.
+## Polars and CSV contract
 
-6E migrates Mandarin, East Whisman, notebooks, and other repository/host consumers
-in their own environments. Their old imports, workflow version 1, Feature content,
-and persisted Graph JSON need explicit changes. They were not run in this slice.
-Old Graph JSON is not Model JSON. Turn 1 now supplies an explicit bounded v1
-converter and migrated synthetic examples; this does not certify external consumers.
+`polars.to_frame(Table | Flow)` creates detached columns. `polars.to_table(frame)`
+copies cells to a Table; `polars.from_frame(frame, units=...)` reads the explicit
+Flow movement format. Opaque or mixed Table cells use Object columns to avoid
+silent coercion. Row UUIDs and Claims stay in separate evidence, not hidden columns.
 
-6F removes the old domain and persistence implementations after consumer acceptance.
-The retained code is now in `rangekeeper.legacy.graph`: its `table` uses shared
-`table.Table` storage, and its own `view`, `reduction` and `adapter.json` preserve
-predecessor behaviour. Its tests are under `src/tests/legacy`. Canonical adapters
-and workflows do not import that package. The removed `graph.workflow` and presentation-adapter paths
-have no compatibility aliases.
+CSV rejects rich cells and nonfinite numbers. UUID cells become text. Reading uses
+Polars inference: empty fields become None, while `NA` remains text. Preserve
+leading-zero identifiers with `csv.read(path, schema_overrides={"code": pl.String})`
+after `import polars as pl`. CSV cannot reconstruct a Model or its provenance.

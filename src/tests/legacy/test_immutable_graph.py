@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import numpy as np
+
 from dataclasses import FrozenInstanceError, replace
 from datetime import datetime, timezone
 import subprocess
@@ -8,7 +10,6 @@ from types import ModuleType
 from uuid import UUID, uuid4, uuid5, NAMESPACE_URL
 
 import pint
-import pandas as pd
 import pytest
 
 import rangekeeper as rk
@@ -1641,8 +1642,8 @@ def test_feature_aggregation_collects_raw_subtree_values(model):
 
 def test_distinct_uses_normal_python_equality():
     assert rk.legacy.graph.reduction.distinct(([1], [1], [2])) == ([1], [2])
-    with pytest.raises(ValueError, match="truth value of a Series is ambiguous"):
-        rk.legacy.graph.reduction.distinct((pd.Series((1, 2)), pd.Series((1, 2))))
+    with pytest.raises(ValueError, match="truth value of an array"):
+        rk.legacy.graph.reduction.distinct((np.array((1, 2)), np.array((1, 2))))
 
 
 def test_feature_mode_rejects_ties_and_missing_subtrees_are_none(model):
@@ -1933,12 +1934,12 @@ def test_measurement_without_aggregation_rule_is_rejected(model):
 
 def test_feature_aggregation_supports_rich_values_without_mutating_them(model):
     from datetime import date
-    from rangekeeper.model.flow import Flow, from_events
-    from rangekeeper.calculations.series import sum_flows
+    from rangekeeper.model.flow import Flow
+    from rangekeeper.calculations.series import aggregate
 
     dates = (date(2025, 1, 1), date(2025, 2, 1))
-    first_flow = from_events(dates, (10.0, 20.0), units="dimensionless")
-    second_flow = from_events(dates, (1.0, 2.0), units="dimensionless")
+    first_flow = Flow.from_events(dates, (10.0, 20.0), units="dimensionless")
+    second_flow = Flow.from_events(dates, (1.0, 2.0), units="dimensionless")
     first_snapshot = first_flow.to_data()
     second_snapshot = second_flow.to_data()
     root = rk.legacy.graph.Entity(name="Root", classification=model["space"])
@@ -1963,7 +1964,7 @@ def test_feature_aggregation_supports_rich_values_without_mutating_them(model):
     ).view()
 
     def combine(values: tuple[Flow, ...]) -> Flow:
-        return sum_flows(values).flow
+        return aggregate(values).flow
 
     result = view.aggregate(rk.legacy.graph.reduction.by_feature("cashflow", reducer=combine))
     assert tuple(m.magnitude for m in result.root_value.movements) == (11.0, 22.0)

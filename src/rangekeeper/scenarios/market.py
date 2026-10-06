@@ -32,8 +32,8 @@ from ..model.scenario import (
     ObservationAvailability,
 )
 from .._schema.records import ValueReference
-from ..duration.period import resolve_period_date
-from ..calculations.distribution import sample as sample_distribution
+
+
 from .plan import make_plan, validate
 from .components import (
     make_trend,
@@ -59,9 +59,9 @@ def _flow(plan, amounts):
         units="dimensionless",
         movements=tuple(
             Movement(
-                key=f"p{i+1}",
+                key=f"p{i + 1}",
                 period=p,
-                date=resolve_period_date(p, timing="last_day"),
+                date=p.resolve(timing="last_day"),
                 magnitude=float(x),
             )
             for i, (p, x) in enumerate(zip(plan.periods, amounts))
@@ -90,10 +90,8 @@ def _sample(model: Model, plan: ScenarioPlan, key: str) -> Model:
         assert parameter.distribution is not None or parameter.quantity is not None
         if plan.method == "independent.v2":
             array = (
-                sample_distribution(
-                    parameter.distribution,
-                    size=len(plan.periods),
-                    generator=generator(name),
+                parameter.distribution.sample(
+                    size=len(plan.periods), generator=generator(name)
                 )
                 if parameter.distribution
                 else (cast(Quantity, parameter.quantity).magnitude,) * len(plan.periods)
@@ -109,9 +107,7 @@ def _sample(model: Model, plan: ScenarioPlan, key: str) -> Model:
             )
         else:
             magnitude = (
-                sample_distribution(
-                    parameter.distribution, size=1, generator=generator(name)
-                )[0]
+                parameter.distribution.sample(size=1, generator=generator(name))[0]
                 if parameter.distribution
                 else cast(Quantity, parameter.quantity).magnitude
             )
@@ -172,9 +168,7 @@ def _capture(model, plan, key, values, streams, algorithm):
         availability=tuple(
             ObservationAvailability(
                 target=ValueReference(value=v.id, movement=m.key),
-                available_at=resolve_period_date(
-                    cast(Any, m.period), timing="last_day"
-                ),
+                available_at=cast(Any, m.period).resolve(timing="last_day"),
             )
             for v in values
             if v.flow is not None
@@ -367,14 +361,16 @@ def realize(model: Model, plan: ScenarioPlan, *, draws: Model) -> Market:
     updated = cast(dict[str, Any], record.to_data())
     updated["outputs"] = [Binding(name=v.key, value=v.id).to_data() for v in values]
     updated["availability"].extend(
-        ObservationAvailability(
-            target=ValueReference(value=v.id, movement=m.key),
-            available_at=resolve_period_date(
-                plan.periods[i + delays.get(v.key, 0)], timing="last_day"
-            ),
-        ).to_data()
-        for v in values
-        for i, m in enumerate(cast(Flow, v.flow).movements)
+        (
+            ObservationAvailability(
+                target=ValueReference(value=v.id, movement=m.key),
+                available_at=plan.periods[i + delays.get(v.key, 0)].resolve(
+                    timing="last_day"
+                ),
+            ).to_data()
+            for v in values
+            for i, m in enumerate(cast(Flow, v.flow).movements)
+        )
     )
     data["provenance"]["scenarios"] = [
         updated if r["id"] == str(record.id) else r

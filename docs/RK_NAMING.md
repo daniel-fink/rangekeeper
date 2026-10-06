@@ -1,9 +1,8 @@
 # RK naming
 
-This update aligns the Turn 2 API with the walkthrough vocabulary at checkpoint
-`7b8dcd4`. A scenario is an alternative case or trial; it need not be random.
-A Market combines named market components. An investment Model uses that Market,
-and a Policy supplies decisions. Model–Specification–Run ownership is unchanged.
+Prefer one clear noun for a type and one clear verb for an operation. Use a
+qualified name when one word would lose domain meaning. Put an invariant on its
+owner; keep cross-record and IO operations at their explicit boundary.
 
 ## Records and views
 
@@ -24,12 +23,13 @@ and a Policy supplies decisions. Model–Specification–Run ownership is unchan
 Binding record; each container validates local uniqueness and target resolution.
 No generated field schema is repeated in a handwritten distribution class.
 
-Generated records remain inert. `model.distribution` supplies pure named
-constructors and shared semantic validation. `calculations.distribution` supplies
-`sample`, `calculate_cumulative_density`, and `calculate_interval_mass`. Samples
-use the record's units; probabilities are dimensionless. Sampling advances only
-the supplied NumPy generator. Distribution records survive detached serialization
-and have the same type when read back through scenario content.
+Generated records inherit field-free behaviour from the explicit generator bridge.
+`Distribution.uniform`, `triangular`, `pert` and `symmetric` construct parameters;
+`check` validates their meaning. Instance methods `sample`, `cdf` and `mass` own
+probability calculations. CDF means cumulative distribution function. Samples use
+the record's units; probabilities are dimensionless. Sampling advances only the
+supplied NumPy generator. Nested decoding returns the same class and methods.
+See [record ownership and contracts](RECORD_BOUNDARY.md).
 
 ## Composable authoring
 
@@ -89,15 +89,11 @@ distributions. Linked cycle estimates remain available through
 records remain separate from DecisionHistory. Policy evaluation has no authority
 to infer missing observations or claim numerical feasibility.
 
-## Draft migration and verification
 
-Method names advance to `market.v2`, `market.estimates.v2`, and `independent.v2`
-because stored parameter/output bindings change. `upgrade_scenario_names` creates
-a new Model revision from v1 draft data without rerunning calculations. It keeps
-Value and Movement identities, numerical content, availability, claims and random
-stream identifiers. The old document and Runs remain untouched. Fresh generation
-keeps the original volatility random-stream identity despite its new public name.
+## Runtime services
 
-There are no public aliases for superseded classes. See the [upgrade guide](LEGACY_UPGRADE_GUIDE.md)
-and [verification evidence](research/full-migration/naming/README.md). Previous
-verification logs remain historical evidence and are not rewritten.
+`Executor` traverses batches; `Plan` resolves their graph; `Attempt` owns one scalar
+execution. Run `Tree` and `Publication` validators have separate scopes. Layout
+`Formulation` owns symbolic geometry. The viewer uses `Viewer` for mutable display
+state; C# `Validator.Check` overloads distinguish structural and Model checks.
+Prefer composition between these services to inheritance with hidden state.

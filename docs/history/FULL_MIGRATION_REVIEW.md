@@ -1,16 +1,18 @@
 # Full library and consumer migration: review proposal
 
+> Historical design or implementation record. Names, commands and status below describe that checkpoint. Use the [current documentation](../README.md) for supported APIs.
+
 **Legacy isolation, 2026-10-06:** held Python code is now in `rangekeeper.legacy`,
 predecessor tests in `src/tests/legacy`, and excluded C# code in `grasshopper/legacy`.
-Old public paths have no aliases. See [the boundary and current checks](LEGACY_ISOLATION.md).
+Old public paths have no aliases. See [the boundary and current checks](../LEGACY_ISOLATION.md).
 The Windows gate remains open; earlier Turn 4 results below describe the preceding wheel.
 
 **Turn 4 update, 2026-10-06:** [Permitted legacy retirement](FULL_MIGRATION_TURN4.md)
 removes the superseded numerical/presentation modules and narrows optional
 dependencies. The paired Turn 3 checkpoint is pushed: RK `305f3ff`, Projects
-`6146ad2`. Turn 4 is uncommitted. [Current acceptance](research/full-migration/turn4/BASELINE.md)
+`6146ad2`. Turn 4 is uncommitted. [Current acceptance](../research/full-migration/turn4/BASELINE.md)
 records 1,058 passing local tests, seven walkthroughs and all three real source
-builds. The [remaining retirement register](research/full-migration/turn4/RETIREMENT.md)
+builds. The [remaining retirement register](../research/full-migration/turn4/RETIREMENT.md)
 holds old graph/Measure/Speckle API and excluded C# code for the Windows connector
 gate. Full retirement is not complete. Hypar is retired; Browser/outliner is on hold.
 Dated checkpoints below remain historical and do not override this current state.
@@ -21,8 +23,8 @@ now use Model/Specification 0.5.0 and Run 0.2.0. `ValueReference` addresses scal
 Values or owner-local Movement keys. The canonical calendar package is `duration/`;
 `temporal` has no public alias. Finite Flow formulations, captured scenario replay,
 exogenous declarative policies and the four numerical walkthroughs are implemented.
-See [verification](research/full-migration/turn2/README.md) and the
-[upgrade guide](LEGACY_UPGRADE_GUIDE.md). Turn 3 completes remaining consumers and
+See [verification](../research/full-migration/turn2/README.md) and the
+[upgrade guide](../LEGACY_UPGRADE_GUIDE.md). Turn 3 completes remaining consumers and
 integrations; Turn 4 retires obsolete code after their acceptance gates.
 The dated checkpoint descriptions below remain historical context.
 
@@ -95,9 +97,9 @@ steer the concrete design as it develops.
 
 ## Evidence and scope that the older tables missed
 
-The [static inventory](research/full-migration/inventory.json) records source
+The [static inventory](../research/full-migration/inventory.json) records source
 hashes, symbols, consumer reference locations and checkout states. The
-[symbol list](research/full-migration/SYMBOLS.md) includes private methods and
+[symbol list](../research/full-migration/SYMBOLS.md) includes private methods and
 fields as well as public operations. These are discovery evidence, not proof
 that every listed method works. The script reads code without importing it.
 
@@ -254,7 +256,7 @@ Time powers are not inherently meaningless: velocity squared has units m²/s².
 If a particular stream product creates an unwanted time power, inspect operand
 meaning and units. Deleting that power cannot establish a valid operation.
 
-The [unit probe](research/full-migration/unit-probe.json) reproduces the helpers
+The [unit probe](../research/full-migration/unit-probe.json) reproduces the helpers
 called by `Stream.product`: dimensionless × AUD/month becomes AUD after the old
 time-removal step, without applying a duration. A product of two rates with time
 exponent -2 raises `NotImplementedError`. This could approximate a one-unit-period
@@ -489,7 +491,7 @@ generation/policy evaluation requires Run extensions is an explicit schema revie
 | `drive_model_from_design.ipynb` | Speckle, Model aggregation, temporal Values and financial formulations | Design-derived input → canonical Model → financial results with provenance; shared membership not double counted |
 | Test model implementations under `src/tests/models/` | Same builders and numerical interfaces | Migrate full implementations and assertions; inspect methods reached through instances, not only imports |
 | Grasshopper C# components and tests | Cross-language canonical format and adapter contract | Fixture round trip plus actual Rhino/Grasshopper authoring checks; transport object identity is not Model revision identity |
-| Hypar | Retired by explicit user decision in Turn 3; local residue later removed at the user's request | No supported-consumer acceptance. Keep earlier research and the [removal record](research/full-migration/hypar-removal/README.md). |
+| Hypar | Retired by explicit user decision in Turn 3; local residue later removed at the user's request | No supported-consumer acceptance. Keep earlier research and the [removal record](../research/full-migration/hypar-removal/README.md). |
 | Parallel RK layout/workbench implementation | Inventory complete public behavior and current tests, then port against Model-backed graph/adapters/workflow | Inspection/progress, checked layouts, saved preferences and viewer edits preserved; layout backend/environment checks remain separate from domain solve tests |
 | Other consumers discovered during repository/import/data-format searches | Add to this register and classify current version/capabilities | A named owner, environment, migration recipe, evidence and removal gate |
 

@@ -3,7 +3,7 @@
 from uuid import UUID
 from collections.abc import Mapping
 from ..model import Model
-from ..model.flow import resolve_date
+
 from .._schema.records import (
     Policy,
     DecisionPoint,
@@ -78,7 +78,7 @@ def build_stop_gain_resale_policy(
 
     points = []
     for index, (h, (factor, s)) in enumerate(rows):
-        at = resolve_date(h, timing="last_day")
+        at = h.resolve(timing="last_day")
         observation = ObservationBinding(
             name="pricing_factor", target=target(pricing_factor, factor)
         )

@@ -1,13 +1,15 @@
 # Rangekeeper Graph Refactor Implementation Plan
 
+> Historical design or implementation record. Names, commands and status below describe that checkpoint. Use the [current documentation](../README.md) for supported APIs.
+
 **Historical implementation plan:** the current acausal-modelling plan is
-[LIBRARY_ARCHITECTURE.md](LIBRARY_ARCHITECTURE.md). The graph domain core described
+[LIBRARY_ARCHITECTURE.md](../LIBRARY_ARCHITECTURE.md). The graph domain core described
 here is being assessed for substantial replacement by schema-backed Model records;
 graph algorithms and numerical behavior are candidates for reuse. The dated
 phases, layouts, handoff instructions, and test counts below document the earlier
 graph work and do not define the current implementation sequence.
 
-The current [Model-backed graph APIs](GRAPH_MODEL.md) supersede the old View and
+The current [Model-backed graph APIs](../GRAPH_MODEL.md) supersede the old View and
 reduction namespace described here. Retained old consumers explicitly use
 `rangekeeper.graph.legacy`; the names below remain historical.
 
@@ -151,10 +153,10 @@ semantics, and atomic source-Graph preservation on both success and failure.
 
 This was the implementation brief for the earlier deliberate breaking refactor
 of Rangekeeper's entity/relationship graph system. Its remaining phases are
-historical; the current sequence is in [the library plan](LIBRARY_ARCHITECTURE.md). Rhino 8,
+historical; the current sequence is in [the library plan](../LIBRARY_ARCHITECTURE.md). Rhino 8,
 Grasshopper, the official Speckle v3 connector, and end-to-end publication are
 tested on a dedicated **Windows host**. See
-[`grasshopper/WINDOWS_DEVELOPMENT.md`](../grasshopper/WINDOWS_DEVELOPMENT.md) for
+[`grasshopper/WINDOWS_DEVELOPMENT.md`](../../grasshopper/WINDOWS_DEVELOPMENT.md) for
 the reproducible Windows runbook.
 
 Source Codex tasks:

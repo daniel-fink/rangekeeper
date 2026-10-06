@@ -108,7 +108,7 @@ test(
       const approx = (a, b) => assert.ok(Math.abs(a - b) < 3, `${a} != ${b}`);
       await page.evaluate((id) => {
         graphReview.select(id);
-        graphReview.focusOn(id);
+        graphReview.focus(id);
       }, ids.floor);
       let before = await positions();
       await drag(ids.members[0], 70, 55);
@@ -149,7 +149,7 @@ test(
       }
       await assertBounds();
       await page.evaluate(
-        (id) => graphReview.changeCollapse([id], true),
+        (id) => graphReview.collapse([id], true),
         ids.floor,
       );
       before = await positions();
@@ -160,7 +160,7 @@ test(
         approx(after[id].y - before[id].y, 40);
       }
       await page.evaluate(
-        (id) => graphReview.changeCollapse([id], false),
+        (id) => graphReview.collapse([id], false),
         ids.floor,
       );
       await assertBounds();
@@ -204,9 +204,9 @@ test(
         await page.evaluate(() => JSON.stringify(graphReview.data)),
         original,
       );
-      await page.evaluate((id) => graphReview.focusOn(id), ids.floor);
+      await page.evaluate((id) => graphReview.focus(id), ids.floor);
       const ordinaryBefore = await positions();
-      await page.evaluate((id) => graphReview.focusOn(id), one);
+      await page.evaluate((id) => graphReview.focus(id), one);
       const ordinaryAfter = await positions();
       for (const id of ids.members)
         assert.deepEqual(ordinaryAfter[id], ordinaryBefore[id]);
@@ -242,7 +242,7 @@ test(
       approx(after.s.x - before.s.x, 30);
       approx(after.s.y - before.s.y, 20);
       await assertBounds();
-      await page.evaluate(() => graphReview.changeCollapse(["A"], true));
+      await page.evaluate(() => graphReview.collapse(["A"], true));
       assert.equal(
         await page.evaluate(() =>
           graphReview.cy.getElementById("s").hasClass("hidden"),
@@ -254,7 +254,7 @@ test(
       after = await positions();
       approx(after.s.x - before.s.x, 20);
       approx(after.s.y - before.s.y, 10);
-      await page.evaluate(() => graphReview.changeCollapse(["B"], true));
+      await page.evaluate(() => graphReview.collapse(["B"], true));
       assert.equal(
         await page.evaluate(() =>
           graphReview.cy.getElementById("s").hasClass("hidden"),
@@ -264,7 +264,7 @@ test(
       await page.click("#restore");
       await assertBounds();
       await page.evaluate(() => {
-        graphReview.focusOn("A");
+        graphReview.focus("A");
         graphReview.cy.zoom(1);
       });
       before = await positions();

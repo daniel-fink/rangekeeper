@@ -1,4 +1,5 @@
 """Naming changes preserve recorded mathematics, units and deterministic draws."""
+from rangekeeper.model.distribution import Distribution
 
 from copy import deepcopy
 from datetime import date
@@ -8,8 +9,8 @@ from uuid import UUID, uuid4
 import numpy as np
 import pytest
 from rangekeeper.model import Model, Metadata, Binding
-from rangekeeper.model.distribution import Distribution, make_uniform, make_symmetric
-from rangekeeper.calculations import distribution as calculations
+
+
 from rangekeeper.duration import make_periods
 from rangekeeper.scenarios import market, Market, replay
 from rangekeeper.migration import upgrade_scenario_names
@@ -40,16 +41,14 @@ def plan(**kwargs):
 def test_shared_distribution_survives_serialization_and_calculations():
     from rangekeeper._schema.records import Distribution as Generated
 
-    record = make_symmetric(kind="triangular", mean=2, residual=1, units="AUD")
+    record = Distribution.symmetric(kind="triangular", mean=2, residual=1, units="AUD")
     assert type(record) is Generated
     restored = Distribution.from_json(json.dumps(record.to_data()))
     assert restored == record
-    assert sum(
-        calculations.calculate_interval_mass(restored, [1, 2, 3])
-    ) == pytest.approx(1)
-    assert calculations.sample(
-        record, size=5, generator=np.random.default_rng(17)
-    ) == calculations.sample(restored, size=5, generator=np.random.default_rng(17))
+    assert sum(restored.mass([1, 2, 3])) == pytest.approx(1)
+    assert record.sample(
+        size=5, generator=np.random.default_rng(17)
+    ) == restored.sample(size=5, generator=np.random.default_rng(17))
     data = record.to_data()
     data["lower"] = -99
     assert record.lower == 1
@@ -57,7 +56,7 @@ def test_shared_distribution_survives_serialization_and_calculations():
         record.lower = 0
     invalid = Distribution(kind="pert", lower=2, upper=1, units="AUD")
     with pytest.raises(ValueError, match="bounds"):
-        calculations.sample(invalid, size=1, generator=np.random.default_rng(1))
+        invalid.sample(size=1, generator=np.random.default_rng(1))
 
 
 def test_component_authoring_preserves_plan_and_rejects_conflicts():
@@ -126,7 +125,9 @@ def test_upgrade_and_seeded_generation_preserve_original_paths():
     fresh = market.generate(
         root(),
         plan(
-            parameters={"volatility_per_period": make_uniform(lower=0.02, upper=0.05)}
+            parameters={
+                "volatility_per_period": Distribution.uniform(lower=0.02, upper=0.05)
+            }
         ),
         scenario_keys=["naming-reference"],
     )[0]

@@ -2,7 +2,7 @@
 
 Status: schema decision accepted, 2026-10-02. Daniel chose to retain LinkML and
 proceed through domain replacement and a minimal library core to scalar execution.
-The [domain migration map](../../DOMAIN_MIGRATION_MAP.md) now completes Step 1;
+The [domain migration map](../../history/DOMAIN_MIGRATION_MAP.md) now completes Step 1;
 shared generated records and structural artifacts are next. See the [decision record](DECISION.md) for the
 trade-off, selected Python record boundary, and next implementation step. The
 complete native CUE candidate was not implemented; this comparison is closed for

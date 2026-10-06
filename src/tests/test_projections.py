@@ -1,10 +1,12 @@
 """Explicit projection origins, padding and mass allocation after API retirement."""
 
+from rangekeeper.model.distribution import Distribution
+
 from datetime import date
 import pytest
 from rangekeeper.calculations import projection, series
 from rangekeeper.duration import make_periods
-from rangekeeper.model.distribution import make_pert
+
 from rangekeeper.model.measure import Quantity
 
 
@@ -35,7 +37,9 @@ def test_padding_is_explicit_and_preserves_projection_origin():
 def test_pert_allocation_preserves_mass_without_padding_observations():
     periods = make_periods(date(2000, 1, 1), frequency="month", count=12)
     flow = projection.allocate(
-        Quantity(magnitude=1, units="meter"), periods=periods, distribution=make_pert()
+        Quantity(magnitude=1, units="meter"),
+        periods=periods,
+        distribution=Distribution.pert(),
     )
-    assert series.total(flow).magnitude == pytest.approx(1)
+    assert flow.total().magnitude == pytest.approx(1)
     assert tuple(m.period for m in flow.movements) == periods

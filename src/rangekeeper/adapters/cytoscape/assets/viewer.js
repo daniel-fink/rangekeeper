@@ -398,58 +398,58 @@
   }
 
   // geometry.ts
-  function connectionCentre(ctx2, node) {
+  function connectionCentre(viewer2, node) {
     const p = node.position();
     return {
       x: p.x,
-      y: p.y - (node.hasClass("frame") ? node.height() / 2 - ctx2.HEADER / 2 : 0)
+      y: p.y - (node.hasClass("frame") ? node.height() / 2 - viewer2.HEADER / 2 : 0)
     };
   }
-  function headerEndpoint(ctx2, node, other) {
-    const p = ctx2.connectionCentre(node), q = ctx2.connectionCentre(other);
+  function headerEndpoint(viewer2, node, other) {
+    const p = viewer2.connectionCentre(node), q = viewer2.connectionCentre(other);
     const dx = q.x - p.x, dy = q.y - p.y;
     const scale = Math.max(
       Math.abs(dx) / (node.width() / 2),
-      Math.abs(dy) / (ctx2.HEADER / 2)
+      Math.abs(dy) / (viewer2.HEADER / 2)
     );
-    return scale ? { x: p.x + dx / scale, y: p.y + dy / scale } : { x: p.x, y: p.y + ctx2.HEADER / 2 };
+    return scale ? { x: p.x + dx / scale, y: p.y + dy / scale } : { x: p.x, y: p.y + viewer2.HEADER / 2 };
   }
-  function endpoint(ctx2, edge, source) {
+  function endpoint(viewer2, edge, source) {
     const node = source ? edge.source() : edge.target();
     const other = source ? edge.target() : edge.source();
     const p = node.position();
     if (node.hasClass("frame")) {
-      const q = ctx2.headerEndpoint(node, other);
+      const q = viewer2.headerEndpoint(node, other);
       return `${q.x - p.x}px ${q.y - p.y}px`;
     }
     if (other.hasClass("frame")) {
-      const q = ctx2.headerEndpoint(other, node);
+      const q = viewer2.headerEndpoint(other, node);
       return `${Math.atan2(q.y - p.y, q.x - p.x) * 180 / Math.PI + 90}deg`;
     }
     return "outside-to-node";
   }
-  function connectionGeometry(ctx2, n) {
+  function connectionGeometry(viewer2, n) {
     return {
-      ...ctx2.connectionCentre(n),
+      ...viewer2.connectionCentre(n),
       w: n.width(),
-      h: n.hasClass("frame") ? ctx2.HEADER : n.height(),
+      h: n.hasClass("frame") ? viewer2.HEADER : n.height(),
       nodePosition: { ...n.position() }
     };
   }
-  function updateConnections(ctx2) {
-    const eligible = ctx2.cy.edges().filter((e) => ctx2.fourPorts && !ctx2.layoutMode && !e.hasClass("hidden"));
+  function updateConnections(viewer2) {
+    const eligible = viewer2.cy.edges().filter((e) => viewer2.fourPorts && !viewer2.layoutMode && !e.hasClass("hidden"));
     const references = /* @__PURE__ */ new Map(), pairs = /* @__PURE__ */ new Map();
     const finite = (p) => p && Number.isFinite(p.x) && Number.isFinite(p.y);
-    ctx2.routes = /* @__PURE__ */ new Map();
+    viewer2.routes = /* @__PURE__ */ new Map();
     const nativePairs = eligible.filter(
       (e) => !e.source().hasClass("frame") && !e.target().hasClass("frame") && e.source().id() !== e.target().id() && Math.hypot(
         e.source().position().x - e.target().position().x,
         e.source().position().y - e.target().position().y
       ) > 1e-6
     );
-    ctx2.cy.batch(
+    viewer2.cy.batch(
       () => nativePairs.forEach((e) => {
-        e.removeStyle(ctx2.routingStyle);
+        e.removeStyle(viewer2.routingStyle);
         e.style({
           "curve-style": "straight",
           "source-endpoint": "outside-to-line",
@@ -470,55 +470,55 @@
       if (!pairs.has(key)) pairs.set(key, []);
       pairs.get(key).push(e.id());
     }
-    ctx2.cy.batch(
-      () => ctx2.cy.edges().forEach((e) => {
+    viewer2.cy.batch(
+      () => viewer2.cy.edges().forEach((e) => {
         const active = eligible.has(e);
         e.toggleClass("four-port", active);
         if (!active) {
-          e.removeStyle(ctx2.routingStyle);
+          e.removeStyle(viewer2.routingStyle);
           e.style({
-            "source-endpoint": ctx2.endpoint(e, true),
-            "target-endpoint": ctx2.endpoint(e, false)
+            "source-endpoint": viewer2.endpoint(e, true),
+            "target-endpoint": viewer2.endpoint(e, false)
           });
           return;
         }
         const source = e.source(), target = e.target();
         const pair = pairs.get(JSON.stringify([source.id(), target.id()].sort()));
         const result = route({
-          source: ctx2.connectionGeometry(source),
-          target: ctx2.connectionGeometry(target),
+          source: viewer2.connectionGeometry(source),
+          target: viewer2.connectionGeometry(target),
           sourceId: source.id(),
           targetId: target.id(),
           ...references.get(e.id()),
-          previous: ctx2.portChoices.get(e.id()),
+          previous: viewer2.portChoices.get(e.id()),
           lane: pair.indexOf(e.id()),
           laneCount: pair.length
         });
-        ctx2.portChoices.set(e.id(), {
+        viewer2.portChoices.set(e.id(), {
           sourcePort: result.sourcePort,
           targetPort: result.targetPort
         });
-        ctx2.routes.set(e.id(), result);
+        viewer2.routes.set(e.id(), result);
         e.style(
           style(result, source.position(), target.position())
         );
       })
     );
-    const labels = ctx2.cy.edges().filter((e) => !e.hasClass("hidden")).map((e) => {
+    const labels = viewer2.cy.edges().filter((e) => !e.hasClass("hidden")).map((e) => {
       const geometry = {
         source: e.sourceEndpoint(),
         target: e.targetEndpoint(),
         controls: e.controlPoints() || []
       };
       const arc = sampleCurve(geometry), width = labelWidth(geometry, arc);
-      ctx2.labelMeasure.font = `${e.style("font-style")} ${e.style("font-weight")} ${e.numericStyle("font-size")}px ${e.style("font-family")}`;
+      viewer2.labelMeasure.font = `${e.style("font-style")} ${e.style("font-weight")} ${e.numericStyle("font-size")}px ${e.style("font-family")}`;
       let text = e.style("label");
       if (e.style("text-transform") === "uppercase") text = text.toUpperCase();
       if (e.style("text-transform") === "lowercase") text = text.toLowerCase();
       const fitted = fitLabel(
         text,
         Math.max(1, width),
-        (text2) => Math.ceil(ctx2.labelMeasure.measureText(text2).width)
+        (text2) => Math.ceil(viewer2.labelMeasure.measureText(text2).width)
       );
       const style2 = {
         "text-max-width": Math.max(1, width),
@@ -528,28 +528,28 @@
         style2["text-rotation"] = `${labelAngle(geometry, fitted.width + 2 * e.numericStyle("text-background-padding"), arc)}rad`;
       return [e, style2];
     });
-    ctx2.cy.batch(() => labels.forEach(([e, style2]) => e.style(style2)));
+    viewer2.cy.batch(() => labels.forEach(([e, style2]) => e.style(style2)));
   }
-  function syncBoxes(ctx2) {
-    if (ctx2.syncing || !ctx2.cy) return;
-    ctx2.syncing = true;
-    if (ctx2.data.savedLayout) {
-      const saved = ctx2.data.savedLayout, state = ctx2.presentation;
+  function syncBoxes(viewer2) {
+    if (viewer2.syncing || !viewer2.cy) return;
+    viewer2.syncing = true;
+    if (viewer2.data.savedLayout) {
+      const saved = viewer2.data.savedLayout, state = viewer2.presentation;
       const visible = new Set(
-        ctx2.visible().nodes().map((n) => n.id())
+        viewer2.visible().nodes().map((n) => n.id())
       );
       resizePresentation(
-        ctx2.data,
+        viewer2.data,
         state,
         visible,
-        ctx2.collapsed,
-        ctx2.drag?.id,
-        ctx2.showSpacingAdvisories
+        viewer2.collapsed,
+        viewer2.drag?.id,
+        viewer2.showSpacingAdvisories
       );
-      for (const n of ctx2.cy.nodes()) {
-        const r = state.display[n.id()], assembly = ctx2.data.assemblies[n.id()];
+      for (const n of viewer2.cy.nodes()) {
+        const r = state.display[n.id()], assembly = viewer2.data.assemblies[n.id()];
         const frame = Boolean(
-          assembly && !ctx2.collapsed.has(n.id()) && assembly.entities.some((i) => visible.has(i)) && visible.has(n.id())
+          assembly && !viewer2.collapsed.has(n.id()) && assembly.entities.some((i) => visible.has(i)) && visible.has(n.id())
         );
         const stop = Math.min(100, saved.problem.header / r.height * 100);
         n.toggleClass("frame", frame);
@@ -560,41 +560,41 @@
           boxWidth: r.width - 3,
           boxHeight: r.height - 3,
           bandStops: `0% ${stop}% ${stop}% 100%`,
-          frameZ: Math.min(4, revealPath(ctx2.data, n.id()).length),
-          title: assembly ? `${ctx2.collapsed.has(n.id()) ? "\u25B8" : "\u25BE"} ${assembly.name}` : n.data("label")
+          frameZ: Math.min(4, revealPath(viewer2.data, n.id()).length),
+          title: assembly ? `${viewer2.collapsed.has(n.id()) ? "\u25B8" : "\u25BE"} ${assembly.name}` : n.data("label")
         });
         n.position({ x: r.x + r.width / 2, y: r.y + r.height / 2 });
       }
-      renderConflicts(ctx2);
-      ctx2.updateConnections();
-      ctx2.syncing = false;
+      renderConflicts(viewer2);
+      viewer2.updateConnections();
+      viewer2.syncing = false;
       return;
     }
     {
-      for (const id of assemblyOrder(ctx2.data)) {
-        const assembly = ctx2.data.assemblies[id];
-        const node = ctx2.cy.getElementById(id);
-        node.data("frameZ", Math.min(4, revealPath(ctx2.data, id).length));
+      for (const id of assemblyOrder(viewer2.data)) {
+        const assembly = viewer2.data.assemblies[id];
+        const node = viewer2.cy.getElementById(id);
+        node.data("frameZ", Math.min(4, revealPath(viewer2.data, id).length));
         node.data(
           "title",
-          `${ctx2.collapsed.has(id) ? "\u25B8" : "\u25BE"} ${assembly.name}`
+          `${viewer2.collapsed.has(id) ? "\u25B8" : "\u25BE"} ${assembly.name}`
         );
-        const members = ctx2.cy.collection(
-          assembly.entities.map((mid) => ctx2.cy.getElementById(mid)[0]).filter(
+        const members = viewer2.cy.collection(
+          assembly.entities.map((mid) => viewer2.cy.getElementById(mid)[0]).filter(
             (n) => n && !n.hasClass("hidden")
           )
         );
-        const frame = ctx2.mode === "outlines" && !ctx2.layoutMode && !ctx2.collapsed.has(id) && !node.hasClass("hidden") && members.length > 0;
+        const frame = viewer2.mode === "outlines" && !viewer2.layoutMode && !viewer2.collapsed.has(id) && !node.hasClass("hidden") && members.length > 0;
         node.toggleClass("frame", frame);
         if (frame) {
-          if (ctx2.drag?.id === id) continue;
+          if (viewer2.drag?.id === id) continue;
           const bb = members.boundingBox({
             includeLabels: true,
             includeOverlays: false,
             useCache: false
           });
-          const w = Math.max(180, bb.w + 2 * ctx2.PAD), h = bb.h + 2 * ctx2.PAD + ctx2.HEADER;
-          const stop = ctx2.HEADER / h * 100;
+          const w = Math.max(180, bb.w + 2 * viewer2.PAD), h = bb.h + 2 * viewer2.PAD + viewer2.HEADER;
+          const stop = viewer2.HEADER / h * 100;
           node.data({
             boxWidth: w,
             boxHeight: h,
@@ -602,64 +602,64 @@
           });
           node.position({
             x: (bb.x1 + bb.x2) / 2,
-            y: (bb.y1 + bb.y2 - ctx2.HEADER) / 2
+            y: (bb.y1 + bb.y2 - viewer2.HEADER) / 2
           });
-        } else if (ctx2.compactPositions[id] && ctx2.drag?.id !== id) {
-          node.position({ ...ctx2.compactPositions[id] });
+        } else if (viewer2.compactPositions[id] && viewer2.drag?.id !== id) {
+          node.position({ ...viewer2.compactPositions[id] });
         }
       }
     }
-    ctx2.updateConnections();
-    ctx2.syncing = false;
+    viewer2.updateConnections();
+    viewer2.syncing = false;
   }
-  function renderConflicts(ctx2) {
-    const state = ctx2.presentation, conflicts = state.conflicts;
+  function renderConflicts(viewer2) {
+    const state = viewer2.presentation, conflicts = state.conflicts;
     const errors = conflicts.filter((c) => c.code !== "clearance"), advisories = conflicts.filter((c) => c.code === "clearance");
     const affected = new Set(errors.flatMap((c) => c.objects));
     const nearby = new Set(advisories.flatMap((c) => c.objects));
-    ctx2.cy.nodes().forEach((n) => {
+    viewer2.cy.nodes().forEach((n) => {
       n.toggleClass("presentation-conflict", affected.has(n.id()));
       n.toggleClass(
         "presentation-advisory",
         nearby.has(n.id()) && !affected.has(n.id())
       );
     });
-    const host = ctx2.$("presentation-conflicts");
+    const host = viewer2.$("presentation-conflicts");
     if (!host) return;
     const signature = JSON.stringify([
       state.adjusted,
       conflicts,
-      ctx2.showSpacingAdvisories
+      viewer2.showSpacingAdvisories
     ]);
     if (host.dataset.signature === signature) return;
     host.dataset.signature = signature;
     host.replaceChildren();
-    ctx2.make(
+    viewer2.make(
       "p",
-      `${state.adjusted ? "Adjusted presentation" : "Saved starting layout"} \xB7 ${errors.length} visible enclosure/collision conflict(s).${ctx2.showSpacingAdvisories ? ` ${advisories.length} spacing ${advisories.length === 1 ? "advisory" : "advisories"} (amber).` : ""}`,
+      `${state.adjusted ? "Adjusted presentation" : "Saved starting layout"} \xB7 ${errors.length} visible enclosure/collision conflict(s).${viewer2.showSpacingAdvisories ? ` ${advisories.length} spacing ${advisories.length === 1 ? "advisory" : "advisories"} (amber).` : ""}`,
       host
     );
     if (state.adjusted)
-      ctx2.make(
+      viewer2.make(
         "p",
         "Grid, ordering and compactness have not been revalidated. Changes last until reload or dataset switch.",
         host
       );
     if (conflicts.length) {
-      const details = ctx2.make("details", void 0, host);
-      ctx2.make("summary", "Inspect conflicts and advisories", details);
+      const details = viewer2.make("details", void 0, host);
+      viewer2.make("summary", "Inspect conflicts and advisories", details);
       for (const c of conflicts.slice(0, 50)) {
-        const row = ctx2.make("p", c.message + ": ", details);
+        const row = viewer2.make("p", c.message + ": ", details);
         for (const id of c.objects) {
-          const b = ctx2.make("button", ctx2.label(id), row);
+          const b = viewer2.make("button", viewer2.label(id), row);
           b.onclick = () => {
-            ctx2.select(id);
-            ctx2.cy.center(ctx2.cy.getElementById(id));
+            viewer2.select(id);
+            viewer2.cy.center(viewer2.cy.getElementById(id));
           };
         }
       }
       if (conflicts.length > 50)
-        ctx2.make("p", `Showing 50 of ${conflicts.length} findings.`, details);
+        viewer2.make("p", `Showing 50 of ${conflicts.length} findings.`, details);
     }
   }
 
@@ -667,116 +667,116 @@
   var isEdge = (data) => "source" in data;
 
   // navigation.ts
-  function pushHistory(ctx2) {
-    ctx2.history.push(ctx2.snapshot());
-    ctx2.$("back").disabled = false;
+  function remember(viewer2) {
+    viewer2.history.push(viewer2.snapshot());
+    viewer2.$("back").disabled = false;
   }
-  function changeCollapse(ctx2, ids, value) {
-    ctx2.pushHistory();
+  function collapse(viewer2, ids, value) {
+    viewer2.remember();
     for (const id of ids)
-      value ? ctx2.collapsed.add(id) : ctx2.collapsed.delete(id);
-    ctx2.applyVisibility();
+      value ? viewer2.collapsed.add(id) : viewer2.collapsed.delete(id);
+    viewer2.applyVisibility();
   }
-  function fit(ctx2) {
-    if (ctx2.visible().length) ctx2.cy.fit(ctx2.visible(), 55);
+  function fit(viewer2) {
+    if (viewer2.visible().length) viewer2.cy.fit(viewer2.visible(), 55);
   }
-  function focusOn(ctx2, id) {
-    ctx2.pushHistory();
-    const assembly = ctx2.data.assemblies[id];
-    if (assembly) ctx2.focusIds = /* @__PURE__ */ new Set([id, ...descendants(ctx2.data, id)]);
+  function focus(viewer2, id) {
+    viewer2.remember();
+    const assembly = viewer2.data.assemblies[id];
+    if (assembly) viewer2.focusIds = /* @__PURE__ */ new Set([id, ...descendants(viewer2.data, id)]);
     else {
-      const element = ctx2.cy.getElementById(id);
-      ctx2.focusIds = /* @__PURE__ */ new Set([id]);
+      const element = viewer2.cy.getElementById(id);
+      viewer2.focusIds = /* @__PURE__ */ new Set([id]);
       if (element.isEdge()) {
-        ctx2.focusIds.add(element.data("source"));
-        ctx2.focusIds.add(element.data("target"));
+        viewer2.focusIds.add(element.data("source"));
+        viewer2.focusIds.add(element.data("target"));
       }
-      for (const item of ctx2.data.elements) {
+      for (const item of viewer2.data.elements) {
         const edge = item.data;
         if (isEdge(edge) && (edge.source === id || edge.target === id)) {
-          ctx2.focusIds.add(edge.source);
-          ctx2.focusIds.add(edge.target);
+          viewer2.focusIds.add(edge.source);
+          viewer2.focusIds.add(edge.target);
         }
       }
-      for (const [aid] of ctx2.memberships(id)) ctx2.focusIds.add(aid);
+      for (const [aid] of viewer2.memberships(id)) viewer2.focusIds.add(aid);
     }
-    for (const nid of [...ctx2.focusIds])
-      for (const aid of ctx2.projection.memberships[nid] || [])
-        if (ctx2.collapsed.has(aid)) ctx2.focusIds.add(aid);
-    ctx2.applyVisibility();
-    ctx2.fit();
+    for (const nid of [...viewer2.focusIds])
+      for (const aid of viewer2.projection.memberships[nid] || [])
+        if (viewer2.collapsed.has(aid)) viewer2.focusIds.add(aid);
+    viewer2.applyVisibility();
+    viewer2.fit();
   }
-  function reset(ctx2) {
-    ctx2.pushHistory();
-    ctx2.focusIds = null;
-    ctx2.applyVisibility();
-    ctx2.fit();
+  function reset(viewer2) {
+    viewer2.remember();
+    viewer2.focusIds = null;
+    viewer2.applyVisibility();
+    viewer2.fit();
   }
-  function restore(ctx2) {
-    if (ctx2.data.savedLayout) {
-      if (ctx2.dragFrame != null) cancelAnimationFrame(ctx2.dragFrame);
-      ctx2.dragFrame = null;
-      ctx2.drag = null;
-      ctx2.presentation = initialPresentation(ctx2.data);
-      ctx2.collapsed.clear();
-      ctx2.focusIds = null;
-      ctx2.applyVisibility();
-      ctx2.$("timing").textContent = "Checked saved layout restored";
+  function restore(viewer2) {
+    if (viewer2.data.savedLayout) {
+      if (viewer2.dragFrame != null) cancelAnimationFrame(viewer2.dragFrame);
+      viewer2.dragFrame = null;
+      viewer2.drag = null;
+      viewer2.presentation = initialPresentation(viewer2.data);
+      viewer2.collapsed.clear();
+      viewer2.focusIds = null;
+      viewer2.applyVisibility();
+      viewer2.$("timing").textContent = "Checked saved layout restored";
       return;
     }
-    ctx2.updating = true;
-    ctx2.cy.batch(
-      () => ctx2.cy.nodes().forEach((n) => {
-        n.position({ ...ctx2.data.positions[n.id()] });
+    viewer2.updating = true;
+    viewer2.cy.batch(
+      () => viewer2.cy.nodes().forEach((n) => {
+        n.position({ ...viewer2.data.positions[n.id()] });
       })
     );
-    for (const id of Object.keys(ctx2.data.assemblies))
-      ctx2.compactPositions[id] = { ...ctx2.data.positions[id] };
-    ctx2.updating = false;
-    ctx2.syncBoxes();
-    ctx2.$("timing").textContent = "Reference arrangement restored";
+    for (const id of Object.keys(viewer2.data.assemblies))
+      viewer2.compactPositions[id] = { ...viewer2.data.positions[id] };
+    viewer2.updating = false;
+    viewer2.syncBoxes();
+    viewer2.$("timing").textContent = "Reference arrangement restored";
   }
-  function reveal(ctx2, id, assemblyId) {
-    ctx2.pushHistory();
+  function reveal(viewer2, id, assemblyId) {
+    viewer2.remember();
     if (assemblyId) {
-      for (const ancestor of revealPath(ctx2.data, assemblyId))
-        ctx2.collapsed.delete(ancestor);
-      ctx2.collapsed.delete(assemblyId);
+      for (const ancestor of revealPath(viewer2.data, assemblyId))
+        viewer2.collapsed.delete(ancestor);
+      viewer2.collapsed.delete(assemblyId);
     }
-    if (ctx2.focusIds) {
-      ctx2.focusIds.add(id);
+    if (viewer2.focusIds) {
+      viewer2.focusIds.add(id);
       if (assemblyId) {
-        ctx2.focusIds.add(assemblyId);
-        for (const mid of ctx2.data.assemblies[assemblyId].entities)
-          ctx2.focusIds.add(mid);
+        viewer2.focusIds.add(assemblyId);
+        for (const mid of viewer2.data.assemblies[assemblyId].entities)
+          viewer2.focusIds.add(mid);
       }
     }
-    ctx2.applyVisibility();
-    ctx2.select(id);
-    ctx2.fit();
+    viewer2.applyVisibility();
+    viewer2.select(id);
+    viewer2.fit();
   }
-  function selectLinkedObject(ctx2) {
+  function selectLinkedObject(viewer2) {
     if (!location.hash) return;
     const params = new URLSearchParams(location.hash.slice(1)), ids = params.getAll("select");
     if ([...params.keys()].some((k) => k !== "select") || ids.length !== 1 || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
       ids[0]
-    ) || !ctx2.data.details[ids[0]]) {
-      ctx2.make(
+    ) || !viewer2.data.details[ids[0]]) {
+      viewer2.make(
         "p",
         "This review link does not identify an object in the current graph.",
-        ctx2.$("diagnostics"),
+        viewer2.$("diagnostics"),
         "issue"
       );
       return;
     }
-    ctx2.select(ids[0]);
+    viewer2.select(ids[0]);
   }
 
   // inspector.ts
-  function valueText(ctx2, value) {
+  function valueText(viewer2, value) {
     if (value === null) return "Unknown / not supplied";
     if (value && typeof value === "object" && "units" in value)
-      return `${ctx2.valueText(value.value)} ${value.units}`.trim();
+      return `${viewer2.valueText(value.value)} ${value.units}`.trim();
     if (typeof value === "object") return JSON.stringify(value);
     return String(value);
   }
@@ -789,21 +789,21 @@
       return null;
     }
   }
-  function renderDecision(ctx2, claim, host) {
+  function renderDecision(viewer2, claim, host) {
     const decision = decisionRecord(claim);
     if (!decision) return false;
-    ctx2.make(
+    viewer2.make(
       "h4",
       `${decision.id} \xB7 ${decision.status || "Status not recorded"}`,
       host
     );
-    ctx2.make("p", decision.text, host);
-    ctx2.make(
+    viewer2.make("p", decision.text, host);
+    viewer2.make(
       "p",
       `${decision.source || "Attribution not recorded"} \xB7 ${decision.date || "Date not recorded"}`,
       host
     );
-    if (ctx2.data.reviewUrl === "review.html") {
+    if (viewer2.data.reviewUrl === "review.html") {
       const link = document.createElement("a");
       link.textContent = "Open decision and mapping review";
       link.href = "review.html#decision-" + encodeURIComponent(decision.id);
@@ -813,15 +813,15 @@
     }
     return true;
   }
-  function evidence(ctx2, parent, fact) {
+  function evidence(viewer2, parent, fact) {
     if (!fact) {
-      ctx2.make("p", "No Fact attached to this item.", parent, "code");
+      viewer2.make("p", "No Fact attached to this item.", parent, "code");
       return;
     }
-    const box = ctx2.make("details", void 0, parent);
-    ctx2.make("summary", `Evidence \xB7 ${fact.reconciliation || fact.status}`, box);
+    const box = viewer2.make("details", void 0, parent);
+    viewer2.make("summary", `Evidence \xB7 ${fact.reconciliation || fact.status}`, box);
     if (fact.reconciliation)
-      ctx2.make(
+      viewer2.make(
         "p",
         `Selected claim is ${fact.reconciliation}. Other claims are retained.`,
         box,
@@ -833,7 +833,7 @@
       const id = pending.pop();
       if (seenClaims.has(id)) continue;
       seenClaims.add(id);
-      const claim = ctx2.data.claims[id];
+      const claim = viewer2.data.claims[id];
       if (!claim) continue;
       const record = decisionRecord(claim);
       if (record && !seenDecisions.has(record.id)) {
@@ -844,40 +844,40 @@
         if (source.claim) pending.push(source.claim);
     }
     if (decisions.length) {
-      const list = ctx2.make("details", void 0, box);
-      ctx2.make("summary", `Reviewed decisions \xB7 ${decisions.length}`, list);
-      for (const claim of decisions) renderDecision(ctx2, claim, list);
+      const list = viewer2.make("details", void 0, box);
+      viewer2.make("summary", `Reviewed decisions \xB7 ${decisions.length}`, list);
+      for (const claim of decisions) renderDecision(viewer2, claim, list);
     }
     const visited = /* @__PURE__ */ new Set();
     const appendClaim = (id, host, depth) => {
       if (visited.has(id)) {
-        ctx2.make("p", `Previously shown claim ${id}`, host, "code");
+        viewer2.make("p", `Previously shown claim ${id}`, host, "code");
         return;
       }
       visited.add(id);
-      const c = ctx2.data.claims[id];
+      const c = viewer2.data.claims[id];
       if (!c) return;
-      const item = ctx2.make("details", void 0, host);
-      ctx2.make(
+      const item = viewer2.make("details", void 0, host);
+      viewer2.make(
         "summary",
         `${c.kind}${fact.selected === id ? " \xB7 selected" : ""}`,
         item
       );
-      if (!renderDecision(ctx2, c, item))
-        ctx2.make("pre", JSON.stringify(c.value, null, 2), item);
-      if (c.method) ctx2.make("pre", JSON.stringify(c.method, null, 2), item);
+      if (!renderDecision(viewer2, c, item))
+        viewer2.make("pre", JSON.stringify(c.value, null, 2), item);
+      if (c.method) viewer2.make("pre", JSON.stringify(c.method, null, 2), item);
       for (const source of c.sources) {
         if (source.claim) {
           if (depth < 8) appendClaim(source.claim, item, depth + 1);
           else
-            ctx2.make(
+            viewer2.make(
               "p",
               "Further evidence available in the embedded view data.",
               item
             );
         } else {
-          ctx2.make("p", source.name, item);
-          ctx2.make(
+          viewer2.make("p", source.name, item);
+          viewer2.make(
             "pre",
             JSON.stringify(
               { reference: source.reference, checksum: source.checksum },
@@ -891,18 +891,18 @@
     };
     fact.claims.forEach((id) => appendClaim(id, box, 0));
   }
-  function nav(ctx2, parent, text, id) {
-    const b = ctx2.make("button", text, parent, "nav");
+  function nav(viewer2, parent, text, id) {
+    const b = viewer2.make("button", text, parent, "nav");
     b.dataset.target = id;
-    b.onclick = () => ctx2.select(id, true);
+    b.onclick = () => viewer2.select(id, true);
     return b;
   }
-  function renderSelection(ctx2) {
-    const host = ctx2.$("selection");
+  function renderSelection(viewer2) {
+    const host = viewer2.$("selection");
     host.replaceChildren();
-    ctx2.$("focus").disabled = !ctx2.inspected;
-    if (!ctx2.inspected) {
-      ctx2.make(
+    viewer2.$("focus").disabled = !viewer2.inspected;
+    if (!viewer2.inspected) {
+      viewer2.make(
         "p",
         "Search for or select any object or connection. Focus and expand only when you choose.",
         host,
@@ -910,90 +910,90 @@
       );
       return;
     }
-    const element = ctx2.cy.getElementById(ctx2.inspected), d = ctx2.data.details[ctx2.inspected];
+    const element = viewer2.cy.getElementById(viewer2.inspected), d = viewer2.data.details[viewer2.inspected];
     if (!d && element.length) {
       const edge = element.data();
-      ctx2.make("h2", edge.label, host);
-      ctx2.make(
+      viewer2.make("h2", edge.label, host);
+      viewer2.make(
         "p",
         edge.connector === "summary" ? "Collapsed relationship summary. This line represents hidden detail; it is not a new domain relationship." : "Recorded Assembly membership, shown as a display connector.",
         host
       );
-      ctx2.nav(host, `From \xB7 ${ctx2.label(edge.source)}`, edge.source);
-      ctx2.nav(host, `To \xB7 ${ctx2.label(edge.target)}`, edge.target);
+      viewer2.nav(host, `From \xB7 ${viewer2.label(edge.source)}`, edge.source);
+      viewer2.nav(host, `To \xB7 ${viewer2.label(edge.target)}`, edge.target);
       if (edge.membershipPaths?.some((path) => path.length > 2)) {
-        ctx2.make("h3", "Membership paths", host);
+        viewer2.make("h3", "Membership paths", host);
         for (const path of edge.membershipPaths)
-          ctx2.make("p", path.map(ctx2.label).join(" \u2192 "), host);
+          viewer2.make("p", path.map(viewer2.label).join(" \u2192 "), host);
       }
       if (edge.originalIds) {
-        ctx2.make("h3", "Original relationships", host);
+        viewer2.make("h3", "Original relationships", host);
         for (const id of edge.originalIds) {
-          const original = ctx2.cy.getElementById(id).data();
-          ctx2.nav(
+          const original = viewer2.cy.getElementById(id).data();
+          viewer2.nav(
             host,
-            `${ctx2.label(original.source)} \u2192 ${original.label} \u2192 ${ctx2.label(original.target)}`,
+            `${viewer2.label(original.source)} \u2192 ${original.label} \u2192 ${viewer2.label(original.target)}`,
             id
           );
-          ctx2.evidence(host, ctx2.data.details[id].fact);
+          viewer2.evidence(host, viewer2.data.details[id].fact);
         }
       }
       return;
     }
     if (!d) return;
-    ctx2.make("h2", element.data("label"), host);
-    ctx2.make(
+    viewer2.make("h2", element.data("label"), host);
+    viewer2.make(
       "span",
-      element.isEdge() ? "Relationship" : ctx2.data.assemblies[ctx2.inspected] ? "Assembly" : "Entity",
+      element.isEdge() ? "Relationship" : viewer2.data.assemblies[viewer2.inspected] ? "Assembly" : "Entity",
       host,
       "tag"
     );
     if (d.classification?.name !== "Assembly")
-      ctx2.make("span", d.classification?.name || "Unclassified", host, "tag");
-    ctx2.make("p", element.data("code") || ctx2.inspected, host, "code");
+      viewer2.make("span", d.classification?.name || "Unclassified", host, "tag");
+    viewer2.make("p", element.data("code") || viewer2.inspected, host, "code");
     if (element.hasClass("hidden")) {
-      ctx2.make(
+      viewer2.make(
         "p",
         "Hidden in the current view. Inspection does not expand Assemblies.",
         host,
         "issue"
       );
       if (element.isNode()) {
-        const containers = ctx2.memberships(ctx2.inspected).filter(
-          ([id]) => ctx2.collapsed.has(id) || ctx2.projection.hiddenIds.includes(id)
+        const containers = viewer2.memberships(viewer2.inspected).filter(
+          ([id]) => viewer2.collapsed.has(id) || viewer2.projection.hiddenIds.includes(id)
         );
         if (containers.length)
           for (const [id, a] of containers) {
-            const b = ctx2.make("button", `Reveal in ${a.name}`, host, "nav");
-            b.onclick = () => ctx2.reveal(ctx2.inspected, id);
+            const b = viewer2.make("button", `Reveal in ${a.name}`, host, "nav");
+            b.onclick = () => viewer2.reveal(viewer2.inspected, id);
           }
         else {
-          const b = ctx2.make("button", "Reveal in view", host, "nav");
-          b.onclick = () => ctx2.reveal(ctx2.inspected);
+          const b = viewer2.make("button", "Reveal in view", host, "nav");
+          b.onclick = () => viewer2.reveal(viewer2.inspected);
         }
       }
     }
-    const assembly = ctx2.data.assemblies[ctx2.inspected];
+    const assembly = viewer2.data.assemblies[viewer2.inspected];
     if (assembly) {
-      const b = ctx2.make(
+      const b = viewer2.make(
         "button",
-        ctx2.collapsed.has(ctx2.inspected) ? "Expand Assembly" : "Collapse Assembly",
+        viewer2.collapsed.has(viewer2.inspected) ? "Expand Assembly" : "Collapse Assembly",
         host,
         "nav"
       );
       b.id = "toggle-collapse";
-      b.onclick = () => ctx2.changeCollapse([ctx2.inspected], !ctx2.collapsed.has(ctx2.inspected));
-      ctx2.make(
+      b.onclick = () => viewer2.collapse([viewer2.inspected], !viewer2.collapsed.has(viewer2.inspected));
+      viewer2.make(
         "p",
-        `${assembly.entities.length} recorded members. ${ctx2.data.savedLayout ? "Boxes fit visible members and resize as you arrange or change scope. Highlighting identifies direct membership; red outlines flag presentation conflicts." : "Highlighting identifies exact membership; rectangles may also enclose nonmembers."}`,
+        `${assembly.entities.length} recorded members. ${viewer2.data.savedLayout ? "Boxes fit visible members and resize as you arrange or change scope. Highlighting identifies direct membership; red outlines flag presentation conflicts." : "Highlighting identifies exact membership; rectangles may also enclose nonmembers."}`,
         host
       );
-      const list = ctx2.make("details", void 0, host);
-      ctx2.make("summary", "Exact members", list);
-      assembly.entities.forEach((id) => ctx2.nav(list, ctx2.label(id), id));
+      const list = viewer2.make("details", void 0, host);
+      viewer2.make("summary", "Exact members", list);
+      assembly.entities.forEach((id) => viewer2.nav(list, viewer2.label(id), id));
     }
-    if (ctx2.data.diagnostics.ambiguousParents.includes(ctx2.inspected) || ctx2.data.diagnostics.containmentCycles.includes(ctx2.inspected))
-      ctx2.make(
+    if (viewer2.data.diagnostics.ambiguousParents.includes(viewer2.inspected) || viewer2.data.diagnostics.containmentCycles.includes(viewer2.inspected))
+      viewer2.make(
         "p",
         "No unique display hierarchy is assumed. All domain relationships are retained.",
         host,
@@ -1001,56 +1001,56 @@
       );
     for (const key of ["measurements", "labels", "features", "flows"]) {
       if (!d[key]?.length) continue;
-      ctx2.make("h3", key, host);
+      viewer2.make("h3", key, host);
       for (const item of d[key]) {
-        const dl = ctx2.make("dl", void 0, host);
-        ctx2.make("dt", item.name, dl);
-        ctx2.make("dd", ctx2.valueText(item.value), dl);
-        if (item.definition) ctx2.make("p", item.definition, host, "code");
-        ctx2.evidence(host, item.fact);
+        const dl = viewer2.make("dl", void 0, host);
+        viewer2.make("dt", item.name, dl);
+        viewer2.make("dd", viewer2.valueText(item.value), dl);
+        if (item.definition) viewer2.make("p", item.definition, host, "code");
+        viewer2.evidence(host, item.fact);
       }
     }
-    const findings = (ctx2.data.reviewItems || []).filter(
-      (item) => item.targets.includes(ctx2.inspected)
+    const findings = (viewer2.data.reviewItems || []).filter(
+      (item) => item.targets.includes(viewer2.inspected)
     );
     if (findings.length) {
-      ctx2.make("h3", "Review findings", host);
+      viewer2.make("h3", "Review findings", host);
       for (const item of findings) {
-        const row = ctx2.make("details", void 0, host);
-        ctx2.make("summary", `${item.id} \xB7 ${item.group} \xB7 ${item.kind}`, row);
-        ctx2.make("p", item.scope, row);
-        ctx2.make("p", item.explanation, row);
+        const row = viewer2.make("details", void 0, host);
+        viewer2.make("summary", `${item.id} \xB7 ${item.group} \xB7 ${item.kind}`, row);
+        viewer2.make("p", item.scope, row);
+        viewer2.make("p", item.explanation, row);
         for (const [name, value] of Object.entries(item.values)) {
           if ((name !== "Known subtotal" || value !== null) && (!Array.isArray(value) || value.length))
-            ctx2.make(
+            viewer2.make(
               "p",
-              `${name}: ${value === null ? "Unknown" : ctx2.valueText(value)}`,
+              `${name}: ${value === null ? "Unknown" : viewer2.valueText(value)}`,
               row
             );
         }
         for (const reference of item.references)
-          ctx2.make("p", reference, row, "code");
+          viewer2.make("p", reference, row, "code");
       }
     }
     if (d.fact) {
-      ctx2.make("h3", "Object provenance", host);
-      ctx2.evidence(host, d.fact);
+      viewer2.make("h3", "Object provenance", host);
+      viewer2.evidence(host, d.fact);
     }
-    const groups = ctx2.memberships(ctx2.inspected);
+    const groups = viewer2.memberships(viewer2.inspected);
     if (groups.length) {
-      ctx2.make("h3", "Member of", host);
-      for (const [id, a] of groups) ctx2.nav(host, a.name, id);
+      viewer2.make("h3", "Member of", host);
+      for (const [id, a] of groups) viewer2.nav(host, a.name, id);
     }
     if (element.isEdge()) {
-      ctx2.make("h3", "Endpoints", host);
-      ctx2.nav(
+      viewer2.make("h3", "Endpoints", host);
+      viewer2.nav(
         host,
-        `From \xB7 ${ctx2.label(element.data("source"))}`,
+        `From \xB7 ${viewer2.label(element.data("source"))}`,
         element.data("source")
       );
-      ctx2.nav(
+      viewer2.nav(
         host,
-        `To \xB7 ${ctx2.label(element.data("target"))}`,
+        `To \xB7 ${viewer2.label(element.data("target"))}`,
         element.data("target")
       );
     } else {
@@ -1069,10 +1069,10 @@
         ]
       ]) {
         if (!edges.length) continue;
-        ctx2.make("h3", `${direction} relationships`, host);
+        viewer2.make("h3", `${direction} relationships`, host);
         edges.forEach((edge) => {
           const other = direction === "Incoming" ? edge.source() : edge.target();
-          ctx2.nav(
+          viewer2.nav(
             host,
             `${edge.data("label")} \xB7 ${other.data("label")}${edge.hasClass("hidden") ? " (hidden by view)" : ""}`,
             edge.id()
@@ -1309,138 +1309,138 @@
   }
 
   // renderer.ts
-  function updateCounts(ctx2) {
-    ctx2.$("counts").textContent = `${ctx2.visible().nodes().length} / ${ctx2.cy.nodes().length} objects \xB7 ${ctx2.visible().edges().length} displayed connections`;
+  function updateCounts(viewer2) {
+    viewer2.$("counts").textContent = `${viewer2.visible().nodes().length} / ${viewer2.cy.nodes().length} objects \xB7 ${viewer2.visible().edges().length} displayed connections`;
   }
-  function highlight(ctx2) {
-    ctx2.cy.elements().removeClass("member");
-    const assembly = ctx2.data.assemblies[ctx2.inspected];
+  function highlight(viewer2) {
+    viewer2.cy.elements().removeClass("member");
+    const assembly = viewer2.data.assemblies[viewer2.inspected];
     if (!assembly) return;
     const ids = /* @__PURE__ */ new Set([...assembly.entities, ...assembly.relationships]);
-    ctx2.cy.elements().forEach((e) => {
+    viewer2.cy.elements().forEach((e) => {
       if (ids.has(e.id()) || e.data("connector") === "summary" && e.data("originalIds").some((id) => ids.has(id)))
         e.addClass("member");
     });
   }
-  function applyVisibility(ctx2) {
+  function applyVisibility(viewer2) {
     const start = performance.now();
-    ctx2.updating = true;
-    ctx2.projection = projectCollapse(ctx2.data, ctx2.collapsed, ctx2.filters);
-    const hidden = new Set(ctx2.projection.hiddenIds);
-    const edges = new Map(ctx2.projection.edges.map((e) => [e.id, e]));
-    ctx2.cy.batch(() => {
-      ctx2.cy.edges("[?displayOnly]").remove();
-      ctx2.cy.add(
-        ctx2.projection.edges.filter((e) => e.displayOnly).map((e) => ({ data: e }))
+    viewer2.updating = true;
+    viewer2.projection = projectCollapse(viewer2.data, viewer2.collapsed, viewer2.filters);
+    const hidden = new Set(viewer2.projection.hiddenIds);
+    const edges = new Map(viewer2.projection.edges.map((e) => [e.id, e]));
+    viewer2.cy.batch(() => {
+      viewer2.cy.edges("[?displayOnly]").remove();
+      viewer2.cy.add(
+        viewer2.projection.edges.filter((e) => e.displayOnly).map((e) => ({ data: e }))
       );
-      ctx2.cy.nodes().forEach((n) => {
+      viewer2.cy.nodes().forEach((n) => {
         n.toggleClass(
           "hidden",
-          hidden.has(n.id()) || Boolean(ctx2.focusIds && !ctx2.focusIds.has(n.id()))
+          hidden.has(n.id()) || Boolean(viewer2.focusIds && !viewer2.focusIds.has(n.id()))
         );
       });
-      ctx2.cy.edges().forEach((e) => {
+      viewer2.cy.edges().forEach((e) => {
         e.toggleClass(
           "hidden",
-          !edges.has(e.id()) || e.source().hasClass("hidden") || e.target().hasClass("hidden") || e.data("connector") === "membership" && !ctx2.showMembership
+          !edges.has(e.id()) || e.source().hasClass("hidden") || e.target().hasClass("hidden") || e.data("connector") === "membership" && !viewer2.showMembership
         );
       });
-      ctx2.cy.elements(":selected").unselect();
-      const selected = ctx2.cy.getElementById(ctx2.inspected || "");
+      viewer2.cy.elements(":selected").unselect();
+      const selected = viewer2.cy.getElementById(viewer2.inspected || "");
       if (selected.length && !selected.hasClass("hidden")) selected.select();
-      if (ctx2.inspected && !selected.length && !ctx2.data.details[ctx2.inspected])
-        ctx2.inspected = null;
+      if (viewer2.inspected && !selected.length && !viewer2.data.details[viewer2.inspected])
+        viewer2.inspected = null;
     });
-    ctx2.updating = false;
-    ctx2.syncBoxes();
-    ctx2.highlight();
-    ctx2.renderSelection();
-    ctx2.updateCounts();
-    ctx2.metrics.filterMs = performance.now() - start;
+    viewer2.updating = false;
+    viewer2.syncBoxes();
+    viewer2.highlight();
+    viewer2.renderSelection();
+    viewer2.updateCounts();
+    viewer2.metrics.filterMs = performance.now() - start;
   }
-  function select(ctx2, id) {
-    const start = performance.now(), e = ctx2.cy.getElementById(id);
+  function select(viewer2, id) {
+    const start = performance.now(), e = viewer2.cy.getElementById(id);
     if (!e.length) return;
-    ctx2.updating = true;
-    ctx2.cy.elements(":selected").unselect();
-    ctx2.inspected = id;
+    viewer2.updating = true;
+    viewer2.cy.elements(":selected").unselect();
+    viewer2.inspected = id;
     if (!e.hasClass("hidden")) e.select();
-    ctx2.updating = false;
-    ctx2.highlight();
-    ctx2.renderSelection();
-    ctx2.metrics.selectionMs = performance.now() - start;
+    viewer2.updating = false;
+    viewer2.highlight();
+    viewer2.renderSelection();
+    viewer2.metrics.selectionMs = performance.now() - start;
   }
-  function syncFilters(ctx2) {
-    document.querySelectorAll("#filters input").forEach((i) => i.checked = ctx2.filters.has(i.value));
-    ctx2.$("member-links").checked = ctx2.showMembership;
+  function syncFilters(viewer2) {
+    document.querySelectorAll("#filters input").forEach((i) => i.checked = viewer2.filters.has(i.value));
+    viewer2.$("member-links").checked = viewer2.showMembership;
   }
-  function setupFilters(ctx2) {
-    ctx2.$("filters").replaceChildren();
+  function setupFilters(viewer2) {
+    viewer2.$("filters").replaceChildren();
     const types = [
       ...new Set(
-        ctx2.data.elements.filter((e) => "source" in e.data).map((e) => e.data.type)
+        viewer2.data.elements.filter((e) => "source" in e.data).map((e) => e.data.type)
       )
     ];
-    ctx2.filters = new Set(types);
+    viewer2.filters = new Set(types);
     for (const type of types) {
-      const l = ctx2.make("label", void 0, ctx2.$("filters")), input = ctx2.make("input", void 0, l);
+      const l = viewer2.make("label", void 0, viewer2.$("filters")), input = viewer2.make("input", void 0, l);
       input.type = "checkbox";
       input.value = type;
       input.checked = true;
-      ctx2.make(
+      viewer2.make(
         "span",
-        ctx2.data.elements.find((e) => "source" in e.data && e.data.type === type).data.label,
+        viewer2.data.elements.find((e) => "source" in e.data && e.data.type === type).data.label,
         l
       );
       input.onchange = () => {
-        ctx2.pushHistory();
-        input.checked ? ctx2.filters.add(type) : ctx2.filters.delete(type);
-        ctx2.applyVisibility();
+        viewer2.remember();
+        input.checked ? viewer2.filters.add(type) : viewer2.filters.delete(type);
+        viewer2.applyVisibility();
       };
     }
   }
-  function loadDataset(ctx2, index) {
+  function loadDataset(viewer2, index) {
     const start = performance.now();
-    ctx2.updating = true;
-    if (ctx2.dragFrame != null) cancelAnimationFrame(ctx2.dragFrame);
-    ctx2.dragFrame = null;
-    if (ctx2.cy) ctx2.cy.destroy();
-    ctx2.portChoices = /* @__PURE__ */ new Map();
-    ctx2.routes = /* @__PURE__ */ new Map();
-    ctx2.data = ctx2.datasets[index];
-    ctx2.presentation = initialPresentation(ctx2.data);
-    ctx2.showSpacingAdvisories = false;
-    ctx2.$("spacing-advisories").checked = false;
-    ctx2.$("spacing-advisory-control").hidden = !ctx2.data.savedLayout;
-    ctx2.$("presentation-conflicts")?.replaceChildren();
-    if (ctx2.$("presentation-conflicts"))
-      delete ctx2.$("presentation-conflicts").dataset.signature;
-    ctx2.mode = "outlines";
-    ctx2.HEADER = ctx2.data.savedLayout?.problem.header ?? 36;
-    ctx2.$("relayout").disabled = Boolean(ctx2.data.savedLayout);
-    ctx2.$("membership").disabled = Boolean(ctx2.data.savedLayout);
-    ctx2.$("restore").textContent = ctx2.data.savedLayout ? "Restore saved layout" : "Restore arrangement";
-    ctx2.inspected = null;
-    ctx2.collapsed = /* @__PURE__ */ new Set();
-    ctx2.history = [];
-    ctx2.drag = null;
-    Object.keys(ctx2.metrics).forEach((key) => ctx2.metrics[key] = 0);
-    ctx2.$("dataset").value = String(index);
-    ctx2.$("back").disabled = true;
-    ctx2.$("search").value = "";
-    ctx2.$("results").replaceChildren();
-    ctx2.compactPositions = Object.fromEntries(
-      Object.keys(ctx2.data.assemblies).map((id) => [
+    viewer2.updating = true;
+    if (viewer2.dragFrame != null) cancelAnimationFrame(viewer2.dragFrame);
+    viewer2.dragFrame = null;
+    if (viewer2.cy) viewer2.cy.destroy();
+    viewer2.portChoices = /* @__PURE__ */ new Map();
+    viewer2.routes = /* @__PURE__ */ new Map();
+    viewer2.data = viewer2.datasets[index];
+    viewer2.presentation = initialPresentation(viewer2.data);
+    viewer2.showSpacingAdvisories = false;
+    viewer2.$("spacing-advisories").checked = false;
+    viewer2.$("spacing-advisory-control").hidden = !viewer2.data.savedLayout;
+    viewer2.$("presentation-conflicts")?.replaceChildren();
+    if (viewer2.$("presentation-conflicts"))
+      delete viewer2.$("presentation-conflicts").dataset.signature;
+    viewer2.mode = "outlines";
+    viewer2.HEADER = viewer2.data.savedLayout?.problem.header ?? 36;
+    viewer2.$("relayout").disabled = Boolean(viewer2.data.savedLayout);
+    viewer2.$("membership").disabled = Boolean(viewer2.data.savedLayout);
+    viewer2.$("restore").textContent = viewer2.data.savedLayout ? "Restore saved layout" : "Restore arrangement";
+    viewer2.inspected = null;
+    viewer2.collapsed = /* @__PURE__ */ new Set();
+    viewer2.history = [];
+    viewer2.drag = null;
+    Object.keys(viewer2.metrics).forEach((key) => viewer2.metrics[key] = 0);
+    viewer2.$("dataset").value = String(index);
+    viewer2.$("back").disabled = true;
+    viewer2.$("search").value = "";
+    viewer2.$("results").replaceChildren();
+    viewer2.compactPositions = Object.fromEntries(
+      Object.keys(viewer2.data.assemblies).map((id) => [
         id,
-        { ...ctx2.data.positions[id] }
+        { ...viewer2.data.positions[id] }
       ])
     );
-    const elements = structuredClone(ctx2.data.elements);
+    const elements = structuredClone(viewer2.data.elements);
     for (const e of elements)
       if ("source" in e.data) e.data.connector = "domain";
       else e.data.title = e.data.label;
-    ctx2.cy = globalThis.cytoscape({
-      container: ctx2.$("cy"),
+    viewer2.cy = globalThis.cytoscape({
+      container: viewer2.$("cy"),
       elements,
       layout: { name: "preset" },
       selectionType: "single",
@@ -1450,137 +1450,137 @@
       wheelSensitivity: 0.2,
       style: styles
     });
-    if (ctx2.data.savedLayout) {
-      for (const n of ctx2.cy.nodes()) {
-        const r = ctx2.data.savedLayout.geometry.rectangles[n.id()];
+    if (viewer2.data.savedLayout) {
+      for (const n of viewer2.cy.nodes()) {
+        const r = viewer2.data.savedLayout.geometry.rectangles[n.id()];
         n.data({
           savedWidth: r.width - 3,
           savedHeight: r.height - 3,
           savedTextWidth: r.width - 16
         });
       }
-      ctx2.cy.nodes().addClass("saved");
+      viewer2.cy.nodes().addClass("saved");
     }
-    ctx2.$("outlines").classList.add("active");
-    ctx2.$("membership").classList.remove("active");
-    ctx2.$("canvas-note").textContent = ctx2.data.savedLayout ? "Drag nodes or assembly headers to arrange \xB7 boxes fit visible members \xB7 changes are session-only." : "Outlines show selected visible scope, not ownership or physical boundaries.";
-    for (const [id] of Object.entries(ctx2.data.assemblies))
-      ctx2.cy.getElementById(id).data({ boxWidth: 170, boxHeight: 42, bandStops: "0% 85% 85% 100%" });
-    ctx2.cy.nodes().forEach((n) => {
-      if (ctx2.memberships(n.id()).length > 1) n.addClass("shared");
+    viewer2.$("outlines").classList.add("active");
+    viewer2.$("membership").classList.remove("active");
+    viewer2.$("canvas-note").textContent = viewer2.data.savedLayout ? "Drag nodes or assembly headers to arrange \xB7 boxes fit visible members \xB7 changes are session-only." : "Outlines show selected visible scope, not ownership or physical boundaries.";
+    for (const [id] of Object.entries(viewer2.data.assemblies))
+      viewer2.cy.getElementById(id).data({ boxWidth: 170, boxHeight: 42, bandStops: "0% 85% 85% 100%" });
+    viewer2.cy.nodes().forEach((n) => {
+      if (viewer2.memberships(n.id()).length > 1) n.addClass("shared");
     });
-    ctx2.cy.on("select unselect", "node,edge", () => {
-      if (ctx2.updating) return;
-      ctx2.inspected = ctx2.cy.$(":selected").first().id() || null;
-      ctx2.highlight();
-      ctx2.renderSelection();
+    viewer2.cy.on("select unselect", "node,edge", () => {
+      if (viewer2.updating) return;
+      viewer2.inspected = viewer2.cy.$(":selected").first().id() || null;
+      viewer2.highlight();
+      viewer2.renderSelection();
     });
-    ctx2.cy.on("tap", (ev) => {
-      if (ev.target === ctx2.cy) {
-        ctx2.cy.elements(":selected").unselect();
-        ctx2.inspected = null;
-        ctx2.highlight();
-        ctx2.renderSelection();
+    viewer2.cy.on("tap", (ev) => {
+      if (ev.target === viewer2.cy) {
+        viewer2.cy.elements(":selected").unselect();
+        viewer2.inspected = null;
+        viewer2.highlight();
+        viewer2.renderSelection();
       }
     });
-    ctx2.cy.on("grab", "node", (ev) => {
-      const n = ev.target, a = ctx2.data.assemblies[n.id()];
-      ctx2.drag = {
+    viewer2.cy.on("grab", "node", (ev) => {
+      const n = ev.target, a = viewer2.data.assemblies[n.id()];
+      viewer2.drag = {
         id: n.id(),
         start: { ...n.position() },
-        rectangles: ctx2.presentation ? movingRectangles(ctx2.data, ctx2.presentation, n.id()) : void 0,
-        members: a && !ctx2.collapsed.has(n.id()) ? descendants(ctx2.data, n.id()).map((id) => ctx2.cy.getElementById(id)).filter((m) => m.length && !m.hasClass("hidden")).map((m) => ({ id: m.id(), position: { ...m.position() } })) : []
+        rectangles: viewer2.presentation ? movingRectangles(viewer2.data, viewer2.presentation, n.id()) : void 0,
+        members: a && !viewer2.collapsed.has(n.id()) ? descendants(viewer2.data, n.id()).map((id) => viewer2.cy.getElementById(id)).filter((m) => m.length && !m.hasClass("hidden")).map((m) => ({ id: m.id(), position: { ...m.position() } })) : []
       };
     });
-    ctx2.cy.on("drag", "node", (ev) => {
-      if (ctx2.drag?.id !== ev.target.id()) return;
-      if (ctx2.presentation) {
-        ctx2.drag.latest = { ...ev.target.position() };
-        if (ctx2.dragFrame == null)
-          ctx2.dragFrame = requestAnimationFrame(() => {
-            ctx2.dragFrame = null;
-            flushPresentationDrag(ctx2);
+    viewer2.cy.on("drag", "node", (ev) => {
+      if (viewer2.drag?.id !== ev.target.id()) return;
+      if (viewer2.presentation) {
+        viewer2.drag.latest = { ...ev.target.position() };
+        if (viewer2.dragFrame == null)
+          viewer2.dragFrame = requestAnimationFrame(() => {
+            viewer2.dragFrame = null;
+            flushPresentationDrag(viewer2);
           });
         return;
       }
-      const pos = ev.target.position(), dx = pos.x - ctx2.drag.start.x, dy = pos.y - ctx2.drag.start.y;
-      ctx2.updating = true;
-      ctx2.cy.batch(
-        () => ctx2.drag.members.forEach((m) => {
+      const pos = ev.target.position(), dx = pos.x - viewer2.drag.start.x, dy = pos.y - viewer2.drag.start.y;
+      viewer2.updating = true;
+      viewer2.cy.batch(
+        () => viewer2.drag.members.forEach((m) => {
           const p = { x: m.position.x + dx, y: m.position.y + dy };
-          ctx2.cy.getElementById(m.id).position(p);
-          if (ctx2.data.assemblies[m.id]) ctx2.compactPositions[m.id] = { ...p };
+          viewer2.cy.getElementById(m.id).position(p);
+          if (viewer2.data.assemblies[m.id]) viewer2.compactPositions[m.id] = { ...p };
         })
       );
-      if (ctx2.data.assemblies[ctx2.drag.id])
-        ctx2.compactPositions[ctx2.drag.id] = { ...pos };
-      ctx2.updating = false;
-      ctx2.syncBoxes();
+      if (viewer2.data.assemblies[viewer2.drag.id])
+        viewer2.compactPositions[viewer2.drag.id] = { ...pos };
+      viewer2.updating = false;
+      viewer2.syncBoxes();
     });
-    ctx2.cy.on("free", "node", () => {
-      if (ctx2.dragFrame != null) cancelAnimationFrame(ctx2.dragFrame);
-      ctx2.dragFrame = null;
-      flushPresentationDrag(ctx2);
-      ctx2.drag = null;
-      ctx2.syncBoxes();
+    viewer2.cy.on("free", "node", () => {
+      if (viewer2.dragFrame != null) cancelAnimationFrame(viewer2.dragFrame);
+      viewer2.dragFrame = null;
+      flushPresentationDrag(viewer2);
+      viewer2.drag = null;
+      viewer2.syncBoxes();
     });
-    ctx2.cy.on("position", "node", (ev) => {
-      if (ctx2.syncing || ctx2.updating || ctx2.drag || ctx2.layoutMode) return;
-      if (ctx2.data.assemblies[ev.target.id()] && !ev.target.hasClass("frame"))
-        ctx2.compactPositions[ev.target.id()] = { ...ev.target.position() };
-      if (ctx2.presentation) {
-        const n = ev.target, r = ctx2.presentation.rectangles[n.id()];
-        ctx2.presentation.rectangles[n.id()] = {
+    viewer2.cy.on("position", "node", (ev) => {
+      if (viewer2.syncing || viewer2.updating || viewer2.drag || viewer2.layoutMode) return;
+      if (viewer2.data.assemblies[ev.target.id()] && !ev.target.hasClass("frame"))
+        viewer2.compactPositions[ev.target.id()] = { ...ev.target.position() };
+      if (viewer2.presentation) {
+        const n = ev.target, r = viewer2.presentation.rectangles[n.id()];
+        viewer2.presentation.rectangles[n.id()] = {
           ...r,
           x: n.position().x - r.width / 2,
           y: n.position().y - r.height / 2
         };
-        ctx2.presentation.adjusted = true;
+        viewer2.presentation.adjusted = true;
       }
-      ctx2.syncBoxes();
+      viewer2.syncBoxes();
     });
-    ctx2.setupFilters();
-    ctx2.showMembership = !ctx2.data.savedLayout;
-    ctx2.syncFilters();
-    ctx2.focusIds = ctx2.data.initialFocus ? /* @__PURE__ */ new Set([
-      ctx2.data.initialFocus,
-      ...ctx2.data.assemblies[ctx2.data.initialFocus].entities
+    viewer2.setupFilters();
+    viewer2.showMembership = !viewer2.data.savedLayout;
+    viewer2.syncFilters();
+    viewer2.focusIds = viewer2.data.initialFocus ? /* @__PURE__ */ new Set([
+      viewer2.data.initialFocus,
+      ...viewer2.data.assemblies[viewer2.data.initialFocus].entities
     ]) : null;
-    ctx2.updating = false;
-    ctx2.applyVisibility();
-    ctx2.fit();
-    ctx2.$("notes").replaceChildren();
-    ctx2.data.notes.forEach((n) => ctx2.make("p", n, ctx2.$("notes")));
-    ctx2.$("diagnostics").replaceChildren();
-    const diag = ctx2.data.diagnostics;
+    viewer2.updating = false;
+    viewer2.applyVisibility();
+    viewer2.fit();
+    viewer2.$("notes").replaceChildren();
+    viewer2.data.notes.forEach((n) => viewer2.make("p", n, viewer2.$("notes")));
+    viewer2.$("diagnostics").replaceChildren();
+    const diag = viewer2.data.diagnostics;
     if (diag.ambiguousParents.length || diag.containmentCycles.length) {
-      const host = ctx2.make(
+      const host = viewer2.make(
         "p",
         `${diag.ambiguousParents.length} object(s) with multiple containment parents; ${diag.containmentCycles.length} in containment cycles. No display parent was chosen.`,
-        ctx2.$("diagnostics"),
+        viewer2.$("diagnostics"),
         "issue"
       );
       for (const id of /* @__PURE__ */ new Set([
         ...diag.ambiguousParents,
         ...diag.containmentCycles
       ]))
-        ctx2.nav(host, ctx2.label(id), id);
+        viewer2.nav(host, viewer2.label(id), id);
     }
-    ctx2.$("anchors").disabled = Boolean(ctx2.data.savedLayout) || !ctx2.data.anchors.length;
-    ctx2.$("anchors").checked = false;
-    ctx2.selectLinkedObject();
-    ctx2.metrics.loadMs = performance.now() - start;
-    ctx2.$("timing").textContent = `Loaded in ${ctx2.metrics.loadMs.toFixed(0)} ms \xB7 ${ctx2.data.savedLayout ? "saved starting layout \xB7 draggable" : "reference arrangement"}`;
+    viewer2.$("anchors").disabled = Boolean(viewer2.data.savedLayout) || !viewer2.data.anchors.length;
+    viewer2.$("anchors").checked = false;
+    viewer2.selectLinkedObject();
+    viewer2.metrics.loadMs = performance.now() - start;
+    viewer2.$("timing").textContent = `Loaded in ${viewer2.metrics.loadMs.toFixed(0)} ms \xB7 ${viewer2.data.savedLayout ? "saved starting layout \xB7 draggable" : "reference arrangement"}`;
   }
-  async function relayout(ctx2) {
-    if (ctx2.data.savedLayout) return;
+  async function relayout(viewer2) {
+    if (viewer2.data.savedLayout) return;
     const start = performance.now();
-    ctx2.$("relayout").disabled = true;
-    ctx2.layoutMode = true;
-    ctx2.syncBoxes();
-    const anchors = ctx2.$("anchors").checked ? ctx2.data.anchors.filter((id) => !ctx2.cy.getElementById(id).hasClass("hidden")).map((id) => ({
+    viewer2.$("relayout").disabled = true;
+    viewer2.layoutMode = true;
+    viewer2.syncBoxes();
+    const anchors = viewer2.$("anchors").checked ? viewer2.data.anchors.filter((id) => !viewer2.cy.getElementById(id).hasClass("hidden")).map((id) => ({
       nodeId: id,
-      position: { ...ctx2.cy.getElementById(id).position() }
+      position: { ...viewer2.cy.getElementById(id).position() }
     })) : [];
     const options = {
       name: "fcose",
@@ -1596,246 +1596,245 @@
     };
     if (anchors.length) {
       options.fixedNodeConstraint = anchors;
-      if (ctx2.data.alignment)
+      if (viewer2.data.alignment)
         options.alignmentConstraint = {
-          vertical: ctx2.data.alignment.vertical.filter(
-            (g) => g.every((id) => !ctx2.cy.getElementById(id).hasClass("hidden"))
+          vertical: viewer2.data.alignment.vertical.filter(
+            (g) => g.every((id) => !viewer2.cy.getElementById(id).hasClass("hidden"))
           )
         };
     }
     try {
       await new Promise((resolve, reject) => {
         try {
-          ctx2.visible().layout({ ...options, stop: resolve }).run();
+          viewer2.visible().layout({ ...options, stop: resolve }).run();
         } catch (e) {
           reject(e);
         }
       });
-      for (const id of Object.keys(ctx2.data.assemblies))
-        ctx2.compactPositions[id] = { ...ctx2.cy.getElementById(id).position() };
-      ctx2.metrics.layoutMs = performance.now() - start;
-      ctx2.$("timing").textContent = `fCoSE \xB7 ${ctx2.metrics.layoutMs.toFixed(0)} ms${anchors.length ? " \xB7 fixed anchors" : ""}`;
+      for (const id of Object.keys(viewer2.data.assemblies))
+        viewer2.compactPositions[id] = { ...viewer2.cy.getElementById(id).position() };
+      viewer2.metrics.layoutMs = performance.now() - start;
+      viewer2.$("timing").textContent = `fCoSE \xB7 ${viewer2.metrics.layoutMs.toFixed(0)} ms${anchors.length ? " \xB7 fixed anchors" : ""}`;
     } finally {
-      ctx2.layoutMode = false;
-      ctx2.syncBoxes();
-      ctx2.fit();
-      ctx2.$("relayout").disabled = false;
+      viewer2.layoutMode = false;
+      viewer2.syncBoxes();
+      viewer2.fit();
+      viewer2.$("relayout").disabled = false;
     }
   }
-  function setMode(ctx2, next) {
-    if (ctx2.data.savedLayout && next !== "outlines") return;
-    ctx2.mode = next;
-    ctx2.$("outlines").classList.toggle("active", next === "outlines");
-    ctx2.$("membership").classList.toggle("active", next === "membership");
-    ctx2.syncBoxes();
+  function setMode(viewer2, next) {
+    if (viewer2.data.savedLayout && next !== "outlines") return;
+    viewer2.mode = next;
+    viewer2.$("outlines").classList.toggle("active", next === "outlines");
+    viewer2.$("membership").classList.toggle("active", next === "membership");
+    viewer2.syncBoxes();
   }
-  function flushPresentationDrag(ctx2) {
-    const d = ctx2.drag;
-    if (!ctx2.presentation || !d?.latest) return;
+  function flushPresentationDrag(viewer2) {
+    const d = viewer2.drag;
+    if (!viewer2.presentation || !d?.latest) return;
     translate(
-      ctx2.presentation,
+      viewer2.presentation,
       d.rectangles,
       d.latest.x - d.start.x,
       d.latest.y - d.start.y
     );
-    ctx2.syncBoxes();
+    viewer2.syncBoxes();
   }
 
   // app.ts
-  var ctx = {};
-  ctx.connectionCentre = (...args) => connectionCentre(ctx, ...args);
-  ctx.headerEndpoint = (...args) => headerEndpoint(ctx, ...args);
-  ctx.endpoint = (...args) => endpoint(ctx, ...args);
-  ctx.connectionGeometry = (...args) => connectionGeometry(ctx, ...args);
-  ctx.updateConnections = (...args) => updateConnections(ctx, ...args);
-  ctx.syncBoxes = (...args) => syncBoxes(ctx, ...args);
-  ctx.pushHistory = (...args) => pushHistory(ctx, ...args);
-  ctx.changeCollapse = (...args) => changeCollapse(ctx, ...args);
-  ctx.fit = (...args) => fit(ctx, ...args);
-  ctx.focusOn = (...args) => focusOn(ctx, ...args);
-  ctx.reset = (...args) => reset(ctx, ...args);
-  ctx.restore = (...args) => restore(ctx, ...args);
-  ctx.reveal = (...args) => reveal(ctx, ...args);
-  ctx.selectLinkedObject = (...args) => selectLinkedObject(ctx, ...args);
-  ctx.valueText = (...args) => valueText(ctx, ...args);
-  ctx.evidence = (...args) => evidence(ctx, ...args);
-  ctx.nav = (...args) => nav(ctx, ...args);
-  ctx.renderSelection = (...args) => renderSelection(ctx, ...args);
-  ctx.highlight = (...args) => highlight(ctx, ...args);
-  ctx.updateCounts = (...args) => updateCounts(ctx, ...args);
-  ctx.applyVisibility = (...args) => applyVisibility(ctx, ...args);
-  ctx.select = (id) => select(ctx, id);
-  ctx.syncFilters = (...args) => syncFilters(ctx, ...args);
-  ctx.setupFilters = (...args) => setupFilters(ctx, ...args);
-  ctx.loadDataset = (...args) => loadDataset(ctx, ...args);
-  ctx.relayout = (...args) => relayout(ctx, ...args);
-  ctx.setMode = (...args) => setMode(ctx, ...args);
-  ctx.datasets = JSON.parse(
+  var viewer = {};
+  viewer.connectionCentre = (...args) => connectionCentre(viewer, ...args);
+  viewer.headerEndpoint = (...args) => headerEndpoint(viewer, ...args);
+  viewer.endpoint = (...args) => endpoint(viewer, ...args);
+  viewer.connectionGeometry = (...args) => connectionGeometry(viewer, ...args);
+  viewer.updateConnections = (...args) => updateConnections(viewer, ...args);
+  viewer.syncBoxes = (...args) => syncBoxes(viewer, ...args);
+  viewer.remember = (...args) => remember(viewer, ...args);
+  viewer.collapse = (...args) => collapse(viewer, ...args);
+  viewer.fit = (...args) => fit(viewer, ...args);
+  viewer.focus = (...args) => focus(viewer, ...args);
+  viewer.reset = (...args) => reset(viewer, ...args);
+  viewer.restore = (...args) => restore(viewer, ...args);
+  viewer.reveal = (...args) => reveal(viewer, ...args);
+  viewer.selectLinkedObject = (...args) => selectLinkedObject(viewer, ...args);
+  viewer.valueText = (...args) => valueText(viewer, ...args);
+  viewer.evidence = (...args) => evidence(viewer, ...args);
+  viewer.nav = (...args) => nav(viewer, ...args);
+  viewer.renderSelection = (...args) => renderSelection(viewer, ...args);
+  viewer.highlight = (...args) => highlight(viewer, ...args);
+  viewer.updateCounts = (...args) => updateCounts(viewer, ...args);
+  viewer.applyVisibility = (...args) => applyVisibility(viewer, ...args);
+  viewer.select = (id) => select(viewer, id);
+  viewer.syncFilters = (...args) => syncFilters(viewer, ...args);
+  viewer.setupFilters = (...args) => setupFilters(viewer, ...args);
+  viewer.loadDataset = (...args) => loadDataset(viewer, ...args);
+  viewer.relayout = (...args) => relayout(viewer, ...args);
+  viewer.setMode = (...args) => setMode(viewer, ...args);
+  viewer.datasets = JSON.parse(
     document.getElementById("graph-data").textContent
   ).datasets;
-  ctx.$ = (id) => document.getElementById(id);
-  ctx.make = (tag, text, parent, cls) => {
+  viewer.$ = (id) => document.getElementById(id);
+  viewer.make = (tag, text, parent, cls) => {
     const e = document.createElement(tag);
     if (text !== void 0) e.textContent = String(text);
     if (cls) e.className = cls;
     if (parent) parent.append(e);
     return e;
   };
-  ctx.HEADER = 36;
-  ctx.PAD = 24;
-  ctx.labelMeasure = document.createElement("canvas").getContext("2d");
-  ctx.cy = void 0;
-  ctx.data = void 0;
-  ctx.projection = void 0;
-  ctx.inspected = null;
-  ctx.focusIds = null;
-  ctx.history = [];
-  ctx.collapsed = /* @__PURE__ */ new Set();
-  ctx.filters = /* @__PURE__ */ new Set();
-  ctx.mode = "outlines";
-  ctx.showMembership = true;
-  ctx.fourPorts = true;
-  ctx.compactPositions = {};
-  ctx.drag = null;
-  ctx.presentation = null;
-  ctx.showSpacingAdvisories = false;
-  ctx.dragFrame = null;
-  ctx.syncing = false;
-  ctx.updating = false;
-  ctx.layoutMode = false;
-  ctx.portChoices = /* @__PURE__ */ new Map();
-  ctx.routes = /* @__PURE__ */ new Map();
-  ctx.metrics = { loadMs: 0, layoutMs: 0, selectionMs: 0, filterMs: 0 };
-  ctx.label = (id) => ctx.data.details[id]?.name || ctx.cy.getElementById(id).data("label") || id;
-  ctx.memberships = (id) => Object.entries(ctx.data.assemblies).filter(
+  viewer.HEADER = 36;
+  viewer.PAD = 24;
+  viewer.labelMeasure = document.createElement("canvas").getContext("2d");
+  viewer.cy = void 0;
+  viewer.data = void 0;
+  viewer.projection = void 0;
+  viewer.inspected = null;
+  viewer.focusIds = null;
+  viewer.history = [];
+  viewer.collapsed = /* @__PURE__ */ new Set();
+  viewer.filters = /* @__PURE__ */ new Set();
+  viewer.mode = "outlines";
+  viewer.showMembership = true;
+  viewer.fourPorts = true;
+  viewer.compactPositions = {};
+  viewer.drag = null;
+  viewer.presentation = null;
+  viewer.showSpacingAdvisories = false;
+  viewer.dragFrame = null;
+  viewer.syncing = false;
+  viewer.updating = false;
+  viewer.layoutMode = false;
+  viewer.portChoices = /* @__PURE__ */ new Map();
+  viewer.routes = /* @__PURE__ */ new Map();
+  viewer.metrics = { loadMs: 0, layoutMs: 0, selectionMs: 0, filterMs: 0 };
+  viewer.label = (id) => viewer.data.details[id]?.name || viewer.cy.getElementById(id).data("label") || id;
+  viewer.memberships = (id) => Object.entries(viewer.data.assemblies).filter(
     ([, a]) => a.entities.includes(id) || a.relationships.includes(id)
   );
-  ctx.visible = () => ctx.cy.elements().filter((e) => !e.hasClass("hidden"));
-  ctx.snapshot = () => ({
-    focus: ctx.focusIds ? [...ctx.focusIds] : null,
-    filters: [...ctx.filters],
-    collapsed: [...ctx.collapsed],
-    showMembership: ctx.showMembership
+  viewer.visible = () => viewer.cy.elements().filter((e) => !e.hasClass("hidden"));
+  viewer.snapshot = () => ({
+    focus: viewer.focusIds ? [...viewer.focusIds] : null,
+    filters: [...viewer.filters],
+    collapsed: [...viewer.collapsed],
+    showMembership: viewer.showMembership
   });
-  ctx.routingStyle = "curve-style control-point-distances control-point-weights control-point-step-size edge-distances loop-direction loop-sweep text-rotation";
-  ctx.datasets.forEach((d, i) => {
-    const o = ctx.make("option", d.name, ctx.$("dataset"));
+  viewer.routingStyle = "curve-style control-point-distances control-point-weights control-point-step-size edge-distances loop-direction loop-sweep text-rotation";
+  viewer.datasets.forEach((d, i) => {
+    const o = viewer.make("option", d.name, viewer.$("dataset"));
     o.value = String(i);
   });
-  ctx.$("dataset").onchange = () => ctx.loadDataset(Number(ctx.$("dataset").value));
-  ctx.$("membership").onclick = () => ctx.setMode("membership");
-  ctx.$("outlines").onclick = () => ctx.setMode("outlines");
-  ctx.$("four-port-routing").onchange = () => {
-    ctx.fourPorts = ctx.$("four-port-routing").checked;
-    ctx.syncBoxes();
+  viewer.$("dataset").onchange = () => viewer.loadDataset(Number(viewer.$("dataset").value));
+  viewer.$("membership").onclick = () => viewer.setMode("membership");
+  viewer.$("outlines").onclick = () => viewer.setMode("outlines");
+  viewer.$("four-port-routing").onchange = () => {
+    viewer.fourPorts = viewer.$("four-port-routing").checked;
+    viewer.syncBoxes();
   };
-  ctx.$("spacing-advisories").onchange = () => {
-    ctx.showSpacingAdvisories = ctx.$("spacing-advisories").checked;
-    ctx.syncBoxes();
+  viewer.$("spacing-advisories").onchange = () => {
+    viewer.showSpacingAdvisories = viewer.$("spacing-advisories").checked;
+    viewer.syncBoxes();
   };
-  ctx.$("fit").onclick = ctx.fit;
-  ctx.$("restore").onclick = ctx.restore;
-  ctx.$("relayout").onclick = ctx.relayout;
-  ctx.$("focus").onclick = () => {
-    if (ctx.inspected) ctx.focusOn(ctx.inspected);
+  viewer.$("fit").onclick = viewer.fit;
+  viewer.$("restore").onclick = viewer.restore;
+  viewer.$("relayout").onclick = viewer.relayout;
+  viewer.$("focus").onclick = () => {
+    if (viewer.inspected) viewer.focus(viewer.inspected);
   };
-  ctx.$("reset").onclick = ctx.reset;
-  ctx.$("collapse-all").onclick = () => ctx.changeCollapse(Object.keys(ctx.data.assemblies), true);
-  ctx.$("expand-all").onclick = () => ctx.changeCollapse(Object.keys(ctx.data.assemblies), false);
-  ctx.$("member-links").onchange = () => {
-    ctx.pushHistory();
-    ctx.showMembership = ctx.$("member-links").checked;
-    ctx.applyVisibility();
+  viewer.$("reset").onclick = viewer.reset;
+  viewer.$("collapse-all").onclick = () => viewer.collapse(Object.keys(viewer.data.assemblies), true);
+  viewer.$("expand-all").onclick = () => viewer.collapse(Object.keys(viewer.data.assemblies), false);
+  viewer.$("member-links").onchange = () => {
+    viewer.remember();
+    viewer.showMembership = viewer.$("member-links").checked;
+    viewer.applyVisibility();
   };
-  ctx.$("back").onclick = () => {
-    const previous = ctx.history.pop();
+  viewer.$("back").onclick = () => {
+    const previous = viewer.history.pop();
     if (!previous) return;
-    ctx.focusIds = previous.focus ? new Set(previous.focus) : null;
-    ctx.filters = new Set(previous.filters);
-    ctx.collapsed = new Set(previous.collapsed);
-    ctx.showMembership = previous.showMembership;
-    ctx.syncFilters();
-    ctx.applyVisibility();
-    ctx.fit();
-    ctx.$("back").disabled = !ctx.history.length;
+    viewer.focusIds = previous.focus ? new Set(previous.focus) : null;
+    viewer.filters = new Set(previous.filters);
+    viewer.collapsed = new Set(previous.collapsed);
+    viewer.showMembership = previous.showMembership;
+    viewer.syncFilters();
+    viewer.applyVisibility();
+    viewer.fit();
+    viewer.$("back").disabled = !viewer.history.length;
   };
-  ctx.$("clear").onclick = () => {
-    ctx.cy.elements(":selected").unselect();
-    ctx.inspected = null;
-    ctx.highlight();
-    ctx.renderSelection();
+  viewer.$("clear").onclick = () => {
+    viewer.cy.elements(":selected").unselect();
+    viewer.inspected = null;
+    viewer.highlight();
+    viewer.renderSelection();
   };
-  ctx.$("search").oninput = () => {
-    const q = ctx.$("search").value.trim().toLowerCase();
-    ctx.$("results").replaceChildren();
+  viewer.$("search").oninput = () => {
+    const q = viewer.$("search").value.trim().toLowerCase();
+    viewer.$("results").replaceChildren();
     if (!q) return;
-    ctx.cy.nodes().filter(
+    viewer.cy.nodes().filter(
       (n) => [n.data("label"), n.data("code"), n.id()].some(
         (v) => (v || "").toLowerCase().includes(q)
       )
     ).slice(0, 8).forEach((n) => {
-      const button = ctx.make(
+      const button = viewer.make(
         "button",
         `${n.data("label")} \xB7 ${n.data("code")}`,
-        ctx.$("results")
+        viewer.$("results")
       );
       button.onclick = () => {
-        ctx.select(n.id());
+        viewer.select(n.id());
         if (!n.hasClass("hidden")) {
           const bb = n.renderedBoundingBox();
-          if (bb.x1 < 0 || bb.y1 < 0 || bb.x2 > ctx.cy.width() || bb.y2 > ctx.cy.height())
-            ctx.cy.center(n);
+          if (bb.x1 < 0 || bb.y1 < 0 || bb.x2 > viewer.cy.width() || bb.y2 > viewer.cy.height())
+            viewer.cy.center(n);
         }
-        ctx.$("results").replaceChildren();
+        viewer.$("results").replaceChildren();
       };
     });
   };
-  ctx.$("search").onkeydown = (e) => {
-    if (e.key === "Enter") ctx.$("results").querySelector("button")?.click();
-    if (e.key === "Escape") ctx.$("results").replaceChildren();
+  viewer.$("search").onkeydown = (e) => {
+    if (e.key === "Enter") viewer.$("results").querySelector("button")?.click();
+    if (e.key === "Escape") viewer.$("results").replaceChildren();
   };
   new ResizeObserver(() => {
-    if (ctx.cy) ctx.cy.resize();
-  }).observe(ctx.$("stage"));
-  window.spike = {
+    if (viewer.cy) viewer.cy.resize();
+  }).observe(viewer.$("stage"));
+  window.graphReview = {
     get cy() {
-      return ctx.cy;
+      return viewer.cy;
     },
     get data() {
-      return ctx.data;
+      return viewer.data;
     },
     get selected() {
-      return ctx.inspected;
+      return viewer.inspected;
     },
     get collapsed() {
-      return [...ctx.collapsed];
+      return [...viewer.collapsed];
     },
     get projection() {
-      return ctx.projection;
+      return viewer.projection;
     },
     get presentation() {
-      return structuredClone(ctx.presentation);
+      return structuredClone(viewer.presentation);
     },
     get metrics() {
-      return { ...ctx.metrics };
+      return { ...viewer.metrics };
     },
     get routes() {
-      return Object.fromEntries(ctx.routes);
+      return Object.fromEntries(viewer.routes);
     },
     get visibleIds() {
-      return ctx.visible().map((e) => e.id());
+      return viewer.visible().map((e) => e.id());
     },
-    loadDataset: ctx.loadDataset,
-    select: ctx.select,
-    focusOn: ctx.focusOn,
-    reset: ctx.reset,
-    restore: ctx.restore,
-    relayout: ctx.relayout,
-    setMode: ctx.setMode,
-    syncBoxes: ctx.syncBoxes,
-    changeCollapse: ctx.changeCollapse
+    loadDataset: viewer.loadDataset,
+    select: viewer.select,
+    focus: viewer.focus,
+    reset: viewer.reset,
+    restore: viewer.restore,
+    relayout: viewer.relayout,
+    setMode: viewer.setMode,
+    syncBoxes: viewer.syncBoxes,
+    collapse: viewer.collapse
   };
-  window.graphReview = window.spike;
-  window.addEventListener("hashchange", ctx.selectLinkedObject);
-  ctx.loadDataset(0);
+  window.addEventListener("hashchange", viewer.selectLinkedObject);
+  viewer.loadDataset(0);
 })();

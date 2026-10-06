@@ -18,7 +18,7 @@ public static class Compose
             System=new SystemRecord { Entities=entities.ToArray(), Assemblies=assemblies.ToArray(), Relationships=relationships.ToArray() }
         };
         if(provenance is not null) { var data=result.ToData();data["provenance"]=provenance.ToData();result=new ModelRecord(data); }
-        Validation.Validate.Require(result);
+        Validation.Validator.Require(result);
         return result;
     }
     public static T Clone<T>(T source, bool reuseIdentity) where T:WireRecord
@@ -36,7 +36,7 @@ public static class Compose
     public static T Decode<T>(string json) where T:WireRecord
     {
         var value=Codec.Decode<T>(json);
-        var errors=Validation.Validate.Record(value);
+        var errors=Validation.Validator.Check(value);
         if(errors.Count!=0) throw new ArgumentException(string.Join("; ",errors.Select(e=>e.Message)));
         return value;
     }

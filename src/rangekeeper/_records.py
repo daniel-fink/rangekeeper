@@ -116,12 +116,18 @@ class Record:
         raise AttributeError("records are immutable")
 
     def _initialize(self, fields: Mapping[str, object]) -> None:
+        self._set_data(self._encode(fields))
+
+    def _encode(self, fields: Mapping[str, object]) -> dict[str, object]:
+        """Encode typed field values once for both construction and replacement."""
         from ._schema.records import _TYPES
         from ._schema.validation import _slot_map
 
         slots = _slot_map(self._kind)
         data = {}
         for name, value in fields.items():
+            if name not in slots:
+                raise TypeError(f"{self._kind}: unknown field {name!r}")
             if value is UNSET:
                 continue
             meta = slots[name]
@@ -151,7 +157,17 @@ class Record:
                 if meta["many"] and isinstance(value, (tuple, list))
                 else encode(value)
             )
-        self._set_data(data)
+        return data
+
+    def _replace(self: R, fields: Mapping[str, object]) -> R:
+        """Copy supplied fields without collapsing omitted, null and empty values.
+
+        Generated signatures provide field types and reject unknown keywords. This
+        primitive changes content only; document revision rules belong to facades.
+        """
+        data = self.to_data()
+        data.update(self._encode(fields))
+        return type(self).from_data(data)
 
     def _set_data(self, data: object) -> None:
         from ._schema.validation import validate

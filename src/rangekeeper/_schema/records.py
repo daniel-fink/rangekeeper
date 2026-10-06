@@ -6,6 +6,10 @@ from collections.abc import Mapping
 from uuid import UUID
 from datetime import date as Date
 from .._records import Record, Unset, UNSET, FrozenJSONValue, JSONValue
+from .._behaviors.flow import FlowBehavior
+from .._behaviors.flow import MovementBehavior
+from .._behaviors.period import PeriodBehavior
+from .._behaviors.distribution import DistributionBehavior
 
 ActionKind = Literal['assign', 'terminate']
 Cardinality = Literal['one', 'many']
@@ -36,6 +40,7 @@ ValueKind = Literal['measurement', 'flow', 'property']
 Content = FrozenJSONValue
 
 class Action(Record):
+    'An inert assignment or terminal action. Effects are applied atomically; no Python callbacks.'
     __slots__ = ()
     _kind = 'Action'
 
@@ -50,20 +55,36 @@ class Action(Record):
             'quantity': quantity,
         })
 
+    def replace(self, *,
+        kind: ActionKind | Unset = UNSET,
+        target: ValueReference | None | Unset = UNSET,
+        quantity: Quantity | None | Unset = UNSET,
+    ) -> Action:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'kind': kind,
+            'target': target,
+            'quantity': quantity,
+        })
+
     @property
     def kind(self) -> ActionKind:
+        'Kind.'
         return cast('ActionKind', self._field('kind'))
 
     @property
     def target(self) -> ValueReference | None:
+        'Target.'
         return cast('ValueReference | None', self._field('target'))
 
     @property
     def quantity(self) -> Quantity | None:
+        'Quantity.'
         return cast('Quantity | None', self._field('quantity'))
 
 
 class Argument(Record):
+    'One named expression argument in a Function call.'
     __slots__ = ()
     _kind = 'Argument'
 
@@ -76,16 +97,29 @@ class Argument(Record):
             'expression': expression,
         })
 
+    def replace(self, *,
+        name: str | Unset = UNSET,
+        expression: Expression | Unset = UNSET,
+    ) -> Argument:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'name': name,
+            'expression': expression,
+        })
+
     @property
     def name(self) -> str:
+        'Name.'
         return cast('str', self._field('name'))
 
     @property
     def expression(self) -> Expression:
+        'Expression.'
         return cast('Expression', self._field('expression'))
 
 
 class Entity(Record):
+    'An identifiable domain object, such as an apartment, building, or actor. Its identity persists across immutable Model revisions. Loading its definition does not execute calculations.'
     __slots__ = ()
     _kind = 'Entity'
 
@@ -104,28 +138,50 @@ class Entity(Record):
             'characteristics': characteristics,
         })
 
+    def replace(self, *,
+        classification: UUID | None | Unset = UNSET,
+        id: UUID | Unset = UNSET,
+        code: str | None | Unset = UNSET,
+        name: str | None | Unset = UNSET,
+        characteristics: Characteristics | None | Unset = UNSET,
+    ) -> Entity:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'classification': classification,
+            'id': id,
+            'code': code,
+            'name': name,
+            'characteristics': characteristics,
+        })
+
     @property
     def classification(self) -> UUID | None:
+        'Classification describing the object, referenced by its stable UUID.'
         return cast('UUID | None', self._field('classification'))
 
     @property
     def id(self) -> UUID:
+        'Stable identity of the Entity, distinct from a Model revision.'
         return cast('UUID', self._field('id'))
 
     @property
     def code(self) -> str | None:
+        'Optional case-sensitive code unique among all Entities and Assemblies in the Model. Renaming it preserves UUID identity and references.'
         return cast('str | None', self._field('code'))
 
     @property
     def name(self) -> str | None:
+        'Human-readable display name; not used as identity.'
         return cast('str | None', self._field('name'))
 
     @property
     def characteristics(self) -> Characteristics | None:
+        "The Entity's labels and named values."
         return cast('Characteristics | None', self._field('characteristics'))
 
 
 class Assembly(Entity):
+    'An Entity identifying a collection of Entities and Relationships. Members are referenced by identity and may belong to more than one Assembly. Membership does not imply spatial containment or duplicate its members.'
     __slots__ = ()
     _kind = 'Assembly'
 
@@ -148,36 +204,64 @@ class Assembly(Entity):
             'characteristics': characteristics,
         })
 
+    def replace(self, *,
+        entities: tuple[UUID, ...] | None | Unset = UNSET,
+        relationships: tuple[UUID, ...] | None | Unset = UNSET,
+        classification: UUID | None | Unset = UNSET,
+        id: UUID | Unset = UNSET,
+        code: str | None | Unset = UNSET,
+        name: str | None | Unset = UNSET,
+        characteristics: Characteristics | None | Unset = UNSET,
+    ) -> Assembly:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'entities': entities,
+            'relationships': relationships,
+            'classification': classification,
+            'id': id,
+            'code': code,
+            'name': name,
+            'characteristics': characteristics,
+        })
+
     @property
     def entities(self) -> tuple[UUID, ...] | None:
+        'Unordered, unique UUIDs of member Entities, including nested Assemblies.'
         return cast('tuple[UUID, ...] | None', self._field('entities'))
 
     @property
     def relationships(self) -> tuple[UUID, ...] | None:
+        'Unordered, unique UUIDs of member Relationships.'
         return cast('tuple[UUID, ...] | None', self._field('relationships'))
 
     @property
     def classification(self) -> UUID | None:
+        'Classification describing the object, referenced by its stable UUID.'
         return cast('UUID | None', self._field('classification'))
 
     @property
     def id(self) -> UUID:
+        'Stable identity of the Entity, distinct from a Model revision.'
         return cast('UUID', self._field('id'))
 
     @property
     def code(self) -> str | None:
+        'Optional case-sensitive code unique among all Entities and Assemblies in the Model. Renaming it preserves UUID identity and references.'
         return cast('str | None', self._field('code'))
 
     @property
     def name(self) -> str | None:
+        'Human-readable display name; not used as identity.'
         return cast('str | None', self._field('name'))
 
     @property
     def characteristics(self) -> Characteristics | None:
+        "The Entity's labels and named values."
         return cast('Characteristics | None', self._field('characteristics'))
 
 
 class Assignment(Record):
+    'An explicit scalar or Movement target and finite supplied Quantity; its collection determines assignment or estimate semantics.'
     __slots__ = ()
     _kind = 'Assignment'
 
@@ -190,16 +274,29 @@ class Assignment(Record):
             'quantity': quantity,
         })
 
+    def replace(self, *,
+        target: ValueReference | Unset = UNSET,
+        quantity: Quantity | Unset = UNSET,
+    ) -> Assignment:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'target': target,
+            'quantity': quantity,
+        })
+
     @property
     def target(self) -> ValueReference:
+        'Target.'
         return cast('ValueReference', self._field('target'))
 
     @property
     def quantity(self) -> Quantity:
+        'Explicit finite magnitude and compatible units; omission or null is not a supplied amount.'
         return cast('Quantity', self._field('quantity'))
 
 
 class Binding(Record):
+    'A local interface name that refers to an existing canonical Value by UUID.'
     __slots__ = ()
     _kind = 'Binding'
 
@@ -212,16 +309,29 @@ class Binding(Record):
             'value': value,
         })
 
+    def replace(self, *,
+        name: str | Unset = UNSET,
+        value: UUID | Unset = UNSET,
+    ) -> Binding:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'name': name,
+            'value': value,
+        })
+
     @property
     def name(self) -> str:
+        'Case-sensitive local interface name; not reference identity.'
         return cast('str', self._field('name'))
 
     @property
     def value(self) -> UUID:
+        'UUID of the shared Value. Its declaration supplies its kind, Measure, and content.'
         return cast('UUID', self._field('value'))
 
 
 class Call(Record):
+    'Application of an identified Function to positional and named expression arguments.'
     __slots__ = ()
     _kind = 'Call'
 
@@ -236,20 +346,36 @@ class Call(Record):
             'named_arguments': named_arguments,
         })
 
+    def replace(self, *,
+        function: UUID | Unset = UNSET,
+        arguments: tuple[Expression, ...] | None | Unset = UNSET,
+        named_arguments: tuple[Argument, ...] | None | Unset = UNSET,
+    ) -> Call:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'function': function,
+            'arguments': arguments,
+            'named_arguments': named_arguments,
+        })
+
     @property
     def function(self) -> UUID:
+        'Function.'
         return cast('UUID', self._field('function'))
 
     @property
     def arguments(self) -> tuple[Expression, ...] | None:
+        'Positional arguments, in order.'
         return cast('tuple[Expression, ...] | None', self._field('arguments'))
 
     @property
     def named_arguments(self) -> tuple[Argument, ...] | None:
+        'Named arguments with unique parameter names. Their order is retained for authoring, not positional binding.'
         return cast('tuple[Argument, ...] | None', self._field('named_arguments'))
 
 
 class Characteristics(Record):
+    'A collection of Labels and Values belonging to an Entity or Relationship. Each Label or Value has a stable UUID and a key unique within its collection.'
     __slots__ = ()
     _kind = 'Characteristics'
 
@@ -262,16 +388,29 @@ class Characteristics(Record):
             'values': values,
         })
 
+    def replace(self, *,
+        labels: tuple[Label, ...] | None | Unset = UNSET,
+        values: tuple[Value, ...] | None | Unset = UNSET,
+    ) -> Characteristics:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'labels': labels,
+            'values': values,
+        })
+
     @property
     def labels(self) -> tuple[Label, ...] | None:
+        'Identified labels with explicit owner-local keys, unique within this collection.'
         return cast('tuple[Label, ...] | None', self._field('labels'))
 
     @property
     def values(self) -> tuple[Value, ...] | None:
+        'Identified values with explicit owner-local keys, unique within this collection.'
         return cast('tuple[Value, ...] | None', self._field('values'))
 
 
 class Claim(Record):
+    'Sourced, asserted, or derived candidate content and its supporting lineage.'
     __slots__ = ()
     _kind = 'Claim'
 
@@ -290,28 +429,50 @@ class Claim(Record):
             'method': method,
         })
 
+    def replace(self, *,
+        id: UUID | Unset = UNSET,
+        content: JSONValue | None | Unset = UNSET,
+        kind: ClaimKind | Unset = UNSET,
+        sources: tuple[Location | UUID, ...] | None | Unset = UNSET,
+        method: Method | None | Unset = UNSET,
+    ) -> Claim:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'id': id,
+            'content': content,
+            'kind': kind,
+            'sources': sources,
+            'method': method,
+        })
+
     @property
     def id(self) -> UUID:
+        'Id.'
         return cast('UUID', self._field('id'))
 
     @property
     def content(self) -> FrozenJSONValue | None:
+        'Content.'
         return cast('FrozenJSONValue | None', self._field('content'))
 
     @property
     def kind(self) -> ClaimKind:
+        'Kind.'
         return cast('ClaimKind', self._field('kind'))
 
     @property
     def sources(self) -> tuple[Location | UUID, ...] | None:
+        'Source Locations or UUID references to upstream Claims.'
         return cast('tuple[Location | UUID, ...] | None', self._field('sources'))
 
     @property
     def method(self) -> Method | None:
+        'Method.'
         return cast('Method | None', self._field('method'))
 
 
 class Classification(Record):
+    'A named definition node in a taxonomy hierarchy.'
     __slots__ = ()
     _kind = 'Classification'
 
@@ -330,28 +491,50 @@ class Classification(Record):
             'parent': parent,
         })
 
+    def replace(self, *,
+        id: UUID | Unset = UNSET,
+        code: str | Unset = UNSET,
+        name: str | Unset = UNSET,
+        definition: str | None | Unset = UNSET,
+        parent: UUID | None | Unset = UNSET,
+    ) -> Classification:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'id': id,
+            'code': code,
+            'name': name,
+            'definition': definition,
+            'parent': parent,
+        })
+
     @property
     def id(self) -> UUID:
+        'Stable identity across code changes and Model revisions.'
         return cast('UUID', self._field('id'))
 
     @property
     def code(self) -> str:
+        'Case-sensitive code unique within its Taxonomy; descriptive metadata, not reference identity.'
         return cast('str', self._field('code'))
 
     @property
     def name(self) -> str:
+        'Nonblank human-readable name.'
         return cast('str', self._field('name'))
 
     @property
     def definition(self) -> str | None:
+        'Optional explanatory text; an empty string is permitted.'
         return cast('str | None', self._field('definition'))
 
     @property
     def parent(self) -> UUID | None:
+        'Parent Classification in the same Taxonomy, referenced by UUID. An absent or null parent denotes a root candidate.'
         return cast('UUID | None', self._field('parent'))
 
 
 class Constraint(Record):
+    'An identified requirement that a referenced Boolean Expression be true in the context where the Constraint is imposed.'
     __slots__ = ()
     _kind = 'Constraint'
 
@@ -370,28 +553,50 @@ class Constraint(Record):
             'predicate': predicate,
         })
 
+    def replace(self, *,
+        id: UUID | Unset = UNSET,
+        code: str | None | Unset = UNSET,
+        name: str | None | Unset = UNSET,
+        description: str | None | Unset = UNSET,
+        predicate: UUID | Unset = UNSET,
+    ) -> Constraint:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'id': id,
+            'code': code,
+            'name': name,
+            'description': description,
+            'predicate': predicate,
+        })
+
     @property
     def id(self) -> UUID:
+        'Stable identity of the Constraint across Model revisions.'
         return cast('UUID', self._field('id'))
 
     @property
     def code(self) -> str | None:
+        'Optional case-sensitive code unique within its Constraint collection; not reference identity. Renaming it preserves UUID references.'
         return cast('str | None', self._field('code'))
 
     @property
     def name(self) -> str | None:
+        'Human-readable display name; not used as identity.'
         return cast('str | None', self._field('name'))
 
     @property
     def description(self) -> str | None:
+        'Explanation of the requirement and its purpose.'
         return cast('str | None', self._field('description'))
 
     @property
     def predicate(self) -> UUID:
+        'UUID reference to the Expression required to be true. Reference existence and a Boolean result domain require semantic validation beyond record shape.'
         return cast('UUID', self._field('predicate'))
 
 
 class ContentEntry(Record):
+    'ContentEntry'
     __slots__ = ()
     _kind = 'ContentEntry'
 
@@ -404,16 +609,29 @@ class ContentEntry(Record):
             'value': value,
         })
 
+    def replace(self, *,
+        key: PropertyContent | Unset = UNSET,
+        value: PropertyContent | Unset = UNSET,
+    ) -> ContentEntry:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'key': key,
+            'value': value,
+        })
+
     @property
     def key(self) -> PropertyContent:
+        'Key.'
         return cast('PropertyContent', self._field('key'))
 
     @property
     def value(self) -> PropertyContent:
+        'Value.'
         return cast('PropertyContent', self._field('value'))
 
 
 class Criterion(Record):
+    'Require an Entity Label with this owner-local key to include the exact Classification.'
     __slots__ = ()
     _kind = 'Criterion'
 
@@ -426,16 +644,29 @@ class Criterion(Record):
             'classification': classification,
         })
 
+    def replace(self, *,
+        key: str | Unset = UNSET,
+        classification: UUID | Unset = UNSET,
+    ) -> Criterion:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'key': key,
+            'classification': classification,
+        })
+
     @property
     def key(self) -> str:
+        'Owner-local Label key.'
         return cast('str', self._field('key'))
 
     @property
     def classification(self) -> UUID:
+        'Classification.'
         return cast('UUID', self._field('classification'))
 
 
 class Decision(Record):
+    'Recorded outcome of one evaluated decision point; absence of a rule means fallback.'
     __slots__ = ()
     _kind = 'Decision'
 
@@ -458,36 +689,64 @@ class Decision(Record):
             'termination_reason': termination_reason,
         })
 
+    def replace(self, *,
+        point: UUID | Unset = UNSET,
+        at: Date | Unset = UNSET,
+        rule: UUID | None | Unset = UNSET,
+        observations: tuple[ObservedQuantity, ...] | Unset = UNSET,
+        assignments: tuple[Assignment, ...] | Unset = UNSET,
+        terminated: bool | Unset = UNSET,
+        termination_reason: str | None | Unset = UNSET,
+    ) -> Decision:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'point': point,
+            'at': at,
+            'rule': rule,
+            'observations': observations,
+            'assignments': assignments,
+            'terminated': terminated,
+            'termination_reason': termination_reason,
+        })
+
     @property
     def point(self) -> UUID:
+        'Point.'
         return cast('UUID', self._field('point'))
 
     @property
     def at(self) -> Date:
+        'At.'
         return cast('Date', self._field('at'))
 
     @property
     def rule(self) -> UUID | None:
+        'Rule.'
         return cast('UUID | None', self._field('rule'))
 
     @property
     def observations(self) -> tuple[ObservedQuantity, ...]:
+        'Observations.'
         return cast('tuple[ObservedQuantity, ...]', self._field('observations'))
 
     @property
     def assignments(self) -> tuple[Assignment, ...]:
+        'Assignments.'
         return cast('tuple[Assignment, ...]', self._field('assignments'))
 
     @property
     def terminated(self) -> bool:
+        'Terminated.'
         return cast('bool', self._field('terminated'))
 
     @property
     def termination_reason(self) -> str | None:
+        'Reason for termination, required when terminated is true.'
         return cast('str | None', self._field('termination_reason'))
 
 
 class DecisionPoint(Record):
+    'One dated policy point with explicit observations, first-match rules and fallback.'
     __slots__ = ()
     _kind = 'DecisionPoint'
 
@@ -506,28 +765,50 @@ class DecisionPoint(Record):
             'fallback': fallback,
         })
 
+    def replace(self, *,
+        id: UUID | Unset = UNSET,
+        at: Date | Unset = UNSET,
+        observations: tuple[ObservationBinding, ...] | Unset = UNSET,
+        rules: tuple[Rule, ...] | Unset = UNSET,
+        fallback: tuple[Action, ...] | Unset = UNSET,
+    ) -> DecisionPoint:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'id': id,
+            'at': at,
+            'observations': observations,
+            'rules': rules,
+            'fallback': fallback,
+        })
+
     @property
     def id(self) -> UUID:
+        'Id.'
         return cast('UUID', self._field('id'))
 
     @property
     def at(self) -> Date:
+        'At.'
         return cast('Date', self._field('at'))
 
     @property
     def observations(self) -> tuple[ObservationBinding, ...]:
+        'Observations.'
         return cast('tuple[ObservationBinding, ...]', self._field('observations'))
 
     @property
     def rules(self) -> tuple[Rule, ...]:
+        'Rules.'
         return cast('tuple[Rule, ...]', self._field('rules'))
 
     @property
     def fallback(self) -> tuple[Action, ...]:
+        'Fallback.'
         return cast('tuple[Action, ...]', self._field('fallback'))
 
 
 class Definitions(Record):
+    'Reusable Taxonomies, Measures, and Functions identified by stable UUIDs within a Model.'
     __slots__ = ()
     _kind = 'Definitions'
 
@@ -542,20 +823,36 @@ class Definitions(Record):
             'functions': functions,
         })
 
+    def replace(self, *,
+        taxonomies: tuple[Taxonomy, ...] | None | Unset = UNSET,
+        measures: tuple[Measure, ...] | None | Unset = UNSET,
+        functions: tuple[Function, ...] | None | Unset = UNSET,
+    ) -> Definitions:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'taxonomies': taxonomies,
+            'measures': measures,
+            'functions': functions,
+        })
+
     @property
     def taxonomies(self) -> tuple[Taxonomy, ...] | None:
+        'Taxonomies.'
         return cast('tuple[Taxonomy, ...] | None', self._field('taxonomies'))
 
     @property
     def measures(self) -> tuple[Measure, ...] | None:
+        'Measures.'
         return cast('tuple[Measure, ...] | None', self._field('measures'))
 
     @property
     def functions(self) -> tuple[Function, ...] | None:
+        'Exact versioned Function contracts used by calls in this Model. Implementations and their capabilities are selected separately.'
         return cast('tuple[Function, ...] | None', self._field('functions'))
 
 
 class Diagnostic(Record):
+    'A coded finding and optional numerical evidence, qualified by document revision.'
     __slots__ = ()
     _kind = 'Diagnostic'
 
@@ -580,40 +877,71 @@ class Diagnostic(Record):
             'references': references,
         })
 
+    def replace(self, *,
+        severity: Severity | Unset = UNSET,
+        code: str | Unset = UNSET,
+        message: str | Unset = UNSET,
+        document: UUID | Unset = UNSET,
+        target: UUID | None | Unset = UNSET,
+        residual: Quantity | Unset = UNSET,
+        tolerance: Quantity | Unset = UNSET,
+        references: tuple[ScopedValueReference, ...] | None | Unset = UNSET,
+    ) -> Diagnostic:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'severity': severity,
+            'code': code,
+            'message': message,
+            'document': document,
+            'target': target,
+            'residual': residual,
+            'tolerance': tolerance,
+            'references': references,
+        })
+
     @property
     def severity(self) -> Severity:
+        'Importance of the finding.'
         return cast('Severity', self._field('severity'))
 
     @property
     def code(self) -> str:
+        'Nonblank finding code.'
         return cast('str', self._field('code'))
 
     @property
     def message(self) -> str:
+        'Explanation and, for numerical findings, the checking convention.'
         return cast('str', self._field('message'))
 
     @property
     def document(self) -> UUID | None:
+        'Revision containing the referenced target, or the document addressed as a whole.'
         return cast('UUID | None', self._field('document'))
 
     @property
     def target(self) -> UUID | None:
+        'UUID of a canonical record in document; never an unqualified cross-revision reference.'
         return cast('UUID | None', self._field('target'))
 
     @property
     def residual(self) -> Quantity | None:
+        'Finite signed residual under the stated convention.'
         return cast('Quantity | None', self._field('residual'))
 
     @property
     def tolerance(self) -> Quantity | None:
+        'Finite nonnegative tolerance in compatible units.'
         return cast('Quantity | None', self._field('tolerance'))
 
     @property
     def references(self) -> tuple[ScopedValueReference, ...] | None:
+        'References.'
         return cast('tuple[ScopedValueReference, ...] | None', self._field('references'))
 
 
-class Distribution(Record):
+class Distribution(DistributionBehavior, Record):
+    'Serializable distribution parameters, with explicit units; no live random generator.'
     __slots__ = ()
     _kind = 'Distribution'
 
@@ -634,32 +962,57 @@ class Distribution(Record):
             'units': units,
         })
 
+    def replace(self, *,
+        kind: DistributionFamily | Unset = UNSET,
+        lower: int | float | Unset = UNSET,
+        upper: int | float | Unset = UNSET,
+        mode: int | float | None | Unset = UNSET,
+        weighting: int | float | None | Unset = UNSET,
+        units: str | Unset = UNSET,
+    ) -> Distribution:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'kind': kind,
+            'lower': lower,
+            'upper': upper,
+            'mode': mode,
+            'weighting': weighting,
+            'units': units,
+        })
+
     @property
     def kind(self) -> DistributionFamily:
+        'Kind.'
         return cast('DistributionFamily', self._field('kind'))
 
     @property
     def lower(self) -> int | float:
+        'Lower.'
         return cast('int | float', self._field('lower'))
 
     @property
     def upper(self) -> int | float:
+        'Upper.'
         return cast('int | float', self._field('upper'))
 
     @property
     def mode(self) -> int | float | None:
+        'Mode.'
         return cast('int | float | None', self._field('mode'))
 
     @property
     def weighting(self) -> int | float | None:
+        'Weighting.'
         return cast('int | float | None', self._field('weighting'))
 
     @property
     def units(self) -> str:
+        'Units.'
         return cast('str', self._field('units'))
 
 
 class Domain(Record):
+    'The permitted content of an argument or result, including its kind, compatible units, measurement meaning, and collection elements where applicable.'
     __slots__ = ()
     _kind = 'Domain'
 
@@ -678,28 +1031,50 @@ class Domain(Record):
             'collection_kind': collection_kind,
         })
 
+    def replace(self, *,
+        kind: DomainKind | Unset = UNSET,
+        units: str | None | Unset = UNSET,
+        measure: UUID | Unset = UNSET,
+        item_domain: Domain | Unset = UNSET,
+        collection_kind: CollectionKind | Unset = UNSET,
+    ) -> Domain:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'kind': kind,
+            'units': units,
+            'measure': measure,
+            'item_domain': item_domain,
+            'collection_kind': collection_kind,
+        })
+
     @property
     def kind(self) -> DomainKind:
+        'The category of content permitted by this Domain.'
         return cast('DomainKind', self._field('kind'))
 
     @property
     def units(self) -> str | None:
+        'Optional compatible units required for Quantity content. Omission leaves units unconstrained by the signature; a concrete Quantity still requires explicit units.'
         return cast('str | None', self._field('units'))
 
     @property
     def measure(self) -> UUID | None:
+        'Optional exact measurement meaning required for a measurement or Flow.'
         return cast('UUID | None', self._field('measure'))
 
     @property
     def item_domain(self) -> Domain | None:
+        'Domain of each collection element.'
         return cast('Domain | None', self._field('item_domain'))
 
     @property
     def collection_kind(self) -> CollectionKind | None:
+        'Optional collection shape required by this signature.'
         return cast('CollectionKind | None', self._field('collection_kind'))
 
 
 class Entry(Record):
+    'A named text component of a source address.'
     __slots__ = ()
     _kind = 'Entry'
 
@@ -712,16 +1087,29 @@ class Entry(Record):
             'value': value,
         })
 
+    def replace(self, *,
+        key: str | Unset = UNSET,
+        value: str | Unset = UNSET,
+    ) -> Entry:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'key': key,
+            'value': value,
+        })
+
     @property
     def key(self) -> str:
+        'Key.'
         return cast('str', self._field('key'))
 
     @property
     def value(self) -> str:
+        'Value.'
         return cast('str', self._field('value'))
 
 
 class Expression(Record):
+    'An identified mathematical expression. Its kind determines its content; nested expressions retain order and UUID references resolve in the applicable Model or composed Specification scope.'
     __slots__ = ()
     _kind = 'Expression'
 
@@ -752,52 +1140,92 @@ class Expression(Record):
             'query': query,
         })
 
+    def replace(self, *,
+        id: UUID | Unset = UNSET,
+        kind: ExpressionKind | Unset = UNSET,
+        quantity: Quantity | Unset = UNSET,
+        boolean: bool | Unset = UNSET,
+        target: ValueReference | Unset = UNSET,
+        operator: Operator | Unset = UNSET,
+        operands: tuple[Expression, ...] | None | Unset = UNSET,
+        operand: Expression | Unset = UNSET,
+        call: Call | Unset = UNSET,
+        selection: Selection | Unset = UNSET,
+        query: Query | Unset = UNSET,
+    ) -> Expression:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'id': id,
+            'kind': kind,
+            'quantity': quantity,
+            'boolean': boolean,
+            'target': target,
+            'operator': operator,
+            'operands': operands,
+            'operand': operand,
+            'call': call,
+            'selection': selection,
+            'query': query,
+        })
+
     @property
     def id(self) -> UUID:
+        'Stable identity of this Expression across Model revisions.'
         return cast('UUID', self._field('id'))
 
     @property
     def kind(self) -> ExpressionKind:
+        'Kind.'
         return cast('ExpressionKind', self._field('kind'))
 
     @property
     def quantity(self) -> Quantity | None:
+        'Numerical literal with an explicit magnitude and units, independent of any Measure. Use dimensionless for unitless content. Zero is a literal, not absence.'
         return cast('Quantity | None', self._field('quantity'))
 
     @property
     def boolean(self) -> bool | None:
+        'Boolean literal; false is a literal, not absence.'
         return cast('bool | None', self._field('boolean'))
 
     @property
     def target(self) -> ValueReference | None:
+        'Explicit Value or Movement symbol; never implicit recorded content.'
         return cast('ValueReference | None', self._field('target'))
 
     @property
     def operator(self) -> Operator | None:
+        'Operator.'
         return cast('Operator | None', self._field('operator'))
 
     @property
     def operands(self) -> tuple[Expression, ...] | None:
+        'Two ordered operands of a binary operator. Unary operators use operand; Function calls use their own signature.'
         return cast('tuple[Expression, ...] | None', self._field('operands'))
 
     @property
     def operand(self) -> Expression | None:
+        'Operand of unary negation or Boolean negation.'
         return cast('Expression | None', self._field('operand'))
 
     @property
     def call(self) -> Call | None:
+        'Call.'
         return cast('Call | None', self._field('call'))
 
     @property
     def selection(self) -> Selection | None:
+        'Selection.'
         return cast('Selection | None', self._field('selection'))
 
     @property
     def query(self) -> Query | None:
+        'Query.'
         return cast('Query | None', self._field('query'))
 
 
 class Fact(Record):
+    'Supporting Claims for the recorded state of one graph object or characteristic.'
     __slots__ = ()
     _kind = 'Fact'
 
@@ -812,20 +1240,36 @@ class Fact(Record):
             'reconciliation': reconciliation,
         })
 
+    def replace(self, *,
+        target: UUID | Unset = UNSET,
+        claims: tuple[UUID, ...] | Unset = UNSET,
+        reconciliation: Reconciliation | None | Unset = UNSET,
+    ) -> Fact:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'target': target,
+            'claims': claims,
+            'reconciliation': reconciliation,
+        })
+
     @property
     def target(self) -> UUID:
+        'The actual graph object or characteristic being supported, referenced by its stable UUID.'
         return cast('UUID', self._field('target'))
 
     @property
     def claims(self) -> tuple[UUID, ...]:
+        'Unique UUIDs of supporting Claims; at least one is required.'
         return cast('tuple[UUID, ...]', self._field('claims'))
 
     @property
     def reconciliation(self) -> Reconciliation | None:
+        'Reconciliation.'
         return cast('Reconciliation | None', self._field('reconciliation'))
 
 
 class Filter(Record):
+    'Conjunctive filters over fixed Entity metadata. No numerical expression or solved amount determines membership.'
     __slots__ = ()
     _kind = 'Filter'
 
@@ -838,16 +1282,29 @@ class Filter(Record):
             'labels': labels,
         })
 
+    def replace(self, *,
+        classification: UUID | Unset = UNSET,
+        labels: tuple[Criterion, ...] | None | Unset = UNSET,
+    ) -> Filter:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'classification': classification,
+            'labels': labels,
+        })
+
     @property
     def classification(self) -> UUID | None:
+        'Classification.'
         return cast('UUID | None', self._field('classification'))
 
     @property
     def labels(self) -> tuple[Criterion, ...] | None:
+        'All listed Label conditions must hold.'
         return cast('tuple[Criterion, ...] | None', self._field('labels'))
 
 
-class Flow(Record):
+class Flow(FlowBehavior, Record):
+    'Ordered temporal quantities owned by one Value. Dates are coordinates, not units. Empty, unresolved and zero movements are distinct. The overall model logic defines the meaning of the quantities and selects their calculations; a Flow carries no semantic kind or basis.'
     __slots__ = ()
     _kind = 'Flow'
 
@@ -860,16 +1317,29 @@ class Flow(Record):
             'movements': movements,
         })
 
+    def replace(self, *,
+        units: str | Unset = UNSET,
+        movements: tuple[Movement, ...] | Unset = UNSET,
+    ) -> Flow:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'units': units,
+            'movements': movements,
+        })
+
     @property
     def units(self) -> str:
+        'Units.'
         return cast('str', self._field('units'))
 
     @property
     def movements(self) -> tuple[Movement, ...]:
+        'Movements.'
         return cast('tuple[Movement, ...]', self._field('movements'))
 
 
 class Formulation(Record):
+    'An identified mathematical container with explicit local declarations, expressions, and asserted constraints. Formulations may contain child Formulations and bind names to shared Values.'
     __slots__ = ()
     _kind = 'Formulation'
 
@@ -896,44 +1366,78 @@ class Formulation(Record):
             'formulations': formulations,
         })
 
+    def replace(self, *,
+        id: UUID | Unset = UNSET,
+        code: str | None | Unset = UNSET,
+        name: str | None | Unset = UNSET,
+        description: str | None | Unset = UNSET,
+        bindings: tuple[Binding, ...] | None | Unset = UNSET,
+        values: tuple[Value, ...] | None | Unset = UNSET,
+        expressions: tuple[Expression, ...] | None | Unset = UNSET,
+        constraints: tuple[Constraint, ...] | None | Unset = UNSET,
+        formulations: tuple[Formulation, ...] | None | Unset = UNSET,
+    ) -> Formulation:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'id': id,
+            'code': code,
+            'name': name,
+            'description': description,
+            'bindings': bindings,
+            'values': values,
+            'expressions': expressions,
+            'constraints': constraints,
+            'formulations': formulations,
+        })
+
     @property
     def id(self) -> UUID:
+        'Stable identity of this Formulation across Model revisions.'
         return cast('UUID', self._field('id'))
 
     @property
     def code(self) -> str | None:
+        'Optional case-sensitive code unique among sibling Formulations; not reference identity.'
         return cast('str | None', self._field('code'))
 
     @property
     def name(self) -> str | None:
+        'Human-readable display name.'
         return cast('str | None', self._field('name'))
 
     @property
     def description(self) -> str | None:
+        'Explanation of the mathematical purpose of this Formulation.'
         return cast('str | None', self._field('description'))
 
     @property
     def bindings(self) -> tuple[Binding, ...] | None:
+        'Local interface names referring to existing Values, including local Values.'
         return cast('tuple[Binding, ...] | None', self._field('bindings'))
 
     @property
     def values(self) -> tuple[Value, ...] | None:
+        'Canonical declarations owned by this Formulation. Values already owned elsewhere are referenced, not repeated here.'
         return cast('tuple[Value, ...] | None', self._field('values'))
 
     @property
     def expressions(self) -> tuple[Expression, ...] | None:
+        'Root Expressions owned by this Formulation; their nested operands remain owned within their expression trees. Constraints may reference any eligible Expression in the applicable scope.'
         return cast('tuple[Expression, ...] | None', self._field('expressions'))
 
     @property
     def constraints(self) -> tuple[Constraint, ...] | None:
+        'Canonical assertions owned by this Formulation, referencing Boolean Expressions by UUID.'
         return cast('tuple[Constraint, ...] | None', self._field('constraints'))
 
     @property
     def formulations(self) -> tuple[Formulation, ...] | None:
+        'Canonical child Formulations owned by this Formulation. Repeated or cyclic containment is invalid.'
         return cast('tuple[Formulation, ...] | None', self._field('formulations'))
 
 
 class Function(Record):
+    'An identified, versioned contract for a pure mathematical or domain function, independent of a particular runtime implementation.'
     __slots__ = ()
     _kind = 'Function'
 
@@ -960,44 +1464,78 @@ class Function(Record):
             'empty_collection': empty_collection,
         })
 
+    def replace(self, *,
+        id: UUID | Unset = UNSET,
+        code: str | Unset = UNSET,
+        name: str | Unset = UNSET,
+        version: str | Unset = UNSET,
+        parameters: tuple[Parameter, ...] | None | Unset = UNSET,
+        result: Domain | Unset = UNSET,
+        semantics: str | Unset = UNSET,
+        unit_rule: str | Unset = UNSET,
+        empty_collection: EmptyHandling | Unset = UNSET,
+    ) -> Function:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'id': id,
+            'code': code,
+            'name': name,
+            'version': version,
+            'parameters': parameters,
+            'result': result,
+            'semantics': semantics,
+            'unit_rule': unit_rule,
+            'empty_collection': empty_collection,
+        })
+
     @property
     def id(self) -> UUID:
+        'Id.'
         return cast('UUID', self._field('id'))
 
     @property
     def code(self) -> str:
+        'Code.'
         return cast('str', self._field('code'))
 
     @property
     def name(self) -> str:
+        'Human-readable function name.'
         return cast('str', self._field('name'))
 
     @property
     def version(self) -> str:
+        'Version.'
         return cast('str', self._field('version'))
 
     @property
     def parameters(self) -> tuple[Parameter, ...] | None:
+        'Ordered signature. Omission denotes no parameters.'
         return cast('tuple[Parameter, ...] | None', self._field('parameters'))
 
     @property
     def result(self) -> Domain:
+        'Domain of the result.'
         return cast('Domain', self._field('result'))
 
     @property
     def semantics(self) -> str:
+        'Mathematical meaning, argument conventions, domain restrictions, and exceptional cases.'
         return cast('str', self._field('semantics'))
 
     @property
     def unit_rule(self) -> str:
+        'How result units follow from the arguments, or why units do not apply. This rule requires semantic implementation; prose is not an executable unit checker.'
         return cast('str', self._field('unit_rule'))
 
     @property
     def empty_collection(self) -> EmptyHandling | None:
+        'Required for functions with collection arguments. Zero is permitted only when the result domain and units can be established without reading a member.'
         return cast('EmptyHandling | None', self._field('empty_collection'))
 
 
 class Implementation(Record):
+    'An implementation role and its reproducible software identity as reported for this execution.'
     __slots__ = ()
     _kind = 'Implementation'
 
@@ -1012,20 +1550,36 @@ class Implementation(Record):
             'version': version,
         })
 
+    def replace(self, *,
+        kind: ImplementationKind | Unset = UNSET,
+        name: str | Unset = UNSET,
+        version: str | Unset = UNSET,
+    ) -> Implementation:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'kind': kind,
+            'name': name,
+            'version': version,
+        })
+
     @property
     def kind(self) -> ImplementationKind:
+        'Role performed by the implementation.'
         return cast('ImplementationKind', self._field('kind'))
 
     @property
     def name(self) -> str:
+        'Nonblank implementation name.'
         return cast('str', self._field('name'))
 
     @property
     def version(self) -> str:
+        'Nonblank version or immutable build identifier.'
         return cast('str', self._field('version'))
 
 
 class Label(Record):
+    'A named set of Classifications describing an aspect of an Entity or Relationship.'
     __slots__ = ()
     _kind = 'Label'
 
@@ -1040,20 +1594,36 @@ class Label(Record):
             'classifications': classifications,
         })
 
+    def replace(self, *,
+        id: UUID | Unset = UNSET,
+        key: str | Unset = UNSET,
+        classifications: tuple[UUID, ...] | None | Unset = UNSET,
+    ) -> Label:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'id': id,
+            'key': key,
+            'classifications': classifications,
+        })
+
     @property
     def id(self) -> UUID:
+        'Stable identity of the Label, used by provenance Facts.'
         return cast('UUID', self._field('id'))
 
     @property
     def key(self) -> str:
+        "Name unique within the owner's characteristics.labels collection."
         return cast('str', self._field('key'))
 
     @property
     def classifications(self) -> tuple[UUID, ...] | None:
+        'Unique UUID references to Classifications describing this aspect.'
         return cast('tuple[UUID, ...] | None', self._field('classifications'))
 
 
 class LibraryVersion(Record):
+    'Recorded implementation dependency version.'
     __slots__ = ()
     _kind = 'LibraryVersion'
 
@@ -1066,16 +1636,29 @@ class LibraryVersion(Record):
             'version': version,
         })
 
+    def replace(self, *,
+        name: str | Unset = UNSET,
+        version: str | Unset = UNSET,
+    ) -> LibraryVersion:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'name': name,
+            'version': version,
+        })
+
     @property
     def name(self) -> str:
+        'Name.'
         return cast('str', self._field('name'))
 
     @property
     def version(self) -> str:
+        'Version.'
         return cast('str', self._field('version'))
 
 
 class Location(Record):
+    'An address within a specific Source edition.'
     __slots__ = ()
     _kind = 'Location'
 
@@ -1088,16 +1671,29 @@ class Location(Record):
             'address': address,
         })
 
+    def replace(self, *,
+        source: UUID | Unset = UNSET,
+        address: Mapping[str, Mapping[str, JSONValue] | str] | None | Unset = UNSET,
+    ) -> Location:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'source': source,
+            'address': address,
+        })
+
     @property
     def source(self) -> UUID:
+        'Source.'
         return cast('UUID', self._field('source'))
 
     @property
     def address(self) -> Mapping[str, Mapping[str, FrozenJSONValue] | str] | None:
+        'Named address parts, such as sheet and cell, with nonblank text values.'
         return cast('Mapping[str, Mapping[str, FrozenJSONValue] | str] | None', self._field('address'))
 
 
 class Measure(Record):
+    'An identified definition of a measurable characteristic and its canonical units.'
     __slots__ = ()
     _kind = 'Measure'
 
@@ -1118,32 +1714,57 @@ class Measure(Record):
             'tags': tags,
         })
 
+    def replace(self, *,
+        id: UUID | Unset = UNSET,
+        code: str | Unset = UNSET,
+        name: str | Unset = UNSET,
+        units: str | Unset = UNSET,
+        definition: str | None | Unset = UNSET,
+        tags: tuple[str, ...] | None | Unset = UNSET,
+    ) -> Measure:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'id': id,
+            'code': code,
+            'name': name,
+            'units': units,
+            'definition': definition,
+            'tags': tags,
+        })
+
     @property
     def id(self) -> UUID:
+        'Stable identity of this Measure definition.'
         return cast('UUID', self._field('id'))
 
     @property
     def code(self) -> str:
+        'Case-sensitive code unique within the Model’s Measure collection; not reference identity.'
         return cast('str', self._field('code'))
 
     @property
     def name(self) -> str:
+        'Nonblank human-readable name of the measured characteristic.'
         return cast('str', self._field('name'))
 
     @property
     def units(self) -> str:
+        'Nonblank expression specifying the canonical units for quantities interpreted through this Measure, such as m^2 or AUD/year. Unitless quantities must have an explicit dimensionless convention.'
         return cast('str', self._field('units'))
 
     @property
     def definition(self) -> str | None:
+        'Optional explanatory text describing the measurement convention.'
         return cast('str | None', self._field('definition'))
 
     @property
     def tags(self) -> tuple[str, ...] | None:
+        'Unordered, nonblank descriptive terms, with no duplicates.'
         return cast('tuple[str, ...] | None', self._field('tags'))
 
 
 class Measurement(Record):
+    'An identified measurable property with a Measure and an optional Quantity.'
     __slots__ = ()
     _kind = 'Measurement'
 
@@ -1158,20 +1779,36 @@ class Measurement(Record):
             'id': id,
         })
 
+    def replace(self, *,
+        measure: UUID | Unset = UNSET,
+        quantity: Quantity | None | Unset = UNSET,
+        id: UUID | Unset = UNSET,
+    ) -> Measurement:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'measure': measure,
+            'quantity': quantity,
+            'id': id,
+        })
+
     @property
     def measure(self) -> UUID:
+        'Measure defining meaning and canonical units, referenced by its stable UUID.'
         return cast('UUID', self._field('measure'))
 
     @property
     def quantity(self) -> Quantity | None:
+        "Optional recorded numerical content. Its units must be compatible with the Measure's canonical units. Omission or null denotes unresolved content."
         return cast('Quantity | None', self._field('quantity'))
 
     @property
     def id(self) -> UUID:
+        'Stable identity of the Measurement, used by provenance Facts.'
         return cast('UUID', self._field('id'))
 
 
 class Metadata(Record):
+    'Identity, description, and optional lineage of one immutable document revision.'
     __slots__ = ()
     _kind = 'Metadata'
 
@@ -1190,28 +1827,50 @@ class Metadata(Record):
             'previous': previous,
         })
 
+    def replace(self, *,
+        id: UUID | Unset = UNSET,
+        schema_version: str | Unset = UNSET,
+        name: str | None | Unset = UNSET,
+        description: str | None | Unset = UNSET,
+        previous: UUID | Unset = UNSET,
+    ) -> Metadata:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'id': id,
+            'schema_version': schema_version,
+            'name': name,
+            'description': description,
+            'previous': previous,
+        })
+
     @property
     def id(self) -> UUID:
+        'UUID identifying the enclosing immutable document revision.'
         return cast('UUID', self._field('id'))
 
     @property
     def schema_version(self) -> str:
+        "Version of the enclosing document's schema contract."
         return cast('str', self._field('schema_version'))
 
     @property
     def name(self) -> str | None:
+        'Optional human-readable name of this revision.'
         return cast('str | None', self._field('name'))
 
     @property
     def description(self) -> str | None:
+        'Optional explanation of this revision and its purpose.'
         return cast('str | None', self._field('description'))
 
     @property
     def previous(self) -> UUID | None:
+        'UUID of the preceding revision of the same document kind, referencing its Metadata.'
         return cast('UUID | None', self._field('previous'))
 
 
 class Method(Record):
+    'The named process used to assert, derive, or reconcile evidence.'
     __slots__ = ()
     _kind = 'Method'
 
@@ -1226,20 +1885,36 @@ class Method(Record):
             'description': description,
         })
 
+    def replace(self, *,
+        code: str | Unset = UNSET,
+        version: str | None | Unset = UNSET,
+        description: str | None | Unset = UNSET,
+    ) -> Method:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'code': code,
+            'version': version,
+            'description': description,
+        })
+
     @property
     def code(self) -> str:
+        'Code.'
         return cast('str', self._field('code'))
 
     @property
     def version(self) -> str | None:
+        'Version.'
         return cast('str | None', self._field('version'))
 
     @property
     def description(self) -> str | None:
+        'Description.'
         return cast('str | None', self._field('description'))
 
 
 class Model(Record):
+    "A self-contained snapshot of a system's declarations, mathematical formulations, and recorded content, identified by its Metadata."
     __slots__ = ()
     _kind = 'Model'
 
@@ -1256,24 +1931,43 @@ class Model(Record):
             'provenance': provenance,
         })
 
+    def replace(self, *,
+        metadata: Metadata | Unset = UNSET,
+        definitions: Definitions | Unset = UNSET,
+        system: System | Unset = UNSET,
+        provenance: Provenance | Unset = UNSET,
+    ) -> Model:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'metadata': metadata,
+            'definitions': definitions,
+            'system': system,
+            'provenance': provenance,
+        })
+
     @property
     def metadata(self) -> Metadata:
+        'Required identity, schema contract version, and optional descriptive/history fields.'
         return cast('Metadata', self._field('metadata'))
 
     @property
     def definitions(self) -> Definitions | None:
+        'Canonical Taxonomy, Measure, and Function definitions referenced by this snapshot.'
         return cast('Definitions | None', self._field('definitions'))
 
     @property
     def system(self) -> System | None:
+        'The domain objects and explicit mathematical formulations represented by this Model.'
         return cast('System | None', self._field('system'))
 
     @property
     def provenance(self) -> Provenance | None:
+        'Evidence and reasoning supporting recorded domain and Value content in this snapshot.'
         return cast('Provenance | None', self._field('provenance'))
 
 
-class Movement(Record):
+class Movement(MovementBehavior, Record):
+    'One numerical entry in a Flow, associated with a date or period. The overall model logic determines its meaning. At least one of date or period is required. With a period, date records an independent payment or observation date and need not lie inside the period. Derived boundary dates are calculated, not stored. Key is stable within its Flow; repeated event dates require distinct keys. Magnitude omission/null means unresolved. Claims retain source or derivation evidence.'
     __slots__ = ()
     _kind = 'Movement'
 
@@ -1292,28 +1986,50 @@ class Movement(Record):
             'claims': claims,
         })
 
+    def replace(self, *,
+        key: str | Unset = UNSET,
+        date: Date | None | Unset = UNSET,
+        period: Period | None | Unset = UNSET,
+        magnitude: int | float | None | Unset = UNSET,
+        claims: tuple[UUID, ...] | None | Unset = UNSET,
+    ) -> Movement:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'key': key,
+            'date': date,
+            'period': period,
+            'magnitude': magnitude,
+            'claims': claims,
+        })
+
     @property
     def key(self) -> str:
+        'Key.'
         return cast('str', self._field('key'))
 
     @property
     def date(self) -> Date | None:
+        'Date.'
         return cast('Date | None', self._field('date'))
 
     @property
     def period(self) -> Period | None:
+        'Period.'
         return cast('Period | None', self._field('period'))
 
     @property
     def magnitude(self) -> int | float | None:
+        'Magnitude.'
         return cast('int | float | None', self._field('magnitude'))
 
     @property
     def claims(self) -> tuple[UUID, ...] | None:
+        'Claims.'
         return cast('tuple[UUID, ...] | None', self._field('claims'))
 
 
 class Objective(Record):
+    'A scalar numerical Expression and the sense in which its result is preferred.'
     __slots__ = ()
     _kind = 'Objective'
 
@@ -1326,16 +2042,29 @@ class Objective(Record):
             'sense': sense,
         })
 
+    def replace(self, *,
+        expression: UUID | Unset = UNSET,
+        sense: ObjectiveKind | Unset = UNSET,
+    ) -> Objective:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'expression': expression,
+            'sense': sense,
+        })
+
     @property
     def expression(self) -> UUID:
+        'UUID of a scalar numerical Expression in the composed Model and Specification scope.'
         return cast('UUID', self._field('expression'))
 
     @property
     def sense(self) -> ObjectiveKind:
+        'Whether smaller or larger results are preferred.'
         return cast('ObjectiveKind', self._field('sense'))
 
 
 class ObservationAvailability(Record):
+    'Earliest date a recorded Value or Movement may be supplied to a policy.'
     __slots__ = ()
     _kind = 'ObservationAvailability'
 
@@ -1348,16 +2077,29 @@ class ObservationAvailability(Record):
             'available_at': available_at,
         })
 
+    def replace(self, *,
+        target: ValueReference | Unset = UNSET,
+        available_at: Date | Unset = UNSET,
+    ) -> ObservationAvailability:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'target': target,
+            'available_at': available_at,
+        })
+
     @property
     def target(self) -> ValueReference:
+        'Target.'
         return cast('ValueReference', self._field('target'))
 
     @property
     def available_at(self) -> Date:
+        'Available at.'
         return cast('Date', self._field('available_at'))
 
 
 class ObservationBinding(Record):
+    'An explicit observation target. An optional date may delay availability but cannot advance it.'
     __slots__ = ()
     _kind = 'ObservationBinding'
 
@@ -1372,20 +2114,36 @@ class ObservationBinding(Record):
             'available_at': available_at,
         })
 
+    def replace(self, *,
+        name: str | Unset = UNSET,
+        target: ValueReference | Unset = UNSET,
+        available_at: Date | None | Unset = UNSET,
+    ) -> ObservationBinding:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'name': name,
+            'target': target,
+            'available_at': available_at,
+        })
+
     @property
     def name(self) -> str:
+        'Name.'
         return cast('str', self._field('name'))
 
     @property
     def target(self) -> ValueReference:
+        'Target.'
         return cast('ValueReference', self._field('target'))
 
     @property
     def available_at(self) -> Date | None:
+        'Available at.'
         return cast('Date | None', self._field('available_at'))
 
 
 class ObservedQuantity(Record):
+    'The exact quantity and availability supplied to a decision.'
     __slots__ = ()
     _kind = 'ObservedQuantity'
 
@@ -1402,24 +2160,43 @@ class ObservedQuantity(Record):
             'available_at': available_at,
         })
 
+    def replace(self, *,
+        name: str | Unset = UNSET,
+        target: ValueReference | Unset = UNSET,
+        quantity: Quantity | Unset = UNSET,
+        available_at: Date | Unset = UNSET,
+    ) -> ObservedQuantity:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'name': name,
+            'target': target,
+            'quantity': quantity,
+            'available_at': available_at,
+        })
+
     @property
     def name(self) -> str:
+        'Name.'
         return cast('str', self._field('name'))
 
     @property
     def target(self) -> ValueReference:
+        'Target.'
         return cast('ValueReference', self._field('target'))
 
     @property
     def quantity(self) -> Quantity:
+        'Quantity.'
         return cast('Quantity', self._field('quantity'))
 
     @property
     def available_at(self) -> Date:
+        'Available at.'
         return cast('Date', self._field('available_at'))
 
 
 class Parameter(Record):
+    'A named argument in a Function signature. List order determines positional argument order.'
     __slots__ = ()
     _kind = 'Parameter'
 
@@ -1436,24 +2213,43 @@ class Parameter(Record):
             'required': required,
         })
 
+    def replace(self, *,
+        name: str | Unset = UNSET,
+        domain: Domain | Unset = UNSET,
+        kind: ParameterKind | Unset = UNSET,
+        required: bool | Unset = UNSET,
+    ) -> Parameter:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'name': name,
+            'domain': domain,
+            'kind': kind,
+            'required': required,
+        })
+
     @property
     def name(self) -> str:
+        'Name.'
         return cast('str', self._field('name'))
 
     @property
     def domain(self) -> Domain:
+        'Content permitted for this argument.'
         return cast('Domain', self._field('domain'))
 
     @property
     def kind(self) -> ParameterKind:
+        'How a call may supply this parameter.'
         return cast('ParameterKind', self._field('kind'))
 
     @property
     def required(self) -> bool:
+        'Whether a call must supply this argument.'
         return cast('bool', self._field('required'))
 
 
-class Period(Record):
+class Period(PeriodBehavior, Record):
+    'Half-open interval [start, end). Date boundaries use the Gregorian calendar; start must precede end.'
     __slots__ = ()
     _kind = 'Period'
 
@@ -1466,16 +2262,29 @@ class Period(Record):
             'end': end,
         })
 
+    def replace(self, *,
+        start: Date | Unset = UNSET,
+        end: Date | Unset = UNSET,
+    ) -> Period:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'start': start,
+            'end': end,
+        })
+
     @property
     def start(self) -> Date:
+        'Start.'
         return cast('Date', self._field('start'))
 
     @property
     def end(self) -> Date:
+        'End.'
         return cast('Date', self._field('end'))
 
 
 class Policy(Record):
+    'Finite policy owning explicit controlled targets and ordered dated decision points.'
     __slots__ = ()
     _kind = 'Policy'
 
@@ -1490,20 +2299,36 @@ class Policy(Record):
             'points': points,
         })
 
+    def replace(self, *,
+        id: UUID | Unset = UNSET,
+        targets: tuple[ValueReference, ...] | Unset = UNSET,
+        points: tuple[DecisionPoint, ...] | Unset = UNSET,
+    ) -> Policy:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'id': id,
+            'targets': targets,
+            'points': points,
+        })
+
     @property
     def id(self) -> UUID:
+        'Id.'
         return cast('UUID', self._field('id'))
 
     @property
     def targets(self) -> tuple[ValueReference, ...]:
+        'Targets.'
         return cast('tuple[ValueReference, ...]', self._field('targets'))
 
     @property
     def points(self) -> tuple[DecisionPoint, ...]:
+        'Points.'
         return cast('tuple[DecisionPoint, ...]', self._field('points'))
 
 
 class Projection(Record):
+    'Select Entity identities or Values belonging to each matching Entity.'
     __slots__ = ()
     _kind = 'Projection'
 
@@ -1522,28 +2347,50 @@ class Projection(Record):
             'missing': missing,
         })
 
+    def replace(self, *,
+        kind: ProjectionKind | Unset = UNSET,
+        key: str | Unset = UNSET,
+        measure: UUID | Unset = UNSET,
+        cardinality: Cardinality | Unset = UNSET,
+        missing: MissingHandling | Unset = UNSET,
+    ) -> Projection:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'kind': kind,
+            'key': key,
+            'measure': measure,
+            'cardinality': cardinality,
+            'missing': missing,
+        })
+
     @property
     def kind(self) -> ProjectionKind:
+        'Kind.'
         return cast('ProjectionKind', self._field('kind'))
 
     @property
     def key(self) -> str | None:
+        'Exact owner-local Value key.'
         return cast('str | None', self._field('key'))
 
     @property
     def measure(self) -> UUID | None:
+        'Select Values with this exact Measure.'
         return cast('UUID | None', self._field('measure'))
 
     @property
     def cardinality(self) -> Cardinality | None:
+        'Cardinality.'
         return cast('Cardinality | None', self._field('cardinality'))
 
     @property
     def missing(self) -> MissingHandling | None:
+        'Missing.'
         return cast('MissingHandling | None', self._field('missing'))
 
 
 class PropertyContent(Record):
+    'Tagged inert content. Scalar text preserves exact type and representation, including negative zero. Containers never instantiate arbitrary Python classes. Conditional shape and canonical scalar grammar are checked semantically.'
     __slots__ = ()
     _kind = 'PropertyContent'
 
@@ -1564,32 +2411,57 @@ class PropertyContent(Record):
             'entries': entries,
         })
 
+    def replace(self, *,
+        kind: ContentKind | Unset = UNSET,
+        text: str | None | Unset = UNSET,
+        zone: str | None | Unset = UNSET,
+        fold: int | None | Unset = UNSET,
+        items: tuple[PropertyContent, ...] | None | Unset = UNSET,
+        entries: tuple[ContentEntry, ...] | None | Unset = UNSET,
+    ) -> PropertyContent:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'kind': kind,
+            'text': text,
+            'zone': zone,
+            'fold': fold,
+            'items': items,
+            'entries': entries,
+        })
+
     @property
     def kind(self) -> ContentKind:
+        'Kind.'
         return cast('ContentKind', self._field('kind'))
 
     @property
     def text(self) -> str | None:
+        'Text.'
         return cast('str | None', self._field('text'))
 
     @property
     def zone(self) -> str | None:
+        'Zone.'
         return cast('str | None', self._field('zone'))
 
     @property
     def fold(self) -> int | None:
+        'Fold.'
         return cast('int | None', self._field('fold'))
 
     @property
     def items(self) -> tuple[PropertyContent, ...] | None:
+        'Items.'
         return cast('tuple[PropertyContent, ...] | None', self._field('items'))
 
     @property
     def entries(self) -> tuple[ContentEntry, ...] | None:
+        'Entries.'
         return cast('tuple[ContentEntry, ...] | None', self._field('entries'))
 
 
 class Provenance(Record):
+    'Facts connecting graph objects to supporting Claims, with the Sources and upstream Claims needed to follow their lineage.'
     __slots__ = ()
     _kind = 'Provenance'
 
@@ -1606,24 +2478,43 @@ class Provenance(Record):
             'scenarios': scenarios,
         })
 
+    def replace(self, *,
+        sources: tuple[Source, ...] | None | Unset = UNSET,
+        claims: tuple[Claim, ...] | None | Unset = UNSET,
+        facts: tuple[Fact, ...] | None | Unset = UNSET,
+        scenarios: tuple[ScenarioRealization, ...] | None | Unset = UNSET,
+    ) -> Provenance:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'sources': sources,
+            'claims': claims,
+            'facts': facts,
+            'scenarios': scenarios,
+        })
+
     @property
     def sources(self) -> tuple[Source, ...] | None:
+        'Sources.'
         return cast('tuple[Source, ...] | None', self._field('sources'))
 
     @property
     def claims(self) -> tuple[Claim, ...] | None:
+        'Claims.'
         return cast('tuple[Claim, ...] | None', self._field('claims'))
 
     @property
     def facts(self) -> tuple[Fact, ...] | None:
+        'Facts.'
         return cast('tuple[Fact, ...] | None', self._field('facts'))
 
     @property
     def scenarios(self) -> tuple[ScenarioRealization, ...] | None:
+        'Scenarios.'
         return cast('tuple[ScenarioRealization, ...] | None', self._field('scenarios'))
 
 
 class Quantity(Record):
+    'Numerical content consisting of a finite magnitude and explicit units.'
     __slots__ = ()
     _kind = 'Quantity'
 
@@ -1636,16 +2527,29 @@ class Quantity(Record):
             'units': units,
         })
 
+    def replace(self, *,
+        magnitude: int | float | Unset = UNSET,
+        units: str | Unset = UNSET,
+    ) -> Quantity:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'magnitude': magnitude,
+            'units': units,
+        })
+
     @property
     def magnitude(self) -> int | float:
+        'Finite numerical magnitude expressed in the accompanying units.'
         return cast('int | float', self._field('magnitude'))
 
     @property
     def units(self) -> str:
+        'Explicit units for this magnitude, such as m^2, AUD/year, or dimensionless.'
         return cast('str', self._field('units'))
 
 
 class Query(Record):
+    'A non-executing query specification returning Entity or Value identities from the containing Model revision.'
     __slots__ = ()
     _kind = 'Query'
 
@@ -1664,28 +2568,50 @@ class Query(Record):
             'duplicates': duplicates,
         })
 
+    def replace(self, *,
+        starting_at: UUID | Unset = UNSET,
+        steps: tuple[Traversal, ...] | None | Unset = UNSET,
+        filter: Filter | Unset = UNSET,
+        projection: Projection | Unset = UNSET,
+        duplicates: DuplicateHandling | Unset = UNSET,
+    ) -> Query:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'starting_at': starting_at,
+            'steps': steps,
+            'filter': filter,
+            'projection': projection,
+            'duplicates': duplicates,
+        })
+
     @property
     def starting_at(self) -> UUID:
+        'Starting at.'
         return cast('UUID', self._field('starting_at'))
 
     @property
     def steps(self) -> tuple[Traversal, ...] | None:
+        'Ordered traversal steps; omission selects the starting Entity.'
         return cast('tuple[Traversal, ...] | None', self._field('steps'))
 
     @property
     def filter(self) -> Filter | None:
+        'Filter.'
         return cast('Filter | None', self._field('filter'))
 
     @property
     def projection(self) -> Projection:
+        'Projection.'
         return cast('Projection', self._field('projection'))
 
     @property
     def duplicates(self) -> DuplicateHandling:
+        'Duplicates.'
         return cast('DuplicateHandling', self._field('duplicates'))
 
 
 class RandomStream(Record):
+    'Stable component stream identity derived from seed, scenario key and component name.'
     __slots__ = ()
     _kind = 'RandomStream'
 
@@ -1698,16 +2624,29 @@ class RandomStream(Record):
             'identifier': identifier,
         })
 
+    def replace(self, *,
+        name: str | Unset = UNSET,
+        identifier: str | Unset = UNSET,
+    ) -> RandomStream:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'name': name,
+            'identifier': identifier,
+        })
+
     @property
     def name(self) -> str:
+        'Name.'
         return cast('str', self._field('name'))
 
     @property
     def identifier(self) -> str:
+        'Identifier.'
         return cast('str', self._field('identifier'))
 
 
 class Reconciliation(Record):
+    'Explicit selection of one supporting Claim when evidence conflicts.'
     __slots__ = ()
     _kind = 'Reconciliation'
 
@@ -1722,20 +2661,36 @@ class Reconciliation(Record):
             'method': method,
         })
 
+    def replace(self, *,
+        selected: UUID | Unset = UNSET,
+        status: ReconciliationStatus | Unset = UNSET,
+        method: Method | None | Unset = UNSET,
+    ) -> Reconciliation:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'selected': selected,
+            'status': status,
+            'method': method,
+        })
+
     @property
     def selected(self) -> UUID:
+        "UUID of a Claim included in the Fact's claims."
         return cast('UUID', self._field('selected'))
 
     @property
     def status(self) -> ReconciliationStatus:
+        'Status.'
         return cast('ReconciliationStatus', self._field('status'))
 
     @property
     def method(self) -> Method | None:
+        'Method.'
         return cast('Method | None', self._field('method'))
 
 
 class Relationship(Record):
+    'An identified, directed connection from one Entity to another. Its classification describes the connection; its characteristics describe properties of the connection itself.'
     __slots__ = ()
     _kind = 'Relationship'
 
@@ -1754,28 +2709,50 @@ class Relationship(Record):
             'characteristics': characteristics,
         })
 
+    def replace(self, *,
+        classification: UUID | Unset = UNSET,
+        id: UUID | Unset = UNSET,
+        source: UUID | Unset = UNSET,
+        target: UUID | Unset = UNSET,
+        characteristics: Characteristics | None | Unset = UNSET,
+    ) -> Relationship:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'classification': classification,
+            'id': id,
+            'source': source,
+            'target': target,
+            'characteristics': characteristics,
+        })
+
     @property
     def classification(self) -> UUID:
+        'Classification describing the object, referenced by its stable UUID.'
         return cast('UUID', self._field('classification'))
 
     @property
     def id(self) -> UUID:
+        'Stable identity of the Relationship across Model revisions.'
         return cast('UUID', self._field('id'))
 
     @property
     def source(self) -> UUID:
+        'UUID of the source Entity.'
         return cast('UUID', self._field('source'))
 
     @property
     def target(self) -> UUID:
+        'UUID of the target Entity.'
         return cast('UUID', self._field('target'))
 
     @property
     def characteristics(self) -> Characteristics | None:
+        'Labels and Values describing this connection.'
         return cast('Characteristics | None', self._field('characteristics'))
 
 
 class Report(Record):
+    'Outcome, actual runtime, findings, and ordered execution trace of a Run.'
     __slots__ = ()
     _kind = 'Report'
 
@@ -1794,28 +2771,50 @@ class Report(Record):
             'decisions': decisions,
         })
 
+    def replace(self, *,
+        status: Status | Unset = UNSET,
+        runtime: Runtime | Unset = UNSET,
+        diagnostics: tuple[Diagnostic, ...] | None | Unset = UNSET,
+        trace: tuple[Step, ...] | None | Unset = UNSET,
+        decisions: tuple[Decision, ...] | None | Unset = UNSET,
+    ) -> Report:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'status': status,
+            'runtime': runtime,
+            'diagnostics': diagnostics,
+            'trace': trace,
+            'decisions': decisions,
+        })
+
     @property
     def status(self) -> Status:
+        'Required execution and mathematical outcome.'
         return cast('Status', self._field('status'))
 
     @property
     def runtime(self) -> Runtime | None:
+        'Actual runtime when known; may be absent for a skipped or pre-execution failure.'
         return cast('Runtime | None', self._field('runtime'))
 
     @property
     def diagnostics(self) -> tuple[Diagnostic, ...] | None:
+        'Unordered findings supporting interpretation of the outcome.'
         return cast('tuple[Diagnostic, ...] | None', self._field('diagnostics'))
 
     @property
     def trace(self) -> tuple[Step, ...] | None:
+        'Ordered execution and selection records; list order is preserved.'
         return cast('tuple[Step, ...] | None', self._field('trace'))
 
     @property
     def decisions(self) -> tuple[Decision, ...] | None:
+        'Decisions.'
         return cast('tuple[Decision, ...] | None', self._field('decisions'))
 
 
 class Rule(Record):
+    'One ordered Boolean condition and its atomic actions.'
     __slots__ = ()
     _kind = 'Rule'
 
@@ -1830,20 +2829,36 @@ class Rule(Record):
             'actions': actions,
         })
 
+    def replace(self, *,
+        id: UUID | Unset = UNSET,
+        condition: Expression | Unset = UNSET,
+        actions: tuple[Action, ...] | Unset = UNSET,
+    ) -> Rule:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'id': id,
+            'condition': condition,
+            'actions': actions,
+        })
+
     @property
     def id(self) -> UUID:
+        'Id.'
         return cast('UUID', self._field('id'))
 
     @property
     def condition(self) -> Expression:
+        'Condition.'
         return cast('Expression', self._field('condition'))
 
     @property
     def actions(self) -> tuple[Action, ...]:
+        'Actions.'
         return cast('tuple[Action, ...]', self._field('actions'))
 
 
 class Run(Record):
+    'The finalized record of one execution attempt against an exact Specification revision.'
     __slots__ = ()
     _kind = 'Run'
 
@@ -1862,28 +2877,50 @@ class Run(Record):
             'report': report,
         })
 
+    def replace(self, *,
+        metadata: Metadata | Unset = UNSET,
+        specification: UUID | Unset = UNSET,
+        spawns: tuple[UUID, ...] | None | Unset = UNSET,
+        outputs: tuple[UUID, ...] | None | Unset = UNSET,
+        report: Report | Unset = UNSET,
+    ) -> Run:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'metadata': metadata,
+            'specification': specification,
+            'spawns': spawns,
+            'outputs': outputs,
+            'report': report,
+        })
+
     @property
     def metadata(self) -> Metadata:
+        'Identity and schema version of this immutable Run record.'
         return cast('Metadata', self._field('metadata'))
 
     @property
     def specification(self) -> UUID:
+        'Exact attempted Specification revision, resolved as a Specification document.'
         return cast('UUID', self._field('specification'))
 
     @property
     def spawns(self) -> tuple[UUID, ...] | None:
+        'Unique references to directly spawned Run revisions.'
         return cast('tuple[UUID, ...] | None', self._field('spawns'))
 
     @property
     def outputs(self) -> tuple[UUID, ...] | None:
+        'Unique accepted output Model revision references, or their union for a batch.'
         return cast('tuple[UUID, ...] | None', self._field('outputs'))
 
     @property
     def report(self) -> Report:
+        'Execution outcome and supporting evidence.'
         return cast('Report', self._field('report'))
 
 
 class Runtime(Record):
+    'Observed timing, implementation identities, and effective numerical settings.'
     __slots__ = ()
     _kind = 'Runtime'
 
@@ -1900,24 +2937,43 @@ class Runtime(Record):
             'settings': settings,
         })
 
+    def replace(self, *,
+        started_at: str | None | Unset = UNSET,
+        finished_at: str | None | Unset = UNSET,
+        implementations: tuple[Implementation, ...] | Unset = UNSET,
+        settings: Settings | Unset = UNSET,
+    ) -> Runtime:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'started_at': started_at,
+            'finished_at': finished_at,
+            'implementations': implementations,
+            'settings': settings,
+        })
+
     @property
     def started_at(self) -> str | None:
+        'Observed start instant with an explicit timezone.'
         return cast('str | None', self._field('started_at'))
 
     @property
     def finished_at(self) -> str | None:
+        'Observed finish instant with an explicit timezone.'
         return cast('str | None', self._field('finished_at'))
 
     @property
     def implementations(self) -> tuple[Implementation, ...]:
+        'Actual implementation identities; nonempty when Runtime is present.'
         return cast('tuple[Implementation, ...]', self._field('implementations'))
 
     @property
     def settings(self) -> Settings | None:
+        'Effective numerical settings, rather than merely copied requests.'
         return cast('Settings | None', self._field('settings'))
 
 
 class ScenarioParameter(Record):
+    'One named constant or sampled parameter; exactly one input is required by semantic validation.'
     __slots__ = ()
     _kind = 'ScenarioParameter'
 
@@ -1932,20 +2988,36 @@ class ScenarioParameter(Record):
             'distribution': distribution,
         })
 
+    def replace(self, *,
+        name: str | Unset = UNSET,
+        quantity: Quantity | None | Unset = UNSET,
+        distribution: Distribution | None | Unset = UNSET,
+    ) -> ScenarioParameter:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'name': name,
+            'quantity': quantity,
+            'distribution': distribution,
+        })
+
     @property
     def name(self) -> str:
+        'Name.'
         return cast('str', self._field('name'))
 
     @property
     def quantity(self) -> Quantity | None:
+        'Quantity.'
         return cast('Quantity | None', self._field('quantity'))
 
     @property
     def distribution(self) -> Distribution | None:
+        'Distribution.'
         return cast('Distribution | None', self._field('distribution'))
 
 
 class ScenarioPlan(Record):
+    'Finite market generation plan. This is input-generation provenance, not governing mathematics.'
     __slots__ = ()
     _kind = 'ScenarioPlan'
 
@@ -1964,28 +3036,50 @@ class ScenarioPlan(Record):
             'parameters': parameters,
         })
 
+    def replace(self, *,
+        id: UUID | Unset = UNSET,
+        method: str | Unset = UNSET,
+        seed: int | Unset = UNSET,
+        periods: tuple[Period, ...] | Unset = UNSET,
+        parameters: tuple[ScenarioParameter, ...] | Unset = UNSET,
+    ) -> ScenarioPlan:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'id': id,
+            'method': method,
+            'seed': seed,
+            'periods': periods,
+            'parameters': parameters,
+        })
+
     @property
     def id(self) -> UUID:
+        'Id.'
         return cast('UUID', self._field('id'))
 
     @property
     def method(self) -> str:
+        'Method.'
         return cast('str', self._field('method'))
 
     @property
     def seed(self) -> int:
+        'Seed.'
         return cast('int', self._field('seed'))
 
     @property
     def periods(self) -> tuple[Period, ...]:
+        'Periods.'
         return cast('tuple[Period, ...]', self._field('periods'))
 
     @property
     def parameters(self) -> tuple[ScenarioParameter, ...]:
+        'Parameters.'
         return cast('tuple[ScenarioParameter, ...]', self._field('parameters'))
 
 
 class ScenarioRealization(Record):
+    'Captured scenario inputs and paths. Stored draws permit replay without random sampling.'
     __slots__ = ()
     _kind = 'ScenarioRealization'
 
@@ -2012,44 +3106,78 @@ class ScenarioRealization(Record):
             'availability': availability,
         })
 
+    def replace(self, *,
+        id: UUID | Unset = UNSET,
+        plan: ScenarioPlan | Unset = UNSET,
+        key: str | Unset = UNSET,
+        generator: str | Unset = UNSET,
+        versions: tuple[LibraryVersion, ...] | Unset = UNSET,
+        streams: tuple[RandomStream, ...] | Unset = UNSET,
+        inputs: tuple[Binding, ...] | Unset = UNSET,
+        outputs: tuple[Binding, ...] | Unset = UNSET,
+        availability: tuple[ObservationAvailability, ...] | Unset = UNSET,
+    ) -> ScenarioRealization:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'id': id,
+            'plan': plan,
+            'key': key,
+            'generator': generator,
+            'versions': versions,
+            'streams': streams,
+            'inputs': inputs,
+            'outputs': outputs,
+            'availability': availability,
+        })
+
     @property
     def id(self) -> UUID:
+        'Id.'
         return cast('UUID', self._field('id'))
 
     @property
     def plan(self) -> ScenarioPlan:
+        'Plan.'
         return cast('ScenarioPlan', self._field('plan'))
 
     @property
     def key(self) -> str:
+        'Key.'
         return cast('str', self._field('key'))
 
     @property
     def generator(self) -> str:
+        'Generator.'
         return cast('str', self._field('generator'))
 
     @property
     def versions(self) -> tuple[LibraryVersion, ...]:
+        'Versions.'
         return cast('tuple[LibraryVersion, ...]', self._field('versions'))
 
     @property
     def streams(self) -> tuple[RandomStream, ...]:
+        'Streams.'
         return cast('tuple[RandomStream, ...]', self._field('streams'))
 
     @property
     def inputs(self) -> tuple[Binding, ...]:
+        'Inputs.'
         return cast('tuple[Binding, ...]', self._field('inputs'))
 
     @property
     def outputs(self) -> tuple[Binding, ...]:
+        'Outputs.'
         return cast('tuple[Binding, ...]', self._field('outputs'))
 
     @property
     def availability(self) -> tuple[ObservationAvailability, ...]:
+        'Availability.'
         return cast('tuple[ObservationAvailability, ...]', self._field('availability'))
 
 
 class ScopedValueReference(Record):
+    'An explicit revision and Value/Movement reference used in execution evidence.'
     __slots__ = ()
     _kind = 'ScopedValueReference'
 
@@ -2062,16 +3190,29 @@ class ScopedValueReference(Record):
             'reference': reference,
         })
 
+    def replace(self, *,
+        document: UUID | Unset = UNSET,
+        reference: ValueReference | Unset = UNSET,
+    ) -> ScopedValueReference:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'document': document,
+            'reference': reference,
+        })
+
     @property
     def document(self) -> UUID:
+        'Document.'
         return cast('UUID', self._field('document'))
 
     @property
     def reference(self) -> ValueReference:
+        'Reference.'
         return cast('ValueReference', self._field('reference'))
 
 
 class Selection(Record):
+    'Read a declared member or indexed element from structured expression content.'
     __slots__ = ()
     _kind = 'Selection'
 
@@ -2088,24 +3229,43 @@ class Selection(Record):
             'index': index,
         })
 
+    def replace(self, *,
+        kind: SelectionKind | Unset = UNSET,
+        base: Expression | Unset = UNSET,
+        member: str | None | Unset = UNSET,
+        index: Expression | Unset = UNSET,
+    ) -> Selection:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'kind': kind,
+            'base': base,
+            'member': member,
+            'index': index,
+        })
+
     @property
     def kind(self) -> SelectionKind:
+        'Kind.'
         return cast('SelectionKind', self._field('kind'))
 
     @property
     def base(self) -> Expression:
+        'Base.'
         return cast('Expression', self._field('base'))
 
     @property
     def member(self) -> str | None:
+        'Declared member name.'
         return cast('str | None', self._field('member'))
 
     @property
     def index(self) -> Expression | None:
+        'Index expression.'
         return cast('Expression | None', self._field('index'))
 
 
 class Settings(Record):
+    'Numerical convergence and resource settings; the containing record distinguishes requested from effective values.'
     __slots__ = ()
     _kind = 'Settings'
 
@@ -2124,28 +3284,50 @@ class Settings(Record):
             'constraint_limit': constraint_limit,
         })
 
+    def replace(self, *,
+        relative_tolerance: int | float | None | Unset = UNSET,
+        iteration_limit: int | None | Unset = UNSET,
+        time_limit: int | float | None | Unset = UNSET,
+        symbol_limit: int | None | Unset = UNSET,
+        constraint_limit: int | None | Unset = UNSET,
+    ) -> Settings:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'relative_tolerance': relative_tolerance,
+            'iteration_limit': iteration_limit,
+            'time_limit': time_limit,
+            'symbol_limit': symbol_limit,
+            'constraint_limit': constraint_limit,
+        })
+
     @property
     def relative_tolerance(self) -> int | float | None:
+        'Positive finite dimensionless convergence tolerance, strictly less than one.'
         return cast('int | float | None', self._field('relative_tolerance'))
 
     @property
     def iteration_limit(self) -> int | None:
+        "Maximum number of solver iterations requested, interpreted by the backend's documented algorithm."
         return cast('int | None', self._field('iteration_limit'))
 
     @property
     def time_limit(self) -> int | float | None:
+        "Positive finite execution time limit in seconds, using the backend's documented timing convention."
         return cast('int | float | None', self._field('time_limit'))
 
     @property
     def symbol_limit(self) -> int | None:
+        'Maximum prepared scalar/Movement symbols.'
         return cast('int | None', self._field('symbol_limit'))
 
     @property
     def constraint_limit(self) -> int | None:
+        'Maximum expanded comparison rows.'
         return cast('int | None', self._field('constraint_limit'))
 
 
 class Source(Record):
+    'An identifiable edition of an external evidence artifact.'
     __slots__ = ()
     _kind = 'Source'
 
@@ -2166,32 +3348,57 @@ class Source(Record):
             'author': author,
         })
 
+    def replace(self, *,
+        id: UUID | Unset = UNSET,
+        name: str | Unset = UNSET,
+        checksum: str | Unset = UNSET,
+        issued_at: Date | str | None | Unset = UNSET,
+        received_at: Date | str | None | Unset = UNSET,
+        author: str | None | Unset = UNSET,
+    ) -> Source:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'id': id,
+            'name': name,
+            'checksum': checksum,
+            'issued_at': issued_at,
+            'received_at': received_at,
+            'author': author,
+        })
+
     @property
     def id(self) -> UUID:
+        'Id.'
         return cast('UUID', self._field('id'))
 
     @property
     def name(self) -> str:
+        'Name.'
         return cast('str', self._field('name'))
 
     @property
     def checksum(self) -> str:
+        'Content checksum identifying the evidence edition.'
         return cast('str', self._field('checksum'))
 
     @property
     def issued_at(self) -> Date | str | None:
+        'Issued at.'
         return cast('Date | str | None', self._field('issued_at'))
 
     @property
     def received_at(self) -> Date | str | None:
+        'Received at.'
         return cast('Date | str | None', self._field('received_at'))
 
     @property
     def author(self) -> str | None:
+        'Author.'
         return cast('str | None', self._field('author'))
 
 
 class Span(Period):
+    'Named extent, using the same half-open boundary convention as Period.'
     __slots__ = ()
     _kind = 'Span'
 
@@ -2206,20 +3413,36 @@ class Span(Period):
             'end': end,
         })
 
+    def replace(self, *,
+        name: str | None | Unset = UNSET,
+        start: Date | Unset = UNSET,
+        end: Date | Unset = UNSET,
+    ) -> Span:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'name': name,
+            'start': start,
+            'end': end,
+        })
+
     @property
     def name(self) -> str | None:
+        'Name.'
         return cast('str | None', self._field('name'))
 
     @property
     def start(self) -> Date:
+        'Start.'
         return cast('Date', self._field('start'))
 
     @property
     def end(self) -> Date:
+        'End.'
         return cast('Date', self._field('end'))
 
 
 class Specification(Record):
+    'An immutable contribution of investigation requirements, a composition of such contributions, or a batch of separate Specifications. A concrete composition investigates one pinned Model revision.'
     __slots__ = ()
     _kind = 'Specification'
 
@@ -2250,52 +3473,92 @@ class Specification(Record):
             'policy': policy,
         })
 
+    def replace(self, *,
+        metadata: Metadata | Unset = UNSET,
+        model: UUID | Unset = UNSET,
+        includes: tuple[UUID, ...] | None | Unset = UNSET,
+        cases: tuple[UUID, ...] | None | Unset = UNSET,
+        assignments: tuple[Assignment, ...] | None | Unset = UNSET,
+        unknowns: tuple[ValueReference, ...] | None | Unset = UNSET,
+        estimates: tuple[Assignment, ...] | None | Unset = UNSET,
+        formulations: tuple[Formulation, ...] | None | Unset = UNSET,
+        objectives: tuple[Objective, ...] | None | Unset = UNSET,
+        settings: Settings | Unset = UNSET,
+        policy: Policy | None | Unset = UNSET,
+    ) -> Specification:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'metadata': metadata,
+            'model': model,
+            'includes': includes,
+            'cases': cases,
+            'assignments': assignments,
+            'unknowns': unknowns,
+            'estimates': estimates,
+            'formulations': formulations,
+            'objectives': objectives,
+            'settings': settings,
+            'policy': policy,
+        })
+
     @property
     def metadata(self) -> Metadata:
+        'Identity and schema version of this Specification revision, with optional description and lineage.'
         return cast('Metadata', self._field('metadata'))
 
     @property
     def model(self) -> UUID | None:
+        "UUID of the exact input Model revision. Optional on a contribution; required after composing a concrete investigation. On a batch it only asserts every case's independently supplied input Model."
         return cast('UUID | None', self._field('model'))
 
     @property
     def includes(self) -> tuple[UUID, ...] | None:
+        'Unique Metadata UUIDs of Specification revisions contributing requirements to this investigation.'
         return cast('tuple[UUID, ...] | None', self._field('includes'))
 
     @property
     def cases(self) -> tuple[UUID, ...] | None:
+        'Unique Metadata UUIDs of separate Specifications in a batch, without implicit inheritance.'
         return cast('tuple[UUID, ...] | None', self._field('cases'))
 
     @property
     def assignments(self) -> tuple[Assignment, ...] | None:
+        'Explicit Quantities held fixed on their target Values for this investigation.'
         return cast('tuple[Assignment, ...] | None', self._field('assignments'))
 
     @property
     def unknowns(self) -> tuple[ValueReference, ...] | None:
+        'Unique scalar or Movement unknowns; explicit and disjoint from assignments and policy targets.'
         return cast('tuple[ValueReference, ...] | None', self._field('unknowns'))
 
     @property
     def estimates(self) -> tuple[Assignment, ...] | None:
+        'Initial numerical estimates for unknown Values, used to initialize a solve without fixing them.'
         return cast('tuple[Assignment, ...] | None', self._field('estimates'))
 
     @property
     def formulations(self) -> tuple[Formulation, ...] | None:
+        "Additional mathematical declarations and constraints owned by this Specification. Root codes are unique within this collection, independently of the Model's root Formulation codes."
         return cast('tuple[Formulation, ...] | None', self._field('formulations'))
 
     @property
     def objectives(self) -> tuple[Objective, ...] | None:
+        'Objectives in decreasing order of preference. Implementations may use this order for automatic selection; candidate exploration and final selection are implementation responsibilities.'
         return cast('tuple[Objective, ...] | None', self._field('objectives'))
 
     @property
     def settings(self) -> Settings | None:
+        'Optional numerical requests. Choices still unspecified after composition are left to the implementation; the Run records the effective settings.'
         return cast('Settings | None', self._field('settings'))
 
     @property
     def policy(self) -> Policy | None:
+        'Policy.'
         return cast('Policy | None', self._field('policy'))
 
 
 class Status(Record):
+    'Execution completion and mathematical conclusion, recorded independently.'
     __slots__ = ()
     _kind = 'Status'
 
@@ -2308,16 +3571,29 @@ class Status(Record):
             'solution': solution,
         })
 
+    def replace(self, *,
+        completion: CompletionStatus | Unset = UNSET,
+        solution: SolutionStatus | Unset = UNSET,
+    ) -> Status:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'completion': completion,
+            'solution': solution,
+        })
+
     @property
     def completion(self) -> CompletionStatus:
+        'How this attempt ended, or the aggregate completion of a batch.'
         return cast('CompletionStatus', self._field('completion'))
 
     @property
     def solution(self) -> SolutionStatus:
+        'Mathematical conclusion; batches use not_applicable.'
         return cast('SolutionStatus', self._field('solution'))
 
 
 class Step(Record):
+    'One ordered record of execution activity, without prescribing scheduling or policy logic.'
     __slots__ = ()
     _kind = 'Step'
 
@@ -2336,28 +3612,50 @@ class Step(Record):
             'target': target,
         })
 
+    def replace(self, *,
+        kind: StepKind | Unset = UNSET,
+        at: str | None | Unset = UNSET,
+        message: str | Unset = UNSET,
+        document: UUID | Unset = UNSET,
+        target: UUID | None | Unset = UNSET,
+    ) -> Step:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'kind': kind,
+            'at': at,
+            'message': message,
+            'document': document,
+            'target': target,
+        })
+
     @property
     def kind(self) -> StepKind:
+        'Kind of recorded execution activity.'
         return cast('StepKind', self._field('kind'))
 
     @property
     def at(self) -> str | None:
+        'Observed event instant with an explicit timezone.'
         return cast('str | None', self._field('at'))
 
     @property
     def message(self) -> str:
+        'What occurred and the basis for any selection.'
         return cast('str', self._field('message'))
 
     @property
     def document(self) -> UUID | None:
+        'Revision containing the referenced target, or the document addressed as a whole.'
         return cast('UUID | None', self._field('document'))
 
     @property
     def target(self) -> UUID | None:
+        'UUID of a canonical record in document; never an unqualified cross-revision reference.'
         return cast('UUID | None', self._field('target'))
 
 
 class System(Record):
+    'The Entities, Relationships, Assemblies, and mathematical formulations of a Model.'
     __slots__ = ()
     _kind = 'System'
 
@@ -2374,24 +3672,43 @@ class System(Record):
             'formulations': formulations,
         })
 
+    def replace(self, *,
+        entities: tuple[Entity, ...] | None | Unset = UNSET,
+        relationships: tuple[Relationship, ...] | None | Unset = UNSET,
+        assemblies: tuple[Assembly, ...] | None | Unset = UNSET,
+        formulations: tuple[Formulation, ...] | None | Unset = UNSET,
+    ) -> System:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'entities': entities,
+            'relationships': relationships,
+            'assemblies': assemblies,
+            'formulations': formulations,
+        })
+
     @property
     def entities(self) -> tuple[Entity, ...] | None:
+        'Canonical domain Entities, excluding Assemblies stored in their own collection.'
         return cast('tuple[Entity, ...] | None', self._field('entities'))
 
     @property
     def relationships(self) -> tuple[Relationship, ...] | None:
+        'Canonical directed connections between Entities, including Assemblies.'
         return cast('tuple[Relationship, ...] | None', self._field('relationships'))
 
     @property
     def assemblies(self) -> tuple[Assembly, ...] | None:
+        'Canonical Assemblies with UUID references to shared domain members.'
         return cast('tuple[Assembly, ...] | None', self._field('assemblies'))
 
     @property
     def formulations(self) -> tuple[Formulation, ...] | None:
+        'Canonical root Formulations containing governing mathematical declarations and constraints.'
         return cast('tuple[Formulation, ...] | None', self._field('formulations'))
 
 
 class Taxonomy(Record):
+    'A named, single-root hierarchy of Classifications.'
     __slots__ = ()
     _kind = 'Taxonomy'
 
@@ -2410,28 +3727,50 @@ class Taxonomy(Record):
             'classifications': classifications,
         })
 
+    def replace(self, *,
+        id: UUID | Unset = UNSET,
+        code: str | Unset = UNSET,
+        name: str | Unset = UNSET,
+        definition: str | None | Unset = UNSET,
+        classifications: tuple[Classification, ...] | Unset = UNSET,
+    ) -> Taxonomy:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'id': id,
+            'code': code,
+            'name': name,
+            'definition': definition,
+            'classifications': classifications,
+        })
+
     @property
     def id(self) -> UUID:
+        'Id.'
         return cast('UUID', self._field('id'))
 
     @property
     def code(self) -> str:
+        "Case-sensitive code unique in the Model's taxonomy catalogue."
         return cast('str', self._field('code'))
 
     @property
     def name(self) -> str:
+        'Name.'
         return cast('str', self._field('name'))
 
     @property
     def definition(self) -> str | None:
+        'Definition.'
         return cast('str | None', self._field('definition'))
 
     @property
     def classifications(self) -> tuple[Classification, ...]:
+        'Identified Classifications belonging to this Taxonomy; codes are unique within the collection.'
         return cast('tuple[Classification, ...]', self._field('classifications'))
 
 
 class Traversal(Record):
+    'One traversal step over domain Relationships or Assembly membership.'
     __slots__ = ()
     _kind = 'Traversal'
 
@@ -2448,24 +3787,43 @@ class Traversal(Record):
             'direction': direction,
         })
 
+    def replace(self, *,
+        kind: TraversalKind | Unset = UNSET,
+        depth: Depth | Unset = UNSET,
+        classification: UUID | Unset = UNSET,
+        direction: Direction | Unset = UNSET,
+    ) -> Traversal:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'kind': kind,
+            'depth': depth,
+            'classification': classification,
+            'direction': direction,
+        })
+
     @property
     def kind(self) -> TraversalKind:
+        'Kind.'
         return cast('TraversalKind', self._field('kind'))
 
     @property
     def depth(self) -> Depth:
+        'Depth.'
         return cast('Depth', self._field('depth'))
 
     @property
     def classification(self) -> UUID | None:
+        'Exact Classification of Relationships to follow.'
         return cast('UUID | None', self._field('classification'))
 
     @property
     def direction(self) -> Direction | None:
+        'Direction.'
         return cast('Direction | None', self._field('direction'))
 
 
 class Value(Record):
+    "An identified, typed Value belonging to an Entity or Relationship's Characteristics, or declared locally within a mathematical Formulation. Its key provides a name within the owner's values collection; its UUID identifies the symbol independently of that name."
     __slots__ = ()
     _kind = 'Value'
 
@@ -2490,40 +3848,71 @@ class Value(Record):
             'content': content,
         })
 
+    def replace(self, *,
+        measure: UUID | None | Unset = UNSET,
+        quantity: Quantity | None | Unset = UNSET,
+        id: UUID | Unset = UNSET,
+        key: str | Unset = UNSET,
+        kind: ValueKind | Unset = UNSET,
+        description: str | None | Unset = UNSET,
+        flow: Flow | None | Unset = UNSET,
+        content: PropertyContent | None | Unset = UNSET,
+    ) -> Value:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'measure': measure,
+            'quantity': quantity,
+            'id': id,
+            'key': key,
+            'kind': kind,
+            'description': description,
+            'flow': flow,
+            'content': content,
+        })
+
     @property
     def measure(self) -> UUID | None:
+        'Measure defining meaning and canonical units, referenced by its stable UUID.'
         return cast('UUID | None', self._field('measure'))
 
     @property
     def quantity(self) -> Quantity | None:
+        "Optional recorded numerical content. Its units must be compatible with the Measure's canonical units. Omission or null denotes unresolved content."
         return cast('Quantity | None', self._field('quantity'))
 
     @property
     def id(self) -> UUID:
+        'Stable identity of the Value, used by provenance Facts.'
         return cast('UUID', self._field('id'))
 
     @property
     def key(self) -> str:
+        "Nonblank name unique within the owner's values collection; not reference identity."
         return cast('str', self._field('key'))
 
     @property
     def kind(self) -> ValueKind:
+        'The kind of content represented by this characteristic.'
         return cast('ValueKind', self._field('kind'))
 
     @property
     def description(self) -> str | None:
+        'Explanation of the meaning of this Value within its owner.'
         return cast('str | None', self._field('description'))
 
     @property
     def flow(self) -> Flow | None:
+        'Flow.'
         return cast('Flow | None', self._field('flow'))
 
     @property
     def content(self) -> PropertyContent | None:
+        'Content.'
         return cast('PropertyContent | None', self._field('content'))
 
 
 class ValueReference(Record):
+    'A Value UUID and optional stable owner-local Movement key. Scope comes from the containing Model or composed Specification; positions are never identities.'
     __slots__ = ()
     _kind = 'ValueReference'
 
@@ -2536,12 +3925,24 @@ class ValueReference(Record):
             'movement': movement,
         })
 
+    def replace(self, *,
+        value: UUID | Unset = UNSET,
+        movement: str | None | Unset = UNSET,
+    ) -> ValueReference:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'value': value,
+            'movement': movement,
+        })
+
     @property
     def value(self) -> UUID:
+        'Value.'
         return cast('UUID', self._field('value'))
 
     @property
     def movement(self) -> str | None:
+        'Movement.'
         return cast('str | None', self._field('movement'))
 
 

@@ -5,7 +5,7 @@ The [accepted LinkML decision](../current-schema-comparison/DECISION.md) and
 [current library plan](../../LIBRARY_ARCHITECTURE.md) govern continuation; rerunning
 or extending this study is not a prerequisite for the next implementation stage.
 
-Companion evidence for [the schema tooling review](../../SCHEMA_TOOLING_EVALUATION.md),
+Companion evidence for [the schema tooling review](../../history/SCHEMA_TOOLING_EVALUATION.md),
 run on 2026-09-24. These files describe a synthetic test vocabulary. They are not
 an adopted RK schema, numerical engine, or production dependency configuration.
 
