@@ -1,35 +1,39 @@
-# Synthetic Specification; no execution or output Model is asserted.
+# Synthetic conformance fixture; no runtime execution is claimed.
 metadata:
-  id: cb42759d-cde3-5003-be43-b62d4d3f6cae
-  schema_version: 0.4.0
+  id: 6ec2799f-e2d4-5844-b839-e24287b8cea4
+  schema_version: 0.5.0
   name: Value and rent preferences
-  description: Prefer higher capital value, then lower rent per dwelling. An implementation may present
-    trade-offs for user choice or select automatically using this preference order. No selection workflow
-    or solution is asserted by this document.
-  previous: d43051ac-fb7e-54d7-8038-8f71adc336ff
-model: 396b03f6-1ebb-59f4-b520-231242ffd645
+  description: Prefer higher capital value, then lower rent per dwelling. An implementation may present trade-offs
+    for user choice or select automatically using this preference order. No selection workflow or solution is asserted
+    by this document.
+  previous: cb42759d-cde3-5003-be43-b62d4d3f6cae
+model: e9096132-8158-56db-bc3e-b64ef7f92d4e
 assignments:
-- value: 194afc26-3e2e-507b-ad0c-a73a4b0b2ccd
-  quantity:
+- quantity:
     magnitude: 20
     units: dwelling
-- value: cbe37d0a-79ce-5d1b-b0cb-8d2a42acc991
-  quantity:
+  target:
+    value: 194afc26-3e2e-507b-ad0c-a73a4b0b2ccd
+- quantity:
     magnitude: 50000
     units: AUD/year
-- value: 0ceeb0d5-91b7-53b7-b823-2234e2262a4f
-  quantity:
+  target:
+    value: cbe37d0a-79ce-5d1b-b0cb-8d2a42acc991
+- quantity:
     magnitude: 0.05
     units: 1/year
+  target:
+    value: 0ceeb0d5-91b7-53b7-b823-2234e2262a4f
 unknowns:
-- e3fb1434-5371-5bcb-b0b8-e3af2bf65022
-- 9324f928-cfc8-50bb-ba99-fe8c02a6dbd2
-- a947d40b-d9b0-54cb-a2a4-f8f598405ac2
-estimates:
 - value: e3fb1434-5371-5bcb-b0b8-e3af2bf65022
-  quantity:
+- value: 9324f928-cfc8-50bb-ba99-fe8c02a6dbd2
+- value: a947d40b-d9b0-54cb-a2a4-f8f598405ac2
+estimates:
+- quantity:
     magnitude: 30000
     units: AUD/dwelling/year
+  target:
+    value: e3fb1434-5371-5bcb-b0b8-e3af2bf65022
 formulations:
 - id: 144ccde3-7a7c-52a3-897b-c677994c8d3e
   code: rent_limit
@@ -41,7 +45,8 @@ formulations:
     operands:
     - id: 4528ebfc-83d4-5f85-8673-5abd6f25c93c
       kind: reference
-      target: e3fb1434-5371-5bcb-b0b8-e3af2bf65022
+      target:
+        value: e3fb1434-5371-5bcb-b0b8-e3af2bf65022
     - id: 1dc1a89d-3890-5f33-8ea9-85b0174a7ff5
       kind: quantity
       quantity:
@@ -49,7 +54,8 @@ formulations:
         units: AUD/dwelling/year
   - id: 8dce4beb-6a16-58d9-95ef-554ac2b1eb1f
     kind: reference
-    target: a947d40b-d9b0-54cb-a2a4-f8f598405ac2
+    target:
+      value: a947d40b-d9b0-54cb-a2a4-f8f598405ac2
   constraints:
   - id: 0908c386-c2f4-560f-b8a3-5a812e313120
     code: ceiling

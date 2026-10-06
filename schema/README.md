@@ -1,5 +1,16 @@
 # Rangekeeper schema: purpose, object model, and current draft
 
+**Turn 2 extension, 2026-10-06:** Model/Specification **0.5.0** and Run **0.2.0**
+add shared `ValueReference(value, movement?)` roles, captured scenario records,
+finite declarative policies and scoped Movement diagnostics. `Expression.target`,
+`Assignment.target`, unknowns and estimates share the reference shape. Generated
+records remain authoritative. See the [Turn 2 contract](../docs/FULL_MIGRATION_TURN2.md)
+and [verification](../docs/research/full-migration/turn2/README.md). Earlier dated
+paragraphs describe previous checkpoints; historical Runs are not rewritten.
+The private stock LinkML loader has a terminal-Action limitation in the additional
+[new-document probe](../docs/research/full-migration/turn2/final-notebooks/native-boundary.json);
+the generated immutable production records and codecs round-trip all ten documents.
+
 **Movement naming, 2026-10-06:** `flow.yaml` defines `Movement` and ordered
 `Flow.movements`. They replace the unreleased `FlowSample`/`samples` names without
 aliases. Entry fields and behavior remain unchanged. See the
@@ -20,7 +31,7 @@ payment/observation fact; it need not lie within the Period. There is no TimePoi
 or intraday Flow coordinate. See the [contract](../docs/FULL_MIGRATION_TURN1.md)
 and [verification](../docs/research/full-migration/date-only/README.md).
 
-**Current extension (2026-10-04):** Model 0.4.0 imports `duration.yaml`,
+**Turn 1 extension (2026-10-04):** Model 0.4.0 imports `duration.yaml`,
 `flow.yaml` and `content.yaml` through Characteristics. Values now support
 measurement, flow and property content. See [Turn 1 contracts](../docs/FULL_MIGRATION_TURN1.md)
 and the [upgrade guide](../docs/LEGACY_UPGRADE_GUIDE.md). The original scalar
@@ -42,6 +53,15 @@ graph meaning. Canonical Model/Specification/Run codecs and immutable revision s
 are now implemented: see [Run and storage](../docs/RUN_AND_STORAGE.md).
 [Affine scalar execution](../docs/SCALAR_EXECUTION.md) is also implemented.
 Legacy consumer format migration and richer calculation capabilities remain pending.
+
+## Shared scenario vocabulary
+
+`distribution.yaml` defines the generated Distribution record. `binding.yaml`
+defines the shared local-name-to-Value contract used by both Formulations and
+scenario realizations. `scenario.yaml` uses RandomStream for random-sequence
+identity. Public market access and explicit v1-to-v2 method upgrades are described
+in [RK naming](../docs/RK_NAMING.md). These are draft API and method-vocabulary
+changes; historical Runs are not rewritten.
 
 ## Schema, project definitions, and project objects
 
@@ -553,7 +573,7 @@ operator: equal
 operands:
 - id: c989e7fa-e363-48c0-907c-e4cc8b5a6935
   kind: reference
-  target: a947d40b-d9b0-54cb-a2a4-f8f598405ac2
+  target: {value: a947d40b-d9b0-54cb-a2a4-f8f598405ac2}
 - id: 8a82e02f-9fdd-4ff7-a68e-387a6279ed32
   kind: quantity
   quantity:
@@ -769,7 +789,7 @@ example envelopes remain isolated component fixtures, not alternative Model form
 
 ## Specifications
 
-[specification.yaml](specification.yaml), draft `0.4.0`, defines immutable investigation
+[specification.yaml](specification.yaml), draft `0.5.0`, defines immutable investigation
 requirements, their additive composition, and explicit batches:
 
 `Specification` replaces the former `Problem` name. It declares the question and
@@ -779,7 +799,9 @@ than another schema container. Draft `0.3.0` renames the root class and schema
 namespace without changing field semantics. The four examples have new revision
 UUIDs and retained their preceding `0.2.0` revision references. Draft `0.4.0` adds
 composition; the current standalone examples have new UUIDs with their `0.3.0`
-revisions as predecessors.
+revisions as predecessors. Turn 2 adds shared scalar/Movement targets and one
+finite policy contribution; current fixtures have fresh revision UUIDs recorded
+in the [fixture mapping](../docs/research/full-migration/turn2/fixture-revisions.json).
 
 ```text
 Specification
@@ -788,27 +810,34 @@ Specification
   includes[]: Metadata UUID            Specification contributions to one investigation
   cases[]: Metadata UUID               separate Specifications in a batch
   assignments[]: Assignment            amounts to enforce
-  unknowns[]: Value UUID               amounts that may vary
+  unknowns[]: ValueReference           scalar/Movement amounts that may vary
   estimates[]: Assignment              starting estimates for unknowns
   formulations[]: Formulation          additional mathematics for this investigation
   objectives[]: Objective              decreasing order of preference
     expression: Expression UUID
     sense: minimize | maximize
+  policy?: Policy                     one finite controlled-role contribution
   settings?: Settings
+    symbol_limit?: integer
+    constraint_limit?: integer
     relative_tolerance?: decimal
     iteration_limit?: integer
     time_limit?: decimal               seconds
 
-Assignment
+ValueReference
   value: Value UUID
+  movement?: string                   owner-local Movement key
+
+Assignment
+  target: ValueReference
   quantity: Quantity
 ```
 
 Only `metadata` is structurally required. A partial contribution may omit its Model
 and solve roles. A concrete composition must resolve exactly one Model revision.
-Every Value needed by
-imposed Constraints or any objective must nevertheless have an explicit assignment
-or unknown role. This includes intermediate quantities; unrelated Values need no
+Every scalar or Movement needed by
+imposed Constraints or any objective must have an explicit assignment, unknown,
+or policy-controlled role. This includes intermediate quantities; unrelated Values need no
 role. Unknowns may be underdetermined: role completeness is not a uniqueness test.
 An effective composition with no objectives requests an equation/feasibility investigation. Forward and
 inverse investigations differ in their roles, not in a mode flag or rewritten equations.
@@ -824,7 +853,7 @@ Composition has no override precedence:
 
 - One contributor supplies each assignment target, unknown role, estimate target,
   and individual setting. Independently repeated requirements are errors, even if
-  identical. Assignment and unknown roles cannot overlap. Estimates and their
+  identical. Assignment, unknown and policy-controlled roles cannot overlap. Estimates and their
   unknown roles may come from different contributors.
 - One contributor supplies the whole nonempty ordered objectives list. Omission
   and empty collections contribute nothing; `objectives: []` cannot cancel an
@@ -940,7 +969,7 @@ records, not evidence that execution occurred.
 
 ## Runs
 
-[run.yaml](run.yaml), draft `0.1.0`, records a finalized execution attempt:
+[run.yaml](run.yaml), draft `0.2.0`, records a finalized execution attempt:
 
 ```text
 Run
@@ -960,12 +989,14 @@ Run
         name: string
         version: string
       settings?: Settings
+    decisions[]: Decision             evaluated policy observations/actions
     diagnostics[]: Diagnostic
       severity: info | warning | error
       code: Code
       message: string
       document?: Metadata UUID
       target?: UUID
+      references[]: ScopedValueReference
       residual?: Quantity
       tolerance?: Quantity
     trace[]: Step                       ordered

@@ -7,7 +7,8 @@ import math
 from ..model.flow import Flow, from_periods
 from ..model.duration import Period
 from ..model.measure import Quantity
-from .distribution import Distribution
+from ..model.distribution import Distribution, make_uniform
+from .distribution import calculate_interval_mass
 
 
 def project_values(
@@ -106,7 +107,7 @@ def allocate(
     if not periods or weights is not None and distribution is not None:
         raise ValueError("allocation needs periods and at most one weight source")
     if weights is None:
-        distribution = distribution or Distribution.uniform()
+        distribution = distribution or make_uniform()
         bounds = [
             distribution.lower
             + (distribution.upper - distribution.lower) * i / len(periods)
@@ -115,7 +116,7 @@ def allocate(
         if distribution.lower == distribution.upper:
             weights = (1.0,) + (0.0,) * (len(periods) - 1)
         else:
-            weights = distribution.interval_mass(bounds)
+            weights = calculate_interval_mass(distribution, bounds)
     if (
         len(weights) != len(periods)
         or any(not math.isfinite(w) or w < 0 for w in weights)

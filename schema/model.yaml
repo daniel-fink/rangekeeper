@@ -1,9 +1,9 @@
 id: https://daniel-fink.github.io/rangekeeper/schema/model
 name: rangekeeper_model
 title: Rangekeeper Model
-version: 0.4.0
-description: An immutable revision containing metadata, reusable definitions, a represented system,
-  and provenance for its recorded content.
+version: 0.5.0
+description: An immutable revision containing metadata, reusable definitions, a represented system, and
+  provenance for its recorded content.
 prefixes:
   linkml: https://w3id.org/linkml/
   rk: https://daniel-fink.github.io/rangekeeper/schema/
@@ -16,22 +16,22 @@ default_range: string
 classes:
   Model:
     tree_root: true
-    description: A self-contained snapshot of a system's declarations, mathematical formulations,
-      and recorded content, identified by its Metadata.
+    description: A self-contained snapshot of a system's declarations, mathematical formulations, and
+      recorded content, identified by its Metadata.
     notes:
-    - Metadata.id identifies this Model revision. Model has no second identifier slot; native LinkML
-      revision references target the identified Metadata record. Metadata and System do not create
-      additional domain or mathematical reference scopes.
+    - Metadata.id identifies this Model revision. Model has no second identifier slot; native LinkML revision
+      references target the identified Metadata record. Metadata and System do not create additional domain
+      or mathematical reference scopes.
     - Every identified record has one canonical occurrence within the snapshot, including nested records.
       Domain and mathematical UUID references resolve within this Model. Previous-revision references
       and external evidence artifacts are exceptions; history is not needed to interpret current content.
-    - Changing snapshot content requires a new Metadata.id. Declarations that retain their identity
-      across revisions retain their UUIDs. Immutability and revision history require implementation
-      enforcement; record validation alone cannot establish them.
+    - Changing snapshot content requires a new Metadata.id. Declarations that retain their identity across
+      revisions retain their UUIDs. Immutability and revision history require implementation enforcement;
+      record validation alone cannot establish them.
     - Unresolved Values are valid. Recorded content does not fix a Value in a subsequent Specification.
       Loading or validating a Model does not evaluate expressions, assert solver success, or execute policies.
-    - Definitions, System, and Provenance may be absent when empty. Collections are unordered except
-      where their child schemas explicitly preserve mathematical order.
+    - Definitions, System, and Provenance may be absent when empty. Collections are unordered except where
+      their child schemas explicitly preserve mathematical order.
     - All Constraints in System.formulations and their descendant Formulations form the Model's governing
       mathematics. Expressions do not assert themselves. Specification-specific constraints, solve roles,
       objectives, policies, and execution settings remain outside this snapshot contract.
@@ -74,8 +74,8 @@ classes:
       duplicate it in entities. Entity codes are unique across entities and assemblies when supplied.
     - formulations contains explicit Formulation instances. The name describes the mathematical relationships
       they impose, without assigning a solving direction. Reusable templates and instantiation are deferred.
-    - Root Formulation codes are unique within formulations. Child Formulation codes and other local names retain
-      the scopes specified by Formulation. Nested children continue to use Formulation.formulations.
+    - Root Formulation codes are unique within formulations. Child Formulation codes and other local names
+      retain the scopes specified by Formulation. Nested children continue to use Formulation.formulations.
     attributes:
       entities:
         description: Canonical domain Entities, excluding Assemblies stored in their own collection.

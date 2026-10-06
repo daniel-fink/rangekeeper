@@ -1,0 +1,38 @@
+Traceback (most recent call last):
+  File "/Volumes/Data/Projects/Rangekeeper/docs/research/full-migration/turn2/verify_new_native.py", line 38, in <module>
+    record = json_loader.loads(json.dumps(data), target_class=getattr(native, kind))
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/linkml_runtime/loaders/loader_root.py", line 137, in loads
+    return self.load(source, target_class, metadata=metadata)
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/linkml_runtime/loaders/loader_root.py", line 82, in load
+    results = self.load_any(*args, **kwargs)
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/linkml_runtime/loaders/json_loader.py", line 65, in load_any
+    return self._construct_target_class(data_as_dict, target_class)
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/linkml_runtime/loaders/loader_root.py", line 153, in _construct_target_class
+    return target_class(**data_as_dict)
+  File "<string>", line 14, in __init__
+  File "/Volumes/Data/Projects/Rangekeeper/src/rangekeeper/_schema/native.py", line 301, in __post_init__
+    self.policy = Policy(**as_dict(self.policy))
+  File "<string>", line 6, in __init__
+  File "/Volumes/Data/Projects/Rangekeeper/src/rangekeeper/_schema/native.py", line 1310, in __post_init__
+    self._normalize_inlined_as_list(slot_name="points", slot_type=DecisionPoint, key_name="id", keyed=True)
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/linkml_runtime/utils/yamlutils.py", line 106, in _normalize_inlined_as_list
+    self._normalize_inlined(slot_name, slot_type, key_name, keyed, True)
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/linkml_runtime/utils/yamlutils.py", line 202, in _normalize_inlined
+    cooked_obj = slot_type(**as_dict(list_entry))
+  File "<string>", line 8, in __init__
+  File "/Volumes/Data/Projects/Rangekeeper/src/rangekeeper/_schema/native.py", line 1271, in __post_init__
+    self._normalize_inlined_as_list(slot_name="rules", slot_type=Rule, key_name="id", keyed=True)
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/linkml_runtime/utils/yamlutils.py", line 106, in _normalize_inlined_as_list
+    self._normalize_inlined(slot_name, slot_type, key_name, keyed, True)
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/linkml_runtime/utils/yamlutils.py", line 202, in _normalize_inlined
+    cooked_obj = slot_type(**as_dict(list_entry))
+  File "<string>", line 6, in __init__
+  File "/Volumes/Data/Projects/Rangekeeper/src/rangekeeper/_schema/native.py", line 1231, in __post_init__
+    self._normalize_inlined_as_list(slot_name="actions", slot_type=Action, key_name="kind", keyed=False)
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/linkml_runtime/utils/yamlutils.py", line 106, in _normalize_inlined_as_list
+    self._normalize_inlined(slot_name, slot_type, key_name, keyed, True)
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/linkml_runtime/utils/yamlutils.py", line 190, in _normalize_inlined
+    order_up(lev, slot_type(**{key_name: lev}))
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/linkml_runtime/utils/yamlutils.py", line 142, in order_up
+    raise ValueError(
+ValueError: Slot: actions - attribute kind value (terminate) does not match key (terminate)

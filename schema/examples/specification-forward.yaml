@@ -1,32 +1,36 @@
-# Synthetic Specification; no execution or output Model is asserted.
+# Synthetic conformance fixture; no runtime execution is claimed.
 metadata:
-  id: a7e90723-6bbc-5d2c-8f1e-d6bc28062658
-  schema_version: 0.4.0
+  id: 2660b5a4-1780-5a59-8aac-b838299d632d
+  schema_version: 0.5.0
   name: Forward valuation
-  description: 'Determine NOI and capital value from supplied operating assumptions. Expected arithmetic:
-    NOI 550000 AUD/year and value 11000000 AUD. No solver has been run.'
-  previous: de0f4ee5-14b6-539f-98ff-1d6164c0fdf7
-model: 396b03f6-1ebb-59f4-b520-231242ffd645
+  description: 'Determine NOI and capital value from supplied operating assumptions. Expected arithmetic: NOI 550000
+    AUD/year and value 11000000 AUD. No solver has been run.'
+  previous: a7e90723-6bbc-5d2c-8f1e-d6bc28062658
+model: e9096132-8158-56db-bc3e-b64ef7f92d4e
 assignments:
-- value: 194afc26-3e2e-507b-ad0c-a73a4b0b2ccd
-  quantity:
+- quantity:
     magnitude: 20
     units: dwelling
-- value: e3fb1434-5371-5bcb-b0b8-e3af2bf65022
-  quantity:
+  target:
+    value: 194afc26-3e2e-507b-ad0c-a73a4b0b2ccd
+- quantity:
     magnitude: 30000
     units: AUD/dwelling/year
-- value: cbe37d0a-79ce-5d1b-b0cb-8d2a42acc991
-  quantity:
+  target:
+    value: e3fb1434-5371-5bcb-b0b8-e3af2bf65022
+- quantity:
     magnitude: 50000
     units: AUD/year
-- value: 0ceeb0d5-91b7-53b7-b823-2234e2262a4f
-  quantity:
+  target:
+    value: cbe37d0a-79ce-5d1b-b0cb-8d2a42acc991
+- quantity:
     magnitude: 0.05
     units: 1/year
+  target:
+    value: 0ceeb0d5-91b7-53b7-b823-2234e2262a4f
 unknowns:
-- 9324f928-cfc8-50bb-ba99-fe8c02a6dbd2
-- a947d40b-d9b0-54cb-a2a4-f8f598405ac2
+- value: 9324f928-cfc8-50bb-ba99-fe8c02a6dbd2
+- value: a947d40b-d9b0-54cb-a2a4-f8f598405ac2
 settings:
   relative_tolerance: 1.0e-08
   iteration_limit: 100

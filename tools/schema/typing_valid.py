@@ -29,7 +29,7 @@ value = Value(
     quantity=Quantity(magnitude=0, units="AUD/year"),
 )
 traits = Characteristics(values=(value,))
-model = Model(metadata=Metadata(id=uuid4(), schema_version="0.4.0"))
+model = Model(metadata=Metadata(id=uuid4(), schema_version="0.5.0"))
 identity: UUID = model.metadata.id
 claim = Claim(
     id=uuid4(),

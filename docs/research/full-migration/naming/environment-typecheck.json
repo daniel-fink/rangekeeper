@@ -1,0 +1,22 @@
+{
+  "python": "/private/tmp/rk-full-runtime/bin/python",
+  "version": "3.10.19",
+  "rk": "/Volumes/Data/Projects/Rangekeeper/src/rangekeeper/__init__.py",
+  "packages": {
+    "linkml": null,
+    "linkml-runtime": null,
+    "jsonschema": "4.26.0",
+    "PyYAML": "6.0.3",
+    "numpy": "2.2.6",
+    "scipy": "1.15.3",
+    "pint": "0.24.4",
+    "polars": "1.44.2",
+    "pandas": "2.3.2",
+    "pyomo": "6.10.1",
+    "highspy": "1.15.1",
+    "pyxirr": "0.10.7",
+    "nbformat": "5.11.1",
+    "nbclient": "0.11.0",
+    "mypy": "1.18.2"
+  }
+}

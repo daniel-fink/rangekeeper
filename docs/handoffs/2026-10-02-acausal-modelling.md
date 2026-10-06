@@ -1,5 +1,35 @@
 # Rangekeeper acausal modelling handoff
 
+**Naming follow-up, 2026-10-06:** [RK vocabulary alignment](../RK_NAMING.md) is implemented.
+The current check is 971 passing local tests, all seven schema suites, static
+and installed-package checks, and five executed walkthroughs. This supersedes
+older counts below. Market methods use v2 names with an explicit draft upgrade.
+These are the acceptance results for the Turn 2 and naming checkpoint.
+
+**Turn 2 update, 2026-10-06:** [Temporal equations, scenarios and policies](../FULL_MIGRATION_TURN2.md)
+now use Model/Specification 0.5.0 and Run 0.2.0. `ValueReference` addresses scalar
+Values or owner-local Movement keys. The canonical calendar package is `duration/`;
+`temporal` has no public alias. Finite Flow formulations, captured scenario replay,
+exogenous declarative policies and the four numerical walkthroughs are implemented.
+See [verification](../research/full-migration/turn2/README.md) and the
+[upgrade guide](../LEGACY_UPGRADE_GUIDE.md). Turn 3 completes remaining consumers and
+integrations; Turn 4 retires obsolete code after their acceptance gates.
+The dated checkpoint descriptions below remain historical context.
+
+Turn 2 final acceptance: **967 local tests passed**, seven schema suites,
+generation, typing, installed package, all five numerical notebooks, and the
+upgrade-guide examples. Installed temporal outputs are PV `3000/11` and inverse
+initial amount `110`; decision evidence is retained. The additional stock-native
+loader probe is 9/10 due to terminal Action normalization; the production immutable
+boundary is 10/10. See the evidence report for that bounded tooling limitation.
+
+This checkpoint follows `7b8dcd4`. Preserve the unrelated `.gitignore` edit and the Syncthing
+lock conflict copy. The Turn 2 evidence directory contains starting fingerprints,
+namespace-gate checks, intermediate results and final acceptance. Do not rerun old
+research to infer current results. The 2,000-scenario setting remains available;
+routine notebook acceptance uses four declared scenarios. External-service proof
+and full legacy removal remain separate work.
+
 **Movement naming, 2026-10-06:** the current API uses `Movement` and
 `Flow.movements`. See the [naming contract](../FULL_MIGRATION_TURN1.md#movement-naming)
 for the Python/wire-format change and upgrade requirements.
@@ -13,6 +43,18 @@ and [verification](../research/full-migration/flow-semantics/README.md).
 Prepared 2026-10-02 for continuation on Daniel's Mac Studio.
 
 ## Resume here
+
+Continue with **Turn 3: remaining consumers and integrations**. Turn 2 and the
+RK naming alignment are complete, with 971 passing local tests and the acceptance
+evidence linked above. Port the remaining service/design notebooks and available
+external consumers, then verify them in their required environments. Keep old
+implementations until those consumer gates pass; Turn 4 owns their removal.
+See [consumer migration](../CONSUMER_MIGRATION.md) and the
+[full migration review](../FULL_MIGRATION_REVIEW.md) for the remaining scope.
+
+The dated entries below describe earlier checkpoints, not the current work queue.
+
+## Earlier checkpoints
 
 **Full migration update, 2026-10-04:** [Turn 1 foundations](../FULL_MIGRATION_TURN1.md)
 implements Model 0.4.0 rich properties and Flow Values, `model.duration`,
@@ -348,3 +390,7 @@ does not add publication authorization. No agents have been delegated work.
 > bounded slices with acceptance checks before retiring old domain code.
 > Preserve genuine forward/inverse execution, independent acceptance and batch accounting.
 > Do not reopen native CUE research or create a temporary `schema/execution/` core.
+
+## Market and scenario naming
+
+See the [RK naming update](../RK_NAMING.md) for the typed Market view, shared Distribution and Binding records, RandomStream, DecisionHistory, component constructors and explicit scenario draft upgrades.

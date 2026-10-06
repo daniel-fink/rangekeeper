@@ -3,6 +3,7 @@ from __future__ import annotations
 import pandas as pd
 
 import rangekeeper as rk
+from rangekeeper import _legacy_duration as legacy_duration
 
 
 class Noise:
@@ -30,5 +31,5 @@ class Noise:
         return rk.flux.Flow(
             movements=pd.Series(
                 data=self.noise_dist.sample(size=self.sequence.size),
-                index=rk.duration.Sequence.to_datestamps(sequence=self.sequence)),
+                index=legacy_duration.Sequence.to_datestamps(sequence=self.sequence)),
             name='Noise')

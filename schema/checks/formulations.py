@@ -297,7 +297,7 @@ case(
 case(
     "unknown Value reference",
     lambda d, b: b["formulations"][0]["expressions"][0]["operands"][0].update(
-        target=b["id"]
+        target=dict(value=b["id"])
     ),
 )
 case(

@@ -52,7 +52,7 @@ from rdflib import (
     URIRef
 )
 
-from linkml_runtime.linkml_model.types import Boolean, Date, Datetime, Decimal, Integer, String
+from linkml_runtime.linkml_model.types import Boolean, Date, Datetime, Decimal, Double, Integer, String
 from linkml_runtime.utils.metamodelcore import Bool, Decimal, XSDDate, XSDDateTime
 
 metamodel_version = "1.11.0"
@@ -103,6 +103,18 @@ class MetadataId(UUID):
     pass
 
 
+class RuleId(UUID):
+    pass
+
+
+class DecisionPointId(UUID):
+    pass
+
+
+class PolicyId(UUID):
+    pass
+
+
 class MeasureId(UUID):
     pass
 
@@ -127,6 +139,22 @@ class ConstraintId(UUID):
     pass
 
 
+class ScenarioPlanId(UUID):
+    pass
+
+
+class ScenarioRealizationId(UUID):
+    pass
+
+
+class LabelId(UUID):
+    pass
+
+
+class ValueId(UUID):
+    pass
+
+
 class ExpressionId(UUID):
     pass
 
@@ -140,14 +168,6 @@ class EntityId(UUID):
 
 
 class AssemblyId(EntityId):
-    pass
-
-
-class LabelId(UUID):
-    pass
-
-
-class ValueId(UUID):
     pass
 
 
@@ -234,11 +254,12 @@ class Specification(YAMLRoot):
     includes: Optional[Union[Union[str, MetadataId], list[Union[str, MetadataId]]]] = empty_list()
     cases: Optional[Union[Union[str, MetadataId], list[Union[str, MetadataId]]]] = empty_list()
     assignments: Optional[Union[Union[dict, "Assignment"], list[Union[dict, "Assignment"]]]] = empty_list()
-    unknowns: Optional[Union[Union[str, ValueId], list[Union[str, ValueId]]]] = empty_list()
+    unknowns: Optional[Union[Union[dict, "ValueReference"], list[Union[dict, "ValueReference"]]]] = empty_list()
     estimates: Optional[Union[Union[dict, "Assignment"], list[Union[dict, "Assignment"]]]] = empty_list()
     formulations: Optional[Union[dict[Union[str, FormulationId], Union[dict, "Formulation"]], list[Union[dict, "Formulation"]]]] = empty_dict()
     objectives: Optional[Union[Union[dict, "Objective"], list[Union[dict, "Objective"]]]] = empty_list()
     settings: Optional[Union[dict, "Settings"]] = None
+    policy: Optional[Union[dict, "Policy"]] = None
 
     def __post_init__(self, *_: str, **kwargs: Any):
         if self._is_empty(self.metadata):
@@ -263,7 +284,7 @@ class Specification(YAMLRoot):
 
         if not isinstance(self.unknowns, list):
             self.unknowns = [self.unknowns] if self.unknowns is not None else []
-        self.unknowns = [v if isinstance(v, ValueId) else ValueId(v) for v in self.unknowns]
+        self.unknowns = [v if isinstance(v, ValueReference) else ValueReference(**as_dict(v)) for v in self.unknowns]
 
         if not isinstance(self.estimates, list):
             self.estimates = [self.estimates] if self.estimates is not None else []
@@ -276,34 +297,8 @@ class Specification(YAMLRoot):
         if self.settings is not None and not isinstance(self.settings, Settings):
             self.settings = Settings(**as_dict(self.settings))
 
-        super().__post_init__(**kwargs)
-
-
-@dataclass(repr=False)
-class Assignment(YAMLRoot):
-    """
-    Embedded association of a numerical Value reference with a supplied Quantity.
-    """
-    _inherited_slots: ClassVar[list[str]] = []
-
-    class_class_uri: ClassVar[URIRef] = RK["Assignment"]
-    class_class_curie: ClassVar[str] = "rk:Assignment"
-    class_name: ClassVar[str] = "Assignment"
-    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Assignment")
-
-    value: Union[str, ValueId] = None
-    quantity: Union[dict, "Quantity"] = None
-
-    def __post_init__(self, *_: str, **kwargs: Any):
-        if self._is_empty(self.value):
-            self.MissingRequiredField("value")
-        if not isinstance(self.value, ValueId):
-            self.value = ValueId(self.value)
-
-        if self._is_empty(self.quantity):
-            self.MissingRequiredField("quantity")
-        if not isinstance(self.quantity, Quantity):
-            self.quantity = Quantity(**as_dict(self.quantity))
+        if self.policy is not None and not isinstance(self.policy, Policy):
+            self.policy = Policy(**as_dict(self.policy))
 
         super().__post_init__(**kwargs)
 
@@ -398,6 +393,7 @@ class Report(YAMLRoot):
     runtime: Optional[Union[dict, "Runtime"]] = None
     diagnostics: Optional[Union[Union[dict, "Diagnostic"], list[Union[dict, "Diagnostic"]]]] = empty_list()
     trace: Optional[Union[Union[dict, "Step"], list[Union[dict, "Step"]]]] = empty_list()
+    decisions: Optional[Union[Union[dict, "Decision"], list[Union[dict, "Decision"]]]] = empty_list()
 
     def __post_init__(self, *_: str, **kwargs: Any):
         if self._is_empty(self.status):
@@ -411,6 +407,8 @@ class Report(YAMLRoot):
         self._normalize_inlined_as_list(slot_name="diagnostics", slot_type=Diagnostic, key_name="severity", keyed=False)
 
         self._normalize_inlined_as_list(slot_name="trace", slot_type=Step, key_name="kind", keyed=False)
+
+        self._normalize_inlined_as_list(slot_name="decisions", slot_type=Decision, key_name="point", keyed=False)
 
         super().__post_init__(**kwargs)
 
@@ -532,6 +530,7 @@ class Diagnostic(YAMLRoot):
     target: Optional[Union[str, UUID]] = None
     residual: Optional[Union[dict, "Quantity"]] = None
     tolerance: Optional[Union[dict, "Quantity"]] = None
+    references: Optional[Union[Union[dict, "ScopedValueReference"], list[Union[dict, "ScopedValueReference"]]]] = empty_list()
 
     def __post_init__(self, *_: str, **kwargs: Any):
         if self._is_empty(self.severity):
@@ -560,6 +559,8 @@ class Diagnostic(YAMLRoot):
 
         if self.tolerance is not None and not isinstance(self.tolerance, Quantity):
             self.tolerance = Quantity(**as_dict(self.tolerance))
+
+        self._normalize_inlined_as_list(slot_name="references", slot_type=ScopedValueReference, key_name="document", keyed=False)
 
         super().__post_init__(**kwargs)
 
@@ -632,35 +633,6 @@ class Definitions(YAMLRoot):
 
 
 @dataclass(repr=False)
-class Binding(YAMLRoot):
-    """
-    A name within a Formulation that refers to an existing Value by UUID.
-    """
-    _inherited_slots: ClassVar[list[str]] = []
-
-    class_class_uri: ClassVar[URIRef] = RK["Binding"]
-    class_class_curie: ClassVar[str] = "rk:Binding"
-    class_name: ClassVar[str] = "Binding"
-    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Binding")
-
-    name: Union[str, Code] = None
-    value: Union[str, ValueId] = None
-
-    def __post_init__(self, *_: str, **kwargs: Any):
-        if self._is_empty(self.name):
-            self.MissingRequiredField("name")
-        if not isinstance(self.name, Code):
-            self.name = Code(self.name)
-
-        if self._is_empty(self.value):
-            self.MissingRequiredField("value")
-        if not isinstance(self.value, ValueId):
-            self.value = ValueId(self.value)
-
-        super().__post_init__(**kwargs)
-
-
-@dataclass(repr=False)
 class Formulation(YAMLRoot):
     """
     An identified mathematical container with explicit local declarations, expressions, and asserted constraints.
@@ -677,7 +649,7 @@ class Formulation(YAMLRoot):
     code: Optional[Union[str, Code]] = None
     name: Optional[str] = None
     description: Optional[str] = None
-    bindings: Optional[Union[Union[dict, Binding], list[Union[dict, Binding]]]] = empty_list()
+    bindings: Optional[Union[Union[dict, "Binding"], list[Union[dict, "Binding"]]]] = empty_list()
     values: Optional[Union[dict[Union[str, ValueId], Union[dict, "Value"]], list[Union[dict, "Value"]]]] = empty_dict()
     expressions: Optional[Union[dict[Union[str, ExpressionId], Union[dict, "Expression"]], list[Union[dict, "Expression"]]]] = empty_dict()
     constraints: Optional[Union[dict[Union[str, ConstraintId], Union[dict, "Constraint"]], list[Union[dict, "Constraint"]]]] = empty_dict()
@@ -727,6 +699,7 @@ class Provenance(YAMLRoot):
     sources: Optional[Union[dict[Union[str, SourceId], Union[dict, "Source"]], list[Union[dict, "Source"]]]] = empty_dict()
     claims: Optional[Union[dict[Union[str, ClaimId], Union[dict, "Claim"]], list[Union[dict, "Claim"]]]] = empty_dict()
     facts: Optional[Union[Union[dict, "Fact"], list[Union[dict, "Fact"]]]] = empty_list()
+    scenarios: Optional[Union[dict[Union[str, ScenarioRealizationId], Union[dict, "ScenarioRealization"]], list[Union[dict, "ScenarioRealization"]]]] = empty_dict()
 
     def __post_init__(self, *_: str, **kwargs: Any):
         self._normalize_inlined_as_list(slot_name="sources", slot_type=Source, key_name="id", keyed=True)
@@ -736,6 +709,8 @@ class Provenance(YAMLRoot):
         if not isinstance(self.facts, list):
             self.facts = [self.facts] if self.facts is not None else []
         self.facts = [v if isinstance(v, Fact) else Fact(**as_dict(v)) for v in self.facts]
+
+        self._normalize_inlined_as_list(slot_name="scenarios", slot_type=ScenarioRealization, key_name="id", keyed=True)
 
         super().__post_init__(**kwargs)
 
@@ -1022,6 +997,8 @@ class Settings(YAMLRoot):
     relative_tolerance: Optional[Decimal] = None
     iteration_limit: Optional[int] = None
     time_limit: Optional[Decimal] = None
+    symbol_limit: Optional[int] = None
+    constraint_limit: Optional[int] = None
 
     def __post_init__(self, *_: str, **kwargs: Any):
         if self.relative_tolerance is not None and not isinstance(self.relative_tolerance, Decimal):
@@ -1032,6 +1009,372 @@ class Settings(YAMLRoot):
 
         if self.time_limit is not None and not isinstance(self.time_limit, Decimal):
             self.time_limit = Decimal(self.time_limit)
+
+        if self.symbol_limit is not None and not isinstance(self.symbol_limit, int):
+            self.symbol_limit = int(self.symbol_limit)
+
+        if self.constraint_limit is not None and not isinstance(self.constraint_limit, int):
+            self.constraint_limit = int(self.constraint_limit)
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class ValueReference(YAMLRoot):
+    """
+    A Value UUID and optional stable owner-local Movement key. Scope comes from the containing Model or composed
+    Specification; positions are never identities.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["ValueReference"]
+    class_class_curie: ClassVar[str] = "rk:ValueReference"
+    class_name: ClassVar[str] = "ValueReference"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/ValueReference")
+
+    value: Union[str, ValueId] = None
+    movement: Optional[str] = None
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.value):
+            self.MissingRequiredField("value")
+        if not isinstance(self.value, ValueId):
+            self.value = ValueId(self.value)
+
+        if self.movement is not None and not isinstance(self.movement, str):
+            self.movement = str(self.movement)
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class ScopedValueReference(YAMLRoot):
+    """
+    An explicit revision and Value/Movement reference used in execution evidence.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["ScopedValueReference"]
+    class_class_curie: ClassVar[str] = "rk:ScopedValueReference"
+    class_name: ClassVar[str] = "ScopedValueReference"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/ScopedValueReference")
+
+    document: Union[str, UUID] = None
+    reference: Union[dict, ValueReference] = None
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.document):
+            self.MissingRequiredField("document")
+        if not isinstance(self.document, UUID):
+            self.document = UUID(self.document)
+
+        if self._is_empty(self.reference):
+            self.MissingRequiredField("reference")
+        if not isinstance(self.reference, ValueReference):
+            self.reference = ValueReference(**as_dict(self.reference))
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class Assignment(YAMLRoot):
+    """
+    An explicit scalar or Movement target and finite supplied Quantity; its collection determines assignment or
+    estimate semantics.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["Assignment"]
+    class_class_curie: ClassVar[str] = "rk:Assignment"
+    class_name: ClassVar[str] = "Assignment"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Assignment")
+
+    target: Union[dict, ValueReference] = None
+    quantity: Union[dict, "Quantity"] = None
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.target):
+            self.MissingRequiredField("target")
+        if not isinstance(self.target, ValueReference):
+            self.target = ValueReference(**as_dict(self.target))
+
+        if self._is_empty(self.quantity):
+            self.MissingRequiredField("quantity")
+        if not isinstance(self.quantity, Quantity):
+            self.quantity = Quantity(**as_dict(self.quantity))
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class ObservationBinding(YAMLRoot):
+    """
+    An explicit observation target. An optional date may delay availability but cannot advance it.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["ObservationBinding"]
+    class_class_curie: ClassVar[str] = "rk:ObservationBinding"
+    class_name: ClassVar[str] = "ObservationBinding"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/ObservationBinding")
+
+    name: Union[str, Code] = None
+    target: Union[dict, ValueReference] = None
+    available_at: Optional[Union[str, XSDDate]] = None
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.name):
+            self.MissingRequiredField("name")
+        if not isinstance(self.name, Code):
+            self.name = Code(self.name)
+
+        if self._is_empty(self.target):
+            self.MissingRequiredField("target")
+        if not isinstance(self.target, ValueReference):
+            self.target = ValueReference(**as_dict(self.target))
+
+        if self.available_at is not None and not isinstance(self.available_at, XSDDate):
+            self.available_at = XSDDate(self.available_at)
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class Action(YAMLRoot):
+    """
+    An inert assignment or terminal action. Effects are applied atomically; no Python callbacks.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["Action"]
+    class_class_curie: ClassVar[str] = "rk:Action"
+    class_name: ClassVar[str] = "Action"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Action")
+
+    kind: Union[str, "ActionKind"] = None
+    target: Optional[Union[dict, ValueReference]] = None
+    quantity: Optional[Union[dict, "Quantity"]] = None
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.kind):
+            self.MissingRequiredField("kind")
+        if not isinstance(self.kind, ActionKind):
+            self.kind = ActionKind(self.kind)
+
+        if self.target is not None and not isinstance(self.target, ValueReference):
+            self.target = ValueReference(**as_dict(self.target))
+
+        if self.quantity is not None and not isinstance(self.quantity, Quantity):
+            self.quantity = Quantity(**as_dict(self.quantity))
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class Rule(YAMLRoot):
+    """
+    One ordered Boolean condition and its atomic actions.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["Rule"]
+    class_class_curie: ClassVar[str] = "rk:Rule"
+    class_name: ClassVar[str] = "Rule"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Rule")
+
+    id: Union[str, RuleId] = None
+    condition: Union[dict, "Expression"] = None
+    actions: Union[Union[dict, Action], list[Union[dict, Action]]] = None
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.id):
+            self.MissingRequiredField("id")
+        if not isinstance(self.id, RuleId):
+            self.id = RuleId(self.id)
+
+        if self._is_empty(self.condition):
+            self.MissingRequiredField("condition")
+        if not isinstance(self.condition, Expression):
+            self.condition = Expression(**as_dict(self.condition))
+
+        if self._is_empty(self.actions):
+            self.MissingRequiredField("actions")
+        self._normalize_inlined_as_list(slot_name="actions", slot_type=Action, key_name="kind", keyed=False)
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class DecisionPoint(YAMLRoot):
+    """
+    One dated policy point with explicit observations, first-match rules and fallback.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["DecisionPoint"]
+    class_class_curie: ClassVar[str] = "rk:DecisionPoint"
+    class_name: ClassVar[str] = "DecisionPoint"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/DecisionPoint")
+
+    id: Union[str, DecisionPointId] = None
+    at: Union[str, XSDDate] = None
+    observations: Union[Union[dict, ObservationBinding], list[Union[dict, ObservationBinding]]] = None
+    rules: Union[dict[Union[str, RuleId], Union[dict, Rule]], list[Union[dict, Rule]]] = empty_dict()
+    fallback: Union[Union[dict, Action], list[Union[dict, Action]]] = None
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.id):
+            self.MissingRequiredField("id")
+        if not isinstance(self.id, DecisionPointId):
+            self.id = DecisionPointId(self.id)
+
+        if self._is_empty(self.at):
+            self.MissingRequiredField("at")
+        if not isinstance(self.at, XSDDate):
+            self.at = XSDDate(self.at)
+
+        if self._is_empty(self.observations):
+            self.MissingRequiredField("observations")
+        self._normalize_inlined_as_list(slot_name="observations", slot_type=ObservationBinding, key_name="name", keyed=False)
+
+        if self._is_empty(self.rules):
+            self.MissingRequiredField("rules")
+        self._normalize_inlined_as_list(slot_name="rules", slot_type=Rule, key_name="id", keyed=True)
+
+        if self._is_empty(self.fallback):
+            self.MissingRequiredField("fallback")
+        self._normalize_inlined_as_list(slot_name="fallback", slot_type=Action, key_name="kind", keyed=False)
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class Policy(YAMLRoot):
+    """
+    Finite policy owning explicit controlled targets and ordered dated decision points.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["Policy"]
+    class_class_curie: ClassVar[str] = "rk:Policy"
+    class_name: ClassVar[str] = "Policy"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Policy")
+
+    id: Union[str, PolicyId] = None
+    targets: Union[Union[dict, ValueReference], list[Union[dict, ValueReference]]] = None
+    points: Union[dict[Union[str, DecisionPointId], Union[dict, DecisionPoint]], list[Union[dict, DecisionPoint]]] = empty_dict()
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.id):
+            self.MissingRequiredField("id")
+        if not isinstance(self.id, PolicyId):
+            self.id = PolicyId(self.id)
+
+        if self._is_empty(self.targets):
+            self.MissingRequiredField("targets")
+        if not isinstance(self.targets, list):
+            self.targets = [self.targets] if self.targets is not None else []
+        self.targets = [v if isinstance(v, ValueReference) else ValueReference(**as_dict(v)) for v in self.targets]
+
+        if self._is_empty(self.points):
+            self.MissingRequiredField("points")
+        self._normalize_inlined_as_list(slot_name="points", slot_type=DecisionPoint, key_name="id", keyed=True)
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class ObservedQuantity(YAMLRoot):
+    """
+    The exact quantity and availability supplied to a decision.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["ObservedQuantity"]
+    class_class_curie: ClassVar[str] = "rk:ObservedQuantity"
+    class_name: ClassVar[str] = "ObservedQuantity"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/ObservedQuantity")
+
+    name: Union[str, Code] = None
+    target: Union[dict, ValueReference] = None
+    quantity: Union[dict, "Quantity"] = None
+    available_at: Union[str, XSDDate] = None
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.name):
+            self.MissingRequiredField("name")
+        if not isinstance(self.name, Code):
+            self.name = Code(self.name)
+
+        if self._is_empty(self.target):
+            self.MissingRequiredField("target")
+        if not isinstance(self.target, ValueReference):
+            self.target = ValueReference(**as_dict(self.target))
+
+        if self._is_empty(self.quantity):
+            self.MissingRequiredField("quantity")
+        if not isinstance(self.quantity, Quantity):
+            self.quantity = Quantity(**as_dict(self.quantity))
+
+        if self._is_empty(self.available_at):
+            self.MissingRequiredField("available_at")
+        if not isinstance(self.available_at, XSDDate):
+            self.available_at = XSDDate(self.available_at)
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class Decision(YAMLRoot):
+    """
+    Recorded outcome of one evaluated decision point; absence of a rule means fallback.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["Decision"]
+    class_class_curie: ClassVar[str] = "rk:Decision"
+    class_name: ClassVar[str] = "Decision"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Decision")
+
+    point: Union[str, UUID] = None
+    at: Union[str, XSDDate] = None
+    observations: Union[Union[dict, ObservedQuantity], list[Union[dict, ObservedQuantity]]] = None
+    assignments: Union[Union[dict, Assignment], list[Union[dict, Assignment]]] = None
+    terminated: Union[bool, Bool] = None
+    rule: Optional[Union[str, UUID]] = None
+    termination_reason: Optional[str] = None
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.point):
+            self.MissingRequiredField("point")
+        if not isinstance(self.point, UUID):
+            self.point = UUID(self.point)
+
+        if self._is_empty(self.at):
+            self.MissingRequiredField("at")
+        if not isinstance(self.at, XSDDate):
+            self.at = XSDDate(self.at)
+
+        if self._is_empty(self.observations):
+            self.MissingRequiredField("observations")
+        self._normalize_inlined_as_list(slot_name="observations", slot_type=ObservedQuantity, key_name="name", keyed=False)
+
+        if self._is_empty(self.assignments):
+            self.MissingRequiredField("assignments")
+        if not isinstance(self.assignments, list):
+            self.assignments = [self.assignments] if self.assignments is not None else []
+        self.assignments = [v if isinstance(v, Assignment) else Assignment(**as_dict(v)) for v in self.assignments]
+
+        if self._is_empty(self.terminated):
+            self.MissingRequiredField("terminated")
+        if not isinstance(self.terminated, Bool):
+            self.terminated = Bool(self.terminated)
+
+        if self.rule is not None and not isinstance(self.rule, UUID):
+            self.rule = UUID(self.rule)
+
+        if self.termination_reason is not None and not isinstance(self.termination_reason, str):
+            self.termination_reason = str(self.termination_reason)
 
         super().__post_init__(**kwargs)
 
@@ -1426,6 +1769,381 @@ class Constraint(YAMLRoot):
 
 
 @dataclass(repr=False)
+class Binding(YAMLRoot):
+    """
+    A local interface name that refers to an existing canonical Value by UUID.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["Binding"]
+    class_class_curie: ClassVar[str] = "rk:Binding"
+    class_name: ClassVar[str] = "Binding"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Binding")
+
+    name: Union[str, Code] = None
+    value: Union[str, ValueId] = None
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.name):
+            self.MissingRequiredField("name")
+        if not isinstance(self.name, Code):
+            self.name = Code(self.name)
+
+        if self._is_empty(self.value):
+            self.MissingRequiredField("value")
+        if not isinstance(self.value, ValueId):
+            self.value = ValueId(self.value)
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class ScenarioParameter(YAMLRoot):
+    """
+    One named constant or sampled parameter; exactly one input is required by semantic validation.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["ScenarioParameter"]
+    class_class_curie: ClassVar[str] = "rk:ScenarioParameter"
+    class_name: ClassVar[str] = "ScenarioParameter"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/ScenarioParameter")
+
+    name: Union[str, Code] = None
+    quantity: Optional[Union[dict, Quantity]] = None
+    distribution: Optional[Union[dict, "Distribution"]] = None
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.name):
+            self.MissingRequiredField("name")
+        if not isinstance(self.name, Code):
+            self.name = Code(self.name)
+
+        if self.quantity is not None and not isinstance(self.quantity, Quantity):
+            self.quantity = Quantity(**as_dict(self.quantity))
+
+        if self.distribution is not None and not isinstance(self.distribution, Distribution):
+            self.distribution = Distribution(**as_dict(self.distribution))
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class ScenarioPlan(YAMLRoot):
+    """
+    Finite market generation plan. This is input-generation provenance, not governing mathematics.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["ScenarioPlan"]
+    class_class_curie: ClassVar[str] = "rk:ScenarioPlan"
+    class_name: ClassVar[str] = "ScenarioPlan"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/ScenarioPlan")
+
+    id: Union[str, ScenarioPlanId] = None
+    method: str = None
+    seed: int = None
+    periods: Union[Union[dict, "Period"], list[Union[dict, "Period"]]] = None
+    parameters: Union[Union[dict, ScenarioParameter], list[Union[dict, ScenarioParameter]]] = None
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.id):
+            self.MissingRequiredField("id")
+        if not isinstance(self.id, ScenarioPlanId):
+            self.id = ScenarioPlanId(self.id)
+
+        if self._is_empty(self.method):
+            self.MissingRequiredField("method")
+        if not isinstance(self.method, str):
+            self.method = str(self.method)
+
+        if self._is_empty(self.seed):
+            self.MissingRequiredField("seed")
+        if not isinstance(self.seed, int):
+            self.seed = int(self.seed)
+
+        if self._is_empty(self.periods):
+            self.MissingRequiredField("periods")
+        self._normalize_inlined_as_list(slot_name="periods", slot_type=Period, key_name="start", keyed=False)
+
+        if self._is_empty(self.parameters):
+            self.MissingRequiredField("parameters")
+        self._normalize_inlined_as_list(slot_name="parameters", slot_type=ScenarioParameter, key_name="name", keyed=False)
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class RandomStream(YAMLRoot):
+    """
+    Stable component stream identity derived from seed, scenario key and component name.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["RandomStream"]
+    class_class_curie: ClassVar[str] = "rk:RandomStream"
+    class_name: ClassVar[str] = "RandomStream"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/RandomStream")
+
+    name: Union[str, Code] = None
+    identifier: str = None
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.name):
+            self.MissingRequiredField("name")
+        if not isinstance(self.name, Code):
+            self.name = Code(self.name)
+
+        if self._is_empty(self.identifier):
+            self.MissingRequiredField("identifier")
+        if not isinstance(self.identifier, str):
+            self.identifier = str(self.identifier)
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class LibraryVersion(YAMLRoot):
+    """
+    Recorded implementation dependency version.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["LibraryVersion"]
+    class_class_curie: ClassVar[str] = "rk:LibraryVersion"
+    class_name: ClassVar[str] = "LibraryVersion"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/LibraryVersion")
+
+    name: str = None
+    version: str = None
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.name):
+            self.MissingRequiredField("name")
+        if not isinstance(self.name, str):
+            self.name = str(self.name)
+
+        if self._is_empty(self.version):
+            self.MissingRequiredField("version")
+        if not isinstance(self.version, str):
+            self.version = str(self.version)
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class ObservationAvailability(YAMLRoot):
+    """
+    Earliest date a recorded Value or Movement may be supplied to a policy.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["ObservationAvailability"]
+    class_class_curie: ClassVar[str] = "rk:ObservationAvailability"
+    class_name: ClassVar[str] = "ObservationAvailability"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/ObservationAvailability")
+
+    target: Union[dict, ValueReference] = None
+    available_at: Union[str, XSDDate] = None
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.target):
+            self.MissingRequiredField("target")
+        if not isinstance(self.target, ValueReference):
+            self.target = ValueReference(**as_dict(self.target))
+
+        if self._is_empty(self.available_at):
+            self.MissingRequiredField("available_at")
+        if not isinstance(self.available_at, XSDDate):
+            self.available_at = XSDDate(self.available_at)
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class ScenarioRealization(YAMLRoot):
+    """
+    Captured scenario inputs and paths. Stored draws permit replay without random sampling.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["ScenarioRealization"]
+    class_class_curie: ClassVar[str] = "rk:ScenarioRealization"
+    class_name: ClassVar[str] = "ScenarioRealization"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/ScenarioRealization")
+
+    id: Union[str, ScenarioRealizationId] = None
+    plan: Union[dict, ScenarioPlan] = None
+    key: Union[str, Code] = None
+    generator: str = None
+    versions: Union[Union[dict, LibraryVersion], list[Union[dict, LibraryVersion]]] = None
+    streams: Union[Union[dict, RandomStream], list[Union[dict, RandomStream]]] = None
+    inputs: Union[Union[dict, Binding], list[Union[dict, Binding]]] = None
+    outputs: Union[Union[dict, Binding], list[Union[dict, Binding]]] = None
+    availability: Union[Union[dict, ObservationAvailability], list[Union[dict, ObservationAvailability]]] = None
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.id):
+            self.MissingRequiredField("id")
+        if not isinstance(self.id, ScenarioRealizationId):
+            self.id = ScenarioRealizationId(self.id)
+
+        if self._is_empty(self.plan):
+            self.MissingRequiredField("plan")
+        if not isinstance(self.plan, ScenarioPlan):
+            self.plan = ScenarioPlan(**as_dict(self.plan))
+
+        if self._is_empty(self.key):
+            self.MissingRequiredField("key")
+        if not isinstance(self.key, Code):
+            self.key = Code(self.key)
+
+        if self._is_empty(self.generator):
+            self.MissingRequiredField("generator")
+        if not isinstance(self.generator, str):
+            self.generator = str(self.generator)
+
+        if self._is_empty(self.versions):
+            self.MissingRequiredField("versions")
+        self._normalize_inlined_as_list(slot_name="versions", slot_type=LibraryVersion, key_name="name", keyed=False)
+
+        if self._is_empty(self.streams):
+            self.MissingRequiredField("streams")
+        self._normalize_inlined_as_list(slot_name="streams", slot_type=RandomStream, key_name="name", keyed=False)
+
+        if self._is_empty(self.inputs):
+            self.MissingRequiredField("inputs")
+        self._normalize_inlined_as_list(slot_name="inputs", slot_type=Binding, key_name="name", keyed=False)
+
+        if self._is_empty(self.outputs):
+            self.MissingRequiredField("outputs")
+        self._normalize_inlined_as_list(slot_name="outputs", slot_type=Binding, key_name="name", keyed=False)
+
+        if self._is_empty(self.availability):
+            self.MissingRequiredField("availability")
+        self._normalize_inlined_as_list(slot_name="availability", slot_type=ObservationAvailability, key_name="available_at", keyed=False)
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class Characteristics(YAMLRoot):
+    """
+    A collection of Labels and Values belonging to an Entity or Relationship. Each Label or Value has a stable UUID
+    and a key unique within its collection.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["Characteristics"]
+    class_class_curie: ClassVar[str] = "rk:Characteristics"
+    class_name: ClassVar[str] = "Characteristics"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Characteristics")
+
+    labels: Optional[Union[dict[Union[str, LabelId], Union[dict, "Label"]], list[Union[dict, "Label"]]]] = empty_dict()
+    values: Optional[Union[dict[Union[str, ValueId], Union[dict, "Value"]], list[Union[dict, "Value"]]]] = empty_dict()
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        self._normalize_inlined_as_list(slot_name="labels", slot_type=Label, key_name="id", keyed=True)
+
+        self._normalize_inlined_as_list(slot_name="values", slot_type=Value, key_name="id", keyed=True)
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class Label(YAMLRoot):
+    """
+    A named set of Classifications describing an aspect of an Entity or Relationship.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["Label"]
+    class_class_curie: ClassVar[str] = "rk:Label"
+    class_name: ClassVar[str] = "Label"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Label")
+
+    id: Union[str, LabelId] = None
+    key: str = None
+    classifications: Optional[Union[Union[str, ClassificationId], list[Union[str, ClassificationId]]]] = empty_list()
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.id):
+            self.MissingRequiredField("id")
+        if not isinstance(self.id, LabelId):
+            self.id = LabelId(self.id)
+
+        if self._is_empty(self.key):
+            self.MissingRequiredField("key")
+        if not isinstance(self.key, str):
+            self.key = str(self.key)
+
+        if not isinstance(self.classifications, list):
+            self.classifications = [self.classifications] if self.classifications is not None else []
+        self.classifications = [v if isinstance(v, ClassificationId) else ClassificationId(v) for v in self.classifications]
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class Value(YAMLRoot):
+    """
+    An identified, typed Value belonging to an Entity or Relationship's Characteristics, or declared locally within a
+    mathematical Formulation. Its key provides a name within the owner's values collection; its UUID identifies the
+    symbol independently of that name.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["Value"]
+    class_class_curie: ClassVar[str] = "rk:Value"
+    class_name: ClassVar[str] = "Value"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Value")
+
+    id: Union[str, ValueId] = None
+    measure: Union[str, MeasureId] = None
+    key: str = None
+    kind: Union[str, "ValueKind"] = None
+    quantity: Optional[Union[dict, Quantity]] = None
+    description: Optional[str] = None
+    flow: Optional[Union[dict, "Flow"]] = None
+    content: Optional[Union[dict, "PropertyContent"]] = None
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.id):
+            self.MissingRequiredField("id")
+        if not isinstance(self.id, ValueId):
+            self.id = ValueId(self.id)
+
+        if self._is_empty(self.measure):
+            self.MissingRequiredField("measure")
+        if not isinstance(self.measure, MeasureId):
+            self.measure = MeasureId(self.measure)
+
+        if self._is_empty(self.key):
+            self.MissingRequiredField("key")
+        if not isinstance(self.key, str):
+            self.key = str(self.key)
+
+        if self._is_empty(self.kind):
+            self.MissingRequiredField("kind")
+        if not isinstance(self.kind, ValueKind):
+            self.kind = ValueKind(self.kind)
+
+        if self.quantity is not None and not isinstance(self.quantity, Quantity):
+            self.quantity = Quantity(**as_dict(self.quantity))
+
+        if self.description is not None and not isinstance(self.description, str):
+            self.description = str(self.description)
+
+        if self.flow is not None and not isinstance(self.flow, Flow):
+            self.flow = Flow(**as_dict(self.flow))
+
+        if self.content is not None and not isinstance(self.content, PropertyContent):
+            self.content = PropertyContent(**as_dict(self.content))
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
 class Expression(YAMLRoot):
     """
     An identified mathematical expression. Its kind determines its content; nested expressions retain order and UUID
@@ -1442,7 +2160,7 @@ class Expression(YAMLRoot):
     kind: Union[str, "ExpressionKind"] = None
     quantity: Optional[Union[dict, Quantity]] = None
     boolean: Optional[Union[bool, Bool]] = None
-    target: Optional[Union[str, ValueId]] = None
+    target: Optional[Union[dict, ValueReference]] = None
     operator: Optional[Union[str, "Operator"]] = None
     operands: Optional[Union[dict[Union[str, ExpressionId], Union[dict, "Expression"]], list[Union[dict, "Expression"]]]] = empty_dict()
     operand: Optional[Union[dict, "Expression"]] = None
@@ -1467,8 +2185,8 @@ class Expression(YAMLRoot):
         if self.boolean is not None and not isinstance(self.boolean, Bool):
             self.boolean = Bool(self.boolean)
 
-        if self.target is not None and not isinstance(self.target, ValueId):
-            self.target = ValueId(self.target)
+        if self.target is not None and not isinstance(self.target, ValueReference):
+            self.target = ValueReference(**as_dict(self.target))
 
         if self.operator is not None and not isinstance(self.operator, Operator):
             self.operator = Operator(self.operator)
@@ -1602,7 +2320,7 @@ class Relationship(YAMLRoot):
     classification: Union[str, ClassificationId] = None
     source: Union[str, EntityId] = None
     target: Union[str, EntityId] = None
-    characteristics: Optional[Union[dict, "Characteristics"]] = None
+    characteristics: Optional[Union[dict, Characteristics]] = None
 
     def __post_init__(self, *_: str, **kwargs: Any):
         if self._is_empty(self.id):
@@ -1627,6 +2345,200 @@ class Relationship(YAMLRoot):
 
         if self.characteristics is not None and not isinstance(self.characteristics, Characteristics):
             self.characteristics = Characteristics(**as_dict(self.characteristics))
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class Flow(YAMLRoot):
+    """
+    Ordered temporal quantities owned by one Value. Dates are coordinates, not units. Empty, unresolved and zero
+    movements are distinct. The overall model logic defines the meaning of the quantities and selects their
+    calculations; a Flow carries no semantic kind or basis.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["Flow"]
+    class_class_curie: ClassVar[str] = "rk:Flow"
+    class_name: ClassVar[str] = "Flow"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Flow")
+
+    units: str = None
+    movements: Union[Union[dict, "Movement"], list[Union[dict, "Movement"]]] = None
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.units):
+            self.MissingRequiredField("units")
+        if not isinstance(self.units, str):
+            self.units = str(self.units)
+
+        if self._is_empty(self.movements):
+            self.MissingRequiredField("movements")
+        self._normalize_inlined_as_list(slot_name="movements", slot_type=Movement, key_name="key", keyed=False)
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class Movement(YAMLRoot):
+    """
+    One numerical entry in a Flow, associated with a date or period. The overall model logic determines its meaning.
+    At least one of date or period is required. With a period, date records an independent payment or observation date
+    and need not lie inside the period. Derived boundary dates are calculated, not stored. Key is stable within its
+    Flow; repeated event dates require distinct keys. Magnitude omission/null means unresolved. Claims retain source
+    or derivation evidence.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["Movement"]
+    class_class_curie: ClassVar[str] = "rk:Movement"
+    class_name: ClassVar[str] = "Movement"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Movement")
+
+    key: str = None
+    date: Optional[Union[str, XSDDate]] = None
+    period: Optional[Union[dict, "Period"]] = None
+    magnitude: Optional[Decimal] = None
+    claims: Optional[Union[Union[str, UUID], list[Union[str, UUID]]]] = empty_list()
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.key):
+            self.MissingRequiredField("key")
+        if not isinstance(self.key, str):
+            self.key = str(self.key)
+
+        if self.date is not None and not isinstance(self.date, XSDDate):
+            self.date = XSDDate(self.date)
+
+        if self.period is not None and not isinstance(self.period, Period):
+            self.period = Period(**as_dict(self.period))
+
+        if self.magnitude is not None and not isinstance(self.magnitude, Decimal):
+            self.magnitude = Decimal(self.magnitude)
+
+        if not isinstance(self.claims, list):
+            self.claims = [self.claims] if self.claims is not None else []
+        self.claims = [v if isinstance(v, UUID) else UUID(v) for v in self.claims]
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class Distribution(YAMLRoot):
+    """
+    Serializable distribution parameters, with explicit units; no live random generator.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["Distribution"]
+    class_class_curie: ClassVar[str] = "rk:Distribution"
+    class_name: ClassVar[str] = "Distribution"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Distribution")
+
+    kind: Union[str, "DistributionFamily"] = None
+    lower: float = None
+    upper: float = None
+    units: str = None
+    mode: Optional[float] = None
+    weighting: Optional[float] = None
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.kind):
+            self.MissingRequiredField("kind")
+        if not isinstance(self.kind, DistributionFamily):
+            self.kind = DistributionFamily(self.kind)
+
+        if self._is_empty(self.lower):
+            self.MissingRequiredField("lower")
+        if not isinstance(self.lower, float):
+            self.lower = float(self.lower)
+
+        if self._is_empty(self.upper):
+            self.MissingRequiredField("upper")
+        if not isinstance(self.upper, float):
+            self.upper = float(self.upper)
+
+        if self._is_empty(self.units):
+            self.MissingRequiredField("units")
+        if not isinstance(self.units, str):
+            self.units = str(self.units)
+
+        if self.mode is not None and not isinstance(self.mode, float):
+            self.mode = float(self.mode)
+
+        if self.weighting is not None and not isinstance(self.weighting, float):
+            self.weighting = float(self.weighting)
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class PropertyContent(YAMLRoot):
+    """
+    Tagged inert content. Scalar text preserves exact type and representation, including negative zero. Containers
+    never instantiate arbitrary Python classes. Conditional shape and canonical scalar grammar are checked
+    semantically.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["PropertyContent"]
+    class_class_curie: ClassVar[str] = "rk:PropertyContent"
+    class_name: ClassVar[str] = "PropertyContent"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/PropertyContent")
+
+    kind: Union[str, "ContentKind"] = None
+    text: Optional[str] = None
+    zone: Optional[str] = None
+    fold: Optional[int] = None
+    items: Optional[Union[Union[dict, "PropertyContent"], list[Union[dict, "PropertyContent"]]]] = empty_list()
+    entries: Optional[Union[Union[dict, "ContentEntry"], list[Union[dict, "ContentEntry"]]]] = empty_list()
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.kind):
+            self.MissingRequiredField("kind")
+        if not isinstance(self.kind, ContentKind):
+            self.kind = ContentKind(self.kind)
+
+        if self.text is not None and not isinstance(self.text, str):
+            self.text = str(self.text)
+
+        if self.zone is not None and not isinstance(self.zone, str):
+            self.zone = str(self.zone)
+
+        if self.fold is not None and not isinstance(self.fold, int):
+            self.fold = int(self.fold)
+
+        self._normalize_inlined_as_list(slot_name="items", slot_type=PropertyContent, key_name="kind", keyed=False)
+
+        if not isinstance(self.entries, list):
+            self.entries = [self.entries] if self.entries is not None else []
+        self.entries = [v if isinstance(v, ContentEntry) else ContentEntry(**as_dict(v)) for v in self.entries]
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class ContentEntry(YAMLRoot):
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["ContentEntry"]
+    class_class_curie: ClassVar[str] = "rk:ContentEntry"
+    class_name: ClassVar[str] = "ContentEntry"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/ContentEntry")
+
+    key: Union[dict, PropertyContent] = None
+    value: Union[dict, PropertyContent] = None
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.key):
+            self.MissingRequiredField("key")
+        if not isinstance(self.key, PropertyContent):
+            self.key = PropertyContent(**as_dict(self.key))
+
+        if self._is_empty(self.value):
+            self.MissingRequiredField("value")
+        if not isinstance(self.value, PropertyContent):
+            self.value = PropertyContent(**as_dict(self.value))
 
         super().__post_init__(**kwargs)
 
@@ -1819,7 +2731,7 @@ class Entity(YAMLRoot):
     classification: Optional[Union[str, ClassificationId]] = None
     code: Optional[Union[str, Code]] = None
     name: Optional[str] = None
-    characteristics: Optional[Union[dict, "Characteristics"]] = None
+    characteristics: Optional[Union[dict, Characteristics]] = None
 
     def __post_init__(self, *_: str, **kwargs: Any):
         if self._is_empty(self.id):
@@ -1872,268 +2784,6 @@ class Assembly(Entity):
         if not isinstance(self.relationships, list):
             self.relationships = [self.relationships] if self.relationships is not None else []
         self.relationships = [v if isinstance(v, RelationshipId) else RelationshipId(v) for v in self.relationships]
-
-        super().__post_init__(**kwargs)
-
-
-@dataclass(repr=False)
-class Characteristics(YAMLRoot):
-    """
-    A collection of Labels and Values belonging to an Entity or Relationship. Each Label or Value has a stable UUID
-    and a key unique within its collection.
-    """
-    _inherited_slots: ClassVar[list[str]] = []
-
-    class_class_uri: ClassVar[URIRef] = RK["Characteristics"]
-    class_class_curie: ClassVar[str] = "rk:Characteristics"
-    class_name: ClassVar[str] = "Characteristics"
-    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Characteristics")
-
-    labels: Optional[Union[dict[Union[str, LabelId], Union[dict, "Label"]], list[Union[dict, "Label"]]]] = empty_dict()
-    values: Optional[Union[dict[Union[str, ValueId], Union[dict, "Value"]], list[Union[dict, "Value"]]]] = empty_dict()
-
-    def __post_init__(self, *_: str, **kwargs: Any):
-        self._normalize_inlined_as_list(slot_name="labels", slot_type=Label, key_name="id", keyed=True)
-
-        self._normalize_inlined_as_list(slot_name="values", slot_type=Value, key_name="id", keyed=True)
-
-        super().__post_init__(**kwargs)
-
-
-@dataclass(repr=False)
-class Label(YAMLRoot):
-    """
-    A named set of Classifications describing an aspect of an Entity or Relationship.
-    """
-    _inherited_slots: ClassVar[list[str]] = []
-
-    class_class_uri: ClassVar[URIRef] = RK["Label"]
-    class_class_curie: ClassVar[str] = "rk:Label"
-    class_name: ClassVar[str] = "Label"
-    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Label")
-
-    id: Union[str, LabelId] = None
-    key: str = None
-    classifications: Optional[Union[Union[str, ClassificationId], list[Union[str, ClassificationId]]]] = empty_list()
-
-    def __post_init__(self, *_: str, **kwargs: Any):
-        if self._is_empty(self.id):
-            self.MissingRequiredField("id")
-        if not isinstance(self.id, LabelId):
-            self.id = LabelId(self.id)
-
-        if self._is_empty(self.key):
-            self.MissingRequiredField("key")
-        if not isinstance(self.key, str):
-            self.key = str(self.key)
-
-        if not isinstance(self.classifications, list):
-            self.classifications = [self.classifications] if self.classifications is not None else []
-        self.classifications = [v if isinstance(v, ClassificationId) else ClassificationId(v) for v in self.classifications]
-
-        super().__post_init__(**kwargs)
-
-
-@dataclass(repr=False)
-class Value(YAMLRoot):
-    """
-    An identified, typed Value belonging to an Entity or Relationship's Characteristics, or declared locally within a
-    mathematical Formulation. Its key provides a name within the owner's values collection; its UUID identifies the
-    symbol independently of that name.
-    """
-    _inherited_slots: ClassVar[list[str]] = []
-
-    class_class_uri: ClassVar[URIRef] = RK["Value"]
-    class_class_curie: ClassVar[str] = "rk:Value"
-    class_name: ClassVar[str] = "Value"
-    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Value")
-
-    id: Union[str, ValueId] = None
-    measure: Union[str, MeasureId] = None
-    key: str = None
-    kind: Union[str, "ValueKind"] = None
-    quantity: Optional[Union[dict, Quantity]] = None
-    description: Optional[str] = None
-    flow: Optional[Union[dict, "Flow"]] = None
-    content: Optional[Union[dict, "PropertyContent"]] = None
-
-    def __post_init__(self, *_: str, **kwargs: Any):
-        if self._is_empty(self.id):
-            self.MissingRequiredField("id")
-        if not isinstance(self.id, ValueId):
-            self.id = ValueId(self.id)
-
-        if self._is_empty(self.measure):
-            self.MissingRequiredField("measure")
-        if not isinstance(self.measure, MeasureId):
-            self.measure = MeasureId(self.measure)
-
-        if self._is_empty(self.key):
-            self.MissingRequiredField("key")
-        if not isinstance(self.key, str):
-            self.key = str(self.key)
-
-        if self._is_empty(self.kind):
-            self.MissingRequiredField("kind")
-        if not isinstance(self.kind, ValueKind):
-            self.kind = ValueKind(self.kind)
-
-        if self.quantity is not None and not isinstance(self.quantity, Quantity):
-            self.quantity = Quantity(**as_dict(self.quantity))
-
-        if self.description is not None and not isinstance(self.description, str):
-            self.description = str(self.description)
-
-        if self.flow is not None and not isinstance(self.flow, Flow):
-            self.flow = Flow(**as_dict(self.flow))
-
-        if self.content is not None and not isinstance(self.content, PropertyContent):
-            self.content = PropertyContent(**as_dict(self.content))
-
-        super().__post_init__(**kwargs)
-
-
-@dataclass(repr=False)
-class Flow(YAMLRoot):
-    """
-    Ordered temporal quantities owned by one Value. Dates are coordinates, not units. Empty, unresolved and zero
-    movements are distinct. The overall model logic defines the meaning of the quantities and selects their
-    calculations; a Flow carries no semantic kind or basis.
-    """
-    _inherited_slots: ClassVar[list[str]] = []
-
-    class_class_uri: ClassVar[URIRef] = RK["Flow"]
-    class_class_curie: ClassVar[str] = "rk:Flow"
-    class_name: ClassVar[str] = "Flow"
-    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Flow")
-
-    units: str = None
-    movements: Union[Union[dict, "Movement"], list[Union[dict, "Movement"]]] = None
-
-    def __post_init__(self, *_: str, **kwargs: Any):
-        if self._is_empty(self.units):
-            self.MissingRequiredField("units")
-        if not isinstance(self.units, str):
-            self.units = str(self.units)
-
-        if self._is_empty(self.movements):
-            self.MissingRequiredField("movements")
-        self._normalize_inlined_as_list(slot_name="movements", slot_type=Movement, key_name="key", keyed=False)
-
-        super().__post_init__(**kwargs)
-
-
-@dataclass(repr=False)
-class Movement(YAMLRoot):
-    """
-    One numerical entry in a Flow, associated with a date or period. The overall model logic determines its meaning.
-    At least one of date or period is required. With a period, date records an independent payment or observation date
-    and need not lie inside the period. Derived boundary dates are calculated, not stored. Key is stable within its
-    Flow; repeated event dates require distinct keys. Magnitude omission/null means unresolved. Claims retain source
-    or derivation evidence.
-    """
-    _inherited_slots: ClassVar[list[str]] = []
-
-    class_class_uri: ClassVar[URIRef] = RK["Movement"]
-    class_class_curie: ClassVar[str] = "rk:Movement"
-    class_name: ClassVar[str] = "Movement"
-    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Movement")
-
-    key: str = None
-    date: Optional[Union[str, XSDDate]] = None
-    period: Optional[Union[dict, "Period"]] = None
-    magnitude: Optional[Decimal] = None
-    claims: Optional[Union[Union[str, UUID], list[Union[str, UUID]]]] = empty_list()
-
-    def __post_init__(self, *_: str, **kwargs: Any):
-        if self._is_empty(self.key):
-            self.MissingRequiredField("key")
-        if not isinstance(self.key, str):
-            self.key = str(self.key)
-
-        if self.date is not None and not isinstance(self.date, XSDDate):
-            self.date = XSDDate(self.date)
-
-        if self.period is not None and not isinstance(self.period, Period):
-            self.period = Period(**as_dict(self.period))
-
-        if self.magnitude is not None and not isinstance(self.magnitude, Decimal):
-            self.magnitude = Decimal(self.magnitude)
-
-        if not isinstance(self.claims, list):
-            self.claims = [self.claims] if self.claims is not None else []
-        self.claims = [v if isinstance(v, UUID) else UUID(v) for v in self.claims]
-
-        super().__post_init__(**kwargs)
-
-
-@dataclass(repr=False)
-class PropertyContent(YAMLRoot):
-    """
-    Tagged inert content. Scalar text preserves exact type and representation, including negative zero. Containers
-    never instantiate arbitrary Python classes. Conditional shape and canonical scalar grammar are checked
-    semantically.
-    """
-    _inherited_slots: ClassVar[list[str]] = []
-
-    class_class_uri: ClassVar[URIRef] = RK["PropertyContent"]
-    class_class_curie: ClassVar[str] = "rk:PropertyContent"
-    class_name: ClassVar[str] = "PropertyContent"
-    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/PropertyContent")
-
-    kind: Union[str, "ContentKind"] = None
-    text: Optional[str] = None
-    zone: Optional[str] = None
-    fold: Optional[int] = None
-    items: Optional[Union[Union[dict, "PropertyContent"], list[Union[dict, "PropertyContent"]]]] = empty_list()
-    entries: Optional[Union[Union[dict, "ContentEntry"], list[Union[dict, "ContentEntry"]]]] = empty_list()
-
-    def __post_init__(self, *_: str, **kwargs: Any):
-        if self._is_empty(self.kind):
-            self.MissingRequiredField("kind")
-        if not isinstance(self.kind, ContentKind):
-            self.kind = ContentKind(self.kind)
-
-        if self.text is not None and not isinstance(self.text, str):
-            self.text = str(self.text)
-
-        if self.zone is not None and not isinstance(self.zone, str):
-            self.zone = str(self.zone)
-
-        if self.fold is not None and not isinstance(self.fold, int):
-            self.fold = int(self.fold)
-
-        self._normalize_inlined_as_list(slot_name="items", slot_type=PropertyContent, key_name="kind", keyed=False)
-
-        if not isinstance(self.entries, list):
-            self.entries = [self.entries] if self.entries is not None else []
-        self.entries = [v if isinstance(v, ContentEntry) else ContentEntry(**as_dict(v)) for v in self.entries]
-
-        super().__post_init__(**kwargs)
-
-
-@dataclass(repr=False)
-class ContentEntry(YAMLRoot):
-    _inherited_slots: ClassVar[list[str]] = []
-
-    class_class_uri: ClassVar[URIRef] = RK["ContentEntry"]
-    class_class_curie: ClassVar[str] = "rk:ContentEntry"
-    class_name: ClassVar[str] = "ContentEntry"
-    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/ContentEntry")
-
-    key: Union[dict, PropertyContent] = None
-    value: Union[dict, PropertyContent] = None
-
-    def __post_init__(self, *_: str, **kwargs: Any):
-        if self._is_empty(self.key):
-            self.MissingRequiredField("key")
-        if not isinstance(self.key, PropertyContent):
-            self.key = PropertyContent(**as_dict(self.key))
-
-        if self._is_empty(self.value):
-            self.MissingRequiredField("value")
-        if not isinstance(self.value, PropertyContent):
-            self.value = PropertyContent(**as_dict(self.value))
 
         super().__post_init__(**kwargs)
 
@@ -2334,6 +2984,15 @@ class ReconciliationStatus(EnumDefinitionImpl):
         name="ReconciliationStatus",
     )
 
+class ActionKind(EnumDefinitionImpl):
+
+    assign = PermissibleValue(text="assign")
+    terminate = PermissibleValue(text="terminate")
+
+    _defn = EnumDefinition(
+        name="ActionKind",
+    )
+
 class DomainKind(EnumDefinitionImpl):
 
     number = PermissibleValue(
@@ -2417,6 +3076,25 @@ class EmptyHandling(EnumDefinitionImpl):
 
     _defn = EnumDefinition(
         name="EmptyHandling",
+    )
+
+class ValueKind(EnumDefinitionImpl):
+    """
+    Supported kinds of Values.
+    """
+    measurement = PermissibleValue(
+        text="measurement",
+        description="A measurable property with a Measure and an optional Quantity.")
+    flow = PermissibleValue(
+        text="flow",
+        description="Temporal quantities with a Measure and optional Flow.")
+    property = PermissibleValue(
+        text="property",
+        description="Inert typed property content with no Measure.")
+
+    _defn = EnumDefinition(
+        name="ValueKind",
+        description="Supported kinds of Values.",
     )
 
 class ExpressionKind(EnumDefinitionImpl):
@@ -2515,6 +3193,39 @@ class SelectionKind(EnumDefinitionImpl):
         name="SelectionKind",
     )
 
+class DistributionFamily(EnumDefinitionImpl):
+
+    uniform = PermissibleValue(text="uniform")
+    triangular = PermissibleValue(text="triangular")
+    pert = PermissibleValue(text="pert")
+
+    _defn = EnumDefinition(
+        name="DistributionFamily",
+    )
+
+class ContentKind(EnumDefinitionImpl):
+
+    null = PermissibleValue(text="null")
+    boolean = PermissibleValue(text="boolean")
+    integer = PermissibleValue(text="integer")
+    float = PermissibleValue(text="float")
+    string = PermissibleValue(text="string")
+    uuid = PermissibleValue(text="uuid")
+    date = PermissibleValue(text="date")
+    datetime = PermissibleValue(text="datetime")
+    time = PermissibleValue(text="time")
+    duration = PermissibleValue(text="duration")
+    list = PermissibleValue(text="list")
+    tuple = PermissibleValue(text="tuple")
+    set = PermissibleValue(text="set")
+    frozenset = PermissibleValue(text="frozenset")
+    mapping = PermissibleValue(text="mapping")
+    mapping_proxy = PermissibleValue(text="mapping_proxy")
+
+    _defn = EnumDefinition(
+        name="ContentKind",
+    )
+
 class TraversalKind(EnumDefinitionImpl):
 
     relationship = PermissibleValue(
@@ -2606,48 +3317,6 @@ class DuplicateHandling(EnumDefinitionImpl):
         name="DuplicateHandling",
     )
 
-class ValueKind(EnumDefinitionImpl):
-    """
-    Supported kinds of Values.
-    """
-    measurement = PermissibleValue(
-        text="measurement",
-        description="A measurable property with a Measure and an optional Quantity.")
-    flow = PermissibleValue(
-        text="flow",
-        description="Temporal quantities with a Measure and optional Flow.")
-    property = PermissibleValue(
-        text="property",
-        description="Inert typed property content with no Measure.")
-
-    _defn = EnumDefinition(
-        name="ValueKind",
-        description="Supported kinds of Values.",
-    )
-
-class ContentKind(EnumDefinitionImpl):
-
-    null = PermissibleValue(text="null")
-    boolean = PermissibleValue(text="boolean")
-    integer = PermissibleValue(text="integer")
-    float = PermissibleValue(text="float")
-    string = PermissibleValue(text="string")
-    uuid = PermissibleValue(text="uuid")
-    date = PermissibleValue(text="date")
-    datetime = PermissibleValue(text="datetime")
-    time = PermissibleValue(text="time")
-    duration = PermissibleValue(text="duration")
-    list = PermissibleValue(text="list")
-    tuple = PermissibleValue(text="tuple")
-    set = PermissibleValue(text="set")
-    frozenset = PermissibleValue(text="frozenset")
-    mapping = PermissibleValue(text="mapping")
-    mapping_proxy = PermissibleValue(text="mapping_proxy")
-
-    _defn = EnumDefinition(
-        name="ContentKind",
-    )
-
 # Slots
 class slots:
     pass
@@ -2706,8 +3375,7 @@ slots.specification__assignments = Slot(uri=RK.assignments, name="specification_
                    model_uri=DEFAULT_.specification__assignments, domain=None, range=Optional[Union[Union[dict, Assignment], list[Union[dict, Assignment]]]])
 
 slots.specification__unknowns = Slot(uri=RK.unknowns, name="specification__unknowns", curie=RK.curie('unknowns'),
-                   model_uri=DEFAULT_.specification__unknowns, domain=None, range=Optional[Union[Union[str, ValueId], list[Union[str, ValueId]]]],
-                   pattern=re.compile(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'))
+                   model_uri=DEFAULT_.specification__unknowns, domain=None, range=Optional[Union[Union[dict, ValueReference], list[Union[dict, ValueReference]]]])
 
 slots.specification__estimates = Slot(uri=RK.estimates, name="specification__estimates", curie=RK.curie('estimates'),
                    model_uri=DEFAULT_.specification__estimates, domain=None, range=Optional[Union[Union[dict, Assignment], list[Union[dict, Assignment]]]])
@@ -2721,12 +3389,8 @@ slots.specification__objectives = Slot(uri=RK.objectives, name="specification__o
 slots.specification__settings = Slot(uri=RK.settings, name="specification__settings", curie=RK.curie('settings'),
                    model_uri=DEFAULT_.specification__settings, domain=None, range=Optional[Union[dict, Settings]])
 
-slots.assignment__value = Slot(uri=RK.value, name="assignment__value", curie=RK.curie('value'),
-                   model_uri=DEFAULT_.assignment__value, domain=None, range=Union[str, ValueId],
-                   pattern=re.compile(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'))
-
-slots.assignment__quantity = Slot(uri=RK.quantity, name="assignment__quantity", curie=RK.curie('quantity'),
-                   model_uri=DEFAULT_.assignment__quantity, domain=None, range=Union[dict, Quantity])
+slots.specification__policy = Slot(uri=RK.policy, name="specification__policy", curie=RK.curie('policy'),
+                   model_uri=DEFAULT_.specification__policy, domain=None, range=Optional[Union[dict, Policy]])
 
 slots.objective__expression = Slot(uri=RK.expression, name="objective__expression", curie=RK.curie('expression'),
                    model_uri=DEFAULT_.objective__expression, domain=None, range=Union[str, ExpressionId],
@@ -2764,6 +3428,9 @@ slots.report__diagnostics = Slot(uri=RK.diagnostics, name="report__diagnostics",
 
 slots.report__trace = Slot(uri=RK.trace, name="report__trace", curie=RK.curie('trace'),
                    model_uri=DEFAULT_.report__trace, domain=None, range=Optional[Union[Union[dict, Step], list[Union[dict, Step]]]])
+
+slots.report__decisions = Slot(uri=RK.decisions, name="report__decisions", curie=RK.curie('decisions'),
+                   model_uri=DEFAULT_.report__decisions, domain=None, range=Optional[Union[Union[dict, Decision], list[Union[dict, Decision]]]])
 
 slots.status__completion = Slot(uri=RK.completion, name="status__completion", curie=RK.curie('completion'),
                    model_uri=DEFAULT_.status__completion, domain=None, range=Union[str, "CompletionStatus"])
@@ -2818,6 +3485,9 @@ slots.diagnostic__residual = Slot(uri=RK.residual, name="diagnostic__residual", 
 slots.diagnostic__tolerance = Slot(uri=RK.tolerance, name="diagnostic__tolerance", curie=RK.curie('tolerance'),
                    model_uri=DEFAULT_.diagnostic__tolerance, domain=None, range=Optional[Union[dict, Quantity]])
 
+slots.diagnostic__references = Slot(uri=RK.references, name="diagnostic__references", curie=RK.curie('references'),
+                   model_uri=DEFAULT_.diagnostic__references, domain=None, range=Optional[Union[Union[dict, ScopedValueReference], list[Union[dict, ScopedValueReference]]]])
+
 slots.step__kind = Slot(uri=RK.kind, name="step__kind", curie=RK.curie('kind'),
                    model_uri=DEFAULT_.step__kind, domain=None, range=Union[str, "StepKind"])
 
@@ -2844,13 +3514,6 @@ slots.definitions__measures = Slot(uri=RK.measures, name="definitions__measures"
 
 slots.definitions__functions = Slot(uri=RK.functions, name="definitions__functions", curie=RK.curie('functions'),
                    model_uri=DEFAULT_.definitions__functions, domain=None, range=Optional[Union[dict[Union[str, FunctionId], Union[dict, Function]], list[Union[dict, Function]]]])
-
-slots.binding__name = Slot(uri=RK.name, name="binding__name", curie=RK.curie('name'),
-                   model_uri=DEFAULT_.binding__name, domain=None, range=Union[str, Code])
-
-slots.binding__value = Slot(uri=RK.value, name="binding__value", curie=RK.curie('value'),
-                   model_uri=DEFAULT_.binding__value, domain=None, range=Union[str, ValueId],
-                   pattern=re.compile(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'))
 
 slots.formulation__id = Slot(uri=RK.id, name="formulation__id", curie=RK.curie('id'),
                    model_uri=DEFAULT_.formulation__id, domain=None, range=URIRef)
@@ -2888,6 +3551,9 @@ slots.provenance__claims = Slot(uri=RK.claims, name="provenance__claims", curie=
 
 slots.provenance__facts = Slot(uri=RK.facts, name="provenance__facts", curie=RK.curie('facts'),
                    model_uri=DEFAULT_.provenance__facts, domain=None, range=Optional[Union[Union[dict, Fact], list[Union[dict, Fact]]]])
+
+slots.provenance__scenarios = Slot(uri=RK.scenarios, name="provenance__scenarios", curie=RK.curie('scenarios'),
+                   model_uri=DEFAULT_.provenance__scenarios, domain=None, range=Optional[Union[dict[Union[str, ScenarioRealizationId], Union[dict, ScenarioRealization]], list[Union[dict, ScenarioRealization]]]])
 
 slots.source__id = Slot(uri=RK.id, name="source__id", curie=RK.curie('id'),
                    model_uri=DEFAULT_.source__id, domain=None, range=URIRef)
@@ -2997,6 +3663,116 @@ slots.settings__iteration_limit = Slot(uri=RK.iteration_limit, name="settings__i
 
 slots.settings__time_limit = Slot(uri=RK.time_limit, name="settings__time_limit", curie=RK.curie('time_limit'),
                    model_uri=DEFAULT_.settings__time_limit, domain=None, range=Optional[Decimal])
+
+slots.settings__symbol_limit = Slot(uri=RK.symbol_limit, name="settings__symbol_limit", curie=RK.curie('symbol_limit'),
+                   model_uri=DEFAULT_.settings__symbol_limit, domain=None, range=Optional[int])
+
+slots.settings__constraint_limit = Slot(uri=RK.constraint_limit, name="settings__constraint_limit", curie=RK.curie('constraint_limit'),
+                   model_uri=DEFAULT_.settings__constraint_limit, domain=None, range=Optional[int])
+
+slots.valueReference__value = Slot(uri=RK.value, name="valueReference__value", curie=RK.curie('value'),
+                   model_uri=DEFAULT_.valueReference__value, domain=None, range=Union[str, ValueId],
+                   pattern=re.compile(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'))
+
+slots.valueReference__movement = Slot(uri=RK.movement, name="valueReference__movement", curie=RK.curie('movement'),
+                   model_uri=DEFAULT_.valueReference__movement, domain=None, range=Optional[str],
+                   pattern=re.compile(r'\S'))
+
+slots.scopedValueReference__document = Slot(uri=RK.document, name="scopedValueReference__document", curie=RK.curie('document'),
+                   model_uri=DEFAULT_.scopedValueReference__document, domain=None, range=Union[str, UUID])
+
+slots.scopedValueReference__reference = Slot(uri=RK.reference, name="scopedValueReference__reference", curie=RK.curie('reference'),
+                   model_uri=DEFAULT_.scopedValueReference__reference, domain=None, range=Union[dict, ValueReference])
+
+slots.assignment__target = Slot(uri=RK.target, name="assignment__target", curie=RK.curie('target'),
+                   model_uri=DEFAULT_.assignment__target, domain=None, range=Union[dict, ValueReference])
+
+slots.assignment__quantity = Slot(uri=RK.quantity, name="assignment__quantity", curie=RK.curie('quantity'),
+                   model_uri=DEFAULT_.assignment__quantity, domain=None, range=Union[dict, Quantity])
+
+slots.observationBinding__name = Slot(uri=RK.name, name="observationBinding__name", curie=RK.curie('name'),
+                   model_uri=DEFAULT_.observationBinding__name, domain=None, range=Union[str, Code])
+
+slots.observationBinding__target = Slot(uri=RK.target, name="observationBinding__target", curie=RK.curie('target'),
+                   model_uri=DEFAULT_.observationBinding__target, domain=None, range=Union[dict, ValueReference])
+
+slots.observationBinding__available_at = Slot(uri=RK.available_at, name="observationBinding__available_at", curie=RK.curie('available_at'),
+                   model_uri=DEFAULT_.observationBinding__available_at, domain=None, range=Optional[Union[str, XSDDate]])
+
+slots.action__kind = Slot(uri=RK.kind, name="action__kind", curie=RK.curie('kind'),
+                   model_uri=DEFAULT_.action__kind, domain=None, range=Union[str, "ActionKind"])
+
+slots.action__target = Slot(uri=RK.target, name="action__target", curie=RK.curie('target'),
+                   model_uri=DEFAULT_.action__target, domain=None, range=Optional[Union[dict, ValueReference]])
+
+slots.action__quantity = Slot(uri=RK.quantity, name="action__quantity", curie=RK.curie('quantity'),
+                   model_uri=DEFAULT_.action__quantity, domain=None, range=Optional[Union[dict, Quantity]])
+
+slots.rule__id = Slot(uri=RK.id, name="rule__id", curie=RK.curie('id'),
+                   model_uri=DEFAULT_.rule__id, domain=None, range=URIRef)
+
+slots.rule__condition = Slot(uri=RK.condition, name="rule__condition", curie=RK.curie('condition'),
+                   model_uri=DEFAULT_.rule__condition, domain=None, range=Union[dict, Expression])
+
+slots.rule__actions = Slot(uri=RK.actions, name="rule__actions", curie=RK.curie('actions'),
+                   model_uri=DEFAULT_.rule__actions, domain=None, range=Union[Union[dict, Action], list[Union[dict, Action]]])
+
+slots.decisionPoint__id = Slot(uri=RK.id, name="decisionPoint__id", curie=RK.curie('id'),
+                   model_uri=DEFAULT_.decisionPoint__id, domain=None, range=URIRef)
+
+slots.decisionPoint__at = Slot(uri=RK.at, name="decisionPoint__at", curie=RK.curie('at'),
+                   model_uri=DEFAULT_.decisionPoint__at, domain=None, range=Union[str, XSDDate])
+
+slots.decisionPoint__observations = Slot(uri=RK.observations, name="decisionPoint__observations", curie=RK.curie('observations'),
+                   model_uri=DEFAULT_.decisionPoint__observations, domain=None, range=Union[Union[dict, ObservationBinding], list[Union[dict, ObservationBinding]]])
+
+slots.decisionPoint__rules = Slot(uri=RK.rules, name="decisionPoint__rules", curie=RK.curie('rules'),
+                   model_uri=DEFAULT_.decisionPoint__rules, domain=None, range=Union[dict[Union[str, RuleId], Union[dict, Rule]], list[Union[dict, Rule]]])
+
+slots.decisionPoint__fallback = Slot(uri=RK.fallback, name="decisionPoint__fallback", curie=RK.curie('fallback'),
+                   model_uri=DEFAULT_.decisionPoint__fallback, domain=None, range=Union[Union[dict, Action], list[Union[dict, Action]]])
+
+slots.policy__id = Slot(uri=RK.id, name="policy__id", curie=RK.curie('id'),
+                   model_uri=DEFAULT_.policy__id, domain=None, range=URIRef)
+
+slots.policy__targets = Slot(uri=RK.targets, name="policy__targets", curie=RK.curie('targets'),
+                   model_uri=DEFAULT_.policy__targets, domain=None, range=Union[Union[dict, ValueReference], list[Union[dict, ValueReference]]])
+
+slots.policy__points = Slot(uri=RK.points, name="policy__points", curie=RK.curie('points'),
+                   model_uri=DEFAULT_.policy__points, domain=None, range=Union[dict[Union[str, DecisionPointId], Union[dict, DecisionPoint]], list[Union[dict, DecisionPoint]]])
+
+slots.observedQuantity__name = Slot(uri=RK.name, name="observedQuantity__name", curie=RK.curie('name'),
+                   model_uri=DEFAULT_.observedQuantity__name, domain=None, range=Union[str, Code])
+
+slots.observedQuantity__target = Slot(uri=RK.target, name="observedQuantity__target", curie=RK.curie('target'),
+                   model_uri=DEFAULT_.observedQuantity__target, domain=None, range=Union[dict, ValueReference])
+
+slots.observedQuantity__quantity = Slot(uri=RK.quantity, name="observedQuantity__quantity", curie=RK.curie('quantity'),
+                   model_uri=DEFAULT_.observedQuantity__quantity, domain=None, range=Union[dict, Quantity])
+
+slots.observedQuantity__available_at = Slot(uri=RK.available_at, name="observedQuantity__available_at", curie=RK.curie('available_at'),
+                   model_uri=DEFAULT_.observedQuantity__available_at, domain=None, range=Union[str, XSDDate])
+
+slots.decision__point = Slot(uri=RK.point, name="decision__point", curie=RK.curie('point'),
+                   model_uri=DEFAULT_.decision__point, domain=None, range=Union[str, UUID])
+
+slots.decision__at = Slot(uri=RK.at, name="decision__at", curie=RK.curie('at'),
+                   model_uri=DEFAULT_.decision__at, domain=None, range=Union[str, XSDDate])
+
+slots.decision__rule = Slot(uri=RK.rule, name="decision__rule", curie=RK.curie('rule'),
+                   model_uri=DEFAULT_.decision__rule, domain=None, range=Optional[Union[str, UUID]])
+
+slots.decision__observations = Slot(uri=RK.observations, name="decision__observations", curie=RK.curie('observations'),
+                   model_uri=DEFAULT_.decision__observations, domain=None, range=Union[Union[dict, ObservedQuantity], list[Union[dict, ObservedQuantity]]])
+
+slots.decision__assignments = Slot(uri=RK.assignments, name="decision__assignments", curie=RK.curie('assignments'),
+                   model_uri=DEFAULT_.decision__assignments, domain=None, range=Union[Union[dict, Assignment], list[Union[dict, Assignment]]])
+
+slots.decision__terminated = Slot(uri=RK.terminated, name="decision__terminated", curie=RK.curie('terminated'),
+                   model_uri=DEFAULT_.decision__terminated, domain=None, range=Union[bool, Bool])
+
+slots.decision__termination_reason = Slot(uri=RK.termination_reason, name="decision__termination_reason", curie=RK.curie('termination_reason'),
+                   model_uri=DEFAULT_.decision__termination_reason, domain=None, range=Optional[str])
 
 slots.quantity__magnitude = Slot(uri=RK.magnitude, name="quantity__magnitude", curie=RK.curie('magnitude'),
                    model_uri=DEFAULT_.quantity__magnitude, domain=None, range=Decimal)
@@ -3138,6 +3914,13 @@ slots.constraint__predicate = Slot(uri=RK.predicate, name="constraint__predicate
                    model_uri=DEFAULT_.constraint__predicate, domain=None, range=Union[str, ExpressionId],
                    pattern=re.compile(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'))
 
+slots.binding__name = Slot(uri=RK.name, name="binding__name", curie=RK.curie('name'),
+                   model_uri=DEFAULT_.binding__name, domain=None, range=Union[str, Code])
+
+slots.binding__value = Slot(uri=RK.value, name="binding__value", curie=RK.curie('value'),
+                   model_uri=DEFAULT_.binding__value, domain=None, range=Union[str, ValueId],
+                   pattern=re.compile(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'))
+
 slots.assembly__entities = Slot(uri=RK.entities, name="assembly__entities", curie=RK.curie('entities'),
                    model_uri=DEFAULT_.assembly__entities, domain=None, range=Optional[Union[Union[str, EntityId], list[Union[str, EntityId]]]],
                    pattern=re.compile(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'))
@@ -3145,6 +3928,111 @@ slots.assembly__entities = Slot(uri=RK.entities, name="assembly__entities", curi
 slots.assembly__relationships = Slot(uri=RK.relationships, name="assembly__relationships", curie=RK.curie('relationships'),
                    model_uri=DEFAULT_.assembly__relationships, domain=None, range=Optional[Union[Union[str, RelationshipId], list[Union[str, RelationshipId]]]],
                    pattern=re.compile(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'))
+
+slots.scenarioParameter__name = Slot(uri=RK.name, name="scenarioParameter__name", curie=RK.curie('name'),
+                   model_uri=DEFAULT_.scenarioParameter__name, domain=None, range=Union[str, Code])
+
+slots.scenarioParameter__quantity = Slot(uri=RK.quantity, name="scenarioParameter__quantity", curie=RK.curie('quantity'),
+                   model_uri=DEFAULT_.scenarioParameter__quantity, domain=None, range=Optional[Union[dict, Quantity]])
+
+slots.scenarioParameter__distribution = Slot(uri=RK.distribution, name="scenarioParameter__distribution", curie=RK.curie('distribution'),
+                   model_uri=DEFAULT_.scenarioParameter__distribution, domain=None, range=Optional[Union[dict, Distribution]])
+
+slots.scenarioPlan__id = Slot(uri=RK.id, name="scenarioPlan__id", curie=RK.curie('id'),
+                   model_uri=DEFAULT_.scenarioPlan__id, domain=None, range=URIRef)
+
+slots.scenarioPlan__method = Slot(uri=RK.method, name="scenarioPlan__method", curie=RK.curie('method'),
+                   model_uri=DEFAULT_.scenarioPlan__method, domain=None, range=str)
+
+slots.scenarioPlan__seed = Slot(uri=RK.seed, name="scenarioPlan__seed", curie=RK.curie('seed'),
+                   model_uri=DEFAULT_.scenarioPlan__seed, domain=None, range=int)
+
+slots.scenarioPlan__periods = Slot(uri=RK.periods, name="scenarioPlan__periods", curie=RK.curie('periods'),
+                   model_uri=DEFAULT_.scenarioPlan__periods, domain=None, range=Union[Union[dict, Period], list[Union[dict, Period]]])
+
+slots.scenarioPlan__parameters = Slot(uri=RK.parameters, name="scenarioPlan__parameters", curie=RK.curie('parameters'),
+                   model_uri=DEFAULT_.scenarioPlan__parameters, domain=None, range=Union[Union[dict, ScenarioParameter], list[Union[dict, ScenarioParameter]]])
+
+slots.randomStream__name = Slot(uri=RK.name, name="randomStream__name", curie=RK.curie('name'),
+                   model_uri=DEFAULT_.randomStream__name, domain=None, range=Union[str, Code])
+
+slots.randomStream__identifier = Slot(uri=RK.identifier, name="randomStream__identifier", curie=RK.curie('identifier'),
+                   model_uri=DEFAULT_.randomStream__identifier, domain=None, range=str)
+
+slots.libraryVersion__name = Slot(uri=RK.name, name="libraryVersion__name", curie=RK.curie('name'),
+                   model_uri=DEFAULT_.libraryVersion__name, domain=None, range=str)
+
+slots.libraryVersion__version = Slot(uri=RK.version, name="libraryVersion__version", curie=RK.curie('version'),
+                   model_uri=DEFAULT_.libraryVersion__version, domain=None, range=str)
+
+slots.observationAvailability__target = Slot(uri=RK.target, name="observationAvailability__target", curie=RK.curie('target'),
+                   model_uri=DEFAULT_.observationAvailability__target, domain=None, range=Union[dict, ValueReference])
+
+slots.observationAvailability__available_at = Slot(uri=RK.available_at, name="observationAvailability__available_at", curie=RK.curie('available_at'),
+                   model_uri=DEFAULT_.observationAvailability__available_at, domain=None, range=Union[str, XSDDate])
+
+slots.scenarioRealization__id = Slot(uri=RK.id, name="scenarioRealization__id", curie=RK.curie('id'),
+                   model_uri=DEFAULT_.scenarioRealization__id, domain=None, range=URIRef)
+
+slots.scenarioRealization__plan = Slot(uri=RK.plan, name="scenarioRealization__plan", curie=RK.curie('plan'),
+                   model_uri=DEFAULT_.scenarioRealization__plan, domain=None, range=Union[dict, ScenarioPlan])
+
+slots.scenarioRealization__key = Slot(uri=RK.key, name="scenarioRealization__key", curie=RK.curie('key'),
+                   model_uri=DEFAULT_.scenarioRealization__key, domain=None, range=Union[str, Code])
+
+slots.scenarioRealization__generator = Slot(uri=RK.generator, name="scenarioRealization__generator", curie=RK.curie('generator'),
+                   model_uri=DEFAULT_.scenarioRealization__generator, domain=None, range=str)
+
+slots.scenarioRealization__versions = Slot(uri=RK.versions, name="scenarioRealization__versions", curie=RK.curie('versions'),
+                   model_uri=DEFAULT_.scenarioRealization__versions, domain=None, range=Union[Union[dict, LibraryVersion], list[Union[dict, LibraryVersion]]])
+
+slots.scenarioRealization__streams = Slot(uri=RK.streams, name="scenarioRealization__streams", curie=RK.curie('streams'),
+                   model_uri=DEFAULT_.scenarioRealization__streams, domain=None, range=Union[Union[dict, RandomStream], list[Union[dict, RandomStream]]])
+
+slots.scenarioRealization__inputs = Slot(uri=RK.inputs, name="scenarioRealization__inputs", curie=RK.curie('inputs'),
+                   model_uri=DEFAULT_.scenarioRealization__inputs, domain=None, range=Union[Union[dict, Binding], list[Union[dict, Binding]]])
+
+slots.scenarioRealization__outputs = Slot(uri=RK.outputs, name="scenarioRealization__outputs", curie=RK.curie('outputs'),
+                   model_uri=DEFAULT_.scenarioRealization__outputs, domain=None, range=Union[Union[dict, Binding], list[Union[dict, Binding]]])
+
+slots.scenarioRealization__availability = Slot(uri=RK.availability, name="scenarioRealization__availability", curie=RK.curie('availability'),
+                   model_uri=DEFAULT_.scenarioRealization__availability, domain=None, range=Union[Union[dict, ObservationAvailability], list[Union[dict, ObservationAvailability]]])
+
+slots.characteristics__labels = Slot(uri=RK.labels, name="characteristics__labels", curie=RK.curie('labels'),
+                   model_uri=DEFAULT_.characteristics__labels, domain=None, range=Optional[Union[dict[Union[str, LabelId], Union[dict, Label]], list[Union[dict, Label]]]])
+
+slots.characteristics__values = Slot(uri=RK.values, name="characteristics__values", curie=RK.curie('values'),
+                   model_uri=DEFAULT_.characteristics__values, domain=None, range=Optional[Union[dict[Union[str, ValueId], Union[dict, Value]], list[Union[dict, Value]]]])
+
+slots.label__id = Slot(uri=RK.id, name="label__id", curie=RK.curie('id'),
+                   model_uri=DEFAULT_.label__id, domain=None, range=URIRef)
+
+slots.label__key = Slot(uri=RK.key, name="label__key", curie=RK.curie('key'),
+                   model_uri=DEFAULT_.label__key, domain=None, range=str,
+                   pattern=re.compile(r'\S'))
+
+slots.label__classifications = Slot(uri=RK.classifications, name="label__classifications", curie=RK.curie('classifications'),
+                   model_uri=DEFAULT_.label__classifications, domain=None, range=Optional[Union[Union[str, ClassificationId], list[Union[str, ClassificationId]]]],
+                   pattern=re.compile(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'))
+
+slots.value__id = Slot(uri=RK.id, name="value__id", curie=RK.curie('id'),
+                   model_uri=DEFAULT_.value__id, domain=None, range=URIRef)
+
+slots.value__key = Slot(uri=RK.key, name="value__key", curie=RK.curie('key'),
+                   model_uri=DEFAULT_.value__key, domain=None, range=str,
+                   pattern=re.compile(r'\S'))
+
+slots.value__kind = Slot(uri=RK.kind, name="value__kind", curie=RK.curie('kind'),
+                   model_uri=DEFAULT_.value__kind, domain=None, range=Union[str, "ValueKind"])
+
+slots.value__description = Slot(uri=RK.description, name="value__description", curie=RK.curie('description'),
+                   model_uri=DEFAULT_.value__description, domain=None, range=Optional[str])
+
+slots.value__flow = Slot(uri=RK.flow, name="value__flow", curie=RK.curie('flow'),
+                   model_uri=DEFAULT_.value__flow, domain=None, range=Optional[Union[dict, Flow]])
+
+slots.value__content = Slot(uri=RK.content, name="value__content", curie=RK.curie('content'),
+                   model_uri=DEFAULT_.value__content, domain=None, range=Optional[Union[dict, PropertyContent]])
 
 slots.expression__id = Slot(uri=RK.id, name="expression__id", curie=RK.curie('id'),
                    model_uri=DEFAULT_.expression__id, domain=None, range=URIRef)
@@ -3159,8 +4047,7 @@ slots.expression__boolean = Slot(uri=RK.boolean, name="expression__boolean", cur
                    model_uri=DEFAULT_.expression__boolean, domain=None, range=Optional[Union[bool, Bool]])
 
 slots.expression__target = Slot(uri=RK.target, name="expression__target", curie=RK.curie('target'),
-                   model_uri=DEFAULT_.expression__target, domain=None, range=Optional[Union[str, ValueId]],
-                   pattern=re.compile(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'))
+                   model_uri=DEFAULT_.expression__target, domain=None, range=Optional[Union[dict, ValueReference]])
 
 slots.expression__operator = Slot(uri=RK.operator, name="expression__operator", curie=RK.curie('operator'),
                    model_uri=DEFAULT_.expression__operator, domain=None, range=Optional[Union[str, "Operator"]])
@@ -3221,6 +4108,71 @@ slots.relationship__target = Slot(uri=RK.target, name="relationship__target", cu
 
 slots.relationship__characteristics = Slot(uri=RK.characteristics, name="relationship__characteristics", curie=RK.curie('characteristics'),
                    model_uri=DEFAULT_.relationship__characteristics, domain=None, range=Optional[Union[dict, Characteristics]])
+
+slots.flow__units = Slot(uri=RK.units, name="flow__units", curie=RK.curie('units'),
+                   model_uri=DEFAULT_.flow__units, domain=None, range=str,
+                   pattern=re.compile(r'\S'))
+
+slots.flow__movements = Slot(uri=RK.movements, name="flow__movements", curie=RK.curie('movements'),
+                   model_uri=DEFAULT_.flow__movements, domain=None, range=Union[Union[dict, Movement], list[Union[dict, Movement]]])
+
+slots.movement__key = Slot(uri=RK.key, name="movement__key", curie=RK.curie('key'),
+                   model_uri=DEFAULT_.movement__key, domain=None, range=str,
+                   pattern=re.compile(r'\S'))
+
+slots.movement__date = Slot(uri=RK.date, name="movement__date", curie=RK.curie('date'),
+                   model_uri=DEFAULT_.movement__date, domain=None, range=Optional[Union[str, XSDDate]])
+
+slots.movement__period = Slot(uri=RK.period, name="movement__period", curie=RK.curie('period'),
+                   model_uri=DEFAULT_.movement__period, domain=None, range=Optional[Union[dict, Period]])
+
+slots.movement__magnitude = Slot(uri=RK.magnitude, name="movement__magnitude", curie=RK.curie('magnitude'),
+                   model_uri=DEFAULT_.movement__magnitude, domain=None, range=Optional[Decimal])
+
+slots.movement__claims = Slot(uri=RK.claims, name="movement__claims", curie=RK.curie('claims'),
+                   model_uri=DEFAULT_.movement__claims, domain=None, range=Optional[Union[Union[str, UUID], list[Union[str, UUID]]]])
+
+slots.distribution__kind = Slot(uri=RK.kind, name="distribution__kind", curie=RK.curie('kind'),
+                   model_uri=DEFAULT_.distribution__kind, domain=None, range=Union[str, "DistributionFamily"])
+
+slots.distribution__lower = Slot(uri=RK.lower, name="distribution__lower", curie=RK.curie('lower'),
+                   model_uri=DEFAULT_.distribution__lower, domain=None, range=float)
+
+slots.distribution__upper = Slot(uri=RK.upper, name="distribution__upper", curie=RK.curie('upper'),
+                   model_uri=DEFAULT_.distribution__upper, domain=None, range=float)
+
+slots.distribution__mode = Slot(uri=RK.mode, name="distribution__mode", curie=RK.curie('mode'),
+                   model_uri=DEFAULT_.distribution__mode, domain=None, range=Optional[float])
+
+slots.distribution__weighting = Slot(uri=RK.weighting, name="distribution__weighting", curie=RK.curie('weighting'),
+                   model_uri=DEFAULT_.distribution__weighting, domain=None, range=Optional[float])
+
+slots.distribution__units = Slot(uri=RK.units, name="distribution__units", curie=RK.curie('units'),
+                   model_uri=DEFAULT_.distribution__units, domain=None, range=str)
+
+slots.propertyContent__kind = Slot(uri=RK.kind, name="propertyContent__kind", curie=RK.curie('kind'),
+                   model_uri=DEFAULT_.propertyContent__kind, domain=None, range=Union[str, "ContentKind"])
+
+slots.propertyContent__text = Slot(uri=RK.text, name="propertyContent__text", curie=RK.curie('text'),
+                   model_uri=DEFAULT_.propertyContent__text, domain=None, range=Optional[str])
+
+slots.propertyContent__zone = Slot(uri=RK.zone, name="propertyContent__zone", curie=RK.curie('zone'),
+                   model_uri=DEFAULT_.propertyContent__zone, domain=None, range=Optional[str])
+
+slots.propertyContent__fold = Slot(uri=RK.fold, name="propertyContent__fold", curie=RK.curie('fold'),
+                   model_uri=DEFAULT_.propertyContent__fold, domain=None, range=Optional[int])
+
+slots.propertyContent__items = Slot(uri=RK.items, name="propertyContent__items", curie=RK.curie('items'),
+                   model_uri=DEFAULT_.propertyContent__items, domain=None, range=Optional[Union[Union[dict, PropertyContent], list[Union[dict, PropertyContent]]]])
+
+slots.propertyContent__entries = Slot(uri=RK.entries, name="propertyContent__entries", curie=RK.curie('entries'),
+                   model_uri=DEFAULT_.propertyContent__entries, domain=None, range=Optional[Union[Union[dict, ContentEntry], list[Union[dict, ContentEntry]]]])
+
+slots.contentEntry__key = Slot(uri=RK.key, name="contentEntry__key", curie=RK.curie('key'),
+                   model_uri=DEFAULT_.contentEntry__key, domain=None, range=Union[dict, PropertyContent])
+
+slots.contentEntry__value = Slot(uri=RK.value, name="contentEntry__value", curie=RK.curie('value'),
+                   model_uri=DEFAULT_.contentEntry__value, domain=None, range=Union[dict, PropertyContent])
 
 slots.traversal__kind = Slot(uri=RK.kind, name="traversal__kind", curie=RK.curie('kind'),
                    model_uri=DEFAULT_.traversal__kind, domain=None, range=Union[str, "TraversalKind"])
@@ -3296,89 +4248,6 @@ slots.entity__name = Slot(uri=RK.name, name="entity__name", curie=RK.curie('name
 slots.entity__characteristics = Slot(uri=RK.characteristics, name="entity__characteristics", curie=RK.curie('characteristics'),
                    model_uri=DEFAULT_.entity__characteristics, domain=None, range=Optional[Union[dict, Characteristics]])
 
-slots.characteristics__labels = Slot(uri=RK.labels, name="characteristics__labels", curie=RK.curie('labels'),
-                   model_uri=DEFAULT_.characteristics__labels, domain=None, range=Optional[Union[dict[Union[str, LabelId], Union[dict, Label]], list[Union[dict, Label]]]])
-
-slots.characteristics__values = Slot(uri=RK.values, name="characteristics__values", curie=RK.curie('values'),
-                   model_uri=DEFAULT_.characteristics__values, domain=None, range=Optional[Union[dict[Union[str, ValueId], Union[dict, Value]], list[Union[dict, Value]]]])
-
-slots.label__id = Slot(uri=RK.id, name="label__id", curie=RK.curie('id'),
-                   model_uri=DEFAULT_.label__id, domain=None, range=URIRef)
-
-slots.label__key = Slot(uri=RK.key, name="label__key", curie=RK.curie('key'),
-                   model_uri=DEFAULT_.label__key, domain=None, range=str,
-                   pattern=re.compile(r'\S'))
-
-slots.label__classifications = Slot(uri=RK.classifications, name="label__classifications", curie=RK.curie('classifications'),
-                   model_uri=DEFAULT_.label__classifications, domain=None, range=Optional[Union[Union[str, ClassificationId], list[Union[str, ClassificationId]]]],
-                   pattern=re.compile(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'))
-
-slots.value__id = Slot(uri=RK.id, name="value__id", curie=RK.curie('id'),
-                   model_uri=DEFAULT_.value__id, domain=None, range=URIRef)
-
-slots.value__key = Slot(uri=RK.key, name="value__key", curie=RK.curie('key'),
-                   model_uri=DEFAULT_.value__key, domain=None, range=str,
-                   pattern=re.compile(r'\S'))
-
-slots.value__kind = Slot(uri=RK.kind, name="value__kind", curie=RK.curie('kind'),
-                   model_uri=DEFAULT_.value__kind, domain=None, range=Union[str, "ValueKind"])
-
-slots.value__description = Slot(uri=RK.description, name="value__description", curie=RK.curie('description'),
-                   model_uri=DEFAULT_.value__description, domain=None, range=Optional[str])
-
-slots.value__flow = Slot(uri=RK.flow, name="value__flow", curie=RK.curie('flow'),
-                   model_uri=DEFAULT_.value__flow, domain=None, range=Optional[Union[dict, Flow]])
-
-slots.value__content = Slot(uri=RK.content, name="value__content", curie=RK.curie('content'),
-                   model_uri=DEFAULT_.value__content, domain=None, range=Optional[Union[dict, PropertyContent]])
-
-slots.flow__units = Slot(uri=RK.units, name="flow__units", curie=RK.curie('units'),
-                   model_uri=DEFAULT_.flow__units, domain=None, range=str,
-                   pattern=re.compile(r'\S'))
-
-slots.flow__movements = Slot(uri=RK.movements, name="flow__movements", curie=RK.curie('movements'),
-                   model_uri=DEFAULT_.flow__movements, domain=None, range=Union[Union[dict, Movement], list[Union[dict, Movement]]])
-
-slots.movement__key = Slot(uri=RK.key, name="movement__key", curie=RK.curie('key'),
-                   model_uri=DEFAULT_.movement__key, domain=None, range=str,
-                   pattern=re.compile(r'\S'))
-
-slots.movement__date = Slot(uri=RK.date, name="movement__date", curie=RK.curie('date'),
-                   model_uri=DEFAULT_.movement__date, domain=None, range=Optional[Union[str, XSDDate]])
-
-slots.movement__period = Slot(uri=RK.period, name="movement__period", curie=RK.curie('period'),
-                   model_uri=DEFAULT_.movement__period, domain=None, range=Optional[Union[dict, Period]])
-
-slots.movement__magnitude = Slot(uri=RK.magnitude, name="movement__magnitude", curie=RK.curie('magnitude'),
-                   model_uri=DEFAULT_.movement__magnitude, domain=None, range=Optional[Decimal])
-
-slots.movement__claims = Slot(uri=RK.claims, name="movement__claims", curie=RK.curie('claims'),
-                   model_uri=DEFAULT_.movement__claims, domain=None, range=Optional[Union[Union[str, UUID], list[Union[str, UUID]]]])
-
-slots.propertyContent__kind = Slot(uri=RK.kind, name="propertyContent__kind", curie=RK.curie('kind'),
-                   model_uri=DEFAULT_.propertyContent__kind, domain=None, range=Union[str, "ContentKind"])
-
-slots.propertyContent__text = Slot(uri=RK.text, name="propertyContent__text", curie=RK.curie('text'),
-                   model_uri=DEFAULT_.propertyContent__text, domain=None, range=Optional[str])
-
-slots.propertyContent__zone = Slot(uri=RK.zone, name="propertyContent__zone", curie=RK.curie('zone'),
-                   model_uri=DEFAULT_.propertyContent__zone, domain=None, range=Optional[str])
-
-slots.propertyContent__fold = Slot(uri=RK.fold, name="propertyContent__fold", curie=RK.curie('fold'),
-                   model_uri=DEFAULT_.propertyContent__fold, domain=None, range=Optional[int])
-
-slots.propertyContent__items = Slot(uri=RK.items, name="propertyContent__items", curie=RK.curie('items'),
-                   model_uri=DEFAULT_.propertyContent__items, domain=None, range=Optional[Union[Union[dict, PropertyContent], list[Union[dict, PropertyContent]]]])
-
-slots.propertyContent__entries = Slot(uri=RK.entries, name="propertyContent__entries", curie=RK.curie('entries'),
-                   model_uri=DEFAULT_.propertyContent__entries, domain=None, range=Optional[Union[Union[dict, ContentEntry], list[Union[dict, ContentEntry]]]])
-
-slots.contentEntry__key = Slot(uri=RK.key, name="contentEntry__key", curie=RK.curie('key'),
-                   model_uri=DEFAULT_.contentEntry__key, domain=None, range=Union[dict, PropertyContent])
-
-slots.contentEntry__value = Slot(uri=RK.value, name="contentEntry__value", curie=RK.curie('value'),
-                   model_uri=DEFAULT_.contentEntry__value, domain=None, range=Union[dict, PropertyContent])
-
 slots.period__start = Slot(uri=RK.start, name="period__start", curie=RK.curie('start'),
                    model_uri=DEFAULT_.period__start, domain=None, range=Union[str, XSDDate])
 
@@ -3388,10 +4257,10 @@ slots.period__end = Slot(uri=RK.end, name="period__end", curie=RK.curie('end'),
 slots.span__name = Slot(uri=RK.name, name="span__name", curie=RK.curie('name'),
                    model_uri=DEFAULT_.span__name, domain=None, range=Optional[str])
 
-slots.Relationship_classification = Slot(uri=RK.classification, name="Relationship_classification", curie=RK.curie('classification'),
-                   model_uri=DEFAULT_.Relationship_classification, domain=Relationship, range=Union[str, ClassificationId],
-                   pattern=re.compile(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'))
-
 slots.Value_measure = Slot(uri=RK.measure, name="Value_measure", curie=RK.curie('measure'),
                    model_uri=DEFAULT_.Value_measure, domain=Value, range=Union[str, MeasureId],
+                   pattern=re.compile(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'))
+
+slots.Relationship_classification = Slot(uri=RK.classification, name="Relationship_classification", curie=RK.curie('classification'),
+                   model_uri=DEFAULT_.Relationship_classification, domain=Relationship, range=Union[str, ClassificationId],
                    pattern=re.compile(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'))

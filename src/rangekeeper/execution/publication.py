@@ -1,6 +1,7 @@
 """Construct detached candidate revisions; persist only after independent acceptance."""
 
 from collections.abc import Mapping
+from typing import Any, cast
 from uuid import UUID, uuid4
 
 from ..model import Model
@@ -13,99 +14,92 @@ from .errors import NumericalError
 
 
 def candidate(
-    prepared: Prepared, unknowns: Mapping[UUID, float], *, run_id: UUID
+    prepared: Prepared, unknowns: Mapping[str, float], *, run_id: UUID
 ) -> Model:
-    """Build and codec-round-trip a new Model with canonical scalar quantities.
+    """Construct and round-trip one candidate, preserving shape and unrelated content.
 
-    Preserve definitions, mathematical declarations, unrelated content and all old
-    Claims. Replace Facts for the written Values with fresh method-labelled Claims;
-    do not leave changed quantities attached to their previous accepted evidence.
-    Method descriptions identify the Run/Specification without inventing a new
-    schema-level cross-document provenance reference.
+    Private symbol tokens never become domain identities. Each changed Movement
+    receives new evidence; old Claims remain available as revision history.
     """
+    from .evaluator import quantity as finite_quantity
+
     if set(unknowns) != set(prepared.unknowns):
         raise NumericalError(
-            "backend candidate does not contain exactly the unknown UUIDs"
+            "backend candidate does not contain exactly the unknown symbols"
         )
     quantities = dict(prepared.assignments)
-    for id, magnitude in unknowns.items():
-        from .evaluator import quantity as finite_quantity
+    for token, magnitude in unknowns.items():
+        quantities[token] = finite_quantity(magnitude, prepared.value_units[token])
+    data = cast(dict[str, Any], prepared.model.to_data())
+    provenance = data.setdefault("provenance", {})
+    claims = provenance.setdefault("claims", [])
+    changed = {str(prepared.references[token].value) for token in quantities}
+    facts = [f for f in provenance.get("facts", []) if f["target"] not in changed]
 
-        quantities[id] = finite_quantity(magnitude, prepared.value_units[id])
-    system = prepared.model.system.to_data() if prepared.model.system else {}
-    serialized_quantities = {
-        str(id): quantity.to_data() for id, quantity in quantities.items()
-    }
+    def claim(content, method):
+        identity = str(uuid4())
+        claims.append(
+            dict(
+                id=identity,
+                kind="asserted",
+                content=content,
+                method=dict(
+                    code=method,
+                    version="2",
+                    description=f"Run {run_id}; Specification {prepared.composition.root_id}; independently checked publication.",
+                ),
+            )
+        )
+        return identity
 
     def replace(node):
         if isinstance(node, dict):
-            id = node.get("id")
-            if id in serialized_quantities and node.get("kind") == "measurement":
-                node["quantity"] = serialized_quantities[id]
-            for value in node.values():
-                replace(value)
+            identity = node.get("id")
+            if identity in changed and node.get("kind") in ("measurement", "flow"):
+                if node["kind"] == "measurement":
+                    node["quantity"] = quantities[identity].to_data()
+                else:
+                    for movement in node["flow"]["movements"]:
+                        token = identity + "/" + movement["key"]
+                        if token in quantities:
+                            amount = quantities[token].to_data()
+                            movement["magnitude"] = amount["magnitude"]
+                            movement["claims"] = [
+                                claim(
+                                    dict(
+                                        target=prepared.references[token].to_data(),
+                                        quantity=amount,
+                                    ),
+                                    (
+                                        "rangekeeper.movement.assignment"
+                                        if token in prepared.assignments
+                                        else "rangekeeper.movement.solution"
+                                    ),
+                                )
+                            ]
+                content = {
+                    name: node[name]
+                    for name in ("measure", "quantity", "flow")
+                    if name in node
+                }
+                evidence = claim(content, "rangekeeper.value.publication")
+                facts.append(dict(target=identity, claims=[evidence]))
+            for child in node.values():
+                replace(child)
         elif isinstance(node, list):
-            for value in node:
-                replace(value)
+            for child in node:
+                replace(child)
 
-    replace(system)
-    provenance = (
-        prepared.model.provenance.to_data() if prepared.model.provenance else {}
-    )
-    original = prepared.model.provenance
-    claims = [claim.to_data() for claim in (original.claims or ())] if original else []
-    facts = (
-        [
-            fact.to_data()
-            for fact in (original.facts or ())
-            if fact.target not in quantities
-        ]
-        if original
-        else []
-    )
-    for id, quantity in quantities.items():
-        claim_id = uuid4()
-        claims.append(
-            {
-                "id": str(claim_id),
-                "kind": "asserted",
-                "content": {
-                    "measure": str(prepared.values[id].measure),
-                    "quantity": quantity.to_data(),
-                },
-                "method": {
-                    "code": (
-                        "rangekeeper.scalar.assignment"
-                        if id in prepared.assignments
-                        else "rangekeeper.scalar.solution"
-                    ),
-                    "version": "1",
-                    "description": f"Run {run_id}; Specification {prepared.composition.root_id}; independently checked scalar publication.",
-                },
-            }
-        )
-        facts.append({"target": str(id), "claims": [str(claim_id)]})
+    replace(data.get("system", {}))
     if not quantities:
-        claims.append(
-            {
-                "id": str(uuid4()),
-                "kind": "asserted",
-                "content": {"model": str(prepared.model.id)},
-                "method": {
-                    "code": "rangekeeper.scalar.feasibility",
-                    "version": "1",
-                    "description": f"Run {run_id}; Specification {prepared.composition.root_id}; accepted constant-only mathematics.",
-                },
-            }
-        )
-    provenance.update(claims=claims, facts=facts)
+        claim(dict(model=str(prepared.model.id)), "rangekeeper.feasibility")
+    provenance["facts"] = facts
     result = prepared.model.revise(
         Update(
-            system=System.from_data(system),
+            system=System.from_data(data.get("system", {})),
             provenance=Provenance.from_data(provenance),
         )
     )
-    # Numerical acceptance inspects exactly what interchange will deliver.
     return json.loads(json.dumps(result), kind=Model)
 
 

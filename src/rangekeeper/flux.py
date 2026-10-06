@@ -12,6 +12,7 @@ import pint
 import pyxirr
 
 import rangekeeper as rk
+from rangekeeper import _legacy_duration as legacy_duration
 
 
 def _format_series(
@@ -301,7 +302,7 @@ class Flow:
 
     def pv(
         self,
-        frequency: rk.duration.Type,
+        frequency: legacy_duration.Type,
         rate: float,
         name: str = None,
     ) -> Flow:
@@ -383,7 +384,7 @@ class Flow:
 
     def resample(
         self,
-        frequency: rk.duration.Type,
+        frequency: legacy_duration.Type,
         origin: Optional[pd.Timestamp, datetime.date] = None,
         sum: bool = True,
     ) -> Flow:
@@ -400,7 +401,7 @@ class Flow:
             origin = self.movements.index[0].date()
 
         movements = self.movements.copy(deep=True)
-        offset = rk.duration.Type.offset(frequency)
+        offset = legacy_duration.Type.offset(frequency)
         resample_kwargs = {
             "rule": offset,
             "label": "right",
@@ -422,14 +423,14 @@ class Flow:
         # )
         #
         # print(f"Flow.resample() for {self.name} bound: {self.movements.index[-1]}")
-        sequence = rk.duration.Sequence.from_bounds(
+        sequence = legacy_duration.Sequence.from_bounds(
             include_start=origin,
             frequency=frequency,
             bound=self.movements.index[-1] if self.movements.size >= 1 else origin,
         )
         # print(f"Flow.resample() for {self.name} origin: {origin}")
         # print(f"Flow.resample() for {self.name} sequence: {sequence}")
-        index = rk.duration.Sequence.to_datestamps(sequence=sequence)
+        index = legacy_duration.Sequence.to_datestamps(sequence=sequence)
 
         index = index[(index >= resampled.index[0])]
         # Hack to fix bug with dangling period at end of index
@@ -461,7 +462,7 @@ class Flow:
         trimmed = result  # .trim_empty()
 
         # result = result.trim_to_span(
-        #     span=rk.duration.Span(
+        #     span=legacy_duration.Span(
         #         start_date=self.movements.index[0].date(),
         #         end_date=self.movements.index[-1].date(),
         #     )
@@ -485,7 +486,7 @@ class Flow:
         # print(f"to_periods() origin: {index[0].start_time.date()} freq: {index.freqstr}")
 
         resampled = self.resample(
-            frequency=rk.duration.Type.from_value(value=index.freqstr),
+            frequency=legacy_duration.Type.from_value(value=index.freqstr),
             origin=origin,
         )
         # print(f"to_periods() Resampled {self.name}:")
@@ -555,7 +556,7 @@ class Flow:
 
     def trim_to_span(
         self,
-        span: rk.duration.Span,
+        span: legacy_duration.Span,
         name: str = None,
     ) -> Flow:
         """
@@ -572,7 +573,7 @@ class Flow:
 
     def to_stream(
         self,
-        frequency: rk.duration.Type,
+        frequency: legacy_duration.Type,
         name: str = None,
     ) -> Stream:
         """
@@ -604,7 +605,7 @@ class Flow:
 class Stream:
     name: str
     flows: Optional[List[Flow]]
-    frequency: rk.duration.Type
+    frequency: legacy_duration.Type
     start_date: Optional[datetime.date]
     end_date: Optional[datetime.date]
     frame: pd.DataFrame
@@ -616,7 +617,7 @@ class Stream:
     def __init__(
         self,
         flows: List[Flow],
-        frequency: rk.duration.Type,
+        frequency: legacy_duration.Type,
         name: str = None,
     ):
 
@@ -644,7 +645,7 @@ class Stream:
         self.end_date = max(dates)
         """The latest date of the Stream's constituent Flows' movements."""
 
-        self.index = rk.duration.Sequence.from_bounds(
+        self.index = legacy_duration.Sequence.from_bounds(
             include_start=self.start_date,
             bound=self.end_date,
             frequency=self.frequency,
@@ -776,7 +777,7 @@ class Stream:
         return cls(
             name=name,
             flows=flows,
-            frequency=rk.duration.Type.from_value(data.index.freqstr),
+            frequency=legacy_duration.Type.from_value(data.index.freqstr),
         )
 
     def plot(
@@ -1085,7 +1086,7 @@ class Stream:
 
     def resample(
         self,
-        frequency: rk.duration.Type,
+        frequency: legacy_duration.Type,
     ) -> Stream:
         if frequency == self.frequency:
             return self
@@ -1095,7 +1096,7 @@ class Stream:
             frequency=frequency,
         )
 
-    def trim_to_span(self, span: rk.duration.Span) -> Stream:
+    def trim_to_span(self, span: legacy_duration.Span) -> Stream:
         """
         Returns an Stream with all flows trimmed to the specified Span
         :param span:
@@ -1112,7 +1113,7 @@ class Stream:
         cls,
         streams,
         name: str,
-        frequency: rk.duration.Type,
+        frequency: legacy_duration.Type,
     ) -> Stream:
         # Check Units:
         if any(stream.units != streams[0].units for stream in streams):

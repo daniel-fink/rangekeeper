@@ -10,6 +10,7 @@ import pandas as pd
 import scipy.stats as ss
 
 import rangekeeper as rk
+from rangekeeper import _legacy_duration as legacy_duration
 
 
 class Padding(enum.Enum):
@@ -86,7 +87,7 @@ class Extrapolation(Projection):
 
     def terms(self) -> pd.Series:
         terms = self.form.terms(
-            sequence=rk.duration.Sequence.to_range_index(sequence=self.sequence))
+            sequence=legacy_duration.Sequence.to_range_index(sequence=self.sequence))
         left = self._pad(
             value=terms[0],
             length=pd.period_range(start=self.bounds[0], end=self.sequence[0]).size,
@@ -97,12 +98,12 @@ class Extrapolation(Projection):
             type=self.padding[1])
         data = np.concatenate((left[:-1], terms, right[1:])) # Exclude last item from left and first item from right as we included them in padding length.
 
-        sequence = rk.duration.Sequence.from_bounds(
+        sequence = legacy_duration.Sequence.from_bounds(
             include_start=self.bounds[0].to_timestamp(),
-            frequency=rk.duration.Type.from_value(self.sequence.freqstr),
+            frequency=legacy_duration.Type.from_value(self.sequence.freqstr),
             bound=self.bounds[1].to_timestamp())
 
-        index = rk.duration.Sequence.to_datestamps(sequence=sequence)
+        index = legacy_duration.Sequence.to_datestamps(sequence=sequence)
 
         result = pd.Series(
             data=data,
@@ -145,7 +146,7 @@ class Distribution(Projection):
             type=Padding.NIL)
 
     def _seq_to_params(self) -> [float]:
-        range_index = rk.duration.Sequence.to_range_index(
+        range_index = legacy_duration.Sequence.to_range_index(
             sequence=self.sequence)
         range_index = range_index.insert(
             loc=len(range_index),
@@ -159,21 +160,21 @@ class Distribution(Projection):
 
         return pd.Series(
             data=data,
-            index=rk.duration.Sequence.to_datestamps(
-                rk.duration.Sequence.from_bounds(
+            index=legacy_duration.Sequence.to_datestamps(
+                legacy_duration.Sequence.from_bounds(
                     include_start=self.bounds[0].to_timestamp(),
-                    frequency=rk.duration.Type.from_value(self.sequence.freqstr),
+                    frequency=legacy_duration.Type.from_value(self.sequence.freqstr),
                     bound=self.bounds[1].to_timestamp())))
 
     def cumulative_density(self) -> [float]:
         densities = self.form.cumulative_density(parameters=self._parameters)
         data = np.concatenate((self._left_padding, densities, self._right_padding))
 
-        period_index = rk.duration.Sequence.from_bounds(
+        period_index = legacy_duration.Sequence.from_bounds(
             include_start=self.bounds[0].to_timestamp(),
-            frequency=rk.duration.Type.from_value(self.sequence.freq),
+            frequency=legacy_duration.Type.from_value(self.sequence.freq),
             bound=self.bounds[1].to_timestamp())
-        datestamp_index = rk.duration.Sequence.to_datestamps(sequence=period_index)
+        datestamp_index = legacy_duration.Sequence.to_datestamps(sequence=period_index)
         datestamp_index = datestamp_index.insert(loc=0, item=self.bounds[0].start_time)
 
         return pd.Series(

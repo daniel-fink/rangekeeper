@@ -6,7 +6,7 @@ from datetime import date, datetime
 import pandas as pd
 from ..table import Table, TableError
 from ..model.flow import Flow, from_events, validate_flow, resolve_date
-from ..temporal.period import PeriodTiming
+from ..duration.period import PeriodTiming
 
 
 def to_frame(flow: Flow) -> pd.DataFrame:

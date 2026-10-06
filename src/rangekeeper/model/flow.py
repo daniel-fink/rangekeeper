@@ -15,8 +15,8 @@ from typing import TYPE_CHECKING
 from uuid import UUID
 
 from .._schema.records import Flow, Movement, Period, Value
-from ..temporal.calendar import require_date
-from ..temporal.period import PeriodTiming, resolve_period_date, validate_period
+from ..duration.calendar import require_date
+from ..duration.period import PeriodTiming, resolve_period_date, validate_period
 from ..units import UnitSystem, default_units
 
 if TYPE_CHECKING:

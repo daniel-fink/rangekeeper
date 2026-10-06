@@ -15,7 +15,7 @@ class Result:
     """A backend claim and candidate; only independent acceptance can publish it."""
 
     termination: str
-    candidate: Mapping[UUID, float] | None = None
+    candidate: Mapping[str, float] | None = None
     implementations: tuple[Implementation, ...] = ()
     evidence: Mapping[str, object] = field(default_factory=dict)
 

@@ -10,6 +10,12 @@ from copy import deepcopy
 from datetime import datetime
 import math
 
+from rangekeeper.model._references import (
+    reference_key,
+    recorded_quantity,
+    numerical_units,
+    resolve_reference,
+)
 from rangekeeper.errors import ContractError
 from rangekeeper._validation import require, require_acyclic
 from rangekeeper.model._validation import model_documents, validate_model
@@ -45,7 +51,7 @@ def validate_non_batch_status(run):
     outputs = set(run.get("outputs") or [])
     allowed = {
         "completed": {"feasible", "infeasible", "unknown"},
-        "limited": {"feasible", "unknown"},
+        "limited": {"feasible", "unknown", "not_assessed"},
         "failed": {"unknown", "not_assessed"},
         "cancelled": {"unknown", "not_assessed"},
         "skipped": {"not_assessed"},
@@ -65,6 +71,11 @@ def validate_non_batch_status(run):
 def validate_report(run, *, batch, effective=None):
     """Check local report evidence; effective requirements add requested-setting checks."""
     data = run["report"]
+    if effective is not None:
+        require(
+            not data.get("decisions") or effective.get("policy") is not None,
+            "decision evidence requires a policy",
+        )
     status = data["status"]
     completion, solution = status["completion"], status["solution"]
     findings = data.get("diagnostics") or []
@@ -224,6 +235,7 @@ def validate_run(
             typed[key] = (kind, doc)
     active, visited, parents, producers = set(), {}, {}, {}
     input_ids, output_ids = set(), set()
+    scope_cache = {}
 
     def resolve(ref, kind):
         require(ref in typed, f"unresolved {kind} reference")
@@ -250,16 +262,33 @@ def validate_run(
     def published(run, model, effective, scope):
         input_id = model["metadata"]["id"]
         input_ids.add(input_id)
-        originals = {
-            r["id"]: r
+        originals = scope.values
+        assignments = list(effective.get("assignments") or [])
+        decisions = run["report"].get("decisions") or []
+        if effective.get("policy"):
+            from rangekeeper.specification._policy_validation import validate_decisions
+
+            assignments.extend(
+                validate_decisions(
+                    effective["policy"],
+                    decisions,
+                    scope=scope,
+                    provenance=model.get("provenance") or {},
+                )
+            )
+        else:
+            require(not decisions, "decision evidence requires a policy")
+        roles = list(effective.get("unknowns") or []) + [
+            a["target"] for a in assignments
+        ]
+        needed = {reference_key(r): r for r in roles}
+        model_values = {
+            r["id"]
             for r in records(model.get("system") or {})
-            if r.get("kind") == "measurement"
-        }
-        needed = set(effective.get("unknowns") or []) | {
-            a["value"] for a in effective.get("assignments") or []
+            if r.get("kind") in ("measurement", "flow")
         }
         require(
-            needed <= set(originals),
+            all(r["value"] in model_values for r in roles),
             "Specification-local Value publication requires adapter",
         )
 
@@ -268,8 +297,16 @@ def validate_run(
             result.pop("metadata", None)
             result.pop("provenance", None)
             for r in records(result):
-                if r.get("kind") == "measurement" and "id" in r:
+                if r.get("kind") == "measurement" and "id" in r and r["id"] in needed:
                     r.pop("quantity", None)
+                if r.get("kind") == "flow" and "id" in r:
+                    for m in (r.get("flow") or {}).get("movements") or []:
+                        if (
+                            reference_key(dict(value=r["id"], movement=m["key"]))
+                            in needed
+                        ):
+                            m.pop("magnitude", None)
+                            m.pop("claims", None)
             return result
 
         for ref in run.get("outputs") or []:
@@ -282,48 +319,49 @@ def validate_run(
                 output["metadata"].get("previous") == input_id,
                 "output lineage must reference input",
             )
-            validate_model(output, model_version)
+            output_scope = validate_model(output, model_version)
             require(
                 definition(output) == definition(model),
-                "scalar output must preserve input definitions",
+                "output must preserve input definitions and unrelated recorded content",
             )
-            values = {
-                r["id"]: r
-                for r in records(output.get("system") or {})
-                if r.get("kind") == "measurement"
-            }
-            for target in needed:
-                quantity = values[target].get("quantity")
+            for target in needed.values():
+                quantity = recorded_quantity(
+                    target, output_scope.values, output_scope.measures
+                )
                 require(
                     quantity is not None, "accepted output has unresolved solve Value"
                 )
-                expected_units = scope.measures[values[target]["measure"]]["units"]
                 require(
-                    quantity["units"] == expected_units,
+                    quantity["units"]
+                    == numerical_units(target, originals, scope.measures),
                     "output unit conversion requires adapter",
                 )
                 require(
                     math.isfinite(quantity["magnitude"]), "non-finite output quantity"
                 )
-            for assignment in effective.get("assignments") or []:
+            for assignment in assignments:
+                actual = recorded_quantity(
+                    assignment["target"], output_scope.values, output_scope.measures
+                )
+                expected = assignment["quantity"]
                 require(
                     (
-                        quantities_equal(
-                            values[assignment["value"]]["quantity"],
-                            assignment["quantity"],
-                        )
+                        quantities_equal(actual, expected)
                         if quantities_equal is not None
-                        else values[assignment["value"]]["quantity"]
-                        == assignment["quantity"]
+                        else actual == expected
                     ),
                     "output violates assignment",
                 )
-            # Non-solve recorded values must not silently change during scalar publication.
-            for target in set(originals) - needed:
-                require(
-                    values[target].get("quantity") == originals[target].get("quantity"),
-                    "unrelated recorded content changed",
-                )
+            old_claims = {
+                c["id"]: c for c in (model.get("provenance") or {}).get("claims") or []
+            }
+            new_claims = {
+                c["id"]: c for c in (output.get("provenance") or {}).get("claims") or []
+            }
+            require(
+                all(new_claims.get(k) == v for k, v in old_claims.items()),
+                "historical Claims changed",
+            )
 
     def visit(ref):
         require(ref not in active, "Run spawn cycle")
@@ -433,6 +471,21 @@ def validate_run(
                     "invalid Specification requires diagnostic",
                 )
             else:
+                if (
+                    effective.get("policy")
+                    and not outputs
+                    and (run["report"].get("decisions") or solution != "not_assessed")
+                ):
+                    from rangekeeper.specification._policy_validation import (
+                        validate_decisions,
+                    )
+
+                    validate_decisions(
+                        effective["policy"],
+                        run["report"].get("decisions") or [],
+                        scope=scope,
+                        provenance=model.get("provenance") or {},
+                    )
                 if outputs:
                     published(run, model, effective, scope)
         validate_report(run, batch=batch, effective=effective)
@@ -440,6 +493,12 @@ def validate_run(
             run["report"].get("trace") or []
         ):
             reference(item)
+            for scoped in item.get("references") or []:
+                doc = resolve(scoped["document"], "Model")
+                if scoped["document"] not in scope_cache:
+                    scope_cache[scoped["document"]] = validate_model(doc, model_version)
+                referenced_scope = scope_cache[scoped["document"]]
+                resolve_reference(scoped["reference"], referenced_scope.values)
         visited[ref] = run
         return run
 

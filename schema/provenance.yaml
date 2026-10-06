@@ -1,13 +1,14 @@
 id: https://daniel-fink.github.io/rangekeeper/schema/provenance
 name: rangekeeper_provenance
 title: Rangekeeper Provenance
-version: 0.3.0
+version: 0.4.0
 description: Evidence and reasoning supporting the recorded state of graph objects.
 prefixes:
   linkml: https://w3id.org/linkml/
   rk: https://daniel-fink.github.io/rangekeeper/schema/
 imports:
 - assembly
+- scenario
 default_prefix: rk
 default_range: string
 classes:
@@ -33,6 +34,12 @@ classes:
         multivalued: true
         inlined: true
         inlined_as_list: true
+      scenarios:
+        range: ScenarioRealization
+        inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
   Source:
     description: An identifiable edition of an external evidence artifact.
     attributes:
@@ -111,8 +118,8 @@ classes:
     notes:
     - A sourced Claim requires at least one Location. A derived Claim requires at least one upstream Claim
       and a Method. An asserted Claim requires a Method.
-    - Measurement content records a Measure UUID and optional Quantity with compatible units. Label content records
-      Classification UUIDs. Content does not introduce another characteristic identity.
+    - Measurement content records a Measure UUID and optional Quantity with compatible units. Label content
+      records Classification UUIDs. Content does not introduce another characteristic identity.
     - Claim content is a generic boundary. Payload structure, required support kinds, and dependency cycles
       require semantic validation in addition to structural validation of this envelope.
     attributes:

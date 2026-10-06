@@ -33,6 +33,27 @@ def encoded(value):
     return json.dumps(value, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
 
 
+def simplify_conjunctions(node):
+    """Remove A-or-B when the same schema node already requires A.
+
+    LinkML can emit a recursive $ref both directly and in anyOf. Rechecking
+    both at each Expression level makes validation exponential in tree depth.
+    A AND (A OR B) is exactly A, including for null and invalid input. No
+    field, constraint or accepted wire shape is added by this transformation.
+    """
+    if isinstance(node, list):
+        for child in node:
+            simplify_conjunctions(child)
+    elif isinstance(node, dict):
+        for child in node.values():
+            simplify_conjunctions(child)
+        required = list(node.get("allOf", []))
+        if "$ref" in node:
+            required.append({"$ref": node["$ref"]})
+        if any(item in node.get("anyOf", []) for item in required):
+            del node["anyOf"]
+
+
 def generate():
     versions = {name: importlib.metadata.version(name) for name in PINNED}
     if versions != PINNED:
@@ -69,6 +90,7 @@ def generate():
             "$id": schema["$id"],
             "$defs": schema["$defs"],
         }
+        simplify_conjunctions(shared)
         Draft202012Validator.check_schema(shared)
         opaque = {
             name

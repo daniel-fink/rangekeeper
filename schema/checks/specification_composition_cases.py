@@ -67,9 +67,9 @@ def check_composition(schema, validators, module, model, version, model_version)
         view.pop("metadata")
         for field in ("assignments", "estimates"):
             if field in view:
-                view[field].sort(key=lambda a: a["value"])
+                view[field].sort(key=lambda a: a["target"]["value"])
         if "unknowns" in view:
-            view["unknowns"].sort()
+            view["unknowns"].sort(key=lambda r: r["value"])
         return view
 
     for name, doc in (("forward", forward), ("inverse", inverse)):
@@ -77,7 +77,7 @@ def check_composition(schema, validators, module, model, version, model_version)
         result = check(doc)
         assert requirements(result.effective) == requirements(flat)
         assert "includes" not in result.effective
-        assert result.sources[("unknowns", common["unknowns"][0])] == common_id
+        assert result.sources[("unknowns", common["unknowns"][0]["value"])] == common_id
     paths = validate_batch(batch, models, version, model_version, specifications=catalogue)
     assert {path[-1] for path in paths} == set(batch["cases"])
     accepted += 1
@@ -110,10 +110,10 @@ def check_composition(schema, validators, module, model, version, model_version)
     assert check(split_settings, (timing,)).effective["settings"] == forward["settings"]
 
     rent = forward["assignments"][0]
-    target = rent["value"]
+    target = rent["target"]["value"]
     for label, fields in (
         ("equal assignment", dict(assignments=[deepcopy(rent)])),
-        ("different assignment", dict(assignments=[dict(value=target, quantity=dict(magnitude=1, units=rent["quantity"]["units"]))])),
+        ("different assignment", dict(assignments=[dict(target=dict(value=target), quantity=dict(magnitude=1, units=rent["quantity"]["units"]))])),
         ("unknown role", dict(unknowns=[forward["unknowns"][0]])),
         ("setting", dict(settings=dict(time_limit=forward["settings"]["time_limit"]))),
     ):
@@ -121,7 +121,7 @@ def check_composition(schema, validators, module, model, version, model_version)
         bad = deepcopy(forward)
         bad["includes"].append(extra["metadata"]["id"])
         reject("multiple contributors", lambda: check(bad, (extra,)))
-    conflict = record("role-conflict", unknowns=[target])
+    conflict = record("role-conflict", unknowns=[dict(value=target)])
     bad = deepcopy(forward)
     bad["includes"].append(conflict["metadata"]["id"])
     reject("roles overlap", lambda: check(bad, (conflict,)))
@@ -157,7 +157,7 @@ def check_composition(schema, validators, module, model, version, model_version)
     bad = record("includes-batch", includes=[batch["metadata"]["id"]])
     reject("cannot include a batch", lambda: compose(bad))
 
-    for field, content in (("includes", [common_id]), ("unknowns", [target]),
+    for field, content in (("includes", [common_id]), ("unknowns", [dict(value=target)]),
                            ("assignments", [rent]), ("settings", {"time_limit": 1})):
         bad = deepcopy(batch)
         bad[field] = content

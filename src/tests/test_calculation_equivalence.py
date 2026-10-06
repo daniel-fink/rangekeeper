@@ -4,7 +4,7 @@ from datetime import date
 import pytest
 from rangekeeper.model.flow import from_periods
 from rangekeeper.model.measure import Quantity
-from rangekeeper.temporal import make_periods
+from rangekeeper.duration import make_periods
 from rangekeeper.calculations.account import calculate_account
 from rangekeeper.calculations.dynamics.cyclicality import calculate_cycle
 

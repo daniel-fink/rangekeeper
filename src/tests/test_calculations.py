@@ -21,7 +21,8 @@ from rangekeeper._schema.records import (
     PropertyContent,
 )
 from rangekeeper.model.measure import Quantity
-from rangekeeper.temporal import make_periods, make_period, offset, year_fraction
+from rangekeeper.model import distribution as distributions
+from rangekeeper.duration import make_periods, make_period, offset, year_fraction
 from rangekeeper.calculations import (
     series,
     projection,
@@ -119,7 +120,7 @@ def test_model_flow_content_store_and_stream():
     )
     entity = Entity(id=uuid4(), characteristics=Characteristics(values=(a, b, prop)))
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.4.0"),
+        metadata=Metadata(id=uuid4(), schema_version="0.5.0"),
         definitions=Definitions(measures=(measure,)),
         system=System(entities=(entity,)),
     )
@@ -141,9 +142,9 @@ def test_model_flow_content_store_and_stream():
     assert restored_yaml.to_data() == model.to_data()
     assert type(restored_yaml.value(a.id).flow.movements[0].period.start) is date
     data = restored.to_data()
-    data["system"]["entities"][0]["characteristics"]["values"][0]["flow"]["movements"][0][
-        "magnitude"
-    ] = 10
+    data["system"]["entities"][0]["characteristics"]["values"][0]["flow"]["movements"][
+        0
+    ]["magnitude"] = 10
     assert model.value(a.id).flow.movements[0].magnitude == 0
     with pytest.raises(AttributeError):
         model.value(a.id).flow.movements[0].magnitude = 10
@@ -217,13 +218,12 @@ def test_units_and_factor_product():
         series.sum_flows((annual([1]), annual([1], units="USD")))
     length = annual([1], units="m")
     assert (
-        series.sum_flows((length, annual([100], units="cm"))).flow.movements[0].magnitude
+        series.sum_flows((length, annual([100], units="cm")))
+        .flow.movements[0]
+        .magnitude
         == 2
     )
-    assert (
-        series.multiply_flows((length, length)).units
-        == "meter ** 2"
-    )
+    assert series.multiply_flows((length, length)).units == "meter ** 2"
 
 
 def test_explicit_calendar_integration():
@@ -231,7 +231,9 @@ def test_explicit_calendar_integration():
     rates = from_periods(periods, [3660, 3660], units="AUD/year")
     assert [
         s.magnitude
-        for s in series.integrate(rates, day_count="actual/actual", units="AUD").movements
+        for s in series.integrate(
+            rates, day_count="actual/actual", units="AUD"
+        ).movements
     ] == pytest.approx([310, 290])
 
 
@@ -278,9 +280,7 @@ def test_resample_complete_calendar_and_explicit_reduction():
         40,
     ] and result.coverage == (1, 0, 1)
     assert series.total(result.flow).magnitude == 70
-    stocks = from_events(
-        [date(2020, 1, 1), date(2020, 1, 31)], [10, 20], units="kWh"
-    )
+    stocks = from_events([date(2020, 1, 1), date(2020, 1, 31)], [10, 20], units="kWh")
     assert (
         series.resample(stocks, periods=periods[:1], reduction="last")
         .flow.movements[0]
@@ -289,22 +289,28 @@ def test_resample_complete_calendar_and_explicit_reduction():
     )
     assert (
         series.resample(stocks, periods=periods[:1], reduction="sum")
-        .flow.movements[0].magnitude == 30
+        .flow.movements[0]
+        .magnitude
+        == 30
     )
 
 
 @pytest.mark.parametrize("kind", ["uniform", "triangular", "pert"])
 def test_distribution_sampling_and_mass(kind):
-    dist = distribution.Distribution.symmetric(kind=kind, mean=2, residual=1)
-    assert sum(dist.interval_mass([1, 1.5, 2, 2.5, 3])) == pytest.approx(1)
-    assert dist.sample(size=5, generator=np.random.default_rng(7)) == dist.sample(
-        size=5, generator=np.random.default_rng(7)
-    )
-    assert distribution.Distribution.symmetric(kind=kind, mean=2, residual=0).sample(
-        size=3, generator=np.random.default_rng(7)
+    dist = distributions.make_symmetric(kind=kind, mean=2, residual=1)
+    assert sum(
+        distribution.calculate_interval_mass(dist, [1, 1.5, 2, 2.5, 3])
+    ) == pytest.approx(1)
+    assert distribution.sample(
+        dist, size=5, generator=np.random.default_rng(7)
+    ) == distribution.sample(dist, size=5, generator=np.random.default_rng(7))
+    assert distribution.sample(
+        distributions.make_symmetric(kind=kind, mean=2, residual=0),
+        size=3,
+        generator=np.random.default_rng(7),
     ) == (2, 2, 2)
     with pytest.raises(ValueError):
-        dist.interval_mass([1, 3, 2])
+        distribution.calculate_interval_mass(dist, [1, 3, 2])
 
 
 def test_projection_and_partition_invariants():
@@ -323,7 +329,7 @@ def test_projection_and_partition_invariants():
     flow = projection.allocate(
         Quantity(magnitude=100, units="kg"),
         periods=periods,
-        distribution=distribution.Distribution.pert(),
+        distribution=distributions.make_pert(),
     )
     assert series.total(flow).magnitude == pytest.approx(100)
     pieces = Interval(3, 13).subdivide((0.2, 0.3, 0.5))
@@ -387,10 +393,7 @@ def test_adapter_exports_are_detached():
     frame = po.to_frame(flow)
     assert po.from_frame(frame, units=flow.units) == flow
     frame = pa.to_frame(flow)
-    assert (
-        pa.from_frame(frame, units=flow.units).movements[0].magnitude
-        == 0
-    )
+    assert pa.from_frame(frame, units=flow.units).movements[0].magnitude == 0
     frame.at[0, "period"]["start"] = "2000-01-01"
     assert flow.movements[0].period.start == date(2020, 1, 1)
 
@@ -416,7 +419,7 @@ def test_dynamics_fixed_inputs():
 
 
 def test_weighted_rates_and_partial_period_helpers():
-    from rangekeeper.temporal import periods_between, cover
+    from rangekeeper.duration import periods_between, cover
 
     periods = make_periods(date(2020, 1, 1), frequency="month", count=2)
     rates = from_periods(periods, (10, 20), units="AUD/year")
@@ -493,10 +496,7 @@ def test_polars_preserves_explicit_null_and_omission():
             ],
         }
     )
-    assert (
-        from_frame(to_frame(flow), units=flow.units).to_data()
-        == flow.to_data()
-    )
+    assert from_frame(to_frame(flow), units=flow.units).to_data() == flow.to_data()
 
 
 def test_invalid_timezone_is_a_domain_validation_error():

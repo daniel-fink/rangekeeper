@@ -1,5 +1,6 @@
 """Partial authoring, pinned composition, contributor traceability and conflicts."""
 
+from rangekeeper.model.expression import ValueReference
 from dataclasses import FrozenInstanceError
 from pathlib import Path
 from uuid import uuid4
@@ -56,7 +57,7 @@ class Resolver:
 def spec(**fields):
     return Specification(
         SpecificationRecord(
-            metadata=Metadata(id=uuid4(), schema_version="0.4.0"), **fields
+            metadata=Metadata(id=uuid4(), schema_version="0.5.0"), **fields
         )
     )
 
@@ -76,13 +77,13 @@ def test_partial_and_batch_fixtures_are_locally_valid(path):
 
 def test_diamond_contributes_once_with_immutable_trace():
     target = uuid4()
-    base = spec(unknowns=(target,))
+    base = spec(unknowns=(ValueReference(value=target),))
     left, right = spec(includes=(base.id,)), spec(includes=(base.id,))
     root = spec(includes=(left.id, right.id))
     resolver = Resolver(base, left, right)
     composition = compose(root, resolver=resolver)
     assert composition.root_id == root.id and composition.model_id is None
-    assert composition.requirements.unknowns == (target,)
+    assert composition.requirements.unknowns == (ValueReference(value=target),)
     assert composition.sources[("unknowns", str(target))] == base.id
     assert len(composition.contributors) == 4 and resolver.calls.count(base.id) == 1
     assert {doc.id for doc in composition.contributions} == set(
@@ -100,7 +101,7 @@ def test_diamond_contributes_once_with_immutable_trace():
 
 def test_independent_duplicate_requirement_is_a_conflict():
     target = uuid4()
-    left, right = spec(unknowns=(target,)), spec(unknowns=(target,))
+    left, right = spec(unknowns=(ValueReference(value=target),)), spec(unknowns=(ValueReference(value=target),))
     root = spec(includes=(left.id, right.id))
     with pytest.raises(ValidationError, match="multiple contributors"):
         compose(root, resolver=Resolver(left, right))
@@ -116,9 +117,9 @@ def test_conflicting_model_pins_and_role_overlap():
     with pytest.raises(ValidationError, match="roles overlap"):
         spec(
             assignments=(
-                Assignment(value=target, quantity=Quantity(magnitude=0, units="m")),
+                Assignment(target=ValueReference(value=target), quantity=Quantity(magnitude=0, units="m")),
             ),
-            unknowns=(target,),
+            unknowns=(ValueReference(value=target),),
         )
 
 
@@ -132,12 +133,12 @@ def test_missing_wrong_kind_wrong_identity_and_cycles():
     left_id, right_id = uuid4(), uuid4()
     left = Specification(
         SpecificationRecord(
-            metadata=Metadata(id=left_id, schema_version="0.4.0"), includes=(right_id,)
+            metadata=Metadata(id=left_id, schema_version="0.5.0"), includes=(right_id,)
         )
     )
     right = Specification(
         SpecificationRecord(
-            metadata=Metadata(id=right_id, schema_version="0.4.0"), includes=(left_id,)
+            metadata=Metadata(id=right_id, schema_version="0.5.0"), includes=(left_id,)
         )
     )
     with pytest.raises(ValidationError, match="cycle"):
@@ -165,10 +166,10 @@ def test_complete_composed_investigations_pin_the_model(name):
     assert not validate(composition, resolver=Resolver()).valid
     standalone = Specification.from_data(load(name.replace("composed-", "")))
     expected = compose(standalone, resolver=resolver)
-    assert {a.value for a in composition.requirements.assignments} == {
-        a.value for a in expected.requirements.assignments
+    assert {a.target.value for a in composition.requirements.assignments} == {
+        a.target.value for a in expected.requirements.assignments
     }
-    assert set(composition.requirements.unknowns) == set(expected.requirements.unknowns)
+    assert {r.value for r in composition.requirements.unknowns} == {r.value for r in expected.requirements.unknowns}
 
 
 def test_partial_roles_do_not_become_complete_from_recorded_values():
@@ -204,7 +205,7 @@ def test_local_revision_and_unknown_external_references():
                 metadata=Metadata(
                     id=before.id,
                     previous=after.id,
-                    schema_version="0.4.0",
+                    schema_version="0.5.0",
                     name="reuse",
                 )
             )
@@ -221,8 +222,8 @@ def test_duplicate_local_references_and_identity_reuse_are_rejected():
     with pytest.raises(ValidationError, match="duplicate includes"):
         spec(includes=(target, target))
     with pytest.raises(ValidationError, match="duplicate unknown"):
-        spec(unknowns=(target, target))
-    metadata = Metadata(id=uuid4(), schema_version="0.4.0")
+        spec(unknowns=(ValueReference(value=target), ValueReference(value=target)))
+    metadata = Metadata(id=uuid4(), schema_version="0.5.0")
     with pytest.raises(ValidationError, match="cycle"):
         Specification(SpecificationRecord(metadata=metadata, includes=(metadata.id,)))
 
@@ -267,4 +268,4 @@ def test_model_resolver_must_return_the_requested_revision():
 def test_locally_known_role_target_cannot_masquerade_as_value():
     formulation = Formulation(id=uuid4())
     with pytest.raises(ReferenceTypeError, match="wrong local record kind"):
-        spec(formulations=(formulation,), unknowns=(formulation.id,))
+        spec(formulations=(formulation,), unknowns=(ValueReference(value=formulation.id),))

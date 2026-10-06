@@ -130,12 +130,12 @@ def test_missing_output_rejects_publication_without_partial_run():
 def test_failed_attempt_can_reference_an_incomplete_saved_specification():
     store = MemoryStore()
     spec = rk.Specification.from_data(
-        {"metadata": {"id": str(uuid4()), "schema_version": "0.4.0"}}
+        {"metadata": {"id": str(uuid4()), "schema_version": "0.5.0"}}
     )
     store.put(spec)
     run = Run.from_data(
         {
-            "metadata": {"id": str(uuid4()), "schema_version": "0.1.0"},
+            "metadata": {"id": str(uuid4()), "schema_version": "0.2.0"},
             "specification": str(spec.id),
             "report": {
                 "status": {"completion": "failed", "solution": "not_assessed"},
@@ -161,10 +161,10 @@ def test_resolver_results_must_match_requested_kind_and_revision(problem, code):
         def load_specification(self, identity):
             if problem == "kind":
                 return rk.Model.from_data(
-                    {"metadata": {"id": str(identity), "schema_version": "0.4.0"}}
+                    {"metadata": {"id": str(identity), "schema_version": "0.5.0"}}
                 )
             return rk.Specification.from_data(
-                {"metadata": {"id": str(uuid4()), "schema_version": "0.4.0"}}
+                {"metadata": {"id": str(uuid4()), "schema_version": "0.5.0"}}
             )
 
         def load_model(self, identity):
@@ -204,7 +204,7 @@ def test_spawn_cycle_is_detected_without_infinite_resolution():
 def test_scoped_report_documents_resolve_outside_the_input_tree():
     store = inputs()
     extra = rk.Model.from_data(
-        {"metadata": {"id": str(uuid4()), "schema_version": "0.4.0"}}
+        {"metadata": {"id": str(uuid4()), "schema_version": "0.5.0"}}
     )
     store.put(extra)
     data = load("run-failed")

@@ -1,0 +1,36 @@
+id: https://daniel-fink.github.io/rangekeeper/schema/distribution
+name: rangekeeper_distribution
+version: 0.1.0
+prefixes:
+  linkml: https://w3id.org/linkml/
+  rk: https://daniel-fink.github.io/rangekeeper/schema/
+imports:
+- common
+default_prefix: rk
+default_range: string
+classes:
+  Distribution:
+    description: Serializable distribution parameters, with explicit units; no live random generator.
+    attributes:
+      kind:
+        range: DistributionFamily
+        required: true
+      lower:
+        range: double
+        required: true
+      upper:
+        range: double
+        required: true
+      mode:
+        range: double
+      weighting:
+        range: double
+      units:
+        range: string
+        required: true
+enums:
+  DistributionFamily:
+    permissible_values:
+      uniform: {}
+      triangular: {}
+      pert: {}

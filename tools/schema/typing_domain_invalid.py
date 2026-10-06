@@ -5,10 +5,10 @@ from rangekeeper.model import Model, Metadata, Update
 from rangekeeper.references import DocumentResolver
 from rangekeeper.specification import Specification, compose
 
-model = Model.create(metadata=Metadata(id=uuid4(), schema_version="0.4.0"))
+model = Model.create(metadata=Metadata(id=uuid4(), schema_version="0.5.0"))
 model.entity("entity-code")
 model.find_entities(classification="class-code")
-model.metadata = Metadata(id=uuid4(), schema_version="0.4.0")
+model.metadata = Metadata(id=uuid4(), schema_version="0.5.0")
 Update(system=None)
 Specification(model)
 

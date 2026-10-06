@@ -1,0 +1,159 @@
+id: https://daniel-fink.github.io/rangekeeper/schema/policy
+name: rangekeeper_policy
+version: 0.1.0
+prefixes:
+  linkml: https://w3id.org/linkml/
+  rk: https://daniel-fink.github.io/rangekeeper/schema/
+imports:
+- expression
+- value_reference
+default_prefix: rk
+default_range: string
+classes:
+  ObservationBinding:
+    description: An explicit observation target. An optional date may delay availability but cannot advance it.
+    attributes:
+      name:
+        range: Code
+        required: true
+      target:
+        range: ValueReference
+        required: true
+        inlined: true
+      available_at:
+        range: date
+  Action:
+    description: An inert assignment or terminal action. Effects are applied atomically; no Python callbacks.
+    attributes:
+      kind:
+        range: ActionKind
+        required: true
+      target:
+        range: ValueReference
+        inlined: true
+      quantity:
+        range: Quantity
+        inlined: true
+  Rule:
+    description: One ordered Boolean condition and its atomic actions.
+    attributes:
+      id:
+        range: UUID
+        required: true
+        identifier: true
+      condition:
+        range: Expression
+        required: true
+        inlined: true
+      actions:
+        range: Action
+        required: true
+        inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
+  DecisionPoint:
+    description: One dated policy point with explicit observations, first-match rules and fallback.
+    attributes:
+      id:
+        range: UUID
+        required: true
+        identifier: true
+      at:
+        range: date
+        required: true
+      observations:
+        range: ObservationBinding
+        required: true
+        inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
+      rules:
+        range: Rule
+        required: true
+        inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
+      fallback:
+        range: Action
+        required: true
+        inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
+  Policy:
+    description: Finite policy owning explicit controlled targets and ordered dated decision points.
+    attributes:
+      id:
+        range: UUID
+        required: true
+        identifier: true
+      targets:
+        range: ValueReference
+        required: true
+        inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
+      points:
+        range: DecisionPoint
+        required: true
+        inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
+  ObservedQuantity:
+    description: The exact quantity and availability supplied to a decision.
+    attributes:
+      name:
+        range: Code
+        required: true
+      target:
+        range: ValueReference
+        required: true
+        inlined: true
+      quantity:
+        range: Quantity
+        required: true
+        inlined: true
+      available_at:
+        range: date
+        required: true
+  Decision:
+    description: Recorded outcome of one evaluated decision point; absence of a rule means fallback.
+    attributes:
+      point:
+        range: UUID
+        required: true
+      at:
+        range: date
+        required: true
+      rule:
+        range: UUID
+      observations:
+        range: ObservedQuantity
+        required: true
+        inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
+      assignments:
+        range: Assignment
+        required: true
+        inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
+      terminated:
+        range: boolean
+        required: true
+      termination_reason:
+        range: string
+        description: Reason for termination, required when terminated is true.
+enums:
+  ActionKind:
+    permissible_values:
+      assign: {}
+      terminate: {}

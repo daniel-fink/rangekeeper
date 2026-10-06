@@ -1,5 +1,15 @@
 # Model and Specification APIs — Turn 2
 
+**Turn 2 update, 2026-10-06:** [Temporal equations, scenarios and policies](FULL_MIGRATION_TURN2.md)
+now use Model/Specification 0.5.0 and Run 0.2.0. `ValueReference` addresses scalar
+Values or owner-local Movement keys. The canonical calendar package is `duration/`;
+`temporal` has no public alias. Finite Flow formulations, captured scenario replay,
+exogenous declarative policies and the four numerical walkthroughs are implemented.
+See [verification](research/full-migration/turn2/README.md) and the
+[upgrade guide](LEGACY_UPGRADE_GUIDE.md). Turn 3 completes remaining consumers and
+integrations; Turn 4 retires obsolete code after their acceptance gates.
+The dated checkpoint descriptions below remain historical context.
+
 **Flow semantics update, 2026-10-06:** Flows no longer carry semantic kinds or
 basis. The overall model logic owns their meaning and selects operations; units,
 dates, alignment and missingness remain checked. See the
@@ -103,7 +113,7 @@ gross = Value(id=uuid4(), key="gross", kind="measurement", measure=area.id,
 net = Value(id=uuid4(), key="net", kind="measurement", measure=area.id)
 entity = Entity(id=uuid4(), code="A", characteristics=Characteristics(values=(gross, net)))
 model = Model.create(
-    metadata=Metadata(id=uuid4(), schema_version="0.4.0"),
+    metadata=Metadata(id=uuid4(), schema_version="0.5.0"),
     definitions=Definitions(measures=(area,)), system=System(entities=(entity,)),
 )
 assert model.value(gross.id).quantity.magnitude == 100
@@ -163,13 +173,14 @@ External references and incomplete solve roles are permitted in a saved contribu
 ```python
 from rangekeeper.errors import MissingReferenceError
 from rangekeeper.specification import Specification, SpecificationRecord, compose, validate
+from rangekeeper.model.expression import ValueReference
 
 shared = Specification(SpecificationRecord(
-    metadata=Metadata(id=uuid4(), schema_version="0.4.0"),
-    model=model.id, unknowns=(gross.id,),
+    metadata=Metadata(id=uuid4(), schema_version="0.5.0"),
+    model=model.id, unknowns=(ValueReference(value=gross.id),),
 ))
 investigation = Specification(SpecificationRecord(
-    metadata=Metadata(id=uuid4(), schema_version="0.4.0"), includes=(shared.id,),
+    metadata=Metadata(id=uuid4(), schema_version="0.5.0"), includes=(shared.id,),
 ))
 
 class Inputs:

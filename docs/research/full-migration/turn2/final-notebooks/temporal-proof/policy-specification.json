@@ -1,0 +1,741 @@
+{
+  "metadata": {
+    "id": "918d8c86-4bdd-4330-ab3d-ae8df5476679",
+    "schema_version": "0.5.0"
+  },
+  "model": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+  "assignments": [
+    {
+      "target": {
+        "value": "444bae8f-5f4f-47e2-8bc3-ff733866f400"
+      },
+      "quantity": {
+        "magnitude": 100.0,
+        "units": "AUD"
+      }
+    },
+    {
+      "target": {
+        "value": "4cc5464e-9a94-4dd6-b0ac-31422d1d05db"
+      },
+      "quantity": {
+        "magnitude": 0.0,
+        "units": "AUD"
+      }
+    },
+    {
+      "target": {
+        "value": "3c259bcc-8c90-4f10-bb74-d8633ede5524"
+      },
+      "quantity": {
+        "magnitude": 0.0,
+        "units": "dimensionless"
+      }
+    },
+    {
+      "target": {
+        "value": "345a0cdc-4ac5-4fce-9ec9-9a287de558eb"
+      },
+      "quantity": {
+        "magnitude": 0.05,
+        "units": "dimensionless"
+      }
+    },
+    {
+      "target": {
+        "value": "420a120c-75c5-4209-9e40-a66394e09854"
+      },
+      "quantity": {
+        "magnitude": 0.35,
+        "units": "dimensionless"
+      }
+    },
+    {
+      "target": {
+        "value": "a1bcd495-982d-4c9c-a350-70e57f13cc02"
+      },
+      "quantity": {
+        "magnitude": 0.1,
+        "units": "dimensionless"
+      }
+    },
+    {
+      "target": {
+        "value": "e7e67a76-580d-4d44-a6f6-a3aca66fde06"
+      },
+      "quantity": {
+        "magnitude": 0.05,
+        "units": "dimensionless"
+      }
+    },
+    {
+      "target": {
+        "value": "f17e78ea-436f-489a-ad32-5e17f9663934"
+      },
+      "quantity": {
+        "magnitude": 0.07,
+        "units": "dimensionless"
+      }
+    },
+    {
+      "target": {
+        "value": "642a55a6-b0fe-49fc-9a27-213bcbc8407d"
+      },
+      "quantity": {
+        "magnitude": 1000.0,
+        "units": "AUD"
+      }
+    },
+    {
+      "target": {
+        "value": "8e7a9533-8b5d-52d0-a8a6-b9cd4a2f0193",
+        "movement": "p1"
+      },
+      "quantity": {
+        "magnitude": 1.0,
+        "units": "dimensionless"
+      }
+    },
+    {
+      "target": {
+        "value": "8e7a9533-8b5d-52d0-a8a6-b9cd4a2f0193",
+        "movement": "p2"
+      },
+      "quantity": {
+        "magnitude": 1.0679253398247313,
+        "units": "dimensionless"
+      }
+    },
+    {
+      "target": {
+        "value": "8e7a9533-8b5d-52d0-a8a6-b9cd4a2f0193",
+        "movement": "p3"
+      },
+      "quantity": {
+        "magnitude": 1.0843952303448146,
+        "units": "dimensionless"
+      }
+    },
+    {
+      "target": {
+        "value": "8e7a9533-8b5d-52d0-a8a6-b9cd4a2f0193",
+        "movement": "p4"
+      },
+      "quantity": {
+        "magnitude": 1.151900241793467,
+        "units": "dimensionless"
+      }
+    },
+    {
+      "target": {
+        "value": "fe0bd77b-6228-551f-8a65-485ab2a500ed",
+        "movement": "p1"
+      },
+      "quantity": {
+        "magnitude": 0.059100664385144046,
+        "units": "dimensionless"
+      }
+    },
+    {
+      "target": {
+        "value": "fe0bd77b-6228-551f-8a65-485ab2a500ed",
+        "movement": "p2"
+      },
+      "quantity": {
+        "magnitude": 0.053797324414978975,
+        "units": "dimensionless"
+      }
+    },
+    {
+      "target": {
+        "value": "fe0bd77b-6228-551f-8a65-485ab2a500ed",
+        "movement": "p3"
+      },
+      "quantity": {
+        "magnitude": 0.053476284706182875,
+        "units": "dimensionless"
+      }
+    }
+  ],
+  "unknowns": [
+    {
+      "value": "4f6761ab-9539-4273-8944-cf1f04dc0732"
+    },
+    {
+      "value": "66a8f8c2-1fc3-43fe-a21c-e2a1b1ce3984",
+      "movement": "p1"
+    },
+    {
+      "value": "66a8f8c2-1fc3-43fe-a21c-e2a1b1ce3984",
+      "movement": "p2"
+    },
+    {
+      "value": "66a8f8c2-1fc3-43fe-a21c-e2a1b1ce3984",
+      "movement": "p3"
+    },
+    {
+      "value": "66a8f8c2-1fc3-43fe-a21c-e2a1b1ce3984",
+      "movement": "p4"
+    },
+    {
+      "value": "45899ce9-4112-4d5a-89fc-44e75456a51f",
+      "movement": "p1"
+    },
+    {
+      "value": "45899ce9-4112-4d5a-89fc-44e75456a51f",
+      "movement": "p2"
+    },
+    {
+      "value": "45899ce9-4112-4d5a-89fc-44e75456a51f",
+      "movement": "p3"
+    },
+    {
+      "value": "45899ce9-4112-4d5a-89fc-44e75456a51f",
+      "movement": "p4"
+    },
+    {
+      "value": "66833b39-0aa0-4abf-96fc-0eeb9e0d2e5c",
+      "movement": "p1"
+    },
+    {
+      "value": "66833b39-0aa0-4abf-96fc-0eeb9e0d2e5c",
+      "movement": "p2"
+    },
+    {
+      "value": "66833b39-0aa0-4abf-96fc-0eeb9e0d2e5c",
+      "movement": "p3"
+    },
+    {
+      "value": "66833b39-0aa0-4abf-96fc-0eeb9e0d2e5c",
+      "movement": "p4"
+    },
+    {
+      "value": "e8bda6ab-b781-468e-ab67-5170dd273074",
+      "movement": "p1"
+    },
+    {
+      "value": "e8bda6ab-b781-468e-ab67-5170dd273074",
+      "movement": "p2"
+    },
+    {
+      "value": "e8bda6ab-b781-468e-ab67-5170dd273074",
+      "movement": "p3"
+    },
+    {
+      "value": "e8bda6ab-b781-468e-ab67-5170dd273074",
+      "movement": "p4"
+    },
+    {
+      "value": "9ce6ea52-500d-460e-8315-13dfaca05324",
+      "movement": "p1"
+    },
+    {
+      "value": "9ce6ea52-500d-460e-8315-13dfaca05324",
+      "movement": "p2"
+    },
+    {
+      "value": "9ce6ea52-500d-460e-8315-13dfaca05324",
+      "movement": "p3"
+    },
+    {
+      "value": "9ce6ea52-500d-460e-8315-13dfaca05324",
+      "movement": "p4"
+    },
+    {
+      "value": "86bf9d62-2b4d-47e2-8fb3-512edc8af09a",
+      "movement": "p1"
+    },
+    {
+      "value": "86bf9d62-2b4d-47e2-8fb3-512edc8af09a",
+      "movement": "p2"
+    },
+    {
+      "value": "86bf9d62-2b4d-47e2-8fb3-512edc8af09a",
+      "movement": "p3"
+    },
+    {
+      "value": "86bf9d62-2b4d-47e2-8fb3-512edc8af09a",
+      "movement": "p4"
+    },
+    {
+      "value": "01b3df2e-0b0e-4333-9950-992397e6439c",
+      "movement": "p1"
+    },
+    {
+      "value": "01b3df2e-0b0e-4333-9950-992397e6439c",
+      "movement": "p2"
+    },
+    {
+      "value": "01b3df2e-0b0e-4333-9950-992397e6439c",
+      "movement": "p3"
+    },
+    {
+      "value": "01b3df2e-0b0e-4333-9950-992397e6439c",
+      "movement": "p4"
+    },
+    {
+      "value": "079ddde4-9dc2-42b1-a050-3065da3a859a",
+      "movement": "p1"
+    },
+    {
+      "value": "079ddde4-9dc2-42b1-a050-3065da3a859a",
+      "movement": "p2"
+    },
+    {
+      "value": "079ddde4-9dc2-42b1-a050-3065da3a859a",
+      "movement": "p3"
+    },
+    {
+      "value": "079ddde4-9dc2-42b1-a050-3065da3a859a",
+      "movement": "p4"
+    },
+    {
+      "value": "dcc7d313-fc82-47f7-9cfb-b451ef54615a",
+      "movement": "p1"
+    },
+    {
+      "value": "dcc7d313-fc82-47f7-9cfb-b451ef54615a",
+      "movement": "p2"
+    },
+    {
+      "value": "dcc7d313-fc82-47f7-9cfb-b451ef54615a",
+      "movement": "p3"
+    },
+    {
+      "value": "bd801dfd-7d47-424a-a0a9-2837d5b548ce",
+      "movement": "p1"
+    },
+    {
+      "value": "bd801dfd-7d47-424a-a0a9-2837d5b548ce",
+      "movement": "p2"
+    },
+    {
+      "value": "bd801dfd-7d47-424a-a0a9-2837d5b548ce",
+      "movement": "p3"
+    },
+    {
+      "value": "de3668d7-c59d-4cb0-85ad-9eb006015aee",
+      "movement": "p1"
+    },
+    {
+      "value": "de3668d7-c59d-4cb0-85ad-9eb006015aee",
+      "movement": "p2"
+    },
+    {
+      "value": "de3668d7-c59d-4cb0-85ad-9eb006015aee",
+      "movement": "p3"
+    },
+    {
+      "value": "70c8c81f-7327-4c66-bc75-6153455855b2",
+      "movement": "p1"
+    },
+    {
+      "value": "70c8c81f-7327-4c66-bc75-6153455855b2",
+      "movement": "p2"
+    },
+    {
+      "value": "70c8c81f-7327-4c66-bc75-6153455855b2",
+      "movement": "p3"
+    },
+    {
+      "value": "71058c00-a60b-4c60-99ca-782d10312133",
+      "movement": "p1"
+    },
+    {
+      "value": "71058c00-a60b-4c60-99ca-782d10312133",
+      "movement": "p2"
+    },
+    {
+      "value": "71058c00-a60b-4c60-99ca-782d10312133",
+      "movement": "p3"
+    },
+    {
+      "value": "7f31d085-cc38-4f3d-8b12-93d463383f8c",
+      "movement": "p1"
+    },
+    {
+      "value": "7f31d085-cc38-4f3d-8b12-93d463383f8c",
+      "movement": "p2"
+    },
+    {
+      "value": "7f31d085-cc38-4f3d-8b12-93d463383f8c",
+      "movement": "p3"
+    }
+  ],
+  "policy": {
+    "id": "df5baaad-539f-4555-a1f8-7a061b382535",
+    "targets": [
+      {
+        "value": "f5c5ad35-2603-4d72-9775-98fa8ecf0886",
+        "movement": "p1"
+      },
+      {
+        "value": "6f6a5c5a-5536-4513-9a22-8ad3954caa65",
+        "movement": "p1"
+      },
+      {
+        "value": "f5c5ad35-2603-4d72-9775-98fa8ecf0886",
+        "movement": "p2"
+      },
+      {
+        "value": "6f6a5c5a-5536-4513-9a22-8ad3954caa65",
+        "movement": "p2"
+      },
+      {
+        "value": "f5c5ad35-2603-4d72-9775-98fa8ecf0886",
+        "movement": "p3"
+      },
+      {
+        "value": "6f6a5c5a-5536-4513-9a22-8ad3954caa65",
+        "movement": "p3"
+      }
+    ],
+    "points": [
+      {
+        "id": "2fde3b36-722f-5d1c-a8ce-a8c0dbcec0a9",
+        "at": "2021-12-31",
+        "observations": [
+          {
+            "name": "pricing_factor",
+            "target": {
+              "value": "8e7a9533-8b5d-52d0-a8a6-b9cd4a2f0193",
+              "movement": "p1"
+            }
+          }
+        ],
+        "rules": [
+          {
+            "id": "4dcad6cb-336b-5101-8d53-f9c5a6057a36",
+            "condition": {
+              "id": "e0bb89b2-7993-578b-a5e3-520031fd49d6",
+              "kind": "binary",
+              "operator": "greater_than",
+              "operands": [
+                {
+                  "id": "0d7134fd-2e4e-5dc9-a0f7-97787546f71f",
+                  "kind": "reference",
+                  "target": {
+                    "value": "8e7a9533-8b5d-52d0-a8a6-b9cd4a2f0193",
+                    "movement": "p1"
+                  }
+                },
+                {
+                  "id": "46e31031-f7a5-5b0f-b754-d2bb7d62b8c1",
+                  "kind": "quantity",
+                  "quantity": {
+                    "magnitude": 1.01,
+                    "units": "dimensionless"
+                  }
+                }
+              ]
+            },
+            "actions": [
+              {
+                "kind": "assign",
+                "target": {
+                  "value": "f5c5ad35-2603-4d72-9775-98fa8ecf0886",
+                  "movement": "p1"
+                },
+                "quantity": {
+                  "magnitude": 1,
+                  "units": "dimensionless"
+                }
+              },
+              {
+                "kind": "assign",
+                "target": {
+                  "value": "6f6a5c5a-5536-4513-9a22-8ad3954caa65",
+                  "movement": "p1"
+                },
+                "quantity": {
+                  "magnitude": 1,
+                  "units": "dimensionless"
+                }
+              },
+              {
+                "kind": "assign",
+                "target": {
+                  "value": "f5c5ad35-2603-4d72-9775-98fa8ecf0886",
+                  "movement": "p2"
+                },
+                "quantity": {
+                  "magnitude": 0,
+                  "units": "dimensionless"
+                }
+              },
+              {
+                "kind": "assign",
+                "target": {
+                  "value": "6f6a5c5a-5536-4513-9a22-8ad3954caa65",
+                  "movement": "p2"
+                },
+                "quantity": {
+                  "magnitude": 0,
+                  "units": "dimensionless"
+                }
+              },
+              {
+                "kind": "assign",
+                "target": {
+                  "value": "f5c5ad35-2603-4d72-9775-98fa8ecf0886",
+                  "movement": "p3"
+                },
+                "quantity": {
+                  "magnitude": 0,
+                  "units": "dimensionless"
+                }
+              },
+              {
+                "kind": "assign",
+                "target": {
+                  "value": "6f6a5c5a-5536-4513-9a22-8ad3954caa65",
+                  "movement": "p3"
+                },
+                "quantity": {
+                  "magnitude": 0,
+                  "units": "dimensionless"
+                }
+              },
+              {
+                "kind": "terminate"
+              }
+            ]
+          }
+        ],
+        "fallback": [
+          {
+            "kind": "assign",
+            "target": {
+              "value": "f5c5ad35-2603-4d72-9775-98fa8ecf0886",
+              "movement": "p1"
+            },
+            "quantity": {
+              "magnitude": 1,
+              "units": "dimensionless"
+            }
+          },
+          {
+            "kind": "assign",
+            "target": {
+              "value": "6f6a5c5a-5536-4513-9a22-8ad3954caa65",
+              "movement": "p1"
+            },
+            "quantity": {
+              "magnitude": 0,
+              "units": "dimensionless"
+            }
+          }
+        ]
+      },
+      {
+        "id": "4e5d388b-8504-5257-a5a3-55ede87066d2",
+        "at": "2022-12-31",
+        "observations": [
+          {
+            "name": "pricing_factor",
+            "target": {
+              "value": "8e7a9533-8b5d-52d0-a8a6-b9cd4a2f0193",
+              "movement": "p2"
+            }
+          }
+        ],
+        "rules": [
+          {
+            "id": "e93630e5-0035-5c9a-ae3d-7ca188058a25",
+            "condition": {
+              "id": "690d227b-fd4c-5f5f-ba10-b74922dbe670",
+              "kind": "binary",
+              "operator": "greater_than",
+              "operands": [
+                {
+                  "id": "720e968e-3c60-58bf-8d5c-992b7df6c807",
+                  "kind": "reference",
+                  "target": {
+                    "value": "8e7a9533-8b5d-52d0-a8a6-b9cd4a2f0193",
+                    "movement": "p2"
+                  }
+                },
+                {
+                  "id": "70061ee8-0885-5bb1-8eef-88e37a8e718a",
+                  "kind": "quantity",
+                  "quantity": {
+                    "magnitude": 1.01,
+                    "units": "dimensionless"
+                  }
+                }
+              ]
+            },
+            "actions": [
+              {
+                "kind": "assign",
+                "target": {
+                  "value": "f5c5ad35-2603-4d72-9775-98fa8ecf0886",
+                  "movement": "p2"
+                },
+                "quantity": {
+                  "magnitude": 1,
+                  "units": "dimensionless"
+                }
+              },
+              {
+                "kind": "assign",
+                "target": {
+                  "value": "6f6a5c5a-5536-4513-9a22-8ad3954caa65",
+                  "movement": "p2"
+                },
+                "quantity": {
+                  "magnitude": 1,
+                  "units": "dimensionless"
+                }
+              },
+              {
+                "kind": "assign",
+                "target": {
+                  "value": "f5c5ad35-2603-4d72-9775-98fa8ecf0886",
+                  "movement": "p3"
+                },
+                "quantity": {
+                  "magnitude": 0,
+                  "units": "dimensionless"
+                }
+              },
+              {
+                "kind": "assign",
+                "target": {
+                  "value": "6f6a5c5a-5536-4513-9a22-8ad3954caa65",
+                  "movement": "p3"
+                },
+                "quantity": {
+                  "magnitude": 0,
+                  "units": "dimensionless"
+                }
+              },
+              {
+                "kind": "terminate"
+              }
+            ]
+          }
+        ],
+        "fallback": [
+          {
+            "kind": "assign",
+            "target": {
+              "value": "f5c5ad35-2603-4d72-9775-98fa8ecf0886",
+              "movement": "p2"
+            },
+            "quantity": {
+              "magnitude": 1,
+              "units": "dimensionless"
+            }
+          },
+          {
+            "kind": "assign",
+            "target": {
+              "value": "6f6a5c5a-5536-4513-9a22-8ad3954caa65",
+              "movement": "p2"
+            },
+            "quantity": {
+              "magnitude": 0,
+              "units": "dimensionless"
+            }
+          }
+        ]
+      },
+      {
+        "id": "34fd2f6d-0856-5a6b-b13f-6905c9b97ad5",
+        "at": "2023-12-31",
+        "observations": [
+          {
+            "name": "pricing_factor",
+            "target": {
+              "value": "8e7a9533-8b5d-52d0-a8a6-b9cd4a2f0193",
+              "movement": "p3"
+            }
+          }
+        ],
+        "rules": [
+          {
+            "id": "773924b8-d4c1-5024-8b5f-2b2695946b1d",
+            "condition": {
+              "id": "071277f6-464e-552a-8939-91efb3cbfb3b",
+              "kind": "binary",
+              "operator": "greater_than",
+              "operands": [
+                {
+                  "id": "0375179f-d444-5987-ab77-d3942dff24cf",
+                  "kind": "reference",
+                  "target": {
+                    "value": "8e7a9533-8b5d-52d0-a8a6-b9cd4a2f0193",
+                    "movement": "p3"
+                  }
+                },
+                {
+                  "id": "23d91d1b-b6b9-5ba0-85a9-e676ea91e1c3",
+                  "kind": "quantity",
+                  "quantity": {
+                    "magnitude": 1.01,
+                    "units": "dimensionless"
+                  }
+                }
+              ]
+            },
+            "actions": [
+              {
+                "kind": "assign",
+                "target": {
+                  "value": "f5c5ad35-2603-4d72-9775-98fa8ecf0886",
+                  "movement": "p3"
+                },
+                "quantity": {
+                  "magnitude": 1,
+                  "units": "dimensionless"
+                }
+              },
+              {
+                "kind": "assign",
+                "target": {
+                  "value": "6f6a5c5a-5536-4513-9a22-8ad3954caa65",
+                  "movement": "p3"
+                },
+                "quantity": {
+                  "magnitude": 1,
+                  "units": "dimensionless"
+                }
+              },
+              {
+                "kind": "terminate"
+              }
+            ]
+          }
+        ],
+        "fallback": [
+          {
+            "kind": "assign",
+            "target": {
+              "value": "f5c5ad35-2603-4d72-9775-98fa8ecf0886",
+              "movement": "p3"
+            },
+            "quantity": {
+              "magnitude": 1,
+              "units": "dimensionless"
+            }
+          },
+          {
+            "kind": "assign",
+            "target": {
+              "value": "6f6a5c5a-5536-4513-9a22-8ad3954caa65",
+              "movement": "p3"
+            },
+            "quantity": {
+              "magnitude": 1,
+              "units": "dimensionless"
+            }
+          },
+          {
+            "kind": "terminate"
+          }
+        ]
+      }
+    ]
+  }
+}

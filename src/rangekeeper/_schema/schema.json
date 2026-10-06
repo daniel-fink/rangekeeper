@@ -1,5 +1,48 @@
 {
   "$defs": {
+    "Action": {
+      "additionalProperties": false,
+      "description": "An inert assignment or terminal action. Effects are applied atomically; no Python callbacks.",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/ActionKind"
+        },
+        "quantity": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "target": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ValueReference"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "Action",
+      "type": "object"
+    },
+    "ActionKind": {
+      "description": "",
+      "enum": [
+        "assign",
+        "terminate"
+      ],
+      "title": "ActionKind",
+      "type": "string"
+    },
     "Argument": {
       "additionalProperties": false,
       "description": "One named expression argument in a Function call.",
@@ -99,7 +142,7 @@
     },
     "Assignment": {
       "additionalProperties": false,
-      "description": "Embedded association of a numerical Value reference with a supplied Quantity.",
+      "description": "An explicit scalar or Movement target and finite supplied Quantity; its collection determines assignment or estimate semantics.",
       "properties": {
         "quantity": {
           "$ref": "#/$defs/Quantity",
@@ -110,20 +153,12 @@
           ],
           "description": "Explicit finite magnitude and compatible units; omission or null is not a supplied amount."
         },
-        "value": {
-          "anyOf": [
-            {
-              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-              "type": "string"
-            }
-          ],
-          "description": "UUID of the numerical Value receiving the supplied amount or estimate.",
-          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "type": "string"
+        "target": {
+          "$ref": "#/$defs/ValueReference"
         }
       },
       "required": [
-        "value",
+        "target",
         "quantity"
       ],
       "title": "Assignment",
@@ -131,7 +166,7 @@
     },
     "Binding": {
       "additionalProperties": false,
-      "description": "A name within a Formulation that refers to an existing Value by UUID.",
+      "description": "A local interface name that refers to an existing canonical Value by UUID.",
       "properties": {
         "name": {
           "description": "Case-sensitive local interface name; not reference identity.",
@@ -164,12 +199,7 @@
         "arguments": {
           "description": "Positional arguments, in order.",
           "items": {
-            "$ref": "#/$defs/Expression",
-            "anyOf": [
-              {
-                "$ref": "#/$defs/Expression"
-              }
-            ]
+            "$ref": "#/$defs/Expression"
           },
           "type": [
             "array",
@@ -189,12 +219,7 @@
         "named_arguments": {
           "description": "Named arguments with unique parameter names. Their order is retained for authoring, not positional binding.",
           "items": {
-            "$ref": "#/$defs/Argument",
-            "anyOf": [
-              {
-                "$ref": "#/$defs/Argument"
-              }
-            ]
+            "$ref": "#/$defs/Argument"
           },
           "type": [
             "array",
@@ -557,6 +582,99 @@
       "title": "Criterion",
       "type": "object"
     },
+    "Decision": {
+      "additionalProperties": false,
+      "description": "Recorded outcome of one evaluated decision point; absence of a rule means fallback.",
+      "properties": {
+        "assignments": {
+          "items": {
+            "$ref": "#/$defs/Assignment"
+          },
+          "type": "array"
+        },
+        "at": {
+          "format": "date",
+          "type": "string"
+        },
+        "observations": {
+          "items": {
+            "$ref": "#/$defs/ObservedQuantity"
+          },
+          "type": "array"
+        },
+        "point": {
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "rule": {
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "terminated": {
+          "type": "boolean"
+        },
+        "termination_reason": {
+          "description": "Reason for termination, required when terminated is true.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "point",
+        "at",
+        "observations",
+        "assignments",
+        "terminated"
+      ],
+      "title": "Decision",
+      "type": "object"
+    },
+    "DecisionPoint": {
+      "additionalProperties": false,
+      "description": "One dated policy point with explicit observations, first-match rules and fallback.",
+      "properties": {
+        "at": {
+          "format": "date",
+          "type": "string"
+        },
+        "fallback": {
+          "items": {
+            "$ref": "#/$defs/Action"
+          },
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "observations": {
+          "items": {
+            "$ref": "#/$defs/ObservationBinding"
+          },
+          "type": "array"
+        },
+        "rules": {
+          "items": {
+            "$ref": "#/$defs/Rule"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "at",
+        "observations",
+        "rules",
+        "fallback"
+      ],
+      "title": "DecisionPoint",
+      "type": "object"
+    },
     "Definitions": {
       "additionalProperties": false,
       "description": "Reusable Taxonomies, Measures, and Functions identified by stable UUIDs within a Model.",
@@ -688,18 +806,19 @@
           "pattern": "\\S",
           "type": "string"
         },
+        "references": {
+          "items": {
+            "$ref": "#/$defs/ScopedValueReference"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
         "residual": {
           "allOf": [
             {
               "$ref": "#/$defs/Quantity"
-            }
-          ],
-          "anyOf": [
-            {
-              "$ref": "#/$defs/Quantity"
-            },
-            {
-              "type": "null"
             }
           ],
           "description": "Finite signed residual under the stated convention."
@@ -722,14 +841,6 @@
               "$ref": "#/$defs/Quantity"
             }
           ],
-          "anyOf": [
-            {
-              "$ref": "#/$defs/Quantity"
-            },
-            {
-              "type": "null"
-            }
-          ],
           "description": "Finite nonnegative tolerance in compatible units."
         }
       },
@@ -748,6 +859,54 @@
         "incoming"
       ],
       "title": "Direction",
+      "type": "string"
+    },
+    "Distribution": {
+      "additionalProperties": false,
+      "description": "Serializable distribution parameters, with explicit units; no live random generator.",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/DistributionFamily"
+        },
+        "lower": {
+          "type": "number"
+        },
+        "mode": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "units": {
+          "type": "string"
+        },
+        "upper": {
+          "type": "number"
+        },
+        "weighting": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "lower",
+        "upper",
+        "units"
+      ],
+      "title": "Distribution",
+      "type": "object"
+    },
+    "DistributionFamily": {
+      "description": "",
+      "enum": [
+        "uniform",
+        "triangular",
+        "pert"
+      ],
+      "title": "DistributionFamily",
       "type": "string"
     },
     "Domain": {
@@ -899,14 +1058,6 @@
           "allOf": [
             {
               "$ref": "#/$defs/Domain"
-            }
-          ],
-          "anyOf": [
-            {
-              "$ref": "#/$defs/Domain"
-            },
-            {
-              "type": "null"
             }
           ],
           "description": "Domain of each collection element."
@@ -1380,14 +1531,6 @@
             {
               "$ref": "#/$defs/Call"
             }
-          ],
-          "anyOf": [
-            {
-              "$ref": "#/$defs/Call"
-            },
-            {
-              "type": "null"
-            }
           ]
         },
         "id": {
@@ -1404,25 +1547,12 @@
               "$ref": "#/$defs/Expression"
             }
           ],
-          "anyOf": [
-            {
-              "$ref": "#/$defs/Expression"
-            },
-            {
-              "type": "null"
-            }
-          ],
           "description": "Operand of unary negation or Boolean negation."
         },
         "operands": {
           "description": "Two ordered operands of a binary operator. Unary operators use operand; Function calls use their own signature.",
           "items": {
-            "$ref": "#/$defs/Expression",
-            "anyOf": [
-              {
-                "$ref": "#/$defs/Expression"
-              }
-            ]
+            "$ref": "#/$defs/Expression"
           },
           "maxItems": 2,
           "minItems": 2,
@@ -1440,28 +1570,12 @@
               "$ref": "#/$defs/Quantity"
             }
           ],
-          "anyOf": [
-            {
-              "$ref": "#/$defs/Quantity"
-            },
-            {
-              "type": "null"
-            }
-          ],
           "description": "Numerical literal with an explicit magnitude and units, independent of any Measure. Use dimensionless for unitless content. Zero is a literal, not absence."
         },
         "query": {
           "allOf": [
             {
               "$ref": "#/$defs/Query"
-            }
-          ],
-          "anyOf": [
-            {
-              "$ref": "#/$defs/Query"
-            },
-            {
-              "type": "null"
             }
           ]
         },
@@ -1470,29 +1584,15 @@
             {
               "$ref": "#/$defs/Selection"
             }
-          ],
-          "anyOf": [
-            {
-              "$ref": "#/$defs/Selection"
-            },
-            {
-              "type": "null"
-            }
           ]
         },
         "target": {
-          "anyOf": [
+          "allOf": [
             {
-              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-              "type": "string"
-            },
-            {
-              "type": "null"
+              "$ref": "#/$defs/ValueReference"
             }
           ],
-          "description": "Value symbol referenced by its stable UUID in the applicable Model or composed Specification scope.",
-          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "type": "string"
+          "description": "Explicit Value or Movement symbol; never implicit recorded content."
         }
       },
       "required": [
@@ -1594,12 +1694,7 @@
         "labels": {
           "description": "All listed Label conditions must hold.",
           "items": {
-            "$ref": "#/$defs/Criterion",
-            "anyOf": [
-              {
-                "$ref": "#/$defs/Criterion"
-              }
-            ]
+            "$ref": "#/$defs/Criterion"
           },
           "type": [
             "array",
@@ -1750,12 +1845,7 @@
         "parameters": {
           "description": "Ordered signature. Omission denotes no parameters.",
           "items": {
-            "$ref": "#/$defs/Parameter",
-            "anyOf": [
-              {
-                "$ref": "#/$defs/Parameter"
-              }
-            ]
+            "$ref": "#/$defs/Parameter"
           },
           "type": [
             "array",
@@ -1876,6 +1966,24 @@
         "key"
       ],
       "title": "Label",
+      "type": "object"
+    },
+    "LibraryVersion": {
+      "additionalProperties": false,
+      "description": "Recorded implementation dependency version.",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version"
+      ],
+      "title": "LibraryVersion",
       "type": "object"
     },
     "Location": {
@@ -2095,14 +2203,6 @@
               "$ref": "#/$defs/Definitions"
             }
           ],
-          "anyOf": [
-            {
-              "$ref": "#/$defs/Definitions"
-            },
-            {
-              "type": "null"
-            }
-          ],
           "description": "Canonical Taxonomy, Measure, and Function definitions referenced by this snapshot."
         },
         "metadata": {
@@ -2120,28 +2220,12 @@
               "$ref": "#/$defs/Provenance"
             }
           ],
-          "anyOf": [
-            {
-              "$ref": "#/$defs/Provenance"
-            },
-            {
-              "type": "null"
-            }
-          ],
           "description": "Evidence and reasoning supporting recorded domain and Value content in this snapshot."
         },
         "system": {
           "allOf": [
             {
               "$ref": "#/$defs/System"
-            }
-          ],
-          "anyOf": [
-            {
-              "$ref": "#/$defs/System"
-            },
-            {
-              "type": "null"
             }
           ],
           "description": "The domain objects and explicit mathematical formulations represented by this Model."
@@ -2237,6 +2321,79 @@
       "title": "ObjectiveKind",
       "type": "string"
     },
+    "ObservationAvailability": {
+      "additionalProperties": false,
+      "description": "Earliest date a recorded Value or Movement may be supplied to a policy.",
+      "properties": {
+        "available_at": {
+          "format": "date",
+          "type": "string"
+        },
+        "target": {
+          "$ref": "#/$defs/ValueReference"
+        }
+      },
+      "required": [
+        "target",
+        "available_at"
+      ],
+      "title": "ObservationAvailability",
+      "type": "object"
+    },
+    "ObservationBinding": {
+      "additionalProperties": false,
+      "description": "An explicit observation target. An optional date may delay availability but cannot advance it.",
+      "properties": {
+        "available_at": {
+          "format": "date",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
+          "type": "string"
+        },
+        "target": {
+          "$ref": "#/$defs/ValueReference"
+        }
+      },
+      "required": [
+        "name",
+        "target"
+      ],
+      "title": "ObservationBinding",
+      "type": "object"
+    },
+    "ObservedQuantity": {
+      "additionalProperties": false,
+      "description": "The exact quantity and availability supplied to a decision.",
+      "properties": {
+        "available_at": {
+          "format": "date",
+          "type": "string"
+        },
+        "name": {
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
+          "type": "string"
+        },
+        "quantity": {
+          "$ref": "#/$defs/Quantity"
+        },
+        "target": {
+          "$ref": "#/$defs/ValueReference"
+        }
+      },
+      "required": [
+        "name",
+        "target",
+        "quantity",
+        "available_at"
+      ],
+      "title": "ObservedQuantity",
+      "type": "object"
+    },
     "Operator": {
       "description": "",
       "enum": [
@@ -2326,6 +2483,35 @@
         "end"
       ],
       "title": "Period",
+      "type": "object"
+    },
+    "Policy": {
+      "additionalProperties": false,
+      "description": "Finite policy owning explicit controlled targets and ordered dated decision points.",
+      "properties": {
+        "id": {
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "points": {
+          "items": {
+            "$ref": "#/$defs/DecisionPoint"
+          },
+          "type": "array"
+        },
+        "targets": {
+          "items": {
+            "$ref": "#/$defs/ValueReference"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "targets",
+        "points"
+      ],
+      "title": "Policy",
       "type": "object"
     },
     "Projection": {
@@ -2556,6 +2742,15 @@
             "null"
           ]
         },
+        "scenarios": {
+          "items": {
+            "$ref": "#/$defs/ScenarioRealization"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
         "sources": {
           "items": {
             "$ref": "#/$defs/Source"
@@ -2602,14 +2797,6 @@
             {
               "$ref": "#/$defs/Filter"
             }
-          ],
-          "anyOf": [
-            {
-              "$ref": "#/$defs/Filter"
-            },
-            {
-              "type": "null"
-            }
           ]
         },
         "projection": {
@@ -2633,12 +2820,7 @@
         "steps": {
           "description": "Ordered traversal steps; omission selects the starting Entity.",
           "items": {
-            "$ref": "#/$defs/Traversal",
-            "anyOf": [
-              {
-                "$ref": "#/$defs/Traversal"
-              }
-            ]
+            "$ref": "#/$defs/Traversal"
           },
           "type": [
             "array",
@@ -2652,6 +2834,25 @@
         "duplicates"
       ],
       "title": "Query",
+      "type": "object"
+    },
+    "RandomStream": {
+      "additionalProperties": false,
+      "description": "Stable component stream identity derived from seed, scenario key and component name.",
+      "properties": {
+        "identifier": {
+          "type": "string"
+        },
+        "name": {
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "identifier"
+      ],
+      "title": "RandomStream",
       "type": "object"
     },
     "Reconciliation": {
@@ -2742,6 +2943,15 @@
       "additionalProperties": false,
       "description": "Outcome, actual runtime, findings, and ordered execution trace of a Run.",
       "properties": {
+        "decisions": {
+          "items": {
+            "$ref": "#/$defs/Decision"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
         "diagnostics": {
           "description": "Unordered findings supporting interpretation of the outcome.",
           "items": {
@@ -2756,14 +2966,6 @@
           "allOf": [
             {
               "$ref": "#/$defs/Runtime"
-            }
-          ],
-          "anyOf": [
-            {
-              "$ref": "#/$defs/Runtime"
-            },
-            {
-              "type": "null"
             }
           ],
           "description": "Actual runtime when known; may be absent for a skipped or pre-execution failure."
@@ -2792,6 +2994,32 @@
         "status"
       ],
       "title": "Report",
+      "type": "object"
+    },
+    "Rule": {
+      "additionalProperties": false,
+      "description": "One ordered Boolean condition and its atomic actions.",
+      "properties": {
+        "actions": {
+          "items": {
+            "$ref": "#/$defs/Action"
+          },
+          "type": "array"
+        },
+        "condition": {
+          "$ref": "#/$defs/Expression"
+        },
+        "id": {
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "condition",
+        "actions"
+      ],
+      "title": "Rule",
       "type": "object"
     },
     "Run": {
@@ -2896,14 +3124,6 @@
               "$ref": "#/$defs/Settings"
             }
           ],
-          "anyOf": [
-            {
-              "$ref": "#/$defs/Settings"
-            },
-            {
-              "type": "null"
-            }
-          ],
           "description": "Effective numerical settings, rather than merely copied requests."
         },
         "started_at": {
@@ -2919,6 +3139,161 @@
         "implementations"
       ],
       "title": "Runtime",
+      "type": "object"
+    },
+    "ScenarioParameter": {
+      "additionalProperties": false,
+      "description": "One named constant or sampled parameter; exactly one input is required by semantic validation.",
+      "properties": {
+        "distribution": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Distribution"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "name": {
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
+          "type": "string"
+        },
+        "quantity": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Quantity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "ScenarioParameter",
+      "type": "object"
+    },
+    "ScenarioPlan": {
+      "additionalProperties": false,
+      "description": "Finite market generation plan. This is input-generation provenance, not governing mathematics.",
+      "properties": {
+        "id": {
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "method": {
+          "type": "string"
+        },
+        "parameters": {
+          "items": {
+            "$ref": "#/$defs/ScenarioParameter"
+          },
+          "type": "array"
+        },
+        "periods": {
+          "items": {
+            "$ref": "#/$defs/Period"
+          },
+          "type": "array"
+        },
+        "seed": {
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "method",
+        "seed",
+        "periods",
+        "parameters"
+      ],
+      "title": "ScenarioPlan",
+      "type": "object"
+    },
+    "ScenarioRealization": {
+      "additionalProperties": false,
+      "description": "Captured scenario inputs and paths. Stored draws permit replay without random sampling.",
+      "properties": {
+        "availability": {
+          "items": {
+            "$ref": "#/$defs/ObservationAvailability"
+          },
+          "type": "array"
+        },
+        "generator": {
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "inputs": {
+          "items": {
+            "$ref": "#/$defs/Binding"
+          },
+          "type": "array"
+        },
+        "key": {
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
+          "type": "string"
+        },
+        "outputs": {
+          "items": {
+            "$ref": "#/$defs/Binding"
+          },
+          "type": "array"
+        },
+        "plan": {
+          "$ref": "#/$defs/ScenarioPlan"
+        },
+        "streams": {
+          "items": {
+            "$ref": "#/$defs/RandomStream"
+          },
+          "type": "array"
+        },
+        "versions": {
+          "items": {
+            "$ref": "#/$defs/LibraryVersion"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "plan",
+        "key",
+        "generator",
+        "versions",
+        "streams",
+        "inputs",
+        "outputs",
+        "availability"
+      ],
+      "title": "ScenarioRealization",
+      "type": "object"
+    },
+    "ScopedValueReference": {
+      "additionalProperties": false,
+      "description": "An explicit revision and Value/Movement reference used in execution evidence.",
+      "properties": {
+        "document": {
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "reference": {
+          "$ref": "#/$defs/ValueReference"
+        }
+      },
+      "required": [
+        "document",
+        "reference"
+      ],
+      "title": "ScopedValueReference",
       "type": "object"
     },
     "Selection": {
@@ -3005,14 +3380,6 @@
               "$ref": "#/$defs/Expression"
             }
           ],
-          "anyOf": [
-            {
-              "$ref": "#/$defs/Expression"
-            },
-            {
-              "type": "null"
-            }
-          ],
           "description": "Index expression."
         },
         "kind": {
@@ -3047,6 +3414,14 @@
       "additionalProperties": false,
       "description": "Numerical convergence and resource settings; the containing record distinguishes requested from effective values.",
       "properties": {
+        "constraint_limit": {
+          "description": "Maximum expanded comparison rows.",
+          "minimum": 1,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
         "iteration_limit": {
           "description": "Maximum number of solver iterations requested, interpreted by the backend's documented algorithm.",
           "minimum": 1,
@@ -3061,6 +3436,14 @@
           "minimum": 0,
           "type": [
             "number",
+            "null"
+          ]
+        },
+        "symbol_limit": {
+          "description": "Maximum prepared scalar/Movement symbols.",
+          "minimum": 1,
+          "type": [
+            "integer",
             "null"
           ]
         },
@@ -3288,33 +3671,28 @@
             "null"
           ]
         },
+        "policy": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Policy"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "settings": {
           "allOf": [
             {
               "$ref": "#/$defs/Settings"
             }
           ],
-          "anyOf": [
-            {
-              "$ref": "#/$defs/Settings"
-            },
-            {
-              "type": "null"
-            }
-          ],
           "description": "Optional numerical requests. Choices still unspecified after composition are left to the implementation; the Run records the effective settings."
         },
         "unknowns": {
-          "description": "Unique Value UUIDs whose amounts may be determined, including intermediate unknowns.",
+          "description": "Unique scalar or Movement unknowns; explicit and disjoint from assignments and policy targets.",
           "items": {
-            "anyOf": [
-              {
-                "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-                "type": "string"
-              }
-            ],
-            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-            "type": "string"
+            "$ref": "#/$defs/ValueReference"
           },
           "type": [
             "array",
@@ -3771,6 +4149,28 @@
       ],
       "title": "ValueKind",
       "type": "string"
+    },
+    "ValueReference": {
+      "additionalProperties": false,
+      "description": "A Value UUID and optional stable owner-local Movement key. Scope comes from the containing Model or composed Specification; positions are never identities.",
+      "properties": {
+        "movement": {
+          "pattern": "\\S",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "value": {
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value"
+      ],
+      "title": "ValueReference",
+      "type": "object"
     }
   },
   "$id": "https://daniel-fink.github.io/rangekeeper/schema/bundle",

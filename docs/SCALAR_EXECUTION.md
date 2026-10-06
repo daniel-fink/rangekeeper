@@ -1,5 +1,15 @@
 # Scalar execution with Pyomo and HiGHS
 
+**Turn 2 update, 2026-10-06:** [Temporal equations, scenarios and policies](FULL_MIGRATION_TURN2.md)
+now use Model/Specification 0.5.0 and Run 0.2.0. `ValueReference` addresses scalar
+Values or owner-local Movement keys. The canonical calendar package is `duration/`;
+`temporal` has no public alias. Finite Flow formulations, captured scenario replay,
+exogenous declarative policies and the four numerical walkthroughs are implemented.
+See [verification](research/full-migration/turn2/README.md) and the
+[upgrade guide](LEGACY_UPGRADE_GUIDE.md). Turn 3 completes remaining consumers and
+integrations; Turn 4 retires obsolete code after their acceptance gates.
+The dated checkpoint descriptions below remain historical context.
+
 Step 5 implements **actual affine feasibility execution** in `rangekeeper.execution`.
 The executor reads the canonical Model and an additive Specification composition,
 lowers declared mathematics, solves in a separate process, independently evaluates
@@ -95,19 +105,20 @@ equality, nonstrict upper/lower bounds, conjunctions and Boolean constants.
 All Model and Specification Constraints are imposed. Unused reporting expressions
 remain passive, including the fixture's area query. No stored amount supplies a
 missing role. Estimates are reported as unused by this simplex feasibility method.
-Canonical units come from each Value's Measure; conversion is explicit and
+Canonical units come from each scalar Value's Measure or Flow units; conversion is explicit and
 equations must compare compatible dimensions. Multiplicative arithmetic that would
 require unsupported offset-unit handling is rejected.
 
 The adapter explicitly rejects nonlinear unknown products/divisors/powers, strict
 comparisons, disjunctions, function calls, selections, imposed queries, ordered
 optimization objectives and Specification-local Value publication. Rich temporal
-Values, structural interventions, scenario generation and graph consumer migration
-remain later checkpoints. It never substitutes hard-coded valuation formulas.
+Values and scenario generation are now supported by full migration Turn 2.
+Structural interventions and remaining external consumer migration remain later work. It never substitutes hard-coded valuation formulas.
 
 ## Settings, limits and conclusions
 
-- Default limits are **30 seconds** and **100,000 simplex iterations** per leaf.
+- Default limits are **30 seconds**, **100,000 simplex iterations**, **10,000 symbols**
+  and **20,000 affine constraints** per leaf.
   Requested `iteration_limit` maps to HiGHS simplex iterations; presolve reductions
   are separate. Requests exceeding HiGHS's integer maximum are clamped with a
   `settings_adjusted` diagnostic.

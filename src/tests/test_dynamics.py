@@ -22,6 +22,7 @@ import pandas as pd
 import pint
 
 import rangekeeper as rk
+from rangekeeper import _legacy_duration as legacy_duration
 
 # matplotlib.use('TkAgg')
 plt.style.use("seaborn-v0_8")  # pretty matplotlib plots
@@ -35,7 +36,7 @@ pint.set_application_registry(rk.measure.Index.registry)
 model_params = {
     "start_date": datetime.date(2001, 1, 1),
     "num_periods": 10,
-    "frequency": rk.duration.Type.YEAR,
+    "frequency": legacy_duration.Type.YEAR,
     "acquisition_cost": -1000 * currency.units,
     "initial_income": 100 * currency.units,
     "growth_rate": 0.02,
@@ -50,15 +51,15 @@ model_params = {
 class ExAnteInflexibleModel:
     def __init__(self, params: dict):
         self.params = params
-        self.calc_span = rk.duration.Span.from_duration(
+        self.calc_span = legacy_duration.Span.from_duration(
             name="Span to Calculate Reversion",
             date=self.params["start_date"],
             duration=self.params["frequency"],
             amount=self.params["num_periods"] + 1,
         )
-        self.acq_span = rk.duration.Span.from_duration(
+        self.acq_span = legacy_duration.Span.from_duration(
             name="Acquisition Span",
-            date=rk.duration.offset(
+            date=legacy_duration.offset(
                 params["start_date"], amount=-1, duration=self.params["frequency"]
             ),
             duration=self.params["frequency"],
@@ -146,7 +147,7 @@ class ExAnteInflexibleModel:
         irrs = []
         for period in self.net_cfs.movements.index:
             cumulative_net_cfs = self.net_cfs.trim_to_span(
-                span=rk.duration.Span(
+                span=legacy_duration.Span(
                     name="Cumulative Net Cashflow Span",
                     start_date=self.params["start_date"],
                     end_date=period,
@@ -196,15 +197,15 @@ class ExPostInflexibleModel:
         self.market = market
 
     def set_spans(self):
-        self.calc_span = rk.duration.Span.from_duration(
+        self.calc_span = legacy_duration.Span.from_duration(
             name="Span to Calculate Reversion",
             date=self.params["start_date"],
             duration=self.params["frequency"],
             amount=self.params["num_periods"] + 1,
         )
-        self.acq_span = rk.duration.Span.from_duration(
+        self.acq_span = legacy_duration.Span.from_duration(
             name="Acquisition Span",
-            date=rk.duration.offset(
+            date=legacy_duration.offset(
                 self.params["start_date"], amount=-1, duration=self.params["frequency"]
             ),
             duration=self.params["frequency"],
@@ -303,7 +304,7 @@ class ExPostInflexibleModel:
         irrs = []
         for period in self.net_cfs.movements.index:
             cumulative_net_cfs = self.net_cfs.trim_to_span(
-                span=rk.duration.Span(
+                span=legacy_duration.Span(
                     name="Cumulative Net Cashflow Span",
                     start_date=self.params["start_date"],
                     end_date=period,
@@ -383,8 +384,8 @@ class ExPostInflexibleModel:
 
 
 class TestDynamics:
-    frequency = rk.duration.Type.YEAR
-    span = rk.duration.Span.from_duration(
+    frequency = legacy_duration.Type.YEAR
+    span = legacy_duration.Span.from_duration(
         name="Span",
         date=pd.Timestamp(2000, 1, 1),
         duration=frequency,

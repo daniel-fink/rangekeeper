@@ -1,0 +1,3 @@
+[IPKernelApp] WARNING | Kernel is running over TCP without encryption. All communication (including code and outputs) is sent in plain text and is susceptible to eavesdropping. Use IPC transport or launch with kernel manager-provisioned CurveZMQ keys to enable transport encryption.
+{"source": "/Volumes/Data/Projects/Rangekeeper/walkthrough/market_dynamics.ipynb", "output": "/Volumes/Data/Projects/Rangekeeper/docs/research/full-migration/naming/installed-notebooks/market_dynamics.ipynb", "python": "/private/tmp/rk-full-runtime/bin/python", "cells": 23, "executed": 11}
+[IPKernelApp] WARNING | Parent appears to have exited, shutting down.

@@ -1,0 +1,22 @@
+{
+  "python": "/private/tmp/rk-probe-audit-venv/bin/python",
+  "version": "3.10.19",
+  "rk": "/Volumes/Data/Projects/Rangekeeper/src/rangekeeper/__init__.py",
+  "packages": {
+    "linkml": "1.11.1",
+    "linkml-runtime": "1.11.1",
+    "jsonschema": "4.26.0",
+    "PyYAML": "6.0.3",
+    "numpy": null,
+    "scipy": null,
+    "pint": null,
+    "polars": null,
+    "pandas": null,
+    "pyomo": null,
+    "highspy": null,
+    "pyxirr": null,
+    "nbformat": null,
+    "nbclient": null,
+    "mypy": null
+  }
+}

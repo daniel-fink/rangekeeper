@@ -1,8 +1,8 @@
 # Upgrade older Rangekeeper consumers
 
-This guide covers the implemented **Turn 1** APIs in the full migration.
-Use [the ledger](FULL_MIGRATION_TURN1.md) to distinguish delivered replacements
-from work in Turns 2–4. The old runtime modules still exist for unmigrated consumers.
+This guide covers the implemented **Turn 1 and Turn 2** APIs in the full migration.
+Use the [Turn 2 contract](FULL_MIGRATION_TURN2.md) and [original ledger](FULL_MIGRATION_TURN1.md)
+to distinguish delivered replacements from the remaining Turns 3–4. The old runtime modules still exist for unmigrated consumers.
 Do not use their presence as evidence that old Graph JSON is canonical Model JSON.
 
 **Movement naming, 2026-10-06:** import `Movement` from `rangekeeper.model.flow`
@@ -24,15 +24,11 @@ revision; older snapshots remain historical. `Value.kind="flow"` still identifie
 the content shape. See the [contract](FULL_MIGRATION_TURN1.md#flow-semantics-and-explicit-operations)
 and [verification](research/full-migration/flow-semantics/README.md).
 
-**Planned namespace change, 2026-10-05:** Turn 2 will start by moving calendar
-operations from `rangekeeper.temporal` to `rangekeeper.duration`.
-`rangekeeper.model.duration` will continue to expose the canonical records.
-The examples below use the current, implemented `temporal` imports; update them
-with the code change. This is an intentional replacement of the old public
-`rk.duration.Type/Sequence/Span` API, not an import-only upgrade for old consumers.
-The temporary `_legacy_duration.py` will be private migration support, not a
-recommended import for downstream code. See the
-[sequence and acceptance checks](FULL_MIGRATION_TURN1.md#duration-namespace-migration).
+**Duration namespace, 2026-10-06:** use `rangekeeper.duration` for calendar
+operations. `rangekeeper.temporal` is removed without an alias. The records remain
+in `rangekeeper.model.duration`. Old `duration.Type/Sequence/Span` callers require
+an explicit port; the private `_legacy_duration` module is temporary support for
+remaining repository consumers, not a downstream replacement API.
 
 ## Install and check the artifact
 
@@ -42,7 +38,7 @@ Polars 1.44.2 and the exact dependency list in the
 [verification report](research/full-migration/turn1/README.md).
 
 ```sh
-python -m pip install './src[calculations,pandas,yaml,workflow]'
+python -m pip install './src[calculations,pandas,yaml,workflow,execution]'
 python -c 'import rangekeeper; print(rangekeeper.__file__)'
 ```
 
@@ -62,7 +58,7 @@ from rangekeeper.model import (
 )
 from rangekeeper.model.content import encode, decode
 from rangekeeper.model.flow import Stream, from_periods
-from rangekeeper.temporal import make_periods
+from rangekeeper.duration import make_periods
 from rangekeeper.calculations import series
 
 periods = make_periods(date(2026, 1, 1), frequency="month", count=3)
@@ -72,7 +68,7 @@ reading = Value(id=uuid4(), key="delivered", kind="flow", measure=measure.id, fl
 note = Value(id=uuid4(), key="source", kind="property", content=encode({"checked": False}))
 owner = Entity(id=uuid4(), code="A", characteristics=Characteristics(values=(reading, note)))
 model = Model.create(
-    metadata=Metadata(id=uuid4(), schema_version="0.4.0"),
+    metadata=Metadata(id=uuid4(), schema_version="0.5.0"),
     definitions=Definitions(measures=(measure,)), system=System(entities=(owner,)),
 )
 stream = Stream.from_values(model, (reading.id,))
@@ -130,7 +126,7 @@ keep the original Flow when individual payment facts are required.
 
 | Old call or assumption | Replacement / deliberate change |
 |---|---|
-| `duration.Type` / pandas frequency inference | Explicit `frequency="month"` etc.; ten calendar frequencies in `temporal.calendar` |
+| `duration.Type` / pandas frequency inference | Explicit `frequency="month"` etc.; ten calendar frequencies in `duration.calendar` |
 | Inclusive `Span.end_date` | Half-open `[start,end)` Period/Span; add one calendar day when mapping an inclusive date-only end |
 | `Flow.from_dict/from_sequence` | Explicit ordered dates/magnitudes in `model.flow.from_events`; duplicate dates need keys |
 | `Flow.from_projection` | `calculations.projection.project` or `allocate`, with Quantity and Periods |
@@ -141,7 +137,7 @@ keep the original Flow when individual payment facts are required.
 | `Flow.resample(frequency)` | Explicit complete target Period grid, reduction and missing policy; every mean requires weighting |
 | `Flow.clean/trim/diff/collapse` | `series.clean/trim/difference/collapse`; see docstrings for unresolved first differences and time bounds |
 | Mutable pandas content | `adapters.pandas.to_frame/from_frame`; Polars equivalents; detached `to_series` is a presentation projection |
-| Implicit global RNG | `Distribution.sample(size=..., generator=np.random.default_rng(seed))` |
+| Implicit global RNG | `calculations.distribution.sample(distribution, size=..., generator=...)` |
 | `flow.pv` | `financial.calculate_pv(rate=..., first_period=1)`; rate is per observation period |
 | `flow.npv/irr` | `calculate_xnpv(valuation_date=..., day_count=...)`; `calculate_irr(guess=...)` returns one root and residual; guess is optional; both require `timing=` for undated periods |
 | Account constructor calculates silently | `account.calculate_account(..., method=..., timing=...)`; result has opening/closing/overdraft/interest Flows |
@@ -208,8 +204,9 @@ Use `DirectoryStore` for filesystem persistence. Writes are append-only by revis
 UUID; conflicting content fails. A Flow calculation returns a detached result;
 author its result as a Value in a new Model revision when it must be retained.
 Changing a revision does not silently rewrite a Specification or historical Run.
-Model 0.3.0 upgrades require `migration.upgrade_model`; it creates a new UUID and
-`metadata.previous`. Re-author dependent Specifications against that new revision.
+Model 0.3.0/0.4.0 upgrades use `migration.upgrade_model`; it creates a new UUID and
+`metadata.previous`. `migration.upgrade_specification` upgrades a 0.4.0 Specification,
+requiring the new Model UUID and explicit mappings for included/case revisions.
 Retain historical Runs with their original pinned documents and reader environment.
 
 ## Convert an old persisted Graph
@@ -259,11 +256,107 @@ are Turn 3 work. A passing synthetic example does not certify them.
   The basic DCF notebook's intended result remains **1000**, checked independently.
 - Distribution bounds are checked element by element. Degenerate distributions
   return the requested sample count. Shock impact is applied once, explicitly.
-- Numerical kernels do not establish acausal support. Flow solve roles, indexed
-  equations and policy mathematics require Turn 2 capability and acceptance work.
+- Numerical kernels do not establish acausal support. Turn 2 adds finite Movement
+  equations and exogenous policies; unknown rates, nonlinear/piecewise symbolic
+  accounts and endogenous sequential decisions remain outside affine execution.
 
 The complete worked snippet is executable in
 [`guide_example.py`](research/full-migration/financial-library/guide_example.py).
 The [current financial verification](research/full-migration/financial-library/README.md) records its
 installed-wheel run and the notebook and regression evidence. The
 [original Turn 1 report](research/full-migration/turn1/README.md) remains historical evidence.
+
+## Movement roles, equations and draft-format changes
+
+Current Model/Specification documents use 0.5.0; Runs use 0.2.0. Replace scalar
+expression `target: UUID` with `target: {value: UUID}`. Replace assignment `value`
+with `target: {value: UUID}` and wrap scalar unknowns in the same reference shape.
+A Flow role adds `movement: KEY`. Use `specification.targets.scalar` and `movement`
+for typed references. `assign_flow(model, value)` explicitly reuses resolved amounts;
+`unknown_flow(model, value)` declares them unknown even if recorded amounts exist.
+Estimates do not fill missing assignments. A Measure is not a Value selector.
+
+The upgrade functions preserve identity, order and provenance, create new revisions
+and reject unsupported content. They do not silently strip old `basis`/`samples`
+fields or convert old Graph JSON. Apply the documented earlier draft corrections
+explicitly before upgrading. There is no automatic historical Run upgrade.
+
+The installed example has separate authoring, formulation, investigation, execution
+and reporting operations. This complete example is checked outside the checkout:
+
+```python
+from rangekeeper.examples import investment
+from rangekeeper.execution import Executor
+from rangekeeper.io import MemoryStore
+from rangekeeper.run import validate as validate_run
+
+investment_model = investment.formulate(investment.author({"num_periods": 3}))
+resale_policy = investment.build_stop_gain_resale_policy(investment_model, minimum_holding_periods=1)
+question = investment.specify(investment_model, policy=resale_policy)
+investment_store = MemoryStore()
+investment_store.put(investment_model)
+execution = Executor(investment_store).execute(question)
+assert execution.report.status.solution == "feasible"
+validate_run(execution, resolver=investment_store).raise_if_invalid()
+accepted = investment_store.load_model(execution.record.outputs[0])
+report = investment.report(accepted)
+assert len(execution.report.decisions) >= 1
+assert accepted.metadata.previous == investment_model.id
+```
+
+Use `formulations` builders for declarations and `calculations` for known-data
+results. Fixed-rate growth and discounting can solve forward or inverse initial
+amounts. General IRR and unknown discount/growth rates are not affine investigations.
+Do not embed Python callbacks in policy records or perform calculations in a model
+constructor. Keep source-building `WorkflowSpec` separate from mathematical
+`Specification`.
+
+## Captured scenarios and policy comparisons
+
+```python
+from rangekeeper.scenarios import market, replay
+from rangekeeper.duration import make_periods
+
+scenario_base = Model.create(metadata=Metadata(id=uuid4(), schema_version="0.5.0"))
+scenario_plan = market.make_plan(
+    periods=make_periods(date(2027, 1, 1), frequency="year", count=4), seed=23,
+)
+scenario = market.generate(scenario_base, scenario_plan, scenario_keys=("example",))[0]
+assert replay(scenario.model).model is scenario.model
+market_path = scenario.space_market_price_factors
+assert len(market_path.flow.movements) == 4
+```
+
+Choose `sample` to inspect draws before realization, or `capture` plus `realize`
+for supplied innovations. `resolve_input` and `resolve_output` avoid collisions
+between parameter and path names. Seed, key and component select a stream;
+worker count does not. Parallel generation requires the usual guarded Python
+script entry point when called outside notebooks.
+
+Policies see only declared quantities available by each decision date and earlier
+decisions. Forward-derived market ratios are unavailable before their inputs.
+Exactly one threshold sale occurs: include that period's operations and sale,
+then zero later investment cashflows. The full scenario remains intact. Compare
+fixed and flexible investments using the same realization; label hindsight
+horizon selection explicitly. Threshold policies do not guarantee a market peak.
+
+The [Turn 2 evidence](research/full-migration/turn2/README.md) supersedes earlier
+counts for the current working tree. The full 2,000-scenario notebook setting is
+available but routine acceptance uses four visible scenarios.
+
+## RK naming and existing scenario drafts
+
+The [naming guide](RK_NAMING.md) records the current vocabulary. `Market` is a
+read-only view of canonical Values, not another persistent document. Use
+`model.distribution.Distribution` and its `make_uniform`, `make_triangular`,
+`make_pert`, or `make_symmetric` constructors. Calculation functions consume the
+same generated record; numerical methods are no longer attached to a second
+handwritten Distribution class.
+
+`migration.upgrade_scenario_names(old_data)` explicitly converts the unreleased
+`market.v1`, `market.estimates.v1` and `independent.v1` labels into their v2 methods.
+Pass detached Model 0.5.0 data; the function returns a new Model revision and
+preserves Value UUIDs, quantities, Movement coordinates, claims and random stream
+identifiers. Codecs do not upgrade automatically. Old Runs keep their original
+Model pins and are not relabelled as new executions. Select the new Model revision
+explicitly when authoring a later Specification.

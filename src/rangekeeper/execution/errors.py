@@ -20,3 +20,7 @@ class NumericalError(ValueError):
 
 class BackendUnavailable(RuntimeError):
     """The optional, pinned execution backend cannot be loaded."""
+
+
+class AttemptDeadline(RuntimeError):
+    """The attempt budget expired at a preparation or compilation checkpoint."""

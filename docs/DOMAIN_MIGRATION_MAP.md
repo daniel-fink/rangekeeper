@@ -1,5 +1,15 @@
 # Domain migration map and Python interface contract
 
+**Turn 2 update, 2026-10-06:** [Temporal equations, scenarios and policies](FULL_MIGRATION_TURN2.md)
+now use Model/Specification 0.5.0 and Run 0.2.0. `ValueReference` addresses scalar
+Values or owner-local Movement keys. The canonical calendar package is `duration/`;
+`temporal` has no public alias. Finite Flow formulations, captured scenario replay,
+exogenous declarative policies and the four numerical walkthroughs are implemented.
+See [verification](research/full-migration/turn2/README.md) and the
+[upgrade guide](LEGACY_UPGRADE_GUIDE.md). Turn 3 completes remaining consumers and
+integrations; Turn 4 retires obsolete code after their acceptance gates.
+The dated checkpoint descriptions below remain historical context.
+
 **Movement naming, 2026-10-06:** the current API uses `Movement` and
 `Flow.movements`. See the [naming contract](FULL_MIGRATION_TURN1.md#movement-naming)
 for the Python/wire-format change and upgrade requirements.
@@ -15,11 +25,7 @@ implements Model 0.4.0 rich properties and Flow Values, `model.duration`,
 `temporal`, `calculations`, detached dataframe adapters, and explicit Graph conversion.
 The basic DCF notebook, financial test model and synthetic source workflows migrated.
 Read the [upgrade guide](LEGACY_UPGRADE_GUIDE.md) and [verification](research/full-migration/turn1/README.md).
-Next is Turn 2: temporal mathematics, scenarios/policies, and their consumers.
-The [duration namespace migration](FULL_MIGRATION_TURN1.md#duration-namespace-migration),
-recorded 2026-10-05, opens that turn: canonical operations move from `temporal/`
-to `duration/`; retained old callers use temporary private migration support.
-The current runtime paths above remain in use until that slice is verified.
+Turn 2 is implemented; see the current contract and verification linked above.
 Turns 3–4 finish remaining consumers and retire old modules. The six-checkpoint
 history below remains the scalar/core work record; full migration is not complete.
 

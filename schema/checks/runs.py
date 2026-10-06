@@ -188,6 +188,7 @@ for name in ids:
     good(name)
 for completion, solution in (
     ("limited", "unknown"),
+    ("limited", "not_assessed"),
     ("completed", "unknown"),
     ("completed", "infeasible"),
     ("cancelled", "unknown"),

@@ -7,6 +7,7 @@ from uuid import UUID
 from datetime import date as Date
 from .._records import Record, Unset, UNSET, FrozenJSONValue, JSONValue
 
+ActionKind = Literal['assign', 'terminate']
 Cardinality = Literal['one', 'many']
 ClaimKind = Literal['sourced', 'asserted', 'derived']
 CollectionKind = Literal['set', 'bag', 'sequence']
@@ -14,6 +15,7 @@ CompletionStatus = Literal['completed', 'limited', 'partial', 'failed', 'cancell
 ContentKind = Literal['null', 'boolean', 'integer', 'float', 'string', 'uuid', 'date', 'datetime', 'time', 'duration', 'list', 'tuple', 'set', 'frozenset', 'mapping', 'mapping_proxy']
 Depth = Literal['direct', 'transitive']
 Direction = Literal['outgoing', 'incoming']
+DistributionFamily = Literal['uniform', 'triangular', 'pert']
 DomainKind = Literal['number', 'quantity', 'measurement', 'boolean', 'string', 'date', 'span', 'flow', 'stream', 'account', 'entity', 'collection']
 DuplicateHandling = Literal['distinct', 'preserve']
 EmptyHandling = Literal['error', 'zero']
@@ -32,6 +34,34 @@ StepKind = Literal['validation', 'formulation', 'solve', 'publication', 'selecti
 TraversalKind = Literal['relationship', 'membership']
 ValueKind = Literal['measurement', 'flow', 'property']
 Content = FrozenJSONValue
+
+class Action(Record):
+    __slots__ = ()
+    _kind = 'Action'
+
+    def __init__(self, *,
+        kind: ActionKind,
+        target: ValueReference | None | Unset = UNSET,
+        quantity: Quantity | None | Unset = UNSET,
+    ) -> None:
+        self._initialize({
+            'kind': kind,
+            'target': target,
+            'quantity': quantity,
+        })
+
+    @property
+    def kind(self) -> ActionKind:
+        return cast('ActionKind', self._field('kind'))
+
+    @property
+    def target(self) -> ValueReference | None:
+        return cast('ValueReference | None', self._field('target'))
+
+    @property
+    def quantity(self) -> Quantity | None:
+        return cast('Quantity | None', self._field('quantity'))
+
 
 class Argument(Record):
     __slots__ = ()
@@ -152,17 +182,17 @@ class Assignment(Record):
     _kind = 'Assignment'
 
     def __init__(self, *,
-        value: UUID,
+        target: ValueReference,
         quantity: Quantity,
     ) -> None:
         self._initialize({
-            'value': value,
+            'target': target,
             'quantity': quantity,
         })
 
     @property
-    def value(self) -> UUID:
-        return cast('UUID', self._field('value'))
+    def target(self) -> ValueReference:
+        return cast('ValueReference', self._field('target'))
 
     @property
     def quantity(self) -> Quantity:
@@ -405,6 +435,98 @@ class Criterion(Record):
         return cast('UUID', self._field('classification'))
 
 
+class Decision(Record):
+    __slots__ = ()
+    _kind = 'Decision'
+
+    def __init__(self, *,
+        point: UUID,
+        at: Date,
+        rule: UUID | None | Unset = UNSET,
+        observations: tuple[ObservedQuantity, ...],
+        assignments: tuple[Assignment, ...],
+        terminated: bool,
+        termination_reason: str | None | Unset = UNSET,
+    ) -> None:
+        self._initialize({
+            'point': point,
+            'at': at,
+            'rule': rule,
+            'observations': observations,
+            'assignments': assignments,
+            'terminated': terminated,
+            'termination_reason': termination_reason,
+        })
+
+    @property
+    def point(self) -> UUID:
+        return cast('UUID', self._field('point'))
+
+    @property
+    def at(self) -> Date:
+        return cast('Date', self._field('at'))
+
+    @property
+    def rule(self) -> UUID | None:
+        return cast('UUID | None', self._field('rule'))
+
+    @property
+    def observations(self) -> tuple[ObservedQuantity, ...]:
+        return cast('tuple[ObservedQuantity, ...]', self._field('observations'))
+
+    @property
+    def assignments(self) -> tuple[Assignment, ...]:
+        return cast('tuple[Assignment, ...]', self._field('assignments'))
+
+    @property
+    def terminated(self) -> bool:
+        return cast('bool', self._field('terminated'))
+
+    @property
+    def termination_reason(self) -> str | None:
+        return cast('str | None', self._field('termination_reason'))
+
+
+class DecisionPoint(Record):
+    __slots__ = ()
+    _kind = 'DecisionPoint'
+
+    def __init__(self, *,
+        id: UUID,
+        at: Date,
+        observations: tuple[ObservationBinding, ...],
+        rules: tuple[Rule, ...],
+        fallback: tuple[Action, ...],
+    ) -> None:
+        self._initialize({
+            'id': id,
+            'at': at,
+            'observations': observations,
+            'rules': rules,
+            'fallback': fallback,
+        })
+
+    @property
+    def id(self) -> UUID:
+        return cast('UUID', self._field('id'))
+
+    @property
+    def at(self) -> Date:
+        return cast('Date', self._field('at'))
+
+    @property
+    def observations(self) -> tuple[ObservationBinding, ...]:
+        return cast('tuple[ObservationBinding, ...]', self._field('observations'))
+
+    @property
+    def rules(self) -> tuple[Rule, ...]:
+        return cast('tuple[Rule, ...]', self._field('rules'))
+
+    @property
+    def fallback(self) -> tuple[Action, ...]:
+        return cast('tuple[Action, ...]', self._field('fallback'))
+
+
 class Definitions(Record):
     __slots__ = ()
     _kind = 'Definitions'
@@ -445,6 +567,7 @@ class Diagnostic(Record):
         target: UUID | None | Unset = UNSET,
         residual: Quantity | Unset = UNSET,
         tolerance: Quantity | Unset = UNSET,
+        references: tuple[ScopedValueReference, ...] | None | Unset = UNSET,
     ) -> None:
         self._initialize({
             'severity': severity,
@@ -454,6 +577,7 @@ class Diagnostic(Record):
             'target': target,
             'residual': residual,
             'tolerance': tolerance,
+            'references': references,
         })
 
     @property
@@ -483,6 +607,56 @@ class Diagnostic(Record):
     @property
     def tolerance(self) -> Quantity | None:
         return cast('Quantity | None', self._field('tolerance'))
+
+    @property
+    def references(self) -> tuple[ScopedValueReference, ...] | None:
+        return cast('tuple[ScopedValueReference, ...] | None', self._field('references'))
+
+
+class Distribution(Record):
+    __slots__ = ()
+    _kind = 'Distribution'
+
+    def __init__(self, *,
+        kind: DistributionFamily,
+        lower: int | float,
+        upper: int | float,
+        mode: int | float | None | Unset = UNSET,
+        weighting: int | float | None | Unset = UNSET,
+        units: str,
+    ) -> None:
+        self._initialize({
+            'kind': kind,
+            'lower': lower,
+            'upper': upper,
+            'mode': mode,
+            'weighting': weighting,
+            'units': units,
+        })
+
+    @property
+    def kind(self) -> DistributionFamily:
+        return cast('DistributionFamily', self._field('kind'))
+
+    @property
+    def lower(self) -> int | float:
+        return cast('int | float', self._field('lower'))
+
+    @property
+    def upper(self) -> int | float:
+        return cast('int | float', self._field('upper'))
+
+    @property
+    def mode(self) -> int | float | None:
+        return cast('int | float | None', self._field('mode'))
+
+    @property
+    def weighting(self) -> int | float | None:
+        return cast('int | float | None', self._field('weighting'))
+
+    @property
+    def units(self) -> str:
+        return cast('str', self._field('units'))
 
 
 class Domain(Record):
@@ -556,7 +730,7 @@ class Expression(Record):
         kind: ExpressionKind,
         quantity: Quantity | Unset = UNSET,
         boolean: bool | Unset = UNSET,
-        target: UUID | Unset = UNSET,
+        target: ValueReference | Unset = UNSET,
         operator: Operator | Unset = UNSET,
         operands: tuple[Expression, ...] | None | Unset = UNSET,
         operand: Expression | Unset = UNSET,
@@ -595,8 +769,8 @@ class Expression(Record):
         return cast('bool | None', self._field('boolean'))
 
     @property
-    def target(self) -> UUID | None:
-        return cast('UUID | None', self._field('target'))
+    def target(self) -> ValueReference | None:
+        return cast('ValueReference | None', self._field('target'))
 
     @property
     def operator(self) -> Operator | None:
@@ -879,6 +1053,28 @@ class Label(Record):
         return cast('tuple[UUID, ...] | None', self._field('classifications'))
 
 
+class LibraryVersion(Record):
+    __slots__ = ()
+    _kind = 'LibraryVersion'
+
+    def __init__(self, *,
+        name: str,
+        version: str,
+    ) -> None:
+        self._initialize({
+            'name': name,
+            'version': version,
+        })
+
+    @property
+    def name(self) -> str:
+        return cast('str', self._field('name'))
+
+    @property
+    def version(self) -> str:
+        return cast('str', self._field('version'))
+
+
 class Location(Record):
     __slots__ = ()
     _kind = 'Location'
@@ -1139,6 +1335,90 @@ class Objective(Record):
         return cast('ObjectiveKind', self._field('sense'))
 
 
+class ObservationAvailability(Record):
+    __slots__ = ()
+    _kind = 'ObservationAvailability'
+
+    def __init__(self, *,
+        target: ValueReference,
+        available_at: Date,
+    ) -> None:
+        self._initialize({
+            'target': target,
+            'available_at': available_at,
+        })
+
+    @property
+    def target(self) -> ValueReference:
+        return cast('ValueReference', self._field('target'))
+
+    @property
+    def available_at(self) -> Date:
+        return cast('Date', self._field('available_at'))
+
+
+class ObservationBinding(Record):
+    __slots__ = ()
+    _kind = 'ObservationBinding'
+
+    def __init__(self, *,
+        name: str,
+        target: ValueReference,
+        available_at: Date | None | Unset = UNSET,
+    ) -> None:
+        self._initialize({
+            'name': name,
+            'target': target,
+            'available_at': available_at,
+        })
+
+    @property
+    def name(self) -> str:
+        return cast('str', self._field('name'))
+
+    @property
+    def target(self) -> ValueReference:
+        return cast('ValueReference', self._field('target'))
+
+    @property
+    def available_at(self) -> Date | None:
+        return cast('Date | None', self._field('available_at'))
+
+
+class ObservedQuantity(Record):
+    __slots__ = ()
+    _kind = 'ObservedQuantity'
+
+    def __init__(self, *,
+        name: str,
+        target: ValueReference,
+        quantity: Quantity,
+        available_at: Date,
+    ) -> None:
+        self._initialize({
+            'name': name,
+            'target': target,
+            'quantity': quantity,
+            'available_at': available_at,
+        })
+
+    @property
+    def name(self) -> str:
+        return cast('str', self._field('name'))
+
+    @property
+    def target(self) -> ValueReference:
+        return cast('ValueReference', self._field('target'))
+
+    @property
+    def quantity(self) -> Quantity:
+        return cast('Quantity', self._field('quantity'))
+
+    @property
+    def available_at(self) -> Date:
+        return cast('Date', self._field('available_at'))
+
+
 class Parameter(Record):
     __slots__ = ()
     _kind = 'Parameter'
@@ -1193,6 +1473,34 @@ class Period(Record):
     @property
     def end(self) -> Date:
         return cast('Date', self._field('end'))
+
+
+class Policy(Record):
+    __slots__ = ()
+    _kind = 'Policy'
+
+    def __init__(self, *,
+        id: UUID,
+        targets: tuple[ValueReference, ...],
+        points: tuple[DecisionPoint, ...],
+    ) -> None:
+        self._initialize({
+            'id': id,
+            'targets': targets,
+            'points': points,
+        })
+
+    @property
+    def id(self) -> UUID:
+        return cast('UUID', self._field('id'))
+
+    @property
+    def targets(self) -> tuple[ValueReference, ...]:
+        return cast('tuple[ValueReference, ...]', self._field('targets'))
+
+    @property
+    def points(self) -> tuple[DecisionPoint, ...]:
+        return cast('tuple[DecisionPoint, ...]', self._field('points'))
 
 
 class Projection(Record):
@@ -1289,11 +1597,13 @@ class Provenance(Record):
         sources: tuple[Source, ...] | None | Unset = UNSET,
         claims: tuple[Claim, ...] | None | Unset = UNSET,
         facts: tuple[Fact, ...] | None | Unset = UNSET,
+        scenarios: tuple[ScenarioRealization, ...] | None | Unset = UNSET,
     ) -> None:
         self._initialize({
             'sources': sources,
             'claims': claims,
             'facts': facts,
+            'scenarios': scenarios,
         })
 
     @property
@@ -1307,6 +1617,10 @@ class Provenance(Record):
     @property
     def facts(self) -> tuple[Fact, ...] | None:
         return cast('tuple[Fact, ...] | None', self._field('facts'))
+
+    @property
+    def scenarios(self) -> tuple[ScenarioRealization, ...] | None:
+        return cast('tuple[ScenarioRealization, ...] | None', self._field('scenarios'))
 
 
 class Quantity(Record):
@@ -1369,6 +1683,28 @@ class Query(Record):
     @property
     def duplicates(self) -> DuplicateHandling:
         return cast('DuplicateHandling', self._field('duplicates'))
+
+
+class RandomStream(Record):
+    __slots__ = ()
+    _kind = 'RandomStream'
+
+    def __init__(self, *,
+        name: str,
+        identifier: str,
+    ) -> None:
+        self._initialize({
+            'name': name,
+            'identifier': identifier,
+        })
+
+    @property
+    def name(self) -> str:
+        return cast('str', self._field('name'))
+
+    @property
+    def identifier(self) -> str:
+        return cast('str', self._field('identifier'))
 
 
 class Reconciliation(Record):
@@ -1448,12 +1784,14 @@ class Report(Record):
         runtime: Runtime | Unset = UNSET,
         diagnostics: tuple[Diagnostic, ...] | None | Unset = UNSET,
         trace: tuple[Step, ...] | None | Unset = UNSET,
+        decisions: tuple[Decision, ...] | None | Unset = UNSET,
     ) -> None:
         self._initialize({
             'status': status,
             'runtime': runtime,
             'diagnostics': diagnostics,
             'trace': trace,
+            'decisions': decisions,
         })
 
     @property
@@ -1471,6 +1809,38 @@ class Report(Record):
     @property
     def trace(self) -> tuple[Step, ...] | None:
         return cast('tuple[Step, ...] | None', self._field('trace'))
+
+    @property
+    def decisions(self) -> tuple[Decision, ...] | None:
+        return cast('tuple[Decision, ...] | None', self._field('decisions'))
+
+
+class Rule(Record):
+    __slots__ = ()
+    _kind = 'Rule'
+
+    def __init__(self, *,
+        id: UUID,
+        condition: Expression,
+        actions: tuple[Action, ...],
+    ) -> None:
+        self._initialize({
+            'id': id,
+            'condition': condition,
+            'actions': actions,
+        })
+
+    @property
+    def id(self) -> UUID:
+        return cast('UUID', self._field('id'))
+
+    @property
+    def condition(self) -> Expression:
+        return cast('Expression', self._field('condition'))
+
+    @property
+    def actions(self) -> tuple[Action, ...]:
+        return cast('tuple[Action, ...]', self._field('actions'))
 
 
 class Run(Record):
@@ -1547,6 +1917,160 @@ class Runtime(Record):
         return cast('Settings | None', self._field('settings'))
 
 
+class ScenarioParameter(Record):
+    __slots__ = ()
+    _kind = 'ScenarioParameter'
+
+    def __init__(self, *,
+        name: str,
+        quantity: Quantity | None | Unset = UNSET,
+        distribution: Distribution | None | Unset = UNSET,
+    ) -> None:
+        self._initialize({
+            'name': name,
+            'quantity': quantity,
+            'distribution': distribution,
+        })
+
+    @property
+    def name(self) -> str:
+        return cast('str', self._field('name'))
+
+    @property
+    def quantity(self) -> Quantity | None:
+        return cast('Quantity | None', self._field('quantity'))
+
+    @property
+    def distribution(self) -> Distribution | None:
+        return cast('Distribution | None', self._field('distribution'))
+
+
+class ScenarioPlan(Record):
+    __slots__ = ()
+    _kind = 'ScenarioPlan'
+
+    def __init__(self, *,
+        id: UUID,
+        method: str,
+        seed: int,
+        periods: tuple[Period, ...],
+        parameters: tuple[ScenarioParameter, ...],
+    ) -> None:
+        self._initialize({
+            'id': id,
+            'method': method,
+            'seed': seed,
+            'periods': periods,
+            'parameters': parameters,
+        })
+
+    @property
+    def id(self) -> UUID:
+        return cast('UUID', self._field('id'))
+
+    @property
+    def method(self) -> str:
+        return cast('str', self._field('method'))
+
+    @property
+    def seed(self) -> int:
+        return cast('int', self._field('seed'))
+
+    @property
+    def periods(self) -> tuple[Period, ...]:
+        return cast('tuple[Period, ...]', self._field('periods'))
+
+    @property
+    def parameters(self) -> tuple[ScenarioParameter, ...]:
+        return cast('tuple[ScenarioParameter, ...]', self._field('parameters'))
+
+
+class ScenarioRealization(Record):
+    __slots__ = ()
+    _kind = 'ScenarioRealization'
+
+    def __init__(self, *,
+        id: UUID,
+        plan: ScenarioPlan,
+        key: str,
+        generator: str,
+        versions: tuple[LibraryVersion, ...],
+        streams: tuple[RandomStream, ...],
+        inputs: tuple[Binding, ...],
+        outputs: tuple[Binding, ...],
+        availability: tuple[ObservationAvailability, ...],
+    ) -> None:
+        self._initialize({
+            'id': id,
+            'plan': plan,
+            'key': key,
+            'generator': generator,
+            'versions': versions,
+            'streams': streams,
+            'inputs': inputs,
+            'outputs': outputs,
+            'availability': availability,
+        })
+
+    @property
+    def id(self) -> UUID:
+        return cast('UUID', self._field('id'))
+
+    @property
+    def plan(self) -> ScenarioPlan:
+        return cast('ScenarioPlan', self._field('plan'))
+
+    @property
+    def key(self) -> str:
+        return cast('str', self._field('key'))
+
+    @property
+    def generator(self) -> str:
+        return cast('str', self._field('generator'))
+
+    @property
+    def versions(self) -> tuple[LibraryVersion, ...]:
+        return cast('tuple[LibraryVersion, ...]', self._field('versions'))
+
+    @property
+    def streams(self) -> tuple[RandomStream, ...]:
+        return cast('tuple[RandomStream, ...]', self._field('streams'))
+
+    @property
+    def inputs(self) -> tuple[Binding, ...]:
+        return cast('tuple[Binding, ...]', self._field('inputs'))
+
+    @property
+    def outputs(self) -> tuple[Binding, ...]:
+        return cast('tuple[Binding, ...]', self._field('outputs'))
+
+    @property
+    def availability(self) -> tuple[ObservationAvailability, ...]:
+        return cast('tuple[ObservationAvailability, ...]', self._field('availability'))
+
+
+class ScopedValueReference(Record):
+    __slots__ = ()
+    _kind = 'ScopedValueReference'
+
+    def __init__(self, *,
+        document: UUID,
+        reference: ValueReference,
+    ) -> None:
+        self._initialize({
+            'document': document,
+            'reference': reference,
+        })
+
+    @property
+    def document(self) -> UUID:
+        return cast('UUID', self._field('document'))
+
+    @property
+    def reference(self) -> ValueReference:
+        return cast('ValueReference', self._field('reference'))
+
+
 class Selection(Record):
     __slots__ = ()
     _kind = 'Selection'
@@ -1589,11 +2113,15 @@ class Settings(Record):
         relative_tolerance: int | float | None | Unset = UNSET,
         iteration_limit: int | None | Unset = UNSET,
         time_limit: int | float | None | Unset = UNSET,
+        symbol_limit: int | None | Unset = UNSET,
+        constraint_limit: int | None | Unset = UNSET,
     ) -> None:
         self._initialize({
             'relative_tolerance': relative_tolerance,
             'iteration_limit': iteration_limit,
             'time_limit': time_limit,
+            'symbol_limit': symbol_limit,
+            'constraint_limit': constraint_limit,
         })
 
     @property
@@ -1607,6 +2135,14 @@ class Settings(Record):
     @property
     def time_limit(self) -> int | float | None:
         return cast('int | float | None', self._field('time_limit'))
+
+    @property
+    def symbol_limit(self) -> int | None:
+        return cast('int | None', self._field('symbol_limit'))
+
+    @property
+    def constraint_limit(self) -> int | None:
+        return cast('int | None', self._field('constraint_limit'))
 
 
 class Source(Record):
@@ -1693,11 +2229,12 @@ class Specification(Record):
         includes: tuple[UUID, ...] | None | Unset = UNSET,
         cases: tuple[UUID, ...] | None | Unset = UNSET,
         assignments: tuple[Assignment, ...] | None | Unset = UNSET,
-        unknowns: tuple[UUID, ...] | None | Unset = UNSET,
+        unknowns: tuple[ValueReference, ...] | None | Unset = UNSET,
         estimates: tuple[Assignment, ...] | None | Unset = UNSET,
         formulations: tuple[Formulation, ...] | None | Unset = UNSET,
         objectives: tuple[Objective, ...] | None | Unset = UNSET,
         settings: Settings | Unset = UNSET,
+        policy: Policy | None | Unset = UNSET,
     ) -> None:
         self._initialize({
             'metadata': metadata,
@@ -1710,6 +2247,7 @@ class Specification(Record):
             'formulations': formulations,
             'objectives': objectives,
             'settings': settings,
+            'policy': policy,
         })
 
     @property
@@ -1733,8 +2271,8 @@ class Specification(Record):
         return cast('tuple[Assignment, ...] | None', self._field('assignments'))
 
     @property
-    def unknowns(self) -> tuple[UUID, ...] | None:
-        return cast('tuple[UUID, ...] | None', self._field('unknowns'))
+    def unknowns(self) -> tuple[ValueReference, ...] | None:
+        return cast('tuple[ValueReference, ...] | None', self._field('unknowns'))
 
     @property
     def estimates(self) -> tuple[Assignment, ...] | None:
@@ -1751,6 +2289,10 @@ class Specification(Record):
     @property
     def settings(self) -> Settings | None:
         return cast('Settings | None', self._field('settings'))
+
+    @property
+    def policy(self) -> Policy | None:
+        return cast('Policy | None', self._field('policy'))
 
 
 class Status(Record):
@@ -1981,7 +2523,30 @@ class Value(Record):
         return cast('PropertyContent | None', self._field('content'))
 
 
+class ValueReference(Record):
+    __slots__ = ()
+    _kind = 'ValueReference'
+
+    def __init__(self, *,
+        value: UUID,
+        movement: str | None | Unset = UNSET,
+    ) -> None:
+        self._initialize({
+            'value': value,
+            'movement': movement,
+        })
+
+    @property
+    def value(self) -> UUID:
+        return cast('UUID', self._field('value'))
+
+    @property
+    def movement(self) -> str | None:
+        return cast('str | None', self._field('movement'))
+
+
 _TYPES = {
+    'Action': Action,
     'Argument': Argument,
     'Assembly': Assembly,
     'Assignment': Assignment,
@@ -1993,8 +2558,11 @@ _TYPES = {
     'Constraint': Constraint,
     'ContentEntry': ContentEntry,
     'Criterion': Criterion,
+    'Decision': Decision,
+    'DecisionPoint': DecisionPoint,
     'Definitions': Definitions,
     'Diagnostic': Diagnostic,
+    'Distribution': Distribution,
     'Domain': Domain,
     'Entity': Entity,
     'Entry': Entry,
@@ -2006,6 +2574,7 @@ _TYPES = {
     'Function': Function,
     'Implementation': Implementation,
     'Label': Label,
+    'LibraryVersion': LibraryVersion,
     'Location': Location,
     'Measure': Measure,
     'Measurement': Measurement,
@@ -2014,18 +2583,28 @@ _TYPES = {
     'Model': Model,
     'Movement': Movement,
     'Objective': Objective,
+    'ObservationAvailability': ObservationAvailability,
+    'ObservationBinding': ObservationBinding,
+    'ObservedQuantity': ObservedQuantity,
     'Parameter': Parameter,
     'Period': Period,
+    'Policy': Policy,
     'Projection': Projection,
     'PropertyContent': PropertyContent,
     'Provenance': Provenance,
     'Quantity': Quantity,
     'Query': Query,
+    'RandomStream': RandomStream,
     'Reconciliation': Reconciliation,
     'Relationship': Relationship,
     'Report': Report,
+    'Rule': Rule,
     'Run': Run,
     'Runtime': Runtime,
+    'ScenarioParameter': ScenarioParameter,
+    'ScenarioPlan': ScenarioPlan,
+    'ScenarioRealization': ScenarioRealization,
+    'ScopedValueReference': ScopedValueReference,
     'Selection': Selection,
     'Settings': Settings,
     'Source': Source,
@@ -2037,6 +2616,7 @@ _TYPES = {
     'Taxonomy': Taxonomy,
     'Traversal': Traversal,
     'Value': Value,
+    'ValueReference': ValueReference,
 }
 
-__all__ = ['Argument', 'Assembly', 'Assignment', 'Binding', 'Call', 'Cardinality', 'Characteristics', 'Claim', 'ClaimKind', 'Classification', 'CollectionKind', 'CompletionStatus', 'Constraint', 'Content', 'ContentEntry', 'ContentKind', 'Criterion', 'Definitions', 'Depth', 'Diagnostic', 'Direction', 'Domain', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'Entity', 'Entry', 'Expression', 'ExpressionKind', 'Fact', 'Filter', 'Flow', 'Formulation', 'Function', 'Implementation', 'ImplementationKind', 'Label', 'Location', 'Measure', 'Measurement', 'Metadata', 'Method', 'MissingHandling', 'Model', 'Movement', 'Objective', 'ObjectiveKind', 'Operator', 'Parameter', 'ParameterKind', 'Period', 'Projection', 'ProjectionKind', 'PropertyContent', 'Provenance', 'Quantity', 'Query', 'Reconciliation', 'ReconciliationStatus', 'Relationship', 'Report', 'Run', 'Runtime', 'Selection', 'SelectionKind', 'Settings', 'Severity', 'SolutionStatus', 'Source', 'Span', 'Specification', 'Status', 'Step', 'StepKind', 'System', 'Taxonomy', 'Traversal', 'TraversalKind', 'Value', 'ValueKind']
+__all__ = ['Action', 'ActionKind', 'Argument', 'Assembly', 'Assignment', 'Binding', 'Call', 'Cardinality', 'Characteristics', 'Claim', 'ClaimKind', 'Classification', 'CollectionKind', 'CompletionStatus', 'Constraint', 'Content', 'ContentEntry', 'ContentKind', 'Criterion', 'Decision', 'DecisionPoint', 'Definitions', 'Depth', 'Diagnostic', 'Direction', 'Distribution', 'DistributionFamily', 'Domain', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'Entity', 'Entry', 'Expression', 'ExpressionKind', 'Fact', 'Filter', 'Flow', 'Formulation', 'Function', 'Implementation', 'ImplementationKind', 'Label', 'LibraryVersion', 'Location', 'Measure', 'Measurement', 'Metadata', 'Method', 'MissingHandling', 'Model', 'Movement', 'Objective', 'ObjectiveKind', 'ObservationAvailability', 'ObservationBinding', 'ObservedQuantity', 'Operator', 'Parameter', 'ParameterKind', 'Period', 'Policy', 'Projection', 'ProjectionKind', 'PropertyContent', 'Provenance', 'Quantity', 'Query', 'RandomStream', 'Reconciliation', 'ReconciliationStatus', 'Relationship', 'Report', 'Rule', 'Run', 'Runtime', 'ScenarioParameter', 'ScenarioPlan', 'ScenarioRealization', 'ScopedValueReference', 'Selection', 'SelectionKind', 'Settings', 'Severity', 'SolutionStatus', 'Source', 'Span', 'Specification', 'Status', 'Step', 'StepKind', 'System', 'Taxonomy', 'Traversal', 'TraversalKind', 'Value', 'ValueKind', 'ValueReference']

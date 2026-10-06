@@ -36,7 +36,12 @@ from ..specification._composition import specification_catalogue
 from ..units import UnitSystem, default_units
 from . import acceptance, compiler, preparation, publication, settings
 from .backends import Backend, PyomoHighs
-from .errors import UnsupportedProblem, NumericalError, BackendUnavailable
+from .errors import (
+    UnsupportedProblem,
+    NumericalError,
+    BackendUnavailable,
+    AttemptDeadline,
+)
 
 
 def _now() -> str:
@@ -204,13 +209,24 @@ class Executor:
         output = None
         completion: CompletionStatus = "failed"
         solution: SolutionStatus = "not_assessed"
+
+        def check_deadline() -> None:
+            if limits is not None and time.monotonic() - clock >= limits.time_limit:
+                raise AttemptDeadline(
+                    "execution deadline reached during preparation or compilation"
+                )
+
         try:
             view = compose(specification, resolver=self.store)
             limits, adjustments = settings.resolve(view.requirements.settings)
             findings.extend(adjustments)
             prepared = preparation.prepare(
-                specification, resolver=self.store, units=self.units
+                specification,
+                resolver=self.store,
+                units=self.units,
+                checkpoint=check_deadline,
             )
+            check_deadline()
             trace.append(
                 Step(
                     kind="validation",
@@ -219,12 +235,20 @@ class Executor:
                     message="Validated additive composition, exact Model pin, scalar roles and recorded units.",
                 )
             )
-            problem = compiler.compile(prepared)
+            if len(prepared.references) > limits.symbol_limit:
+                raise UnsupportedProblem("expanded symbol limit exceeded")
+            problem = compiler.compile(
+                prepared,
+                checkpoint=check_deadline,
+                constraint_limit=limits.constraint_limit,
+            )
+            if len(problem.rows) > limits.constraint_limit:
+                raise UnsupportedProblem("expanded constraint limit exceeded")
             trace.append(
                 Step(
                     kind="formulation",
                     at=_now(),
-                    message=f"Compiled {len(problem.rows)} affine equality/bound rows after explicit assignments.",
+                    message=f"Expanded {len(prepared.references)} scalar/Movement symbols and {len(problem.rows)} affine constraints; limits {limits.symbol_limit}/{limits.constraint_limit}.",
                 )
             )
             if view.requirements.estimates:
@@ -251,6 +275,7 @@ class Executor:
                     ),
                 )
             )
+            check_deadline()
             result = self.backend.solve(
                 problem,
                 limits=limits,
@@ -339,6 +364,13 @@ class Executor:
                             message="Serialized candidate failed independent acceptance; no output was published.",
                         )
                     )
+        except AttemptDeadline as error:
+            completion, solution = "limited", "not_assessed"
+            findings.append(
+                Diagnostic(
+                    severity="warning", code="attempt_deadline", message=str(error)
+                )
+            )
         except ValidationError as error:
             completion, solution = "failed", (
                 "not_assessed" if prepared is None else "unknown"
@@ -394,7 +426,15 @@ class Executor:
         effective = (
             limits.record()
             if limits and result and result.termination != "worker_deadline"
-            else Settings(time_limit=limits.time_limit) if limits else Settings()
+            else (
+                Settings(
+                    time_limit=limits.time_limit,
+                    symbol_limit=limits.symbol_limit,
+                    constraint_limit=limits.constraint_limit,
+                )
+                if limits
+                else Settings()
+            )
         )
         if result is None or result.termination == "worker_deadline":
             findings.append(
@@ -436,6 +476,7 @@ class Executor:
                     ),
                     diagnostics=tuple(findings),
                     trace=tuple(trace),
+                    decisions=() if prepared is None else prepared.decisions,
                 ),
             )
         )

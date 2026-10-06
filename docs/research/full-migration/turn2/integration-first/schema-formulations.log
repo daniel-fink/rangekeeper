@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "/Volumes/Data/Projects/Rangekeeper/schema/checks/formulations.py", line 326, in <module>
+    structural(document)
+  File "/Volumes/Data/Projects/Rangekeeper/schema/checks/formulations.py", line 78, in structural
+    validators[cls].validate(record)
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/jsonschema/validators.py", line 450, in validate
+    raise error
+jsonschema.exceptions.ValidationError: '960374d3-385f-5abf-a046-0010d81a60dd' is not valid under any of the given schemas
+
+Failed validating 'anyOf' in schema['properties']['formulations']['items']['properties']['expressions']['items']['properties']['operands']['items']['properties']['target']:
+    {'anyOf': [{'$ref': '#/$defs/ValueReference'}, {'type': 'null'}],
+     'description': 'Explicit Value or Movement symbol; never implicit '
+                    'recorded content.'}
+
+On instance['formulations'][0]['expressions'][0]['operands'][0]['target']:
+    '960374d3-385f-5abf-a046-0010d81a60dd'

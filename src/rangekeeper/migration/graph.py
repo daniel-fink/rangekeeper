@@ -427,23 +427,3 @@ def convert_graph(
         return ConversionResult(
             None, digest, tuple(sorted(identities.items())), (str(error),)
         )
-
-
-def upgrade_model(data: dict, *, revision_id: UUID | None = None) -> Model:
-    """Explicitly upgrade a scalar Model 0.3.0 to a new 0.4.0 revision.
-
-    Declaration UUIDs and source provenance stay intact. The old revision remains
-    immutable; previous points to it. Ordinary codecs reject the old version.
-    """
-    result = _json_copy(data)
-    if result.get("metadata", {}).get("schema_version") != "0.3.0":
-        raise ValueError("expected Model schema version 0.3.0")
-    old = result["metadata"]["id"]
-    if revision_id is not None and str(revision_id) == old:
-        raise ValueError("upgrade requires a new revision UUID")
-    result["metadata"].update(
-        id=str(revision_id or uuid4()),
-        previous=old,
-        schema_version=document_version("Model"),
-    )
-    return Model.from_data(result)
