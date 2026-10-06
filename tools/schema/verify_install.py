@@ -18,6 +18,9 @@ ROOT = Path(__file__).resolve().parents[2]
 parser = argparse.ArgumentParser()
 parser.add_argument("--runtime-python", default=sys.executable)
 parser.add_argument(
+    "--wheel", type=Path, help="Verify this exact prebuilt artifact without rebuilding"
+)
+parser.add_argument(
     "--execution-python",
     help="Also verify the optional solver extra, copying its dependencies from this interpreter",
 )
@@ -42,27 +45,31 @@ DEPENDENCIES = (
 )
 with tempfile.TemporaryDirectory(prefix="rk-installed-records-") as directory:
     temp = Path(directory)
-    stage = temp / "stage"
-    stage.mkdir()
-    for name in ("pyproject.toml", "README.md"):
-        shutil.copy2(ROOT / "src" / name, stage / name)
-    shutil.copytree(
-        ROOT / "src/rangekeeper",
-        stage / "rangekeeper",
-        ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "node_modules"),
-    )
-    wheel_dir = temp / "wheel"
-    subprocess.run(
-        [
-            sys.executable,
-            "-c",
-            "from setuptools.build_meta import build_wheel; build_wheel('"
-            + str(wheel_dir)
-            + "')",
-        ],
-        cwd=stage,
-        check=True,
-    )
+    if args.wheel is None:
+        stage = temp / "stage"
+        stage.mkdir()
+        for name in ("pyproject.toml", "README.md"):
+            shutil.copy2(ROOT / "src" / name, stage / name)
+        shutil.copytree(
+            ROOT / "src/rangekeeper",
+            stage / "rangekeeper",
+            ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "node_modules"),
+        )
+        wheel_dir = temp / "wheel"
+        subprocess.run(
+            [
+                sys.executable,
+                "-c",
+                "from setuptools.build_meta import build_wheel; build_wheel('"
+                + str(wheel_dir)
+                + "')",
+            ],
+            cwd=stage,
+            check=True,
+        )
+        wheel = next(wheel_dir.glob("*.whl"))
+    else:
+        wheel = args.wheel.resolve(strict=True)
     venv = temp / "venv"
     subprocess.run(
         [sys.executable, "-m", "venv", "--without-pip", str(venv)], check=True
@@ -78,7 +85,6 @@ with tempfile.TemporaryDirectory(prefix="rk-installed-records-") as directory:
             text=True,
         ).strip()
     )
-    wheel = next(wheel_dir.glob("*.whl"))
     subprocess.run(
         [
             sys.executable,
@@ -135,6 +141,10 @@ assert 'site-packages' in rangekeeper.__file__
 assert validate(Model(metadata=Metadata(id=uuid4(), schema_version='0.5.0'))).valid
 assert files('rangekeeper').joinpath('py.typed').is_file()
 assert files('rangekeeper').joinpath('_currencies.json').is_file()
+for resource in ('workflow/workbench.py', 'workflow/layout_review.py', 'adapters/cytoscape/assets/viewer.js', 'adapters/cytoscape/layout/assembly.mzn', 'adapters/speckle/contract.json', 'migration/layout.py', 'migration/speckle.py'):
+    assert files('rangekeeper').joinpath(resource).is_file(), resource
+from rangekeeper.adapters.speckle import decode_model, encode_model
+assert 'specklepy' not in sys.modules
 for name in ('schema.json', 'slots.json', 'manifest.json', 'native.py'):
     assert files('rangekeeper._schema').joinpath(name).is_file()
 data = {'implementations': [{'kind': 'evaluator', 'name': 'test', 'version': '1'}],

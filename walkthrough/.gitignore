@@ -1,5 +1,10 @@
-# Build outputs
-_build
+# Generated deliverables and build caches
+# Keep the generated deliverable coherent; execution caches remain ignored.
+_build/*
+!_build/html/
+!_build/jupyter_execute/
+_build/jupyter_execute/*
+!_build/jupyter_execute/*.ipynb
 
 # Local environments and caches
 .venv

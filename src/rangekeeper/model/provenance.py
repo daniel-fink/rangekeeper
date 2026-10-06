@@ -39,21 +39,16 @@ def locations(model: "Model", claim_id: UUID) -> tuple[Location, ...]:
     no source file, URI or service is accessed. Repeated diamond support is deduplicated.
     """
     require_uuid(claim_id, "claim_id")
-    claims = (
-        {claim.id: claim for claim in (model.provenance.claims or ())}
-        if model.provenance
-        else {}
-    )
-    if claim_id not in claims:
-        model.owner_of(claim_id)  # Raises MissingReferenceError if it is wholly absent.
-        raise ReferenceTypeError(f"{claim_id} is not a Claim")
+    model.claim(
+        claim_id
+    )  # Use the revision's existing typed index, not a new catalogue per Fact.
     seen, result = set(), []
 
     def visit(identity):
         if identity in seen:
             return
         seen.add(identity)
-        for support in claims[identity].sources or ():
+        for support in model.claim(identity).sources or ():
             if isinstance(support, UUID):
                 visit(support)
             elif support not in result:

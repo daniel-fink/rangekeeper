@@ -8,21 +8,21 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Loading a Design &#8212; Rangekeeper</title>
-  
-  
-  
+    <title>Load design into a canonical Model &#8212; Rangekeeper</title>
+
+
+
   <script data-cfasync="false">
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
-  
+
   <!-- Loaded before other Sphinx assets -->
   <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
 <link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
 <link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
 
-  
+
   <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
   <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
@@ -30,12 +30,12 @@
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
-    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=9c3e77be" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
-  
+
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
@@ -50,7 +50,7 @@
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="_static/togglebutton.js?v=4a39c7ea"></script>
+    <script src="_static/togglebutton.js?v=b8b12719"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script src="_static/design-tabs.js?v=f930bc37"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
@@ -58,37 +58,38 @@
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'load_design';</script>
+    <script src="_static/plotly.min.js?v=7a1ec768"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Driving a Financial Valuation from a Design" href="drive_model_from_design.html" />
+    <link rel="next" title="Drive financial equations from design" href="drive_model_from_design.html" />
     <link rel="prev" title="Flexibility under Uncertainty" href="flexibility_under_uncertainty.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
-  
-  
+
+
   <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
 
-  
-  
+
+
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
-  
+
   <div id="pst-scroll-pixel-helper"></div>
-  
+
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
-  
+
   <input type="checkbox"
           class="sidebar-toggle"
           id="pst-primary-sidebar-checkbox"/>
   <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
-  
+
   <input type="checkbox"
           class="sidebar-toggle"
           id="pst-secondary-sidebar-checkbox"/>
   <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
-  
+
   <div class="search-button__wrapper">
     <div class="search-button__overlay"></div>
     <div class="search-button__search-container">
@@ -114,49 +115,49 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 
-  
+
     <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
     </header>
-  
+
 
   <div class="bd-container">
     <div class="bd-container__inner bd-page-width">
-      
-      
-      
-      <div class="bd-sidebar-primary bd-sidebar">
-        
 
-  
+
+
+      <div class="bd-sidebar-primary bd-sidebar">
+
+
+
   <div class="sidebar-header-items sidebar-primary__section">
-    
-    
-    
-    
+
+
+
+
   </div>
-  
+
     <div class="sidebar-primary-items__start sidebar-primary__section">
         <div class="sidebar-primary-item">
 
-  
-    
-  
+
+
+
 
 <a class="navbar-brand logo" href="intro.html">
-  
-  
-  
-  
-  
-    
-    
-      
-    
-    
+
+
+
+
+
+
+
+
+
+
     <img src="_static/rangekeeper.jpg" class="logo__image only-light" alt="Rangekeeper - Home"/>
     <script>document.write(`<img src="_static/rangekeeper.jpg" class="logo__image only-dark" alt="Rangekeeper - Home"/>`);</script>
-  
-  
+
+
 </a></div>
         <div class="sidebar-primary-item">
 
@@ -171,7 +172,7 @@
  </script></div>
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
-        
+
         <ul class="nav bd-sidenav bd-sidenav__home-link">
             <li class="toctree-l1">
                 <a class="reference internal" href="intro.html">
@@ -189,46 +190,46 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Using Rangekeeper in Examples</span></p>
 <ul class="current nav bd-sidenav">
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Loading a Design</a></li>
-<li class="toctree-l1"><a class="reference internal" href="drive_model_from_design.html">Driving a Financial Valuation from a Design</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Load design into a canonical Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="drive_model_from_design.html">Drive financial equations from design</a></li>
 </ul>
 
     </div>
 </nav></div>
     </div>
-  
-  
+
+
   <div class="sidebar-primary-items__end sidebar-primary__section">
   </div>
-  
+
   <div id="rtd-footer-container"></div>
 
 
       </div>
-      
+
       <main id="main-content" class="bd-main" role="main">
-        
-        
+
+
 
 <div class="sbt-scroll-pixel-helper"></div>
 
           <div class="bd-content">
             <div class="bd-article-container">
-              
+
               <div class="bd-header-article d-print-none">
 <div class="header-article-items header-article__inner">
-  
+
     <div class="header-article-items__start">
-      
+
         <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
   <span class="fa-solid fa-bars"></span>
 </button></div>
-      
+
     </div>
-  
-  
+
+
     <div class="header-article-items__end">
-      
+
         <div class="header-article-item">
 
 <div class="article-header-buttons">
@@ -242,24 +243,24 @@
     <i class="fas fa-rocket"></i>
   </button>
   <ul class="dropdown-menu">
-      
-      
-      
+
+
+
       <li><a href="https://colab.research.google.com/github/daniel-fink/rangekeeper/blob/main/walkthrough/load_design.ipynb" target="_blank"
    class="btn btn-sm dropdown-item"
    title="Launch on Colab"
    data-bs-placement="left" data-bs-toggle="tooltip"
 >
-  
+
 
 <span class="btn__icon-container">
-  
+
     <img alt="Colab logo" src="_static/images/logo_colab.png">
   </span>
 <span class="btn__text-container">Colab</span>
 </a>
 </li>
-      
+
   </ul>
 </div>
 
@@ -273,15 +274,15 @@
     <i class="fab fa-github"></i>
   </button>
   <ul class="dropdown-menu">
-      
-      
-      
+
+
+
       <li><a href="https://github.com/daniel-fink/rangekeeper" target="_blank"
    class="btn btn-sm btn-source-repository-button dropdown-item"
    title="Source repository"
    data-bs-placement="left" data-bs-toggle="tooltip"
 >
-  
+
 
 <span class="btn__icon-container">
   <i class="fab fa-github"></i>
@@ -289,16 +290,16 @@
 <span class="btn__text-container">Repository</span>
 </a>
 </li>
-      
-      
-      
-      
+
+
+
+
       <li><a href="https://github.com/daniel-fink/rangekeeper/issues/new?title=Issue%20on%20page%20%2Fload_design.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
 >
-  
+
 
 <span class="btn__icon-container">
   <i class="fas fa-lightbulb"></i>
@@ -306,7 +307,7 @@
 <span class="btn__text-container">Open issue</span>
 </a>
 </li>
-      
+
   </ul>
 </div>
 
@@ -320,15 +321,15 @@
     <i class="fas fa-download"></i>
   </button>
   <ul class="dropdown-menu">
-      
-      
-      
+
+
+
       <li><a href="_sources/load_design.ipynb" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
 >
-  
+
 
 <span class="btn__icon-container">
   <i class="fas fa-file"></i>
@@ -336,17 +337,17 @@
 <span class="btn__text-container">.ipynb</span>
 </a>
 </li>
-      
-      
-      
-      
+
+
+
+
       <li>
 <button onclick="window.print()"
   class="btn btn-sm btn-download-pdf-button dropdown-item"
   title="Print to PDF"
   data-bs-placement="left" data-bs-toggle="tooltip"
 >
-  
+
 
 <span class="btn__icon-container">
   <i class="fas fa-file-pdf"></i>
@@ -354,7 +355,7 @@
 <span class="btn__text-container">.pdf</span>
 </button>
 </li>
-      
+
   </ul>
 </div>
 
@@ -366,7 +367,7 @@
   title="Fullscreen mode"
   data-bs-placement="bottom" data-bs-toggle="tooltip"
 >
-  
+
 
 <span class="btn__icon-container">
   <i class="fas fa-expand"></i>
@@ -398,540 +399,236 @@ document.write(`
     <span class="fa-solid fa-list"></span>
 </button>
 </div></div>
-      
+
     </div>
-  
+
 </div>
 </div>
-              
-              
+
+
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Loading a Design</h1>
+    <h1>Load design into a canonical Model</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
-            
+
             <div>
                 <h2> Contents </h2>
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#object-model">Object Model</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#entities-and-relationships">Entities and Relationships</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#entitys"><code class="docutils literal notranslate"><span class="pre">Entity</span></code>s</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#relationships"><code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#assemblys"><code class="docutils literal notranslate"><span class="pre">Assembly</span></code>s</a></li>
-</ul>
-</li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#definitions">Definitions</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#properties-of-entitys">Properties of <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#properties-of-relationships">Properties of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#events"><code class="docutils literal notranslate"><span class="pre">Event</span></code>s</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rationale-and-implications">Rationale and Implications</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#technicalities">Technicalities</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#defining-entitys-and-relationships-in-the-design-scenario">Defining <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s and <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s in the Design Scenario</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-design">Example Design</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#authenticate-and-load-the-design-from-speckle">Authenticate and Load the Design from Speckle</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inspect-the-design">Inspect the Design</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rangekeeper-entitys-in-the-design">Rangekeeper <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s in the Design</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#querying-the-design-s-object-graph">Querying the Design’s Object Graph</a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#receive-or-load">Receive or load</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#select-by-identity">Select by identity</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#report-detached-data">Report detached data</a></li>
 </ul>
             </nav>
         </div>
     </div>
 </div>
 
-              
-                
+
+
 <div id="searchbox"></div>
                 <article class="bd-article">
-                  
-  <section class="tex2jax_ignore mathjax_ignore" id="loading-a-design">
-<h1>Loading a Design<a class="headerlink" href="#loading-a-design" title="Link to this heading">#</a></h1>
-<p><em>Rangekeeper</em> provides API access to <a class="reference external" href="https://speckle.systems/">Speckle</a>. This
-enables loading and extending a 3D design with <em>Rangekeeper</em> in order
-to produce its financial valuation, as well as execute any automated
-decision-making or optimisation processes, and sending the results back to
-Speckle.</p>
-<section id="object-model">
-<h2>Object Model<a class="headerlink" href="#object-model" title="Link to this heading">#</a></h2>
-<p>Before walking through the I/O methods, it is important to understand the
-requirements <em>Rangekeeper</em> places on how a design must be structured,
-so that the <code class="docutils literal notranslate"><span class="pre">Flow</span></code>s and <code class="docutils literal notranslate"><span class="pre">Stream</span></code>s of a DCF Proforma can be appropriately
-attributed to the design’s objects (especially its representations of
-physical spaces, components, and equipment).</p>
-<section id="entities-and-relationships">
-<h3>Entities and Relationships<a class="headerlink" href="#entities-and-relationships" title="Link to this heading">#</a></h3>
-<p>A holistic representation of a real estate asset is that it is a
-web of inter-related ‘entities’; where each entity is a ‘thing’ and can have
-multiple relationships with other entities. For example, a floor is a type
-of entity (say, a “Space”) and it has relationships with floors above and
-below it, as well as relationships to its sub-entities (e.g. rooms), or even
-what services it (e.g. the mechanical systems controlling its air conditioning)</p>
-<figure class="align-default" id="real-estate-asset-property-as-a-graph">
-<a class="reference internal image-reference" href="_images/devModelGraph.jpg"><img alt="_images/devModelGraph.jpg" src="_images/devModelGraph.jpg" style="width: 100%;" />
-</a>
-<figcaption>
-<p><span class="caption-number">Fig. 6 </span><span class="caption-text">An entire Real Estate asset is represented as a huge web (graph) of <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s
-and <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s between those <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s</span><a class="headerlink" href="#real-estate-asset-property-as-a-graph" title="Link to this image">#</a></p>
-</figcaption>
-</figure>
-<section id="entitys">
-<h4><code class="docutils literal notranslate"><span class="pre">Entity</span></code>s<a class="headerlink" href="#entitys" title="Link to this heading">#</a></h4>
-<p>An <code class="docutils literal notranslate"><span class="pre">Entity</span></code> is a ‘thing’ that has substance, or is composed of sub-<code class="docutils literal notranslate"><span class="pre">Entity</span></code>s
-that have substance, material, mass, volume, existence, are ‘real’, etc.</p>
-</section>
-<section id="relationships">
-<h4><code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s<a class="headerlink" href="#relationships" title="Link to this heading">#</a></h4>
-<p><code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s describe some sort of (directed) association, connection, or
-link between <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s. Each <code class="docutils literal notranslate"><span class="pre">Relationship</span></code> is described by its ‘type’; for
-instance, an <code class="docutils literal notranslate"><span class="pre">Entity</span></code> can be related to another by virtue of it “being
-contained (spatially)” by the other, or it could be “installed before” another
-<code class="docutils literal notranslate"><span class="pre">Entity</span></code>.
-There can be any number of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s between any number of <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s.</p>
-</section>
-<section id="assemblys">
-<h4><code class="docutils literal notranslate"><span class="pre">Assembly</span></code>s<a class="headerlink" href="#assemblys" title="Link to this heading">#</a></h4>
-<p>In order to clearly encapsulate ‘groups’ of intuitively-related <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s,
-<em>Rangekeeper</em> has a concept of an <code class="docutils literal notranslate"><span class="pre">Assembly</span></code>, which is an object that defines
-a collection of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s and their associated <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s.
-<code class="docutils literal notranslate"><span class="pre">Assembly</span></code>s are <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s themselves, too –- so they can also be related to
-other <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s.
-This means that <em>Rangekeeper</em> can traverse from <code class="docutils literal notranslate"><span class="pre">Assembly</span></code> to <code class="docutils literal notranslate"><span class="pre">Assembly</span></code> through
-overlapping <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s, in a similar fashion to common-sense conceptualisation
-of how a real estate asset is structured.</p>
-<figure class="align-default" id="a-diagram-of-assembly-s-of-entity-s">
-<a class="reference internal image-reference" href="_images/devModelAssembly.jpg"><img alt="_images/devModelAssembly.jpg" src="_images/devModelAssembly.jpg" style="width: 100%;" />
-</a>
-<figcaption>
-<p><span class="caption-number">Fig. 7 </span><span class="caption-text">An <code class="docutils literal notranslate"><span class="pre">Assembly</span></code> is a non-exclusive collection of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s, enabling the
-traversal of <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s in the graph.</span><a class="headerlink" href="#a-diagram-of-assembly-s-of-entity-s" title="Link to this image">#</a></p>
-</figcaption>
-</figure>
-</section>
-</section>
-<section id="definitions">
-<h3>Definitions<a class="headerlink" href="#definitions" title="Link to this heading">#</a></h3>
-<section id="properties-of-entitys">
-<h4>Properties of <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s<a class="headerlink" href="#properties-of-entitys" title="Link to this heading">#</a></h4>
-<p>All <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s have the following properties:</p>
-<ol class="arabic simple">
-<li><p><strong>entityId</strong>: a unique &amp; immutable identifier for the <code class="docutils literal notranslate"><span class="pre">Entity</span></code> over the whole of
-its lifetime.</p></li>
-<li><p><strong>Name</strong>: human-readable text identifying the <code class="docutils literal notranslate"><span class="pre">Entity</span></code></p></li>
-<li><p><strong>Type</strong>: an <code class="docutils literal notranslate"><span class="pre">entityType</span></code> (which is a node of a tree of <code class="docutils literal notranslate"><span class="pre">entityType</span></code>s)</p></li>
-<li><p><strong>Attributes</strong>: a key-value store of specific properties of the <code class="docutils literal notranslate"><span class="pre">Entity</span></code>
-(eg, its area, geometry, material, cash flows, etc).</p></li>
-</ol>
-<p>In addition, <code class="docutils literal notranslate"><span class="pre">Assembly</span></code>s record a set of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s about <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s that
-are related to, or in, the <code class="docutils literal notranslate"><span class="pre">Assembly</span></code>.</p>
-<ol class="arabic simple">
-<li><p><strong>Relationships</strong>: a set of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s</p></li>
-</ol>
-</section>
-<section id="properties-of-relationships">
-<h4>Properties of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s<a class="headerlink" href="#properties-of-relationships" title="Link to this heading">#</a></h4>
-<p>Meanwhile, all <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s have the following properties:</p>
-<ol class="arabic simple">
-<li><p><strong>Type</strong>: a <code class="docutils literal notranslate"><span class="pre">RelationshipType</span></code>, which is an item from a list of defined
-<code class="docutils literal notranslate"><span class="pre">RelationshipType</span></code>s</p></li>
-<li><p><strong>Source</strong>: the <code class="docutils literal notranslate"><span class="pre">Entity</span></code> that is the source of the <code class="docutils literal notranslate"><span class="pre">Relationship</span></code></p></li>
-<li><p><strong>Target</strong>: the <code class="docutils literal notranslate"><span class="pre">Entity</span></code> that is the target of the <code class="docutils literal notranslate"><span class="pre">Relationship</span></code></p></li>
-</ol>
-</section>
-<section id="events">
-<h4><code class="docutils literal notranslate"><span class="pre">Event</span></code>s<a class="headerlink" href="#events" title="Link to this heading">#</a></h4>
-<p>Every <code class="docutils literal notranslate"><span class="pre">Entity</span></code> can exist in both space and time. Most <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s will have (or
-its sub-<code class="docutils literal notranslate"><span class="pre">Entity</span></code>s will have, in the case of an <code class="docutils literal notranslate"><span class="pre">Assembly</span></code>) geometry/s that
-define the extent of space that the entity exists in.</p>
-<p>To represent how an <code class="docutils literal notranslate"><span class="pre">Entity</span></code> exists in time, the <code class="docutils literal notranslate"><span class="pre">Entity</span></code> has <code class="docutils literal notranslate"><span class="pre">Event</span></code>s
-recorded against it. For example, an <code class="docutils literal notranslate"><span class="pre">Event</span></code> may record the installation of the
-<code class="docutils literal notranslate"><span class="pre">entity</span></code> during construction, or it may record production of revenue during
-operation of the real estate project as an asset.</p>
-<p><code class="docutils literal notranslate"><span class="pre">Flow</span></code>s and <code class="docutils literal notranslate"><span class="pre">Stream</span></code>s are subclasses of <code class="docutils literal notranslate"><span class="pre">Event</span></code>s.</p>
-<figure class="align-default" id="uml-style-diagram-of-foundation-of-rangekeeper-s-object-model">
-<a class="reference internal image-reference" href="_images/objModel.jpg"><img alt="_images/objModel.jpg" src="_images/objModel.jpg" style="width: 100%;" />
-</a>
-<figcaption>
-<p><span class="caption-number">Fig. 8 </span><span class="caption-text">Diagram of general overview of the founational concepts of <em>Rangekeeper</em>’s
-object model, in UML-style.</span><a class="headerlink" href="#uml-style-diagram-of-foundation-of-rangekeeper-s-object-model" title="Link to this image">#</a></p>
-</figcaption>
-</figure>
-</section>
-</section>
-</section>
-<section id="rationale-and-implications">
-<h2>Rationale and Implications<a class="headerlink" href="#rationale-and-implications" title="Link to this heading">#</a></h2>
-<p><em>Rangekeeper</em> will use the <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s defined in the <code class="docutils literal notranslate"><span class="pre">Assembly</span></code>/s of a
-design to structure the “drill-downs” and “roll-ups” (ie, the
-compositions) of <code class="docutils literal notranslate"><span class="pre">Flow</span></code>s into <code class="docutils literal notranslate"><span class="pre">Stream</span></code>s that are appropriate for the kinds of
-summations and metrics that the DCF Proforma model requires.</p>
-<p>For example, an office building may produce revenue from multiple tenants. A
-tenant may occupy multiple floors, or a part (space) of a single floor.
-For <em>Rangekeeper</em>, each space would be an <code class="docutils literal notranslate"><span class="pre">entity</span></code>; with its <code class="docutils literal notranslate"><span class="pre">Events</span></code> property
-containing a set of <code class="docutils literal notranslate"><span class="pre">Flow</span></code>s and/or <code class="docutils literal notranslate"><span class="pre">Stream</span></code>s that represent revenues or costs
-associated with that space. Those may be aggregated into cash flows generated by
-the tenant of those spaces, and analysed as such, or they may be aggregated per
-floor, or per building, or per project.</p>
-<p>This makes it simple to calculate things like the share of total revenue
-generated by each tenant; or the share of revenue generated by each floor.
-Likewise with costs.</p>
-<p>The multi-faceted nature of the <a class="reference external" href="https://en.wikipedia.org/wiki/Entity%E2%80%93relationship_model"><code class="docutils literal notranslate"><span class="pre">Entity</span></code>-<code class="docutils literal notranslate"><span class="pre">Relationship</span></code> model</a> enables
-multiple pathways for those aggregations to be specified, and thus enables an
-efficient and broad ability to query the model for the kinds of analyses
-pertinent to real estate valuation.</p>
-<section id="technicalities">
-<h3>Technicalities<a class="headerlink" href="#technicalities" title="Link to this heading">#</a></h3>
-<p>To provide a <em>Rangekeeper</em> model with the <code class="docutils literal notranslate"><span class="pre">Entity</span></code>-<code class="docutils literal notranslate"><span class="pre">Relationship</span></code> organization,
-those need to either be defined in the design itself, or they need to
-be specified after receiving and loading the design.</p>
-<section id="defining-entitys-and-relationships-in-the-design-scenario">
-<h4>Defining <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s and <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s in the Design Scenario<a class="headerlink" href="#defining-entitys-and-relationships-in-the-design-scenario" title="Link to this heading">#</a></h4>
-<p><em>Rangekeeper</em> uses the <a class="reference external" href="https://speckle.systems">Speckle</a> service and data model
-for the exchange of designs, and scaffolds <code class="docutils literal notranslate"><span class="pre">entity</span></code>s off a <a class="reference external" href="https://speckle.guide/dev/base.html">Speckle
-<code class="docutils literal notranslate"><span class="pre">Base</span></code></a></p>
-<p>It also provides two means to define <code class="docutils literal notranslate"><span class="pre">entity</span></code>s and <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s:</p>
-<ol class="arabic simple">
-<li><p>A plugin to [McNeel’s Rhinoceros3D Grasshopper]
-(<a class="reference external" href="https://www.rhino3d.com/6/new/grasshopper/">https://www.rhino3d.com/6/new/grasshopper/</a>), that enables both automated and
-manual assignment of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s to geometries before their export to
-Speckle; and</p></li>
-<li><p>Manual assignment of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s to <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s once they have been loaded
-from a Speckle stream in <em>Rangekeeper</em>.</p></li>
-</ol>
-</section>
-</section>
-</section>
-<section id="example-design">
-<h2>Example Design<a class="headerlink" href="#example-design" title="Link to this heading">#</a></h2>
-<p>An example property has been documented and uploaded to Speckle for us to use
-as a demonstration of the object model and its use in <em>Rangekeeper</em>.</p>
-<p>This design is composed of two mixed-use buildings, that both share a
-common basement plinth, used for parking and shared mechanical and other
-services (e.g. garbage disposal, storage)</p>
-<p>To access the design in <em>Rangekeeper</em>, we need to load it from Speckle.
-First load neccesary libraries:</p>
+
+  <section class="tex2jax_ignore mathjax_ignore" id="load-design-into-a-canonical-model">
+<h1>Load design into a canonical Model<a class="headerlink" href="#load-design-into-a-canonical-model" title="Link to this heading">#</a></h1>
+<p>This notebook separates transport, interpretation, validation, and presentation. Fixture mode is a small synthetic public design. Live mode reads the declared pinned service object; it never publishes. An error does not switch modes. Geometry stays in its source transport.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">display</span><span class="p">,</span> <span class="n">IFrame</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.examples</span><span class="w"> </span><span class="kn">import</span> <span class="n">design</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.model</span><span class="w"> </span><span class="kn">import</span> <span class="n">Model</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.graph</span><span class="w"> </span><span class="kn">import</span> <span class="n">View</span><span class="p">,</span> <span class="n">Hierarchy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.graph.projection</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_table</span><span class="p">,</span> <span class="n">FieldColumn</span><span class="p">,</span> <span class="n">ValueColumn</span><span class="p">,</span> <span class="n">PropertyColumn</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.adapters</span><span class="w"> </span><span class="kn">import</span> <span class="n">cytoscape</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.adapters.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_flows</span><span class="p">,</span> <span class="n">plot_partition</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">json</span> <span class="k">as</span> <span class="n">codec</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">IFrame</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">specklepy.api</span><span class="w"> </span><span class="kn">import</span> <span class="n">operations</span><span class="p">,</span> <span class="n">client</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">specklepy.transports.server</span><span class="w"> </span><span class="kn">import</span> <span class="n">ServerTransport</span>
-
-<span class="c1"># Load environment variables from .env file</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">dotenv</span>
-<span class="n">dotenv</span><span class="o">.</span><span class="n">load_dotenv</span><span class="p">(</span><span class="n">dotenv</span><span class="o">.</span><span class="n">find_dotenv</span><span class="p">())</span>
-
-<span class="kn">import</span><span class="w"> </span><span class="nn">rangekeeper</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">rk</span>
-</pre></div>
-</div>
-</div>
-</div>
-<section id="authenticate-and-load-the-design-from-speckle">
-<h3>Authenticate and Load the Design from Speckle<a class="headerlink" href="#authenticate-and-load-the-design-from-speckle" title="Link to this heading">#</a></h3>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Authenticate with Speckle</span>
-<span class="n">speckle</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">SpeckleClient</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s2">&quot;app.speckle.systems&quot;</span><span class="p">)</span>
-<span class="n">speckle</span><span class="o">.</span><span class="n">authenticate_with_token</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;SPECKLE_TOKEN&quot;</span><span class="p">))</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">✓ Authenticated as: </span><span class="si">{</span><span class="n">speckle</span><span class="o">.</span><span class="n">account</span><span class="o">.</span><span class="n">userInfo</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">MODE</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"RK_DESIGN_MODE"</span><span class="p">,</span> <span class="s2">"fixture"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Declared design mode:"</span><span class="p">,</span> <span class="n">MODE</span><span class="p">)</span>
+<span class="n">OUTPUT</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"design-output"</span><span class="p">)</span>
+<span class="n">OUTPUT</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>✓ Authenticated as: Daniel Fink
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Declared design mode: fixture
 </pre></div>
 </div>
 </div>
 </div>
+<section id="receive-or-load">
+<h2>Receive or load<a class="headerlink" href="#receive-or-load" title="Link to this heading">#</a></h2>
+<p>Historical Speckle content requires an explicit reviewed mapping. A canonical envelope can instead use <code class="docutils literal notranslate"><span class="pre">decode_model</span></code>. Collection nesting does not establish domain membership.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Explore the Speckle Project, Model, and Versions</span>
-<span class="n">project</span> <span class="o">=</span> <span class="n">speckle</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">get_with_models</span><span class="p">(</span><span class="s2">&quot;c0f66c35e3&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Project: </span><span class="si">{</span><span class="n">project</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">, ID: </span><span class="si">{</span><span class="n">project</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span>
-    <span class="sa">f</span><span class="s2">&quot;Models: </span><span class="si">{</span><span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">model</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">project</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">items</span><span class="p">]</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">id</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">model</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">project</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">items</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
-<span class="p">)</span>
-
-<span class="n">model</span> <span class="o">=</span> <span class="n">speckle</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">get_with_versions</span><span class="p">(</span>
-    <span class="n">project_id</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
-    <span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;119ad04487&quot;</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span>
-    <span class="sa">f</span><span class="s2">&quot;Model: </span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">, Versions: </span><span class="si">{</span><span class="p">[</span><span class="n">version</span><span class="o">.</span><span class="n">id</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">version</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">model</span><span class="o">.</span><span class="n">versions</span><span class="o">.</span><span class="n">items</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
-<span class="p">)</span>
-
-<span class="n">version</span> <span class="o">=</span> <span class="n">speckle</span><span class="o">.</span><span class="n">version</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-    <span class="n">project_id</span><span class="o">=</span><span class="n">project</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
-    <span class="n">version_id</span><span class="o">=</span><span class="s2">&quot;9a9670946f&quot;</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Version: </span><span class="si">{</span><span class="n">version</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">, Referenced Object: </span><span class="si">{</span><span class="n">version</span><span class="o">.</span><span class="n">referenced_object</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">MODE</span> <span class="o">==</span> <span class="s2">"fixture"</span><span class="p">:</span>
+    <span class="n">source</span> <span class="o">=</span> <span class="n">design</span><span class="o">.</span><span class="n">fixture</span><span class="p">()</span>
+    <span class="n">utility_names</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"cores"</span><span class="p">:</span> <span class="s2">"cores"</span><span class="p">}</span>
+<span class="k">elif</span> <span class="n">MODE</span> <span class="o">==</span> <span class="s2">"live"</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">specklepy.api.client</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpeckleClient</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.adapters.speckle</span><span class="w"> </span><span class="kn">import</span> <span class="n">receive</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.migration.speckle</span><span class="w"> </span><span class="kn">import</span> <span class="n">MappingSpec</span><span class="p">,</span> <span class="n">convert_speckle</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">SpeckleClient</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s2">"app.speckle.systems"</span><span class="p">)</span>
+    <span class="n">client</span><span class="o">.</span><span class="n">authenticate_with_token</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"SPECKLE_TOKEN"</span><span class="p">])</span>
+    <span class="n">received</span> <span class="o">=</span> <span class="n">receive</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">project_id</span><span class="o">=</span><span class="s2">"c0f66c35e3"</span><span class="p">,</span> <span class="n">object_id</span><span class="o">=</span><span class="s2">"e7acaac21ae7e9369339900a4aaeb827"</span><span class="p">)</span>
+    <span class="n">mapping</span> <span class="o">=</span> <span class="n">MappingSpec</span><span class="p">(</span>
+        <span class="n">classifications</span><span class="o">=</span><span class="p">(</span><span class="s2">"floor"</span><span class="p">,</span> <span class="s2">"space"</span><span class="p">,</span> <span class="s2">"utilities"</span><span class="p">,</span> <span class="s2">"building"</span><span class="p">,</span> <span class="s2">"property"</span><span class="p">),</span>
+        <span class="n">relationships</span><span class="o">=</span><span class="p">(</span><span class="s2">"spatiallyContains"</span><span class="p">,</span> <span class="s2">"services"</span><span class="p">,</span> <span class="s2">"contains"</span><span class="p">),</span>
+        <span class="n">measurements</span><span class="o">=</span><span class="p">{</span><span class="s2">"gfa"</span><span class="p">:</span> <span class="s2">"meter ** 2"</span><span class="p">,</span> <span class="s2">"volume"</span><span class="p">:</span> <span class="s2">"meter ** 3"</span><span class="p">,</span> <span class="s2">"ffl"</span><span class="p">:</span> <span class="s2">"meter"</span><span class="p">,</span> <span class="s2">"ftf"</span><span class="p">:</span> <span class="s2">"meter"</span><span class="p">,</span> <span class="s2">"perimeter"</span><span class="p">:</span> <span class="s2">"meter"</span><span class="p">},</span>
+        <span class="n">properties</span><span class="o">=</span><span class="p">(</span><span class="s2">"use"</span><span class="p">,</span> <span class="s2">"number"</span><span class="p">),</span>
+        <span class="n">source_name</span><span class="o">=</span><span class="s2">"Speckle c0f66c35e3/e7acaac21ae7e9369339900a4aaeb827"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">conversion</span> <span class="o">=</span> <span class="n">convert_speckle</span><span class="p">(</span><span class="n">received</span><span class="o">.</span><span class="n">payload</span><span class="p">,</span> <span class="n">mapping</span><span class="o">=</span><span class="n">mapping</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">conversion</span><span class="o">.</span><span class="n">model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="n">conversion</span><span class="o">.</span><span class="n">issues</span>
+    <span class="n">source</span> <span class="o">=</span> <span class="n">conversion</span><span class="o">.</span><span class="n">model</span>
+    <span class="n">utility_names</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"buildingAcores"</span><span class="p">:</span> <span class="s2">"cores"</span><span class="p">,</span> <span class="s2">"buildingBcores"</span><span class="p">:</span> <span class="s2">"cores"</span><span class="p">,</span> <span class="s2">"plinthplant"</span><span class="p">:</span> <span class="s2">"plant"</span><span class="p">}</span>
+<span class="k">elif</span> <span class="n">MODE</span> <span class="o">==</span> <span class="s2">"canonical"</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.adapters.speckle</span><span class="w"> </span><span class="kn">import</span> <span class="n">decode_model</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+    <span class="n">source</span> <span class="o">=</span> <span class="n">decode_model</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"RK_DESIGN_ENVELOPE"</span><span class="p">])</span><span class="o">.</span><span class="n">read_text</span><span class="p">()))</span>
+    <span class="n">utility_names</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"RK_DESIGN_INTERPRETATION"</span><span class="p">])</span><span class="o">.</span><span class="n">read_text</span><span class="p">())[</span><span class="s2">"utility_names"</span><span class="p">]</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Select fixture, live, or canonical explicitly"</span><span class="p">)</span>
+<span class="n">source</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">from_data</span><span class="p">(</span><span class="n">source</span><span class="o">.</span><span class="n">to_data</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Model revision:"</span><span class="p">,</span> <span class="n">source</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s2">"Objects:"</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">source</span><span class="o">.</span><span class="n">find_entities</span><span class="p">()))</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Project: RangekeeperDemo, ID: c0f66c35e3
-Models: [&#39;main&#39;], [&#39;119ad04487&#39;]
-</pre></div>
-</div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Model: main, Versions: [&#39;9a9670946f&#39;]
-</pre></div>
-</div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Version: 9a9670946f, Referenced Object: e7acaac21ae7e9369339900a4aaeb827
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load the root Speckle Object of the design</span>
-<span class="n">transport</span> <span class="o">=</span> <span class="n">ServerTransport</span><span class="p">(</span><span class="n">stream_id</span><span class="o">=</span><span class="s2">&quot;c0f66c35e3&quot;</span><span class="p">,</span> <span class="n">client</span><span class="o">=</span><span class="n">speckle</span><span class="p">)</span>
-<span class="n">root</span> <span class="o">=</span> <span class="n">operations</span><span class="o">.</span><span class="n">receive</span><span class="p">(</span>
-    <span class="n">obj_id</span><span class="o">=</span><span class="s2">&quot;e7acaac21ae7e9369339900a4aaeb827&quot;</span><span class="p">,</span>
-    <span class="n">remote_transport</span><span class="o">=</span><span class="n">transport</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Root Object: </span><span class="si">{</span><span class="n">root</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Root Object: Base(id: e7acaac21ae7e9369339900a4aaeb827, speckle_type: Base, 
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Model revision: bce1e752-588a-4c52-a22a-43d4f87cfc9b Objects: 4
 </pre></div>
 </div>
 </div>
 </div>
 </section>
-<section id="inspect-the-design">
-<h3>Inspect the Design<a class="headerlink" href="#inspect-the-design" title="Link to this heading">#</a></h3>
+<section id="select-by-identity">
+<h2>Select by identity<a class="headerlink" href="#select-by-identity" title="Link to this heading">#</a></h2>
+<p>Classification codes are resolved once to UUIDs. Names remain search labels. Spatial containment is selected separately from services and other relationships. This tree projection checks for multiple parents; the ordinary graph viewer also supports shared membership.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">IFrame</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;https://app.speckle.systems/projects/</span><span class="si">{</span><span class="n">project</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">/models/</span><span class="si">{</span><span class="n">model</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">spatial</span> <span class="o">=</span> <span class="n">design</span><span class="o">.</span><span class="n">classification_id</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="s2">"spatiallyContains"</span><span class="p">)</span>
+<span class="n">spatial_view</span> <span class="o">=</span> <span class="n">View</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">relationships</span><span class="o">=</span><span class="p">[</span><span class="n">e</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">source</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">relationships</span> <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">classification</span> <span class="o">==</span> <span class="n">spatial</span><span class="p">])</span>
+<span class="n">hierarchy</span> <span class="o">=</span> <span class="n">Hierarchy</span><span class="p">(</span><span class="n">spatial_view</span><span class="p">)</span>
+<span class="n">root</span> <span class="o">=</span> <span class="n">hierarchy</span><span class="o">.</span><span class="n">root</span>
+<span class="n">contributors</span> <span class="o">=</span> <span class="n">design</span><span class="o">.</span><span class="n">select_contributors</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="n">root</span><span class="p">)</span>
+<span class="n">table</span> <span class="o">=</span> <span class="n">to_table</span><span class="p">(</span><span class="n">spatial_view</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">(</span>
+    <span class="n">FieldColumn</span><span class="p">(</span><span class="s2">"ID"</span><span class="p">,</span> <span class="s2">"entity_id"</span><span class="p">),</span> <span class="n">FieldColumn</span><span class="p">(</span><span class="s2">"Name"</span><span class="p">,</span> <span class="s2">"name"</span><span class="p">),</span>
+    <span class="n">FieldColumn</span><span class="p">(</span><span class="s2">"Class"</span><span class="p">,</span> <span class="s2">"classification_code"</span><span class="p">),</span> <span class="n">ValueColumn</span><span class="p">(</span><span class="s2">"GFA (m²)"</span><span class="p">,</span> <span class="s2">"gfa"</span><span class="p">,</span> <span class="s2">"meter ** 2"</span><span class="p">),</span>
+    <span class="n">PropertyColumn</span><span class="p">(</span><span class="s2">"Use"</span><span class="p">,</span> <span class="s2">"use"</span><span class="p">),</span> <span class="n">PropertyColumn</span><span class="p">(</span><span class="s2">"Number"</span><span class="p">,</span> <span class="s2">"number"</span><span class="p">),</span>
+<span class="p">))</span>
+<span class="n">display</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="nb">dict</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">rows</span><span class="p">]))</span>
+<span class="n">viewer</span> <span class="o">=</span> <span class="n">cytoscape</span><span class="o">.</span><span class="n">write_viewer</span><span class="p">([</span><span class="n">cytoscape</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">spatial_view</span><span class="p">,</span> <span class="s2">"Spatial containment"</span><span class="p">)],</span> <span class="n">OUTPUT</span> <span class="o">/</span> <span class="s2">"spatial.html"</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">IFrame</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">viewer</span><span class="p">),</span> <span class="n">width</span><span class="o">=</span><span class="s2">"100%"</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">600</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Class</th>
+      <th>GFA (m²)</th>
+      <th>Use</th>
+      <th>Number</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>68bb7529-541f-5dc4-9742-57398a8cacff</td>
+      <td>floor</td>
+      <td>floor</td>
+      <td>1000.0</td>
+      <td>None</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>e98fc2e9-a2f2-560f-a4c4-140d695b0e85</td>
+      <td>cores</td>
+      <td>utilities</td>
+      <td>NaN</td>
+      <td>cores</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>26987824-5607-5f51-88e0-fc041bb02609</td>
+      <td>space</td>
+      <td>space</td>
+      <td>NaN</td>
+      <td>hotel</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>3912b85d-46e4-5e98-af3f-593bca6886b5</td>
+      <td>property</td>
+      <td>property</td>
+      <td>NaN</td>
+      <td>None</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+</div></div><div class="output text_html">
         <iframe
             width="100%"
-            height="800"
-            src="https://app.speckle.systems/projects/c0f66c35e3/models/119ad04487"
+            height="600"
+            src="design-output/spatial.html"
             frameborder="0"
             allowfullscreen
-            
-        ></iframe>
-        </div></div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Let&#39;s identify the root members of the:</span>
-<span class="n">roots</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">get_dynamic_member_names</span><span class="p">()</span>
-<span class="n">roots</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&#39;@context&#39;, &#39;totalChildrenCount&#39;, &#39;@property&#39;]
-</pre></div>
-</div>
-</div>
-</div>
-<p>In this design, two members (Speckle Objects) at the root of
-the model:</p>
-<ol class="arabic simple">
-<li><p>‘&#64;context’, and</p></li>
-<li><p>‘&#64;property’</p></li>
-</ol>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Speckle Objects whose member names begin with an <code class="docutils literal notranslate"><span class="pre">&#64;</span></code> indicate ‘detached’ data:
-See <a class="reference external" href="https://speckle.guide/dev/base.html#detaching">The Base Object: Detaching</a>
-for more information.</p>
-</div>
-<p>For future reference, if we wanted to see their spatial representation, we can
-pass them in to the Speckle Viewer’s “models” endpoint with their <code class="docutils literal notranslate"><span class="pre">id</span></code>s:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">IFrame</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;https://app.speckle.systems/projects/</span><span class="si">{</span><span class="n">project</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">/models/</span><span class="si">{</span><span class="n">root</span><span class="p">[</span><span class="s1">&#39;@property&#39;</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_html">
-        <iframe
-            width="100%"
-            height="800"
-            src="https://app.speckle.systems/projects/c0f66c35e3/models/bed351126771f61e3d6255c18cd48aa5"
-            frameborder="0"
-            allowfullscreen
-            
-        ></iframe>
-        </div></div>
-</div>
-<p>We can even use the Speckle Viewer’s ‘filter’ functionality to see only the
-certain types of objects contained within the spaces of the design (try creating a filter to isolate “floor” or “utilities” types):</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">IFrame</span><span class="p">(</span><span class="s2">&quot;https://app.speckle.systems/projects/c0f66c35e3/models/119ad04487#savedView={</span><span class="si">%22i</span><span class="s2">d%22:</span><span class="si">%220a</span><span class="s2">5bda3b33%22}&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_html">
-        <iframe
-            width="100%"
-            height="800"
-            src="https://app.speckle.systems/projects/c0f66c35e3/models/119ad04487#savedView={%22id%22:%220a5bda3b33%22}"
-            frameborder="0"
-            allowfullscreen
-            
+
         ></iframe>
         </div></div>
 </div>
 </section>
-<section id="rangekeeper-entitys-in-the-design">
-<h3>Rangekeeper <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s in the Design<a class="headerlink" href="#rangekeeper-entitys-in-the-design" title="Link to this heading">#</a></h3>
-<p>Of course, not all Speckle Objects are Rangekeeper <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s for us to use in
-our valuations and modeling.
-To make parsing the design easier, <em>Rangekeeper</em> provides some helper
-methods to convert the Speckle Objects into Rangekeeper <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s:</p>
+<section id="report-detached-data">
+<h2>Report detached data<a class="headerlink" href="#report-detached-data" title="Link to this heading">#</a></h2>
+<p>Areas below use unique floor identities. Parent totals are calculated for presentation and are not added to their constituents.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Return any Speckle Objects in the &#39;@design&#39; trunk that have &#39;entityId&#39;s:</span>
-<span class="n">parsed</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">Speckle</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">base</span><span class="o">=</span><span class="n">root</span><span class="p">[</span><span class="s1">&#39;@property&#39;</span><span class="p">])</span>
-
-<span class="c1"># (Recursively) Convert the Speckle Objects into Rangekeeper Entities:</span>
-<span class="nb">property</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">Speckle</span><span class="o">.</span><span class="n">to_rk</span><span class="p">(</span>
-    <span class="n">bases</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">parsed</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span>
-    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;property&#39;</span><span class="p">,</span>
-    <span class="nb">type</span><span class="o">=</span><span class="s1">&#39;archetype&#39;</span><span class="p">)</span>
-
-<span class="c1"># (We can check that it is an Assembly:)</span>
-<span class="nb">isinstance</span><span class="p">(</span><span class="nb">property</span><span class="p">,</span> <span class="n">rk</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">Assembly</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.model.characteristics</span><span class="w"> </span><span class="kn">import</span> <span class="n">value</span> <span class="k">as</span> <span class="n">local_value</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">default_units</span>
+<span class="n">areas</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">uid</span> <span class="ow">in</span> <span class="n">contributors</span><span class="p">:</span>
+    <span class="n">item</span> <span class="o">=</span> <span class="n">local_value</span><span class="p">(</span><span class="n">source</span><span class="o">.</span><span class="n">entity</span><span class="p">(</span><span class="n">uid</span><span class="p">)</span><span class="o">.</span><span class="n">characteristics</span><span class="p">,</span> <span class="s2">"gfa"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">item</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">item</span><span class="o">.</span><span class="n">quantity</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Unresolved GFA: </span><span class="si">{</span><span class="n">uid</span><span class="si">}</span><span class="s2">"</span>
+        <span class="n">areas</span><span class="p">[</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="n">default_units</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">quantity</span><span class="p">,</span> <span class="n">to</span><span class="o">=</span><span class="s2">"meter ** 2"</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
+<span class="k">for</span> <span class="n">chart</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"sunburst"</span><span class="p">,</span> <span class="s2">"treemap"</span><span class="p">):</span>
+    <span class="n">figure</span> <span class="o">=</span> <span class="n">plot_partition</span><span class="p">(</span><span class="n">hierarchy</span><span class="p">,</span> <span class="n">areas</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">"m²"</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">"Gross floor area"</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">chart</span><span class="p">)</span>
+    <span class="n">figure</span><span class="o">.</span><span class="n">write_html</span><span class="p">(</span><span class="n">OUTPUT</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"gfa-</span><span class="si">{</span><span class="n">chart</span><span class="si">}</span><span class="s2">.html"</span><span class="p">,</span> <span class="n">include_plotlyjs</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">display</span><span class="p">(</span><span class="n">figure</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Warning: Duplicate Entity 6496e279-88ca-49f4-b48c-6c0f156e0a58 [utilities] found.
-Existing Entity is an Assembly while new Entity is not. Keeping Assembly.
-</pre></div>
+<div class="output text_html"><div id="plotly-load_design-7-0" style="width:100%;height:600px"></div><script src="_static/plotly.min.js"></script><script>var figure={"config": {"plotlyServerURL": "https://plot.ly"}, "data": [{"branchvalues": "total", "hovertemplate": "%{label}\u003cbr>%{value:,.2f} m\u00b2\u003cextra>\u003c/extra>", "ids": ["3912b85d-46e4-5e98-af3f-593bca6886b5", "e98fc2e9-a2f2-560f-a4c4-140d695b0e85", "26987824-5607-5f51-88e0-fc041bb02609", "68bb7529-541f-5dc4-9742-57398a8cacff"], "labels": ["property", "cores", "space", "floor"], "marker": {"colors": ["#285f8f", "#285f8f", "#285f8f", "#285f8f"]}, "parents": ["", "3912b85d-46e4-5e98-af3f-593bca6886b5", "3912b85d-46e4-5e98-af3f-593bca6886b5", "26987824-5607-5f51-88e0-fc041bb02609"], "type": "sunburst", "values": [1000.0, 0, 1000.0, 1000.0]}], "layout": {"height": 500, "margin": {"b": 15, "l": 15, "r": 15, "t": 70}, "template": {"data": {"bar": [{"error_x": {"color": "#2a3f5f"}, "error_y": {"color": "#2a3f5f"}, "marker": {"line": {"color": "#E5ECF6", "width": 0.5}, "pattern": {"fillmode": "overlay", "size": 10, "solidity": 0.2}}, "type": "bar"}], "barpolar": [{"marker": {"line": {"color": "#E5ECF6", "width": 0.5}, "pattern": {"fillmode": "overlay", "size": 10, "solidity": 0.2}}, "type": "barpolar"}], "carpet": [{"aaxis": {"endlinecolor": "#2a3f5f", "gridcolor": "white", "linecolor": "white", "minorgridcolor": "white", "startlinecolor": "#2a3f5f"}, "baxis": {"endlinecolor": "#2a3f5f", "gridcolor": "white", "linecolor": "white", "minorgridcolor": "white", "startlinecolor": "#2a3f5f"}, "type": "carpet"}], "choropleth": [{"colorbar": {"outlinewidth": 0, "ticks": ""}, "type": "choropleth"}], "contour": [{"colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]], "type": "contour"}], "contourcarpet": [{"colorbar": {"outlinewidth": 0, "ticks": ""}, "type": "contourcarpet"}], "heatmap": [{"colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]], "type": "heatmap"}], "histogram": [{"marker": {"pattern": {"fillmode": "overlay", "size": 10, "solidity": 0.2}}, "type": "histogram"}], "histogram2d": [{"colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]], "type": "histogram2d"}], "histogram2dcontour": [{"colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]], "type": "histogram2dcontour"}], "mesh3d": [{"colorbar": {"outlinewidth": 0, "ticks": ""}, "type": "mesh3d"}], "parcoords": [{"line": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "type": "parcoords"}], "pie": [{"automargin": true, "type": "pie"}], "scatter": [{"fillpattern": {"fillmode": "overlay", "size": 10, "solidity": 0.2}, "type": "scatter"}], "scatter3d": [{"line": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "type": "scatter3d"}], "scattercarpet": [{"marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "type": "scattercarpet"}], "scattergeo": [{"marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "type": "scattergeo"}], "scattergl": [{"marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "type": "scattergl"}], "scattermap": [{"marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "type": "scattermap"}], "scattermapbox": [{"marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "type": "scattermapbox"}], "scatterpolar": [{"marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "type": "scatterpolar"}], "scatterpolargl": [{"marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "type": "scatterpolargl"}], "scatterternary": [{"marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "type": "scatterternary"}], "surface": [{"colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]], "type": "surface"}], "table": [{"cells": {"fill": {"color": "#EBF0F8"}, "line": {"color": "white"}}, "header": {"fill": {"color": "#C8D4E3"}, "line": {"color": "white"}}, "type": "table"}]}, "layout": {"annotationdefaults": {"arrowcolor": "#2a3f5f", "arrowhead": 0, "arrowwidth": 1}, "autotypenumbers": "strict", "coloraxis": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "colorscale": {"diverging": [[0, "#8e0152"], [0.1, "#c51b7d"], [0.2, "#de77ae"], [0.3, "#f1b6da"], [0.4, "#fde0ef"], [0.5, "#f7f7f7"], [0.6, "#e6f5d0"], [0.7, "#b8e186"], [0.8, "#7fbc41"], [0.9, "#4d9221"], [1, "#276419"]], "sequential": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]], "sequentialminus": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]]}, "colorway": ["#636efa", "#EF553B", "#00cc96", "#ab63fa", "#FFA15A", "#19d3f3", "#FF6692", "#B6E880", "#FF97FF", "#FECB52"], "font": {"color": "#2a3f5f"}, "geo": {"bgcolor": "white", "lakecolor": "white", "landcolor": "#E5ECF6", "showlakes": true, "showland": true, "subunitcolor": "white"}, "hoverlabel": {"align": "left"}, "hovermode": "closest", "mapbox": {"style": "light"}, "paper_bgcolor": "white", "plot_bgcolor": "#E5ECF6", "polar": {"angularaxis": {"gridcolor": "white", "linecolor": "white", "ticks": ""}, "bgcolor": "#E5ECF6", "radialaxis": {"gridcolor": "white", "linecolor": "white", "ticks": ""}}, "scene": {"xaxis": {"backgroundcolor": "#E5ECF6", "gridcolor": "white", "gridwidth": 2, "linecolor": "white", "showbackground": true, "ticks": "", "zerolinecolor": "white"}, "yaxis": {"backgroundcolor": "#E5ECF6", "gridcolor": "white", "gridwidth": 2, "linecolor": "white", "showbackground": true, "ticks": "", "zerolinecolor": "white"}, "zaxis": {"backgroundcolor": "#E5ECF6", "gridcolor": "white", "gridwidth": 2, "linecolor": "white", "showbackground": true, "ticks": "", "zerolinecolor": "white"}}, "shapedefaults": {"line": {"color": "#2a3f5f"}}, "ternary": {"aaxis": {"gridcolor": "white", "linecolor": "white", "ticks": ""}, "baxis": {"gridcolor": "white", "linecolor": "white", "ticks": ""}, "bgcolor": "#E5ECF6", "caxis": {"gridcolor": "white", "linecolor": "white", "ticks": ""}}, "title": {"x": 0.05}, "xaxis": {"automargin": true, "gridcolor": "white", "linecolor": "white", "ticks": "", "title": {"standoff": 15}, "zerolinecolor": "white", "zerolinewidth": 2}, "yaxis": {"automargin": true, "gridcolor": "white", "linecolor": "white", "ticks": "", "title": {"standoff": 15}, "zerolinecolor": "white", "zerolinewidth": 2}}}, "title": {"text": "Gross floor area"}}};Plotly.newPlot("plotly-load_design-7-0",figure.data,figure.layout,figure.config);</script></div><div class="output text_html"><div id="plotly-load_design-7-1" style="width:100%;height:600px"></div><script src="_static/plotly.min.js"></script><script>var figure={"config": {"plotlyServerURL": "https://plot.ly"}, "data": [{"branchvalues": "total", "hovertemplate": "%{label}\u003cbr>%{value:,.2f} m\u00b2\u003cextra>\u003c/extra>", "ids": ["3912b85d-46e4-5e98-af3f-593bca6886b5", "e98fc2e9-a2f2-560f-a4c4-140d695b0e85", "26987824-5607-5f51-88e0-fc041bb02609", "68bb7529-541f-5dc4-9742-57398a8cacff"], "labels": ["property", "cores", "space", "floor"], "marker": {"colors": ["#285f8f", "#285f8f", "#285f8f", "#285f8f"]}, "parents": ["", "3912b85d-46e4-5e98-af3f-593bca6886b5", "3912b85d-46e4-5e98-af3f-593bca6886b5", "26987824-5607-5f51-88e0-fc041bb02609"], "type": "treemap", "values": [1000.0, 0, 1000.0, 1000.0]}], "layout": {"height": 500, "margin": {"b": 15, "l": 15, "r": 15, "t": 70}, "template": {"data": {"bar": [{"error_x": {"color": "#2a3f5f"}, "error_y": {"color": "#2a3f5f"}, "marker": {"line": {"color": "#E5ECF6", "width": 0.5}, "pattern": {"fillmode": "overlay", "size": 10, "solidity": 0.2}}, "type": "bar"}], "barpolar": [{"marker": {"line": {"color": "#E5ECF6", "width": 0.5}, "pattern": {"fillmode": "overlay", "size": 10, "solidity": 0.2}}, "type": "barpolar"}], "carpet": [{"aaxis": {"endlinecolor": "#2a3f5f", "gridcolor": "white", "linecolor": "white", "minorgridcolor": "white", "startlinecolor": "#2a3f5f"}, "baxis": {"endlinecolor": "#2a3f5f", "gridcolor": "white", "linecolor": "white", "minorgridcolor": "white", "startlinecolor": "#2a3f5f"}, "type": "carpet"}], "choropleth": [{"colorbar": {"outlinewidth": 0, "ticks": ""}, "type": "choropleth"}], "contour": [{"colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]], "type": "contour"}], "contourcarpet": [{"colorbar": {"outlinewidth": 0, "ticks": ""}, "type": "contourcarpet"}], "heatmap": [{"colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]], "type": "heatmap"}], "histogram": [{"marker": {"pattern": {"fillmode": "overlay", "size": 10, "solidity": 0.2}}, "type": "histogram"}], "histogram2d": [{"colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]], "type": "histogram2d"}], "histogram2dcontour": [{"colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]], "type": "histogram2dcontour"}], "mesh3d": [{"colorbar": {"outlinewidth": 0, "ticks": ""}, "type": "mesh3d"}], "parcoords": [{"line": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "type": "parcoords"}], "pie": [{"automargin": true, "type": "pie"}], "scatter": [{"fillpattern": {"fillmode": "overlay", "size": 10, "solidity": 0.2}, "type": "scatter"}], "scatter3d": [{"line": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "type": "scatter3d"}], "scattercarpet": [{"marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "type": "scattercarpet"}], "scattergeo": [{"marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "type": "scattergeo"}], "scattergl": [{"marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "type": "scattergl"}], "scattermap": [{"marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "type": "scattermap"}], "scattermapbox": [{"marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "type": "scattermapbox"}], "scatterpolar": [{"marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "type": "scatterpolar"}], "scatterpolargl": [{"marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "type": "scatterpolargl"}], "scatterternary": [{"marker": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "type": "scatterternary"}], "surface": [{"colorbar": {"outlinewidth": 0, "ticks": ""}, "colorscale": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]], "type": "surface"}], "table": [{"cells": {"fill": {"color": "#EBF0F8"}, "line": {"color": "white"}}, "header": {"fill": {"color": "#C8D4E3"}, "line": {"color": "white"}}, "type": "table"}]}, "layout": {"annotationdefaults": {"arrowcolor": "#2a3f5f", "arrowhead": 0, "arrowwidth": 1}, "autotypenumbers": "strict", "coloraxis": {"colorbar": {"outlinewidth": 0, "ticks": ""}}, "colorscale": {"diverging": [[0, "#8e0152"], [0.1, "#c51b7d"], [0.2, "#de77ae"], [0.3, "#f1b6da"], [0.4, "#fde0ef"], [0.5, "#f7f7f7"], [0.6, "#e6f5d0"], [0.7, "#b8e186"], [0.8, "#7fbc41"], [0.9, "#4d9221"], [1, "#276419"]], "sequential": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]], "sequentialminus": [[0.0, "#0d0887"], [0.1111111111111111, "#46039f"], [0.2222222222222222, "#7201a8"], [0.3333333333333333, "#9c179e"], [0.4444444444444444, "#bd3786"], [0.5555555555555556, "#d8576b"], [0.6666666666666666, "#ed7953"], [0.7777777777777778, "#fb9f3a"], [0.8888888888888888, "#fdca26"], [1.0, "#f0f921"]]}, "colorway": ["#636efa", "#EF553B", "#00cc96", "#ab63fa", "#FFA15A", "#19d3f3", "#FF6692", "#B6E880", "#FF97FF", "#FECB52"], "font": {"color": "#2a3f5f"}, "geo": {"bgcolor": "white", "lakecolor": "white", "landcolor": "#E5ECF6", "showlakes": true, "showland": true, "subunitcolor": "white"}, "hoverlabel": {"align": "left"}, "hovermode": "closest", "mapbox": {"style": "light"}, "paper_bgcolor": "white", "plot_bgcolor": "#E5ECF6", "polar": {"angularaxis": {"gridcolor": "white", "linecolor": "white", "ticks": ""}, "bgcolor": "#E5ECF6", "radialaxis": {"gridcolor": "white", "linecolor": "white", "ticks": ""}}, "scene": {"xaxis": {"backgroundcolor": "#E5ECF6", "gridcolor": "white", "gridwidth": 2, "linecolor": "white", "showbackground": true, "ticks": "", "zerolinecolor": "white"}, "yaxis": {"backgroundcolor": "#E5ECF6", "gridcolor": "white", "gridwidth": 2, "linecolor": "white", "showbackground": true, "ticks": "", "zerolinecolor": "white"}, "zaxis": {"backgroundcolor": "#E5ECF6", "gridcolor": "white", "gridwidth": 2, "linecolor": "white", "showbackground": true, "ticks": "", "zerolinecolor": "white"}}, "shapedefaults": {"line": {"color": "#2a3f5f"}}, "ternary": {"aaxis": {"gridcolor": "white", "linecolor": "white", "ticks": ""}, "baxis": {"gridcolor": "white", "linecolor": "white", "ticks": ""}, "bgcolor": "#E5ECF6", "caxis": {"gridcolor": "white", "linecolor": "white", "ticks": ""}}, "title": {"x": 0.05}, "xaxis": {"automargin": true, "gridcolor": "white", "linecolor": "white", "ticks": "", "title": {"standoff": 15}, "zerolinecolor": "white", "zerolinewidth": 2}, "yaxis": {"automargin": true, "gridcolor": "white", "linecolor": "white", "ticks": "", "title": {"standoff": 15}, "zerolinecolor": "white", "zerolinewidth": 2}}}, "title": {"text": "Gross floor area"}}};Plotly.newPlot("plotly-load_design-7-1",figure.data,figure.layout,figure.config);</script></div></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Warning: Duplicate Entity 6496e279-88ca-49f4-b48c-6c0f156e0a58 [utilities] found.
-Existing Entity is an Assembly while new Entity is not. Keeping Assembly.
-</pre></div>
-</div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Warning: Duplicate Entity 6496e279-88ca-49f4-b48c-6c0f156e0a58 [utilities] found.
-Existing Entity is an Assembly while new Entity is not. Keeping Assembly.
-Warning: Duplicate Entity 2b51847e-ec54-415d-afa0-ce32d74c6144 [plinthparking] found.
-Existing Entity is an Assembly while new Entity is not. Keeping Assembly.
-</pre></div>
-</div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>True
-</pre></div>
-</div>
-</div>
-</div>
-<section id="querying-the-design-s-object-graph">
-<h4>Querying the Design’s Object Graph<a class="headerlink" href="#querying-the-design-s-object-graph" title="Link to this heading">#</a></h4>
-<p><em>Rangekeeper</em> uses the <a class="reference external" href="https://networkx.org/">NetworkX</a> library to represent
-the object graph of the design, where each <code class="docutils literal notranslate"><span class="pre">Assembly</span></code> is a <code class="docutils literal notranslate"><span class="pre">MultiDiGraph</span></code> of
-<code class="docutils literal notranslate"><span class="pre">Entity</span></code> nodes and <code class="docutils literal notranslate"><span class="pre">Relationship</span></code> edges.
-This means we can query it pythonically:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get the &quot;BuildingA&quot; Assembly:</span>
-<span class="n">buildingA</span> <span class="o">=</span> <span class="p">[</span><span class="n">entity</span> <span class="k">for</span> <span class="p">(</span><span class="n">entityId</span><span class="p">,</span> <span class="n">entity</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">property</span><span class="o">.</span><span class="n">get_entities</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">entity</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;buildingA&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;buildingA: </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">buildingA</span><span class="p">))</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>buildingA: Assembly: buildingA
-Type: building
-Members: [&#39;name&#39;, &#39;totalChildrenCount&#39;, &#39;type&#39;]
-Entities: [(&#39;5ebb9736-5f18-4103-a5a4-040cd2e9b019&#39;, {&#39;entity&#39;: Assembly: buildingA (Type: building)}), (&#39;c0348c0f-a31f-421b-b6bc-0fe0d5ea947f&#39;, {&#39;entity&#39;: Assembly: buildingAhotel (Type: space)}), (&#39;1d0841bf-aa28-41d7-ba75-0ad0f3d57d21&#39;, {&#39;entity&#39;: Assembly: buildingAretail (Type: space)}), (&#39;7716632b-f43c-4ed2-9f84-26709361bbfe&#39;, {&#39;entity&#39;: Assembly: buildingAresidential (Type: space)}), (&#39;01aec121-ef19-4e6d-9f09-b2ce007b717d&#39;, {&#39;entity&#39;: Assembly: buildingAretail (Type: space)}), (&#39;6f6b227b-b28b-4412-89bd-0a9bbc47164e&#39;, {&#39;entity&#39;: Assembly: buildingAparking (Type: space)}), (&#39;7eec5208-fc0e-4dfd-bd0b-b1d226b2e97e&#39;, {&#39;entity&#39;: Entity: buildingAcores (Type: utilities)})]
-Relationships: [(&#39;5ebb9736-5f18-4103-a5a4-040cd2e9b019&#39;, &#39;c0348c0f-a31f-421b-b6bc-0fe0d5ea947f&#39;, &#39;spatiallyContains&#39;), (&#39;5ebb9736-5f18-4103-a5a4-040cd2e9b019&#39;, &#39;1d0841bf-aa28-41d7-ba75-0ad0f3d57d21&#39;, &#39;spatiallyContains&#39;), (&#39;5ebb9736-5f18-4103-a5a4-040cd2e9b019&#39;, &#39;7716632b-f43c-4ed2-9f84-26709361bbfe&#39;, &#39;spatiallyContains&#39;), (&#39;5ebb9736-5f18-4103-a5a4-040cd2e9b019&#39;, &#39;01aec121-ef19-4e6d-9f09-b2ce007b717d&#39;, &#39;spatiallyContains&#39;), (&#39;5ebb9736-5f18-4103-a5a4-040cd2e9b019&#39;, &#39;6f6b227b-b28b-4412-89bd-0a9bbc47164e&#39;, &#39;spatiallyContains&#39;), (&#39;5ebb9736-5f18-4103-a5a4-040cd2e9b019&#39;, &#39;7eec5208-fc0e-4dfd-bd0b-b1d226b2e97e&#39;, &#39;spatiallyContains&#39;)]
-</pre></div>
-</div>
-</div>
-</div>
-<p>Because we can also define directed, labelled <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s between <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s,
-we can identify relatives of <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s accordingly:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get all relatives of BuildingA where BuildingA is the source of</span>
-<span class="c1"># a &#39;spatiallyContains&#39; relationship:</span>
-<span class="n">buildingA_containment</span> <span class="o">=</span> <span class="n">buildingA</span><span class="o">.</span><span class="n">get_relatives</span><span class="p">(</span>
-    <span class="n">outgoing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">relationship_type</span><span class="o">=</span><span class="s1">&#39;spatiallyContains&#39;</span><span class="p">,</span>
-    <span class="n">assembly</span><span class="o">=</span><span class="nb">property</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;buildingA Containment: </span><span class="se">\n</span><span class="s1"> </span><span class="si">{0}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">buildingA_containment</span><span class="p">))</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>buildingA Containment: 
- [Assembly: buildingAhotel (Type: space), Assembly: buildingAretail (Type: space), Assembly: buildingAresidential (Type: space), Assembly: buildingAretail (Type: space), Assembly: buildingAparking (Type: space), Entity: buildingAcores (Type: utilities)]
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">buildingAresi</span> <span class="o">=</span> <span class="p">[</span><span class="n">entity</span> <span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="n">buildingA_containment</span> <span class="k">if</span> <span class="n">entity</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;buildingAresidential&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;buildingAresidential: </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">buildingAresi</span><span class="p">))</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>buildingAresidential: Assembly: buildingAresidential
-Type: space
-Members: [&#39;name&#39;, &#39;use&#39;, &#39;@displayValue&#39;, &#39;volume&#39;, &#39;renderMaterial&#39;, &#39;totalChildrenCount&#39;, &#39;type&#39;]
-Entities: [(&#39;7716632b-f43c-4ed2-9f84-26709361bbfe&#39;, {&#39;entity&#39;: Assembly: buildingAresidential (Type: space)}), (&#39;bf5a4444-6abd-4b89-b7a8-d758df5134fe&#39;, {&#39;entity&#39;: Entity: buildingAresidentialFloor0 (Type: floor)}), (&#39;dbf25b07-6f85-45bb-905c-de5b8562f5e7&#39;, {&#39;entity&#39;: Entity: buildingAresidentialFloor1 (Type: floor)}), (&#39;507e4ef2-fe13-44d7-af5f-bcf717b3de53&#39;, {&#39;entity&#39;: Entity: buildingAresidentialFloor2 (Type: floor)}), (&#39;bb815059-7516-45df-8fac-16f0e62242f3&#39;, {&#39;entity&#39;: Entity: buildingAresidentialFloor3 (Type: floor)})]
-Relationships: [(&#39;7716632b-f43c-4ed2-9f84-26709361bbfe&#39;, &#39;bf5a4444-6abd-4b89-b7a8-d758df5134fe&#39;, &#39;spatiallyContains&#39;), (&#39;7716632b-f43c-4ed2-9f84-26709361bbfe&#39;, &#39;dbf25b07-6f85-45bb-905c-de5b8562f5e7&#39;, &#39;spatiallyContains&#39;), (&#39;7716632b-f43c-4ed2-9f84-26709361bbfe&#39;, &#39;507e4ef2-fe13-44d7-af5f-bcf717b3de53&#39;, &#39;spatiallyContains&#39;), (&#39;7716632b-f43c-4ed2-9f84-26709361bbfe&#39;, &#39;bb815059-7516-45df-8fac-16f0e62242f3&#39;, &#39;spatiallyContains&#39;)]
-</pre></div>
-</div>
-</div>
-</div>
-<p>We can also visualize the design’s graph as well:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">property</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;_static/</span><span class="si">{</span><span class="nb">property</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-<span class="n">IFrame</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;_static/</span><span class="si">{</span><span class="nb">property</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">.html&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="s1">&#39;100%&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">800</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>_static/property.html
-</pre></div>
-</div>
-<div class="output text_html">
-        <iframe
-            width="100%"
-            height="800"
-            src="_static/property.html"
-            frameborder="0"
-            allowfullscreen
-            
-        ></iframe>
-        </div></div>
-</div>
-</section>
-</section>
 </section>
 </section>
 
@@ -956,14 +653,14 @@ Relationships: [(&#39;7716632b-f43c-4ed2-9f84-26709361bbfe&#39;, &#39;bf5a4444-6
     <script>kernelName = 'python3'</script>
 
                 </article>
-              
 
-              
-              
-              
-              
+
+
+
+
+
                 <footer class="prev-next-footer d-print-none">
-                  
+
 <div class="prev-next-area">
     <a class="left-prev"
        href="flexibility_under_uncertainty.html"
@@ -979,17 +676,17 @@ Relationships: [(&#39;7716632b-f43c-4ed2-9f84-26709361bbfe&#39;, &#39;bf5a4444-6
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Driving a Financial Valuation from a Design</p>
+        <p class="prev-next-title">Drive financial equations from design</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
 </div>
                 </footer>
-              
+
             </div>
-            
-            
-              
+
+
+
                 <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
 
@@ -999,84 +696,56 @@ Relationships: [(&#39;7716632b-f43c-4ed2-9f84-26709361bbfe&#39;, &#39;bf5a4444-6
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#object-model">Object Model</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#entities-and-relationships">Entities and Relationships</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#entitys"><code class="docutils literal notranslate"><span class="pre">Entity</span></code>s</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#relationships"><code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#assemblys"><code class="docutils literal notranslate"><span class="pre">Assembly</span></code>s</a></li>
-</ul>
-</li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#definitions">Definitions</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#properties-of-entitys">Properties of <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#properties-of-relationships">Properties of <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#events"><code class="docutils literal notranslate"><span class="pre">Event</span></code>s</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rationale-and-implications">Rationale and Implications</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#technicalities">Technicalities</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#defining-entitys-and-relationships-in-the-design-scenario">Defining <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s and <code class="docutils literal notranslate"><span class="pre">Relationship</span></code>s in the Design Scenario</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-design">Example Design</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#authenticate-and-load-the-design-from-speckle">Authenticate and Load the Design from Speckle</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inspect-the-design">Inspect the Design</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#rangekeeper-entitys-in-the-design">Rangekeeper <code class="docutils literal notranslate"><span class="pre">Entity</span></code>s in the Design</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#querying-the-design-s-object-graph">Querying the Design’s Object Graph</a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#receive-or-load">Receive or load</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#select-by-identity">Select by identity</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#report-detached-data">Report detached data</a></li>
 </ul>
   </nav></div>
 
 </div></div>
-              
-            
+
+
           </div>
           <footer class="bd-footer-content">
-            
+
 <div class="bd-footer-content__inner container">
-  
+
   <div class="footer-item">
-    
+
 <p class="component-author">
 By Daniel Fink
 </p>
 
   </div>
-  
+
   <div class="footer-item">
-    
+
 
   <p class="copyright">
-    
+
       © Copyright 2025.
       <br/>
-    
+
   </p>
 
   </div>
-  
+
   <div class="footer-item">
-    
+
   </div>
-  
+
   <div class="footer-item">
-    
+
   </div>
-  
+
 </div>
           </footer>
-        
+
 
       </main>
     </div>
   </div>
-  
+
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
   <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
 <script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>

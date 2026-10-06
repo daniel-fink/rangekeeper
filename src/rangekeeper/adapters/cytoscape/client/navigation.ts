@@ -1,3 +1,4 @@
+import { initialPresentation } from "./presentation";
 import { isEdge } from "./document";
 import type { ViewerContext } from "./context";
 import * as fourPortRouting from "./routing";
@@ -50,6 +51,17 @@ export function reset(ctx: ViewerContext) {
   ctx.fit();
 }
 export function restore(ctx: ViewerContext) {
+  if (ctx.data.savedLayout) {
+    if (ctx.dragFrame != null) cancelAnimationFrame(ctx.dragFrame);
+    ctx.dragFrame = null;
+    ctx.drag = null;
+    ctx.presentation = initialPresentation(ctx.data);
+    ctx.collapsed.clear();
+    ctx.focusIds = null;
+    ctx.applyVisibility();
+    ctx.$("timing").textContent = "Checked saved layout restored";
+    return;
+  }
   ctx.updating = true;
   ctx.cy.batch(() =>
     ctx.cy.nodes().forEach((n) => {

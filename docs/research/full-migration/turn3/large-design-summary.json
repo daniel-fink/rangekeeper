@@ -1,0 +1,25 @@
+{
+  "status": "passed",
+  "results": [
+    {
+      "runtime": "310",
+      "status": "passed",
+      "contributors": 36,
+      "unknowns": 4541,
+      "units": "AUD",
+      "source_claims_preserved": 302,
+      "output_revision": "3dee8dd2-f33c-4f53-8195-aa5c938b27ae"
+    },
+    {
+      "runtime": "313",
+      "status": "passed",
+      "contributors": 36,
+      "unknowns": 4541,
+      "units": "AUD",
+      "source_claims_preserved": 302,
+      "output_revision": "606a6fa2-1eab-462e-b543-30aadf845d54"
+    }
+  ],
+  "validation": "Executor, store, repeated resolver-backed Run validation and canonical export passed",
+  "runtime_crash": "Earlier profiled Python 3.10 native crash was not reproduced without profiling; cause unresolved."
+}

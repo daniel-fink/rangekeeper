@@ -117,5 +117,27 @@ export const styles = [
       "z-index": "data(frameZ)",
     },
   },
+  {
+    selector: "node.saved",
+    style: {
+      width: "data(savedWidth)",
+      height: "data(savedHeight)",
+      padding: 0,
+      "border-width": 1,
+      "font-size": 12,
+      "font-family": "monospace",
+      "text-wrap": "ellipsis",
+      "text-max-width": "data(savedTextWidth)",
+      "text-outline-width": 0,
+    },
+  },
+  {
+    selector: "node.presentation-conflict",
+    style: { "border-color": "#c83232", color: "#a12222" },
+  },
+  {
+    selector: "node.presentation-advisory",
+    style: { "border-color": "#b7791f", color: "#946015" },
+  },
   { selector: ".hidden", style: { display: "none" } },
 ] as unknown as cytoscape.StylesheetJson;

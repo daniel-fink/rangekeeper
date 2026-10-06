@@ -1,0 +1,2916 @@
+{
+  "note": "Lexical references include test/import-guard strings; each retained hit has a removal gate.",
+  "migrated_consumers": [
+    "src/tests/models/deterministic.py",
+    "src/tests/models/flexible.py",
+    "src/tests/models/probabilistic.py",
+    "walkthrough/basic_dcf.ipynb",
+    "walkthrough/deterministic_scenarios.ipynb",
+    "walkthrough/drive_model_from_design.ipynb",
+    "walkthrough/flexibility_intro.ipynb",
+    "walkthrough/flexibility_under_uncertainty.ipynb",
+    "walkthrough/load_design.ipynb",
+    "walkthrough/market_dynamics.ipynb"
+  ],
+  "migrated_runtime_references": [],
+  "occurrences": [
+    {
+      "path": "src/rangekeeper/api.py",
+      "cell": null,
+      "line": 58,
+      "source": "if rk.graph.entity.is_entity(base):",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/api.py",
+      "cell": null,
+      "line": 71,
+      "source": "if rk.graph.entity.is_assembly(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/api.py",
+      "cell": null,
+      "line": 73,
+      "source": ") & rk.graph.entity.is_entity(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/api.py",
+      "cell": null,
+      "line": 80,
+      "source": "elif rk.graph.entity.is_assembly(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/api.py",
+      "cell": null,
+      "line": 82,
+      "source": ") & rk.graph.entity.is_entity(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/api.py",
+      "cell": null,
+      "line": 119,
+      "source": "for assembly in [base for base in bases if rk.graph.entity.is_assembly(base)]:",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/black_swan.py",
+      "cell": null,
+      "line": 8,
+      "source": "from rangekeeper import _legacy_duration as legacy_duration",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/black_swan.py",
+      "cell": null,
+      "line": 17,
+      "source": "probability: rk.distribution.Form,",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/black_swan.py",
+      "cell": null,
+      "line": 40,
+      "source": "def generate(self) -> rk.flux.Flow:",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/black_swan.py",
+      "cell": null,
+      "line": 41,
+      "source": "return rk.flux.Flow(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/cyclicality.py",
+      "cell": null,
+      "line": 12,
+      "source": "from rangekeeper import _legacy_duration as legacy_duration",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/cyclicality.py",
+      "cell": null,
+      "line": 109,
+      "source": "return rk.flux.Flow(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/cyclicality.py",
+      "cell": null,
+      "line": 121,
+      "source": "name: str = \"asymmetric_sine_cycle\") -> rk.flux.Flow:",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/cyclicality.py",
+      "cell": null,
+      "line": 130,
+      "source": "return rk.flux.Flow(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/cyclicality.py",
+      "cell": null,
+      "line": 139,
+      "source": "space_waveform: rk.flux.Flow",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/cyclicality.py",
+      "cell": null,
+      "line": 140,
+      "source": "asset_waveform: rk.flux.Flow",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/cyclicality.py",
+      "cell": null,
+      "line": 169,
+      "source": "self.space_waveform = rk.flux.Flow(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/cyclicality.py",
+      "cell": null,
+      "line": 333,
+      "source": "space_cycle_phase_prop_dist: rk.distribution.Form,",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/cyclicality.py",
+      "cell": null,
+      "line": 334,
+      "source": "space_cycle_period_dist: rk.distribution.Form,",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/cyclicality.py",
+      "cell": null,
+      "line": 335,
+      "source": "space_cycle_height_dist: rk.distribution.Form,",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/cyclicality.py",
+      "cell": null,
+      "line": 336,
+      "source": "asset_cycle_phase_diff_prop_dist: rk.distribution.Form,",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/cyclicality.py",
+      "cell": null,
+      "line": 337,
+      "source": "asset_cycle_period_diff_dist: rk.distribution.Form,",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/cyclicality.py",
+      "cell": null,
+      "line": 338,
+      "source": "asset_cycle_amplitude_dist: rk.distribution.Form,",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/cyclicality.py",
+      "cell": null,
+      "line": 339,
+      "source": "space_cycle_asymmetric_parameter_dist: rk.distribution.Form,",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/cyclicality.py",
+      "cell": null,
+      "line": 340,
+      "source": "asset_cycle_asymmetric_parameter_dist: rk.distribution.Form,",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/market.py",
+      "cell": null,
+      "line": 13,
+      "source": "from rangekeeper import _legacy_duration as legacy_duration",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/market.py",
+      "cell": null,
+      "line": 20,
+      "source": "trend: rk.dynamics.trend.Trend,",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/market.py",
+      "cell": null,
+      "line": 21,
+      "source": "volatility: rk.dynamics.volatility.Volatility,",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/market.py",
+      "cell": null,
+      "line": 22,
+      "source": "cyclicality: rk.dynamics.cyclicality.Cyclicality,",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/market.py",
+      "cell": null,
+      "line": 23,
+      "source": "noise: rk.dynamics.noise.Noise,",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/market.py",
+      "cell": null,
+      "line": 24,
+      "source": "black_swan: rk.dynamics.black_swan.BlackSwan):",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/market.py",
+      "cell": null,
+      "line": 37,
+      "source": "self.space_market = rk.flux.Flow(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/market.py",
+      "cell": null,
+      "line": 42,
+      "source": "self.asset_market = rk.flux.Flow(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/market.py",
+      "cell": null,
+      "line": 62,
+      "source": "self.asset_true_value = rk.flux.Flow(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/market.py",
+      "cell": null,
+      "line": 72,
+      "source": "self.space_market_price_factors = rk.flux.Flow(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/market.py",
+      "cell": null,
+      "line": 84,
+      "source": "self.noisy_value = rk.flux.Flow(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/market.py",
+      "cell": null,
+      "line": 89,
+      "source": "self.historical_value = rk.flux.Flow(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/market.py",
+      "cell": null,
+      "line": 96,
+      "source": "self.implied_rev_cap_rate = rk.flux.Flow(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/market.py",
+      "cell": null,
+      "line": 110,
+      "source": "self.returns = rk.flux.Flow(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/market.py",
+      "cell": null,
+      "line": 139,
+      "source": "trends: [rk.dynamics.trend.Trend],",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/market.py",
+      "cell": null,
+      "line": 140,
+      "source": "volatilities: [rk.dynamics.volatility.Volatility],",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/market.py",
+      "cell": null,
+      "line": 141,
+      "source": "cyclicalities: [rk.dynamics.cyclicality.Cyclicality],",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/market.py",
+      "cell": null,
+      "line": 142,
+      "source": "noise: rk.dynamics.noise.Noise,",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/market.py",
+      "cell": null,
+      "line": 143,
+      "source": "black_swan: rk.dynamics.black_swan.BlackSwan) -> [Market]:",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/noise.py",
+      "cell": null,
+      "line": 6,
+      "source": "from rangekeeper import _legacy_duration as legacy_duration",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/noise.py",
+      "cell": null,
+      "line": 13,
+      "source": "noise_dist: rk.distribution.Form):",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/noise.py",
+      "cell": null,
+      "line": 30,
+      "source": "def generate(self) -> rk.flux.Flow:",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/noise.py",
+      "cell": null,
+      "line": 31,
+      "source": "return rk.flux.Flow(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/trend.py",
+      "cell": null,
+      "line": 12,
+      "source": "class Trend(rk.flux.Flow):",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/trend.py",
+      "cell": null,
+      "line": 31,
+      "source": "self.proj = rk.projection.Extrapolation(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/trend.py",
+      "cell": null,
+      "line": 32,
+      "source": "form=rk.extrapolation.Compounding(rate=self.growth_rate),",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/trend.py",
+      "cell": null,
+      "line": 55,
+      "source": "growth_rate_dist: rk.distribution,",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/trend.py",
+      "cell": null,
+      "line": 56,
+      "source": "initial_value_dist: rk.distribution,",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/volatility.py",
+      "cell": null,
+      "line": 12,
+      "source": "from rangekeeper import _legacy_duration as legacy_duration",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/volatility.py",
+      "cell": null,
+      "line": 15,
+      "source": "class Volatility(rk.flux.Flow):",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/volatility.py",
+      "cell": null,
+      "line": 18,
+      "source": "trend: rk.dynamics.trend.Trend,",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/volatility.py",
+      "cell": null,
+      "line": 33,
+      "source": "data=[sp.special.ndtri(rk.distribution.Uniform(lower=0, range=1).sample()[0]) * volatility_per_period",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/volatility.py",
+      "cell": null,
+      "line": 39,
+      "source": "self.volatility = rk.flux.Flow(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/volatility.py",
+      "cell": null,
+      "line": 49,
+      "source": "self.autoregressive_returns = rk.flux.Flow(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/dynamics/volatility.py",
+      "cell": null,
+      "line": 90,
+      "source": "trends: [rk.dynamics.trend.Trend],",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/flux.py",
+      "cell": null,
+      "line": 15,
+      "source": "from rangekeeper import _legacy_duration as legacy_duration",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/flux.py",
+      "cell": null,
+      "line": 27,
+      "source": "formatted = rk.format.to_currencys(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/flux.py",
+      "cell": null,
+      "line": 32,
+      "source": "#     data=rk.format.to_currencys(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/flux.py",
+      "cell": null,
+      "line": 38,
+      "source": "formatted = rk.format.to_decimals(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/flux.py",
+      "cell": null,
+      "line": 109,
+      "source": "self.units = rk.measure.Index.registry.dimensionless",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/flux.py",
+      "cell": null,
+      "line": 234,
+      "source": "value: Union[float, pint.Quantity, rk.distribution.Form],",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/flux.py",
+      "cell": null,
+      "line": 235,
+      "source": "proj: rk.projection,",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/flux.py",
+      "cell": null,
+      "line": 252,
+      "source": "elif isinstance(value, rk.distribution.Form):",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/flux.py",
+      "cell": null,
+      "line": 255,
+      "source": "if isinstance(proj, rk.projection.Extrapolation):",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/flux.py",
+      "cell": null,
+      "line": 257,
+      "source": "proj.form.type == rk.extrapolation.Type.STRAIGHT_LINE",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/flux.py",
+      "cell": null,
+      "line": 258,
+      "source": "or proj.form.type == rk.extrapolation.Type.RECURRING",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/flux.py",
+      "cell": null,
+      "line": 261,
+      "source": "elif proj.form.type == rk.extrapolation.Type.COMPOUNDING:",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/flux.py",
+      "cell": null,
+      "line": 266,
+      "source": "elif isinstance(proj, rk.projection.Distribution):",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/flux.py",
+      "cell": null,
+      "line": 336,
+      "source": "from rangekeeper.measure import Index",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/flux.py",
+      "cell": null,
+      "line": 355,
+      "source": "rate = rate.to(rk.measure.Index.registry.dimensionless).magnitude",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/flux.py",
+      "cell": null,
+      "line": 456,
+      "source": "result = rk.flux.Flow(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/flux.py",
+      "cell": null,
+      "line": 980,
+      "source": "registry = registry if registry is not None else rk.measure.Index.registry",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/flux.py",
+      "cell": null,
+      "line": 981,
+      "source": "units = rk.measure.multiply_units(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/flux.py",
+      "cell": null,
+      "line": 984,
+      "source": "reduced_units = rk.measure.remove_dimension(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/formula/financial.py",
+      "cell": null,
+      "line": 12,
+      "source": "from rangekeeper import _legacy_duration as legacy_duration",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/formula/financial.py",
+      "cell": null,
+      "line": 16,
+      "source": "startings: rk.flux.Flow",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/formula/financial.py",
+      "cell": null,
+      "line": 17,
+      "source": "endings: rk.flux.Flow",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/formula/financial.py",
+      "cell": null,
+      "line": 18,
+      "source": "overdraft: rk.flux.Flow",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/formula/financial.py",
+      "cell": null,
+      "line": 19,
+      "source": "interest: rk.flux.Flow",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/formula/financial.py",
+      "cell": null,
+      "line": 98,
+      "source": "transactions: rk.flux.Flow,",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/formula/financial.py",
+      "cell": null,
+      "line": 101,
+      "source": "rate: Union[float, rk.flux.Flow] = 0.0,",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/formula/financial.py",
+      "cell": null,
+      "line": 110,
+      "source": "rate = rk.flux.Flow.from_projection(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/formula/financial.py",
+      "cell": null,
+      "line": 113,
+      "source": "proj=rk.projection.Extrapolation(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/formula/financial.py",
+      "cell": null,
+      "line": 114,
+      "source": "form=rk.extrapolation.Recurring(),",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/formula/financial.py",
+      "cell": null,
+      "line": 143,
+      "source": "startings = rk.flux.Flow(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/formula/financial.py",
+      "cell": null,
+      "line": 153,
+      "source": "endings = rk.flux.Flow(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/formula/financial.py",
+      "cell": null,
+      "line": 163,
+      "source": "overdraft = rk.flux.Flow(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/formula/financial.py",
+      "cell": null,
+      "line": 173,
+      "source": "interest = rk.flux.Flow(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/formula/financial.py",
+      "cell": null,
+      "line": 186,
+      "source": ") -> rk.flux.Flow:",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/formula/financial.py",
+      "cell": null,
+      "line": 191,
+      "source": "result = rk.flux.Flow(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/graph/__init__.py",
+      "cell": null,
+      "line": 4,
+      "source": "Old domain classes, Graph JSON, Graph-only table projection and graph.legacy remain",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/graph/legacy/reduction.py",
+      "cell": null,
+      "line": 175,
+      "source": "measure = view.graph.definitions._resolve_measure(self.reference)",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/graph/legacy/reduction.py",
+      "cell": null,
+      "line": 261,
+      "source": "entity = view.graph.entity(identifier)",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/graph/legacy/view.py",
+      "cell": null,
+      "line": 209,
+      "source": "registered = self.graph.entity(entity)",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/graph/legacy/view.py",
+      "cell": null,
+      "line": 229,
+      "source": "candidate = graph.entity(assembly)",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/graph/legacy/view.py",
+      "cell": null,
+      "line": 239,
+      "source": "entity_ids = {graph.entity(item).id for item in entities}",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/graph/legacy/view.py",
+      "cell": null,
+      "line": 259,
+      "source": "{graph.entity(item).id for item in entities},",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/graph/legacy/view.py",
+      "cell": null,
+      "line": 275,
+      "source": "requested_entity_classification = graph.definitions._resolve_classification(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/graph/legacy/view.py",
+      "cell": null,
+      "line": 278,
+      "source": "requested_relationship_classification = graph.definitions._resolve_classification(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/graph/legacy/view.py",
+      "cell": null,
+      "line": 285,
+      "source": "if graph.definitions._classification_matches(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/graph/legacy/view.py",
+      "cell": null,
+      "line": 296,
+      "source": "and graph.definitions._classification_matches(",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/graph/revision.py",
+      "cell": null,
+      "line": 199,
+      "source": "for taxonomy in graph.definitions.taxonomies.values()",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/graph/table.py",
+      "cell": null,
+      "line": 84,
+      "source": "view.graph.definitions.taxonomy_for(classification).code,",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/graph/table.py",
+      "cell": null,
+      "line": 162,
+      "source": "measure = view.graph.definitions._resolve_measure(measure_reference)",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/graph/table.py",
+      "cell": null,
+      "line": 200,
+      "source": "return view.graph.definitions.taxonomy_for(entity.classification).code",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/graph/update.py",
+      "cell": null,
+      "line": 221,
+      "source": "graph.definitions if update.definitions is None else update.definitions",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/graph/view.py",
+      "cell": null,
+      "line": 41,
+      "source": "\"model must be a Model; use graph.legacy.View for old Graphs\"",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/policy.py",
+      "cell": null,
+      "line": 10,
+      "source": "condition: Callable[[rk.flux.Flow], List[bool]],",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/projection.py",
+      "cell": null,
+      "line": 13,
+      "source": "from rangekeeper import _legacy_duration as legacy_duration",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/projection.py",
+      "cell": null,
+      "line": 61,
+      "source": "form: rk.extrapolation.Form",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/projection.py",
+      "cell": null,
+      "line": 66,
+      "source": "form: rk.extrapolation.Form,",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/projection.py",
+      "cell": null,
+      "line": 116,
+      "source": "form: rk.distribution.Form",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/projection.py",
+      "cell": null,
+      "line": 120,
+      "source": "form: rk.distribution.Form,",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/space.py",
+      "cell": null,
+      "line": 14,
+      "source": "#             measurements: Dict[rk.measure.Measure, Quantity] = None,",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/rangekeeper/space.py",
+      "cell": null,
+      "line": 37,
+      "source": "#             measurements: Dict[rk.measure.Measure, Quantity] = None,",
+      "retirement": "Turn 4: remove implementation/export after Turn 3 consumers and characterization gates pass"
+    },
+    {
+      "path": "src/tests/models/linear_graph.py",
+      "cell": null,
+      "line": 11,
+      "source": "#     import modules.rangekeeper.distribution",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/models/linear_graph.py",
+      "cell": null,
+      "line": 12,
+      "source": "#     from modules.rangekeeper.flux import Flow, Stream",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_api.py",
+      "cell": null,
+      "line": 87,
+      "source": "parsed = rk.api.Speckle.parse(base=obj[\"@property\"])",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_api.py",
+      "cell": null,
+      "line": 104,
+      "source": "property = rk.api.Speckle.to_rk(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_api.py",
+      "cell": null,
+      "line": 130,
+      "source": "#         parsed = rk.api.Speckle.parse(base=TestApi.model[\"@property\"])",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_api.py",
+      "cell": null,
+      "line": 134,
+      "source": "#         property = rk.api.Speckle.to_rk(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_api.py",
+      "cell": null,
+      "line": 230,
+      "source": "#         # entities = rk.api.Speckle.parse(scenario)",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_api.py",
+      "cell": null,
+      "line": 232,
+      "source": "#         # foo = rk.api.Speckle.parse(entities[0])",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_api.py",
+      "cell": null,
+      "line": 235,
+      "source": "#         # bar = rk.api.Speckle.to_entity(entities[0])",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_api.py",
+      "cell": null,
+      "line": 253,
+      "source": "#         # foo = rk.api.Speckle.to_entity(entities[0])",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_calculation_equivalence.py",
+      "cell": null,
+      "line": 16,
+      "source": "from rangekeeper.formula.financial import Account",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_calculation_equivalence.py",
+      "cell": null,
+      "line": 45,
+      "source": "from rangekeeper.dynamics.cyclicality import Enumerate",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 25,
+      "source": "from rangekeeper import _legacy_duration as legacy_duration",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 32,
+      "source": "units = rk.measure.Index.registry",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 33,
+      "source": "currency = rk.measure.register_currency(registry=units)",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 35,
+      "source": "pint.set_application_registry(rk.measure.Index.registry)",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 78,
+      "source": "self.acquisition = rk.flux.Flow.from_projection(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 81,
+      "source": "proj=rk.projection.Distribution(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 82,
+      "source": "form=rk.distribution.Uniform(),",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 88,
+      "source": "self.pgi = rk.flux.Flow.from_projection(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 91,
+      "source": "proj=rk.projection.Extrapolation(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 92,
+      "source": "form=rk.extrapolation.Compounding(rate=self.params[\"growth_rate\"]),",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 98,
+      "source": "self.vacancy = rk.flux.Flow(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 103,
+      "source": "self.egi = rk.flux.Stream(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 108,
+      "source": "self.opex = rk.flux.Flow(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 113,
+      "source": "self.noi = rk.flux.Stream(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 118,
+      "source": "self.capex = rk.flux.Flow(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 123,
+      "source": "self.net_cfs = rk.flux.Stream(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 129,
+      "source": "self.reversions = rk.flux.Flow(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 137,
+      "source": "self.pbtcfs = rk.flux.Stream(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 156,
+      "source": "reversion = rk.flux.Flow(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 159,
+      "source": "cumulative_net_cfs_with_rev = rk.flux.Stream(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 171,
+      "source": "incl_acq = rk.flux.Stream(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 179,
+      "source": "self.pvs = rk.flux.Flow(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 182,
+      "source": "self.irrs = rk.flux.Flow(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 196,
+      "source": "def set_market(self, market: rk.dynamics.market.Market):",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 228,
+      "source": "self.acquisition = rk.flux.Flow.from_projection(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 231,
+      "source": "proj=rk.projection.Distribution(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 232,
+      "source": "form=rk.distribution.Uniform(),",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 238,
+      "source": "pgi = rk.flux.Flow.from_projection(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 241,
+      "source": "proj=rk.projection.Extrapolation(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 242,
+      "source": "form=rk.extrapolation.Compounding(rate=self.params[\"growth_rate\"]),",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 248,
+      "source": "self.pgi = rk.flux.Stream(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 252,
+      "source": ").product(registry=rk.measure.Index.registry)",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 254,
+      "source": "self.vacancy = rk.flux.Flow(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 259,
+      "source": "self.egi = rk.flux.Stream(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 264,
+      "source": "self.opex = rk.flux.Flow(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 269,
+      "source": "self.noi = rk.flux.Stream(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 274,
+      "source": "self.capex = rk.flux.Flow(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 279,
+      "source": "self.net_cfs = rk.flux.Stream(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 285,
+      "source": "self.reversions = rk.flux.Flow(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 293,
+      "source": "self.pbtcfs = rk.flux.Stream(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 313,
+      "source": "reversion = rk.flux.Flow(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 316,
+      "source": "cumulative_net_cfs_with_rev = rk.flux.Stream(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 328,
+      "source": "incl_acq = rk.flux.Stream(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 336,
+      "source": "self.pvs = rk.flux.Flow(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 339,
+      "source": "self.irrs = rk.flux.Flow(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 360,
+      "source": "def from_markets(cls, params: dict, markets: [rk.dynamics.market.Market]):",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 399,
+      "source": "trend = rk.dynamics.trend.Trend(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 414,
+      "source": "volatility = rk.dynamics.volatility.Volatility(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 435,
+      "source": "cyclicality = rk.dynamics.cyclicality.Cyclicality.from_params(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 448,
+      "source": "rk.flux.Stream(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 463,
+      "source": "noise_dist = rk.distribution.Symmetric(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 464,
+      "source": "type=rk.distribution.Type.TRIANGULAR, mean=0.0, residual=noise_residual",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 467,
+      "source": "noise = rk.dynamics.noise.Noise(sequence=sequence, noise_dist=noise_dist)",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 475,
+      "source": "black_swan_probability = rk.distribution.Uniform()",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 477,
+      "source": "black_swan = rk.dynamics.black_swan.BlackSwan(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 488,
+      "source": "market = rk.dynamics.market.Market(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 498,
+      "source": "growth_rate_dist = rk.distribution.Symmetric(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 499,
+      "source": "type=rk.distribution.Type.TRIANGULAR, mean=-0.0005, residual=0.005",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 501,
+      "source": "initial_value_dist = rk.distribution.Symmetric(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 502,
+      "source": "type=rk.distribution.Type.TRIANGULAR, mean=0.05, residual=0.005",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 505,
+      "source": "trends = rk.dynamics.trend.Trend.from_likelihoods(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 512,
+      "source": "volatilities = rk.dynamics.volatility.Volatility.from_trends(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 519,
+      "source": "cyclicalities = rk.dynamics.cyclicality.Cyclicality.from_likelihoods(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 521,
+      "source": "space_cycle_phase_prop_dist=rk.distribution.Uniform(),",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 522,
+      "source": "space_cycle_period_dist=rk.distribution.Symmetric(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 523,
+      "source": "type=rk.distribution.Type.UNIFORM, mean=15, residual=5",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 525,
+      "source": "space_cycle_height_dist=rk.distribution.Symmetric(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 526,
+      "source": "type=rk.distribution.Type.UNIFORM, mean=0.5, residual=0",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 528,
+      "source": "asset_cycle_phase_diff_prop_dist=rk.distribution.Symmetric(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 529,
+      "source": "type=rk.distribution.Type.UNIFORM, mean=0, residual=0.2",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 531,
+      "source": "asset_cycle_period_diff_dist=rk.distribution.Symmetric(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 532,
+      "source": "type=rk.distribution.Type.UNIFORM, mean=0, residual=1",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 534,
+      "source": "asset_cycle_amplitude_dist=rk.distribution.Symmetric(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 535,
+      "source": "type=rk.distribution.Type.UNIFORM, mean=0.02, residual=0.0",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 537,
+      "source": "space_cycle_asymmetric_parameter_dist=rk.distribution.Symmetric(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 538,
+      "source": "type=rk.distribution.Type.UNIFORM, mean=0.75, residual=0.0",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 540,
+      "source": "asset_cycle_asymmetric_parameter_dist=rk.distribution.Symmetric(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 541,
+      "source": "type=rk.distribution.Type.UNIFORM, mean=0.75, residual=0.0",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 545,
+      "source": "noise = rk.dynamics.noise.Noise(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 547,
+      "source": "noise_dist=rk.distribution.Symmetric(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 548,
+      "source": "type=rk.distribution.Type.TRIANGULAR, mean=0.0, residual=0.1",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 551,
+      "source": "black_swan = rk.dynamics.black_swan.BlackSwan(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 555,
+      "source": "probability=rk.distribution.Uniform(),",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 558,
+      "source": "markets = rk.dynamics.market.Market.from_likelihoods(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 644,
+      "source": "def exceed_pricing_factor(state: rk.flux.Flow) -> [bool]:",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_dynamics.py",
+      "cell": null,
+      "line": 676,
+      "source": "# policy = rk.policy.Policy(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_graph_json.py",
+      "cell": null,
+      "line": 33,
+      "source": "from rangekeeper.graph.revision import Diff",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_graph_json.py",
+      "cell": null,
+      "line": 34,
+      "source": "from rangekeeper.measure import Index, Measure, QuantityKind",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_graph_json.py",
+      "cell": null,
+      "line": 119,
+      "source": "is graph.definitions.measures[\"length\"]",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 15,
+      "source": "import rangekeeper.graph.definitions as definitions_module",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 16,
+      "source": "from rangekeeper.measure import AggregationRule, Index, Measure, QuantityKind",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 26,
+      "source": "rk.graph.legacy.View(model)",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 162,
+      "source": "assert hasattr(rk.graph.revision, \"Revision\")",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 163,
+      "source": "assert hasattr(rk.graph.revision, \"Diff\")",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 164,
+      "source": "assert not hasattr(rk.graph.revision, \"Changes\")",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 165,
+      "source": "assert hasattr(rk.graph.revision, \"Delta\")",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 166,
+      "source": "assert hasattr(rk.graph.revision, \"Modification\")",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 168,
+      "source": "assert not hasattr(rk.graph.legacy.View(rk.graph.Graph()), \"expand\")",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 169,
+      "source": "assert not hasattr(rk.graph.legacy.View, \"aggregate_measurement\")",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 170,
+      "source": "assert not hasattr(rk.graph.legacy.View, \"aggregate_feature\")",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 173,
+      "source": "assert hasattr(rk.graph, \"Aggregation\")  # Model-backed result; old result is in graph.legacy",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 175,
+      "source": "assert hasattr(rk.graph.legacy.reduction, \"Aggregation\")",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 178,
+      "source": "assert not hasattr(rk.graph.legacy.View, \"to_networkx\")",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 191,
+      "source": "assert not hasattr(rk.graph.legacy.reduction.Aggregation, \"by_measure\")",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 192,
+      "source": "assert not hasattr(rk.graph.legacy.reduction.Aggregation, \"by_feature\")",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 195,
+      "source": "assert isinstance(rk.graph.legacy.reduction, ModuleType)",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 258,
+      "source": "assert rk.graph.legacy.reduction.__all__ == [",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 288,
+      "source": "rk.graph.legacy.reduction.by_feature(\"value\", reducer=rk.graph.legacy.reduction.collect),",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 289,
+      "source": "rk.graph.legacy.reduction.Reduction,",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 292,
+      "source": "rk.graph.legacy.reduction.by_measure(42)",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 294,
+      "source": "rk.graph.legacy.reduction.by_measure(\" \")",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 296,
+      "source": "rk.graph.legacy.reduction.by_feature(42, reducer=any)",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 298,
+      "source": "rk.graph.legacy.reduction.by_feature(\" \", reducer=any)",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 300,
+      "source": "rk.graph.legacy.reduction.by_feature(\"value\", reducer=None)",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 309,
+      "source": "rk.graph.legacy.reduction.Aggregation(view=view, _values={})",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 311,
+      "source": "aggregation = rk.graph.legacy.reduction.Aggregation(view=view, _values={entity.id: 0})",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 529,
+      "source": "assert graph.entity(entity.id) is entity",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 686,
+      "source": "assert graph.entity(\"27.05\") is first",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 687,
+      "source": "assert graph.entity(\"27.06\") is named",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 1382,
+      "source": "assert graph.entity(entity.id) is entity",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 1393,
+      "source": "assert graph.entity(entity.id) is entity",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 1570,
+      "source": "rk.graph.legacy.reduction.by_feature(\"requires_review\", reducer=any)",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 1578,
+      "source": "rk.graph.legacy.reduction.by_feature(\"requires_review\", reducer=all)",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 1617,
+      "source": "rk.graph.legacy.reduction.by_feature(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 1618,
+      "source": "\"planning_zone\", reducer=rk.graph.legacy.reduction.collect",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 1621,
+      "source": "assert isinstance(collected, rk.graph.legacy.reduction.Aggregation)",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 1631,
+      "source": "rk.graph.legacy.reduction.by_feature(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 1632,
+      "source": "\"planning_zone\", reducer=rk.graph.legacy.reduction.distinct",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 1638,
+      "source": "rk.graph.legacy.reduction.by_feature(\"planning_zone\", reducer=rk.graph.legacy.reduction.mode)",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 1643,
+      "source": "rk.graph.legacy.reduction.by_feature(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 1652,
+      "source": "assert rk.graph.legacy.reduction.distinct(([1], [1], [2])) == ([1], [2])",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 1654,
+      "source": "rk.graph.legacy.reduction.distinct((pd.Series((1, 2)), pd.Series((1, 2))))",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 1681,
+      "source": "rk.graph.legacy.reduction.by_feature(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 1682,
+      "source": "\"planning_zone\", reducer=rk.graph.legacy.reduction.collect",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 1688,
+      "source": "rk.graph.legacy.reduction.by_feature(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 1689,
+      "source": "\"planning_zone\", reducer=rk.graph.legacy.reduction.mode",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 1740,
+      "source": "result = entity_view.aggregate(rk.graph.legacy.reduction.by_measure(\"area.nsa.internal\"))",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 1879,
+      "source": "result = view.aggregate(rk.graph.legacy.reduction.by_measure(aggregate_area))",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 1911,
+      "source": "result = view.aggregate(rk.graph.legacy.reduction.by_measure(model[\"internal_area\"]))",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 1940,
+      "source": "graph.view().aggregate(rk.graph.legacy.reduction.by_measure(non_aggregating))",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 1945,
+      "source": "first_flow = rk.flux.Flow(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 1950,
+      "source": "second_flow = rk.flux.Flow(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 1978,
+      "source": "def combine(values: tuple[rk.flux.Flow, ...]) -> rk.flux.Flow:",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 1982,
+      "source": "return rk.flux.Flow(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 1988,
+      "source": "result = view.aggregate(rk.graph.legacy.reduction.by_feature(\"cashflow\", reducer=combine))",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 2002,
+      "source": "rk.graph.legacy.reduction.by_feature(\"value\", reducer=rk.graph.legacy.reduction.collect)",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 2013,
+      "source": "rk.graph.legacy.reduction.by_feature(\"value\", reducer=rk.graph.legacy.reduction.collect)",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 2031,
+      "source": "parent = rk.graph.revision.Revision(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 2036,
+      "source": "child = rk.graph.revision.Revision(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 2052,
+      "source": "rk.graph.revision.Revision(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 2058,
+      "source": "rk.graph.revision.Revision(graph=graph, created_by=\" \")",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 2060,
+      "source": "rk.graph.revision.Revision(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 2069,
+      "source": "parent = rk.graph.revision.Revision(graph=graph, created_by=\"importer\")",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 2070,
+      "source": "child = rk.graph.revision.Revision(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 2075,
+      "source": "unrelated = rk.graph.revision.Revision(graph=graph, created_by=\"importer\")",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 2119,
+      "source": "diff = rk.graph.revision.Diff.between(parent, child)",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 2121,
+      "source": "rk.graph.revision.Modification(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 2127,
+      "source": "rk.graph.revision.Modification(before=provisional, after=resolved),",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 2148,
+      "source": "assert rk.graph.revision.Diff.between(parent, child).measures.modified == (",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 2149,
+      "source": "rk.graph.revision.Modification(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 2206,
+      "source": "result = graph.view().aggregate(rk.graph.legacy.reduction.by_measure(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 2216,
+      "source": "assert graph.view().aggregate(rk.graph.legacy.reduction.by_measure(model[\"internal_area\"])).root_value == 0 * Index.registry.squaremeter",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 2217,
+      "source": "empty = graph.view().aggregate(rk.graph.legacy.reduction.by_measure(model[\"internal_area\"], contributors=lambda e: False, require_measurement=True))",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_immutable_graph.py",
+      "cell": null,
+      "line": 2244,
+      "source": "graph.view().aggregate(rk.graph.legacy.reduction.by_measure(model[\"internal_area\"], contributors=lambda e: e.id == c.id, require_measurement=True))",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_legacy_table.py",
+      "cell": null,
+      "line": 47,
+      "source": "view = rk.graph.legacy.View(graph)",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_legacy_table.py",
+      "cell": null,
+      "line": 135,
+      "source": "measure = rk.measure.Measure(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_legacy_table.py",
+      "cell": null,
+      "line": 138,
+      "source": "units=rk.measure.Index.registry.squaremeter,",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_legacy_table.py",
+      "cell": null,
+      "line": 142,
+      "source": "quantity=1 * rk.measure.Index.registry.squaremeter,",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_measures.py",
+      "cell": null,
+      "line": 24,
+      "source": "units = rk.measure.Index.registry",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_measures.py",
+      "cell": null,
+      "line": 28,
+      "source": "currency = rk.measure.register_currency(registry=units)",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_measures.py",
+      "cell": null,
+      "line": 37,
+      "source": "original = rk.measure.Measure(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_measures.py",
+      "cell": null,
+      "line": 43,
+      "source": "renamed = rk.measure.Measure(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_measures.py",
+      "cell": null,
+      "line": 49,
+      "source": "different = rk.measure.Measure(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_measures.py",
+      "cell": null,
+      "line": 60,
+      "source": "measure = rk.measure.Measure(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_measures.py",
+      "cell": null,
+      "line": 72,
+      "source": "measure = rk.measure.Measure(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_measures.py",
+      "cell": null,
+      "line": 78,
+      "source": "conflicting_units = rk.measure.Measure(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_measures.py",
+      "cell": null,
+      "line": 84,
+      "source": "conflicting_definition = rk.measure.Measure(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_measures.py",
+      "cell": null,
+      "line": 97,
+      "source": "measure = rk.measure.Measure(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_measures.py",
+      "cell": null,
+      "line": 109,
+      "source": "gfa = rk.measure.Measure(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_measures.py",
+      "cell": null,
+      "line": 115,
+      "source": "nsa = rk.measure.Measure(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_measures.py",
+      "cell": null,
+      "line": 121,
+      "source": "rent = rk.measure.Measure(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_measures.py",
+      "cell": null,
+      "line": 127,
+      "source": "rent_per_nsa = rk.measure.Measure(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_measures.py",
+      "cell": null,
+      "line": 149,
+      "source": "quantity_check = 100 * rk.measure.Index.registry.dimensionless",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_measures.py",
+      "cell": null,
+      "line": 185,
+      "source": "foo = rk.measure.to_filtered(quantity=ratio)",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_measures.py",
+      "cell": null,
+      "line": 215,
+      "source": "#     parent_space = rk.space.Space(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_model_consumers.py",
+      "cell": null,
+      "line": 222,
+      "source": "assert not any(n.startswith(('rangekeeper.graph.legacy', 'rangekeeper.graph.graph', 'rangekeeper.graph.entity', 'rangekeeper.measure', 'pyomo', 'highspy', 'networkx', 'pandas')) for n in sys.modules)",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_model_graph.py",
+      "cell": null,
+      "line": 470,
+      "source": "for prefix in ('pint','numpy','networkx','pandas','pyomo','highspy','matplotlib','specklepy','rangekeeper.graph.legacy','rangekeeper.graph.graph'):",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 13,
+      "source": "from rangekeeper import _legacy_duration as legacy_duration",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 26,
+      "source": "units = rk.measure.Index.registry",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 27,
+      "source": "currency = rk.measure.register_currency(registry=units)",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 38,
+      "source": "uniform_dist = rk.distribution.Uniform(generator=None)",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 46,
+      "source": "exp_form = rk.extrapolation.Compounding(rate=0.02)",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 57,
+      "source": "pert_dist = rk.distribution.PERT(peak=0.75, weighting=4)",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 112,
+      "source": "reduced_quantity = rk.measure.remove_dimension(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 123,
+      "source": "product = rk.measure.multiply_units(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 144,
+      "source": "flow_from_series = rk.flux.Flow(movements=series, units=currency.units)",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 151,
+      "source": "flow_from_dict = rk.flux.Flow.from_dict(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 178,
+      "source": "flow = rk.flux.Flow.from_projection(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 181,
+      "source": "proj=rk.projection.Distribution(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 182,
+      "source": "form=rk.distribution.Uniform(), sequence=periods",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 245,
+      "source": "flow = rk.flux.Flow(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 295,
+      "source": "dist = rk.distribution.PERT(peak=5, weighting=4, minimum=2, maximum=8)",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 296,
+      "source": "assert isinstance(dist, rk.distribution.Form)",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 300,
+      "source": "flow = rk.flux.Flow.from_projection(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 303,
+      "source": "proj=rk.projection.Distribution(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 304,
+      "source": "form=rk.distribution.Uniform(), sequence=periods",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 331,
+      "source": "flow1 = rk.flux.Flow.from_projection(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 334,
+      "source": "proj=rk.projection.Distribution(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 335,
+      "source": "form=rk.distribution.Uniform(),",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 345,
+      "source": "flow2 = rk.flux.Flow.from_projection(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 348,
+      "source": "proj=rk.projection.Distribution(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 349,
+      "source": "form=rk.distribution.Uniform(),",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 359,
+      "source": "flow3 = rk.flux.Flow.from_projection(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 362,
+      "source": "proj=rk.projection.Distribution(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 363,
+      "source": "form=rk.distribution.Uniform(),",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 373,
+      "source": "stream = rk.flux.Stream(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 431,
+      "source": "# cumsum_flow = rk.flux.Flow(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 443,
+      "source": "stream_sqm = rk.flux.Stream(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 504,
+      "source": "interval = rk.segmentation.Interval(right=9.6, left=2.4)",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 528,
+      "source": "gross = rk.segmentation.Segment(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 529,
+      "source": "bounds=rk.segmentation.Interval(right=100),",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 530,
+      "source": "characteristics={rk.segmentation.Characteristic.use: \"mixed\"},",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 534,
+      "source": "residential.characteristics[rk.segmentation.Characteristic.use] = \"residential\"",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 535,
+      "source": "podium.characteristics[rk.segmentation.Characteristic.use] = \"mixed\"",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 544,
+      "source": "rk.segmentation.Characteristic.type: \"Podium\",",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 545,
+      "source": "rk.segmentation.Characteristic.tenure: \"Mixed\",",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 546,
+      "source": "rk.segmentation.Characteristic.use: \"Parking\",",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 547,
+      "source": "rk.segmentation.Characteristic.span: 1,",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 554,
+      "source": "rk.segmentation.Characteristic.type: \"Podium\",",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 555,
+      "source": "rk.segmentation.Characteristic.tenure: \"Mixed\",",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 556,
+      "source": "rk.segmentation.Characteristic.use: \"Retail\",",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 557,
+      "source": "rk.segmentation.Characteristic.span: 2,",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 564,
+      "source": "rk.segmentation.Characteristic.type: \"Podium\",",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 565,
+      "source": "rk.segmentation.Characteristic.tenure: \"Mixed\",",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 566,
+      "source": "rk.segmentation.Characteristic.use: \"BOH\",",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 567,
+      "source": "rk.segmentation.Characteristic.span: 2,",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 576,
+      "source": "podium.display_children(pivot=rk.segmentation.Characteristic.span)",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 582,
+      "source": "parent = rk.segmentation.Type(name=\"parent\")",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 583,
+      "source": "child = rk.segmentation.Type(name=\"child\")",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 587,
+      "source": "rk.segmentation.Type(name=\"grandchild01\"),",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 588,
+      "source": "rk.segmentation.Type(name=\"grandchild02\"),",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 591,
+      "source": "grandparent = rk.segmentation.Type(name=\"grandparent\")",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 602,
+      "source": "#     speckle = rk.api.Speckle(token='<redacted>')",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_modules.py",
+      "cell": null,
+      "line": 611,
+      "source": "#     query = rk.api.Speckle.query2('https://speckle.xyz/streams/1dd7d041b5/objects/33cfc8f0cdfc980b783f00cc35167fc6')",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_projections.py",
+      "cell": null,
+      "line": 6,
+      "source": "from rangekeeper import _legacy_duration as legacy_duration",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_projections.py",
+      "cell": null,
+      "line": 30,
+      "source": "straightline = rk.extrapolation.StraightLine(slope=1)",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_projections.py",
+      "cell": null,
+      "line": 36,
+      "source": "recurring = rk.extrapolation.Recurring()",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_projections.py",
+      "cell": null,
+      "line": 41,
+      "source": "compounding = rk.extrapolation.Compounding(rate=0.1)",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_projections.py",
+      "cell": null,
+      "line": 52,
+      "source": "generic = rk.projection.Projection(sequence=sequence)",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_projections.py",
+      "cell": null,
+      "line": 56,
+      "source": "extrapolation = rk.projection.Extrapolation(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_projections.py",
+      "cell": null,
+      "line": 57,
+      "source": "form=rk.extrapolation.StraightLine(slope=1),",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_projections.py",
+      "cell": null,
+      "line": 62,
+      "source": "extrapolation_padding = rk.projection.Extrapolation(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_projections.py",
+      "cell": null,
+      "line": 63,
+      "source": "form=rk.extrapolation.Compounding(rate=0.05),",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_projections.py",
+      "cell": null,
+      "line": 66,
+      "source": "padding=(rk.projection.Padding.UNITIZE, rk.projection.Padding.EXTEND))",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_projections.py",
+      "cell": null,
+      "line": 80,
+      "source": "uniform = rk.projection.Distribution(",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_projections.py",
+      "cell": null,
+      "line": 81,
+      "source": "form=rk.distribution.PERT(),",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_schema_graph_contract.py",
+      "cell": null,
+      "line": 40,
+      "source": "from rangekeeper.measure import Index, Measure",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_schema_graph_contract.py",
+      "cell": null,
+      "line": 330,
+      "source": "first, second = graph.entity(\"A\"), graph.entity(\"B\")",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_schema_graph_contract.py",
+      "cell": null,
+      "line": 528,
+      "source": "assert graph.entity(\"A\").classification.parent.code == \"object\"",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_schema_graph_contract.py",
+      "cell": null,
+      "line": 551,
+      "source": "reading = graph.entity(\"B\").measurements[\"area\"]",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_scoped_codes.py",
+      "cell": null,
+      "line": 16,
+      "source": "from rangekeeper.measure import Index, Measure",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_scoped_codes.py",
+      "cell": null,
+      "line": 49,
+      "source": "assert graph.entity(\"A\") is a",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_scoped_codes.py",
+      "cell": null,
+      "line": 50,
+      "source": "assert graph.entity(\"a\") is lower",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_scoped_codes.py",
+      "cell": null,
+      "line": 80,
+      "source": "assert graph.entity(\"APT.101\") is entity",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_scoped_codes.py",
+      "cell": null,
+      "line": 81,
+      "source": "assert graph.definitions.measures[\"area.net_lettable\"] is measure",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_unresolved_measurements.py",
+      "cell": null,
+      "line": 9,
+      "source": "from rangekeeper.graph.legacy.reduction import by_measure",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_unresolved_measurements.py",
+      "cell": null,
+      "line": 11,
+      "source": "from rangekeeper.measure import AggregationRule, Index, Measure",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "src/tests/test_workflow_boundaries.py",
+      "cell": null,
+      "line": 348,
+      "source": "assert all(graph.entity(f.target).id == f.target for f in graph.provenance.facts)",
+      "retirement": "Turn 4: retain characterization checks until equivalent canonical behavior and remaining caller ports pass"
+    },
+    {
+      "path": "walkthrough/basic_dcf.ipynb",
+      "cell": "cell 51",
+      "line": 11,
+      "source": "assert not any(name in sys.modules for name in (\"rangekeeper.flux\", \"rangekeeper._legacy_duration\", \"rangekeeper.formula\", \"rangekeeper.graph.legacy\"))",
+      "retirement": "Turn 4: negative import guard or historical caller; inspect before deletion"
+    },
+    {
+      "path": "walkthrough/deterministic_scenarios.ipynb",
+      "cell": "cell 4",
+      "line": 21,
+      "source": "assert not {'rangekeeper.flux','rangekeeper.dynamics','rangekeeper.policy','rangekeeper._legacy_duration'} & set(sys.modules)",
+      "retirement": "Turn 4: negative import guard or historical caller; inspect before deletion"
+    },
+    {
+      "path": "walkthrough/deterministic_scenarios.ipynb",
+      "cell": "cell 22",
+      "line": 1,
+      "source": "assert not {'rangekeeper.flux','rangekeeper.dynamics','rangekeeper.policy','rangekeeper._legacy_duration'} & set(sys.modules)",
+      "retirement": "Turn 4: negative import guard or historical caller; inspect before deletion"
+    },
+    {
+      "path": "walkthrough/flexibility_intro.ipynb",
+      "cell": "cell 4",
+      "line": 21,
+      "source": "assert not {'rangekeeper.flux','rangekeeper.dynamics','rangekeeper.policy','rangekeeper._legacy_duration'} & set(sys.modules)",
+      "retirement": "Turn 4: negative import guard or historical caller; inspect before deletion"
+    },
+    {
+      "path": "walkthrough/flexibility_intro.ipynb",
+      "cell": "cell 24",
+      "line": 1,
+      "source": "assert not {'rangekeeper.flux','rangekeeper.dynamics','rangekeeper.policy','rangekeeper._legacy_duration'} & set(sys.modules)",
+      "retirement": "Turn 4: negative import guard or historical caller; inspect before deletion"
+    },
+    {
+      "path": "walkthrough/flexibility_under_uncertainty.ipynb",
+      "cell": "cell 4",
+      "line": 21,
+      "source": "assert not {'rangekeeper.flux','rangekeeper.dynamics','rangekeeper.policy','rangekeeper._legacy_duration'} & set(sys.modules)",
+      "retirement": "Turn 4: negative import guard or historical caller; inspect before deletion"
+    },
+    {
+      "path": "walkthrough/flexibility_under_uncertainty.ipynb",
+      "cell": "cell 33",
+      "line": 1,
+      "source": "assert not {'rangekeeper.flux','rangekeeper.dynamics','rangekeeper.policy','rangekeeper._legacy_duration'} & set(sys.modules)",
+      "retirement": "Turn 4: negative import guard or historical caller; inspect before deletion"
+    },
+    {
+      "path": "walkthrough/market_dynamics.ipynb",
+      "cell": "cell 4",
+      "line": 21,
+      "source": "assert not {'rangekeeper.flux','rangekeeper.dynamics','rangekeeper.policy','rangekeeper._legacy_duration'} & set(sys.modules)",
+      "retirement": "Turn 4: negative import guard or historical caller; inspect before deletion"
+    },
+    {
+      "path": "walkthrough/market_dynamics.ipynb",
+      "cell": "cell 22",
+      "line": 1,
+      "source": "assert not {'rangekeeper.flux','rangekeeper.dynamics','rangekeeper.policy','rangekeeper._legacy_duration'} & set(sys.modules)",
+      "retirement": "Turn 4: negative import guard or historical caller; inspect before deletion"
+    },
+    {
+      "path": "tools/schema/verify_install.py",
+      "cell": null,
+      "line": 209,
+      "source": "for prefix in ('pint', 'numpy', 'networkx', 'pandas', 'pyomo', 'highspy', 'rangekeeper.graph.legacy', 'rangekeeper.graph.graph'):",
+      "retirement": "Turn 4: negative import guard or historical caller; inspect before deletion"
+    },
+    {
+      "path": "tools/schema/verify_install.py",
+      "cell": null,
+      "line": 219,
+      "source": "for prefix in ('pint', 'numpy', 'networkx', 'pandas', 'pyomo', 'highspy', 'rangekeeper.graph.legacy', 'rangekeeper.graph.graph'):",
+      "retirement": "Turn 4: negative import guard or historical caller; inspect before deletion"
+    },
+    {
+      "path": "tools/schema/verify_install.py",
+      "cell": null,
+      "line": 289,
+      "source": "for prefix in ('networkx', 'pandas', 'rangekeeper.graph.legacy', 'rangekeeper.graph.graph', 'pyomo', 'highspy'):",
+      "retirement": "Turn 4: negative import guard or historical caller; inspect before deletion"
+    },
+    {
+      "path": "tools/schema/verify_install.py",
+      "cell": null,
+      "line": 320,
+      "source": "for prefix in ('scipy', 'pandas', 'polars', 'numpy', 'rangekeeper.flux', 'rangekeeper._legacy_duration'):",
+      "retirement": "Turn 4: negative import guard or historical caller; inspect before deletion"
+    },
+    {
+      "path": "tools/schema/verify_install.py",
+      "cell": null,
+      "line": 388,
+      "source": "for prefix in ('rangekeeper.graph.legacy', 'rangekeeper.graph.graph', 'rangekeeper.graph.entity', 'rangekeeper.measure', 'networkx', 'pandas', 'pyomo', 'highspy'):",
+      "retirement": "Turn 4: negative import guard or historical caller; inspect before deletion"
+    }
+  ]
+}

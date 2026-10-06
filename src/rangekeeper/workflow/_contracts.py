@@ -52,6 +52,7 @@ class OperationDeclaration:
     policy_field: str = "specification"
     modules: tuple[str, ...] = ()
     dependencies_used: tuple[str, ...] = ()
+    inspect_input: Callable[[Any, Path], Mapping[str, object]] | None = None
 
     def parse(self, value: Mapping[str, object]) -> Any:
         from dataclasses import MISSING

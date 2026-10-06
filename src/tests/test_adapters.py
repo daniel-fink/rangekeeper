@@ -21,10 +21,11 @@ def test_supported_adapter_and_table_surfaces_are_explicit():
         "document",
         "excel",
         "pandas",
+        "speckle",
         "visualization",
     ]
     assert table_module.__all__ == ["Row", "Table", "TableError"]
-    for retired in ("json", "speckle", "SpeckleImportError", "SpeckleConflictError"):
+    for retired in ("json", "SpeckleImportError", "SpeckleConflictError"):
         assert not hasattr(adapter, retired)
     assert not hasattr(rk.graph, "materialization")
     for retired in (

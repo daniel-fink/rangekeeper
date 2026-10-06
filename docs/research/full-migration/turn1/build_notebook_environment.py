@@ -17,7 +17,7 @@ stage = OUT/'stage'
 stage.mkdir()
 for name in ('pyproject.toml','README.md'):
     shutil.copy2(ROOT/'src'/name, stage/name)
-shutil.copytree(ROOT/'src/rangekeeper', stage/'rangekeeper', ignore=shutil.ignore_patterns('__pycache__','*.pyc'))
+shutil.copytree(ROOT/'src/rangekeeper', stage/'rangekeeper', ignore=shutil.ignore_patterns('__pycache__','*.pyc','node_modules'))
 subprocess.run([sys.executable,'-c',"from setuptools.build_meta import build_wheel; build_wheel('../wheel')"], cwd=stage, check=True)
 wheel=next((OUT/'wheel').glob('*.whl'))
 with zipfile.ZipFile(wheel) as z:

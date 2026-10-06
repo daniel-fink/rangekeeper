@@ -1,0 +1,57 @@
+[
+  {
+    "name": "large_design_python310",
+    "exit_code": 0,
+    "still_running": false
+  },
+  {
+    "name": "final_python_suite",
+    "exit_code": 0,
+    "still_running": false
+  },
+  {
+    "name": "final_notebooks",
+    "exit_code": 0,
+    "still_running": false
+  },
+  {
+    "name": "final_installed",
+    "exit_code": 0,
+    "still_running": false
+  },
+  {
+    "name": "final_typing",
+    "exit_code": 0,
+    "still_running": false
+  },
+  {
+    "name": "project_builds",
+    "exit_code": 0,
+    "still_running": false
+  },
+  {
+    "name": "project_tests",
+    "exit_code": 0,
+    "still_running": false
+  },
+  {
+    "name": "mandarin_notebook",
+    "exit_code": 0,
+    "still_running": false
+  },
+  {
+    "name": "project_comparisons",
+    "exit_code": 0,
+    "still_running": false
+  },
+  {
+    "name": "mandarin_history",
+    "exit_code": 0,
+    "still_running": false
+  },
+  {
+    "name": "documentation",
+    "exit_code": 0,
+    "still_running": false
+  }
+]

@@ -1,0 +1,22 @@
+{
+  "scanned": [
+    "mandarin/tests/test_workflow.py",
+    "mandarin/tests/test_equivalence.py",
+    "mandarin/notebooks/01_workflow_review.ipynb",
+    "mandarin/spec/model.yaml",
+    "mandarin/spec/sources.yaml",
+    "mandarin/spec/decisions.yaml",
+    "mandarin/spec/checks.yaml",
+    "mandarin/presentation/layout.yaml",
+    "east-whisman/tests/test_workflow.py",
+    "east-whisman/spec/december/model.yaml",
+    "east-whisman/spec/december/sources.yaml",
+    "east-whisman/spec/december/decisions.yaml",
+    "east-whisman/spec/december/checks.yaml",
+    "east-whisman/spec/november-r2/model.yaml",
+    "east-whisman/spec/november-r2/sources.yaml",
+    "east-whisman/spec/november-r2/decisions.yaml",
+    "east-whisman/spec/november-r2/checks.yaml"
+  ],
+  "runtime_legacy_references": []
+}

@@ -126,6 +126,7 @@ def metadata(
         "deferred_evidence": deferred_evidence,
         "aggregation_policies": spec.model.get("aggregates", ()),
         "specification": dict(spec.hashes),
+        "review_specification": spec.to_mapping(),
         "sources": {
             key: {
                 "id": str(item.source.id),

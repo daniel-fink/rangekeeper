@@ -248,6 +248,24 @@ class _Composition:
             self.attach(item, (*sources, *base))
             if value is None and attr.get("on_unavailable"):
                 missing = attr["on_unavailable"]
+                if "property" in missing:
+                    # Retain the source's descriptive fallback as content, alongside
+                    # the unresolved measurement and its finding. Never coerce it to zero.
+                    from rangekeeper.model.content import encode
+
+                    fallback = missing["property"]
+                    raw, support = binding(
+                        fallback["binding"], row, table, self.outputs
+                    )
+                    detail = Value(
+                        id=self.identity("value", f"{uid}:{fallback['key']}"),
+                        key=fallback["key"],
+                        kind="property",
+                        content=encode(raw),
+                    )
+                    values.append(detail)
+                    self.attach(detail, (*sources, *support, *base))
+                    sources = (*sources, *support)
                 if "binding" in missing:
                     sources = (
                         *sources,
@@ -372,25 +390,21 @@ class _Composition:
         from rangekeeper._validation import require_acyclic
         from rangekeeper.errors import ContractError
 
+        # Membership is selected once by canonical classification identity. A scan
+        # per owner needlessly repeated every generated-record lookup on large sources.
+        kinds = {self.classes[code].id for code in self.model["memberships"]}
+        selected_by_owner = {}
         parents = {}
         for edge in self.edges:
-            if (
-                classification(self.definitions, edge.classification).code
-                in self.model["memberships"]
-            ):
+            if edge.classification in kinds:
+                selected_by_owner.setdefault(edge.source, []).append(edge)
                 parents.setdefault(edge.source, []).append(edge.target)
         try:
             require_acyclic(parents, "Assembly membership")
         except ContractError as error:
             raise _Failure("membership_cycle", str(error)) from error
         for uid, obj in list(self.objects.items()):
-            selected = [
-                e
-                for e in self.edges
-                if e.source == uid
-                and classification(self.definitions, e.classification).code
-                in self.model["memberships"]
-            ]
+            selected = selected_by_owner.get(uid, ())
             if selected and (not isinstance(obj, Assembly)):
                 raise _Failure(
                     "invalid_membership_owner",

@@ -11,7 +11,7 @@ from typing import TypeVar
 from uuid import UUID
 
 from .._records import Record
-from .._schema.validation import slots_for
+from .._schema.validation import _slot_map
 from ..errors import IdentityConflictError, MissingReferenceError, ReferenceTypeError
 from ..validate import require_uuid
 
@@ -23,7 +23,7 @@ def walk(
 ) -> Iterator[tuple[Record, UUID | None, str]]:
     """Yield embedded records in document encounter order with nearest identified owner."""
     yield record, owner, path
-    fields = slots_for(record._kind)
+    fields = _slot_map(record._kind)
     if "id" in fields:
         owner = getattr(record, "id")
     for name in record.field_names():
@@ -50,7 +50,7 @@ class Index:
     def build(cls, root: Record) -> "Index":
         records, owners = {}, {}
         for record, owner, _ in walk(root):
-            if "id" not in slots_for(record._kind):
+            if "id" not in _slot_map(record._kind):
                 continue
             identity = getattr(record, "id")
             if identity in records:
@@ -81,7 +81,7 @@ class Index:
         from .._schema.records import _TYPES
 
         for record, _, path in walk(root):
-            for name, field in slots_for(record._kind).items():
+            for name, field in _slot_map(record._kind).items():
                 types = tuple(
                     _TYPES[option["kind"]]
                     for option in field["options"]

@@ -1,0 +1,42 @@
+{
+  "python": "3.10.19",
+  "pid": 44300,
+  "signal": "SIGSEGV",
+  "phase": "additional repeated Run validation after feasible execution",
+  "profiling": "faulthandler.dump_traceback_later(120, repeat=True)",
+  "top_frames": [
+    {
+      "symbol": "_PyObject_Malloc",
+      "image": "libpython3.10.dylib"
+    },
+    {
+      "symbol": "PyObject_GenericSetAttr",
+      "image": "libpython3.10.dylib"
+    },
+    {
+      "symbol": "PyObject_SetAttr",
+      "image": "libpython3.10.dylib"
+    },
+    {
+      "symbol": "_PyEval_EvalFrameDefault",
+      "image": "libpython3.10.dylib"
+    },
+    {
+      "symbol": "_PyFunction_Vectorcall",
+      "image": "libpython3.10.dylib"
+    },
+    {
+      "symbol": "slot_tp_init",
+      "image": "libpython3.10.dylib"
+    },
+    {
+      "symbol": "type_call",
+      "image": "libpython3.10.dylib"
+    },
+    {
+      "symbol": "call_function",
+      "image": "libpython3.10.dylib"
+    }
+  ],
+  "cause": "not established; unprofiled reproduction required"
+}

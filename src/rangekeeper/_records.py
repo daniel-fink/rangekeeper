@@ -76,10 +76,10 @@ def _freeze(value):
 
 def _normalize(kind, data):
     """Normalize only schema-declared UUID slots, never opaque content."""
-    from ._schema.validation import slots_for
+    from ._schema.validation import _slot_map
 
     result = dict(data)
-    for name, meta in slots_for(kind).items():
+    for name, meta in _slot_map(kind).items():
         if name not in result or result[name] is None:
             continue
 
@@ -117,9 +117,9 @@ class Record:
 
     def _initialize(self, fields: Mapping[str, object]) -> None:
         from ._schema.records import _TYPES
-        from ._schema.validation import slots_for
+        from ._schema.validation import _slot_map
 
-        slots = slots_for(self._kind)
+        slots = _slot_map(self._kind)
         data = {}
         for name, value in fields.items():
             if value is UNSET:
@@ -188,9 +188,9 @@ class Record:
         return _json_copy(self._data)
 
     def has_field(self, name: str) -> bool:
-        from ._schema.validation import slots_for
+        from ._schema.validation import _slot_map
 
-        if name not in slots_for(self._kind):
+        if name not in _slot_map(self._kind):
             raise KeyError(name)
         return name in self._data
 
@@ -204,9 +204,9 @@ class Record:
 
     def _field(self, name):
         from ._schema.records import _TYPES
-        from ._schema.validation import slots_for
+        from ._schema.validation import _slot_map
 
-        meta = slots_for(self._kind)[name]
+        meta = _slot_map(self._kind)[name]
         if name not in self._data:
             if meta["mapping"]:
                 return MappingProxyType({})

@@ -1,0 +1,1 @@
+{"status": "passed", "source": {"project_id": "c0f66c35e3", "version_id": null, "object_id": "e7acaac21ae7e9369339900a4aaeb827", "sdk": "specklepy", "sdk_version": "3.0.7"}, "entities": 36, "assemblies": 14, "relationships": 63}

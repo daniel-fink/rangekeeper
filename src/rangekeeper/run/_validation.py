@@ -236,6 +236,7 @@ def validate_run(
     active, visited, parents, producers = set(), {}, {}, {}
     input_ids, output_ids = set(), set()
     scope_cache = {}
+    identity_cache = {}
 
     def resolve(ref, kind):
         require(ref in typed, f"unresolved {kind} reference")
@@ -244,9 +245,15 @@ def validate_run(
         return doc
 
     def ids(kind, doc):
-        if kind == "Model":
-            _, doc = model_documents(doc)
-        return {r["id"] for r in records(doc) if "id" in r}
+        # A temporal Run can reference thousands of constraints in one revision.
+        # Index that immutable document once per validation call. Keep the cache
+        # local so a later call must check its supplied documents afresh.
+        revision = doc["metadata"]["id"]
+        if revision not in identity_cache:
+            if kind == "Model":
+                _, doc = model_documents(doc)
+            identity_cache[revision] = {r["id"] for r in records(doc) if "id" in r}
+        return identity_cache[revision]
 
     def reference(record):
         document, target = record.get("document"), record.get("target")

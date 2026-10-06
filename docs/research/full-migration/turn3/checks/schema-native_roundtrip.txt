@@ -1,0 +1,1 @@
+Native identifiers, typed reference fields, and generated Python round trips passed for both examples.

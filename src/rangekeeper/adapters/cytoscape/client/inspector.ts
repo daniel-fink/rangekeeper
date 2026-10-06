@@ -10,6 +10,44 @@ export function valueText(ctx: ViewerContext, value) {
   if (typeof value === "object") return JSON.stringify(value);
   return String(value);
 }
+function decisionRecord(claim) {
+  if (claim?.method?.code !== "reviewed-decision") return null;
+  try {
+    const value =
+      typeof claim.value === "string" ? JSON.parse(claim.value) : claim.value;
+    return value &&
+      typeof value.id === "string" &&
+      typeof value.text === "string"
+      ? value
+      : null;
+  } catch {
+    return null;
+  }
+}
+function renderDecision(ctx: ViewerContext, claim, host) {
+  const decision = decisionRecord(claim);
+  if (!decision) return false;
+  ctx.make(
+    "h4",
+    `${decision.id} · ${decision.status || "Status not recorded"}`,
+    host,
+  );
+  ctx.make("p", decision.text, host);
+  ctx.make(
+    "p",
+    `${decision.source || "Attribution not recorded"} · ${decision.date || "Date not recorded"}`,
+    host,
+  );
+  if (ctx.data.reviewUrl === "review.html") {
+    const link = document.createElement("a");
+    link.textContent = "Open decision and mapping review";
+    link.href = "review.html#decision-" + encodeURIComponent(decision.id);
+    link.target = "_blank";
+    link.rel = "noopener";
+    host.append(link);
+  }
+  return true;
+}
 export function evidence(ctx: ViewerContext, parent, fact) {
   if (!fact) {
     ctx.make("p", "No Fact attached to this item.", parent, "code");
@@ -24,6 +62,30 @@ export function evidence(ctx: ViewerContext, parent, fact) {
       box,
       "issue",
     );
+  // Make every reviewed decision reachable without expanding a deep Claim chain.
+  const pending = [...fact.claims],
+    seenDecisions = new Set(),
+    seenClaims = new Set();
+  const decisions = [];
+  while (pending.length) {
+    const id = pending.pop();
+    if (seenClaims.has(id)) continue;
+    seenClaims.add(id);
+    const claim = ctx.data.claims[id];
+    if (!claim) continue;
+    const record = decisionRecord(claim);
+    if (record && !seenDecisions.has(record.id)) {
+      seenDecisions.add(record.id);
+      decisions.push(claim);
+    }
+    for (const source of claim.sources)
+      if (source.claim) pending.push(source.claim);
+  }
+  if (decisions.length) {
+    const list = ctx.make("details", undefined, box);
+    ctx.make("summary", `Reviewed decisions · ${decisions.length}`, list);
+    for (const claim of decisions) renderDecision(ctx, claim, list);
+  }
   const visited = new Set();
   const appendClaim = (id, host, depth) => {
     if (visited.has(id)) {
@@ -39,7 +101,8 @@ export function evidence(ctx: ViewerContext, parent, fact) {
       `${c.kind}${fact.selected === id ? " · selected" : ""}`,
       item,
     );
-    ctx.make("pre", JSON.stringify(c.value, null, 2), item);
+    if (!renderDecision(ctx, c, item))
+      ctx.make("pre", JSON.stringify(c.value, null, 2), item);
     if (c.method) ctx.make("pre", JSON.stringify(c.method, null, 2), item);
     for (const source of c.sources) {
       if (source.claim) {
@@ -173,7 +236,7 @@ export function renderSelection(ctx: ViewerContext) {
       ctx.changeCollapse([ctx.inspected], !ctx.collapsed.has(ctx.inspected));
     ctx.make(
       "p",
-      `${assembly.entities.length} recorded members. Highlighting identifies exact membership; rectangles may also enclose nonmembers.`,
+      `${assembly.entities.length} recorded members. ${ctx.data.savedLayout ? "Boxes fit visible members and resize as you arrange or change scope. Highlighting identifies direct membership; red outlines flag presentation conflicts." : "Highlighting identifies exact membership; rectangles may also enclose nonmembers."}`,
       host,
     );
     const list = ctx.make("details", undefined, host);
@@ -190,8 +253,8 @@ export function renderSelection(ctx: ViewerContext) {
       host,
       "issue",
     );
-  for (const key of ["measurements", "labels", "features"]) {
-    if (!d[key].length) continue;
+  for (const key of ["measurements", "labels", "features", "flows"]) {
+    if (!d[key]?.length) continue;
     ctx.make("h3", key, host);
     for (const item of d[key]) {
       const dl = ctx.make("dl", undefined, host);

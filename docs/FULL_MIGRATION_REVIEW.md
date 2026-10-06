@@ -1,5 +1,16 @@
 # Full library and consumer migration: review proposal
 
+**Turn 3 update, 2026-10-06:** [Remaining consumers and design integrations](FULL_MIGRATION_TURN3.md)
+implements the canonical workbench/layout port, all three Projects source builds,
+Speckle mapping, both design walkthroughs and generated C# Rhino 8 authoring.
+See [current acceptance](research/full-migration/turn3/BASELINE.md),
+[consumer register](research/full-migration/turn3/CONSUMERS.md), and
+[Turn 4 retirement gates](research/full-migration/turn3/RETIREMENT.md).
+The Windows official connector gate remains open. Hypar support is retired;
+the future Browser/outliner importer remains on hold. Dated checkpoints below
+remain historical evidence and do not override this current scope.
+
+
 **Turn 2 update, 2026-10-06:** [Temporal equations, scenarios and policies](FULL_MIGRATION_TURN2.md)
 now use Model/Specification 0.5.0 and Run 0.2.0. `ValueReference` addresses scalar
 Values or owner-local Movement keys. The canonical calendar package is `duration/`;
@@ -473,7 +484,7 @@ generation/policy evaluation requires Run extensions is an explicit schema revie
 | `drive_model_from_design.ipynb` | Speckle, Model aggregation, temporal Values and financial formulations | Design-derived input → canonical Model → financial results with provenance; shared membership not double counted |
 | Test model implementations under `src/tests/models/` | Same builders and numerical interfaces | Migrate full implementations and assertions; inspect methods reached through instances, not only imports |
 | Grasshopper C# components and tests | Cross-language canonical format and adapter contract | Fixture round trip plus actual Rhino/Grasshopper authoring checks; transport object identity is not Model revision identity |
-| Hypar | Locate maintained source and responsible consumer/environment | No compatibility claim without source and a reproducible test; removal from supported scope requires an explicit decision |
+| Hypar | Retired by explicit user decision in Turn 3 | Preserve historical files; excluded from supported-consumer acceptance |
 | Parallel RK layout/workbench implementation | Inventory complete public behavior and current tests, then port against Model-backed graph/adapters/workflow | Inspection/progress, checked layouts, saved preferences and viewer edits preserved; layout backend/environment checks remain separate from domain solve tests |
 | Other consumers discovered during repository/import/data-format searches | Add to this register and classify current version/capabilities | A named owner, environment, migration recipe, evidence and removal gate |
 

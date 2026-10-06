@@ -1,0 +1,48 @@
+
+> rangekeeper-cytoscape-viewer@0.1.0 test
+> node --test test/*.cjs
+
+✔ collapsed ancestor hides private descendants but preserves another open membership path (8.855709ms)
+✔ all containing paths collapsed hides shared once and retains both directed representatives (0.317458ms)
+✔ expanding ancestor preserves explicitly collapsed descendant state (0.168375ms)
+✔ membership cycles fail explicitly rather than recursing forever (0.936542ms)
+✔ node drag resizes nested boxes, no canonical mutation and exact reset (9.554625ms)
+✔ assembly translation includes hidden descendants and shared objects exactly once (0.25375ms)
+✔ moving a shared member updates both boxes without moving their other contents (0.118125ms)
+✔ visible-only bounds shrink, empty groups become headers, hidden positions survive (0.159125ms)
+✔ conflicts are visible-only, transitive membership is valid, floats have tolerance (0.166834ms)
+✔ dragged assembly dimensions stay stable until release, then fit visible members (0.169416ms)
+✔ spacing is optional advisory; only actual overlap is an error (0.145834ms)
+✔ nearby nonmembers are advisory, intersections and unrelated enclosure stay red (0.114625ms)
+✔ all four shared-member states retain canonical identity and memberships (9.607708ms)
+✔ membership links exist only for visible members of collapsed Assemblies (0.798709ms)
+✔ summaries preserve direction, mix labels and suppress internal connections (0.218625ms)
+✔ opposite collapse orders yield identical, unique projected edges (0.192ms)
+✔ filtered originals determine summary label and evidence (0.120792ms)
+✔ one redirected relationship is still a summary; original edges stay original (0.095583ms)
+✔ all four directions snap both endpoints to side midpoints (1.981583ms)
+✔ native reference is honoured; ties and six-unit hysteresis are stable (0.124959ms)
+✔ header geometry rather than full box determines routing (0.120416ms)
+✔ parallel and opposite directions separate internally but preserve tangents (0.161416ms)
+✔ coincident and touching rectangles retain distinct defined ports (0.123375ms)
+✔ self loops align to ports on ordinary nodes and elevated Assembly headers (0.125792ms)
+✔ pure routing and native style generation preserve all inputs (0.180083ms)
+✔ single edges have two controls; parallel separation spans two interior controls (0.085542ms)
+✔ forward handles follow their own axes, not diagonal separation (0.079083ms)
+✔ short, perpendicular and backward handles remain bounded and nonzero (0.1255ms)
+✔ sideways approaches retain room to turn at both ports (0.085333ms)
+✔ labels follow their displayed span along the curve and stay readable in reverse (1.0835ms)
+✔ label budget grows with the middle span and reserves endpoint clearance (0.649542ms)
+✔ parallel routes do not fold back for short facing ports, including opposing arrows (8.979625ms)
+✔ parallel separation stays broad and shrinks with available space (0.110667ms)
+✔ label span centres on the native midpoint, not half the travelled length (0.114166ms)
+✔ displayed text measurement accounts for ellipsis without changing source text (0.12125ms)
+﹣ saved starting geometry supports dragging, visible resizing, conflicts and exact restore (0.400959ms) # SKIP
+ℹ tests 36
+ℹ suites 0
+ℹ pass 35
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 1
+ℹ todo 0
+ℹ duration_ms 99.57225

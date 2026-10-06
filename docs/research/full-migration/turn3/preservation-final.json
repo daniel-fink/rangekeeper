@@ -1,0 +1,370 @@
+{
+  "status": "passed",
+  "files": 91,
+  "checks": [
+    {
+      "path": "/Volumes/Data/Projects/Rangekeeper/.gitignore",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Rangekeeper/src/uv.sync-conflict-20261005-170953-H3RQGJU.lock",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/.gitignore",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/inputs/GFA Calculations - Latest.xlsx",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/inputs/README.md",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/inputs/260811 Est_Mandarin_MGP March 2026.xlsx",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/inputs/2026.08.06_JLL_MC Pricing.xlsx",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/east-whisman/inputs/README.md",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/east-whisman/inputs/201223_PODIUM GDV Area Template Rev 01_R1-R2.xlsx",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/uv.lock",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/pyproject.toml",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/README.md",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/manifest.json",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/.python-version",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/legacy-v0.1/README.md",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/legacy-v0.1/SESSION_REFERENCE.md",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/legacy-v0.1/manifest.json",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/legacy-v0.1/outputs/mandarin-domain-graph-v0.1.rk.json",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/legacy-v0.1/notebooks/0x_import-v0.1.ipynb",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/legacy-v0.1/notebooks/0x_feasibility-v0.1.ipynb",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/tests/test_project_structure.py",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/tests/test_jll_adapter.py",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/tests/test_ingestion_handoff.py",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/tests/test_graph_review.py",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/tests/test_interpretation_review.py",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/tests/README.md",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/tests/test_specification.py",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/tests/test_schedule_adapters.py",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/tests/test_source_review.py",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/tests/test_numeric_specification.py",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/tests/test_reconciliation.py",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/spec/model.yaml",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/spec/sources.yaml",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/spec/decisions.yaml",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/spec/checks.yaml",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/scripts/verify_ingestion_migration.py",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/scripts/compare_schedule_adapters.py",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/scripts/verify_graph_review.py",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/scripts/compare_jll_adapter.py",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/scripts/verify_notebooks.py",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/notebooks/01_source_review.ipynb",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/notebooks/README.md",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/notebooks/03_graph_review.ipynb",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/notebooks/02_project_structure.ipynb",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/src/mandarin/reconciliation.py",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/src/mandarin/review_display.py",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/src/mandarin/__init__.py",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/src/mandarin/structure_display.py",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/src/mandarin/source_review.py",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/src/mandarin/project_structure.py",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/src/mandarin/sources.py",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/src/mandarin/specification.py",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/src/mandarin/interpretation_review.py",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/src/mandarin/graph_review.py",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/src/mandarin/__pycache__/sources.cpython-313.pyc",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/src/mandarin/__pycache__/review_display.cpython-313.pyc",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/src/mandarin/__pycache__/interpretation_review.cpython-313.pyc",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/src/mandarin/__pycache__/structure_spec.cpython-313.pyc",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/src/mandarin/__pycache__/structure_display.cpython-313.pyc",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/src/mandarin/__pycache__/graph_viewer.cpython-313.pyc",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/src/mandarin/__pycache__/project_structure.cpython-313.pyc",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/src/mandarin/__pycache__/source_review.cpython-313.pyc",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/src/mandarin/__pycache__/graph_review.cpython-313.pyc",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/src/mandarin/__pycache__/reconciliation.cpython-313.pyc",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/src/mandarin/__pycache__/__init__.cpython-313.pyc",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/src/mandarin/__pycache__/specification.cpython-313.pyc",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/src/mandarin/__pycache__/rollups.cpython-313.pyc",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/src/mandarin/adapters/jll.py",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/src/mandarin/adapters/__init__.py",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/src/mandarin/adapters/pipeline.py",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/src/mandarin/adapters/schedules.py",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/src/mandarin/adapters/__pycache__/_provenance.cpython-313.pyc",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/src/mandarin/adapters/__pycache__/pipeline.cpython-313.pyc",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/src/mandarin/adapters/__pycache__/jll.cpython-313.pyc",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/src/mandarin/adapters/__pycache__/schedules.cpython-313.pyc",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/src/mandarin/adapters/__pycache__/__init__.cpython-313.pyc",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/spikes/cytoscape_fcose/test_spike.py",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/spikes/cytoscape_fcose/bundle_vendor.cjs",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/spikes/cytoscape_fcose/projection_test.cjs",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/spikes/cytoscape_fcose/nested_browser_test.cjs",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/spikes/cytoscape_fcose/README.md",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/spikes/cytoscape_fcose/spike.py",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/spikes/cytoscape_fcose/spike.ipynb",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/spikes/cytoscape_fcose/package-lock.json",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/spikes/cytoscape_fcose/package.json",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/spikes/cytoscape_fcose/routing_test.cjs",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/spikes/cytoscape_fcose/browser_test.cjs",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/spikes/cytoscape_fcose/graph_review_browser_test.cjs",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/archive/pre-yaml-rebuild/tests/fixtures/.gitkeep",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Rangekeeper/grasshopper/Tests/exampleDesign.3dm",
+      "unchanged": true
+    },
+    {
+      "path": "/Volumes/Data/Projects/Rangekeeper/grasshopper/Tests/exampleDesignConfig.ghx",
+      "unchanged": true
+    }
+  ]
+}

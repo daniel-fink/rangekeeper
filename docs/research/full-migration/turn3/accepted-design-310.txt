@@ -1,0 +1,8 @@
+{"python": "3.10.19 (main, Jan 14 2026, 23:38:29) [Clang 21.1.4 ]", "package": "/private/tmp/rk-turn3-verified-wheel/site/rangekeeper/__init__.py"}
+{"stage": "loaded", "elapsed_seconds": 0.704}
+{"stage": "authored", "elapsed_seconds": 4.944}
+{"stage": "formulated", "elapsed_seconds": 120.634}
+{"stage": "specified", "elapsed_seconds": 121.156}
+{"stage": "stored", "elapsed_seconds": 156.433}
+{"stage": "executed", "elapsed_seconds": 564.558}
+{"status": "passed", "contributors": 36, "unknowns": 4541, "units": "AUD", "source_claims_preserved": 302, "output_revision": "3dee8dd2-f33c-4f53-8195-aa5c938b27ae"}
