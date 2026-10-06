@@ -93,7 +93,7 @@ gross = Value(id=uuid4(), key="gross", kind="measurement", measure=area.id,
 net = Value(id=uuid4(), key="net", kind="measurement", measure=area.id)
 entity = Entity(id=uuid4(), code="A", characteristics=Characteristics(values=(gross, net)))
 model = Model.create(
-    metadata=Metadata(id=uuid4(), schema_version="0.5.0"),
+    metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
     definitions=Definitions(measures=(area,)), system=System(entities=(entity,)),
 )
 assert model.value(gross.id).quantity.magnitude == 100
@@ -113,7 +113,9 @@ the facade is returned. `create` uses the same path with typed section arguments
 History is not loaded implicitly. `to_data` always exports detached mutable data.
 
 UUID methods `entity`, `relationship`, `value`, `formulation` and `owner_of` require
-actual UUID objects. Missing identities raise `MissingReferenceError`; wrong kinds
+actual UUID objects. `Model.movement(id)` looks up a Movement;
+`Model.resolve(Reference(target=id))` looks up a Value or Movement in this revision.
+A Movement's nearest identified owner is its containing Value. Missing identities raise `MissingReferenceError`; wrong kinds
 raise `ReferenceTypeError`. Entity lookup includes Assemblies stored canonically in
 `System.assemblies`, without duplicating them into `System.entities`. Values can belong
 to Entities, Relationships, Assemblies or nested Formulations. `owner_of` returns the
@@ -153,14 +155,14 @@ External references and incomplete solve roles are permitted in a saved contribu
 ```python
 from rangekeeper.errors import MissingReferenceError
 from rangekeeper.specification import Specification, SpecificationRecord, compose, validate
-from rangekeeper.model.expression import ValueReference
+from rangekeeper.model.expression import Reference
 
 shared = Specification(SpecificationRecord(
-    metadata=Metadata(id=uuid4(), schema_version="0.5.0"),
-    model=model.id, unknowns=(ValueReference(value=gross.id),),
+    metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
+    model=model.id, unknowns=(Reference(target=gross.id),),
 ))
 investigation = Specification(SpecificationRecord(
-    metadata=Metadata(id=uuid4(), schema_version="0.5.0"), includes=(shared.id,),
+    metadata=Metadata(id=uuid4(), schema_version="0.6.0"), includes=(shared.id,),
 ))
 
 class Inputs:

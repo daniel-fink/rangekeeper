@@ -1,4 +1,5 @@
 """Naming changes preserve recorded mathematics, units and deterministic draws."""
+
 from rangekeeper.model.distribution import Distribution
 
 from copy import deepcopy
@@ -26,7 +27,7 @@ RENAMES = {
 
 
 def root():
-    return Model.create(metadata=Metadata(id=UUID(int=17), schema_version="0.5.0"))
+    return Model.create(metadata=Metadata(id=UUID(int=17), schema_version="0.6.0"))
 
 
 def plan(**kwargs):
@@ -113,6 +114,9 @@ def test_upgrade_and_seeded_generation_preserve_original_paths():
     }
     for identity, value in old_values.items():
         after = upgraded.value(UUID(identity)).to_data()
+        if after.get("flow") is not None:
+            for movement in after["flow"]["movements"]:
+                UUID(movement.pop("id"))
         assert {k: v for k, v in after.items() if k != "key"} == {
             k: v for k, v in value.items() if k != "key"
         }
@@ -132,12 +136,15 @@ def test_upgrade_and_seeded_generation_preserve_original_paths():
         scenario_keys=["naming-reference"],
     )[0]
     for binding in old_record["outputs"]:
-        assert (
-            fresh.resolve_output(
-                RENAMES.get(binding["name"], binding["name"])
-            ).flow.to_data()
-            == old_values[binding["value"]]["flow"]
-        )
+        generated = fresh.resolve_output(
+            RENAMES.get(binding["name"], binding["name"])
+        ).flow
+        stored = old_values[binding["value"]]["flow"]
+        assert [
+            {k: v for k, v in m.to_data().items() if k != "id"}
+            for m in generated.movements
+        ] == [{k: v for k, v in m.items() if k != "id"} for m in stored["movements"]]
+        assert generated.units == stored["units"]
     assert (
         fresh.resolve_input("volatility_per_period").quantity
         == replayed.resolve_input("volatility_per_period").quantity

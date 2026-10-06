@@ -46,7 +46,7 @@ class Action(Record):
 
     def __init__(self, *,
         kind: ActionKind,
-        target: ValueReference | None | Unset = UNSET,
+        target: Reference | None | Unset = UNSET,
         quantity: Quantity | None | Unset = UNSET,
     ) -> None:
         self._initialize({
@@ -57,7 +57,7 @@ class Action(Record):
 
     def replace(self, *,
         kind: ActionKind | Unset = UNSET,
-        target: ValueReference | None | Unset = UNSET,
+        target: Reference | None | Unset = UNSET,
         quantity: Quantity | None | Unset = UNSET,
     ) -> Action:
         """Return a validated copy; omitted arguments preserve field presence and value."""
@@ -73,9 +73,9 @@ class Action(Record):
         return cast('ActionKind', self._field('kind'))
 
     @property
-    def target(self) -> ValueReference | None:
+    def target(self) -> Reference | None:
         'Target.'
-        return cast('ValueReference | None', self._field('target'))
+        return cast('Reference | None', self._field('target'))
 
     @property
     def quantity(self) -> Quantity | None:
@@ -266,7 +266,7 @@ class Assignment(Record):
     _kind = 'Assignment'
 
     def __init__(self, *,
-        target: ValueReference,
+        target: Reference,
         quantity: Quantity,
     ) -> None:
         self._initialize({
@@ -275,7 +275,7 @@ class Assignment(Record):
         })
 
     def replace(self, *,
-        target: ValueReference | Unset = UNSET,
+        target: Reference | Unset = UNSET,
         quantity: Quantity | Unset = UNSET,
     ) -> Assignment:
         """Return a validated copy; omitted arguments preserve field presence and value."""
@@ -285,9 +285,9 @@ class Assignment(Record):
         })
 
     @property
-    def target(self) -> ValueReference:
+    def target(self) -> Reference:
         'Target.'
-        return cast('ValueReference', self._field('target'))
+        return cast('Reference', self._field('target'))
 
     @property
     def quantity(self) -> Quantity:
@@ -864,7 +864,7 @@ class Diagnostic(Record):
         target: UUID | None | Unset = UNSET,
         residual: Quantity | Unset = UNSET,
         tolerance: Quantity | Unset = UNSET,
-        references: tuple[ScopedValueReference, ...] | None | Unset = UNSET,
+        references: tuple[Reference, ...] | None | Unset = UNSET,
     ) -> None:
         self._initialize({
             'severity': severity,
@@ -885,7 +885,7 @@ class Diagnostic(Record):
         target: UUID | None | Unset = UNSET,
         residual: Quantity | Unset = UNSET,
         tolerance: Quantity | Unset = UNSET,
-        references: tuple[ScopedValueReference, ...] | None | Unset = UNSET,
+        references: tuple[Reference, ...] | None | Unset = UNSET,
     ) -> Diagnostic:
         """Return a validated copy; omitted arguments preserve field presence and value."""
         return self._replace({
@@ -935,9 +935,9 @@ class Diagnostic(Record):
         return cast('Quantity | None', self._field('tolerance'))
 
     @property
-    def references(self) -> tuple[ScopedValueReference, ...] | None:
-        'References.'
-        return cast('tuple[ScopedValueReference, ...] | None', self._field('references'))
+    def references(self) -> tuple[Reference, ...] | None:
+        "Participating Values and Movements in this Run's input Model. Batch findings and attempts without a valid input Model cannot carry these references."
+        return cast('tuple[Reference, ...] | None', self._field('references'))
 
 
 class Distribution(DistributionBehavior, Record):
@@ -1118,7 +1118,7 @@ class Expression(Record):
         kind: ExpressionKind,
         quantity: Quantity | Unset = UNSET,
         boolean: bool | Unset = UNSET,
-        target: ValueReference | Unset = UNSET,
+        target: Reference | Unset = UNSET,
         operator: Operator | Unset = UNSET,
         operands: tuple[Expression, ...] | None | Unset = UNSET,
         operand: Expression | Unset = UNSET,
@@ -1145,7 +1145,7 @@ class Expression(Record):
         kind: ExpressionKind | Unset = UNSET,
         quantity: Quantity | Unset = UNSET,
         boolean: bool | Unset = UNSET,
-        target: ValueReference | Unset = UNSET,
+        target: Reference | Unset = UNSET,
         operator: Operator | Unset = UNSET,
         operands: tuple[Expression, ...] | None | Unset = UNSET,
         operand: Expression | Unset = UNSET,
@@ -1189,9 +1189,9 @@ class Expression(Record):
         return cast('bool | None', self._field('boolean'))
 
     @property
-    def target(self) -> ValueReference | None:
+    def target(self) -> Reference | None:
         'Explicit Value or Movement symbol; never implicit recorded content.'
-        return cast('ValueReference | None', self._field('target'))
+        return cast('Reference | None', self._field('target'))
 
     @property
     def operator(self) -> Operator | None:
@@ -1967,18 +1967,20 @@ class Model(Record):
 
 
 class Movement(MovementBehavior, Record):
-    'One numerical entry in a Flow, associated with a date or period. The overall model logic determines its meaning. At least one of date or period is required. With a period, date records an independent payment or observation date and need not lie inside the period. Derived boundary dates are calculated, not stored. Key is stable within its Flow; repeated event dates require distinct keys. Magnitude omission/null means unresolved. Claims retain source or derivation evidence.'
+    'One numerical entry in a Flow, associated with a date or period. The overall model logic determines its meaning. At least one of date or period is required. With a period, date records an independent payment or observation date and need not lie inside the period. Derived boundary dates are calculated, not stored. UUID identifies the Movement independently of dates and optional matching keys. Repeated event dates require distinct nonblank keys; keys are not reference identity. Magnitude omission/null means unresolved. Claims retain source or derivation evidence.'
     __slots__ = ()
     _kind = 'Movement'
 
     def __init__(self, *,
-        key: str,
+        id: UUID,
+        key: str | None | Unset = UNSET,
         date: Date | None | Unset = UNSET,
         period: Period | None | Unset = UNSET,
         magnitude: int | float | None | Unset = UNSET,
         claims: tuple[UUID, ...] | None | Unset = UNSET,
     ) -> None:
         self._initialize({
+            'id': id,
             'key': key,
             'date': date,
             'period': period,
@@ -1987,7 +1989,8 @@ class Movement(MovementBehavior, Record):
         })
 
     def replace(self, *,
-        key: str | Unset = UNSET,
+        id: UUID | Unset = UNSET,
+        key: str | None | Unset = UNSET,
         date: Date | None | Unset = UNSET,
         period: Period | None | Unset = UNSET,
         magnitude: int | float | None | Unset = UNSET,
@@ -1995,6 +1998,7 @@ class Movement(MovementBehavior, Record):
     ) -> Movement:
         """Return a validated copy; omitted arguments preserve field presence and value."""
         return self._replace({
+            'id': id,
             'key': key,
             'date': date,
             'period': period,
@@ -2003,9 +2007,14 @@ class Movement(MovementBehavior, Record):
         })
 
     @property
-    def key(self) -> str:
-        'Key.'
-        return cast('str', self._field('key'))
+    def id(self) -> UUID:
+        'Stable Movement identity across Model revisions. Derived numerical results receive fresh identities.'
+        return cast('UUID', self._field('id'))
+
+    @property
+    def key(self) -> str | None:
+        'Optional event matching key and readable label; never reference identity.'
+        return cast('str | None', self._field('key'))
 
     @property
     def date(self) -> Date | None:
@@ -2069,7 +2078,7 @@ class ObservationAvailability(Record):
     _kind = 'ObservationAvailability'
 
     def __init__(self, *,
-        target: ValueReference,
+        target: Reference,
         available_at: Date,
     ) -> None:
         self._initialize({
@@ -2078,7 +2087,7 @@ class ObservationAvailability(Record):
         })
 
     def replace(self, *,
-        target: ValueReference | Unset = UNSET,
+        target: Reference | Unset = UNSET,
         available_at: Date | Unset = UNSET,
     ) -> ObservationAvailability:
         """Return a validated copy; omitted arguments preserve field presence and value."""
@@ -2088,9 +2097,9 @@ class ObservationAvailability(Record):
         })
 
     @property
-    def target(self) -> ValueReference:
+    def target(self) -> Reference:
         'Target.'
-        return cast('ValueReference', self._field('target'))
+        return cast('Reference', self._field('target'))
 
     @property
     def available_at(self) -> Date:
@@ -2105,7 +2114,7 @@ class ObservationBinding(Record):
 
     def __init__(self, *,
         name: str,
-        target: ValueReference,
+        target: Reference,
         available_at: Date | None | Unset = UNSET,
     ) -> None:
         self._initialize({
@@ -2116,7 +2125,7 @@ class ObservationBinding(Record):
 
     def replace(self, *,
         name: str | Unset = UNSET,
-        target: ValueReference | Unset = UNSET,
+        target: Reference | Unset = UNSET,
         available_at: Date | None | Unset = UNSET,
     ) -> ObservationBinding:
         """Return a validated copy; omitted arguments preserve field presence and value."""
@@ -2132,9 +2141,9 @@ class ObservationBinding(Record):
         return cast('str', self._field('name'))
 
     @property
-    def target(self) -> ValueReference:
+    def target(self) -> Reference:
         'Target.'
-        return cast('ValueReference', self._field('target'))
+        return cast('Reference', self._field('target'))
 
     @property
     def available_at(self) -> Date | None:
@@ -2149,7 +2158,7 @@ class ObservedQuantity(Record):
 
     def __init__(self, *,
         name: str,
-        target: ValueReference,
+        target: Reference,
         quantity: Quantity,
         available_at: Date,
     ) -> None:
@@ -2162,7 +2171,7 @@ class ObservedQuantity(Record):
 
     def replace(self, *,
         name: str | Unset = UNSET,
-        target: ValueReference | Unset = UNSET,
+        target: Reference | Unset = UNSET,
         quantity: Quantity | Unset = UNSET,
         available_at: Date | Unset = UNSET,
     ) -> ObservedQuantity:
@@ -2180,9 +2189,9 @@ class ObservedQuantity(Record):
         return cast('str', self._field('name'))
 
     @property
-    def target(self) -> ValueReference:
+    def target(self) -> Reference:
         'Target.'
-        return cast('ValueReference', self._field('target'))
+        return cast('Reference', self._field('target'))
 
     @property
     def quantity(self) -> Quantity:
@@ -2290,7 +2299,7 @@ class Policy(Record):
 
     def __init__(self, *,
         id: UUID,
-        targets: tuple[ValueReference, ...],
+        targets: tuple[Reference, ...],
         points: tuple[DecisionPoint, ...],
     ) -> None:
         self._initialize({
@@ -2301,7 +2310,7 @@ class Policy(Record):
 
     def replace(self, *,
         id: UUID | Unset = UNSET,
-        targets: tuple[ValueReference, ...] | Unset = UNSET,
+        targets: tuple[Reference, ...] | Unset = UNSET,
         points: tuple[DecisionPoint, ...] | Unset = UNSET,
     ) -> Policy:
         """Return a validated copy; omitted arguments preserve field presence and value."""
@@ -2317,9 +2326,9 @@ class Policy(Record):
         return cast('UUID', self._field('id'))
 
     @property
-    def targets(self) -> tuple[ValueReference, ...]:
+    def targets(self) -> tuple[Reference, ...]:
         'Targets.'
-        return cast('tuple[ValueReference, ...]', self._field('targets'))
+        return cast('tuple[Reference, ...]', self._field('targets'))
 
     @property
     def points(self) -> tuple[DecisionPoint, ...]:
@@ -2687,6 +2696,32 @@ class Reconciliation(Record):
     def method(self) -> Method | None:
         'Method.'
         return cast('Method | None', self._field('method'))
+
+
+class Reference(Record):
+    "A Value or Movement UUID resolved in the containing Model or composed Specification. Execution diagnostic references resolve in the Run's input Model. Names, matching keys and positions are never identities."
+    __slots__ = ()
+    _kind = 'Reference'
+
+    def __init__(self, *,
+        target: UUID,
+    ) -> None:
+        self._initialize({
+            'target': target,
+        })
+
+    def replace(self, *,
+        target: UUID | Unset = UNSET,
+    ) -> Reference:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'target': target,
+        })
+
+    @property
+    def target(self) -> UUID:
+        'UUID of a Value or Movement declaration in the applicable scope.'
+        return cast('UUID', self._field('target'))
 
 
 class Relationship(Record):
@@ -3176,41 +3211,6 @@ class ScenarioRealization(Record):
         return cast('tuple[ObservationAvailability, ...]', self._field('availability'))
 
 
-class ScopedValueReference(Record):
-    'An explicit revision and Value/Movement reference used in execution evidence.'
-    __slots__ = ()
-    _kind = 'ScopedValueReference'
-
-    def __init__(self, *,
-        document: UUID,
-        reference: ValueReference,
-    ) -> None:
-        self._initialize({
-            'document': document,
-            'reference': reference,
-        })
-
-    def replace(self, *,
-        document: UUID | Unset = UNSET,
-        reference: ValueReference | Unset = UNSET,
-    ) -> ScopedValueReference:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'document': document,
-            'reference': reference,
-        })
-
-    @property
-    def document(self) -> UUID:
-        'Document.'
-        return cast('UUID', self._field('document'))
-
-    @property
-    def reference(self) -> ValueReference:
-        'Reference.'
-        return cast('ValueReference', self._field('reference'))
-
-
 class Selection(Record):
     'Read a declared member or indexed element from structured expression content.'
     __slots__ = ()
@@ -3452,7 +3452,7 @@ class Specification(Record):
         includes: tuple[UUID, ...] | None | Unset = UNSET,
         cases: tuple[UUID, ...] | None | Unset = UNSET,
         assignments: tuple[Assignment, ...] | None | Unset = UNSET,
-        unknowns: tuple[ValueReference, ...] | None | Unset = UNSET,
+        unknowns: tuple[Reference, ...] | None | Unset = UNSET,
         estimates: tuple[Assignment, ...] | None | Unset = UNSET,
         formulations: tuple[Formulation, ...] | None | Unset = UNSET,
         objectives: tuple[Objective, ...] | None | Unset = UNSET,
@@ -3479,7 +3479,7 @@ class Specification(Record):
         includes: tuple[UUID, ...] | None | Unset = UNSET,
         cases: tuple[UUID, ...] | None | Unset = UNSET,
         assignments: tuple[Assignment, ...] | None | Unset = UNSET,
-        unknowns: tuple[ValueReference, ...] | None | Unset = UNSET,
+        unknowns: tuple[Reference, ...] | None | Unset = UNSET,
         estimates: tuple[Assignment, ...] | None | Unset = UNSET,
         formulations: tuple[Formulation, ...] | None | Unset = UNSET,
         objectives: tuple[Objective, ...] | None | Unset = UNSET,
@@ -3527,9 +3527,9 @@ class Specification(Record):
         return cast('tuple[Assignment, ...] | None', self._field('assignments'))
 
     @property
-    def unknowns(self) -> tuple[ValueReference, ...] | None:
+    def unknowns(self) -> tuple[Reference, ...] | None:
         'Unique scalar or Movement unknowns; explicit and disjoint from assignments and policy targets.'
-        return cast('tuple[ValueReference, ...] | None', self._field('unknowns'))
+        return cast('tuple[Reference, ...] | None', self._field('unknowns'))
 
     @property
     def estimates(self) -> tuple[Assignment, ...] | None:
@@ -3911,41 +3911,6 @@ class Value(Record):
         return cast('PropertyContent | None', self._field('content'))
 
 
-class ValueReference(Record):
-    'A Value UUID and optional stable owner-local Movement key. Scope comes from the containing Model or composed Specification; positions are never identities.'
-    __slots__ = ()
-    _kind = 'ValueReference'
-
-    def __init__(self, *,
-        value: UUID,
-        movement: str | None | Unset = UNSET,
-    ) -> None:
-        self._initialize({
-            'value': value,
-            'movement': movement,
-        })
-
-    def replace(self, *,
-        value: UUID | Unset = UNSET,
-        movement: str | None | Unset = UNSET,
-    ) -> ValueReference:
-        """Return a validated copy; omitted arguments preserve field presence and value."""
-        return self._replace({
-            'value': value,
-            'movement': movement,
-        })
-
-    @property
-    def value(self) -> UUID:
-        'Value.'
-        return cast('UUID', self._field('value'))
-
-    @property
-    def movement(self) -> str | None:
-        'Movement.'
-        return cast('str | None', self._field('movement'))
-
-
 _TYPES = {
     'Action': Action,
     'Argument': Argument,
@@ -3997,6 +3962,7 @@ _TYPES = {
     'Query': Query,
     'RandomStream': RandomStream,
     'Reconciliation': Reconciliation,
+    'Reference': Reference,
     'Relationship': Relationship,
     'Report': Report,
     'Rule': Rule,
@@ -4005,7 +3971,6 @@ _TYPES = {
     'ScenarioParameter': ScenarioParameter,
     'ScenarioPlan': ScenarioPlan,
     'ScenarioRealization': ScenarioRealization,
-    'ScopedValueReference': ScopedValueReference,
     'Selection': Selection,
     'Settings': Settings,
     'Source': Source,
@@ -4017,7 +3982,6 @@ _TYPES = {
     'Taxonomy': Taxonomy,
     'Traversal': Traversal,
     'Value': Value,
-    'ValueReference': ValueReference,
 }
 
-__all__ = ['Action', 'ActionKind', 'Argument', 'Assembly', 'Assignment', 'Binding', 'Call', 'Cardinality', 'Characteristics', 'Claim', 'ClaimKind', 'Classification', 'CollectionKind', 'CompletionStatus', 'Constraint', 'Content', 'ContentEntry', 'ContentKind', 'Criterion', 'Decision', 'DecisionPoint', 'Definitions', 'Depth', 'Diagnostic', 'Direction', 'Distribution', 'DistributionFamily', 'Domain', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'Entity', 'Entry', 'Expression', 'ExpressionKind', 'Fact', 'Filter', 'Flow', 'Formulation', 'Function', 'Implementation', 'ImplementationKind', 'Label', 'LibraryVersion', 'Location', 'Measure', 'Measurement', 'Metadata', 'Method', 'MissingHandling', 'Model', 'Movement', 'Objective', 'ObjectiveKind', 'ObservationAvailability', 'ObservationBinding', 'ObservedQuantity', 'Operator', 'Parameter', 'ParameterKind', 'Period', 'Policy', 'Projection', 'ProjectionKind', 'PropertyContent', 'Provenance', 'Quantity', 'Query', 'RandomStream', 'Reconciliation', 'ReconciliationStatus', 'Relationship', 'Report', 'Rule', 'Run', 'Runtime', 'ScenarioParameter', 'ScenarioPlan', 'ScenarioRealization', 'ScopedValueReference', 'Selection', 'SelectionKind', 'Settings', 'Severity', 'SolutionStatus', 'Source', 'Span', 'Specification', 'Status', 'Step', 'StepKind', 'System', 'Taxonomy', 'Traversal', 'TraversalKind', 'Value', 'ValueKind', 'ValueReference']
+__all__ = ['Action', 'ActionKind', 'Argument', 'Assembly', 'Assignment', 'Binding', 'Call', 'Cardinality', 'Characteristics', 'Claim', 'ClaimKind', 'Classification', 'CollectionKind', 'CompletionStatus', 'Constraint', 'Content', 'ContentEntry', 'ContentKind', 'Criterion', 'Decision', 'DecisionPoint', 'Definitions', 'Depth', 'Diagnostic', 'Direction', 'Distribution', 'DistributionFamily', 'Domain', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'Entity', 'Entry', 'Expression', 'ExpressionKind', 'Fact', 'Filter', 'Flow', 'Formulation', 'Function', 'Implementation', 'ImplementationKind', 'Label', 'LibraryVersion', 'Location', 'Measure', 'Measurement', 'Metadata', 'Method', 'MissingHandling', 'Model', 'Movement', 'Objective', 'ObjectiveKind', 'ObservationAvailability', 'ObservationBinding', 'ObservedQuantity', 'Operator', 'Parameter', 'ParameterKind', 'Period', 'Policy', 'Projection', 'ProjectionKind', 'PropertyContent', 'Provenance', 'Quantity', 'Query', 'RandomStream', 'Reconciliation', 'ReconciliationStatus', 'Reference', 'Relationship', 'Report', 'Rule', 'Run', 'Runtime', 'ScenarioParameter', 'ScenarioPlan', 'ScenarioRealization', 'Selection', 'SelectionKind', 'Settings', 'Severity', 'SolutionStatus', 'Source', 'Span', 'Specification', 'Status', 'Step', 'StepKind', 'System', 'Taxonomy', 'Traversal', 'TraversalKind', 'Value', 'ValueKind']

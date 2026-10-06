@@ -3,6 +3,7 @@
 from __future__ import annotations
 from collections.abc import Sequence
 from datetime import date
+from uuid import UUID, uuid4
 import math
 from typing import TYPE_CHECKING, Literal, cast
 from .._records import UNSET
@@ -30,7 +31,7 @@ class MovementBehavior:
 
     @property
     def coordinate(self) -> tuple:
-        """Return alignment identity; independently recorded dates must also agree."""
+        """Return the matching coordinate independently of UUID identity."""
         movement = cast("Movement", self)
         if movement.period is not None:
             return (
@@ -83,14 +84,15 @@ class FlowBehavior:
 
         units = default_units if units is None else units
         units.compatible(flow.units, flow.units)
-        keys = set()
+        identities = set()
+        events: dict[date, list[str | None]] = {}
         previous = None
         previous_end = None
         mode = None
         for movement in flow.movements:
-            if movement.key in keys:
-                raise ValueError(f"duplicate movement key: {movement.key}")
-            keys.add(movement.key)
+            if movement.id in identities:
+                raise ValueError(f"duplicate Movement UUID: {movement.id}")
+            identities.add(movement.id)
             if movement.date is not None:
                 require_date(movement.date)
             if movement.period is None and movement.date is None:
@@ -109,6 +111,12 @@ class FlowBehavior:
                 if previous is not None and movement.date < previous:
                     raise ValueError("Flow movements must be ordered by date")
                 previous = movement.date
+                keys = events.setdefault(movement.date, [])
+                keys.append(movement.key)
+                if len(keys) > 1 and (None in keys or len(set(keys)) != len(keys)):
+                    raise ValueError(
+                        "repeated event dates require distinct nonblank matching keys"
+                    )
             if len(movement.claims or ()) != len(set(movement.claims or ())):
                 raise ValueError("duplicate movement Claim")
         if resolved:
@@ -123,9 +131,10 @@ class FlowBehavior:
         magnitudes: Sequence[int | float | None],
         *,
         units: str,
-        keys: Sequence[str] | None = None,
+        keys: Sequence[str | None] | None = None,
+        ids: Sequence[UUID] | None = None,
     ) -> Flow:
-        """Construct ordered dated entries; repeated dates require distinct keys."""
+        """Construct dated entries with supplied or fresh IDs; repeated dates need distinct keys."""
         factory = cast("type[Flow]", cls)
         from .._schema.records import Movement
         from ..duration.calendar import require_date
@@ -134,18 +143,28 @@ class FlowBehavior:
             len(dates) != len(magnitudes)
             or keys is not None
             and len(keys) != len(dates)
+            or ids is not None
+            and len(ids) != len(dates)
         ):
-            raise ValueError("coordinates, magnitudes and keys must have equal lengths")
+            raise ValueError("dates, magnitudes, keys and IDs must have equal lengths")
         for value in dates:
             require_date(value)
-        selected_keys = (
-            tuple(keys) if keys is not None else tuple(d.isoformat() for d in dates)
-        )
+        selected_keys = tuple(keys) if keys is not None else (None,) * len(dates)
         result = factory(
             units=units,
             movements=tuple(
-                Movement(key=key, date=day, magnitude=value)
-                for day, key, value in zip(dates, selected_keys, magnitudes)
+                Movement(
+                    id=identity,
+                    key=UNSET if key is None else key,
+                    date=day,
+                    magnitude=value,
+                )
+                for day, key, value, identity in zip(
+                    dates,
+                    selected_keys,
+                    magnitudes,
+                    tuple(ids) if ids is not None else tuple(uuid4() for _ in dates),
+                )
             ),
         )
         result.check()
@@ -159,11 +178,14 @@ class FlowBehavior:
         *,
         units: str,
         dates: Sequence[date | None] | None = None,
+        ids: Sequence[UUID] | None = None,
+        keys: Sequence[str | None] | None = None,
     ) -> Flow:
         """Construct quantities over periods without inventing payment dates.
 
         Supply dates only for independently known payment/observation dates. Omitted
         dates remain absent; valuation and presentation can resolve a convention later.
+        Omitted IDs are generated. Omitted matching keys remain absent.
         """
         factory = cast("type[Flow]", cls)
         from .._schema.records import Movement
@@ -173,15 +195,22 @@ class FlowBehavior:
             len(periods) != len(magnitudes)
             or dates is not None
             and len(dates) != len(periods)
+            or ids is not None
+            and len(ids) != len(periods)
+            or keys is not None
+            and len(keys) != len(periods)
         ):
-            raise ValueError("periods, magnitudes and dates must have equal lengths")
+            raise ValueError(
+                "periods, magnitudes, dates, keys and IDs must have equal lengths"
+            )
         movements = []
         for i, (period, magnitude) in enumerate(zip(periods, magnitudes)):
             period.check()
             day = dates[i] if dates is not None else None
             movements.append(
                 Movement(
-                    key=f"{period.start.isoformat()}/{period.end.isoformat()}",
+                    id=ids[i] if ids is not None else uuid4(),
+                    key=keys[i] if keys is not None and keys[i] is not None else UNSET,
                     period=period,
                     magnitude=magnitude,
                     date=UNSET if day is None else require_date(day),
@@ -190,6 +219,17 @@ class FlowBehavior:
         result = factory(units=units, movements=tuple(movements))
         result.check()
         return result
+
+    def clone(self) -> Flow:
+        """Copy content with fresh Movement IDs for an independent owning Value.
+
+        Dates, matching keys, magnitudes and evidence remain unchanged. Revision
+        updates use replace() instead, preserving the existing identities.
+        """
+        flow = cast("Flow", self)
+        return flow.replace(
+            movements=tuple(m.replace(id=uuid4()) for m in flow.movements)
+        ).check()
 
     def convert(self, *, units: str, unit_system: UnitSystem | None = None) -> Flow:
         """Convert all known movements together; retain unresolved movements and evidence."""
@@ -218,14 +258,15 @@ class FlowBehavior:
         ).check()
 
     def scale(self, factor: float) -> Flow:
-        """Multiply by a finite dimensionless scalar, preserving missing movements."""
+        """Create independent scaled movements with fresh IDs, retaining missing amounts."""
         flow = cast("Flow", self)
         if type(factor) not in (int, float) or not math.isfinite(factor):
             raise ValueError("factor must be finite")
         return flow.replace(
             movements=tuple(
                 s.replace(
-                    magnitude=None if s.magnitude is None else s.magnitude * factor
+                    id=uuid4(),
+                    magnitude=None if s.magnitude is None else s.magnitude * factor,
                 )
                 for s in flow.movements
             )
@@ -310,7 +351,7 @@ class FlowBehavior:
                 if previous is None or movement.magnitude is None
                 else movement.magnitude - previous
             )
-            movements.append(movement.replace(magnitude=magnitude))
+            movements.append(movement.replace(id=uuid4(), magnitude=magnitude))
             previous = movement.magnitude
         return flow.replace(movements=tuple(movements)).check()
 
@@ -330,7 +371,6 @@ class FlowBehavior:
         flow = cast("Flow", self)
         from .._schema.records import Movement
         from ..duration.calendar import require_date
-        from ..duration.calendar import require_date
 
         if on is not None and timing is not None:
             raise ValueError("supply on or timing, not both")
@@ -346,7 +386,8 @@ class FlowBehavior:
             dict.fromkeys(c for s in flow.movements for c in (s.claims or ()))
         )
         movement = Movement(
-            key=flow.movements[-1].key,
+            id=uuid4(),
+            key=UNSET if flow.movements[-1].key is None else flow.movements[-1].key,
             date=day,
             magnitude=None if quantity is None else quantity.magnitude,
             claims=claims,

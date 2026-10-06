@@ -1,6 +1,6 @@
-id: https://daniel-fink.github.io/rangekeeper/schema/value_reference
-name: rangekeeper_value_reference
-version: 0.1.0
+id: https://daniel-fink.github.io/rangekeeper/schema/reference
+name: rangekeeper_reference
+version: 0.2.0
 prefixes:
   linkml: https://w3id.org/linkml/
   rk: https://daniel-fink.github.io/rangekeeper/schema/
@@ -9,28 +9,13 @@ imports:
 default_prefix: rk
 default_range: string
 classes:
-  ValueReference:
-    description: A Value UUID and optional stable owner-local Movement key. Scope comes from the containing Model
-      or composed Specification; positions are never identities.
+  Reference:
+    description: A Value or Movement UUID resolved in the containing Model or composed Specification. Execution diagnostic references resolve in the Run's input Model. Names, matching keys and positions are never identities.
     attributes:
-      value:
-        range: Value
-        required: true
-        inlined: false
-        pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
-      movement:
-        range: string
-        pattern: \S
-  ScopedValueReference:
-    description: An explicit revision and Value/Movement reference used in execution evidence.
-    attributes:
-      document:
+      target:
+        description: UUID of a Value or Movement declaration in the applicable scope.
         range: UUID
         required: true
-      reference:
-        range: ValueReference
-        required: true
-        inlined: true
   Assignment:
     description: An explicit scalar or Movement target and finite supplied Quantity; its collection determines assignment
       or estimate semantics.
@@ -44,7 +29,7 @@ classes:
       record duplicates the Value declaration. Recorded content is reused only by supplying it explicitly.
     attributes:
       target:
-        range: ValueReference
+        range: Reference
         required: true
         inlined: true
       quantity:

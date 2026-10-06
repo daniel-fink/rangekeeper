@@ -1,7 +1,7 @@
 id: https://daniel-fink.github.io/rangekeeper/schema/specification
 name: rangekeeper_specification
 title: Rangekeeper Specifications
-version: 0.5.0
+version: 0.6.0
 description: Immutable, additively composable investigation requirements and explicit batches of Specifications.
 prefixes:
   linkml: https://w3id.org/linkml/
@@ -10,7 +10,7 @@ imports:
 - common
 - formulation
 - settings
-- value_reference
+- reference
 - policy
 default_prefix: rk
 default_range: string
@@ -130,7 +130,7 @@ classes:
         inlined: true
         inlined_as_list: true
       unknowns:
-        range: ValueReference
+        range: Reference
         inlined: true
         multivalued: true
         inlined_as_list: true

@@ -1,10 +1,9 @@
-# Synthetic conformance fixture; no runtime execution is claimed.
 metadata:
   id: cc343536-8c15-57bb-8128-1a3d9fcde726
-  schema_version: 0.2.0
+  schema_version: 0.3.0
   name: Synthetic forward Run
-  description: New synthetic 0.2.0 conformance fixture. No evaluator or solver produced this record; historical
-    Runs are unchanged.
+  description: New synthetic 0.3.0 conformance fixture. No evaluator or solver produced
+    this record; historical Runs are unchanged.
 specification: c1efd865-1463-54c1-b28b-5e689f4837ed
 outputs:
 - bc429c41-ecde-54b8-94e8-07aadfcdec66
@@ -26,8 +25,9 @@ report:
   diagnostics:
   - severity: info
     code: constraint_residual
-    message: 'Synthetic expected residual: left side minus right side in AUD/year, without scaling; acceptance is
-      absolute residual <= tolerance. Values are fixture expectations, not measured execution diagnostics.'
+    message: 'Synthetic expected residual: left side minus right side in AUD/year,
+      without scaling; acceptance is absolute residual <= tolerance. Values are fixture
+      expectations, not measured execution diagnostics.'
     document: bc429c41-ecde-54b8-94e8-07aadfcdec66
     target: d526182d-2216-5862-88b9-b5bdd5e804a5
     residual:
@@ -38,8 +38,9 @@ report:
       units: AUD/year
   - severity: info
     code: constraint_residual
-    message: 'Synthetic expected residual: left side minus right side in AUD/year, without scaling; acceptance is
-      absolute residual <= tolerance. Values are fixture expectations, not measured execution diagnostics.'
+    message: 'Synthetic expected residual: left side minus right side in AUD/year,
+      without scaling; acceptance is absolute residual <= tolerance. Values are fixture
+      expectations, not measured execution diagnostics.'
     document: bc429c41-ecde-54b8-94e8-07aadfcdec66
     target: 02ff78c0-ec20-535d-b997-ac16d64fd944
     residual:
@@ -54,7 +55,8 @@ report:
     message: Hypothetical validation of the composed scalar Specification.
     document: c1efd865-1463-54c1-b28b-5e689f4837ed
   - kind: solve
-    message: Hypothetical scalar resolution; this fixture does not claim observed execution.
+    message: Hypothetical scalar resolution; this fixture does not claim observed
+      execution.
   - kind: publication
     at: '2026-10-01T00:00:01Z'
     message: Hypothetical acceptance of the expected scalar snapshot.

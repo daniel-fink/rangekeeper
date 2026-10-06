@@ -11,7 +11,7 @@ from .._schema.records import (
     Action,
     ObservationBinding,
     Quantity,
-    ValueReference,
+    Reference,
 )
 from ..formulations._alignment import aligned, target, shape
 from ..formulations._identity import identify, identify_tree
@@ -27,27 +27,27 @@ def build_stop_gain_resale_policy(
     sale: UUID,
     threshold: float,
     minimum_holding_periods: int = 1,
-    mapping: Mapping[str, str] | None = None
+    mapping: Mapping[UUID, UUID] | None = None
 ) -> Policy:
     """Declare one sale at first factor > threshold, otherwise at the final horizon.
 
     Decisions occur on each period's last included date. The sale period has
     holding=1 and sale=1, so its operating cashflow is included. Later controls
     are zero. Minimum holding is a positive count including the sale period.
-    An explicit mapping selects observed keys when the market extends beyond the
+    An explicit mapping selects observed Movement UUIDs when the market extends beyond the
     investment horizon. Availability still prevents future observations.
     Threshold is dimensionless. No path, cashflow or Model is changed.
     """
     if mapping is None:
         rows = aligned(model, (pricing_factor, sale), holding)
     else:
-        factors = {m.key: m for m in shape(model, pricing_factor).movements}
+        factors = {m.id: m for m in shape(model, pricing_factor).movements}
         controls = aligned(model, (sale,), holding)
-        if set(mapping) != {h.key for h, _ in controls} or not set(
+        if set(mapping) != {h.id for h, _ in controls} or not set(
             mapping.values()
         ) <= set(factors):
             raise ValueError("policy mapping must cover every control coordinate")
-        rows = [(h, (factors[mapping[h.key]], matches[0])) for h, matches in controls]
+        rows = [(h, (factors[mapping[h.id]], matches[0])) for h, matches in controls]
     if (
         not rows
         or type(minimum_holding_periods) is not int
@@ -85,13 +85,13 @@ def build_stop_gain_resale_policy(
         condition = identify_tree(
             id,
             "resale",
-            h.key,
+            str(h.id),
             binary("greater_than", reference(observation.target), literal(threshold)),
         )
         rules = (
             (
                 Rule(
-                    id=identify(id, h.key, "rule"),
+                    id=identify(id, str(h.id), "rule"),
                     condition=condition,
                     actions=sell(index),
                 ),
@@ -106,7 +106,7 @@ def build_stop_gain_resale_policy(
         )
         points.append(
             DecisionPoint(
-                id=identify(id, h.key, "point"),
+                id=identify(id, str(h.id), "point"),
                 at=at,
                 observations=(observation,),
                 rules=rules,

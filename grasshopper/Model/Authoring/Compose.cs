@@ -13,7 +13,7 @@ public static class Compose
         IEnumerable<Assembly> assemblies, IEnumerable<Relationship> relationships, Provenance? provenance=null)
     {
         var result=new ModelRecord {
-            Metadata=new Metadata { Id=revision, SchemaVersion="0.5.0" },
+            Metadata=new Metadata { Id=revision, SchemaVersion="0.6.0" },
             Definitions=definitions,
             System=new SystemRecord { Entities=entities.ToArray(), Assemblies=assemblies.ToArray(), Relationships=relationships.ToArray() }
         };

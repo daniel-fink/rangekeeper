@@ -5,8 +5,10 @@ from uuid import UUID, uuid5
 from .._schema.records import Expression
 
 
-def identify(owner: UUID, *parts: str) -> UUID:
-    return uuid5(owner, json.dumps(parts, separators=(",", ":")))
+def identify(owner: UUID, *parts: str | UUID) -> UUID:
+    return uuid5(
+        owner, json.dumps([str(part) for part in parts], separators=(",", ":"))
+    )
 
 
 def identify_tree(

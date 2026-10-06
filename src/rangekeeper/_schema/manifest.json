@@ -1,9 +1,9 @@
 {
   "artifacts": {
-    "native.py": "a4a785e0c18b93d06160ac8ffcbc0b6a3a8b9afb2700cf2c133a30b9f6eff333",
-    "records.py": "567e9cd143915126e6c80bbfffc999342bb2bcfda3a0678b3dc2d6417d8af1a6",
-    "schema.json": "4b288fdba16276a45721f944482653284a58fd76bc229c8cce369b825357e864",
-    "slots.json": "19ffae84ef928d25b104af41165298d52063a97d1b4b17bb44e998018ecec412"
+    "native.py": "ca1b259602fb20802791041cfe1fc3dc8f7e748b36510966afa0a35e3bad8afb",
+    "records.py": "25e0a58bf63fda510d547a03801aa3df418a7f1eab99767543e00accf433d7f9",
+    "schema.json": "933102be128ee1a456695d6c7f88202e79654ec677f7063b2fa03759abf1982f",
+    "slots.json": "65bb8ebfbb071577f69d8897cc6c684229a3bc13926c792a54f3d92b825d8438"
   },
   "classes": [
     "Action",
@@ -57,6 +57,7 @@
     "Query",
     "RandomStream",
     "Reconciliation",
+    "Reference",
     "Relationship",
     "Report",
     "Rule",
@@ -65,7 +66,6 @@
     "ScenarioParameter",
     "ScenarioPlan",
     "ScenarioRealization",
-    "ScopedValueReference",
     "Selection",
     "Settings",
     "Source",
@@ -76,8 +76,7 @@
     "System",
     "Taxonomy",
     "Traversal",
-    "Value",
-    "ValueReference"
+    "Value"
   ],
   "dependencies": {
     "PyYAML": "6.0.3",
@@ -86,9 +85,9 @@
     "linkml-runtime": "1.11.1"
   },
   "document_versions": {
-    "Model": "0.5.0",
-    "Run": "0.2.0",
-    "Specification": "0.5.0"
+    "Model": "0.6.0",
+    "Run": "0.3.0",
+    "Specification": "0.6.0"
   },
   "generator_version": 1,
   "opaque_classes": [
@@ -106,21 +105,21 @@
     "schema/distribution.yaml": "8b1c0fa236a513592b0d8b6dac81d80ad49a228fc4496273fb4ded42fe0220a9",
     "schema/duration.yaml": "dec034e122f319779ad92c9d3339df0732ccd8995e784db81fb4ed3f9b50c8fd",
     "schema/entity.yaml": "e236e8ead99ca976ff4f9b0c0aa8cb89db503e5f771c194b5f139b97dcb92e02",
-    "schema/expression.yaml": "0ea55501facce16fdc39355caa1fe3435845e95f1e33367f240da6ce7952f0ad",
-    "schema/flow.yaml": "8d918a565be2529a5c3c0f74613fda6a31bd4670d601e37b9a26fa7d6f1d8fec",
+    "schema/expression.yaml": "bc0dc7ad34a6b1478505ead8149b5864f0a53691afa2b97b177e8997b0bb4f69",
+    "schema/flow.yaml": "a5db35c095d4e723d8bd11e6db157a9f88d534cb29ca46435aca62f7818b0261",
     "schema/formulation.yaml": "c5a2cc0adbbdb20c673635ce9d220f1799b46e9b59c1b859dd525856b28c0cd0",
     "schema/function.yaml": "334bf0ff3faac228a0e7a7739980373e5503c8f9662a40492889c57b358437aa",
     "schema/measure.yaml": "6f438b7731824cbbc7115a2225af442c162692b32b6b897302fd4beb2e80c996",
-    "schema/model.yaml": "72d1259ab58e21a5937872605f22d8df0d2abdc9dde7492dd1ba6faaaaa3ae11",
-    "schema/policy.yaml": "d2f1b3ae2ab311874fe70733cb84112828f1037284e1ba79b8fe5a29d7fd1fab",
+    "schema/model.yaml": "dcd3dcae0c4764cadb1124ea7cb499526f929fcfc7ee7934799d9017094a5a13",
+    "schema/policy.yaml": "48cf4f8d49aa59981c6ca23df466b305f68233ff7adee28e7d525b546219a2a6",
     "schema/provenance.yaml": "c15a16cf5c5c90725efb9590adf086ec26532ff56f1ddf7989560c138fa75a67",
     "schema/query.yaml": "d63026f3082110e141872a7fcb628388faf3fff0dc47b42c55522a91b4944747",
+    "schema/reference.yaml": "961d3e1f5e35302aef45f732c08c6ea2471b4b17196ae125ff0bbeb334a71153",
     "schema/relationship.yaml": "da2c4f2389b72bdc7bfb5bf6bf5d6f3f31b790b567de50481f307963a825e406",
-    "schema/run.yaml": "53dbfd9f2d9781bdebc4c3b714d8317275a82fcbea71cd4e1f78a1dfae88a4f7",
-    "schema/scenario.yaml": "d19fa639e2ed135c5ba9f81dc0105a5a420fa6264f76fc9367517fa147e5d5ec",
+    "schema/run.yaml": "29c0c07c49de3cbca3832e0baa56cac488897c03517617bbc4c7589329b3ac19",
+    "schema/scenario.yaml": "2aa230889d057eee911d802967beff1fe20fa59b913b67056b7019ea55a46973",
     "schema/settings.yaml": "8c1534db9a5ca24f1e9f270d757cc9191c63233adcf16b9ce29826acd60d7dca",
-    "schema/specification.yaml": "a18b66a649410773e8894feb5e87fe9443df2b0aac6e98531b47c022217b4fd8",
-    "schema/value_reference.yaml": "805b702c9b2873bd54afea08837887041849e99fb50c92be0983a8424c1ca67e",
+    "schema/specification.yaml": "c4ce0f1cef009e6354447986edbf2eaf7b7f669829c4e8e9c032b1f4bc4aa150",
     "tools/schema/bundle.yaml": "695423eb5d5fc898f39afd1bedda5c6ccb29711f67008ed0dd1e89f91436e25a",
     "tools/schema/generate.py": "dd2e81f25dcdb018f5d70bf200c04a2dab1f30b19dac9307aace1c4984ce06a9",
     "tools/schema/requirements.txt": "84ef01c513f5561fceb0d171c9b66fb2a6a05a1802c4d01c3f2429eb97778976"

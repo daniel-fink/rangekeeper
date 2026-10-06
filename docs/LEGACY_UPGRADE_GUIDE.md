@@ -97,7 +97,7 @@ reading = Value(id=uuid4(), key="delivered", kind="flow", measure=measure.id, fl
 note = Value(id=uuid4(), key="source", kind="property", content=encode({"checked": False}))
 owner = Entity(id=uuid4(), code="A", characteristics=Characteristics(values=(reading, note)))
 model = Model.create(
-    metadata=Metadata(id=uuid4(), schema_version="0.5.0"),
+    metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
     definitions=Definitions(measures=(measure,)), system=System(entities=(owner,)),
 )
 stream = Stream.from_values(model, (reading.id,))
@@ -301,18 +301,26 @@ installed-wheel run and the notebook and regression evidence. The
 
 ## Movement roles, equations and draft-format changes
 
-Current Model/Specification documents use 0.5.0; Runs use 0.2.0. Replace scalar
-expression `target: UUID` with `target: {value: UUID}`. Replace assignment `value`
-with `target: {value: UUID}` and wrap scalar unknowns in the same reference shape.
-A Flow role adds `movement: KEY`. Use `specification.targets.scalar` and `movement`
-for typed references. `assign_flow(model, value)` explicitly reuses resolved amounts;
-`unknown_flow(model, value)` declares them unknown even if recorded amounts exist.
+Current Model/Specification documents use 0.6.0; Runs use 0.3.0.
+References use `Reference(target=uuid)` in Python and `{target: UUID}` on the wire.
+Every Movement requires its own UUID. The optional key remains an alignment label.
+There is no `ScopedValueReference`; diagnostic participants use the owning Run's
+input Model. See [references and identity](REFERENCES.md).
+
+Use `upgrade_model` for Model 0.3.0/0.4.0/0.5.0 and `upgrade_specification` for
+Specification 0.4.0/0.5.0. The converters derive Movement UUIDs from the former
+Value UUID and key, then update references to the same UUIDs. Supply upgraded
+external revision pins explicitly. Inputs and opaque Claim content remain unchanged.
+Validate the upgraded Specification with its resolver before execution.
+
+Use `specification.targets.scalar` and `movement` with the target UUID.
+`assign_flow(model, value, ids=...)` explicitly reuses resolved amounts;
+`unknown_flow(model, value, ids=...)` declares them unknown. Omit `ids` for all entries.
 Estimates do not fill missing assignments. A Measure is not a Value selector.
 
-The upgrade functions preserve identity, order and provenance, create new revisions
-and reject unsupported content. They do not silently strip old `basis`/`samples`
-fields or convert old Graph JSON. Apply the documented earlier draft corrections
-explicitly before upgrading. There is no automatic historical Run upgrade.
+The converters create new document revisions and reject unsupported content.
+They do not strip old `basis`/`samples` fields or convert old Graph JSON. Apply
+those earlier draft corrections first. Historical Runs are never upgraded.
 
 The installed example has separate authoring, formulation, investigation, execution
 and reporting operations. This complete example is checked outside the checkout:
@@ -350,7 +358,7 @@ constructor. Keep source-building `WorkflowSpec` separate from mathematical
 from rangekeeper.scenarios import market, replay
 from rangekeeper.duration import make_periods
 
-scenario_base = Model.create(metadata=Metadata(id=uuid4(), schema_version="0.5.0"))
+scenario_base = Model.create(metadata=Metadata(id=uuid4(), schema_version="0.6.0"))
 scenario_plan = market.make_plan(
     periods=make_periods(date(2027, 1, 1), frequency="year", count=4), seed=23,
 )
@@ -388,7 +396,7 @@ handwritten Distribution class.
 
 `migration.upgrade_scenario_names(old_data)` explicitly converts the unreleased
 `market.v1`, `market.estimates.v1` and `independent.v1` labels into their v2 methods.
-Pass detached Model 0.5.0 data; the function returns a new Model revision and
+Pass detached Model 0.5.0 or 0.6.0 data; the function returns a new Model revision and
 preserves Value UUIDs, quantities, Movement coordinates, claims and random stream
 identifiers. Codecs do not upgrade automatically. Old Runs keep their original
 Model pins and are not relabelled as new executions. Select the new Model revision

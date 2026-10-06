@@ -78,7 +78,7 @@ class Index:
         already declared locally cannot masquerade as another record kind.
         Complete Model/composition validation owns reference existence checks.
         """
-        from .._schema.records import _TYPES
+        from .._schema.records import _TYPES, Reference, Value, Movement
 
         for record, _, path in walk(root):
             for name, field in _slot_map(record._kind).items():
@@ -87,6 +87,8 @@ class Index:
                     for option in field["options"]
                     if option["category"] == "uuid" and option["kind"] in _TYPES
                 )
+                if isinstance(record, Reference) and name == "target":
+                    types = (Value, Movement)
                 if not types:
                     continue
                 value = getattr(record, name)

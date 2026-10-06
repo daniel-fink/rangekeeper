@@ -8,8 +8,8 @@ why these boundaries exist.
 
 ## Contracts
 
-The document roots are Model and Specification version `0.5.0`, and Run version
-`0.2.0`. Each contains Metadata with a revision UUID. Model holds Definitions,
+The document roots are Model and Specification version `0.6.0`, and Run version
+`0.3.0`. Each contains Metadata with a revision UUID. Model holds Definitions,
 System and Provenance. Specification describes an investigation over exact
 revisions. Run records a finalized attempt and accepted outputs.
 
@@ -17,7 +17,7 @@ revisions. Run records a finalized attempt and accepted outputs.
 - [Record boundary](../docs/RECORD_BOUNDARY.md): immutable access and field presence.
 - [Expression contract](../docs/EXPRESSION_CONTRACT.md): syntax and mathematical meaning.
 - [Calculations](../docs/CALCULATIONS.md): dates, Movements and units.
-- [Scenarios and policies](../docs/SCENARIOS_AND_POLICIES.md): ValueReference and causal replay.
+- [Scenarios and policies](../docs/SCENARIOS_AND_POLICIES.md): Reference and causal replay.
 - [Run and storage](../docs/RUN_AND_STORAGE.md): status, publication and exact revisions.
 
 Use native UUID references in Python and UUID strings on the wire. Owned records
@@ -32,7 +32,7 @@ and mathematical syntax.
 ## Sources and generated outputs
 
 The YAML files in this directory divide the schema by domain responsibility.
-`rk.yaml` aggregates the root imports. Examples and conformance cases are in
+The generator combines the root schemas and resolves their imports into one bundle. Examples and conformance cases are in
 `examples/` and `checks/`. Generated Python records, schemas, slots and a source
 manifest are packaged under `src/rangekeeper/_schema`. Generated C# records and
 transport metadata are under `grasshopper/Model/Generated`.

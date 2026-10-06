@@ -9,6 +9,7 @@ Start with [architecture](LIBRARY_ARCHITECTURE.md), then use the guide for your 
 | Guide | Purpose |
 | --- | --- |
 | [Object model](MODEL_SPECIFICATION_RUN.md) | Why the three roots and their ownership boundaries exist |
+| [References and identity](REFERENCES.md) | UUIDs, revision scope, Flow copying and draft upgrades |
 | [Records and methods](RECORD_BOUNDARY.md) | Generated fields, immutable replacement and intrinsic behavior |
 | [Domain operations](DOMAIN_CORE.md) | Authoring, lookup, revision, composition and validation |
 | [Calculations](CALCULATIONS.md) | Movement, Flow, calendar, unit and missing-value rules |

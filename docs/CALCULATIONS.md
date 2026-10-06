@@ -7,13 +7,13 @@ define that meaning.
 
 ## Flow semantics and explicit operations
 
-A `Movement` has an owner-local key, magnitude and date or bounded Period. Its date
+A `Movement` has a UUID, optional matching key, magnitude and date or bounded Period. Its date
 records a payment or observation; its Period records coverage. Both may be present
 and need not coincide. Magnitude `None` is unresolved; zero is an observed amount.
 Nonfinite numbers are invalid. Omission and explicit null survive canonical codecs.
 
 `movement.number` returns a finite float or raises for unresolved content.
-`movement.coordinate` supplies the alignment coordinate. `movement.resolve(timing=)`
+`movement.coordinate` supplies the alignment coordinate; it does not use the UUID. `movement.resolve(timing=)`
 uses the recorded date or an explicit convention for period-only content.
 `flow.check(resolved=True)` checks arithmetic readiness and returns the same Flow.
 `flow.clean()` removes unresolved movements explicitly; it does not fill them with
@@ -86,3 +86,16 @@ compatibility aliases. Use the [upgrade guide](LEGACY_UPGRADE_GUIDE.md) when por
 an older consumer. Schema fields and generated records are described in the
 [schema guide](../schema/README.md); the [walkthroughs](../walkthrough/README.md)
 show complete calculations and investigations.
+
+## Movement identity
+
+Movement UUIDs are unique throughout a Model. Event alignment uses date and optional
+key; repeated dates require distinct nonblank keys. Period alignment uses coverage
+and the optional recorded date, without using the key.
+
+Constructors generate UUIDs unless `ids=` is supplied. Decoding requires recorded
+UUIDs. `replace`, unit conversion and filtering preserve identities. `clone()`
+creates independent movements for another Value. Numerical results such as scaling,
+differences, aggregation, integration and valuation get fresh Movement UUIDs.
+Alignment keeps existing IDs and creates IDs for missing placeholders.
+See [references](REFERENCES.md) for revision and migration rules.

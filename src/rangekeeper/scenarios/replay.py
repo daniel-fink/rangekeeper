@@ -36,8 +36,16 @@ def replay(model: Model, *, realization: UUID | None = None) -> Market:
         if flow is None:
             raise ValueError("stored output is not a Flow")
         actual = cast(dict[str, Any], flow.to_data())
-        for item in actual["movements"]:
-            item.pop("claims", None)
-        if actual != _flow(record.plan, paths[output.name]).to_data():
+        expected = cast(
+            dict[str, Any],
+            _flow(record.plan, paths[output.name], output.value).to_data(),
+        )
+        # Replay checks recorded mathematics. Explicit draft upgrades preserve IDs
+        # derived from older addresses, which need not equal new-generation IDs.
+        for content in (actual, expected):
+            for item in content["movements"]:
+                item.pop("claims", None)
+                item.pop("id")
+        if actual != expected:
             raise ValueError(f"replay differs from stored path: {output.name}")
     return Market(model, record)

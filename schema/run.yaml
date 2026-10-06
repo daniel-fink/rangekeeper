@@ -1,7 +1,7 @@
 id: https://daniel-fink.github.io/rangekeeper/schema/run
 name: rangekeeper_run
 title: Rangekeeper Runs
-version: 0.2.0
+version: 0.3.0
 description: Finalized immutable execution records, spawned executions, accepted Model outputs, and supporting
   reports.
 prefixes:
@@ -273,7 +273,8 @@ classes:
         - range: Quantity
           inlined: true
       references:
-        range: ScopedValueReference
+        description: Participating Values and Movements in this Run's input Model. Batch findings and attempts without a valid input Model cannot carry these references.
+        range: Reference
         inlined: true
         multivalued: true
         inlined_as_list: true

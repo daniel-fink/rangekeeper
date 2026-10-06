@@ -35,7 +35,7 @@ FIXTURES = sorted(
 
 
 def minimal():
-    return rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.5.0"))
+    return rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.6.0"))
 
 
 @pytest.fixture(params=["memory", "directory"])
@@ -169,7 +169,7 @@ def test_conflicting_content_and_kind_do_not_replace_a_revision(store):
     with pytest.raises(RevisionConflictError):
         store.put(rk.Model.from_data(data))
     spec = rk.Specification.from_data(
-        {"metadata": {"id": str(document.id), "schema_version": "0.5.0"}}
+        {"metadata": {"id": str(document.id), "schema_version": "0.6.0"}}
     )
     with pytest.raises(RevisionConflictError):
         store.put(spec)
@@ -353,7 +353,7 @@ from rangekeeper import Model
 from rangekeeper.model import Metadata
 from rangekeeper.io import DirectoryStore, _atomic
 _atomic.os.link = lambda *args: os._exit(23)
-DirectoryStore(Path(sys.argv[1])).put(Model.create(metadata=Metadata(id=UUID(sys.argv[2]), schema_version="0.5.0")))
+DirectoryStore(Path(sys.argv[1])).put(Model.create(metadata=Metadata(id=UUID(sys.argv[2]), schema_version="0.6.0")))
 """
     identity = uuid4()
     result = subprocess.run(
@@ -365,7 +365,7 @@ DirectoryStore(Path(sys.argv[1])).put(Model.create(metadata=Metadata(id=UUID(sys
     store = DirectoryStore(tmp_path)
     with pytest.raises(MissingReferenceError):
         store.load_model(identity)
-    document = rk.Model.create(metadata=Metadata(id=identity, schema_version="0.5.0"))
+    document = rk.Model.create(metadata=Metadata(id=identity, schema_version="0.6.0"))
     store.put(document)
     assert store.load_model(identity).id == identity
 
@@ -381,11 +381,11 @@ def test_store_preserves_objective_order(store):
 
 def test_store_preserves_trace_order_and_optional_presence(store):
     spec = rk.Specification.from_data(
-        {"metadata": {"id": str(uuid4()), "schema_version": "0.5.0"}}
+        {"metadata": {"id": str(uuid4()), "schema_version": "0.6.0"}}
     )
     store.put(spec)
     data = {
-        "metadata": {"id": str(uuid4()), "schema_version": "0.2.0"},
+        "metadata": {"id": str(uuid4()), "schema_version": "0.3.0"},
         "specification": str(spec.id),
         "report": {
             "status": {"completion": "failed", "solution": "not_assessed"},

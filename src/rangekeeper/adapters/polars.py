@@ -52,6 +52,7 @@ def to_frame(flow: Flow | Table) -> DataFrame:
     if not rows:
         return pl.DataFrame(
             schema={
+                "id": pl.String,
                 "key": pl.String,
                 "date": pl.String,
                 "period": pl.Null,
@@ -62,10 +63,12 @@ def to_frame(flow: Flow | Table) -> DataFrame:
         )
     frame = pl.DataFrame(rows, infer_schema_length=None)
     # Include omitted columns without inventing field presence in the record.
-    for name in ("date", "period", "magnitude", "claims"):
+    for name in ("key", "date", "period", "magnitude", "claims"):
         if name not in frame.columns:
             frame = frame.with_columns(pl.lit(None).alias(name))
-    return frame.select("key", "date", "period", "magnitude", "claims", "_present")
+    return frame.select(
+        "id", "key", "date", "period", "magnitude", "claims", "_present"
+    )
 
 
 def from_frame(frame: DataFrame, *, units: str) -> Flow:
@@ -91,7 +94,7 @@ def dates(
 ) -> DataFrame:
     """Project dates and magnitudes for display, with an explicit period convention.
 
-    This omits movement keys, coverage and Claims. Use to_frame for interchange.
+    This omits Movement IDs, matching keys, coverage and Claims. Use to_frame for interchange.
     """
     import polars as pl
 

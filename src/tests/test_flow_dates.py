@@ -2,6 +2,7 @@
 
 from rangekeeper.model.flow import Flow
 
+from uuid import uuid4
 from datetime import date, datetime, timezone
 
 import pytest
@@ -34,9 +35,10 @@ def test_schema_date_or_timestamp_union_retains_timestamp_support():
 
 
 def test_date_records_and_detached_wire_format():
-    movement = Movement(key="delivery", date=date(2026, 1, 2), magnitude=2)
+    movement = Movement(id=uuid4(), key="delivery", date=date(2026, 1, 2), magnitude=2)
     assert type(movement.date) is date
     assert movement.to_data() == {
+        "id": str(movement.id),
         "key": "delivery",
         "date": "2026-01-02",
         "magnitude": 2,
@@ -60,7 +62,7 @@ def test_datetimes_are_not_flow_coordinates(value):
         lambda: Flow.from_events([value], [1], units="m"),
         lambda: make_period(value, date(2026, 2, 1)),
         lambda: offset(value, frequency="day"),
-        lambda: Movement(key="event", date=value),
+        lambda: Movement(id=uuid4(), key="event", date=value),
         lambda: Period(start=value, end=date(2026, 2, 1)),
     ):
         with pytest.raises((TypeError, ValidationError)):
@@ -70,14 +72,14 @@ def test_datetimes_are_not_flow_coordinates(value):
 @pytest.mark.parametrize("value", ["2026-01-01T00:00:00", "2026-02-30", "01/01/2026"])
 def test_wire_dates_must_be_valid_iso_dates(value):
     with pytest.raises(ValidationError):
-        Movement.from_data({"key": "event", "date": value})
+        Movement.from_data({"id": str(uuid4()), "key": "event", "date": value})
 
 
 def test_sample_needs_date_or_period():
     # Generated records check structure; Flow validation checks this cross-field rule.
     for movement in (
-        Movement(key="missing"),
-        Movement(key="null", date=None, period=None),
+        Movement(id=uuid4(), key="missing"),
+        Movement(id=uuid4(), key="null", date=None, period=None),
     ):
         with pytest.raises(ValueError, match="date or period"):
             Flow(units="m", movements=(movement,)).check()
@@ -163,8 +165,15 @@ def test_date_and_period_null_presence_survives_frames():
         {
             "units": "m",
             "movements": [
-                {"key": "a", "date": None, "period": JANUARY.to_data(), "magnitude": 0},
                 {
+                    "id": str(uuid4()),
+                    "key": "a",
+                    "date": None,
+                    "period": JANUARY.to_data(),
+                    "magnitude": 0,
+                },
+                {
+                    "id": str(uuid4()),
                     "key": "b",
                     "period": {"start": "2026-02-01", "end": "2026-03-01"},
                     "magnitude": None,

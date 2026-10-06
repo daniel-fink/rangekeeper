@@ -1,6 +1,6 @@
 """Finite Movement equations checked against an independent temporal oracle."""
 
-from rangekeeper.model.expression import ValueReference
+from rangekeeper.model.expression import Reference
 from dataclasses import replace
 from datetime import date
 from uuid import uuid4
@@ -51,13 +51,14 @@ def oracle():
                 flow=Flow(
                     units="AUD",
                     movements=tuple(
-                        Movement(key=f"y{i+1}", period=p) for i, p in enumerate(periods)
+                        Movement(id=uuid4(), key=f"y{i+1}", period=p)
+                        for i, p in enumerate(periods)
                     ),
                 ),
             )
         )
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.5.0"),
+        metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
         definitions=Definitions(
             measures=(
                 Measure(id=money, code="money", name="Money", units="AUD"),
@@ -101,7 +102,7 @@ def investigate(model, ids, *, inverse=False):
     unknown = "initial" if inverse else "pv"
     return Specification(
         SpecificationRecord(
-            metadata=Metadata(id=uuid4(), schema_version="0.5.0"),
+            metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
             model=model.id,
             assignments=(
                 Assignment(
@@ -158,23 +159,42 @@ def test_explicit_flow_roles_preserve_missing_null_zero_and_unrelated_entries():
     cash["flow"]["movements"][1]["magnitude"] = None
     cash["flow"]["movements"][2]["magnitude"] = 99
     model = model.revise(Update(system=System.from_data(data)))
-    assert assign_flow(model, ids["cash"], keys=["y1"])[0].quantity.magnitude == 0
+    assert (
+        assign_flow(
+            model, ids["cash"], ids=[model.value(ids["cash"]).flow.movements[0].id]
+        )[0].quantity.magnitude
+        == 0
+    )
     with pytest.raises(ValueError, match="unresolved"):
         assign_flow(model, ids["cash"])
-    for keys in (["absent"], ["y1", "y1"]):
+    for selected in ([uuid4()], [model.value(ids["cash"]).flow.movements[0].id] * 2):
         with pytest.raises(ValueError):
-            unknown_flow(model, ids["cash"], keys=keys)
+            unknown_flow(model, ids["cash"], ids=selected)
     specification = Specification(
         SpecificationRecord(
-            metadata=Metadata(id=uuid4(), schema_version="0.5.0"),
+            metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
             model=model.id,
             assignments=(
                 Assignment(
-                    target=movement(ids["cash"], "y1"),
+                    target=movement(
+                        next(
+                            m.id
+                            for m in model.value(ids["cash"]).flow.movements
+                            if m.key == "y1"
+                        )
+                    ),
                     quantity=Quantity(magnitude=25, units="AUD"),
                 ),
             ),
-            unknowns=(movement(ids["cash"], "y2"),),
+            unknowns=(
+                movement(
+                    next(
+                        m.id
+                        for m in model.value(ids["cash"]).flow.movements
+                        if m.key == "y2"
+                    )
+                ),
+            ),
         )
     )
     store = MemoryStore()
@@ -225,14 +245,32 @@ def test_stable_references_builder_ids_and_coordinate_mismatch():
     cash["flow"]["movements"].insert(
         0,
         Movement(
-            key="inserted", period=Period(start=date(2026, 1, 1), end=date(2027, 1, 1))
+            id=uuid4(),
+            key="inserted",
+            period=Period(start=date(2026, 1, 1), end=date(2027, 1, 1)),
         ).to_data(),
     )
     changed = model.revise(Update(system=System.from_data(data)))
     from rangekeeper.execution.symbols import key, units_for
 
-    assert key(movement(ids["cash"], "y2")) == str(ids["cash"]) + "/y2"
-    assert units_for(changed, movement(ids["cash"], "y2")) == "AUD"
+    assert key(
+        movement(
+            next(m.id for m in model.value(ids["cash"]).flow.movements if m.key == "y2")
+        )
+    ) == str(model.value(ids["cash"]).flow.movements[1].id)
+    assert (
+        units_for(
+            changed,
+            movement(
+                next(
+                    m.id
+                    for m in model.value(ids["cash"]).flow.movements
+                    if m.key == "y2"
+                )
+            ),
+        )
+        == "AUD"
+    )
     with pytest.raises(ValueError, match="coordinates"):
         flow.build_sum(
             changed, id=uuid4(), sources=[ids["cash"]], result=ids["discounted"]
@@ -248,7 +286,9 @@ def test_movement_roles_conflicts_units_and_recorded_values_not_assignments():
     original = investigate(model, ids).to_data()
     # A resolved record is still not a role. An estimate is not a role either.
     original["unknowns"] = [
-        r for r in original["unknowns"] if r.get("movement") != "y2"
+        r
+        for r in original["unknowns"]
+        if r["target"] != str(model.value(ids["cash"]).flow.movements[1].id)
     ]
     failed = Executor(store).execute(Specification.from_data(original))
     assert failed.report.status.solution == "not_assessed"
@@ -259,12 +299,18 @@ def test_movement_roles_conflicts_units_and_recorded_values_not_assignments():
         elif modify == "overlap":
             data["assignments"].append(
                 dict(
-                    target=movement(ids["cash"], "y1").to_data(),
+                    target=movement(
+                        next(
+                            m.id
+                            for m in model.value(ids["cash"]).flow.movements
+                            if m.key == "y1"
+                        )
+                    ).to_data(),
                     quantity=dict(magnitude=1, units="AUD"),
                 )
             )
         elif modify == "missing":
-            data["unknowns"][1]["movement"] = "not-present"
+            data["unknowns"][1]["target"] = str(uuid4())
         else:
             data["assignments"][0]["quantity"]["units"] = "m"
         try:
@@ -289,7 +335,7 @@ def test_movement_candidate_rejection_and_expansion_limits():
         def solve(self, *args, **kwargs):
             result = PyomoHighs().solve(*args, **kwargs)
             candidate = dict(result.candidate)
-            candidate[str(ids["cash"]) + "/y2"] += 1
+            candidate[str(model.value(ids["cash"]).flow.movements[1].id)] += 1
             return replace(result, candidate=candidate)
 
     run = Executor(store, backend=WrongCandidate()).execute(investigate(model, ids))
@@ -341,7 +387,7 @@ def test_explicit_draft_upgrade_preserves_order_and_requires_new_pins():
     def unwrap(node):
         if isinstance(node, dict):
             if node.get("kind") == "reference":
-                node["target"] = node["target"]["value"]
+                node["target"] = node["target"]["target"]
             for value in node.values():
                 unwrap(value)
         elif isinstance(node, list):
@@ -397,7 +443,7 @@ def test_finite_balance_interest_scaling_sum_and_explicit_reversion_mapping():
                 key=name,
                 kind="flow",
                 measure=model.value(ids["cash"]).measure,
-                flow=Flow.from_data(template["flow"]),
+                flow=Flow.from_data(template["flow"]).clone(),
             ).to_data()
         )
     model = model.revise(Update(system=System.from_data(data)))
@@ -436,7 +482,10 @@ def test_finite_balance_interest_scaling_sum_and_explicit_reversion_mapping():
             income=ids["discounted"],
             capitalization=scalar(ids["rate"]),
             result=ids["reversion"],
-            mapping={"y1": "y2", "y2": "y3", "y3": "y1"},
+            mapping={
+                out.id: model.value(ids["discounted"]).flow.movements[(i + 1) % 3].id
+                for i, out in enumerate(model.value(ids["reversion"]).flow.movements)
+            },
         ),
     ]
     data = model.system.to_data()
@@ -452,14 +501,20 @@ def test_finite_balance_interest_scaling_sum_and_explicit_reversion_mapping():
     ]
     assigned.extend(
         Assignment(
-            target=movement(ids["cash"], f"y{i+1}"),
+            target=movement(
+                next(
+                    m.id
+                    for m in model.value(ids["cash"]).flow.movements
+                    if m.key == f"y{i+1}"
+                )
+            ),
             quantity=Quantity(magnitude=x, units="AUD"),
         )
         for i, x in enumerate((10, -20, 5))
     )
     spec = Specification(
         SpecificationRecord(
-            metadata=Metadata(id=uuid4(), schema_version="0.5.0"),
+            metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
             model=model.id,
             assignments=tuple(assigned),
             unknowns=tuple(

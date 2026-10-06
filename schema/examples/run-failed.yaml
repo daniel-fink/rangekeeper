@@ -1,10 +1,9 @@
-# Synthetic conformance fixture; no runtime execution is claimed.
 metadata:
   id: e272c23f-5498-5f2c-81aa-eac7608bda03
-  schema_version: 0.2.0
+  schema_version: 0.3.0
   name: Synthetic failed attempt
-  description: New synthetic 0.2.0 conformance fixture. No evaluator or solver produced this record; historical
-    Runs are unchanged.
+  description: New synthetic 0.3.0 conformance fixture. No evaluator or solver produced
+    this record; historical Runs are unchanged.
 specification: 5f5be6f0-a423-5a22-89f8-bc83ac1f9d96
 report:
   status:
@@ -13,6 +12,6 @@ report:
   diagnostics:
   - severity: error
     code: unsupported_capability
-    message: 'Synthetic failure before numerical execution: the selected implementation cannot evaluate the requested
-      formulation.'
+    message: 'Synthetic failure before numerical execution: the selected implementation
+      cannot evaluate the requested formulation.'
     document: 5f5be6f0-a423-5a22-89f8-bc83ac1f9d96

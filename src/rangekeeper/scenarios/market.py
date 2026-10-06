@@ -31,7 +31,7 @@ from ..model.scenario import (
     LibraryVersion,
     ObservationAvailability,
 )
-from .._schema.records import ValueReference
+from .._schema.records import Reference
 
 
 from .plan import make_plan, validate
@@ -54,11 +54,14 @@ def _identity(model, plan, key):
     )
 
 
-def _flow(plan, amounts):
+def _flow(plan, amounts, owner: UUID):
     return Flow(
         units="dimensionless",
         movements=tuple(
             Movement(
+                id=uuid5(
+                    owner, "movement/" + p.start.isoformat() + "/" + p.end.isoformat()
+                ),
                 key=f"p{i + 1}",
                 period=p,
                 date=p.resolve(timing="last_day"),
@@ -102,7 +105,7 @@ def _sample(model: Model, plan: ScenarioPlan, key: str) -> Model:
                     key="input_" + name,
                     kind="flow",
                     measure=measure_id,
-                    flow=_flow(plan, array),
+                    flow=_flow(plan, array, uuid5(root, name)),
                 )
             )
         else:
@@ -139,7 +142,7 @@ def _sample(model: Model, plan: ScenarioPlan, key: str) -> Model:
                     key="input_" + name,
                     kind="flow",
                     measure=measure_id,
-                    flow=_flow(plan, array),
+                    flow=_flow(plan, array, uuid5(root, name)),
                 )
             )
     return _capture(model, plan, key, values, streams, "numpy.SeedSequence/PCG64")
@@ -167,7 +170,7 @@ def _capture(model, plan, key, values, streams, algorithm):
         outputs=(),
         availability=tuple(
             ObservationAvailability(
-                target=ValueReference(value=v.id, movement=m.key),
+                target=Reference(target=m.id),
                 available_at=cast(Any, m.period).resolve(timing="last_day"),
             )
             for v in values
@@ -264,7 +267,11 @@ def capture(
                 raise ValueError(
                     "captured draws require finite values for every period"
                 )
-            values.append(Value(**common, kind="flow", flow=_flow(plan, amounts)))
+            values.append(
+                Value(
+                    **common, kind="flow", flow=_flow(plan, amounts, uuid5(root, name))
+                )
+            )
     result = _capture(model, plan, scenario_key, values, (), "supplied")
     captured_inputs(result, plan)
     return result
@@ -332,7 +339,7 @@ def captured_inputs(draws: Model, plan: ScenarioPlan):
 def realize(model: Model, plan: ScenarioPlan, *, draws: Model) -> Market:
     """Construct paths from recorded draws only. No RNG, mutation, store or file IO.
 
-    Input Values and provenance are retained. Paths use stable Movement keys and
+    Input Values and provenance are retained. Paths use stable Movement UUIDs, period labels and
     dates. Forward-derived ratios carry availability at the next period end.
     """
     validate(plan)
@@ -347,7 +354,7 @@ def realize(model: Model, plan: ScenarioPlan, *, draws: Model) -> Market:
             key=name,
             kind="flow",
             measure=measure_id,
-            flow=_flow(plan, amounts),
+            flow=_flow(plan, amounts, uuid5(record.id, "output/" + name)),
         )
         for name, amounts in paths.items()
     )
@@ -363,7 +370,7 @@ def realize(model: Model, plan: ScenarioPlan, *, draws: Model) -> Market:
     updated["availability"].extend(
         (
             ObservationAvailability(
-                target=ValueReference(value=v.id, movement=m.key),
+                target=Reference(target=m.id),
                 available_at=plan.periods[i + delays.get(v.key, 0)].resolve(
                     timing="last_day"
                 ),

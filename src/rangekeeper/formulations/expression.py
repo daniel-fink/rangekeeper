@@ -2,7 +2,7 @@
 
 from collections.abc import Sequence
 from uuid import UUID, uuid4
-from .._schema.records import Expression, Quantity, ValueReference
+from .._schema.records import Expression, Quantity, Reference
 
 
 def literal(
@@ -16,7 +16,7 @@ def literal(
     )
 
 
-def reference(target: ValueReference, *, id: UUID | None = None) -> Expression:
+def reference(target: Reference, *, id: UUID | None = None) -> Expression:
     """Declare a symbol; its recorded magnitude is never read."""
     return Expression(id=id or uuid4(), kind="reference", target=target)
 

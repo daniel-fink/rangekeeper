@@ -65,7 +65,7 @@ def test_deterministic_horizon_comparison(initial, increment, terminal):
 
 
 def test_probabilistic_and_flexible_use_identical_captured_paths():
-    base = Model.create(metadata=Metadata(id=uuid4(), schema_version="0.5.0"))
+    base = Model.create(metadata=Metadata(id=uuid4(), schema_version="0.6.0"))
     plan = make_plan(
         periods=make_periods(datetime.date(2021, 1, 1), frequency="year", count=4),
         seed=17,

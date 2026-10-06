@@ -226,7 +226,10 @@ def author(
                 units="AUD",
                 movements=tuple(
                     Movement(
-                        key=f"y{i + 1}", period=p, date=p.resolve(timing="last_day")
+                        id=uuid4(),
+                        key=f"y{i + 1}",
+                        period=p,
+                        date=p.resolve(timing="last_day"),
                     )
                     for i, p in enumerate(periods[:count])
                 ),
@@ -324,7 +327,11 @@ def formulate(model: Model) -> Model:
 
     def r(item, key=None):
         bound.add(item.id)
-        return reference(scalar(item.id) if key is None else movement(item.id, key))
+        return reference(
+            scalar(item.id)
+            if key is None
+            else movement(next(m.id for m in item.flow.movements if m.key == key))
+        )
 
     def put(item, key, rhs):
         equations.append(
@@ -499,7 +506,7 @@ def specify(model: Model) -> Specification:
                     inputs[item.id] = item
     return Specification(
         SpecificationRecord(
-            metadata=Metadata(id=uuid4(), schema_version="0.5.0"),
+            metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
             model=model.id,
             assignments=tuple(
                 Assignment(target=scalar(v.id), quantity=cast(Quantity, v.quantity))

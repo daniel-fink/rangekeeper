@@ -11,14 +11,19 @@ import yaml
 import _library
 
 from rangekeeper.errors import ContractError
-from rangekeeper.specification._composition import compose_specification, specification_catalogue
+from rangekeeper.specification._composition import (
+    compose_specification,
+    specification_catalogue,
+)
 from rangekeeper.specification._validation import validate_batch, validate_specification
 
 
 def check_composition(schema, validators, module, model, version, model_version):
     names = ("common", "composed-forward", "composed-inverse", "batch")
     docs = {
-        name: yaml.safe_load((schema / f"examples/specification-{name}.yaml").read_text())
+        name: yaml.safe_load(
+            (schema / f"examples/specification-{name}.yaml").read_text()
+        )
         for name in names
     }
     common, forward, inverse, batch = (docs[name] for name in names)
@@ -67,18 +72,24 @@ def check_composition(schema, validators, module, model, version, model_version)
         view.pop("metadata")
         for field in ("assignments", "estimates"):
             if field in view:
-                view[field].sort(key=lambda a: a["target"]["value"])
+                view[field].sort(key=lambda a: a["target"]["target"])
         if "unknowns" in view:
-            view["unknowns"].sort(key=lambda r: r["value"])
+            view["unknowns"].sort(key=lambda r: r["target"])
         return view
 
     for name, doc in (("forward", forward), ("inverse", inverse)):
-        flat = yaml.safe_load((schema / f"examples/specification-{name}.yaml").read_text())
+        flat = yaml.safe_load(
+            (schema / f"examples/specification-{name}.yaml").read_text()
+        )
         result = check(doc)
         assert requirements(result.effective) == requirements(flat)
         assert "includes" not in result.effective
-        assert result.sources[("unknowns", common["unknowns"][0]["value"])] == common_id
-    paths = validate_batch(batch, models, version, model_version, specifications=catalogue)
+        assert (
+            result.sources[("unknowns", common["unknowns"][0]["target"])] == common_id
+        )
+    paths = validate_batch(
+        batch, models, version, model_version, specifications=catalogue
+    )
     assert {path[-1] for path in paths} == set(batch["cases"])
     accepted += 1
 
@@ -110,10 +121,20 @@ def check_composition(schema, validators, module, model, version, model_version)
     assert check(split_settings, (timing,)).effective["settings"] == forward["settings"]
 
     rent = forward["assignments"][0]
-    target = rent["target"]["value"]
+    target = rent["target"]["target"]
     for label, fields in (
         ("equal assignment", dict(assignments=[deepcopy(rent)])),
-        ("different assignment", dict(assignments=[dict(target=dict(value=target), quantity=dict(magnitude=1, units=rent["quantity"]["units"]))])),
+        (
+            "different assignment",
+            dict(
+                assignments=[
+                    dict(
+                        target=dict(target=target),
+                        quantity=dict(magnitude=1, units=rent["quantity"]["units"]),
+                    )
+                ]
+            ),
+        ),
         ("unknown role", dict(unknowns=[forward["unknowns"][0]])),
         ("setting", dict(settings=dict(time_limit=forward["settings"]["time_limit"]))),
     ):
@@ -121,7 +142,7 @@ def check_composition(schema, validators, module, model, version, model_version)
         bad = deepcopy(forward)
         bad["includes"].append(extra["metadata"]["id"])
         reject("multiple contributors", lambda: check(bad, (extra,)))
-    conflict = record("role-conflict", unknowns=[dict(value=target)])
+    conflict = record("role-conflict", unknowns=[dict(target=target)])
     bad = deepcopy(forward)
     bad["includes"].append(conflict["metadata"]["id"])
     reject("roles overlap", lambda: check(bad, (conflict,)))
@@ -157,24 +178,50 @@ def check_composition(schema, validators, module, model, version, model_version)
     bad = record("includes-batch", includes=[batch["metadata"]["id"]])
     reject("cannot include a batch", lambda: compose(bad))
 
-    for field, content in (("includes", [common_id]), ("unknowns", [dict(value=target)]),
-                           ("assignments", [rent]), ("settings", {"time_limit": 1})):
+    for field, content in (
+        ("includes", [common_id]),
+        ("unknowns", [dict(target=target)]),
+        ("assignments", [rent]),
+        ("settings", {"time_limit": 1}),
+    ):
         bad = deepcopy(batch)
         bad[field] = content
         reject("batch cannot", lambda: compose(bad))
     bad = deepcopy(batch)
     bad["model"] = uid("different-model")
     cat = dict(catalogue, **{bad["metadata"]["id"]: bad})
-    reject("batch input Model assertion", lambda: validate_batch(bad, models, version, model_version, specifications=cat))
+    reject(
+        "batch input Model assertion",
+        lambda: validate_batch(bad, models, version, model_version, specifications=cat),
+    )
     # A batch Model pin does not repair an incomplete case.
     missing_model = deepcopy(forward)
     missing_model.pop("includes")
     cat = dict(catalogue, **{missing_model["metadata"]["id"]: missing_model})
-    reject("requires an input Model", lambda: validate_batch(batch, models, version, model_version, specifications=cat))
-    reject("unresolved input Model", lambda: validate_batch(batch, {}, version, model_version, specifications=catalogue))
-    reject("batch is not one", lambda: validate_specification(batch, model, version, model_version, specifications=catalogue))
-    outer = record("outer-batch", cases=[batch["metadata"]["id"], forward["metadata"]["id"]])
-    nested_paths = validate_batch(outer, models, version, model_version, specifications=catalogue)
+    reject(
+        "requires an input Model",
+        lambda: validate_batch(
+            batch, models, version, model_version, specifications=cat
+        ),
+    )
+    reject(
+        "unresolved input Model",
+        lambda: validate_batch(
+            batch, {}, version, model_version, specifications=catalogue
+        ),
+    )
+    reject(
+        "batch is not one",
+        lambda: validate_specification(
+            batch, model, version, model_version, specifications=catalogue
+        ),
+    )
+    outer = record(
+        "outer-batch", cases=[batch["metadata"]["id"], forward["metadata"]["id"]]
+    )
+    nested_paths = validate_batch(
+        outer, models, version, model_version, specifications=catalogue
+    )
     assert len(nested_paths) == 3 and len(set(nested_paths)) == 3
     accepted += 1
     collision_batch = deepcopy(batch)
@@ -187,38 +234,63 @@ def check_composition(schema, validators, module, model, version, model_version)
     )
 
     # Omission/empty lists are neutral; objectives are supplied as a whole.
-    optimization = yaml.safe_load((schema / "examples/specification-objectives.yaml").read_text())
+    optimization = yaml.safe_load(
+        (schema / "examples/specification-objectives.yaml").read_text()
+    )
     criteria = record("criteria", objectives=optimization.pop("objectives"))
     optimization["includes"] = [criteria["metadata"]["id"]]
     optimization["objectives"] = []
     result = check(optimization, (criteria,))
     assert result.effective["objectives"] == criteria["objectives"]
-    transported = json.loads(json_dumper.dumps(
-        json_loader.loads(json.dumps(optimization), target_class=module.Specification),
-        inject_type=False,
-    ))
+    transported = json.loads(
+        json_dumper.dumps(
+            json_loader.loads(
+                json.dumps(optimization), target_class=module.Specification
+            ),
+            inject_type=False,
+        )
+    )
     # The native dumper omits the empty local list; included preference order stays.
     assert check(transported, (criteria,)).effective == result.effective
-    competing = record("competing-criteria", objectives=deepcopy(criteria["objectives"]))
+    competing = record(
+        "competing-criteria", objectives=deepcopy(criteria["objectives"])
+    )
     optimization["includes"].append(competing["metadata"]["id"])
-    reject("multiple contributors for objectives", lambda: check(optimization, (criteria, competing)))
+    reject(
+        "multiple contributors for objectives",
+        lambda: check(optimization, (criteria, competing)),
+    )
 
     # Additional mathematics accumulates even when jointly infeasible.
-    false_requirement = record("false", formulations=[dict(
-        id=uid("false-formulation"),
-        expressions=[dict(id=uid("false-expression"), kind="boolean", boolean=False)],
-        constraints=[dict(id=uid("false-constraint"), predicate=uid("false-expression"))],
-    )])
+    false_requirement = record(
+        "false",
+        formulations=[
+            dict(
+                id=uid("false-formulation"),
+                expressions=[
+                    dict(id=uid("false-expression"), kind="boolean", boolean=False)
+                ],
+                constraints=[
+                    dict(id=uid("false-constraint"), predicate=uid("false-expression"))
+                ],
+            )
+        ],
+    )
     constrained = deepcopy(forward)
     constrained["includes"].append(false_requirement["metadata"]["id"])
     check(constrained, (false_requirement,))
     duplicate_math = deepcopy(false_requirement)
     duplicate_math["metadata"]["id"] = uid("duplicate-math")
     constrained["includes"].append(duplicate_math["metadata"]["id"])
-    reject("duplicate identity", lambda: check(constrained, (false_requirement, duplicate_math)))
+    reject(
+        "duplicate identity",
+        lambda: check(constrained, (false_requirement, duplicate_math)),
+    )
 
     # Cross-contributor references resolve in the effective mathematical scope.
-    opt = yaml.safe_load((schema / "examples/specification-optimization.yaml").read_text())
+    opt = yaml.safe_load(
+        (schema / "examples/specification-optimization.yaml").read_text()
+    )
     maths = record("maths", formulations=opt.pop("formulations"))
     opt["includes"] = [maths["metadata"]["id"]]
     check(opt, (maths,))
@@ -229,12 +301,20 @@ def check_composition(schema, validators, module, model, version, model_version)
     bad_cat = dict(catalogue)
     bad_cat[common_id] = deepcopy(common)
     bad_cat[common_id]["metadata"]["id"] = uid("mismatch")
-    reject("catalogue identity mismatch", lambda: specification_catalogue(forward, bad_cat, version))
+    reject(
+        "catalogue identity mismatch",
+        lambda: specification_catalogue(forward, bad_cat, version),
+    )
     bad_cat[common_id] = model
-    reject("must resolve to a Specification", lambda: specification_catalogue(forward, bad_cat, version))
+    reject(
+        "must resolve to a Specification",
+        lambda: specification_catalogue(forward, bad_cat, version),
+    )
     bad_cat = dict(catalogue)
     bad_cat[forward["metadata"]["id"]] = inverse
-    reject("different content", lambda: specification_catalogue(forward, bad_cat, version))
+    reject(
+        "different content", lambda: specification_catalogue(forward, bad_cat, version)
+    )
     bad_model = deepcopy(common)
     bad_model["model"] = uid("another-model")
     reject("conflicting input Model", lambda: compose(with_model, (bad_model,)))
@@ -255,12 +335,27 @@ def check_composition(schema, validators, module, model, version, model_version)
     for doc in docs.values():
         validators["Specification"].validate(doc)
         obj = json_loader.loads(json.dumps(doc), target_class=module.Specification)
-        assert all(isinstance(ref, module.MetadataId) for ref in obj.includes + obj.cases)
+        assert all(
+            isinstance(ref, module.MetadataId) for ref in obj.includes + obj.cases
+        )
         after = json.loads(json_dumper.dumps(obj, inject_type=False))
         assert after == doc, (doc, after)
         validators["Specification"].validate(after)
         restored[after["metadata"]["id"]] = after
-    assert validate_batch(restored[batch["metadata"]["id"]], models, version, model_version, specifications=restored) == paths
+    assert (
+        validate_batch(
+            restored[batch["metadata"]["id"]],
+            models,
+            version,
+            model_version,
+            specifications=restored,
+        )
+        == paths
+    )
     assert (docs, model) == before
-    print(f"Passed {accepted} composition/batch acceptance checks, {rejected} composition rejections,")
-    print(f"and {len(docs)} additional native round trips; no inputs mutated or solver executed.")
+    print(
+        f"Passed {accepted} composition/batch acceptance checks, {rejected} composition rejections,"
+    )
+    print(
+        f"and {len(docs)} additional native round trips; no inputs mutated or solver executed."
+    )

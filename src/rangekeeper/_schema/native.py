@@ -163,6 +163,10 @@ class RelationshipId(UUID):
     pass
 
 
+class MovementId(UUID):
+    pass
+
+
 class EntityId(UUID):
     pass
 
@@ -254,7 +258,7 @@ class Specification(YAMLRoot):
     includes: Optional[Union[Union[str, MetadataId], list[Union[str, MetadataId]]]] = empty_list()
     cases: Optional[Union[Union[str, MetadataId], list[Union[str, MetadataId]]]] = empty_list()
     assignments: Optional[Union[Union[dict, "Assignment"], list[Union[dict, "Assignment"]]]] = empty_list()
-    unknowns: Optional[Union[Union[dict, "ValueReference"], list[Union[dict, "ValueReference"]]]] = empty_list()
+    unknowns: Optional[Union[Union[dict, "Reference"], list[Union[dict, "Reference"]]]] = empty_list()
     estimates: Optional[Union[Union[dict, "Assignment"], list[Union[dict, "Assignment"]]]] = empty_list()
     formulations: Optional[Union[dict[Union[str, FormulationId], Union[dict, "Formulation"]], list[Union[dict, "Formulation"]]]] = empty_dict()
     objectives: Optional[Union[Union[dict, "Objective"], list[Union[dict, "Objective"]]]] = empty_list()
@@ -282,9 +286,7 @@ class Specification(YAMLRoot):
             self.assignments = [self.assignments] if self.assignments is not None else []
         self.assignments = [v if isinstance(v, Assignment) else Assignment(**as_dict(v)) for v in self.assignments]
 
-        if not isinstance(self.unknowns, list):
-            self.unknowns = [self.unknowns] if self.unknowns is not None else []
-        self.unknowns = [v if isinstance(v, ValueReference) else ValueReference(**as_dict(v)) for v in self.unknowns]
+        self._normalize_inlined_as_list(slot_name="unknowns", slot_type=Reference, key_name="target", keyed=False)
 
         if not isinstance(self.estimates, list):
             self.estimates = [self.estimates] if self.estimates is not None else []
@@ -530,7 +532,7 @@ class Diagnostic(YAMLRoot):
     target: Optional[Union[str, UUID]] = None
     residual: Optional[Union[dict, "Quantity"]] = None
     tolerance: Optional[Union[dict, "Quantity"]] = None
-    references: Optional[Union[Union[dict, "ScopedValueReference"], list[Union[dict, "ScopedValueReference"]]]] = empty_list()
+    references: Optional[Union[Union[dict, "Reference"], list[Union[dict, "Reference"]]]] = empty_list()
 
     def __post_init__(self, *_: str, **kwargs: Any):
         if self._is_empty(self.severity):
@@ -560,7 +562,7 @@ class Diagnostic(YAMLRoot):
         if self.tolerance is not None and not isinstance(self.tolerance, Quantity):
             self.tolerance = Quantity(**as_dict(self.tolerance))
 
-        self._normalize_inlined_as_list(slot_name="references", slot_type=ScopedValueReference, key_name="document", keyed=False)
+        self._normalize_inlined_as_list(slot_name="references", slot_type=Reference, key_name="target", keyed=False)
 
         super().__post_init__(**kwargs)
 
@@ -1020,58 +1022,25 @@ class Settings(YAMLRoot):
 
 
 @dataclass(repr=False)
-class ValueReference(YAMLRoot):
+class Reference(YAMLRoot):
     """
-    A Value UUID and optional stable owner-local Movement key. Scope comes from the containing Model or composed
-    Specification; positions are never identities.
-    """
-    _inherited_slots: ClassVar[list[str]] = []
-
-    class_class_uri: ClassVar[URIRef] = RK["ValueReference"]
-    class_class_curie: ClassVar[str] = "rk:ValueReference"
-    class_name: ClassVar[str] = "ValueReference"
-    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/ValueReference")
-
-    value: Union[str, ValueId] = None
-    movement: Optional[str] = None
-
-    def __post_init__(self, *_: str, **kwargs: Any):
-        if self._is_empty(self.value):
-            self.MissingRequiredField("value")
-        if not isinstance(self.value, ValueId):
-            self.value = ValueId(self.value)
-
-        if self.movement is not None and not isinstance(self.movement, str):
-            self.movement = str(self.movement)
-
-        super().__post_init__(**kwargs)
-
-
-@dataclass(repr=False)
-class ScopedValueReference(YAMLRoot):
-    """
-    An explicit revision and Value/Movement reference used in execution evidence.
+    A Value or Movement UUID resolved in the containing Model or composed Specification. Execution diagnostic
+    references resolve in the Run's input Model. Names, matching keys and positions are never identities.
     """
     _inherited_slots: ClassVar[list[str]] = []
 
-    class_class_uri: ClassVar[URIRef] = RK["ScopedValueReference"]
-    class_class_curie: ClassVar[str] = "rk:ScopedValueReference"
-    class_name: ClassVar[str] = "ScopedValueReference"
-    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/ScopedValueReference")
+    class_class_uri: ClassVar[URIRef] = RK["Reference"]
+    class_class_curie: ClassVar[str] = "rk:Reference"
+    class_name: ClassVar[str] = "Reference"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Reference")
 
-    document: Union[str, UUID] = None
-    reference: Union[dict, ValueReference] = None
+    target: Union[str, UUID] = None
 
     def __post_init__(self, *_: str, **kwargs: Any):
-        if self._is_empty(self.document):
-            self.MissingRequiredField("document")
-        if not isinstance(self.document, UUID):
-            self.document = UUID(self.document)
-
-        if self._is_empty(self.reference):
-            self.MissingRequiredField("reference")
-        if not isinstance(self.reference, ValueReference):
-            self.reference = ValueReference(**as_dict(self.reference))
+        if self._is_empty(self.target):
+            self.MissingRequiredField("target")
+        if not isinstance(self.target, UUID):
+            self.target = UUID(self.target)
 
         super().__post_init__(**kwargs)
 
@@ -1089,14 +1058,14 @@ class Assignment(YAMLRoot):
     class_name: ClassVar[str] = "Assignment"
     class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Assignment")
 
-    target: Union[dict, ValueReference] = None
+    target: Union[dict, Reference] = None
     quantity: Union[dict, "Quantity"] = None
 
     def __post_init__(self, *_: str, **kwargs: Any):
         if self._is_empty(self.target):
             self.MissingRequiredField("target")
-        if not isinstance(self.target, ValueReference):
-            self.target = ValueReference(**as_dict(self.target))
+        if not isinstance(self.target, Reference):
+            self.target = Reference(**as_dict(self.target))
 
         if self._is_empty(self.quantity):
             self.MissingRequiredField("quantity")
@@ -1119,7 +1088,7 @@ class ObservationBinding(YAMLRoot):
     class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/ObservationBinding")
 
     name: Union[str, Code] = None
-    target: Union[dict, ValueReference] = None
+    target: Union[dict, Reference] = None
     available_at: Optional[Union[str, XSDDate]] = None
 
     def __post_init__(self, *_: str, **kwargs: Any):
@@ -1130,8 +1099,8 @@ class ObservationBinding(YAMLRoot):
 
         if self._is_empty(self.target):
             self.MissingRequiredField("target")
-        if not isinstance(self.target, ValueReference):
-            self.target = ValueReference(**as_dict(self.target))
+        if not isinstance(self.target, Reference):
+            self.target = Reference(**as_dict(self.target))
 
         if self.available_at is not None and not isinstance(self.available_at, XSDDate):
             self.available_at = XSDDate(self.available_at)
@@ -1152,7 +1121,7 @@ class Action(YAMLRoot):
     class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Action")
 
     kind: Union[str, "ActionKind"] = None
-    target: Optional[Union[dict, ValueReference]] = None
+    target: Optional[Union[dict, Reference]] = None
     quantity: Optional[Union[dict, "Quantity"]] = None
 
     def __post_init__(self, *_: str, **kwargs: Any):
@@ -1161,8 +1130,8 @@ class Action(YAMLRoot):
         if not isinstance(self.kind, ActionKind):
             self.kind = ActionKind(self.kind)
 
-        if self.target is not None and not isinstance(self.target, ValueReference):
-            self.target = ValueReference(**as_dict(self.target))
+        if self.target is not None and not isinstance(self.target, Reference):
+            self.target = Reference(**as_dict(self.target))
 
         if self.quantity is not None and not isinstance(self.quantity, Quantity):
             self.quantity = Quantity(**as_dict(self.quantity))
@@ -1261,7 +1230,7 @@ class Policy(YAMLRoot):
     class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Policy")
 
     id: Union[str, PolicyId] = None
-    targets: Union[Union[dict, ValueReference], list[Union[dict, ValueReference]]] = None
+    targets: Union[Union[dict, Reference], list[Union[dict, Reference]]] = None
     points: Union[dict[Union[str, DecisionPointId], Union[dict, DecisionPoint]], list[Union[dict, DecisionPoint]]] = empty_dict()
 
     def __post_init__(self, *_: str, **kwargs: Any):
@@ -1272,9 +1241,7 @@ class Policy(YAMLRoot):
 
         if self._is_empty(self.targets):
             self.MissingRequiredField("targets")
-        if not isinstance(self.targets, list):
-            self.targets = [self.targets] if self.targets is not None else []
-        self.targets = [v if isinstance(v, ValueReference) else ValueReference(**as_dict(v)) for v in self.targets]
+        self._normalize_inlined_as_list(slot_name="targets", slot_type=Reference, key_name="target", keyed=False)
 
         if self._is_empty(self.points):
             self.MissingRequiredField("points")
@@ -1296,7 +1263,7 @@ class ObservedQuantity(YAMLRoot):
     class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/ObservedQuantity")
 
     name: Union[str, Code] = None
-    target: Union[dict, ValueReference] = None
+    target: Union[dict, Reference] = None
     quantity: Union[dict, "Quantity"] = None
     available_at: Union[str, XSDDate] = None
 
@@ -1308,8 +1275,8 @@ class ObservedQuantity(YAMLRoot):
 
         if self._is_empty(self.target):
             self.MissingRequiredField("target")
-        if not isinstance(self.target, ValueReference):
-            self.target = ValueReference(**as_dict(self.target))
+        if not isinstance(self.target, Reference):
+            self.target = Reference(**as_dict(self.target))
 
         if self._is_empty(self.quantity):
             self.MissingRequiredField("quantity")
@@ -1943,14 +1910,14 @@ class ObservationAvailability(YAMLRoot):
     class_name: ClassVar[str] = "ObservationAvailability"
     class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/ObservationAvailability")
 
-    target: Union[dict, ValueReference] = None
+    target: Union[dict, Reference] = None
     available_at: Union[str, XSDDate] = None
 
     def __post_init__(self, *_: str, **kwargs: Any):
         if self._is_empty(self.target):
             self.MissingRequiredField("target")
-        if not isinstance(self.target, ValueReference):
-            self.target = ValueReference(**as_dict(self.target))
+        if not isinstance(self.target, Reference):
+            self.target = Reference(**as_dict(self.target))
 
         if self._is_empty(self.available_at):
             self.MissingRequiredField("available_at")
@@ -2160,7 +2127,7 @@ class Expression(YAMLRoot):
     kind: Union[str, "ExpressionKind"] = None
     quantity: Optional[Union[dict, Quantity]] = None
     boolean: Optional[Union[bool, Bool]] = None
-    target: Optional[Union[dict, ValueReference]] = None
+    target: Optional[Union[dict, Reference]] = None
     operator: Optional[Union[str, "Operator"]] = None
     operands: Optional[Union[dict[Union[str, ExpressionId], Union[dict, "Expression"]], list[Union[dict, "Expression"]]]] = empty_dict()
     operand: Optional[Union[dict, "Expression"]] = None
@@ -2185,8 +2152,8 @@ class Expression(YAMLRoot):
         if self.boolean is not None and not isinstance(self.boolean, Bool):
             self.boolean = Bool(self.boolean)
 
-        if self.target is not None and not isinstance(self.target, ValueReference):
-            self.target = ValueReference(**as_dict(self.target))
+        if self.target is not None and not isinstance(self.target, Reference):
+            self.target = Reference(**as_dict(self.target))
 
         if self.operator is not None and not isinstance(self.operator, Operator):
             self.operator = Operator(self.operator)
@@ -2364,7 +2331,7 @@ class Flow(YAMLRoot):
     class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Flow")
 
     units: str = None
-    movements: Union[Union[dict, "Movement"], list[Union[dict, "Movement"]]] = None
+    movements: Union[dict[Union[str, MovementId], Union[dict, "Movement"]], list[Union[dict, "Movement"]]] = empty_dict()
 
     def __post_init__(self, *_: str, **kwargs: Any):
         if self._is_empty(self.units):
@@ -2374,7 +2341,7 @@ class Flow(YAMLRoot):
 
         if self._is_empty(self.movements):
             self.MissingRequiredField("movements")
-        self._normalize_inlined_as_list(slot_name="movements", slot_type=Movement, key_name="key", keyed=False)
+        self._normalize_inlined_as_list(slot_name="movements", slot_type=Movement, key_name="id", keyed=True)
 
         super().__post_init__(**kwargs)
 
@@ -2384,9 +2351,10 @@ class Movement(YAMLRoot):
     """
     One numerical entry in a Flow, associated with a date or period. The overall model logic determines its meaning.
     At least one of date or period is required. With a period, date records an independent payment or observation date
-    and need not lie inside the period. Derived boundary dates are calculated, not stored. Key is stable within its
-    Flow; repeated event dates require distinct keys. Magnitude omission/null means unresolved. Claims retain source
-    or derivation evidence.
+    and need not lie inside the period. Derived boundary dates are calculated, not stored. UUID identifies the
+    Movement independently of dates and optional matching keys. Repeated event dates require distinct nonblank keys;
+    keys are not reference identity. Magnitude omission/null means unresolved. Claims retain source or derivation
+    evidence.
     """
     _inherited_slots: ClassVar[list[str]] = []
 
@@ -2395,16 +2363,20 @@ class Movement(YAMLRoot):
     class_name: ClassVar[str] = "Movement"
     class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Movement")
 
-    key: str = None
+    id: Union[str, MovementId] = None
+    key: Optional[str] = None
     date: Optional[Union[str, XSDDate]] = None
     period: Optional[Union[dict, "Period"]] = None
     magnitude: Optional[Decimal] = None
     claims: Optional[Union[Union[str, UUID], list[Union[str, UUID]]]] = empty_list()
 
     def __post_init__(self, *_: str, **kwargs: Any):
-        if self._is_empty(self.key):
-            self.MissingRequiredField("key")
-        if not isinstance(self.key, str):
+        if self._is_empty(self.id):
+            self.MissingRequiredField("id")
+        if not isinstance(self.id, MovementId):
+            self.id = MovementId(self.id)
+
+        if self.key is not None and not isinstance(self.key, str):
             self.key = str(self.key)
 
         if self.date is not None and not isinstance(self.date, XSDDate):
@@ -3375,7 +3347,7 @@ slots.specification__assignments = Slot(uri=RK.assignments, name="specification_
                    model_uri=DEFAULT_.specification__assignments, domain=None, range=Optional[Union[Union[dict, Assignment], list[Union[dict, Assignment]]]])
 
 slots.specification__unknowns = Slot(uri=RK.unknowns, name="specification__unknowns", curie=RK.curie('unknowns'),
-                   model_uri=DEFAULT_.specification__unknowns, domain=None, range=Optional[Union[Union[dict, ValueReference], list[Union[dict, ValueReference]]]])
+                   model_uri=DEFAULT_.specification__unknowns, domain=None, range=Optional[Union[Union[dict, Reference], list[Union[dict, Reference]]]])
 
 slots.specification__estimates = Slot(uri=RK.estimates, name="specification__estimates", curie=RK.curie('estimates'),
                    model_uri=DEFAULT_.specification__estimates, domain=None, range=Optional[Union[Union[dict, Assignment], list[Union[dict, Assignment]]]])
@@ -3486,7 +3458,7 @@ slots.diagnostic__tolerance = Slot(uri=RK.tolerance, name="diagnostic__tolerance
                    model_uri=DEFAULT_.diagnostic__tolerance, domain=None, range=Optional[Union[dict, Quantity]])
 
 slots.diagnostic__references = Slot(uri=RK.references, name="diagnostic__references", curie=RK.curie('references'),
-                   model_uri=DEFAULT_.diagnostic__references, domain=None, range=Optional[Union[Union[dict, ScopedValueReference], list[Union[dict, ScopedValueReference]]]])
+                   model_uri=DEFAULT_.diagnostic__references, domain=None, range=Optional[Union[Union[dict, Reference], list[Union[dict, Reference]]]])
 
 slots.step__kind = Slot(uri=RK.kind, name="step__kind", curie=RK.curie('kind'),
                    model_uri=DEFAULT_.step__kind, domain=None, range=Union[str, "StepKind"])
@@ -3670,22 +3642,11 @@ slots.settings__symbol_limit = Slot(uri=RK.symbol_limit, name="settings__symbol_
 slots.settings__constraint_limit = Slot(uri=RK.constraint_limit, name="settings__constraint_limit", curie=RK.curie('constraint_limit'),
                    model_uri=DEFAULT_.settings__constraint_limit, domain=None, range=Optional[int])
 
-slots.valueReference__value = Slot(uri=RK.value, name="valueReference__value", curie=RK.curie('value'),
-                   model_uri=DEFAULT_.valueReference__value, domain=None, range=Union[str, ValueId],
-                   pattern=re.compile(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'))
-
-slots.valueReference__movement = Slot(uri=RK.movement, name="valueReference__movement", curie=RK.curie('movement'),
-                   model_uri=DEFAULT_.valueReference__movement, domain=None, range=Optional[str],
-                   pattern=re.compile(r'\S'))
-
-slots.scopedValueReference__document = Slot(uri=RK.document, name="scopedValueReference__document", curie=RK.curie('document'),
-                   model_uri=DEFAULT_.scopedValueReference__document, domain=None, range=Union[str, UUID])
-
-slots.scopedValueReference__reference = Slot(uri=RK.reference, name="scopedValueReference__reference", curie=RK.curie('reference'),
-                   model_uri=DEFAULT_.scopedValueReference__reference, domain=None, range=Union[dict, ValueReference])
+slots.reference__target = Slot(uri=RK.target, name="reference__target", curie=RK.curie('target'),
+                   model_uri=DEFAULT_.reference__target, domain=None, range=Union[str, UUID])
 
 slots.assignment__target = Slot(uri=RK.target, name="assignment__target", curie=RK.curie('target'),
-                   model_uri=DEFAULT_.assignment__target, domain=None, range=Union[dict, ValueReference])
+                   model_uri=DEFAULT_.assignment__target, domain=None, range=Union[dict, Reference])
 
 slots.assignment__quantity = Slot(uri=RK.quantity, name="assignment__quantity", curie=RK.curie('quantity'),
                    model_uri=DEFAULT_.assignment__quantity, domain=None, range=Union[dict, Quantity])
@@ -3694,7 +3655,7 @@ slots.observationBinding__name = Slot(uri=RK.name, name="observationBinding__nam
                    model_uri=DEFAULT_.observationBinding__name, domain=None, range=Union[str, Code])
 
 slots.observationBinding__target = Slot(uri=RK.target, name="observationBinding__target", curie=RK.curie('target'),
-                   model_uri=DEFAULT_.observationBinding__target, domain=None, range=Union[dict, ValueReference])
+                   model_uri=DEFAULT_.observationBinding__target, domain=None, range=Union[dict, Reference])
 
 slots.observationBinding__available_at = Slot(uri=RK.available_at, name="observationBinding__available_at", curie=RK.curie('available_at'),
                    model_uri=DEFAULT_.observationBinding__available_at, domain=None, range=Optional[Union[str, XSDDate]])
@@ -3703,7 +3664,7 @@ slots.action__kind = Slot(uri=RK.kind, name="action__kind", curie=RK.curie('kind
                    model_uri=DEFAULT_.action__kind, domain=None, range=Union[str, "ActionKind"])
 
 slots.action__target = Slot(uri=RK.target, name="action__target", curie=RK.curie('target'),
-                   model_uri=DEFAULT_.action__target, domain=None, range=Optional[Union[dict, ValueReference]])
+                   model_uri=DEFAULT_.action__target, domain=None, range=Optional[Union[dict, Reference]])
 
 slots.action__quantity = Slot(uri=RK.quantity, name="action__quantity", curie=RK.curie('quantity'),
                    model_uri=DEFAULT_.action__quantity, domain=None, range=Optional[Union[dict, Quantity]])
@@ -3736,7 +3697,7 @@ slots.policy__id = Slot(uri=RK.id, name="policy__id", curie=RK.curie('id'),
                    model_uri=DEFAULT_.policy__id, domain=None, range=URIRef)
 
 slots.policy__targets = Slot(uri=RK.targets, name="policy__targets", curie=RK.curie('targets'),
-                   model_uri=DEFAULT_.policy__targets, domain=None, range=Union[Union[dict, ValueReference], list[Union[dict, ValueReference]]])
+                   model_uri=DEFAULT_.policy__targets, domain=None, range=Union[Union[dict, Reference], list[Union[dict, Reference]]])
 
 slots.policy__points = Slot(uri=RK.points, name="policy__points", curie=RK.curie('points'),
                    model_uri=DEFAULT_.policy__points, domain=None, range=Union[dict[Union[str, DecisionPointId], Union[dict, DecisionPoint]], list[Union[dict, DecisionPoint]]])
@@ -3745,7 +3706,7 @@ slots.observedQuantity__name = Slot(uri=RK.name, name="observedQuantity__name", 
                    model_uri=DEFAULT_.observedQuantity__name, domain=None, range=Union[str, Code])
 
 slots.observedQuantity__target = Slot(uri=RK.target, name="observedQuantity__target", curie=RK.curie('target'),
-                   model_uri=DEFAULT_.observedQuantity__target, domain=None, range=Union[dict, ValueReference])
+                   model_uri=DEFAULT_.observedQuantity__target, domain=None, range=Union[dict, Reference])
 
 slots.observedQuantity__quantity = Slot(uri=RK.quantity, name="observedQuantity__quantity", curie=RK.curie('quantity'),
                    model_uri=DEFAULT_.observedQuantity__quantity, domain=None, range=Union[dict, Quantity])
@@ -3966,7 +3927,7 @@ slots.libraryVersion__version = Slot(uri=RK.version, name="libraryVersion__versi
                    model_uri=DEFAULT_.libraryVersion__version, domain=None, range=str)
 
 slots.observationAvailability__target = Slot(uri=RK.target, name="observationAvailability__target", curie=RK.curie('target'),
-                   model_uri=DEFAULT_.observationAvailability__target, domain=None, range=Union[dict, ValueReference])
+                   model_uri=DEFAULT_.observationAvailability__target, domain=None, range=Union[dict, Reference])
 
 slots.observationAvailability__available_at = Slot(uri=RK.available_at, name="observationAvailability__available_at", curie=RK.curie('available_at'),
                    model_uri=DEFAULT_.observationAvailability__available_at, domain=None, range=Union[str, XSDDate])
@@ -4047,7 +4008,7 @@ slots.expression__boolean = Slot(uri=RK.boolean, name="expression__boolean", cur
                    model_uri=DEFAULT_.expression__boolean, domain=None, range=Optional[Union[bool, Bool]])
 
 slots.expression__target = Slot(uri=RK.target, name="expression__target", curie=RK.curie('target'),
-                   model_uri=DEFAULT_.expression__target, domain=None, range=Optional[Union[dict, ValueReference]])
+                   model_uri=DEFAULT_.expression__target, domain=None, range=Optional[Union[dict, Reference]])
 
 slots.expression__operator = Slot(uri=RK.operator, name="expression__operator", curie=RK.curie('operator'),
                    model_uri=DEFAULT_.expression__operator, domain=None, range=Optional[Union[str, "Operator"]])
@@ -4114,10 +4075,13 @@ slots.flow__units = Slot(uri=RK.units, name="flow__units", curie=RK.curie('units
                    pattern=re.compile(r'\S'))
 
 slots.flow__movements = Slot(uri=RK.movements, name="flow__movements", curie=RK.curie('movements'),
-                   model_uri=DEFAULT_.flow__movements, domain=None, range=Union[Union[dict, Movement], list[Union[dict, Movement]]])
+                   model_uri=DEFAULT_.flow__movements, domain=None, range=Union[dict[Union[str, MovementId], Union[dict, Movement]], list[Union[dict, Movement]]])
+
+slots.movement__id = Slot(uri=RK.id, name="movement__id", curie=RK.curie('id'),
+                   model_uri=DEFAULT_.movement__id, domain=None, range=URIRef)
 
 slots.movement__key = Slot(uri=RK.key, name="movement__key", curie=RK.curie('key'),
-                   model_uri=DEFAULT_.movement__key, domain=None, range=str,
+                   model_uri=DEFAULT_.movement__key, domain=None, range=Optional[str],
                    pattern=re.compile(r'\S'))
 
 slots.movement__date = Slot(uri=RK.date, name="movement__date", curie=RK.curie('date'),

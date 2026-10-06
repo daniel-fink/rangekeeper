@@ -1,7 +1,7 @@
 id: https://daniel-fink.github.io/rangekeeper/schema/flow
 name: rangekeeper_flow
 title: Rangekeeper Flow
-version: 0.1.0
+version: 0.2.0
 prefixes:
   linkml: https://w3id.org/linkml/
   rk: https://daniel-fink.github.io/rangekeeper/schema/
@@ -25,11 +25,16 @@ classes:
         list_elements_ordered: true
         required: true
   Movement:
-    description: One numerical entry in a Flow, associated with a date or period. The overall model logic determines its meaning. At least one of date or period is required. With a period, date records an independent payment or observation date and need not lie inside the period. Derived boundary dates are calculated, not stored. Key is stable within its Flow; repeated event dates require distinct keys. Magnitude omission/null means unresolved. Claims retain source or derivation evidence.
+    description: One numerical entry in a Flow, associated with a date or period. The overall model logic determines its meaning. At least one of date or period is required. With a period, date records an independent payment or observation date and need not lie inside the period. Derived boundary dates are calculated, not stored. UUID identifies the Movement independently of dates and optional matching keys. Repeated event dates require distinct nonblank keys; keys are not reference identity. Magnitude omission/null means unresolved. Claims retain source or derivation evidence.
     attributes:
-      key:
-        range: string
+      id:
+        description: Stable Movement identity across Model revisions. Derived numerical results receive fresh identities.
+        range: UUID
         required: true
+        identifier: true
+      key:
+        description: Optional event matching key and readable label; never reference identity.
+        range: string
         pattern: \S
       date:
         range: date

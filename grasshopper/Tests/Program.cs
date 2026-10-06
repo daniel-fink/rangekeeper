@@ -8,6 +8,21 @@ static void Require(bool predicate,string reason) { if (!predicate) throw new Ex
 var model=Codec.Decode<Model>(File.ReadAllText(args[0]));
 Validator.Require(model);
 var before=Codec.Encode(model);
+var movementId=Guid.NewGuid();
+var movement=new Movement {Id=movementId,Date=new DateOnly(2026,1,1),Magnitude=0};
+Require(!movement.Key.IsPresent,"omitted matching key was invented");
+Require(Codec.Decode<Movement>(Codec.Encode(movement)).Id==movementId,"Movement UUID changed");
+var reference=new Reference {Target=movementId};
+Require(Codec.Decode<Reference>(Codec.Encode(reference)).Target==movementId,"Reference UUID changed");
+Require(Validator.Check(new Movement(new JsonObject { ["date"]="2026-01-01" })).Count>0,"missing Movement UUID accepted");
+var wrongReference=model.ToData();
+wrongReference["system"]!["formulations"]!.AsArray().Add(new JsonObject {
+    ["id"]=Guid.NewGuid().ToString(), ["expressions"]=new JsonArray(new JsonObject {
+        ["id"]=Guid.NewGuid().ToString(), ["kind"]="reference",
+        ["target"]=new JsonObject { ["target"]=model.System.Value.Entities.Value[0].Id.ToString() }
+    })
+});
+Require(Validator.Check(new Model(wrongReference)).Any(x=>x.Message.Contains("expected Value/Movement")),"wrong Reference kind accepted");
 var raw=model.ToData();raw["metadata"]!["name"]="detached";
 Require(Codec.Encode(model)==before,"export mutated Model");
 var value=new Value { Id=Guid.NewGuid(),Key="zero",Kind="measurement",Quantity=new Quantity {Magnitude=0,Units="dimensionless"} };

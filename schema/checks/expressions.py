@@ -26,7 +26,10 @@ import _library
 from rangekeeper.errors import ContractError
 from rangekeeper._validation import require_unique
 from rangekeeper.model._expression import (
-    build_scope, infer_expression_domain, matches_domain, validate_constraint_predicates,
+    build_scope,
+    infer_expression_domain,
+    matches_domain,
+    validate_constraint_predicates,
 )
 
 
@@ -50,9 +53,7 @@ for name, file in [
     ("Relationship", "relationship"),
     ("Assembly", "assembly"),
 ]:
-    document = json.loads(
-        _library.schema_json(name)
-    )
+    document = json.loads(_library.schema_json(name))
     cls = validator_for(document)
     cls.check_schema(document)
     validators[name] = cls(document, format_checker=FormatChecker())
@@ -70,7 +71,7 @@ for owner, slot, target in [
     field = view.induced_slot(slot, owner)
     assert field.range == target and field.inlined is False
 
-assert view.induced_slot("target", "Expression").range == "ValueReference"
+assert view.induced_slot("target", "Expression").range == "Reference"
 assert view.induced_slot("target", "Expression").inlined
 
 valid = []
@@ -95,15 +96,21 @@ for name in ("valuation-expressions", "query-aggregation", "function-expressions
         validators["Domain"].validate(record["domain"])
         valid.append(("Domain", record["domain"]))
     scope = build_scope(fixture)
-    validate_fixture_constraints(fixture.get("constraints", []), fixture["expressions"], scope=scope)
+    validate_fixture_constraints(
+        fixture.get("constraints", []), fixture["expressions"], scope=scope
+    )
 
 scalar, graph, rich = fixtures
 # A date result remains valid without a date literal node.
-assert infer_expression_domain(rich["expressions"][2], scope=build_scope(rich)) == dict(kind="date")
+assert infer_expression_domain(rich["expressions"][2], scope=build_scope(rich)) == dict(
+    kind="date"
+)
 readme = [
     yaml.safe_load(block)
     for block in re.findall(
-        r"```yaml\n(.*?)```", (SCHEMA.parent / "docs/SCHEMA_EXAMPLES.md").read_text(), re.DOTALL
+        r"```yaml\n(.*?)```",
+        (SCHEMA.parent / "docs/SCHEMA_EXAMPLES.md").read_text(),
+        re.DOTALL,
     )
     if "kind: binary" in block
 ]
@@ -113,12 +120,16 @@ valid.extend(("Expression", item) for item in readme)
 readme_constraints = [
     yaml.safe_load(block)
     for block in re.findall(
-        r"```yaml\n(.*?)```", (SCHEMA.parent / "docs/SCHEMA_EXAMPLES.md").read_text(), re.DOTALL
+        r"```yaml\n(.*?)```",
+        (SCHEMA.parent / "docs/SCHEMA_EXAMPLES.md").read_text(),
+        re.DOTALL,
     )
     if "\npredicate: " in block
 ]
 assert len(readme_constraints) == 1
-validate_fixture_constraints(readme_constraints, scalar["expressions"], scope=build_scope(scalar))
+validate_fixture_constraints(
+    readme_constraints, scalar["expressions"], scope=build_scope(scalar)
+)
 valid.extend(("Constraint", item) for item in readme_constraints)
 valid.extend(
     ("Domain", record)
@@ -157,7 +168,7 @@ true = expression("true", "boolean", boolean=True)
 reference = expression(
     "reference",
     "reference",
-    target=dict(value=scalar["entities"][0]["characteristics"]["values"][0]["id"]),
+    target=dict(target=scalar["entities"][0]["characteristics"]["values"][0]["id"]),
 )
 for node in [
     left,
@@ -241,7 +252,9 @@ def constraint(name, predicate, **metadata):
 
 
 minimal = constraint("minimal", scalar["expressions"][0]["id"])
-validate_fixture_constraints([minimal], scalar["expressions"], scope=build_scope(scalar))
+validate_fixture_constraints(
+    [minimal], scalar["expressions"], scope=build_scope(scalar)
+)
 valid.append(("Constraint", minimal))
 
 # Predicate validity is independent of current truth and expression syntax form.
@@ -355,7 +368,7 @@ for node in [
     expression("bad-bool", "boolean", boolean=0),
     expression("deferred-date", "date", date="2026-09-30"),
     expression("deferred-string", "string", text=""),
-    expression("bad-reference", "reference", target=dict(value="annual_rent")),
+    expression("bad-reference", "reference", target=dict(target="annual_rent")),
     dict(left, source_code="print(1)"),
 ]:
     reject("Expression", node)
@@ -454,11 +467,15 @@ assert area_domain == dict(kind="quantity", units="m^2")
 assert not matches_domain(area_domain, dict(kind="number"), scope=scope)
 assert not matches_domain(area_domain, dict(kind="measurement"), scope=scope)
 assert matches_domain(area_domain, dict(kind="quantity", units="m^2"), scope=scope)
-assert matches_domain(infer_expression_domain(left, scope=scope), dict(kind="number"), scope=scope)
+assert matches_domain(
+    infer_expression_domain(left, scope=scope), dict(kind="number"), scope=scope
+)
 product = expression(
     "product", "binary", operator="multiply", operands=[reference, right]
 )
-assert infer_expression_domain(product, scope=build_scope(scalar)) == dict(kind="quantity")
+assert infer_expression_domain(product, scope=build_scope(scalar)) == dict(
+    kind="quantity"
+)
 for magnitude in (float("nan"), float("inf")):
     semantic_case(scalar, quantity("nonfinite", magnitude), "non-finite magnitude")
 
@@ -499,7 +516,9 @@ bad["selection"]["base"] = copy.deepcopy(
 )
 semantic_case(graph, bad, "ordered sequence")
 semantic_case(
-    scalar, expression("unknown", "reference", target=dict(value=left["id"])), "unknown Value"
+    scalar,
+    expression("unknown", "reference", target=dict(target=left["id"])),
+    "unknown Value",
 )
 semantic_case(
     scalar,
@@ -566,7 +585,7 @@ constraint_semantic = [
     (
         scalar,
         scalar["expressions"],
-        [constraint("wrong-target", reference["target"]["value"])],
+        [constraint("wrong-target", reference["target"]["target"])],
         "unknown or non-Expression",
     ),
     (scalar, [left], [constraint("number", left["id"])], "must be Boolean"),
@@ -604,7 +623,7 @@ constraint_semantic = [
     (
         scalar,
         scalar["expressions"],
-        [dict(minimal, id=reference["target"]["value"])],
+        [dict(minimal, id=reference["target"]["target"])],
         "duplicate Constraint identity",
     ),
     (
@@ -639,7 +658,7 @@ values = {
 
 def symbolic(node):
     if node["kind"] == "reference":
-        return values[node["target"]["value"]]
+        return values[node["target"]["target"]]
     return (node["operator"], *(symbolic(child) for child in node["operands"]))
 
 

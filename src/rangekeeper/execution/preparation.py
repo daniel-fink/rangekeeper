@@ -6,7 +6,7 @@ from types import MappingProxyType
 from uuid import UUID
 
 from .._records import Record
-from .._schema.records import Constraint, Expression, Quantity, Value
+from .._schema.records import Constraint, Expression, Quantity, Value, Movement
 from ..model import Model
 from ..model._index import walk
 from ..model.definitions import measure
@@ -15,7 +15,7 @@ from ..specification import Composition, validate
 from ..units import UnitSystem, default_units
 from .errors import UnsupportedProblem
 from . import symbols
-from .._schema.records import Decision, ValueReference, Assignment
+from .._schema.records import Decision, Reference, Assignment
 
 
 @dataclass(frozen=True)
@@ -39,7 +39,7 @@ class Prepared:
     unknowns: tuple[str, ...]
     assertions: tuple[Assertion, ...]
     units: UnitSystem
-    references: Mapping[str, ValueReference]
+    references: Mapping[str, Reference]
     decisions: tuple[Decision, ...] = ()
 
 
@@ -82,7 +82,9 @@ def prepare(
 
     if model.system is not None:
         collect(model.system, model.id)
-    model_values = set(values)
+    model_values = {
+        r.id for r, _, _ in walk(model._record) if isinstance(r, (Value, Movement))
+    }
     for contributor in composition.contributions:
         for formulation in contributor.record.formulations or ():
             collect(formulation, contributor.id)
@@ -112,7 +114,7 @@ def prepare(
         decisions = policy_result.decisions
         policy_assignments = policy_result.assignments
         role_references.extend(a.target for a in policy_assignments)
-    if any(ref.value not in model_values for ref in role_references):
+    if any(ref.target not in model_values for ref in role_references):
         raise UnsupportedProblem(
             "Specification-local Value publication requires a later adapter"
         )

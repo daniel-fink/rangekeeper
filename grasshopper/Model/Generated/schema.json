@@ -20,7 +20,7 @@
         "target": {
           "anyOf": [
             {
-              "$ref": "#/$defs/ValueReference"
+              "$ref": "#/$defs/Reference"
             },
             {
               "type": "null"
@@ -154,7 +154,7 @@
           "description": "Explicit finite magnitude and compatible units; omission or null is not a supplied amount."
         },
         "target": {
-          "$ref": "#/$defs/ValueReference"
+          "$ref": "#/$defs/Reference"
         }
       },
       "required": [
@@ -807,8 +807,9 @@
           "type": "string"
         },
         "references": {
+          "description": "Participating Values and Movements in this Run's input Model. Batch findings and attempts without a valid input Model cannot carry these references.",
           "items": {
-            "$ref": "#/$defs/ScopedValueReference"
+            "$ref": "#/$defs/Reference"
           },
           "type": [
             "array",
@@ -1589,7 +1590,7 @@
         "target": {
           "allOf": [
             {
-              "$ref": "#/$defs/ValueReference"
+              "$ref": "#/$defs/Reference"
             }
           ],
           "description": "Explicit Value or Movement symbol; never implicit recorded content."
@@ -2239,7 +2240,7 @@
     },
     "Movement": {
       "additionalProperties": false,
-      "description": "One numerical entry in a Flow, associated with a date or period. The overall model logic determines its meaning. At least one of date or period is required. With a period, date records an independent payment or observation date and need not lie inside the period. Derived boundary dates are calculated, not stored. Key is stable within its Flow; repeated event dates require distinct keys. Magnitude omission/null means unresolved. Claims retain source or derivation evidence.",
+      "description": "One numerical entry in a Flow, associated with a date or period. The overall model logic determines its meaning. At least one of date or period is required. With a period, date records an independent payment or observation date and need not lie inside the period. Derived boundary dates are calculated, not stored. UUID identifies the Movement independently of dates and optional matching keys. Repeated event dates require distinct nonblank keys; keys are not reference identity. Magnitude omission/null means unresolved. Claims retain source or derivation evidence.",
       "properties": {
         "claims": {
           "items": {
@@ -2258,9 +2259,18 @@
             "null"
           ]
         },
-        "key": {
-          "pattern": "\\S",
+        "id": {
+          "description": "Stable Movement identity across Model revisions. Derived numerical results receive fresh identities.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
           "type": "string"
+        },
+        "key": {
+          "description": "Optional event matching key and readable label; never reference identity.",
+          "pattern": "\\S",
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "magnitude": {
           "type": [
@@ -2280,7 +2290,7 @@
         }
       },
       "required": [
-        "key"
+        "id"
       ],
       "title": "Movement",
       "type": "object"
@@ -2330,7 +2340,7 @@
           "type": "string"
         },
         "target": {
-          "$ref": "#/$defs/ValueReference"
+          "$ref": "#/$defs/Reference"
         }
       },
       "required": [
@@ -2356,7 +2366,7 @@
           "type": "string"
         },
         "target": {
-          "$ref": "#/$defs/ValueReference"
+          "$ref": "#/$defs/Reference"
         }
       },
       "required": [
@@ -2382,7 +2392,7 @@
           "$ref": "#/$defs/Quantity"
         },
         "target": {
-          "$ref": "#/$defs/ValueReference"
+          "$ref": "#/$defs/Reference"
         }
       },
       "required": [
@@ -2501,7 +2511,7 @@
         },
         "targets": {
           "items": {
-            "$ref": "#/$defs/ValueReference"
+            "$ref": "#/$defs/Reference"
           },
           "type": "array"
         }
@@ -2894,6 +2904,22 @@
       "title": "ReconciliationStatus",
       "type": "string"
     },
+    "Reference": {
+      "additionalProperties": false,
+      "description": "A Value or Movement UUID resolved in the containing Model or composed Specification. Execution diagnostic references resolve in the Run's input Model. Names, matching keys and positions are never identities.",
+      "properties": {
+        "target": {
+          "description": "UUID of a Value or Movement declaration in the applicable scope.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "target"
+      ],
+      "title": "Reference",
+      "type": "object"
+    },
     "Relationship": {
       "additionalProperties": false,
       "description": "An identified, directed connection from one Entity to another. Its classification describes the connection; its characteristics describe properties of the connection itself.",
@@ -3275,25 +3301,6 @@
         "availability"
       ],
       "title": "ScenarioRealization",
-      "type": "object"
-    },
-    "ScopedValueReference": {
-      "additionalProperties": false,
-      "description": "An explicit revision and Value/Movement reference used in execution evidence.",
-      "properties": {
-        "document": {
-          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "type": "string"
-        },
-        "reference": {
-          "$ref": "#/$defs/ValueReference"
-        }
-      },
-      "required": [
-        "document",
-        "reference"
-      ],
-      "title": "ScopedValueReference",
       "type": "object"
     },
     "Selection": {
@@ -3692,7 +3699,7 @@
         "unknowns": {
           "description": "Unique scalar or Movement unknowns; explicit and disjoint from assignments and policy targets.",
           "items": {
-            "$ref": "#/$defs/ValueReference"
+            "$ref": "#/$defs/Reference"
           },
           "type": [
             "array",
@@ -4149,28 +4156,6 @@
       ],
       "title": "ValueKind",
       "type": "string"
-    },
-    "ValueReference": {
-      "additionalProperties": false,
-      "description": "A Value UUID and optional stable owner-local Movement key. Scope comes from the containing Model or composed Specification; positions are never identities.",
-      "properties": {
-        "movement": {
-          "pattern": "\\S",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "value": {
-          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "type": "string"
-        }
-      },
-      "required": [
-        "value"
-      ],
-      "title": "ValueReference",
-      "type": "object"
     }
   },
   "$id": "https://daniel-fink.github.io/rangekeeper/schema/bundle",

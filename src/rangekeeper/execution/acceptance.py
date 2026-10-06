@@ -9,7 +9,7 @@ from .preparation import Prepared
 from .evaluator import comparisons
 from .errors import NumericalError
 from . import symbols
-from .._schema.records import ScopedValueReference, Expression
+from .._schema.records import Expression
 from ..model._index import walk
 
 
@@ -71,13 +71,8 @@ def check(
                     code="assignment_rejected",
                     message="Candidate changed an explicit assignment.",
                     document=prepared.model.id,
-                    target=prepared.references[id].value,
-                    references=(
-                        ScopedValueReference(
-                            document=prepared.model.id,
-                            reference=prepared.references[id],
-                        ),
-                    ),
+                    target=prepared.references[id].target,
+                    references=(prepared.references[id],),
                 )
             )
     for assertion in prepared.assertions:
@@ -117,9 +112,7 @@ def check(
                     document=assertion.document,
                     target=assertion.constraint.id,
                     references=tuple(
-                        ScopedValueReference(
-                            document=prepared.model.id, reference=node.target
-                        )
+                        node.target
                         for node, _, _ in walk(assertion.predicate)
                         if isinstance(node, Expression)
                         and node.kind == "reference"

@@ -2,19 +2,14 @@
 
 from uuid import UUID
 from ..model import Model
-from .._schema.records import Formulation, ValueReference
-from ._alignment import shape, target
+from .._schema.records import Formulation, Reference
+from ._alignment import shape, target, owner
 from ._construction import construct
 from .expression import reference, literal, equal, add, multiply
 
 
 def build_compound(
-    model: Model,
-    *,
-    id: UUID,
-    initial: ValueReference,
-    rate: ValueReference,
-    result: UUID
+    model: Model, *, id: UUID, initial: Reference, rate: Reference, result: UUID
 ) -> Formulation:
     """Declare first amount = initial, then prior amount * (1 + periodic rate).
 
@@ -29,18 +24,15 @@ def build_compound(
             if index == 0
             else multiply(reference(prior), add(literal(1), reference(rate)))
         )
-        equations.append((item.key, equal(reference(current), rhs)))
+        equations.append((str(item.id), equal(reference(current), rhs)))
         prior = current
-    return construct(id, "compound", equations, (initial.value, rate.value, result))
+    return construct(
+        id, "compound", equations, (owner(model, initial), owner(model, rate), result)
+    )
 
 
 def build_linear(
-    model: Model,
-    *,
-    id: UUID,
-    initial: ValueReference,
-    increment: ValueReference,
-    result: UUID
+    model: Model, *, id: UUID, initial: Reference, increment: Reference, result: UUID
 ) -> Formulation:
     """Declare initial + step index * increment; first index is zero.
 
@@ -48,7 +40,7 @@ def build_linear(
     """
     equations = [
         (
-            m.key,
+            str(m.id),
             equal(
                 reference(target(result, m)),
                 add(reference(initial), multiply(literal(i), reference(increment))),
@@ -56,4 +48,9 @@ def build_linear(
         )
         for i, m in enumerate(shape(model, result).movements)
     ]
-    return construct(id, "linear", equations, (initial.value, increment.value, result))
+    return construct(
+        id,
+        "linear",
+        equations,
+        (owner(model, initial), owner(model, increment), result),
+    )

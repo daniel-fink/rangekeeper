@@ -29,7 +29,7 @@ value = Value(
     quantity=Quantity(magnitude=0, units="AUD/year"),
 )
 traits = Characteristics(values=(value,))
-model = Model(metadata=Metadata(id=uuid4(), schema_version="0.5.0"))
+model = Model(metadata=Metadata(id=uuid4(), schema_version="0.6.0"))
 identity: UUID = model.metadata.id
 claim = Claim(
     id=uuid4(),
@@ -43,7 +43,7 @@ restored: Model = Model.from_data(model.to_data())
 
 period = Period(start=date(2026, 1, 1), end=date(2026, 2, 1))
 start: date = period.start
-movement = Movement(key="january", period=period)
+movement = Movement(id=uuid4(), key="january", period=period)
 payment_date: date | None = movement.date
 flow = Flow(units="AUD", movements=(movement,))
 movements: tuple[Movement, ...] = flow.movements

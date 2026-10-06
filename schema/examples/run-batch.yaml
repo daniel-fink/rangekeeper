@@ -1,10 +1,9 @@
-# Synthetic conformance fixture; no runtime execution is claimed.
 metadata:
   id: be7ea554-f418-5764-932c-6d0fb3012e97
-  schema_version: 0.2.0
+  schema_version: 0.3.0
   name: Synthetic batch Run
-  description: New synthetic 0.2.0 conformance fixture. No evaluator or solver produced this record; historical
-    Runs are unchanged.
+  description: New synthetic 0.3.0 conformance fixture. No evaluator or solver produced
+    this record; historical Runs are unchanged.
 specification: 45d06a63-85fe-5d80-82a0-f55a6a06a01a
 spawns:
 - cc343536-8c15-57bb-8128-1a3d9fcde726

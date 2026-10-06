@@ -10,7 +10,7 @@ prefixes:
 imports:
 - function
 - query
-- value_reference
+- reference
 default_prefix: rk
 default_range: string
 classes:
@@ -63,11 +63,11 @@ classes:
         any_of:
         - range: boolean
       target:
-        range: ValueReference
+        range: Reference
         inlined: true
         description: Explicit Value or Movement symbol; never implicit recorded content.
         all_of:
-        - range: ValueReference
+        - range: Reference
           inlined: true
       operator:
         range: Operator

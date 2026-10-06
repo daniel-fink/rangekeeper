@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from uuid import uuid4
+
 from dataclasses import dataclass
 import math
 
@@ -25,7 +27,7 @@ class Account:
         """Change in nonnegative account balance, excluding the separate overdraft."""
         return self.closing.replace(
             movements=tuple(
-                c.replace(magnitude=c.number - o.number)
+                c.replace(id=uuid4(), magnitude=c.number - o.number)
                 for o, c in zip(self.opening.movements, self.closing.movements)
             )
         ).check()
@@ -86,10 +88,10 @@ class Account:
                 principal += interest
             if timing == "arrears":
                 principal += movement.number
-            opens.append(movement.replace(magnitude=opening))
-            closes.append(movement.replace(magnitude=max(principal, 0)))
-            deficits.append(movement.replace(magnitude=min(principal, 0)))
-            interests.append(movement.replace(magnitude=interest))
+            opens.append(movement.replace(id=uuid4(), magnitude=opening))
+            closes.append(movement.replace(id=uuid4(), magnitude=max(principal, 0)))
+            deficits.append(movement.replace(id=uuid4(), magnitude=min(principal, 0)))
+            interests.append(movement.replace(id=uuid4(), magnitude=interest))
             opening_value = principal
         deficit_flow = transactions.replace(movements=tuple(deficits)).check()
         return cls(

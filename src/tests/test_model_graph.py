@@ -114,7 +114,7 @@ def fixture(*, missing=False, overlap=False, amounts=(10, 20, 0)):
         quantity=Quantity(magnitude=777, units="meter ** 2"),
     )
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.5.0"),
+        metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
         definitions=Definitions(measures=(measure,), taxonomies=(taxonomy,)),
         system=System(
             entities=tuple(nodes),
@@ -472,7 +472,7 @@ for prefix in ('pint','numpy','networkx','pandas','pyomo','highspy','matplotlib'
 from rangekeeper import Model
 from rangekeeper.model import Metadata
 from uuid import uuid4
-model=Model.create(metadata=Metadata(id=uuid4(),schema_version='0.5.0'))
+model=Model.create(metadata=Metadata(id=uuid4(),schema_version='0.6.0'))
 assert graph.View(model).entities==()
 """
     subprocess.run([sys.executable, "-c", script], check=True)

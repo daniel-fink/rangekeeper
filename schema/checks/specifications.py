@@ -45,9 +45,7 @@ for cls in (
     "Model",
 ):
     schema = "model" if cls == "Model" else "specification"
-    generated = json.loads(
-        _library.schema_json(cls)
-    )
+    generated = json.loads(_library.schema_json(cls))
     validator = validator_for(generated)
     validator.check_schema(generated)
     validators[cls] = validator(generated, format_checker=FormatChecker())
@@ -65,8 +63,8 @@ for owner, field, target in (
 ):
     slot = view.induced_slot(field, owner)
     assert slot.range == target and slot.inlined is False
-assert view.induced_slot("target", "Assignment").range == "ValueReference"
-assert view.induced_slot("unknowns", "Specification").range == "ValueReference"
+assert view.induced_slot("target", "Assignment").range == "Reference"
+assert view.induced_slot("unknowns", "Specification").range == "Reference"
 
 for field, target in (
     ("assignments", "Assignment"),
@@ -110,12 +108,16 @@ valid.append((empty_objectives, model))
 # The second criterion alone can introduce a required Value dependency.
 secondary_dependency = copy.deepcopy(optimization)
 secondary_dependency["formulations"][0]["expressions"].append(
-    dict(id=uid("secondary-area"), kind="reference", target=dict(value=values["floor_area"]))
+    dict(
+        id=uid("secondary-area"),
+        kind="reference",
+        target=dict(target=values["floor_area"]),
+    )
 )
 secondary_dependency["objectives"].append(
     dict(expression=uid("secondary-area"), sense="minimize")
 )
-secondary_dependency["unknowns"].append(dict(value=values["floor_area"]))
+secondary_dependency["unknowns"].append(dict(target=values["floor_area"]))
 valid.append((secondary_dependency, model))
 
 # An empty system admits an empty investigation; no artificial objective or role.
@@ -158,18 +160,24 @@ limit = dict(
 )
 formulation["values"] = [limit]
 formulation["expressions"][0]["operands"][1] = dict(
-    id=uid("limit-ref"), kind="reference", target=dict(value=limit["id"])
+    id=uid("limit-ref"), kind="reference", target=dict(target=limit["id"])
 )
 local["assignments"].append(
-    dict(target=dict(value=limit["id"]), quantity=dict(magnitude=32000, units="AUD/dwelling/year"))
+    dict(
+        target=dict(target=limit["id"]),
+        quantity=dict(magnitude=32000, units="AUD/dwelling/year"),
+    )
 )
 valid.append((local, model))
 
 local_unknown = copy.deepcopy(local)
 local_unknown["assignments"].pop()
-local_unknown["unknowns"].append(dict(value=limit["id"]))
+local_unknown["unknowns"].append(dict(target=limit["id"]))
 local_unknown["estimates"].append(
-    dict(target=dict(value=limit["id"]), quantity=dict(magnitude=32000, units="AUD/dwelling/year"))
+    dict(
+        target=dict(target=limit["id"]),
+        quantity=dict(magnitude=32000, units="AUD/dwelling/year"),
+    )
 )
 valid.append((local_unknown, model))
 
@@ -212,7 +220,7 @@ valid.append((zero, model))
 # Equation/unknown counting is not a schema validity rule: underdetermined is valid.
 underdetermined = copy.deepcopy(forward)
 rent = underdetermined["assignments"].pop(1)
-underdetermined["unknowns"].append(dict(value=rent["target"]["value"]))
+underdetermined["unknowns"].append(dict(target=rent["target"]["target"]))
 valid.append((underdetermined, model))
 
 # Literal false is a valid but unsatisfiable additional constraint.
@@ -282,8 +290,8 @@ shape_case(lambda p: p["assignments"][0].update(value=dict(id=values["homes"])))
 shape_case(lambda p: p["assignments"][0]["quantity"].update(magnitude=True))
 shape_case(lambda p: p["assignments"][0]["quantity"].pop("units"))
 shape_case(lambda p: p["estimates"][0].pop("quantity"))
-shape_case(lambda p: p.update(unknowns=[dict(value=dict(id=values["NOI"]))]))
-shape_case(lambda p: p.update(unknowns=[dict(value="NOI")]))
+shape_case(lambda p: p.update(unknowns=[dict(target=dict(id=values["NOI"]))]))
+shape_case(lambda p: p.update(unknowns=[dict(target="NOI")]))
 shape_case(lambda p: p["objectives"][0].pop("expression"))
 shape_case(lambda p: p["objectives"][0].pop("sense"))
 shape_case(lambda p: p["objectives"][0].update(sense="solve"))
@@ -345,15 +353,18 @@ semantic_case(
     ],
 )
 semantic_case(
-    "non-Value role target",
-    lambda p: p["assignments"][0].update(target=dict(value=model["system"]["entities"][0]["id"])),
+    "unknown Value or Movement reference",
+    lambda p: p["assignments"][0].update(
+        target=dict(target=model["system"]["entities"][0]["id"])
+    ),
 )
 semantic_case(
-    "non-Value role target", lambda p: p["unknowns"].append(dict(value=uid("missing-value")))
+    "unknown Value or Movement reference",
+    lambda p: p["unknowns"].append(dict(target=uid("missing-value"))),
 )
 semantic_case(
-    "non-Value role target",
-    lambda p: p["estimates"][0].update(target=dict(value=uid("missing-estimate"))),
+    "unknown Value or Movement reference",
+    lambda p: p["estimates"][0].update(target=dict(target=uid("missing-estimate"))),
 )
 semantic_case(
     "duplicate assignments target",
@@ -365,14 +376,19 @@ semantic_case(
 )
 semantic_case("duplicate unknown", lambda p: p["unknowns"].append(p["unknowns"][0]))
 semantic_case(
-    "roles overlap", lambda p: p["unknowns"].append(dict(value=p["assignments"][0]["target"]["value"]))
+    "roles overlap",
+    lambda p: p["unknowns"].append(
+        dict(target=p["assignments"][0]["target"]["target"])
+    ),
 )
 semantic_case(
     "not an unknown",
     lambda p: p["estimates"].append(copy.deepcopy(p["assignments"][0])),
 )
 semantic_case("missing solve role", lambda p: p["assignments"].pop())
-semantic_case("missing solve role", lambda p: p["unknowns"].remove(dict(value=values["NOI"])))
+semantic_case(
+    "missing solve role", lambda p: p["unknowns"].remove(dict(target=values["NOI"]))
+)
 semantic_case(
     "missing solve role",
     lambda p: p["assignments"].pop(1),
@@ -424,7 +440,7 @@ semantic_case(
 )
 semantic_case(
     "missing solve role",
-    lambda p: p["unknowns"].remove(dict(value=values["floor_area"])),
+    lambda p: p["unknowns"].remove(dict(target=values["floor_area"])),
     base=secondary_dependency,
 )
 semantic_case(
@@ -436,9 +452,9 @@ semantic_case(
     lambda p: p["formulations"][0].update(values=[copy.deepcopy(value_records["NOI"])]),
 )
 semantic_case(
-    "unknown Value reference",
+    "unknown Value or Movement reference",
     lambda p: p["formulations"][0]["expressions"][1].update(
-        target=dict(value=uid("missing-symbol"))
+        target=dict(target=uid("missing-symbol"))
     ),
 )
 semantic_case("positive and finite", lambda p: p.update(settings=dict(time_limit=0)))
@@ -498,10 +514,15 @@ with TemporaryDirectory(prefix="rk-specification-") as temp:
         assert isinstance(record.metadata, module.Metadata)
         assert isinstance(record.metadata.id, module.MetadataId)
         assert isinstance(record.model, module.MetadataId)
-        assert all(isinstance(ref, module.ValueReference) and isinstance(ref.value, module.ValueId) for ref in record.unknowns)
+        assert all(
+            isinstance(ref, module.Reference) and isinstance(ref.target, module.UUID)
+            for ref in record.unknowns
+        )
         for assignment in record.assignments + record.estimates:
             assert isinstance(assignment, module.Assignment)
-            assert isinstance(assignment.target, module.ValueReference) and isinstance(assignment.target.value, module.ValueId)
+            assert isinstance(assignment.target, module.Reference) and isinstance(
+                assignment.target.target, module.UUID
+            )
             assert isinstance(assignment.quantity, module.Quantity)
         for objective in record.objectives:
             assert isinstance(objective.expression, module.ExpressionId)
