@@ -127,6 +127,7 @@ class Tree:
         batch = bool(spec.get("cases"))
         outputs = set(run.get("outputs") or [])
         effective = None
+        scope = None
         if batch:
             # Check batch shape, pinned kinds and reference graph; individual leaf
             # attempts can still report invalid numerical roles without a solution.
@@ -232,14 +233,17 @@ class Tree:
             run["report"].get("trace") or []
         ):
             self.reference(item)
-            for scoped in item.get("references") or []:
-                doc = self.resolve(scoped["document"], "Model")
-                if scoped["document"] not in self.scope_cache:
-                    self.scope_cache[scoped["document"]] = validate_model(
-                        doc, self.model_version
+            for reference in item.get("references") or []:
+                require(
+                    not batch and scope is not None,
+                    "diagnostic references require this Run's valid input Model",
+                )
+                input_id = effective["model"]
+                if input_id not in self.scope_cache:
+                    self.scope_cache[input_id] = validate_model(
+                        self.models[input_id], self.model_version
                     )
-                referenced_scope = self.scope_cache[scoped["document"]]
-                resolve_reference(scoped["reference"], referenced_scope.values)
+                resolve_reference(reference, self.scope_cache[input_id].targets)
         self.visited[ref] = run
         return run
 

@@ -4,6 +4,7 @@ Old pandas container details and implicit time-unit removal are intentional API
 breaks. Dates, totals, allocation, partition meaning and detached results remain
 covered here. Plotting is tested by the installed walkthroughs and adapters.
 """
+
 from rangekeeper.model.flow import Flow
 
 from rangekeeper.model.distribution import Distribution
@@ -136,7 +137,7 @@ def test_stream_selection_and_mixed_frequency_totals():
     )
     owner = Entity(id=uuid4(), characteristics=Characteristics(values=values))
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.5.0"),
+        metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
         definitions=Definitions(measures=(measure,)),
         system=System(entities=(owner,)),
     )
@@ -216,7 +217,7 @@ def test_segment_meaning_is_model_content_not_a_second_mutable_tree():
     )
     parent = Assembly(id=uuid4(), name="Podium", entities=tuple(c.id for c in children))
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.5.0"),
+        metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
         system=System(entities=children, assemblies=(parent,)),
     )
     assert residential.right == 65
@@ -248,7 +249,7 @@ def test_type_ancestry_uses_canonical_classification_references():
         classifications=(grandparent, parent, child, *leaves),
     )
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.5.0"),
+        metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
         definitions=Definitions(taxonomies=(taxonomy,)),
     )
     records = {c.id: c for c in model.definitions.taxonomies[0].classifications}

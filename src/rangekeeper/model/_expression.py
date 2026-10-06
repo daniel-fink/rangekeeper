@@ -28,6 +28,7 @@ class Scope:
     entities: Mapping[str, dict]
     classifications: Mapping[str, dict]
     values: Mapping[str, dict]
+    targets: Mapping[str, tuple[dict, dict | None]]
     domains: Mapping[str, dict]
     functions: Mapping[str, dict]
     identities: frozenset[str]
@@ -44,6 +45,7 @@ def build_scope(document, local_values=()) -> Scope:
     entities: dict[str, dict] = {}
     classifications: dict[str, dict] = {}
     values: dict[str, dict] = {}
+    targets: dict[str, tuple[dict, dict | None]] = {}
     domains: dict[str, dict] = {}
     functions: dict[str, dict] = {}
     identities: set[str] = set()
@@ -68,6 +70,7 @@ def build_scope(document, local_values=()) -> Scope:
         from rangekeeper._schema.records import Flow, PropertyContent
 
         add(values, value)
+        targets[value["id"]] = (value, None)
         kind = value["kind"]
         if kind in ("measurement", "flow"):
             require(value.get("measure") in measures, "unknown Value Measure")
@@ -84,6 +87,14 @@ def build_scope(document, local_values=()) -> Scope:
             if kind == "flow" and value.get("flow") is not None:
                 try:
                     Flow.from_data(value["flow"]).check()
+                    for movement in value["flow"]["movements"]:
+                        identity = movement["id"]
+                        require(
+                            identity not in identities,
+                            f"duplicate identity: {identity}",
+                        )
+                        identities.add(identity)
+                        targets[identity] = (value, movement)
                 except (ValueError, TypeError) as error:
                     require(False, str(error))
         else:
@@ -113,6 +124,7 @@ def build_scope(document, local_values=()) -> Scope:
     # Explicitly a fixture domain environment, not accepted domain Value records.
     for value in document.get("input_domains") or []:
         add(values, value)
+        targets[value["id"]] = (value, None)
         domains[value["id"]] = value["domain"]
     codes = set()
     for function in document.get("functions") or []:
@@ -124,6 +136,7 @@ def build_scope(document, local_values=()) -> Scope:
         entities=MappingProxyType(entities),
         classifications=MappingProxyType(classifications),
         values=MappingProxyType(values),
+        targets=MappingProxyType(targets),
         domains=MappingProxyType(domains),
         functions=MappingProxyType(functions),
         identities=frozenset(identities),
@@ -264,11 +277,10 @@ def infer_expression_domain(node, seen=None, *, scope: Scope) -> dict:
         return dict(kind=kind)
     if kind == "reference":
         target = node["target"]
-        require(target["value"] in scope.domains, "unknown Value reference")
-        if target.get("movement") is not None:
-            value, _ = resolve_reference(target, scope.values)
+        value, movement = resolve_reference(target, scope.targets)
+        if movement is not None:
             return dict(kind="quantity", units=value["flow"]["units"])
-        return scope.domains[target["value"]]
+        return scope.domains[value["id"]]
     if kind in ("binary", "unary"):
         args = [node["operand"]] if kind == "unary" else node["operands"]
         domains = [infer_expression_domain(arg, seen, scope=scope) for arg in args]

@@ -18,7 +18,7 @@ def validate_policy(policy, *, scope, units_compatible=None):
         "duplicate or empty policy targets",
     )
     for target in targets.values():
-        numerical_units(target, scope.values, scope.measures)
+        numerical_units(target, scope.targets, scope.measures)
     require(bool(policy["points"]), "policy needs decision points")
     dates = [p["at"] for p in policy["points"]]
     require(dates == sorted(set(dates)), "decision dates must be strictly increasing")
@@ -31,7 +31,7 @@ def validate_policy(policy, *, scope, units_compatible=None):
         )
         observed = {reference_key(o["target"]) for o in observations}
         for observation in observations:
-            numerical_units(observation["target"], scope.values, scope.measures)
+            numerical_units(observation["target"], scope.targets, scope.measures)
         for rule in point["rules"]:
             require(
                 infer_expression_domain(rule["condition"], scope=scope)["kind"]
@@ -74,7 +74,7 @@ def validate_policy(policy, *, scope, units_compatible=None):
                 local.add(token)
                 covered.add(token)
                 expected = numerical_units(
-                    action["target"], scope.values, scope.measures
+                    action["target"], scope.targets, scope.measures
                 )
                 actual = action["quantity"]
                 require(
@@ -138,7 +138,7 @@ def validate_decisions(policy, decisions, *, scope, provenance=None):
                 if prior_date
                 else available_on(
                     binding["target"],
-                    scope.values,
+                    scope.targets,
                     provenance or {},
                     declared=binding.get("available_at"),
                 )
@@ -148,7 +148,7 @@ def validate_decisions(policy, decisions, *, scope, provenance=None):
                 and observed["available_at"] == canonical_date,
                 "observation availability differs from input evidence",
             )
-            actual = recorded_quantity(binding["target"], scope.values, scope.measures)
+            actual = recorded_quantity(binding["target"], scope.targets, scope.measures)
             prior = next(
                 (
                     a["quantity"]

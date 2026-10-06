@@ -115,7 +115,7 @@ operator: equal
 operands:
 - id: c989e7fa-e363-48c0-907c-e4cc8b5a6935
   kind: reference
-  target: {value: a947d40b-d9b0-54cb-a2a4-f8f598405ac2}
+  target: {target: a947d40b-d9b0-54cb-a2a4-f8f598405ac2}
 - id: 8a82e02f-9fdd-4ff7-a68e-387a6279ed32
   kind: quantity
   quantity:

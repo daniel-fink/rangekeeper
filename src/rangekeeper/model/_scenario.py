@@ -72,7 +72,7 @@ def validate_realizations(provenance, scope):
         tokens = [reference_key(a["target"]) for a in item["availability"]]
         require(len(tokens) == len(set(tokens)), "duplicate observation availability")
         for availability in item["availability"]:
-            _, movement = resolve_reference(availability["target"], scope.values)
+            _, movement = resolve_reference(availability["target"], scope.targets)
             require(movement is not None, "scenario availability requires a Movement")
             if movement.get("date") is not None:
                 require(
@@ -96,9 +96,7 @@ def validate_realizations(provenance, scope):
                             - timedelta(days=1)
                         ).isoformat()
                         actual = availability.get(
-                            reference_key(
-                                dict(value=value["id"], movement=movement["key"])
-                            )
+                            reference_key(dict(target=movement["id"]))
                         )
                         require(
                             actual is not None and actual >= required,
@@ -150,7 +148,7 @@ def _validate_contents(item, scope):
     expected_availability = set()
     for field in ("inputs", "outputs"):
         for binding in item[field]:
-            value, _ = resolve_reference(dict(value=binding["value"]), scope.values)
+            value, _ = resolve_reference(dict(target=binding["value"]), scope.targets)
             name = binding["name"]
             is_flow = field == "outputs" or name in arrays
             if is_flow:
@@ -178,9 +176,7 @@ def _validate_contents(item, scope):
                         movement.get("magnitude") is not None,
                         "captured scenario path cannot be unresolved",
                     )
-                    token = reference_key(
-                        dict(value=value["id"], movement=movement["key"])
-                    )
+                    token = reference_key(dict(target=movement["id"]))
                     expected_availability.add(token)
                     earliest = (
                         date.fromisoformat(plan["periods"][index]["end"])

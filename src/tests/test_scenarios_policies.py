@@ -28,7 +28,7 @@ from rangekeeper.specification.targets import movement
 
 
 def base():
-    return Model.create(metadata=Metadata(id=uuid4(), schema_version="0.5.0"))
+    return Model.create(metadata=Metadata(id=uuid4(), schema_version="0.6.0"))
 
 
 def test_parallel_streams_and_replay(monkeypatch):
@@ -78,7 +78,7 @@ def test_fixed_market_oracle_and_shock_applied_once():
     assert [
         m.magnitude for m in result.value("shock_effect").flow.movements
     ] == pytest.approx([-0.2, -0.1, -0.05])
-    ref = movement(result.value("implied_reversion_cap_rates").id, "p1")
+    ref = movement(result.value("implied_reversion_cap_rates").flow.movements[0].id)
     with pytest.raises(PolicyCapabilityError, match="unavailable"):
         observe(
             result.model,
@@ -111,6 +111,7 @@ def policy_model(factors):
                     units="dimensionless",
                     movements=tuple(
                         Movement(
+                            id=uuid4(),
                             key=f"p{i+1}",
                             period=p,
                             magnitude=factors[i] if name == "pricing" else None,
@@ -121,7 +122,7 @@ def policy_model(factors):
             )
         )
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.5.0"),
+        metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
         definitions=Definitions(measures=(measure,)),
         system=System(formulations=(Formulation(id=uuid4(), values=tuple(values)),)),
     )
@@ -153,12 +154,12 @@ def test_resale_dates_strict_threshold_and_holding(factors, minimum, sale):
     sales = [
         a.quantity.magnitude
         for a in result.assignments
-        if a.target.value == v["sale"].id
+        if a.target.target in {m.id for m in v["sale"].flow.movements}
     ]
     holding = [
         a.quantity.magnitude
         for a in result.assignments
-        if a.target.value == v["holding"].id
+        if a.target.target in {m.id for m in v["holding"].flow.movements}
     ]
     assert sales == [int(i + 1 == sale) for i in range(len(factors))]
     assert holding == [int(i < sale) for i in range(len(factors))]
@@ -200,7 +201,9 @@ def test_independent_realizations_capture_distribution_draws():
         ),
     )
     result = generate(base(), plan, scenario_keys=["independent"])[0]
-    assert result.value("space_market_price_factors").flow == result.value("space_factor").flow
+    assert [
+        m.number for m in result.value("space_market_price_factors").flow.movements
+    ] == [m.number for m in result.value("space_factor").flow.movements]
     assert replay(result.model).model.id == result.model.id
 
 
@@ -236,7 +239,8 @@ def test_supplied_innovations_realize_without_randomness(monkeypatch):
     draws = capture(model, plan, scenario_key="known", inputs=inputs)
     result = realize(model, plan, draws=draws)
     assert [
-        m.magnitude for m in result.resolve_output("autoregressive_returns").flow.movements
+        m.magnitude
+        for m in result.resolve_output("autoregressive_returns").flow.movements
     ] == pytest.approx([0.01, 0.025, 0.0025])
     assert [
         m.magnitude for m in result.value("historical_value").flow.movements
@@ -291,7 +295,7 @@ def test_control_roles_conflict_across_contributors_and_endogenous_observation_f
     store.put(spec)
     other = Specification(
         SpecificationRecord(
-            metadata=Metadata(id=uuid4(), schema_version="0.5.0"),
+            metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
             model=model.id,
             policy=policy,
         )
@@ -299,7 +303,7 @@ def test_control_roles_conflict_across_contributors_and_endogenous_observation_f
     store.put(other)
     joined = Specification(
         SpecificationRecord(
-            metadata=Metadata(id=uuid4(), schema_version="0.5.0"),
+            metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
             includes=(spec.id, other.id),
         )
     )

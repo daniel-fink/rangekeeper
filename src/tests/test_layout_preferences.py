@@ -38,7 +38,7 @@ requires_z3 = pytest.mark.z3
 
 def graph_records(records):
     return Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.5.0"),
+        metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
         system=System(
             entities=tuple(
                 Entity(
@@ -116,7 +116,7 @@ def test_measurement_units_are_normalized_before_similarity():
         Quantity(magnitude=2, units="meter"),
     )
     graph = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.5.0"),
+        metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
         definitions=Definitions(measures=(m,)),
         system=System(
             entities=tuple(

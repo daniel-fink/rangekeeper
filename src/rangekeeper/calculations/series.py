@@ -7,6 +7,8 @@ and is responsible for their meaning.
 
 from __future__ import annotations
 
+from uuid import uuid4
+
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date
@@ -92,7 +94,9 @@ class Alignment:
                     claim for movement in group for claim in (movement.claims or ())
                 )
             )
-            movements.append(group[0].replace(magnitude=value, claims=claims))
+            movements.append(
+                group[0].replace(id=uuid4(), magnitude=value, claims=claims)
+            )
             coverage.append(sum(row[index] for row in self.coverage) / len(group))
         return Aggregation(
             converted[0].replace(movements=tuple(movements)).check(), tuple(coverage)
@@ -191,7 +195,11 @@ def align(
                 magnitude = 0.0
             source = mapping.get(key, templates[key])
             movements.append(
-                source.replace(magnitude=magnitude, claims=UNSET if present else ())
+                source.replace(
+                    id=source.id if present else uuid4(),
+                    magnitude=magnitude,
+                    claims=UNSET if present else (),
+                )
             )
         aligned.append(flow.replace(movements=tuple(movements)).check())
         coverages.append(tuple(coverage))
@@ -221,6 +229,7 @@ def multiply(flows: Sequence[Flow]) -> Flow:
         unit = default_units.multiply(unit, flow.units)
     movements = [
         group[0].replace(
+            id=uuid4(),
             magnitude=math.prod(s.number for s in group),
             claims=tuple(dict.fromkeys((c for s in group for c in s.claims or ()))),
         )
@@ -282,7 +291,7 @@ def integrate(
                 to=output_units,
             ).magnitude
         )
-        movements.append(movement.replace(magnitude=magnitude))
+        movements.append(movement.replace(id=uuid4(), magnitude=magnitude))
     return flow.replace(movements=tuple(movements), units=output_units).check()
 
 

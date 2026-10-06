@@ -6,7 +6,7 @@ prefixes:
   rk: https://daniel-fink.github.io/rangekeeper/schema/
 imports:
 - expression
-- value_reference
+- reference
 default_prefix: rk
 default_range: string
 classes:
@@ -17,7 +17,7 @@ classes:
         range: Code
         required: true
       target:
-        range: ValueReference
+        range: Reference
         required: true
         inlined: true
       available_at:
@@ -29,7 +29,7 @@ classes:
         range: ActionKind
         required: true
       target:
-        range: ValueReference
+        range: Reference
         inlined: true
       quantity:
         range: Quantity
@@ -91,7 +91,7 @@ classes:
         required: true
         identifier: true
       targets:
-        range: ValueReference
+        range: Reference
         required: true
         inlined: true
         multivalued: true
@@ -111,7 +111,7 @@ classes:
         range: Code
         required: true
       target:
-        range: ValueReference
+        range: Reference
         required: true
         inlined: true
       quantity:

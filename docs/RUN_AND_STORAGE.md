@@ -35,12 +35,12 @@ from rangekeeper.specification import SpecificationRecord, compose, validate as 
 from rangekeeper.run import RunRecord, Report, Status, Diagnostic, validate as validate_run
 from rangekeeper.io import MemoryStore, DirectoryStore, json
 
-model = rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.5.0"))
+model = rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.6.0"))
 specification = rk.Specification(SpecificationRecord(
-    metadata=Metadata(id=uuid4(), schema_version="0.5.0"), model=model.id,
+    metadata=Metadata(id=uuid4(), schema_version="0.6.0"), model=model.id,
 ))
 run = rk.Run(RunRecord(
-    metadata=Metadata(id=uuid4(), schema_version="0.2.0", name="Synthetic example"),
+    metadata=Metadata(id=uuid4(), schema_version="0.3.0", name="Synthetic example"),
     specification=specification.id,
     report=Report(
         status=Status(completion="failed", solution="not_assessed"),

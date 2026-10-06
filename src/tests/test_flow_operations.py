@@ -1,4 +1,6 @@
 """Flows carry quantities; model-selected operations supply their interpretation."""
+
+from uuid import uuid4
 from rangekeeper.model.flow import Flow
 
 from rangekeeper.calculations.account import Account
@@ -29,7 +31,7 @@ def test_flow_wire_contract_rejects_semantic_classification(field):
 
 @pytest.mark.parametrize("include_movements", [False, True])
 def test_old_samples_field_is_rejected_instead_of_losing_entries(include_movements):
-    movement = Movement(key="payment", date=date(2026, 1, 1), magnitude=100)
+    movement = Movement(id=uuid4(), key="payment", date=date(2026, 1, 1), magnitude=100)
     payload = {"units": "AUD", "samples": [movement.to_data()]}
     if include_movements:
         payload["movements"] = []

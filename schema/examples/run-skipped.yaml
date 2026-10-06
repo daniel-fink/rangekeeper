@@ -1,10 +1,9 @@
-# Synthetic conformance fixture; no runtime execution is claimed.
 metadata:
   id: 37045e56-e14c-5fb0-99e1-edd704271361
-  schema_version: 0.2.0
+  schema_version: 0.3.0
   name: Synthetic skipped attempt
-  description: New synthetic 0.2.0 conformance fixture. No evaluator or solver produced this record; historical
-    Runs are unchanged.
+  description: New synthetic 0.3.0 conformance fixture. No evaluator or solver produced
+    this record; historical Runs are unchanged.
 specification: 5f5be6f0-a423-5a22-89f8-bc83ac1f9d96
 report:
   status:

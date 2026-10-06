@@ -486,7 +486,7 @@ describes this DCF:</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Rangekeeper import: /private/tmp/rk-refactor2-notebook-site/rangekeeper/__init__.py
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Rangekeeper import: /private/tmp/rk-identities-notebook-site-final/rangekeeper/__init__.py
 </pre></div>
 </div>
 </div>
@@ -523,7 +523,7 @@ its UUID and owner-local key. Polars is used here only to display detached data.
                    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">flow</span> <span class="ow">in</span> <span class="n">flows</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
     <span class="n">entity</span> <span class="o">=</span> <span class="n">Entity</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">uuid4</span><span class="p">(),</span> <span class="n">code</span><span class="o">=</span><span class="s2">"property"</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Example property"</span><span class="p">,</span>
                     <span class="n">characteristics</span><span class="o">=</span><span class="n">Characteristics</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="n">values</span><span class="p">))</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">Model</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">metadata</span><span class="o">=</span><span class="n">Metadata</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">uuid4</span><span class="p">(),</span> <span class="n">schema_version</span><span class="o">=</span><span class="s2">"0.5.0"</span><span class="p">),</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">Model</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">metadata</span><span class="o">=</span><span class="n">Metadata</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">uuid4</span><span class="p">(),</span> <span class="n">schema_version</span><span class="o">=</span><span class="s2">"0.6.0"</span><span class="p">),</span>
                             <span class="n">definitions</span><span class="o">=</span><span class="n">Definitions</span><span class="p">(</span><span class="n">measures</span><span class="o">=</span><span class="p">(</span><span class="n">measure</span><span class="p">,)),</span>
                             <span class="n">system</span><span class="o">=</span><span class="n">System</span><span class="p">(</span><span class="n">entities</span><span class="o">=</span><span class="p">(</span><span class="n">entity</span><span class="p">,)))</span>
     <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="n">Stream</span><span class="o">.</span><span class="n">from_values</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">values</span><span class="p">))</span>
@@ -576,10 +576,10 @@ its UUID and owner-local key. Polars is used here only to display detached data.
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(Movement.from_data({'key': '2019-01-01', 'date': '2019-01-01', 'magnitude': 300}),
- Movement.from_data({'key': '2020-01-01', 'date': '2020-01-01', 'magnitude': 100}),
- Movement.from_data({'key': '2020-01-02', 'date': '2020-01-02', 'magnitude': 200}),
- Movement.from_data({'key': '2020-12-31', 'date': '2020-12-31', 'magnitude': -100}))
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(Movement.from_data({'id': 'e11929f7-f3c5-4b49-acc7-87978889298b', 'date': '2019-01-01', 'magnitude': 300}),
+ Movement.from_data({'id': '54464b08-9197-450d-8f2e-3535e178454d', 'date': '2020-01-01', 'magnitude': 100}),
+ Movement.from_data({'id': 'de71b422-de1c-46bb-b7d6-f32f96f2babf', 'date': '2020-01-02', 'magnitude': 200}),
+ Movement.from_data({'id': '76d55ea8-ad22-4631-8255-d551e34ab267', 'date': '2020-12-31', 'magnitude': -100}))
 </pre></div>
 </div>
 </div>
@@ -722,8 +722,8 @@ negative, because it is an <em>outflow</em>.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[('potential_gross_income', UUID('6abad90a-dfd9-4322-b9e0-fccdfc69d8f7')),
- ('vacancy', UUID('761c5619-3c62-45dc-96fe-46ad2d9d030b'))]
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[('potential_gross_income', UUID('6c1796e5-ecfa-4394-b15f-8000e03bba90')),
+ ('vacancy', UUID('7f3eb898-fab0-4119-a25b-2b13e162ef92'))]
 </pre></div>
 </div>
 </div>

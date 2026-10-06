@@ -8,6 +8,8 @@ is responsible for that interpretation; Flow records carry no semantic kinds.
 
 from __future__ import annotations
 
+from uuid import uuid4
+
 from dataclasses import dataclass
 from datetime import date
 import math
@@ -39,9 +41,10 @@ def calculate_pv(flow: Flow, *, rate: float, first_period: int = 1) -> Flow:
     return flow.replace(
         movements=tuple(
             movement.replace(
+                id=uuid4(),
                 magnitude=_require_result(
                     pyxirr.pv(rate, first_period + i, 0, -movement.number), "PV"
-                )
+                ),
             )
             for i, movement in enumerate(flow.movements)
         )

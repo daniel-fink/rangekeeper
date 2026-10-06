@@ -479,7 +479,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Installed package: /private/tmp/rk-refactor2-notebook-site/rangekeeper/__init__.py
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Installed package: /private/tmp/rk-identities-notebook-site-final/rangekeeper/__init__.py
 </pre></div>
 </div>
 </div>
@@ -532,7 +532,7 @@ document.write(`
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'num_periods'</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">'growth_rate'</span><span class="p">:</span> <span class="mf">0.</span><span class="p">}</span>
 <span class="n">periods</span> <span class="o">=</span> <span class="n">make_periods</span><span class="p">(</span><span class="n">date</span><span class="p">(</span><span class="mi">2021</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">frequency</span><span class="o">=</span><span class="s1">'year'</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="mi">11</span><span class="p">)</span>
-<span class="n">base_model</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">metadata</span><span class="o">=</span><span class="n">Metadata</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">uuid4</span><span class="p">(),</span> <span class="n">schema_version</span><span class="o">=</span><span class="s1">'0.5.0'</span><span class="p">))</span>
+<span class="n">base_model</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">metadata</span><span class="o">=</span><span class="n">Metadata</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">uuid4</span><span class="p">(),</span> <span class="n">schema_version</span><span class="o">=</span><span class="s1">'0.6.0'</span><span class="p">))</span>
 <span class="n">plan</span> <span class="o">=</span> <span class="n">market</span><span class="o">.</span><span class="n">make_plan</span><span class="p">(</span><span class="n">periods</span><span class="o">=</span><span class="n">periods</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">20261006</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="p">{</span>
     <span class="s1">'volatility_per_period'</span><span class="p">:</span> <span class="mf">.025</span><span class="p">,</span> <span class="s1">'space_amplitude'</span><span class="p">:</span> <span class="mf">.25</span><span class="p">,</span> <span class="s1">'space_period'</span><span class="p">:</span> <span class="mf">10.</span><span class="p">,</span>
     <span class="s1">'space_phase'</span><span class="p">:</span> <span class="mf">0.</span><span class="p">,</span> <span class="s1">'growth_rate'</span><span class="p">:</span> <span class="mf">.02</span><span class="p">,</span> <span class="s1">'shock_likelihood'</span><span class="p">:</span> <span class="mf">.02</span><span class="p">})</span>
@@ -592,7 +592,7 @@ document.write(`
   white-space: pre-wrap;
 }
 </style>
-<small>shape: (3, 5)</small><table border="1" class="dataframe"><thead><tr><th>Date</th><th>Pricing factor</th><th>Rule</th><th>Terminated</th><th>Reason</th></tr><tr><td>date</td><td>f64</td><td>str</td><td>bool</td><td>str</td></tr></thead><tbody><tr><td>2021-12-31</td><td>1.0</td><td>&quot;fallback&quot;</td><td>false</td><td>null</td></tr><tr><td>2022-12-31</td><td>1.153078</td><td>&quot;fallback&quot;</td><td>false</td><td>null</td></tr><tr><td>2023-12-31</td><td>1.218242</td><td>&quot;7207b777-d3c8-5cf4-82f3-e44597…</td><td>true</td><td>&quot;rule_matched&quot;</td></tr></tbody></table></div></div></div>
+<small>shape: (3, 5)</small><table border="1" class="dataframe"><thead><tr><th>Date</th><th>Pricing factor</th><th>Rule</th><th>Terminated</th><th>Reason</th></tr><tr><td>date</td><td>f64</td><td>str</td><td>bool</td><td>str</td></tr></thead><tbody><tr><td>2021-12-31</td><td>1.0</td><td>&quot;fallback&quot;</td><td>false</td><td>null</td></tr><tr><td>2022-12-31</td><td>1.153078</td><td>&quot;fallback&quot;</td><td>false</td><td>null</td></tr><tr><td>2023-12-31</td><td>1.218242</td><td>&quot;45155e3a-9eaa-5751-9b1d-41544f…</td><td>true</td><td>&quot;rule_matched&quot;</td></tr></tbody></table></div></div></div>
 </div>
 </section>
 <section id="compare-cashflows-and-results">

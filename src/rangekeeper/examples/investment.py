@@ -23,7 +23,7 @@ from ..model import (
 from ..model.flow import Flow, Movement
 from ..model.scenario import ScenarioRealization
 from .._schema.records import (
-    ValueReference,
+    Reference,
     Assignment,
     Policy,
     Specification as SpecificationRecord,
@@ -117,7 +117,7 @@ def author(
     base = (
         scenario.model
         if scenario
-        else Model.create(metadata=Metadata(id=uuid4(), schema_version="0.5.0"))
+        else Model.create(metadata=Metadata(id=uuid4(), schema_version="0.6.0"))
     )
     if scenario and tuple(scenario.realization.plan.periods) != periods:
         raise ValueError("scenario periods must match the complete investment horizon")
@@ -153,6 +153,7 @@ def author(
             units="dimensionless" if control else p["units"],
             movements=tuple(
                 Movement(
+                    id=uuid4(),
                     key=f"p{i + 1}",
                     period=period,
                     date=period.resolve(timing="last_day"),
@@ -182,6 +183,7 @@ def author(
                     units="dimensionless",
                     movements=tuple(
                         Movement(
+                            id=uuid4(),
                             key=f"p{i + 1}",
                             period=period,
                             date=period.resolve(timing="last_day"),
@@ -252,7 +254,11 @@ def formulate(model: Model) -> Model:
     equations = []
 
     def r(name, key=None):
-        return ref(scalar(v[name].id) if key is None else movement(v[name].id, key))
+        return ref(
+            scalar(v[name].id)
+            if key is None
+            else movement(next(m.id for m in _flow(v[name]).movements if m.key == key))
+        )
 
     def set_equation(name, key, rhs):
         equations.append((name + "/" + (key or "scalar"), equal(r(name, key), rhs)))
@@ -271,7 +277,14 @@ def formulate(model: Model) -> Model:
             ),
         )
         set_equation(
-            "pgi", key, multiply(r("base_pgi", key), ref(movement(factors.id, key)))
+            "pgi",
+            key,
+            multiply(
+                r("base_pgi", key),
+                ref(
+                    movement(next(m.id for m in factors.flow.movements if m.key == key))
+                ),
+            ),
         )
         for name, fraction in [
             ("vacancy", "vacancy_rate"),
@@ -288,11 +301,7 @@ def formulate(model: Model) -> Model:
     total = None
     for i, item in enumerate(_flow(v["holding"]).movements):
         key, next_key = item.key, _flow(v["ncf"]).movements[i + 1].key
-        cap = (
-            ref(movement(caps.id, caps.flow.movements[i].key))
-            if caps
-            else r("cap_rate")
-        )
+        cap = ref(movement(caps.flow.movements[i].id)) if caps else r("cap_rate")
         set_equation("potential_sale", key, divide(r("ncf", next_key), cap))
         set_equation("operations", key, multiply(r("ncf", key), r("holding", key)))
         set_equation(
@@ -355,13 +364,13 @@ def specify(
             assignments.extend(
                 (
                     Assignment(
-                        target=movement(v["holding"].id, f"p{i+1}"),
+                        target=movement(_flow(v["holding"]).movements[i].id),
                         quantity=Quantity(
                             magnitude=int(i < sale_period), units="dimensionless"
                         ),
                     ),
                     Assignment(
-                        target=movement(v["sale"].id, f"p{i+1}"),
+                        target=movement(_flow(v["sale"]).movements[i].id),
                         quantity=Quantity(
                             magnitude=int(i + 1 == sale_period), units="dimensionless"
                         ),
@@ -379,7 +388,7 @@ def specify(
     )
     return Specification(
         SpecificationRecord(
-            metadata=Metadata(id=uuid4(), schema_version="0.5.0"),
+            metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
             model=model.id,
             assignments=tuple(assignments),
             unknowns=unknowns,
@@ -429,12 +438,13 @@ def report(model: Model) -> InvestmentReport:
     from datetime import timedelta
 
     purchase = Movement(
+        id=uuid4(),
         key="acquisition",
         date=first - timedelta(days=1),
         magnitude=-abs(_quantity(v["acquisition_price"]).magnitude),
     )
     operating = tuple(
-        Movement(key=m.key, date=m.date, magnitude=m.magnitude)
+        Movement(id=uuid4(), key=m.key, date=m.date, magnitude=m.magnitude)
         for m in _flow(v["total"]).movements
         if m.resolve() <= sale_date
     )
@@ -470,7 +480,10 @@ def build_stop_gain_resale_policy(
         sale=own["sale"].id,
         threshold=threshold,
         minimum_holding_periods=minimum_holding_periods,
-        mapping={m.key: m.key for m in own["holding"].flow.movements},
+        mapping={
+            h.id: p.id
+            for h, p in zip(own["holding"].flow.movements, factors.flow.movements)
+        },
     )
 
 
@@ -487,6 +500,7 @@ def horizon_returns(model: Model) -> Flow:
     assert first_period is not None
     first = first_period.start
     purchase = Movement(
+        id=uuid4(),
         key="acquisition",
         date=first - timedelta(days=1),
         magnitude=-abs(_quantity(v["acquisition_price"]).magnitude),
@@ -499,6 +513,7 @@ def horizon_returns(model: Model) -> Flow:
                 raise ValueError("horizon reporting requires resolved amounts")
             movements.append(
                 Movement(
+                    id=uuid4(),
                     key=amount.key,
                     date=amount.date,
                     magnitude=amount.magnitude + (sale.magnitude if i == index else 0),
@@ -507,5 +522,7 @@ def horizon_returns(model: Model) -> Flow:
         irr = financial.calculate_irr(
             Flow(units=_flow(v["total"]).units, movements=tuple(movements))
         )
-        result.append(Movement(key=sale.key, date=sale.date, magnitude=100 * irr.rate))
+        result.append(
+            Movement(id=uuid4(), key=sale.key, date=sale.date, magnitude=100 * irr.rate)
+        )
     return Flow(units="percent", movements=tuple(result))

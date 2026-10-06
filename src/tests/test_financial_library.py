@@ -1,4 +1,5 @@
 """Independent finance oracles and PyXIRR integration boundary checks."""
+
 from rangekeeper.model.flow import Flow
 
 from datetime import date, datetime
@@ -69,8 +70,14 @@ def test_pv_keeps_records_and_non_currency_units(first_period):
     source = Flow(
         units="kg",
         movements=(
-            Movement(key="a", date=date(2026, 1, 1), magnitude=100, claims=(uuid4(),)),
-            Movement(key="b", date=date(2026, 2, 1), magnitude=-110),
+            Movement(
+                id=uuid4(),
+                key="a",
+                date=date(2026, 1, 1),
+                magnitude=100,
+                claims=(uuid4(),),
+            ),
+            Movement(id=uuid4(), key="b", date=date(2026, 2, 1), magnitude=-110),
         ),
     )
     before = source.to_data()
@@ -78,6 +85,8 @@ def test_pv_keeps_records_and_non_currency_units(first_period):
     assert source.to_data() == before and result.units == "kg"
     for i, (original, discounted) in enumerate(zip(source.movements, result.movements)):
         expected = original.to_data()
+        assert discounted.id != original.id
+        expected["id"] = str(discounted.id)
         expected["magnitude"] = pytest.approx(
             original.magnitude / 1.1 ** (first_period + i)
         )

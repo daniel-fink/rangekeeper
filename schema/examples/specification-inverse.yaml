@@ -1,11 +1,11 @@
-# Synthetic conformance fixture; no runtime execution is claimed.
 metadata:
   id: 04e7e76f-7d71-53ae-9006-78bdb5e1e788
-  schema_version: 0.5.0
+  schema_version: 0.6.0
   name: Inverse valuation
-  description: 'Determine rent and NOI for an assigned capital value. Expected arithmetic: rent 27500 AUD/dwelling/year
-    and NOI 500000 AUD/year. This example pins the same input Model; tests also exercise a separately identified
-    snapshot with recorded amounts.'
+  description: 'Determine rent and NOI for an assigned capital value. Expected arithmetic:
+    rent 27500 AUD/dwelling/year and NOI 500000 AUD/year. This example pins the same
+    input Model; tests also exercise a separately identified snapshot with recorded
+    amounts.'
   previous: 807e416e-d4b7-5476-bd30-449720556aae
 model: e9096132-8158-56db-bc3e-b64ef7f92d4e
 assignments:
@@ -13,28 +13,28 @@ assignments:
     magnitude: 20
     units: dwelling
   target:
-    value: 194afc26-3e2e-507b-ad0c-a73a4b0b2ccd
+    target: 194afc26-3e2e-507b-ad0c-a73a4b0b2ccd
 - quantity:
     magnitude: 50000
     units: AUD/year
   target:
-    value: cbe37d0a-79ce-5d1b-b0cb-8d2a42acc991
+    target: cbe37d0a-79ce-5d1b-b0cb-8d2a42acc991
 - quantity:
     magnitude: 0.05
     units: 1/year
   target:
-    value: 0ceeb0d5-91b7-53b7-b823-2234e2262a4f
+    target: 0ceeb0d5-91b7-53b7-b823-2234e2262a4f
 - quantity:
     magnitude: 10000000
     units: AUD
   target:
-    value: a947d40b-d9b0-54cb-a2a4-f8f598405ac2
+    target: a947d40b-d9b0-54cb-a2a4-f8f598405ac2
 unknowns:
-- value: e3fb1434-5371-5bcb-b0b8-e3af2bf65022
-- value: 9324f928-cfc8-50bb-ba99-fe8c02a6dbd2
+- target: e3fb1434-5371-5bcb-b0b8-e3af2bf65022
+- target: 9324f928-cfc8-50bb-ba99-fe8c02a6dbd2
 estimates:
 - quantity:
     magnitude: 30000
     units: AUD/dwelling/year
   target:
-    value: e3fb1434-5371-5bcb-b0b8-e3af2bf65022
+    target: e3fb1434-5371-5bcb-b0b8-e3af2bf65022

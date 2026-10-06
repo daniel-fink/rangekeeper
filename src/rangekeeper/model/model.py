@@ -15,6 +15,8 @@ from .._schema.records import (
     Entity,
     Relationship,
     Value,
+    Movement,
+    Reference,
     Formulation,
     Claim,
     Source,
@@ -139,6 +141,19 @@ class Model:
     def value(self, id: UUID) -> Value:
         """Resolve a domain-owned or Formulation-local Value, including unresolved ones."""
         return self._index.get(id, Value)
+
+    def movement(self, id: UUID) -> Movement:
+        """Resolve one Movement by identity, independently of matching keys."""
+        return self._index.get(id, Movement)
+
+    def resolve(self, reference: Reference) -> Value | Movement:
+        """Resolve a reference only in this complete Model revision."""
+        if not isinstance(reference, Reference):
+            raise TypeError("reference must be a Reference")
+        record = self._index.get(reference.target, Record)
+        if not isinstance(record, (Value, Movement)):
+            raise TypeError("reference must target a Value or Movement")
+        return record
 
     def formulation(self, id: UUID) -> Formulation:
         """Resolve a root or nested Formulation without flattening its ownership."""

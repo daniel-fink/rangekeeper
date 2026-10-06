@@ -18,7 +18,7 @@ operators. Helper records use `Call`, `Parameter`, `Filter`, `Criterion`, and
 | --- | --- |
 | Numerical literal | `quantity`: embedded Quantity with magnitude and explicit units |
 | Boolean literal | `boolean`: true or false |
-| Value reference | `reference`: target ValueReference (Value UUID and optional Movement key) |
+| Value reference | `reference`: target Reference (Value or Movement UUID) |
 | Unary operation | `unary`: operator and one `operand` |
 | Binary operation | `binary`: operator and two ordered `operands` |
 | Function call | `call`: Function UUID, positional arguments, named arguments |

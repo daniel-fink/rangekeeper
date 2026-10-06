@@ -65,11 +65,11 @@ with tempfile.TemporaryDirectory(prefix="rk-simplification-") as directory:
     for value in [
         None,
         {},
-        {"value": "annual_rent"},
-        {"value": "00000000-0000-0000-0000-000000000001"},
+        {"target": "annual_rent"},
+        {"target": "00000000-0000-0000-0000-000000000001"},
         {"value": "00000000-0000-0000-0000-000000000001", "movement": "p1"},
     ]:
-        cases.append(("ValueReference", "reference", value))
+        cases.append(("Reference", "reference", value))
     validators = {}
 
     def valid(which, kind, value):

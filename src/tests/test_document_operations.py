@@ -52,14 +52,14 @@ def test_nested_normalization_and_independent_copies():
 )
 def test_reject_unsupported_specification_values(value):
     with pytest.raises(AdapterEncodingError):
-        invocation({"value": value})
+        invocation({"target": value})
 
 
 def test_cycles_rejected_and_shared_containers_allowed():
     cyclic = []
     cyclic.append(cyclic)
     with pytest.raises(AdapterEncodingError, match="Cyclic"):
-        invocation({"value": cyclic})
+        invocation({"target": cyclic})
     shared = [1]
     assert invocation({"a": shared, "b": shared}).specification["a"] == (1,)
 
@@ -69,7 +69,7 @@ def test_fingerprint_type_and_order_semantics():
     assert fp(invocation({"a": 1, "b": 2})) == fp(invocation({"b": 2, "a": 1}))
     assert fp(invocation({"a": [1, 2]})) == fp(invocation({"a": (1, 2)}))
     assert fp(invocation({"a": [1, 2]})) != fp(invocation({"a": [2, 1]}))
-    assert len({fp(invocation({"value": v})) for v in [1, 1.0, True, "1"]}) == 4
+    assert len({fp(invocation({"target": v})) for v in [1, 1.0, True, "1"]}) == 4
     assert fp(invocation()) != fp(invocation(method=Method(code="test", version="2")))
     assert fp(invocation()) != fp(invocation(inputs={"source": None}))
     assert fp(invocation()) == fp(

@@ -4,32 +4,32 @@ See [architecture](LIBRARY_ARCHITECTURE.md) for ownership and [verification](VER
 
 ## Record contracts
 
-LinkML remains authoritative. Model and Specification are **0.5.0**; Run is
-**0.2.0**. Generated immutable records and the native LinkML bundle are regenerated
+LinkML remains authoritative. Model and Specification are **0.6.0**; Run is
+**0.3.0**. Generated immutable records and the native LinkML bundle are regenerated
 together. Schema changes are deliberate draft-format breaks, with explicit
 revision-producing upgrades. Historical Runs and research outputs keep their
 original formats and pins.
 
-`ValueReference(value: UUID, movement: str | None = None)` identifies a Value or
-one of its owner-local Movement keys. The containing Model or composed
-Specification fixes revision scope. Movement order and coordinates have meaning,
-but neither array position nor a separate Movement UUID determines identity.
+`Reference(target: UUID)` identifies a Value or Movement directly. The containing
+Model or composed Specification fixes revision scope. A Movement has its own UUID;
+its optional key is a label used for event alignment. Array position and coordinates
+do not determine identity. See [references and identity](REFERENCES.md).
 
 - `Expression.target`, `Assignment.target`, estimates and `Specification.unknowns`
   share that reference shape. Bindings continue to refer to whole Values.
 - Numerical roles accept scalar measurements or individual Movements. Whole-Flow
   roles require explicit expansion with `assign_flow()` or `unknown_flow()`.
-- Flow units, shape, keys and coordinates must exist before solving. Magnitudes
+- Flow units, shape, Movement IDs and coordinates must exist before solving. Magnitudes
   may be absent or null. Known zero is distinct from either unresolved state.
-- Duplicate roles and assignment/unknown/control conflicts use the pair of Value
-  UUID and optional Movement key. Contributions cannot override each other, even
-  with identical quantities. One policy contribution is permitted per composition.
+- Duplicate roles and assignment/unknown/control conflicts use the target UUID.
+  Contributions cannot override each other, even with identical quantities. One policy contribution is permitted per composition.
 - Loading recorded values or supplying estimates never assigns them.
   `assign_flow()` explicitly copies resolved recorded magnitudes in Flow units.
 - Movement assignments convert to Flow units; scalar assignments convert to
   Measure units. Symbolic arithmetic retains dimensions, including time powers.
-- Diagnostic references carry the document revision plus ValueReference, so a
-  residual can identify both its Constraint and participating Movements.
+- Diagnostic `document` and `target` identify the reported subject, such as a
+  Specification Constraint. Participating `references` resolve only in the owning
+  Run's input Model. A batch puts these references on its child Runs.
 
 A limited Run can use `not_assessed` when preparation consumes its time budget
 before numerical assessment. It requires runtime evidence and a diagnostic, and
@@ -42,7 +42,7 @@ rangekeeper/
   model/
     duration.py                 Period, Span
     flow.py                     Flow, Movement, Stream
-    expression.py               Expression, ValueReference
+    expression.py               Expression, Reference
     scenario.py                 generated scenario record exports
     _references.py              shared scoped reference checks
     _scenario.py                pure captured-record conformance
@@ -58,7 +58,7 @@ rangekeeper/
     financial.py                build_discount, build_present_value, build_reversion
     account.py                  build_balance, build_interest
     _identity.py                deterministic UUID5 declaration IDs
-    _alignment.py               coordinate matching and key references
+    _alignment.py               coordinate matching and UUID references
     _construction.py            assemble finite immutable declarations
   specification/
     targets.py                  scalar, movement, assign_flow, unknown_flow
@@ -80,7 +80,7 @@ rangekeeper/
     preparation.py              explicit roles and policy assignments
     compiler.py                 affine lowering under fixed assignments
     evaluator.py                independent original-expression evaluation
-    acceptance.py               exact assignments, residuals, scoped evidence
+    acceptance.py               exact assignments, residuals and input-Model evidence
     publication.py              new immutable output revisions
     executor.py                 sequential batch traversal
     planning.py                 resolved case graph and composed leaves
@@ -94,9 +94,9 @@ rangekeeper/
 custom finite equations. Builders return declarations only. They read Flow shapes,
 not recorded amounts as hidden constants. They perform no calculation, solve or IO.
 Coordinate mismatches and ambiguous duplicate coordinates fail. Lagged reversion
-uses an explicit result-key to income-key mapping. Generated IDs use Formulation
-ID, operation, Movement/equation key and expression-tree path; operand order is
-preserved. Units are checked when mathematics is compiled and independently accepted.
+uses an explicit result-Movement UUID to income-Movement UUID mapping. Generated
+IDs use Formulation ID, operation, Movement UUID or equation label and expression-tree
+path; operand order is preserved. Units are checked when mathematics is compiled and independently accepted.
 
 `duration/` replaces `temporal/`, with no alias. `model.duration` and the Period/Span
 wire fields are unchanged. Old `duration.Type/Sequence/Span` are not the new API.
@@ -141,8 +141,8 @@ in the Run report. Preparation and recursive compilation check the shared deadli
 the backend receives only its remaining budget. These are cooperative Python
 checkpoints, not hard interruption of a single structural-validation call.
 
-Publication retains Value identities, Movement keys, coordinates, order, Flow
-units, unrelated content and historical Claims. It changes only explicit assigned
+Publication retains Value and Movement identities, optional keys, coordinates,
+order, Flow units, unrelated content and historical Claims. It changes only explicit assigned
 or solved magnitudes and supporting evidence. Changed Movements gain fresh Claims;
 affected Values gain Facts. The candidate passes through the codec before original
 Expressions and exact normalized assignments are checked. Rejected candidates are
@@ -172,6 +172,7 @@ is unavailable in another implementation version.
 
 NumPy SeedSequence/PCG64 streams derive from the seed, scenario key and stable
 component identifier, using SHA256 rather than Python hash or dispatch order.
+Movement IDs derive from the owning Value UUID and period boundaries.
 Worker communication contains detached data. Results retain requested key order;
 worker count and key reordering do not change a scenario's content. Storage is
 outside workers. Realizations record stream identifiers, library versions, named

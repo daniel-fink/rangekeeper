@@ -33,7 +33,7 @@
       "options": [
         {
           "category": "record",
-          "kind": "ValueReference"
+          "kind": "Reference"
         }
       ],
       "ordered": false,
@@ -182,7 +182,7 @@
       "options": [
         {
           "category": "record",
-          "kind": "ValueReference"
+          "kind": "Reference"
         }
       ],
       "ordered": false,
@@ -796,7 +796,7 @@
       "options": [
         {
           "category": "record",
-          "kind": "ScopedValueReference"
+          "kind": "Reference"
         }
       ],
       "ordered": true,
@@ -1235,7 +1235,7 @@
       "options": [
         {
           "category": "record",
-          "kind": "ValueReference"
+          "kind": "Reference"
         }
       ],
       "ordered": false,
@@ -2045,10 +2045,23 @@
       "ordered": false,
       "required": false
     },
-    "key": {
+    "id": {
       "many": false,
       "mapping": false,
       "nullable": false,
+      "options": [
+        {
+          "category": "uuid",
+          "kind": "UUID"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "key": {
+      "many": false,
+      "mapping": false,
+      "nullable": true,
       "options": [
         {
           "category": "primitive",
@@ -2056,7 +2069,7 @@
         }
       ],
       "ordered": false,
-      "required": true
+      "required": false
     },
     "magnitude": {
       "many": false,
@@ -2134,7 +2147,7 @@
       "options": [
         {
           "category": "record",
-          "kind": "ValueReference"
+          "kind": "Reference"
         }
       ],
       "ordered": false,
@@ -2175,7 +2188,7 @@
       "options": [
         {
           "category": "record",
-          "kind": "ValueReference"
+          "kind": "Reference"
         }
       ],
       "ordered": false,
@@ -2229,7 +2242,7 @@
       "options": [
         {
           "category": "record",
-          "kind": "ValueReference"
+          "kind": "Reference"
         }
       ],
       "ordered": false,
@@ -2352,7 +2365,7 @@
       "options": [
         {
           "category": "record",
-          "kind": "ValueReference"
+          "kind": "Reference"
         }
       ],
       "ordered": true,
@@ -2718,6 +2731,21 @@
         {
           "category": "enum",
           "kind": "ReconciliationStatus"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    }
+  },
+  "Reference": {
+    "target": {
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "uuid",
+          "kind": "UUID"
         }
       ],
       "ordered": false,
@@ -3247,34 +3275,6 @@
       "required": true
     }
   },
-  "ScopedValueReference": {
-    "document": {
-      "many": false,
-      "mapping": false,
-      "nullable": false,
-      "options": [
-        {
-          "category": "uuid",
-          "kind": "UUID"
-        }
-      ],
-      "ordered": false,
-      "required": true
-    },
-    "reference": {
-      "many": false,
-      "mapping": false,
-      "nullable": false,
-      "options": [
-        {
-          "category": "record",
-          "kind": "ValueReference"
-        }
-      ],
-      "ordered": false,
-      "required": true
-    }
-  },
   "Selection": {
     "base": {
       "many": false,
@@ -3663,7 +3663,7 @@
       "options": [
         {
           "category": "record",
-          "kind": "ValueReference"
+          "kind": "Reference"
         }
       ],
       "ordered": false,
@@ -4044,34 +4044,6 @@
       ],
       "ordered": false,
       "required": false
-    }
-  },
-  "ValueReference": {
-    "movement": {
-      "many": false,
-      "mapping": false,
-      "nullable": true,
-      "options": [
-        {
-          "category": "primitive",
-          "kind": "string"
-        }
-      ],
-      "ordered": false,
-      "required": false
-    },
-    "value": {
-      "many": false,
-      "mapping": false,
-      "nullable": false,
-      "options": [
-        {
-          "category": "uuid",
-          "kind": "Value"
-        }
-      ],
-      "ordered": false,
-      "required": true
     }
   }
 }

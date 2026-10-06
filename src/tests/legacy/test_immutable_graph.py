@@ -20,7 +20,7 @@ from rangekeeper.legacy.measure import AggregationRule, Index, Measure, Quantity
 def test_new_and_legacy_views_have_explicit_domain_boundaries():
     from rangekeeper import Model
     from rangekeeper.model import Metadata
-    model = Model.create(metadata=Metadata(id=uuid4(), schema_version="0.5.0"))
+    model = Model.create(metadata=Metadata(id=uuid4(), schema_version="0.6.0"))
     with pytest.raises(TypeError):
         from rangekeeper.graph import View as ModelView
         ModelView(rk.legacy.graph.Graph())

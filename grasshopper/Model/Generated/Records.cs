@@ -22,9 +22,9 @@ public sealed class Action : WireRecord
         init => WriteOptional("quantity", value);
     }
     /// <summary>Wire field target; missing and null remain distinct.</summary>
-    public Optional<ValueReference> Target
+    public Optional<Reference> Target
     {
-        get => ReadOptional<ValueReference>("target");
+        get => ReadOptional<Reference>("target");
         init => WriteOptional("target", value);
     }
 }
@@ -112,9 +112,9 @@ public sealed class Assignment : WireRecord
         init => Write("quantity", value);
     }
     /// <summary>Wire field target; missing and null remain distinct.</summary>
-    public ValueReference Target
+    public Reference Target
     {
-        get => Read<ValueReference>("target");
+        get => Read<Reference>("target");
         init => Write("target", value);
     }
 }
@@ -486,9 +486,9 @@ public sealed class Diagnostic : WireRecord
         init => Write("message", value);
     }
     /// <summary>Wire field references; missing and null remain distinct.</summary>
-    public Optional<IReadOnlyList<ScopedValueReference>> References
+    public Optional<IReadOnlyList<Reference>> References
     {
-        get => ReadOptional<IReadOnlyList<ScopedValueReference>>("references");
+        get => ReadOptional<IReadOnlyList<Reference>>("references");
         init => WriteOptional("references", value);
     }
     /// <summary>Wire field residual; missing and null remain distinct.</summary>
@@ -724,9 +724,9 @@ public sealed class Expression : WireRecord
         init => WriteOptional("selection", value);
     }
     /// <summary>Wire field target; missing and null remain distinct.</summary>
-    public Optional<ValueReference> Target
+    public Optional<Reference> Target
     {
-        get => ReadOptional<ValueReference>("target");
+        get => ReadOptional<Reference>("target");
         init => WriteOptional("target", value);
     }
 }
@@ -1197,11 +1197,17 @@ public sealed class Movement : WireRecord
         get => ReadOptional<DateOnly>("date");
         init => WriteOptional("date", value);
     }
-    /// <summary>Wire field key; missing and null remain distinct.</summary>
-    public string Key
+    /// <summary>Wire field id; missing and null remain distinct.</summary>
+    public Guid Id
     {
-        get => Read<string>("key");
-        init => Write("key", value);
+        get => Read<Guid>("id");
+        init => Write("id", value);
+    }
+    /// <summary>Wire field key; missing and null remain distinct.</summary>
+    public Optional<string> Key
+    {
+        get => ReadOptional<string>("key");
+        init => WriteOptional("key", value);
     }
     /// <summary>Wire field magnitude; missing and null remain distinct.</summary>
     public Optional<decimal> Magnitude
@@ -1250,9 +1256,9 @@ public sealed class ObservationAvailability : WireRecord
         init => Write("available_at", value);
     }
     /// <summary>Wire field target; missing and null remain distinct.</summary>
-    public ValueReference Target
+    public Reference Target
     {
-        get => Read<ValueReference>("target");
+        get => Read<Reference>("target");
         init => Write("target", value);
     }
 }
@@ -1276,9 +1282,9 @@ public sealed class ObservationBinding : WireRecord
         init => Write("name", value);
     }
     /// <summary>Wire field target; missing and null remain distinct.</summary>
-    public ValueReference Target
+    public Reference Target
     {
-        get => Read<ValueReference>("target");
+        get => Read<Reference>("target");
         init => Write("target", value);
     }
 }
@@ -1308,9 +1314,9 @@ public sealed class ObservedQuantity : WireRecord
         init => Write("quantity", value);
     }
     /// <summary>Wire field target; missing and null remain distinct.</summary>
-    public ValueReference Target
+    public Reference Target
     {
-        get => Read<ValueReference>("target");
+        get => Read<Reference>("target");
         init => Write("target", value);
     }
 }
@@ -1386,9 +1392,9 @@ public sealed class Policy : WireRecord
         init => Write("points", value);
     }
     /// <summary>Wire field targets; missing and null remain distinct.</summary>
-    public IReadOnlyList<ValueReference> Targets
+    public IReadOnlyList<Reference> Targets
     {
-        get => Read<IReadOnlyList<ValueReference>>("targets");
+        get => Read<IReadOnlyList<Reference>>("targets");
         init => Write("targets", value);
     }
 }
@@ -1608,6 +1614,20 @@ public sealed class Reconciliation : WireRecord
     {
         get => Read<string>("status");
         init => Write("status", value);
+    }
+}
+
+/// <summary>Schema-derived Reference wire record. Exports and nested reads are detached.</summary>
+public sealed class Reference : WireRecord
+{
+    public Reference() { }
+    public Reference(JsonObject data) : base(data) { }
+
+    /// <summary>Wire field target; missing and null remain distinct.</summary>
+    public Guid Target
+    {
+        get => Read<Guid>("target");
+        init => Write("target", value);
     }
 }
 
@@ -1909,26 +1929,6 @@ public sealed class ScenarioRealization : WireRecord
     }
 }
 
-/// <summary>Schema-derived ScopedValueReference wire record. Exports and nested reads are detached.</summary>
-public sealed class ScopedValueReference : WireRecord
-{
-    public ScopedValueReference() { }
-    public ScopedValueReference(JsonObject data) : base(data) { }
-
-    /// <summary>Wire field document; missing and null remain distinct.</summary>
-    public Guid Document
-    {
-        get => Read<Guid>("document");
-        init => Write("document", value);
-    }
-    /// <summary>Wire field reference; missing and null remain distinct.</summary>
-    public ValueReference Reference
-    {
-        get => Read<ValueReference>("reference");
-        init => Write("reference", value);
-    }
-}
-
 /// <summary>Schema-derived Selection wire record. Exports and nested reads are detached.</summary>
 public sealed class Selection : WireRecord
 {
@@ -2136,9 +2136,9 @@ public sealed class Specification : WireRecord
         init => WriteOptional("settings", value);
     }
     /// <summary>Wire field unknowns; missing and null remain distinct.</summary>
-    public Optional<IReadOnlyList<ValueReference>> Unknowns
+    public Optional<IReadOnlyList<Reference>> Unknowns
     {
-        get => ReadOptional<IReadOnlyList<ValueReference>>("unknowns");
+        get => ReadOptional<IReadOnlyList<Reference>>("unknowns");
         init => WriteOptional("unknowns", value);
     }
 }
@@ -2356,25 +2356,5 @@ public sealed class Value : WireRecord
     {
         get => ReadOptional<Quantity>("quantity");
         init => WriteOptional("quantity", value);
-    }
-}
-
-/// <summary>Schema-derived ValueReference wire record. Exports and nested reads are detached.</summary>
-public sealed class ValueReference : WireRecord
-{
-    public ValueReference() { }
-    public ValueReference(JsonObject data) : base(data) { }
-
-    /// <summary>Wire field movement; missing and null remain distinct.</summary>
-    public Optional<string> Movement
-    {
-        get => ReadOptional<string>("movement");
-        init => WriteOptional("movement", value);
-    }
-    /// <summary>Wire field value; missing and null remain distinct.</summary>
-    public Guid Value
-    {
-        get => Read<Guid>("value");
-        init => Write("value", value);
     }
 }

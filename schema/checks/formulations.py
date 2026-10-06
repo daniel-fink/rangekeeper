@@ -42,9 +42,7 @@ for name, file in (
     ("Relationship", "relationship"),
     ("Assembly", "assembly"),
 ):
-    generated = json.loads(
-        _library.schema_json(name)
-    )
+    generated = json.loads(_library.schema_json(name))
     cls = validator_for(generated)
     cls.check_schema(generated)
     validators[name] = cls(generated, format_checker=FormatChecker())
@@ -295,9 +293,9 @@ case(
     lambda d, b: b["values"][0].update(measure=uid("missing-measure")),
 )
 case(
-    "unknown Value reference",
+    "unknown Value or Movement reference",
     lambda d, b: b["formulations"][0]["expressions"][0]["operands"][0].update(
-        target=dict(value=b["id"])
+        target=dict(target=b["id"])
     ),
 )
 case(

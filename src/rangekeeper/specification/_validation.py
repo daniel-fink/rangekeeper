@@ -167,7 +167,7 @@ def _validate_concrete(
     scope = validate_formulations(document, additional_formulations=additions)
 
     def eligible(target):
-        return numerical_units(target, scope.values, scope.measures)
+        return numerical_units(target, scope.targets, scope.measures)
 
     def supplied(collection):
         targets = set()

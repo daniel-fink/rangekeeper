@@ -38,7 +38,6 @@ class Publication:
         """Check permitted changed Values, assignments, lineage and retained Claims."""
         input_id = model["metadata"]["id"]
         self.input_ids.add(input_id)
-        originals = scope.values
         assignments = list(effective.get("assignments") or [])
         decisions = run["report"].get("decisions") or []
         if effective.get("policy"):
@@ -59,12 +58,10 @@ class Publication:
         ]
         needed = {reference_key(r): r for r in roles}
         model_values = {
-            r["id"]
-            for r in records(model.get("system") or {})
-            if r.get("kind") in ("measurement", "flow")
+            r["id"] for r in records(model.get("system") or {}) if "id" in r
         }
         require(
-            all(r["value"] in model_values for r in roles),
+            all(r["target"] in model_values for r in roles),
             "Specification-local Value publication requires adapter",
         )
 
@@ -77,10 +74,7 @@ class Publication:
                     r.pop("quantity", None)
                 if r.get("kind") == "flow" and "id" in r:
                     for m in (r.get("flow") or {}).get("movements") or []:
-                        if (
-                            reference_key(dict(value=r["id"], movement=m["key"]))
-                            in needed
-                        ):
+                        if m["id"] in needed:
                             m.pop("magnitude", None)
                             m.pop("claims", None)
             return result
@@ -102,14 +96,14 @@ class Publication:
             )
             for target in needed.values():
                 quantity = recorded_quantity(
-                    target, output_scope.values, output_scope.measures
+                    target, output_scope.targets, output_scope.measures
                 )
                 require(
                     quantity is not None, "accepted output has unresolved solve Value"
                 )
                 require(
                     quantity["units"]
-                    == numerical_units(target, originals, scope.measures),
+                    == numerical_units(target, scope.targets, scope.measures),
                     "output unit conversion requires adapter",
                 )
                 require(
@@ -117,7 +111,7 @@ class Publication:
                 )
             for assignment in assignments:
                 actual = recorded_quantity(
-                    assignment["target"], output_scope.values, output_scope.measures
+                    assignment["target"], output_scope.targets, output_scope.measures
                 )
                 expected = assignment["quantity"]
                 require(

@@ -123,7 +123,7 @@ import rangekeeper
 from rangekeeper._schema.records import Model, Metadata, Runtime, Period, Flow, Movement, Source
 from rangekeeper.model.validation import validate
 period = Period(start=date(2026, 1, 1), end=date(2026, 2, 1))
-movement = Movement(key="january", period=period)
+movement = Movement(id=uuid4(), key="january", period=period)
 assert movement.date is None and "date" not in movement.to_data()
 flow = Flow(units="AUD", movements=(movement,))
 assert set(flow.to_data()) == {"units", "movements"}
@@ -147,7 +147,7 @@ print("Installed wheel: date fields and source timestamp alternatives passed")
 from rangekeeper.errors import ValidationError
 assert 'stage' not in rangekeeper.__file__
 assert 'site-packages' in rangekeeper.__file__
-assert validate(Model(metadata=Metadata(id=uuid4(), schema_version='0.5.0'))).valid
+assert validate(Model(metadata=Metadata(id=uuid4(), schema_version='0.6.0'))).valid
 assert files('rangekeeper').joinpath('py.typed').is_file()
 assert files('rangekeeper').joinpath('_currencies.json').is_file()
 for name in ('api', 'measure', 'flux', '_legacy_duration', 'distribution', 'extrapolation', 'projection',
@@ -177,11 +177,11 @@ assert 'rangekeeper.graph' not in sys.modules
 from rangekeeper.model import Model as DomainModel, Entity, System, Update
 from rangekeeper.specification import Specification, SpecificationRecord, compose, validate as validate_composition
 entity = Entity(id=uuid4(), code='A')
-domain = DomainModel.create(metadata=Metadata(id=uuid4(), schema_version='0.5.0'), system=System(entities=(entity,)))
+domain = DomainModel.create(metadata=Metadata(id=uuid4(), schema_version='0.6.0'), system=System(entities=(entity,)))
 assert domain.entity(entity.id).code == 'A'
 revised = domain.revise(Update(system=System()))
 assert revised.metadata.previous == domain.id
-spec = Specification(SpecificationRecord(metadata=Metadata(id=uuid4(), schema_version='0.5.0'), model=domain.id))
+spec = Specification(SpecificationRecord(metadata=Metadata(id=uuid4(), schema_version='0.6.0'), model=domain.id))
 class Resolver:
     def load_model(self, id):
         assert id == domain.id
@@ -205,7 +205,7 @@ except ImportError as error:
     assert 'rangekeeper[yaml]' in str(error)
 else:
     raise AssertionError('YAML should be absent in the base environment')
-failed = Run(RunRecord(metadata=Metadata(id=uuid4(), schema_version='0.2.0'),
+failed = Run(RunRecord(metadata=Metadata(id=uuid4(), schema_version='0.3.0'),
     specification=spec.id, report=Report(status=Status(completion='failed', solution='not_assessed'),
     diagnostics=(Diagnostic(severity='error', code='unsupported', message='Fixture-only failed attempt'),))))
 with TemporaryDirectory() as directory:
@@ -295,7 +295,7 @@ measure = Measure(id=uuid4(), code='area', name='Area', units='meter ** 2')
 value = Value(id=uuid4(), key='net', kind='measurement', measure=measure.id, quantity=Quantity(magnitude=12, units='meter ** 2'))
 entity = Entity(id=uuid4(), characteristics=Characteristics(values=(value,)))
 group = Assembly(id=uuid4(), entities=(entity.id,))
-model = rk.Model.create(metadata=Metadata(id=uuid4(), schema_version='0.5.0'), definitions=Definitions(measures=(measure,)), system=System(entities=(entity,), assemblies=(group,)))
+model = rk.Model.create(metadata=Metadata(id=uuid4(), schema_version='0.6.0'), definitions=Definitions(measures=(measure,)), system=System(entities=(entity,), assemblies=(group,)))
 hierarchy = Hierarchy.from_membership(View(model, assembly=group.id), root=group.id)
 result = Reduction(select=select_value('net'), reducer=sum_quantities, units='centimeter ** 2', contributors=lambda item: item.id == entity.id).execute(hierarchy)
 assert result.root_value.magnitude == 120000 and result.coverage(group.id).complete

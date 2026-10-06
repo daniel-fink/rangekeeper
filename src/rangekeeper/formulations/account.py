@@ -2,15 +2,15 @@
 
 from uuid import UUID
 from ..model import Model
-from .._schema.records import Formulation, ValueReference, Expression
+from .._schema.records import Formulation, Reference, Expression
 from .flow import build_accumulation
-from ._alignment import aligned, shape, target
+from ._alignment import aligned, shape, target, owner
 from ._construction import construct
 from .expression import reference, literal, equal, multiply, binary
 
 
 def build_balance(
-    model: Model, *, id: UUID, movements: UUID, initial: ValueReference, result: UUID
+    model: Model, *, id: UUID, movements: UUID, initial: Reference, result: UUID
 ) -> Formulation:
     """Declare signed balance continuity, with no overdraft-dependent behavior."""
     return build_accumulation(
@@ -23,7 +23,7 @@ def build_interest(
     *,
     id: UUID,
     principal: UUID,
-    rate: ValueReference,
+    rate: Reference,
     result: UUID,
     nonnegative_principal: bool
 ) -> Formulation:
@@ -42,14 +42,14 @@ def build_interest(
         equations.extend(
             (
                 (
-                    m.key + "/interest",
+                    str(m.id) + "/interest",
                     equal(
                         reference(target(result, m)),
                         multiply(reference(p), reference(rate)),
                     ),
                 ),
                 (
-                    m.key + "/nonnegative",
+                    str(m.id) + "/nonnegative",
                     binary(
                         "greater_than_or_equal",
                         reference(p),
@@ -58,4 +58,4 @@ def build_interest(
                 ),
             )
         )
-    return construct(id, "interest", equations, (principal, rate.value, result))
+    return construct(id, "interest", equations, (principal, owner(model, rate), result))

@@ -3,8 +3,8 @@
 from collections.abc import Mapping
 from uuid import UUID
 from ..model import Model
-from .._schema.records import Formulation, ValueReference
-from ._alignment import aligned, shape, target
+from .._schema.records import Formulation, Reference
+from ._alignment import aligned, shape, target, owner
 from ._construction import construct
 from .expression import reference, literal, equal, add, divide, power, sum_expressions
 
@@ -14,7 +14,7 @@ def build_discount(
     *,
     id: UUID,
     source: UUID,
-    rate: ValueReference,
+    rate: Reference,
     result: UUID,
     first_period: int = 1
 ) -> Formulation:
@@ -27,7 +27,7 @@ def build_discount(
         raise ValueError("first_period must be a nonnegative integer")
     equations = [
         (
-            m.key,
+            m.id,
             equal(
                 reference(target(result, m)),
                 divide(
@@ -38,11 +38,11 @@ def build_discount(
         )
         for i, (m, matches) in enumerate(aligned(model, (source,), result))
     ]
-    return construct(id, "discount", equations, (source, rate.value, result))
+    return construct(id, "discount", equations, (source, owner(model, rate), result))
 
 
 def build_present_value(
-    model: Model, *, id: UUID, source: UUID, result: ValueReference
+    model: Model, *, id: UUID, source: UUID, result: Reference
 ) -> Formulation:
     """Declare total PV as an ordered sum of an explicitly discounted Flow."""
     equation = equal(
@@ -51,7 +51,9 @@ def build_present_value(
             [reference(target(source, m)) for m in shape(model, source).movements]
         ),
     )
-    return construct(id, "present_value", [("total", equation)], (source, result.value))
+    return construct(
+        id, "present_value", [("total", equation)], (source, owner(model, result))
+    )
 
 
 def build_reversion(
@@ -59,32 +61,34 @@ def build_reversion(
     *,
     id: UUID,
     income: UUID,
-    capitalization: ValueReference,
+    capitalization: Reference,
     result: UUID,
-    mapping: Mapping[str, str]
+    mapping: Mapping[UUID, UUID]
 ) -> Formulation:
-    """Declare sale = income / capitalization using result-key -> income-key mapping.
+    """Declare sale = income / capitalization using result-Movement UUID to income-Movement UUID mapping.
 
-    All result keys must be mapped. This makes any next-period income assumption
+    All result Movement UUIDs must be mapped. This makes any next-period income assumption
     explicit. Capitalization units must turn income units into sale units.
     """
-    source = {m.key: m for m in shape(model, income).movements}
+    source = {m.id: m for m in shape(model, income).movements}
     destination = shape(model, result).movements
-    if set(mapping) != {m.key for m in destination} or not set(mapping.values()) <= set(
+    if set(mapping) != {m.id for m in destination} or not set(mapping.values()) <= set(
         source
     ):
-        raise ValueError("reversion requires a complete valid key mapping")
+        raise ValueError("reversion requires a complete valid Movement mapping")
     equations = [
         (
-            m.key,
+            m.id,
             equal(
                 reference(target(result, m)),
                 divide(
-                    reference(target(income, source[mapping[m.key]])),
+                    reference(target(income, source[mapping[m.id]])),
                     reference(capitalization),
                 ),
             ),
         )
         for m in destination
     ]
-    return construct(id, "reversion", equations, (income, capitalization.value, result))
+    return construct(
+        id, "reversion", equations, (income, owner(model, capitalization), result)
+    )

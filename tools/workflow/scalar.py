@@ -5,7 +5,7 @@ mathematical authoring and execution; each transition uses the public boundary.
 """
 
 from pathlib import Path
-from rangekeeper.model.expression import ValueReference
+from rangekeeper.model.expression import Reference
 from uuid import uuid4
 
 
@@ -110,9 +110,7 @@ def run_example(destination: Path) -> dict:
         kind="binary",
         operator="equal",
         operands=(
-            Expression(
-                id=uuid4(), kind="reference", target=ValueReference(value=gross.id)
-            ),
+            Expression(id=uuid4(), kind="reference", target=Reference(target=gross.id)),
             Expression(
                 id=uuid4(),
                 kind="binary",
@@ -121,12 +119,12 @@ def run_example(destination: Path) -> dict:
                     Expression(
                         id=uuid4(),
                         kind="reference",
-                        target=ValueReference(value=net.id),
+                        target=Reference(target=net.id),
                     ),
                     Expression(
                         id=uuid4(),
                         kind="reference",
-                        target=ValueReference(value=net.id),
+                        target=Reference(target=net.id),
                     ),
                 ),
             ),
@@ -167,12 +165,12 @@ def run_example(destination: Path) -> dict:
     def solve(input_model, assigned, quantity, unknown):
         specification = Specification.from_data(
             {
-                "metadata": {"id": str(uuid4()), "schema_version": "0.5.0"},
+                "metadata": {"id": str(uuid4()), "schema_version": "0.6.0"},
                 "model": str(input_model.id),
                 "assignments": [
-                    {"target": {"value": str(assigned)}, "quantity": quantity}
+                    {"target": {"target": str(assigned)}, "quantity": quantity}
                 ],
-                "unknowns": [{"value": str(unknown)}],
+                "unknowns": [{"target": str(unknown)}],
             }
         )
         result = Executor(store).execute(specification)

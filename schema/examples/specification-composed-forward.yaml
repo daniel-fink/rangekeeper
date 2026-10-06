@@ -1,10 +1,9 @@
-# Synthetic conformance fixture; no runtime execution is claimed.
 metadata:
   id: c1efd865-1463-54c1-b28b-5e689f4837ed
-  schema_version: 0.5.0
+  schema_version: 0.6.0
   name: Composed forward valuation
-  description: Combines shared requirements with investigation-specific roles. Equivalent to the standalone forward
-    example; no solver has been run.
+  description: Combines shared requirements with investigation-specific roles. Equivalent
+    to the standalone forward example; no solver has been run.
   previous: 6415f03f-f1a4-5ff2-b4f8-b4faaafd027e
 includes:
 - fb1663aa-1482-50e1-9da9-d798faa70872
@@ -13,9 +12,9 @@ assignments:
     magnitude: 30000
     units: AUD/dwelling/year
   target:
-    value: e3fb1434-5371-5bcb-b0b8-e3af2bf65022
+    target: e3fb1434-5371-5bcb-b0b8-e3af2bf65022
 unknowns:
-- value: a947d40b-d9b0-54cb-a2a4-f8f598405ac2
+- target: a947d40b-d9b0-54cb-a2a4-f8f598405ac2
 settings:
   relative_tolerance: 1.0e-08
   iteration_limit: 100

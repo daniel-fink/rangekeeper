@@ -109,7 +109,9 @@ def test_model_flow_content_store_and_stream():
     flow = annual([0, None, 3])
     measure = Measure(id=uuid4(), code="rent", name="Rent", units=flow.units)
     a = Value(id=uuid4(), key="rent", kind="flow", measure=measure.id, flow=flow)
-    b = Value(id=uuid4(), key="other", kind="flow", measure=measure.id, flow=flow)
+    b = Value(
+        id=uuid4(), key="other", kind="flow", measure=measure.id, flow=flow.clone()
+    )
     prop = Value(
         id=uuid4(),
         key="source",
@@ -118,7 +120,7 @@ def test_model_flow_content_store_and_stream():
     )
     entity = Entity(id=uuid4(), characteristics=Characteristics(values=(a, b, prop)))
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.5.0"),
+        metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
         definitions=Definitions(measures=(measure,)),
         system=System(entities=(entity,)),
     )
@@ -188,7 +190,7 @@ def test_month_anchor_and_leap_year():
 
 def test_duplicate_events_order_and_periods():
     today = date(2020, 1, 1)
-    with pytest.raises(ValueError, match="duplicate"):
+    with pytest.raises(ValueError, match="repeated event|duplicate"):
         Flow.from_events([today, today], [1, 2], units="m")
     flow = Flow.from_events(
         [today, today], [1, 2], units="m", keys=["delivery-1", "delivery-2"]
@@ -482,12 +484,14 @@ def test_polars_preserves_explicit_null_and_omission():
             "units": "meter",
             "movements": [
                 {
+                    "id": str(uuid4()),
                     "key": "a",
                     "date": None,
                     "period": {"start": "2020-01-01", "end": "2020-01-02"},
                     "claims": None,
                 },
                 {
+                    "id": str(uuid4()),
                     "key": "b",
                     "period": {"start": "2020-01-02", "end": "2020-01-03"},
                     "magnitude": None,

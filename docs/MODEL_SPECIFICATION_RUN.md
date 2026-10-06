@@ -21,8 +21,8 @@ ownership, graph relationships and mathematical constraints remain separate.
 ## Specification
 
 A Specification selects an exact input Model and supplies assignments, unknowns,
-estimates, bounds, objectives or policy requirements. `ValueReference` identifies
-a scalar Value or one Movement key within a Flow Value. Includes compose additive
+estimates, bounds, objectives or policy requirements. `Reference` identifies
+a Value or Movement by UUID. Includes compose additive
 contributions; conflicting declarations fail. Cases describe separate attempts in
 a batch. A partial contribution can exist before all external references resolve.
 
@@ -51,6 +51,13 @@ Records are immutable. Generated `replace()` builds another record while retaini
 omitted/null/empty distinctions. `Model.revise()` and `Specification.revise()` apply
 revision rules; metadata-only changes are not meaningful content revisions. Run has
 no revise operation because it records a finalized event.
+
+Each Model revision is a complete immutable snapshot. Creating M2 leaves M1 intact.
+Unchanged declarations and changed amounts retain their Value and Movement UUIDs;
+the new Model revision gets a new UUID. A Reference resolves against the Model that
+contains it, or against the exact input Model selected by a Specification. A Run
+keeps that Specification pin, so its evidence keeps the original meaning.
+See [references and identity](REFERENCES.md) for copying and calculation rules.
 
 Strict JSON/YAML codecs use an explicit root kind. Stores are append-only by UUID.
 Reusing an ID for different content is an error. Source workflows retain Claims and

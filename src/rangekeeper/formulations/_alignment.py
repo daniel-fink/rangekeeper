@@ -3,7 +3,7 @@
 from uuid import UUID
 from ..model import Model
 from ..model.flow import Flow, Movement
-from .._schema.records import ValueReference
+from .._schema.records import Reference
 
 
 def shape(model: Model, value: UUID) -> Flow:
@@ -36,5 +36,15 @@ def aligned(model: Model, sources, result):
     ]
 
 
-def target(value: UUID, item: Movement) -> ValueReference:
-    return ValueReference(value=value, movement=item.key)
+def owner(model: Model, reference: Reference) -> UUID:
+    """Return the Value bound by an operand, including a Movement's owner."""
+    item = model.resolve(reference)
+    if isinstance(item, Movement):
+        identity = model.owner_of(item.id)
+        assert identity is not None
+        return identity
+    return item.id
+
+
+def target(value: UUID, item: Movement) -> Reference:
+    return Reference(target=item.id)

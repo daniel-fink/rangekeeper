@@ -1,7 +1,7 @@
 id: https://daniel-fink.github.io/rangekeeper/schema/model
 name: rangekeeper_model
 title: Rangekeeper Model
-version: 0.5.0
+version: 0.6.0
 description: An immutable revision containing metadata, reusable definitions, a represented system, and
   provenance for its recorded content.
 prefixes:

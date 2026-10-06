@@ -11,6 +11,7 @@ from ..io import json
 from ..references import DocumentResolver
 from .preparation import Prepared
 from .errors import NumericalError
+from . import symbols
 
 
 def candidate(
@@ -33,7 +34,10 @@ def candidate(
     data = cast(dict[str, Any], prepared.model.to_data())
     provenance = data.setdefault("provenance", {})
     claims = provenance.setdefault("claims", [])
-    changed = {str(prepared.references[token].value) for token in quantities}
+    changed = {
+        str(symbols.owner(prepared.model, prepared.references[token]).id)
+        for token in quantities
+    }
     facts = [f for f in provenance.get("facts", []) if f["target"] not in changed]
 
     def claim(content, method):
@@ -60,7 +64,7 @@ def candidate(
                     node["quantity"] = quantities[identity].to_data()
                 else:
                     for movement in node["flow"]["movements"]:
-                        token = identity + "/" + movement["key"]
+                        token = movement["id"]
                         if token in quantities:
                             amount = quantities[token].to_data()
                             movement["magnitude"] = amount["magnitude"]

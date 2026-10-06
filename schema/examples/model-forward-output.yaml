@@ -1,10 +1,10 @@
-# Synthetic conformance fixture; no runtime execution is claimed.
 metadata:
   id: bc429c41-ecde-54b8-94e8-07aadfcdec66
-  schema_version: 0.5.0
+  schema_version: 0.6.0
   previous: e9096132-8158-56db-bc3e-b64ef7f92d4e
   name: Synthetic forward output
-  description: Hypothetical accepted snapshot with expected scalar amounts; not a solver-produced Model.
+  description: Hypothetical accepted snapshot with expected scalar amounts; not a
+    solver-produced Model.
 definitions:
   taxonomies:
   - id: fa1d6a4d-d7b5-5c8c-a30e-a65a2c90517c
@@ -53,7 +53,8 @@ definitions:
     code: capitalization_rate
     name: Capitalization rate
     units: 1/year
-    definition: Annual income divided by capital value; 0.05/year is the annual five percent convention.
+    definition: Annual income divided by capital value; 0.05/year is the annual five
+      percent convention.
   functions:
   - id: f3827f2b-2f45-5032-b067-89e8ff73f0fa
     code: collection.sum
@@ -69,9 +70,10 @@ definitions:
       required: true
     result:
       kind: measurement
-    semantics: Sum every element, retaining multiplicity. Members must have compatible units and measurement meaning.
-      Unresolved members remain symbolic; none are dropped. An empty collection is rejected because this signature
-      does not establish result units without a member.
+    semantics: Sum every element, retaining multiplicity. Members must have compatible
+      units and measurement meaning. Unresolved members remain symbolic; none are
+      dropped. An empty collection is rejected because this signature does not establish
+      result units without a member.
     unit_rule: The result has the common measurement units of the members.
     empty_collection: error
 system:
@@ -174,7 +176,8 @@ system:
   - id: 960374d3-385f-5abf-a046-0010d81a60dd
     code: valuation
     name: Residential valuation
-    description: Shared valuation Values with income and capitalization equations in child Formulations.
+    description: Shared valuation Values with income and capitalization equations
+      in child Formulations.
     bindings:
     - name: homes
       value: 194afc26-3e2e-507b-ad0c-a73a4b0b2ccd
@@ -209,7 +212,7 @@ system:
         - id: 1fb80684-6104-5434-98f6-1c85916326f0
           kind: reference
           target:
-            value: 9324f928-cfc8-50bb-ba99-fe8c02a6dbd2
+            target: 9324f928-cfc8-50bb-ba99-fe8c02a6dbd2
         - id: d6969b54-363e-56d1-9178-8f902f77b99b
           kind: binary
           operator: subtract
@@ -221,20 +224,21 @@ system:
             - id: 170ff22d-dd17-5bc2-ab54-651ce5b66c80
               kind: reference
               target:
-                value: 194afc26-3e2e-507b-ad0c-a73a4b0b2ccd
+                target: 194afc26-3e2e-507b-ad0c-a73a4b0b2ccd
             - id: 4e1bb38a-8a38-5b8e-af81-739fcf45ecfb
               kind: reference
               target:
-                value: e3fb1434-5371-5bcb-b0b8-e3af2bf65022
+                target: e3fb1434-5371-5bcb-b0b8-e3af2bf65022
           - id: b29af982-81b4-5697-92ca-1faa0ee2a4d8
             kind: reference
             target:
-              value: cbe37d0a-79ce-5d1b-b0cb-8d2a42acc991
+              target: cbe37d0a-79ce-5d1b-b0cb-8d2a42acc991
       constraints:
       - id: d526182d-2216-5862-88b9-b5bdd5e804a5
         code: equation
         name: Net operating income
-        description: Net operating income equals annual rent less annual operating cost.
+        description: Net operating income equals annual rent less annual operating
+          cost.
         predicate: 8c9b169a-c9ee-51f6-ab09-ee9fb24f0dda
     - id: f1c4f798-cc6b-58a5-a776-43bec536cc39
       code: capitalization
@@ -254,20 +258,21 @@ system:
           - id: 65f40df5-96f0-59b3-8ce4-122dea47f0ca
             kind: reference
             target:
-              value: a947d40b-d9b0-54cb-a2a4-f8f598405ac2
+              target: a947d40b-d9b0-54cb-a2a4-f8f598405ac2
           - id: 19b0ad63-2b65-529f-8970-dc554dd9f9b3
             kind: reference
             target:
-              value: 0ceeb0d5-91b7-53b7-b823-2234e2262a4f
+              target: 0ceeb0d5-91b7-53b7-b823-2234e2262a4f
         - id: 251fe406-e76e-5f27-b858-3a27df290f46
           kind: reference
           target:
-            value: 9324f928-cfc8-50bb-ba99-fe8c02a6dbd2
+            target: 9324f928-cfc8-50bb-ba99-fe8c02a6dbd2
       constraints:
       - id: 02ff78c0-ec20-535d-b997-ac16d64fd944
         code: equation
         name: Capital valuation
-        description: Capital value multiplied by the annual capitalization rate equals net operating income.
+        description: Capital value multiplied by the annual capitalization rate equals
+          net operating income.
         predicate: 6e20a24c-d2d2-5bbf-bf91-5f81884641ee
   - id: f3e01d59-4e43-58e8-b80d-054c3e242a16
     code: area

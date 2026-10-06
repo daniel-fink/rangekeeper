@@ -68,7 +68,7 @@ def test_failure_preserves_success(tmp_path, monkeypatch, failure):
     if failure == "validation":
         (root / "spec/model.yaml").write_text("invalid: true")
     elif failure == "execution":
-        docs["model"]["relationships"][0]["source"]["key"] = {"value": "unknown"}
+        docs["model"]["relationships"][0]["source"]["key"] = {"target": "unknown"}
         rewrite(root, docs)
     elif failure in {"export", "interrupt"}:
 

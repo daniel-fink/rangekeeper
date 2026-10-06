@@ -5,7 +5,7 @@ from datetime import date
 from ..model import Model
 from ..model._references import reference_key
 
-from .._schema.records import ObservationBinding, ObservedQuantity, Quantity
+from .._schema.records import ObservationBinding, ObservedQuantity, Quantity, Movement
 from ..duration.calendar import require_date
 from .result import Observation
 
@@ -38,7 +38,10 @@ def observe(
     result = []
     for binding in bindings:
         target = binding.target
-        value = model.value(target.value)
+        record = model.resolve(target)
+        owner = model.owner_of(record.id) if isinstance(record, Movement) else record.id
+        assert owner is not None
+        value = model.value(owner)
         available = [
             d
             for d in (
@@ -47,17 +50,14 @@ def observe(
             )
             if d is not None
         ]
-        if target.movement is None:
+        if not isinstance(record, Movement):
             quantity = value.quantity if value.kind == "measurement" else None
         else:
             if value.kind != "flow" or value.flow is None:
                 raise PolicyCapabilityError(
                     "observation requires a declared Flow shape"
                 )
-            matches = [m for m in value.flow.movements if m.key == target.movement]
-            if len(matches) != 1:
-                raise PolicyCapabilityError("observation Movement does not exist")
-            item = matches[0]
+            item = record
             if item.date is not None:
                 available.append(item.date)
             elif item.period is not None:

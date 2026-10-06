@@ -50,7 +50,7 @@ def fixture(tmp_path):
     )
     root = Assembly(id=uuid4(), code="root", entities=tuple({a.id, b.id}))
     graph = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.5.0"),
+        metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
         system=System(entities=(one, two), assemblies=(a, b, root)),
         definitions=Definitions(
             taxonomies=(
@@ -158,7 +158,7 @@ def test_layout_failure_retains_previous_success(tmp_path, monkeypatch, failure)
         monkeypatch.setattr(layout_review, "export_layout_review", fail)
     elif failure == "stale_graph":
         attempt.result.model = Model.create(
-            metadata=Metadata(id=uuid4(), schema_version="0.5.0"),
+            metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
             system=System(entities=(Entity(id=uuid4(), code="changed"),)),
         )
     else:

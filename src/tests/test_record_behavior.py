@@ -29,7 +29,9 @@ DAY = date(2026, 1, 1)
     ],
 )
 def test_replacement_preserves_presence_and_input(fields):
-    original = r.Movement.from_data({"key": "a", "date": DAY.isoformat(), **fields})
+    original = r.Movement.from_data(
+        {"id": str(uuid4()), "key": "a", "date": DAY.isoformat(), **fields}
+    )
     before = original.to_data()
     copy = original.replace(key="b", magnitude=UNSET, claims=UNSET)
     assert type(copy) is r.Movement
@@ -43,7 +45,7 @@ def test_replacement_preserves_presence_and_input(fields):
 
 
 def test_replacement_checks_types_and_copies_mutable_content():
-    movement = r.Movement(key="a", date=DAY)
+    movement = r.Movement(id=uuid4(), key="a", date=DAY)
     with pytest.raises(TypeError):
         movement.replace(unknown=True)
     with pytest.raises((TypeError, ValidationError)):
@@ -100,15 +102,26 @@ def test_check_clean_and_number_have_distinct_roles():
 def test_reduction_shares_units_claims_and_coverage(reducer, expected):
     a, b = UUID(int=1), UUID(int=2)
     left = r.Flow(
-        units="m", movements=(r.Movement(key="a", date=DAY, magnitude=1, claims=(a,)),)
+        units="m",
+        movements=(
+            r.Movement(id=uuid4(), key="a", date=DAY, magnitude=1, claims=(a,)),
+        ),
     )
     right = r.Flow(
         units="cm",
-        movements=(r.Movement(key="a", date=DAY, magnitude=200, claims=(b, a)),),
+        movements=(
+            r.Movement(id=uuid4(), key="a", date=DAY, magnitude=200, claims=(b, a)),
+        ),
     )
     aligned = align([left, right])
     result = aligned.reduce(reducer=reducer)
-    assert result == aggregate([left, right], reducer=reducer)
+    independent = aggregate([left, right], reducer=reducer)
+    assert independent.coverage == result.coverage
+    assert independent.flow.movements[0].id != result.flow.movements[0].id
+    assert (
+        independent.flow.movements[0].replace(id=result.flow.movements[0].id)
+        == result.flow.movements[0]
+    )
     assert result.flow.movements[0].number == expected
     assert result.flow.movements[0].claims == (a, b)
     assert result.coverage == (1.0,)
@@ -151,7 +164,7 @@ def test_model_builds_one_index_and_reuses_it_for_validation(monkeypatch):
         return build(record)
 
     monkeypatch.setattr(Index, "build", counted)
-    model = Model.create(metadata=r.Metadata(id=uuid4(), schema_version="0.5.0"))
+    model = Model.create(metadata=r.Metadata(id=uuid4(), schema_version="0.6.0"))
     assert len(calls) == 1
     validate(model).raise_if_invalid()
     assert len(calls) == 1
@@ -176,4 +189,11 @@ def test_zero_filling_uses_target_units_for_offset_conversions():
     result = aggregate([first, second], join="union", missing="zero")
     assert [m.number for m in result.flow.movements] == [1.0, 273.15]
     assert result.coverage == (0.5, 0.5)
-    assert align([first, second], join="union", missing="zero").reduce() == result
+    independent = align([first, second], join="union", missing="zero").reduce()
+    assert independent.coverage == result.coverage
+    assert [m.number for m in independent.flow.movements] == [
+        m.number for m in result.flow.movements
+    ]
+    assert set(m.id for m in independent.flow.movements).isdisjoint(
+        m.id for m in result.flow.movements
+    )

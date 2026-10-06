@@ -1,10 +1,9 @@
-# Synthetic conformance fixture; no runtime execution is claimed.
 metadata:
   id: 5f5be6f0-a423-5a22-89f8-bc83ac1f9d96
-  schema_version: 0.5.0
+  schema_version: 0.6.0
   name: Composed inverse valuation
-  description: Combines shared requirements with investigation-specific roles. Equivalent to the standalone inverse
-    example; no solver has been run.
+  description: Combines shared requirements with investigation-specific roles. Equivalent
+    to the standalone inverse example; no solver has been run.
   previous: abd75e4d-3e68-54b5-b446-2f3ea51d6c9c
 includes:
 - fb1663aa-1482-50e1-9da9-d798faa70872
@@ -13,12 +12,12 @@ assignments:
     magnitude: 10000000
     units: AUD
   target:
-    value: a947d40b-d9b0-54cb-a2a4-f8f598405ac2
+    target: a947d40b-d9b0-54cb-a2a4-f8f598405ac2
 unknowns:
-- value: e3fb1434-5371-5bcb-b0b8-e3af2bf65022
+- target: e3fb1434-5371-5bcb-b0b8-e3af2bf65022
 estimates:
 - quantity:
     magnitude: 30000
     units: AUD/dwelling/year
   target:
-    value: e3fb1434-5371-5bcb-b0b8-e3af2bf65022
+    target: e3fb1434-5371-5bcb-b0b8-e3af2bf65022

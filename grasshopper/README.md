@@ -17,7 +17,7 @@ dotnet build grasshopper/Components/Components.csproj --no-restore
 dotnet build grasshopper/Tests/Tests.csproj
 ```
 
-Run Python fixture preparation with `docs/research/full-migration/turn3/cross_language.py
+Run Python fixture preparation with `tools/schema/cross_language.py
 prepare DIRECTORY`; run `Tests.dll DIRECTORY/python.json DIRECTORY/csharp.json`
 with a .NET 8 host, then run the Python `check` command. This verifies rich content,
 UUID references, dates, omission/null, zero/false, separate collections, immutable

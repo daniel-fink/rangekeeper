@@ -137,7 +137,7 @@ def test_invalid_shared_declarations_fail_during_load(tmp_path, case):
         item["measurements_evidence"] = None
     else:
         item.pop("table")
-        item["key"] = {"value": "one"}
+        item["key"] = {"target": "one"}
     rewrite(root, docs)
     with pytest.raises(
         (ValueError, TypeError), match="(set|measurements|specifications)"

@@ -1,24 +1,67 @@
 """Explicit upgrades of draft documents; historical Runs are never rewritten."""
 
 from collections.abc import Mapping
-from uuid import UUID, uuid4
+from uuid import UUID, uuid4, uuid5
 from .._records import _json_copy
 from ..model import Model
 from ..specification import Specification
 from .._schema.validation import document_version
 
 
-def _references(node):
-    """Change owned Expression wire fields while preserving opaque Claim content."""
-    if isinstance(node, dict):
-        if node.get("kind") == "reference" and isinstance(node.get("target"), str):
-            node["target"] = {"value": node["target"]}
-        for key, value in node.items():
-            if key != "content":
-                _references(value)
-    elif isinstance(node, list):
-        for value in node:
-            _references(value)
+def _movement_id(value, key):
+    """Map the former owner/key address deterministically, across document revisions."""
+    return str(uuid5(UUID(str(value)), "movement:" + key))
+
+
+def _walk(node, kind):
+    """Traverse declared record slots only; arbitrary evidence mappings are opaque."""
+    from .._schema.validation import _slot_map
+
+    if not isinstance(node, dict):
+        return
+    yield node, kind
+    for name, slot in _slot_map(kind).items():
+        if slot["mapping"] or name not in node:
+            continue
+        records = [
+            option["kind"]
+            for option in slot["options"]
+            if option["category"] == "record"
+        ]
+        if not records:
+            continue
+        children = node[name] if slot["many"] else [node[name]]
+        for child in children or []:
+            yield from _walk(child, records[0])
+
+
+def _movements(node, kind="Model"):
+    """Add identities only to declared Flow Values; opaque evidence stays unchanged."""
+    for record, record_kind in _walk(node, kind):
+        if (
+            record_kind == "Value"
+            and record.get("kind") == "flow"
+            and record.get("flow") is not None
+        ):
+            for movement in record["flow"]["movements"]:
+                if "id" not in movement:
+                    movement["id"] = _movement_id(record["id"], movement["key"])
+
+
+def _references(node, kind="Model"):
+    """Rewrite typed references, without treating arbitrary value fields as addresses."""
+    for record, record_kind in _walk(node, kind):
+        if (
+            record_kind == "Expression"
+            and record.get("kind") == "reference"
+            and isinstance(record.get("target"), str)
+        ):
+            record["target"] = {"target": record["target"]}
+        if record_kind == "Reference" and "value" in record:
+            value, movement = record.pop("value"), record.pop("movement", None)
+            record["target"] = (
+                value if movement is None else _movement_id(value, movement)
+            )
 
 
 def _revision(data, kind, versions, revision_id):
@@ -38,14 +81,15 @@ def _revision(data, kind, versions, revision_id):
 
 
 def upgrade_model(data: dict, *, revision_id: UUID | None = None) -> Model:
-    """Upgrade Model 0.3.0/0.4.0 to a new 0.5.0 revision with stable Value identities.
+    """Upgrade Model 0.3.0/0.4.0/0.5.0 into a complete 0.6.0 revision.
 
-    Scalar references gain their explicit ValueReference wrapper. Flow keys,
+    Value identities stay fixed; old owner/key addresses determine Movement UUIDs. Flow keys,
     dates, units, ordered mathematics and provenance remain unchanged. Invalid or
     unsupported old content fails validation; no input, store or file is changed.
     """
-    result = _revision(data, "Model", {"0.3.0", "0.4.0"}, revision_id)
-    _references(result.get("system"))
+    result = _revision(data, "Model", {"0.3.0", "0.4.0", "0.5.0"}, revision_id)
+    _movements(result)
+    _references(result)
     return Model.from_data(result)
 
 
@@ -56,13 +100,13 @@ def upgrade_specification(
     revisions: Mapping[UUID, UUID] | None = None,
     revision_id: UUID | None = None,
 ) -> Specification:
-    """Upgrade 0.4.0 roles and expressions, requiring explicit new external pins.
+    """Upgrade 0.4.0/0.5.0 roles and expressions, requiring explicit new external pins.
 
     Pass the upgraded Model UUID and a complete mapping for includes/cases. A
     partial contribution needs neither when it has no such references. The caller
     then performs resolver-backed validation. Old Runs keep their original pins.
     """
-    result = _revision(data, "Specification", {"0.4.0"}, revision_id)
+    result = _revision(data, "Specification", {"0.4.0", "0.5.0"}, revision_id)
     if result.get("model") is not None:
         if model is None:
             raise ValueError("upgraded Model revision must be supplied explicitly")
@@ -76,8 +120,13 @@ def upgrade_specification(
             result[field] = [str(revisions[UUID(ref)]) for ref in result[field]]
     for field in ("assignments", "estimates"):
         for assignment in result.get(field) or []:
-            assignment["target"] = dict(value=assignment.pop("value"))
+            if "target" not in assignment:
+                assignment["target"] = dict(value=assignment.pop("value"))
     if result.get("unknowns") is not None:
-        result["unknowns"] = [dict(value=ref) for ref in result["unknowns"]]
-    _references(result.get("formulations"))
+        result["unknowns"] = [
+            dict(value=ref) if isinstance(ref, str) else ref
+            for ref in result["unknowns"]
+        ]
+    _movements(result, "Specification")
+    _references(result, "Specification")
     return Specification.from_data(result)

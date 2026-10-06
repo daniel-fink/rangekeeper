@@ -40,9 +40,10 @@ needs them. Polars loads when an alignment or resampling operation needs it.
 
 ```python
 from datetime import date
+from uuid import uuid4
 from rangekeeper.model.flow import Flow, Movement
 
-movement = Movement(key="delivery", date=date(2026, 1, 1))
+movement = Movement(id=uuid4(), key="delivery", date=date(2026, 1, 1))
 assert not movement.has_field("magnitude")
 resolved = movement.replace(magnitude=10, claims=())
 assert resolved.number == 10.0
@@ -79,11 +80,12 @@ applies only to schema-declared references, never to opaque content.
 ```text
 Movement
   number -> float                         finite magnitude; unresolved raises
-  coordinate -> tuple                     alignment identity
+  coordinate -> tuple                     alignment coordinate, independent of UUID
   resolve(*, timing=None) -> date          recorded date, or explicit period rule
   replace(*, ...) -> Movement              typed, immutable structural replacement
 
 Flow
+  clone() -> Flow                         independent Movement UUIDs
   from_events(dates, magnitudes, *, units, keys=None)
   from_periods(periods, magnitudes, *, units, dates=None)
   check(*, resolved=False, units=None) -> Flow

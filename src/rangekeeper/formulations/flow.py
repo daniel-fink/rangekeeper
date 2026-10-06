@@ -3,8 +3,8 @@
 from collections.abc import Sequence
 from uuid import UUID
 from ..model import Model
-from .._schema.records import Formulation, ValueReference
-from ._alignment import aligned, shape, target
+from .._schema.records import Formulation, Reference
+from ._alignment import aligned, shape, target, owner
 from ._construction import construct
 from .expression import reference, equal, add, multiply, sum_expressions
 
@@ -20,7 +20,7 @@ def build_sum(
         raise ValueError("sum requires sources")
     equations = [
         (
-            m.key,
+            str(m.id),
             equal(
                 reference(target(result, m)),
                 sum_expressions(
@@ -34,18 +34,16 @@ def build_sum(
 
 
 def build_scale(
-    model: Model, *, id: UUID, source: UUID, factor: ValueReference | UUID, result: UUID
+    model: Model, *, id: UUID, source: UUID, factor: Reference | UUID, result: UUID
 ) -> Formulation:
     """Declare source times a scalar or aligned Flow factor, retaining product units."""
-    sources = (source,) if isinstance(factor, ValueReference) else (source, factor)
+    sources = (source,) if isinstance(factor, Reference) else (source, factor)
     equations = []
     for m, matches in aligned(model, sources, result):
-        ref = (
-            factor if isinstance(factor, ValueReference) else target(factor, matches[1])
-        )
+        ref = factor if isinstance(factor, Reference) else target(factor, matches[1])
         equations.append(
             (
-                m.key,
+                str(m.id),
                 equal(
                     reference(target(result, m)),
                     multiply(reference(target(source, matches[0])), reference(ref)),
@@ -58,14 +56,14 @@ def build_scale(
         equations,
         (
             source,
-            factor.value if isinstance(factor, ValueReference) else factor,
+            owner(model, factor) if isinstance(factor, Reference) else factor,
             result,
         ),
     )
 
 
 def build_accumulation(
-    model: Model, *, id: UUID, source: UUID, initial: ValueReference, result: UUID
+    model: Model, *, id: UUID, source: UUID, initial: Reference, result: UUID
 ) -> Formulation:
     """Declare closing balance = prior balance + signed movement for each period.
 
@@ -77,7 +75,7 @@ def build_accumulation(
         current = target(result, m)
         equations.append(
             (
-                m.key,
+                str(m.id),
                 equal(
                     reference(current),
                     add(reference(prior), reference(target(source, matches[0]))),
@@ -85,4 +83,6 @@ def build_accumulation(
             )
         )
         prior = current
-    return construct(id, "accumulation", equations, (source, initial.value, result))
+    return construct(
+        id, "accumulation", equations, (source, owner(model, initial), result)
+    )
