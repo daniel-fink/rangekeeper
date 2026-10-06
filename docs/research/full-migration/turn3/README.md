@@ -2,7 +2,7 @@
 
 Start with [BASELINE.md](BASELINE.md) for environments, preservation, scope and
 limitations, and [COMMANDS.md](COMMANDS.md) for reproduction. The
-[implementation contract](../../../FULL_MIGRATION_TURN3.md) describes the public
+[implementation contract](../../../history/FULL_MIGRATION_TURN3.md) describes the public
 interfaces. The [retirement register](RETIREMENT.md) names what Turn 4 may remove
 and what the unresolved Windows connector gate still holds.
 

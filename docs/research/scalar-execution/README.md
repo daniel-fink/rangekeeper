@@ -35,16 +35,19 @@ row scaling, iteration count, timing and independent dimensional residuals.
 
 ## Verification results
 
+Log filenames below refer to files in the [evidence archive](evidence.tar.gz).
+Extract that archive to inspect them; loose logs are not tracked in Git.
+
 | Check | Observed result | Evidence |
 | --- | --- | --- |
-| Baseline before implementation | 702 passed, two failures, 704 executed | [log](baseline.log), [JUnit](baseline.xml) |
-| Final local Python suite | **745 passed, the same two failures**, 747 executed; no skips/errors | [log](pytest.log), [JUnit](pytest.xml) |
+| Baseline before implementation | 702 passed, two failures, 704 executed | log (`baseline.log`), [JUnit](baseline.xml) |
+| Final local Python suite | **745 passed, the same two failures**, 747 executed; no skips/errors | log (`pytest.log`), [JUnit](pytest.xml) |
 | New scalar execution coverage | **43 passed**, included in the final suite | [tests](../../../src/tests/test_execution.py) |
-| Generated artifacts | Fresh, no source changes | [log](generation.log), [fingerprints](verified-sources.json) |
-| Static API checks | 66 source files pass; 8 record, 6 domain, 5 IO and 4 execution examples rejected as intended | [log](typing.log) |
-| Native immutable record equivalence | Passed | [log](native.log) |
+| Generated artifacts | Fresh, no source changes | log (`generation.log`), [fingerprints](verified-sources.json) |
+| Static API checks | 66 source files pass; 8 record, 6 domain, 5 IO and 4 execution examples rejected as intended | log (`typing.log`) |
+| Native immutable record equivalence | Passed | log (`native.log`) |
 | Seven existing schema suites | All pass, with unchanged cases and expectations | Logs below |
-| Isolated installed wheel | Lightweight imports; core and units/codecs/stores; missing-backend behavior; genuine process-isolated forward/inverse execution and disk publication all pass outside checkout | [log](installed.log) |
+| Isolated installed wheel | Lightweight imports; core and units/codecs/stores; missing-backend behavior; genuine process-isolated forward/inverse execution and disk publication all pass outside checkout | log (`installed.log`) |
 | Preservation | 201 protected existing files unchanged; 259 verified source fingerprints current; all 113 prior lock entries retain versions, only Pyomo/Highspy added | [report](preservation.json) |
 
 The two failures reproduced before and after implementation are:
@@ -58,10 +61,10 @@ Neither legacy implementation nor its expectations was edited. Three live-servic
 tests in `tests/test_api.py` were excluded, as in the baseline. External projects,
 Speckle/host integrations, other platforms and remote CI remain unverified.
 
-Schema-suite evidence is [validate](schema-validate.log),
-[native round trip](schema-native_roundtrip.log), [expressions](schema-expressions.log),
-[formulations](schema-formulations.log), [Models](schema-models.log),
-[Specifications](schema-specifications.log) and [Runs](schema-runs.log).
+Schema-suite evidence is validate (`schema-validate.log`),
+native round trip (`schema-native_roundtrip.log`), expressions (`schema-expressions.log`),
+formulations (`schema-formulations.log`), Models (`schema-models.log`),
+Specifications (`schema-specifications.log`) and Runs (`schema-runs.log`).
 These preserved checks still describe their own bounded/synthetic scope; some
 legacy terminal messages say execution is unimplemented. They do not invoke the
 new adapter, whose evidence is recorded separately here.
@@ -80,7 +83,7 @@ The local runtime is Python **3.10.19**, macOS **15.7.9 arm64**, with Pyomo
 **6.10.1**, Highspy/HiGHS **1.15.1**, NumPy **2.2.6**, Pint **0.24.4** and
 PyYAML **6.0.3**. The schema environment uses LinkML **1.11.1**,
 linkml-runtime **1.11.1** and jsonschema **4.26.0**. Mypy is **1.18.2**.
-[Runtime inventory](environment.log) and [schema inventory](schema-environment.log)
+Runtime inventory (`environment.log`) and schema inventory (`schema-environment.log`)
 record actual versions and import location. No packages were installed into
 `src/.venv`; the added backend lives in a temporary supplemental environment.
 
@@ -161,4 +164,4 @@ Generic `relative_tolerance` is explicitly reported unapplied, not mapped to an
 unrelated absolute solver tolerance. Independent acceptance has its own documented
 dimensional policy. No uniqueness or preference-optimality claim is made.
 
-Step 6 is graph/consumer migration under the [migration map](../../DOMAIN_MIGRATION_MAP.md).
+Step 6 is graph/consumer migration under the [migration map](../../history/DOMAIN_MIGRATION_MAP.md).

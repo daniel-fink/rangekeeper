@@ -6,7 +6,7 @@ Verification date: 2026-10-06. Start: `acausal-modelling` at
 230 installed code/artifact files match the working tree, and verifies both
 protected files are unchanged and the Git index is empty.
 [Complete environment inventories](environments.json) retain installed versions.
-The contract and implementation map are in [FULL_MIGRATION_TURN2.md](../../../FULL_MIGRATION_TURN2.md).
+The contract and implementation map are in [FULL_MIGRATION_TURN2.md](../../../history/FULL_MIGRATION_TURN2.md).
 
 ## Baseline and environment
 

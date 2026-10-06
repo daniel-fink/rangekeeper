@@ -32,6 +32,9 @@ parser.add_argument(
     "--financial-python",
     help="Verify the PyXIRR financial wrapper without SciPy or dataframe dependencies",
 )
+parser.add_argument(
+    "--tables-python", help="Verify Polars and CSV with no pandas installed"
+)
 args = parser.parse_args()
 DEPENDENCIES = (
     "jsonschema",
@@ -126,6 +129,12 @@ flow = Flow(units="AUD", movements=(movement,))
 assert set(flow.to_data()) == {"units", "movements"}
 assert Flow.from_data(flow.to_data()) == flow
 assert type(flow.movements[0]) is Movement and not hasattr(flow, "samples")
+assert flow.movements[0].replace(magnitude=3).number == 3.0
+assert not flow.replace().movements[0].has_field("magnitude")
+assert period.check().resolve(timing="last_day") == date(2026, 1, 31)
+assert Movement.__doc__ and Movement.magnitude.__doc__
+for removed in ("rangekeeper.calculations._flow", "rangekeeper.calculations.distribution"):
+    assert importlib.util.find_spec(removed) is None, removed
 import rangekeeper.model.flow as flow_api
 assert flow_api.Movement is Movement and not hasattr(flow_api, "FlowSample")
 assert not hasattr(flow, "basis") and not hasattr(flow, "kind")
@@ -307,22 +316,23 @@ print('Installed wheel: canonical membership, explicit Value reduction, coverage
             cwd=temp,
             check=True,
         )
-        script = """
+        script = """from rangekeeper.model.flow import Flow
+
 from datetime import date
 import math, sys
 import pyxirr
 from rangekeeper.calculations.financial import calculate_pv, calculate_xnpv, calculate_irr
-from rangekeeper.model.flow import from_events, from_periods
+
 from rangekeeper.duration import make_periods
-flow = from_events([date(2026, 1, 1), date(2027, 1, 1)], [-100, 110], units='AUD')
+flow = Flow.from_events([date(2026, 1, 1), date(2027, 1, 1)], [-100, 110], units='AUD')
 assert abs(calculate_xnpv(flow, rate=.1, valuation_date=date(2026, 1, 1)).magnitude) < 1e-9
 result = calculate_irr(flow)
 assert math.isclose(result.rate, .1) and result.method == 'pyxirr.xirr'
 assert abs(result.residual.magnitude) < 1e-9
-future = from_periods(make_periods(date(2026, 1, 1), frequency='year', count=1), [110], units='AUD')
+future = Flow.from_periods(make_periods(date(2026, 1, 1), frequency='year', count=1), [110], units='AUD')
 assert math.isclose(calculate_pv(future, rate=.1).movements[0].magnitude, 100)
 assert math.isclose(calculate_xnpv(future, rate=.1, valuation_date=date(2026, 1, 1), timing='end').magnitude, 100)
-assert calculate_xnpv(from_events([], [], units='AUD'), rate=.1, valuation_date=date(2026, 1, 1)).magnitude == 0
+assert calculate_xnpv(Flow.from_events([], [], units='AUD'), rate=0.1, valuation_date=date(2026, 1, 1)).magnitude == 0
 for prefix in ('scipy', 'pandas', 'polars', 'numpy', 'rangekeeper.flux', 'rangekeeper._legacy_duration'):
     assert not any(name == prefix or name.startswith(prefix + '.') for name in sys.modules), prefix
 print('Installed wheel: PyXIRR', pyxirr.__version__, 'PV/XNPV/IRR passed without SciPy, dataframes or legacy imports')
@@ -394,6 +404,39 @@ assert summary['inverse_net']['magnitude'] == 25
 for prefix in ('rangekeeper.legacy', 'rangekeeper.graph.graph', 'rangekeeper.graph.entity', 'rangekeeper.measure', 'networkx', 'pandas', 'pyomo', 'highspy'):
     assert not any(name == prefix or name.startswith(prefix + '.') for name in sys.modules), prefix
 print('Installed wheel: XLSX workflow, Model provenance, YAML/JSON, stores and real forward/inverse execution passed')
+"""
+        subprocess.run([str(python), "-I", "-c", script], cwd=temp, check=True)
+    if args.tables_python:
+        table_dependencies = copy_dependencies.replace(
+            "('Pint', 'flexcache', 'flexparser', 'platformdirs', 'PyYAML')",
+            "('polars', 'polars-runtime-32')",
+        )
+        subprocess.run(
+            [args.tables_python, "-c", table_dependencies, str(site)],
+            cwd=temp,
+            check=True,
+        )
+        script = """
+import importlib.util
+from datetime import date
+from pathlib import Path
+from uuid import uuid4
+import polars as pl
+from rangekeeper.model.flow import Flow
+from rangekeeper.table import Table
+from rangekeeper.adapters import csv, polars
+assert importlib.util.find_spec('pandas') is None
+assert importlib.util.find_spec('rangekeeper.adapters.pandas') is None
+flow = Flow.from_events([date(2026, 1, 1)], [0], units='AUD')
+assert polars.from_frame(polars.to_frame(flow), units='AUD') == flow
+assert polars.dates(flow)['date'].to_list() == [date(2026, 1, 1)]
+table = Table(columns=('code', 'status', 'value'), rows=({'code': '001', 'status': 'NA', 'value': None},))
+assert polars.to_table(polars.to_frame(table)) == table
+path = csv.write(table, Path('table.csv'))
+assert csv.read(path, schema_overrides={'code': pl.String}) == table
+mixed = Table(columns=('value',), rows=({'value': uuid4()}, {'value': {'x': (1, 2)}}))
+assert polars.to_table(polars.to_frame(mixed)) == mixed
+print('Installed wheel: Polars Flow/Table and CSV checks passed with pandas absent')
 """
         subprocess.run([str(python), "-I", "-c", script], cwd=temp, check=True)
     print(

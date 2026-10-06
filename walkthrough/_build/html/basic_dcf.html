@@ -463,7 +463,7 @@ describes this DCF:</p>
 </figure>
 <section id="setup">
 <h2>Setup<a class="headerlink" href="#setup" title="Link to this heading">#</a></h2>
-<p>Use the built Rangekeeper package with its <code class="docutils literal notranslate"><span class="pre">calculations</span></code> and <code class="docutils literal notranslate"><span class="pre">pandas</span></code> extras. This tutorial uses explicit AUD units and Gregorian dates; it does not depend on the machine locale.</p>
+<p>Use the built Rangekeeper package with its <code class="docutils literal notranslate"><span class="pre">calculations</span></code> and <code class="docutils literal notranslate"><span class="pre">plotting</span></code> extras. This tutorial uses explicit AUD units and Gregorian dates; it does not depend on the machine locale.</p>
 <p>Import Libraries:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -471,23 +471,22 @@ describes this DCF:</p>
 <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">date</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uuid</span><span class="w"> </span><span class="kn">import</span> <span class="n">uuid4</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">polars</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pl</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">set_tbl_cols</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">rangekeeper</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">rk</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.model.flow</span><span class="w"> </span><span class="kn">import</span> <span class="n">Flow</span><span class="p">,</span> <span class="n">Stream</span><span class="p">,</span> <span class="n">from_events</span><span class="p">,</span> <span class="n">from_periods</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.model.flow</span><span class="w"> </span><span class="kn">import</span> <span class="n">Flow</span><span class="p">,</span> <span class="n">Stream</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.model.measure</span><span class="w"> </span><span class="kn">import</span> <span class="n">Quantity</span><span class="p">,</span> <span class="n">Measure</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.model</span><span class="w"> </span><span class="kn">import</span> <span class="n">Metadata</span><span class="p">,</span> <span class="n">Definitions</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">Entity</span><span class="p">,</span> <span class="n">Characteristics</span><span class="p">,</span> <span class="n">Value</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.duration</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_periods</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.calculations</span><span class="w"> </span><span class="kn">import</span> <span class="n">series</span><span class="p">,</span> <span class="n">projection</span><span class="p">,</span> <span class="n">financial</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.adapters.pandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_series</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.adapters</span><span class="w"> </span><span class="kn">import</span> <span class="n">polars</span> <span class="k">as</span> <span class="n">tables</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="s2">"Rangekeeper import:"</span><span class="p">,</span> <span class="n">rk</span><span class="o">.</span><span class="vm">__file__</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Rangekeeper:"</span><span class="p">,</span> <span class="n">rk</span><span class="o">.</span><span class="vm">__file__</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Rangekeeper import: /private/tmp/rk-turn4-wheel/site/rangekeeper/__init__.py
-Rangekeeper: /private/tmp/rk-turn4-wheel/site/rangekeeper/__init__.py
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Rangekeeper import: /private/tmp/rk-refactor2-notebook-site/rangekeeper/__init__.py
 </pre></div>
 </div>
 </div>
@@ -509,7 +508,7 @@ Building 2’s Parking”</p>
 Its ordered movements record calendar coordinates, magnitudes and optional evidence.
 The model logic defines the meaning of each Flow and selects its calculations. Flows carry no semantic kind or basis.
 Flows can use currency, energy, mass or other units. A canonical Value gives a Flow
-its UUID and owner-local key. pandas is used here only to display detached data.</p>
+its UUID and owner-local key. Polars is used here only to display detached data.</p>
 <section id="initializing-a-flow">
 <h4>Initializing a <code class="docutils literal notranslate"><span class="pre">Flow</span></code><a class="headerlink" href="#initializing-a-flow" title="Link to this heading">#</a></h4>
 <p>Currency is explicit. A Measure defines the meaning and canonical units of a Value. The helper below creates immutable Model content; it does not solve an investigation.</p>
@@ -542,33 +541,34 @@ its UUID and owner-local key. pandas is used here only to display detached data.
 <p>Next we define a <code class="docutils literal notranslate"><span class="pre">Flow</span></code> object from a list of dates and amounts:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">transactions</span> <span class="o">=</span> <span class="p">{</span><span class="n">date</span><span class="p">(</span><span class="mi">2020</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">):</span> <span class="mi">100</span><span class="p">,</span> <span class="n">date</span><span class="p">(</span><span class="mi">2020</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">):</span> <span class="mi">200</span><span class="p">,</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.model.flow</span><span class="w"> </span><span class="kn">import</span> <span class="n">Flow</span>
+<span class="n">transactions</span> <span class="o">=</span> <span class="p">{</span><span class="n">date</span><span class="p">(</span><span class="mi">2020</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">):</span> <span class="mi">100</span><span class="p">,</span> <span class="n">date</span><span class="p">(</span><span class="mi">2020</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">):</span> <span class="mi">200</span><span class="p">,</span>
                 <span class="n">date</span><span class="p">(</span><span class="mi">2019</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">):</span> <span class="mi">300</span><span class="p">,</span> <span class="n">date</span><span class="p">(</span><span class="mi">2020</span><span class="p">,</span><span class="mi">12</span><span class="p">,</span><span class="mi">31</span><span class="p">):</span> <span class="o">-</span><span class="mi">100</span><span class="p">}</span>
 <span class="c1"># The author makes ordering explicit; constructors do not reorder evidence.</span>
 <span class="n">dates</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">transactions</span><span class="p">)</span>
-<span class="n">cash_flow</span> <span class="o">=</span> <span class="n">from_events</span><span class="p">(</span><span class="n">dates</span><span class="p">,</span> <span class="p">[</span><span class="n">transactions</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dates</span><span class="p">],</span> <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="p">)</span>
+<span class="n">cash_flow</span> <span class="o">=</span> <span class="n">Flow</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="n">dates</span><span class="p">,</span> <span class="p">[</span><span class="n">transactions</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dates</span><span class="p">],</span> <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
-<p>Display a detached pandas representation of the Flow:</p>
+<p>Display a detached Polars representation of the Flow:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">to_series</span><span class="p">(</span><span class="n">cash_flow</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Operational Expenses"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tables</span><span class="o">.</span><span class="n">dates</span><span class="p">(</span><span class="n">cash_flow</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Operational Expenses"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2019-01-01     300
-2020-01-01     100
-2020-01-02     200
-2020-12-31    -100
-Name: Operational Expenses, dtype: object
-</pre></div>
+<div class="output text_html"><div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (4, 2)</small><table border="1" class="dataframe"><thead><tr><th>date</th><th>Operational Expenses</th></tr><tr><td>date</td><td>f64</td></tr></thead><tbody><tr><td>2019-01-01</td><td>300.0</td></tr><tr><td>2020-01-01</td><td>100.0</td></tr><tr><td>2020-01-02</td><td>200.0</td></tr><tr><td>2020-12-31</td><td>-100.0</td></tr></tbody></table></div></div></div>
 </div>
-</div>
-</div>
-<p>Inspect canonical movements and their calendar coordinates. Pandas conversion is a detached presentation operation.</p>
+<p>Inspect canonical movements and their calendar coordinates. Polars conversion is a detached presentation operation.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cash_flow</span><span class="o">.</span><span class="n">movements</span>
@@ -618,52 +618,19 @@ Name: Operational Expenses, dtype: object
 <p>A Flow has units and ordered movements. The model logic supplies their meaning and chooses the operations. A Value supplies its key and UUID in a Model. Movements can be positive, negative, zero, or unresolved. Dates must be ordered; repeated event dates need distinct keys. No dataframe is stored inside the Model.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">to_series</span><span class="p">(</span><span class="n">cash_flow</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Operational Expenses"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tables</span><span class="o">.</span><span class="n">dates</span><span class="p">(</span><span class="n">cash_flow</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Operational Expenses"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html"><div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
+<div class="output text_html"><div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
 </style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Operational Expenses</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>2019-01-01</th>
-      <td>300</td>
-    </tr>
-    <tr>
-      <th>2020-01-01</th>
-      <td>100</td>
-    </tr>
-    <tr>
-      <th>2020-01-02</th>
-      <td>200</td>
-    </tr>
-    <tr>
-      <th>2020-12-31</th>
-      <td>-100</td>
-    </tr>
-  </tbody>
-</table>
-</div></div></div>
+<small>shape: (4, 2)</small><table border="1" class="dataframe"><thead><tr><th>date</th><th>Operational Expenses</th></tr><tr><td>date</td><td>f64</td></tr></thead><tbody><tr><td>2019-01-01</td><td>300.0</td></tr><tr><td>2020-01-01</td><td>100.0</td></tr><tr><td>2020-01-02</td><td>200.0</td></tr><tr><td>2020-12-31</td><td>-100.0</td></tr></tbody></table></div></div></div>
 </div>
 </section>
 </section>
@@ -703,53 +670,39 @@ Name: Operational Expenses, dtype: object
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">potential_gross_income</span> <span class="o">=</span> <span class="n">projection</span><span class="o">.</span><span class="n">project</span><span class="p">(</span>
     <span class="n">Quantity</span><span class="p">(</span><span class="n">magnitude</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="p">),</span> <span class="n">periods</span><span class="o">=</span><span class="n">periods</span><span class="p">,</span>
     <span class="n">method</span><span class="o">=</span><span class="s2">"compound"</span><span class="p">,</span> <span class="n">rate</span><span class="o">=</span><span class="n">compounding_rate</span><span class="p">)</span>
-<span class="n">to_series</span><span class="p">(</span><span class="n">potential_gross_income</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Potential Gross Income"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span>
+<span class="n">tables</span><span class="o">.</span><span class="n">dates</span><span class="p">(</span><span class="n">potential_gross_income</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Potential Gross Income"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2001-12-31         100.0
-2002-12-31         102.0
-2003-12-31        104.04
-2004-12-31      106.1208
-2005-12-31    108.243216
-2006-12-31     110.40808
-2007-12-31    112.616242
-2008-12-31    114.868567
-2009-12-31    117.165938
-2010-12-31    119.509257
-2011-12-31    121.899442
-Name: Potential Gross Income, dtype: object
-</pre></div>
-</div>
-</div>
+<div class="output text_html"><div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (11, 2)</small><table border="1" class="dataframe"><thead><tr><th>date</th><th>Potential Gross Income</th></tr><tr><td>date</td><td>f64</td></tr></thead><tbody><tr><td>2001-12-31</td><td>100.0</td></tr><tr><td>2002-12-31</td><td>102.0</td></tr><tr><td>2003-12-31</td><td>104.04</td></tr><tr><td>2004-12-31</td><td>106.1208</td></tr><tr><td>2005-12-31</td><td>108.243216</td></tr><tr><td>&hellip;</td><td>&hellip;</td></tr><tr><td>2007-12-31</td><td>112.616242</td></tr><tr><td>2008-12-31</td><td>114.868567</td></tr><tr><td>2009-12-31</td><td>117.165938</td></tr><tr><td>2010-12-31</td><td>119.509257</td></tr><tr><td>2011-12-31</td><td>121.899442</td></tr></tbody></table></div></div></div>
 </div>
 <p>Similarly, we define the ‘Vacancy’ line item by multiplying the movements of the
 ‘Potential Gross Income’ <code class="docutils literal notranslate"><span class="pre">Flow</span></code> by a vacancy rate:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vacancy_rate</span> <span class="o">=</span> <span class="mf">0.05</span>
-<span class="n">vacancy</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">potential_gross_income</span><span class="p">,</span> <span class="o">-</span><span class="n">vacancy_rate</span><span class="p">)</span>
-<span class="n">to_series</span><span class="p">(</span><span class="n">vacancy</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Vacancy Allowance"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span>
+<span class="n">vacancy</span> <span class="o">=</span> <span class="n">potential_gross_income</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="o">-</span><span class="n">vacancy_rate</span><span class="p">)</span>
+<span class="n">tables</span><span class="o">.</span><span class="n">dates</span><span class="p">(</span><span class="n">vacancy</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Vacancy Allowance"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2001-12-31        -5.0
-2002-12-31        -5.1
-2003-12-31      -5.202
-2004-12-31    -5.30604
-2005-12-31   -5.412161
-2006-12-31   -5.520404
-2007-12-31   -5.630812
-2008-12-31   -5.743428
-2009-12-31   -5.858297
-2010-12-31   -5.975463
-2011-12-31   -6.094972
-Name: Vacancy Allowance, dtype: object
-</pre></div>
-</div>
-</div>
+<div class="output text_html"><div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (11, 2)</small><table border="1" class="dataframe"><thead><tr><th>date</th><th>Vacancy Allowance</th></tr><tr><td>date</td><td>f64</td></tr></thead><tbody><tr><td>2001-12-31</td><td>-5.0</td></tr><tr><td>2002-12-31</td><td>-5.1</td></tr><tr><td>2003-12-31</td><td>-5.202</td></tr><tr><td>2004-12-31</td><td>-5.30604</td></tr><tr><td>2005-12-31</td><td>-5.412161</td></tr><tr><td>&hellip;</td><td>&hellip;</td></tr><tr><td>2007-12-31</td><td>-5.630812</td></tr><tr><td>2008-12-31</td><td>-5.743428</td></tr><tr><td>2009-12-31</td><td>-5.858297</td></tr><tr><td>2010-12-31</td><td>-5.975463</td></tr><tr><td>2011-12-31</td><td>-6.094972</td></tr></tbody></table></div></div></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -769,8 +722,8 @@ negative, because it is an <em>outflow</em>.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[('potential_gross_income', UUID('1e67a7bd-f983-4414-9d4c-2bb3ee671340')),
- ('vacancy', UUID('8d08d1eb-668f-49d0-8be1-c3eae55f1820'))]
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[('potential_gross_income', UUID('6abad90a-dfd9-4322-b9e0-fccdfc69d8f7')),
+ ('vacancy', UUID('761c5619-3c62-45dc-96fe-46ad2d9d030b'))]
 </pre></div>
 </div>
 </div>
@@ -778,81 +731,60 @@ negative, because it is an <em>outflow</em>.</p>
 <p>The Stream retains its Model revision and Value identities. Pointwise addition is explicit and does not change either input.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">effective_gross_income_flow</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">sum_flows</span><span class="p">(</span><span class="n">effective_gross_income</span><span class="o">.</span><span class="n">flows</span><span class="p">)</span><span class="o">.</span><span class="n">flow</span>
-<span class="n">to_series</span><span class="p">(</span><span class="n">effective_gross_income_flow</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Effective Gross Income"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">effective_gross_income_flow</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span><span class="n">effective_gross_income</span><span class="o">.</span><span class="n">flows</span><span class="p">)</span><span class="o">.</span><span class="n">flow</span>
+<span class="n">tables</span><span class="o">.</span><span class="n">dates</span><span class="p">(</span><span class="n">effective_gross_income_flow</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Effective Gross Income"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2001-12-31          95.0
-2002-12-31          96.9
-2003-12-31        98.838
-2004-12-31     100.81476
-2005-12-31    102.831055
-2006-12-31    104.887676
-2007-12-31     106.98543
-2008-12-31    109.125138
-2009-12-31    111.307641
-2010-12-31    113.533794
-2011-12-31     115.80447
-Name: Effective Gross Income, dtype: object
-</pre></div>
-</div>
-</div>
+<div class="output text_html"><div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (11, 2)</small><table border="1" class="dataframe"><thead><tr><th>date</th><th>Effective Gross Income</th></tr><tr><td>date</td><td>f64</td></tr></thead><tbody><tr><td>2001-12-31</td><td>95.0</td></tr><tr><td>2002-12-31</td><td>96.9</td></tr><tr><td>2003-12-31</td><td>98.838</td></tr><tr><td>2004-12-31</td><td>100.81476</td></tr><tr><td>2005-12-31</td><td>102.831055</td></tr><tr><td>&hellip;</td><td>&hellip;</td></tr><tr><td>2007-12-31</td><td>106.98543</td></tr><tr><td>2008-12-31</td><td>109.125138</td></tr><tr><td>2009-12-31</td><td>111.307641</td></tr><tr><td>2010-12-31</td><td>113.533794</td></tr><tr><td>2011-12-31</td><td>115.80447</td></tr></tbody></table></div></div></div>
 </div>
 <p>The result retains the period coordinates and period-end observation dates. An unequal calendar would require explicit alignment or resampling.</p>
 <p>With this in mind, we can complete Table 1.1</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">opex_pgi_ratio</span> <span class="o">=</span> <span class="mf">.35</span>
-<span class="n">operating_expenses</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">potential_gross_income</span><span class="p">,</span> <span class="o">-</span><span class="n">opex_pgi_ratio</span><span class="p">)</span>
-<span class="n">net_operating_income</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">sum_flows</span><span class="p">((</span><span class="n">effective_gross_income_flow</span><span class="p">,</span> <span class="n">operating_expenses</span><span class="p">))</span><span class="o">.</span><span class="n">flow</span>
-<span class="n">to_series</span><span class="p">(</span><span class="n">net_operating_income</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Net Operating Income"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span>
+<span class="n">operating_expenses</span> <span class="o">=</span> <span class="n">potential_gross_income</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="o">-</span><span class="n">opex_pgi_ratio</span><span class="p">)</span>
+<span class="n">net_operating_income</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">aggregate</span><span class="p">((</span><span class="n">effective_gross_income_flow</span><span class="p">,</span> <span class="n">operating_expenses</span><span class="p">))</span><span class="o">.</span><span class="n">flow</span>
+<span class="n">tables</span><span class="o">.</span><span class="n">dates</span><span class="p">(</span><span class="n">net_operating_income</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Net Operating Income"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2001-12-31         60.0
-2002-12-31         61.2
-2003-12-31       62.424
-2004-12-31     63.67248
-2005-12-31     64.94593
-2006-12-31    66.244848
-2007-12-31    67.569745
-2008-12-31     68.92114
-2009-12-31    70.299563
-2010-12-31    71.705554
-2011-12-31    73.139665
-Name: Net Operating Income, dtype: object
-</pre></div>
-</div>
-</div>
+<div class="output text_html"><div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (11, 2)</small><table border="1" class="dataframe"><thead><tr><th>date</th><th>Net Operating Income</th></tr><tr><td>date</td><td>f64</td></tr></thead><tbody><tr><td>2001-12-31</td><td>60.0</td></tr><tr><td>2002-12-31</td><td>61.2</td></tr><tr><td>2003-12-31</td><td>62.424</td></tr><tr><td>2004-12-31</td><td>63.67248</td></tr><tr><td>2005-12-31</td><td>64.94593</td></tr><tr><td>&hellip;</td><td>&hellip;</td></tr><tr><td>2007-12-31</td><td>67.569745</td></tr><tr><td>2008-12-31</td><td>68.92114</td></tr><tr><td>2009-12-31</td><td>70.299563</td></tr><tr><td>2010-12-31</td><td>71.705554</td></tr><tr><td>2011-12-31</td><td>73.139665</td></tr></tbody></table></div></div></div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">capex_pgi_ratio</span> <span class="o">=</span> <span class="mf">.1</span>
-<span class="n">capital_expenditures</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">potential_gross_income</span><span class="p">,</span> <span class="o">-</span><span class="n">capex_pgi_ratio</span><span class="p">)</span>
-<span class="n">net_annual_cashflows</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">sum_flows</span><span class="p">((</span><span class="n">net_operating_income</span><span class="p">,</span> <span class="n">capital_expenditures</span><span class="p">))</span><span class="o">.</span><span class="n">flow</span>
-<span class="n">to_series</span><span class="p">(</span><span class="n">net_annual_cashflows</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Net Annual Cashflows"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span>
+<span class="n">capital_expenditures</span> <span class="o">=</span> <span class="n">potential_gross_income</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="o">-</span><span class="n">capex_pgi_ratio</span><span class="p">)</span>
+<span class="n">net_annual_cashflows</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">aggregate</span><span class="p">((</span><span class="n">net_operating_income</span><span class="p">,</span> <span class="n">capital_expenditures</span><span class="p">))</span><span class="o">.</span><span class="n">flow</span>
+<span class="n">tables</span><span class="o">.</span><span class="n">dates</span><span class="p">(</span><span class="n">net_annual_cashflows</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Net Annual Cashflows"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2001-12-31         50.0
-2002-12-31         51.0
-2003-12-31        52.02
-2004-12-31      53.0604
-2005-12-31    54.121608
-2006-12-31     55.20404
-2007-12-31    56.308121
-2008-12-31    57.434283
-2009-12-31    58.582969
-2010-12-31    59.754628
-2011-12-31    60.949721
-Name: Net Annual Cashflows, dtype: object
-</pre></div>
-</div>
-</div>
+<div class="output text_html"><div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (11, 2)</small><table border="1" class="dataframe"><thead><tr><th>date</th><th>Net Annual Cashflows</th></tr><tr><td>date</td><td>f64</td></tr></thead><tbody><tr><td>2001-12-31</td><td>50.0</td></tr><tr><td>2002-12-31</td><td>51.0</td></tr><tr><td>2003-12-31</td><td>52.02</td></tr><tr><td>2004-12-31</td><td>53.0604</td></tr><tr><td>2005-12-31</td><td>54.121608</td></tr><tr><td>&hellip;</td><td>&hellip;</td></tr><tr><td>2007-12-31</td><td>56.308121</td></tr><tr><td>2008-12-31</td><td>57.434283</td></tr><tr><td>2009-12-31</td><td>58.582969</td></tr><tr><td>2010-12-31</td><td>59.754628</td></tr><tr><td>2011-12-31</td><td>60.949721</td></tr></tbody></table></div></div></div>
 </div>
 <p>To calculate the reversion cashflow, we set up a period that spans the 10th year
 of the property:</p>
@@ -861,84 +793,74 @@ of the property:</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">reversion_period</span> <span class="o">=</span> <span class="n">periods</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span>
 <span class="n">exit_caprate</span> <span class="o">=</span> <span class="mf">0.05</span>
 <span class="c1"># Capitalize the following year's net cashflow at the end of the tenth year.</span>
-<span class="n">reversion_flow</span> <span class="o">=</span> <span class="n">from_periods</span><span class="p">((</span><span class="n">reversion_period</span><span class="p">,),</span>
-    <span class="p">(</span><span class="n">net_annual_cashflows</span><span class="o">.</span><span class="n">movements</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">magnitude</span> <span class="o">/</span> <span class="n">exit_caprate</span><span class="p">,),</span> <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="p">)</span>
-<span class="n">to_series</span><span class="p">(</span><span class="n">reversion_flow</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Reversion"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span>
+<span class="n">reversion_flow</span> <span class="o">=</span> <span class="n">Flow</span><span class="o">.</span><span class="n">from_periods</span><span class="p">((</span><span class="n">reversion_period</span><span class="p">,),</span> <span class="p">(</span><span class="n">net_annual_cashflows</span><span class="o">.</span><span class="n">movements</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">magnitude</span> <span class="o">/</span> <span class="n">exit_caprate</span><span class="p">,),</span> <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="p">)</span>
+<span class="n">tables</span><span class="o">.</span><span class="n">dates</span><span class="p">(</span><span class="n">reversion_flow</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Reversion"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2010-12-31    1218.99442
-Name: Reversion, dtype: object
-</pre></div>
-</div>
-</div>
+<div class="output text_html"><div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (1, 2)</small><table border="1" class="dataframe"><thead><tr><th>date</th><th>Reversion</th></tr><tr><td>date</td><td>f64</td></tr></thead><tbody><tr><td>2010-12-31</td><td>1218.99442</td></tr></tbody></table></div></div></div>
 </div>
 <p>Finally, we can aggregate the net and reversion cashflows in order to calculate
 the project’s complete cashflows:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">to_series</span><span class="p">(</span><span class="n">reversion_flow</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Reversion"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tables</span><span class="o">.</span><span class="n">dates</span><span class="p">(</span><span class="n">reversion_flow</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Reversion"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2010-12-31    1218.99442
-Name: Reversion, dtype: object
-</pre></div>
-</div>
-</div>
+<div class="output text_html"><div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (1, 2)</small><table border="1" class="dataframe"><thead><tr><th>date</th><th>Reversion</th></tr><tr><td>date</td><td>f64</td></tr></thead><tbody><tr><td>2010-12-31</td><td>1218.99442</td></tr></tbody></table></div></div></div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">net_cashflows_with_reversion</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">sum_flows</span><span class="p">(</span>
-    <span class="p">(</span><span class="n">net_annual_cashflows</span><span class="p">,</span> <span class="n">reversion_flow</span><span class="p">),</span> <span class="n">join</span><span class="o">=</span><span class="s2">"union"</span><span class="p">,</span> <span class="n">missing</span><span class="o">=</span><span class="s2">"zero"</span><span class="p">)</span><span class="o">.</span><span class="n">flow</span>
-<span class="n">to_series</span><span class="p">(</span><span class="n">net_cashflows_with_reversion</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Net Cashflow with Reversion"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">net_cashflows_with_reversion</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">aggregate</span><span class="p">((</span><span class="n">net_annual_cashflows</span><span class="p">,</span> <span class="n">reversion_flow</span><span class="p">),</span> <span class="n">join</span><span class="o">=</span><span class="s1">'union'</span><span class="p">,</span> <span class="n">missing</span><span class="o">=</span><span class="s1">'zero'</span><span class="p">)</span><span class="o">.</span><span class="n">flow</span>
+<span class="n">tables</span><span class="o">.</span><span class="n">dates</span><span class="p">(</span><span class="n">net_cashflows_with_reversion</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Net Cashflow with Reversion"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2001-12-31           50.0
-2002-12-31           51.0
-2003-12-31          52.02
-2004-12-31        53.0604
-2005-12-31      54.121608
-2006-12-31       55.20404
-2007-12-31      56.308121
-2008-12-31      57.434283
-2009-12-31      58.582969
-2010-12-31    1278.749048
-2011-12-31      60.949721
-Name: Net Cashflow with Reversion, dtype: object
-</pre></div>
-</div>
-</div>
+<div class="output text_html"><div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (11, 2)</small><table border="1" class="dataframe"><thead><tr><th>date</th><th>Net Cashflow with Reversion</th></tr><tr><td>date</td><td>f64</td></tr></thead><tbody><tr><td>2001-12-31</td><td>50.0</td></tr><tr><td>2002-12-31</td><td>51.0</td></tr><tr><td>2003-12-31</td><td>52.02</td></tr><tr><td>2004-12-31</td><td>53.0604</td></tr><tr><td>2005-12-31</td><td>54.121608</td></tr><tr><td>&hellip;</td><td>&hellip;</td></tr><tr><td>2007-12-31</td><td>56.308121</td></tr><tr><td>2008-12-31</td><td>57.434283</td></tr><tr><td>2009-12-31</td><td>58.582969</td></tr><tr><td>2010-12-31</td><td>1278.749048</td></tr><tr><td>2011-12-31</td><td>60.949721</td></tr></tbody></table></div></div></div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">net_cashflows_with_reversion</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">trim</span><span class="p">(</span>
-    <span class="n">net_cashflows_with_reversion</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">start_date</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">date</span><span class="p">(</span><span class="mi">2011</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
-<span class="n">to_series</span><span class="p">(</span><span class="n">net_cashflows_with_reversion</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Net Cashflow with Reversion"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">net_cashflows_with_reversion</span> <span class="o">=</span> <span class="n">net_cashflows_with_reversion</span><span class="o">.</span><span class="n">trim</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">start_date</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">date</span><span class="p">(</span><span class="mi">2011</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">tables</span><span class="o">.</span><span class="n">dates</span><span class="p">(</span><span class="n">net_cashflows_with_reversion</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Net Cashflow with Reversion"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2001-12-31           50.0
-2002-12-31           51.0
-2003-12-31          52.02
-2004-12-31        53.0604
-2005-12-31      54.121608
-2006-12-31       55.20404
-2007-12-31      56.308121
-2008-12-31      57.434283
-2009-12-31      58.582969
-2010-12-31    1278.749048
-Name: Net Cashflow with Reversion, dtype: object
-</pre></div>
+<div class="output text_html"><div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (10, 2)</small><table border="1" class="dataframe"><thead><tr><th>date</th><th>Net Cashflow with Reversion</th></tr><tr><td>date</td><td>f64</td></tr></thead><tbody><tr><td>2001-12-31</td><td>50.0</td></tr><tr><td>2002-12-31</td><td>51.0</td></tr><tr><td>2003-12-31</td><td>52.02</td></tr><tr><td>2004-12-31</td><td>53.0604</td></tr><tr><td>2005-12-31</td><td>54.121608</td></tr><tr><td>2006-12-31</td><td>55.20404</td></tr><tr><td>2007-12-31</td><td>56.308121</td></tr><tr><td>2008-12-31</td><td>57.434283</td></tr><tr><td>2009-12-31</td><td>58.582969</td></tr><tr><td>2010-12-31</td><td>1278.749048</td></tr></tbody></table></div></div></div>
 </div>
-</div>
-</div>
-<p>The canonical Model holds the named Flow Values. A detached pandas table presents the same content in the layout used by Table 1.1.</p>
+<p>The canonical Model holds the named Flow Values. A detached Polars table presents the same content in the layout used by Table 1.1.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">flows</span> <span class="o">=</span> <span class="p">{</span>
@@ -954,173 +876,20 @@ Name: Net Cashflow with Reversion, dtype: object
 <span class="p">}</span>
 <span class="n">model</span><span class="p">,</span> <span class="n">table_stream</span> <span class="o">=</span> <span class="n">record_flows</span><span class="p">(</span><span class="n">flows</span><span class="p">)</span>
 <span class="c1"># Presentation is detached. Blank table cells do not change canonical missingness.</span>
-<span class="n">table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">to_series</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">flow</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">value</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">table_stream</span><span class="o">.</span><span class="n">values</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+<span class="n">table</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">tables</span><span class="o">.</span><span class="n">dates</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">flow</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"amount"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span><span class="o">.</span><span class="n">with_columns</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">lit</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">key</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">"Flow"</span><span class="p">))</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">table_stream</span><span class="o">.</span><span class="n">values</span><span class="p">])</span><span class="o">.</span><span class="n">pivot</span><span class="p">(</span><span class="n">on</span><span class="o">=</span><span class="s2">"date"</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="s2">"Flow"</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="s2">"amount"</span><span class="p">,</span> <span class="n">maintain_order</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">table</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html"><div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
+<div class="output text_html"><div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
 </style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>2001-12-31</th>
-      <th>2002-12-31</th>
-      <th>2003-12-31</th>
-      <th>2004-12-31</th>
-      <th>2005-12-31</th>
-      <th>2006-12-31</th>
-      <th>2007-12-31</th>
-      <th>2008-12-31</th>
-      <th>2009-12-31</th>
-      <th>2010-12-31</th>
-      <th>2011-12-31</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>Potential Gross Income</th>
-      <td>100.0</td>
-      <td>102.0</td>
-      <td>104.04</td>
-      <td>106.1208</td>
-      <td>108.243216</td>
-      <td>110.40808</td>
-      <td>112.616242</td>
-      <td>114.868567</td>
-      <td>117.165938</td>
-      <td>119.509257</td>
-      <td>121.899442</td>
-    </tr>
-    <tr>
-      <th>Vacancy</th>
-      <td>-5.0</td>
-      <td>-5.1</td>
-      <td>-5.202</td>
-      <td>-5.30604</td>
-      <td>-5.412161</td>
-      <td>-5.520404</td>
-      <td>-5.630812</td>
-      <td>-5.743428</td>
-      <td>-5.858297</td>
-      <td>-5.975463</td>
-      <td>-6.094972</td>
-    </tr>
-    <tr>
-      <th>Effective Gross Income</th>
-      <td>95.0</td>
-      <td>96.9</td>
-      <td>98.838</td>
-      <td>100.81476</td>
-      <td>102.831055</td>
-      <td>104.887676</td>
-      <td>106.98543</td>
-      <td>109.125138</td>
-      <td>111.307641</td>
-      <td>113.533794</td>
-      <td>115.80447</td>
-    </tr>
-    <tr>
-      <th>Operating Expenses</th>
-      <td>-35.0</td>
-      <td>-35.7</td>
-      <td>-36.414</td>
-      <td>-37.14228</td>
-      <td>-37.885126</td>
-      <td>-38.642828</td>
-      <td>-39.415685</td>
-      <td>-40.203998</td>
-      <td>-41.008078</td>
-      <td>-41.82824</td>
-      <td>-42.664805</td>
-    </tr>
-    <tr>
-      <th>Net Operating Income</th>
-      <td>60.0</td>
-      <td>61.2</td>
-      <td>62.424</td>
-      <td>63.67248</td>
-      <td>64.94593</td>
-      <td>66.244848</td>
-      <td>67.569745</td>
-      <td>68.92114</td>
-      <td>70.299563</td>
-      <td>71.705554</td>
-      <td>73.139665</td>
-    </tr>
-    <tr>
-      <th>Capital Expenditures</th>
-      <td>-10.0</td>
-      <td>-10.2</td>
-      <td>-10.404</td>
-      <td>-10.61208</td>
-      <td>-10.824322</td>
-      <td>-11.040808</td>
-      <td>-11.261624</td>
-      <td>-11.486857</td>
-      <td>-11.716594</td>
-      <td>-11.950926</td>
-      <td>-12.189944</td>
-    </tr>
-    <tr>
-      <th>Net Annual Cashflows</th>
-      <td>50.0</td>
-      <td>51.0</td>
-      <td>52.02</td>
-      <td>53.0604</td>
-      <td>54.121608</td>
-      <td>55.20404</td>
-      <td>56.308121</td>
-      <td>57.434283</td>
-      <td>58.582969</td>
-      <td>59.754628</td>
-      <td>60.949721</td>
-    </tr>
-    <tr>
-      <th>Reversion</th>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>1218.99442</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>Net Cashflow with Reversion</th>
-      <td>50.0</td>
-      <td>51.0</td>
-      <td>52.02</td>
-      <td>53.0604</td>
-      <td>54.121608</td>
-      <td>55.20404</td>
-      <td>56.308121</td>
-      <td>57.434283</td>
-      <td>58.582969</td>
-      <td>1278.749048</td>
-      <td>NaN</td>
-    </tr>
-  </tbody>
-</table>
-</div></div></div>
+<small>shape: (9, 12)</small><table border="1" class="dataframe"><thead><tr><th>Flow</th><th>2001-12-31</th><th>2002-12-31</th><th>2003-12-31</th><th>2004-12-31</th><th>2005-12-31</th><th>2006-12-31</th><th>2007-12-31</th><th>2008-12-31</th><th>2009-12-31</th><th>2010-12-31</th><th>2011-12-31</th></tr><tr><td>str</td><td>f64</td><td>f64</td><td>f64</td><td>f64</td><td>f64</td><td>f64</td><td>f64</td><td>f64</td><td>f64</td><td>f64</td><td>f64</td></tr></thead><tbody><tr><td>&quot;Potential Gross Income&quot;</td><td>100.0</td><td>102.0</td><td>104.04</td><td>106.1208</td><td>108.243216</td><td>110.40808</td><td>112.616242</td><td>114.868567</td><td>117.165938</td><td>119.509257</td><td>121.899442</td></tr><tr><td>&quot;Vacancy&quot;</td><td>-5.0</td><td>-5.1</td><td>-5.202</td><td>-5.30604</td><td>-5.412161</td><td>-5.520404</td><td>-5.630812</td><td>-5.743428</td><td>-5.858297</td><td>-5.975463</td><td>-6.094972</td></tr><tr><td>&quot;Effective Gross Income&quot;</td><td>95.0</td><td>96.9</td><td>98.838</td><td>100.81476</td><td>102.831055</td><td>104.887676</td><td>106.98543</td><td>109.125138</td><td>111.307641</td><td>113.533794</td><td>115.80447</td></tr><tr><td>&quot;Operating Expenses&quot;</td><td>-35.0</td><td>-35.7</td><td>-36.414</td><td>-37.14228</td><td>-37.885126</td><td>-38.642828</td><td>-39.415685</td><td>-40.203998</td><td>-41.008078</td><td>-41.82824</td><td>-42.664805</td></tr><tr><td>&quot;Net Operating Income&quot;</td><td>60.0</td><td>61.2</td><td>62.424</td><td>63.67248</td><td>64.94593</td><td>66.244848</td><td>67.569745</td><td>68.92114</td><td>70.299563</td><td>71.705554</td><td>73.139665</td></tr><tr><td>&quot;Capital Expenditures&quot;</td><td>-10.0</td><td>-10.2</td><td>-10.404</td><td>-10.61208</td><td>-10.824322</td><td>-11.040808</td><td>-11.261624</td><td>-11.486857</td><td>-11.716594</td><td>-11.950926</td><td>-12.189944</td></tr><tr><td>&quot;Net Annual Cashflows&quot;</td><td>50.0</td><td>51.0</td><td>52.02</td><td>53.0604</td><td>54.121608</td><td>55.20404</td><td>56.308121</td><td>57.434283</td><td>58.582969</td><td>59.754628</td><td>60.949721</td></tr><tr><td>&quot;Reversion&quot;</td><td>null</td><td>null</td><td>null</td><td>null</td><td>null</td><td>null</td><td>null</td><td>null</td><td>null</td><td>1218.99442</td><td>null</td></tr><tr><td>&quot;Net Cashflow with Reversion&quot;</td><td>50.0</td><td>51.0</td><td>52.02</td><td>53.0604</td><td>54.121608</td><td>55.20404</td><td>56.308121</td><td>57.434283</td><td>58.582969</td><td>1278.749048</td><td>null</td></tr></tbody></table></div></div></div>
 </div>
 </section>
 <section id="discount-and-check-the-result">
@@ -1130,29 +899,23 @@ Name: Net Cashflow with Reversion, dtype: object
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">discount_rate</span> <span class="o">=</span> <span class="mf">0.07</span>
 <span class="n">pvs</span> <span class="o">=</span> <span class="n">financial</span><span class="o">.</span><span class="n">calculate_pv</span><span class="p">(</span><span class="n">net_cashflows_with_reversion</span><span class="p">,</span> <span class="n">rate</span><span class="o">=</span><span class="n">discount_rate</span><span class="p">,</span> <span class="n">first_period</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="n">to_series</span><span class="p">(</span><span class="n">pvs</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Present Value"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span>
+<span class="n">tables</span><span class="o">.</span><span class="n">dates</span><span class="p">(</span><span class="n">pvs</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Present Value"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2001-12-31     46.728972
-2002-12-31     44.545375
-2003-12-31     42.463816
-2004-12-31     40.479525
-2005-12-31     38.587959
-2006-12-31     36.784783
-2007-12-31     35.065868
-2008-12-31     33.427276
-2009-12-31     31.865254
-2010-12-31    650.051174
-Name: Present Value, dtype: object
-</pre></div>
-</div>
-</div>
+<div class="output text_html"><div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (10, 2)</small><table border="1" class="dataframe"><thead><tr><th>date</th><th>Present Value</th></tr><tr><td>date</td><td>f64</td></tr></thead><tbody><tr><td>2001-12-31</td><td>46.728972</td></tr><tr><td>2002-12-31</td><td>44.545375</td></tr><tr><td>2003-12-31</td><td>42.463816</td></tr><tr><td>2004-12-31</td><td>40.479525</td></tr><tr><td>2005-12-31</td><td>38.587959</td></tr><tr><td>2006-12-31</td><td>36.784783</td></tr><tr><td>2007-12-31</td><td>35.065868</td></tr><tr><td>2008-12-31</td><td>33.427276</td></tr><tr><td>2009-12-31</td><td>31.865254</td></tr><tr><td>2010-12-31</td><td>650.051174</td></tr></tbody></table></div></div></div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">property_pv</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">total</span><span class="p">(</span><span class="n">pvs</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">property_pv</span> <span class="o">=</span> <span class="n">pvs</span><span class="o">.</span><span class="n">total</span><span class="p">()</span><span class="o">.</span><span class="n">magnitude</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Property PV: $</span><span class="si">{</span><span class="n">property_pv</span><span class="si">:</span><span class="s2">,.0f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="c1"># Independent scalar oracle: ten annual movements plus terminal proceeds.</span>
 <span class="n">expected</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">50</span> <span class="o">*</span> <span class="mf">1.02</span><span class="o">**</span><span class="n">i</span> <span class="o">/</span> <span class="mf">1.07</span><span class="o">**</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span> <span class="o">+</span> <span class="p">(</span><span class="mi">50</span><span class="o">*</span><span class="mf">1.02</span><span class="o">**</span><span class="mi">10</span><span class="o">/</span><span class="mf">.05</span><span class="p">)</span><span class="o">/</span><span class="mf">1.07</span><span class="o">**</span><span class="mi">10</span>

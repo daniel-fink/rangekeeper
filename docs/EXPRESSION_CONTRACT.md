@@ -1,8 +1,8 @@
 # Expression, Function, Query, and Constraint contract
 
-Status: schema draft with structural and bounded semantic conformance checks.
-This specifies representations and meaning. It does not implement an evaluator,
-query executor, numerical solver, or the content formats of financial Values.
+This guide specifies representations and meaning. Structural and bounded semantic
+checks enforce this contract. The [executor](SCALAR_EXECUTION.md) implements the
+documented affine subset; representation alone does not promise execution support.
 
 ## Composition and identity
 
@@ -18,7 +18,7 @@ operators. Helper records use `Call`, `Parameter`, `Filter`, `Criterion`, and
 | --- | --- |
 | Numerical literal | `quantity`: embedded Quantity with magnitude and explicit units |
 | Boolean literal | `boolean`: true or false |
-| Value reference | `reference`: target Value UUID |
+| Value reference | `reference`: target ValueReference (Value UUID and optional Movement key) |
 | Unary operation | `unary`: operator and one `operand` |
 | Binary operation | `binary`: operator and two ordered `operands` |
 | Function call | `call`: Function UUID, positional arguments, named arguments |
@@ -36,15 +36,14 @@ carry a Measure reference. A Measure defines domain meaning and canonical units;
 a Quantity supplies magnitude and units. The containing Expression owns identity.
 Zero and false are meaningful content. Missing or
 null literal content is invalid. A reference to an unresolved Value is valid.
-Optional list fields may be absent, null, or empty to denote no entries; generated
-dumpers may omit empty lists. Required operation content cannot be null or empty.
+Optional list fields may be absent, null, or empty to denote no entries; canonical codecs preserve those distinctions. Required operation content cannot be null or empty.
 
 Date and string literal nodes are deferred until a concrete operation requires
 them. Policy guards or action arguments may provide such requirements; their
 comparison, typing, and execution semantics will need to be specified together.
 This does not remove date or string result domains: a reference, selection, or call
 can return such content under its declared contract. For example, selecting a
-Span's `end_date` returns a date without a date literal node. Selector names and
+Span's `end` returns a date without a date literal node. Selector names and
 characteristic keys are schema fields, not string literal expressions.
 
 Comparisons produce Boolean expressions. A Constraint asserts that one must
@@ -131,7 +130,7 @@ it, or return zero when a numerical result and its units can be established.
 Unresolved members are neither dropped nor interpreted as zero. Multiplicity
 affects the result when the Query deliberately retains it.
 
-For example, the [graph aggregation fixture](examples/query-aggregation.yaml)
+For example, the [graph aggregation fixture](../schema/examples/query-aggregation.yaml)
 expresses the sum of apartment rent within Building A. Apartment A is reachable
 directly and via a floor. `distinct` retains its rent Value once; Workspace A
 is excluded. All rent amounts are unresolved. The expected symbolic sum contains
@@ -172,7 +171,7 @@ The schemas and checks establish:
 - Constraint predicate references and Boolean result domains, including nested
   and reused predicates, Boolean calls, and literal false predicates.
 
-The [structured-expression fixture](examples/function-expressions.yaml) includes
+The [structured-expression fixture](../schema/examples/function-expressions.yaml) includes
 Flow total, annual IRR, a Span endpoint, Account transactions, and indexed balances.
 Its `input_domains` entries describe fixture-only domains, not serialized Value
 records. The checker supplies illustrative member domains for these examples. A

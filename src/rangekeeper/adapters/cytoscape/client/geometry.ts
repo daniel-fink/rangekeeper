@@ -1,60 +1,60 @@
 import { resizePresentation } from "./presentation";
 import type cytoscape from "cytoscape";
-import type { ViewerContext } from "./context";
+import type { Viewer } from "./context";
 import * as fourPortRouting from "./routing";
 import { projectCollapse } from "./projection";
 import { assemblyOrder, descendants, revealPath } from "./membership";
-export function connectionCentre(ctx: ViewerContext, node) {
+export function connectionCentre(viewer: Viewer, node) {
   const p = node.position();
   return {
     x: p.x,
-    y: p.y - (node.hasClass("frame") ? node.height() / 2 - ctx.HEADER / 2 : 0),
+    y: p.y - (node.hasClass("frame") ? node.height() / 2 - viewer.HEADER / 2 : 0),
   };
 }
-export function headerEndpoint(ctx: ViewerContext, node, other) {
-  const p = ctx.connectionCentre(node),
-    q = ctx.connectionCentre(other);
+export function headerEndpoint(viewer: Viewer, node, other) {
+  const p = viewer.connectionCentre(node),
+    q = viewer.connectionCentre(other);
   const dx = q.x - p.x,
     dy = q.y - p.y;
   const scale = Math.max(
     Math.abs(dx) / (node.width() / 2),
-    Math.abs(dy) / (ctx.HEADER / 2),
+    Math.abs(dy) / (viewer.HEADER / 2),
   );
   return scale
     ? { x: p.x + dx / scale, y: p.y + dy / scale }
-    : { x: p.x, y: p.y + ctx.HEADER / 2 };
+    : { x: p.x, y: p.y + viewer.HEADER / 2 };
 }
-export function endpoint(ctx: ViewerContext, edge, source) {
+export function endpoint(viewer: Viewer, edge, source) {
   const node = source ? edge.source() : edge.target();
   const other = source ? edge.target() : edge.source();
   const p = node.position();
   if (node.hasClass("frame")) {
     // Native explicit endpoints follow the header perimeter within the larger node.
-    const q = ctx.headerEndpoint(node, other);
+    const q = viewer.headerEndpoint(node, other);
     return `${q.x - p.x}px ${q.y - p.y}px`;
   }
   if (other.hasClass("frame")) {
-    const q = ctx.headerEndpoint(other, node);
+    const q = viewer.headerEndpoint(other, node);
     return `${(Math.atan2(q.y - p.y, q.x - p.x) * 180) / Math.PI + 90}deg`;
   }
   return "outside-to-node";
 }
-export function connectionGeometry(ctx: ViewerContext, n) {
+export function connectionGeometry(viewer: Viewer, n) {
   return {
-    ...ctx.connectionCentre(n),
+    ...viewer.connectionCentre(n),
     w: n.width(),
-    h: n.hasClass("frame") ? ctx.HEADER : n.height(),
+    h: n.hasClass("frame") ? viewer.HEADER : n.height(),
     nodePosition: { ...n.position() },
   };
 }
-export function updateConnections(ctx: ViewerContext) {
-  const eligible = ctx.cy
+export function updateConnections(viewer: Viewer) {
+  const eligible = viewer.cy
     .edges()
-    .filter((e) => ctx.fourPorts && !ctx.layoutMode && !e.hasClass("hidden"));
+    .filter((e) => viewer.fourPorts && !viewer.layoutMode && !e.hasClass("hidden"));
   const references = new Map(),
     pairs = new Map();
   const finite = (p) => p && Number.isFinite(p.x) && Number.isFinite(p.y);
-  ctx.routes = new Map();
+  viewer.routes = new Map();
   // Read an unsnapped native reference before applying our curves, synchronously
   // within the same render frame. Header pairs use effective-rectangle geometry.
   const nativePairs = eligible.filter(
@@ -67,9 +67,9 @@ export function updateConnections(ctx: ViewerContext) {
         e.source().position().y - e.target().position().y,
       ) > 1e-6,
   );
-  ctx.cy.batch(() =>
+  viewer.cy.batch(() =>
     nativePairs.forEach((e) => {
-      e.removeStyle(ctx.routingStyle);
+      e.removeStyle(viewer.routingStyle);
       e.style({
         "curve-style": "straight",
         "source-endpoint": "outside-to-line",
@@ -91,15 +91,15 @@ export function updateConnections(ctx: ViewerContext) {
     if (!pairs.has(key)) pairs.set(key, []);
     pairs.get(key).push(e.id());
   }
-  ctx.cy.batch(() =>
-    ctx.cy.edges().forEach((e) => {
+  viewer.cy.batch(() =>
+    viewer.cy.edges().forEach((e) => {
       const active = eligible.has(e);
       e.toggleClass("four-port", active);
       if (!active) {
-        e.removeStyle(ctx.routingStyle);
+        e.removeStyle(viewer.routingStyle);
         e.style({
-          "source-endpoint": ctx.endpoint(e, true),
-          "target-endpoint": ctx.endpoint(e, false),
+          "source-endpoint": viewer.endpoint(e, true),
+          "target-endpoint": viewer.endpoint(e, false),
         });
         return;
       }
@@ -107,20 +107,20 @@ export function updateConnections(ctx: ViewerContext) {
         target = e.target();
       const pair = pairs.get(JSON.stringify([source.id(), target.id()].sort()));
       const result = fourPortRouting.route({
-        source: ctx.connectionGeometry(source),
-        target: ctx.connectionGeometry(target),
+        source: viewer.connectionGeometry(source),
+        target: viewer.connectionGeometry(target),
         sourceId: source.id(),
         targetId: target.id(),
         ...references.get(e.id()),
-        previous: ctx.portChoices.get(e.id()),
+        previous: viewer.portChoices.get(e.id()),
         lane: pair.indexOf(e.id()),
         laneCount: pair.length,
       });
-      ctx.portChoices.set(e.id(), {
+      viewer.portChoices.set(e.id(), {
         sourcePort: result.sourcePort,
         targetPort: result.targetPort,
       });
-      ctx.routes.set(e.id(), result);
+      viewer.routes.set(e.id(), result);
       e.style(
         fourPortRouting.style(result, source.position(), target.position()),
       );
@@ -128,7 +128,7 @@ export function updateConnections(ctx: ViewerContext) {
   );
   // Read geometry after routing styles have flushed. This also supports the
   // comparison mode without changing its curve or native label rotation.
-  const labels = ctx.cy
+  const labels = viewer.cy
     .edges()
     .filter((e) => !e.hasClass("hidden"))
     .map((e: cytoscape.EdgeSingular) => {
@@ -139,14 +139,14 @@ export function updateConnections(ctx: ViewerContext) {
       };
       const arc = fourPortRouting.sampleCurve(geometry),
         width = fourPortRouting.labelWidth(geometry, arc);
-      ctx.labelMeasure.font = `${e.style("font-style")} ${e.style("font-weight")} ${e.numericStyle("font-size")}px ${e.style("font-family")}`;
+      viewer.labelMeasure.font = `${e.style("font-style")} ${e.style("font-weight")} ${e.numericStyle("font-size")}px ${e.style("font-family")}`;
       let text = e.style("label");
       if (e.style("text-transform") === "uppercase") text = text.toUpperCase();
       if (e.style("text-transform") === "lowercase") text = text.toLowerCase();
       const fitted = fourPortRouting.fitLabel(
         text,
         Math.max(1, width),
-        (text) => Math.ceil(ctx.labelMeasure.measureText(text).width),
+        (text) => Math.ceil(viewer.labelMeasure.measureText(text).width),
       );
       const style = {
         "text-max-width": Math.max(1, width),
@@ -157,34 +157,34 @@ export function updateConnections(ctx: ViewerContext) {
           `${fourPortRouting.labelAngle(geometry, fitted.width + 2 * e.numericStyle("text-background-padding"), arc)}rad`;
       return [e, style] as const;
     });
-  ctx.cy.batch(() => labels.forEach(([e, style]) => e.style(style)));
+  viewer.cy.batch(() => labels.forEach(([e, style]) => e.style(style)));
 }
-export function syncBoxes(ctx: ViewerContext) {
-  if (ctx.syncing || !ctx.cy) return;
-  ctx.syncing = true;
-  if (ctx.data.savedLayout) {
-    const saved = ctx.data.savedLayout,
-      state = ctx.presentation;
+export function syncBoxes(viewer: Viewer) {
+  if (viewer.syncing || !viewer.cy) return;
+  viewer.syncing = true;
+  if (viewer.data.savedLayout) {
+    const saved = viewer.data.savedLayout,
+      state = viewer.presentation;
     const visible = new Set(
-      ctx
+      viewer
         .visible()
         .nodes()
         .map((n) => n.id()),
     );
     resizePresentation(
-      ctx.data,
+      viewer.data,
       state,
       visible,
-      ctx.collapsed,
-      ctx.drag?.id,
-      ctx.showSpacingAdvisories,
+      viewer.collapsed,
+      viewer.drag?.id,
+      viewer.showSpacingAdvisories,
     );
-    for (const n of ctx.cy.nodes()) {
+    for (const n of viewer.cy.nodes()) {
       const r = state.display[n.id()],
-        assembly = ctx.data.assemblies[n.id()];
+        assembly = viewer.data.assemblies[n.id()];
       const frame = Boolean(
         assembly &&
-          !ctx.collapsed.has(n.id()) &&
+          !viewer.collapsed.has(n.id()) &&
           assembly.entities.some((i) => visible.has(i)) &&
           visible.has(n.id()),
       );
@@ -197,51 +197,51 @@ export function syncBoxes(ctx: ViewerContext) {
         boxWidth: r.width - 3,
         boxHeight: r.height - 3,
         bandStops: `0% ${stop}% ${stop}% 100%`,
-        frameZ: Math.min(4, revealPath(ctx.data, n.id()).length),
+        frameZ: Math.min(4, revealPath(viewer.data, n.id()).length),
         title: assembly
-          ? `${ctx.collapsed.has(n.id()) ? "▸" : "▾"} ${assembly.name}`
+          ? `${viewer.collapsed.has(n.id()) ? "▸" : "▾"} ${assembly.name}`
           : n.data("label"),
       });
       n.position({ x: r.x + r.width / 2, y: r.y + r.height / 2 });
     }
-    renderConflicts(ctx);
-    ctx.updateConnections();
-    ctx.syncing = false;
+    renderConflicts(viewer);
+    viewer.updateConnections();
+    viewer.syncing = false;
     return;
   }
   {
-    for (const id of assemblyOrder(ctx.data)) {
-      const assembly = ctx.data.assemblies[id];
-      const node = ctx.cy.getElementById(id);
-      node.data("frameZ", Math.min(4, revealPath(ctx.data, id).length));
+    for (const id of assemblyOrder(viewer.data)) {
+      const assembly = viewer.data.assemblies[id];
+      const node = viewer.cy.getElementById(id);
+      node.data("frameZ", Math.min(4, revealPath(viewer.data, id).length));
       node.data(
         "title",
-        `${ctx.collapsed.has(id) ? "▸" : "▾"} ${assembly.name}`,
+        `${viewer.collapsed.has(id) ? "▸" : "▾"} ${assembly.name}`,
       );
-      const members = ctx.cy.collection(
+      const members = viewer.cy.collection(
         assembly.entities
-          .map((mid) => ctx.cy.getElementById(mid)[0])
+          .map((mid) => viewer.cy.getElementById(mid)[0])
           .filter(
             (n) => n && !n.hasClass("hidden"),
           ) as unknown as cytoscape.CollectionArgument,
       );
       const frame =
-        ctx.mode === "outlines" &&
-        !ctx.layoutMode &&
-        !ctx.collapsed.has(id) &&
+        viewer.mode === "outlines" &&
+        !viewer.layoutMode &&
+        !viewer.collapsed.has(id) &&
         !node.hasClass("hidden") &&
         members.length > 0;
       node.toggleClass("frame", frame);
       if (frame) {
-        if (ctx.drag?.id === id) continue;
+        if (viewer.drag?.id === id) continue;
         const bb = members.boundingBox({
           includeLabels: true,
           includeOverlays: false,
           useCache: false,
         } as cytoscape.BoundingBoxOptions & { useCache: boolean });
-        const w = Math.max(180, bb.w + 2 * ctx.PAD),
-          h = bb.h + 2 * ctx.PAD + ctx.HEADER;
-        const stop = (ctx.HEADER / h) * 100;
+        const w = Math.max(180, bb.w + 2 * viewer.PAD),
+          h = bb.h + 2 * viewer.PAD + viewer.HEADER;
+        const stop = (viewer.HEADER / h) * 100;
         node.data({
           boxWidth: w,
           boxHeight: h,
@@ -249,68 +249,68 @@ export function syncBoxes(ctx: ViewerContext) {
         });
         node.position({
           x: (bb.x1 + bb.x2) / 2,
-          y: (bb.y1 + bb.y2 - ctx.HEADER) / 2,
+          y: (bb.y1 + bb.y2 - viewer.HEADER) / 2,
         });
-      } else if (ctx.compactPositions[id] && ctx.drag?.id !== id) {
-        node.position({ ...ctx.compactPositions[id] });
+      } else if (viewer.compactPositions[id] && viewer.drag?.id !== id) {
+        node.position({ ...viewer.compactPositions[id] });
       }
     }
   }
   // Flush frame geometry before reading width/height for header attachment points.
   // Cytoscape defers mapped style updates until the preceding batch ends.
-  ctx.updateConnections();
-  ctx.syncing = false;
+  viewer.updateConnections();
+  viewer.syncing = false;
 }
 
-function renderConflicts(ctx: ViewerContext) {
-  const state = ctx.presentation,
+function renderConflicts(viewer: Viewer) {
+  const state = viewer.presentation,
     conflicts = state.conflicts;
   const errors = conflicts.filter((c) => c.code !== "clearance"),
     advisories = conflicts.filter((c) => c.code === "clearance");
   const affected = new Set(errors.flatMap((c) => c.objects));
   const nearby = new Set(advisories.flatMap((c) => c.objects));
-  ctx.cy.nodes().forEach((n) => {
+  viewer.cy.nodes().forEach((n) => {
     n.toggleClass("presentation-conflict", affected.has(n.id()));
     n.toggleClass(
       "presentation-advisory",
       nearby.has(n.id()) && !affected.has(n.id()),
     );
   });
-  const host = ctx.$("presentation-conflicts");
+  const host = viewer.$("presentation-conflicts");
   if (!host) return;
   const signature = JSON.stringify([
     state.adjusted,
     conflicts,
-    ctx.showSpacingAdvisories,
+    viewer.showSpacingAdvisories,
   ]);
   if (host.dataset.signature === signature) return;
   host.dataset.signature = signature;
   host.replaceChildren();
-  ctx.make(
+  viewer.make(
     "p",
-    `${state.adjusted ? "Adjusted presentation" : "Saved starting layout"} · ${errors.length} visible enclosure/collision conflict(s).${ctx.showSpacingAdvisories ? ` ${advisories.length} spacing ${advisories.length === 1 ? "advisory" : "advisories"} (amber).` : ""}`,
+    `${state.adjusted ? "Adjusted presentation" : "Saved starting layout"} · ${errors.length} visible enclosure/collision conflict(s).${viewer.showSpacingAdvisories ? ` ${advisories.length} spacing ${advisories.length === 1 ? "advisory" : "advisories"} (amber).` : ""}`,
     host,
   );
   if (state.adjusted)
-    ctx.make(
+    viewer.make(
       "p",
       "Grid, ordering and compactness have not been revalidated. Changes last until reload or dataset switch.",
       host,
     );
   if (conflicts.length) {
-    const details = ctx.make("details", undefined, host);
-    ctx.make("summary", "Inspect conflicts and advisories", details);
+    const details = viewer.make("details", undefined, host);
+    viewer.make("summary", "Inspect conflicts and advisories", details);
     for (const c of conflicts.slice(0, 50)) {
-      const row = ctx.make("p", c.message + ": ", details);
+      const row = viewer.make("p", c.message + ": ", details);
       for (const id of c.objects) {
-        const b = ctx.make("button", ctx.label(id), row);
+        const b = viewer.make("button", viewer.label(id), row);
         b.onclick = () => {
-          ctx.select(id);
-          ctx.cy.center(ctx.cy.getElementById(id));
+          viewer.select(id);
+          viewer.cy.center(viewer.cy.getElementById(id));
         };
       }
     }
     if (conflicts.length > 50)
-      ctx.make("p", `Showing 50 of ${conflicts.length} findings.`, details);
+      viewer.make("p", `Showing 50 of ${conflicts.length} findings.`, details);
   }
 }

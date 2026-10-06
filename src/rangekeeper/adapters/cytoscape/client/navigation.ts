@@ -1,99 +1,99 @@
 import { initialPresentation } from "./presentation";
 import { isEdge } from "./document";
-import type { ViewerContext } from "./context";
+import type { Viewer } from "./context";
 import * as fourPortRouting from "./routing";
 import { projectCollapse } from "./projection";
 import { assemblyOrder, descendants, revealPath } from "./membership";
-export function pushHistory(ctx: ViewerContext) {
-  ctx.history.push(ctx.snapshot());
-  ctx.$("back").disabled = false;
+export function remember(viewer: Viewer) {
+  viewer.history.push(viewer.snapshot());
+  viewer.$("back").disabled = false;
 }
-export function changeCollapse(ctx: ViewerContext, ids, value) {
-  ctx.pushHistory();
+export function collapse(viewer: Viewer, ids, value) {
+  viewer.remember();
   for (const id of ids)
-    value ? ctx.collapsed.add(id) : ctx.collapsed.delete(id);
-  ctx.applyVisibility();
+    value ? viewer.collapsed.add(id) : viewer.collapsed.delete(id);
+  viewer.applyVisibility();
 }
-export function fit(ctx: ViewerContext) {
-  if (ctx.visible().length) ctx.cy.fit(ctx.visible(), 55);
+export function fit(viewer: Viewer) {
+  if (viewer.visible().length) viewer.cy.fit(viewer.visible(), 55);
 }
-export function focusOn(ctx: ViewerContext, id) {
-  ctx.pushHistory();
-  const assembly = ctx.data.assemblies[id];
-  if (assembly) ctx.focusIds = new Set([id, ...descendants(ctx.data, id)]);
+export function focus(viewer: Viewer, id) {
+  viewer.remember();
+  const assembly = viewer.data.assemblies[id];
+  if (assembly) viewer.focusIds = new Set([id, ...descendants(viewer.data, id)]);
   else {
-    const element = ctx.cy.getElementById(id);
-    ctx.focusIds = new Set([id]);
+    const element = viewer.cy.getElementById(id);
+    viewer.focusIds = new Set([id]);
     if (element.isEdge()) {
-      ctx.focusIds.add(element.data("source"));
-      ctx.focusIds.add(element.data("target"));
+      viewer.focusIds.add(element.data("source"));
+      viewer.focusIds.add(element.data("target"));
     }
-    for (const item of ctx.data.elements) {
+    for (const item of viewer.data.elements) {
       const edge = item.data;
       if (isEdge(edge) && (edge.source === id || edge.target === id)) {
-        ctx.focusIds.add(edge.source);
-        ctx.focusIds.add(edge.target);
+        viewer.focusIds.add(edge.source);
+        viewer.focusIds.add(edge.target);
       }
     }
-    for (const [aid] of ctx.memberships(id)) ctx.focusIds.add(aid);
+    for (const [aid] of viewer.memberships(id)) viewer.focusIds.add(aid);
   }
   // A collapsed representative can provide context for a hidden focused endpoint.
-  for (const nid of [...ctx.focusIds])
-    for (const aid of ctx.projection.memberships[nid] || [])
-      if (ctx.collapsed.has(aid)) ctx.focusIds.add(aid);
-  ctx.applyVisibility();
-  ctx.fit();
+  for (const nid of [...viewer.focusIds])
+    for (const aid of viewer.projection.memberships[nid] || [])
+      if (viewer.collapsed.has(aid)) viewer.focusIds.add(aid);
+  viewer.applyVisibility();
+  viewer.fit();
 }
-export function reset(ctx: ViewerContext) {
-  ctx.pushHistory();
-  ctx.focusIds = null;
-  ctx.applyVisibility();
-  ctx.fit();
+export function reset(viewer: Viewer) {
+  viewer.remember();
+  viewer.focusIds = null;
+  viewer.applyVisibility();
+  viewer.fit();
 }
-export function restore(ctx: ViewerContext) {
-  if (ctx.data.savedLayout) {
-    if (ctx.dragFrame != null) cancelAnimationFrame(ctx.dragFrame);
-    ctx.dragFrame = null;
-    ctx.drag = null;
-    ctx.presentation = initialPresentation(ctx.data);
-    ctx.collapsed.clear();
-    ctx.focusIds = null;
-    ctx.applyVisibility();
-    ctx.$("timing").textContent = "Checked saved layout restored";
+export function restore(viewer: Viewer) {
+  if (viewer.data.savedLayout) {
+    if (viewer.dragFrame != null) cancelAnimationFrame(viewer.dragFrame);
+    viewer.dragFrame = null;
+    viewer.drag = null;
+    viewer.presentation = initialPresentation(viewer.data);
+    viewer.collapsed.clear();
+    viewer.focusIds = null;
+    viewer.applyVisibility();
+    viewer.$("timing").textContent = "Checked saved layout restored";
     return;
   }
-  ctx.updating = true;
-  ctx.cy.batch(() =>
-    ctx.cy.nodes().forEach((n) => {
-      n.position({ ...ctx.data.positions[n.id()] });
+  viewer.updating = true;
+  viewer.cy.batch(() =>
+    viewer.cy.nodes().forEach((n) => {
+      n.position({ ...viewer.data.positions[n.id()] });
     }),
   );
-  for (const id of Object.keys(ctx.data.assemblies))
-    ctx.compactPositions[id] = { ...ctx.data.positions[id] };
-  ctx.updating = false;
-  ctx.syncBoxes();
-  ctx.$("timing").textContent = "Reference arrangement restored";
+  for (const id of Object.keys(viewer.data.assemblies))
+    viewer.compactPositions[id] = { ...viewer.data.positions[id] };
+  viewer.updating = false;
+  viewer.syncBoxes();
+  viewer.$("timing").textContent = "Reference arrangement restored";
 }
-export function reveal(ctx: ViewerContext, id, assemblyId) {
-  ctx.pushHistory();
+export function reveal(viewer: Viewer, id, assemblyId) {
+  viewer.remember();
   if (assemblyId) {
-    for (const ancestor of revealPath(ctx.data, assemblyId))
-      ctx.collapsed.delete(ancestor);
-    ctx.collapsed.delete(assemblyId);
+    for (const ancestor of revealPath(viewer.data, assemblyId))
+      viewer.collapsed.delete(ancestor);
+    viewer.collapsed.delete(assemblyId);
   }
-  if (ctx.focusIds) {
-    ctx.focusIds.add(id);
+  if (viewer.focusIds) {
+    viewer.focusIds.add(id);
     if (assemblyId) {
-      ctx.focusIds.add(assemblyId);
-      for (const mid of ctx.data.assemblies[assemblyId].entities)
-        ctx.focusIds.add(mid);
+      viewer.focusIds.add(assemblyId);
+      for (const mid of viewer.data.assemblies[assemblyId].entities)
+        viewer.focusIds.add(mid);
     }
   }
-  ctx.applyVisibility();
-  ctx.select(id);
-  ctx.fit();
+  viewer.applyVisibility();
+  viewer.select(id);
+  viewer.fit();
 }
-export function selectLinkedObject(ctx: ViewerContext) {
+export function selectLinkedObject(viewer: Viewer) {
   if (!location.hash) return;
   const params = new URLSearchParams(location.hash.slice(1)),
     ids = params.getAll("select");
@@ -103,15 +103,15 @@ export function selectLinkedObject(ctx: ViewerContext) {
     !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
       ids[0],
     ) ||
-    !ctx.data.details[ids[0]]
+    !viewer.data.details[ids[0]]
   ) {
-    ctx.make(
+    viewer.make(
       "p",
       "This review link does not identify an object in the current graph.",
-      ctx.$("diagnostics"),
+      viewer.$("diagnostics"),
       "issue",
     );
     return;
   }
-  ctx.select(ids[0]);
+  viewer.select(ids[0]);
 }

@@ -27,7 +27,7 @@ from ..model.content import decode, encode
 from ..model.definitions import find_classifications
 from ..model.flow import Flow, Movement
 from ..duration import make_periods
-from ..duration.period import resolve_period_date
+
 from ..formulations import build_formulation
 from ..formulations.expression import (
     reference,
@@ -226,9 +226,7 @@ def author(
                 units="AUD",
                 movements=tuple(
                     Movement(
-                        key=f"y{i+1}",
-                        period=p,
-                        date=resolve_period_date(p, timing="last_day"),
+                        key=f"y{i + 1}", period=p, date=p.resolve(timing="last_day")
                     )
                     for i, p in enumerate(periods[:count])
                 ),

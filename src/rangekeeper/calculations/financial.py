@@ -12,11 +12,10 @@ from dataclasses import dataclass
 from datetime import date
 import math
 
-from ..model.flow import Flow, resolve_date
+from ..model.flow import Flow
 from ..model.measure import Quantity
 from ..duration.period import PeriodTiming
 from ..duration.calendar import DayCount, require_date, resolve_day_count
-from ._flow import replace_movement, replace_movements, require_resolved, magnitude
 
 
 def _require_result(value: float | None, operation: str) -> float:
@@ -34,21 +33,19 @@ def calculate_pv(flow: Flow, *, rate: float, first_period: int = 1) -> Flow:
     """
     import pyxirr
 
-    require_resolved(flow)
+    flow.check(resolved=True)
     if not math.isfinite(rate) or rate <= -1 or type(first_period) is not int:
         raise ValueError("rate must exceed -1 and first_period must be an integer")
-    return replace_movements(
-        flow,
-        [
-            replace_movement(
-                movement,
-                _require_result(
-                    pyxirr.pv(rate, first_period + i, 0, -magnitude(movement)), "PV"
-                ),
+    return flow.replace(
+        movements=tuple(
+            movement.replace(
+                magnitude=_require_result(
+                    pyxirr.pv(rate, first_period + i, 0, -movement.number), "PV"
+                )
             )
             for i, movement in enumerate(flow.movements)
-        ],
-    )
+        )
+    ).check()
 
 
 def calculate_xnpv(
@@ -68,15 +65,15 @@ def calculate_xnpv(
     """
     import pyxirr
 
-    require_resolved(flow)
+    flow.check(resolved=True)
     require_date(valuation_date)
     if not math.isfinite(rate) or rate <= -1:
         raise ValueError("rate must be finite and greater than -1")
     convention = resolve_day_count(day_count)
     if not flow.movements:
         return Quantity(magnitude=0, units=flow.units)
-    dates = [resolve_date(movement, timing=timing) for movement in flow.movements]
-    amounts = [magnitude(movement) for movement in flow.movements]
+    dates = [movement.resolve(timing=timing) for movement in flow.movements]
+    amounts = [movement.number for movement in flow.movements]
     value = _require_result(
         pyxirr.xnpv(rate, dates, amounts, day_count=convention), "XNPV"
     )
@@ -113,14 +110,14 @@ def calculate_irr(
     """
     import pyxirr
 
-    require_resolved(flow)
+    flow.check(resolved=True)
     if guess is not None and (not math.isfinite(guess) or guess <= -1):
         raise ValueError("IRR guess must be finite and greater than -1")
     if valuation_date is not None:
         require_date(valuation_date)
     convention = resolve_day_count(day_count)
-    dates = [resolve_date(movement, timing=timing) for movement in flow.movements]
-    amounts = [magnitude(movement) for movement in flow.movements]
+    dates = [movement.resolve(timing=timing) for movement in flow.movements]
+    amounts = [movement.number for movement in flow.movements]
     if not any(amount < 0 for amount in amounts) or not any(
         amount > 0 for amount in amounts
     ):

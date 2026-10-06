@@ -111,7 +111,7 @@ public sealed class ExportComponent : GH_Component
     {
         RecordGoo input=null!;string associations="[]";
         if(!data.GetData(0,ref input))return;data.GetData(1,ref associations);
-        try { var model=(ModelRecord)input.Value;Validation.Validate.Require(model);data.SetData(0,Codec.Encode(model));data.SetData(1,Codec.Envelope(model,JsonNode.Parse(associations)!.AsArray()).ToJsonString()); }
+        try { var model=(ModelRecord)input.Value;Validation.Validator.Require(model);data.SetData(0,Codec.Encode(model));data.SetData(1,Codec.Envelope(model,JsonNode.Parse(associations)!.AsArray()).ToJsonString()); }
         catch(Exception error){AddRuntimeMessage(GH_RuntimeMessageLevel.Error,error.Message);}
     }
 }
@@ -126,7 +126,7 @@ public sealed class ValidateComponent : GH_Component
     protected override void SolveInstance(IGH_DataAccess data)
     {
         RecordGoo input=null!;if(!data.GetData(0,ref input))return;
-        try { var errors=Validation.Validate.Model((ModelRecord)input.Value);data.SetData(0,errors.Count==0);data.SetDataList(1,errors.Select(e=>e.Path+": "+e.Message)); }
+        try { var errors=Validation.Validator.Check((ModelRecord)input.Value);data.SetData(0,errors.Count==0);data.SetDataList(1,errors.Select(e=>e.Path+": "+e.Message)); }
         catch(Exception error){AddRuntimeMessage(GH_RuntimeMessageLevel.Error,error.Message);}
     }
 }

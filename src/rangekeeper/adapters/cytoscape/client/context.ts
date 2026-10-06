@@ -9,7 +9,7 @@ export interface Snapshot {
   showMembership: boolean;
 }
 /** One owner for mutable display state. Canonical document data is never edited. */
-export interface ViewerContext {
+export interface Viewer {
   datasets: GraphDocument[];
   data: GraphDocument;
   cy: cytoscape.Core;
@@ -63,7 +63,7 @@ export interface ViewerContext {
   ) => Array<[string, GraphDocument["assemblies"][string]]>;
   visible: () => cytoscape.CollectionReturnValue;
   snapshot: () => Snapshot;
-  pushHistory: () => void;
+  remember: () => void;
   updateCounts: () => void;
   connectionCentre: (node: cytoscape.NodeSingular) => Point;
   headerEndpoint: (
@@ -78,9 +78,9 @@ export interface ViewerContext {
   syncBoxes: () => void;
   highlight: () => void;
   applyVisibility: () => void;
-  changeCollapse: (ids: Iterable<string>, value: boolean) => void;
+  collapse: (ids: Iterable<string>, value: boolean) => void;
   fit: () => void;
-  focusOn: (id: string) => void;
+  focus: (id: string) => void;
   reset: () => void;
   restore: () => void;
   valueText: (value: unknown) => string;
@@ -101,7 +101,6 @@ export interface ViewerContext {
 }
 declare global {
   interface Window {
-    spike: unknown;
     graphReview: unknown;
   }
 }

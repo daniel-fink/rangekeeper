@@ -32,12 +32,37 @@ def validate(
     from .model import Model
 
     if isinstance(model, Model):
-        model = model.to_data()
+        return _validate(
+            model._record, index=model._index, history=history, units=units
+        )
+    if isinstance(model, ModelRecord):
+        return _validate(model, history=history, units=units)
     issues: list[Issue] = []
     data = checked("Model", model, "", issues)
+    if issues:
+        for position, value in enumerate(history):
+            checked("Metadata", value, f"/history/{position}", issues)
+        return ValidationReport(tuple(issues))
+    return _validate(ModelRecord.from_data(data), history=history, units=units)
+
+
+def _validate(
+    record: ModelRecord,
+    *,
+    index: Index | None = None,
+    history: Sequence[Mapping[str, object]] = (),
+    units: UnitSystem = default_units,
+) -> ValidationReport:
+    """Check a structurally valid record, reusing the facade's ownership index.
+
+    Only generated records enter this path. Raw mappings first pass the public
+    structural check. No index or validation result is cached across revisions.
+    """
+    data = record.to_data()
+    issues: list[Issue] = []
     prior = [
-        checked("Metadata", value, f"/history/{index}", issues)
-        for index, value in enumerate(history)
+        checked("Metadata", value, f"/history/{position}", issues)
+        for position, value in enumerate(history)
     ]
     report = bounded(
         issues,
@@ -46,8 +71,8 @@ def validate(
     )
     if not report.valid:
         return report
-    record = ModelRecord.from_data(data)
-    index = Index.build(record)
+    if index is None:
+        index = Index.build(record)
     return ValidationReport(
         recorded_unit_issues(
             record,

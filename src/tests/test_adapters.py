@@ -2,7 +2,7 @@ from dataclasses import FrozenInstanceError
 from uuid import uuid4
 
 import numpy as np
-import pandas as pd
+import polars as pl
 import pint
 import pytest
 
@@ -20,7 +20,8 @@ def test_supported_adapter_and_table_surfaces_are_explicit():
         "cytoscape",
         "document",
         "excel",
-        "pandas",
+        "polars",
+        "plotting",
         "speckle",
         "visualization",
     ]
@@ -74,7 +75,7 @@ def test_table_rejects_string_columns_and_non_mapping_rows():
         table_module.Table(columns=("name",), rows=("First",))
 
 
-def test_pandas_table_round_trip_preserves_columns_rows_and_runtime_values():
+def test_polars_table_round_trip_preserves_columns_rows_and_runtime_values():
     runtime_value = object()
     table = table_module.Table(
         columns=("entity_id", "value"),
@@ -84,8 +85,8 @@ def test_pandas_table_round_trip_preserves_columns_rows_and_runtime_values():
         ),
     )
 
-    frame = adapter.pandas.to_dataframe(table)
-    restored = adapter.pandas.from_dataframe(frame)
+    frame = adapter.polars.to_frame(table)
+    restored = adapter.polars.to_table(frame)
 
     assert tuple(frame.columns) == table.columns
     assert restored.columns == table.columns
@@ -93,17 +94,17 @@ def test_pandas_table_round_trip_preserves_columns_rows_and_runtime_values():
     assert restored.rows[1].values["value"] is None
 
 
-def test_pandas_adapter_ignores_index_and_preserves_empty_columns():
-    frame = pd.DataFrame(columns=("name", "value"), index=pd.Index([], name="index"))
+def test_polars_adapter_preserves_empty_columns():
+    frame = pl.DataFrame(schema={"name": pl.String, "value": pl.Float64})
 
-    table = adapter.pandas.from_dataframe(frame)
+    table = adapter.polars.to_table(frame)
 
     assert table.columns == ("name", "value")
     assert table.rows == ()
-    assert tuple(adapter.pandas.to_dataframe(table).columns) == table.columns
+    assert tuple(adapter.polars.to_frame(table).columns) == table.columns
 
 
-def test_csv_composes_table_and_dataframe_adapters_with_pandas_inference(tmp_path):
+def test_csv_composes_table_and_dataframe_adapters_with_polars_inference(tmp_path):
     table = table_module.Table(
         columns=("name", "code", "status", "count", "active", "missing"),
         rows=(
@@ -126,10 +127,10 @@ def test_csv_composes_table_and_dataframe_adapters_with_pandas_inference(tmp_pat
     row = restored.rows[0].values
     assert row["name"] == "Office"
     assert row["code"] == 1
-    assert pd.isna(row["status"])
+    assert row["status"] == "NA"
     assert row["count"] == 3
     assert row["active"]
-    assert pd.isna(row["missing"])
+    assert row["missing"] is None
 
 
 def test_csv_rejects_rich_values_instead_of_stringifying_them(tmp_path):
@@ -152,7 +153,7 @@ def test_csv_preserves_empty_tables_and_single_column_none_rows(tmp_path):
     adapter.csv.write(missing, missing_path)
 
     assert adapter.csv.read(empty_path) == empty
-    assert pd.isna(adapter.csv.read(missing_path).column("value")[0])
+    assert adapter.csv.read(missing_path).column("value")[0] is None
 
 
 def test_csv_rejects_non_finite_numbers(tmp_path):
@@ -410,3 +411,35 @@ def test_csv_projects_revision_and_entity_uuids_as_text(tmp_path):
     assert restored.column("model_id") == (str(view.model.id), str(view.model.id))
     assert restored.column("entity_id") == tuple(str(e.id) for e in view.entities)
     assert all(row.id is None for row in restored.rows)
+
+
+def test_csv_can_preserve_identifier_text(tmp_path):
+    path = tmp_path / "identifiers.csv"
+    path.write_text("code,status\n001,NA\n")
+    assert adapter.csv.read(path, schema_overrides={"code": pl.String}).column(
+        "code"
+    ) == ("001",)
+
+
+def test_polars_keeps_mixed_and_nested_table_cells():
+    table = table_module.Table(
+        columns=("mixed", "nested"),
+        rows=(
+            {"mixed": 1, "nested": ("a", "b")},
+            {"mixed": "1", "nested": {"x": 1}},
+        ),
+    )
+    assert adapter.polars.to_table(adapter.polars.to_frame(table)) == table
+
+
+def test_table_exports_preserve_large_integers(tmp_path):
+    integer = np.int64(2**63 - 1)
+    table = table_module.Table(
+        columns=("value",), rows=({"value": integer}, {"value": 1.5})
+    )
+    path = adapter.csv.write(table, tmp_path / "large.csv")
+    assert path.read_text().splitlines()[1] == str(integer)
+    restored = adapter.csv.read(path, schema_overrides={"value": pl.String})
+    assert restored.column("value") == (str(integer), "1.5")
+    huge = table_module.Table(columns=("value",), rows=({"value": 10**40},))
+    assert adapter.polars.to_table(adapter.polars.to_frame(huge)) == huge

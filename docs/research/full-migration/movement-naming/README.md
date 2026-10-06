@@ -28,7 +28,7 @@ local consumers and DCF walkthrough use the new names. There are no compatibilit
 aliases. Old `samples` payloads are rejected, including payloads containing both
 field names. Upgrade saved draft data explicitly, preserve entry order and every
 entry field, and save a new Model revision. Do not overwrite historical snapshots.
-See the [contract](../../../FULL_MIGRATION_TURN1.md#movement-naming) and
+See the [contract](../../../history/FULL_MIGRATION_TURN1.md#movement-naming) and
 [upgrade guide](../../../LEGACY_UPGRADE_GUIDE.md).
 
 ## Results

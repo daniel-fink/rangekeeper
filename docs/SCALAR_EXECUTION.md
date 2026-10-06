@@ -1,22 +1,12 @@
 # Scalar execution with Pyomo and HiGHS
 
-**Turn 2 update, 2026-10-06:** [Temporal equations, scenarios and policies](FULL_MIGRATION_TURN2.md)
-now use Model/Specification 0.5.0 and Run 0.2.0. `ValueReference` addresses scalar
-Values or owner-local Movement keys. The canonical calendar package is `duration/`;
-`temporal` has no public alias. Finite Flow formulations, captured scenario replay,
-exogenous declarative policies and the four numerical walkthroughs are implemented.
-See [verification](research/full-migration/turn2/README.md) and the
-[upgrade guide](LEGACY_UPGRADE_GUIDE.md). Turn 3 completes remaining consumers and
-integrations; Turn 4 retires obsolete code after their acceptance gates.
-The dated checkpoint descriptions below remain historical context.
-
-Step 5 implements **actual affine feasibility execution** in `rangekeeper.execution`.
+The execution package implements **actual affine feasibility execution** in `rangekeeper.execution`.
 The executor reads the canonical Model and an additive Specification composition,
 lowers declared mathematics, solves in a separate process, independently evaluates
 the original expressions on serialized candidate quantities, and publishes accepted
 Model revisions followed by finalized Runs. LinkML remains the field authority.
 
-The first checkpoint produces capital value **11,000,000 AUD** and NOI
+The worked scalar example produces capital value **11,000,000 AUD** and NOI
 **550,000 AUD/year**. New Specification revisions pinned to that actual output
 produce rent **27,500 AUD/dwelling/year** and NOI **500,000 AUD/year**. The previous
 recorded rent of 30,000 remains an observation in the input snapshot and does not
@@ -34,7 +24,7 @@ python -m pip install './src[execution,yaml]'
 The backend pins are `pyomo==6.10.1` and `highspy==1.15.1`. Importing
 `rangekeeper` or `rangekeeper.execution` does not load either backend. Pyomo/HiGHS
 load in a child process when solving. Pint may load NumPy during unit operations
-when NumPy is installed. Existing legacy dependency metadata is otherwise unchanged.
+when NumPy is installed. Optional dependencies are listed in the [installation guide](../src/README.md).
 
 ```python
 from pathlib import Path
@@ -86,7 +76,8 @@ store. It never reads the synthetic expected-output fixtures as results.
 | `execution/settings.py` | Resolve requested/default limits and account for unsupported or adjusted settings. |
 | `execution/backends/base.py` | Narrow problem/result protocol; a backend candidate is a claim awaiting acceptance. |
 | `execution/backends/pyomo.py`, `_worker.py` | Parent deadline and private numerical JSON protocol; child builds Pyomo variables/constraints, invokes HiGHS and reports observed status/options/versions/counts. |
-| `execution/executor.py` | Attempt orchestration, sequential batches, status/evidence construction, output-before-Run persistence. |
+| `execution/executor.py`, `planning.py` | Sequential batches, reference resolution and one composition per leaf. |
+| `execution/attempt.py` | Per-attempt deadline, preparation, backend result, independent acceptance and output-before-Run persistence. |
 
 Derived preparation/compiler/result objects are runtime operations, not a second
 authoritative field schema. Domain classes do not import execution or solvers.
@@ -96,7 +87,7 @@ Failed composition cases remain accountably visible within batch Runs.
 
 ## Supported mathematics
 
-The first slice supports Model-owned scalar Measurements with explicit fixed and
+The executor supports Model-owned scalar Measurements and finite Flow Movements with explicit fixed and
 unknown roles, quantity literals, references, negation, addition, subtraction,
 multiplication with at least one fixed expression, division by a nonzero fixed
 expression, and powers that remain affine after assignment. Constraints support
@@ -112,7 +103,7 @@ require unsupported offset-unit handling is rejected.
 The adapter explicitly rejects nonlinear unknown products/divisors/powers, strict
 comparisons, disjunctions, function calls, selections, imposed queries, ordered
 optimization objectives and Specification-local Value publication. Rich temporal
-Values and scenario generation are now supported by full migration Turn 2.
+Values and scenario generation follow the [temporal contract](SCENARIOS_AND_POLICIES.md).
 Structural interventions and remaining external consumer migration remain later work. It never substitutes hard-coded valuation formulas.
 
 ## Settings, limits and conclusions
@@ -180,11 +171,9 @@ As with the stores, there is no multi-document transaction: IO failure can leave
 complete accepted output or completed child Run. Every direct batch case has its own
 Run, including failures; parent outputs are exactly the unique union of child outputs.
 
-## Next checkpoint
+## Related boundaries
 
-Step 6A/6B now implements [Model-backed graph views and reductions](GRAPH_MODEL.md).
-Next adapt tables, presentation adapters and workflows to the canonical Model,
-then retire their old domain implementation
-under the existing [consumer migration map](DOMAIN_MIGRATION_MAP.md). Richer mathematics
-and optimization remain explicitly scoped extensions. No commit or push is part of
-this local execution implementation.
+[Graph views and reductions](GRAPH_MODEL.md), [tables and workflows](CONSUMER_MIGRATION.md)
+consume canonical Models independently of numerical execution. Nonlinear solving,
+optimization and structural interventions require separate capability and acceptance
+contracts. See [verification](VERIFICATION.md) for current checks.

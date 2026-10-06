@@ -1,16 +1,18 @@
 # Domain migration map and Python interface contract
 
+> Historical design or implementation record. Names, commands and status below describe that checkpoint. Use the [current documentation](../README.md) for supported APIs.
+
 **Legacy isolation, 2026-10-06:** held Python code is now in `rangekeeper.legacy`,
 predecessor tests in `src/tests/legacy`, and excluded C# code in `grasshopper/legacy`.
-Old public paths have no aliases. See [the boundary and current checks](LEGACY_ISOLATION.md).
+Old public paths have no aliases. See [the boundary and current checks](../LEGACY_ISOLATION.md).
 The Windows gate remains open; earlier Turn 4 results below describe the preceding wheel.
 
 **Turn 4 update, 2026-10-06:** [Permitted legacy retirement](FULL_MIGRATION_TURN4.md)
 removes the superseded numerical/presentation modules and narrows optional
 dependencies. The paired Turn 3 checkpoint is pushed: RK `305f3ff`, Projects
-`6146ad2`. Turn 4 is uncommitted. [Current acceptance](research/full-migration/turn4/BASELINE.md)
+`6146ad2`. Turn 4 is uncommitted. [Current acceptance](../research/full-migration/turn4/BASELINE.md)
 records 1,058 passing local tests, seven walkthroughs and all three real source
-builds. The [remaining retirement register](research/full-migration/turn4/RETIREMENT.md)
+builds. The [remaining retirement register](../research/full-migration/turn4/RETIREMENT.md)
 holds old graph/Measure/Speckle API and excluded C# code for the Windows connector
 gate. Full retirement is not complete. Hypar is retired; Browser/outliner is on hold.
 Dated checkpoints below remain historical and do not override this current state.
@@ -21,8 +23,8 @@ now use Model/Specification 0.5.0 and Run 0.2.0. `ValueReference` addresses scal
 Values or owner-local Movement keys. The canonical calendar package is `duration/`;
 `temporal` has no public alias. Finite Flow formulations, captured scenario replay,
 exogenous declarative policies and the four numerical walkthroughs are implemented.
-See [verification](research/full-migration/turn2/README.md) and the
-[upgrade guide](LEGACY_UPGRADE_GUIDE.md). Turn 3 completes remaining consumers and
+See [verification](../research/full-migration/turn2/README.md) and the
+[upgrade guide](../LEGACY_UPGRADE_GUIDE.md). Turn 3 completes remaining consumers and
 integrations; Turn 4 retires obsolete code after their acceptance gates.
 The dated checkpoint descriptions below remain historical context.
 
@@ -34,37 +36,37 @@ for the Python/wire-format change and upgrade requirements.
 basis. The overall model logic owns their meaning and selects operations; units,
 dates, alignment and missingness remain checked. See the
 [current contract](FULL_MIGRATION_TURN1.md#flow-semantics-and-explicit-operations)
-and [verification](research/full-migration/flow-semantics/README.md).
+and [verification](../research/full-migration/flow-semantics/README.md).
 
 **Full migration update, 2026-10-04:** [Turn 1 foundations](FULL_MIGRATION_TURN1.md)
 implements Model 0.4.0 rich properties and Flow Values, `model.duration`,
 `temporal`, `calculations`, detached dataframe adapters, and explicit Graph conversion.
 The basic DCF notebook, financial test model and synthetic source workflows migrated.
-Read the [upgrade guide](LEGACY_UPGRADE_GUIDE.md) and [verification](research/full-migration/turn1/README.md).
+Read the [upgrade guide](../LEGACY_UPGRADE_GUIDE.md) and [verification](../research/full-migration/turn1/README.md).
 Turn 2 is implemented; see the current contract and verification linked above.
 Turns 3–4 finish remaining consumers and retire old modules. The six-checkpoint
 history below remains the scalar/core work record; full migration is not complete.
 
 **Expanded review:** [Full migration review](FULL_MIGRATION_REVIEW.md) now covers
 all remaining older modules, temporal/numerical redesign, consumer proof and
-upgrade guidance. Its [symbol inventory](research/full-migration/SYMBOLS.md)
+upgrade guidance. Its [symbol inventory](../research/full-migration/SYMBOLS.md)
 expands the earlier grouped numerical row; proposed APIs remain subject to review.
 
-**2026-10-03 update:** [Step 6C/6D](CONSUMER_MIGRATION.md) is implemented.
+**2026-10-03 update:** [Step 6C/6D](../CONSUMER_MIGRATION.md) is implemented.
 The responsibility inventory below retains its Step 1 baseline; current consumers
 use `table`, `adapters`, and `workflow`, with `WorkflowResult.model`. External
 consumer migration (6E) and old-domain retirement (6F) remain.
 
 Status: Step 1 design and baseline completed 2026-10-02. This is the recommended
 implementation contract for Steps 2–4. Work units 2A/2B are now implemented;
-see [record boundary](RECORD_BOUNDARY.md) for working APIs and verified limits.
-Work units 3A/3B are also implemented; [domain APIs](DOMAIN_CORE.md) records the
+see [record boundary](../RECORD_BOUNDARY.md) for working APIs and verified limits.
+Work units 3A/3B are also implemented; [domain APIs](../DOMAIN_CORE.md) records the
 working facade/resolver interfaces and their bounded semantics.
-[Run/storage](RUN_AND_STORAGE.md), [scalar execution](SCALAR_EXECUTION.md) and
-[Model-backed graph operations](GRAPH_MODEL.md) are now implemented. Those guides
+[Run/storage](../RUN_AND_STORAGE.md), [scalar execution](../SCALAR_EXECUTION.md) and
+[Model-backed graph operations](../GRAPH_MODEL.md) are now implemented. Those guides
 record current APIs; remaining consumer interfaces below are migration contracts. Read together with
-[the observed baseline](research/domain-migration/BASELINE.md), the
-[work plan](DOMAIN_MIGRATION_PLAN.md), and [architecture](LIBRARY_ARCHITECTURE.md).
+[the observed baseline](../research/domain-migration/BASELINE.md), the
+[work plan](DOMAIN_MIGRATION_PLAN.md), and [architecture](../LIBRARY_ARCHITECTURE.md).
 The baseline inspected 93 Python modules, seven walkthrough notebooks, and the
 available Mandarin/East Whisman consumer references. Live services, external
 project execution, and Rhino/Grasshopper remain unverified.
@@ -102,7 +104,7 @@ assumption that stock `gen-python` already supplies immutable public objects.
 ## Current responsibilities and dispositions
 
 Paths in this table are relative to `src/rangekeeper/` unless prefixed with `schema/`.
-The [static inventory](research/domain-migration/evidence/inventory.json) records
+The [static inventory](../research/domain-migration/evidence/inventory.json) records
 symbol locations, imports, notebook code references, and inspected consumer hashes.
 
 | Current responsibility and evidence | Contract mismatch / decision | Destination and disposition | Consumers, acceptance, and retirement |
@@ -149,7 +151,7 @@ symbol locations, imports, notebook code references, and inspected consumer hash
   `metadata.id`; it creates no second identifier. No generic inheritance hierarchy
   combining Model/Specification/Run behavior beyond private record plumbing.
 
-The subsequent [validation refinement](DOMAIN_CORE.md#composable-validation) is
+The subsequent [validation refinement](../DOMAIN_CORE.md#composable-validation) is
 implemented: `validate.py` owns argument guards, `_validation.py` owns generic semantic
 invariants and stage orchestration, and domain modules own their rule composition.
 `Scope` is lookup data; expression inference and predicate validation are functions
@@ -173,7 +175,7 @@ This is a creation sequence, not an instruction to move the existing tree at onc
 | `io/{json,yaml,store,memory,directory}.py` | Format codecs; writable `RecordStore`; `MemoryStore`, `DirectoryStore`. |
 | `units.py` | `UnitSystem`, `default_units`; no schema authority or solving. |
 | `graph/{view,traversal,reduction,table}.py` | Model-backed View and graph algorithms, migrated after core. |
-| `execution/`, `formulations/` | Step 5 implements preparation/compiler/evaluator/acceptance/publication/backend orchestration; see [scalar execution](SCALAR_EXECUTION.md). Richer mathematical construction remains future work. No execution implementation was part of Steps 2–4. |
+| `execution/`, `formulations/` | Step 5 implements preparation/compiler/evaluator/acceptance/publication/backend orchestration; see [scalar execution](../SCALAR_EXECUTION.md). Richer mathematical construction remains future work. No execution implementation was part of Steps 2–4. |
 | Root and package `__init__.py`, `py.typed` | Small explicit public exports, lazy optional integrations, packaged typing. |
 
 Dependency order: generated records/private record support → document facades and
@@ -186,7 +188,7 @@ and avoids per-field dynamic `__getattr__` dispatch.
 
 ## Generated record decision and evidence
 
-The [isolated probe](research/domain-migration/evidence/record_boundary_probe.py)
+The [isolated probe](../research/domain-migration/evidence/record_boundary_probe.py)
 generated 50 classes from the complete import bundle. All 14 selected document
 fixtures passed structural validation before and after exact data round trips.
 Every declared field in those fixtures was accessible. Nested mappings/sequences
@@ -197,7 +199,7 @@ Stock generated LinkML metadata remained mutable, as expected.
 The initial projection incorrectly treated `Content` as a structured record; the
 corrected generator detects `class_uri: linkml:Any` and treats it as opaque JSON.
 The failure and corrected result are retained. Opaque `id` keys must never enter
-domain identity indexes. See [results](research/domain-migration/evidence/record-boundary-results.json).
+domain identity indexes. See [results](../research/domain-migration/evidence/record-boundary-results.json).
 
 Production generation rules are fixed as follows:
 
@@ -236,9 +238,9 @@ Production generation rules are fixed as follows:
 The Step 1 probe established feasibility and deliberately omitted
 semantic entrypoints, stores, index caching, constructor validation, complete union
 annotations, and a static checker run. Generated constructors, shared bounded validation and static checking are now
-implemented and verified in [Turn 1](research/domain-migration/turn1/README.md);
-Model/Specification facades and indexes are now implemented in [Turn 2](DOMAIN_CORE.md);
-[Turn 3](RUN_AND_STORAGE.md) now implements Run, codecs, stores and final public exports.
+implemented and verified in [Turn 1](../research/domain-migration/turn1/README.md);
+Model/Specification facades and indexes are now implemented in [Turn 2](../DOMAIN_CORE.md);
+[Turn 3](../RUN_AND_STORAGE.md) now implements Run, codecs, stores and final public exports.
 
 ## Public interface contract
 
@@ -247,7 +249,7 @@ root facades; `EntityLike = Entity | Assembly`; generated nested types are immut
 `Unset` denotes omitted operation arguments, not a serialized schema value.
 All collections returned by domain operations are immutable. None initializes a
 solver. Model/Specification operations are now implemented as documented in
-[DOMAIN_CORE.md](DOMAIN_CORE.md); [Turn 3](RUN_AND_STORAGE.md) implements the Run/IO signatures.
+[DOMAIN_CORE.md](../DOMAIN_CORE.md); [Turn 3](../RUN_AND_STORAGE.md) implements the Run/IO signatures.
 Specification exposes generated fields through `.record`; Composition also retains
 immutable `.contributions` snapshots. `SpecificationResolver` provides the two investigation
 lookups; `DocumentResolver` extends it with the implemented Run lookup.
@@ -386,13 +388,13 @@ unit settings; it receives `DocumentResolver`/`RecordStore` through injection.
 Prepared equations, backend state, candidate quantities and acceptance results are
 runtime-only objects. The acceptance evaluator traverses original expressions and
 must not import the Pyomo adapter. `Executor.execute(specification) -> Run` is now
-implemented in [Step 5](SCALAR_EXECUTION.md), separately from the Step 2–4 scope.
+implemented in [Step 5](../SCALAR_EXECUTION.md), separately from the Step 2–4 scope.
 
 ## Usage contracts
 
 End-to-end examples below combine implemented domain/IO/root APIs with graph APIs
 that remain design targets; see the implemented guides for runnable core examples.
-For executable Turn 2 examples, use [the domain API guide](DOMAIN_CORE.md).
+For executable Turn 2 examples, use [the domain API guide](../DOMAIN_CORE.md).
 
 ```python
 from uuid import uuid4
@@ -454,7 +456,7 @@ children = view.successors(parent_id)
 | Mandarin and East Whisman | **Step 6 / richer-content gate**. Imports Graph JSON, provenance, workflow; Mandarin also Diff and Feature. Shared project repo inspected at `5725cc02748ace15e390c8dcea2c5d69185d67c9`, requires Python 3.13 for Mandarin. | Project test/equivalence suites and reviewed exports in their own environment. Not executed here. Migrate persisted comparisons intentionally; do not assert byte equality across different interchange formats. |
 | Seven walkthrough notebooks | **After relevant consumers/numerics**. Two use Speckle, others use Flux/duration/units; several use root `update_class` and obsolete distribution/graph calls. | Clean-kernel runs with declared data/services; compare numerical outputs. Inspection only; no notebook has been certified by this step. |
 | Grasshopper C# | **Later integration**. Entity inherits Speckle Base; model references Speckle 2.18.0. | Pure cross-language Model fixture tests plus Rhino/Windows authoring acceptance. Current README's Snapshot/Phase 6 description is historical; new Model contract supersedes it. No host verification here. |
-| Hypar directory | **Retired and removed**. No Git-tracked source existed; ignored build/editor residue was removed at the user's request. | No migration or acceptance task. Preserve the [removal record](research/full-migration/hypar-removal/README.md) and earlier research. |
+| Hypar directory | **Retired and removed**. No Git-tracked source existed; ignored build/editor residue was removed at the user's request. | No migration or acceptance task. Preserve the [removal record](../research/full-migration/hypar-removal/README.md) and earlier research. |
 | Root Speckle API | **Later integration**; legacy conversions used by design notebooks. | Three live tests excluded from baseline. Require available service fixtures and explicit transport environment. |
 | Numerical modules, formula examples, Policy | **Retain initially**; bridge later. | 58 numerical/unit/module cases passed, one residual expectation failed. Root class-patching helper remains until notebooks/examples are migrated; no new core use. |
 

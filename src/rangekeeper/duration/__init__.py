@@ -5,10 +5,8 @@ from .period import (
     PeriodTiming,
     make_period,
     make_periods,
-    validate_period,
     periods_between,
     cover,
-    resolve_period_date,
 )
 
 __all__ = [
@@ -17,8 +15,6 @@ __all__ = [
     "year_fraction",
     "make_period",
     "make_periods",
-    "validate_period",
     "periods_between",
     "cover",
-    "resolve_period_date",
 ]

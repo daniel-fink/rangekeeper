@@ -9,7 +9,7 @@ from uuid import NAMESPACE_URL, uuid5
 import pint
 import pytest
 
-from rangekeeper.adapters import csv, pandas
+from rangekeeper.adapters import csv, polars
 from rangekeeper.errors import IdentityConflictError
 from rangekeeper.evidence import Claim, Location, Method, Source
 from rangekeeper.table import Row, Table, TableError
@@ -159,9 +159,9 @@ def test_exports_do_not_invent_metadata_columns(tmp_path):
     original = Table(
         columns=("name",), rows=(Row(values={"name": "Apartment"}, id=uid("r1")),)
     )
-    frame = pandas.to_dataframe(original)
+    frame = polars.to_frame(original)
     assert list(frame.columns) == ["name"]
-    assert pandas.from_dataframe(frame).rows[0].id is None
+    assert polars.to_table(frame).rows[0].id is None
     path = csv.write(original, tmp_path / "schedule.csv")
     assert path.read_text() == "name\nApartment\n"
     assert csv.read(path).rows[0].id is None

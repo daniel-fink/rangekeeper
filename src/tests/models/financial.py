@@ -1,5 +1,7 @@
 """Migrated known-data development account example, independent of legacy modules."""
 
+from rangekeeper.calculations.account import Account
+
 from dataclasses import dataclass
 from datetime import date
 from rangekeeper.model.flow import Flow
@@ -12,8 +14,8 @@ from rangekeeper.calculations import projection, series, account
 class DevelopmentAccounts:
     draws: Flow
     payments: Flow
-    equity: account.AccountResult
-    loan: account.AccountResult
+    equity: account.Account
+    loan: account.Account
 
 
 def build_accounts(
@@ -33,21 +35,21 @@ def build_accounts(
     construction = projection.allocate(
         Quantity(magnitude=-costs, units="AUD"), periods=periods[:9]
     )
-    draws = series.sum_flows(
+    draws = series.aggregate(
         (purchase, construction), join="union", missing="zero"
     ).flow
     receipts = projection.allocate(
         Quantity(magnitude=payments, units="AUD"), periods=periods[9:]
     )
-    equity_account = account.calculate_account(
+    equity_account = Account.calculate(
         draws, starting=Quantity(magnitude=equity, units="AUD")
     )
-    debt = series.sum_flows(
-        (series.negate(equity_account.overdraft), series.negate(receipts)),
+    debt = series.aggregate(
+        (equity_account.overdraft.negate(), receipts.negate()),
         join="union",
         missing="zero",
     ).flow
-    loan = account.calculate_account(
+    loan = Account.calculate(
         debt,
         starting=Quantity(magnitude=0, units="AUD"),
         rate=interest_rate / 12,

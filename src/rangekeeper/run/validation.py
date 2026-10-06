@@ -11,7 +11,7 @@ from .._records import Record
 from .._schema.validation import document_version
 from .._validation import bounded, checked
 from ..diagnostics import Issue, ValidationReport
-from ._validation import validate_run
+from ._tree import Tree
 from ..units import UnitSystem, default_units
 from .._schema.records import Quantity
 from ..errors import UnitError
@@ -56,7 +56,7 @@ def validate_records(
     }
     return bounded(
         issues,
-        lambda: validate_run(
+        lambda: Tree(
             root,
             run_data,
             spec_data,
@@ -73,7 +73,7 @@ def validate_records(
                     Quantity.from_data(requested), to=actual["units"]
                 ).to_data()
             ),
-        ),
+        ).check(),
         document=root,
     )
 

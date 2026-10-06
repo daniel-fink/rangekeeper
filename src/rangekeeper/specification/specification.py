@@ -5,11 +5,11 @@ from dataclasses import dataclass
 import math
 from uuid import UUID
 
-from .._comparison import canonical
+from .._comparison import check_revision
 from .._schema.records import Specification as SpecificationRecord, Metadata
 from .._schema.validation import document_version
 from .._validation import bounded, require
-from ..errors import RevisionConflictError, UnsupportedVersionError
+from ..errors import UnsupportedVersionError
 from ..model._index import Index
 from ..model._formulation import validate_formulation_names
 from ._composition import compose_specification, validate_local_header
@@ -115,24 +115,5 @@ class Specification:
         """
         if not isinstance(replacement, SpecificationRecord):
             raise TypeError("replacement must be a generated Specification record")
-        if (
-            replacement.metadata.id in (self.id, self.metadata.previous)
-            or replacement.metadata.previous != self.id
-        ):
-            raise RevisionConflictError(
-                "replacement must not reuse this revision or its predecessor, and must set previous=current UUID"
-            )
-        if replacement.metadata.schema_version != self.metadata.schema_version:
-            raise UnsupportedVersionError("revise cannot migrate schema versions")
-        before, after = self.to_data(), replacement.to_data()
-        for data, metadata in ((before, self.metadata), (after, replacement.metadata)):
-            data["metadata"] = {
-                key: value
-                for key, value in metadata.to_data().items()
-                if key not in ("id", "previous")
-            }
-        if canonical("Specification", before) == canonical("Specification", after):
-            raise RevisionConflictError(
-                "replacement changes no requirements or descriptive content"
-            )
+        check_revision(self._record, replacement)
         return type(self)(replacement)

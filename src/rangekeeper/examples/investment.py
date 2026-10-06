@@ -20,7 +20,7 @@ from ..model import (
     Value,
     Update,
 )
-from ..model.flow import Flow, Movement, resolve_date
+from ..model.flow import Flow, Movement
 from ..model.scenario import ScenarioRealization
 from .._schema.records import (
     ValueReference,
@@ -29,7 +29,7 @@ from .._schema.records import (
     Specification as SpecificationRecord,
 )
 from ..duration import make_periods, offset
-from ..duration.period import resolve_period_date
+
 from ..formulations import build_formulation
 from ..formulations.expression import (
     reference as ref,
@@ -153,9 +153,9 @@ def author(
             units="dimensionless" if control else p["units"],
             movements=tuple(
                 Movement(
-                    key=f"p{i+1}",
+                    key=f"p{i + 1}",
                     period=period,
-                    date=resolve_period_date(period, timing="last_day"),
+                    date=period.resolve(timing="last_day"),
                 )
                 for i, period in enumerate(ps)
             ),
@@ -182,9 +182,9 @@ def author(
                     units="dimensionless",
                     movements=tuple(
                         Movement(
-                            key=f"p{i+1}",
+                            key=f"p{i + 1}",
                             period=period,
-                            date=resolve_period_date(period, timing="last_day"),
+                            date=period.resolve(timing="last_day"),
                             magnitude=1,
                         )
                         for i, period in enumerate(periods)
@@ -422,7 +422,7 @@ def report(model: Model) -> InvestmentReport:
     sale = [m for m in _flow(v["sale"]).movements if m.magnitude == 1]
     if len(sale) != 1:
         raise ValueError("investment output must have exactly one sale")
-    sale_date = resolve_date(sale[0])
+    sale_date = sale[0].resolve()
     first_period = _flow(v["total"]).movements[0].period
     assert first_period is not None
     first = first_period.start
@@ -436,7 +436,7 @@ def report(model: Model) -> InvestmentReport:
     operating = tuple(
         Movement(key=m.key, date=m.date, magnitude=m.magnitude)
         for m in _flow(v["total"]).movements
-        if resolve_date(m) <= sale_date
+        if m.resolve() <= sale_date
     )
     cashflows = Flow(units=_flow(v["total"]).units, movements=(purchase, *operating))
     pv = _quantity(v["pv"])

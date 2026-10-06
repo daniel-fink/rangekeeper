@@ -19,7 +19,7 @@ dependencies = [
 layout = ["z3-solver==5.1.0.0"]
 calculations = ["polars>=1.44,<2", "numpy>=1.24", "scipy>=1.12", "pint>=0.24", "pyxirr>=0.10.7,<0.11"]
 financial = ["pyxirr>=0.10.7,<0.11"]
-pandas = ["pandas>=2.2"]
+tables = ["polars>=1.44,<2"]
 plotting = ["matplotlib>=3.10", "plotly>=6.0"]
 visualization = ["networkx>=3.1", "plotly>=6.0", "pyvis>=0.3.2"]
 speckle = ["specklepy>=2.21"]
@@ -31,7 +31,7 @@ workflow = ["openpyxl>=3.1.5,<4", "PyYAML>=6.0.2,<7"]
 excel = ["openpyxl>=3.1.5,<4", "PyYAML>=6.0.2,<7"]
 
 [dependency-groups]
-dev = ["pytest>=8.0", "black>=25.0", "numpy-financial>=1.0", "pandas-stubs~=2.3.2"]
+dev = ["pytest>=8.0", "black>=25.0", "numpy-financial>=1.0"]
 
 [tool.ruff.format]
 preview = true  # Uses Black's experimental formatting rules

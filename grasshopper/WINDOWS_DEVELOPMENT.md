@@ -1,4 +1,4 @@
-# Current connector acceptance gate — Turn 3
+# Windows connector acceptance gate
 
 Mac authoring is accepted separately. The official current connector remains an
 open Windows gate. [Speckle installation requirements](https://docs.speckle.systems/connectors/installation)
@@ -39,7 +39,7 @@ then, hold the isolated predecessor code in `grasshopper/legacy` and
 This runbook provisions and operates the dedicated Windows host used to build
 and accept Rangekeeper's Rhino 8/Grasshopper/Speckle v3 authoring path. It is the
 operational companion to Phase 6 of
-[`GRAPH_REFACTOR_IMPLEMENTATION_PLAN.md`](../GRAPH_REFACTOR_IMPLEMENTATION_PLAN.md).
+[`GRAPH_REFACTOR_IMPLEMENTATION_PLAN.md`](../docs/history/GRAPH_REFACTOR_IMPLEMENTATION_PLAN.md).
 
 The C# projects are still Rhino 7/.NET Framework/Speckle v2 at the time this
 runbook is introduced. Commands marked **target** become authoritative when the

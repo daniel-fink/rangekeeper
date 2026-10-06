@@ -461,7 +461,8 @@ document.write(`
 <span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">date</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">uuid</span><span class="w"> </span><span class="kn">import</span> <span class="n">uuid4</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span><span class="o">,</span><span class="w"> </span><span class="nn">sys</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>  <span class="c1"># Detached tables for presentation only.</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">polars</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pl</span>  <span class="c1"># Detached tables for presentation only.</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">set_tbl_cols</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">rangekeeper</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">rk</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.examples</span><span class="w"> </span><span class="kn">import</span> <span class="n">investment</span>
@@ -482,7 +483,7 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Installed package: /private/tmp/rk-turn4-wheel/site/rangekeeper/__init__.py
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Installed package: /private/tmp/rk-refactor2-notebook-site/rangekeeper/__init__.py
 </pre></div>
 </div>
 </div>
@@ -609,197 +610,35 @@ document.write(`
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">rows</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">'Scenario'</span><span class="p">:</span> <span class="n">scenario</span><span class="o">.</span><span class="n">realization</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="s1">'Fixed PV (AUD)'</span><span class="p">:</span> <span class="n">fixed</span><span class="o">.</span><span class="n">pv</span><span class="o">.</span><span class="n">magnitude</span><span class="p">,</span> <span class="s1">'Policy PV (AUD)'</span><span class="p">:</span> <span class="n">chosen</span><span class="o">.</span><span class="n">pv</span><span class="o">.</span><span class="n">magnitude</span><span class="p">,</span> <span class="s1">'PV difference (AUD)'</span><span class="p">:</span> <span class="n">chosen</span><span class="o">.</span><span class="n">pv</span><span class="o">.</span><span class="n">magnitude</span><span class="o">-</span><span class="n">fixed</span><span class="o">.</span><span class="n">pv</span><span class="o">.</span><span class="n">magnitude</span><span class="p">,</span> <span class="s1">'Fixed IRR (%)'</span><span class="p">:</span> <span class="mi">100</span><span class="o">*</span><span class="n">fixed</span><span class="o">.</span><span class="n">irr</span><span class="o">.</span><span class="n">rate</span><span class="p">,</span> <span class="s1">'Policy IRR (%)'</span><span class="p">:</span> <span class="mi">100</span><span class="o">*</span><span class="n">chosen</span><span class="o">.</span><span class="n">irr</span><span class="o">.</span><span class="n">rate</span><span class="p">,</span> <span class="s1">'IRR difference (percentage points)'</span><span class="p">:</span> <span class="mi">100</span><span class="o">*</span><span class="p">(</span><span class="n">chosen</span><span class="o">.</span><span class="n">irr</span><span class="o">.</span><span class="n">rate</span><span class="o">-</span><span class="n">fixed</span><span class="o">.</span><span class="n">irr</span><span class="o">.</span><span class="n">rate</span><span class="p">),</span> <span class="s1">'Policy sale'</span><span class="p">:</span> <span class="n">chosen</span><span class="o">.</span><span class="n">sale_date</span><span class="p">}</span> <span class="k">for</span> <span class="n">scenario</span><span class="p">,</span> <span class="n">fixed</span><span class="p">,</span> <span class="n">chosen</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">scenarios</span><span class="p">,</span> <span class="n">fixed_results</span><span class="p">,</span> <span class="n">policy_results</span><span class="p">)]</span>
-<span class="n">results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
-<span class="n">results</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="s1">'number'</span><span class="p">)</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">results</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">selectors</span><span class="o">.</span><span class="n">numeric</span><span class="p">())</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html"><div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
+<div class="output text_html"><div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
 </style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Scenario</th>
-      <th>Fixed PV (AUD)</th>
-      <th>Policy PV (AUD)</th>
-      <th>PV difference (AUD)</th>
-      <th>Fixed IRR (%)</th>
-      <th>Policy IRR (%)</th>
-      <th>IRR difference (percentage points)</th>
-      <th>Policy sale</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>scenario-0000</td>
-      <td>816.980182</td>
-      <td>1113.287737</td>
-      <td>296.307555</td>
-      <td>4.323860</td>
-      <td>9.112985</td>
-      <td>4.789125</td>
-      <td>2026-12-31</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>scenario-0001</td>
-      <td>951.141353</td>
-      <td>951.141353</td>
-      <td>0.000000</td>
-      <td>6.355849</td>
-      <td>6.355849</td>
-      <td>0.000000</td>
-      <td>2030-12-31</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>scenario-0002</td>
-      <td>997.424545</td>
-      <td>997.424545</td>
-      <td>0.000000</td>
-      <td>6.963340</td>
-      <td>6.963340</td>
-      <td>0.000000</td>
-      <td>2030-12-31</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>scenario-0003</td>
-      <td>774.128403</td>
-      <td>1677.898207</td>
-      <td>903.769804</td>
-      <td>3.360857</td>
-      <td>27.945041</td>
-      <td>24.584184</td>
-      <td>2023-12-31</td>
-    </tr>
-  </tbody>
-</table>
-</div></div><div class="output text_html"><div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
+<small>shape: (4, 8)</small><table border="1" class="dataframe"><thead><tr><th>Scenario</th><th>Fixed PV (AUD)</th><th>Policy PV (AUD)</th><th>PV difference (AUD)</th><th>Fixed IRR (%)</th><th>Policy IRR (%)</th><th>IRR difference (percentage points)</th><th>Policy sale</th></tr><tr><td>str</td><td>f64</td><td>f64</td><td>f64</td><td>f64</td><td>f64</td><td>f64</td><td>date</td></tr></thead><tbody><tr><td>&quot;scenario-0000&quot;</td><td>816.980182</td><td>1113.287737</td><td>296.307555</td><td>4.32386</td><td>9.112985</td><td>4.789125</td><td>2026-12-31</td></tr><tr><td>&quot;scenario-0001&quot;</td><td>951.141353</td><td>951.141353</td><td>0.0</td><td>6.355849</td><td>6.355849</td><td>0.0</td><td>2030-12-31</td></tr><tr><td>&quot;scenario-0002&quot;</td><td>997.424545</td><td>997.424545</td><td>0.0</td><td>6.96334</td><td>6.96334</td><td>0.0</td><td>2030-12-31</td></tr><tr><td>&quot;scenario-0003&quot;</td><td>774.128403</td><td>1677.898207</td><td>903.769804</td><td>3.360857</td><td>27.945041</td><td>24.584184</td><td>2023-12-31</td></tr></tbody></table></div></div><div class="output text_html"><div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
 </style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Fixed PV (AUD)</th>
-      <th>Policy PV (AUD)</th>
-      <th>PV difference (AUD)</th>
-      <th>Fixed IRR (%)</th>
-      <th>Policy IRR (%)</th>
-      <th>IRR difference (percentage points)</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>count</th>
-      <td>4.000</td>
-      <td>4.000</td>
-      <td>4.000</td>
-      <td>4.000</td>
-      <td>4.000</td>
-      <td>4.000</td>
-    </tr>
-    <tr>
-      <th>mean</th>
-      <td>884.919</td>
-      <td>1184.938</td>
-      <td>300.019</td>
-      <td>5.251</td>
-      <td>12.594</td>
-      <td>7.343</td>
-    </tr>
-    <tr>
-      <th>std</th>
-      <td>106.353</td>
-      <td>335.642</td>
-      <td>426.048</td>
-      <td>1.692</td>
-      <td>10.302</td>
-      <td>11.714</td>
-    </tr>
-    <tr>
-      <th>min</th>
-      <td>774.128</td>
-      <td>951.141</td>
-      <td>0.000</td>
-      <td>3.361</td>
-      <td>6.356</td>
-      <td>0.000</td>
-    </tr>
-    <tr>
-      <th>25%</th>
-      <td>806.267</td>
-      <td>985.854</td>
-      <td>0.000</td>
-      <td>4.083</td>
-      <td>6.811</td>
-      <td>0.000</td>
-    </tr>
-    <tr>
-      <th>50%</th>
-      <td>884.061</td>
-      <td>1055.356</td>
-      <td>148.154</td>
-      <td>5.340</td>
-      <td>8.038</td>
-      <td>2.395</td>
-    </tr>
-    <tr>
-      <th>75%</th>
-      <td>962.712</td>
-      <td>1254.440</td>
-      <td>448.173</td>
-      <td>6.508</td>
-      <td>13.821</td>
-      <td>9.738</td>
-    </tr>
-    <tr>
-      <th>max</th>
-      <td>997.425</td>
-      <td>1677.898</td>
-      <td>903.770</td>
-      <td>6.963</td>
-      <td>27.945</td>
-      <td>24.584</td>
-    </tr>
-  </tbody>
-</table>
-</div></div></div>
+<small>shape: (9, 7)</small><table border="1" class="dataframe"><thead><tr><th>statistic</th><th>Fixed PV (AUD)</th><th>Policy PV (AUD)</th><th>PV difference (AUD)</th><th>Fixed IRR (%)</th><th>Policy IRR (%)</th><th>IRR difference (percentage points)</th></tr><tr><td>str</td><td>f64</td><td>f64</td><td>f64</td><td>f64</td><td>f64</td><td>f64</td></tr></thead><tbody><tr><td>&quot;count&quot;</td><td>4.0</td><td>4.0</td><td>4.0</td><td>4.0</td><td>4.0</td><td>4.0</td></tr><tr><td>&quot;null_count&quot;</td><td>0.0</td><td>0.0</td><td>0.0</td><td>0.0</td><td>0.0</td><td>0.0</td></tr><tr><td>&quot;mean&quot;</td><td>884.918621</td><td>1184.93796</td><td>300.01934</td><td>5.250976</td><td>12.594304</td><td>7.343327</td></tr><tr><td>&quot;std&quot;</td><td>106.3534</td><td>335.641522</td><td>426.048358</td><td>1.691649</td><td>10.301955</td><td>11.713525</td></tr><tr><td>&quot;min&quot;</td><td>774.128403</td><td>951.141353</td><td>0.0</td><td>3.360857</td><td>6.355849</td><td>0.0</td></tr><tr><td>&quot;25%&quot;</td><td>816.980182</td><td>997.424545</td><td>0.0</td><td>4.32386</td><td>6.96334</td><td>0.0</td></tr><tr><td>&quot;50%&quot;</td><td>951.141353</td><td>1113.287737</td><td>296.307555</td><td>6.355849</td><td>9.112985</td><td>4.789125</td></tr><tr><td>&quot;75%&quot;</td><td>951.141353</td><td>1113.287737</td><td>296.307555</td><td>6.355849</td><td>9.112985</td><td>4.789125</td></tr><tr><td>&quot;max&quot;</td><td>997.424545</td><td>1677.898207</td><td>903.769804</td><td>6.96334</td><td>27.945041</td><td>24.584184</td></tr></tbody></table></div></div></div>
 </div>
 </section>
 <section id="compare-pv-distributions">
 <h3>8. Compare PV distributions<a class="headerlink" href="#compare-pv-distributions" title="Link to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pv_samples</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'Fixed horizon'</span><span class="p">:</span> <span class="n">results</span><span class="p">[</span><span class="s1">'Fixed PV (AUD)'</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="s1">'Policy'</span><span class="p">:</span> <span class="n">results</span><span class="p">[</span><span class="s1">'Policy PV (AUD)'</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()}</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pv_samples</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'Fixed horizon'</span><span class="p">:</span> <span class="n">results</span><span class="p">[</span><span class="s1">'Fixed PV (AUD)'</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">(),</span> <span class="s1">'Policy'</span><span class="p">:</span> <span class="n">results</span><span class="p">[</span><span class="s1">'Policy PV (AUD)'</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()}</span>
 <span class="n">plot_distribution</span><span class="p">(</span><span class="n">pv_samples</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">'AUD'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s1">'PV distributions: </span><span class="si">{</span><span class="n">SCENARIO_COUNT</span><span class="si">}</span><span class="s1"> paired scenarios'</span><span class="p">);</span>
 </pre></div>
 </div>
@@ -823,7 +662,7 @@ document.write(`
 <h3>9. Compare realized IRR distributions<a class="headerlink" href="#compare-realized-irr-distributions" title="Link to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">irr_samples</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'Fixed horizon'</span><span class="p">:</span> <span class="n">results</span><span class="p">[</span><span class="s1">'Fixed IRR (%)'</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="s1">'Policy'</span><span class="p">:</span> <span class="n">results</span><span class="p">[</span><span class="s1">'Policy IRR (%)'</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()}</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">irr_samples</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'Fixed horizon'</span><span class="p">:</span> <span class="n">results</span><span class="p">[</span><span class="s1">'Fixed IRR (%)'</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">(),</span> <span class="s1">'Policy'</span><span class="p">:</span> <span class="n">results</span><span class="p">[</span><span class="s1">'Policy IRR (%)'</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">()}</span>
 <span class="n">plot_distribution</span><span class="p">(</span><span class="n">irr_samples</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">'Annual dated IRR (%)'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Realized IRR distributions'</span><span class="p">);</span>
 </pre></div>
 </div>
@@ -847,7 +686,7 @@ document.write(`
 <h3>10. Inspect paired outcome relationships<a class="headerlink" href="#inspect-paired-outcome-relationships" title="Link to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot_pairs</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s1">'Fixed PV (AUD)'</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">results</span><span class="p">[</span><span class="s1">'Fixed IRR (%)'</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">x_label</span><span class="o">=</span><span class="s1">'Fixed PV (AUD)'</span><span class="p">,</span> <span class="n">y_label</span><span class="o">=</span><span class="s1">'Fixed IRR (%)'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Fixed-horizon outcomes'</span><span class="p">);</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot_pairs</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s1">'Fixed PV (AUD)'</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">(),</span> <span class="n">results</span><span class="p">[</span><span class="s1">'Fixed IRR (%)'</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">(),</span> <span class="n">x_label</span><span class="o">=</span><span class="s1">'Fixed PV (AUD)'</span><span class="p">,</span> <span class="n">y_label</span><span class="o">=</span><span class="s1">'Fixed IRR (%)'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Fixed-horizon outcomes'</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -857,7 +696,7 @@ document.write(`
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot_pairs</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s1">'Policy PV (AUD)'</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">results</span><span class="p">[</span><span class="s1">'Policy IRR (%)'</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">x_label</span><span class="o">=</span><span class="s1">'Policy PV (AUD)'</span><span class="p">,</span> <span class="n">y_label</span><span class="o">=</span><span class="s1">'Policy IRR (%)'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Policy outcomes'</span><span class="p">);</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot_pairs</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s1">'Policy PV (AUD)'</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">(),</span> <span class="n">results</span><span class="p">[</span><span class="s1">'Policy IRR (%)'</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">(),</span> <span class="n">x_label</span><span class="o">=</span><span class="s1">'Policy PV (AUD)'</span><span class="p">,</span> <span class="n">y_label</span><span class="o">=</span><span class="s1">'Policy IRR (%)'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Policy outcomes'</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -867,7 +706,7 @@ document.write(`
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot_pairs</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s1">'Fixed PV (AUD)'</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">results</span><span class="p">[</span><span class="s1">'PV difference (AUD)'</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">x_label</span><span class="o">=</span><span class="s1">'Fixed PV (AUD)'</span><span class="p">,</span> <span class="n">y_label</span><span class="o">=</span><span class="s1">'Policy minus fixed PV (AUD)'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Paired PV differences'</span><span class="p">);</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot_pairs</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s1">'Fixed PV (AUD)'</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">(),</span> <span class="n">results</span><span class="p">[</span><span class="s1">'PV difference (AUD)'</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">(),</span> <span class="n">x_label</span><span class="o">=</span><span class="s1">'Fixed PV (AUD)'</span><span class="p">,</span> <span class="n">y_label</span><span class="o">=</span><span class="s1">'Policy minus fixed PV (AUD)'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Paired PV differences'</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -877,7 +716,7 @@ document.write(`
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot_pairs</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s1">'Fixed IRR (%)'</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">results</span><span class="p">[</span><span class="s1">'IRR difference (percentage points)'</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">x_label</span><span class="o">=</span><span class="s1">'Fixed IRR (%)'</span><span class="p">,</span> <span class="n">y_label</span><span class="o">=</span><span class="s1">'Policy minus fixed IRR (percentage points)'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Paired IRR differences'</span><span class="p">);</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot_pairs</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s1">'Fixed IRR (%)'</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">(),</span> <span class="n">results</span><span class="p">[</span><span class="s1">'IRR difference (percentage points)'</span><span class="p">]</span><span class="o">.</span><span class="n">to_list</span><span class="p">(),</span> <span class="n">x_label</span><span class="o">=</span><span class="s1">'Fixed IRR (%)'</span><span class="p">,</span> <span class="n">y_label</span><span class="o">=</span><span class="s1">'Policy minus fixed IRR (percentage points)'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Paired IRR differences'</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>

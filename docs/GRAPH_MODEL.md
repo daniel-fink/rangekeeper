@@ -1,42 +1,6 @@
 # Model-backed graph operations
 
-**Legacy isolation, 2026-10-06:** held Python code is now in `rangekeeper.legacy`,
-predecessor tests in `src/tests/legacy`, and excluded C# code in `grasshopper/legacy`.
-Old public paths have no aliases. See [the boundary and current checks](LEGACY_ISOLATION.md).
-The Windows gate remains open; earlier Turn 4 results below describe the preceding wheel.
-
-**Turn 4 update, 2026-10-06:** [Permitted legacy retirement](FULL_MIGRATION_TURN4.md)
-removes the superseded numerical/presentation modules and narrows optional
-dependencies. The paired Turn 3 checkpoint is pushed: RK `305f3ff`, Projects
-`6146ad2`. Turn 4 is uncommitted. [Current acceptance](research/full-migration/turn4/BASELINE.md)
-records 1,058 passing local tests, seven walkthroughs and all three real source
-builds. The [remaining retirement register](research/full-migration/turn4/RETIREMENT.md)
-holds old graph/Measure/Speckle API and excluded C# code for the Windows connector
-gate. Full retirement is not complete. Hypar is retired; Browser/outliner is on hold.
-Dated checkpoints below remain historical and do not override this current state.
-
-
-**Flow semantics update, 2026-10-06:** Flows no longer carry semantic kinds or
-basis. The overall model logic owns their meaning and selects operations; units,
-dates, alignment and missingness remain checked. See the
-[current contract](FULL_MIGRATION_TURN1.md#flow-semantics-and-explicit-operations)
-and [verification](research/full-migration/flow-semantics/README.md).
-
-**Full migration update, 2026-10-04:** [Turn 1 foundations](FULL_MIGRATION_TURN1.md)
-implements Model 0.4.0 rich properties and Flow Values, `model.duration`,
-`temporal`, `calculations`, detached dataframe adapters, and explicit Graph conversion.
-The basic DCF notebook, financial test model and synthetic source workflows migrated.
-Read the [upgrade guide](LEGACY_UPGRADE_GUIDE.md) and [verification](research/full-migration/turn1/README.md).
-Next is Turn 2: temporal mathematics, scenarios/policies, and their consumers.
-Turns 3–4 finish remaining consumers and retire old modules. The six-checkpoint
-history below remains the scalar/core work record; full migration is not complete.
-
-Step 6A/6B are implemented locally, 2026-10-03. `rangekeeper.graph.View` now
-selects immutable records from one canonical Model revision. Explicit hierarchy
-construction and Value-based reduction work over that selection.
-[Step 6C/6D](CONSUMER_MIGRATION.md) now adds tables, presentation adapters, and
-source workflows. External consumer migration and retirement remain 6E/6F.
-[Verification evidence](research/graph-migration/README.md) records this boundary.
+Views select canonical Model objects. Membership and hierarchy are explicit projections; a graph operation does not define domain ownership or revise stored content.
 
 ## Architecture and ownership
 
@@ -200,27 +164,3 @@ The old Graph domain, its View, table projection and JSON codec are isolated in
 `rangekeeper.legacy.graph` for the Windows migration/retirement gate.
 They do not sit behind the new constructors. No implicit Graph-to-Model conversion
 exists. The new adapters and source workflows do not import the old domain.
-
-## Remaining Step 6 implementation slices
-
-The [full migration review](FULL_MIGRATION_REVIEW.md) expands the remaining scope
-to numerical/temporal behavior and all supported consumers, including parallel
-workbench/layout features. The four-turn sequence now governs implementation of that scope. The table
-below retains the graph migration milestones; it is not the whole refactor plan.
-
-| Slice | Work | Acceptance/removal condition |
-| --- | --- | --- |
-| 6A/6B — implemented | Model selections, membership, hierarchy, explicit Value reduction | New semantics, old consumer characterization, static/installed checks and scalar regressions pass. |
-| 6C — implemented | Move shared Row/Table to `table.py`; add `graph/projection.py` with FieldColumn/ValueColumn/LabelColumn and `to_table`/`to_tree_table`; migrate CSV/pandas/viewer projections to `adapters/` | Stable identity/order, units/missingness, repeated viewer occurrences, packaged assets; retire old projection traversal. |
-| 6D — implemented | Migrate source-building WorkflowSpec/runtime/composition to `workflow/`, producing `WorkflowResult.model`; preserve closed operation catalog, evidence/fingerprints and atomic validation | Supported source-to-Model-to-codec/store-to-executor example; no conflation with mathematical Specification/Run. |
-| 6E — in progress | Migrate actual projects, notebooks and supported persisted formats in their own environments | Consumer-specific semantic equivalence, explicit key mapping, source/provenance preservation and declared unsupported content. |
-| 6F | Remove superseded domain/codec/export implementations after their last supported consumer moves | Import/caller inventory, installed-package checks and documentation; no silent format or data loss. |
-
-Mandarin/East Whisman Feature-rich content remains gated on an explicit supported
-contract. No generic Feature is silently stringified, dropped or hidden in Claim
-content. Speckle/Grasshopper need service/host acceptance. Hypar was later retired;
-its local residue is now [removed](research/full-migration/hypar-removal/README.md),
-with no source-discovery task. These consumers were not executed in this slice. Numerical
-modules, temporal Values and rich mathematical capabilities now have explicit
-work in the expanded full migration. Turn 1 has delivered content and numerical
-foundations; indexed mathematics and scenario/policy execution remain Turn 2.

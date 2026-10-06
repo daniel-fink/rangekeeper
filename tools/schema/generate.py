@@ -27,6 +27,14 @@ PINNED = {
     "jsonschema": "4.26.0",
     "PyYAML": "6.0.3",
 }
+# Only these generated records inherit handwritten, field-free behaviour. Keeping
+# the bridge here makes direct construction and schema-directed decoding identical.
+BEHAVIORS = {
+    "Flow": ("flow", "FlowBehavior"),
+    "Movement": ("flow", "MovementBehavior"),
+    "Period": ("period", "PeriodBehavior"),
+    "Distribution": ("distribution", "DistributionBehavior"),
+}
 
 
 def encoded(value):
@@ -171,6 +179,10 @@ def generate():
             "from uuid import UUID",
             "from datetime import date as Date",
             "from .._records import Record, Unset, UNSET, FrozenJSONValue, JSONValue",
+            *[
+                f"from .._behaviors.{module} import {behavior}"
+                for module, behavior in BEHAVIORS.values()
+            ],
             "",
         ]
         for name in sorted(enums):
@@ -238,9 +250,13 @@ def generate():
             if parent:
                 emit(str(parent))
             fields = slots[name]
+            bases = [str(parent or "Record")]
+            if name in BEHAVIORS:
+                bases.insert(0, BEHAVIORS[name][1])
             lines.extend(
                 [
-                    f'class {name}({parent or "Record"}):',
+                    f'class {name}({", ".join(bases)}):',
+                    f"    {str(classes[name].description or name)!r}",
                     "    __slots__ = ()",
                     f"    _kind = {name!r}",
                     "",
@@ -263,12 +279,35 @@ def generate():
             )
             lines.extend([f"            {field!r}: {field}," for field in fields])
             lines.extend(["        })", ""])
+            # Replacement uses the same field encoder and structural validation as
+            # construction. UNSET preserves the existing field's presence/value.
+            lines.extend(["    def replace(self, *,"])
+            for field, meta in fields.items():
+                typ = field_type(meta, True)
+                if "Unset" not in typ:
+                    typ += " | Unset"
+                lines.append(f"        {field}: {typ} = UNSET,")
+            lines.extend(
+                [
+                    f"    ) -> {name}:",
+                    '        """Return a validated copy; omitted arguments preserve field presence and value."""',
+                    "        return self._replace({",
+                    *[f"            {field!r}: {field}," for field in fields],
+                    "        })",
+                    "",
+                ]
+            )
+            descriptions = {
+                field.name: field.description
+                for field in view.class_induced_slots(name)
+            }
             for field, meta in fields.items():
                 typ = field_type(meta)
                 lines.extend(
                     [
                         "    @property",
                         f"    def {field}(self) -> {typ}:",
+                        f"        {str(descriptions[field] or field.replace('_', ' ').capitalize() + '.')!r}",
                         f"        return cast({typ!r}, self._field({field!r}))",
                         "",
                     ]

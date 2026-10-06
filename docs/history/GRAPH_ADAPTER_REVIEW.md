@@ -1,17 +1,19 @@
 # Ingestion and workflow boundary review
 
+> Historical design or implementation record. Names, commands and status below describe that checkpoint. Use the [current documentation](../README.md) for supported APIs.
+
 > Historical source/Graph contract, superseded for new builds on 2026-10-03.
-> Use [Model consumer migration](CONSUMER_MIGRATION.md) for the current packages,
+> Use [Model consumer migration](../CONSUMER_MIGRATION.md) for the current packages,
 > workflow version 2, Value keys, and Model export. The earlier API names and
 > acceptance results below remain evidence for the external migration gate (6E).
 
 **Scope, 2026-10-02:** this is a dated review and resolution record for existing
-graph ingestion. Follow [LIBRARY_ARCHITECTURE.md](LIBRARY_ARCHITECTURE.md) for the
+graph ingestion. Follow [LIBRARY_ARCHITECTURE.md](../LIBRARY_ARCHITECTURE.md) for the
 current domain replacement and migration sequence. Historical recommendations
 below are not additional prerequisites for the scalar executor.
 
 For the subsequent format-independent execution review and implementation, see
-[GRAPH_WORKFLOW_FORMATS.md](GRAPH_WORKFLOW_FORMATS.md). The dated findings below
+[GRAPH_WORKFLOW_FORMATS.md](../GRAPH_WORKFLOW_FORMATS.md). The dated findings below
 remain a historical record. The initial refactor was subsequently committed as
 `7f7098c`; the format-independent follow-up is committed as `588b5b4`.
 
@@ -68,10 +70,10 @@ one package would hide those differences rather than reduce maintenance.
 
 ### 1. Share derivation support; fix divergent lineage and Issue handling
 
-[tabular.numbers](../src/rangekeeper/graph/workflow/ingestion/tabular.py) fingerprints
+[tabular.numbers](../../src/rangekeeper/workflow/ingestion/tabular.py) fingerprints
 the complete settings Claim lineage by making temporary one-cell Evidence.
-[transform](../src/rangekeeper/graph/workflow/ingestion/transform.py) and
-[classify_rows](../src/rangekeeper/graph/adapter/excel/classification.py) record only
+[transform](../../src/rangekeeper/workflow/ingestion/transform.py) and
+[classify_rows](../../src/rangekeeper/adapters/excel/classification.py) record only
 its ID. The latter operations also independently assemble derived Claim IDs and
 parents. Extract a small internal Claim-lineage fingerprint helper and shared
 Issue projection/merge support; keep numeric and label policies distinct.
@@ -96,7 +98,7 @@ identity recipes initially, or version any intentional change.
 
 ### 2. Give specification validation one owner per operation
 
-[StepSpec/schema](../src/rangekeeper/graph/workflow/specification.py) repeat
+[StepSpec/schema](../../src/rangekeeper/workflow/specification.py) repeat
 operation knowledge across request types, mapping conversion, dependency typing
 and handwritten schemas. Model and check validation use another family of mapping
 validators. A small static operation descriptor could connect parser, input kinds,
@@ -109,7 +111,7 @@ passes, but execution raises `KeyError('table')`. Required fields depend on oper
 kind and are not consistently checked. This violates the intended early-validation
 boundary even though the current Mandarin declarations pass.
 
-The [Excel YAML loader](../src/rangekeeper/graph/adapter/excel/specification.py) and
+The [Excel YAML loader](../../src/rangekeeper/adapters/excel/specification.py) and
 workflow loader also duplicate safe-loader/key handling with different alias and
 error policies. Share decoding support only after making those differences explicit.
 The published `schema()` currently covers steps only; decide whether to keep that
@@ -120,9 +122,9 @@ parser/schema agreement; no executable tags, arbitrary imports or expression eng
 
 ### 3. Move source and table policy out of the runner
 
-[runtime.run](../src/rangekeeper/graph/workflow/runtime.py) implements its own
+[runtime.run](../../src/rangekeeper/workflow/runtime.py) implements its own
 stopping-marker matcher and table `where` predicate. Excel extraction already owns
-[_matches/_last_row](../src/rangekeeper/graph/adapter/excel/extraction.py); workflow's
+[_matches/_last_row](../../src/rangekeeper/adapters/excel/extraction.py); workflow's
 matcher omits the native error/cache guards. Composition conditions and check
 filters independently repeat exact-type comparisons.
 
@@ -139,7 +141,7 @@ distinct; selected Claims and Issue scopes remain unchanged.
 
 ### 4. Decouple composition/checking from workflow and Excel helpers
 
-[composition](../src/rangekeeper/graph/workflow/composition.py) receives the
+[composition](../../src/rangekeeper/workflow/composition.py) receives the
 whole WorkflowSpec although it needs model/identity policy and Evidence. Checking
 and rendering import its binding or reference-formatting helpers. Generic Claim
 location traversal lives in `excel.classification`, so graph composition depends on
@@ -164,7 +166,7 @@ decision lineage, exact membership and unavailable comparisons remain intact.
 
 ### 5. Separate reproducibility metadata from semantic identity
 
-[runtime.run](../src/rangekeeper/graph/workflow/runtime.py) hashes every Python
+[runtime.run](../../src/rangekeeper/workflow/runtime.py) hashes every Python
 file beneath the installed `rangekeeper` package and feeds that aggregate into configuration and composition
 identities. A renderer-only or docstring edit therefore changes derived Claim IDs.
 It also records a workflow dispatch Operation plus the underlying native Operation

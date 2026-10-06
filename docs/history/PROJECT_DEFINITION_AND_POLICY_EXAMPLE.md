@@ -1,5 +1,7 @@
 # Project definitions, execution, and policy optimization
 
+> Historical redevelopment proposal. Its scope and unimplemented examples describe the original design discussion. Use the [current guides](../README.md) for runtime contracts.
+
 Status: agreed design direction and representative example, recorded 2026-09-22;
 equation-oriented modelling and progressive examples agreed 2026-09-23; aligned
 with the immutable Model/Specification/Run contract on 2026-09-24.
@@ -9,23 +11,23 @@ temporal schemas and their runtime interfaces remain to be specified. The financ
 figures below are illustrative inputs, not calibrated estimates or predicted results.
 
 The current object-model reference is
-[Model, Specification, and Run: object model and requirements](MODEL_SPECIFICATION_RUN.md).
+[Model, Specification, and Run: object model and requirements](../MODEL_SPECIFICATION_RUN.md).
 This note retains the representative policy example and its provisional assumptions.
-The 2026-10-01 [scenario and policy composition sketches](MODEL_SPECIFICATION_RUN.md#24-scenario-and-policy-composition-sketches)
+The 2026-10-01 [scenario and policy composition sketches](../MODEL_SPECIFICATION_RUN.md#scenarios-and-policy)
 clarify that one Specification and Run can evaluate multiple futures and alternative
 complete policies, publishing multiple Model outputs. Additive `includes` assemble
 one investigation; `cases` specify separate investigations, recorded by ordinary
 child Runs. Policy alternatives remain distinct from cooperating subordinate policies.
 Scalar Specification composition and finalized Run records are drafted; direct
 subordinate executions use `Run.spawns`. This policy example remains unimplemented.
-The 2026-10-01 [execution priorities](MODEL_SPECIFICATION_RUN.md#51-execution-priorities-and-capability-boundary)
-and [scenario distinctions](MODEL_SPECIFICATION_RUN.md#52-scenarios-inverse-questions-and-policy-optimization)
+The 2026-10-01 [execution priorities](../SCALAR_EXECUTION.md#supported-mathematics)
+and [scenario distinctions](../MODEL_SPECIFICATION_RUN.md#scenarios-and-policy)
 clarify the route to this example: deterministic valuation under supplied markets,
 evaluation on saved futures, committed decisions across those futures, and then
 adaptive policies. Algebraic inversion of market generation is a separate capability.
 It is a design reference, not documentation of an implemented RK API.
 The current bounded ingestion workflow is documented separately in
-[Format-independent workflow execution](GRAPH_WORKFLOW_FORMATS.md).
+[Format-independent workflow execution](../GRAPH_WORKFLOW_FORMATS.md).
 
 ## Purpose and sequence
 
@@ -35,7 +37,7 @@ different market scenarios; and compare the resulting physical projects and
 financial outcomes. Users should eventually be able to search for policies suited
 to their anticipated markets, site, permitted uses, design constraints, and objectives.
 
-The current [library plan](LIBRARY_ARCHITECTURE.md) retains LinkML and builds the
+The current [library plan](../LIBRARY_ARCHITECTURE.md) retains LinkML and builds the
 canonical core directly in the library. The agreed sequence is:
 
 1. Use the completed [domain migration map](DOMAIN_MIGRATION_MAP.md), then implement the minimal
@@ -78,7 +80,7 @@ Conceptually:
 Model₀ + Specification → Run → {Model₁, …, Modelₙ}
 ```
 
-The [core specification](MODEL_SPECIFICATION_RUN.md) defines the root
+The [core specification](../MODEL_SPECIFICATION_RUN.md) defines the root
 responsibilities and drafted scalar child schemas. Richer policy/temporal
 extensions and the migration from existing RK classes still require implementation
 design; the current scalar root names and field contracts are already defined.
@@ -147,7 +149,7 @@ declared supported interface or an explicit outer search procedure.
 
 The top-down root contracts, child-schema proposals, validity rules, and staged
 acceptance examples now live in
-[Model, Specification, and Run: object model and requirements](MODEL_SPECIFICATION_RUN.md).
+[Model, Specification, and Run: object model and requirements](../MODEL_SPECIFICATION_RUN.md).
 They distinguish value/entity/component declarations, expressions, domain
 relationships, mathematical constraints, bindings, resolutions, and Specification-owned
 policies. Scalar record names and shapes are drafted in LinkML; richer extensions
@@ -443,18 +445,18 @@ These are intended acceptance properties, not reports of tests already performed
 
 ## References and precedents
 
-- [Flexibility under uncertainty notebook](../walkthrough/flexibility_under_uncertainty.ipynb):
+- [Flexibility under uncertainty notebook](../../walkthrough/flexibility_under_uncertainty.ipynb):
   the stop-gain policy responds to the first qualifying pricing-factor observation
   above 1.20, adjusts the holding period, and compares flexible and inflexible outcomes
   on common market scenarios. It is a conceptual reference, not the implementation
   of the proposed two-pad example.
 - Geltner and de Neufville, [Flexibility and Real Estate Valuation under Uncertainty:
-  A Practical Guide for Developers](../walkthrough/resources/deNeufvilleGeltnerValuationUnderUncertainty.pdf)
+  A Practical Guide for Developers](../../walkthrough/resources/deNeufvilleGeltnerValuationUnderUncertainty.pdf)
   (2018): Chapter 9, especially printed p. 65, for paired scenario comparisons;
   Chapters 18-19 and Box 18.1 on printed p. 133 for decision rules and information
   limits; Chapter 21, printed pp. 160-161, for product mix; Chapter 22, printed
   pp. 173-174, for sequential phasing and commitment to finish a started phase.
-- [Current Policy implementation](../src/rangekeeper/policy.py): a pair of arbitrary
+- [Current Policy implementation](../../src/rangekeeper/policies/observation.py): a pair of arbitrary
   Python callbacks. Its current API does not enforce the proposed information,
   immutability, or termination boundaries.
 - [Bazel actions](https://bazel.build/extending/rules#actions): separating a declared

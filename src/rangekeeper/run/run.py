@@ -8,7 +8,7 @@ from .._schema.records import Run as RunRecord, Metadata, Report
 from .._schema.validation import document_version
 from .._validation import bounded
 from ..errors import UnsupportedVersionError
-from ._validation import validate_local
+from ._report import validate_local
 
 
 @dataclass(frozen=True, init=False, eq=False)

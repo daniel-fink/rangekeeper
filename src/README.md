@@ -1,5 +1,8 @@
 # Rangekeeper
 
+[Record methods and immutable replacement](../docs/RECORD_BOUNDARY.md) describes the current
+Flow, Movement, Period, Distribution, alignment and account APIs.
+
 Rangekeeper provides immutable `Model`, `Specification` and `Run` records, explicit
 source workflows, Model-backed graph operations, numerical calculations and
 Pyomo/HiGHS execution. LinkML owns persistent fields. Codecs and revision stores
@@ -8,7 +11,7 @@ preserve identity, provenance, ordered mathematics and missing values.
 The current migration is on `acausal-modelling`; these changes are not yet a PyPI
 release. See the [architecture](../docs/LIBRARY_ARCHITECTURE.md),
 [upgrade guide](../docs/LEGACY_UPGRADE_GUIDE.md) and
-[Turn 4 report](../docs/FULL_MIGRATION_TURN4.md).
+[verification guide](../docs/VERIFICATION.md).
 
 ## Installation
 
@@ -27,7 +30,7 @@ Choose extras for the operations you use:
 | `financial` | PyXIRR valuation, IRR and day-count calculations |
 | `calculations` | Known-data Flow operations, probability distributions and scenario kernels |
 | `execution` | Pyomo/HiGHS numerical execution |
-| `pandas` | Detached pandas and CSV adapters |
+| `tables` | Detached Polars and CSV adapters |
 | `plotting` | Matplotlib Flow plots and Plotly presentation |
 | `visualization` | PyVis and Plotly graph presentation |
 | `speckle` | Explicit Speckle receive operations |
@@ -37,7 +40,7 @@ Choose extras for the operations you use:
 For example, the numerical and design walkthroughs require:
 
 ```sh
-pip install '.[calculations,execution,pandas,plotting,visualization,workflow]'
+pip install '.[calculations,execution,tables,plotting,visualization,workflow]'
 ```
 
 The bundled Cytoscape viewer and constructive layouts need no Node.js or solver
@@ -61,7 +64,7 @@ local acceptance. Optional MiniZinc tests skip when that executable is absent.
 Use `--show-plots` only for an interactive Matplotlib test session.
 
 Schema generation uses the separate pinned LinkML tool environment. See
-[verification commands](../docs/research/full-migration/turn4/COMMANDS.md) for
+[verification commands](../docs/VERIFICATION.md) for
 schema, typing, installed-wheel, notebook and project acceptance.
 
 ## Source workflows

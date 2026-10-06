@@ -4,7 +4,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from uuid import UUID, uuid4
 
-from .._comparison import canonical
+from .._comparison import check_revision
 from .._records import Record, UNSET, Unset
 from .._schema.records import (
     Model as ModelRecord,
@@ -20,7 +20,7 @@ from .._schema.records import (
     Source,
 )
 from .._schema.validation import document_version
-from ..errors import RevisionConflictError, UnsupportedVersionError
+from ..errors import UnsupportedVersionError
 from ..units import UnitSystem, default_units
 from ..validate import require_uuid, optional_text
 from ._index import Index
@@ -56,9 +56,9 @@ class Model:
         if record.metadata.schema_version != document_version("Model"):
             raise UnsupportedVersionError(record.metadata.schema_version)
         index = Index.build(record)
-        from .validation import validate
+        from .validation import _validate
 
-        validate(record, units=units).raise_if_invalid()
+        _validate(record, index=index, units=units).raise_if_invalid()
         # Publish state only after both structural/local indexes and semantics pass.
         object.__setattr__(self, "_record", record)
         object.__setattr__(self, "_index", index)
@@ -190,41 +190,16 @@ class Model:
         """
         if not isinstance(update, Update):
             raise TypeError("update must be an Update")
-        candidate = self._record.to_data()
-        for section in ("definitions", "system", "provenance"):
-            value = getattr(update, section)
-            if value is not UNSET:
-                candidate[section] = value.to_data()
-        if isinstance(update.metadata, Unset):
-            metadata = Metadata.from_data(
-                {
-                    **self.metadata.to_data(),
-                    "id": str(uuid4()),
-                    "previous": str(self.id),
-                }
-            )
-        else:
-            metadata = update.metadata
-            if (
-                metadata.id in (self.id, self.metadata.previous)
-                or metadata.previous != self.id
-            ):
-                raise RevisionConflictError(
-                    "new metadata must not reuse this revision or its predecessor, and must set previous=current UUID"
-                )
-            if metadata.schema_version != self.metadata.schema_version:
-                raise UnsupportedVersionError("revise cannot migrate schema versions")
-        proposed_metadata = metadata.to_data()
-        candidate["metadata"] = proposed_metadata
-        before = self.to_data()
-        for data, item in ((before, self.metadata), (candidate, metadata)):
-            # Identity/lineage changes alone do not warrant a new domain revision.
-            data["metadata"] = {
-                k: v for k, v in item.to_data().items() if k not in ("id", "previous")
-            }
-        if canonical("Model", before) == canonical("Model", candidate):
-            raise RevisionConflictError(
-                "update changes no domain or descriptive content"
-            )
-        candidate["metadata"] = proposed_metadata
-        return type(self).from_data(candidate, units=self._units)
+        metadata = (
+            self.metadata.replace(id=uuid4(), previous=self.id)
+            if isinstance(update.metadata, Unset)
+            else update.metadata
+        )
+        candidate = self._record.replace(
+            metadata=metadata,
+            definitions=update.definitions,
+            system=update.system,
+            provenance=update.provenance,
+        )
+        check_revision(self._record, candidate)
+        return type(self)(candidate, units=self._units)

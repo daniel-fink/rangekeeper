@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from datetime import date
 from ..model import Model
 from ..model._references import reference_key
-from ..model.flow import resolve_date
+
 from .._schema.records import ObservationBinding, ObservedQuantity, Quantity
 from ..duration.calendar import require_date
 from .result import Observation
@@ -62,7 +62,7 @@ def observe(
                 available.append(item.date)
             elif item.period is not None:
                 # Period totals cannot be observed before their coverage is complete.
-                available.append(resolve_date(item, timing="last_day"))
+                available.append(item.resolve(timing="last_day"))
             quantity = (
                 None
                 if item.magnitude is None

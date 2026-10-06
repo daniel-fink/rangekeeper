@@ -1,8 +1,10 @@
 # Schema tooling for the proposed RK object model
 
+> Historical design or implementation record. Names, commands and status below describe that checkpoint. Use the [current documentation](../README.md) for supported APIs.
+
 **Historical research, with current decision:** Daniel selected LinkML on
-2026-10-02; see the [decision record](research/current-schema-comparison/DECISION.md)
-and [library architecture](LIBRARY_ARCHITECTURE.md). Recommendations and open
+2026-10-02; see the [decision record](../research/current-schema-comparison/DECISION.md)
+and [library architecture](../LIBRARY_ARCHITECTURE.md). Recommendations and open
 choices below describe the 2026-09-24 study, not the current work queue. Its
 measured observations remain unchanged.
 
@@ -71,7 +73,7 @@ migrations, reference preservation, or execution-version tracking.
 ## 2. What was actually tested
 
 Sources, fixtures, results, and reproduction instructions are retained in
-[the research bundle](research/schema-tooling/README.md). These are synthetic
+[the research bundle](../research/schema-tooling/README.md). These are synthetic
 schema probes, not the proposed RK schema and not tests of the numerical engine.
 
 Tested on Python 3.11.16 with LinkML/linkml-runtime 1.11.1, Pydantic 2.13.5,

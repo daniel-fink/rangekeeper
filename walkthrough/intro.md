@@ -1,44 +1,22 @@
 # Rangekeeper
 
-Rangekeeper is an open-source python-based [code 
-library](https://github.com/daniel-fink/rangekeeper) for financial
-modelling in real estate asset & development planning, decision-making, cashflow
-forecasting, and scenario analysis.
+These notebooks introduce immutable Model records, explicit cashflow calculations,
+scenario generation and policy comparisons. They also show how reviewed design
+content becomes a canonical Model and a financial investigation.
 
-Rangekeeper enables real estate valuation at all stages and resolutions of 
-description — from early-stage ‘back-of-the-envelope’ models to detailed 
-commercial assessments, and can be completely synchronised with 3D design, 
-engineering, and logistics modelling.
+The numerical examples follow David Geltner and Richard de Neufville's
+[Flexibility and Real Estate Valuation under Uncertainty](https://doi.org/10.1002/9781119106470).
+They assume familiarity with its valuation concepts and Python.
 
-It decomposes elements of the Discounted Cash Flow (DCF) Proforma modelling 
-approach into recomposable code functions that can be wired together to form a 
-full model.
+Use the source checkout and optional dependencies listed in the walkthrough README.
+The current notebooks use the pre-1.0 canonical API; a plain installation of the
+published PyPI package may not supply that API. Tables use Polars. Canonical
+records retain their units and provenance independently of display tables.
 
-Development of the library follows the rigorous methodology established by MIT 
-Professors David Geltner and Richard de Neufville, in their book [Flexibility 
-and Real Estate Valuation under Uncertainty: A Practical Guide for 
-Developers](https://www.wiley.com/go/geltner-deneufville/flexibility-and-real-estate-valuation)
-, and expands it into a more robust computational framework.
-
-This walkthrough is intended to provide a brief introduction to the library, as 
-well as examples of its use in practice. There are two sections to the 
-walkthrough:
-1. **Real Estate Flexibility and Valuation under Uncertainty**: a series of 
-   notebooks providing a walkthrough of the library in parallel with chapters of
-   the book. 
-2. **Using Rangekeeper in Examples**: notebooks that showcase some of the 
-   library's functionality in practice 
-
-This walkthrough is intended for use by practitioners who are both familiar with 
-the book's content, and well-versed in data-science-oriented programming. 
-
-For those interested, notebooks can be run interactively via Google Colab, by
-clicking the ![Open In Colab](./resources/rocket.png) icon at the top of each 
-notebook.
-```{note}
-Note: installation of the library via `!pip install rangekeeper` is required 
-for use in Google Colab.
-```
+The five numerical notebooks include a visible routine count of four scenarios.
+`RK_SCENARIO_COUNT=2000` selects the larger study. The two design notebooks use an
+explicit local fixture by default. Live receive requires separate configuration;
+there is no automatic fallback or service publication.
 
 ## Table of Contents
 ```{tableofcontents}

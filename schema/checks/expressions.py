@@ -103,7 +103,7 @@ assert infer_expression_domain(rich["expressions"][2], scope=build_scope(rich)) 
 readme = [
     yaml.safe_load(block)
     for block in re.findall(
-        r"```yaml\n(.*?)```", (SCHEMA / "README.md").read_text(), re.DOTALL
+        r"```yaml\n(.*?)```", (SCHEMA.parent / "docs/SCHEMA_EXAMPLES.md").read_text(), re.DOTALL
     )
     if "kind: binary" in block
 ]
@@ -113,7 +113,7 @@ valid.extend(("Expression", item) for item in readme)
 readme_constraints = [
     yaml.safe_load(block)
     for block in re.findall(
-        r"```yaml\n(.*?)```", (SCHEMA / "README.md").read_text(), re.DOTALL
+        r"```yaml\n(.*?)```", (SCHEMA.parent / "docs/SCHEMA_EXAMPLES.md").read_text(), re.DOTALL
     )
     if "\npredicate: " in block
 ]

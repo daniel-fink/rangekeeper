@@ -14,32 +14,95 @@ import json
 import math
 from typing import Literal
 
-from ..model.flow import (
-    Flow,
-    Movement,
-    movement_coordinate,
-    validate_flow,
-    resolve_date,
-)
+from ..model.flow import Flow, Movement
 from ..model.duration import Period
 from ..model.measure import Quantity
-from ..duration.period import PeriodTiming, validate_period
 from ..duration.calendar import DayCount, elapsed_days, year_fraction
-from ..units import UnitSystem, default_units
-
-from ._flow import replace_movements, replace_movement
-
-Missing = Literal["error", "propagate", "skip", "zero"]
+from ..units import default_units
+from .._behaviors.flow import Missing
+from .._records import UNSET
 
 
 @dataclass(frozen=True, slots=True)
-class AlignmentResult:
+class Alignment:
+    """Common coordinates with the original known-value mask and missing policy.
+
+    Construct with ``align``. Repeated reductions reuse the alignment and report
+    original coverage even when absent coordinates were explicitly filled with zero.
+    """
+
     flows: tuple[Flow, ...]
     coverage: tuple[tuple[bool, ...], ...]
+    missing: Missing = "error"
+
+    def __post_init__(self) -> None:
+        if not self.flows or len(self.coverage) != len(self.flows):
+            raise ValueError("alignment requires one coverage row per Flow")
+        if self.missing not in ("error", "propagate", "skip", "zero"):
+            raise ValueError("invalid missing policy")
+        coordinates = tuple(m.coordinate for m in self.flows[0].movements)
+        for flow, row in zip(self.flows, self.coverage):
+            flow.check(resolved=self.missing == "error")
+            if (
+                len(row) != len(coordinates)
+                or tuple(m.coordinate for m in flow.movements) != coordinates
+            ):
+                raise ValueError("alignment coordinates and coverage must agree")
+
+    def reduce(self, *, reducer: str = "sum", units: str | None = None) -> Aggregation:
+        """Reduce compatible quantities with one rule for Claims and missing values.
+
+        All-missing groups remain unresolved, including with skip. Zero filling
+        applies only to absent coordinates, as selected when the alignment was made.
+        Unit conversion occurs before reduction; coverage uses the original mask.
+        """
+        if reducer not in ("sum", "min", "max"):
+            raise ValueError("reducer must be sum, min or max")
+        converted = []
+        for flow, row in zip(self.flows, self.coverage):
+            result = flow.convert(units=units or self.flows[0].units)
+            if self.missing == "zero":
+                # Absent coordinates contribute zero in the requested units, even
+                # when conversion has an offset (for example, Celsius to Kelvin).
+                result = result.replace(
+                    movements=tuple(
+                        (
+                            movement.replace(magnitude=0.0)
+                            if not known and movement.magnitude is not None
+                            else movement
+                        )
+                        for movement, known in zip(result.movements, row)
+                    )
+                )
+            converted.append(result)
+        movements, coverage = [], []
+        for index, group in enumerate(zip(*(flow.movements for flow in converted))):
+            known = [
+                movement.number for movement in group if movement.magnitude is not None
+            ]
+            value = None
+            if known and (len(known) == len(group) or self.missing == "skip"):
+                value = (
+                    math.fsum(known)
+                    if reducer == "sum"
+                    else (min(known) if reducer == "min" else max(known))
+                )
+            claims = tuple(
+                dict.fromkeys(
+                    claim for movement in group for claim in (movement.claims or ())
+                )
+            )
+            movements.append(group[0].replace(magnitude=value, claims=claims))
+            coverage.append(sum(row[index] for row in self.coverage) / len(group))
+        return Aggregation(
+            converted[0].replace(movements=tuple(movements)).check(), tuple(coverage)
+        )
 
 
 @dataclass(frozen=True, slots=True)
-class AggregateResult:
+class Aggregation:
+    """A reduced Flow and the known fraction of its inputs at each coordinate."""
+
     flow: Flow
     coverage: tuple[float, ...]
 
@@ -55,12 +118,12 @@ def _polars():
 
 
 def _key(movement: Movement) -> str:
-    return json.dumps(movement_coordinate(movement))
+    return json.dumps(movement.coordinate)
 
 
 def align(
     flows: Sequence[Flow], *, join: str = "exact", missing: Missing = "error"
-) -> AlignmentResult:
+) -> Alignment:
     """Align on explicit coordinates; zero fills absent rows, never unresolved movements.
 
     Exact alignment is the default. Union/intersection must be requested. Coverage
@@ -78,7 +141,7 @@ def align(
     maps, templates = [], {}
     modes: set[bool] = set()
     for flow in flows:
-        validate_flow(flow)
+        flow.check()
         mapping = {_key(movement): movement for movement in flow.movements}
         maps.append(mapping)
         templates.update(
@@ -100,7 +163,7 @@ def align(
     def order(key: str) -> tuple[date, str]:
         movement = templates[key]
         period = movement.period
-        return (period.start if period is not None else resolve_date(movement), key)
+        return (period.start if period is not None else movement.resolve(), key)
 
     keys.sort(key=order)
     pl = _polars()
@@ -128,66 +191,14 @@ def align(
                 magnitude = 0.0
             source = mapping.get(key, templates[key])
             movements.append(
-                replace_movement(
-                    source, magnitude, claims=source.claims if present else ()
-                )
+                source.replace(magnitude=magnitude, claims=UNSET if present else ())
             )
-        aligned.append(replace_movements(flow, movements))
+        aligned.append(flow.replace(movements=tuple(movements)).check())
         coverages.append(tuple(coverage))
-    return AlignmentResult(tuple(aligned), tuple(coverages))
+    return Alignment(tuple(aligned), tuple(coverages), missing)
 
 
-def convert(flow: Flow, *, units: str, unit_system: UnitSystem = default_units) -> Flow:
-    """Convert all known movements together; retain unresolved movements and evidence."""
-    if not unit_system.compatible(flow.units, units):
-        raise ValueError("incompatible Flow units")
-    return replace_movements(
-        flow,
-        [
-            replace_movement(
-                s,
-                (
-                    None
-                    if s.magnitude is None
-                    else unit_system.convert(
-                        Quantity(magnitude=s.magnitude, units=flow.units), to=units
-                    ).magnitude
-                ),
-            )
-            for s in flow.movements
-        ],
-        units=units,
-    )
-
-
-def sum_flows(
-    flows: Sequence[Flow],
-    *,
-    units: str | None = None,
-    missing: Missing = "error",
-    join: str = "exact",
-) -> AggregateResult:
-    """Add compatible quantities pointwise; all-missing results remain unresolved."""
-    if not flows:
-        raise ValueError("sum needs at least one Flow")
-    converted = tuple(convert(flow, units=units or flows[0].units) for flow in flows)
-    aligned = align(converted, join=join, missing=missing)
-    movements, coverage = [], []
-    for index, group in enumerate(zip(*(flow.movements for flow in aligned.flows))):
-        known = [s.magnitude for s in group if s.magnitude is not None]
-        complete = len(known) == len(group)
-        magnitude = (
-            math.fsum(known) if known and (complete or missing == "skip") else None
-        )
-        claims = tuple(
-            dict.fromkeys(c for movement in group for c in (movement.claims or ()))
-        )
-        movements.append(replace_movement(group[0], magnitude, claims=claims))
-        coverage.append(sum(row[index] for row in aligned.coverage) / len(group))
-    return AggregateResult(replace_movements(converted[0], movements), tuple(coverage))
-
-
-def multiply_flows(flows: Sequence[Flow]) -> Flow:
+def multiply(flows: Sequence[Flow]) -> Flow:
     """Multiply aligned known movements and units without removing time dimensions.
 
     Normalize dimensionless scales such as percent to ratios before multiplication.
@@ -197,9 +208,11 @@ def multiply_flows(flows: Sequence[Flow]) -> Flow:
     if not flows:
         raise ValueError("product needs at least one Flow")
     flows = tuple(
-        convert(flow, units="dimensionless")
-        if default_units.compatible(flow.units, "dimensionless")
-        else flow
+        (
+            flow.convert(units="dimensionless")
+            if default_units.compatible(flow.units, "dimensionless")
+            else flow
+        )
         for flow in flows
     )
     aligned = align(flows)
@@ -207,49 +220,13 @@ def multiply_flows(flows: Sequence[Flow]) -> Flow:
     for flow in flows:
         unit = default_units.multiply(unit, flow.units)
     movements = [
-        replace_movement(
-            group[0],
-            math.prod(s.magnitude for s in group),
-            claims=tuple(dict.fromkeys(c for s in group for c in (s.claims or ()))),
+        group[0].replace(
+            magnitude=math.prod(s.number for s in group),
+            claims=tuple(dict.fromkeys((c for s in group for c in s.claims or ()))),
         )
         for group in zip(*(flow.movements for flow in aligned.flows))
     ]
-    return replace_movements(flows[0], movements, units=unit)
-
-
-def scale(flow: Flow, factor: float) -> Flow:
-    """Multiply by a finite dimensionless scalar, preserving missing movements."""
-    if type(factor) not in (int, float) or not math.isfinite(factor):
-        raise ValueError("factor must be finite")
-    return replace_movements(
-        flow,
-        [
-            replace_movement(s, None if s.magnitude is None else s.magnitude * factor)
-            for s in flow.movements
-        ],
-    )
-
-
-def negate(flow: Flow) -> Flow:
-    return scale(flow, -1)
-
-
-def total(flow: Flow, *, missing: Missing = "error") -> Quantity | None:
-    """Sum entries over time, retaining their units.
-
-    This is a numerical sum. The model determines whether summation expresses
-    the intended quantity; no balance, rate or other interpretation is inferred.
-    """
-    validate_flow(flow)
-    if missing not in ("error", "propagate", "skip"):
-        raise ValueError("total missing must be error, propagate or skip")
-    values = [s.magnitude for s in flow.movements if s.magnitude is not None]
-    if len(values) != len(flow.movements):
-        if missing == "error":
-            raise ValueError("cannot total unresolved movements")
-        if missing == "propagate" or not values:
-            return None
-    return Quantity(magnitude=math.fsum(values), units=flow.units)
+    return flows[0].replace(movements=tuple(movements), units=unit).check()
 
 
 def integrate(
@@ -265,7 +242,7 @@ def integrate(
     A day-count convention uses period boundaries and a quantity measured in years.
     Calling this operation supplies the integration rule; the Flow has no rate kind.
     """
-    validate_flow(flow)
+    flow.check()
     if (exposures is None) == (day_count is None):
         raise ValueError("supply exactly one of exposures or day_count")
     if exposures is None:
@@ -299,13 +276,14 @@ def integrate(
             if movement.magnitude is None
             else default_units.convert(
                 Quantity(
-                    magnitude=movement.magnitude * exposure.magnitude, units=product_unit
+                    magnitude=movement.magnitude * exposure.magnitude,
+                    units=product_unit,
                 ),
                 to=output_units,
             ).magnitude
         )
-        movements.append(replace_movement(movement, magnitude))
-    return replace_movements(flow, movements, units=output_units)
+        movements.append(movement.replace(magnitude=magnitude))
+    return flow.replace(movements=tuple(movements), units=output_units).check()
 
 
 def resample(
@@ -315,7 +293,7 @@ def resample(
     reduction: str,
     missing: Missing = "error",
     weighting: Literal["observations", "elapsed"] | None = None,
-) -> AggregateResult:
+) -> Aggregation:
     """Reduce observations into a complete period grid with explicit missing rules.
 
     The caller selects sum, first, last, min, max or mean. Means require an explicit
@@ -325,9 +303,8 @@ def resample(
     cannot cross target periods; allocate them explicitly first. missing="zero"
     fills empty target groups only, never unresolved entries in a populated group.
     """
-    from ..model.flow import from_periods
 
-    validate_flow(flow)
+    flow.check()
     if missing not in ("error", "propagate", "skip", "zero"):
         raise ValueError("invalid missing policy")
     if reduction not in {"sum", "first", "last", "mean", "min", "max"}:
@@ -344,7 +321,7 @@ def resample(
         raise ValueError("elapsed weighting requires bounded movements")
     periods = tuple(periods)
     for i, period in enumerate(periods):
-        validate_period(period)
+        period.check()
         if i and elapsed_days(periods[i - 1].end, period.start) < 0:
             raise ValueError("resampling periods overlap or are unordered")
     groups: list[list[Movement]] = [[] for _ in periods]
@@ -358,7 +335,7 @@ def resample(
                 and movement.period.end <= period.end
             ]
         else:
-            point = resolve_date(movement)
+            point = movement.resolve()
             matches = [
                 i
                 for i, period in enumerate(periods)
@@ -404,182 +381,28 @@ def resample(
         if not movements and missing == "zero":
             value = 0.0
         values.append(value)
-    result = from_periods(
-        periods,
-        values,
-        units=flow.units,
-    )
-    result = replace_movements(
-        result,
-        [
-            replace_movement(
-                s,
-                s.magnitude,
+    result = Flow.from_periods(periods, values, units=flow.units)
+    result = result.replace(
+        movements=tuple(
+            s.replace(
+                magnitude=s.magnitude,
                 claims=tuple(
-                    dict.fromkeys(c for origin in group for c in (origin.claims or ()))
+                    dict.fromkeys((c for origin in group for c in origin.claims or ()))
                 ),
             )
             for s, group in zip(result.movements, groups)
-        ],
-    )
-    return AggregateResult(result, tuple(coverages))
-
-
-def trim(flow: Flow, *, start: date, end: date) -> Flow:
-    """Select dates in [start, end) or whole periods contained in that interval.
-
-    Partial period overlap raises ValueError; trimming must not silently allocate
-    a period quantity or substitute an assumed payment date for its coverage.
-    """
-    validate_flow(flow)
-    if elapsed_days(start, end) < 0:
-        raise ValueError("trim end precedes start")
-    selected = []
-    for movement in flow.movements:
-        if movement.period is None:
-            if start <= resolve_date(movement) < end:
-                selected.append(movement)
-        else:
-            period = movement.period
-            if period.end <= start or period.start >= end:
-                continue
-            if period.start < start or period.end > end:
-                raise ValueError("trim crosses a movement period; allocate explicitly")
-            selected.append(movement)
-    return replace_movements(flow, selected)
-
-
-def clean(flow: Flow, *, remove_zeroes: bool = False) -> Flow:
-    """Explicitly remove unresolved movements, and optionally zeroes; do not impute data."""
-    return replace_movements(
-        flow,
-        [
-            s
-            for s in flow.movements
-            if s.magnitude is not None and (not remove_zeroes or s.magnitude != 0)
-        ],
-    )
-
-
-def difference(flow: Flow, *, initial: float | None = None) -> Flow:
-    """Return adjacent differences; a missing neighbour yields an unresolved movement.
-
-    The first movement is unresolved unless the caller supplies an initial value in
-    the Flow's units. The model determines what the changes represent.
-    """
-    previous, movements = initial, []
-    for movement in flow.movements:
-        magnitude = (
-            None
-            if previous is None or movement.magnitude is None
-            else movement.magnitude - previous
         )
-        movements.append(replace_movement(movement, magnitude))
-        previous = movement.magnitude
-    return replace_movements(flow, movements)
+    ).check()
+    return Aggregation(result, tuple(coverages))
 
 
-def collapse(
-    flow: Flow,
-    *,
-    on: date | None = None,
-    timing: PeriodTiming | None = None,
-    missing: Missing = "error",
-) -> Flow:
-    """Place one total on a selected date and retain input Claims.
-
-    For period content, supply on or a timing convention unless the final movement
-    already records a date. This explicit loss of temporal detail does not mutate
-    the source Flow. Empty input is returned unchanged.
-    """
-    from ..duration.calendar import require_date
-
-    if on is not None and timing is not None:
-        raise ValueError("supply on or timing, not both")
-    if not flow.movements:
-        return flow
-    quantity = total(flow, missing=missing)
-    day = (
-        require_date(on)
-        if on is not None
-        else resolve_date(flow.movements[-1], timing=timing)
-    )
-    claims = tuple(dict.fromkeys(c for s in flow.movements for c in (s.claims or ())))
-    movement = Movement(
-        key=flow.movements[-1].key,
-        date=day,
-        magnitude=None if quantity is None else quantity.magnitude,
-        claims=claims,
-    )
-    return replace_movements(flow, [movement])
-
-
-def reduce_flows(
+def aggregate(
     flows: Sequence[Flow],
     *,
-    reducer: str,
+    reducer: str = "sum",
     units: str | None = None,
     missing: Missing = "error",
     join: str = "exact",
-) -> AggregateResult:
-    """Reduce aligned compatible Flows with sum/min/max and explicit partial coverage."""
-    if reducer == "sum":
-        return sum_flows(flows, units=units, missing=missing, join=join)
-    if reducer not in {"min", "max"} or not flows:
-        raise ValueError("extrema require compatible Flows and min/max reducer")
-    converted = tuple(convert(flow, units=units or flows[0].units) for flow in flows)
-    aligned = align(converted, join=join, missing=missing)
-    result, coverage = [], []
-    for i, movements in enumerate(zip(*(flow.movements for flow in aligned.flows))):
-        known = [s.magnitude for s in movements if s.magnitude is not None]
-        value = (
-            (min if reducer == "min" else max)(known)
-            if known and (len(known) == len(movements) or missing == "skip")
-            else None
-        )
-        result.append(
-            replace_movement(
-                movements[0],
-                value,
-                claims=tuple(
-                    dict.fromkeys(c for s in movements for c in (s.claims or ()))
-                ),
-            )
-        )
-        coverage.append(sum(row[i] for row in aligned.coverage) / len(movements))
-    return AggregateResult(replace_movements(converted[0], result), tuple(coverage))
-
-
-def find_extent(
-    flow: Flow, *, include_zeroes: bool = False
-) -> tuple[date, date] | None:
-    """Return selected period coverage [start,end), or first/last dated events.
-
-    Unresolved movements and, by default, zeroes are excluded. Period boundaries
-    describe coverage even when independent payment dates are recorded.
-    """
-    validate_flow(flow)
-    selected = [
-        s
-        for s in flow.movements
-        if s.magnitude is not None and (include_zeroes or s.magnitude != 0)
-    ]
-    if not selected:
-        return None
-    first, last = selected[0], selected[-1]
-    if first.period is not None and last.period is not None:
-        return first.period.start, last.period.end
-    return resolve_date(first), resolve_date(last)
-
-
-def trim_empty(flow: Flow) -> Flow:
-    """Remove leading/trailing zero or unresolved rows, retaining interior gaps."""
-    validate_flow(flow)
-    selected = [
-        i
-        for i, s in enumerate(flow.movements)
-        if s.magnitude is not None and s.magnitude != 0
-    ]
-    return replace_movements(
-        flow, flow.movements[selected[0] : selected[-1] + 1] if selected else ()
-    )
+) -> Aggregation:
+    """Align and reduce compatible Flows; use Alignment.reduce to reuse a shared grid."""
+    return align(flows, join=join, missing=missing).reduce(reducer=reducer, units=units)

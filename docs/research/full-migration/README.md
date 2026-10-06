@@ -1,6 +1,6 @@
 # Full migration discovery evidence
 
-Captured 2026-10-03 for the [full-refactor review](../../FULL_MIGRATION_REVIEW.md).
+Captured 2026-10-03 for the [full-refactor review](../../history/FULL_MIGRATION_REVIEW.md).
 This is static discovery, not a new test baseline or completed behavior audit.
 
 Run from the repository root:

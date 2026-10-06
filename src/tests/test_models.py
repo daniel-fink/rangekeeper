@@ -44,7 +44,7 @@ def test_linear_known_data_regression():
     assert math.isclose(
         result.disposition.movements[-1].magnitude, 1218.99, rel_tol=0.01
     )
-    assert series.total(result.pv_sums).magnitude == pytest.approx(1000)
+    assert result.pv_sums.total().magnitude == pytest.approx(1000)
     assert abs(result.irr.residual.magnitude) < 1e-7
     assert len(result.investment_cashflows.movements) == 11
 

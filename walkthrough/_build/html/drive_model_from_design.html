@@ -443,7 +443,8 @@ document.write(`
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">polars</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pl</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">set_tbl_cols</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">display</span><span class="p">,</span> <span class="n">IFrame</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.examples</span><span class="w"> </span><span class="kn">import</span> <span class="n">design</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.model</span><span class="w"> </span><span class="kn">import</span> <span class="n">Model</span>
@@ -526,79 +527,22 @@ document.write(`
     <span class="n">FieldColumn</span><span class="p">(</span><span class="s2">"Class"</span><span class="p">,</span> <span class="s2">"classification_code"</span><span class="p">),</span> <span class="n">ValueColumn</span><span class="p">(</span><span class="s2">"GFA (m²)"</span><span class="p">,</span> <span class="s2">"gfa"</span><span class="p">,</span> <span class="s2">"meter ** 2"</span><span class="p">),</span>
     <span class="n">PropertyColumn</span><span class="p">(</span><span class="s2">"Use"</span><span class="p">,</span> <span class="s2">"use"</span><span class="p">),</span> <span class="n">PropertyColumn</span><span class="p">(</span><span class="s2">"Number"</span><span class="p">,</span> <span class="s2">"number"</span><span class="p">),</span>
 <span class="p">))</span>
-<span class="n">display</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="nb">dict</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">rows</span><span class="p">]))</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.adapters.polars</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_frame</span>
+<span class="n">display</span><span class="p">(</span><span class="n">to_frame</span><span class="p">(</span><span class="n">table</span><span class="p">))</span>
 <span class="n">viewer</span> <span class="o">=</span> <span class="n">cytoscape</span><span class="o">.</span><span class="n">write_viewer</span><span class="p">([</span><span class="n">cytoscape</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">spatial_view</span><span class="p">,</span> <span class="s2">"Spatial containment"</span><span class="p">)],</span> <span class="n">OUTPUT</span> <span class="o">/</span> <span class="s2">"spatial.html"</span><span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">IFrame</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">viewer</span><span class="p">),</span> <span class="n">width</span><span class="o">=</span><span class="s2">"100%"</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">600</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html"><div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
+<div class="output text_html"><div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
 </style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>ID</th>
-      <th>Name</th>
-      <th>Class</th>
-      <th>GFA (m²)</th>
-      <th>Use</th>
-      <th>Number</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>68bb7529-541f-5dc4-9742-57398a8cacff</td>
-      <td>floor</td>
-      <td>floor</td>
-      <td>1000.0</td>
-      <td>None</td>
-      <td>1.0</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>e98fc2e9-a2f2-560f-a4c4-140d695b0e85</td>
-      <td>cores</td>
-      <td>utilities</td>
-      <td>NaN</td>
-      <td>cores</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>26987824-5607-5f51-88e0-fc041bb02609</td>
-      <td>space</td>
-      <td>space</td>
-      <td>NaN</td>
-      <td>hotel</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>3912b85d-46e4-5e98-af3f-593bca6886b5</td>
-      <td>property</td>
-      <td>property</td>
-      <td>NaN</td>
-      <td>None</td>
-      <td>NaN</td>
-    </tr>
-  </tbody>
-</table>
-</div></div><div class="output text_html">
+<small>shape: (4, 6)</small><table border="1" class="dataframe"><thead><tr><th>ID</th><th>Name</th><th>Class</th><th>GFA (m²)</th><th>Use</th><th>Number</th></tr><tr><td>object</td><td>str</td><td>str</td><td>f64</td><td>str</td><td>i64</td></tr></thead><tbody><tr><td>68bb7529-541f-5dc4-9742-57398a8cacff</td><td>&quot;floor&quot;</td><td>&quot;floor&quot;</td><td>1000.0</td><td>null</td><td>1</td></tr><tr><td>e98fc2e9-a2f2-560f-a4c4-140d695b0e85</td><td>&quot;cores&quot;</td><td>&quot;utilities&quot;</td><td>null</td><td>&quot;cores&quot;</td><td>null</td></tr><tr><td>26987824-5607-5f51-88e0-fc041bb02609</td><td>&quot;space&quot;</td><td>&quot;space&quot;</td><td>null</td><td>&quot;hotel&quot;</td><td>null</td></tr><tr><td>3912b85d-46e4-5e98-af3f-593bca6886b5</td><td>&quot;property&quot;</td><td>&quot;property&quot;</td><td>null</td><td>null</td><td>null</td></tr></tbody></table></div></div><div class="output text_html">
         <iframe
             width="100%"
             height="600"
@@ -645,82 +589,20 @@ document.write(`
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Expected one utility named </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span>
     <span class="n">utility_kinds</span><span class="p">[</span><span class="n">matches</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">kind</span>
 <span class="n">model</span> <span class="o">=</span> <span class="n">design</span><span class="o">.</span><span class="n">author</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="n">root</span><span class="p">,</span> <span class="n">utility_kinds</span><span class="o">=</span><span class="n">utility_kinds</span><span class="p">)</span>
-<span class="n">display</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">"Efficiency"</span><span class="p">:</span> <span class="n">design</span><span class="o">.</span><span class="n">EFFICIENCY</span><span class="p">,</span> <span class="s2">"Initial rent (AUD/m²)"</span><span class="p">:</span> <span class="n">design</span><span class="o">.</span><span class="n">RENT</span><span class="p">,</span> <span class="s2">"PGI growth"</span><span class="p">:</span> <span class="n">design</span><span class="o">.</span><span class="n">GROWTH</span><span class="p">,</span> <span class="s2">"Vacancy"</span><span class="p">:</span> <span class="n">design</span><span class="o">.</span><span class="n">VACANCY</span><span class="p">,</span> <span class="s2">"Floor OPEX (AUD/m²)"</span><span class="p">:</span> <span class="n">design</span><span class="o">.</span><span class="n">FLOOR_OPEX</span><span class="p">,</span> <span class="s2">"Facade OPEX (AUD/m²)"</span><span class="p">:</span> <span class="n">design</span><span class="o">.</span><span class="n">FACADE_OPEX</span><span class="p">,</span> <span class="s2">"Floor CAPEX (AUD/m²)"</span><span class="p">:</span> <span class="n">design</span><span class="o">.</span><span class="n">FLOOR_CAPEX</span><span class="p">}))</span>
+<span class="n">assumptions</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"Efficiency"</span><span class="p">:</span> <span class="n">design</span><span class="o">.</span><span class="n">EFFICIENCY</span><span class="p">,</span> <span class="s2">"Initial rent (AUD/m²)"</span><span class="p">:</span> <span class="n">design</span><span class="o">.</span><span class="n">RENT</span><span class="p">,</span> <span class="s2">"PGI growth"</span><span class="p">:</span> <span class="n">design</span><span class="o">.</span><span class="n">GROWTH</span><span class="p">,</span> <span class="s2">"Vacancy"</span><span class="p">:</span> <span class="n">design</span><span class="o">.</span><span class="n">VACANCY</span><span class="p">,</span> <span class="s2">"Floor OPEX (AUD/m²)"</span><span class="p">:</span> <span class="n">design</span><span class="o">.</span><span class="n">FLOOR_OPEX</span><span class="p">,</span> <span class="s2">"Facade OPEX (AUD/m²)"</span><span class="p">:</span> <span class="n">design</span><span class="o">.</span><span class="n">FACADE_OPEX</span><span class="p">,</span> <span class="s2">"Floor CAPEX (AUD/m²)"</span><span class="p">:</span> <span class="n">design</span><span class="o">.</span><span class="n">FLOOR_CAPEX</span><span class="p">}</span>
+<span class="n">display</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([{</span><span class="s2">"Use"</span><span class="p">:</span> <span class="n">use</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">values</span><span class="p">[</span><span class="n">use</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">assumptions</span><span class="o">.</span><span class="n">items</span><span class="p">()}}</span> <span class="k">for</span> <span class="n">use</span> <span class="ow">in</span> <span class="n">design</span><span class="o">.</span><span class="n">EFFICIENCY</span><span class="p">]))</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html"><div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
+<div class="output text_html"><div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
 </style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Efficiency</th>
-      <th>Initial rent (AUD/m²)</th>
-      <th>PGI growth</th>
-      <th>Vacancy</th>
-      <th>Floor OPEX (AUD/m²)</th>
-      <th>Facade OPEX (AUD/m²)</th>
-      <th>Floor CAPEX (AUD/m²)</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>hotel</th>
-      <td>0.800</td>
-      <td>750</td>
-      <td>0.035</td>
-      <td>0.025</td>
-      <td>-175</td>
-      <td>-50</td>
-      <td>-100</td>
-    </tr>
-    <tr>
-      <th>retail</th>
-      <td>0.675</td>
-      <td>1000</td>
-      <td>0.075</td>
-      <td>0.075</td>
-      <td>-225</td>
-      <td>-100</td>
-      <td>-150</td>
-    </tr>
-    <tr>
-      <th>residential</th>
-      <td>0.750</td>
-      <td>600</td>
-      <td>0.055</td>
-      <td>0.015</td>
-      <td>-125</td>
-      <td>-50</td>
-      <td>-75</td>
-    </tr>
-    <tr>
-      <th>parking</th>
-      <td>0.900</td>
-      <td>0</td>
-      <td>0.000</td>
-      <td>0.000</td>
-      <td>-65</td>
-      <td>-25</td>
-      <td>-50</td>
-    </tr>
-  </tbody>
-</table>
-</div></div></div>
+<small>shape: (4, 8)</small><table border="1" class="dataframe"><thead><tr><th>Use</th><th>Efficiency</th><th>Initial rent (AUD/m²)</th><th>PGI growth</th><th>Vacancy</th><th>Floor OPEX (AUD/m²)</th><th>Facade OPEX (AUD/m²)</th><th>Floor CAPEX (AUD/m²)</th></tr><tr><td>str</td><td>f64</td><td>i64</td><td>f64</td><td>f64</td><td>i64</td><td>i64</td><td>i64</td></tr></thead><tbody><tr><td>&quot;hotel&quot;</td><td>0.8</td><td>750</td><td>0.035</td><td>0.025</td><td>-175</td><td>-50</td><td>-100</td></tr><tr><td>&quot;retail&quot;</td><td>0.675</td><td>1000</td><td>0.075</td><td>0.075</td><td>-225</td><td>-100</td><td>-150</td></tr><tr><td>&quot;residential&quot;</td><td>0.75</td><td>600</td><td>0.055</td><td>0.015</td><td>-125</td><td>-50</td><td>-75</td></tr><tr><td>&quot;parking&quot;</td><td>0.9</td><td>0</td><td>0.0</td><td>0.0</td><td>-65</td><td>-25</td><td>-50</td></tr></tbody></table></div></div></div>
 </div>
 </section>
 <section id="declare-governing-mathematics">
@@ -769,7 +651,7 @@ Explicit unknowns: 395
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Accepted Run: 6aaeded2-1922-43e1-9b60-d96a74695f3d
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Accepted Run: f8dba3e1-91a1-4e79-a4f2-64b5ec2806e3
 Property PV: AUD 8,664,230.65
 </pre></div>
 </div>
@@ -781,9 +663,9 @@ Property PV: AUD 8,664,230.65
 <p>Expenses retain their negative sign. Zero in the non-payment years is a declared zero, not missing data. Source evidence and prior Claims remain available in the accepted Model.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.adapters.pandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_series</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.adapters</span><span class="w"> </span><span class="kn">import</span> <span class="n">polars</span> <span class="k">as</span> <span class="n">tables</span>
 <span class="n">component_names</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"pgi"</span><span class="p">,</span> <span class="s2">"vacancy"</span><span class="p">,</span> <span class="s2">"egi"</span><span class="p">,</span> <span class="s2">"floor_opex"</span><span class="p">,</span> <span class="s2">"facade_opex"</span><span class="p">,</span> <span class="s2">"opex"</span><span class="p">,</span> <span class="s2">"floor_capex"</span><span class="p">,</span> <span class="s2">"utility_capex"</span><span class="p">,</span> <span class="s2">"capex"</span><span class="p">,</span> <span class="s2">"noi"</span><span class="p">,</span> <span class="s2">"nacf"</span><span class="p">,</span> <span class="s2">"reversion"</span><span class="p">,</span> <span class="s2">"total"</span><span class="p">,</span> <span class="s2">"discounted"</span><span class="p">)</span>
-<span class="n">display</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="n">name</span><span class="p">:</span> <span class="n">to_series</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">flow</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">component_names</span><span class="p">})</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s2">"outside declared horizon"</span><span class="p">))</span>
+<span class="n">display</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">tables</span><span class="o">.</span><span class="n">dates</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">flow</span><span class="p">)</span><span class="o">.</span><span class="n">with_columns</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">lit</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">"component"</span><span class="p">))</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">component_names</span><span class="p">])</span><span class="o">.</span><span class="n">pivot</span><span class="p">(</span><span class="n">on</span><span class="o">=</span><span class="s2">"component"</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="s2">"date"</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="s2">"magnitude"</span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s2">"date"</span><span class="p">))</span>
 <span class="n">figure</span> <span class="o">=</span> <span class="n">plot_flows</span><span class="p">({</span><span class="n">name</span><span class="p">:</span> <span class="n">results</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">flow</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"egi"</span><span class="p">,</span> <span class="s2">"opex"</span><span class="p">,</span> <span class="s2">"capex"</span><span class="p">,</span> <span class="s2">"nacf"</span><span class="p">)},</span> <span class="n">title</span><span class="o">=</span><span class="s2">"Operating and capital cashflows (AUD)"</span><span class="p">)</span>
 <span class="c1"># Label the actual year-end payment dates, rather than the next January tick.</span>
 <span class="n">axis</span> <span class="o">=</span> <span class="n">figure</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -793,247 +675,26 @@ Property PV: AUD 8,664,230.65
 <span class="n">figure</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 <span class="n">figure</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">OUTPUT</span> <span class="o">/</span> <span class="s2">"components.png"</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">figure</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Average annual OPEX (11-period calculation span):"</span><span class="p">,</span> <span class="n">to_series</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s2">"opex"</span><span class="p">]</span><span class="o">.</span><span class="n">flow</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Average annual CAPEX (11-period calculation span):"</span><span class="p">,</span> <span class="n">to_series</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s2">"capex"</span><span class="p">]</span><span class="o">.</span><span class="n">flow</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Average annual OPEX (11-period calculation span):"</span><span class="p">,</span> <span class="n">results</span><span class="p">[</span><span class="s2">"opex"</span><span class="p">]</span><span class="o">.</span><span class="n">flow</span><span class="o">.</span><span class="n">total</span><span class="p">()</span><span class="o">.</span><span class="n">magnitude</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s2">"opex"</span><span class="p">]</span><span class="o">.</span><span class="n">flow</span><span class="o">.</span><span class="n">movements</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Average annual CAPEX (11-period calculation span):"</span><span class="p">,</span> <span class="n">results</span><span class="p">[</span><span class="s2">"capex"</span><span class="p">]</span><span class="o">.</span><span class="n">flow</span><span class="o">.</span><span class="n">total</span><span class="p">()</span><span class="o">.</span><span class="n">magnitude</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s2">"capex"</span><span class="p">]</span><span class="o">.</span><span class="n">flow</span><span class="o">.</span><span class="n">movements</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/var/folders/sk/cjq5zjks7gx_3tf9m67y43xr0000gn/T/ipykernel_80604/1061869740.py:3: FutureWarning:
-
-Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+<div class="output text_html"><div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (11, 15)</small><table border="1" class="dataframe"><thead><tr><th>date</th><th>pgi</th><th>vacancy</th><th>egi</th><th>floor_opex</th><th>facade_opex</th><th>opex</th><th>floor_capex</th><th>utility_capex</th><th>capex</th><th>noi</th><th>nacf</th><th>reversion</th><th>total</th><th>discounted</th></tr><tr><td>date</td><td>f64</td><td>f64</td><td>f64</td><td>f64</td><td>f64</td><td>f64</td><td>f64</td><td>f64</td><td>f64</td><td>f64</td><td>f64</td><td>f64</td><td>f64</td><td>f64</td></tr></thead><tbody><tr><td>2001-12-31</td><td>600000.0</td><td>-15000.0</td><td>585000.0</td><td>-175000.0</td><td>-18000.0</td><td>-193000.0</td><td>-0.0</td><td>-0.0</td><td>-0.0</td><td>392000.0</td><td>392000.0</td><td>-0.0</td><td>392000.0</td><td>366355.140187</td></tr><tr><td>2002-12-31</td><td>621000.0</td><td>-15525.0</td><td>605475.0</td><td>-181125.0</td><td>-18630.0</td><td>-199755.0</td><td>-0.0</td><td>-0.0</td><td>-0.0</td><td>405720.0</td><td>405720.0</td><td>-0.0</td><td>405720.0</td><td>354371.560835</td></tr><tr><td>2003-12-31</td><td>642735.0</td><td>-16068.375</td><td>626666.625</td><td>-187464.375</td><td>-19282.05</td><td>-206746.425</td><td>-0.0</td><td>-0.0</td><td>-0.0</td><td>419920.2</td><td>419920.2</td><td>-0.0</td><td>419920.2</td><td>342779.967724</td></tr><tr><td>2004-12-31</td><td>665230.725</td><td>-16630.768125</td><td>648599.956875</td><td>-194025.628125</td><td>-19956.92175</td><td>-213982.549875</td><td>-0.0</td><td>-0.0</td><td>-0.0</td><td>434617.407</td><td>434617.407</td><td>-0.0</td><td>434617.407</td><td>331567.538873</td></tr><tr><td>2005-12-31</td><td>688513.800375</td><td>-17212.845009</td><td>671300.955366</td><td>-200816.525109</td><td>-20655.414011</td><td>-221471.939121</td><td>-100000.0</td><td>-2000.0</td><td>-102000.0</td><td>449829.016245</td><td>347829.016245</td><td>-0.0</td><td>347829.016245</td><td>247997.281406</td></tr><tr><td>&hellip;</td><td>&hellip;</td><td>&hellip;</td><td>&hellip;</td><td>&hellip;</td><td>&hellip;</td><td>&hellip;</td><td>&hellip;</td><td>&hellip;</td><td>&hellip;</td><td>&hellip;</td><td>&hellip;</td><td>&hellip;</td><td>&hellip;</td><td>&hellip;</td></tr><tr><td>2007-12-31</td><td>737553.195807</td><td>-18438.829895</td><td>719114.365912</td><td>-215119.68211</td><td>-22126.595874</td><td>-237246.277984</td><td>-0.0</td><td>-0.0</td><td>-0.0</td><td>481868.087927</td><td>481868.087927</td><td>-0.0</td><td>481868.087927</td><td>300083.227379</td></tr><tr><td>2008-12-31</td><td>763367.55766</td><td>-19084.188941</td><td>744283.368718</td><td>-222648.870984</td><td>-22901.02673</td><td>-245549.897714</td><td>-0.0</td><td>-0.0</td><td>-0.0</td><td>498733.471004</td><td>498733.471004</td><td>-0.0</td><td>498733.471004</td><td>290267.420876</td></tr><tr><td>2009-12-31</td><td>790085.422178</td><td>-19752.135554</td><td>770333.286624</td><td>-230441.581469</td><td>-23702.562665</td><td>-254144.144134</td><td>-0.0</td><td>-0.0</td><td>-0.0</td><td>516189.14249</td><td>516189.14249</td><td>-0.0</td><td>516189.14249</td><td>280772.692156</td></tr><tr><td>2010-12-31</td><td>817738.411954</td><td>-20443.460299</td><td>797294.951655</td><td>-238507.03682</td><td>-24532.152359</td><td>-263039.189179</td><td>-103500.0</td><td>-2070.0</td><td>-105570.0</td><td>534255.762477</td><td>428685.762477</td><td>1.1059e7</td><td>1.1488e7</td><td>5.8398e6</td></tr><tr><td>2011-12-31</td><td>846359.256373</td><td>-21158.981409</td><td>825200.274963</td><td>-246854.783109</td><td>-25390.777691</td><td>-272245.5608</td><td>-0.0</td><td>-0.0</td><td>-0.0</td><td>552954.714163</td><td>552954.714163</td><td>null</td><td>null</td><td>null</td></tr></tbody></table></div></div><div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;Figure size 1000x350 with 1 Axes&gt;
 </pre></div>
 </div>
-<div class="output text_html"><div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>pgi</th>
-      <th>vacancy</th>
-      <th>egi</th>
-      <th>floor_opex</th>
-      <th>facade_opex</th>
-      <th>opex</th>
-      <th>floor_capex</th>
-      <th>utility_capex</th>
-      <th>capex</th>
-      <th>noi</th>
-      <th>nacf</th>
-      <th>reversion</th>
-      <th>total</th>
-      <th>discounted</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>2001-12-31</th>
-      <td>600000.000000</td>
-      <td>-15000.000000</td>
-      <td>585000.000000</td>
-      <td>-175000.000000</td>
-      <td>-18000.000000</td>
-      <td>-193000.000000</td>
-      <td>-0.0</td>
-      <td>-0.0</td>
-      <td>-0.0</td>
-      <td>392000.000000</td>
-      <td>392000.000000</td>
-      <td>-0.0</td>
-      <td>392000.0</td>
-      <td>366355.140187</td>
-    </tr>
-    <tr>
-      <th>2002-12-31</th>
-      <td>621000.000000</td>
-      <td>-15525.000000</td>
-      <td>605475.000000</td>
-      <td>-181125.000000</td>
-      <td>-18630.000000</td>
-      <td>-199755.000000</td>
-      <td>-0.0</td>
-      <td>-0.0</td>
-      <td>-0.0</td>
-      <td>405720.000000</td>
-      <td>405720.000000</td>
-      <td>-0.0</td>
-      <td>405720.0</td>
-      <td>354371.560835</td>
-    </tr>
-    <tr>
-      <th>2003-12-31</th>
-      <td>642735.000000</td>
-      <td>-16068.375000</td>
-      <td>626666.625000</td>
-      <td>-187464.375000</td>
-      <td>-19282.050000</td>
-      <td>-206746.425000</td>
-      <td>-0.0</td>
-      <td>-0.0</td>
-      <td>-0.0</td>
-      <td>419920.200000</td>
-      <td>419920.200000</td>
-      <td>-0.0</td>
-      <td>419920.2</td>
-      <td>342779.967724</td>
-    </tr>
-    <tr>
-      <th>2004-12-31</th>
-      <td>665230.725000</td>
-      <td>-16630.768125</td>
-      <td>648599.956875</td>
-      <td>-194025.628125</td>
-      <td>-19956.921750</td>
-      <td>-213982.549875</td>
-      <td>-0.0</td>
-      <td>-0.0</td>
-      <td>-0.0</td>
-      <td>434617.407000</td>
-      <td>434617.407000</td>
-      <td>-0.0</td>
-      <td>434617.407</td>
-      <td>331567.538873</td>
-    </tr>
-    <tr>
-      <th>2005-12-31</th>
-      <td>688513.800375</td>
-      <td>-17212.845009</td>
-      <td>671300.955366</td>
-      <td>-200816.525109</td>
-      <td>-20655.414011</td>
-      <td>-221471.939121</td>
-      <td>-100000.0</td>
-      <td>-2000.0</td>
-      <td>-102000.0</td>
-      <td>449829.016245</td>
-      <td>347829.016245</td>
-      <td>-0.0</td>
-      <td>347829.016245</td>
-      <td>247997.281406</td>
-    </tr>
-    <tr>
-      <th>2006-12-31</th>
-      <td>712611.783388</td>
-      <td>-17815.294585</td>
-      <td>694796.488803</td>
-      <td>-207845.103488</td>
-      <td>-21378.353502</td>
-      <td>-229223.456990</td>
-      <td>-0.0</td>
-      <td>-0.0</td>
-      <td>-0.0</td>
-      <td>465573.031814</td>
-      <td>465573.031814</td>
-      <td>-0.0</td>
-      <td>465573.031814</td>
-      <td>310230.969368</td>
-    </tr>
-    <tr>
-      <th>2007-12-31</th>
-      <td>737553.195807</td>
-      <td>-18438.829895</td>
-      <td>719114.365912</td>
-      <td>-215119.682110</td>
-      <td>-22126.595874</td>
-      <td>-237246.277984</td>
-      <td>-0.0</td>
-      <td>-0.0</td>
-      <td>-0.0</td>
-      <td>481868.087927</td>
-      <td>481868.087927</td>
-      <td>-0.0</td>
-      <td>481868.087927</td>
-      <td>300083.227379</td>
-    </tr>
-    <tr>
-      <th>2008-12-31</th>
-      <td>763367.557660</td>
-      <td>-19084.188941</td>
-      <td>744283.368718</td>
-      <td>-222648.870984</td>
-      <td>-22901.026730</td>
-      <td>-245549.897714</td>
-      <td>-0.0</td>
-      <td>-0.0</td>
-      <td>-0.0</td>
-      <td>498733.471004</td>
-      <td>498733.471004</td>
-      <td>-0.0</td>
-      <td>498733.471004</td>
-      <td>290267.420876</td>
-    </tr>
-    <tr>
-      <th>2009-12-31</th>
-      <td>790085.422178</td>
-      <td>-19752.135554</td>
-      <td>770333.286624</td>
-      <td>-230441.581469</td>
-      <td>-23702.562665</td>
-      <td>-254144.144134</td>
-      <td>-0.0</td>
-      <td>-0.0</td>
-      <td>-0.0</td>
-      <td>516189.142490</td>
-      <td>516189.142490</td>
-      <td>-0.0</td>
-      <td>516189.14249</td>
-      <td>280772.692156</td>
-    </tr>
-    <tr>
-      <th>2010-12-31</th>
-      <td>817738.411954</td>
-      <td>-20443.460299</td>
-      <td>797294.951655</td>
-      <td>-238507.036820</td>
-      <td>-24532.152359</td>
-      <td>-263039.189179</td>
-      <td>-103500.0</td>
-      <td>-2070.0</td>
-      <td>-105570.0</td>
-      <td>534255.762477</td>
-      <td>428685.762477</td>
-      <td>11059094.28327</td>
-      <td>11487780.045746</td>
-      <td>5839804.854455</td>
-    </tr>
-    <tr>
-      <th>2011-12-31</th>
-      <td>846359.256373</td>
-      <td>-21158.981409</td>
-      <td>825200.274963</td>
-      <td>-246854.783109</td>
-      <td>-25390.777691</td>
-      <td>-272245.560800</td>
-      <td>-0.0</td>
-      <td>-0.0</td>
-      <td>-0.0</td>
-      <td>552954.714163</td>
-      <td>552954.714163</td>
-      <td>outside declared horizon</td>
-      <td>outside declared horizon</td>
-      <td>outside declared horizon</td>
-    </tr>
-  </tbody>
-</table>
-</div></div><img alt="_images/4e77bb10b40099bbaca1d0836055ebd8b6f0975e724328ce9cd5d30df4fcc69a.png" src="_images/4e77bb10b40099bbaca1d0836055ebd8b6f0975e724328ce9cd5d30df4fcc69a.png" />
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Average annual OPEX (11-period calculation span): -230582.2218905772
 Average annual CAPEX (11-period calculation span): -18870.0
 </pre></div>
 </div>
-<img alt="_images/4e77bb10b40099bbaca1d0836055ebd8b6f0975e724328ce9cd5d30df4fcc69a.png" src="_images/4e77bb10b40099bbaca1d0836055ebd8b6f0975e724328ce9cd5d30df4fcc69a.png" />
 </div>
 </div>
 </section>

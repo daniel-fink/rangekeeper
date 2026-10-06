@@ -1,8 +1,10 @@
 # Turn 3 — Remaining consumers, workbench and design integrations
 
+> Historical design or implementation record. Names, commands and status below describe that checkpoint. Use the [current documentation](../README.md) for supported APIs.
+
 Implemented against RK `b9de7fc` on `acausal-modelling`, Projects `5725cc0`, and
 layout reference `4e5aec4`. This is an uncommitted candidate. No push, release or
-external publication is included. [Acceptance evidence](research/full-migration/turn3/BASELINE.md)
+external publication is included. [Acceptance evidence](../research/full-migration/turn3/BASELINE.md)
 records the actual environments, commands, results and remaining gates.
 
 The canonical Model remains the domain authority. LinkML owns the fields for both
@@ -173,17 +175,17 @@ acceptance. The exported Model passes Python validation and canonical decoding.
 
 ## Completion and retirement
 
-Use the [evidence report](research/full-migration/turn3/BASELINE.md) for the current
+Use the [evidence report](../research/full-migration/turn3/BASELINE.md) for the current
 completion statement. Local implementation and acceptance are distinct from all
 supported integrations being accepted. The Windows official connector publication
 and receive gate remains open; no destination was selected or published to.
-[Windows acceptance procedure](../grasshopper/WINDOWS_DEVELOPMENT.md) defines that gate.
+[Windows acceptance procedure](../../grasshopper/WINDOWS_DEVELOPMENT.md) defines that gate.
 
 Hypar was retired from supported consumers in this turn. Its local residue was
-later [removed at the user's request](research/full-migration/hypar-removal/README.md);
+later [removed at the user's request](../research/full-migration/hypar-removal/README.md);
 the historical research remains. The future
 Browser/outliner importer remains on hold. Turn 4 removes old code only according
-to the [exact retirement register](research/full-migration/turn3/RETIREMENT.md),
+to the [exact retirement register](../research/full-migration/turn3/RETIREMENT.md),
 including the Windows-dependent hold. This turn does not remove legacy modules.
 
 Static typing includes the ported workbench, layout and Speckle modules, for

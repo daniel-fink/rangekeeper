@@ -439,7 +439,8 @@ document.write(`
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">polars</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pl</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">set_tbl_cols</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">display</span><span class="p">,</span> <span class="n">IFrame</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.examples</span><span class="w"> </span><span class="kn">import</span> <span class="n">design</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.model</span><span class="w"> </span><span class="kn">import</span> <span class="n">Model</span>
@@ -522,79 +523,22 @@ document.write(`
     <span class="n">FieldColumn</span><span class="p">(</span><span class="s2">"Class"</span><span class="p">,</span> <span class="s2">"classification_code"</span><span class="p">),</span> <span class="n">ValueColumn</span><span class="p">(</span><span class="s2">"GFA (m²)"</span><span class="p">,</span> <span class="s2">"gfa"</span><span class="p">,</span> <span class="s2">"meter ** 2"</span><span class="p">),</span>
     <span class="n">PropertyColumn</span><span class="p">(</span><span class="s2">"Use"</span><span class="p">,</span> <span class="s2">"use"</span><span class="p">),</span> <span class="n">PropertyColumn</span><span class="p">(</span><span class="s2">"Number"</span><span class="p">,</span> <span class="s2">"number"</span><span class="p">),</span>
 <span class="p">))</span>
-<span class="n">display</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="nb">dict</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">values</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">rows</span><span class="p">]))</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.adapters.polars</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_frame</span>
+<span class="n">display</span><span class="p">(</span><span class="n">to_frame</span><span class="p">(</span><span class="n">table</span><span class="p">))</span>
 <span class="n">viewer</span> <span class="o">=</span> <span class="n">cytoscape</span><span class="o">.</span><span class="n">write_viewer</span><span class="p">([</span><span class="n">cytoscape</span><span class="o">.</span><span class="n">project</span><span class="p">(</span><span class="n">spatial_view</span><span class="p">,</span> <span class="s2">"Spatial containment"</span><span class="p">)],</span> <span class="n">OUTPUT</span> <span class="o">/</span> <span class="s2">"spatial.html"</span><span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">IFrame</span><span class="p">(</span><span class="n">src</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">viewer</span><span class="p">),</span> <span class="n">width</span><span class="o">=</span><span class="s2">"100%"</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">600</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html"><div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
+<div class="output text_html"><div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
 </style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>ID</th>
-      <th>Name</th>
-      <th>Class</th>
-      <th>GFA (m²)</th>
-      <th>Use</th>
-      <th>Number</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>68bb7529-541f-5dc4-9742-57398a8cacff</td>
-      <td>floor</td>
-      <td>floor</td>
-      <td>1000.0</td>
-      <td>None</td>
-      <td>1.0</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>e98fc2e9-a2f2-560f-a4c4-140d695b0e85</td>
-      <td>cores</td>
-      <td>utilities</td>
-      <td>NaN</td>
-      <td>cores</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>26987824-5607-5f51-88e0-fc041bb02609</td>
-      <td>space</td>
-      <td>space</td>
-      <td>NaN</td>
-      <td>hotel</td>
-      <td>NaN</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>3912b85d-46e4-5e98-af3f-593bca6886b5</td>
-      <td>property</td>
-      <td>property</td>
-      <td>NaN</td>
-      <td>None</td>
-      <td>NaN</td>
-    </tr>
-  </tbody>
-</table>
-</div></div><div class="output text_html">
+<small>shape: (4, 6)</small><table border="1" class="dataframe"><thead><tr><th>ID</th><th>Name</th><th>Class</th><th>GFA (m²)</th><th>Use</th><th>Number</th></tr><tr><td>object</td><td>str</td><td>str</td><td>f64</td><td>str</td><td>i64</td></tr></thead><tbody><tr><td>68bb7529-541f-5dc4-9742-57398a8cacff</td><td>&quot;floor&quot;</td><td>&quot;floor&quot;</td><td>1000.0</td><td>null</td><td>1</td></tr><tr><td>e98fc2e9-a2f2-560f-a4c4-140d695b0e85</td><td>&quot;cores&quot;</td><td>&quot;utilities&quot;</td><td>null</td><td>&quot;cores&quot;</td><td>null</td></tr><tr><td>26987824-5607-5f51-88e0-fc041bb02609</td><td>&quot;space&quot;</td><td>&quot;space&quot;</td><td>null</td><td>&quot;hotel&quot;</td><td>null</td></tr><tr><td>3912b85d-46e4-5e98-af3f-593bca6886b5</td><td>&quot;property&quot;</td><td>&quot;property&quot;</td><td>null</td><td>null</td><td>null</td></tr></tbody></table></div></div><div class="output text_html">
         <iframe
             width="100%"
             height="600"

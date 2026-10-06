@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
+
 from collections.abc import Sequence
 import math
-from ..model.flow import Flow, from_periods
+from ..model.flow import Flow
 from ..model.duration import Period
 from ..model.measure import Quantity
-from ..model.distribution import Distribution, make_uniform
-from .distribution import calculate_interval_mass
+from ..model.distribution import Distribution
 
 
 def project_values(
@@ -78,7 +78,7 @@ def project(
     factors: Sequence[float] | None = None,
 ) -> Flow:
     """Evaluate a known Quantity path over caller-selected periods."""
-    return from_periods(
+    return Flow.from_periods(
         periods,
         project_values(
             initial.magnitude,
@@ -107,7 +107,7 @@ def allocate(
     if not periods or weights is not None and distribution is not None:
         raise ValueError("allocation needs periods and at most one weight source")
     if weights is None:
-        distribution = distribution or make_uniform()
+        distribution = distribution or Distribution.uniform()
         bounds = [
             distribution.lower
             + (distribution.upper - distribution.lower) * i / len(periods)
@@ -116,7 +116,7 @@ def allocate(
         if distribution.lower == distribution.upper:
             weights = (1.0,) + (0.0,) * (len(periods) - 1)
         else:
-            weights = calculate_interval_mass(distribution, bounds)
+            weights = distribution.mass(bounds)
     if (
         len(weights) != len(periods)
         or any(not math.isfinite(w) or w < 0 for w in weights)
@@ -128,4 +128,4 @@ def allocate(
     values = [quantity.magnitude * w for w in weights]
     # Assign roundoff to the final bucket so total content retains the stated amount.
     values[-1] += quantity.magnitude - math.fsum(values)
-    return from_periods(periods, values, units=quantity.units)
+    return Flow.from_periods(periods, values, units=quantity.units)

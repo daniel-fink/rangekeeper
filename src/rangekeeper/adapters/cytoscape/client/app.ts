@@ -1,145 +1,145 @@
 /** Offline entry point. Owns one explicit viewer context; no domain mutations. */
-import type { ViewerContext } from "./context";
+import type { Viewer } from "./context";
 import * as geometry from "./geometry";
 import * as navigation from "./navigation";
 import * as inspector from "./inspector";
 import * as renderer from "./renderer";
-const ctx = {} as ViewerContext;
-ctx.connectionCentre = (...args) => geometry.connectionCentre(ctx, ...args);
-ctx.headerEndpoint = (...args) => geometry.headerEndpoint(ctx, ...args);
-ctx.endpoint = (...args) => geometry.endpoint(ctx, ...args);
-ctx.connectionGeometry = (...args) => geometry.connectionGeometry(ctx, ...args);
-ctx.updateConnections = (...args) => geometry.updateConnections(ctx, ...args);
-ctx.syncBoxes = (...args) => geometry.syncBoxes(ctx, ...args);
-ctx.pushHistory = (...args) => navigation.pushHistory(ctx, ...args);
-ctx.changeCollapse = (...args) => navigation.changeCollapse(ctx, ...args);
-ctx.fit = (...args) => navigation.fit(ctx, ...args);
-ctx.focusOn = (...args) => navigation.focusOn(ctx, ...args);
-ctx.reset = (...args) => navigation.reset(ctx, ...args);
-ctx.restore = (...args) => navigation.restore(ctx, ...args);
-ctx.reveal = (...args) => navigation.reveal(ctx, ...args);
-ctx.selectLinkedObject = (...args) =>
-  navigation.selectLinkedObject(ctx, ...args);
-ctx.valueText = (...args) => inspector.valueText(ctx, ...args);
-ctx.evidence = (...args) => inspector.evidence(ctx, ...args);
-ctx.nav = (...args) => inspector.nav(ctx, ...args);
-ctx.renderSelection = (...args) => inspector.renderSelection(ctx, ...args);
-ctx.highlight = (...args) => renderer.highlight(ctx, ...args);
-ctx.updateCounts = (...args) => renderer.updateCounts(ctx, ...args);
-ctx.applyVisibility = (...args) => renderer.applyVisibility(ctx, ...args);
-ctx.select = (id) => renderer.select(ctx, id);
-ctx.syncFilters = (...args) => renderer.syncFilters(ctx, ...args);
-ctx.setupFilters = (...args) => renderer.setupFilters(ctx, ...args);
-ctx.loadDataset = (...args) => renderer.loadDataset(ctx, ...args);
-ctx.relayout = (...args) => renderer.relayout(ctx, ...args);
-ctx.setMode = (...args) => renderer.setMode(ctx, ...args);
-ctx.datasets = JSON.parse(
+const viewer = {} as Viewer;
+viewer.connectionCentre = (...args) => geometry.connectionCentre(viewer, ...args);
+viewer.headerEndpoint = (...args) => geometry.headerEndpoint(viewer, ...args);
+viewer.endpoint = (...args) => geometry.endpoint(viewer, ...args);
+viewer.connectionGeometry = (...args) => geometry.connectionGeometry(viewer, ...args);
+viewer.updateConnections = (...args) => geometry.updateConnections(viewer, ...args);
+viewer.syncBoxes = (...args) => geometry.syncBoxes(viewer, ...args);
+viewer.remember = (...args) => navigation.remember(viewer, ...args);
+viewer.collapse = (...args) => navigation.collapse(viewer, ...args);
+viewer.fit = (...args) => navigation.fit(viewer, ...args);
+viewer.focus = (...args) => navigation.focus(viewer, ...args);
+viewer.reset = (...args) => navigation.reset(viewer, ...args);
+viewer.restore = (...args) => navigation.restore(viewer, ...args);
+viewer.reveal = (...args) => navigation.reveal(viewer, ...args);
+viewer.selectLinkedObject = (...args) =>
+  navigation.selectLinkedObject(viewer, ...args);
+viewer.valueText = (...args) => inspector.valueText(viewer, ...args);
+viewer.evidence = (...args) => inspector.evidence(viewer, ...args);
+viewer.nav = (...args) => inspector.nav(viewer, ...args);
+viewer.renderSelection = (...args) => inspector.renderSelection(viewer, ...args);
+viewer.highlight = (...args) => renderer.highlight(viewer, ...args);
+viewer.updateCounts = (...args) => renderer.updateCounts(viewer, ...args);
+viewer.applyVisibility = (...args) => renderer.applyVisibility(viewer, ...args);
+viewer.select = (id) => renderer.select(viewer, id);
+viewer.syncFilters = (...args) => renderer.syncFilters(viewer, ...args);
+viewer.setupFilters = (...args) => renderer.setupFilters(viewer, ...args);
+viewer.loadDataset = (...args) => renderer.loadDataset(viewer, ...args);
+viewer.relayout = (...args) => renderer.relayout(viewer, ...args);
+viewer.setMode = (...args) => renderer.setMode(viewer, ...args);
+viewer.datasets = JSON.parse(
   document.getElementById("graph-data").textContent,
 ).datasets;
-ctx.$ = (id) => document.getElementById(id) as ReturnType<ViewerContext["$"]>;
-ctx.make = (tag, text, parent, cls) => {
+viewer.$ = (id) => document.getElementById(id) as ReturnType<Viewer["$"]>;
+viewer.make = (tag, text, parent, cls) => {
   const e = document.createElement(tag);
   if (text !== undefined) e.textContent = String(text);
   if (cls) e.className = cls;
   if (parent) parent.append(e);
   return e;
 };
-ctx.HEADER = 36;
-ctx.PAD = 24;
-ctx.labelMeasure = document.createElement("canvas").getContext("2d");
-ctx.cy = undefined;
-ctx.data = undefined;
-ctx.projection = undefined;
-ctx.inspected = null;
-ctx.focusIds = null;
-ctx.history = [];
-ctx.collapsed = new Set();
-ctx.filters = new Set();
-ctx.mode = "outlines";
-ctx.showMembership = true;
-ctx.fourPorts = true;
-ctx.compactPositions = {};
-ctx.drag = null;
-ctx.presentation = null;
-ctx.showSpacingAdvisories = false;
-ctx.dragFrame = null;
-ctx.syncing = false;
-ctx.updating = false;
-ctx.layoutMode = false;
-ctx.portChoices = new Map();
-ctx.routes = new Map();
-ctx.metrics = { loadMs: 0, layoutMs: 0, selectionMs: 0, filterMs: 0 };
-ctx.label = (id) =>
-  ctx.data.details[id]?.name || ctx.cy.getElementById(id).data("label") || id;
-ctx.memberships = (id) =>
-  Object.entries(ctx.data.assemblies).filter(
+viewer.HEADER = 36;
+viewer.PAD = 24;
+viewer.labelMeasure = document.createElement("canvas").getContext("2d");
+viewer.cy = undefined;
+viewer.data = undefined;
+viewer.projection = undefined;
+viewer.inspected = null;
+viewer.focusIds = null;
+viewer.history = [];
+viewer.collapsed = new Set();
+viewer.filters = new Set();
+viewer.mode = "outlines";
+viewer.showMembership = true;
+viewer.fourPorts = true;
+viewer.compactPositions = {};
+viewer.drag = null;
+viewer.presentation = null;
+viewer.showSpacingAdvisories = false;
+viewer.dragFrame = null;
+viewer.syncing = false;
+viewer.updating = false;
+viewer.layoutMode = false;
+viewer.portChoices = new Map();
+viewer.routes = new Map();
+viewer.metrics = { loadMs: 0, layoutMs: 0, selectionMs: 0, filterMs: 0 };
+viewer.label = (id) =>
+  viewer.data.details[id]?.name || viewer.cy.getElementById(id).data("label") || id;
+viewer.memberships = (id) =>
+  Object.entries(viewer.data.assemblies).filter(
     ([, a]) => a.entities.includes(id) || a.relationships.includes(id),
   );
-ctx.visible = () => ctx.cy.elements().filter((e) => !e.hasClass("hidden"));
-ctx.snapshot = () => ({
-  focus: ctx.focusIds ? [...ctx.focusIds] : null,
-  filters: [...ctx.filters],
-  collapsed: [...ctx.collapsed],
-  showMembership: ctx.showMembership,
+viewer.visible = () => viewer.cy.elements().filter((e) => !e.hasClass("hidden"));
+viewer.snapshot = () => ({
+  focus: viewer.focusIds ? [...viewer.focusIds] : null,
+  filters: [...viewer.filters],
+  collapsed: [...viewer.collapsed],
+  showMembership: viewer.showMembership,
 });
-ctx.routingStyle =
+viewer.routingStyle =
   "curve-style control-point-distances control-point-weights control-point-step-size edge-distances loop-direction loop-sweep text-rotation";
 ("use strict");
-ctx.datasets.forEach((d, i) => {
-  const o = ctx.make("option", d.name, ctx.$("dataset"));
+viewer.datasets.forEach((d, i) => {
+  const o = viewer.make("option", d.name, viewer.$("dataset"));
   o.value = String(i);
 });
-ctx.$("dataset").onchange = () =>
-  ctx.loadDataset(Number(ctx.$("dataset").value));
-ctx.$("membership").onclick = () => ctx.setMode("membership");
-ctx.$("outlines").onclick = () => ctx.setMode("outlines");
-ctx.$("four-port-routing").onchange = () => {
-  ctx.fourPorts = ctx.$("four-port-routing").checked;
-  ctx.syncBoxes();
+viewer.$("dataset").onchange = () =>
+  viewer.loadDataset(Number(viewer.$("dataset").value));
+viewer.$("membership").onclick = () => viewer.setMode("membership");
+viewer.$("outlines").onclick = () => viewer.setMode("outlines");
+viewer.$("four-port-routing").onchange = () => {
+  viewer.fourPorts = viewer.$("four-port-routing").checked;
+  viewer.syncBoxes();
 };
-ctx.$("spacing-advisories").onchange = () => {
-  ctx.showSpacingAdvisories = ctx.$("spacing-advisories").checked;
-  ctx.syncBoxes();
+viewer.$("spacing-advisories").onchange = () => {
+  viewer.showSpacingAdvisories = viewer.$("spacing-advisories").checked;
+  viewer.syncBoxes();
 };
-ctx.$("fit").onclick = ctx.fit;
-ctx.$("restore").onclick = ctx.restore;
-ctx.$("relayout").onclick = ctx.relayout;
-ctx.$("focus").onclick = () => {
-  if (ctx.inspected) ctx.focusOn(ctx.inspected);
+viewer.$("fit").onclick = viewer.fit;
+viewer.$("restore").onclick = viewer.restore;
+viewer.$("relayout").onclick = viewer.relayout;
+viewer.$("focus").onclick = () => {
+  if (viewer.inspected) viewer.focus(viewer.inspected);
 };
-ctx.$("reset").onclick = ctx.reset;
-ctx.$("collapse-all").onclick = () =>
-  ctx.changeCollapse(Object.keys(ctx.data.assemblies), true);
-ctx.$("expand-all").onclick = () =>
-  ctx.changeCollapse(Object.keys(ctx.data.assemblies), false);
-ctx.$("member-links").onchange = () => {
-  ctx.pushHistory();
-  ctx.showMembership = ctx.$("member-links").checked;
-  ctx.applyVisibility();
+viewer.$("reset").onclick = viewer.reset;
+viewer.$("collapse-all").onclick = () =>
+  viewer.collapse(Object.keys(viewer.data.assemblies), true);
+viewer.$("expand-all").onclick = () =>
+  viewer.collapse(Object.keys(viewer.data.assemblies), false);
+viewer.$("member-links").onchange = () => {
+  viewer.remember();
+  viewer.showMembership = viewer.$("member-links").checked;
+  viewer.applyVisibility();
 };
-ctx.$("back").onclick = () => {
-  const previous = ctx.history.pop();
+viewer.$("back").onclick = () => {
+  const previous = viewer.history.pop();
   if (!previous) return;
-  ctx.focusIds = previous.focus ? new Set(previous.focus) : null;
-  ctx.filters = new Set(previous.filters);
-  ctx.collapsed = new Set(previous.collapsed);
-  ctx.showMembership = previous.showMembership;
-  ctx.syncFilters();
-  ctx.applyVisibility();
-  ctx.fit();
-  ctx.$("back").disabled = !ctx.history.length;
+  viewer.focusIds = previous.focus ? new Set(previous.focus) : null;
+  viewer.filters = new Set(previous.filters);
+  viewer.collapsed = new Set(previous.collapsed);
+  viewer.showMembership = previous.showMembership;
+  viewer.syncFilters();
+  viewer.applyVisibility();
+  viewer.fit();
+  viewer.$("back").disabled = !viewer.history.length;
 };
-ctx.$("clear").onclick = () => {
-  ctx.cy.elements(":selected").unselect();
-  ctx.inspected = null;
-  ctx.highlight();
-  ctx.renderSelection();
+viewer.$("clear").onclick = () => {
+  viewer.cy.elements(":selected").unselect();
+  viewer.inspected = null;
+  viewer.highlight();
+  viewer.renderSelection();
 };
-ctx.$("search").oninput = () => {
-  const q = ctx.$("search").value.trim().toLowerCase();
-  ctx.$("results").replaceChildren();
+viewer.$("search").oninput = () => {
+  const q = viewer.$("search").value.trim().toLowerCase();
+  viewer.$("results").replaceChildren();
   if (!q) return;
-  ctx.cy
+  viewer.cy
     .nodes()
     .filter((n) =>
       [n.data("label"), n.data("code"), n.id()].some((v) =>
@@ -148,72 +148,72 @@ ctx.$("search").oninput = () => {
     )
     .slice(0, 8)
     .forEach((n) => {
-      const button = ctx.make(
+      const button = viewer.make(
         "button",
         `${n.data("label")} · ${n.data("code")}`,
-        ctx.$("results"),
+        viewer.$("results"),
       );
       button.onclick = () => {
-        ctx.select(n.id());
+        viewer.select(n.id());
         if (!n.hasClass("hidden")) {
           const bb = n.renderedBoundingBox();
           if (
             bb.x1 < 0 ||
             bb.y1 < 0 ||
-            bb.x2 > ctx.cy.width() ||
-            bb.y2 > ctx.cy.height()
+            bb.x2 > viewer.cy.width() ||
+            bb.y2 > viewer.cy.height()
           )
-            ctx.cy.center(n);
+            viewer.cy.center(n);
         }
-        ctx.$("results").replaceChildren();
+        viewer.$("results").replaceChildren();
       };
     });
 };
-ctx.$("search").onkeydown = (e) => {
-  if (e.key === "Enter") ctx.$("results").querySelector("button")?.click();
-  if (e.key === "Escape") ctx.$("results").replaceChildren();
+viewer.$("search").onkeydown = (e) => {
+  if (e.key === "Enter") viewer.$("results").querySelector("button")?.click();
+  if (e.key === "Escape") viewer.$("results").replaceChildren();
 };
 new ResizeObserver(() => {
-  if (ctx.cy) ctx.cy.resize();
-}).observe(ctx.$("stage"));
-window.spike = {
+  if (viewer.cy) viewer.cy.resize();
+}).observe(viewer.$("stage"));
+window.graphReview = {
   get cy() {
-    return ctx.cy;
+    return viewer.cy;
   },
   get data() {
-    return ctx.data;
+    return viewer.data;
   },
   get selected() {
-    return ctx.inspected;
+    return viewer.inspected;
   },
   get collapsed() {
-    return [...ctx.collapsed];
+    return [...viewer.collapsed];
   },
   get projection() {
-    return ctx.projection;
+    return viewer.projection;
   },
   get presentation() {
-    return structuredClone(ctx.presentation);
+    return structuredClone(viewer.presentation);
   },
   get metrics() {
-    return { ...ctx.metrics };
+    return { ...viewer.metrics };
   },
   get routes() {
-    return Object.fromEntries(ctx.routes);
+    return Object.fromEntries(viewer.routes);
   },
   get visibleIds() {
-    return ctx.visible().map((e) => e.id());
+    return viewer.visible().map((e) => e.id());
   },
-  loadDataset: ctx.loadDataset,
-  select: ctx.select,
-  focusOn: ctx.focusOn,
-  reset: ctx.reset,
-  restore: ctx.restore,
-  relayout: ctx.relayout,
-  setMode: ctx.setMode,
-  syncBoxes: ctx.syncBoxes,
-  changeCollapse: ctx.changeCollapse,
+  loadDataset: viewer.loadDataset,
+  select: viewer.select,
+  focus: viewer.focus,
+  reset: viewer.reset,
+  restore: viewer.restore,
+  relayout: viewer.relayout,
+  setMode: viewer.setMode,
+  syncBoxes: viewer.syncBoxes,
+  collapse: viewer.collapse,
 };
-window.graphReview = window.spike;
-window.addEventListener("hashchange", ctx.selectLinkedObject);
-ctx.loadDataset(0);
+
+window.addEventListener("hashchange", viewer.selectLinkedObject);
+viewer.loadDataset(0);

@@ -1,12 +1,16 @@
 # Full migration: Turn 1 foundations
 
+> Historical design or implementation record. Names, commands and status below describe that checkpoint. Use the [current documentation](../README.md) for supported APIs.
+
+Current intrinsic method ownership is defined in the [record boundary](../RECORD_BOUNDARY.md).
+
 **Turn 2 update, 2026-10-06:** [Temporal equations, scenarios and policies](FULL_MIGRATION_TURN2.md)
 now use Model/Specification 0.5.0 and Run 0.2.0. `ValueReference` addresses scalar
 Values or owner-local Movement keys. The canonical calendar package is `duration/`;
 `temporal` has no public alias. Finite Flow formulations, captured scenario replay,
 exogenous declarative policies and the four numerical walkthroughs are implemented.
-See [verification](research/full-migration/turn2/README.md) and the
-[upgrade guide](LEGACY_UPGRADE_GUIDE.md). Turn 3 completes remaining consumers and
+See [verification](../research/full-migration/turn2/README.md) and the
+[upgrade guide](../LEGACY_UPGRADE_GUIDE.md). Turn 3 completes remaining consumers and
 integrations; Turn 4 retires obsolete code after their acceptance gates.
 The dated checkpoint descriptions below remain historical context.
 
@@ -18,13 +22,13 @@ LinkML remains authoritative. Implementation and verification were completed
 before the separately requested interim commit and push on 2026-10-06. The
 checkpoint includes the date-only contract, PyXIRR integration, removal of Flow
 semantic kinds, and Movement naming. No release is included. The latest
-[verification](research/full-migration/movement-naming/README.md) records 946 local
+[verification](../research/full-migration/movement-naming/README.md) records 946 local
 tests passing, all seven schema suites, typing and installed-package acceptance.
 
 **Flow semantics correction, 2026-10-06:** semantic Flow kinds are removed.
 The overall model logic owns quantity interpretation and operation selection.
 See [Flow semantics and explicit operations](#flow-semantics-and-explicit-operations)
-and the [verification report](research/full-migration/flow-semantics/README.md).
+and the [verification report](../research/full-migration/flow-semantics/README.md).
 
 ## Delivered contract
 
@@ -72,9 +76,9 @@ selects the Value's content shape, not the interpretation of its numbers.
 Units, alignment, date/period coverage, stable keys, missingness and immutable
 records remain checked. The calculation chosen by the caller supplies the rule:
 
-- `total` sums entries with unchanged units. `sum_flows` adds aligned, compatible
+- `total` sums entries with unchanged units. `series.aggregate` adds aligned, compatible
   Flows. Neither claims that a numerical sum is meaningful for every model.
-- `multiply_flows` multiplies aligned magnitudes and units. Dimensionless scales
+- `series.multiply` multiplies aligned magnitudes and units. Dimensionless scales
   such as percent convert to ratios. Physical dimensions, including time, remain.
   No result-kind declaration is required.
 - `integrate` requires explicit exposure Quantities or a period day-count rule.
@@ -110,17 +114,17 @@ evidence references. The overall model logic determines its meaning.
 The LinkML class, generated records, Python property/constructor argument and
 JSON/YAML field all use the new names. `movement_coordinate` replaces
 `sample_coordinate`; private calculation helpers use `replace_movement` and
-`replace_movements`. `resolve_date` now names its argument `movement`.
+`Flow.replace(movements=...).check()`. Resolve a date with `movement.resolve(timing=...)`.
 The fields `key`, `date`, `period`, `magnitude` and `claims`, their validation,
 and the arithmetic remain unchanged. Movement does not add a semantic kind.
-Statistical sampling remains distinct from Movements. The later [naming update](RK_NAMING.md) places this operation at `calculations.distribution.sample(distribution, ...)`, using the shared generated Distribution record.
+Statistical sampling remains distinct from Movements. The later [naming update](../RK_NAMING.md) places this operation at `distribution.sample(...)`, using the shared generated Distribution record.
 
 This is a breaking correction to the unreleased Model 0.4.0 draft, with no
 compatibility aliases or silent loader conversion. Old `samples` payloads fail,
 including payloads which also contain `movements`. Rename the field explicitly
 when upgrading a saved draft, preserve entry order and all entry fields, and
-retain revision history. See the [upgrade guide](LEGACY_UPGRADE_GUIDE.md) and
-[verification](research/full-migration/movement-naming/README.md).
+retain revision history. See the [upgrade guide](../LEGACY_UPGRADE_GUIDE.md) and
+[verification](../research/full-migration/movement-naming/README.md).
 
 ## Ownership and interfaces
 
@@ -135,34 +139,37 @@ rangekeeper/
                       decode(content) -> object              [detached copy]
                       validate_content(content) -> None
     flow.py           Flow, Movement
-                      from_events(dates, magnitudes, *, units, keys=None) -> Flow
-                      from_periods(periods, magnitudes, *, units, dates=None) -> Flow
-                      resolve_date(movement, *, timing=None) -> date
-                      validate_flow(flow, *, units) -> None
+                      Flow.from_events(dates, magnitudes, *, units, keys=None) -> Flow
+                      Flow.from_periods(periods, magnitudes, *, units, dates=None) -> Flow
+                      Movement.resolve(*, timing=None) -> date
+                      Flow.check(*, resolved=False, units=None) -> Flow
                       Stream(model, value_ids)
                         from_values(model, value_ids) -> Stream
                         values -> tuple[Value, ...]
                         flows -> tuple[Flow, ...]
                         select(*, value_ids) / merge(other) -> Stream
-  temporal/
+  duration/
     calendar.py       offset(value, *, frequency, count, month_end)
                       elapsed_days(start, end) -> int
                       year_fraction(start, end, *, convention) -> float
-    period.py         resolve_period_date / validate_period
+    period.py         Period.resolve / Period.check
                       make_period / make_periods / periods_between / cover
   calculations/
-    _flow.py          internal shared result construction and resolved-value checks
-    series.py         align / convert / sum_flows / reduce_flows / multiply_flows
-                      scale / negate / total / integrate / resample
-                      trim / clean / difference / collapse / find_extent / trim_empty
+    series.py         align -> Alignment; Alignment.reduce -> Aggregation
+                      aggregate / multiply / integrate / resample
+  _behaviors/         field-free methods inherited by generated records
+    flow.py           Flow.convert / scale / negate / total / trim / clean
+                      difference / collapse / extent / trim_empty
+                      Movement.number / coordinate / resolve
     distribution.py   Distribution.uniform / triangular / pert / symmetric
-                        sample(*, size, generator) / cumulative_density / interval_mass
+                      check / sample / cdf / mass
+  calculations/
     projection.py     project_values / pad / project / allocate
     financial.py      calculate_pv(flow, *, rate, first_period=1) -> Flow
                       calculate_xnpv(flow, *, rate, valuation_date, day_count, timing) -> Quantity
                       calculate_irr(flow, *, guess=None, valuation_date=None,
                                     day_count, timing) -> IrrResult
-    account.py        calculate_account -> AccountResult; AccountResult.difference
+    account.py        Account.calculate -> Account; Account.difference
     interval.py       Interval.length / split / subdivide
     dynamics/         calculate_trend / calculate_cycle / calculate_autoregression
                       accumulate_volatility / sample_noise / calculate_shock
@@ -197,7 +204,7 @@ immutable results. `IrrResult` reports rate, NPV residual, supplied guess and
 removed: no discovered consumer required bounded root selection. A guess is a
 starting point, not a bound or proof of root uniqueness. The library may select
 different roots for different guesses. Missing/nonfinite results and material
-residuals fail explicitly. See [financial-library verification](research/full-migration/financial-library/README.md).
+residuals fail explicitly. See [financial-library verification](../research/full-migration/financial-library/README.md).
 
 PyXIRR anchors XNPV at the earliest payment. The wrapper uses PyXIRR PV to move
 that value to the requested valuation date under the same convention. The four
@@ -206,9 +213,9 @@ Actual/Actual ISDA and European 30E/360. Empty Flow XNPV returns zero before
 entering the library, whose 0.10.7 empty-date path panics. No new schema is involved.
 
 The declaration/callable inventory is also retained in the source docstrings and
-[API catalog](research/full-migration/movement-naming/api.json). Each catalog entry identifies
+[API catalog](../research/full-migration/movement-naming/api.json). Each catalog entry identifies
 its module, signature, return annotation, and docstring. The module tree above
-identifies ownership; the [upgrade guide](LEGACY_UPGRADE_GUIDE.md) supplies examples.
+identifies ownership; the [upgrade guide](../LEGACY_UPGRADE_GUIDE.md) supplies examples.
 
 ## Duration namespace migration
 
@@ -288,7 +295,7 @@ original code and commands, not evidence that this move has passed verification.
 
 ## Behavior ledger and retirement gates
 
-The [ledger](research/full-migration/turn1/ledger.json) assigns **all 671 discovered
+The [ledger](../research/full-migration/turn1/ledger.json) assigns **all 671 discovered
 symbols across 41 modules** to the rows below. It includes private helpers and
 fields, not 671 separate public promises. Each of 95 discovered consumer files has
 a turn and source evidence. Parallel branch features remain in the ledger. Static
@@ -353,5 +360,5 @@ segment records, remaining notebooks, Projects, layout ports, and service/host
 integration are **not delivered by Turn 1**. Scalar Specification roles remain
 measurement-only. The new core coexists with old runtime modules until their
 consumers move. Tracked old walkthrough build outputs remain historical until the
-whole walkthrough is rebuilt in Turn 4. See the [date-only verification](research/full-migration/date-only/README.md)
-and [original Turn 1 report](research/full-migration/turn1/README.md) for exact results and the HTML preview limitation.
+whole walkthrough is rebuilt in Turn 4. See the [date-only verification](../research/full-migration/date-only/README.md)
+and [original Turn 1 report](../research/full-migration/turn1/README.md) for exact results and the HTML preview limitation.
