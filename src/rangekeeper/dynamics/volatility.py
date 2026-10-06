@@ -9,6 +9,7 @@ import numba
 import multiprocess
 
 import rangekeeper as rk
+from rangekeeper import _legacy_duration as legacy_duration
 
 
 class Volatility(rk.flux.Flow):
@@ -33,7 +34,7 @@ class Volatility(rk.flux.Flow):
                   for x in range(sequence.size)],
             # the ndtri() function replicates excel's NORMSINV().
             # See https://stackoverflow.com/questions/20626994/how-to-calculate-the-inverse-of-the-normal-cumulative-distribution-function-in-p/20627638
-            index=rk.duration.Sequence.to_datestamps(sequence=sequence))
+            index=legacy_duration.Sequence.to_datestamps(sequence=sequence))
 
         self.volatility = rk.flux.Flow(
             movements=volatilities,
@@ -65,7 +66,7 @@ class Volatility(rk.flux.Flow):
 
         movements = pd.Series(
                 data=cumulative_volatility_data,
-                index=rk.duration.Sequence.to_datestamps(sequence=sequence))
+                index=legacy_duration.Sequence.to_datestamps(sequence=sequence))
 
         super().__init__(
             name='Cumulative Volatility',

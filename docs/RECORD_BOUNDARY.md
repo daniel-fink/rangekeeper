@@ -1,5 +1,22 @@
 # Generated records and shared validation — Turn 1
 
+**Additional native-tooling limit:** the current stock LinkML 1.11.1 loader
+cannot load a single-field terminal policy Action in the new Policy record.
+The generated immutable production records/codecs preserve and validate it.
+The [ten-document probe](research/full-migration/turn2/final-notebooks/native-boundary.json)
+records 10 immutable passes and 9 stock-native passes; the stock-native failure
+is retained, not counted as successful migration of that private loader.
+
+**Turn 2 update, 2026-10-06:** [Temporal equations, scenarios and policies](FULL_MIGRATION_TURN2.md)
+now use Model/Specification 0.5.0 and Run 0.2.0. `ValueReference` addresses scalar
+Values or owner-local Movement keys. The canonical calendar package is `duration/`;
+`temporal` has no public alias. Finite Flow formulations, captured scenario replay,
+exogenous declarative policies and the four numerical walkthroughs are implemented.
+See [verification](research/full-migration/turn2/README.md) and the
+[upgrade guide](LEGACY_UPGRADE_GUIDE.md). Turn 3 completes remaining consumers and
+integrations; Turn 4 retires obsolete code after their acceptance gates.
+The dated checkpoint descriptions below remain historical context.
+
 **Flow semantics update, 2026-10-06:** Flows no longer carry semantic kinds or
 basis. The overall model logic owns their meaning and selects operations; units,
 dates, alignment and missingness remain checked. See the
@@ -56,7 +73,7 @@ assert entity.characteristics.values[0].quantity.magnitude == 0
 
 # A complete Model must declare every referenced Measure. Structural construction
 # of the child above cannot establish that document-wide ownership/reference rule.
-model = Model(metadata=Metadata(id=uuid4(), schema_version="0.4.0"))
+model = Model(metadata=Metadata(id=uuid4(), schema_version="0.5.0"))
 validate(model).raise_if_invalid()
 restored = Model.from_data(model.to_data())
 assert restored.metadata.id == model.metadata.id

@@ -9,6 +9,7 @@ import pandas as pd
 import pint
 
 import rangekeeper as rk
+from rangekeeper import _legacy_duration as legacy_duration
 
 
 class Account:
@@ -95,7 +96,7 @@ class Account:
     def __init__(
         self,
         transactions: rk.flux.Flow,
-        frequency: rk.duration.Type,
+        frequency: legacy_duration.Type,
         starting: Union[float, pint.Quantity] = 0.0,
         rate: Union[float, rk.flux.Flow] = 0.0,
         type: Type = Type.SIMPLE,
@@ -111,7 +112,7 @@ class Account:
                 value=rate,
                 proj=rk.projection.Extrapolation(
                     form=rk.extrapolation.Recurring(),
-                    sequence=rk.duration.Sequence.from_datestamps(
+                    sequence=legacy_duration.Sequence.from_datestamps(
                         datestamps=transactions.movements.index,
                         frequency=frequency,
                     ),

@@ -1,5 +1,15 @@
 # Finalized Runs, codecs and revision stores — Turn 3
 
+**Turn 2 update, 2026-10-06:** [Temporal equations, scenarios and policies](FULL_MIGRATION_TURN2.md)
+now use Model/Specification 0.5.0 and Run 0.2.0. `ValueReference` addresses scalar
+Values or owner-local Movement keys. The canonical calendar package is `duration/`;
+`temporal` has no public alias. Finite Flow formulations, captured scenario replay,
+exogenous declarative policies and the four numerical walkthroughs are implemented.
+See [verification](research/full-migration/turn2/README.md) and the
+[upgrade guide](LEGACY_UPGRADE_GUIDE.md). Turn 3 completes remaining consumers and
+integrations; Turn 4 retires obsolete code after their acceptance gates.
+The dated checkpoint descriptions below remain historical context.
+
 **Flow semantics update, 2026-10-06:** Flows no longer carry semantic kinds or
 basis. The overall model logic owns their meaning and selects operations; units,
 dates, alignment and missingness remain checked. See the
@@ -50,12 +60,12 @@ from rangekeeper.specification import SpecificationRecord, compose, validate as 
 from rangekeeper.run import RunRecord, Report, Status, Diagnostic, validate as validate_run
 from rangekeeper.io import MemoryStore, DirectoryStore, json
 
-model = rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.4.0"))
+model = rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.5.0"))
 specification = rk.Specification(SpecificationRecord(
-    metadata=Metadata(id=uuid4(), schema_version="0.4.0"), model=model.id,
+    metadata=Metadata(id=uuid4(), schema_version="0.5.0"), model=model.id,
 ))
 run = rk.Run(RunRecord(
-    metadata=Metadata(id=uuid4(), schema_version="0.1.0", name="Synthetic example"),
+    metadata=Metadata(id=uuid4(), schema_version="0.2.0", name="Synthetic example"),
     specification=specification.id,
     report=Report(
         status=Status(completion="failed", solution="not_assessed"),

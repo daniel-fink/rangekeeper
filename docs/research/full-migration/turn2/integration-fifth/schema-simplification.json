@@ -1,0 +1,3836 @@
+{
+  "matching_cases": 765,
+  "differences": 0,
+  "depth": 9,
+  "timing_seconds": {
+    "raw": 0.18656870804261416,
+    "simplified": 0.0015910419169813395
+  },
+  "outcomes": [
+    {
+      "kind": "Action",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Action",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Action",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Action",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Action",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Action",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "ActionKind",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "ActionKind",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "ActionKind",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "ActionKind",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "ActionKind",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "ActionKind",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Argument",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Argument",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Argument",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Argument",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Argument",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Argument",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Assembly",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Assembly",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Assembly",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Assembly",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Assembly",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Assembly",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Assignment",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Assignment",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Assignment",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Assignment",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Assignment",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Assignment",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Binding",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Binding",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Binding",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Binding",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Binding",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Binding",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Call",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Call",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Call",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Call",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Call",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Call",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Cardinality",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Cardinality",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Cardinality",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Cardinality",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Cardinality",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Cardinality",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Characteristics",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Characteristics",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Characteristics",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Characteristics",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Characteristics",
+      "case": "empty",
+      "accepted": true
+    },
+    {
+      "kind": "Characteristics",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Claim",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Claim",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Claim",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Claim",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Claim",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Claim",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "ClaimKind",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "ClaimKind",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "ClaimKind",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "ClaimKind",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "ClaimKind",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "ClaimKind",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Classification",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Classification",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Classification",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Classification",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Classification",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Classification",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "CollectionKind",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "CollectionKind",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "CollectionKind",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "CollectionKind",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "CollectionKind",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "CollectionKind",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "CompletionStatus",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "CompletionStatus",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "CompletionStatus",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "CompletionStatus",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "CompletionStatus",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "CompletionStatus",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "ComponentStream",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "ComponentStream",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "ComponentStream",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "ComponentStream",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "ComponentStream",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "ComponentStream",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Constraint",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Constraint",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Constraint",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Constraint",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Constraint",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Constraint",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Content",
+      "case": "null",
+      "accepted": true
+    },
+    {
+      "kind": "Content",
+      "case": "false",
+      "accepted": true
+    },
+    {
+      "kind": "Content",
+      "case": "zero",
+      "accepted": true
+    },
+    {
+      "kind": "Content",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Content",
+      "case": "empty",
+      "accepted": true
+    },
+    {
+      "kind": "Content",
+      "case": "extra",
+      "accepted": true
+    },
+    {
+      "kind": "ContentEntry",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "ContentEntry",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "ContentEntry",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "ContentEntry",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "ContentEntry",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "ContentEntry",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "ContentKind",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "ContentKind",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "ContentKind",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "ContentKind",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "ContentKind",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "ContentKind",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Criterion",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Criterion",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Criterion",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Criterion",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Criterion",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Criterion",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Decision",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Decision",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Decision",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Decision",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Decision",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Decision",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "DecisionPoint",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "DecisionPoint",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "DecisionPoint",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "DecisionPoint",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "DecisionPoint",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "DecisionPoint",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Definitions",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Definitions",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Definitions",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Definitions",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Definitions",
+      "case": "empty",
+      "accepted": true
+    },
+    {
+      "kind": "Definitions",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Depth",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Depth",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Depth",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Depth",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Depth",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Depth",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Diagnostic",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Diagnostic",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Diagnostic",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Diagnostic",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Diagnostic",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Diagnostic",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Direction",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Direction",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Direction",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Direction",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Direction",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Direction",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "DistributionFamily",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "DistributionFamily",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "DistributionFamily",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "DistributionFamily",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "DistributionFamily",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "DistributionFamily",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "DistributionParameters",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "DistributionParameters",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "DistributionParameters",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "DistributionParameters",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "DistributionParameters",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "DistributionParameters",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Domain",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Domain",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Domain",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Domain",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Domain",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Domain",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "DomainKind",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "DomainKind",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "DomainKind",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "DomainKind",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "DomainKind",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "DomainKind",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "DuplicateHandling",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "DuplicateHandling",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "DuplicateHandling",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "DuplicateHandling",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "DuplicateHandling",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "DuplicateHandling",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "EmptyHandling",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "EmptyHandling",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "EmptyHandling",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "EmptyHandling",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "EmptyHandling",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "EmptyHandling",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Entity",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Entity",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Entity",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Entity",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Entity",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Entity",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Entry",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Entry",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Entry",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Entry",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Entry",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Entry",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Entry__identifier_optional",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Entry__identifier_optional",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Entry__identifier_optional",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Entry__identifier_optional",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Entry__identifier_optional",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Entry__identifier_optional",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Expression",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Expression",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Expression",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Expression",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Expression",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Expression",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "ExpressionKind",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "ExpressionKind",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "ExpressionKind",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "ExpressionKind",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "ExpressionKind",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "ExpressionKind",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Fact",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Fact",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Fact",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Fact",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Fact",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Fact",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Filter",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Filter",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Filter",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Filter",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Filter",
+      "case": "empty",
+      "accepted": true
+    },
+    {
+      "kind": "Filter",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Flow",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Flow",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Flow",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Flow",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Flow",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Flow",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Formulation",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Formulation",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Formulation",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Formulation",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Formulation",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Formulation",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Function",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Function",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Function",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Function",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Function",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Function",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Implementation",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Implementation",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Implementation",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Implementation",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Implementation",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Implementation",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "ImplementationKind",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "ImplementationKind",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "ImplementationKind",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "ImplementationKind",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "ImplementationKind",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "ImplementationKind",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Label",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Label",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Label",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Label",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Label",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Label",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "LibraryVersion",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "LibraryVersion",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "LibraryVersion",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "LibraryVersion",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "LibraryVersion",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "LibraryVersion",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Location",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Location",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Location",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Location",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Location",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Location",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Measure",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Measure",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Measure",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Measure",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Measure",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Measure",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Measurement",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Measurement",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Measurement",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Measurement",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Measurement",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Measurement",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Metadata",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Metadata",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Metadata",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Metadata",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Metadata",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Metadata",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Method",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Method",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Method",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Method",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Method",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Method",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "MissingHandling",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "MissingHandling",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "MissingHandling",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "MissingHandling",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "MissingHandling",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "MissingHandling",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Model",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Model",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Model",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Model",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Model",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Model",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Movement",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Movement",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Movement",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Movement",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Movement",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Movement",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "NamedValue",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "NamedValue",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "NamedValue",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "NamedValue",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "NamedValue",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "NamedValue",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Objective",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Objective",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Objective",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Objective",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Objective",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Objective",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "ObjectiveKind",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "ObjectiveKind",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "ObjectiveKind",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "ObjectiveKind",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "ObjectiveKind",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "ObjectiveKind",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "ObservationAvailability",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "ObservationAvailability",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "ObservationAvailability",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "ObservationAvailability",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "ObservationAvailability",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "ObservationAvailability",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "ObservationBinding",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "ObservationBinding",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "ObservationBinding",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "ObservationBinding",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "ObservationBinding",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "ObservationBinding",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "ObservedQuantity",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "ObservedQuantity",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "ObservedQuantity",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "ObservedQuantity",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "ObservedQuantity",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "ObservedQuantity",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Operator",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Operator",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Operator",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Operator",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Operator",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Operator",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Parameter",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Parameter",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Parameter",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Parameter",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Parameter",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Parameter",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "ParameterKind",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "ParameterKind",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "ParameterKind",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "ParameterKind",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "ParameterKind",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "ParameterKind",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Period",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Period",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Period",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Period",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Period",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Period",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Policy",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Policy",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Policy",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Policy",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Policy",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Policy",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Projection",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Projection",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Projection",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Projection",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Projection",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Projection",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "ProjectionKind",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "ProjectionKind",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "ProjectionKind",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "ProjectionKind",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "ProjectionKind",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "ProjectionKind",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "PropertyContent",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "PropertyContent",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "PropertyContent",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "PropertyContent",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "PropertyContent",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "PropertyContent",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Provenance",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Provenance",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Provenance",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Provenance",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Provenance",
+      "case": "empty",
+      "accepted": true
+    },
+    {
+      "kind": "Provenance",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Quantity",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Quantity",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Quantity",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Quantity",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Quantity",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Quantity",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Query",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Query",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Query",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Query",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Query",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Query",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Reconciliation",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Reconciliation",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Reconciliation",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Reconciliation",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Reconciliation",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Reconciliation",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "ReconciliationStatus",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "ReconciliationStatus",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "ReconciliationStatus",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "ReconciliationStatus",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "ReconciliationStatus",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "ReconciliationStatus",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Relationship",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Relationship",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Relationship",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Relationship",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Relationship",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Relationship",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Report",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Report",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Report",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Report",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Report",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Report",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Rule",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Rule",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Rule",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Rule",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Rule",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Rule",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Run",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Run",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Run",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Run",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Run",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Run",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Runtime",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Runtime",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Runtime",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Runtime",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Runtime",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Runtime",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "ScenarioParameter",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "ScenarioParameter",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "ScenarioParameter",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "ScenarioParameter",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "ScenarioParameter",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "ScenarioParameter",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "ScenarioPlan",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "ScenarioPlan",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "ScenarioPlan",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "ScenarioPlan",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "ScenarioPlan",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "ScenarioPlan",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "ScenarioRealization",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "ScenarioRealization",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "ScenarioRealization",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "ScenarioRealization",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "ScenarioRealization",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "ScenarioRealization",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "ScopedValueReference",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "ScopedValueReference",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "ScopedValueReference",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "ScopedValueReference",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "ScopedValueReference",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "ScopedValueReference",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Selection",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Selection",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Selection",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Selection",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Selection",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Selection",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "SelectionKind",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "SelectionKind",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "SelectionKind",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "SelectionKind",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "SelectionKind",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "SelectionKind",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Settings",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Settings",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Settings",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Settings",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Settings",
+      "case": "empty",
+      "accepted": true
+    },
+    {
+      "kind": "Settings",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Severity",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Severity",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Severity",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Severity",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Severity",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Severity",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "SolutionStatus",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "SolutionStatus",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "SolutionStatus",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "SolutionStatus",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "SolutionStatus",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "SolutionStatus",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Source",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Source",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Source",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Source",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Source",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Source",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Span",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Span",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Span",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Span",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Span",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Span",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Specification",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Specification",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Specification",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Specification",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Specification",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Specification",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Status",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Status",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Status",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Status",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Status",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Status",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Step",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Step",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Step",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Step",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Step",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Step",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "StepKind",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "StepKind",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "StepKind",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "StepKind",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "StepKind",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "StepKind",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "System",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "System",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "System",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "System",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "System",
+      "case": "empty",
+      "accepted": true
+    },
+    {
+      "kind": "System",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Taxonomy",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Taxonomy",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Taxonomy",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Taxonomy",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Taxonomy",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Taxonomy",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Traversal",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Traversal",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Traversal",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Traversal",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Traversal",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Traversal",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "TraversalKind",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "TraversalKind",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "TraversalKind",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "TraversalKind",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "TraversalKind",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "TraversalKind",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Value",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "Value",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "Value",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "Value",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "Value",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "Value",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "ValueKind",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "ValueKind",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "ValueKind",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "ValueKind",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "ValueKind",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "ValueKind",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "ValueReference",
+      "case": "null",
+      "accepted": false
+    },
+    {
+      "kind": "ValueReference",
+      "case": "false",
+      "accepted": false
+    },
+    {
+      "kind": "ValueReference",
+      "case": "zero",
+      "accepted": false
+    },
+    {
+      "kind": "ValueReference",
+      "case": "array",
+      "accepted": false
+    },
+    {
+      "kind": "ValueReference",
+      "case": "empty",
+      "accepted": false
+    },
+    {
+      "kind": "ValueReference",
+      "case": "extra",
+      "accepted": false
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-optimization.yaml",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-optimization.yaml/omit/metadata",
+      "accepted": false
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-optimization.yaml/null/metadata",
+      "accepted": false
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-optimization.yaml/omit/model",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-optimization.yaml/null/model",
+      "accepted": false
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-optimization.yaml/omit/assignments",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-optimization.yaml/null/assignments",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-optimization.yaml/omit/unknowns",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-optimization.yaml/null/unknowns",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-optimization.yaml/omit/estimates",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-optimization.yaml/null/estimates",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-optimization.yaml/omit/formulations",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-optimization.yaml/null/formulations",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-optimization.yaml/omit/objectives",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-optimization.yaml/null/objectives",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-batch.yaml",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-batch.yaml/omit/metadata",
+      "accepted": false
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-batch.yaml/null/metadata",
+      "accepted": false
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-batch.yaml/omit/model",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-batch.yaml/null/model",
+      "accepted": false
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-batch.yaml/omit/cases",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-batch.yaml/null/cases",
+      "accepted": true
+    },
+    {
+      "kind": "Model",
+      "case": "model.yaml",
+      "accepted": true
+    },
+    {
+      "kind": "Model",
+      "case": "model.yaml/omit/metadata",
+      "accepted": false
+    },
+    {
+      "kind": "Model",
+      "case": "model.yaml/null/metadata",
+      "accepted": false
+    },
+    {
+      "kind": "Model",
+      "case": "model.yaml/omit/definitions",
+      "accepted": true
+    },
+    {
+      "kind": "Model",
+      "case": "model.yaml/null/definitions",
+      "accepted": false
+    },
+    {
+      "kind": "Model",
+      "case": "model.yaml/omit/system",
+      "accepted": true
+    },
+    {
+      "kind": "Model",
+      "case": "model.yaml/null/system",
+      "accepted": false
+    },
+    {
+      "kind": "Model",
+      "case": "model.yaml/omit/provenance",
+      "accepted": true
+    },
+    {
+      "kind": "Model",
+      "case": "model.yaml/null/provenance",
+      "accepted": false
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-objectives.yaml",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-objectives.yaml/omit/metadata",
+      "accepted": false
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-objectives.yaml/null/metadata",
+      "accepted": false
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-objectives.yaml/omit/model",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-objectives.yaml/null/model",
+      "accepted": false
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-objectives.yaml/omit/assignments",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-objectives.yaml/null/assignments",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-objectives.yaml/omit/unknowns",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-objectives.yaml/null/unknowns",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-objectives.yaml/omit/estimates",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-objectives.yaml/null/estimates",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-objectives.yaml/omit/formulations",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-objectives.yaml/null/formulations",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-objectives.yaml/omit/objectives",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-objectives.yaml/null/objectives",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-inverse.yaml",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-inverse.yaml/omit/metadata",
+      "accepted": false
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-inverse.yaml/null/metadata",
+      "accepted": false
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-inverse.yaml/omit/model",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-inverse.yaml/null/model",
+      "accepted": false
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-inverse.yaml/omit/assignments",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-inverse.yaml/null/assignments",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-inverse.yaml/omit/unknowns",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-inverse.yaml/null/unknowns",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-inverse.yaml/omit/estimates",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-inverse.yaml/null/estimates",
+      "accepted": true
+    },
+    {
+      "kind": "Run",
+      "case": "run-failed.yaml",
+      "accepted": true
+    },
+    {
+      "kind": "Run",
+      "case": "run-failed.yaml/omit/metadata",
+      "accepted": false
+    },
+    {
+      "kind": "Run",
+      "case": "run-failed.yaml/null/metadata",
+      "accepted": false
+    },
+    {
+      "kind": "Run",
+      "case": "run-failed.yaml/omit/specification",
+      "accepted": false
+    },
+    {
+      "kind": "Run",
+      "case": "run-failed.yaml/null/specification",
+      "accepted": false
+    },
+    {
+      "kind": "Run",
+      "case": "run-failed.yaml/omit/report",
+      "accepted": false
+    },
+    {
+      "kind": "Run",
+      "case": "run-failed.yaml/null/report",
+      "accepted": false
+    },
+    {
+      "kind": "Run",
+      "case": "run-inverse.yaml",
+      "accepted": true
+    },
+    {
+      "kind": "Run",
+      "case": "run-inverse.yaml/omit/metadata",
+      "accepted": false
+    },
+    {
+      "kind": "Run",
+      "case": "run-inverse.yaml/null/metadata",
+      "accepted": false
+    },
+    {
+      "kind": "Run",
+      "case": "run-inverse.yaml/omit/specification",
+      "accepted": false
+    },
+    {
+      "kind": "Run",
+      "case": "run-inverse.yaml/null/specification",
+      "accepted": false
+    },
+    {
+      "kind": "Run",
+      "case": "run-inverse.yaml/omit/outputs",
+      "accepted": true
+    },
+    {
+      "kind": "Run",
+      "case": "run-inverse.yaml/null/outputs",
+      "accepted": true
+    },
+    {
+      "kind": "Run",
+      "case": "run-inverse.yaml/omit/report",
+      "accepted": false
+    },
+    {
+      "kind": "Run",
+      "case": "run-inverse.yaml/null/report",
+      "accepted": false
+    },
+    {
+      "kind": "Model",
+      "case": "model-forward-output.yaml",
+      "accepted": true
+    },
+    {
+      "kind": "Model",
+      "case": "model-forward-output.yaml/omit/metadata",
+      "accepted": false
+    },
+    {
+      "kind": "Model",
+      "case": "model-forward-output.yaml/null/metadata",
+      "accepted": false
+    },
+    {
+      "kind": "Model",
+      "case": "model-forward-output.yaml/omit/definitions",
+      "accepted": true
+    },
+    {
+      "kind": "Model",
+      "case": "model-forward-output.yaml/null/definitions",
+      "accepted": false
+    },
+    {
+      "kind": "Model",
+      "case": "model-forward-output.yaml/omit/system",
+      "accepted": true
+    },
+    {
+      "kind": "Model",
+      "case": "model-forward-output.yaml/null/system",
+      "accepted": false
+    },
+    {
+      "kind": "Model",
+      "case": "model-forward-output.yaml/omit/provenance",
+      "accepted": true
+    },
+    {
+      "kind": "Model",
+      "case": "model-forward-output.yaml/null/provenance",
+      "accepted": false
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-composed-forward.yaml",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-composed-forward.yaml/omit/metadata",
+      "accepted": false
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-composed-forward.yaml/null/metadata",
+      "accepted": false
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-composed-forward.yaml/omit/includes",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-composed-forward.yaml/null/includes",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-composed-forward.yaml/omit/assignments",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-composed-forward.yaml/null/assignments",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-composed-forward.yaml/omit/unknowns",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-composed-forward.yaml/null/unknowns",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-composed-forward.yaml/omit/settings",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-composed-forward.yaml/null/settings",
+      "accepted": false
+    },
+    {
+      "kind": "Run",
+      "case": "run-skipped.yaml",
+      "accepted": true
+    },
+    {
+      "kind": "Run",
+      "case": "run-skipped.yaml/omit/metadata",
+      "accepted": false
+    },
+    {
+      "kind": "Run",
+      "case": "run-skipped.yaml/null/metadata",
+      "accepted": false
+    },
+    {
+      "kind": "Run",
+      "case": "run-skipped.yaml/omit/specification",
+      "accepted": false
+    },
+    {
+      "kind": "Run",
+      "case": "run-skipped.yaml/null/specification",
+      "accepted": false
+    },
+    {
+      "kind": "Run",
+      "case": "run-skipped.yaml/omit/report",
+      "accepted": false
+    },
+    {
+      "kind": "Run",
+      "case": "run-skipped.yaml/null/report",
+      "accepted": false
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-composed-inverse.yaml",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-composed-inverse.yaml/omit/metadata",
+      "accepted": false
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-composed-inverse.yaml/null/metadata",
+      "accepted": false
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-composed-inverse.yaml/omit/includes",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-composed-inverse.yaml/null/includes",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-composed-inverse.yaml/omit/assignments",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-composed-inverse.yaml/null/assignments",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-composed-inverse.yaml/omit/unknowns",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-composed-inverse.yaml/null/unknowns",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-composed-inverse.yaml/omit/estimates",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-composed-inverse.yaml/null/estimates",
+      "accepted": true
+    },
+    {
+      "kind": "Run",
+      "case": "run-forward.yaml",
+      "accepted": true
+    },
+    {
+      "kind": "Run",
+      "case": "run-forward.yaml/omit/metadata",
+      "accepted": false
+    },
+    {
+      "kind": "Run",
+      "case": "run-forward.yaml/null/metadata",
+      "accepted": false
+    },
+    {
+      "kind": "Run",
+      "case": "run-forward.yaml/omit/specification",
+      "accepted": false
+    },
+    {
+      "kind": "Run",
+      "case": "run-forward.yaml/null/specification",
+      "accepted": false
+    },
+    {
+      "kind": "Run",
+      "case": "run-forward.yaml/omit/outputs",
+      "accepted": true
+    },
+    {
+      "kind": "Run",
+      "case": "run-forward.yaml/null/outputs",
+      "accepted": true
+    },
+    {
+      "kind": "Run",
+      "case": "run-forward.yaml/omit/report",
+      "accepted": false
+    },
+    {
+      "kind": "Run",
+      "case": "run-forward.yaml/null/report",
+      "accepted": false
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-forward.yaml",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-forward.yaml/omit/metadata",
+      "accepted": false
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-forward.yaml/null/metadata",
+      "accepted": false
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-forward.yaml/omit/model",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-forward.yaml/null/model",
+      "accepted": false
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-forward.yaml/omit/assignments",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-forward.yaml/null/assignments",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-forward.yaml/omit/unknowns",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-forward.yaml/null/unknowns",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-forward.yaml/omit/settings",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-forward.yaml/null/settings",
+      "accepted": false
+    },
+    {
+      "kind": "Model",
+      "case": "model-inverse-output.yaml",
+      "accepted": true
+    },
+    {
+      "kind": "Model",
+      "case": "model-inverse-output.yaml/omit/metadata",
+      "accepted": false
+    },
+    {
+      "kind": "Model",
+      "case": "model-inverse-output.yaml/null/metadata",
+      "accepted": false
+    },
+    {
+      "kind": "Model",
+      "case": "model-inverse-output.yaml/omit/definitions",
+      "accepted": true
+    },
+    {
+      "kind": "Model",
+      "case": "model-inverse-output.yaml/null/definitions",
+      "accepted": false
+    },
+    {
+      "kind": "Model",
+      "case": "model-inverse-output.yaml/omit/system",
+      "accepted": true
+    },
+    {
+      "kind": "Model",
+      "case": "model-inverse-output.yaml/null/system",
+      "accepted": false
+    },
+    {
+      "kind": "Model",
+      "case": "model-inverse-output.yaml/omit/provenance",
+      "accepted": true
+    },
+    {
+      "kind": "Model",
+      "case": "model-inverse-output.yaml/null/provenance",
+      "accepted": false
+    },
+    {
+      "kind": "Run",
+      "case": "run-batch.yaml",
+      "accepted": true
+    },
+    {
+      "kind": "Run",
+      "case": "run-batch.yaml/omit/metadata",
+      "accepted": false
+    },
+    {
+      "kind": "Run",
+      "case": "run-batch.yaml/null/metadata",
+      "accepted": false
+    },
+    {
+      "kind": "Run",
+      "case": "run-batch.yaml/omit/specification",
+      "accepted": false
+    },
+    {
+      "kind": "Run",
+      "case": "run-batch.yaml/null/specification",
+      "accepted": false
+    },
+    {
+      "kind": "Run",
+      "case": "run-batch.yaml/omit/spawns",
+      "accepted": true
+    },
+    {
+      "kind": "Run",
+      "case": "run-batch.yaml/null/spawns",
+      "accepted": true
+    },
+    {
+      "kind": "Run",
+      "case": "run-batch.yaml/omit/outputs",
+      "accepted": true
+    },
+    {
+      "kind": "Run",
+      "case": "run-batch.yaml/null/outputs",
+      "accepted": true
+    },
+    {
+      "kind": "Run",
+      "case": "run-batch.yaml/omit/report",
+      "accepted": false
+    },
+    {
+      "kind": "Run",
+      "case": "run-batch.yaml/null/report",
+      "accepted": false
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-common.yaml",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-common.yaml/omit/metadata",
+      "accepted": false
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-common.yaml/null/metadata",
+      "accepted": false
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-common.yaml/omit/model",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-common.yaml/null/model",
+      "accepted": false
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-common.yaml/omit/assignments",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-common.yaml/null/assignments",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-common.yaml/omit/unknowns",
+      "accepted": true
+    },
+    {
+      "kind": "Specification",
+      "case": "specification-common.yaml/null/unknowns",
+      "accepted": true
+    },
+    {
+      "kind": "ValueReference",
+      "case": "reference",
+      "accepted": false
+    },
+    {
+      "kind": "ValueReference",
+      "case": "reference",
+      "accepted": false
+    },
+    {
+      "kind": "ValueReference",
+      "case": "reference",
+      "accepted": false
+    },
+    {
+      "kind": "ValueReference",
+      "case": "reference",
+      "accepted": true
+    },
+    {
+      "kind": "ValueReference",
+      "case": "reference",
+      "accepted": true
+    }
+  ]
+}

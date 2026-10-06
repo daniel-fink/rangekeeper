@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/Volumes/Data/Projects/Rangekeeper/schema/checks/specifications.py", line 278, in <module>
+    shape_case(lambda p: p["assignments"][0].pop("value"))
+  File "/Volumes/Data/Projects/Rangekeeper/schema/checks/specifications.py", line 253, in shape_case
+    change(document)
+  File "/Volumes/Data/Projects/Rangekeeper/schema/checks/specifications.py", line 278, in <lambda>
+    shape_case(lambda p: p["assignments"][0].pop("value"))
+KeyError: 'value'

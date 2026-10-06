@@ -23,8 +23,8 @@ from ..model.flow import (
 )
 from ..model.duration import Period
 from ..model.measure import Quantity
-from ..temporal.period import PeriodTiming, validate_period
-from ..temporal.calendar import DayCount, elapsed_days, year_fraction
+from ..duration.period import PeriodTiming, validate_period
+from ..duration.calendar import DayCount, elapsed_days, year_fraction
 from ..units import UnitSystem, default_units
 
 from ._flow import replace_movements, replace_movement
@@ -492,7 +492,7 @@ def collapse(
     already records a date. This explicit loss of temporal detail does not mutate
     the source Flow. Empty input is returned unchanged.
     """
-    from ..temporal.calendar import require_date
+    from ..duration.calendar import require_date
 
     if on is not None and timing is not None:
         raise ValueError("supply on or timing, not both")

@@ -1,11 +1,11 @@
-# Synthetic conformance fixture: hypothetical execution/output, not an observed solver result.
+# Synthetic conformance fixture; no runtime execution is claimed.
 metadata:
-  id: 9d1861a7-de38-5c5c-8fa7-8a2f8bbc762c
-  schema_version: 0.1.0
+  id: 37045e56-e14c-5fb0-99e1-edd704271361
+  schema_version: 0.2.0
   name: Synthetic skipped attempt
-  description: Synthetic expected record for schema conformance only. No evaluator or numerical solver
-    was executed to produce this record.
-specification: abd75e4d-3e68-54b5-b446-2f3ea51d6c9c
+  description: New synthetic 0.2.0 conformance fixture. No evaluator or solver produced this record; historical
+    Runs are unchanged.
+specification: 5f5be6f0-a423-5a22-89f8-bc83ac1f9d96
 report:
   status:
     completion: skipped
@@ -14,4 +14,4 @@ report:
   - severity: info
     code: case_skipped
     message: 'Synthetic skipped case: execution was not started.'
-    document: abd75e4d-3e68-54b5-b446-2f3ea51d6c9c
+    document: 5f5be6f0-a423-5a22-89f8-bc83ac1f9d96

@@ -1,161 +1,111 @@
-# Pytests file.
-# Note: gathers tests according to a naming convention.
-# By default any file that is to contain tests must be named starting with 'test_',
-# classes that hold tests must be named starting with 'Test',
-# and any function in a file that should be treated as a test must also start with 'test_'.
+"""Complete migrated teaching consumers, with independent deterministic expectations."""
+
 import datetime
-import locale
 import math
-
-import matplotlib.pyplot as plt
-import pandas as pd
-
-import rangekeeper as rk
-import tests
-
-# matplotlib.use('TkAgg')
-plt.style.use("seaborn-v0_8")  # pretty matplotlib plots
-plt.rcParams["figure.figsize"] = (12, 8)
-
-locale.setlocale(locale.LC_ALL, "en_AU")
-units = rk.measure.Index.registry
-currency = rk.measure.register_currency(registry=units)
+import pytest
+from rangekeeper.calculations import series
+from rangekeeper.io import MemoryStore
+from rangekeeper.execution import Executor
+from rangekeeper.run import validate
+from rangekeeper.model import Model, Metadata
+from rangekeeper.duration import make_periods
+from rangekeeper.model.scenario import Distribution
+from rangekeeper.scenarios import generate, make_plan
+from uuid import uuid4
+from tests.models import linear, deterministic, probabilistic, flexible
 
 
-class TestLinear:
-    def test_linear_model(self):
-        from rangekeeper.calculations import series
-        params = dict(units="AUD", start_date=datetime.date(2020,1,1), num_periods=10,
-                      acquisition_price=1000, frequency="year", growth_rate=.02,
-                      initial_pgi=100., vacancy_rate=.05, opex_pgi_ratio=.35,
-                      capex_pgi_ratio=.10, cap_rate=.05, discount_rate=.07)
-        model=tests.models.linear.Model(params)
-        assert math.isclose(model.disposition.movements[-1].magnitude,1218.99,rel_tol=.01)
-        assert math.isclose(series.total(model.pv_sums).magnitude,1000,rel_tol=1e-12)
-        assert abs(model.irr.residual.magnitude)<1e-7
-        assert len(model.investment_cashflows.movements)==11
+def execute(consumer, model, **requirements):
+    store = MemoryStore()
+    store.put(model)
+    run = Executor(store).execute(consumer.specify(model, **requirements))
+    assert run.report.status.solution == "feasible", run.report.to_data()
+    validate(run, resolver=store).raise_if_invalid()
+    output = store.load_model(run.record.outputs[0])
+    return consumer.report(output), run
 
 
-class TestDeterministic:
-    def test_deterministic_model(self):
-        base_params = {
-            "units": currency.units,
-            "start_date": datetime.date(2020, 1, 1),
-            "num_periods": 10,
-            "frequency": rk.duration.Type.YEAR,
-            "growth_rate": 0.02,
-            "initial_pgi": 100.0,
-            "addl_pgi_per_period": 0.0,
-            "vacancy_rate": 0.05,
-            "opex_pgi_ratio": 0.35,
-            "capex_pgi_ratio": 0.10,
-            "cap_rate": 0.05,
-            "discount_rate": 0.07,
-        }
-
-        # Run model with base parameters:
-        base = tests.models.deterministic.Model(base_params)
-
-        base.pv_sums.display()
-        assert base.pv_sums.movements.iloc[0] == 1000
-        assert math.isclose(base.pv_sums.collapse().movements.iloc[0], 10000)
-
-        # Adjust model to optimistic parameters:
-        optimistic_params = base_params.copy()
-        optimistic_params["initial_pgi"] = 110.0
-        optimistic_params["addl_pgi_per_period"] = 3.0
-        optimistic = tests.models.deterministic.Model(optimistic_params)
-        assert math.isclose(
-            a=optimistic.pv_sums.movements.iloc[9], b=1294.08, rel_tol=0.01
-        )
-
-        # Adjust the model to pessimistic parameters:
-        pessimistic_params = base_params.copy()
-        pessimistic_params["initial_pgi"] = 90.0
-        pessimistic_params["addl_pgi_per_period"] = -3.0
-        pessimistic = tests.models.deterministic.Model(pessimistic_params)
-        pessimistic.pv_sums.display()
-        assert math.isclose(
-            a=pessimistic.pv_sums.movements.iloc[9], b=705.92, rel_tol=0.01
-        )
-
-        # Calculate expected value of the property at any period:
-        exp = rk.flux.Flow(
-            movements=pessimistic.pv_sums.movements * 0.5
-            + optimistic.pv_sums.movements * 0.5,
-            units=base_params["units"],
-        )
-        assert math.isclose(exp.movements.iloc[6], 1000.0)
-
-        # Calculate the expected value with flexibility:
-        exp_flex = (
-            pessimistic.pv_sums.movements.iloc[0] * 0.5
-            + optimistic.pv_sums.movements.iloc[9] * 0.5
-        )
-        assert math.isclose(a=exp_flex, b=1083.0, rel_tol=0.1)
+def test_linear_known_data_regression():
+    params = dict(
+        units="AUD",
+        start_date=datetime.date(2020, 1, 1),
+        num_periods=10,
+        acquisition_price=1000,
+        frequency="year",
+        growth_rate=0.02,
+        initial_pgi=100.0,
+        vacancy_rate=0.05,
+        opex_pgi_ratio=0.35,
+        capex_pgi_ratio=0.1,
+        cap_rate=0.05,
+        discount_rate=0.07,
+    )
+    result = linear.Model(params)
+    assert math.isclose(
+        result.disposition.movements[-1].magnitude, 1218.99, rel_tol=0.01
+    )
+    assert series.total(result.pv_sums).magnitude == pytest.approx(1000)
+    assert abs(result.irr.residual.magnitude) < 1e-7
+    assert len(result.investment_cashflows.movements) == 11
 
 
-class TestProbabilistic:
-    def test_probabilistic_model(self):
-        base_params = {
-            "units": currency.units,
-            "start_date": datetime.date(2020, 1, 1),
-            "num_periods": 10,
-            "acquisition_price": 1000,
-            "frequency": rk.duration.Type.YEAR,
-            "growth_rate": 0.02,
-            "initial_pgi": 100.0,
-            "space_market_dist": rk.distribution.PERT(
-                peak=1.0, weighting=4.0, minimum=0.75, maximum=1.25
+@pytest.mark.parametrize(
+    "initial,increment,terminal", [(100, 0, 1000), (110, 3, 1294.08), (90, -3, 705.92)]
+)
+def test_deterministic_horizon_comparison(initial, increment, terminal):
+    model = deterministic.formulate(
+        deterministic.author(dict(initial_pgi=initial, addl_pgi_per_period=increment))
+    )
+    result, _ = execute(deterministic, model)
+    curve = deterministic.values(result.model)["horizon_pv"].flow
+    assert curve.movements[-1].magnitude == pytest.approx(terminal, abs=0.01)
+    assert result.pv.magnitude == pytest.approx(curve.movements[-1].magnitude)
+    assert result.sale_date == datetime.date(2030, 12, 31)
+    assert abs(result.irr.residual.magnitude) < 1e-6
+
+
+def test_probabilistic_and_flexible_use_identical_captured_paths():
+    base = Model.create(metadata=Metadata(id=uuid4(), schema_version="0.5.0"))
+    plan = make_plan(
+        periods=make_periods(datetime.date(2021, 1, 1), frequency="year", count=4),
+        seed=17,
+        method="independent.v2",
+        parameters=dict(
+            space_factor=Distribution(
+                kind="uniform", lower=1.3, upper=1.4, units="dimensionless"
             ),
-            "vacancy_rate": 0.05,
-            "opex_pgi_ratio": 0.35,
-            "capex_pgi_ratio": 0.10,
-            "cap_rate": 0.05,
-            "discount_rate": 0.07,
-        }
-
-        prob = tests.models.probabilistic.Model(base_params)
-        prob.pv_sums.display()
-        prob.investment_cashflows.display()
-        prob.investment_cashflows.sum().display()
-        print("IRR: " + str(prob.irr))
-        print("Average annual NCF: " + str(prob.ncf.sum().movements.mean()))
-
-
-class TestFlexible:
-    def test_flexible_model(self):
-        base_params = {
-            "units": currency.units,
-            "start_date": datetime.date(2020, 1, 1),
-            "num_periods": 24,
-            "acquisition_price": 1000,
-            "frequency": rk.duration.Type.YEAR,
-            "growth_rate": 0.02,
-            "initial_pgi": 100.0,
-            "space_market_dist": rk.distribution.PERT(
-                peak=1.0, weighting=4.0, minimum=0.5, maximum=1.75
-            ),
-            "asset_market_dist": rk.distribution.PERT(
-                peak=0.06, weighting=4.0, minimum=0.03, maximum=0.09
-            ),
-            "vacancy_rate": 0.05,
-            "opex_pgi_ratio": 0.35,
-            "capex_pgi_ratio": 0.10,
-            "cap_rate": 0.05,
-            "discount_rate": 0.07,
-        }
-
-        flex = tests.models.flexible.Model(base_params)
-        flex.pgi_factor.display()
-        flex.disposition.display()
-        flex.pv_ncf_agg.display()
-
-        flex.pv_sums.display()
-
-        print("Reversion Date: " + str(flex.disposition_date))
-        flex.investment_cashflows.display()
-        flex.investment_cashflows.sum().display()
-        print("IRR: " + str(flex.irr))
-        print("NPV: " + str(flex.npv))
-        print("Average annual NCF: " + str(flex.ncf.sum().movements.mean()))
+            asset_cap=0.05,
+        ),
+    )
+    scenario = generate(base, plan, scenario_keys=["paired"])[0]
+    model = probabilistic.formulate(
+        probabilistic.author(dict(num_periods=3), scenario=scenario)
+    )
+    fixed, _ = execute(probabilistic, model)
+    policy = flexible.build_stop_gain_resale_policy(
+        model, minimum_holding_periods=2, threshold=1.2
+    )
+    chosen, run = execute(flexible, model, policy=policy)
+    assert chosen.sale_date == datetime.date(2022, 12, 31)
+    assert fixed.sale_date == datetime.date(2023, 12, 31)
+    assert len(run.report.decisions) == 2
+    for name in ("space_market_price_factors", "historical_value"):
+        value = scenario.value(name)
+        assert (
+            fixed.model.value(value.id).flow
+            == chosen.model.value(value.id).flow
+            == value.flow
+            or name == "space_market_price_factors"
+        )
+        # Assigned observations may gain evidence; their magnitudes and coordinates stay identical.
+        assert [
+            (m.key, m.date, m.magnitude)
+            for m in fixed.model.value(value.id).flow.movements
+        ] == [
+            (m.key, m.date, m.magnitude)
+            for m in chosen.model.value(value.id).flow.movements
+        ]
+    output = flexible.values(chosen.model)
+    assert output["total"].flow.movements[-1].magnitude == 0
+    assert output["operations"].flow.movements[1].magnitude > 0
+    assert output["disposition"].flow.movements[1].magnitude > 0

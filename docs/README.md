@@ -1,5 +1,15 @@
 # Rangekeeper documentation and current work plan
 
+**Turn 2 update, 2026-10-06:** [Temporal equations, scenarios and policies](FULL_MIGRATION_TURN2.md)
+now use Model/Specification 0.5.0 and Run 0.2.0. `ValueReference` addresses scalar
+Values or owner-local Movement keys. The canonical calendar package is `duration/`;
+`temporal` has no public alias. Finite Flow formulations, captured scenario replay,
+exogenous declarative policies and the four numerical walkthroughs are implemented.
+See [verification](research/full-migration/turn2/README.md) and the
+[upgrade guide](LEGACY_UPGRADE_GUIDE.md). Turn 3 completes remaining consumers and
+integrations; Turn 4 retires obsolete code after their acceptance gates.
+The dated checkpoint descriptions below remain historical context.
+
 **Movement naming, 2026-10-06:** the current API uses `Movement` and
 `Flow.movements`. See the [naming contract](FULL_MIGRATION_TURN1.md#movement-naming)
 for the Python/wire-format change and upgrade requirements.
@@ -22,11 +32,7 @@ when the movement has no recorded date.
 [Financial-library integration](research/full-migration/financial-library/README.md)
 now delegates PV, XNPV, IRR and day counts to PyXIRR. The draft mandatory IRR
 bracket is replaced by an optional initial guess.
-Next is Turn 2: temporal mathematics, scenarios/policies, and their consumers.
-Start with the [duration namespace migration](FULL_MIGRATION_TURN1.md#duration-namespace-migration):
-`temporal/` will become `duration/`, while `model.duration` remains the record module.
-The 2026-10-05 decision includes the old-caller transition and verification gates;
-the runtime rename is pending and adds no implementation turn.
+Turn 2 is implemented; see the current contract and verification linked above.
 Turns 3–4 finish remaining consumers and retire old modules. The six-checkpoint
 history below remains the scalar/core work record; full migration is not complete.
 
@@ -37,7 +43,7 @@ an implemented runtime.
 Current consumer checkpoint: [Model tables, adapters, and source workflows](CONSUMER_MIGRATION.md)
 (6C/6D), with [verification](research/consumer-migration/README.md), committed at
 `90c2e00`. The expanded [full migration scope](FULL_MIGRATION_REVIEW.md) now has
-a four-turn implementation sequence and a delivered Turn 1 foundation.
+a four-turn implementation sequence with Turns 1 and 2 implemented.
 It covers all remaining older behavior, numerical/temporal redesign, parallel
 workbench/layout features, consumer proof, retirement and future upgrade guidance.
 6E/6F remain open. Turn 1 schema/API implementations and remaining proposals
@@ -171,3 +177,7 @@ For continuation, use the current architecture and handoff. Preserve historical
 measurements and delivered API examples rather than relabelling them as new
 schema-backed behavior. Documentation updates do not authorize commits, pushes,
 or releases.
+
+## Market and scenario naming
+
+See the [RK naming update](RK_NAMING.md) for the typed Market view, shared Distribution and Binding records, RandomStream, DecisionHistory, component constructors and explicit scenario draft upgrades.

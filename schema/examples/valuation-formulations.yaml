@@ -1,7 +1,3 @@
-# Formulation conformance records, not a complete Model or executable Specification.
-# Same equations and UUIDs as valuation-expressions.yaml, in a separate fixture scope.
-# NOI is owned once by the root Formulation; both children reference that shared Value.
-# All amounts remain unresolved. Constraint codes are local to their owning Formulation.
 definitions:
   measures:
   - id: c78938f5-aa17-51e5-80a0-55fbb002cbbc
@@ -92,7 +88,8 @@ formulations:
       operands:
       - id: 1fb80684-6104-5434-98f6-1c85916326f0
         kind: reference
-        target: 9324f928-cfc8-50bb-ba99-fe8c02a6dbd2
+        target:
+          value: 9324f928-cfc8-50bb-ba99-fe8c02a6dbd2
       - id: d6969b54-363e-56d1-9178-8f902f77b99b
         kind: binary
         operator: subtract
@@ -103,13 +100,16 @@ formulations:
           operands:
           - id: 170ff22d-dd17-5bc2-ab54-651ce5b66c80
             kind: reference
-            target: 194afc26-3e2e-507b-ad0c-a73a4b0b2ccd
+            target:
+              value: 194afc26-3e2e-507b-ad0c-a73a4b0b2ccd
           - id: 4e1bb38a-8a38-5b8e-af81-739fcf45ecfb
             kind: reference
-            target: e3fb1434-5371-5bcb-b0b8-e3af2bf65022
+            target:
+              value: e3fb1434-5371-5bcb-b0b8-e3af2bf65022
         - id: b29af982-81b4-5697-92ca-1faa0ee2a4d8
           kind: reference
-          target: cbe37d0a-79ce-5d1b-b0cb-8d2a42acc991
+          target:
+            value: cbe37d0a-79ce-5d1b-b0cb-8d2a42acc991
     constraints:
     - id: d526182d-2216-5862-88b9-b5bdd5e804a5
       code: equation
@@ -133,13 +133,16 @@ formulations:
         operands:
         - id: 65f40df5-96f0-59b3-8ce4-122dea47f0ca
           kind: reference
-          target: a947d40b-d9b0-54cb-a2a4-f8f598405ac2
+          target:
+            value: a947d40b-d9b0-54cb-a2a4-f8f598405ac2
         - id: 19b0ad63-2b65-529f-8970-dc554dd9f9b3
           kind: reference
-          target: 0ceeb0d5-91b7-53b7-b823-2234e2262a4f
+          target:
+            value: 0ceeb0d5-91b7-53b7-b823-2234e2262a4f
       - id: 251fe406-e76e-5f27-b858-3a27df290f46
         kind: reference
-        target: 9324f928-cfc8-50bb-ba99-fe8c02a6dbd2
+        target:
+          value: 9324f928-cfc8-50bb-ba99-fe8c02a6dbd2
     constraints:
     - id: 02ff78c0-ec20-535d-b997-ac16d64fd944
       code: equation

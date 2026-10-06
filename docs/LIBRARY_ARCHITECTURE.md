@@ -1,5 +1,15 @@
 # Rangekeeper library architecture and migration plan
 
+**Turn 2 update, 2026-10-06:** [Temporal equations, scenarios and policies](FULL_MIGRATION_TURN2.md)
+now use Model/Specification 0.5.0 and Run 0.2.0. `ValueReference` addresses scalar
+Values or owner-local Movement keys. The canonical calendar package is `duration/`;
+`temporal` has no public alias. Finite Flow formulations, captured scenario replay,
+exogenous declarative policies and the four numerical walkthroughs are implemented.
+See [verification](research/full-migration/turn2/README.md) and the
+[upgrade guide](LEGACY_UPGRADE_GUIDE.md). Turn 3 completes remaining consumers and
+integrations; Turn 4 retires obsolete code after their acceptance gates.
+The dated checkpoint descriptions below remain historical context.
+
 **Movement naming, 2026-10-06:** the current API uses `Movement` and
 `Flow.movements`. See the [naming contract](FULL_MIGRATION_TURN1.md#movement-naming)
 for the Python/wire-format change and upgrade requirements.
@@ -22,11 +32,7 @@ when the movement has no recorded date.
 [Financial-library integration](research/full-migration/financial-library/README.md)
 now delegates PV, XNPV, IRR and day counts to PyXIRR. The draft mandatory IRR
 bracket is replaced by an optional initial guess.
-Next is Turn 2: temporal mathematics, scenarios/policies, and their consumers.
-Its opening slice is the [duration namespace migration](FULL_MIGRATION_TURN1.md#duration-namespace-migration),
-recorded 2026-10-05: `temporal/` becomes `duration/`; `model.duration` keeps the
-records. The old `duration.py` moves to temporary private migration support until
-its caller and comparison gates pass. This namespace change is planned, not implemented.
+Turn 2 is implemented; see the current contract and verification linked above.
 Turns 3–4 finish remaining consumers and retire old modules. The six-checkpoint
 history below remains the scalar/core work record; full migration is not complete.
 
@@ -419,3 +425,7 @@ Do not expand scalar execution work into unrelated adapter repair.
 
 Commit, push, release, and deployment are separate from local implementation and
 validation. This document records the plan; it does not authorize publication.
+
+## Market and scenario naming
+
+See the [RK naming update](RK_NAMING.md) for the typed Market view, shared Distribution and Binding records, RandomStream, DecisionHistory, component constructors and explicit scenario draft upgrades.

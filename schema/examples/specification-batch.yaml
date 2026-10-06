@@ -1,11 +1,12 @@
-# Synthetic Specification; no execution or output Model is asserted.
+# Synthetic conformance fixture; no runtime execution is claimed.
 metadata:
-  id: 25df750e-a766-5fdc-9de9-a22d779f135b
-  schema_version: 0.4.0
+  id: 45d06a63-85fe-5d80-82a0-f55a6a06a01a
+  schema_version: 0.5.0
   name: Forward and inverse valuation batch
-  description: Two independent investigations. Cases explicitly include their shared contribution; this
-    batch supplies no solve requirements.
-model: 396b03f6-1ebb-59f4-b520-231242ffd645
+  description: Two independent investigations. Cases explicitly include their shared contribution; this batch supplies
+    no solve requirements.
+  previous: 25df750e-a766-5fdc-9de9-a22d779f135b
+model: e9096132-8158-56db-bc3e-b64ef7f92d4e
 cases:
-- 6415f03f-f1a4-5ff2-b4f8-b4faaafd027e
-- abd75e4d-3e68-54b5-b446-2f3ea51d6c9c
+- c1efd865-1463-54c1-b28b-5e689f4837ed
+- 5f5be6f0-a423-5a22-89f8-bc83ac1f9d96

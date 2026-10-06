@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/Volumes/Data/Projects/Rangekeeper/schema/checks/specifications.py", line 504, in <module>
+    assert isinstance(assignment.value, module.ValueId)
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/jsonasobj2/_jsonobj.py", line 160, in __getattr__
+    return super().__getattribute__(item)
+AttributeError: 'Assignment' object has no attribute 'value'. Did you mean: '_values'?

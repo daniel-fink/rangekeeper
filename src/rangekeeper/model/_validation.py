@@ -37,6 +37,7 @@ def model_documents(model):
         system=system,
         provenance=dict(
             sources=provenance.get("sources") or [],
+            scenarios=provenance.get("scenarios") or [],
             claims=[
                 {k: v for k, v in c.items() if k != "content"}
                 for c in provenance.get("claims") or []
@@ -147,6 +148,10 @@ def validate_model(model, schema_version, history=()):
         },
         "Assembly membership",
     )
+
+    from ._scenario import validate_realizations
+
+    validate_realizations(provenance, scope)
 
     sources = {r["id"]: r for r in provenance.get("sources") or []}
     claims = {r["id"]: r for r in provenance.get("claims") or []}

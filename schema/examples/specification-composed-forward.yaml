@@ -1,19 +1,21 @@
-# Synthetic Specification; no execution or output Model is asserted.
+# Synthetic conformance fixture; no runtime execution is claimed.
 metadata:
-  id: 6415f03f-f1a4-5ff2-b4f8-b4faaafd027e
-  schema_version: 0.4.0
+  id: c1efd865-1463-54c1-b28b-5e689f4837ed
+  schema_version: 0.5.0
   name: Composed forward valuation
-  description: Combines shared requirements with investigation-specific roles. Equivalent to the standalone
-    forward example; no solver has been run.
+  description: Combines shared requirements with investigation-specific roles. Equivalent to the standalone forward
+    example; no solver has been run.
+  previous: 6415f03f-f1a4-5ff2-b4f8-b4faaafd027e
 includes:
-- 0d0336b5-6cf6-56dc-a152-af084b4374d7
+- fb1663aa-1482-50e1-9da9-d798faa70872
 assignments:
-- value: e3fb1434-5371-5bcb-b0b8-e3af2bf65022
-  quantity:
+- quantity:
     magnitude: 30000
     units: AUD/dwelling/year
+  target:
+    value: e3fb1434-5371-5bcb-b0b8-e3af2bf65022
 unknowns:
-- a947d40b-d9b0-54cb-a2a4-f8f598405ac2
+- value: a947d40b-d9b0-54cb-a2a4-f8f598405ac2
 settings:
   relative_tolerance: 1.0e-08
   iteration_limit: 100

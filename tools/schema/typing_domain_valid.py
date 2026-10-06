@@ -14,14 +14,14 @@ from rangekeeper.specification import (
 
 entity = Entity(id=uuid4(), code="A")
 model = Model.create(
-    metadata=Metadata(id=uuid4(), schema_version="0.4.0"),
+    metadata=Metadata(id=uuid4(), schema_version="0.5.0"),
     system=System(entities=(entity,)),
 )
 identity: UUID = model.entity(entity.id).id
 revision: Model = model.revise(Update(system=System()))
 specification = Specification(
     SpecificationRecord(
-        metadata=Metadata(id=uuid4(), schema_version="0.4.0"), model=model.id
+        metadata=Metadata(id=uuid4(), schema_version="0.5.0"), model=model.id
     )
 )
 

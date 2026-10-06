@@ -9,33 +9,10 @@ prefixes:
   rk: https://daniel-fink.github.io/rangekeeper/schema/
 imports:
 - constraint
+- binding
 default_prefix: rk
 default_range: string
 classes:
-  Binding:
-    description: A name within a Formulation that refers to an existing Value by UUID.
-    notes:
-    - A binding shares the target symbol. It neither copies content nor asserts equality between distinct
-      Values, fixes an amount, or assigns a calculation direction.
-    - Names are unique within the Formulation's bindings collection. Multiple distinct names may refer to the
-      same Value. Names are not an alternative Expression reference syntax.
-    - Bindings have no independent identity. Expressions reference Value UUIDs directly. Targets may
-      belong to an Entity, Relationship, or Formulation in the applicable Model or composed Specification scope.
-    attributes:
-      name:
-        description: Case-sensitive local interface name; not reference identity.
-        range: Code
-        required: true
-      value:
-        description: UUID of the shared Value. Its declaration supplies its kind, Measure, and content.
-        range: Value
-        required: true
-        inlined: false
-        pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
-        any_of:
-        - range: Value
-          inlined: false
-          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
   Formulation:
     description: An identified mathematical container with explicit local declarations, expressions,
       and asserted constraints. Formulations may contain child Formulations and bind names to shared Values.

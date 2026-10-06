@@ -214,7 +214,7 @@ def visualization_fixture():
         id=uuid4(), source=root.id, target=child.id, classification=contains.id
     )
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.4.0"),
+        metadata=Metadata(id=uuid4(), schema_version="0.5.0"),
         definitions=Definitions(
             taxonomies=(
                 Taxonomy(

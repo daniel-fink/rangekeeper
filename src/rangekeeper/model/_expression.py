@@ -12,6 +12,7 @@ from typing import cast
 
 from rangekeeper._validation import require
 from rangekeeper.errors import ContractError
+from ._references import resolve_reference
 
 
 @dataclass(frozen=True)
@@ -262,8 +263,12 @@ def infer_expression_domain(node, seen=None, *, scope: Scope) -> dict:
     if kind == "boolean":
         return dict(kind=kind)
     if kind == "reference":
-        require(node["target"] in scope.domains, "unknown Value reference")
-        return scope.domains[node["target"]]
+        target = node["target"]
+        require(target["value"] in scope.domains, "unknown Value reference")
+        if target.get("movement") is not None:
+            value, _ = resolve_reference(target, scope.values)
+            return dict(kind="quantity", units=value["flow"]["units"])
+        return scope.domains[target["value"]]
     if kind in ("binary", "unary"):
         args = [node["operand"]] if kind == "unary" else node["operands"]
         domains = [infer_expression_domain(arg, seen, scope=scope) for arg in args]

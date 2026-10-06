@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from datetime import date
 from rangekeeper.model.flow import Flow
 from rangekeeper.model.measure import Quantity
-from rangekeeper.temporal import make_periods
+from rangekeeper.duration import make_periods
 from rangekeeper.calculations import projection, series, account
 
 

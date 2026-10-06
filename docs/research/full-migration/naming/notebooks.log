@@ -1,0 +1,19 @@
+{"name": "wheel", "argv": ["/private/tmp/rk-probe-audit-venv/bin/python", "/Volumes/Data/Projects/Rangekeeper/docs/research/full-migration/turn1/build_notebook_environment.py", "--output", "/private/tmp/rk-naming-wheel"], "cwd": "/Volumes/Data/Projects/Rangekeeper", "environment_overrides": {"MPLBACKEND": "Agg", "PYTHONDONTWRITEBYTECODE": "1", "PYSTOW_HOME": "/private/tmp/rk-domain-migration-pystow"}, "timeout_seconds": 600, "elapsed_seconds": 0.586, "exit_code": 0, "log": "wheel.log"}
+Traceback (most recent call last):
+  File "/Volumes/Data/Projects/Rangekeeper/docs/research/full-migration/naming/verify.py", line 156, in <module>
+    run(
+  File "/Volumes/Data/Projects/Rangekeeper/docs/research/full-migration/naming/verify.py", line 57, in run
+    if runner.run(name, argv, cwd, timeout):
+  File "/Volumes/Data/Projects/Rangekeeper/docs/research/domain-migration/evidence/run_baseline.py", line 21, in run
+    result = subprocess.run([str(a) for a in args], cwd=cwd, env=env,
+  File "/Users/daniel/.local/share/uv/python/cpython-3.10.19-macos-aarch64-none/lib/python3.10/subprocess.py", line 505, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+  File "/Users/daniel/.local/share/uv/python/cpython-3.10.19-macos-aarch64-none/lib/python3.10/subprocess.py", line 1154, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+  File "/Users/daniel/.local/share/uv/python/cpython-3.10.19-macos-aarch64-none/lib/python3.10/subprocess.py", line 2047, in _communicate
+    self.wait(timeout=self._remaining_time(endtime))
+  File "/Users/daniel/.local/share/uv/python/cpython-3.10.19-macos-aarch64-none/lib/python3.10/subprocess.py", line 1209, in wait
+    return self._wait(timeout=timeout)
+  File "/Users/daniel/.local/share/uv/python/cpython-3.10.19-macos-aarch64-none/lib/python3.10/subprocess.py", line 1953, in _wait
+    time.sleep(delay)
+KeyboardInterrupt

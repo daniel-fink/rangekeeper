@@ -1,0 +1,21 @@
+Traceback (most recent call last):
+  File "/Volumes/Data/Projects/Rangekeeper/schema/checks/runs.py", line 152, in bad
+    validate_run(
+  File "/Volumes/Data/Projects/Rangekeeper/src/rangekeeper/run/_validation.py", line 425, in validate_run
+    visit(root_id)
+  File "/Volumes/Data/Projects/Rangekeeper/src/rangekeeper/run/_validation.py", line 412, in visit
+    published(run, model, effective, scope)
+  File "/Volumes/Data/Projects/Rangekeeper/src/rangekeeper/run/_validation.py", line 289, in published
+    require(definition(output) == definition(model), "output must preserve definitions and unrelated recorded content")
+  File "/Volumes/Data/Projects/Rangekeeper/src/rangekeeper/_validation.py", line 25, in require
+    raise ContractError(message, code=code, path=path)
+rangekeeper.errors.ContractError: output must preserve definitions and unrelated recorded content
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Volumes/Data/Projects/Rangekeeper/schema/checks/runs.py", line 438, in <module>
+    bad(
+  File "/Volumes/Data/Projects/Rangekeeper/schema/checks/runs.py", line 160, in bad
+    assert message in str(error), (message, str(error))
+AssertionError: ('preserve input definitions', 'output must preserve definitions and unrelated recorded content')

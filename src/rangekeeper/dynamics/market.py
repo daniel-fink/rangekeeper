@@ -10,6 +10,7 @@ from numba import jit
 import multiprocess
 
 import rangekeeper as rk
+from rangekeeper import _legacy_duration as legacy_duration
 
 
 class Market:
@@ -25,7 +26,7 @@ class Market:
 
         """
         self.sequence = sequence
-        self._sequence = rk.duration.Sequence.extend(
+        self._sequence = legacy_duration.Sequence.extend(
             sequence=self.sequence,
             end_offset=-1)
 
@@ -95,7 +96,7 @@ class Market:
         self.implied_rev_cap_rate = rk.flux.Flow(
             movements=pd.Series(
                 data=implied_cap_rate_data.values,
-                index=rk.duration.Sequence.to_datestamps(sequence=self._sequence)),
+                index=legacy_duration.Sequence.to_datestamps(sequence=self._sequence)),
             name='Implied Cap Rate')
         """
         These are the forward-looking cap rates implied for each year of the 
@@ -109,7 +110,7 @@ class Market:
         self.returns = rk.flux.Flow(
             movements=pd.Series(
                 data=returns_data.values,
-                index=rk.duration.Sequence.to_datestamps(sequence=self._sequence)),
+                index=legacy_duration.Sequence.to_datestamps(sequence=self._sequence)),
             name='Returns')
 
         """

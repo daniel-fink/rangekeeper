@@ -1,0 +1,511 @@
+"""A finite investment teaching model with separate author/formulate/specify/report steps.
+
+This module is an example consumer, not a new domain schema. Generated Values own
+all parameters and outputs. Construction has no random, solver or storage effects.
+"""
+
+from collections.abc import Mapping
+from dataclasses import dataclass
+from typing import Any, cast
+from datetime import date
+from uuid import UUID, uuid4
+from ..model import (
+    Model,
+    Metadata,
+    Definitions,
+    Measure,
+    Quantity,
+    System,
+    Formulation,
+    Value,
+    Update,
+)
+from ..model.flow import Flow, Movement, resolve_date
+from ..model.scenario import ScenarioRealization
+from .._schema.records import (
+    ValueReference,
+    Assignment,
+    Policy,
+    Specification as SpecificationRecord,
+)
+from ..duration import make_periods, offset
+from ..duration.period import resolve_period_date
+from ..formulations import build_formulation
+from ..formulations.expression import (
+    reference as ref,
+    literal,
+    add,
+    subtract,
+    multiply,
+    divide,
+    power,
+    equal,
+)
+from ..specification import Specification
+from ..specification.targets import scalar, movement, unknown_flow, assign_flow
+from ..calculations import financial, series
+from ..scenarios.view import Market
+
+_DEFAULTS = dict(
+    units="AUD",
+    start_date=date(2020, 1, 1),
+    num_periods=10,
+    initial_pgi=100.0,
+    addl_pgi_per_period=0.0,
+    growth_rate=0.02,
+    vacancy_rate=0.05,
+    opex_pgi_ratio=0.35,
+    capex_pgi_ratio=0.1,
+    cap_rate=0.05,
+    discount_rate=0.07,
+    acquisition_price=1000.0,
+)
+_FULL = ("base_pgi", "pgi", "vacancy", "egi", "opex", "noi", "capex", "ncf")
+_HORIZON = (
+    "potential_sale",
+    "holding",
+    "sale",
+    "operations",
+    "disposition",
+    "total",
+    "discounted",
+    "horizon_pv",
+)
+
+
+def values(model: Model) -> dict[str, Value]:
+    """Return the example's owner-local Values by key, with no code/name fallback."""
+    if model.system is None:
+        raise ValueError("Investment requires a System")
+    matches = [
+        f
+        for f in model.system.formulations or ()
+        if f.name == "Investment inputs and outputs"
+    ]
+    if len(matches) != 1:
+        raise ValueError("expected one authored Investment formulation")
+    return {v.key: v for v in matches[0].values or ()}
+
+
+def author(
+    parameters: Mapping | None = None, *, scenario: Market | None = None
+) -> Model:
+    """Declare parameters and unresolved result shapes; all periods are annual.
+
+    Operating year one follows the acquisition year. The final extra operating
+    period supplies next-period income for reversion. A supplied scenario must
+    cover exactly these N+1 periods. Factors are dimensionless, not currency.
+    """
+    p = {**_DEFAULTS, **(parameters or {})}
+    if set(p) - set(_DEFAULTS):
+        raise ValueError("unknown investment parameter")
+    if type(p["num_periods"]) is not int or p["num_periods"] < 1:
+        raise ValueError("num_periods must be positive")
+    if (
+        any(
+            not 0 <= p[name] < 1
+            for name in ("vacancy_rate", "opex_pgi_ratio", "capex_pgi_ratio")
+        )
+        or p["cap_rate"] <= 0
+    ):
+        raise ValueError("invalid investment ratios")
+    periods = make_periods(
+        offset(p["start_date"], frequency="year"),
+        frequency="year",
+        count=p["num_periods"] + 1,
+    )
+    base = (
+        scenario.model
+        if scenario
+        else Model.create(metadata=Metadata(id=uuid4(), schema_version="0.5.0"))
+    )
+    if scenario and tuple(scenario.realization.plan.periods) != periods:
+        raise ValueError("scenario periods must match the complete investment horizon")
+    money, ratio = uuid4(), uuid4()
+    records = []
+    for name in (
+        "initial_pgi",
+        "addl_pgi_per_period",
+        "growth_rate",
+        "vacancy_rate",
+        "opex_pgi_ratio",
+        "capex_pgi_ratio",
+        "cap_rate",
+        "discount_rate",
+        "acquisition_price",
+    ):
+        monetary = name in ("initial_pgi", "addl_pgi_per_period", "acquisition_price")
+        records.append(
+            Value(
+                id=uuid4(),
+                key=name,
+                kind="measurement",
+                measure=money if monetary else ratio,
+                quantity=Quantity(
+                    magnitude=p[name], units=p["units"] if monetary else "dimensionless"
+                ),
+            )
+        )
+    for name in (*_FULL, *_HORIZON):
+        ps = periods if name in _FULL else periods[:-1]
+        control = name in ("holding", "sale")
+        flow = Flow(
+            units="dimensionless" if control else p["units"],
+            movements=tuple(
+                Movement(
+                    key=f"p{i+1}",
+                    period=period,
+                    date=resolve_period_date(period, timing="last_day"),
+                )
+                for i, period in enumerate(ps)
+            ),
+        )
+        records.append(
+            Value(
+                id=uuid4(),
+                key=name,
+                kind="flow",
+                measure=ratio if control else money,
+                flow=flow,
+            )
+        )
+    records.append(Value(id=uuid4(), key="pv", kind="measurement", measure=money))
+    # Keep a canonical local factor input when no realized scenario is supplied.
+    if scenario is None:
+        records.append(
+            Value(
+                id=uuid4(),
+                key="space_market_price_factors",
+                kind="flow",
+                measure=ratio,
+                flow=Flow(
+                    units="dimensionless",
+                    movements=tuple(
+                        Movement(
+                            key=f"p{i+1}",
+                            period=period,
+                            date=resolve_period_date(period, timing="last_day"),
+                            magnitude=1,
+                        )
+                        for i, period in enumerate(periods)
+                    ),
+                ),
+            )
+        )
+    system = cast(dict[str, Any], base.system.to_data() if base.system else {})
+    system.setdefault("formulations", []).append(
+        Formulation(
+            id=uuid4(), name="Investment inputs and outputs", values=tuple(records)
+        ).to_data()
+    )
+    definitions = cast(
+        dict[str, Any], base.definitions.to_data() if base.definitions else {}
+    )
+    definitions.setdefault("measures", []).extend(
+        [
+            Measure(
+                id=money,
+                code=f"money_{money.hex}",
+                name="Investment amount",
+                units=p["units"],
+            ).to_data(),
+            Measure(
+                id=ratio,
+                code=f"ratio_{ratio.hex}",
+                name="Periodic factor",
+                units="dimensionless",
+            ).to_data(),
+        ]
+    )
+    return base.revise(
+        Update(
+            system=System.from_data(system),
+            definitions=Definitions.from_data(definitions),
+        )
+    )
+
+
+def _inputs(model):
+    own = values(model)
+    if "space_market_price_factors" in own:
+        return own, own["space_market_price_factors"], None
+    realizations = model.provenance.scenarios if model.provenance else ()
+    if not realizations or len(realizations) != 1:
+        raise ValueError("select one scenario for this investment example")
+    result = Market(model, realizations[0])
+    cap_name = (
+        "implied_reversion_cap_rates"
+        if realizations[0].plan.method == "market.v2"
+        else "asset_market"
+    )
+    return own, result.space_market_price_factors, result.value(cap_name)
+
+
+def formulate(model: Model) -> Model:
+    """Declare growth, operating, reversion, control and discount equations only.
+
+    Reversion uses next-period NCF. A scenario's explicit capitalization path can
+    replace the scalar rate. The controls include the sale period's operating
+    income. No recorded magnitudes are substituted into the mathematics.
+    """
+    v, factors, caps = _inputs(model)
+    equations = []
+
+    def r(name, key=None):
+        return ref(scalar(v[name].id) if key is None else movement(v[name].id, key))
+
+    def set_equation(name, key, rhs):
+        equations.append((name + "/" + (key or "scalar"), equal(r(name, key), rhs)))
+
+    for i, item in enumerate(_flow(v["pgi"]).movements):
+        key = item.key
+        set_equation(
+            "base_pgi",
+            key,
+            add(
+                multiply(
+                    r("initial_pgi"),
+                    power(add(literal(1), r("growth_rate")), literal(i)),
+                ),
+                multiply(literal(i), r("addl_pgi_per_period")),
+            ),
+        )
+        set_equation(
+            "pgi", key, multiply(r("base_pgi", key), ref(movement(factors.id, key)))
+        )
+        for name, fraction in [
+            ("vacancy", "vacancy_rate"),
+            ("opex", "opex_pgi_ratio"),
+            ("capex", "capex_pgi_ratio"),
+        ]:
+            set_equation(
+                name, key, multiply(multiply(literal(-1), r(fraction)), r("pgi", key))
+            )
+        set_equation("egi", key, add(r("pgi", key), r("vacancy", key)))
+        set_equation("noi", key, add(r("egi", key), r("opex", key)))
+        set_equation("ncf", key, add(r("noi", key), r("capex", key)))
+    discounted_operations = None
+    total = None
+    for i, item in enumerate(_flow(v["holding"]).movements):
+        key, next_key = item.key, _flow(v["ncf"]).movements[i + 1].key
+        cap = (
+            ref(movement(caps.id, caps.flow.movements[i].key))
+            if caps
+            else r("cap_rate")
+        )
+        set_equation("potential_sale", key, divide(r("ncf", next_key), cap))
+        set_equation("operations", key, multiply(r("ncf", key), r("holding", key)))
+        set_equation(
+            "disposition", key, multiply(r("potential_sale", key), r("sale", key))
+        )
+        set_equation("total", key, add(r("operations", key), r("disposition", key)))
+        divisor = power(add(literal(1), r("discount_rate")), literal(i + 1))
+        set_equation("discounted", key, divide(r("total", key), divisor))
+        discounted_operations = (
+            divide(r("ncf", key), divisor)
+            if discounted_operations is None
+            else add(discounted_operations, divide(r("ncf", key), divisor))
+        )
+        set_equation(
+            "horizon_pv",
+            key,
+            add(discounted_operations, divide(r("potential_sale", key), divisor)),
+        )
+        total = (
+            r("discounted", key) if total is None else add(total, r("discounted", key))
+        )
+    set_equation("pv", None, total)
+    declarations = build_formulation(
+        id=uuid4(),
+        name="Investment equations",
+        equations=equations,
+        values=[x.id for x in v.values()] + [factors.id] + ([caps.id] if caps else []),
+    )
+    assert model.system is not None
+    data = cast(dict[str, Any], model.system.to_data())
+    data["formulations"].append(declarations.to_data())
+    return model.revise(Update(system=System.from_data(data)))
+
+
+def specify(
+    model: Model, *, policy: Policy | None = None, sale_period: int | None = None
+) -> Specification:
+    """Explicitly fix input parameters/path and select result unknowns and controls.
+
+    A policy owns controls exclusively. Without one, sale_period defaults to the
+    final horizon. This call alone does not solve, save or alter any Model.
+    """
+    v, factors, caps = _inputs(model)
+    count = len(_flow(v["holding"]).movements)
+    if policy is not None and sale_period is not None:
+        raise ValueError("choose a policy or fixed sale period")
+    sale_period = count if sale_period is None else sale_period
+    if type(sale_period) is not int or not 1 <= sale_period <= count:
+        raise ValueError("sale period outside investment horizon")
+    assignments = [
+        Assignment(target=scalar(item.id), quantity=item.quantity)
+        for item in v.values()
+        if item.kind == "measurement" and item.quantity is not None
+    ]
+    assignments.extend(assign_flow(model, factors.id))
+    if caps:
+        assignments.extend(assign_flow(model, caps.id))
+    if policy is None:
+        for i in range(count):
+            assignments.extend(
+                (
+                    Assignment(
+                        target=movement(v["holding"].id, f"p{i+1}"),
+                        quantity=Quantity(
+                            magnitude=int(i < sale_period), units="dimensionless"
+                        ),
+                    ),
+                    Assignment(
+                        target=movement(v["sale"].id, f"p{i+1}"),
+                        quantity=Quantity(
+                            magnitude=int(i + 1 == sale_period), units="dimensionless"
+                        ),
+                    ),
+                )
+            )
+    unknowns = (
+        scalar(v["pv"].id),
+        *(
+            target
+            for name in (*_FULL, *_HORIZON)
+            if name not in ("holding", "sale")
+            for target in unknown_flow(model, v[name].id)
+        ),
+    )
+    return Specification(
+        SpecificationRecord(
+            metadata=Metadata(id=uuid4(), schema_version="0.5.0"),
+            model=model.id,
+            assignments=tuple(assignments),
+            unknowns=unknowns,
+            policy=policy,
+        )
+    )
+
+
+@dataclass(frozen=True)
+class InvestmentReport:
+    """Derived presentation results; canonical outputs remain in the accepted Model."""
+
+    model: Model
+    cashflows: Flow
+    pv: Quantity
+    npv: Quantity
+    irr: financial.IrrResult
+    sale_date: date
+
+
+def _flow(value: Value) -> Flow:
+    if value.flow is None:
+        raise ValueError(f"{value.key} has no declared Flow")
+    return value.flow
+
+
+def _quantity(value: Value) -> Quantity:
+    if value.quantity is None:
+        raise ValueError(f"{value.key} remains unresolved")
+    return value.quantity
+
+
+def report(model: Model) -> InvestmentReport:
+    """Calculate dated IRR on accepted quantities, using the dedicated financial library.
+
+    PV comes from governing equations. Acquisition is at the preceding year end;
+    zero post-sale entries are excluded from IRR timing. Missing results fail.
+    """
+    v = values(model)
+    sale = [m for m in _flow(v["sale"]).movements if m.magnitude == 1]
+    if len(sale) != 1:
+        raise ValueError("investment output must have exactly one sale")
+    sale_date = resolve_date(sale[0])
+    first_period = _flow(v["total"]).movements[0].period
+    assert first_period is not None
+    first = first_period.start
+    from datetime import timedelta
+
+    purchase = Movement(
+        key="acquisition",
+        date=first - timedelta(days=1),
+        magnitude=-abs(_quantity(v["acquisition_price"]).magnitude),
+    )
+    operating = tuple(
+        Movement(key=m.key, date=m.date, magnitude=m.magnitude)
+        for m in _flow(v["total"]).movements
+        if resolve_date(m) <= sale_date
+    )
+    cashflows = Flow(units=_flow(v["total"]).units, movements=(purchase, *operating))
+    pv = _quantity(v["pv"])
+    if pv is None:
+        raise ValueError("PV remains unresolved")
+    return InvestmentReport(
+        model,
+        cashflows,
+        pv,
+        Quantity(
+            magnitude=pv.magnitude - abs(_quantity(v["acquisition_price"]).magnitude),
+            units=pv.units,
+        ),
+        financial.calculate_irr(cashflows),
+        sale_date,
+    )
+
+
+def build_stop_gain_resale_policy(
+    model: Model, *, threshold: float = 1.2, minimum_holding_periods: int = 3
+) -> Policy:
+    """Declare resale controls with an explicit market-to-investment key mapping."""
+    from ..policies import build_stop_gain_resale_policy
+
+    own, factors, _ = _inputs(model)
+    return build_stop_gain_resale_policy(
+        model,
+        id=uuid4(),
+        pricing_factor=factors.id,
+        holding=own["holding"].id,
+        sale=own["sale"].id,
+        threshold=threshold,
+        minimum_holding_periods=minimum_holding_periods,
+        mapping={m.key: m.key for m in own["holding"].flow.movements},
+    )
+
+
+def horizon_returns(model: Model) -> Flow:
+    """Calculate dated IRR for each hypothetical sale horizon from accepted amounts.
+
+    These are hindsight alternatives, not policy decisions. Each sale includes
+    the current period's operating amount and its potential sale proceeds.
+    """
+    from datetime import timedelta
+
+    v = values(model)
+    first_period = _flow(v["total"]).movements[0].period
+    assert first_period is not None
+    first = first_period.start
+    purchase = Movement(
+        key="acquisition",
+        date=first - timedelta(days=1),
+        magnitude=-abs(_quantity(v["acquisition_price"]).magnitude),
+    )
+    result = []
+    for index, sale in enumerate(_flow(v["potential_sale"]).movements):
+        movements = [purchase]
+        for i, amount in enumerate(_flow(v["ncf"]).movements[: index + 1]):
+            if amount.magnitude is None or sale.magnitude is None:
+                raise ValueError("horizon reporting requires resolved amounts")
+            movements.append(
+                Movement(
+                    key=amount.key,
+                    date=amount.date,
+                    magnitude=amount.magnitude + (sale.magnitude if i == index else 0),
+                )
+            )
+        irr = financial.calculate_irr(
+            Flow(units=_flow(v["total"]).units, movements=tuple(movements))
+        )
+        result.append(Movement(key=sale.key, date=sale.date, magnitude=100 * irr.rate))
+    return Flow(units="percent", movements=tuple(result))

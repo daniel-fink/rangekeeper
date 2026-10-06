@@ -1,0 +1,601 @@
+.................FFFFF..........F....................................... [  7%]
+...F...............................FF................................... [ 15%]
+..............................FF.FFFFFFFFFFFFFFFF...FFFFFFFF..FFF...FFF. [ 22%]
+FFF.F......FF.................FFF
+=================================== FAILURES ===================================
+____________ test_graph_html_visualization_writes_the_selected_view ____________
+tests/test_adapters.py:247: in test_graph_html_visualization_writes_the_selected_view
+    view, _ = visualization_fixture()
+tests/test_adapters.py:216: in visualization_fixture
+    model = Model.create(
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+_____________ test_graph_html_wraps_invalid_json_options[options0] _____________
+tests/test_adapters.py:261: in test_graph_html_wraps_invalid_json_options
+    view, _ = visualization_fixture()
+tests/test_adapters.py:216: in visualization_fixture
+    model = Model.create(
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+_____________ test_graph_html_wraps_invalid_json_options[options1] _____________
+tests/test_adapters.py:261: in test_graph_html_wraps_invalid_json_options
+    view, _ = visualization_fixture()
+tests/test_adapters.py:216: in visualization_fixture
+    model = Model.create(
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+____________ test_arborescence_visualizations_return_plotly_traces _____________
+tests/test_adapters.py:272: in test_arborescence_visualizations_return_plotly_traces
+    _, table = visualization_fixture()
+tests/test_adapters.py:216: in visualization_fixture
+    model = Model.create(
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+________ test_arborescence_visualization_rejects_rich_or_invalid_values ________
+tests/test_adapters.py:289: in test_arborescence_visualization_rejects_rich_or_invalid_values
+    _, _table = visualization_fixture()
+tests/test_adapters.py:216: in visualization_fixture
+    model = Model.create(
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+_____________ test_csv_projects_revision_and_entity_uuids_as_text ______________
+tests/test_adapters.py:405: in test_csv_projects_revision_and_entity_uuids_as_text
+    view, _ = visualization_fixture()
+tests/test_adapters.py:216: in visualization_fixture
+    model = Model.create(
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+___________________ test_model_flow_content_store_and_stream ___________________
+tests/test_calculations.py:121: in test_model_flow_content_store_and_stream
+    model = Model.create(
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+_______ test_projection_uses_uuids_preserves_membership_and_exports_view _______
+tests/test_cytoscape_adapter.py:64: in test_projection_uses_uuids_preserves_membership_and_exports_view
+    graph, box, a, b = fixture()
+tests/test_cytoscape_adapter.py:52: in fixture
+    Model.create(
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+______________ test_invalid_display_documents_fail_before_export _______________
+tests/test_cytoscape_adapter.py:91: in test_invalid_display_documents_fail_before_export
+    graph, box, _a, _b = fixture()
+tests/test_cytoscape_adapter.py:52: in fixture
+    Model.create(
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+_ test_codecs_require_kind_and_distinguish_decode_shape_and_version_errors[rangekeeper.io.json] _
+tests/test_domain_io.py:93: in test_codecs_require_kind_and_distinguish_decode_shape_and_version_errors
+    data = minimal().to_data()
+tests/test_domain_io.py:38: in minimal
+    return rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.4.0"))
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+_ test_codecs_require_kind_and_distinguish_decode_shape_and_version_errors[rangekeeper.io.yaml] _
+tests/test_domain_io.py:93: in test_codecs_require_kind_and_distinguish_decode_shape_and_version_errors
+    data = minimal().to_data()
+tests/test_domain_io.py:38: in minimal
+    return rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.4.0"))
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+_ test_file_codec_never_overwrites_and_preserves_existing_bytes[rangekeeper.io.json] _
+tests/test_domain_io.py:130: in test_file_codec_never_overwrites_and_preserves_existing_bytes
+    document = minimal()
+tests/test_domain_io.py:38: in minimal
+    return rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.4.0"))
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+_ test_file_codec_never_overwrites_and_preserves_existing_bytes[rangekeeper.io.yaml] _
+tests/test_domain_io.py:130: in test_file_codec_never_overwrites_and_preserves_existing_bytes
+    document = minimal()
+tests/test_domain_io.py:38: in minimal
+    return rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.4.0"))
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+________ test_store_pins_snapshots_and_preserves_old_revisions[memory] _________
+tests/test_domain_io.py:144: in test_store_pins_snapshots_and_preserves_old_revisions
+    before = minimal()
+tests/test_domain_io.py:38: in minimal
+    return rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.4.0"))
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+_______ test_store_pins_snapshots_and_preserves_old_revisions[directory] _______
+tests/test_domain_io.py:144: in test_store_pins_snapshots_and_preserves_old_revisions
+    before = minimal()
+tests/test_domain_io.py:38: in minimal
+    return rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.4.0"))
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+_____ test_conflicting_content_and_kind_do_not_replace_a_revision[memory] ______
+tests/test_domain_io.py:165: in test_conflicting_content_and_kind_do_not_replace_a_revision
+    document = minimal()
+tests/test_domain_io.py:38: in minimal
+    return rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.4.0"))
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+____ test_conflicting_content_and_kind_do_not_replace_a_revision[directory] ____
+tests/test_domain_io.py:165: in test_conflicting_content_and_kind_do_not_replace_a_revision
+    document = minimal()
+tests/test_domain_io.py:38: in minimal
+    return rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.4.0"))
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+________ test_unordered_equivalence_keeps_first_encounter_order[memory] ________
+tests/test_domain_io.py:180: in test_unordered_equivalence_keeps_first_encounter_order
+    data = minimal().to_data()
+tests/test_domain_io.py:38: in minimal
+    return rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.4.0"))
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+______ test_unordered_equivalence_keeps_first_encounter_order[directory] _______
+tests/test_domain_io.py:180: in test_unordered_equivalence_keeps_first_encounter_order
+    data = minimal().to_data()
+tests/test_domain_io.py:38: in minimal
+    return rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.4.0"))
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+__ test_revision_equivalence_preserves_opaque_representations[memory-number] ___
+tests/test_domain_io.py:197: in test_revision_equivalence_preserves_opaque_representations
+    data = minimal().to_data()
+tests/test_domain_io.py:38: in minimal
+    return rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.4.0"))
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+___ test_revision_equivalence_preserves_opaque_representations[memory-bool] ____
+tests/test_domain_io.py:197: in test_revision_equivalence_preserves_opaque_representations
+    data = minimal().to_data()
+tests/test_domain_io.py:38: in minimal
+    return rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.4.0"))
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+___ test_revision_equivalence_preserves_opaque_representations[memory-order] ___
+tests/test_domain_io.py:197: in test_revision_equivalence_preserves_opaque_representations
+    data = minimal().to_data()
+tests/test_domain_io.py:38: in minimal
+    return rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.4.0"))
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+_ test_revision_equivalence_preserves_opaque_representations[memory-presence] __
+tests/test_domain_io.py:197: in test_revision_equivalence_preserves_opaque_representations
+    data = minimal().to_data()
+tests/test_domain_io.py:38: in minimal
+    return rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.4.0"))
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+_ test_revision_equivalence_preserves_opaque_representations[directory-number] _
+tests/test_domain_io.py:197: in test_revision_equivalence_preserves_opaque_representations
+    data = minimal().to_data()
+tests/test_domain_io.py:38: in minimal
+    return rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.4.0"))
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+__ test_revision_equivalence_preserves_opaque_representations[directory-bool] __
+tests/test_domain_io.py:197: in test_revision_equivalence_preserves_opaque_representations
+    data = minimal().to_data()
+tests/test_domain_io.py:38: in minimal
+    return rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.4.0"))
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+_ test_revision_equivalence_preserves_opaque_representations[directory-order] __
+tests/test_domain_io.py:197: in test_revision_equivalence_preserves_opaque_representations
+    data = minimal().to_data()
+tests/test_domain_io.py:38: in minimal
+    return rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.4.0"))
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+_ test_revision_equivalence_preserves_opaque_representations[directory-presence] _
+tests/test_domain_io.py:197: in test_revision_equivalence_preserves_opaque_representations
+    data = minimal().to_data()
+tests/test_domain_io.py:38: in minimal
+    return rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.4.0"))
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+_ test_directory_reads_verify_envelope_identity_kind_and_version[identity-IdentityConflictError] _
+tests/test_domain_io.py:278: in test_directory_reads_verify_envelope_identity_kind_and_version
+    document = minimal()
+tests/test_domain_io.py:38: in minimal
+    return rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.4.0"))
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+_ test_directory_reads_verify_envelope_identity_kind_and_version[kind-DecodeError] _
+tests/test_domain_io.py:278: in test_directory_reads_verify_envelope_identity_kind_and_version
+    document = minimal()
+tests/test_domain_io.py:38: in minimal
+    return rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.4.0"))
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+_ test_directory_reads_verify_envelope_identity_kind_and_version[envelope-DecodeError] _
+tests/test_domain_io.py:278: in test_directory_reads_verify_envelope_identity_kind_and_version
+    document = minimal()
+tests/test_domain_io.py:38: in minimal
+    return rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.4.0"))
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+_ test_directory_reads_verify_envelope_identity_kind_and_version[version-UnsupportedVersionError] _
+tests/test_domain_io.py:278: in test_directory_reads_verify_envelope_identity_kind_and_version
+    document = minimal()
+tests/test_domain_io.py:38: in minimal
+    return rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.4.0"))
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+______ test_concurrent_directory_puts_are_idempotent_or_conflicting[True] ______
+tests/test_domain_io.py:309: in test_concurrent_directory_puts_are_idempotent_or_conflicting
+    first = minimal()
+tests/test_domain_io.py:38: in minimal
+    return rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.4.0"))
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+_____ test_concurrent_directory_puts_are_idempotent_or_conflicting[False] ______
+tests/test_domain_io.py:309: in test_concurrent_directory_puts_are_idempotent_or_conflicting
+    first = minimal()
+tests/test_domain_io.py:38: in minimal
+    return rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.4.0"))
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+__________ test_interrupted_publication_exposes_no_partial_final_file __________
+tests/test_domain_io.py:337: in test_interrupted_publication_exposes_no_partial_final_file
+    document = minimal()
+tests/test_domain_io.py:38: in minimal
+    return rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.4.0"))
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+______ test_process_crash_before_link_leaves_only_ignored_temporary_file _______
+tests/test_domain_io.py:362: in test_process_crash_before_link_leaves_only_ignored_temporary_file
+    assert result.returncode == 23
+E   AssertionError: assert 1 == 23
+E    +  where 1 = CompletedProcess(args=['/private/tmp/rk-full-runtime/bin/python', '-c', '\nimport os, sys\nfrom pathlib import Path\nf...n/T/pytest-of-daniel/pytest-42/test_process_crash_before_link0', 'f735f37d-9e88-45e6-b8ad-e646adc793bb'], returncode=1).returncode
+----------------------------- Captured stderr call -----------------------------
+Traceback (most recent call last):
+  File "<string>", line 9, in <module>
+  File "/Volumes/Data/Projects/Rangekeeper/src/rangekeeper/model/model.py", line 87, in create
+    return cls(
+  File "/Volumes/Data/Projects/Rangekeeper/src/rangekeeper/model/model.py", line 55, in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+rangekeeper.errors.UnsupportedVersionError: 0.4.0
+________ test_store_preserves_trace_order_and_optional_presence[memory] ________
+tests/test_domain_io.py:383: in test_store_preserves_trace_order_and_optional_presence
+    spec = rk.Specification.from_data(
+rangekeeper/specification/specification.py:86: in from_data
+    return cls(SpecificationRecord.from_data(data))
+rangekeeper/specification/specification.py:80: in __init__
+    _validate_local(record)
+rangekeeper/specification/specification.py:24: in _validate_local
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+______ test_store_preserves_trace_order_and_optional_presence[directory] _______
+tests/test_domain_io.py:383: in test_store_preserves_trace_order_and_optional_presence
+    spec = rk.Specification.from_data(
+rangekeeper/specification/specification.py:86: in from_data
+    return cls(SpecificationRecord.from_data(data))
+rangekeeper/specification/specification.py:80: in __init__
+    _validate_local(record)
+rangekeeper/specification/specification.py:24: in _validate_local
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+____________________ test_codec_preserves_permission_errors ____________________
+tests/test_domain_io.py:422: in test_codec_preserves_permission_errors
+    json.write(minimal(), tmp_path / "file.json")
+tests/test_domain_io.py:38: in minimal
+    return rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.4.0"))
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+__________ test_owner_local_values_share_a_measure_without_collapsing __________
+tests/test_domain_model.py:91: in test_owner_local_values_share_a_measure_without_collapsing
+    model = simple()
+tests/test_domain_model.py:63: in simple
+    return Model.create(
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+_______________ test_canonical_assembly_search_and_lookup_errors _______________
+tests/test_domain_model.py:108: in test_canonical_assembly_search_and_lookup_errors
+    model = simple()
+tests/test_domain_model.py:63: in simple
+    return Model.create(
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+____________ test_definition_identity_is_separate_from_code_lookup _____________
+tests/test_domain_model.py:132: in test_definition_identity_is_separate_from_code_lookup
+    model = simple()
+tests/test_domain_model.py:63: in simple
+    return Model.create(
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+____________ test_revision_noop_lineage_version_and_empty_sections _____________
+tests/test_domain_model.py:165: in test_revision_noop_lineage_version_and_empty_sections
+    before = simple()
+tests/test_domain_model.py:63: in simple
+    return Model.create(
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+_______________ test_explicit_metadata_and_descriptive_revision ________________
+tests/test_domain_model.py:188: in test_explicit_metadata_and_descriptive_revision
+    model = simple()
+tests/test_domain_model.py:63: in simple
+    return Model.create(
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+_________________ test_duplicate_ownership_and_opaque_identity _________________
+tests/test_domain_model.py:209: in test_duplicate_ownership_and_opaque_identity
+    model = simple()
+tests/test_domain_model.py:63: in simple
+    return Model.create(
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+___________ test_diff_preserves_presence_and_opaque_types_and_order ____________
+tests/test_domain_model.py:248: in test_diff_preserves_presence_and_opaque_types_and_order
+    model = simple()
+tests/test_domain_model.py:63: in simple
+    return Model.create(
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+__________ test_model_validates_recorded_units_but_not_opaque_content __________
+tests/test_domain_model.py:290: in test_model_validates_recorded_units_but_not_opaque_content
+    model = simple()
+tests/test_domain_model.py:63: in simple
+    return Model.create(
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+________ test_ordered_mathematics_is_not_sorted_for_revision_comparison ________
+tests/test_domain_model.py:318: in test_ordered_mathematics_is_not_sorted_for_revision_comparison
+    model = Model.create(
+rangekeeper/model/model.py:87: in create
+    return cls(
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+_____ test_failed_attempt_can_reference_an_incomplete_saved_specification ______
+tests/test_domain_run.py:132: in test_failed_attempt_can_reference_an_incomplete_saved_specification
+    spec = rk.Specification.from_data(
+rangekeeper/specification/specification.py:86: in from_data
+    return cls(SpecificationRecord.from_data(data))
+rangekeeper/specification/specification.py:80: in __init__
+    _validate_local(record)
+rangekeeper/specification/specification.py:24: in _validate_local
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+_ test_resolver_results_must_match_requested_kind_and_revision[kind-reference.kind] _
+tests/test_domain_run.py:177: in test_resolver_results_must_match_requested_kind_and_revision
+    validate(Run.from_data(load("run-failed")), resolver=WrongResolver())
+rangekeeper/run/validation.py:104: in validate
+    runs, specifications, models = collect_documents(run, resolver)
+rangekeeper/run/_resolve.py:60: in collect_documents
+    resolve(record.specification, Specification)
+rangekeeper/run/_resolve.py:39: in resolve
+    document = loaders[candidate](identity)
+tests/test_domain_run.py:163: in load_specification
+    return rk.Model.from_data(
+rangekeeper/model/model.py:74: in from_data
+    return cls(ModelRecord.from_data(data), units=units)
+rangekeeper/model/model.py:55: in __init__
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+_ test_resolver_results_must_match_requested_kind_and_revision[identity-reference.identity] _
+tests/test_domain_run.py:177: in test_resolver_results_must_match_requested_kind_and_revision
+    validate(Run.from_data(load("run-failed")), resolver=WrongResolver())
+rangekeeper/run/validation.py:104: in validate
+    runs, specifications, models = collect_documents(run, resolver)
+rangekeeper/run/_resolve.py:60: in collect_documents
+    resolve(record.specification, Specification)
+rangekeeper/run/_resolve.py:39: in resolve
+    document = loaders[candidate](identity)
+tests/test_domain_run.py:166: in load_specification
+    return rk.Specification.from_data(
+rangekeeper/specification/specification.py:86: in from_data
+    return cls(SpecificationRecord.from_data(data))
+rangekeeper/specification/specification.py:80: in __init__
+    _validate_local(record)
+rangekeeper/specification/specification.py:24: in _validate_local
+    raise UnsupportedVersionError(record.metadata.schema_version)
+E   rangekeeper.errors.UnsupportedVersionError: 0.4.0
+=============================== warnings summary ===============================
+rangekeeper/_legacy_duration.py:27
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/_legacy_duration.py:27: FutureWarning: 'Y' is deprecated and will be removed in a future version, please use 'YE' instead.
+    if value in ("10Y", "10Y-DEC"):
+
+rangekeeper/_legacy_duration.py:27
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/_legacy_duration.py:27: FutureWarning: 'Y-DEC' is deprecated and will be removed in a future version, please use 'YE-DEC' instead.
+    if value in ("10Y", "10Y-DEC"):
+
+rangekeeper/_legacy_duration.py:29
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/_legacy_duration.py:29: FutureWarning: 'Y' is deprecated and will be removed in a future version, please use 'YE' instead.
+    if value in ("5Y", "5Y-DEC"):
+
+rangekeeper/_legacy_duration.py:29
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/_legacy_duration.py:29: FutureWarning: 'Y-DEC' is deprecated and will be removed in a future version, please use 'YE-DEC' instead.
+    if value in ("5Y", "5Y-DEC"):
+
+rangekeeper/_legacy_duration.py:31
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/_legacy_duration.py:31: FutureWarning: 'Y' is deprecated and will be removed in a future version, please use 'YE' instead.
+    if value in ("2Y", "2Y-DEC"):
+
+rangekeeper/_legacy_duration.py:31
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/_legacy_duration.py:31: FutureWarning: 'Y-DEC' is deprecated and will be removed in a future version, please use 'YE-DEC' instead.
+    if value in ("2Y", "2Y-DEC"):
+
+rangekeeper/_legacy_duration.py:33
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/_legacy_duration.py:33: FutureWarning: 'Y' is deprecated and will be removed in a future version, please use 'YE' instead.
+    if value in ("Y", "YE", "YE-DEC", "Y-DEC", "A-DEC"):
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_adapters.py::test_graph_html_visualization_writes_the_selected_view
+FAILED tests/test_adapters.py::test_graph_html_wraps_invalid_json_options[options0]
+FAILED tests/test_adapters.py::test_graph_html_wraps_invalid_json_options[options1]
+FAILED tests/test_adapters.py::test_arborescence_visualizations_return_plotly_traces
+FAILED tests/test_adapters.py::test_arborescence_visualization_rejects_rich_or_invalid_values
+FAILED tests/test_adapters.py::test_csv_projects_revision_and_entity_uuids_as_text
+FAILED tests/test_calculations.py::test_model_flow_content_store_and_stream
+FAILED tests/test_cytoscape_adapter.py::test_projection_uses_uuids_preserves_membership_and_exports_view
+FAILED tests/test_cytoscape_adapter.py::test_invalid_display_documents_fail_before_export
+FAILED tests/test_domain_io.py::test_codecs_require_kind_and_distinguish_decode_shape_and_version_errors[rangekeeper.io.json]
+FAILED tests/test_domain_io.py::test_codecs_require_kind_and_distinguish_decode_shape_and_version_errors[rangekeeper.io.yaml]
+FAILED tests/test_domain_io.py::test_file_codec_never_overwrites_and_preserves_existing_bytes[rangekeeper.io.json]
+FAILED tests/test_domain_io.py::test_file_codec_never_overwrites_and_preserves_existing_bytes[rangekeeper.io.yaml]
+FAILED tests/test_domain_io.py::test_store_pins_snapshots_and_preserves_old_revisions[memory]
+FAILED tests/test_domain_io.py::test_store_pins_snapshots_and_preserves_old_revisions[directory]
+FAILED tests/test_domain_io.py::test_conflicting_content_and_kind_do_not_replace_a_revision[memory]
+FAILED tests/test_domain_io.py::test_conflicting_content_and_kind_do_not_replace_a_revision[directory]
+FAILED tests/test_domain_io.py::test_unordered_equivalence_keeps_first_encounter_order[memory]
+FAILED tests/test_domain_io.py::test_unordered_equivalence_keeps_first_encounter_order[directory]
+FAILED tests/test_domain_io.py::test_revision_equivalence_preserves_opaque_representations[memory-number]
+FAILED tests/test_domain_io.py::test_revision_equivalence_preserves_opaque_representations[memory-bool]
+FAILED tests/test_domain_io.py::test_revision_equivalence_preserves_opaque_representations[memory-order]
+FAILED tests/test_domain_io.py::test_revision_equivalence_preserves_opaque_representations[memory-presence]
+FAILED tests/test_domain_io.py::test_revision_equivalence_preserves_opaque_representations[directory-number]
+FAILED tests/test_domain_io.py::test_revision_equivalence_preserves_opaque_representations[directory-bool]
+FAILED tests/test_domain_io.py::test_revision_equivalence_preserves_opaque_representations[directory-order]
+FAILED tests/test_domain_io.py::test_revision_equivalence_preserves_opaque_representations[directory-presence]
+FAILED tests/test_domain_io.py::test_directory_reads_verify_envelope_identity_kind_and_version[identity-IdentityConflictError]
+FAILED tests/test_domain_io.py::test_directory_reads_verify_envelope_identity_kind_and_version[kind-DecodeError]
+FAILED tests/test_domain_io.py::test_directory_reads_verify_envelope_identity_kind_and_version[envelope-DecodeError]
+FAILED tests/test_domain_io.py::test_directory_reads_verify_envelope_identity_kind_and_version[version-UnsupportedVersionError]
+FAILED tests/test_domain_io.py::test_concurrent_directory_puts_are_idempotent_or_conflicting[True]
+FAILED tests/test_domain_io.py::test_concurrent_directory_puts_are_idempotent_or_conflicting[False]
+FAILED tests/test_domain_io.py::test_interrupted_publication_exposes_no_partial_final_file
+FAILED tests/test_domain_io.py::test_process_crash_before_link_leaves_only_ignored_temporary_file
+FAILED tests/test_domain_io.py::test_store_preserves_trace_order_and_optional_presence[memory]
+FAILED tests/test_domain_io.py::test_store_preserves_trace_order_and_optional_presence[directory]
+FAILED tests/test_domain_io.py::test_codec_preserves_permission_errors - rang...
+FAILED tests/test_domain_model.py::test_owner_local_values_share_a_measure_without_collapsing
+FAILED tests/test_domain_model.py::test_canonical_assembly_search_and_lookup_errors
+FAILED tests/test_domain_model.py::test_definition_identity_is_separate_from_code_lookup
+FAILED tests/test_domain_model.py::test_revision_noop_lineage_version_and_empty_sections
+FAILED tests/test_domain_model.py::test_explicit_metadata_and_descriptive_revision
+FAILED tests/test_domain_model.py::test_duplicate_ownership_and_opaque_identity
+FAILED tests/test_domain_model.py::test_diff_preserves_presence_and_opaque_types_and_order
+FAILED tests/test_domain_model.py::test_model_validates_recorded_units_but_not_opaque_content
+FAILED tests/test_domain_model.py::test_ordered_mathematics_is_not_sorted_for_revision_comparison
+FAILED tests/test_domain_run.py::test_failed_attempt_can_reference_an_incomplete_saved_specification
+FAILED tests/test_domain_run.py::test_resolver_results_must_match_requested_kind_and_revision[kind-reference.kind]
+FAILED tests/test_domain_run.py::test_resolver_results_must_match_requested_kind_and_revision[identity-reference.identity]
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 50 failures !!!!!!!!!!!!!!!!!!!!!!!!!!
+50 failed, 199 passed, 7 warnings in 22.82s

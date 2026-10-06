@@ -62,7 +62,6 @@ assert view.induced_slot("operands", "Expression").list_elements_ordered
 assert view.induced_slot("arguments", "Call").list_elements_ordered
 assert view.induced_slot("steps", "Query").list_elements_ordered
 for owner, slot, target in [
-    ("Expression", "target", "Value"),
     ("Constraint", "predicate", "Expression"),
     ("Call", "function", "Function"),
     ("Query", "starting_at", "Entity"),
@@ -70,6 +69,9 @@ for owner, slot, target in [
 ]:
     field = view.induced_slot(slot, owner)
     assert field.range == target and field.inlined is False
+
+assert view.induced_slot("target", "Expression").range == "ValueReference"
+assert view.induced_slot("target", "Expression").inlined
 
 valid = []
 fixtures = []
@@ -155,7 +157,7 @@ true = expression("true", "boolean", boolean=True)
 reference = expression(
     "reference",
     "reference",
-    target=scalar["entities"][0]["characteristics"]["values"][0]["id"],
+    target=dict(value=scalar["entities"][0]["characteristics"]["values"][0]["id"]),
 )
 for node in [
     left,
@@ -353,7 +355,7 @@ for node in [
     expression("bad-bool", "boolean", boolean=0),
     expression("deferred-date", "date", date="2026-09-30"),
     expression("deferred-string", "string", text=""),
-    expression("bad-reference", "reference", target="annual_rent"),
+    expression("bad-reference", "reference", target=dict(value="annual_rent")),
     dict(left, source_code="print(1)"),
 ]:
     reject("Expression", node)
@@ -497,7 +499,7 @@ bad["selection"]["base"] = copy.deepcopy(
 )
 semantic_case(graph, bad, "ordered sequence")
 semantic_case(
-    scalar, expression("unknown", "reference", target=left["id"]), "unknown Value"
+    scalar, expression("unknown", "reference", target=dict(value=left["id"])), "unknown Value"
 )
 semantic_case(
     scalar,
@@ -564,7 +566,7 @@ constraint_semantic = [
     (
         scalar,
         scalar["expressions"],
-        [constraint("wrong-target", reference["target"])],
+        [constraint("wrong-target", reference["target"]["value"])],
         "unknown or non-Expression",
     ),
     (scalar, [left], [constraint("number", left["id"])], "must be Boolean"),
@@ -602,7 +604,7 @@ constraint_semantic = [
     (
         scalar,
         scalar["expressions"],
-        [dict(minimal, id=reference["target"])],
+        [dict(minimal, id=reference["target"]["value"])],
         "duplicate Constraint identity",
     ),
     (
@@ -637,7 +639,7 @@ values = {
 
 def symbolic(node):
     if node["kind"] == "reference":
-        return values[node["target"]]
+        return values[node["target"]["value"]]
     return (node["operator"], *(symbolic(child) for child in node["operands"]))
 
 

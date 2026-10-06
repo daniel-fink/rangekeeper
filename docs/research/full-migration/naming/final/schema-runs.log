@@ -1,0 +1,3 @@
+Passed 10 generated schemas, 19 valid Run/tree cases, 28 structural rejections,
+45 bounded semantic rejections, and 32 native Run round trips.
+Synthetic records only. No scheduler or solver executed; full residual/optimality verification and structural publication require adapters.

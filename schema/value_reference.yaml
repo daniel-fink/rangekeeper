@@ -1,0 +1,57 @@
+id: https://daniel-fink.github.io/rangekeeper/schema/value_reference
+name: rangekeeper_value_reference
+version: 0.1.0
+prefixes:
+  linkml: https://w3id.org/linkml/
+  rk: https://daniel-fink.github.io/rangekeeper/schema/
+imports:
+- characteristics
+default_prefix: rk
+default_range: string
+classes:
+  ValueReference:
+    description: A Value UUID and optional stable owner-local Movement key. Scope comes from the containing Model
+      or composed Specification; positions are never identities.
+    attributes:
+      value:
+        range: Value
+        required: true
+        inlined: false
+        pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+      movement:
+        range: string
+        pattern: \S
+  ScopedValueReference:
+    description: An explicit revision and Value/Movement reference used in execution evidence.
+    attributes:
+      document:
+        range: UUID
+        required: true
+      reference:
+        range: ValueReference
+        required: true
+        inlined: true
+  Assignment:
+    description: An explicit scalar or Movement target and finite supplied Quantity; its collection determines assignment
+      or estimate semantics.
+    notes:
+    - This record has no independent identity. Its containing field supplies its role. In assignments the Quantity
+      is enforced; in estimates it initializes an unknown without imposing an equality.
+    - The target Value supplies its Measure and meaning. Quantity units must be compatible with the Measure's canonical
+      units under the agreed unit convention. Conversion must preserve magnitude and meaning. A bare Quantity cannot
+      change the target's Measure or kind, and finite zero is valid supplied content.
+    - Formulation.Binding names an alias to a shared symbol; Assignment supplies content to that symbol. Neither
+      record duplicates the Value declaration. Recorded content is reused only by supplying it explicitly.
+    attributes:
+      target:
+        range: ValueReference
+        required: true
+        inlined: true
+      quantity:
+        description: Explicit finite magnitude and compatible units; omission or null is not a supplied amount.
+        range: Quantity
+        required: true
+        inlined: true
+        all_of:
+        - range: Quantity
+          inlined: true

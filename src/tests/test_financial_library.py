@@ -12,7 +12,7 @@ from rangekeeper.calculations.financial import (
     calculate_xnpv,
 )
 from rangekeeper.model.flow import Flow, Movement, from_events
-from rangekeeper.temporal.calendar import year_fraction
+from rangekeeper.duration.calendar import year_fraction
 
 
 @pytest.mark.parametrize(

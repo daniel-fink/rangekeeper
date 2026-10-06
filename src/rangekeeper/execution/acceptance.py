@@ -8,6 +8,9 @@ from .._schema.records import Diagnostic, Quantity
 from .preparation import Prepared
 from .evaluator import comparisons
 from .errors import NumericalError
+from . import symbols
+from .._schema.records import ScopedValueReference, Expression
+from ..model._index import walk
 
 
 @dataclass(frozen=True)
@@ -53,10 +56,10 @@ def check(
     """
     values = {}
     for id in (*prepared.assignments, *prepared.unknowns):
-        value = candidate.value(id)
-        if value.quantity is None:
+        value = symbols.read(candidate, prepared.references[id])
+        if value is None:
             raise NumericalError(f"candidate has no quantity for {id}")
-        values[id] = prepared.units.convert(value.quantity, to=prepared.value_units[id])
+        values[id] = prepared.units.convert(value, to=prepared.value_units[id])
     diagnostics = []
     accepted = True
     for id, assigned in prepared.assignments.items():
@@ -68,7 +71,13 @@ def check(
                     code="assignment_rejected",
                     message="Candidate changed an explicit assignment.",
                     document=prepared.model.id,
-                    target=id,
+                    target=prepared.references[id].value,
+                    references=(
+                        ScopedValueReference(
+                            document=prepared.model.id,
+                            reference=prepared.references[id],
+                        ),
+                    ),
                 )
             )
     for assertion in prepared.assertions:
@@ -107,6 +116,15 @@ def check(
                     ),
                     document=assertion.document,
                     target=assertion.constraint.id,
+                    references=tuple(
+                        ScopedValueReference(
+                            document=prepared.model.id, reference=node.target
+                        )
+                        for node, _, _ in walk(assertion.predicate)
+                        if isinstance(node, Expression)
+                        and node.kind == "reference"
+                        and node.target is not None
+                    ),
                     residual=Quantity(magnitude=residual, units=left.units),
                     tolerance=Quantity(magnitude=tolerance, units=left.units),
                 )

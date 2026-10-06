@@ -1,0 +1,57 @@
+{
+  "immutable_passed": 10,
+  "stock_native_passed": 9,
+  "results": [
+    {
+      "file": "forward-output.json",
+      "immutable_roundtrip": true,
+      "stock_native_roundtrip": true
+    },
+    {
+      "file": "forward-run.json",
+      "immutable_roundtrip": true,
+      "stock_native_roundtrip": true
+    },
+    {
+      "file": "input.json",
+      "immutable_roundtrip": true,
+      "stock_native_roundtrip": true
+    },
+    {
+      "file": "inverse-output.json",
+      "immutable_roundtrip": true,
+      "stock_native_roundtrip": true
+    },
+    {
+      "file": "inverse-run.json",
+      "immutable_roundtrip": true,
+      "stock_native_roundtrip": true
+    },
+    {
+      "file": "policy-model.json",
+      "immutable_roundtrip": true,
+      "stock_native_roundtrip": true
+    },
+    {
+      "file": "policy-output.json",
+      "immutable_roundtrip": true,
+      "stock_native_roundtrip": true
+    },
+    {
+      "file": "policy-run.json",
+      "immutable_roundtrip": true,
+      "stock_native_roundtrip": true
+    },
+    {
+      "file": "policy-specification.json",
+      "immutable_roundtrip": true,
+      "stock_native_roundtrip": false,
+      "error": "Slot: actions - attribute kind value (terminate) does not match key (terminate)"
+    },
+    {
+      "file": "scenario.json",
+      "immutable_roundtrip": true,
+      "stock_native_roundtrip": true
+    }
+  ]
+}

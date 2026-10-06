@@ -1,7 +1,3 @@
-# Example records, not a Model envelope. All rent amounts are unresolved.
-# Apartment A is reachable by two paths. Distinct projection counts its Value once.
-# Workspace A is excluded by classification. Expected rent symbols: Apartment A and B.
-# The membership count is a separate query; it does not infer containment.
 definitions:
   taxonomies:
   - id: 7242e8f1-4db1-56e5-bebe-b26c5032ebc7
@@ -126,9 +122,9 @@ functions:
     required: true
   result:
     kind: measurement
-  semantics: Sum every element, retaining multiplicity. Members must have compatible units and measurement
-    meaning. Unresolved members remain symbolic; none are dropped. An empty collection is rejected because
-    this signature does not establish result units without a member.
+  semantics: Sum every element, retaining multiplicity. Members must have compatible units and measurement meaning.
+    Unresolved members remain symbolic; none are dropped. An empty collection is rejected because this signature
+    does not establish result units without a member.
   unit_rule: The result has the common measurement units of the members.
   empty_collection: error
 - id: e101eef7-62ac-5a3e-ab82-e84b5e19d58e

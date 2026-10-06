@@ -6,6 +6,7 @@ Derived views are internal check results, not revisions to serialize or publish.
 """
 
 from copy import deepcopy
+from ..model._references import reference_key
 from dataclasses import dataclass
 
 from rangekeeper._validation import require, require_ownership, require_acyclic
@@ -18,6 +19,7 @@ REQUIREMENTS = (
     "formulations",
     "objectives",
     "settings",
+    "policy",
 )
 FIELDS = {"metadata", "model", "includes", "cases", *REQUIREMENTS}
 
@@ -119,7 +121,9 @@ def compose_specification(specification, specifications, schema_version):
         for field in ("assignments", "unknowns", "estimates"):
             local = set()
             for entry in doc.get(field) or []:
-                target = entry if field == "unknowns" else entry["value"]
+                target = reference_key(
+                    entry if field == "unknowns" else entry["target"]
+                )
                 require(
                     target not in local,
                     (
@@ -139,6 +143,9 @@ def compose_specification(specification, specifications, schema_version):
             if value is not None:
                 claim(("settings", name), source)
                 effective.setdefault("settings", {})[name] = deepcopy(value)
+        if doc.get("policy"):
+            claim(("policy",), source)
+            effective["policy"] = deepcopy(doc["policy"])
         if doc.get("objectives"):
             claim(("objectives",), source)
             effective["objectives"] = deepcopy(doc["objectives"])
@@ -150,6 +157,12 @@ def compose_specification(specification, specifications, schema_version):
     if model_ids:
         effective["model"] = next(iter(model_ids))
     require(not assigned & unknowns, "assigned and unknown roles overlap")
+    if effective.get("policy"):
+        controls = [reference_key(ref) for ref in effective["policy"]["targets"]]
+        require(len(controls) == len(set(controls)), "duplicate policy-controlled role")
+        require(
+            not set(controls) & (assigned | unknowns), "policy-controlled roles overlap"
+        )
     return Composition(effective, contributors, sources)
 
 

@@ -132,7 +132,7 @@ print("Installed wheel: date fields and source timestamp alternatives passed")
 from rangekeeper.errors import ValidationError
 assert 'stage' not in rangekeeper.__file__
 assert 'site-packages' in rangekeeper.__file__
-assert validate(Model(metadata=Metadata(id=uuid4(), schema_version='0.4.0'))).valid
+assert validate(Model(metadata=Metadata(id=uuid4(), schema_version='0.5.0'))).valid
 assert files('rangekeeper').joinpath('py.typed').is_file()
 assert files('rangekeeper').joinpath('_currencies.json').is_file()
 for name in ('schema.json', 'slots.json', 'manifest.json', 'native.py'):
@@ -152,11 +152,11 @@ assert 'rangekeeper.graph' not in sys.modules
 from rangekeeper.model import Model as DomainModel, Entity, System, Update
 from rangekeeper.specification import Specification, SpecificationRecord, compose, validate as validate_composition
 entity = Entity(id=uuid4(), code='A')
-domain = DomainModel.create(metadata=Metadata(id=uuid4(), schema_version='0.4.0'), system=System(entities=(entity,)))
+domain = DomainModel.create(metadata=Metadata(id=uuid4(), schema_version='0.5.0'), system=System(entities=(entity,)))
 assert domain.entity(entity.id).code == 'A'
 revised = domain.revise(Update(system=System()))
 assert revised.metadata.previous == domain.id
-spec = Specification(SpecificationRecord(metadata=Metadata(id=uuid4(), schema_version='0.4.0'), model=domain.id))
+spec = Specification(SpecificationRecord(metadata=Metadata(id=uuid4(), schema_version='0.5.0'), model=domain.id))
 class Resolver:
     def load_model(self, id):
         assert id == domain.id
@@ -180,7 +180,7 @@ except ImportError as error:
     assert 'rangekeeper[yaml]' in str(error)
 else:
     raise AssertionError('YAML should be absent in the base environment')
-failed = Run(RunRecord(metadata=Metadata(id=uuid4(), schema_version='0.1.0'),
+failed = Run(RunRecord(metadata=Metadata(id=uuid4(), schema_version='0.2.0'),
     specification=spec.id, report=Report(status=Status(completion='failed', solution='not_assessed'),
     diagnostics=(Diagnostic(severity='error', code='unsupported', message='Fixture-only failed attempt'),))))
 with TemporaryDirectory() as directory:
@@ -270,7 +270,7 @@ measure = Measure(id=uuid4(), code='area', name='Area', units='meter ** 2')
 value = Value(id=uuid4(), key='net', kind='measurement', measure=measure.id, quantity=Quantity(magnitude=12, units='meter ** 2'))
 entity = Entity(id=uuid4(), characteristics=Characteristics(values=(value,)))
 group = Assembly(id=uuid4(), entities=(entity.id,))
-model = rk.Model.create(metadata=Metadata(id=uuid4(), schema_version='0.4.0'), definitions=Definitions(measures=(measure,)), system=System(entities=(entity,), assemblies=(group,)))
+model = rk.Model.create(metadata=Metadata(id=uuid4(), schema_version='0.5.0'), definitions=Definitions(measures=(measure,)), system=System(entities=(entity,), assemblies=(group,)))
 hierarchy = Hierarchy.from_membership(View(model, assembly=group.id), root=group.id)
 result = Reduction(select=select_value('net'), reducer=sum_quantities, units='centimeter ** 2', contributors=lambda item: item.id == entity.id).execute(hierarchy)
 assert result.root_value.magnitude == 120000 and result.coverage(group.id).complete
@@ -297,7 +297,7 @@ import math, sys
 import pyxirr
 from rangekeeper.calculations.financial import calculate_pv, calculate_xnpv, calculate_irr
 from rangekeeper.model.flow import from_events, from_periods
-from rangekeeper.temporal import make_periods
+from rangekeeper.duration import make_periods
 flow = from_events([date(2026, 1, 1), date(2027, 1, 1)], [-100, 110], units='AUD')
 assert abs(calculate_xnpv(flow, rate=.1, valuation_date=date(2026, 1, 1)).magnitude) < 1e-9
 result = calculate_irr(flow)
@@ -307,7 +307,7 @@ future = from_periods(make_periods(date(2026, 1, 1), frequency='year', count=1),
 assert math.isclose(calculate_pv(future, rate=.1).movements[0].magnitude, 100)
 assert math.isclose(calculate_xnpv(future, rate=.1, valuation_date=date(2026, 1, 1), timing='end').magnitude, 100)
 assert calculate_xnpv(from_events([], [], units='AUD'), rate=.1, valuation_date=date(2026, 1, 1)).magnitude == 0
-for prefix in ('scipy', 'pandas', 'polars', 'numpy', 'rangekeeper.flux', 'rangekeeper.duration'):
+for prefix in ('scipy', 'pandas', 'polars', 'numpy', 'rangekeeper.flux', 'rangekeeper._legacy_duration'):
     assert not any(name == prefix or name.startswith(prefix + '.') for name in sys.modules), prefix
 print('Installed wheel: PyXIRR', pyxirr.__version__, 'PV/XNPV/IRR passed without SciPy, dataframes or legacy imports')
 """

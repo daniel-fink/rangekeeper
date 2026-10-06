@@ -6,6 +6,7 @@ from uuid import UUID
 
 from .._schema.records import Expression, Quantity
 from ..units import UnitSystem
+from .symbols import key
 from .errors import NumericalError, UnsupportedProblem
 
 
@@ -17,7 +18,7 @@ def quantity(magnitude: float, units: str) -> Quantity:
 
 
 def evaluate(
-    node: Expression, values: Mapping[UUID, Quantity], *, units: UnitSystem
+    node: Expression, values: Mapping[str, Quantity], *, units: UnitSystem
 ) -> Quantity:
     """Read supplied quantities only; never fall back to recorded Model amounts."""
     if node.kind == "quantity":
@@ -25,7 +26,7 @@ def evaluate(
         return node.quantity
     if node.kind == "reference":
         assert node.target is not None
-        return values[node.target]
+        return values[key(node.target)]
     if node.kind == "unary" and node.operator == "negate":
         assert node.operand is not None
         value = evaluate(node.operand, values, units=units)
@@ -58,9 +59,7 @@ def evaluate(
         raise NumericalError(str(error)) from error
 
 
-def comparisons(
-    node: Expression, values: Mapping[UUID, Quantity], *, units: UnitSystem
-):
+def comparisons(node: Expression, values: Mapping[str, Quantity], *, units: UnitSystem):
     """Yield original comparison sides, retaining conjunction and operand order."""
     if node.kind == "boolean":
         yield "equal", quantity(0 if node.boolean else 1, "dimensionless"), quantity(

@@ -1,11 +1,11 @@
-# Synthetic conformance fixture: hypothetical execution/output, not an observed solver result.
+# Synthetic conformance fixture; no runtime execution is claimed.
 metadata:
-  id: bf6daff3-73ce-5f9c-be2d-7f0aca744bed
-  schema_version: 0.1.0
+  id: e272c23f-5498-5f2c-81aa-eac7608bda03
+  schema_version: 0.2.0
   name: Synthetic failed attempt
-  description: Synthetic expected record for schema conformance only. No evaluator or numerical solver
-    was executed to produce this record.
-specification: abd75e4d-3e68-54b5-b446-2f3ea51d6c9c
+  description: New synthetic 0.2.0 conformance fixture. No evaluator or solver produced this record; historical
+    Runs are unchanged.
+specification: 5f5be6f0-a423-5a22-89f8-bc83ac1f9d96
 report:
   status:
     completion: failed
@@ -13,6 +13,6 @@ report:
   diagnostics:
   - severity: error
     code: unsupported_capability
-    message: 'Synthetic failure before numerical execution: the selected implementation cannot evaluate
-      the requested formulation.'
-    document: abd75e4d-3e68-54b5-b446-2f3ea51d6c9c
+    message: 'Synthetic failure before numerical execution: the selected implementation cannot evaluate the requested
+      formulation.'
+    document: 5f5be6f0-a423-5a22-89f8-bc83ac1f9d96

@@ -1,4 +1,4 @@
-"""Schema-defined date intervals. Calendar operations live in ``temporal``."""
+"""Schema-defined date intervals. Calendar operations live in ``duration``."""
 
 from .._schema.records import Period, Span
 

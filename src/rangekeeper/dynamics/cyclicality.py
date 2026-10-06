@@ -9,6 +9,7 @@ from numba import jit
 import multiprocess
 
 import rangekeeper as rk
+from rangekeeper import _legacy_duration as legacy_duration
 
 
 class Enumerate:
@@ -108,7 +109,7 @@ class Cycle:
         return rk.flux.Flow(
             movements=pd.Series(
                 data=data,
-                index=rk.duration.Sequence.to_datestamps(sequence=sequence)),
+                index=legacy_duration.Sequence.to_datestamps(sequence=sequence)),
             name=name)
 
     def asymmetric_sine(
@@ -129,7 +130,7 @@ class Cycle:
         return rk.flux.Flow(
             movements=pd.Series(
                 data=data,
-                index=rk.duration.Sequence.to_datestamps(sequence=sequence)),
+                index=legacy_duration.Sequence.to_datestamps(sequence=sequence)),
             # units=measure.scalar,
             name=name)
 

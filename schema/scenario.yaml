@@ -1,0 +1,134 @@
+id: https://daniel-fink.github.io/rangekeeper/schema/scenario
+name: rangekeeper_scenario
+version: 0.2.0
+prefixes:
+  linkml: https://w3id.org/linkml/
+  rk: https://daniel-fink.github.io/rangekeeper/schema/
+imports:
+- flow
+- value_reference
+- binding
+- distribution
+default_prefix: rk
+default_range: string
+classes:
+  ScenarioParameter:
+    description: One named constant or sampled parameter; exactly one input is required by semantic validation.
+    attributes:
+      name:
+        range: Code
+        required: true
+      quantity:
+        range: Quantity
+        inlined: true
+      distribution:
+        range: Distribution
+        inlined: true
+  ScenarioPlan:
+    description: Finite market generation plan. This is input-generation provenance, not governing mathematics.
+    attributes:
+      id:
+        range: UUID
+        required: true
+        identifier: true
+      method:
+        range: string
+        required: true
+      seed:
+        range: integer
+        required: true
+        minimum_value: 0
+      periods:
+        range: Period
+        required: true
+        inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
+      parameters:
+        range: ScenarioParameter
+        required: true
+        inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
+  RandomStream:
+    description: Stable component stream identity derived from seed, scenario key and component name.
+    attributes:
+      name:
+        range: Code
+        required: true
+      identifier:
+        range: string
+        required: true
+  LibraryVersion:
+    description: Recorded implementation dependency version.
+    attributes:
+      name:
+        range: string
+        required: true
+      version:
+        range: string
+        required: true
+  ObservationAvailability:
+    description: Earliest date a recorded Value or Movement may be supplied to a policy.
+    attributes:
+      target:
+        range: ValueReference
+        required: true
+        inlined: true
+      available_at:
+        range: date
+        required: true
+  ScenarioRealization:
+    description: Captured scenario inputs and paths. Stored draws permit replay without random sampling.
+    attributes:
+      id:
+        range: UUID
+        required: true
+        identifier: true
+      plan:
+        range: ScenarioPlan
+        required: true
+        inlined: true
+      key:
+        range: Code
+        required: true
+      generator:
+        range: string
+        required: true
+      versions:
+        range: LibraryVersion
+        required: true
+        inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
+      streams:
+        range: RandomStream
+        required: true
+        inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
+      inputs:
+        range: Binding
+        required: true
+        inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
+      outputs:
+        range: Binding
+        required: true
+        inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
+      availability:
+        range: ObservationAvailability
+        required: true
+        inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true

@@ -5,6 +5,7 @@ import pandas as pd
 from numba import jit
 
 import rangekeeper as rk
+from rangekeeper import _legacy_duration as legacy_duration
 
 
 class BlackSwan:
@@ -44,7 +45,7 @@ class BlackSwan:
                     likelihood=self.likelihood,
                     dissipation_rate=self.dissipation_rate,
                     events=self.probability.sample(self.sequence.size)),
-                index=rk.duration.Sequence.to_datestamps(sequence=self.sequence)))
+                index=legacy_duration.Sequence.to_datestamps(sequence=self.sequence)))
 
     @staticmethod
     @jit(nopython=True)

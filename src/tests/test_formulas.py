@@ -7,7 +7,7 @@ from scipy.optimize import brentq
 from pytest import approx
 from rangekeeper.model.flow import from_periods
 from rangekeeper.model.measure import Quantity
-from rangekeeper.temporal import make_periods
+from rangekeeper.duration import make_periods
 from rangekeeper.calculations import series, account
 from tests.models.financial import build_accounts
 

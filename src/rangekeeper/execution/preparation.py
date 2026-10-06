@@ -1,7 +1,7 @@
 """Resolve immutable mathematics and explicit solve roles without a solver import."""
 
 from dataclasses import dataclass
-from collections.abc import Mapping
+from collections.abc import Mapping, Callable
 from types import MappingProxyType
 from uuid import UUID
 
@@ -14,6 +14,8 @@ from ..references import SpecificationResolver
 from ..specification import Specification, Composition, compose, validate
 from ..units import UnitSystem, default_units
 from .errors import UnsupportedProblem
+from . import symbols
+from .._schema.records import Decision, ValueReference, Assignment
 
 
 @dataclass(frozen=True)
@@ -32,18 +34,21 @@ class Prepared:
     model: Model
     composition: Composition
     values: Mapping[UUID, Value]
-    value_units: Mapping[UUID, str]
-    assignments: Mapping[UUID, Quantity]
-    unknowns: tuple[UUID, ...]
+    value_units: Mapping[str, str]
+    assignments: Mapping[str, Quantity]
+    unknowns: tuple[str, ...]
     assertions: tuple[Assertion, ...]
     units: UnitSystem
+    references: Mapping[str, ValueReference]
+    decisions: tuple[Decision, ...] = ()
 
 
 def prepare(
     specification: Specification,
     *,
     resolver: SpecificationResolver,
-    units: UnitSystem = default_units
+    units: UnitSystem = default_units,
+    checkpoint: Callable[[], None] = lambda: None,
 ) -> Prepared:
     """Validate a concrete composition and normalize assignments to Measure units.
 
@@ -54,6 +59,7 @@ def prepare(
     """
     composition = compose(specification, resolver=resolver)
     validate(composition, resolver=resolver, units=units).raise_if_invalid()
+    checkpoint()
     assert composition.model_id is not None
     model = resolver.load_model(composition.model_id)
     requirements = composition.requirements
@@ -67,6 +73,7 @@ def prepare(
 
     def collect(root: Record, document: UUID) -> None:
         for record, _, _ in walk(root):
+            checkpoint()
             if isinstance(record, Value):
                 values[record.id] = record
             elif isinstance(record, Expression):
@@ -80,21 +87,45 @@ def prepare(
     for contributor in composition.contributions:
         for formulation in contributor.record.formulations or ():
             collect(formulation, contributor.id)
-    roles = set(requirements.unknowns or ()) | {
-        a.value for a in requirements.assignments or ()
-    }
-    if not roles <= model_values:
+    role_references = list(requirements.unknowns or ()) + [
+        a.target for a in requirements.assignments or ()
+    ]
+    decisions: tuple[Decision, ...] = ()
+    policy_assignments: tuple[Assignment, ...] = ()
+    if requirements.policy is not None:
+        unknown_tokens = {symbols.key(ref) for ref in requirements.unknowns or ()}
+        if any(
+            symbols.key(binding.target) in unknown_tokens
+            for point in requirements.policy.points
+            for binding in point.observations
+        ):
+            raise UnsupportedProblem(
+                "policy observation targets an endogenous unknown; sequential numerical policies are unsupported"
+            )
+        from ..policies.evaluation import evaluate
+        from ..policies.observation import PolicyCapabilityError
+
+        try:
+            policy_result = evaluate(requirements.policy, model=model)
+            checkpoint()
+        except PolicyCapabilityError as error:
+            raise UnsupportedProblem(str(error)) from error
+        decisions = policy_result.decisions
+        policy_assignments = policy_result.assignments
+        role_references.extend(a.target for a in policy_assignments)
+    if any(ref.value not in model_values for ref in role_references):
         raise UnsupportedProblem(
             "Specification-local Value publication requires a later adapter"
         )
+    references = {symbols.key(ref): ref for ref in role_references}
     value_units = {
-        id: measure(model.definitions, value.measure).units
-        for id, value in values.items()
-        if value.measure is not None
+        token: symbols.units_for(model, ref) for token, ref in references.items()
     }
     assignments = {
-        item.value: units.convert(item.quantity, to=value_units[item.value])
-        for item in requirements.assignments or ()
+        symbols.key(item.target): units.convert(
+            item.quantity, to=value_units[symbols.key(item.target)]
+        )
+        for item in (*(requirements.assignments or ()), *policy_assignments)
     }
     return Prepared(
         model,
@@ -102,10 +133,12 @@ def prepare(
         MappingProxyType(values),
         MappingProxyType(value_units),
         MappingProxyType(assignments),
-        requirements.unknowns or (),
+        tuple(symbols.key(ref) for ref in requirements.unknowns or ()),
         tuple(
             Assertion(document, declaration, expressions[declaration.predicate])
             for document, declaration in declarations
         ),
         units,
+        MappingProxyType(references),
+        decisions,
     )

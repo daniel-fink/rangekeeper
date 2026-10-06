@@ -2,6 +2,7 @@
 
 from .._schema.records import (
     Expression as Expression,
+    ValueReference as ValueReference,
     Constraint as Constraint,
     Function as Function,
     Domain as Domain,
@@ -16,6 +17,7 @@ from .._schema.records import (
 
 __all__ = [
     "Expression",
+    "ValueReference",
     "Constraint",
     "Function",
     "Domain",

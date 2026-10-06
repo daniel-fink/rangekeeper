@@ -8,10 +8,11 @@ original expression trees against the proposed serialized Model.
 from dataclasses import dataclass
 import math
 from types import MappingProxyType
-from collections.abc import Mapping
+from collections.abc import Mapping, Callable
 from uuid import UUID
 
 from .._schema.records import Expression, Quantity
+from .symbols import key
 from .errors import UnsupportedProblem, NumericalError
 from .preparation import Prepared, Assertion
 
@@ -21,7 +22,7 @@ class Affine:
     """A scalar constant plus UUID-keyed coefficients, all in one result unit."""
 
     constant: float
-    coefficients: Mapping[UUID, float]
+    coefficients: Mapping[str, float]
     units: str
 
 
@@ -43,7 +44,7 @@ class Compiled:
     rows: tuple[Row, ...]
 
 
-def _affine(constant: float, coefficients: Mapping[UUID, float], units: str) -> Affine:
+def _affine(constant: float, coefficients: Mapping[str, float], units: str) -> Affine:
     if not all(math.isfinite(x) for x in (constant, *coefficients.values())):
         raise NumericalError("affine lowering produced non-finite coefficients")
     return Affine(
@@ -56,8 +57,11 @@ def _affine(constant: float, coefficients: Mapping[UUID, float], units: str) -> 
 class Compiler:
     """One prepared scope; explicit recursive operations retain mathematical order."""
 
-    def __init__(self, prepared: Prepared) -> None:
+    def __init__(
+        self, prepared: Prepared, checkpoint: Callable[[], None] = lambda: None
+    ) -> None:
         self.prepared = prepared
+        self.checkpoint = checkpoint
 
     def convert(self, value: Affine, units: str) -> Affine:
         """Convert a whole affine expression; offset units are outside this slice."""
@@ -88,18 +92,18 @@ class Compiler:
 
     def expression(self, node: Expression) -> Affine:
         """Compile only arithmetic affine under this Specification's assignments."""
+        self.checkpoint()
         if node.kind == "quantity":
             assert node.quantity is not None
             return _affine(float(node.quantity.magnitude), {}, node.quantity.units)
         if node.kind == "reference":
             assert node.target is not None
-            if node.target in self.prepared.assignments:
-                assigned = self.prepared.assignments[node.target]
+            token = key(node.target)
+            if token in self.prepared.assignments:
+                assigned = self.prepared.assignments[token]
                 return _affine(float(assigned.magnitude), {}, assigned.units)
-            if node.target in self.prepared.unknowns:
-                return _affine(
-                    0, {node.target: 1}, self.prepared.value_units[node.target]
-                )
+            if token in self.prepared.unknowns:
+                return _affine(0, {token: 1}, self.prepared.value_units[token])
             raise UnsupportedProblem("expression reference has no explicit solve role")
         if node.kind == "unary" and node.operator == "negate":
             assert node.operand is not None
@@ -192,13 +196,21 @@ class Compiler:
         return (Row(item, node.operator, residual, scale),)
 
 
-def compile(prepared: Prepared) -> Compiled:
+def compile(
+    prepared: Prepared,
+    *,
+    checkpoint: Callable[[], None] = lambda: None,
+    constraint_limit: int | None = None,
+) -> Compiled:
     """Produce immutable affine rows, retaining scoped diagnostics on capability errors."""
-    compiler = Compiler(prepared)
+    compiler = Compiler(prepared, checkpoint)
     rows: list[Row] = []
     for item in prepared.assertions:
+        checkpoint()
         try:
             rows.extend(compiler.assertion(item))
+            if constraint_limit is not None and len(rows) > constraint_limit:
+                raise UnsupportedProblem("expanded constraint limit exceeded")
         except UnsupportedProblem as error:
             raise UnsupportedProblem(
                 str(error), document=item.document, target=item.constraint.id

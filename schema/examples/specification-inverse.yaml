@@ -1,35 +1,40 @@
-# Synthetic Specification; no execution or output Model is asserted.
+# Synthetic conformance fixture; no runtime execution is claimed.
 metadata:
-  id: 807e416e-d4b7-5476-bd30-449720556aae
-  schema_version: 0.4.0
+  id: 04e7e76f-7d71-53ae-9006-78bdb5e1e788
+  schema_version: 0.5.0
   name: Inverse valuation
-  description: 'Determine rent and NOI for an assigned capital value. Expected arithmetic: rent 27500
-    AUD/dwelling/year and NOI 500000 AUD/year. This example pins the same input Model; tests also exercise
-    a separately identified snapshot with recorded amounts.'
-  previous: d4a35f07-e4b9-5de1-a55d-46a7739f1b7a
-model: 396b03f6-1ebb-59f4-b520-231242ffd645
+  description: 'Determine rent and NOI for an assigned capital value. Expected arithmetic: rent 27500 AUD/dwelling/year
+    and NOI 500000 AUD/year. This example pins the same input Model; tests also exercise a separately identified
+    snapshot with recorded amounts.'
+  previous: 807e416e-d4b7-5476-bd30-449720556aae
+model: e9096132-8158-56db-bc3e-b64ef7f92d4e
 assignments:
-- value: 194afc26-3e2e-507b-ad0c-a73a4b0b2ccd
-  quantity:
+- quantity:
     magnitude: 20
     units: dwelling
-- value: cbe37d0a-79ce-5d1b-b0cb-8d2a42acc991
-  quantity:
+  target:
+    value: 194afc26-3e2e-507b-ad0c-a73a4b0b2ccd
+- quantity:
     magnitude: 50000
     units: AUD/year
-- value: 0ceeb0d5-91b7-53b7-b823-2234e2262a4f
-  quantity:
+  target:
+    value: cbe37d0a-79ce-5d1b-b0cb-8d2a42acc991
+- quantity:
     magnitude: 0.05
     units: 1/year
-- value: a947d40b-d9b0-54cb-a2a4-f8f598405ac2
-  quantity:
+  target:
+    value: 0ceeb0d5-91b7-53b7-b823-2234e2262a4f
+- quantity:
     magnitude: 10000000
     units: AUD
+  target:
+    value: a947d40b-d9b0-54cb-a2a4-f8f598405ac2
 unknowns:
-- e3fb1434-5371-5bcb-b0b8-e3af2bf65022
-- 9324f928-cfc8-50bb-ba99-fe8c02a6dbd2
-estimates:
 - value: e3fb1434-5371-5bcb-b0b8-e3af2bf65022
-  quantity:
+- value: 9324f928-cfc8-50bb-ba99-fe8c02a6dbd2
+estimates:
+- quantity:
     magnitude: 30000
     units: AUD/dwelling/year
+  target:
+    value: e3fb1434-5371-5bcb-b0b8-e3af2bf65022

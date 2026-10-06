@@ -10,6 +10,7 @@ import scipy.stats as ss
 from pytest import approx
 
 import rangekeeper as rk
+from rangekeeper import _legacy_duration as legacy_duration
 
 # Pytests file.
 # Note: gathers tests according to a naming convention.
@@ -65,8 +66,8 @@ class TestDistribution:
 class TestDuration:
     def test_offset(self):
         date = datetime.date(2020, 2, 29)
-        offset_eom = rk.duration.offset(
-            date=date, duration=rk.duration.Type.MONTH, amount=3
+        offset_eom = legacy_duration.offset(
+            date=date, duration=legacy_duration.Type.MONTH, amount=3
         )
         assert offset_eom == datetime.date(2020, 5, 31)
 
@@ -74,22 +75,22 @@ class TestDuration:
 class TestPeriod:
     def test_period_index_validity(self):
         date = datetime.date(2020, 2, 28)
-        period = rk.duration.Period.include_date(
+        period = legacy_duration.Period.include_date(
             date=date,
-            duration=rk.duration.Type.MONTH,
+            duration=legacy_duration.Type.MONTH,
         )
         assert period.day == 29  # end date of Period
         # assert period.month == 2
         #
-        # sequence = rk.duration.Sequence.from_bounds(
+        # sequence = legacy_duration.Sequence.from_bounds(
         #     include_start=date,
         #     bound=datetime.date(2020, 12, 31),
-        #     frequency=rk.duration.Type.QUARTER,
+        #     frequency=legacy_duration.Type.QUARTER,
         # )
         # assert sequence.size == 4
         #
-        # end_date = rk.duration.offset(
-        #     date=date, duration=rk.duration.Type.MONTH, amount=4
+        # end_date = legacy_duration.offset(
+        #     date=date, duration=legacy_duration.Type.MONTH, amount=4
         # )
         # assert end_date == datetime.date(2020, 6, 28)
 
@@ -167,9 +168,9 @@ class TestFlow:
 
         TestFlow.flow_from_series.display()
 
-    periods = rk.duration.Sequence.from_bounds(
+    periods = legacy_duration.Sequence.from_bounds(
         include_start=datetime.date(2020, 1, 31),
-        frequency=rk.duration.Type.MONTH,
+        frequency=legacy_duration.Type.MONTH,
         bound=datetime.date(2022, 1, 1),
     )
 
@@ -217,7 +218,7 @@ class TestFlow:
         assert TestFlow.invert_flow.movements.name == "bar"
         assert TestFlow.invert_flow.units == currency.units
 
-    resample_flow = invert_flow.resample(frequency=rk.duration.Type.YEAR)
+    resample_flow = invert_flow.resample(frequency=legacy_duration.Type.YEAR)
 
     def test_resampling(self):
         # TestFlow.resample_flow.display()
@@ -229,10 +230,10 @@ class TestFlow:
     @pytest.mark.parametrize(
         ("frequency", "expected_origin"),
         [
-            (rk.duration.Type.DAY, "epoch"),
-            (rk.duration.Type.MONTH, None),
-            (rk.duration.Type.QUARTER, None),
-            (rk.duration.Type.YEAR, None),
+            (legacy_duration.Type.DAY, "epoch"),
+            (legacy_duration.Type.MONTH, None),
+            (legacy_duration.Type.QUARTER, None),
+            (legacy_duration.Type.YEAR, None),
         ],
     )
     def test_resample_origin_only_for_tick_offsets(
@@ -264,30 +265,30 @@ class TestFlow:
 
         flow.resample(frequency=frequency)
 
-        assert captured["rule"] == rk.duration.Type.offset(frequency)
+        assert captured["rule"] == legacy_duration.Type.offset(frequency)
         assert captured["label"] == "right"
         if expected_origin is None:
             assert "origin" not in captured
         else:
             assert captured["origin"] == expected_origin
 
-    # to_periods = flow.to_periods(index=rk.duration.Type.YEAR)
+    # to_periods = flow.to_periods(index=legacy_duration.Type.YEAR)
 
     def test_conversion_to_period_index(self):
         pass
         # print(TestFlow.to_periods)
         # assert TestFlow.to_periods
 
-        # resampled = TestFlow.invert_flow.resample(frequency=rk.duration.Type.BIWEEK)
+        # resampled = TestFlow.invert_flow.resample(frequency=legacy_duration.Type.BIWEEK)
         # resampled.display()
 
-        # fortnightly = TestFlow.invert_flow.to_periods(frequency=rk.duration.Type.BIWEEK)
+        # fortnightly = TestFlow.invert_flow.to_periods(frequency=legacy_duration.Type.BIWEEK)
         # print(fortnightly)
 
     def test_distribution_as_input(self):
-        periods = rk.duration.Sequence.from_bounds(
+        periods = legacy_duration.Sequence.from_bounds(
             include_start=datetime.date(2020, 1, 31),
-            frequency=rk.duration.Type.MONTH,
+            frequency=legacy_duration.Type.MONTH,
             bound=datetime.date(2022, 1, 1),
         )
 
@@ -332,10 +333,10 @@ class TestStream:
         value=100.0,
         proj=rk.projection.Distribution(
             form=rk.distribution.Uniform(),
-            sequence=rk.duration.Sequence.from_bounds(
+            sequence=legacy_duration.Sequence.from_bounds(
                 include_start=datetime.date(2020, 1, 31),
                 bound=datetime.date(2022, 1, 1),
-                frequency=rk.duration.Type.YEAR,
+                frequency=legacy_duration.Type.YEAR,
             ),
         ),
         units=currency.units,
@@ -346,10 +347,10 @@ class TestStream:
         value=-50.0,
         proj=rk.projection.Distribution(
             form=rk.distribution.Uniform(),
-            sequence=rk.duration.Sequence.from_bounds(
+            sequence=legacy_duration.Sequence.from_bounds(
                 include_start=datetime.date(2020, 3, 1),
                 bound=datetime.date(2021, 2, 28),
-                frequency=rk.duration.Type.WEEK,
+                frequency=legacy_duration.Type.WEEK,
             ),
         ),
         units=currency.units,
@@ -360,10 +361,10 @@ class TestStream:
         value=-50.0,
         proj=rk.projection.Distribution(
             form=rk.distribution.Uniform(),
-            sequence=rk.duration.Sequence.from_bounds(
+            sequence=legacy_duration.Sequence.from_bounds(
                 include_start=datetime.date(2020, 1, 31),
                 bound=datetime.date(2022, 1, 1),
-                frequency=rk.duration.Type.BIWEEK,
+                frequency=legacy_duration.Type.BIWEEK,
             ),
         ),
         units=currency.units,
@@ -372,7 +373,7 @@ class TestStream:
     stream = rk.flux.Stream(
         name="stream",
         flows=[flow1, flow2, flow3],
-        frequency=rk.duration.Type.BIWEEK,
+        frequency=legacy_duration.Type.BIWEEK,
     )
 
     def test_stream_validity(self):
@@ -383,15 +384,15 @@ class TestStream:
 
         print(f"\nResampled: \n")
         TestStream.flow1.resample(
-            frequency=rk.duration.Type.BIWEEK,
+            frequency=legacy_duration.Type.BIWEEK,
             origin=pd.Timestamp(2020, 2, 9),
         ).display()
         TestStream.flow2.resample(
-            frequency=rk.duration.Type.BIWEEK,
+            frequency=legacy_duration.Type.BIWEEK,
             origin=pd.Timestamp(2020, 2, 9),
         ).display()
         TestStream.flow3.resample(
-            frequency=rk.duration.Type.BIWEEK,
+            frequency=legacy_duration.Type.BIWEEK,
             origin=pd.Timestamp(2020, 2, 9),
         ).display()
 
@@ -399,7 +400,7 @@ class TestStream:
         TestStream.stream.sum().display()
 
         # # TestStream.flow1.display()
-        # TestStream.flow1.resample(frequency=rk.duration.Type.BIWEEK).display()
+        # TestStream.flow1.resample(frequency=legacy_duration.Type.BIWEEK).display()
         # #
         # print(TestStream.flow1.to_periods(index=TestStream.stream.index).to_string())
 
@@ -442,7 +443,7 @@ class TestStream:
         stream_sqm = rk.flux.Stream(
             name="stream_sqm",
             flows=[TestStream.flow1, flow2_sqm],
-            frequency=rk.duration.Type.MONTH,
+            frequency=legacy_duration.Type.MONTH,
         )
 
         stream_sqm_agg = stream_sqm.product(
@@ -471,13 +472,13 @@ class TestStream:
 
 class TestSpan:
     def test_correct_span(self):
-        test_span = rk.duration.Span(
+        test_span = legacy_duration.Span(
             name="test_span",
             start_date=datetime.date(2020, 3, 1),
             end_date=datetime.date(2021, 2, 28),
         )
         assert test_span.start_date < test_span.end_date
-        assert test_span.duration(type=rk.duration.Type.DAY, inclusive=False) == 364
+        assert test_span.duration(type=legacy_duration.Type.DAY, inclusive=False) == 364
 
     def test_correct_spans(self):
         dates = [
@@ -488,12 +489,12 @@ class TestSpan:
             datetime.date(2024, 2, 29),
         ]
         names = ["Span1", "Span2", "Span3", "Span4"]
-        spans = rk.duration.Span.from_date_sequence(names=names, dates=dates)
+        spans = legacy_duration.Span.from_date_sequence(names=names, dates=dates)
 
         assert len(spans) == 4
         assert spans[0].name == "Span1"
         assert spans[0].end_date == datetime.date(2020, 2, 29)
-        assert spans[0].duration(type=rk.duration.Type.DAY) == 0
+        assert spans[0].duration(type=legacy_duration.Type.DAY) == 0
 
         assert spans[1].start_date == datetime.date(2020, 3, 1)
         assert spans[1].end_date == datetime.date(2021, 2, 27)
@@ -598,7 +599,7 @@ class TestType:
 
 # class TestAPI:
 # def test_speckle(self):
-#     speckle = rk.api.Speckle(token='52c9b20071b2854f98ad91af10c154ad5e232b88a7')
+#     speckle = rk.api.Speckle(token='<token>')
 #     item = speckle.get_item(
 #         stream_id='1dd7d041b5',
 #         commit_id='a29679079f')

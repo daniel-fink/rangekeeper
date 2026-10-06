@@ -14,8 +14,8 @@ import math
 
 from ..model.flow import Flow, resolve_date
 from ..model.measure import Quantity
-from ..temporal.period import PeriodTiming
-from ..temporal.calendar import DayCount, require_date, resolve_day_count
+from ..duration.period import PeriodTiming
+from ..duration.calendar import DayCount, require_date, resolve_day_count
 from ._flow import replace_movement, replace_movements, require_resolved, magnitude
 
 

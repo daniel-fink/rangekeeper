@@ -8,6 +8,7 @@ mathematics require a graph adapter and are reported explicitly as unsupported.
 """
 
 import math
+from ..model._references import reference_key, numerical_units
 
 from rangekeeper._validation import require, require_ownership, require_acyclic
 from rangekeeper.model._expression import infer_expression_domain
@@ -166,23 +167,20 @@ def _validate_concrete(
     scope = validate_formulations(document, additional_formulations=additions)
 
     def eligible(target):
-        require(target in scope.values, "unknown or non-Value role target")
-        require(
-            scope.values[target]["kind"] == "measurement", "unsupported role Value kind"
-        )
+        return numerical_units(target, scope.values, scope.measures)
 
     def supplied(collection):
         targets = set()
         for assignment in specification.get(collection) or []:
-            target = assignment["value"]
-            require(target not in targets, f"duplicate {collection} target")
-            targets.add(target)
-            eligible(target)
+            target = assignment["target"]
+            key = reference_key(target)
+            require(key not in targets, f"duplicate {collection} target")
+            targets.add(key)
+            expected = eligible(target)
             quantity = assignment["quantity"]
             require(
                 math.isfinite(quantity["magnitude"]), "non-finite supplied magnitude"
             )
-            expected = scope.measures[scope.values[target]["measure"]]["units"]
             actual = quantity["units"]
             if actual != expected:
                 require(
@@ -196,14 +194,24 @@ def _validate_concrete(
         return targets
 
     assigned = supplied("assignments")
-    unknowns = specification.get("unknowns") or []
-    require(len(unknowns) == len(set(unknowns)), "duplicate unknown")
-    unknowns = set(unknowns)
-    for target in unknowns:
+    references = specification.get("unknowns") or []
+    unknowns = {reference_key(r) for r in references}
+    require(len(references) == len(unknowns), "duplicate unknown")
+    for target in references:
         eligible(target)
     require(not assigned & unknowns, "assigned and unknown roles overlap")
     estimates = supplied("estimates")
     require(estimates <= unknowns, "estimate target is not an unknown")
+    controlled = set()
+    if specification.get("policy"):
+        from ._policy_validation import validate_policy
+
+        controlled = validate_policy(
+            specification["policy"], scope=scope, units_compatible=units_compatible
+        )
+        require(
+            not controlled & (assigned | unknowns), "policy-controlled roles overlap"
+        )
 
     # Imposed predicates and every objective need role completeness. Unused
     # expressions (including reporting queries) need not be prepared for a solve.
@@ -237,11 +245,20 @@ def _validate_concrete(
                 "query dependency resolution requires a graph adapter",
             )
             if node.get("kind") == "reference":
-                required.add(node["target"])
-    require(required <= assigned | unknowns, "missing solve role for required Value")
+                required.add(reference_key(node["target"]))
+    require(
+        required <= assigned | unknowns | controlled,
+        "missing solve role for required Value",
+    )
 
     settings = specification.get("settings") or {}
-    for name in ("relative_tolerance", "time_limit", "iteration_limit"):
+    for name in (
+        "relative_tolerance",
+        "time_limit",
+        "iteration_limit",
+        "symbol_limit",
+        "constraint_limit",
+    ):
         if name in settings and settings[name] is not None:
             value = settings[name]
             require(

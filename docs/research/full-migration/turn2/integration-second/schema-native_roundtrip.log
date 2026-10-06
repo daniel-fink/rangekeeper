@@ -1,0 +1,42 @@
+Traceback (most recent call last):
+  File "/Volumes/Data/Projects/Rangekeeper/schema/checks/native_roundtrip.py", line 61, in <module>
+    assert view.get_identifier_slot("Quantity") is None
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/linkml_runtime/utils/schemaview.py", line 1848, in get_identifier_slot
+    for sn in sorted(self.class_slots(cn, imports=imports)):
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/linkml_runtime/utils/schemaview.py", line 1771, in class_slots
+    ancs = [class_name] if direct else self.class_ancestors(class_name, imports=imports)
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/linkml_runtime/utils/schemaview.py", line 949, in class_ancestors
+    return _closure(
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/linkml_runtime/utils/schemaview.py", line 198, in _closure
+    for v in f(i) or []:
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/linkml_runtime/utils/schemaview.py", line 950, in <lambda>
+    lambda x: self.class_parents(x, imports=imports, mixins=mixins, is_a=is_a),
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/linkml_runtime/utils/schemaview.py", line 910, in class_parents
+    cls = self.get_class(class_name, imports, strict=True)
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/linkml_runtime/utils/schemaview.py", line 799, in get_class
+    c = self.all_classes(imports=imports).get(class_name, None)
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/linkml_runtime/utils/schemaview.py", line 631, in all_classes
+    classes = copy(self._get_dict(CLASSES, imports))
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/linkml_runtime/utils/schemaview.py", line 408, in _get_dict
+    schemas = self.all_schema(imports)
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/linkml_runtime/utils/schemaview.py", line 540, in all_schema
+    return [self.schema_map[sn] for sn in self.imports_closure(imports)]
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/linkml_runtime/utils/schemaview.py", line 470, in imports_closure
+    self.schema_map[sn] = self.load_import(sn)
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/linkml_runtime/utils/schemaview.py", line 377, in load_import
+    return load_schema_wrap(sname + ".yaml", base_dir=base_dir)
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/linkml_runtime/utils/schemaview.py", line 212, in load_schema_wrap
+    schema: SchemaDefinition = yaml_loader.load(path, target_class=SchemaDefinition, **kwargs)
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/linkml_runtime/loaders/loader_root.py", line 82, in load
+    results = self.load_any(*args, **kwargs)
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/linkml_runtime/loaders/yaml_loader.py", line 48, in load_any
+    data_as_dict = self.load_as_dict(source, base_dir=base_dir, metadata=metadata)
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/linkml_runtime/loaders/yaml_loader.py", line 29, in load_as_dict
+    data = self._read_source(
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/linkml_runtime/loaders/loader_root.py", line 188, in _read_source
+    return hbread(source, metadata, base_dir, accept_header)
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/hbreader/__init__.py", line 260, in hbread
+    with hbopen(source, open_info, base_path, accept_header, is_actual_data, read_codec) as f:
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/hbreader/__init__.py", line 206, in hbopen
+    f = open(fname, encoding=read_codec if read_codec else 'utf-8')
+FileNotFoundError: [Errno 2] No such file or directory: '/var/folders/sk/cjq5zjks7gx_3tf9m67y43xr0000gn/T/rk-native-_i8autiw/value.yaml'

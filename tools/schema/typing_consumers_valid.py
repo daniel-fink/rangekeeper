@@ -8,6 +8,11 @@ from rangekeeper.table import Table
 from rangekeeper.workflow.specification import WorkflowSpec
 from rangekeeper.workflow.runtime import run
 
+from rangekeeper.model import Value
+from rangekeeper.model.distribution import Distribution, validate_distribution
+from rangekeeper.scenarios import Market
+from rangekeeper.policies import DecisionHistory
+
 
 def consume(model: Model, spec: WorkflowSpec, root: Path) -> Table:
     view = View(model)
@@ -17,3 +22,12 @@ def consume(model: Model, spec: WorkflowSpec, root: Path) -> Table:
     if outcome.output is not None:
         built: Model = outcome.output.model
     return table
+
+
+def consume_market(market: "Market", distribution: "Distribution") -> "Value":
+    """Named Market access and calculations share the generated public record types."""
+    validate_distribution(distribution)
+    value: Value = market.space_market_price_factors
+    rates: Value = market.implied_reversion_cap_rates
+    history: DecisionHistory = DecisionHistory()
+    return value

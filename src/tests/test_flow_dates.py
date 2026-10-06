@@ -14,7 +14,7 @@ from rangekeeper.model.flow import (
     resolve_date,
     validate_flow,
 )
-from rangekeeper.temporal import make_period, make_periods, offset
+from rangekeeper.duration import make_period, make_periods, offset
 from rangekeeper.calculations import financial, series
 
 

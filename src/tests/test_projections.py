@@ -3,6 +3,7 @@ from pytest import approx
 import pandas as pd
 
 import rangekeeper as rk
+from rangekeeper import _legacy_duration as legacy_duration
 
 
 # Pytests file.
@@ -13,11 +14,11 @@ import rangekeeper as rk
 
 class TestProjection:
     def test_rangeindex(self):
-        sequence = rk.duration.Sequence.from_bounds(
+        sequence = legacy_duration.Sequence.from_bounds(
             include_start=pd.Timestamp(2000, 1, 1),
-            frequency=rk.duration.Type.MONTH,
+            frequency=legacy_duration.Type.MONTH,
             bound=12)
-        range_index = rk.duration.Sequence.to_range_index(
+        range_index = legacy_duration.Sequence.to_range_index(
             sequence=sequence,
             start_period=pd.Period(value='1999-01'),
             end_period=pd.Period(value='2010-01'))
@@ -43,9 +44,9 @@ class TestProjection:
         assert compounding_factors[9] == approx(2.357947691)
 
     def test_extrapolation(self):
-        sequence = rk.duration.Sequence.from_bounds(
+        sequence = legacy_duration.Sequence.from_bounds(
             include_start=pd.Timestamp(2000, 1, 1),
-            frequency=rk.duration.Type.MONTH,
+            frequency=legacy_duration.Type.MONTH,
             bound=12)
 
         generic = rk.projection.Projection(sequence=sequence)
@@ -70,9 +71,9 @@ class TestProjection:
         assert factors.iloc[-1] == approx(1.710339358)
 
     def test_distribution(self):
-        sequence = rk.duration.Sequence.from_bounds(
+        sequence = legacy_duration.Sequence.from_bounds(
             include_start=pd.Timestamp(2000, 1, 1),
-            frequency=rk.duration.Type.MONTH,
+            frequency=legacy_duration.Type.MONTH,
             bound=12)
         bounds = (pd.Period(value='1999-01'), pd.Period(value='2003-01'))
 

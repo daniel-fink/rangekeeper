@@ -1,5 +1,15 @@
 # Full migration: Turn 1 foundations
 
+**Turn 2 update, 2026-10-06:** [Temporal equations, scenarios and policies](FULL_MIGRATION_TURN2.md)
+now use Model/Specification 0.5.0 and Run 0.2.0. `ValueReference` addresses scalar
+Values or owner-local Movement keys. The canonical calendar package is `duration/`;
+`temporal` has no public alias. Finite Flow formulations, captured scenario replay,
+exogenous declarative policies and the four numerical walkthroughs are implemented.
+See [verification](research/full-migration/turn2/README.md) and the
+[upgrade guide](LEGACY_UPGRADE_GUIDE.md). Turn 3 completes remaining consumers and
+integrations; Turn 4 retires obsolete code after their acceptance gates.
+The dated checkpoint descriptions below remain historical context.
+
 Implemented 2026-10-04 on `acausal-modelling`, starting at `90c2e00`.
 This is the first of **four implementation turns**. It extends the completed
 scalar/domain work. It does not complete consumer migration or retire old APIs.
@@ -103,7 +113,7 @@ JSON/YAML field all use the new names. `movement_coordinate` replaces
 `replace_movements`. `resolve_date` now names its argument `movement`.
 The fields `key`, `date`, `period`, `magnitude` and `claims`, their validation,
 and the arithmetic remain unchanged. Movement does not add a semantic kind.
-Statistical sampling APIs such as `Distribution.sample()` keep their names.
+Statistical sampling remains distinct from Movements. The later [naming update](RK_NAMING.md) places this operation at `calculations.distribution.sample(distribution, ...)`, using the shared generated Distribution record.
 
 This is a breaking correction to the unreleased Model 0.4.0 draft, with no
 compatibility aliases or silent loader conversion. Old `samples` payloads fail,

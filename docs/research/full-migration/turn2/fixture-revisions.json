@@ -1,0 +1,22 @@
+{
+  "reason": "New synthetic fixture revisions for current contracts; historical evidence is untouched.",
+  "old_to_new": {
+    "d3214af4-de38-5c02-9ffb-512ef2cb162a": "a9ac9a69-c809-5589-954f-86925dcabcdd",
+    "25df750e-a766-5fdc-9de9-a22d779f135b": "45d06a63-85fe-5d80-82a0-f55a6a06a01a",
+    "396b03f6-1ebb-59f4-b520-231242ffd645": "e9096132-8158-56db-bc3e-b64ef7f92d4e",
+    "cb42759d-cde3-5003-be43-b62d4d3f6cae": "6ec2799f-e2d4-5844-b839-e24287b8cea4",
+    "807e416e-d4b7-5476-bd30-449720556aae": "04e7e76f-7d71-53ae-9006-78bdb5e1e788",
+    "bf6daff3-73ce-5f9c-be2d-7f0aca744bed": "e272c23f-5498-5f2c-81aa-eac7608bda03",
+    "b3acf071-00c7-5651-a9c3-db0d896560a8": "790427e1-fbd3-52ed-89d4-13cf26e074f7",
+    "9a047e59-fa74-562f-97d7-050da3df62d6": "bc429c41-ecde-54b8-94e8-07aadfcdec66",
+    "6415f03f-f1a4-5ff2-b4f8-b4faaafd027e": "c1efd865-1463-54c1-b28b-5e689f4837ed",
+    "9d1861a7-de38-5c5c-8fa7-8a2f8bbc762c": "37045e56-e14c-5fb0-99e1-edd704271361",
+    "abd75e4d-3e68-54b5-b446-2f3ea51d6c9c": "5f5be6f0-a423-5a22-89f8-bc83ac1f9d96",
+    "7e763bde-01f1-5116-8e1d-59e08ad54178": "cc343536-8c15-57bb-8128-1a3d9fcde726",
+    "a7e90723-6bbc-5d2c-8f1e-d6bc28062658": "2660b5a4-1780-5a59-8aac-b838299d632d",
+    "16cdb352-da46-51cc-bfbe-2b6aff920c42": "ff54f83e-3e9d-58c6-bc47-9b2e7338229f",
+    "8f430114-dbd1-53f7-9075-243e3a039d13": "be7ea554-f418-5764-932c-6d0fb3012e97",
+    "0d0336b5-6cf6-56dc-a152-af084b4374d7": "fb1663aa-1482-50e1-9da9-d798faa70872"
+  },
+  "active_readers_updated": []
+}

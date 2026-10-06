@@ -1,0 +1,35 @@
+id: https://daniel-fink.github.io/rangekeeper/schema/binding
+name: rangekeeper_binding
+version: 0.1.0
+prefixes:
+  linkml: https://w3id.org/linkml/
+  rk: https://daniel-fink.github.io/rangekeeper/schema/
+imports:
+- characteristics
+default_prefix: rk
+default_range: string
+classes:
+  Binding:
+    description: A local interface name that refers to an existing canonical Value by UUID.
+    notes:
+    - A binding shares the target symbol. It neither copies content nor asserts equality between distinct
+      Values, fixes an amount, or assigns a calculation direction.
+    - Names are unique within the containing bindings collection. Multiple distinct names may refer to the
+      same Value. Names are not an alternative Expression reference syntax.
+    - Bindings have no independent identity. Expressions reference Value UUIDs directly. Targets may
+      belong to an Entity, Relationship, or Formulation. The containing Formulation or scenario defines the revision and name scope.
+    attributes:
+      name:
+        description: Case-sensitive local interface name; not reference identity.
+        range: Code
+        required: true
+      value:
+        description: UUID of the shared Value. Its declaration supplies its kind, Measure, and content.
+        range: Value
+        required: true
+        inlined: false
+        pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$
+        any_of:
+        - range: Value
+          inlined: false
+          pattern: ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$

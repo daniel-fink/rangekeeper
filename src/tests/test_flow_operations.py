@@ -10,7 +10,7 @@ from rangekeeper.calculations.account import calculate_account
 from rangekeeper.errors import ValidationError
 from rangekeeper.model.flow import Flow, Movement, from_events, from_periods
 from rangekeeper.model.measure import Quantity
-from rangekeeper.temporal import make_period, make_periods
+from rangekeeper.duration import make_period, make_periods
 
 
 @pytest.mark.parametrize("field", ["basis", "kind"])

@@ -1,0 +1,19 @@
+rangekeeper/model/_predicate.py:18: error: Item "None" of "ValueReference | None" has no attribute "to_data"  [union-attr]
+rangekeeper/model/_predicate.py:20: error: Argument 1 to "evaluate" has incompatible type "Expression | None"; expected "Expression"  [arg-type]
+rangekeeper/model/_predicate.py:28: error: Value of type "tuple[Expression, ...] | None" is not indexable  [index]
+rangekeeper/model/_predicate.py:36: error: Value of type "tuple[Expression, ...] | None" is not indexable  [index]
+rangekeeper/model/_predicate.py:40: error: Value of type "tuple[Expression, ...] | None" is not indexable  [index]
+rangekeeper/execution/preparation.py:97: error: Incompatible types in assignment (expression has type "tuple[Decision, ...]", variable has type "tuple[()]")  [assignment]
+rangekeeper/execution/preparation.py:98: error: Incompatible types in assignment (expression has type "tuple[Assignment, ...]", variable has type "tuple[()]")  [assignment]
+rangekeeper/execution/preparation.py:99: error: Need type annotation for "a"  [var-annotated]
+rangekeeper/execution/publication.py:29: error: "object" has no attribute "setdefault"  [attr-defined]
+rangekeeper/execution/publication.py:31: error: "object" has no attribute "get"  [attr-defined]
+rangekeeper/execution/publication.py:64: error: Unsupported target for indexed assignment ("object")  [index]
+rangekeeper/execution/publication.py:65: error: Argument 1 to "from_data" of "Record" has incompatible type "object"; expected "Mapping[str, object]"  [arg-type]
+Found 12 errors in 3 files (checked 113 source files)
+Traceback (most recent call last):
+  File "/Volumes/Data/Projects/Rangekeeper/tools/schema/typecheck.py", line 52, in <module>
+    subprocess.run(
+  File "/Users/daniel/.local/share/uv/python/cpython-3.10.19-macos-aarch64-none/lib/python3.10/subprocess.py", line 526, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/private/tmp/rk-full-runtime/bin/python', '-m', 'mypy', '--follow-imports=silent', '--ignore-missing-imports', '--cache-dir=/var/folders/sk/cjq5zjks7gx_3tf9m67y43xr0000gn/T/rk-mypy-4xgvxzvc', 'rangekeeper/_schema/records.py', 'rangekeeper/_records.py', 'rangekeeper/diagnostics.py', 'rangekeeper/errors.py', 'rangekeeper/validate.py', 'rangekeeper/_validation.py', 'rangekeeper/model', 'rangekeeper/duration', 'rangekeeper/calculations', 'rangekeeper/migration', 'rangekeeper/adapters/pandas.py', 'rangekeeper/adapters/polars.py', 'rangekeeper/specification', 'rangekeeper/units.py', 'rangekeeper/references.py', 'rangekeeper/_comparison.py', 'rangekeeper/run', 'rangekeeper/io', 'rangekeeper/execution', 'rangekeeper/graph/__init__.py', 'rangekeeper/graph/view.py', 'rangekeeper/graph/projection.py', 'rangekeeper/table.py', 'rangekeeper/workflow/runtime.py', 'rangekeeper/workflow/composition.py', 'rangekeeper/workflow/provenance.py', 'rangekeeper/graph/hierarchy.py', 'rangekeeper/graph/membership.py', 'rangekeeper/graph/selection.py', 'rangekeeper/graph/reduction.py', 'rangekeeper/graph/reducers.py', 'rangekeeper/__init__.py', '/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_valid.py', '/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_domain_valid.py', '/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_io_valid.py', '/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_execution_valid.py', '/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_graph_valid.py', '/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_consumers_valid.py']' returned non-zero exit status 1.

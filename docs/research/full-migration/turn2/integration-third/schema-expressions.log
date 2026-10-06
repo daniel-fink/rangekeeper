@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/Volumes/Data/Projects/Rangekeeper/schema/checks/expressions.py", line 439, in <module>
+    assert not validators[cls].is_valid(
+AssertionError: Unexpectedly accepted Expression: {'id': '525dfa5d-de7f-50aa-9d67-e37cea0cc8bd', 'kind': 'reference', 'target': None}

@@ -1,0 +1,13 @@
+{
+  "tests_passed": 971,
+  "schema_suites_passed": 7,
+  "typing": true,
+  "installed": true,
+  "notebooks_passed": 5,
+  "guide": true,
+  "temporal_pv": 272.72727272727275,
+  "temporal_inverse_initial": 110.00000000000001,
+  "unrelated_files_preserved": true,
+  "commit": false,
+  "push": false
+}

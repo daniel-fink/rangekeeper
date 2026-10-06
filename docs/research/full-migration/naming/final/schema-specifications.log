@@ -1,0 +1,5 @@
+Passed 13 composition/batch acceptance checks, 35 composition rejections,
+and 4 additional native round trips; no inputs mutated or solver executed.
+Passed 6 generated schemas, 17 valid Specifications, 46 structural rejections,
+37 bounded semantic rejections, and 17 native Specification round trips.
+No solver executed. Unit conversion, imposed query dependency resolution, and Run publication require adapters.

@@ -11,10 +11,15 @@ class Limits:
 
     time_limit: float = 30
     iteration_limit: int = 100000
+    symbol_limit: int = 10000
+    constraint_limit: int = 20000
 
     def record(self) -> Settings:
         return Settings(
-            time_limit=self.time_limit, iteration_limit=self.iteration_limit
+            time_limit=self.time_limit,
+            iteration_limit=self.iteration_limit,
+            symbol_limit=self.symbol_limit,
+            constraint_limit=self.constraint_limit,
         )
 
 
@@ -58,4 +63,17 @@ def resolve(requested: Settings | None) -> tuple[Limits, tuple[Diagnostic, ...]]
                 ),
             )
         )
-    return Limits(time, iterations), tuple(findings)
+    return Limits(
+        time,
+        iterations,
+        (
+            requested.symbol_limit
+            if requested and requested.symbol_limit is not None
+            else 10000
+        ),
+        (
+            requested.constraint_limit
+            if requested and requested.constraint_limit is not None
+            else 20000
+        ),
+    ), tuple(findings)

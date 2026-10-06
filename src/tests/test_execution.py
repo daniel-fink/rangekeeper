@@ -180,7 +180,7 @@ def test_inputs_and_declared_equations_drive_results(change, expected):
     payload = fresh(data("specification-forward"))
     payload["model"] = str(model.id)
     if change == "input":
-        next(a for a in payload["assignments"] if a["value"] == str(RENT))["quantity"][
+        next(a for a in payload["assignments"] if a["target"]["value"] == str(RENT))["quantity"][
             "magnitude"
         ] = 32000
     assert output(store, execute(store, Specification.from_data(payload))).value(
@@ -191,7 +191,7 @@ def test_inputs_and_declared_equations_drive_results(change, expected):
 def test_assignment_unit_conversion_is_checked_and_published_canonically():
     store, model = setup()
     payload = fresh(data("specification-forward"))
-    next(a for a in payload["assignments"] if a["value"] == str(RENT))["quantity"] = {
+    next(a for a in payload["assignments"] if a["target"]["value"] == str(RENT))["quantity"] = {
         "magnitude": 2500,
         "units": "AUD/dwelling/month",
     }
@@ -210,7 +210,7 @@ def literal(value, units="AUD"):
 
 
 def reference(id):
-    return {"id": str(uuid4()), "kind": "reference", "target": str(id)}
+    return {"id": str(uuid4()), "kind": "reference", "target": dict(value=str(id))}
 
 
 def binary(operator, left, right):
@@ -265,9 +265,9 @@ def test_expected_failures_have_evidence_and_no_output(kind):
     payload = fresh(data("specification-forward"))
     if kind == "nonlinear":
         payload["assignments"] = [
-            a for a in payload["assignments"] if a["value"] != str(RATE)
+            a for a in payload["assignments"] if a["target"]["value"] != str(RATE)
         ]
-        payload["unknowns"].append(str(RATE))
+        payload["unknowns"].append(dict(value=str(RATE)))
     elif kind == "strict":
         payload["formulations"] = [
             formulation(binary("less_than", reference(CAPITAL), literal(12000000)))
@@ -276,7 +276,7 @@ def test_expected_failures_have_evidence_and_no_output(kind):
         payload = fresh(data("specification-objectives"))
     elif kind == "missing_role":
         payload["assignments"] = [
-            a for a in payload["assignments"] if a["value"] != str(RENT)
+            a for a in payload["assignments"] if a["target"]["value"] != str(RENT)
         ]
     elif kind == "units":
         payload["formulations"] = [
@@ -308,9 +308,9 @@ def test_underdetermined_case_returns_one_candidate_without_uniqueness_claim():
     store, model = setup()
     payload = fresh(data("specification-forward"))
     payload["assignments"] = [
-        a for a in payload["assignments"] if a["value"] != str(RENT)
+        a for a in payload["assignments"] if a["target"]["value"] != str(RENT)
     ]
-    payload["unknowns"].append(str(RENT))
+    payload["unknowns"].append(dict(value=str(RENT)))
     run = execute(store, Specification.from_data(payload))
     assert run.report.status.solution == "feasible"
     assert any(d.code == "underdetermined" for d in run.report.diagnostics)
@@ -320,7 +320,7 @@ class WrongCandidate:
     def solve(self, problem, *, limits, remaining):
         result = PyomoHighs().solve(problem, limits=limits, remaining=remaining)
         values = dict(result.candidate)
-        values[CAPITAL] += 1000000
+        values[str(CAPITAL)] += 1000000
         return replace(result, candidate=values)
 
 
@@ -339,7 +339,7 @@ def test_independent_acceptance_rejects_solver_claim_and_serialized_tampering():
     )
     prepared = preparation.prepare(specification, resolver=store)
     proposed = publication.candidate(
-        prepared, {NOI: 550000, CAPITAL: 11000000}, run_id=uuid4()
+        prepared, {str(NOI): 550000, str(CAPITAL): 11000000}, run_id=uuid4()
     )
     changed = proposed.to_data()
     next(node for node in records(changed["system"]) if node.get("id") == str(RENT))[
@@ -356,14 +356,14 @@ def test_composition_conflict_and_mixed_nested_batches_account_for_every_case():
     store.put(other)
     conflict = Specification.from_data(
         {
-            "metadata": {"id": str(uuid4()), "schema_version": "0.4.0"},
+            "metadata": {"id": str(uuid4()), "schema_version": "0.5.0"},
             "includes": [str(good.id), str(other.id)],
         }
     )
     store.put(conflict)
     batch = Specification.from_data(
         {
-            "metadata": {"id": str(uuid4()), "schema_version": "0.4.0"},
+            "metadata": {"id": str(uuid4()), "schema_version": "0.5.0"},
             "model": str(model.id),
             "cases": [str(good.id), str(conflict.id)],
         }
@@ -371,7 +371,7 @@ def test_composition_conflict_and_mixed_nested_batches_account_for_every_case():
     store.put(batch)
     outer = Specification.from_data(
         {
-            "metadata": {"id": str(uuid4()), "schema_version": "0.4.0"},
+            "metadata": {"id": str(uuid4()), "schema_version": "0.5.0"},
             "cases": [str(batch.id), str(good.id)],
         }
     )
@@ -419,7 +419,8 @@ def test_tiny_budget_never_claims_infeasibility():
     store, _ = setup()
     run = execute(store, spec(settings={"time_limit": 1e-7}))
     assert run.report.status.completion == "limited"
-    assert run.report.status.solution == "unknown"
+    assert run.report.status.solution == "not_assessed"
+    assert any(d.code == "attempt_deadline" for d in run.report.diagnostics)
     assert not run.record.outputs
 
 
@@ -473,7 +474,7 @@ def test_missing_references_and_invalid_batch_graph_raise_before_execution():
         store.put(
             Specification.from_data(
                 {
-                    "metadata": {"id": str(id), "schema_version": "0.4.0"},
+                    "metadata": {"id": str(id), "schema_version": "0.5.0"},
                     "cases": [str(other)],
                 }
             )
@@ -500,7 +501,7 @@ def test_constant_only_assertions_and_repeated_publication(truth):
     store, model = setup(model_data=model_data)
     investigation = Specification.from_data(
         {
-            "metadata": {"id": str(uuid4()), "schema_version": "0.4.0"},
+            "metadata": {"id": str(uuid4()), "schema_version": "0.5.0"},
             "model": str(model.id),
         }
     )
@@ -521,9 +522,9 @@ def test_unconstrained_unknown_has_explicit_choice_evidence():
     area = UUID("9d86011c-1658-5c10-87c1-94d281b74e96")
     investigation = Specification.from_data(
         {
-            "metadata": {"id": str(uuid4()), "schema_version": "0.4.0"},
+            "metadata": {"id": str(uuid4()), "schema_version": "0.5.0"},
             "model": str(model.id),
-            "unknowns": [str(area)],
+            "unknowns": [dict(value=str(area))],
         }
     )
     run = execute(store, investigation)
@@ -579,7 +580,7 @@ def test_real_simplex_iteration_limit_has_no_infeasibility_claim():
         )
     model = Model.from_data(
         {
-            "metadata": {"id": str(uuid4()), "schema_version": "0.4.0"},
+            "metadata": {"id": str(uuid4()), "schema_version": "0.5.0"},
             "definitions": {
                 "measures": [
                     {
@@ -615,9 +616,9 @@ def test_real_simplex_iteration_limit_has_no_infeasibility_claim():
     store.put(model)
     specification = Specification.from_data(
         {
-            "metadata": {"id": str(uuid4()), "schema_version": "0.4.0"},
+            "metadata": {"id": str(uuid4()), "schema_version": "0.5.0"},
             "model": str(model.id),
-            "unknowns": [str(id) for id in ids],
+            "unknowns": [dict(value=str(id)) for id in ids],
             "settings": {"iteration_limit": 1, "time_limit": 30},
         }
     )
