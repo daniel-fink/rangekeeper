@@ -1,0 +1,4 @@
+........................................................................ [ 87%]
+..........                                                               [100%]
+- generated xml file: /Volumes/Data/Projects/Rangekeeper/docs/research/full-migration/minizinc/attempt-1/results.xml -
+82 passed in 47.85s

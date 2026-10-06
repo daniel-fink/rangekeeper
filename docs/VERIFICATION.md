@@ -14,9 +14,10 @@ From `src/`:
 MPLBACKEND=Agg python -m pytest -q --ignore=tests/legacy/test_api.py
 ```
 
-The excluded module contains three live predecessor service tests. Optional
-MiniZinc tests skip when that executable is absent. Set `RK_MINIZINC` to a compiler
-with CP-SAT for these checks. Install the `layout` extra for Z3 checks.
+The excluded module contains three live predecessor service tests. Configure
+`RK_MINIZINC` for the required compiler and CP-SAT installation. The
+[strict layout runner](../tools/layout/README.md) fails on missing engines or skips;
+it also checks Z3. Solver versions are pinned by their acceptance contracts.
 
 From the repository root, use the pinned [schema dependencies](../tools/schema/requirements.txt):
 

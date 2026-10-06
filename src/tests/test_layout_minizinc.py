@@ -1,9 +1,6 @@
 """Cross-engine geometry and score parity, including failure semantics."""
 
-import os
-import shutil
 from dataclasses import replace
-from importlib.util import find_spec
 
 import pytest
 
@@ -15,10 +12,7 @@ from rangekeeper.adapters.cytoscape.layout.model import Preference, Weights
 from rangekeeper.adapters.cytoscape.layout.seed import grid_seed
 from rangekeeper.adapters.cytoscape.layout.z3_solver import solve as z3_solve
 
-pytestmark = pytest.mark.skipif(
-    not (os.environ.get("RK_MINIZINC") or shutil.which("minizinc")),
-    reason="Set RK_MINIZINC to an installation with CP-SAT",
-)
+pytestmark = pytest.mark.minizinc
 
 
 @pytest.mark.parametrize(
@@ -47,7 +41,7 @@ def test_infeasible_and_unknown_have_distinct_fallbacks():
     assert all(f["code"] == "exclusion" for f in r.findings)
 
 
-@pytest.mark.skipif(find_spec("z3") is None, reason="Requires optional Z3 reference")
+@pytest.mark.z3
 @pytest.mark.parametrize(
     "direction", ["unspecified", "horizontal", "vertical", "balanced"]
 )
@@ -82,7 +76,7 @@ def test_fixed_seed_scores_match_both_engines(direction):
     assert a.measurements["grid_score"] > 0
 
 
-@pytest.mark.skipif(find_spec("z3") is None, reason="Requires optional Z3 reference")
+@pytest.mark.z3
 @pytest.mark.parametrize("flexible", [False, True])
 def test_tiny_optima_match(flexible):
     p = Problem(

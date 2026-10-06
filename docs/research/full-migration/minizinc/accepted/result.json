@@ -1,0 +1,121 @@
+{
+  "started_at": "2026-10-06T05:01:20.734410+00:00",
+  "python": "3.10.19 (main, Jan 14 2026, 23:38:29) [Clang 21.1.4 ]",
+  "executable": "/Volumes/Data/Projects/Rangekeeper/src/.venv/bin/python",
+  "platform": "macOS-15.7.9-arm64-arm-64bit",
+  "pins": {
+    "minizinc": "2.10.1",
+    "cp-sat": "9.15",
+    "z3-solver": "5.1.0.0",
+    "release": "https://github.com/MiniZinc/MiniZincIDE/releases/tag/2.10.1",
+    "bundles": {
+      "Darwin-arm64": {
+        "url": "https://github.com/MiniZinc/MiniZincIDE/releases/download/2.10.1/MiniZincIDE-2.10.1-aarch64-apple-darwin.dmg",
+        "sha256": "6ab899c06a06bd7542f4df2b39e5afaa1658d6af30a65548a249048d1b3468bc"
+      },
+      "Darwin-x86_64": {
+        "url": "https://github.com/MiniZinc/MiniZincIDE/releases/download/2.10.1/MiniZincIDE-2.10.1-x86_64-apple-darwin.dmg",
+        "sha256": "c5b50d62ab493a354ae2caa5d7fb80ea51ae53a82942b3f358461e1a4a46a2c1"
+      },
+      "Linux-x86_64": {
+        "url": "https://github.com/MiniZinc/MiniZincIDE/releases/download/2.10.1/MiniZincIDE-2.10.1-x86_64-linux-gnu.tgz",
+        "sha256": "b63dd88491d47b05d0eb0ff4aa1112d1e6f77292c023800b20b98851458ce01c"
+      }
+    }
+  },
+  "head": "305f3ff6d460834ea803bae2fa6ad5c48a1627c9",
+  "environment": {
+    "RK_MINIZINC": "/Users/daniel/Applications/rk-minizinc-2.10.1/MiniZincIDE.app/Contents/Resources/minizinc",
+    "PYTHONPATH": "/Volumes/Data/Projects/Rangekeeper/src",
+    "LD_LIBRARY_PATH": null
+  },
+  "toolchain": {
+    "minizinc": {
+      "executable": "/Users/daniel/Applications/rk-minizinc-2.10.1/MiniZincIDE.app/Contents/Resources/minizinc",
+      "compiler": "MiniZinc to FlatZinc converter, version 2.10.1, build 33348285743\nCopyright (C) 2014-2026 Monash University, NICTA, Data61",
+      "backend": "OR Tools CP-SAT",
+      "version": "9.15",
+      "threads": 1,
+      "random_seed": 0
+    },
+    "z3": {
+      "package": "5.1.0.0",
+      "native": "5.1.0"
+    }
+  },
+  "pytest": "8.4.2",
+  "input_sha256": {
+    "src/tests/test_layout_arrangement.py": "a17dc8ab271a8650e67b22e44a0f5f40df3df5543e36f011f5d1da28af3b91cc",
+    "src/tests/test_layout_environment.py": "caa7eb78d1f34c14ec8c7ffa9fa2303fccabe34b06e8f18a85a23d639f2ac819",
+    "src/tests/test_layout_minizinc.py": "961566d954496ecfbe835e0a1b99c47ae2b53615a42cf8e0fca79f3b9b152fc3",
+    "src/tests/test_layout_preferences.py": "e07527ce189d285931729bdd8aedac1df79bc14ba7598bafcc2328c74802627e",
+    "src/tests/test_layout_presentation.py": "7f2ea9b3b044843341a5a9af3e37bf4492e84ea18a857abfd8bba58663465fc0",
+    "src/tests/test_layout_prototype.py": "4f46e48b26de2aeef44d6e900db5df37d1465ba9db3aaa30d40198b345c3ff8e",
+    "src/tests/test_layout_reduction.py": "d3b19389e25bb333efe1c576ee79a8f5503242883eb0a80a607bb22b985b51f9",
+    "src/tests/test_layout_saved.py": "0b17b1322e1847bbd570d740a8223fd6addc575888f55d6b0ebe082651125d67",
+    "src/tests/test_layout_workbench.py": "04a711b019b1c66b48e760e6d5824231c6e6a504b9d66a78fdc365c617841bac",
+    "src/tests/layout_support.py": "5b27d2b7b55515f167da0dc87160c940715d9c8fdff8c1d130de844955e89d12",
+    "src/tests/conftest.py": "3a9c6bc659cb806ccd6791ce1eb8315ecd7633e1e560de76b2a709f0df51c69f",
+    "src/pyproject.toml": "d6c40995efbb30d72629900a8c9ae1b2f42b390bb99953c7749e147343eb8182",
+    "tools/layout/install.py": "974c0387227f8f0c9bbaeedf066245b06b785e9758ed0575c19f7ca383e0eb6e",
+    "tools/layout/verify.py": "05aa6ec189f2289adb9b02cfca274666379da317e53cb6b9143d36961ec76dfd",
+    "tools/layout/toolchain.json": "46e51cf5580f694d3f1ff30d61cf08117d276ed7fab786efdfc08b5539826cdb",
+    "src/rangekeeper/adapters/cytoscape/layout/viewer.py": "ba57e4bc1b05b1c6add6b128377562e4a67732d8efa054a1a73cda8484792b97",
+    "src/rangekeeper/adapters/cytoscape/layout/check.py": "1fec9bc934ae5ade620f775db996cfcfce14672afce1eccdc3d3958a5690c40c",
+    "src/rangekeeper/adapters/cytoscape/layout/similarity.py": "ae470da3d39d756b35b39effc5321a7e5b3c4e35520ee9ae56a36247162b20ec",
+    "src/rangekeeper/adapters/cytoscape/layout/reduction.py": "002247d4e51e2b2f4dad75f2b92e29cbc7677c8ea85f51c72a3c6a1d5f9a99d6",
+    "src/rangekeeper/adapters/cytoscape/layout/render.py": "cba9618db673e20fd0097b452a93a7b0acf38ddfc145335af0df9dea6054c230",
+    "src/rangekeeper/adapters/cytoscape/layout/profile.py": "a2923cb95361331e4e6035228fbb49390e93d1cf64e0d6790eea83ba9d27d258",
+    "src/rangekeeper/adapters/cytoscape/layout/refine.py": "0f9d1211cad5c13791c24b4d76cdcbef73f9fd11301dbe8f3a680ca1e5ce8cf9",
+    "src/rangekeeper/adapters/cytoscape/layout/__init__.py": "fcce5807a2c64d58d7da7a97fffdf76b79357f14de3527e773bcc1cffd1e4b66",
+    "src/rangekeeper/adapters/cytoscape/layout/model.py": "5a00c995a4ecfd62d5949e5994b151f64af1c3323bf7e38b3316b5ab553f9ddb",
+    "src/rangekeeper/adapters/cytoscape/layout/result.py": "f9e4ddcd615465d8ea115f918c99072c8af8272be133162c23c3cddec711972a",
+    "src/rangekeeper/adapters/cytoscape/layout/seed.py": "3809f9d6a93e519b7d29133482ab42ccb856c3197e55c1ff9cdcc9dcd991b6a1",
+    "src/rangekeeper/adapters/cytoscape/layout/minizinc_solver.py": "7a5412067c630c2d7920dc13b64d9c6efbdf89b84b6e683a2750abd90ffc0bae",
+    "src/rangekeeper/adapters/cytoscape/layout/examples.py": "b93e3c81c2ec2b9c02b32dd5c65275efa4ba11210f4d927edaa18f1b94b851fe",
+    "src/rangekeeper/adapters/cytoscape/layout/z3_solver.py": "cfdf6f9a3f106f9bccf1f69b47d0e5d3fd78a9dc75136260f0ab10f1d5eaf181",
+    "src/rangekeeper/adapters/cytoscape/layout/assembly.mzn": "5406f2110cc5aa9a653fcd57a2c861f5182215f903007a332d3ba3b4d0150a3b"
+  },
+  "command": [
+    "/Volumes/Data/Projects/Rangekeeper/src/.venv/bin/python",
+    "-m",
+    "pytest",
+    "--require-layout-solvers",
+    "--strict-markers",
+    "-q",
+    "-rs",
+    "-p",
+    "no:cacheprovider",
+    "--junitxml=/Volumes/Data/Projects/Rangekeeper/docs/research/full-migration/minizinc/accepted/results.xml",
+    "/Volumes/Data/Projects/Rangekeeper/src/tests/test_layout_arrangement.py",
+    "/Volumes/Data/Projects/Rangekeeper/src/tests/test_layout_environment.py",
+    "/Volumes/Data/Projects/Rangekeeper/src/tests/test_layout_minizinc.py",
+    "/Volumes/Data/Projects/Rangekeeper/src/tests/test_layout_preferences.py",
+    "/Volumes/Data/Projects/Rangekeeper/src/tests/test_layout_presentation.py",
+    "/Volumes/Data/Projects/Rangekeeper/src/tests/test_layout_prototype.py",
+    "/Volumes/Data/Projects/Rangekeeper/src/tests/test_layout_reduction.py",
+    "/Volumes/Data/Projects/Rangekeeper/src/tests/test_layout_saved.py",
+    "/Volumes/Data/Projects/Rangekeeper/src/tests/test_layout_workbench.py"
+  ],
+  "cwd": "/Volumes/Data/Projects/Rangekeeper/src",
+  "tests": [
+    "test_layout_arrangement.py",
+    "test_layout_environment.py",
+    "test_layout_minizinc.py",
+    "test_layout_preferences.py",
+    "test_layout_presentation.py",
+    "test_layout_prototype.py",
+    "test_layout_reduction.py",
+    "test_layout_saved.py",
+    "test_layout_workbench.py"
+  ],
+  "exit_code": 0,
+  "seconds": 48.44924012501724,
+  "counts": {
+    "tests": 92,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0
+  },
+  "accepted": true
+}

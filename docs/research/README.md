@@ -7,3 +7,5 @@ Do not rewrite captured output to match a later implementation.
 
 Use [current guides](../README.md) for contracts and [verification](../VERIFICATION.md)
 for commands. [Historical plans](../history/README.md) explain earlier sequencing.
+The [MiniZinc evidence](full-migration/minizinc/README.md) and
+[strict layout procedure](../../tools/layout/README.md) document solver acceptance.

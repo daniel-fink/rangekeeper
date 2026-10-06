@@ -1,10 +1,8 @@
 """Packed flow parity and successful-bundle publication boundaries."""
 
 import json
-import os
 from copy import deepcopy
 from dataclasses import replace
-from importlib.util import find_spec
 
 import pytest
 
@@ -102,10 +100,8 @@ def test_packed_uses_member_sizes_and_preserves_old_serialization(flow):
     assert repeated.geometry_document() == r.geometry_document()
 
 
-@pytest.mark.skipif(
-    find_spec("z3") is None or not os.environ.get("RK_MINIZINC"),
-    reason="Requires optional solvers",
-)
+@pytest.mark.minizinc
+@pytest.mark.z3
 @pytest.mark.parametrize("flow", ["row", "column"])
 def test_native_packed_contract_and_scores(flow):
     from rangekeeper.adapters.cytoscape.layout.minizinc_solver import solve as cp

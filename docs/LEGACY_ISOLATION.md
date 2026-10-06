@@ -3,6 +3,8 @@
 The retained predecessor implementation lives under explicit `legacy` directories.
 Canonical code uses independent records and operations. The official Windows
 connector gate remains open; these trees remain until that gate closes.
+The [MiniZinc checks](research/full-migration/minizinc/README.md) have their own
+strict acceptance procedure and do not change the connector gate.
 
 ```text
 src/rangekeeper/
@@ -79,7 +81,7 @@ source lists. No legacy C# project or compatibility assembly was introduced.
 
 [Captured relocation evidence](research/full-migration/legacy-isolation/README.md)
 records the checks at that checkpoint. Use [verification](VERIFICATION.md) for
-current commands.
+current commands, including strict MiniZinc and Z3 acceptance.
 
 The [Windows procedure](../grasshopper/WINDOWS_DEVELOPMENT.md) still controls final
 removal. Its publication/receive gate is open. All retained implementation is now

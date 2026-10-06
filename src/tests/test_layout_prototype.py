@@ -1,7 +1,6 @@
 """Geometric counterexamples and corrupted outputs, not snapshots of solver code."""
 
 from dataclasses import replace
-from importlib.util import find_spec
 from itertools import combinations
 
 import pytest
@@ -17,9 +16,7 @@ from rangekeeper.adapters.cytoscape.layout.check import metrics
 from rangekeeper.adapters.cytoscape.layout.examples import examples
 from rangekeeper.adapters.cytoscape.layout.z3_solver import solve
 
-requires_z3 = pytest.mark.skipif(
-    find_spec("z3") is None, reason="Install RK[layout-prototype] for solver tests"
-)
+requires_z3 = pytest.mark.z3
 
 
 @pytest.mark.parametrize(

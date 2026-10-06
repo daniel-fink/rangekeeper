@@ -1,11 +1,8 @@
 """Explicit unwrapped geometry, score visibility and historical input compatibility."""
 
 import json
-import os
-import shutil
 from dataclasses import replace
 from hashlib import sha256
-from importlib.util import find_spec
 
 import pytest
 
@@ -96,11 +93,8 @@ def test_old_documents_retain_fingerprint_and_order_rounding():
     assert metrics(replace(old, schema_version=3), rects, grids)["order_score"] == 1
 
 
-@pytest.mark.skipif(
-    find_spec("z3") is None
-    or not (os.environ.get("RK_MINIZINC") or shutil.which("minizinc")),
-    reason="Requires both optional engines",
-)
+@pytest.mark.minizinc
+@pytest.mark.z3
 @pytest.mark.parametrize(
     "flow,alignment", [("column", "start"), ("row", "center"), ("column", "end")]
 )
@@ -137,11 +131,8 @@ def test_invalid_arrangement_profile_rejected():
         replace(p, schema_version=2)
 
 
-@pytest.mark.skipif(
-    find_spec("z3") is None
-    or not (os.environ.get("RK_MINIZINC") or shutil.which("minizinc")),
-    reason="Requires both optional engines",
-)
+@pytest.mark.minizinc
+@pytest.mark.z3
 def test_native_engines_do_not_relax_an_impossible_unwrapped_profile():
     from rangekeeper.adapters.cytoscape.layout.minizinc_solver import solve as cp
     from rangekeeper.adapters.cytoscape.layout.z3_solver import solve as z3

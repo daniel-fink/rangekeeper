@@ -1,6 +1,8 @@
 import matplotlib
 import pytest
 
+pytest_plugins = ["tests.layout_support"]
+
 
 def pytest_addoption(parser: pytest.Parser) -> None:
     parser.getgroup("rangekeeper").addoption(
