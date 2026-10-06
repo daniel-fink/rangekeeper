@@ -1,14 +1,19 @@
 # Full library and consumer migration: review proposal
 
-**Turn 3 update, 2026-10-06:** [Remaining consumers and design integrations](FULL_MIGRATION_TURN3.md)
-implements the canonical workbench/layout port, all three Projects source builds,
-Speckle mapping, both design walkthroughs and generated C# Rhino 8 authoring.
-See [current acceptance](research/full-migration/turn3/BASELINE.md),
-[consumer register](research/full-migration/turn3/CONSUMERS.md), and
-[Turn 4 retirement gates](research/full-migration/turn3/RETIREMENT.md).
-The Windows official connector gate remains open. Hypar support is retired;
-the future Browser/outliner importer remains on hold. Dated checkpoints below
-remain historical evidence and do not override this current scope.
+**Legacy isolation, 2026-10-06:** held Python code is now in `rangekeeper.legacy`,
+predecessor tests in `src/tests/legacy`, and excluded C# code in `grasshopper/legacy`.
+Old public paths have no aliases. See [the boundary and current checks](LEGACY_ISOLATION.md).
+The Windows gate remains open; earlier Turn 4 results below describe the preceding wheel.
+
+**Turn 4 update, 2026-10-06:** [Permitted legacy retirement](FULL_MIGRATION_TURN4.md)
+removes the superseded numerical/presentation modules and narrows optional
+dependencies. The paired Turn 3 checkpoint is pushed: RK `305f3ff`, Projects
+`6146ad2`. Turn 4 is uncommitted. [Current acceptance](research/full-migration/turn4/BASELINE.md)
+records 1,058 passing local tests, seven walkthroughs and all three real source
+builds. The [remaining retirement register](research/full-migration/turn4/RETIREMENT.md)
+holds old graph/Measure/Speckle API and excluded C# code for the Windows connector
+gate. Full retirement is not complete. Hypar is retired; Browser/outliner is on hold.
+Dated checkpoints below remain historical and do not override this current state.
 
 
 **Turn 2 update, 2026-10-06:** [Temporal equations, scenarios and policies](FULL_MIGRATION_TURN2.md)
@@ -484,7 +489,7 @@ generation/policy evaluation requires Run extensions is an explicit schema revie
 | `drive_model_from_design.ipynb` | Speckle, Model aggregation, temporal Values and financial formulations | Design-derived input → canonical Model → financial results with provenance; shared membership not double counted |
 | Test model implementations under `src/tests/models/` | Same builders and numerical interfaces | Migrate full implementations and assertions; inspect methods reached through instances, not only imports |
 | Grasshopper C# components and tests | Cross-language canonical format and adapter contract | Fixture round trip plus actual Rhino/Grasshopper authoring checks; transport object identity is not Model revision identity |
-| Hypar | Retired by explicit user decision in Turn 3 | Preserve historical files; excluded from supported-consumer acceptance |
+| Hypar | Retired by explicit user decision in Turn 3; local residue later removed at the user's request | No supported-consumer acceptance. Keep earlier research and the [removal record](research/full-migration/hypar-removal/README.md). |
 | Parallel RK layout/workbench implementation | Inventory complete public behavior and current tests, then port against Model-backed graph/adapters/workflow | Inspection/progress, checked layouts, saved preferences and viewer edits preserved; layout backend/environment checks remain separate from domain solve tests |
 | Other consumers discovered during repository/import/data-format searches | Add to this register and classify current version/capabilities | A named owner, environment, migration recipe, evidence and removal gate |
 

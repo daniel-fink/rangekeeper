@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/Users/daniel/.local/share/uv/python/cpython-3.10.19-macos-aarch64-none/lib/python3.10/runpy.py", line 289, in run_path
+    return _run_module_code(code, init_globals, run_name,
+  File "/Users/daniel/.local/share/uv/python/cpython-3.10.19-macos-aarch64-none/lib/python3.10/runpy.py", line 96, in _run_module_code
+    _run_code(code, mod_globals, init_globals,
+  File "/Users/daniel/.local/share/uv/python/cpython-3.10.19-macos-aarch64-none/lib/python3.10/runpy.py", line 86, in _run_code
+    exec(code, run_globals)
+  File "/Volumes/Data/Projects/Rangekeeper/src/docs/examples/excel_ingestion.py", line 15, in <module>
+    from rangekeeper.adapters import document, excel, operation
+ImportError: cannot import name 'operation' from 'rangekeeper.adapters' (/private/tmp/rk-turn4-wheel/site/rangekeeper/adapters/__init__.py)
+Area: 103 (declared unit: m²)
+Missing: missing_formula_cache
+Bedrooms: unresolved → 2
+Evidence fingerprint: sha256:e2d03a8472a7db27cae45f5c9388bd93d5673106056d444eb22a6d99c33260e9

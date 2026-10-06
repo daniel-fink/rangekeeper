@@ -29,7 +29,8 @@ in this turn. The historical host provisioning material below is retained contex
 
 Close this gate only after these actual host and publication/receive checks pass.
 Offline JSON, the Mac GHX, or the older pinned Python read cannot close it. Until
-then, hold predecessor code identified by the Turn 4 retirement register.
+then, hold the isolated predecessor code in `grasshopper/legacy` and
+`src/rangekeeper/legacy`, as identified by the Turn 4 retirement register.
 
 ---
 

@@ -1,14 +1,19 @@
 # Domain migration implementation plan
 
-**Turn 3 update, 2026-10-06:** [Remaining consumers and design integrations](FULL_MIGRATION_TURN3.md)
-implements the canonical workbench/layout port, all three Projects source builds,
-Speckle mapping, both design walkthroughs and generated C# Rhino 8 authoring.
-See [current acceptance](research/full-migration/turn3/BASELINE.md),
-[consumer register](research/full-migration/turn3/CONSUMERS.md), and
-[Turn 4 retirement gates](research/full-migration/turn3/RETIREMENT.md).
-The Windows official connector gate remains open. Hypar support is retired;
-the future Browser/outliner importer remains on hold. Dated checkpoints below
-remain historical evidence and do not override this current scope.
+**Legacy isolation, 2026-10-06:** held Python code is now in `rangekeeper.legacy`,
+predecessor tests in `src/tests/legacy`, and excluded C# code in `grasshopper/legacy`.
+Old public paths have no aliases. See [the boundary and current checks](LEGACY_ISOLATION.md).
+The Windows gate remains open; earlier Turn 4 results below describe the preceding wheel.
+
+**Turn 4 update, 2026-10-06:** [Permitted legacy retirement](FULL_MIGRATION_TURN4.md)
+removes the superseded numerical/presentation modules and narrows optional
+dependencies. The paired Turn 3 checkpoint is pushed: RK `305f3ff`, Projects
+`6146ad2`. Turn 4 is uncommitted. [Current acceptance](research/full-migration/turn4/BASELINE.md)
+records 1,058 passing local tests, seven walkthroughs and all three real source
+builds. The [remaining retirement register](research/full-migration/turn4/RETIREMENT.md)
+holds old graph/Measure/Speckle API and excluded C# code for the Windows connector
+gate. Full retirement is not complete. Hypar is retired; Browser/outliner is on hold.
+Dated checkpoints below remain historical and do not override this current state.
 
 
 **Turn 2 update, 2026-10-06:** [Temporal equations, scenarios and policies](FULL_MIGRATION_TURN2.md)
@@ -214,7 +219,9 @@ formats, command-line entrypoints, notebook source cells, and integration bounda
 Text search is a starting point, not proof of complete coverage.
 
 Start with `src/rangekeeper/graph/adapter/`, `graph/workflow/`, root `api.py`,
-`src/tests/`, `walkthrough/`, `grasshopper/`, and `hypar/`. Check which integrations
+`src/tests/`, `walkthrough/`, and `grasshopper/`. Hypar was inspected, then retired;
+its ignored local residue is now [removed](research/full-migration/hypar-removal/README.md).
+It requires no migration. Check which remaining integrations
 are active, stale, generated, or independently versioned before assigning work.
 Known downstream project references should be listed with revision/availability
 status; do not claim external compatibility without inspecting and running them.

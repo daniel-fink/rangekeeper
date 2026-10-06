@@ -12,7 +12,7 @@ from rangekeeper.workflow.ingestion import (
     fingerprint,
     tabular,
 )
-from rangekeeper.graph.provenance import Claim, Location, Method, Source
+from rangekeeper.evidence import Claim, Location, Method, Source
 
 
 def identifier(key):

@@ -1,9 +1,13 @@
 # Upgrade older Rangekeeper consumers
 
-This guide covers the implemented **Turn 1 and Turn 2** APIs in the full migration.
-Use the [Turn 2 contract](FULL_MIGRATION_TURN2.md) and [original ledger](FULL_MIGRATION_TURN1.md)
-to distinguish delivered replacements from the remaining Turns 3–4. The old runtime modules still exist for unmigrated consumers.
-Do not use their presence as evidence that old Graph JSON is canonical Model JSON.
+This guide covers the implemented canonical APIs through full migration Turn 4.
+The [current retirement report](FULL_MIGRATION_TURN4.md) and
+[behaviour map](research/full-migration/turn4/BEHAVIOUR.md) identify removed names.
+Root numerical/presentation modules are removed without aliases. The old graph,
+Measure and Speckle API group remains temporarily held for Windows acceptance
+under `rangekeeper.legacy`. The old root and `graph` paths have no aliases; see
+[legacy isolation](LEGACY_ISOLATION.md).
+Do not build new consumers on that group or treat old Graph JSON as Model JSON.
 
 **Movement naming, 2026-10-06:** import `Movement` from `rangekeeper.model.flow`
 and use `Flow.movements`. These replace `FlowSample` and `Flow.samples` in Python
@@ -27,23 +31,25 @@ and [verification](research/full-migration/flow-semantics/README.md).
 **Duration namespace, 2026-10-06:** use `rangekeeper.duration` for calendar
 operations. `rangekeeper.temporal` is removed without an alias. The records remain
 in `rangekeeper.model.duration`. Old `duration.Type/Sequence/Span` callers require
-an explicit port; the private `_legacy_duration` module is temporary support for
-remaining repository consumers, not a downstream replacement API.
+an explicit port. The private `_legacy_duration` module has also been removed.
 
 ## Install and check the artifact
 
 From a checkout containing this change, build/install the package from `src`.
-Python 3.10 or later is required. The verification environment used Python 3.10.19,
-Polars 1.44.2 and the exact dependency list in the
-[verification report](research/full-migration/turn1/README.md).
+Python 3.10–3.13 is supported by the package metadata. Current checks use Python
+3.10.19 and 3.13.11; see the [environment and evidence](research/full-migration/turn4/BASELINE.md).
+Install only the extras your consumer needs. Core records, units and JSON stores
+need none; source builds use `[workflow,excel]`.
 
 ```sh
-python -m pip install './src[calculations,pandas,yaml,workflow,execution]'
+python -m pip install './src[calculations,pandas,yaml,workflow,execution,plotting,visualization]'
 python -c 'import rangekeeper; print(rangekeeper.__file__)'
 ```
 
 Run notebooks from a fresh kernel using that environment. Execution dependencies
-remain a separate `execution` extra. Do not copy a notebook's stored output and
+remain a separate `execution` extra. `financial` installs PyXIRR without the wider
+calculation stack; `speckle` adds the SDK for explicit live receive. Notebook tools
+are installed separately. The temporary `legacy` extra is only for the held old API. Do not copy a notebook's stored output and
 call that an executed migration. Package version 0.8.71 is unchanged by this
 unreleased work; use the source revision/wheel hash, not that version alone.
 

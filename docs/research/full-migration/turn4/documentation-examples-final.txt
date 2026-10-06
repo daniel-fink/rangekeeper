@@ -1,0 +1,20 @@
+Area: 103 (declared unit: m²)
+Missing: missing_formula_cache
+Bedrooms: unresolved → 2
+Evidence fingerprint: sha256:e2d03a8472a7db27cae45f5c9388bd93d5673106056d444eb22a6d99c33260e9
+Operation: rk.excel.read sha256:a2b772953a4efe271f6200f36e2188f9d83f7957708ad1d00c7ccf47ecb68f67
+Operation: rk.document.describe sha256:b6993cd5e56f64160fa09e6820d5ac153dbda4ea98a8cda6b2a1b9eb00379f66
+Document: xlsx {'worksheet_count': 1, 'populated_cells': 7}
+Operation: rk.document.children sha256:2e9f2cb45a6e35eea63ebfd9a2a85faa5c0f06aad062428581d36bcff279b14b
+Worksheets: ['Unit Pricing']
+Operation: rk.document.inspect sha256:e01043c380e2d36bad06fb35350ab6a3f40788212724f9bc98f0d40a2725a1ec
+J8 observation: Cell(location=Location(source=Source(id=UUID('8794574f-78fa-5ed1-b148-c7a03f88af9e'), name='JLL example', checksum='d65f87a10e25ef8493672dddf5f72be489958a97274e228e67efb902ce64f166', issued_at=None, received_at=None, author=None), reference=mappingproxy({'sheet': 'Unit Pricing', 'cell': 'J8'})), raw=103, formula=None, cached=None, cache_present=False, data_type='n', cached_type=None, number_format='General', xml_value='103', xml_type='n', xml_formula=None, formula_attributes=(), merged_anchor=None)
+Operation: rk.excel.extract_table sha256:2f412ce6021838f954d9ef99856c56b578e7bc40bf1dd6f887cca29a3976a2db
+First row: {'unit': '04.01', 'floor': 4, 'parking': None, 'area': 103}
+Physical rows: 2
+Area Claim: Claim(id=UUID('1afc5c27-0690-5099-a426-cd37920d8f7b'), value=103, kind=<ClaimKind.SOURCED: 'sourced'>, sources=(Location(source=Source(id=UUID('8794574f-78fa-5ed1-b148-c7a03f88af9e'), name='JLL example', checksum='d65f87a10e25ef8493672dddf5f72be489958a97274e228e67efb902ce64f166', issued_at=None, received_at=None, author=None), reference=mappingproxy({'sheet': 'Unit Pricing', 'cell': 'J8'})),), method=Method(code='rk.excel.extract_table', version='2', description=None))
+Parking issues: (Issue(rule_id='jll_apartments', code='blank_cell', severity=<IssueSeverity.WARNING: 'warning'>, message='Source cell is blank', at=(('rows', 'cb0b652b-fb80-56e3-947f-4db1f631ff07', 'parking'),), related_claims=(Claim(id=UUID('2622db2c-6b6c-508d-a8ac-2c44bce48a61'), value=None, kind=<ClaimKind.SOURCED: 'sourced'>, sources=(Location(source=Source(id=UUID('8794574f-78fa-5ed1-b148-c7a03f88af9e'), name='JLL example', checksum='d65f87a10e25ef8493672dddf5f72be489958a97274e228e67efb902ce64f166', issued_at=None, received_at=None, author=None), reference=mappingproxy({'sheet': 'Unit Pricing', 'cell': 'G8'})),), method=Method(code='rk.excel.extract_table', version='2', description=None)),), details=mappingproxy({'sheet': 'Unit Pricing', 'cell': 'G8', 'merged_anchor': None}), id='I-a0232605487c4c73f8b28a548069912797d13abb68fe5086ffbfba822ac8868f'),)
+Operation: rk.excel.read sha256:a2b772953a4efe271f6200f36e2188f9d83f7957708ad1d00c7ccf47ecb68f67
+Operation: rk.excel.extract_table sha256:2f412ce6021838f954d9ef99856c56b578e7bc40bf1dd6f887cca29a3976a2db
+Evidence fingerprint: sha256:405f2a1459e80fb79c33d753f655ac6a3e6083aa6ca312f9dc6e77bee6de8d4f
+Repeat extraction: identical Evidence fingerprint and issue IDs

@@ -179,7 +179,9 @@ supported integrations being accepted. The Windows official connector publicatio
 and receive gate remains open; no destination was selected or published to.
 [Windows acceptance procedure](../grasshopper/WINDOWS_DEVELOPMENT.md) defines that gate.
 
-Hypar is retired from supported consumers; historical files remain. The future
+Hypar was retired from supported consumers in this turn. Its local residue was
+later [removed at the user's request](research/full-migration/hypar-removal/README.md);
+the historical research remains. The future
 Browser/outliner importer remains on hold. Turn 4 removes old code only according
 to the [exact retirement register](research/full-migration/turn3/RETIREMENT.md),
 including the Windows-dependent hold. This turn does not remove legacy modules.

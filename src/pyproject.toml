@@ -12,35 +12,26 @@ requires-python = ">=3.10, <3.14"
 dependencies = [
     "jsonschema>=4.26,<5",
     "rfc3339-validator>=0.1.4,<0.2",
-    "matplotlib>=3.10",
-    "pandas>=2.2",
     "pint>=0.24",
-    "pyxirr>=0.10.7,<0.11",
-    "scipy>=1.12",
-    "networkx>=3.1",
-    "py-moneyed>=3.0",
-    "tabulate>=0.9",
-    "specklepy>=2.21",
-    "numba>=0.61",
-    "multiprocess>=0.70.18",
-    "seaborn>=0.13",
-    "pyvis>=0.3.2",
-    "plotly>=6.0",
-    "aenum>=3.0",
-    "numpy-financial>=1.0",
-    "pytest>=8.0",
-    "black>=25.0",
-    "pandas-stubs~=2.3.2",
 ]
 
 [project.optional-dependencies]
 layout = ["z3-solver==5.1.0.0"]
 calculations = ["polars>=1.44,<2", "numpy>=1.24", "scipy>=1.12", "pint>=0.24", "pyxirr>=0.10.7,<0.11"]
+financial = ["pyxirr>=0.10.7,<0.11"]
 pandas = ["pandas>=2.2"]
-execution = ["pyomo==6.10.1", "highspy==1.15.1"]
+plotting = ["matplotlib>=3.10", "plotly>=6.0"]
+visualization = ["networkx>=3.1", "plotly>=6.0", "pyvis>=0.3.2"]
+speckle = ["specklepy>=2.21"]
+# Temporary predecessor group retained until official Windows connector acceptance.
+legacy = ["networkx>=3.1", "py-moneyed>=3.0", "specklepy>=2.21"]
+execution = ["numpy>=1.24", "pyomo==6.10.1", "highspy==1.15.1"]
 yaml = ["PyYAML>=6.0.2,<7"]
 workflow = ["openpyxl>=3.1.5,<4", "PyYAML>=6.0.2,<7"]
 excel = ["openpyxl>=3.1.5,<4", "PyYAML>=6.0.2,<7"]
+
+[dependency-groups]
+dev = ["pytest>=8.0", "black>=25.0", "numpy-financial>=1.0", "pandas-stubs~=2.3.2"]
 
 [tool.ruff.format]
 preview = true  # Uses Black's experimental formatting rules

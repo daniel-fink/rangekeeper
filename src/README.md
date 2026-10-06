@@ -1,65 +1,75 @@
-# Rangekeeper Source
+# Rangekeeper
 
-Current consumer API: [Model tables, adapters, and source workflows](../docs/CONSUMER_MIGRATION.md) (Step 6C/6D).
-Use `rangekeeper.adapters`, `rangekeeper.workflow`, and `WorkflowResult.model`.
-This directory holds the source code for the Rangekeeper Library
+Rangekeeper provides immutable `Model`, `Specification` and `Run` records, explicit
+source workflows, Model-backed graph operations, numerical calculations and
+Pyomo/HiGHS execution. LinkML owns persistent fields. Codecs and revision stores
+preserve identity, provenance, ordered mathematics and missing values.
+
+The current migration is on `acausal-modelling`; these changes are not yet a PyPI
+release. See the [architecture](../docs/LIBRARY_ARCHITECTURE.md),
+[upgrade guide](../docs/LEGACY_UPGRADE_GUIDE.md) and
+[Turn 4 report](../docs/FULL_MIGRATION_TURN4.md).
 
 ## Installation
-The library is offered through PyPI, and so its installation in other projects can be performed by:
-`pip install rangekeeper`, `poetry add rangekeeper`, or `uv add rangekeeper`, depending on your virtual environment manager.
 
-## Current branch domain core
+Run installation commands from this `src` directory. Core installation is:
 
-This checkout exposes `rangekeeper.Model`, `Specification`, and `Run`, with JSON/YAML
-codecs and append-only memory/filesystem stores. See the [Run and storage guide](../docs/RUN_AND_STORAGE.md)
-for a complete example. These branch changes have not been released to PyPI.
-Install this checkout with `pip install .`; use `pip install '.[yaml]'` for YAML IO.
-Graph/numerical APIs remain available, and their existing dependency metadata remains.
-Core imports do not initialize graph, plotting, service or solver integrations.
-[Scalar execution](../docs/SCALAR_EXECUTION.md) now produces authentic forward/inverse
-outputs through independent acceptance and immutable publication. Install it with
-`pip install '.[execution,yaml]'`; Pyomo/HiGHS remain optional. Model-backed graph selections, hierarchy and explicit Value reductions are available;
-tables/adapters and source-workflow migration remain next.
-
-## Development
-If you wish to contribute to its development, it is recommended to use [uv](https://docs.astral.sh/uv/) for 
-environment and dependency management:
-
-### Environment Setup
-
-1. Install uv, if you haven't yet: <https://docs.astral.sh/uv/>
-2. Clone this repo.
-3. Create a virtual environment: `uv venv .venv`
-4. Activate the virtual environment: `source .venv/bin/activate`
-5. Install dependencies: `uv pip install -r <(uv pip compile pyproject.toml)`
-6. Some tests require API access to [Speckle](https://speckle.systems/). It is recommended to use [Python-Dotenv](https://github.com/theskumar/python-dotenv), and add a `.env` file in the project's root directory with your `SPECKLE_TOKEN` environment variable.
-
-### Testing
-
-Run the test suite without opening Matplotlib windows:
-
-```bash
-uv run pytest
+```sh
+pip install .
 ```
 
-To inspect plots interactively, including from a PyCharm pytest run configuration, add the `--show-plots` option:
+Choose extras for the operations you use:
 
-```bash
-uv run pytest --show-plots
+| Extra | Capability |
+|---|---|
+| `yaml` | Strict YAML codecs |
+| `workflow` or `excel` | Source workflows, Excel reading, workbench and HTML review |
+| `financial` | PyXIRR valuation, IRR and day-count calculations |
+| `calculations` | Known-data Flow operations, probability distributions and scenario kernels |
+| `execution` | Pyomo/HiGHS numerical execution |
+| `pandas` | Detached pandas and CSV adapters |
+| `plotting` | Matplotlib Flow plots and Plotly presentation |
+| `visualization` | PyVis and Plotly graph presentation |
+| `speckle` | Explicit Speckle receive operations |
+| `layout` | Optional Z3 presentation layout solver |
+| `legacy` | Temporary `rangekeeper.legacy` Graph/Measure/Speckle group; see the open Windows gate |
+
+For example, the numerical and design walkthroughs require:
+
+```sh
+pip install '.[calculations,execution,pandas,plotting,visualization,workflow]'
 ```
 
-### Publishing
-1. First, remove any previously built packages: `rm -rf dist/`
-2. Build the package: `uv build`
-3. Then, publish it to PyPI with your `UV_PUBLISH_TOKEN` recorded in the .env file: `export $(grep -v '^#' .env | xargs) && uv publish --token $UV_PUBLISH_TOKEN`
+The bundled Cytoscape viewer and constructive layouts need no Node.js or solver
+at runtime. MiniZinc layout support needs a separately installed executable.
+Core imports do not load dataframes, plotting libraries, service SDKs or solvers.
+The old `flux`, numerical root modules and class-patching helper have been removed;
+there are no aliases. Historical wire conversion remains under `migration`.
 
+## Development and verification
 
-## Typed graph persistence and YAML workflows
+Use Python 3.10–3.13. The development group contains test/format tools; runtime
+extras remain explicit. From this directory:
 
-The optional `workflow` extra provides a bounded source-to-graph executor, strict
-YAML specifications and an explicit export CLI. Graph JSON supports reloadable
-canonical provenance. See [the API and schema guide](../docs/GRAPH_YAML_WORKFLOW.md)
-and [synthetic examples](examples/workflow/README.md).
+```sh
+uv sync --all-extras --group dev --locked
+uv run pytest --ignore=tests/legacy/test_api.py
+```
 
-For ownership and API rationale, see [the adapter guide](../docs/GRAPH_ADAPTER_GUIDE.md)
-and [the ingestion/workflow boundary review](../docs/GRAPH_ADAPTER_REVIEW.md).
+The excluded module contains three old live-service tests. It is not part of
+local acceptance. Optional MiniZinc tests skip when that executable is absent.
+Use `--show-plots` only for an interactive Matplotlib test session.
+
+Schema generation uses the separate pinned LinkML tool environment. See
+[verification commands](../docs/research/full-migration/turn4/COMMANDS.md) for
+schema, typing, installed-wheel, notebook and project acceptance.
+
+## Source workflows
+
+Use `rangekeeper.workflow` with reviewed `WorkflowSpec` documents. It returns a
+canonical Model; export and storage are explicit. Workflow configuration is
+separate from the mathematical Specification consumed by execution.
+
+See the [consumer guide](../docs/CONSUMER_MIGRATION.md),
+[Run and storage guide](../docs/RUN_AND_STORAGE.md) and
+[synthetic source examples](examples/workflow/README.md).

@@ -1,0 +1,25 @@
+{
+  "checked_at": "2026-10-06T04:33:32.037576+00:00",
+  "protected_files_unchanged": 91,
+  "verification_inputs_unchanged": 377,
+  "wheel": "/private/tmp/rk-turn4-wheel/wheel/rangekeeper-0.8.71-py3-none-any.whl",
+  "wheel_sha256": "027a4cd6727a43f30de7b0ddf0cd6adf06355c73e91da5f866157d2c1dcfac14",
+  "packaged_files_equal_to_source": 260,
+  "canonical_runtime_csharp_and_source_notebooks_unchanged": true,
+  "removed_files": 30,
+  "mandarin_code_cells_executed": 5,
+  "suite": {
+    "tests": 1082,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 24
+  },
+  "symbols": {
+    "held-windows": 386,
+    "removed": 283,
+    "retained": 2
+  },
+  "consumers": 95,
+  "open_gate": "Official Windows connector acceptance; predecessor dependency group retained",
+  "publication": "Only the earlier authorised paired Turn 3 checkpoint was committed and pushed; Turn 4 is uncommitted"
+}

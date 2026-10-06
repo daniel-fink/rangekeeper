@@ -1,0 +1,40 @@
+{
+  "status": "passed",
+  "import": "/private/tmp/rk-turn4-core-venv/lib/python3.10/site-packages/rangekeeper/__init__.py",
+  "absent_optional": [
+    "numpy",
+    "scipy",
+    "pandas",
+    "polars",
+    "matplotlib",
+    "plotly",
+    "pyvis",
+    "specklepy",
+    "networkx",
+    "moneyed",
+    "pyomo",
+    "highspy",
+    "pyxirr",
+    "numba",
+    "multiprocess",
+    "pytest",
+    "black",
+    "linkml",
+    "linkml_runtime"
+  ],
+  "packages": {
+    "rfc3339-validator": "0.1.4",
+    "jsonschema-specifications": "2025.9.1",
+    "flexcache": "0.3",
+    "jsonschema": "4.26.0",
+    "platformdirs": "4.12.3",
+    "Pint": "0.24.4",
+    "Rangekeeper": "0.8.71",
+    "flexparser": "0.4",
+    "referencing": "0.37.0",
+    "attrs": "26.1.0",
+    "typing_extensions": "4.16.0",
+    "rpds-py": "0.30.0",
+    "six": "1.17.0"
+  }
+}

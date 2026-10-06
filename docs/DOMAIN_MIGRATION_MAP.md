@@ -1,14 +1,19 @@
 # Domain migration map and Python interface contract
 
-**Turn 3 update, 2026-10-06:** [Remaining consumers and design integrations](FULL_MIGRATION_TURN3.md)
-implements the canonical workbench/layout port, all three Projects source builds,
-Speckle mapping, both design walkthroughs and generated C# Rhino 8 authoring.
-See [current acceptance](research/full-migration/turn3/BASELINE.md),
-[consumer register](research/full-migration/turn3/CONSUMERS.md), and
-[Turn 4 retirement gates](research/full-migration/turn3/RETIREMENT.md).
-The Windows official connector gate remains open. Hypar support is retired;
-the future Browser/outliner importer remains on hold. Dated checkpoints below
-remain historical evidence and do not override this current scope.
+**Legacy isolation, 2026-10-06:** held Python code is now in `rangekeeper.legacy`,
+predecessor tests in `src/tests/legacy`, and excluded C# code in `grasshopper/legacy`.
+Old public paths have no aliases. See [the boundary and current checks](LEGACY_ISOLATION.md).
+The Windows gate remains open; earlier Turn 4 results below describe the preceding wheel.
+
+**Turn 4 update, 2026-10-06:** [Permitted legacy retirement](FULL_MIGRATION_TURN4.md)
+removes the superseded numerical/presentation modules and narrows optional
+dependencies. The paired Turn 3 checkpoint is pushed: RK `305f3ff`, Projects
+`6146ad2`. Turn 4 is uncommitted. [Current acceptance](research/full-migration/turn4/BASELINE.md)
+records 1,058 passing local tests, seven walkthroughs and all three real source
+builds. The [remaining retirement register](research/full-migration/turn4/RETIREMENT.md)
+holds old graph/Measure/Speckle API and excluded C# code for the Windows connector
+gate. Full retirement is not complete. Hypar is retired; Browser/outliner is on hold.
+Dated checkpoints below remain historical and do not override this current state.
 
 
 **Turn 2 update, 2026-10-06:** [Temporal equations, scenarios and policies](FULL_MIGRATION_TURN2.md)
@@ -449,7 +454,7 @@ children = view.successors(parent_id)
 | Mandarin and East Whisman | **Step 6 / richer-content gate**. Imports Graph JSON, provenance, workflow; Mandarin also Diff and Feature. Shared project repo inspected at `5725cc02748ace15e390c8dcea2c5d69185d67c9`, requires Python 3.13 for Mandarin. | Project test/equivalence suites and reviewed exports in their own environment. Not executed here. Migrate persisted comparisons intentionally; do not assert byte equality across different interchange formats. |
 | Seven walkthrough notebooks | **After relevant consumers/numerics**. Two use Speckle, others use Flux/duration/units; several use root `update_class` and obsolete distribution/graph calls. | Clean-kernel runs with declared data/services; compare numerical outputs. Inspection only; no notebook has been certified by this step. |
 | Grasshopper C# | **Later integration**. Entity inherits Speckle Base; model references Speckle 2.18.0. | Pure cross-language Model fixture tests plus Rhino/Windows authoring acceptance. Current README's Snapshot/Phase 6 description is historical; new Model contract supersedes it. No host verification here. |
-| Hypar directory | **Deferred/unverified**. No Git-tracked source under hypar; ignored build/cache residue is not an available implementation. | Locate maintained source before assigning migration or claiming compatibility. |
+| Hypar directory | **Retired and removed**. No Git-tracked source existed; ignored build/editor residue was removed at the user's request. | No migration or acceptance task. Preserve the [removal record](research/full-migration/hypar-removal/README.md) and earlier research. |
 | Root Speckle API | **Later integration**; legacy conversions used by design notebooks. | Three live tests excluded from baseline. Require available service fixtures and explicit transport environment. |
 | Numerical modules, formula examples, Policy | **Retain initially**; bridge later. | 58 numerical/unit/module cases passed, one residual expectation failed. Root class-patching helper remains until notebooks/examples are migrated; no new core use. |
 

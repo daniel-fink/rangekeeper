@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/Volumes/Data/Projects/Rangekeeper/docs/research/full-migration/turn3/build_book.py", line 41, in <module>
+    shutil.copy2(plotly_js, stage / "_static/plotly.min.js")
+  File "/Users/daniel/.local/share/uv/python/cpython-3.10.19-macos-aarch64-none/lib/python3.10/shutil.py", line 434, in copy2
+    copyfile(src, dst, follow_symlinks=follow_symlinks)
+  File "/Users/daniel/.local/share/uv/python/cpython-3.10.19-macos-aarch64-none/lib/python3.10/shutil.py", line 254, in copyfile
+    with open(src, 'rb') as fsrc:
+FileNotFoundError: [Errno 2] No such file or directory: '/private/tmp/rk-full-runtime/lib/python3.10/site-packages/plotly/package_data/plotly.min.js'

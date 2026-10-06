@@ -467,7 +467,7 @@ def test_imports_are_lightweight():
     script = """
 import sys
 import rangekeeper.graph as graph
-for prefix in ('pint','numpy','networkx','pandas','pyomo','highspy','matplotlib','specklepy','rangekeeper.graph.legacy','rangekeeper.graph.graph'):
+for prefix in ('pint','numpy','networkx','pandas','pyomo','highspy','matplotlib','specklepy','rangekeeper.legacy','rangekeeper.graph.graph'):
     assert not any(name==prefix or name.startswith(prefix+'.') for name in sys.modules),prefix
 from rangekeeper import Model
 from rangekeeper.model import Metadata

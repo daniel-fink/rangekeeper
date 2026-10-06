@@ -1,0 +1,7 @@
+
+thread 'main2' (82342818) panicked at /Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/system-configuration-0.6.1/src/dynamic_store.rs:154:1:
+Attempted to create a NULL object.
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'main' (82342816) panicked at /Users/runner/work/uv/uv/crates/uv/src/lib.rs:2648:10:
+Tokio executor failed, was there a panic?: Any { .. }
