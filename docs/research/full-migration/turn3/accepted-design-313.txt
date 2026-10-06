@@ -1,0 +1,8 @@
+{"python": "3.13.11 (main, Jan 14 2026, 23:14:53) [Clang 21.1.4 ]", "package": "/private/tmp/rk-turn3-project-venv/lib/python3.13/site-packages/rangekeeper/__init__.py"}
+{"stage": "loaded", "elapsed_seconds": 0.543}
+{"stage": "authored", "elapsed_seconds": 3.836}
+{"stage": "formulated", "elapsed_seconds": 96.187}
+{"stage": "specified", "elapsed_seconds": 96.537}
+{"stage": "stored", "elapsed_seconds": 124.695}
+{"stage": "executed", "elapsed_seconds": 450.82}
+{"status": "passed", "contributors": 36, "unknowns": 4541, "units": "AUD", "source_claims_preserved": 302, "output_revision": "606a6fa2-1eab-462e-b543-30aadf845d54"}

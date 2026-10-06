@@ -1,5 +1,16 @@
 # Domain migration implementation plan
 
+**Turn 3 update, 2026-10-06:** [Remaining consumers and design integrations](FULL_MIGRATION_TURN3.md)
+implements the canonical workbench/layout port, all three Projects source builds,
+Speckle mapping, both design walkthroughs and generated C# Rhino 8 authoring.
+See [current acceptance](research/full-migration/turn3/BASELINE.md),
+[consumer register](research/full-migration/turn3/CONSUMERS.md), and
+[Turn 4 retirement gates](research/full-migration/turn3/RETIREMENT.md).
+The Windows official connector gate remains open. Hypar support is retired;
+the future Browser/outliner importer remains on hold. Dated checkpoints below
+remain historical evidence and do not override this current scope.
+
+
 **Turn 2 update, 2026-10-06:** [Temporal equations, scenarios and policies](FULL_MIGRATION_TURN2.md)
 now use Model/Specification 0.5.0 and Run 0.2.0. `ValueReference` addresses scalar
 Values or owner-local Movement keys. The canonical calendar package is `duration/`;

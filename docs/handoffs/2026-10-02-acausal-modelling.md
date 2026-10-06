@@ -1,9 +1,31 @@
 # Rangekeeper acausal modelling handoff
 
+## Current continuation — full migration Turn 3, 6 October 2026
+
+RK remains on `acausal-modelling` at base `b9de7fc`; this turn is uncommitted.
+Projects base is `5725cc0`; reference layout worktree `4e5aec4` was read only.
+[Turn 3 contract](../FULL_MIGRATION_TURN3.md), [acceptance evidence](../research/full-migration/turn3/BASELINE.md),
+and [exact retirement list](../research/full-migration/turn3/RETIREMENT.md) supersede
+the older continuation instructions below. Preserve both `.gitignore` changes,
+the RK Syncthing conflict file, original workbooks and original Rhino/GHX files.
+Do not infer commit, push or publication authorization from implementation.
+
+Local acceptance is complete: 1,061 RK tests passed, seven installed walkthroughs,
+three project rebuilds/comparisons, 168 typed sources, C# and Mac Rhino checks.
+Full-size design checks passed on Python 3.10 and 3.13; the earlier profiled native
+crash is retained as an unresolved, non-reproduced diagnostic event. See the report
+for the 24 optional MiniZinc skips and final wheel fingerprint.
+
+Remaining work is the named Windows connector gate and
+Turn 4 retirement. Do not remove its held predecessor dependency group before the
+gate passes. Hypar is retired; Browser/outliner remains on hold. The older domain
+"Turn 3" below refers to Run/storage implementation, not this full-migration turn.
+
+
 **Naming follow-up, 2026-10-06:** [RK vocabulary alignment](../RK_NAMING.md) is implemented.
-The current check is 971 passing local tests, all seven schema suites, static
-and installed-package checks, and five executed walkthroughs. This supersedes
-older counts below. Market methods use v2 names with an explicit draft upgrade.
+The historical Turn 2 naming checkpoint recorded 971 passing local tests, seven
+schema suites, static and installed-package checks, and five executed walkthroughs.
+The Turn 3 acceptance report above supersedes those counts. Market methods use v2 names with an explicit draft upgrade.
 These are the acceptance results for the Turn 2 and naming checkpoint.
 
 **Turn 2 update, 2026-10-06:** [Temporal equations, scenarios and policies](../FULL_MIGRATION_TURN2.md)

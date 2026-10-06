@@ -9,20 +9,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Flexibility under Uncertainty &#8212; Rangekeeper</title>
-  
-  
-  
+
+
+
   <script data-cfasync="false">
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
-  
+
   <!-- Loaded before other Sphinx assets -->
   <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
 <link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
 <link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
 
-  
+
   <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
   <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
@@ -30,12 +30,12 @@
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
-    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=9c3e77be" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
-  
+
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
@@ -50,7 +50,7 @@
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="_static/togglebutton.js?v=4a39c7ea"></script>
+    <script src="_static/togglebutton.js?v=b8b12719"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script src="_static/design-tabs.js?v=f930bc37"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
@@ -58,37 +58,38 @@
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'flexibility_under_uncertainty';</script>
+    <script src="_static/plotly.min.js?v=7a1ec768"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Loading a Design" href="load_design.html" />
+    <link rel="next" title="Load design into a canonical Model" href="load_design.html" />
     <link rel="prev" title="Introduction to Modeling Flexibility" href="flexibility_intro.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
-  
-  
+
+
   <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
 
-  
-  
+
+
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
-  
+
   <div id="pst-scroll-pixel-helper"></div>
-  
+
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
-  
+
   <input type="checkbox"
           class="sidebar-toggle"
           id="pst-primary-sidebar-checkbox"/>
   <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
-  
+
   <input type="checkbox"
           class="sidebar-toggle"
           id="pst-secondary-sidebar-checkbox"/>
   <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
-  
+
   <div class="search-button__wrapper">
     <div class="search-button__overlay"></div>
     <div class="search-button__search-container">
@@ -114,49 +115,49 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 
-  
+
     <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
     </header>
-  
+
 
   <div class="bd-container">
     <div class="bd-container__inner bd-page-width">
-      
-      
-      
-      <div class="bd-sidebar-primary bd-sidebar">
-        
 
-  
+
+
+      <div class="bd-sidebar-primary bd-sidebar">
+
+
+
   <div class="sidebar-header-items sidebar-primary__section">
-    
-    
-    
-    
+
+
+
+
   </div>
-  
+
     <div class="sidebar-primary-items__start sidebar-primary__section">
         <div class="sidebar-primary-item">
 
-  
-    
-  
+
+
+
 
 <a class="navbar-brand logo" href="intro.html">
-  
-  
-  
-  
-  
-    
-    
-      
-    
-    
+
+
+
+
+
+
+
+
+
+
     <img src="_static/rangekeeper.jpg" class="logo__image only-light" alt="Rangekeeper - Home"/>
     <script>document.write(`<img src="_static/rangekeeper.jpg" class="logo__image only-dark" alt="Rangekeeper - Home"/>`);</script>
-  
-  
+
+
 </a></div>
         <div class="sidebar-primary-item">
 
@@ -171,7 +172,7 @@
  </script></div>
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
-        
+
         <ul class="nav bd-sidenav bd-sidenav__home-link">
             <li class="toctree-l1">
                 <a class="reference internal" href="intro.html">
@@ -189,46 +190,46 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Using Rangekeeper in Examples</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="load_design.html">Loading a Design</a></li>
-<li class="toctree-l1"><a class="reference internal" href="drive_model_from_design.html">Driving a Financial Valuation from a Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="load_design.html">Load design into a canonical Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="drive_model_from_design.html">Drive financial equations from design</a></li>
 </ul>
 
     </div>
 </nav></div>
     </div>
-  
-  
+
+
   <div class="sidebar-primary-items__end sidebar-primary__section">
   </div>
-  
+
   <div id="rtd-footer-container"></div>
 
 
       </div>
-      
+
       <main id="main-content" class="bd-main" role="main">
-        
-        
+
+
 
 <div class="sbt-scroll-pixel-helper"></div>
 
           <div class="bd-content">
             <div class="bd-article-container">
-              
+
               <div class="bd-header-article d-print-none">
 <div class="header-article-items header-article__inner">
-  
+
     <div class="header-article-items__start">
-      
+
         <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
   <span class="fa-solid fa-bars"></span>
 </button></div>
-      
+
     </div>
-  
-  
+
+
     <div class="header-article-items__end">
-      
+
         <div class="header-article-item">
 
 <div class="article-header-buttons">
@@ -242,24 +243,24 @@
     <i class="fas fa-rocket"></i>
   </button>
   <ul class="dropdown-menu">
-      
-      
-      
+
+
+
       <li><a href="https://colab.research.google.com/github/daniel-fink/rangekeeper/blob/main/walkthrough/flexibility_under_uncertainty.ipynb" target="_blank"
    class="btn btn-sm dropdown-item"
    title="Launch on Colab"
    data-bs-placement="left" data-bs-toggle="tooltip"
 >
-  
+
 
 <span class="btn__icon-container">
-  
+
     <img alt="Colab logo" src="_static/images/logo_colab.png">
   </span>
 <span class="btn__text-container">Colab</span>
 </a>
 </li>
-      
+
   </ul>
 </div>
 
@@ -273,15 +274,15 @@
     <i class="fab fa-github"></i>
   </button>
   <ul class="dropdown-menu">
-      
-      
-      
+
+
+
       <li><a href="https://github.com/daniel-fink/rangekeeper" target="_blank"
    class="btn btn-sm btn-source-repository-button dropdown-item"
    title="Source repository"
    data-bs-placement="left" data-bs-toggle="tooltip"
 >
-  
+
 
 <span class="btn__icon-container">
   <i class="fab fa-github"></i>
@@ -289,16 +290,16 @@
 <span class="btn__text-container">Repository</span>
 </a>
 </li>
-      
-      
-      
-      
+
+
+
+
       <li><a href="https://github.com/daniel-fink/rangekeeper/issues/new?title=Issue%20on%20page%20%2Fflexibility_under_uncertainty.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
 >
-  
+
 
 <span class="btn__icon-container">
   <i class="fas fa-lightbulb"></i>
@@ -306,7 +307,7 @@
 <span class="btn__text-container">Open issue</span>
 </a>
 </li>
-      
+
   </ul>
 </div>
 
@@ -320,15 +321,15 @@
     <i class="fas fa-download"></i>
   </button>
   <ul class="dropdown-menu">
-      
-      
-      
+
+
+
       <li><a href="_sources/flexibility_under_uncertainty.ipynb" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
 >
-  
+
 
 <span class="btn__icon-container">
   <i class="fas fa-file"></i>
@@ -336,17 +337,17 @@
 <span class="btn__text-container">.ipynb</span>
 </a>
 </li>
-      
-      
-      
-      
+
+
+
+
       <li>
 <button onclick="window.print()"
   class="btn btn-sm btn-download-pdf-button dropdown-item"
   title="Print to PDF"
   data-bs-placement="left" data-bs-toggle="tooltip"
 >
-  
+
 
 <span class="btn__icon-container">
   <i class="fas fa-file-pdf"></i>
@@ -354,7 +355,7 @@
 <span class="btn__text-container">.pdf</span>
 </button>
 </li>
-      
+
   </ul>
 </div>
 
@@ -366,7 +367,7 @@
   title="Fullscreen mode"
   data-bs-placement="bottom" data-bs-toggle="tooltip"
 >
-  
+
 
 <span class="btn__icon-container">
   <i class="fas fa-expand"></i>
@@ -398,747 +399,219 @@ document.write(`
     <span class="fa-solid fa-list"></span>
 </button>
 </div></div>
-      
+
     </div>
-  
+
 </div>
 </div>
-              
-              
+
+
 
 <div id="jb-print-docs-body" class="onlyprint">
     <h1>Flexibility under Uncertainty</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
-            
+
             <div>
                 <h2> Contents </h2>
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multiple-market-scenarios">Multiple Market Scenarios</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#market-parameters-from-sampling-distributions-of-their-likelihoods">Market Parameters from Sampling Distributions of their Likelihoods</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#overall-trend">Overall Trend</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#volatility">Volatility</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#cyclicality">Cyclicality</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#noise-black-swan">Noise &amp; Black Swan</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#goal">Goal</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setup">Setup</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#steps">Steps</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#declare-sampling-distributions-and-sample-size">1. Declare sampling distributions and sample size</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#generate-common-scenarios">2. Generate common scenarios</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inspect-one-declared-scenario">3. Inspect one declared scenario</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#author-and-formulate-each-investment">4. Author and formulate each investment</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#execute-fixed-horizon-investigations">5. Execute fixed-horizon investigations</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#execute-policy-investigations-on-those-same-models">6. Execute policy investigations on those same Models</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inspect-paired-results">7. Inspect paired results</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#compare-pv-distributions">8. Compare PV distributions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#compare-realized-irr-distributions">9. Compare realized IRR distributions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inspect-paired-outcome-relationships">10. Inspect paired outcome relationships</a></li>
 </ul>
 </li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#markets">Markets</a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#comparing-models">Comparing Models</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inflexible-base-model">Inflexible (Base) Model</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#flexible-model">Flexible Model</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#results">Results</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#time-0-present-values-at-occ">Time 0 Present Values at OCC</a><ul class="nav section-nav flex-column">
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#pvs-cumulative-distribution-target-curves">PVs Cumulative Distribution (‘Target Curves’)</a><ul class="nav section-nav flex-column">
-<li class="toc-h6 nav-item toc-entry"><a class="reference internal nav-link" href="#present-values">Present Values</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#realized-irr-at-market-value-price">Realized IRR at Market Value Price</a><ul class="nav section-nav flex-column">
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#irrs-cumulative-distribution-target-curves">IRRs Cumulative Distribution (‘Target Curves’)</a></li>
-</ul>
-</li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#irrs-x-pvs">IRRs x PVs</a><ul class="nav section-nav flex-column">
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#inflexible-model">Inflexible Model</a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">Flexible Model</a></li>
-</ul>
-</li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pvs-diffs">PVs Diffs</a><ul class="nav section-nav flex-column">
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#pv-difference-as-a-function-of-inflex-pv">PV Difference as a function of Inflex PV</a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#irr-difference-as-a-function-of-inflex-irr">IRR Difference as a function of Inflex IRR</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#checks">Checks</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#next-steps">Next Steps</a></li>
 </ul>
             </nav>
         </div>
     </div>
 </div>
 
-              
-                
+
+
 <div id="searchbox"></div>
                 <article class="bd-article">
-                  
+
   <section class="tex2jax_ignore mathjax_ignore" id="flexibility-under-uncertainty">
 <h1>Flexibility under Uncertainty<a class="headerlink" href="#flexibility-under-uncertainty" title="Link to this heading">#</a></h1>
-<p>The previous chapter only modelled a single scenario where flexibility was
-employed. In this chapter, we follow <span id="id1">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> (Chapter 9) in
-assessing how flexibility can be used to manage, and benefit from, uncertainty.</p>
-<section id="multiple-market-scenarios">
-<h2>Multiple Market Scenarios<a class="headerlink" href="#multiple-market-scenarios" title="Link to this heading">#</a></h2>
-<p>If we can produce one future market scenario, we can also produce many. To
-incorporate our uncertainty about how future scenarios may unfold, we derive
-<code class="docutils literal notranslate"><span class="pre">Market</span></code> input parameters by sampling from probability distributions that
-we suspect are realistic for the market in question.</p>
-<section id="market-parameters-from-sampling-distributions-of-their-likelihoods">
-<h3>Market Parameters from Sampling Distributions of their Likelihoods<a class="headerlink" href="#market-parameters-from-sampling-distributions-of-their-likelihoods" title="Link to this heading">#</a></h3>
-<p><em>Rangekeeper</em> provides alternate methods for <code class="docutils literal notranslate"><span class="pre">Market</span></code> <code class="docutils literal notranslate"><span class="pre">dynamics</span></code> modules that
-take probability distributions as inputs, rather than single values. These
-methods also require us to specify how many iterations (runs, or simulations) we
-will produce.</p>
-<p>Begin with importing required libraries and configuring our context:</p>
+<p>Compare fixed-horizon and threshold-policy outcomes on common market realizations, following the teaching structure in Chapters 8–10 of <span class="bibtex-citation" id="id1">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span>.</p>
+<section id="goal">
+<h2>Goal<a class="headerlink" href="#goal" title="Link to this heading">#</a></h2>
+<p>Inspect paired PV, IRR and sale-timing distributions. The routine acceptance count is deliberately small and visible. It demonstrates reproducibility and consumer behavior; it does not estimate policy superiority reliably.</p>
+</section>
+<section id="setup">
+<h2>Setup<a class="headerlink" href="#setup" title="Link to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">locale</span>
-
-<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
-<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
-
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">matplotlib</span> inline
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">date</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uuid</span><span class="w"> </span><span class="kn">import</span> <span class="n">uuid4</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span><span class="o">,</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>  <span class="c1"># Detached tables for presentation only.</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">rangekeeper</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">rk</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">locale</span><span class="o">.</span><span class="n">setlocale</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">LC_ALL</span><span class="p">,</span> <span class="s1">&#39;en_AU&#39;</span><span class="p">)</span>
-<span class="n">units</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">measure</span><span class="o">.</span><span class="n">Index</span><span class="o">.</span><span class="n">registry</span>
-<span class="n">currency</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">measure</span><span class="o">.</span><span class="n">register_currency</span><span class="p">(</span><span class="n">registry</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>Specify how many iterations (scenarios) we will produce. This matches the number
-of samples we will take from the probability distributions:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">iterations</span> <span class="o">=</span> <span class="mi">2000</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>We also need to define the overall <code class="docutils literal notranslate"><span class="pre">Span</span></code> of the <code class="docutils literal notranslate"><span class="pre">Market</span></code>:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">frequency</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span>
-<span class="n">num_periods</span> <span class="o">=</span> <span class="mi">25</span>
-<span class="n">span</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">Span</span><span class="o">.</span><span class="n">from_duration</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Span&quot;</span><span class="p">,</span>
-    <span class="n">date</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
-    <span class="n">duration</span><span class="o">=</span><span class="n">frequency</span><span class="p">,</span>
-    <span class="n">amount</span><span class="o">=</span><span class="n">num_periods</span><span class="p">)</span>
-<span class="n">sequence</span> <span class="o">=</span> <span class="n">span</span><span class="o">.</span><span class="n">to_sequence</span><span class="p">(</span><span class="n">frequency</span><span class="o">=</span><span class="n">frequency</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<section id="overall-trend">
-<h4>Overall Trend<a class="headerlink" href="#overall-trend" title="Link to this heading">#</a></h4>
-<p>Following how <span id="id2">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> construct market simulations, a <em>Rangekeeper</em>
-<code class="docutils literal notranslate"><span class="pre">Market</span></code> <code class="docutils literal notranslate"><span class="pre">Trend</span></code> can sample from distributions defining the growth rate (trend)
-and initial rent value.</p>
-<p>For initial (rent) value, typically values would not be more than 0.05 or 0.1,
-at most. Initial rents should be able to be estimated pretty accurately in the
-realistic pro-forma, especially for existing buildings.</p>
-<p>The growth rate distribution reflects uncertainty in the long-run trend growth
-rate (that applies throughout the entire scenario. In <span id="id3">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span>, this
-is modeled as a triangular distribution (though <em>Rangekeeper</em> provides other
-distributions easily), and the half-range should typically be a small value, at
-most .01 or .02, unless there is great uncertainty in the long-run average
-growth rate in the economy (such as perhaps in some emerging market countries),
-or if one is modeling nominal values and there is great uncertainty about what
-the future rate of inflation will be (but in such cases it is better to model
-real values, net of inflation anyway).</p>
-<p>(From <span id="id4">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span>, accompanying Excel spreadsheets)</p>
-<p>First we define the distributions:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">growth_rate_dist</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Symmetric</span><span class="p">(</span>
-    <span class="nb">type</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">TRIANGULAR</span><span class="p">,</span>
-    <span class="n">mean</span><span class="o">=-</span><span class="mf">.0005</span><span class="p">,</span>
-    <span class="n">residual</span><span class="o">=</span><span class="mf">.005</span><span class="p">)</span>
-<span class="n">initial_value_dist</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Symmetric</span><span class="p">(</span>
-    <span class="nb">type</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">TRIANGULAR</span><span class="p">,</span>
-    <span class="n">mean</span><span class="o">=</span><span class="mf">.05</span><span class="p">,</span>
-    <span class="n">residual</span><span class="o">=</span><span class="mf">.005</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>We now produce the resultant <code class="docutils literal notranslate"><span class="pre">Trend</span></code>s:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cap_rate</span> <span class="o">=</span> <span class="mf">.05</span>
-
-<span class="n">trends</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">trend</span><span class="o">.</span><span class="n">Trend</span><span class="o">.</span><span class="n">from_likelihoods</span><span class="p">(</span>
-    <span class="n">sequence</span><span class="o">=</span><span class="n">sequence</span><span class="p">,</span>
-    <span class="n">cap_rate</span><span class="o">=</span><span class="n">cap_rate</span><span class="p">,</span>
-    <span class="n">growth_rate_dist</span><span class="o">=</span><span class="n">growth_rate_dist</span><span class="p">,</span>
-    <span class="n">initial_value_dist</span><span class="o">=</span><span class="n">initial_value_dist</span><span class="p">,</span>
-    <span class="n">iterations</span><span class="o">=</span><span class="n">iterations</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>We can check that the <code class="docutils literal notranslate"><span class="pre">Trend</span></code>s have been produced as expected:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">initial_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">trend</span><span class="o">.</span><span class="n">initial_value</span> <span class="k">for</span> <span class="n">trend</span> <span class="ow">in</span> <span class="n">trends</span><span class="p">]</span>
-<span class="n">sns</span><span class="o">.</span><span class="n">histplot</span><span class="p">(</span>
-    <span class="n">data</span><span class="o">=</span><span class="n">initial_values</span><span class="p">,</span>
-    <span class="n">bins</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
-    <span class="n">kde</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.examples</span><span class="w"> </span><span class="kn">import</span> <span class="n">investment</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">MemoryStore</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.execution</span><span class="w"> </span><span class="kn">import</span> <span class="n">Executor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.run</span><span class="w"> </span><span class="kn">import</span> <span class="n">validate</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.adapters.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_flows</span><span class="p">,</span> <span class="n">plot_distribution</span><span class="p">,</span> <span class="n">plot_pairs</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.calculations</span><span class="w"> </span><span class="kn">import</span> <span class="n">series</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.model</span><span class="w"> </span><span class="kn">import</span> <span class="n">Model</span><span class="p">,</span> <span class="n">Metadata</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.model.flow</span><span class="w"> </span><span class="kn">import</span> <span class="n">Flow</span><span class="p">,</span> <span class="n">Movement</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.duration</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_periods</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.model.distribution</span><span class="w"> </span><span class="kn">import</span> <span class="n">Distribution</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.scenarios</span><span class="w"> </span><span class="kn">import</span> <span class="n">market</span><span class="p">,</span> <span class="n">replay</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">'figure.dpi'</span><span class="p">:</span> <span class="mi">110</span><span class="p">,</span> <span class="s1">'font.size'</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">'axes.prop_cycle'</span><span class="p">:</span> <span class="n">plt</span><span class="o">.</span><span class="n">cycler</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="p">[</span><span class="s1">'#285f8f'</span><span class="p">,</span><span class="s1">'#cf8b2e'</span><span class="p">,</span><span class="s1">'#9c557a'</span><span class="p">,</span><span class="s1">'#627c49'</span><span class="p">,</span><span class="s1">'#737373'</span><span class="p">])})</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'Installed package:'</span><span class="p">,</span> <span class="n">rk</span><span class="o">.</span><span class="vm">__file__</span><span class="p">)</span>
+<span class="k">assert</span> <span class="ow">not</span> <span class="p">{</span><span class="s1">'rangekeeper.flux'</span><span class="p">,</span><span class="s1">'rangekeeper.dynamics'</span><span class="p">,</span><span class="s1">'rangekeeper.policy'</span><span class="p">,</span><span class="s1">'rangekeeper._legacy_duration'</span><span class="p">}</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;Axes: ylabel=&#39;Count&#39;&gt;
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Installed package: /private/tmp/rk-turn3-complete-wheel/site/rangekeeper/__init__.py
 </pre></div>
 </div>
-<img alt="_images/dd44a750acea597dd43bcd8b1f6c9f71afa42bf6ca86a0c6797992c12e72a783.png" src="_images/dd44a750acea597dd43bcd8b1f6c9f71afa42bf6ca86a0c6797992c12e72a783.png" />
 </div>
 </div>
-</section>
-<section id="volatility">
-<h4>Volatility<a class="headerlink" href="#volatility" title="Link to this heading">#</a></h4>
-<p>Volatility inputs do not require sampling from distributions, but we will be
-producing multiple <code class="docutils literal notranslate"><span class="pre">Volatility</span></code> objects, one for each <code class="docutils literal notranslate"><span class="pre">Trend</span></code>:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">volatility_per_period</span> <span class="o">=</span> <span class="mf">.1</span>
-<span class="n">autoregression_param</span> <span class="o">=</span> <span class="mf">.2</span>
-<span class="n">mean_reversion_param</span> <span class="o">=</span> <span class="mf">.3</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">execute</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">specification</span><span class="p">):</span>
+    <span class="n">store</span> <span class="o">=</span> <span class="n">MemoryStore</span><span class="p">()</span>
+    <span class="n">store</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="n">run</span> <span class="o">=</span> <span class="n">Executor</span><span class="p">(</span><span class="n">store</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">specification</span><span class="p">)</span>
+    <span class="n">validate</span><span class="p">(</span><span class="n">run</span><span class="p">,</span> <span class="n">resolver</span><span class="o">=</span><span class="n">store</span><span class="p">)</span><span class="o">.</span><span class="n">raise_if_invalid</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="n">run</span><span class="o">.</span><span class="n">report</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">solution</span> <span class="o">==</span> <span class="s1">'feasible'</span><span class="p">,</span> <span class="p">[(</span><span class="n">d</span><span class="o">.</span><span class="n">code</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">message</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">run</span><span class="o">.</span><span class="n">report</span><span class="o">.</span><span class="n">diagnostics</span><span class="p">]</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">run</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">outputs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">investment</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">output</span><span class="p">),</span> <span class="n">run</span>
 
-<span class="n">volatilities</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">volatility</span><span class="o">.</span><span class="n">Volatility</span><span class="o">.</span><span class="n">from_trends</span><span class="p">(</span>
-    <span class="n">sequence</span><span class="o">=</span><span class="n">sequence</span><span class="p">,</span>
-    <span class="n">trends</span><span class="o">=</span><span class="n">trends</span><span class="p">,</span>
-    <span class="n">volatility_per_period</span><span class="o">=</span><span class="n">volatility_per_period</span><span class="p">,</span>
-    <span class="n">autoregression_param</span><span class="o">=</span><span class="n">autoregression_param</span><span class="p">,</span>
-    <span class="n">mean_reversion_param</span><span class="o">=</span><span class="n">mean_reversion_param</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">metrics</span><span class="p">(</span><span class="n">result</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s1">'PV (AUD)'</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">pv</span><span class="o">.</span><span class="n">magnitude</span><span class="p">,</span> <span class="s1">'NPV (AUD)'</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">npv</span><span class="o">.</span><span class="n">magnitude</span><span class="p">,</span>
+            <span class="s1">'Dated IRR (%)'</span><span class="p">:</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">result</span><span class="o">.</span><span class="n">irr</span><span class="o">.</span><span class="n">rate</span><span class="p">,</span> <span class="s1">'Sale date'</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">sale_date</span><span class="p">}</span>
 </pre></div>
 </div>
 </div>
 </div>
 </section>
-<section id="cyclicality">
-<h4>Cyclicality<a class="headerlink" href="#cyclicality" title="Link to this heading">#</a></h4>
-<p><span id="id5">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> document multiple means to incorporate estimations of market
-cycle parameters into a market simulation. Here we replicate the distribution
-parameters for use in <em>Rangekeeper</em>.</p>
-<p>We are agnostic about where the market currently is in the cycle, and want
-to simulate all possibilities; thus the Space (Rent) Cycle Phase Proportion (of
-its period) is sampled from a uniform distribution defaulted to a range between
-0 &amp; 1):</p>
+<section id="steps">
+<h2>Steps<a class="headerlink" href="#steps" title="Link to this heading">#</a></h2>
+<section id="declare-sampling-distributions-and-sample-size">
+<h3>1. Declare sampling distributions and sample size<a class="headerlink" href="#declare-sampling-distributions-and-sample-size" title="Link to this heading">#</a></h3>
+<p>The linked cycle method preserves the relationship between space-cycle phase and asset-cycle phase, and between their periods. Sampled proportions, offsets and magnitudes are recorded as canonical inputs.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">space_cycle_phase_prop_dist</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Uniform</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>The Space (Rent) Cycle Period is a random sample between 10 &amp; 20 years:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">space_cycle_period_dist</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Symmetric</span><span class="p">(</span>
-    <span class="nb">type</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">UNIFORM</span><span class="p">,</span>
-    <span class="n">mean</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
-    <span class="n">residual</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>The Space (Rent) Cycle peak-to-trough Height is set at 50% (see <code class="docutils literal notranslate"><span class="pre">residual</span></code> fixed
-to 0):</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">space_cycle_height_dist</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Symmetric</span><span class="p">(</span>
-    <span class="nb">type</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">UNIFORM</span><span class="p">,</span>
-    <span class="n">mean</span><span class="o">=</span><span class="mf">.5</span><span class="p">,</span>
-    <span class="n">residual</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>The Asset (Cap Rate) Cycle Phase differs from the Space Cycle by between -1/10th
-and 1/10th of the Space Cycle Period:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">asset_cycle_phase_diff_prop_dist</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Symmetric</span><span class="p">(</span>
-    <span class="nb">type</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">UNIFORM</span><span class="p">,</span>
-    <span class="n">mean</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-    <span class="n">residual</span><span class="o">=</span><span class="mf">.1</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>The Asset (Cap Rate) Cycle Period in between -1 and 1 year different to that of
-the Space (Rent) Cycle’s</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">asset_cycle_period_diff_dist</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Symmetric</span><span class="p">(</span>
-    <span class="nb">type</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">UNIFORM</span><span class="p">,</span>
-    <span class="n">mean</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-    <span class="n">residual</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>The Asset (Cap Rate) Cycle Amplitude is fixed to 2%:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">asset_cycle_amplitude_dist</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Symmetric</span><span class="p">(</span>
-    <span class="nb">type</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">UNIFORM</span><span class="p">,</span>
-    <span class="n">mean</span><span class="o">=</span><span class="mf">.02</span><span class="p">,</span>
-    <span class="n">residual</span><span class="o">=</span><span class="mf">0.</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>For both the Space and Asset Cycles, we remove any cycle asymmetries, in order
-to align with <span id="id6">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span>’s spreadsheet for Chapters 8, 9, 10. In future
-classes (and possibly future editions), they incorporate cycle asymmetries.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">space_cycle_asymmetric_parameter_dist</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Symmetric</span><span class="p">(</span>
-    <span class="nb">type</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">UNIFORM</span><span class="p">,</span>
-    <span class="n">mean</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-    <span class="n">residual</span><span class="o">=</span><span class="mf">0.</span><span class="p">)</span>
-<span class="n">asset_cycle_asymmetric_parameter_dist</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Symmetric</span><span class="p">(</span>
-    <span class="nb">type</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">UNIFORM</span><span class="p">,</span>
-    <span class="n">mean</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-    <span class="n">residual</span><span class="o">=</span><span class="mf">0.</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>We now produce the resultant <code class="docutils literal notranslate"><span class="pre">Cycle</span></code>s:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cyclicalities</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">cyclicality</span><span class="o">.</span><span class="n">Cyclicality</span><span class="o">.</span><span class="n">from_likelihoods</span><span class="p">(</span>
-    <span class="n">sequence</span><span class="o">=</span><span class="n">sequence</span><span class="p">,</span>
-    <span class="n">space_cycle_phase_prop_dist</span><span class="o">=</span><span class="n">space_cycle_phase_prop_dist</span><span class="p">,</span>
-    <span class="n">space_cycle_period_dist</span><span class="o">=</span><span class="n">space_cycle_period_dist</span><span class="p">,</span>
-    <span class="n">space_cycle_height_dist</span><span class="o">=</span><span class="n">space_cycle_height_dist</span><span class="p">,</span>
-    <span class="n">asset_cycle_phase_diff_prop_dist</span><span class="o">=</span><span class="n">asset_cycle_phase_diff_prop_dist</span><span class="p">,</span>
-    <span class="n">asset_cycle_period_diff_dist</span><span class="o">=</span><span class="n">asset_cycle_period_diff_dist</span><span class="p">,</span>
-    <span class="n">asset_cycle_amplitude_dist</span><span class="o">=</span><span class="n">asset_cycle_amplitude_dist</span><span class="p">,</span>
-    <span class="n">space_cycle_asymmetric_parameter_dist</span><span class="o">=</span><span class="n">space_cycle_asymmetric_parameter_dist</span><span class="p">,</span>
-    <span class="n">asset_cycle_asymmetric_parameter_dist</span><span class="o">=</span><span class="n">asset_cycle_asymmetric_parameter_dist</span><span class="p">,</span>
-    <span class="n">iterations</span><span class="o">=</span><span class="n">iterations</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</section>
-<section id="noise-black-swan">
-<h4>Noise &amp; Black Swan<a class="headerlink" href="#noise-black-swan" title="Link to this heading">#</a></h4>
-<p>Noise &amp; Black Swan inputs do not require sampling from distributions:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">noise</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">noise</span><span class="o">.</span><span class="n">Noise</span><span class="p">(</span>
-    <span class="n">sequence</span><span class="o">=</span><span class="n">sequence</span><span class="p">,</span>
-    <span class="n">noise_dist</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Symmetric</span><span class="p">(</span>
-        <span class="nb">type</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">TRIANGULAR</span><span class="p">,</span>
-        <span class="n">mean</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span>
-        <span class="n">residual</span><span class="o">=</span><span class="mf">.1</span><span class="p">))</span>
-<span class="n">black_swan</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">black_swan</span><span class="o">.</span><span class="n">BlackSwan</span><span class="p">(</span>
-    <span class="n">sequence</span><span class="o">=</span><span class="n">sequence</span><span class="p">,</span>
-    <span class="n">likelihood</span><span class="o">=</span><span class="mf">.05</span><span class="p">,</span>
-    <span class="n">dissipation_rate</span><span class="o">=</span><span class="n">mean_reversion_param</span><span class="p">,</span>
-    <span class="n">probability</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Uniform</span><span class="p">(),</span>
-    <span class="n">impact</span><span class="o">=-</span><span class="mf">.25</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</section>
-</section>
-<section id="markets">
-<h3>Markets<a class="headerlink" href="#markets" title="Link to this heading">#</a></h3>
-<p>Now we can integrate the previous constructs into multiple <code class="docutils literal notranslate"><span class="pre">Market</span></code> simulations:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">markets</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">market</span><span class="o">.</span><span class="n">Market</span><span class="o">.</span><span class="n">from_likelihoods</span><span class="p">(</span>
-    <span class="n">sequence</span><span class="o">=</span><span class="n">sequence</span><span class="p">,</span>
-    <span class="n">trends</span><span class="o">=</span><span class="n">trends</span><span class="p">,</span>
-    <span class="n">volatilities</span><span class="o">=</span><span class="n">volatilities</span><span class="p">,</span>
-    <span class="n">cyclicalities</span><span class="o">=</span><span class="n">cyclicalities</span><span class="p">,</span>
-    <span class="n">noise</span><span class="o">=</span><span class="n">noise</span><span class="p">,</span>
-    <span class="n">black_swan</span><span class="o">=</span><span class="n">black_swan</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>As an example, here is one of the <code class="docutils literal notranslate"><span class="pre">Market</span></code>s (drawn from the <code class="docutils literal notranslate"><span class="pre">markets</span></code> by a random integer):</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
-<span class="n">sample_market</span> <span class="o">=</span> <span class="n">markets</span><span class="p">[</span><span class="n">random</span><span class="o">.</span><span class="n">Random</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">iterations</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span>
-<span class="n">table</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Market Dynamics&#39;</span><span class="p">,</span>
-    <span class="n">flows</span><span class="o">=</span><span class="p">[</span>
-        <span class="n">sample_market</span><span class="o">.</span><span class="n">trend</span><span class="p">,</span>
-        <span class="n">sample_market</span><span class="o">.</span><span class="n">volatility</span><span class="o">.</span><span class="n">volatility</span><span class="p">,</span>
-        <span class="n">sample_market</span><span class="o">.</span><span class="n">volatility</span><span class="o">.</span><span class="n">autoregressive_returns</span><span class="p">,</span>
-        <span class="n">sample_market</span><span class="o">.</span><span class="n">volatility</span><span class="p">,</span>
-        <span class="n">sample_market</span><span class="o">.</span><span class="n">cyclicality</span><span class="o">.</span><span class="n">space_waveform</span><span class="p">,</span>
-        <span class="n">sample_market</span><span class="o">.</span><span class="n">space_market</span><span class="p">,</span>
-        <span class="n">sample_market</span><span class="o">.</span><span class="n">cyclicality</span><span class="o">.</span><span class="n">asset_waveform</span><span class="p">,</span>
-        <span class="n">sample_market</span><span class="o">.</span><span class="n">asset_market</span><span class="p">,</span>
-        <span class="n">sample_market</span><span class="o">.</span><span class="n">asset_true_value</span><span class="p">,</span>
-        <span class="n">sample_market</span><span class="o">.</span><span class="n">space_market_price_factors</span><span class="p">,</span>
-        <span class="n">sample_market</span><span class="o">.</span><span class="n">noisy_value</span><span class="p">,</span>
-        <span class="n">sample_market</span><span class="o">.</span><span class="n">historical_value</span><span class="p">,</span>
-        <span class="n">sample_market</span><span class="o">.</span><span class="n">implied_rev_cap_rate</span><span class="p">,</span>
-        <span class="n">sample_market</span><span class="o">.</span><span class="n">returns</span>
-        <span class="p">],</span>
-    <span class="n">frequency</span><span class="o">=</span><span class="n">frequency</span><span class="p">)</span>
-<span class="n">table</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
-        <span class="n">flows</span><span class="o">=</span><span class="p">{</span>
-            <span class="s1">&#39;Market Trend&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">.1</span><span class="p">),</span>
-            <span class="s1">&#39;Cumulative Volatility&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">.1</span><span class="p">),</span>
-            <span class="s1">&#39;Space Market&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">.1</span><span class="p">),</span>
-            <span class="s1">&#39;Asset True Value&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
-            <span class="s1">&#39;Noisy Value&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
-            <span class="s1">&#39;Historical Value&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-            <span class="p">}</span>
-    <span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">FULL_SCENARIO_COUNT</span> <span class="o">=</span> <span class="mi">2000</span>
+<span class="n">SCENARIO_COUNT</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'RK_SCENARIO_COUNT'</span><span class="p">,</span> <span class="s1">'4'</span><span class="p">))</span>
+<span class="n">WORKERS</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'RK_SCENARIO_WORKERS'</span><span class="p">,</span> <span class="s1">'1'</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'Acceptance/sample run: </span><span class="si">{</span><span class="n">SCENARIO_COUNT</span><span class="si">}</span><span class="s1"> scenarios; full study setting: </span><span class="si">{</span><span class="n">FULL_SCENARIO_COUNT</span><span class="si">}</span><span class="s1">; workers: </span><span class="si">{</span><span class="n">WORKERS</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
+<span class="c1"># Set RK_SCENARIO_COUNT=2000 to run the original full study size.</span>
+<span class="n">periods</span> <span class="o">=</span> <span class="n">make_periods</span><span class="p">(</span><span class="n">date</span><span class="p">(</span><span class="mi">2021</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">frequency</span><span class="o">=</span><span class="s1">'year'</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="mi">11</span><span class="p">)</span>
+<span class="n">base_model</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">metadata</span><span class="o">=</span><span class="n">Metadata</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">uuid4</span><span class="p">(),</span> <span class="n">schema_version</span><span class="o">=</span><span class="s1">'0.5.0'</span><span class="p">))</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">uniform</span><span class="p">(</span><span class="n">lower</span><span class="p">,</span> <span class="n">upper</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">Distribution</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">'uniform'</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="n">lower</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="n">upper</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">'dimensionless'</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">pert</span><span class="p">(</span><span class="n">lower</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">upper</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">Distribution</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">'pert'</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="n">lower</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="n">upper</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">'dimensionless'</span><span class="p">)</span>
+<span class="n">plan</span> <span class="o">=</span> <span class="n">market</span><span class="o">.</span><span class="n">make_plan</span><span class="p">(</span><span class="n">periods</span><span class="o">=</span><span class="n">periods</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">20261006</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">'market.estimates.v2'</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="p">{</span>
+    <span class="s1">'growth_rate'</span><span class="p">:</span> <span class="n">pert</span><span class="p">(</span><span class="o">-</span><span class="mf">.01</span><span class="p">,</span><span class="mf">.02</span><span class="p">,</span><span class="mf">.05</span><span class="p">),</span> <span class="s1">'cap_rate'</span><span class="p">:</span> <span class="n">pert</span><span class="p">(</span><span class="mf">.04</span><span class="p">,</span><span class="mf">.05</span><span class="p">,</span><span class="mf">.07</span><span class="p">),</span>
+    <span class="s1">'space_period'</span><span class="p">:</span> <span class="n">uniform</span><span class="p">(</span><span class="mf">10.</span><span class="p">,</span><span class="mf">20.</span><span class="p">),</span> <span class="s1">'space_phase_proportion'</span><span class="p">:</span> <span class="n">uniform</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span><span class="mf">1.</span><span class="p">),</span>
+    <span class="s1">'space_amplitude'</span><span class="p">:</span> <span class="mf">.25</span><span class="p">,</span> <span class="s1">'asset_amplitude'</span><span class="p">:</span> <span class="mf">.01</span><span class="p">,</span>
+    <span class="s1">'asset_phase_difference'</span><span class="p">:</span> <span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mf">.1</span><span class="p">,</span><span class="mf">.1</span><span class="p">),</span> <span class="s1">'asset_period_difference'</span><span class="p">:</span> <span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mf">1.</span><span class="p">,</span><span class="mf">1.</span><span class="p">),</span>
+    <span class="s1">'space_asymmetry'</span><span class="p">:</span> <span class="mf">0.</span><span class="p">,</span> <span class="s1">'asset_asymmetry'</span><span class="p">:</span> <span class="mf">0.</span><span class="p">,</span> <span class="s1">'volatility_per_period'</span><span class="p">:</span> <span class="mf">.03</span><span class="p">,</span>
+    <span class="s1">'noise_lower'</span><span class="p">:</span> <span class="o">-</span><span class="mf">.03</span><span class="p">,</span> <span class="s1">'noise_upper'</span><span class="p">:</span> <span class="mf">.03</span><span class="p">,</span> <span class="s1">'shock_likelihood'</span><span class="p">:</span> <span class="mf">.02</span><span class="p">,</span>
+    <span class="s1">'shock_impact'</span><span class="p">:</span> <span class="o">-</span><span class="mf">.25</span><span class="p">,</span> <span class="s1">'shock_dissipation'</span><span class="p">:</span> <span class="mf">.5</span><span class="p">})</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="_images/e23459d89d3fb4828b8baa4dccd2d7d4186d12f3141e32a4c15d5c599a132662.png" src="_images/e23459d89d3fb4828b8baa4dccd2d7d4186d12f3141e32a4c15d5c599a132662.png" />
-</div>
-</div>
-</section>
-</section>
-<section id="comparing-models">
-<h2>Comparing Models<a class="headerlink" href="#comparing-models" title="Link to this heading">#</a></h2>
-<p>From <span id="id7">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span>: to obtain the value of flexibility, we compare the
-project utilizing flexibility against a base case or alternative that lacks the
-particular flexibility or rule we are evaluating.
-We must expose the inflexible case to the same independent, random future
-scenarios as the flexible case. We must compute the outcomes for the two cases,
-inflexible and flexible, under exactly the same scenarios of pricing factor
-realizations. We can then compare the results of both the inflexible and
-flexible cases, not only against the (single‐number) traditional pro forma
-metrics, but also side by side against each other for the entire distribution of
-possible (ex‐post) outcomes, recognizing the uncertainty and price dynamics that
-realistically exist.</p>
-<section id="inflexible-base-model">
-<h3>Inflexible (Base) Model<a class="headerlink" href="#inflexible-base-model" title="Link to this heading">#</a></h3>
-<p>Define the Base Model as we did the Ex-Post Inflexible Model in the previous
-section:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;start_date&#39;</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="s1">&#39;2001-01-01&#39;</span><span class="p">),</span>
-    <span class="s1">&#39;num_periods&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
-    <span class="s1">&#39;frequency&#39;</span><span class="p">:</span> <span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span><span class="p">,</span>
-    <span class="s1">&#39;acquisition_cost&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1000</span> <span class="o">*</span> <span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">,</span>
-    <span class="s1">&#39;initial_income&#39;</span><span class="p">:</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">,</span>
-    <span class="s1">&#39;growth_rate&#39;</span><span class="p">:</span> <span class="mf">0.02</span><span class="p">,</span>
-    <span class="s1">&#39;vacancy_rate&#39;</span><span class="p">:</span> <span class="mf">0.05</span><span class="p">,</span>
-    <span class="s1">&#39;opex_pgi_ratio&#39;</span><span class="p">:</span> <span class="mf">0.35</span><span class="p">,</span>
-    <span class="s1">&#39;capex_pgi_ratio&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
-    <span class="s1">&#39;exit_caprate&#39;</span><span class="p">:</span> <span class="mf">0.05</span><span class="p">,</span>
-    <span class="s1">&#39;discount_rate&#39;</span><span class="p">:</span> <span class="mf">0.07</span>
-    <span class="p">}</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell tag_hide-input docutils container">
-<details class="admonition hide above-input">
-<summary aria-label="Toggle hidden content">
-<p class="collapsed admonition-title">Show code cell source</p>
-<p class="expanded admonition-title">Hide code cell source</p>
-</summary>
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">BaseModel</span><span class="p">:</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">pass</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">set_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="n">params</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">set_market</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">market</span><span class="p">:</span> <span class="n">rk</span><span class="o">.</span><span class="n">dynamics</span><span class="o">.</span><span class="n">market</span><span class="o">.</span><span class="n">Market</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">market</span> <span class="o">=</span> <span class="n">market</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">init_spans</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">calc_span</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">Span</span><span class="o">.</span><span class="n">from_duration</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Span to Calculate Reversion&#39;</span><span class="p">,</span>
-            <span class="n">date</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;start_date&#39;</span><span class="p">],</span>
-            <span class="n">duration</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">],</span>
-            <span class="n">amount</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;num_periods&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">acq_span</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">Span</span><span class="o">.</span><span class="n">from_duration</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Acquisition Span&#39;</span><span class="p">,</span>
-            <span class="n">date</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">offset</span><span class="p">(</span>
-                <span class="n">date</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;start_date&#39;</span><span class="p">],</span>
-                <span class="n">amount</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
-                <span class="n">duration</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">]),</span>
-            <span class="n">duration</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">span</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_span</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Span&#39;</span><span class="p">,</span>
-            <span class="n">amount</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
-            <span class="n">duration</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reversion_span</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">span</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Reversion Span&#39;</span><span class="p">,</span>
-            <span class="n">amount</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;num_periods&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
-            <span class="n">duration</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">],</span>
-            <span class="n">bound</span><span class="o">=</span><span class="s1">&#39;start&#39;</span><span class="p">)</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">calc_acquisition</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">acquisition</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="o">.</span><span class="n">from_projection</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Acquisition&#39;</span><span class="p">,</span>
-            <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;acquisition_cost&#39;</span><span class="p">],</span>
-            <span class="n">proj</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">projection</span><span class="o">.</span><span class="n">Distribution</span><span class="p">(</span>
-                <span class="n">form</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Uniform</span><span class="p">(),</span>
-                <span class="n">sequence</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">acq_span</span><span class="o">.</span><span class="n">to_sequence</span><span class="p">(</span><span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])),</span>
-            <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">calc_egi</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">pgi</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="o">.</span><span class="n">from_projection</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Potential Gross Income&#39;</span><span class="p">,</span>
-            <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;initial_income&#39;</span><span class="p">],</span>
-            <span class="n">proj</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">projection</span><span class="o">.</span><span class="n">Extrapolation</span><span class="p">(</span>
-                <span class="n">form</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">extrapolation</span><span class="o">.</span><span class="n">Compounding</span><span class="p">(</span>
-                    <span class="n">rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;growth_rate&#39;</span><span class="p">]),</span>
-                <span class="n">sequence</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_span</span><span class="o">.</span><span class="n">to_sequence</span><span class="p">(</span><span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])),</span>
-            <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
-
-        <span class="c1"># Construct a Stream that multiplies the Base Model&#39;s PGI by the</span>
-        <span class="c1"># simulated Market&#39;s Space Market factors</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">pgi</span> <span class="o">=</span> <span class="p">(</span><span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Potential Gross Income&#39;</span><span class="p">,</span>
-            <span class="n">flows</span><span class="o">=</span><span class="p">[</span>
-                <span class="n">pgi</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">market</span><span class="o">.</span><span class="n">space_market_price_factors</span><span class="o">.</span><span class="n">trim_to_span</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_span</span><span class="p">)</span>
-                <span class="p">],</span>
-            <span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])</span>
-                <span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">registry</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">measure</span><span class="o">.</span><span class="n">Index</span><span class="o">.</span><span class="n">registry</span><span class="p">))</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">vacancy</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Vacancy Allowance&#39;</span><span class="p">,</span>
-            <span class="n">movements</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pgi</span><span class="o">.</span><span class="n">movements</span> <span class="o">*</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;vacancy_rate&#39;</span><span class="p">],</span>
-            <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">egi</span> <span class="o">=</span> <span class="p">(</span><span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Effective Gross Income&#39;</span><span class="p">,</span>
-            <span class="n">flows</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">pgi</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">vacancy</span><span class="p">],</span>
-            <span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])</span>
-                <span class="o">.</span><span class="n">sum</span><span class="p">())</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">calc_noi</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">opex</span> <span class="o">=</span> <span class="p">(</span><span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Operating Expenses&#39;</span><span class="p">,</span>
-            <span class="n">movements</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pgi</span><span class="o">.</span><span class="n">movements</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;opex_pgi_ratio&#39;</span><span class="p">],</span>
-            <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
-                <span class="o">.</span><span class="n">negate</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">noi</span> <span class="o">=</span> <span class="p">(</span><span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Net Operating Income&#39;</span><span class="p">,</span>
-            <span class="n">flows</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">egi</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">opex</span><span class="p">],</span>
-            <span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])</span>
-                <span class="o">.</span><span class="n">sum</span><span class="p">())</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">calc_ncf</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">capex</span> <span class="o">=</span> <span class="p">(</span><span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Capital Expenditures&#39;</span><span class="p">,</span>
-            <span class="n">movements</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pgi</span><span class="o">.</span><span class="n">movements</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;capex_pgi_ratio&#39;</span><span class="p">],</span>
-            <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
-                <span class="o">.</span><span class="n">negate</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">net_cf</span> <span class="o">=</span> <span class="p">(</span><span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Net Annual Cashflow&#39;</span><span class="p">,</span>
-            <span class="n">flows</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">noi</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">capex</span><span class="p">],</span>
-            <span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])</span>
-                <span class="o">.</span><span class="n">sum</span><span class="p">())</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">calc_reversion</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="c1"># Construct the Reversions using the simulated Market&#39;s Asset Market</span>
-            <span class="c1"># factors (cap rates):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">reversions</span> <span class="o">=</span> <span class="p">(</span><span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="p">(</span>
-                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Reversions&#39;</span><span class="p">,</span>
-                <span class="n">movements</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">net_cf</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">periods</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span> <span class="o">/</span>
-                          <span class="bp">self</span><span class="o">.</span><span class="n">market</span><span class="o">.</span><span class="n">implied_rev_cap_rate</span><span class="o">.</span><span class="n">movements</span><span class="p">,</span>
-                <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
-                    <span class="o">.</span><span class="n">trim_to_span</span><span class="p">(</span><span class="n">span</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">span</span><span class="p">))</span>
-
-            <span class="bp">self</span><span class="o">.</span><span class="n">reversion</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reversions</span><span class="o">.</span><span class="n">trim_to_span</span><span class="p">(</span>
-                <span class="n">span</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">reversion_span</span><span class="p">,</span>
-                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Reversion&#39;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">pbtcfs</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
-                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;PBTCFs&#39;</span><span class="p">,</span>
-                <span class="n">flows</span><span class="o">=</span><span class="p">[</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">net_cf</span><span class="o">.</span><span class="n">trim_to_span</span><span class="p">(</span><span class="n">span</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">span</span><span class="p">),</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">reversions</span><span class="o">.</span><span class="n">trim_to_span</span><span class="p">(</span><span class="n">span</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">reversion_span</span><span class="p">)</span>
-                    <span class="p">],</span>
-                <span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">calc_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">pvs</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">irrs</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">period</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">net_cf</span><span class="o">.</span><span class="n">trim_to_span</span><span class="p">(</span><span class="n">span</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">span</span><span class="p">)</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">index</span><span class="p">:</span>
-            <span class="n">cumulative_net_cf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net_cf</span><span class="o">.</span><span class="n">trim_to_span</span><span class="p">(</span>
-                <span class="n">span</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">Span</span><span class="p">(</span>
-                    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Cumulative Net Cashflow Span&#39;</span><span class="p">,</span>
-                    <span class="n">start_date</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;start_date&#39;</span><span class="p">],</span>
-                    <span class="n">end_date</span><span class="o">=</span><span class="n">period</span><span class="p">))</span>
-            <span class="n">reversion</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="p">(</span>
-                <span class="n">movements</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">reversions</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="n">period</span><span class="p">]],</span>
-                <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
-            <span class="n">cumulative_net_cf_with_rev</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
-                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Net Cashflow with Reversion&#39;</span><span class="p">,</span>
-                <span class="n">flows</span><span class="o">=</span><span class="p">[</span>
-                    <span class="n">cumulative_net_cf</span><span class="p">,</span>
-                    <span class="n">reversion</span>
-                    <span class="p">],</span>
-                <span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])</span>
-            <span class="n">pv</span> <span class="o">=</span> <span class="n">cumulative_net_cf_with_rev</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">pv</span><span class="p">(</span>
-                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Present Value&#39;</span><span class="p">,</span>
-                <span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">],</span>
-                <span class="n">rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;discount_rate&#39;</span><span class="p">])</span>
-            <span class="n">pvs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pv</span><span class="o">.</span><span class="n">collapse</span><span class="p">()</span><span class="o">.</span><span class="n">movements</span><span class="p">)</span>
-
-            <span class="n">incl_acq</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
-                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Net Cashflow with Reversion and Acquisition&#39;</span><span class="p">,</span>
-                <span class="n">flows</span><span class="o">=</span><span class="p">[</span><span class="n">cumulative_net_cf_with_rev</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">acquisition</span><span class="p">],</span>
-                <span class="n">frequency</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;frequency&#39;</span><span class="p">])</span>
-
-            <span class="n">irrs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">incl_acq</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">irr</span><span class="p">(),</span> <span class="mi">4</span><span class="p">))</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">pvs</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Present Values&#39;</span><span class="p">,</span>
-            <span class="n">movements</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">pvs</span><span class="p">),</span>
-            <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">irrs</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Internal Rates of Return&#39;</span><span class="p">,</span>
-            <span class="n">movements</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">irrs</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pvs</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">index</span><span class="p">),</span>
-            <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">init_spans</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">calc_acquisition</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">calc_egi</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">calc_noi</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">calc_ncf</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">calc_reversion</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">calc_metrics</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-</details>
-</div>
-<p>For each <code class="docutils literal notranslate"><span class="pre">Market</span></code>, we then run the Base Model.
-To speed this up we can use multiprocessing, so we need to import and configure
-a few libraries:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">multiprocess</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">pint</span>
-<span class="n">pint</span><span class="o">.</span><span class="n">set_application_registry</span><span class="p">(</span><span class="n">rk</span><span class="o">.</span><span class="n">measure</span><span class="o">.</span><span class="n">Index</span><span class="o">.</span><span class="n">registry</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">inflex_scenarios</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="k">for</span> <span class="n">market</span> <span class="ow">in</span> <span class="n">markets</span><span class="p">:</span>
-    <span class="n">scenario</span> <span class="o">=</span> <span class="n">BaseModel</span><span class="p">()</span>
-    <span class="n">scenario</span><span class="o">.</span><span class="n">set_params</span><span class="p">(</span><span class="n">params</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
-    <span class="n">scenario</span><span class="o">.</span><span class="n">set_market</span><span class="p">(</span><span class="n">market</span><span class="p">)</span>
-    <span class="n">inflex_scenarios</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scenario</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">generate</span><span class="p">(</span><span class="n">scenario</span><span class="p">):</span>
-    <span class="n">scenario</span><span class="o">.</span><span class="n">generate</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">scenario</span>
-<span class="n">inflex_scenarios</span> <span class="o">=</span> <span class="n">multiprocess</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">())</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
-    <span class="n">generate</span><span class="p">,</span>
-    <span class="n">inflex_scenarios</span><span class="p">)</span>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Acceptance/sample run: 4 scenarios; full study setting: 2000; workers: 1
 </pre></div>
 </div>
 </div>
 </div>
 </section>
-<section id="flexible-model">
-<h3>Flexible Model<a class="headerlink" href="#flexible-model" title="Link to this heading">#</a></h3>
-<p>Similarly, we set up the Flexible Model with our <code class="docutils literal notranslate"><span class="pre">Policy</span></code>:</p>
+<section id="generate-common-scenarios">
+<h3>2. Generate common scenarios<a class="headerlink" href="#generate-common-scenarios" title="Link to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">exceed_pricing_factor</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">bool</span><span class="p">]:</span>
-    <span class="n">threshold</span> <span class="o">=</span> <span class="mf">1.2</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">result</span><span class="p">):</span>
-            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">:</span>
-                    <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">result</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">adjust_hold_period</span><span class="p">(</span>
-        <span class="n">model</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span>
-        <span class="n">decisions</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">bool</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">object</span><span class="p">:</span>
-    <span class="c1"># Get the index of the decision flag:</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">idx</span> <span class="o">=</span> <span class="n">decisions</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
-    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-        <span class="n">idx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">decisions</span><span class="p">)</span>
-
-    <span class="c1"># Adjust the Model&#39;s holding period:</span>
-    <span class="n">policy_params</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="n">policy_params</span><span class="p">[</span><span class="s1">&#39;num_periods&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">idx</span>
-
-    <span class="c1"># Re-run the Model with updated params:</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">set_params</span><span class="p">(</span><span class="n">policy_params</span><span class="p">)</span>
-    <span class="n">model</span><span class="o">.</span><span class="n">generate</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">model</span>
-
-<span class="n">stop_gain_resale_policy</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">policy</span><span class="o">.</span><span class="n">Policy</span><span class="p">(</span>
-    <span class="n">condition</span><span class="o">=</span><span class="n">exceed_pricing_factor</span><span class="p">,</span>
-    <span class="n">action</span><span class="o">=</span><span class="n">adjust_hold_period</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">scenarios</span> <span class="o">=</span> <span class="n">market</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">base_model</span><span class="p">,</span> <span class="n">plan</span><span class="p">,</span> <span class="n">scenario_keys</span><span class="o">=</span><span class="p">[</span><span class="sa">f</span><span class="s1">'scenario-</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s1">04d</span><span class="si">}</span><span class="s1">'</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">SCENARIO_COUNT</span><span class="p">)],</span> <span class="n">workers</span><span class="o">=</span><span class="n">WORKERS</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">scenarios</span><span class="p">)</span> <span class="o">==</span> <span class="n">SCENARIO_COUNT</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'Captured realizations:'</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">scenarios</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
-</div>
-<p>And we run the Flexible Model for each <code class="docutils literal notranslate"><span class="pre">Market</span></code>:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">policy_args</span> <span class="o">=</span> <span class="p">[(</span><span class="n">scenario</span><span class="o">.</span><span class="n">market</span><span class="o">.</span><span class="n">space_market_price_factors</span><span class="p">,</span> <span class="n">scenario</span><span class="p">)</span> <span class="k">for</span> <span class="n">scenario</span> <span class="ow">in</span> <span class="n">inflex_scenarios</span><span class="p">]</span>
-<span class="n">flex_scenarios</span> <span class="o">=</span> <span class="n">multiprocess</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">())</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
-    <span class="n">stop_gain_resale_policy</span><span class="o">.</span><span class="n">execute</span><span class="p">,</span>
-    <span class="n">policy_args</span><span class="p">)</span>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Captured realizations: 4
 </pre></div>
 </div>
 </div>
 </div>
 </section>
-<section id="results">
-<h3>Results<a class="headerlink" href="#results" title="Link to this heading">#</a></h3>
-<p>We can now compare the results of the Base and Flexible Models with some
-descriptive statistics</p>
+<section id="inspect-one-declared-scenario">
+<h3>3. Inspect one declared scenario<a class="headerlink" href="#inspect-one-declared-scenario" title="Link to this heading">#</a></h3>
+<p>Select the first scenario explicitly, without choosing a favorable result.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ss</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot_flows</span><span class="p">({</span><span class="n">name</span><span class="p">:</span> <span class="n">scenarios</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">flow</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">'space_market_price_factors'</span><span class="p">,</span><span class="s1">'historical_value'</span><span class="p">,</span><span class="s1">'shock_effect'</span><span class="p">)},</span> <span class="n">title</span><span class="o">=</span><span class="s1">'First declared scenario'</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/168f1e9f19721635c3c875a194cae7022737f58b23f8eab19816d25b59f3c1a4.png" src="_images/168f1e9f19721635c3c875a194cae7022737f58b23f8eab19816d25b59f3c1a4.png" />
+</div>
+</div>
+</section>
+<section id="author-and-formulate-each-investment">
+<h3>4. Author and formulate each investment<a class="headerlink" href="#author-and-formulate-each-investment" title="Link to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">models</span> <span class="o">=</span> <span class="p">[</span><span class="n">investment</span><span class="o">.</span><span class="n">formulate</span><span class="p">(</span><span class="n">investment</span><span class="o">.</span><span class="n">author</span><span class="p">({</span><span class="s1">'growth_rate'</span><span class="p">:</span> <span class="mf">0.</span><span class="p">},</span> <span class="n">scenario</span><span class="o">=</span><span class="n">scenario</span><span class="p">))</span> <span class="k">for</span> <span class="n">scenario</span> <span class="ow">in</span> <span class="n">scenarios</span><span class="p">]</span>
 </pre></div>
 </div>
 </div>
 </div>
-<section id="time-0-present-values-at-occ">
-<h4>Time 0 Present Values at OCC<a class="headerlink" href="#time-0-present-values-at-occ" title="Link to this heading">#</a></h4>
+</section>
+<section id="execute-fixed-horizon-investigations">
+<h3>5. Execute fixed-horizon investigations<a class="headerlink" href="#execute-fixed-horizon-investigations" title="Link to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">inflex_pvs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="n">scenario</span><span class="o">.</span><span class="n">pvs</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">scenario</span> <span class="ow">in</span> <span class="n">inflex_scenarios</span><span class="p">])</span>
-<span class="n">flex_pvs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="n">scenario</span><span class="o">.</span><span class="n">pvs</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">scenario</span> <span class="ow">in</span> <span class="n">flex_scenarios</span><span class="p">])</span>
-<span class="n">diff_pvs</span> <span class="o">=</span> <span class="n">flex_pvs</span> <span class="o">-</span> <span class="n">inflex_pvs</span>
-
-<span class="n">pvs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
-    <span class="s1">&#39;Inflexible&#39;</span><span class="p">:</span> <span class="n">inflex_pvs</span><span class="p">,</span>
-    <span class="s1">&#39;Flexible&#39;</span><span class="p">:</span> <span class="n">flex_pvs</span><span class="p">,</span>
-    <span class="s1">&#39;Difference&#39;</span><span class="p">:</span> <span class="n">diff_pvs</span><span class="p">})</span>
-<span class="n">pvs</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fixed_results</span> <span class="o">=</span> <span class="p">[</span><span class="n">execute</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">investment</span><span class="o">.</span><span class="n">specify</span><span class="p">(</span><span class="n">model</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="execute-policy-investigations-on-those-same-models">
+<h3>6. Execute policy investigations on those same Models<a class="headerlink" href="#execute-policy-investigations-on-those-same-models" title="Link to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">policies</span> <span class="o">=</span> <span class="p">[</span><span class="n">investment</span><span class="o">.</span><span class="n">build_stop_gain_resale_policy</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span> <span class="n">minimum_holding_periods</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="p">]</span>
+<span class="n">policy_results</span> <span class="o">=</span> <span class="p">[</span><span class="n">execute</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">investment</span><span class="o">.</span><span class="n">specify</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">policy</span><span class="o">=</span><span class="n">policy</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">model</span><span class="p">,</span> <span class="n">policy</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="n">policies</span><span class="p">)]</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="inspect-paired-results">
+<h3>7. Inspect paired results<a class="headerlink" href="#inspect-paired-results" title="Link to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">rows</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">'Scenario'</span><span class="p">:</span> <span class="n">scenario</span><span class="o">.</span><span class="n">realization</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="s1">'Fixed PV (AUD)'</span><span class="p">:</span> <span class="n">fixed</span><span class="o">.</span><span class="n">pv</span><span class="o">.</span><span class="n">magnitude</span><span class="p">,</span> <span class="s1">'Policy PV (AUD)'</span><span class="p">:</span> <span class="n">chosen</span><span class="o">.</span><span class="n">pv</span><span class="o">.</span><span class="n">magnitude</span><span class="p">,</span> <span class="s1">'PV difference (AUD)'</span><span class="p">:</span> <span class="n">chosen</span><span class="o">.</span><span class="n">pv</span><span class="o">.</span><span class="n">magnitude</span><span class="o">-</span><span class="n">fixed</span><span class="o">.</span><span class="n">pv</span><span class="o">.</span><span class="n">magnitude</span><span class="p">,</span> <span class="s1">'Fixed IRR (%)'</span><span class="p">:</span> <span class="mi">100</span><span class="o">*</span><span class="n">fixed</span><span class="o">.</span><span class="n">irr</span><span class="o">.</span><span class="n">rate</span><span class="p">,</span> <span class="s1">'Policy IRR (%)'</span><span class="p">:</span> <span class="mi">100</span><span class="o">*</span><span class="n">chosen</span><span class="o">.</span><span class="n">irr</span><span class="o">.</span><span class="n">rate</span><span class="p">,</span> <span class="s1">'IRR difference (percentage points)'</span><span class="p">:</span> <span class="mi">100</span><span class="o">*</span><span class="p">(</span><span class="n">chosen</span><span class="o">.</span><span class="n">irr</span><span class="o">.</span><span class="n">rate</span><span class="o">-</span><span class="n">fixed</span><span class="o">.</span><span class="n">irr</span><span class="o">.</span><span class="n">rate</span><span class="p">),</span> <span class="s1">'Policy sale'</span><span class="p">:</span> <span class="n">chosen</span><span class="o">.</span><span class="n">sale_date</span><span class="p">}</span> <span class="k">for</span> <span class="n">scenario</span><span class="p">,</span> <span class="n">fixed</span><span class="p">,</span> <span class="n">chosen</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">scenarios</span><span class="p">,</span> <span class="n">fixed_results</span><span class="p">,</span> <span class="n">policy_results</span><span class="p">)]</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
+<span class="n">results</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="s1">'number'</span><span class="p">)</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1161,434 +634,293 @@ descriptive statistics</p>
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>Inflexible</th>
-      <th>Flexible</th>
-      <th>Difference</th>
+      <th>Scenario</th>
+      <th>Fixed PV (AUD)</th>
+      <th>Policy PV (AUD)</th>
+      <th>PV difference (AUD)</th>
+      <th>Fixed IRR (%)</th>
+      <th>Policy IRR (%)</th>
+      <th>IRR difference (percentage points)</th>
+      <th>Policy sale</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <th>count</th>
-      <td>2000.000000</td>
-      <td>2000.000000</td>
-      <td>2000.000000</td>
+      <th>0</th>
+      <td>scenario-0000</td>
+      <td>816.980182</td>
+      <td>1113.287737</td>
+      <td>296.307555</td>
+      <td>4.323860</td>
+      <td>9.112985</td>
+      <td>4.789125</td>
+      <td>2026-12-31</td>
     </tr>
     <tr>
-      <th>mean</th>
-      <td>1072.543062</td>
-      <td>1435.861724</td>
-      <td>363.318662</td>
-    </tr>
-    <tr>
-      <th>std</th>
-      <td>340.731724</td>
-      <td>409.011430</td>
-      <td>554.795233</td>
-    </tr>
-    <tr>
-      <th>min</th>
-      <td>522.375230</td>
-      <td>539.226862</td>
-      <td>-1399.941700</td>
-    </tr>
-    <tr>
-      <th>25%</th>
-      <td>795.217613</td>
-      <td>1199.181323</td>
-      <td>-48.021396</td>
-    </tr>
-    <tr>
-      <th>50%</th>
-      <td>985.363016</td>
-      <td>1453.376384</td>
-      <td>376.094430</td>
-    </tr>
-    <tr>
-      <th>75%</th>
-      <td>1312.603936</td>
-      <td>1713.210422</td>
-      <td>752.969720</td>
-    </tr>
-    <tr>
-      <th>max</th>
-      <td>2399.276122</td>
-      <td>2697.902717</td>
-      <td>1853.843909</td>
-    </tr>
-  </tbody>
-</table>
-</div></div></div>
-</div>
-<p>At a high level, we can see from the mean and median (50th percentile) results that the Flexible Model produces a higher PV than the Inflexible Model (by about $400.
-However, there still is a significant distortion of the distributions from normal, as can be seen in the skewness and kurtosis statistics.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pvs</span><span class="o">.</span><span class="n">skew</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inflexible    0.784544
-Flexible     -0.265706
-Difference   -0.017136
-dtype: float64
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pvs</span><span class="o">.</span><span class="n">kurtosis</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inflexible   -0.032361
-Flexible     -0.116688
-Difference   -0.582599
-dtype: float64
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;PV Diffs t-stat: </span><span class="se">\n</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-    <span class="n">ss</span><span class="o">.</span><span class="n">ttest_1samp</span><span class="p">(</span><span class="n">diff_pvs</span><span class="p">,</span> <span class="mi">0</span><span class="p">)))</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>PV Diffs t-stat: 
-TtestResult(statistic=np.float64(29.286669325536923), pvalue=np.float64(3.439977994505339e-157), df=np.int64(1999))
-</pre></div>
-</div>
-</div>
-</div>
-<section id="pvs-cumulative-distribution-target-curves">
-<h5>PVs Cumulative Distribution (‘Target Curves’)<a class="headerlink" href="#pvs-cumulative-distribution-target-curves" title="Link to this heading">#</a></h5>
-<p>To get a better idea of just how the Flexible Model outperforms the Inflexible Model, we can plot their distributions of outcomes</p>
-<section id="present-values">
-<h6>Present Values<a class="headerlink" href="#present-values" title="Link to this heading">#</a></h6>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sns</span><span class="o">.</span><span class="n">histplot</span><span class="p">(</span>
-    <span class="n">data</span><span class="o">=</span><span class="n">pvs</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Difference&#39;</span><span class="p">]),</span>
-    <span class="n">binwidth</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
-    <span class="n">kde</span><span class="o">=</span><span class="kc">True</span>
-    <span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;Axes: ylabel=&#39;Count&#39;&gt;
-</pre></div>
-</div>
-<img alt="_images/5c0ffb8d101fcaf258284b56db6f21e0941d467bb7c84e5442906a26e6f055cd.png" src="_images/5c0ffb8d101fcaf258284b56db6f21e0941d467bb7c84e5442906a26e6f055cd.png" />
-</div>
-</div>
-<p>To make reading the plot easier and identify just how and when the Flexible model outperforms the Inflexible, we can also plot the cumulative distribution of the PVs:</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sns</span><span class="o">.</span><span class="n">ecdfplot</span><span class="p">(</span>
-    <span class="n">data</span><span class="o">=</span><span class="n">pvs</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Difference&#39;</span><span class="p">]))</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;Axes: ylabel=&#39;Proportion&#39;&gt;
-</pre></div>
-</div>
-<img alt="_images/d9441583d7a84cefb2c1b80f413733939e39005842b53e1543f9e54d10729250.png" src="_images/d9441583d7a84cefb2c1b80f413733939e39005842b53e1543f9e54d10729250.png" />
-</div>
-</div>
-</section>
-</section>
-</section>
-<section id="realized-irr-at-market-value-price">
-<h4>Realized IRR at Market Value Price<a class="headerlink" href="#realized-irr-at-market-value-price" title="Link to this heading">#</a></h4>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">inflex_irrs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="n">scenario</span><span class="o">.</span><span class="n">irrs</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">scenario</span> <span class="ow">in</span> <span class="n">inflex_scenarios</span><span class="p">])</span>
-<span class="n">flex_irrs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="n">scenario</span><span class="o">.</span><span class="n">irrs</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">scenario</span> <span class="ow">in</span> <span class="n">flex_scenarios</span><span class="p">])</span>
-<span class="n">diff_irrs</span> <span class="o">=</span> <span class="n">flex_irrs</span> <span class="o">-</span> <span class="n">inflex_irrs</span>
-
-<span class="n">irrs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
-    <span class="s1">&#39;Inflexible&#39;</span><span class="p">:</span> <span class="n">inflex_irrs</span><span class="p">,</span>
-    <span class="s1">&#39;Flexible&#39;</span><span class="p">:</span> <span class="n">flex_irrs</span><span class="p">,</span>
-    <span class="s1">&#39;Difference&#39;</span><span class="p">:</span> <span class="n">diff_irrs</span><span class="p">})</span>
-<span class="n">irrs</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_html"><div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Inflexible</th>
-      <th>Flexible</th>
-      <th>Difference</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>count</th>
-      <td>2000.000000</td>
-      <td>2000.000000</td>
-      <td>2000.000000</td>
-    </tr>
-    <tr>
-      <th>mean</th>
-      <td>0.071297</td>
-      <td>0.284939</td>
-      <td>0.213642</td>
-    </tr>
-    <tr>
-      <th>std</th>
-      <td>0.040244</td>
-      <td>0.346125</td>
-      <td>0.358724</td>
-    </tr>
-    <tr>
-      <th>min</th>
-      <td>-0.021319</td>
-      <td>-0.026725</td>
-      <td>-0.158996</td>
-    </tr>
-    <tr>
-      <th>25%</th>
-      <td>0.038459</td>
-      <td>0.092533</td>
+      <th>1</th>
+      <td>scenario-0001</td>
+      <td>951.141353</td>
+      <td>951.141353</td>
       <td>0.000000</td>
+      <td>6.355849</td>
+      <td>6.355849</td>
+      <td>0.000000</td>
+      <td>2030-12-31</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>scenario-0002</td>
+      <td>997.424545</td>
+      <td>997.424545</td>
+      <td>0.000000</td>
+      <td>6.963340</td>
+      <td>6.963340</td>
+      <td>0.000000</td>
+      <td>2030-12-31</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>scenario-0003</td>
+      <td>774.128403</td>
+      <td>1677.898207</td>
+      <td>903.769804</td>
+      <td>3.360857</td>
+      <td>27.945041</td>
+      <td>24.584184</td>
+      <td>2023-12-31</td>
+    </tr>
+  </tbody>
+</table>
+</div></div><div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Fixed PV (AUD)</th>
+      <th>Policy PV (AUD)</th>
+      <th>PV difference (AUD)</th>
+      <th>Fixed IRR (%)</th>
+      <th>Policy IRR (%)</th>
+      <th>IRR difference (percentage points)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>count</th>
+      <td>4.000</td>
+      <td>4.000</td>
+      <td>4.000</td>
+      <td>4.000</td>
+      <td>4.000</td>
+      <td>4.000</td>
+    </tr>
+    <tr>
+      <th>mean</th>
+      <td>884.919</td>
+      <td>1184.938</td>
+      <td>300.019</td>
+      <td>5.251</td>
+      <td>12.594</td>
+      <td>7.343</td>
+    </tr>
+    <tr>
+      <th>std</th>
+      <td>106.353</td>
+      <td>335.642</td>
+      <td>426.048</td>
+      <td>1.692</td>
+      <td>10.302</td>
+      <td>11.714</td>
+    </tr>
+    <tr>
+      <th>min</th>
+      <td>774.128</td>
+      <td>951.141</td>
+      <td>0.000</td>
+      <td>3.361</td>
+      <td>6.356</td>
+      <td>0.000</td>
+    </tr>
+    <tr>
+      <th>25%</th>
+      <td>806.267</td>
+      <td>985.854</td>
+      <td>0.000</td>
+      <td>4.083</td>
+      <td>6.811</td>
+      <td>0.000</td>
     </tr>
     <tr>
       <th>50%</th>
-      <td>0.068040</td>
-      <td>0.135949</td>
-      <td>0.059050</td>
+      <td>884.061</td>
+      <td>1055.356</td>
+      <td>148.154</td>
+      <td>5.340</td>
+      <td>8.038</td>
+      <td>2.395</td>
     </tr>
     <tr>
       <th>75%</th>
-      <td>0.104341</td>
-      <td>0.295923</td>
-      <td>0.246092</td>
+      <td>962.712</td>
+      <td>1254.440</td>
+      <td>448.173</td>
+      <td>6.508</td>
+      <td>13.821</td>
+      <td>9.738</td>
     </tr>
     <tr>
       <th>max</th>
-      <td>0.177128</td>
-      <td>1.886756</td>
-      <td>1.841387</td>
+      <td>997.425</td>
+      <td>1677.898</td>
+      <td>903.770</td>
+      <td>6.963</td>
+      <td>27.945</td>
+      <td>24.584</td>
     </tr>
   </tbody>
 </table>
 </div></div></div>
 </div>
+</section>
+<section id="compare-pv-distributions">
+<h3>8. Compare PV distributions<a class="headerlink" href="#compare-pv-distributions" title="Link to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">irrs</span><span class="o">.</span><span class="n">skew</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pv_samples</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'Fixed horizon'</span><span class="p">:</span> <span class="n">results</span><span class="p">[</span><span class="s1">'Fixed PV (AUD)'</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="s1">'Policy'</span><span class="p">:</span> <span class="n">results</span><span class="p">[</span><span class="s1">'Policy PV (AUD)'</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()}</span>
+<span class="n">plot_distribution</span><span class="p">(</span><span class="n">pv_samples</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">'AUD'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s1">'PV distributions: </span><span class="si">{</span><span class="n">SCENARIO_COUNT</span><span class="si">}</span><span class="s1"> paired scenarios'</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inflexible    0.157770
-Flexible      2.020676
-Difference    1.942266
-dtype: float64
+<img alt="_images/b28a05a99a3cbbe4e83ec89fa5dc3a80f4a628b8434902e6c94e234f43dfaa0b.png" src="_images/b28a05a99a3cbbe4e83ec89fa5dc3a80f4a628b8434902e6c94e234f43dfaa0b.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot_distribution</span><span class="p">(</span><span class="n">pv_samples</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">'AUD'</span><span class="p">,</span> <span class="n">cumulative</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Empirical PV target curves'</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/642a59175961d3e93e90b792d4060f7dd870a202a14db933037fcdee6dc3a5ae.png" src="_images/642a59175961d3e93e90b792d4060f7dd870a202a14db933037fcdee6dc3a5ae.png" />
+</div>
+</div>
+</section>
+<section id="compare-realized-irr-distributions">
+<h3>9. Compare realized IRR distributions<a class="headerlink" href="#compare-realized-irr-distributions" title="Link to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">irr_samples</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'Fixed horizon'</span><span class="p">:</span> <span class="n">results</span><span class="p">[</span><span class="s1">'Fixed IRR (%)'</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="s1">'Policy'</span><span class="p">:</span> <span class="n">results</span><span class="p">[</span><span class="s1">'Policy IRR (%)'</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()}</span>
+<span class="n">plot_distribution</span><span class="p">(</span><span class="n">irr_samples</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">'Annual dated IRR (%)'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Realized IRR distributions'</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/8cf25d7b07febdb062237ab0aaf97b867fbc426e2bf535d8b7601dc4d6667b3a.png" src="_images/8cf25d7b07febdb062237ab0aaf97b867fbc426e2bf535d8b7601dc4d6667b3a.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot_distribution</span><span class="p">(</span><span class="n">irr_samples</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">'Annual dated IRR (%)'</span><span class="p">,</span> <span class="n">cumulative</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Empirical IRR target curves'</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/b6d93f6fa4226a17267f475a8cf899377d2a93d5c05c6bf74ae9ab8468bc8fd1.png" src="_images/b6d93f6fa4226a17267f475a8cf899377d2a93d5c05c6bf74ae9ab8468bc8fd1.png" />
+</div>
+</div>
+</section>
+<section id="inspect-paired-outcome-relationships">
+<h3>10. Inspect paired outcome relationships<a class="headerlink" href="#inspect-paired-outcome-relationships" title="Link to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot_pairs</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s1">'Fixed PV (AUD)'</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">results</span><span class="p">[</span><span class="s1">'Fixed IRR (%)'</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">x_label</span><span class="o">=</span><span class="s1">'Fixed PV (AUD)'</span><span class="p">,</span> <span class="n">y_label</span><span class="o">=</span><span class="s1">'Fixed IRR (%)'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Fixed-horizon outcomes'</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/ff08584a8e98a6ccd3a017e350ad9321166026814eee95f32aa20655607f5f2d.png" src="_images/ff08584a8e98a6ccd3a017e350ad9321166026814eee95f32aa20655607f5f2d.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot_pairs</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s1">'Policy PV (AUD)'</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">results</span><span class="p">[</span><span class="s1">'Policy IRR (%)'</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">x_label</span><span class="o">=</span><span class="s1">'Policy PV (AUD)'</span><span class="p">,</span> <span class="n">y_label</span><span class="o">=</span><span class="s1">'Policy IRR (%)'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Policy outcomes'</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/76ca13bdbc43354f898a6fdd7a2405cab55bf2aa11d4b98daa3db31b07fed459.png" src="_images/76ca13bdbc43354f898a6fdd7a2405cab55bf2aa11d4b98daa3db31b07fed459.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot_pairs</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s1">'Fixed PV (AUD)'</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">results</span><span class="p">[</span><span class="s1">'PV difference (AUD)'</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">x_label</span><span class="o">=</span><span class="s1">'Fixed PV (AUD)'</span><span class="p">,</span> <span class="n">y_label</span><span class="o">=</span><span class="s1">'Policy minus fixed PV (AUD)'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Paired PV differences'</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/89b61f8ba66c50ca1b5299562281660a116f53c4ced3b0340fba55be66ad3273.png" src="_images/89b61f8ba66c50ca1b5299562281660a116f53c4ced3b0340fba55be66ad3273.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot_pairs</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s1">'Fixed IRR (%)'</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">results</span><span class="p">[</span><span class="s1">'IRR difference (percentage points)'</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">x_label</span><span class="o">=</span><span class="s1">'Fixed IRR (%)'</span><span class="p">,</span> <span class="n">y_label</span><span class="o">=</span><span class="s1">'Policy minus fixed IRR (percentage points)'</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Paired IRR differences'</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/3a5b0b2ef4ddb789d48e184e62de18273651116bedb1bcae4c8d6d287c391efd.png" src="_images/3a5b0b2ef4ddb789d48e184e62de18273651116bedb1bcae4c8d6d287c391efd.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="checks">
+<h2>Checks<a class="headerlink" href="#checks" title="Link to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span> <span class="o">==</span> <span class="n">SCENARIO_COUNT</span>
+<span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">replay</span><span class="p">(</span><span class="n">scenario</span><span class="o">.</span><span class="n">model</span><span class="p">)</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">scenario</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">scenario</span> <span class="ow">in</span> <span class="n">scenarios</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">scenario</span><span class="o">.</span><span class="n">historical_value</span><span class="o">.</span><span class="n">flow</span><span class="o">.</span><span class="n">movements</span><span class="p">)</span> <span class="o">==</span> <span class="mi">11</span> <span class="k">for</span> <span class="n">scenario</span> <span class="ow">in</span> <span class="n">scenarios</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'Paired realized inputs and captured-path replay verified.'</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Paired realized inputs and captured-path replay verified.
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">irrs</span><span class="o">.</span><span class="n">kurtosis</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">assert</span> <span class="ow">not</span> <span class="p">{</span><span class="s1">'rangekeeper.flux'</span><span class="p">,</span><span class="s1">'rangekeeper.dynamics'</span><span class="p">,</span><span class="s1">'rangekeeper.policy'</span><span class="p">,</span><span class="s1">'rangekeeper._legacy_duration'</span><span class="p">}</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'Canonical records, explicit roles and installed consumer checks passed.'</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inflexible   -0.881679
-Flexible      3.227400
-Difference    2.925669
-dtype: float64
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Canonical records, explicit roles and installed consumer checks passed.
 </pre></div>
 </div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;IRR Diffs t-stat: </span><span class="se">\n</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-    <span class="n">ss</span><span class="o">.</span><span class="n">ttest_1samp</span><span class="p">(</span><span class="n">diff_irrs</span><span class="p">,</span> <span class="mi">0</span><span class="p">)))</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>IRR Diffs t-stat: 
-TtestResult(statistic=np.float64(26.634315152743138), pvalue=np.float64(5.126810916784482e-134), df=np.int64(1999))
-</pre></div>
-</div>
-</div>
-</div>
-<section id="irrs-cumulative-distribution-target-curves">
-<h5>IRRs Cumulative Distribution (‘Target Curves’)<a class="headerlink" href="#irrs-cumulative-distribution-target-curves" title="Link to this heading">#</a></h5>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">g</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">histplot</span><span class="p">(</span>
-    <span class="n">data</span><span class="o">=</span><span class="n">irrs</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Difference&#39;</span><span class="p">]),</span>
-    <span class="n">binwidth</span><span class="o">=</span><span class="mf">.025</span><span class="p">,</span>
-    <span class="n">kde</span><span class="o">=</span><span class="kc">True</span>
-    <span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<img alt="_images/f9f17ba628060cf02fc5b0d4a09796371ff7cccd54b9ce2a6164098a38c1ea86.png" src="_images/f9f17ba628060cf02fc5b0d4a09796371ff7cccd54b9ce2a6164098a38c1ea86.png" />
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sns</span><span class="o">.</span><span class="n">ecdfplot</span><span class="p">(</span>
-    <span class="n">data</span><span class="o">=</span><span class="n">irrs</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Difference&#39;</span><span class="p">]))</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;Axes: ylabel=&#39;Proportion&#39;&gt;
-</pre></div>
-</div>
-<img alt="_images/d1616288a9c806ef73c4b7153d8142b66e4a6c31188aa02f57e153ea1cf3014f.png" src="_images/d1616288a9c806ef73c4b7153d8142b66e4a6c31188aa02f57e153ea1cf3014f.png" />
 </div>
 </div>
 </section>
-</section>
-<section id="irrs-x-pvs">
-<h4>IRRs x PVs<a class="headerlink" href="#irrs-x-pvs" title="Link to this heading">#</a></h4>
-<section id="inflexible-model">
-<h5>Inflexible Model<a class="headerlink" href="#inflexible-model" title="Link to this heading">#</a></h5>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">inflex_irr_x_pv</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
-    <span class="s1">&#39;PV&#39;</span><span class="p">:</span> <span class="n">inflex_pvs</span><span class="p">,</span>
-    <span class="s1">&#39;IRR&#39;</span><span class="p">:</span> <span class="n">inflex_irrs</span><span class="p">,})</span>
-<span class="n">sns</span><span class="o">.</span><span class="n">jointplot</span><span class="p">(</span>
-    <span class="n">data</span><span class="o">=</span><span class="n">inflex_irr_x_pv</span><span class="p">,</span>
-    <span class="n">x</span><span class="o">=</span><span class="s1">&#39;PV&#39;</span><span class="p">,</span>
-    <span class="n">y</span><span class="o">=</span><span class="s1">&#39;IRR&#39;</span><span class="p">,</span>
-    <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;scatter&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;seaborn.axisgrid.JointGrid at 0x37af26ab0&gt;
-</pre></div>
-</div>
-<img alt="_images/049920548e62b9072ecee9eeee22c364f06d19be99ebb68bc938ac2562b97344.png" src="_images/049920548e62b9072ecee9eeee22c364f06d19be99ebb68bc938ac2562b97344.png" />
-</div>
-</div>
-</section>
-<section id="id8">
-<h5>Flexible Model<a class="headerlink" href="#id8" title="Link to this heading">#</a></h5>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">flex_irr_x_pv</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
-    <span class="s1">&#39;PV&#39;</span><span class="p">:</span> <span class="n">flex_pvs</span><span class="p">,</span>
-    <span class="s1">&#39;IRR&#39;</span><span class="p">:</span> <span class="n">flex_irrs</span><span class="p">})</span>
-<span class="n">sns</span><span class="o">.</span><span class="n">jointplot</span><span class="p">(</span>
-    <span class="n">data</span><span class="o">=</span><span class="n">flex_irr_x_pv</span><span class="p">,</span>
-    <span class="n">x</span><span class="o">=</span><span class="s1">&#39;PV&#39;</span><span class="p">,</span>
-    <span class="n">y</span><span class="o">=</span><span class="s1">&#39;IRR&#39;</span><span class="p">,</span>
-    <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;scatter&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;seaborn.axisgrid.JointGrid at 0x378d7dac0&gt;
-</pre></div>
-</div>
-<img alt="_images/01741d5a5a81dd3b9a9d7cc0577c479f21c8ac4745ca305e32908995dee89270.png" src="_images/01741d5a5a81dd3b9a9d7cc0577c479f21c8ac4745ca305e32908995dee89270.png" />
-</div>
-</div>
-</section>
-</section>
-<section id="pvs-diffs">
-<h4>PVs Diffs<a class="headerlink" href="#pvs-diffs" title="Link to this heading">#</a></h4>
-<section id="pv-difference-as-a-function-of-inflex-pv">
-<h5>PV Difference as a function of Inflex PV<a class="headerlink" href="#pv-difference-as-a-function-of-inflex-pv" title="Link to this heading">#</a></h5>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">diff_pvs_x_inflex_pvs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
-    <span class="s1">&#39;Inflexible PVs&#39;</span><span class="p">:</span> <span class="n">inflex_pvs</span><span class="p">,</span>
-    <span class="s1">&#39;Difference in PV&#39;</span><span class="p">:</span> <span class="n">diff_pvs</span><span class="p">})</span>
-<span class="n">g</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">jointplot</span><span class="p">(</span>
-    <span class="n">data</span><span class="o">=</span><span class="n">diff_pvs_x_inflex_pvs</span><span class="p">,</span>
-    <span class="n">x</span><span class="o">=</span><span class="s1">&#39;Inflexible PVs&#39;</span><span class="p">,</span>
-    <span class="n">y</span><span class="o">=</span><span class="s1">&#39;Difference in PV&#39;</span><span class="p">,</span>
-    <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;hist&#39;</span><span class="p">)</span>
-<span class="n">g</span><span class="o">.</span><span class="n">plot_joint</span><span class="p">(</span>
-    <span class="n">sns</span><span class="o">.</span><span class="n">kdeplot</span><span class="p">,</span>
-    <span class="n">color</span><span class="o">=</span><span class="s1">&#39;grey&#39;</span><span class="p">,</span>
-    <span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">levels</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-<span class="n">g</span><span class="o">.</span><span class="n">plot_marginals</span><span class="p">(</span>
-    <span class="n">sns</span><span class="o">.</span><span class="n">histplot</span>
-    <span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;seaborn.axisgrid.JointGrid at 0x37acca330&gt;
-</pre></div>
-</div>
-<img alt="_images/6678e29aed07224b4405d55e8e902604805b81ecff02e2b3178884456932ccf5.png" src="_images/6678e29aed07224b4405d55e8e902604805b81ecff02e2b3178884456932ccf5.png" />
-</div>
-</div>
-</section>
-<section id="irr-difference-as-a-function-of-inflex-irr">
-<h5>IRR Difference as a function of Inflex IRR<a class="headerlink" href="#irr-difference-as-a-function-of-inflex-irr" title="Link to this heading">#</a></h5>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">diff_irrs_x_inflex_irrs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
-    <span class="s1">&#39;Inflexible IRRs&#39;</span><span class="p">:</span> <span class="n">inflex_irrs</span><span class="p">,</span>
-    <span class="s1">&#39;Difference in IRR&#39;</span><span class="p">:</span> <span class="n">diff_irrs</span><span class="p">})</span>
-<span class="n">g</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">jointplot</span><span class="p">(</span>
-    <span class="n">data</span><span class="o">=</span><span class="n">diff_irrs_x_inflex_irrs</span><span class="p">,</span>
-    <span class="n">x</span><span class="o">=</span><span class="s1">&#39;Inflexible IRRs&#39;</span><span class="p">,</span>
-    <span class="n">y</span><span class="o">=</span><span class="s1">&#39;Difference in IRR&#39;</span><span class="p">,</span>
-    <span class="n">kind</span><span class="o">=</span><span class="s1">&#39;hist&#39;</span><span class="p">)</span>
-<span class="n">g</span><span class="o">.</span><span class="n">plot_joint</span><span class="p">(</span>
-    <span class="n">sns</span><span class="o">.</span><span class="n">kdeplot</span><span class="p">,</span>
-    <span class="n">color</span><span class="o">=</span><span class="s1">&#39;grey&#39;</span><span class="p">,</span>
-    <span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">levels</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-<span class="n">g</span><span class="o">.</span><span class="n">plot_marginals</span><span class="p">(</span>
-    <span class="n">sns</span><span class="o">.</span><span class="n">histplot</span>
-    <span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;seaborn.axisgrid.JointGrid at 0x302bda930&gt;
-</pre></div>
-</div>
-<img alt="_images/440db5942e062c5441bed031e47c9027cb5105e50bbf5f31127f7bd10887ccd1.png" src="_images/440db5942e062c5441bed031e47c9027cb5105e50bbf5f31127f7bd10887ccd1.png" />
-</div>
-</div>
-</section>
-</section>
-</section>
+<section id="next-steps">
+<h2>Next Steps<a class="headerlink" href="#next-steps" title="Link to this heading">#</a></h2>
+<p>Use the full 2,000-scenario setting for a larger study, then test sensitivity to parameters, seeds and thresholds. Keep paired realizations. Threshold rules do not guarantee market-peak sales, positive value differences or numerical feasibility for other formulations.</p>
 </section>
 </section>
 
@@ -1613,14 +945,14 @@ TtestResult(statistic=np.float64(26.634315152743138), pvalue=np.float64(5.126810
     <script>kernelName = 'python3'</script>
 
                 </article>
-              
 
-              
-              
-              
-              
+
+
+
+
+
                 <footer class="prev-next-footer d-print-none">
-                  
+
 <div class="prev-next-area">
     <a class="left-prev"
        href="flexibility_intro.html"
@@ -1636,17 +968,17 @@ TtestResult(statistic=np.float64(26.634315152743138), pvalue=np.float64(5.126810
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Loading a Design</p>
+        <p class="prev-next-title">Load design into a canonical Model</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
 </div>
                 </footer>
-              
+
             </div>
-            
-            
-              
+
+
+
                 <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
 
@@ -1656,93 +988,70 @@ TtestResult(statistic=np.float64(26.634315152743138), pvalue=np.float64(5.126810
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#multiple-market-scenarios">Multiple Market Scenarios</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#market-parameters-from-sampling-distributions-of-their-likelihoods">Market Parameters from Sampling Distributions of their Likelihoods</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#overall-trend">Overall Trend</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#volatility">Volatility</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#cyclicality">Cyclicality</a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#noise-black-swan">Noise &amp; Black Swan</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#goal">Goal</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setup">Setup</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#steps">Steps</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#declare-sampling-distributions-and-sample-size">1. Declare sampling distributions and sample size</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#generate-common-scenarios">2. Generate common scenarios</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inspect-one-declared-scenario">3. Inspect one declared scenario</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#author-and-formulate-each-investment">4. Author and formulate each investment</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#execute-fixed-horizon-investigations">5. Execute fixed-horizon investigations</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#execute-policy-investigations-on-those-same-models">6. Execute policy investigations on those same Models</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inspect-paired-results">7. Inspect paired results</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#compare-pv-distributions">8. Compare PV distributions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#compare-realized-irr-distributions">9. Compare realized IRR distributions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inspect-paired-outcome-relationships">10. Inspect paired outcome relationships</a></li>
 </ul>
 </li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#markets">Markets</a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#comparing-models">Comparing Models</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inflexible-base-model">Inflexible (Base) Model</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#flexible-model">Flexible Model</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#results">Results</a><ul class="nav section-nav flex-column">
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#time-0-present-values-at-occ">Time 0 Present Values at OCC</a><ul class="nav section-nav flex-column">
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#pvs-cumulative-distribution-target-curves">PVs Cumulative Distribution (‘Target Curves’)</a><ul class="nav section-nav flex-column">
-<li class="toc-h6 nav-item toc-entry"><a class="reference internal nav-link" href="#present-values">Present Values</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#realized-irr-at-market-value-price">Realized IRR at Market Value Price</a><ul class="nav section-nav flex-column">
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#irrs-cumulative-distribution-target-curves">IRRs Cumulative Distribution (‘Target Curves’)</a></li>
-</ul>
-</li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#irrs-x-pvs">IRRs x PVs</a><ul class="nav section-nav flex-column">
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#inflexible-model">Inflexible Model</a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">Flexible Model</a></li>
-</ul>
-</li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#pvs-diffs">PVs Diffs</a><ul class="nav section-nav flex-column">
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#pv-difference-as-a-function-of-inflex-pv">PV Difference as a function of Inflex PV</a></li>
-<li class="toc-h5 nav-item toc-entry"><a class="reference internal nav-link" href="#irr-difference-as-a-function-of-inflex-irr">IRR Difference as a function of Inflex IRR</a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#checks">Checks</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#next-steps">Next Steps</a></li>
 </ul>
   </nav></div>
 
 </div></div>
-              
-            
+
+
           </div>
           <footer class="bd-footer-content">
-            
+
 <div class="bd-footer-content__inner container">
-  
+
   <div class="footer-item">
-    
+
 <p class="component-author">
 By Daniel Fink
 </p>
 
   </div>
-  
+
   <div class="footer-item">
-    
+
 
   <p class="copyright">
-    
+
       © Copyright 2025.
       <br/>
-    
+
   </p>
 
   </div>
-  
+
   <div class="footer-item">
-    
+
   </div>
-  
+
   <div class="footer-item">
-    
+
   </div>
-  
+
 </div>
           </footer>
-        
+
 
       </main>
     </div>
   </div>
-  
+
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
   <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
 <script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>

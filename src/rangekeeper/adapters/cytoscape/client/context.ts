@@ -1,6 +1,7 @@
 import type cytoscape from "cytoscape";
 import type { GraphDocument, Projection, Point } from "./document";
 import type { route, Port } from "./routing";
+import type { Presentation, Rectangle } from "./presentation";
 export interface Snapshot {
   focus: string[] | null;
   filters: string[];
@@ -22,9 +23,14 @@ export interface ViewerContext {
   showMembership: boolean;
   fourPorts: boolean;
   compactPositions: Record<string, Point>;
+  presentation: Presentation | null;
+  showSpacingAdvisories: boolean;
+  dragFrame: number | null;
   drag: {
     id: string;
     start: Point;
+    rectangles?: Record<string, Rectangle>;
+    latest?: Point;
     members: Array<{ id: string; position: Point }>;
   } | null;
   syncing: boolean;

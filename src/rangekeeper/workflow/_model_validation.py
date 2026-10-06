@@ -52,8 +52,14 @@ def validate_measurements(values, seen, decision_ids, measures):
         validate_condition(attr.get("when"), seen)
         if "on_unavailable" in attr:
             missing = fields(
-                attr["on_unavailable"], {"binding", "topic", "explanation"}
+                attr["on_unavailable"], {"binding", "property", "topic", "explanation"}
             )
+            if "property" in missing:
+                prop = fields(
+                    missing["property"], {"key", "binding"}, {"key", "binding"}
+                )
+                text(prop["key"])
+                validate_binding(prop["binding"], seen)
             if "binding" in missing:
                 validate_binding(missing["binding"], seen)
             for key in ("feature", "topic", "explanation"):
@@ -137,7 +143,7 @@ def validate_model(model, seen, decisions=None, *, decision_ids=None):
         fields(
             f,
             {"topic", "subject", "explanation", "references", "when", "evidence"},
-            {"binding", "topic", "explanation"},
+            {"topic", "explanation"},
         )
         validate_condition(f.get("when"), seen)
         for b in f.get("evidence", ()):

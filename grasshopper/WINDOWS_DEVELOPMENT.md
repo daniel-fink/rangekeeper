@@ -1,3 +1,38 @@
+# Current connector acceptance gate — Turn 3
+
+Mac authoring is accepted separately. The official current connector remains an
+open Windows gate. [Speckle installation requirements](https://docs.speckle.systems/connectors/installation)
+still state Windows-only support (checked 6 October 2026). No publication occurred
+in this turn. The historical host provisioning material below is retained context.
+
+1. Record Windows, Rhino 8, .NET, current official connector and RK build versions.
+   Build the net8 projects with explicit Rhino reference paths; do not load the
+   excluded old Speckle-inherited components.
+2. Use `Tests/Fixtures/connector-envelope.json` as the small public boundary fixture.
+   It includes canonical membership and property null/false/zero/ordered content.
+   Create simple native Rhino geometry and record its actual Rhino UUID separately
+   in the association. Preserve the fixture Model revision and domain UUIDs.
+3. Pass `rk_format`, `rk_model` and `rk_associations` through the current connector's
+   supported ordinary metadata/data-object route. Record the actual component
+   names and property types. Do not infer this route from older Speckle v2 Goo.
+4. Stop before publication until a concrete destination and explicit publication
+   authorization are available. Record project/model/version/content identifiers
+   after publication. Authentication and destination choice remain external to RK.
+5. Receive that pinned object with `adapters.speckle.transport.receive`; decode with
+   `decode_model`. Compare all Model content and the separate geometry associations,
+   not counts or display nesting. Check IDs, revision, omission/null, zero/false,
+   shared membership, units and property order.
+6. Recompute/re-publish a changed Model as a new revision, then receive both pins.
+   Check historical stability and updated geometry/application/content identities.
+7. Repeat with the canonical example GHX and Python financial acceptance. Retain
+   commands, hashes and redacted diagnostics; keep credentials/private payloads local.
+
+Close this gate only after these actual host and publication/receive checks pass.
+Offline JSON, the Mac GHX, or the older pinned Python read cannot close it. Until
+then, hold predecessor code identified by the Turn 4 retirement register.
+
+---
+
 # Windows development and acceptance runbook
 
 This runbook provisions and operates the dedicated Windows host used to build

@@ -9,20 +9,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>A Basic Discounted Cash Flow Valuation &#8212; Rangekeeper</title>
-  
-  
-  
+
+
+
   <script data-cfasync="false">
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
-  
+
   <!-- Loaded before other Sphinx assets -->
   <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
 <link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
 <link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
 
-  
+
   <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
   <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
@@ -30,12 +30,12 @@
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
-    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=9c3e77be" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
-  
+
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
@@ -50,16 +50,15 @@
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="_static/togglebutton.js?v=4a39c7ea"></script>
+    <script src="_static/togglebutton.js?v=b8b12719"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script src="_static/design-tabs.js?v=f930bc37"></script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
     <script async="async" src="_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
-    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
-    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'basic_dcf';</script>
+    <script src="_static/plotly.min.js?v=7a1ec768"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Deterministic Scenario Analysis" href="deterministic_scenarios.html" />
@@ -67,30 +66,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
-  
-  
+
+
   <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
 
-  
-  
+
+
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
-  
+
   <div id="pst-scroll-pixel-helper"></div>
-  
+
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
-  
+
   <input type="checkbox"
           class="sidebar-toggle"
           id="pst-primary-sidebar-checkbox"/>
   <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
-  
+
   <input type="checkbox"
           class="sidebar-toggle"
           id="pst-secondary-sidebar-checkbox"/>
   <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
-  
+
   <div class="search-button__wrapper">
     <div class="search-button__overlay"></div>
     <div class="search-button__search-container">
@@ -116,49 +115,49 @@
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
 
-  
+
     <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
     </header>
-  
+
 
   <div class="bd-container">
     <div class="bd-container__inner bd-page-width">
-      
-      
-      
-      <div class="bd-sidebar-primary bd-sidebar">
-        
 
-  
+
+
+      <div class="bd-sidebar-primary bd-sidebar">
+
+
+
   <div class="sidebar-header-items sidebar-primary__section">
-    
-    
-    
-    
+
+
+
+
   </div>
-  
+
     <div class="sidebar-primary-items__start sidebar-primary__section">
         <div class="sidebar-primary-item">
 
-  
-    
-  
+
+
+
 
 <a class="navbar-brand logo" href="intro.html">
-  
-  
-  
-  
-  
-    
-    
-      
-    
-    
+
+
+
+
+
+
+
+
+
+
     <img src="_static/rangekeeper.jpg" class="logo__image only-light" alt="Rangekeeper - Home"/>
     <script>document.write(`<img src="_static/rangekeeper.jpg" class="logo__image only-dark" alt="Rangekeeper - Home"/>`);</script>
-  
-  
+
+
 </a></div>
         <div class="sidebar-primary-item">
 
@@ -173,7 +172,7 @@
  </script></div>
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
-        
+
         <ul class="nav bd-sidenav bd-sidenav__home-link">
             <li class="toctree-l1">
                 <a class="reference internal" href="intro.html">
@@ -191,46 +190,46 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Using Rangekeeper in Examples</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="load_design.html">Loading a Design</a></li>
-<li class="toctree-l1"><a class="reference internal" href="drive_model_from_design.html">Driving a Financial Valuation from a Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="load_design.html">Load design into a canonical Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="drive_model_from_design.html">Drive financial equations from design</a></li>
 </ul>
 
     </div>
 </nav></div>
     </div>
-  
-  
+
+
   <div class="sidebar-primary-items__end sidebar-primary__section">
   </div>
-  
+
   <div id="rtd-footer-container"></div>
 
 
       </div>
-      
+
       <main id="main-content" class="bd-main" role="main">
-        
-        
+
+
 
 <div class="sbt-scroll-pixel-helper"></div>
 
           <div class="bd-content">
             <div class="bd-article-container">
-              
+
               <div class="bd-header-article d-print-none">
 <div class="header-article-items header-article__inner">
-  
+
     <div class="header-article-items__start">
-      
+
         <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
   <span class="fa-solid fa-bars"></span>
 </button></div>
-      
+
     </div>
-  
-  
+
+
     <div class="header-article-items__end">
-      
+
         <div class="header-article-item">
 
 <div class="article-header-buttons">
@@ -244,24 +243,24 @@
     <i class="fas fa-rocket"></i>
   </button>
   <ul class="dropdown-menu">
-      
-      
-      
+
+
+
       <li><a href="https://colab.research.google.com/github/daniel-fink/rangekeeper/blob/main/walkthrough/basic_dcf.ipynb" target="_blank"
    class="btn btn-sm dropdown-item"
    title="Launch on Colab"
    data-bs-placement="left" data-bs-toggle="tooltip"
 >
-  
+
 
 <span class="btn__icon-container">
-  
+
     <img alt="Colab logo" src="_static/images/logo_colab.png">
   </span>
 <span class="btn__text-container">Colab</span>
 </a>
 </li>
-      
+
   </ul>
 </div>
 
@@ -275,15 +274,15 @@
     <i class="fab fa-github"></i>
   </button>
   <ul class="dropdown-menu">
-      
-      
-      
+
+
+
       <li><a href="https://github.com/daniel-fink/rangekeeper" target="_blank"
    class="btn btn-sm btn-source-repository-button dropdown-item"
    title="Source repository"
    data-bs-placement="left" data-bs-toggle="tooltip"
 >
-  
+
 
 <span class="btn__icon-container">
   <i class="fab fa-github"></i>
@@ -291,16 +290,16 @@
 <span class="btn__text-container">Repository</span>
 </a>
 </li>
-      
-      
-      
-      
+
+
+
+
       <li><a href="https://github.com/daniel-fink/rangekeeper/issues/new?title=Issue%20on%20page%20%2Fbasic_dcf.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
 >
-  
+
 
 <span class="btn__icon-container">
   <i class="fas fa-lightbulb"></i>
@@ -308,7 +307,7 @@
 <span class="btn__text-container">Open issue</span>
 </a>
 </li>
-      
+
   </ul>
 </div>
 
@@ -322,15 +321,15 @@
     <i class="fas fa-download"></i>
   </button>
   <ul class="dropdown-menu">
-      
-      
-      
+
+
+
       <li><a href="_sources/basic_dcf.ipynb" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
 >
-  
+
 
 <span class="btn__icon-container">
   <i class="fas fa-file"></i>
@@ -338,17 +337,17 @@
 <span class="btn__text-container">.ipynb</span>
 </a>
 </li>
-      
-      
-      
-      
+
+
+
+
       <li>
 <button onclick="window.print()"
   class="btn btn-sm btn-download-pdf-button dropdown-item"
   title="Print to PDF"
   data-bs-placement="left" data-bs-toggle="tooltip"
 >
-  
+
 
 <span class="btn__icon-container">
   <i class="fas fa-file-pdf"></i>
@@ -356,7 +355,7 @@
 <span class="btn__text-container">.pdf</span>
 </button>
 </li>
-      
+
   </ul>
 </div>
 
@@ -368,7 +367,7 @@
   title="Fullscreen mode"
   data-bs-placement="bottom" data-bs-toggle="tooltip"
 >
-  
+
 
 <span class="btn__icon-container">
   <i class="fas fa-expand"></i>
@@ -400,34 +399,36 @@ document.write(`
     <span class="fa-solid fa-list"></span>
 </button>
 </div></div>
-      
+
     </div>
-  
+
 </div>
 </div>
-              
-              
+
+
 
 <div id="jb-print-docs-body" class="onlyprint">
     <h1>A Basic Discounted Cash Flow Valuation</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
-            
+
             <div>
                 <h2> Contents </h2>
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setup">Setup</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-foundational-elements-of-a-proforma">The Foundational Elements of a Proforma</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#a-flow">A <code class="docutils literal notranslate"><span class="pre">Flow</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#initializing-a-flow">Initializing a <code class="docutils literal notranslate"><span class="pre">Flow</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#overview-of-a-flow">Overview of a <code class="docutils literal notranslate"><span class="pre">Flow</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#a-span">A <code class="docutils literal notranslate"><span class="pre">Span</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#a-projection">A <code class="docutils literal notranslate"><span class="pre">Projection</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#a-stream">A <code class="docutils literal notranslate"><span class="pre">Stream</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#periods-and-spans">Periods and spans</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#project-known-values">Project known values</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#a-stream">A Stream</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#discount-and-check-the-result">Discount and check the result</a></li>
 </ul>
 </li>
 </ul>
@@ -436,14 +437,14 @@ document.write(`
     </div>
 </div>
 
-              
-                
+
+
 <div id="searchbox"></div>
                 <article class="bd-article">
-                  
+
   <section class="tex2jax_ignore mathjax_ignore" id="a-basic-discounted-cash-flow-valuation">
 <h1>A Basic Discounted Cash Flow Valuation<a class="headerlink" href="#a-basic-discounted-cash-flow-valuation" title="Link to this heading">#</a></h1>
-<p>Chapter 1 of <span id="id1">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> showcases the structure and functionality of a
+<p>Chapter 1 of <span class="bibtex-citation" id="id1">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> showcases the structure and functionality of a
 basic Discounted Cash Flow (DCF) Valuation for a real estate property.</p>
 <p>Like in the vast majority of cases, the implementation of their DCF model is in
 Microsoft Excel. However, in these notebooks, we will be implementing the same
@@ -451,29 +452,47 @@ methodology in Python, using the
 <a class="reference external" href="https://github.com/daniel-fink/rangekeeper">Rangekeeper</a> open source library.</p>
 <p>In this notebook, the core computational objects (classes), their functionality,
 and how they are composed together into a valuation model are outlined.</p>
-<p>To do so, we will be replicating Table 1.1 from <span id="id2">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span>, which
+<p>To do so, we will be replicating Table 1.1 from <span class="bibtex-citation" id="id2">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span>, which
 describes this DCF:</p>
 <figure class="align-default" id="farevuu-table1-1">
 <a class="reference internal image-reference" href="_images/FaREVuU-table1.1.jpg"><img alt="_images/FaREVuU-table1.1.jpg" src="_images/FaREVuU-table1.1.jpg" style="width: 100%;" />
 </a>
 <figcaption>
-<p><span class="caption-number">Fig. 1 </span><span class="caption-text">Table 1.1 From <span id="id3">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span></span><a class="headerlink" href="#farevuu-table1-1" title="Link to this image">#</a></p>
+<p><span class="caption-number">Fig. 1 </span><span class="caption-text">Table 1.1 From <span class="bibtex-citation" id="id3">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span></span><a class="headerlink" href="#farevuu-table1-1" title="Link to this image">#</a></p>
 </figcaption>
 </figure>
-<p>First, we will need to import any neccesary libraries, as well as the
-<em>Rangekeeper</em> library, that we alias to <code class="docutils literal notranslate"><span class="pre">rk</span></code>:</p>
+<section id="setup">
+<h2>Setup<a class="headerlink" href="#setup" title="Link to this heading">#</a></h2>
+<p>Use the built Rangekeeper package with its <code class="docutils literal notranslate"><span class="pre">calculations</span></code> and <code class="docutils literal notranslate"><span class="pre">pandas</span></code> extras. This tutorial uses explicit AUD units and Gregorian dates; it does not depend on the machine locale.</p>
 <p>Import Libraries:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">locale</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">matplotlib</span> inline
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">date</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uuid</span><span class="w"> </span><span class="kn">import</span> <span class="n">uuid4</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-
-<span class="c1"># Import Rangekeeper:</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">rangekeeper</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">rk</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.model.flow</span><span class="w"> </span><span class="kn">import</span> <span class="n">Flow</span><span class="p">,</span> <span class="n">Stream</span><span class="p">,</span> <span class="n">from_events</span><span class="p">,</span> <span class="n">from_periods</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.model.measure</span><span class="w"> </span><span class="kn">import</span> <span class="n">Quantity</span><span class="p">,</span> <span class="n">Measure</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.model</span><span class="w"> </span><span class="kn">import</span> <span class="n">Metadata</span><span class="p">,</span> <span class="n">Definitions</span><span class="p">,</span> <span class="n">System</span><span class="p">,</span> <span class="n">Entity</span><span class="p">,</span> <span class="n">Characteristics</span><span class="p">,</span> <span class="n">Value</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.duration</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_periods</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.calculations</span><span class="w"> </span><span class="kn">import</span> <span class="n">series</span><span class="p">,</span> <span class="n">projection</span><span class="p">,</span> <span class="n">financial</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.adapters.pandas</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_series</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Rangekeeper import:"</span><span class="p">,</span> <span class="n">rk</span><span class="o">.</span><span class="vm">__file__</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Rangekeeper:"</span><span class="p">,</span> <span class="n">rk</span><span class="o">.</span><span class="vm">__file__</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Rangekeeper import: /private/tmp/rk-turn3-complete-wheel/site/rangekeeper/__init__.py
+Rangekeeper: /private/tmp/rk-turn3-complete-wheel/site/rangekeeper/__init__.py
 </pre></div>
 </div>
 </div>
 </div>
+</section>
 <section id="the-foundational-elements-of-a-proforma">
 <h2>The Foundational Elements of a Proforma<a class="headerlink" href="#the-foundational-elements-of-a-proforma" title="Link to this heading">#</a></h2>
 <section id="a-flow">
@@ -486,28 +505,36 @@ not consider the parties involved – only its amount, date, and direction.</p>
 <p>A cash flow is also sometimes referred to as a ‘line item’, which is a way of
 designating the subject of flows, e.g.: “Operational Expenses”, or “Income from
 Building 2’s Parking”</p>
-<p>A cash flow is implemented in Rangekeeper as a <code class="docutils literal notranslate"><span class="pre">Flow</span></code> object (from the <code class="docutils literal notranslate"><span class="pre">flux</span></code>
-module), which uses a <a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.Series.html">pandas <code class="docutils literal notranslate"><span class="pre">Series</span></code></a>
-object to encapsulate the movements of a quantity (with specified units, like
-currency, energy, mass, etc.) that occur at specified dates.</p>
-<p>Note: the <code class="docutils literal notranslate"><span class="pre">Flow</span></code>’s movements Series index is a <a class="reference external" href="https://pandas.pydata.org/docs/reference/api/pandas.DatetimeIndex.html">Pandas <code class="docutils literal notranslate"><span class="pre">DatetimeIndex</span></code></a>, and its values are <code class="docutils literal notranslate"><span class="pre">float</span></code>s.</p>
+<p>Rangekeeper represents this content with an immutable <code class="docutils literal notranslate"><span class="pre">Flow</span></code> from <code class="docutils literal notranslate"><span class="pre">model.flow</span></code>.
+Its ordered movements record calendar coordinates, magnitudes and optional evidence.
+The model logic defines the meaning of each Flow and selects its calculations. Flows carry no semantic kind or basis.
+Flows can use currency, energy, mass or other units. A canonical Value gives a Flow
+its UUID and owner-local key. pandas is used here only to display detached data.</p>
 <section id="initializing-a-flow">
 <h4>Initializing a <code class="docutils literal notranslate"><span class="pre">Flow</span></code><a class="headerlink" href="#initializing-a-flow" title="Link to this heading">#</a></h4>
-<p>First we initialize the currency used in our Proforma. Currencies are a type of
-<code class="docutils literal notranslate"><span class="pre">Measure</span></code>, which encapsulate <a class="reference external" href="https://github.com/hgrecco/pint">Pint</a> unit
-definitions. <em>Rangekeeper</em> uses the standard library’s <code class="docutils literal notranslate"><span class="pre">locale</span></code> module to set
-the currency units.</p>
+<p>Currency is explicit. A Measure defines the meaning and canonical units of a Value. The helper below creates immutable Model content; it does not solve an investigation.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">locale</span><span class="o">.</span><span class="n">setlocale</span><span class="p">(</span><span class="n">locale</span><span class="o">.</span><span class="n">LC_ALL</span><span class="p">,</span> <span class="s1">&#39;en_AU&#39;</span><span class="p">)</span>
-<span class="n">units</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">measure</span><span class="o">.</span><span class="n">Index</span><span class="o">.</span><span class="n">registry</span>
-<span class="n">currency</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">measure</span><span class="o">.</span><span class="n">register_currency</span><span class="p">(</span><span class="n">registry</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">currency</span> <span class="o">=</span> <span class="s2">"AUD"</span>
+<span class="n">measure</span> <span class="o">=</span> <span class="n">Measure</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">uuid4</span><span class="p">(),</span> <span class="n">code</span><span class="o">=</span><span class="s2">"cash"</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Cash movements"</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">record_flows</span><span class="p">(</span><span class="n">flows</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Author one canonical owner; each named Flow becomes a distinct Value."""</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">Value</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">uuid4</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="n">key</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">"flow"</span><span class="p">,</span> <span class="n">measure</span><span class="o">=</span><span class="n">measure</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">flow</span><span class="o">=</span><span class="n">flow</span><span class="p">)</span>
+                   <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">flow</span> <span class="ow">in</span> <span class="n">flows</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+    <span class="n">entity</span> <span class="o">=</span> <span class="n">Entity</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">uuid4</span><span class="p">(),</span> <span class="n">code</span><span class="o">=</span><span class="s2">"property"</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Example property"</span><span class="p">,</span>
+                    <span class="n">characteristics</span><span class="o">=</span><span class="n">Characteristics</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="n">values</span><span class="p">))</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">Model</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">metadata</span><span class="o">=</span><span class="n">Metadata</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">uuid4</span><span class="p">(),</span> <span class="n">schema_version</span><span class="o">=</span><span class="s2">"0.5.0"</span><span class="p">),</span>
+                            <span class="n">definitions</span><span class="o">=</span><span class="n">Definitions</span><span class="p">(</span><span class="n">measures</span><span class="o">=</span><span class="p">(</span><span class="n">measure</span><span class="p">,)),</span>
+                            <span class="n">system</span><span class="o">=</span><span class="n">System</span><span class="p">(</span><span class="n">entities</span><span class="o">=</span><span class="p">(</span><span class="n">entity</span><span class="p">,)))</span>
+    <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="n">Stream</span><span class="o">.</span><span class="n">from_values</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">values</span><span class="p">))</span>
+
 <span class="nb">print</span><span class="p">(</span><span class="n">currency</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Rangekeeper Measure: &quot;Australian Dollar&quot;. Currency of [&#39;AUSTRALIA&#39;, &#39;COCOS (KEELING) ISLANDS&#39;, &#39;CHRISTMAS ISLAND&#39;, &#39;HEARD &amp; MCDONALD ISLANDS&#39;, &#39;KIRIBATI&#39;, &#39;NORFOLK ISLAND&#39;, &#39;NAURU&#39;, &#39;TUVALU&#39;]. Units: AUD
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>AUD
 </pre></div>
 </div>
 </div>
@@ -515,45 +542,33 @@ the currency units.</p>
 <p>Next we define a <code class="docutils literal notranslate"><span class="pre">Flow</span></code> object from a list of dates and amounts:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">transactions</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="s1">&#39;2020-01-01&#39;</span><span class="p">):</span> <span class="mi">100</span><span class="p">,</span>
-    <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="s1">&#39;2020-01-02&#39;</span><span class="p">):</span> <span class="mi">200</span><span class="p">,</span>
-    <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="s1">&#39;2019-01-01&#39;</span><span class="p">):</span> <span class="mi">300</span><span class="p">,</span>
-    <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="s1">&#39;2020-12-31&#39;</span><span class="p">):</span> <span class="o">-</span><span class="mi">100</span>
-    <span class="p">}</span>
-
-<span class="n">movements</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">transactions</span><span class="p">)</span>
-
-<span class="n">cash_flow</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Operational Expenses&#39;</span><span class="p">,</span>
-    <span class="n">movements</span><span class="o">=</span><span class="n">movements</span><span class="p">,</span>
-    <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">transactions</span> <span class="o">=</span> <span class="p">{</span><span class="n">date</span><span class="p">(</span><span class="mi">2020</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">):</span> <span class="mi">100</span><span class="p">,</span> <span class="n">date</span><span class="p">(</span><span class="mi">2020</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">):</span> <span class="mi">200</span><span class="p">,</span>
+                <span class="n">date</span><span class="p">(</span><span class="mi">2019</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">):</span> <span class="mi">300</span><span class="p">,</span> <span class="n">date</span><span class="p">(</span><span class="mi">2020</span><span class="p">,</span><span class="mi">12</span><span class="p">,</span><span class="mi">31</span><span class="p">):</span> <span class="o">-</span><span class="mi">100</span><span class="p">}</span>
+<span class="c1"># The author makes ordering explicit; constructors do not reorder evidence.</span>
+<span class="n">dates</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">transactions</span><span class="p">)</span>
+<span class="n">cash_flow</span> <span class="o">=</span> <span class="n">from_events</span><span class="p">(</span><span class="n">dates</span><span class="p">,</span> <span class="p">[</span><span class="n">transactions</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dates</span><span class="p">],</span> <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
-<p>We can view the object we just created by simply calling it:</p>
+<p>Display a detached pandas representation of the Flow:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cash_flow</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">to_series</span><span class="p">(</span><span class="n">cash_flow</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Operational Expenses"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html"><table>
-<thead>
-<tr><th style="text-align: right;">                   </th><th style="text-align: right;">  Operational Expenses</th></tr>
-</thead>
-<tbody>
-<tr><td style="text-align: right;">2020-01-01 00:00:00</td><td style="text-align: right;">               $100.00</td></tr>
-<tr><td style="text-align: right;">2020-01-02 00:00:00</td><td style="text-align: right;">               $200.00</td></tr>
-<tr><td style="text-align: right;">2019-01-01 00:00:00</td><td style="text-align: right;">               $300.00</td></tr>
-<tr><td style="text-align: right;">2020-12-31 00:00:00</td><td style="text-align: right;">              -$100.00</td></tr>
-</tbody>
-</table></div></div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2019-01-01     300
+2020-01-01     100
+2020-01-02     200
+2020-12-31    -100
+Name: Operational Expenses, dtype: object
+</pre></div>
 </div>
-<p>We can also inspect it by displaying its ‘movements’ (a Pandas <code class="docutils literal notranslate"><span class="pre">Series</span></code>), and its
-<code class="docutils literal notranslate"><span class="pre">index</span></code> (the Pandas Series’ <code class="docutils literal notranslate"><span class="pre">DateTimeIndex</span></code>):</p>
+</div>
+</div>
+<p>Inspect canonical movements and their calendar coordinates. Pandas conversion is a detached presentation operation.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cash_flow</span><span class="o">.</span><span class="n">movements</span>
@@ -561,28 +576,30 @@ the currency units.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2020-01-01    100.0
-2020-01-02    200.0
-2019-01-01    300.0
-2020-12-31   -100.0
-Name: Operational Expenses, dtype: float64
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(Movement.from_data({'key': '2019-01-01', 'date': '2019-01-01', 'magnitude': 300}),
+ Movement.from_data({'key': '2020-01-01', 'date': '2020-01-01', 'magnitude': 100}),
+ Movement.from_data({'key': '2020-01-02', 'date': '2020-01-02', 'magnitude': 200}),
+ Movement.from_data({'key': '2020-12-31', 'date': '2020-12-31', 'magnitude': -100}))
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cash_flow</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">index</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">movement</span><span class="o">.</span><span class="n">date</span> <span class="k">for</span> <span class="n">movement</span> <span class="ow">in</span> <span class="n">cash_flow</span><span class="o">.</span><span class="n">movements</span><span class="p">]</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>DatetimeIndex([&#39;2020-01-01&#39;, &#39;2020-01-02&#39;, &#39;2019-01-01&#39;, &#39;2020-12-31&#39;], dtype=&#39;datetime64[ns]&#39;, freq=None)
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[datetime.date(2019, 1, 1),
+ datetime.date(2020, 1, 1),
+ datetime.date(2020, 1, 2),
+ datetime.date(2020, 12, 31)]
 </pre></div>
 </div>
 </div>
 </div>
-<p>It’s units can be inspected by calling its <code class="docutils literal notranslate"><span class="pre">units</span></code> property:</p>
+<p>Its units can be inspected through the <code class="docutils literal notranslate"><span class="pre">units</span></code> property:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cash_flow</span><span class="o">.</span><span class="n">units</span>
@@ -590,168 +607,149 @@ Name: Operational Expenses, dtype: float64
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html">AUD</div></div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>'AUD'
+</pre></div>
+</div>
+</div>
 </div>
 </section>
 <section id="overview-of-a-flow">
 <h4>Overview of a <code class="docutils literal notranslate"><span class="pre">Flow</span></code><a class="headerlink" href="#overview-of-a-flow" title="Link to this heading">#</a></h4>
-<p>As you can see, a <code class="docutils literal notranslate"><span class="pre">Flow</span></code> has three properties:</p>
-<ol class="arabic simple">
-<li><p>it’s Name,</p></li>
-<li><p>a Pandas Series of date-stamped amounts (‘Movements’), and</p></li>
-<li><p>the units of the movement’s amounts</p></li>
-</ol>
-<ul class="simple">
-<li><p>Note the following:</p>
-<ol class="arabic simple">
-<li><p>The movements can be in any (temporal) order,</p></li>
-<li><p>The movements can be positive or negative,</p></li>
-<li><p>The movements will be (or converted to) <code class="docutils literal notranslate"><span class="pre">float</span></code>s</p></li>
-<li><p>The pd.Series index is a pd.DatetimeIndex</p></li>
-</ol>
-</li>
-</ul>
-<p>All this information can be inspected via the <code class="docutils literal notranslate"><span class="pre">display()</span></code> method:</p>
+<p>A Flow has units and ordered movements. The model logic supplies their meaning and chooses the operations. A Value supplies its key and UUID in a Model. Movements can be positive, negative, zero, or unresolved. Dates must be ordered; repeated event dates need distinct keys. No dataframe is stored inside the Model.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cash_flow</span><span class="o">.</span><span class="n">display</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">to_series</span><span class="p">(</span><span class="n">cash_flow</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Operational Expenses"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Name: Operational Expenses
-Units: AUD
-Movements: 
-|                     |   Operational Expenses |
-|---------------------|------------------------|
-| 2020-01-01 00:00:00 |                $100.00 |
-| 2020-01-02 00:00:00 |                $200.00 |
-| 2019-01-01 00:00:00 |                $300.00 |
-| 2020-12-31 00:00:00 |               -$100.00 |
-</pre></div>
-</div>
-</div>
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Operational Expenses</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2019-01-01</th>
+      <td>300</td>
+    </tr>
+    <tr>
+      <th>2020-01-01</th>
+      <td>100</td>
+    </tr>
+    <tr>
+      <th>2020-01-02</th>
+      <td>200</td>
+    </tr>
+    <tr>
+      <th>2020-12-31</th>
+      <td>-100</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
 </div>
 </section>
 </section>
-<section id="a-span">
-<h3>A <code class="docutils literal notranslate"><span class="pre">Span</span></code><a class="headerlink" href="#a-span" title="Link to this heading">#</a></h3>
-<p><code class="docutils literal notranslate"><span class="pre">Span</span></code>s are used to define intervals of time that encompass the movements of a
-Flow.</p>
-<p>A <code class="docutils literal notranslate"><span class="pre">Span</span></code> is a pd.Interval of pd.Timestamps that bound its start and end dates.</p>
+<section id="periods-and-spans">
+<h3>Periods and spans<a class="headerlink" href="#periods-and-spans" title="Link to this heading">#</a></h3>
+<p>Periods use date-only, half-open boundaries: the start is included and the end is excluded. This sequence covers eleven years. A period movement stores coverage without a redundant date. We choose <code class="docutils literal notranslate"><span class="pre">timing=&quot;last_day&quot;</span></code> for date-based table labels. The PV calculation below uses an explicit annual movement index, with the first payment at period one.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define a Span:</span>
-<span class="n">start_date</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="s1">&#39;2001-01-01&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">start_date</span> <span class="o">=</span> <span class="n">date</span><span class="p">(</span><span class="mi">2001</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">num_periods</span> <span class="o">=</span> <span class="mi">11</span>
-<span class="n">span</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">Span</span><span class="o">.</span><span class="n">from_duration</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Operation&#39;</span><span class="p">,</span>
-    <span class="n">date</span><span class="o">=</span><span class="n">start_date</span><span class="p">,</span>
-    <span class="n">duration</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span><span class="p">,</span>
-    <span class="n">amount</span><span class="o">=</span><span class="n">num_periods</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">span</span><span class="p">)</span>
+<span class="n">periods</span> <span class="o">=</span> <span class="n">make_periods</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span> <span class="n">frequency</span><span class="o">=</span><span class="s2">"year"</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="n">num_periods</span><span class="p">)</span>
+<span class="n">periods</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">periods</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Span: Operation
-Start Date: 2001-01-01
-End Date: 2011-12-31
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(Period.from_data({'start': '2001-01-01', 'end': '2002-01-01'}),
+ Period.from_data({'start': '2011-01-01', 'end': '2012-01-01'}))
 </pre></div>
 </div>
 </div>
 </div>
 </section>
-<section id="a-projection">
-<h3>A <code class="docutils literal notranslate"><span class="pre">Projection</span></code><a class="headerlink" href="#a-projection" title="Link to this heading">#</a></h3>
-<p>A <code class="docutils literal notranslate"><span class="pre">Projection</span></code> takes a value and casts it over a sequence of periods according
-to a specified logic. There are two classes of the form of the logic:</p>
-<ol class="arabic simple">
-<li><p>Extrapolation, which takes a starting value and from it generates a sequence
-of values over a sequence of dates, and</p></li>
-<li><p>Distribution, which takes a total value and subdivides it over a sequence of
-dates.</p></li>
-</ol>
-<p>To match the logic of line 4, ‘Potential Gross Income’, in Table 1.1 above, we
-will use a “Compounding” extrapolation:</p>
+<section id="project-known-values">
+<h3>Project known values<a class="headerlink" href="#project-known-values" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">calculations.projection</span></code> evaluates known inputs. Compound growth multiplies the initial value by <code class="docutils literal notranslate"><span class="pre">(1</span> <span class="pre">+</span> <span class="pre">rate)</span> <span class="pre">**</span> <span class="pre">period_index</span></code>, starting at index zero. Distribution allocation is a separate operation that preserves the supplied total.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define a Compounding Projection:</span>
-<span class="n">compounding_rate</span> <span class="o">=</span> <span class="mf">0.02</span>
-<span class="n">projection</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">projection</span><span class="o">.</span><span class="n">Extrapolation</span><span class="p">(</span>
-    <span class="n">form</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">extrapolation</span><span class="o">.</span><span class="n">Compounding</span><span class="p">(</span><span class="n">rate</span><span class="o">=</span><span class="n">compounding_rate</span><span class="p">),</span>
-    <span class="n">sequence</span><span class="o">=</span><span class="n">span</span><span class="o">.</span><span class="n">to_sequence</span><span class="p">(</span><span class="n">frequency</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span><span class="p">))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">compounding_rate</span> <span class="o">=</span> <span class="mf">0.02</span>
 </pre></div>
 </div>
 </div>
 </div>
-<p>Let’s now use the previous definitions of <code class="docutils literal notranslate"><span class="pre">Flow</span></code>s and <code class="docutils literal notranslate"><span class="pre">Projection</span></code>s to construct
-the ‘Potential Gross Income’ line item:</p>
+<p>Use the Flow content and projection function to construct the Potential Gross Income line item:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define a compounding Cash Flow:</span>
-<span class="n">initial_income</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">currency</span><span class="o">.</span><span class="n">units</span>
-<span class="n">potential_gross_income</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="o">.</span><span class="n">from_projection</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Potential Gross Income&#39;</span><span class="p">,</span>
-    <span class="n">value</span><span class="o">=</span><span class="n">initial_income</span><span class="p">,</span>
-    <span class="n">proj</span><span class="o">=</span><span class="n">projection</span><span class="p">,</span>
-    <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
-<span class="n">potential_gross_income</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">potential_gross_income</span> <span class="o">=</span> <span class="n">projection</span><span class="o">.</span><span class="n">project</span><span class="p">(</span>
+    <span class="n">Quantity</span><span class="p">(</span><span class="n">magnitude</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="p">),</span> <span class="n">periods</span><span class="o">=</span><span class="n">periods</span><span class="p">,</span>
+    <span class="n">method</span><span class="o">=</span><span class="s2">"compound"</span><span class="p">,</span> <span class="n">rate</span><span class="o">=</span><span class="n">compounding_rate</span><span class="p">)</span>
+<span class="n">to_series</span><span class="p">(</span><span class="n">potential_gross_income</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Potential Gross Income"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html"><table>
-<thead>
-<tr><th style="text-align: right;">                   </th><th style="text-align: right;">  Potential Gross Income</th></tr>
-</thead>
-<tbody>
-<tr><td style="text-align: right;">2001-12-31 00:00:00</td><td style="text-align: right;">                 $100.00</td></tr>
-<tr><td style="text-align: right;">2002-12-31 00:00:00</td><td style="text-align: right;">                 $102.00</td></tr>
-<tr><td style="text-align: right;">2003-12-31 00:00:00</td><td style="text-align: right;">                 $104.04</td></tr>
-<tr><td style="text-align: right;">2004-12-31 00:00:00</td><td style="text-align: right;">                 $106.12</td></tr>
-<tr><td style="text-align: right;">2005-12-31 00:00:00</td><td style="text-align: right;">                 $108.24</td></tr>
-<tr><td style="text-align: right;">2006-12-31 00:00:00</td><td style="text-align: right;">                 $110.41</td></tr>
-<tr><td style="text-align: right;">2007-12-31 00:00:00</td><td style="text-align: right;">                 $112.62</td></tr>
-<tr><td style="text-align: right;">2008-12-31 00:00:00</td><td style="text-align: right;">                 $114.87</td></tr>
-<tr><td style="text-align: right;">2009-12-31 00:00:00</td><td style="text-align: right;">                 $117.17</td></tr>
-<tr><td style="text-align: right;">2010-12-31 00:00:00</td><td style="text-align: right;">                 $119.51</td></tr>
-<tr><td style="text-align: right;">2011-12-31 00:00:00</td><td style="text-align: right;">                 $121.90</td></tr>
-</tbody>
-</table></div></div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2001-12-31         100.0
+2002-12-31         102.0
+2003-12-31        104.04
+2004-12-31      106.1208
+2005-12-31    108.243216
+2006-12-31     110.40808
+2007-12-31    112.616242
+2008-12-31    114.868567
+2009-12-31    117.165938
+2010-12-31    119.509257
+2011-12-31    121.899442
+Name: Potential Gross Income, dtype: object
+</pre></div>
+</div>
+</div>
 </div>
 <p>Similarly, we define the ‘Vacancy’ line item by multiplying the movements of the
 ‘Potential Gross Income’ <code class="docutils literal notranslate"><span class="pre">Flow</span></code> by a vacancy rate:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">vacancy_rate</span> <span class="o">=</span> <span class="mf">0.05</span>
-<span class="n">vacancy</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Vacancy Allowance&#39;</span><span class="p">,</span>
-    <span class="n">movements</span><span class="o">=</span><span class="n">potential_gross_income</span><span class="o">.</span><span class="n">movements</span> <span class="o">*</span> <span class="o">-</span><span class="n">vacancy_rate</span><span class="p">,</span>
-    <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
-<span class="n">vacancy</span>
+<span class="n">vacancy</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">potential_gross_income</span><span class="p">,</span> <span class="o">-</span><span class="n">vacancy_rate</span><span class="p">)</span>
+<span class="n">to_series</span><span class="p">(</span><span class="n">vacancy</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Vacancy Allowance"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html"><table>
-<thead>
-<tr><th style="text-align: right;">                   </th><th style="text-align: right;">  Vacancy Allowance</th></tr>
-</thead>
-<tbody>
-<tr><td style="text-align: right;">2001-12-31 00:00:00</td><td style="text-align: right;">             -$5.00</td></tr>
-<tr><td style="text-align: right;">2002-12-31 00:00:00</td><td style="text-align: right;">             -$5.10</td></tr>
-<tr><td style="text-align: right;">2003-12-31 00:00:00</td><td style="text-align: right;">             -$5.20</td></tr>
-<tr><td style="text-align: right;">2004-12-31 00:00:00</td><td style="text-align: right;">             -$5.31</td></tr>
-<tr><td style="text-align: right;">2005-12-31 00:00:00</td><td style="text-align: right;">             -$5.41</td></tr>
-<tr><td style="text-align: right;">2006-12-31 00:00:00</td><td style="text-align: right;">             -$5.52</td></tr>
-<tr><td style="text-align: right;">2007-12-31 00:00:00</td><td style="text-align: right;">             -$5.63</td></tr>
-<tr><td style="text-align: right;">2008-12-31 00:00:00</td><td style="text-align: right;">             -$5.74</td></tr>
-<tr><td style="text-align: right;">2009-12-31 00:00:00</td><td style="text-align: right;">             -$5.86</td></tr>
-<tr><td style="text-align: right;">2010-12-31 00:00:00</td><td style="text-align: right;">             -$5.98</td></tr>
-<tr><td style="text-align: right;">2011-12-31 00:00:00</td><td style="text-align: right;">             -$6.09</td></tr>
-</tbody>
-</table></div></div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2001-12-31        -5.0
+2002-12-31        -5.1
+2003-12-31      -5.202
+2004-12-31    -5.30604
+2005-12-31   -5.412161
+2006-12-31   -5.520404
+2007-12-31   -5.630812
+2008-12-31   -5.743428
+2009-12-31   -5.858297
+2010-12-31   -5.975463
+2011-12-31   -6.094972
+Name: Vacancy Allowance, dtype: object
+</pre></div>
+</div>
+</div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -760,341 +758,411 @@ negative, because it is an <em>outflow</em>.</p>
 </div>
 </section>
 <section id="a-stream">
-<h3>A <code class="docutils literal notranslate"><span class="pre">Stream</span></code><a class="headerlink" href="#a-stream" title="Link to this heading">#</a></h3>
-<p>A <code class="docutils literal notranslate"><span class="pre">Stream</span></code> is a collection of constituent <code class="docutils literal notranslate"><span class="pre">Flow</span></code>s into a table, such that their
-movements (transactions) are resampled with a specified periodicity.</p>
-<p>Let’s use the ‘Effective Gross Income’ line item in Table 1.1 to illustrate the
-concept of a <code class="docutils literal notranslate"><span class="pre">Stream</span></code>:</p>
+<h3>A Stream<a class="headerlink" href="#a-stream" title="Link to this heading">#</a></h3>
+<p>A Stream selects canonical Flow Values within one immutable Model revision. Names are labels; UUIDs identify the Values. Here, both Flows use the same periods and units, so they can be added directly.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">effective_gross_income</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Effective Gross Income&#39;</span><span class="p">,</span>
-    <span class="n">flows</span><span class="o">=</span><span class="p">[</span><span class="n">potential_gross_income</span><span class="p">,</span> <span class="n">vacancy</span><span class="p">],</span>
-    <span class="n">frequency</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span><span class="p">)</span>
-<span class="n">effective_gross_income</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">income_model</span><span class="p">,</span> <span class="n">effective_gross_income</span> <span class="o">=</span> <span class="n">record_flows</span><span class="p">({</span>
+    <span class="s2">"potential_gross_income"</span><span class="p">:</span> <span class="n">potential_gross_income</span><span class="p">,</span> <span class="s2">"vacancy"</span><span class="p">:</span> <span class="n">vacancy</span><span class="p">})</span>
+<span class="p">[(</span><span class="n">value</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span><span class="n">id</span><span class="p">)</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">effective_gross_income</span><span class="o">.</span><span class="n">values</span><span class="p">]</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html"><table>
-<thead>
-<tr><th style="text-align: right;">    </th><th style="text-align: right;">  Potential Gross Income</th><th style="text-align: right;">  Vacancy Allowance</th></tr>
-</thead>
-<tbody>
-<tr><td style="text-align: right;">2001</td><td style="text-align: right;">                 $100.00</td><td style="text-align: right;">             -$5.00</td></tr>
-<tr><td style="text-align: right;">2002</td><td style="text-align: right;">                 $102.00</td><td style="text-align: right;">             -$5.10</td></tr>
-<tr><td style="text-align: right;">2003</td><td style="text-align: right;">                 $104.04</td><td style="text-align: right;">             -$5.20</td></tr>
-<tr><td style="text-align: right;">2004</td><td style="text-align: right;">                 $106.12</td><td style="text-align: right;">             -$5.31</td></tr>
-<tr><td style="text-align: right;">2005</td><td style="text-align: right;">                 $108.24</td><td style="text-align: right;">             -$5.41</td></tr>
-<tr><td style="text-align: right;">2006</td><td style="text-align: right;">                 $110.41</td><td style="text-align: right;">             -$5.52</td></tr>
-<tr><td style="text-align: right;">2007</td><td style="text-align: right;">                 $112.62</td><td style="text-align: right;">             -$5.63</td></tr>
-<tr><td style="text-align: right;">2008</td><td style="text-align: right;">                 $114.87</td><td style="text-align: right;">             -$5.74</td></tr>
-<tr><td style="text-align: right;">2009</td><td style="text-align: right;">                 $117.17</td><td style="text-align: right;">             -$5.86</td></tr>
-<tr><td style="text-align: right;">2010</td><td style="text-align: right;">                 $119.51</td><td style="text-align: right;">             -$5.98</td></tr>
-<tr><td style="text-align: right;">2011</td><td style="text-align: right;">                 $121.90</td><td style="text-align: right;">             -$6.09</td></tr>
-</tbody>
-</table></div></div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[('potential_gross_income', UUID('813f4738-9c6a-4bfd-aec0-bb43674cdc0d')),
+ ('vacancy', UUID('be68e358-7c74-46fc-89fa-e91f232c0f81'))]
+</pre></div>
 </div>
-<p>As you can see, the <code class="docutils literal notranslate"><span class="pre">Stream</span></code> has a name, a table of constituent <code class="docutils literal notranslate"><span class="pre">Flow</span></code>s (each
-with their own units), with their movements resampled to the specified
-periodicity.</p>
-<p>In order to aggregate the constituent <code class="docutils literal notranslate"><span class="pre">Flow</span></code>s, we can sum them into a resultant
-<code class="docutils literal notranslate"><span class="pre">Flow</span></code>:</p>
+</div>
+</div>
+<p>The Stream retains its Model revision and Value identities. Pointwise addition is explicit and does not change either input.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">effective_gross_income_flow</span> <span class="o">=</span> <span class="n">effective_gross_income</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-<span class="n">effective_gross_income_flow</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">effective_gross_income_flow</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">sum_flows</span><span class="p">(</span><span class="n">effective_gross_income</span><span class="o">.</span><span class="n">flows</span><span class="p">)</span><span class="o">.</span><span class="n">flow</span>
+<span class="n">to_series</span><span class="p">(</span><span class="n">effective_gross_income_flow</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Effective Gross Income"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html"><table>
-<thead>
-<tr><th style="text-align: right;">               date</th><th style="text-align: right;">  Effective Gross Income (sum)</th></tr>
-</thead>
-<tbody>
-<tr><td style="text-align: right;">2001-12-31 00:00:00</td><td style="text-align: right;">                        $95.00</td></tr>
-<tr><td style="text-align: right;">2002-12-31 00:00:00</td><td style="text-align: right;">                        $96.90</td></tr>
-<tr><td style="text-align: right;">2003-12-31 00:00:00</td><td style="text-align: right;">                        $98.84</td></tr>
-<tr><td style="text-align: right;">2004-12-31 00:00:00</td><td style="text-align: right;">                       $100.81</td></tr>
-<tr><td style="text-align: right;">2005-12-31 00:00:00</td><td style="text-align: right;">                       $102.83</td></tr>
-<tr><td style="text-align: right;">2006-12-31 00:00:00</td><td style="text-align: right;">                       $104.89</td></tr>
-<tr><td style="text-align: right;">2007-12-31 00:00:00</td><td style="text-align: right;">                       $106.99</td></tr>
-<tr><td style="text-align: right;">2008-12-31 00:00:00</td><td style="text-align: right;">                       $109.13</td></tr>
-<tr><td style="text-align: right;">2009-12-31 00:00:00</td><td style="text-align: right;">                       $111.31</td></tr>
-<tr><td style="text-align: right;">2010-12-31 00:00:00</td><td style="text-align: right;">                       $113.53</td></tr>
-<tr><td style="text-align: right;">2011-12-31 00:00:00</td><td style="text-align: right;">                       $115.80</td></tr>
-</tbody>
-</table></div></div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2001-12-31          95.0
+2002-12-31          96.9
+2003-12-31        98.838
+2004-12-31     100.81476
+2005-12-31    102.831055
+2006-12-31    104.887676
+2007-12-31     106.98543
+2008-12-31    109.125138
+2009-12-31    111.307641
+2010-12-31    113.533794
+2011-12-31     115.80447
+Name: Effective Gross Income, dtype: object
+</pre></div>
 </div>
-<p>Note the <code class="docutils literal notranslate"><span class="pre">Flow</span></code>’s index is back to a <code class="docutils literal notranslate"><span class="pre">pd.DatetimeIndex</span></code>, with movements occuring
-at the <em>end</em> date of each period.</p>
+</div>
+</div>
+<p>The result retains the period coordinates and period-end observation dates. An unequal calendar would require explicit alignment or resampling.</p>
 <p>With this in mind, we can complete Table 1.1</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">opex_pgi_ratio</span> <span class="o">=</span> <span class="mf">.35</span>
-<span class="n">operating_expenses</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Operating Expenses&#39;</span><span class="p">,</span>
-    <span class="n">movements</span><span class="o">=</span><span class="n">potential_gross_income</span><span class="o">.</span><span class="n">movements</span> <span class="o">*</span> <span class="n">opex_pgi_ratio</span><span class="p">,</span>
-    <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span><span class="o">.</span><span class="n">negate</span><span class="p">()</span>
-
-<span class="n">net_operating_income</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Net Operating Income&#39;</span><span class="p">,</span>
-    <span class="n">flows</span><span class="o">=</span><span class="p">[</span><span class="n">effective_gross_income_flow</span><span class="p">,</span> <span class="n">operating_expenses</span><span class="p">],</span>
-    <span class="n">frequency</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span><span class="p">)</span>
-
-<span class="n">net_operating_income</span>
+<span class="n">operating_expenses</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">potential_gross_income</span><span class="p">,</span> <span class="o">-</span><span class="n">opex_pgi_ratio</span><span class="p">)</span>
+<span class="n">net_operating_income</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">sum_flows</span><span class="p">((</span><span class="n">effective_gross_income_flow</span><span class="p">,</span> <span class="n">operating_expenses</span><span class="p">))</span><span class="o">.</span><span class="n">flow</span>
+<span class="n">to_series</span><span class="p">(</span><span class="n">net_operating_income</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Net Operating Income"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html"><table>
-<thead>
-<tr><th style="text-align: right;">    </th><th style="text-align: right;">  Effective Gross Income (sum)</th><th style="text-align: right;">  Operating Expenses</th></tr>
-</thead>
-<tbody>
-<tr><td style="text-align: right;">2001</td><td style="text-align: right;">                        $95.00</td><td style="text-align: right;">             -$35.00</td></tr>
-<tr><td style="text-align: right;">2002</td><td style="text-align: right;">                        $96.90</td><td style="text-align: right;">             -$35.70</td></tr>
-<tr><td style="text-align: right;">2003</td><td style="text-align: right;">                        $98.84</td><td style="text-align: right;">             -$36.41</td></tr>
-<tr><td style="text-align: right;">2004</td><td style="text-align: right;">                       $100.81</td><td style="text-align: right;">             -$37.14</td></tr>
-<tr><td style="text-align: right;">2005</td><td style="text-align: right;">                       $102.83</td><td style="text-align: right;">             -$37.89</td></tr>
-<tr><td style="text-align: right;">2006</td><td style="text-align: right;">                       $104.89</td><td style="text-align: right;">             -$38.64</td></tr>
-<tr><td style="text-align: right;">2007</td><td style="text-align: right;">                       $106.99</td><td style="text-align: right;">             -$39.42</td></tr>
-<tr><td style="text-align: right;">2008</td><td style="text-align: right;">                       $109.13</td><td style="text-align: right;">             -$40.20</td></tr>
-<tr><td style="text-align: right;">2009</td><td style="text-align: right;">                       $111.31</td><td style="text-align: right;">             -$41.01</td></tr>
-<tr><td style="text-align: right;">2010</td><td style="text-align: right;">                       $113.53</td><td style="text-align: right;">             -$41.83</td></tr>
-<tr><td style="text-align: right;">2011</td><td style="text-align: right;">                       $115.80</td><td style="text-align: right;">             -$42.66</td></tr>
-</tbody>
-</table></div></div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2001-12-31         60.0
+2002-12-31         61.2
+2003-12-31       62.424
+2004-12-31     63.67248
+2005-12-31     64.94593
+2006-12-31    66.244848
+2007-12-31    67.569745
+2008-12-31     68.92114
+2009-12-31    70.299563
+2010-12-31    71.705554
+2011-12-31    73.139665
+Name: Net Operating Income, dtype: object
+</pre></div>
+</div>
+</div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">capex_pgi_ratio</span> <span class="o">=</span> <span class="mf">.1</span>
-<span class="n">capital_expenditures</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Capital Expenditures&#39;</span><span class="p">,</span>
-    <span class="n">movements</span><span class="o">=</span><span class="n">potential_gross_income</span><span class="o">.</span><span class="n">movements</span> <span class="o">*</span> <span class="n">capex_pgi_ratio</span><span class="p">,</span>
-    <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span><span class="o">.</span><span class="n">negate</span><span class="p">()</span>
-
-<span class="n">net_annual_cashflows</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Net Annual Cashflows&#39;</span><span class="p">,</span>
-    <span class="n">flows</span><span class="o">=</span><span class="p">[</span><span class="n">net_operating_income</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">capital_expenditures</span><span class="p">],</span>
-    <span class="n">frequency</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span><span class="p">)</span>
-
-<span class="n">net_annual_cashflows</span>
+<span class="n">capital_expenditures</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">potential_gross_income</span><span class="p">,</span> <span class="o">-</span><span class="n">capex_pgi_ratio</span><span class="p">)</span>
+<span class="n">net_annual_cashflows</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">sum_flows</span><span class="p">((</span><span class="n">net_operating_income</span><span class="p">,</span> <span class="n">capital_expenditures</span><span class="p">))</span><span class="o">.</span><span class="n">flow</span>
+<span class="n">to_series</span><span class="p">(</span><span class="n">net_annual_cashflows</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Net Annual Cashflows"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html"><table>
-<thead>
-<tr><th style="text-align: right;">    </th><th style="text-align: right;">  Net Operating Income (sum)</th><th style="text-align: right;">  Capital Expenditures</th></tr>
-</thead>
-<tbody>
-<tr><td style="text-align: right;">2001</td><td style="text-align: right;">                      $60.00</td><td style="text-align: right;">               -$10.00</td></tr>
-<tr><td style="text-align: right;">2002</td><td style="text-align: right;">                      $61.20</td><td style="text-align: right;">               -$10.20</td></tr>
-<tr><td style="text-align: right;">2003</td><td style="text-align: right;">                      $62.42</td><td style="text-align: right;">               -$10.40</td></tr>
-<tr><td style="text-align: right;">2004</td><td style="text-align: right;">                      $63.67</td><td style="text-align: right;">               -$10.61</td></tr>
-<tr><td style="text-align: right;">2005</td><td style="text-align: right;">                      $64.95</td><td style="text-align: right;">               -$10.82</td></tr>
-<tr><td style="text-align: right;">2006</td><td style="text-align: right;">                      $66.24</td><td style="text-align: right;">               -$11.04</td></tr>
-<tr><td style="text-align: right;">2007</td><td style="text-align: right;">                      $67.57</td><td style="text-align: right;">               -$11.26</td></tr>
-<tr><td style="text-align: right;">2008</td><td style="text-align: right;">                      $68.92</td><td style="text-align: right;">               -$11.49</td></tr>
-<tr><td style="text-align: right;">2009</td><td style="text-align: right;">                      $70.30</td><td style="text-align: right;">               -$11.72</td></tr>
-<tr><td style="text-align: right;">2010</td><td style="text-align: right;">                      $71.71</td><td style="text-align: right;">               -$11.95</td></tr>
-<tr><td style="text-align: right;">2011</td><td style="text-align: right;">                      $73.14</td><td style="text-align: right;">               -$12.19</td></tr>
-</tbody>
-</table></div></div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2001-12-31         50.0
+2002-12-31         51.0
+2003-12-31        52.02
+2004-12-31      53.0604
+2005-12-31    54.121608
+2006-12-31     55.20404
+2007-12-31    56.308121
+2008-12-31    57.434283
+2009-12-31    58.582969
+2010-12-31    59.754628
+2011-12-31    60.949721
+Name: Net Annual Cashflows, dtype: object
+</pre></div>
+</div>
+</div>
 </div>
 <p>To calculate the reversion cashflow, we set up a period that spans the 10th year
 of the property:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">reversion_span</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">Span</span><span class="o">.</span><span class="n">from_duration</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Reversion&#39;</span><span class="p">,</span>
-    <span class="n">date</span><span class="o">=</span><span class="n">start_date</span> <span class="o">+</span> <span class="n">pd</span><span class="o">.</span><span class="n">DateOffset</span><span class="p">(</span><span class="n">years</span><span class="o">=</span><span class="mi">9</span><span class="p">),</span>
-    <span class="n">duration</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span>
-    <span class="p">)</span>
-
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">reversion_period</span> <span class="o">=</span> <span class="n">periods</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span>
 <span class="n">exit_caprate</span> <span class="o">=</span> <span class="mf">0.05</span>
-<span class="n">reversion_flow</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Flow</span><span class="o">.</span><span class="n">from_projection</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Reversion&#39;</span><span class="p">,</span>
-    <span class="n">value</span><span class="o">=</span><span class="n">net_annual_cashflows</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">exit_caprate</span><span class="p">,</span>
-    <span class="n">proj</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">projection</span><span class="o">.</span><span class="n">Distribution</span><span class="p">(</span>
-        <span class="n">form</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">distribution</span><span class="o">.</span><span class="n">Uniform</span><span class="p">(),</span>
-        <span class="n">sequence</span><span class="o">=</span><span class="n">reversion_span</span><span class="o">.</span><span class="n">to_sequence</span><span class="p">(</span><span class="n">frequency</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span><span class="p">)),</span>
-    <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
-<span class="n">reversion_flow</span>
+<span class="c1"># Capitalize the following year's net cashflow at the end of the tenth year.</span>
+<span class="n">reversion_flow</span> <span class="o">=</span> <span class="n">from_periods</span><span class="p">((</span><span class="n">reversion_period</span><span class="p">,),</span>
+    <span class="p">(</span><span class="n">net_annual_cashflows</span><span class="o">.</span><span class="n">movements</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">magnitude</span> <span class="o">/</span> <span class="n">exit_caprate</span><span class="p">,),</span> <span class="n">units</span><span class="o">=</span><span class="n">currency</span><span class="p">)</span>
+<span class="n">to_series</span><span class="p">(</span><span class="n">reversion_flow</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Reversion"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html"><table>
-<thead>
-<tr><th style="text-align: right;">                   </th><th style="text-align: right;">  Reversion</th></tr>
-</thead>
-<tbody>
-<tr><td style="text-align: right;">2010-12-31 00:00:00</td><td style="text-align: right;">  $1,218.99</td></tr>
-</tbody>
-</table></div></div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2010-12-31    1218.99442
+Name: Reversion, dtype: object
+</pre></div>
+</div>
+</div>
 </div>
 <p>Finally, we can aggregate the net and reversion cashflows in order to calculate
 the project’s complete cashflows:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">reversion_flow</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">to_series</span><span class="p">(</span><span class="n">reversion_flow</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Reversion"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html"><table>
-<thead>
-<tr><th style="text-align: right;">                   </th><th style="text-align: right;">  Reversion</th></tr>
-</thead>
-<tbody>
-<tr><td style="text-align: right;">2010-12-31 00:00:00</td><td style="text-align: right;">  $1,218.99</td></tr>
-</tbody>
-</table></div></div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2010-12-31    1218.99442
+Name: Reversion, dtype: object
+</pre></div>
+</div>
+</div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">net_cashflows_with_reversion</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Net Cashflow with Reversion&#39;</span><span class="p">,</span>
-    <span class="n">flows</span><span class="o">=</span><span class="p">[</span><span class="n">net_annual_cashflows</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">reversion_flow</span><span class="p">],</span>
-    <span class="n">frequency</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span><span class="p">)</span>
-<span class="n">net_cashflows_with_reversion</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">net_cashflows_with_reversion</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">sum_flows</span><span class="p">(</span>
+    <span class="p">(</span><span class="n">net_annual_cashflows</span><span class="p">,</span> <span class="n">reversion_flow</span><span class="p">),</span> <span class="n">join</span><span class="o">=</span><span class="s2">"union"</span><span class="p">,</span> <span class="n">missing</span><span class="o">=</span><span class="s2">"zero"</span><span class="p">)</span><span class="o">.</span><span class="n">flow</span>
+<span class="n">to_series</span><span class="p">(</span><span class="n">net_cashflows_with_reversion</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Net Cashflow with Reversion"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html"><table>
-<thead>
-<tr><th style="text-align: right;">    </th><th style="text-align: right;">  Net Annual Cashflows (sum)</th><th style="text-align: right;">  Reversion</th></tr>
-</thead>
-<tbody>
-<tr><td style="text-align: right;">2001</td><td style="text-align: right;">                      $50.00</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">2002</td><td style="text-align: right;">                      $51.00</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">2003</td><td style="text-align: right;">                      $52.02</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">2004</td><td style="text-align: right;">                      $53.06</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">2005</td><td style="text-align: right;">                      $54.12</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">2006</td><td style="text-align: right;">                      $55.20</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">2007</td><td style="text-align: right;">                      $56.31</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">2008</td><td style="text-align: right;">                      $57.43</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">2009</td><td style="text-align: right;">                      $58.58</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">2010</td><td style="text-align: right;">                      $59.75</td><td style="text-align: right;">  $1,218.99</td></tr>
-<tr><td style="text-align: right;">2011</td><td style="text-align: right;">                      $60.95</td><td style="text-align: right;">          0</td></tr>
-</tbody>
-</table></div></div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2001-12-31           50.0
+2002-12-31           51.0
+2003-12-31          52.02
+2004-12-31        53.0604
+2005-12-31      54.121608
+2006-12-31       55.20404
+2007-12-31      56.308121
+2008-12-31      57.434283
+2009-12-31      58.582969
+2010-12-31    1278.749048
+2011-12-31      60.949721
+Name: Net Cashflow with Reversion, dtype: object
+</pre></div>
+</div>
+</div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">net_cashflows_with_reversion</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Net Cashflow with Reversion&#39;</span><span class="p">,</span>
-    <span class="n">flows</span><span class="o">=</span><span class="p">[</span><span class="n">net_annual_cashflows</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">reversion_flow</span><span class="p">],</span>
-    <span class="n">frequency</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span><span class="p">)</span><span class="o">.</span><span class="n">trim_to_span</span><span class="p">(</span>
-    <span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">Span</span><span class="p">(</span>
-        <span class="n">start_date</span><span class="o">=</span><span class="n">start_date</span><span class="p">,</span>
-        <span class="n">end_date</span><span class="o">=</span><span class="n">reversion_span</span><span class="o">.</span><span class="n">end_date</span><span class="p">)</span>
-    <span class="p">)</span>
-<span class="n">net_cashflows_with_reversion</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">net_cashflows_with_reversion</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">trim</span><span class="p">(</span>
+    <span class="n">net_cashflows_with_reversion</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">start_date</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">date</span><span class="p">(</span><span class="mi">2011</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+<span class="n">to_series</span><span class="p">(</span><span class="n">net_cashflows_with_reversion</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Net Cashflow with Reversion"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html"><table>
-<thead>
-<tr><th style="text-align: right;">    </th><th style="text-align: right;">  Net Annual Cashflows (sum)</th><th style="text-align: right;">  Reversion</th></tr>
-</thead>
-<tbody>
-<tr><td style="text-align: right;">2001</td><td style="text-align: right;">                      $50.00</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">2002</td><td style="text-align: right;">                      $51.00</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">2003</td><td style="text-align: right;">                      $52.02</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">2004</td><td style="text-align: right;">                      $53.06</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">2005</td><td style="text-align: right;">                      $54.12</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">2006</td><td style="text-align: right;">                      $55.20</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">2007</td><td style="text-align: right;">                      $56.31</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">2008</td><td style="text-align: right;">                      $57.43</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">2009</td><td style="text-align: right;">                      $58.58</td><td style="text-align: right;">          0</td></tr>
-<tr><td style="text-align: right;">2010</td><td style="text-align: right;">                      $59.75</td><td style="text-align: right;">  $1,218.99</td></tr>
-</tbody>
-</table></div></div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2001-12-31           50.0
+2002-12-31           51.0
+2003-12-31          52.02
+2004-12-31        53.0604
+2005-12-31      54.121608
+2006-12-31       55.20404
+2007-12-31      56.308121
+2008-12-31      57.434283
+2009-12-31      58.582969
+2010-12-31    1278.749048
+Name: Net Cashflow with Reversion, dtype: object
+</pre></div>
 </div>
-<p>If we wished to replicate Table 1.1 from <span id="id4">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span> we can construct a <code class="docutils literal notranslate"><span class="pre">Stream</span></code> like so:</p>
+</div>
+</div>
+<p>The canonical Model holds the named Flow Values. A detached pandas table presents the same content in the layout used by Table 1.1.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">table</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">flux</span><span class="o">.</span><span class="n">Stream</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Table 1.1&#39;</span><span class="p">,</span>
-    <span class="n">flows</span><span class="o">=</span><span class="p">[</span>
-        <span class="n">potential_gross_income</span><span class="p">,</span>
-        <span class="n">vacancy</span><span class="p">,</span>
-        <span class="n">effective_gross_income_flow</span><span class="p">,</span>
-        <span class="n">operating_expenses</span><span class="p">,</span>
-        <span class="n">net_operating_income</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span>
-        <span class="n">capital_expenditures</span><span class="p">,</span>
-        <span class="n">net_annual_cashflows</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span>
-        <span class="n">reversion_flow</span><span class="p">,</span>
-        <span class="n">net_cashflows_with_reversion</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-        <span class="p">],</span>
-    <span class="n">frequency</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span>
-    <span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">flows</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"Potential Gross Income"</span><span class="p">:</span> <span class="n">potential_gross_income</span><span class="p">,</span>
+    <span class="s2">"Vacancy"</span><span class="p">:</span> <span class="n">vacancy</span><span class="p">,</span>
+    <span class="s2">"Effective Gross Income"</span><span class="p">:</span> <span class="n">effective_gross_income_flow</span><span class="p">,</span>
+    <span class="s2">"Operating Expenses"</span><span class="p">:</span> <span class="n">operating_expenses</span><span class="p">,</span>
+    <span class="s2">"Net Operating Income"</span><span class="p">:</span> <span class="n">net_operating_income</span><span class="p">,</span>
+    <span class="s2">"Capital Expenditures"</span><span class="p">:</span> <span class="n">capital_expenditures</span><span class="p">,</span>
+    <span class="s2">"Net Annual Cashflows"</span><span class="p">:</span> <span class="n">net_annual_cashflows</span><span class="p">,</span>
+    <span class="s2">"Reversion"</span><span class="p">:</span> <span class="n">reversion_flow</span><span class="p">,</span>
+    <span class="s2">"Net Cashflow with Reversion"</span><span class="p">:</span> <span class="n">net_cashflows_with_reversion</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="n">model</span><span class="p">,</span> <span class="n">table_stream</span> <span class="o">=</span> <span class="n">record_flows</span><span class="p">(</span><span class="n">flows</span><span class="p">)</span>
+<span class="c1"># Presentation is detached. Blank table cells do not change canonical missingness.</span>
+<span class="n">table</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">to_series</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">flow</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">value</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">table_stream</span><span class="o">.</span><span class="n">values</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
 <span class="n">table</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html"><table>
-<thead>
-<tr><th style="text-align: right;">    </th><th style="text-align: right;">  Potential Gross Income</th><th style="text-align: right;">  Vacancy Allowance</th><th style="text-align: right;">  Effective Gross Income (sum)</th><th style="text-align: right;">  Operating Expenses</th><th style="text-align: right;">  Net Operating Income (sum)</th><th style="text-align: right;">  Capital Expenditures</th><th style="text-align: right;">  Net Annual Cashflows (sum)</th><th style="text-align: right;">  Reversion</th><th style="text-align: right;">  Net Cashflow with Reversion (sum)</th></tr>
-</thead>
-<tbody>
-<tr><td style="text-align: right;">2001</td><td style="text-align: right;">                 $100.00</td><td style="text-align: right;">             -$5.00</td><td style="text-align: right;">                        $95.00</td><td style="text-align: right;">             -$35.00</td><td style="text-align: right;">                      $60.00</td><td style="text-align: right;">               -$10.00</td><td style="text-align: right;">                      $50.00</td><td style="text-align: right;">          0</td><td style="text-align: right;">                             $50.00</td></tr>
-<tr><td style="text-align: right;">2002</td><td style="text-align: right;">                 $102.00</td><td style="text-align: right;">             -$5.10</td><td style="text-align: right;">                        $96.90</td><td style="text-align: right;">             -$35.70</td><td style="text-align: right;">                      $61.20</td><td style="text-align: right;">               -$10.20</td><td style="text-align: right;">                      $51.00</td><td style="text-align: right;">          0</td><td style="text-align: right;">                             $51.00</td></tr>
-<tr><td style="text-align: right;">2003</td><td style="text-align: right;">                 $104.04</td><td style="text-align: right;">             -$5.20</td><td style="text-align: right;">                        $98.84</td><td style="text-align: right;">             -$36.41</td><td style="text-align: right;">                      $62.42</td><td style="text-align: right;">               -$10.40</td><td style="text-align: right;">                      $52.02</td><td style="text-align: right;">          0</td><td style="text-align: right;">                             $52.02</td></tr>
-<tr><td style="text-align: right;">2004</td><td style="text-align: right;">                 $106.12</td><td style="text-align: right;">             -$5.31</td><td style="text-align: right;">                       $100.81</td><td style="text-align: right;">             -$37.14</td><td style="text-align: right;">                      $63.67</td><td style="text-align: right;">               -$10.61</td><td style="text-align: right;">                      $53.06</td><td style="text-align: right;">          0</td><td style="text-align: right;">                             $53.06</td></tr>
-<tr><td style="text-align: right;">2005</td><td style="text-align: right;">                 $108.24</td><td style="text-align: right;">             -$5.41</td><td style="text-align: right;">                       $102.83</td><td style="text-align: right;">             -$37.89</td><td style="text-align: right;">                      $64.95</td><td style="text-align: right;">               -$10.82</td><td style="text-align: right;">                      $54.12</td><td style="text-align: right;">          0</td><td style="text-align: right;">                             $54.12</td></tr>
-<tr><td style="text-align: right;">2006</td><td style="text-align: right;">                 $110.41</td><td style="text-align: right;">             -$5.52</td><td style="text-align: right;">                       $104.89</td><td style="text-align: right;">             -$38.64</td><td style="text-align: right;">                      $66.24</td><td style="text-align: right;">               -$11.04</td><td style="text-align: right;">                      $55.20</td><td style="text-align: right;">          0</td><td style="text-align: right;">                             $55.20</td></tr>
-<tr><td style="text-align: right;">2007</td><td style="text-align: right;">                 $112.62</td><td style="text-align: right;">             -$5.63</td><td style="text-align: right;">                       $106.99</td><td style="text-align: right;">             -$39.42</td><td style="text-align: right;">                      $67.57</td><td style="text-align: right;">               -$11.26</td><td style="text-align: right;">                      $56.31</td><td style="text-align: right;">          0</td><td style="text-align: right;">                             $56.31</td></tr>
-<tr><td style="text-align: right;">2008</td><td style="text-align: right;">                 $114.87</td><td style="text-align: right;">             -$5.74</td><td style="text-align: right;">                       $109.13</td><td style="text-align: right;">             -$40.20</td><td style="text-align: right;">                      $68.92</td><td style="text-align: right;">               -$11.49</td><td style="text-align: right;">                      $57.43</td><td style="text-align: right;">          0</td><td style="text-align: right;">                             $57.43</td></tr>
-<tr><td style="text-align: right;">2009</td><td style="text-align: right;">                 $117.17</td><td style="text-align: right;">             -$5.86</td><td style="text-align: right;">                       $111.31</td><td style="text-align: right;">             -$41.01</td><td style="text-align: right;">                      $70.30</td><td style="text-align: right;">               -$11.72</td><td style="text-align: right;">                      $58.58</td><td style="text-align: right;">          0</td><td style="text-align: right;">                             $58.58</td></tr>
-<tr><td style="text-align: right;">2010</td><td style="text-align: right;">                 $119.51</td><td style="text-align: right;">             -$5.98</td><td style="text-align: right;">                       $113.53</td><td style="text-align: right;">             -$41.83</td><td style="text-align: right;">                      $71.71</td><td style="text-align: right;">               -$11.95</td><td style="text-align: right;">                      $59.75</td><td style="text-align: right;">  $1,218.99</td><td style="text-align: right;">                          $1,278.75</td></tr>
-<tr><td style="text-align: right;">2011</td><td style="text-align: right;">                 $121.90</td><td style="text-align: right;">             -$6.09</td><td style="text-align: right;">                       $115.80</td><td style="text-align: right;">             -$42.66</td><td style="text-align: right;">                      $73.14</td><td style="text-align: right;">               -$12.19</td><td style="text-align: right;">                      $60.95</td><td style="text-align: right;">          0</td><td style="text-align: right;">                                  0</td></tr>
-</tbody>
-</table></div></div>
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>2001-12-31</th>
+      <th>2002-12-31</th>
+      <th>2003-12-31</th>
+      <th>2004-12-31</th>
+      <th>2005-12-31</th>
+      <th>2006-12-31</th>
+      <th>2007-12-31</th>
+      <th>2008-12-31</th>
+      <th>2009-12-31</th>
+      <th>2010-12-31</th>
+      <th>2011-12-31</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Potential Gross Income</th>
+      <td>100.0</td>
+      <td>102.0</td>
+      <td>104.04</td>
+      <td>106.1208</td>
+      <td>108.243216</td>
+      <td>110.40808</td>
+      <td>112.616242</td>
+      <td>114.868567</td>
+      <td>117.165938</td>
+      <td>119.509257</td>
+      <td>121.899442</td>
+    </tr>
+    <tr>
+      <th>Vacancy</th>
+      <td>-5.0</td>
+      <td>-5.1</td>
+      <td>-5.202</td>
+      <td>-5.30604</td>
+      <td>-5.412161</td>
+      <td>-5.520404</td>
+      <td>-5.630812</td>
+      <td>-5.743428</td>
+      <td>-5.858297</td>
+      <td>-5.975463</td>
+      <td>-6.094972</td>
+    </tr>
+    <tr>
+      <th>Effective Gross Income</th>
+      <td>95.0</td>
+      <td>96.9</td>
+      <td>98.838</td>
+      <td>100.81476</td>
+      <td>102.831055</td>
+      <td>104.887676</td>
+      <td>106.98543</td>
+      <td>109.125138</td>
+      <td>111.307641</td>
+      <td>113.533794</td>
+      <td>115.80447</td>
+    </tr>
+    <tr>
+      <th>Operating Expenses</th>
+      <td>-35.0</td>
+      <td>-35.7</td>
+      <td>-36.414</td>
+      <td>-37.14228</td>
+      <td>-37.885126</td>
+      <td>-38.642828</td>
+      <td>-39.415685</td>
+      <td>-40.203998</td>
+      <td>-41.008078</td>
+      <td>-41.82824</td>
+      <td>-42.664805</td>
+    </tr>
+    <tr>
+      <th>Net Operating Income</th>
+      <td>60.0</td>
+      <td>61.2</td>
+      <td>62.424</td>
+      <td>63.67248</td>
+      <td>64.94593</td>
+      <td>66.244848</td>
+      <td>67.569745</td>
+      <td>68.92114</td>
+      <td>70.299563</td>
+      <td>71.705554</td>
+      <td>73.139665</td>
+    </tr>
+    <tr>
+      <th>Capital Expenditures</th>
+      <td>-10.0</td>
+      <td>-10.2</td>
+      <td>-10.404</td>
+      <td>-10.61208</td>
+      <td>-10.824322</td>
+      <td>-11.040808</td>
+      <td>-11.261624</td>
+      <td>-11.486857</td>
+      <td>-11.716594</td>
+      <td>-11.950926</td>
+      <td>-12.189944</td>
+    </tr>
+    <tr>
+      <th>Net Annual Cashflows</th>
+      <td>50.0</td>
+      <td>51.0</td>
+      <td>52.02</td>
+      <td>53.0604</td>
+      <td>54.121608</td>
+      <td>55.20404</td>
+      <td>56.308121</td>
+      <td>57.434283</td>
+      <td>58.582969</td>
+      <td>59.754628</td>
+      <td>60.949721</td>
+    </tr>
+    <tr>
+      <th>Reversion</th>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>1218.99442</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>Net Cashflow with Reversion</th>
+      <td>50.0</td>
+      <td>51.0</td>
+      <td>52.02</td>
+      <td>53.0604</td>
+      <td>54.121608</td>
+      <td>55.20404</td>
+      <td>56.308121</td>
+      <td>57.434283</td>
+      <td>58.582969</td>
+      <td>1278.749048</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
 </div>
-<p>Given that the discount rate is specified as 7%, we can calculate the property’s
-Present Value (PV):</p>
+</section>
+<section id="discount-and-check-the-result">
+<h3>Discount and check the result<a class="headerlink" href="#discount-and-check-the-result" title="Link to this heading">#</a></h3>
+<p>The annual discount rate is 7%. The first payment is one period after the valuation date. Discount the combined cashflows so the reversion receives ten periods of discounting.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">discount_rate</span> <span class="o">=</span> <span class="mf">0.07</span>
-<span class="n">pvs</span> <span class="o">=</span> <span class="n">net_cashflows_with_reversion</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">pv</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Present Value&#39;</span><span class="p">,</span>
-    <span class="n">frequency</span><span class="o">=</span><span class="n">rk</span><span class="o">.</span><span class="n">duration</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">YEAR</span><span class="p">,</span>
-    <span class="n">rate</span><span class="o">=</span><span class="n">discount_rate</span><span class="p">)</span>
-<span class="n">pvs</span>
+<span class="n">pvs</span> <span class="o">=</span> <span class="n">financial</span><span class="o">.</span><span class="n">calculate_pv</span><span class="p">(</span><span class="n">net_cashflows_with_reversion</span><span class="p">,</span> <span class="n">rate</span><span class="o">=</span><span class="n">discount_rate</span><span class="p">,</span> <span class="n">first_period</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">to_series</span><span class="p">(</span><span class="n">pvs</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Present Value"</span><span class="p">,</span> <span class="n">timing</span><span class="o">=</span><span class="s2">"last_day"</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_html"><table>
-<thead>
-<tr><th style="text-align: right;">                   </th><th style="text-align: right;">  Present Value</th></tr>
-</thead>
-<tbody>
-<tr><td style="text-align: right;">2001-12-31 00:00:00</td><td style="text-align: right;">         $46.73</td></tr>
-<tr><td style="text-align: right;">2002-12-31 00:00:00</td><td style="text-align: right;">         $44.55</td></tr>
-<tr><td style="text-align: right;">2003-12-31 00:00:00</td><td style="text-align: right;">         $42.46</td></tr>
-<tr><td style="text-align: right;">2004-12-31 00:00:00</td><td style="text-align: right;">         $40.48</td></tr>
-<tr><td style="text-align: right;">2005-12-31 00:00:00</td><td style="text-align: right;">         $38.59</td></tr>
-<tr><td style="text-align: right;">2006-12-31 00:00:00</td><td style="text-align: right;">         $36.78</td></tr>
-<tr><td style="text-align: right;">2007-12-31 00:00:00</td><td style="text-align: right;">         $35.07</td></tr>
-<tr><td style="text-align: right;">2008-12-31 00:00:00</td><td style="text-align: right;">         $33.43</td></tr>
-<tr><td style="text-align: right;">2009-12-31 00:00:00</td><td style="text-align: right;">         $31.87</td></tr>
-<tr><td style="text-align: right;">2010-12-31 00:00:00</td><td style="text-align: right;">        $650.05</td></tr>
-</tbody>
-</table></div></div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2001-12-31     46.728972
+2002-12-31     44.545375
+2003-12-31     42.463816
+2004-12-31     40.479525
+2005-12-31     38.587959
+2006-12-31     36.784783
+2007-12-31     35.065868
+2008-12-31     33.427276
+2009-12-31     31.865254
+2010-12-31    650.051174
+Name: Present Value, dtype: object
+</pre></div>
+</div>
+</div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">property_pv</span> <span class="o">=</span> <span class="n">pvs</span><span class="o">.</span><span class="n">collapse</span><span class="p">()</span><span class="o">.</span><span class="n">movements</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Property PV: $</span><span class="si">{:,.0f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">property_pv</span><span class="p">))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">property_pv</span> <span class="o">=</span> <span class="n">series</span><span class="o">.</span><span class="n">total</span><span class="p">(</span><span class="n">pvs</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Property PV: $</span><span class="si">{</span><span class="n">property_pv</span><span class="si">:</span><span class="s2">,.0f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="c1"># Independent scalar oracle: ten annual movements plus terminal proceeds.</span>
+<span class="n">expected</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">50</span> <span class="o">*</span> <span class="mf">1.02</span><span class="o">**</span><span class="n">i</span> <span class="o">/</span> <span class="mf">1.07</span><span class="o">**</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span> <span class="o">+</span> <span class="p">(</span><span class="mi">50</span><span class="o">*</span><span class="mf">1.02</span><span class="o">**</span><span class="mi">10</span><span class="o">/</span><span class="mf">.05</span><span class="p">)</span><span class="o">/</span><span class="mf">1.07</span><span class="o">**</span><span class="mi">10</span>
+<span class="k">assert</span> <span class="n">math</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">property_pv</span><span class="p">,</span> <span class="n">expected</span><span class="p">,</span> <span class="n">rel_tol</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">math</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">property_pv</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">rel_tol</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">net_cashflows_with_reversion</span><span class="o">.</span><span class="n">movements</span><span class="p">)</span> <span class="o">==</span> <span class="mi">10</span>
+<span class="k">assert</span> <span class="n">model</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="n">table_stream</span><span class="o">.</span><span class="n">value_ids</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">flow</span><span class="o">.</span><span class="n">units</span> <span class="o">==</span> <span class="s2">"AUD"</span>
+<span class="c1"># A migrated consumer must not import the superseded implementation.</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="k">assert</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">name</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"rangekeeper.flux"</span><span class="p">,</span> <span class="s2">"rangekeeper._legacy_duration"</span><span class="p">,</span> <span class="s2">"rangekeeper.formula"</span><span class="p">,</span> <span class="s2">"rangekeeper.graph.legacy"</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -1129,14 +1197,14 @@ Present Value (PV):</p>
     <script>kernelName = 'python3'</script>
 
                 </article>
-              
 
-              
-              
-              
-              
+
+
+
+
+
                 <footer class="prev-next-footer d-print-none">
-                  
+
 <div class="prev-next-area">
     <a class="left-prev"
        href="intro.html"
@@ -1158,11 +1226,11 @@ Present Value (PV):</p>
     </a>
 </div>
                 </footer>
-              
+
             </div>
-            
-            
-              
+
+
+
                 <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
 
@@ -1172,64 +1240,66 @@ Present Value (PV):</p>
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setup">Setup</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-foundational-elements-of-a-proforma">The Foundational Elements of a Proforma</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#a-flow">A <code class="docutils literal notranslate"><span class="pre">Flow</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#initializing-a-flow">Initializing a <code class="docutils literal notranslate"><span class="pre">Flow</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#overview-of-a-flow">Overview of a <code class="docutils literal notranslate"><span class="pre">Flow</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#a-span">A <code class="docutils literal notranslate"><span class="pre">Span</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#a-projection">A <code class="docutils literal notranslate"><span class="pre">Projection</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#a-stream">A <code class="docutils literal notranslate"><span class="pre">Stream</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#periods-and-spans">Periods and spans</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#project-known-values">Project known values</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#a-stream">A Stream</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#discount-and-check-the-result">Discount and check the result</a></li>
 </ul>
 </li>
 </ul>
   </nav></div>
 
 </div></div>
-              
-            
+
+
           </div>
           <footer class="bd-footer-content">
-            
+
 <div class="bd-footer-content__inner container">
-  
+
   <div class="footer-item">
-    
+
 <p class="component-author">
 By Daniel Fink
 </p>
 
   </div>
-  
+
   <div class="footer-item">
-    
+
 
   <p class="copyright">
-    
+
       © Copyright 2025.
       <br/>
-    
+
   </p>
 
   </div>
-  
+
   <div class="footer-item">
-    
+
   </div>
-  
+
   <div class="footer-item">
-    
+
   </div>
-  
+
 </div>
           </footer>
-        
+
 
       </main>
     </div>
   </div>
-  
+
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
   <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
 <script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>

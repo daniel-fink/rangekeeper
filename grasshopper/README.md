@@ -1,102 +1,62 @@
-# Rangekeeper Grasshopper components
+# Canonical Rangekeeper authoring for Rhino 8
 
-The Grasshopper project is the source-authoring side of Rangekeeper's graph
-model. It associates Rhino geometry with stable domain entities, constructs
-classified relationships and assemblies, validates the result, and emits a
-canonical Rangekeeper Snapshot for publication.
+The active projects target `net8.0`. The Model project has no Rhino or Speckle
+reference. Generated fields come from RK's resolved LinkML bundle; handwritten
+code owns presence-preserving serialization, authoring, composition and diagnostics.
+The Components project uses the installed RhinoCommon, Grasshopper and GH_IO
+assemblies. Package dependencies are pinned in project files and lockfiles.
 
-The current C# implementation is a legacy Rhino 7/Speckle v2 implementation.
-Phase 6 of the
-[`GRAPH_REFACTOR_IMPLEMENTATION_PLAN.md`](../GRAPH_REFACTOR_IMPLEMENTATION_PLAN.md)
-replaces it directly; backwards compatibility is not a goal.
+On the accepted Mac, Rhino 8.35.26251.13002 uses .NET 8.0.14. The .NET SDK is
+10.0.401; it builds the net8 target. The host runtime is checked separately.
+[McNeel's runtime guidance](https://developer.rhino3d.com/en/guides/rhinocommon/moving-to-dotnet-core/)
+identifies net8 as the Rhino 8 target. A later Rhino generation needs its own gate.
 
-## Target architecture
-
-```text
-Rhino 8 model objects
-    -> Rangekeeper entities, labels, relationships, and assemblies
-    -> validation and canonical Snapshot
-    -> geometry + stable IDs + ordinary metadata
-    -> official Speckle v3 Data Object and Collection components
-    -> explicit Publish
+```sh
+python tools/schema/generate_csharp.py --check
+dotnet restore grasshopper/Components/Components.csproj --locked-mode
+dotnet build grasshopper/Components/Components.csproj --no-restore
+dotnet build grasshopper/Tests/Tests.csproj
 ```
 
-Rangekeeper owns the domain graph. The official Speckle connector owns Rhino
-geometry conversion, connector-specific Grasshopper types, authentication,
-model selection, transport, and publication.
+Run Python fixture preparation with `docs/research/full-migration/turn3/cross_language.py
+prepare DIRECTORY`; run `Tests.dll DIRECTORY/python.json DIRECTORY/csharp.json`
+with a .NET 8 host, then run the Python `check` command. This verifies rich content,
+UUID references, dates, omission/null, zero/false, separate collections, immutable
+access and ordered mathematics through both language boundaries.
 
-The Rangekeeper C# model and components must therefore:
+Load the built Components assembly and its adjacent dependencies into a fresh
+Rhino 8 process. `Tests/accept_rhino.py`, run with Rhino's `RunPythonScript`, builds,
+saves, reopens and recomputes `Tests/exampleDesignCanonical.ghx` and writes temporary
+acceptance output. It reads `Tests/exampleDesign.3dm` without changing it. The
+canonical GHX contains two input panels and three new RK components. No EleFront,
+old RK component, SDK object or service account is required.
 
-- remain independent of Speckle `Base` and connector-internal Goo/wrapper types;
-- mirror the canonical Python concepts and Snapshot schema;
-- preserve immutable domain IDs separately from Rhino object IDs, Speckle
-  `applicationId`, and Speckle content IDs;
-- serialize deterministically so C# and Python can share fixtures;
-- expose ordinary Grasshopper-compatible values at the connector boundary;
-- validate the complete graph before publication; and
-- require an explicit user-controlled publication trigger.
+The example interprets only the reviewed `complex::*` geometry and explicit floor
+elevations in metres. It retains all 33 floor slices, three utility objects, nine
+space volumes and the shared service scope. Context geometry remains external.
+Compare the exported Model with the historical design using the separate
+`compare_rhino.py`; counts alone are insufficient. The new UUIDs derive from stable
+Rhino object identities and coordinates. The historical transport converter keeps
+its original domain UUIDs; acceptance records their explicit correspondence.
 
-The root Speckle Collection carries the canonical Snapshot envelope. Individual
-geometry Data Objects carry stable entity-association metadata for inspection
-and geometry lookup. Collection nesting or display geometry is not the source of
-truth for graph reconstruction.
+Generic components accept canonical field JSON. Omitted record IDs use the saved
+component identity. Supply an explicit ID to reuse identity; cloning a component
+without that input creates a new object. Model content changes create a new
+revision and preserve its predecessor through recomputation. `Compose.Clone`
+changes only the selected record ID when `reuseIdentity` is false. References and
+owned Value IDs remain explicit; clone those Values separately before combining
+both owners. Composition rejects conflicting ownership instead of silently
+copying a graph. Export returns text
+and a checked envelope; it does not write, authenticate, solve or publish.
 
-## Intended component groups
+Python validation remains the full semantic acceptance boundary. C# authoring
+checks cover the shared structural contract and local identity/reference rules;
+they do not duplicate the complete Python units and mathematics validators.
 
-The exact component names will be finalized during the Phase 6 implementation,
-but the supported surface is organized around these responsibilities:
+The old .NET Framework/Speckle-inherited source files are excluded from the active
+projects and retained as historical material pending the retirement gate. The
+original `exampleDesignConfig.ghx` remains unchanged.
 
-1. **Taxonomy and Classification** — define owned classification terms and
-   optional arborescences.
-2. **Entity** — associate stable identity, name, primary classification,
-   labels, measures, features, provenance, and optional Rhino geometry.
-3. **Relationship** — connect source and target entity IDs using a required
-   relationship Classification.
-4. **Assembly** — define explicit entity and relationship membership without
-   synthesizing `member_of` edges.
-5. **Model and Validation** — collect the complete graph and report actionable
-   validation diagnostics.
-6. **Snapshot and Speckle Export** — produce the canonical Snapshot envelope and
-   ordinary geometry/metadata outputs consumed by official Speckle v3 nodes.
-
-## Source acceptance model
-
-The end-to-end acceptance assets are:
-
-```text
-Tests/exampleDesign.3dm
-Tests/exampleDesignConfig.ghx
-```
-
-`exampleDesignConfig.ghx` will be rebuilt for Rhino 8 using native model-object
-querying where practical. It must not depend on EleFront, Speckle v2 components,
-or the legacy Rangekeeper Entity/Assembly implementation.
-
-The legacy published result provides the semantic regression baseline:
-
-- 50 canonical entities;
-- 63 relationships;
-- 49 `spatiallyContains` relationships;
-- 3 `contains` relationships; and
-- 11 `services` relationships.
-
-The inspected source baseline is 735 Rhino objects across 30 layers, with 12
-semantically tagged mass objects. The legacy GHX contains 222 components and
-Speckle connector 2.17.1 nodes. These source counts help detect accidental loss;
-the rewritten GHX is expected to be smaller and does not need to preserve its
-legacy component count.
-
-Matching those counts is necessary but not sufficient. Acceptance also checks
-stable identity, endpoint associations, classifications, labels, assemblies,
-Snapshot round-trip equality, geometry association, and the walkthrough's
-numerical results.
-
-## Development and testing
-
-Pure domain logic and cross-language Snapshot fixtures should run on macOS and
-Windows. Rhino, Grasshopper, the official Speckle v3 connector, and publication
-are accepted on the dedicated Windows host.
-
-Provisioning, SSH/Codex handoff, build/install commands, interactive steps, and
-the acceptance checklist are documented in
-[`WINDOWS_DEVELOPMENT.md`](WINDOWS_DEVELOPMENT.md).
+The official current Speckle connector is a separate Windows gate. See
+[the procedure](WINDOWS_DEVELOPMENT.md) and the [Turn 3 contract](../docs/FULL_MIGRATION_TURN3.md).
+Mac authoring and offline envelope tests do not claim Windows connector acceptance.

@@ -5,7 +5,8 @@ from dataclasses import dataclass
 from uuid import UUID
 
 from ..model import Assembly
-from ..model.characteristics import label
+from ..model.characteristics import label, value
+from ..model.content import decode
 from ..model.definitions import classification, measure as find_measure
 from ..table import Row, Table, TableError
 from ..units import UnitSystem, default_units
@@ -72,7 +73,23 @@ class LabelColumn:
         require_text(self.key, "key")
 
 
-Column = FieldColumn | ValueColumn | LabelColumn
+@dataclass(frozen=True, slots=True)
+class PropertyColumn:
+    """Detached rich property content selected by owner-local key.
+
+    Missing or explicit null returns None; false and zero retain their types.
+    A non-property Value raises TableError. No Model internals are exposed.
+    """
+
+    name: str
+    key: str
+
+    def __post_init__(self):
+        require_text(self.name, "column name")
+        require_text(self.key, "key")
+
+
+Column = FieldColumn | ValueColumn | LabelColumn | PropertyColumn
 DEFAULT_COLUMNS = (
     FieldColumn("model_id", "model_id"),
     FieldColumn("entity_id", "entity_id"),
@@ -95,7 +112,10 @@ def to_table(
     if not isinstance(view, View):
         raise TypeError("view must be a Model-backed View")
     columns = tuple(columns)
-    if any(not isinstance(c, (FieldColumn, ValueColumn, LabelColumn)) for c in columns):
+    if any(
+        not isinstance(c, (FieldColumn, ValueColumn, LabelColumn, PropertyColumn))
+        for c in columns
+    ):
         raise TypeError("columns must contain FieldColumn, ValueColumn or LabelColumn")
     names = Table((c.name for c in columns), ()).columns
     # Validate requested units even for an empty View or wholly missing column.
@@ -115,6 +135,15 @@ def to_table(
                     None
                     if item is None or item.quantity is None
                     else units.convert(item.quantity, to=c.units).magnitude
+                )
+            elif isinstance(c, PropertyColumn):
+                item = value(entity.characteristics, c.key)
+                if item is not None and item.kind != "property":
+                    raise TableError(f"{c.key} is not a property Value")
+                result = (
+                    decode(item.content)
+                    if item is not None and item.content is not None
+                    else None
                 )
             elif isinstance(c, LabelColumn):
                 selected_label = label(entity.characteristics, c.key)
@@ -176,6 +205,7 @@ __all__ = [
     "FieldColumn",
     "ValueColumn",
     "LabelColumn",
+    "PropertyColumn",
     "Column",
     "to_table",
     "to_tree_table",

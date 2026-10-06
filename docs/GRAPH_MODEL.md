@@ -1,5 +1,16 @@
 # Model-backed graph operations
 
+**Turn 3 update, 2026-10-06:** [Remaining consumers and design integrations](FULL_MIGRATION_TURN3.md)
+implements the canonical workbench/layout port, all three Projects source builds,
+Speckle mapping, both design walkthroughs and generated C# Rhino 8 authoring.
+See [current acceptance](research/full-migration/turn3/BASELINE.md),
+[consumer register](research/full-migration/turn3/CONSUMERS.md), and
+[Turn 4 retirement gates](research/full-migration/turn3/RETIREMENT.md).
+The Windows official connector gate remains open. Hypar support is retired;
+the future Browser/outliner importer remains on hold. Dated checkpoints below
+remain historical evidence and do not override this current scope.
+
+
 **Flow semantics update, 2026-10-06:** Flows no longer carry semantic kinds or
 basis. The overall model logic owns their meaning and selects operations; units,
 dates, alignment and missingness remain checked. See the

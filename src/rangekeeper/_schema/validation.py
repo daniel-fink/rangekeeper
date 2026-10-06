@@ -27,6 +27,18 @@ def schema_for(kind: str) -> dict:
     return {**deepcopy(schema), "$ref": f"#/$defs/{kind}"}
 
 
+@lru_cache(maxsize=None)
+def _slot_map(kind: str):
+    """Share immutable generated slot metadata inside record access and traversal.
+
+    A read of a UUID or child record must not copy the whole class declaration.
+    The public slots_for function still returns a detached, editable dictionary.
+    """
+    from .._records import _freeze
+
+    return _freeze(_artifacts()[1][kind])
+
+
 def slots_for(kind: str) -> dict:
     return deepcopy(_artifacts()[1][kind])
 

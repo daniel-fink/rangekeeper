@@ -96,3 +96,64 @@ def plot_pairs(
     axis.grid(alpha=0.2)
     figure.tight_layout()
     return figure
+
+
+def plot_partition(
+    hierarchy,
+    amounts,
+    *,
+    units: str,
+    title: str,
+    kind: str = "sunburst",
+    expense_magnitudes: bool = False
+):
+    """Plot additive detached contributor amounts on a validated tree.
+
+    Each supplied UUID contributes once. Ancestor values are calculated from
+    children plus their own direct contribution. Missing contributors must be
+    handled by the caller, not filled by this adapter. Signed negative expenses
+    require the explicit expense_magnitudes projection; the Model is unchanged.
+    Shared membership requires an occurrence design and is rejected by Hierarchy.
+    """
+    import math
+    import plotly.graph_objects as go
+
+    if kind not in ("sunburst", "treemap"):
+        raise ValueError("kind must be sunburst or treemap")
+    ids = hierarchy.preorder()
+    selected = set(ids)
+    if not set(amounts) <= selected or any(
+        not math.isfinite(x) for x in amounts.values()
+    ):
+        raise ValueError("amounts require selected UUIDs and finite numbers")
+    if expense_magnitudes:
+        if any(x > 0 for x in amounts.values()):
+            raise ValueError("expense magnitude requires nonpositive expenses")
+        direct = {uid: -x for uid, x in amounts.items()}
+        title += " — expense magnitudes"
+    else:
+        if any(x < 0 for x in amounts.values()):
+            raise ValueError("negative amounts require an explicit expense projection")
+        direct = dict(amounts)
+    totals = {uid: direct.get(uid, 0) for uid in ids}
+    for uid in reversed(ids):
+        parent = hierarchy.parent(uid)
+        if parent is not None:
+            totals[parent] += totals[uid]
+    trace_type = go.Sunburst if kind == "sunburst" else go.Treemap
+    figure = go.Figure(
+        trace_type(
+            ids=[str(uid) for uid in ids],
+            labels=[hierarchy.view.entity(uid).name or str(uid) for uid in ids],
+            parents=[
+                str(hierarchy.parent(uid)) if hierarchy.parent(uid) is not None else ""
+                for uid in ids
+            ],
+            values=[totals[uid] for uid in ids],
+            branchvalues="total",
+            marker=dict(colors=["#285f8f"] * len(ids)),
+            hovertemplate="%{label}<br>%{value:,.2f} " + units + "<extra></extra>",
+        )
+    )
+    figure.update_layout(title=title, margin=dict(t=70, l=15, r=15, b=15), height=500)
+    return figure

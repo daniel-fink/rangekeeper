@@ -16,6 +16,7 @@ __all__ = [
     "document",
     "excel",
     "pandas",
+    "speckle",
     "visualization",
 ]
 
@@ -26,6 +27,7 @@ _SUBMODULES = frozenset(
         "document",
         "excel",
         "pandas",
+        "speckle",
         "visualization",
     }
 )

@@ -360,3 +360,50 @@ preserves Value UUIDs, quantities, Movement coordinates, claims and random strea
 identifiers. Codecs do not upgrade automatically. Old Runs keep their original
 Model pins and are not relabelled as new executions. Select the new Model revision
 explicitly when authoring a later Specification.
+
+## Workbench, design and external consumers (Turn 3)
+
+Use `rangekeeper.workflow`, not `rangekeeper.graph.workflow`. Outer Sources,
+Model, Decisions and Checks documents use version 2; nested extraction policies
+keep their own versions. Replace Features with property Values and give each
+measurement an explicit owner-local key. Preserve descriptive missing data and
+its finding alongside an unresolved quantity. Workflow checks use Model operands.
+
+`workbench.inspect` reads without writing. `workbench.build` writes a new local
+attempt bundle with `model.json`. Only `attempt.result` from that successful
+attempt is current. Never substitute `attempt.previous` after failure. Use
+`layout_review.build` as a separate presentation step. Upgrade v1/v2 profiles
+explicitly with `migration.layout.upgrade_profile(profile, model=model)`; v3 uses
+classification UUIDs, owner-local Value keys and explicit units.
+
+The transport boundary can be exercised without an SDK or service:
+
+```python
+from rangekeeper.examples import design
+from rangekeeper.adapters.speckle import encode_model, decode_model
+
+source_design = design.fixture()
+envelope = encode_model(source_design)
+restored_design = decode_model(envelope)
+assert restored_design.to_data() == source_design.to_data()
+envelope["rk_model"] = "changed caller-owned data"
+assert restored_design.to_data() == source_design.to_data()
+```
+
+For service use, import `receive` from `adapters.speckle.transport` and supply an
+already configured client plus exactly one version or object pin. An unavailable
+historical version does not select latest. Legacy payloads require the explicit
+`migration.speckle.convert_speckle` mapping and units. Check its issues before using
+the Model. Names are search fields; UUIDs establish identity. Geometry associations
+are external metadata, not domain membership.
+
+For design financial work call `design.author`, `formulate`, `specify`, then
+`Executor.execute`; retrieve the accepted output from the store and report it.
+Keep the declared five-year expense schedule and next-income-period reversion
+basis. Do not replace it with a conventional basis without a reviewed model change.
+
+Grasshopper exports canonical JSON from LinkML-derived C# records. Python performs
+full semantic validation. The [C# guide](../grasshopper/README.md) explains identity,
+revisions, host acceptance and the separate Windows connector gate. See the
+[consumer register](research/full-migration/turn3/CONSUMERS.md) for proved consumers
+and the [retirement register](research/full-migration/turn3/RETIREMENT.md) for holds.

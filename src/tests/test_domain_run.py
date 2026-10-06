@@ -214,3 +214,26 @@ def test_scoped_report_documents_resolve_outside_the_input_tree():
     assert validate(Run.from_data(data), resolver=store).valid
     data["report"]["diagnostics"][0]["target"] = str(uuid4())
     assert not validate(Run.from_data(data), resolver=store).valid
+
+
+def test_repeated_report_references_keep_revision_scopes_separate():
+    """Large reports must not borrow a target from a different revision."""
+    store = inputs()
+    extra = [
+        rk.Model.from_data(
+            {"metadata": {"id": str(uuid4()), "schema_version": "0.5.0"}}
+        )
+        for _ in range(2)
+    ]
+    for model in extra:
+        store.put(model)
+    data = load("run-failed")
+    diagnostic = data["report"]["diagnostics"][0]
+    data["report"]["diagnostics"] = [
+        {**diagnostic, "document": str(model.id), "target": str(model.id)}
+        for _ in range(250)
+        for model in extra
+    ]
+    assert validate(Run.from_data(data), resolver=store).valid
+    data["report"]["diagnostics"][-1]["target"] = str(extra[0].id)
+    assert not validate(Run.from_data(data), resolver=store).valid

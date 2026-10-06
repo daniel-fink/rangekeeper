@@ -13,6 +13,7 @@ from rangekeeper.model import Model, Assembly, Classification
 from rangekeeper.graph import View
 from rangekeeper.model.definitions import classification, measure
 from rangekeeper.model.provenance import fact_for
+from rangekeeper.model.content import decode
 
 from .document import validate_document
 
@@ -74,6 +75,7 @@ def project(model: Model | View, name: str, config: dict | None = None) -> dict:
         "anchors",
         "initialFocus",
         "alignment",
+        "reviewUrl",
         "containmentClassifications",
     }:
         raise ValueError("Unknown viewer configuration fields")
@@ -90,6 +92,7 @@ def project(model: Model | View, name: str, config: dict | None = None) -> dict:
     all_claims = {c.id: c for c in evidence.claims or ()} if evidence else {}
     sources = {s.id: s for s in evidence.sources or ()} if evidence else {}
     claims: dict[str, dict] = {}
+    facts = {f.target: f for f in evidence.facts or ()} if evidence else {}
 
     def claim_row(identity) -> str:
         key = str(identity)
@@ -98,7 +101,13 @@ def project(model: Model | View, name: str, config: dict | None = None) -> dict:
             claims[key] = {
                 "id": key,
                 "kind": c.kind,
-                "value": present(c.content),
+                "value": (
+                    present(c.content["value"][1])
+                    if isinstance(c.content, Mapping)
+                    and c.content.get("encoding") == "rk.source-value/v1"
+                    and c.content["value"][0] == "str"
+                    else present(c.content)
+                ),
                 "method": present(c.method.to_data()) if c.method else None,
                 "sources": [],
             }
@@ -117,7 +126,7 @@ def project(model: Model | View, name: str, config: dict | None = None) -> dict:
         return key
 
     def fact_row(target) -> dict | None:
-        fact = fact_for(model, target.id)
+        fact = facts.get(target.id)
         if fact is None:
             return None
         reconciliation = fact.reconciliation
@@ -165,6 +174,7 @@ def project(model: Model | View, name: str, config: dict | None = None) -> dict:
                     "fact": fact_row(v),
                 }
                 for v in values
+                if v.kind == "measurement"
             ],
             "labels": [
                 {
@@ -175,7 +185,26 @@ def project(model: Model | View, name: str, config: dict | None = None) -> dict:
                 }
                 for l in labels
             ],
-            "features": [],
+            "features": [
+                {
+                    "id": str(v.id),
+                    "name": v.key,
+                    "value": present(decode(v.content)) if v.content else None,
+                    "fact": fact_row(v),
+                }
+                for v in values
+                if v.kind == "property"
+            ],
+            "flows": [
+                {
+                    "id": str(v.id),
+                    "name": v.key,
+                    "value": present(v.flow.to_data()) if v.flow else None,
+                    "fact": fact_row(v),
+                }
+                for v in values
+                if v.kind == "flow"
+            ],
         }
 
     details = {str(o.id): detail(o) for o in (*view.entities, *view.relationships)}

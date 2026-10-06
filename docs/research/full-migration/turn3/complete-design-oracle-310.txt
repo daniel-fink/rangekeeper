@@ -1,0 +1,1 @@
+{"status": "passed", "contributors": 36, "quantity_checks": 4541, "maximum_absolute_error": 5.960464477539063e-08}

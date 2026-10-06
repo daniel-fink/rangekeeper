@@ -60,6 +60,9 @@ ctx.showMembership = true;
 ctx.fourPorts = true;
 ctx.compactPositions = {};
 ctx.drag = null;
+ctx.presentation = null;
+ctx.showSpacingAdvisories = false;
+ctx.dragFrame = null;
 ctx.syncing = false;
 ctx.updating = false;
 ctx.layoutMode = false;
@@ -92,6 +95,10 @@ ctx.$("membership").onclick = () => ctx.setMode("membership");
 ctx.$("outlines").onclick = () => ctx.setMode("outlines");
 ctx.$("four-port-routing").onchange = () => {
   ctx.fourPorts = ctx.$("four-port-routing").checked;
+  ctx.syncBoxes();
+};
+ctx.$("spacing-advisories").onchange = () => {
+  ctx.showSpacingAdvisories = ctx.$("spacing-advisories").checked;
   ctx.syncBoxes();
 };
 ctx.$("fit").onclick = ctx.fit;
@@ -184,6 +191,9 @@ window.spike = {
   },
   get projection() {
     return ctx.projection;
+  },
+  get presentation() {
+    return structuredClone(ctx.presentation);
   },
   get metrics() {
     return { ...ctx.metrics };

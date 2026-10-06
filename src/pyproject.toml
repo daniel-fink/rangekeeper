@@ -34,6 +34,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+layout = ["z3-solver==5.1.0.0"]
 calculations = ["polars>=1.44,<2", "numpy>=1.24", "scipy>=1.12", "pint>=0.24", "pyxirr>=0.10.7,<0.11"]
 pandas = ["pandas>=2.2"]
 execution = ["pyomo==6.10.1", "highspy==1.15.1"]
@@ -56,3 +57,7 @@ exclude = ["*.node_modules*", "*.client*"]
 "rangekeeper" = ["py.typed", "_currencies.json"]
 "rangekeeper._schema" = ["*.json"]
 "rangekeeper.adapters.cytoscape" = ["assets/*.js", "assets/*.css", "assets/*.html", "assets/vendor/*.js", "assets/vendor/*.LICENSE", "assets/vendor/*.json"]
+
+"rangekeeper.adapters.cytoscape.layout" = ["*.mzn"]
+
+"rangekeeper.adapters.speckle" = ["contract.json"]

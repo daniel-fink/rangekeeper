@@ -1,22 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>latest</LangVersion> 
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Company>Daniel Fink</Company>
-    <AssemblyVersion>0.3.0</AssemblyVersion>
-    <RootNamespace>Rangekeeper.Objects</RootNamespace>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AssemblyName>Rangekeeper.Model</AssemblyName>
+    <RootNamespace>Rangekeeper</RootNamespace>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="Speckle.Core" Version="2.18.0" />
-    <PackageReference Include="Speckle.Objects" Version="2.18.0" />
+    <Compile Include="Generated/*.cs;Serialization/*.cs;Authoring/*.cs;Validation/*.cs" />
+    <EmbeddedResource Include="Generated/schema.json;Generated/slots.json" />
+    <PackageReference Include="JsonSchema.Net" Version="9.4.0" />
   </ItemGroup>
-
-  <ItemGroup>
-    <InternalsVisibleTo Include="Tests" />
-  </ItemGroup>
-
 </Project>

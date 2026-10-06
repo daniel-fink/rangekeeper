@@ -78,6 +78,9 @@ def schema():
             "on_unavailable": obj(
                 {
                     "binding": binding,
+                    "property": obj(
+                        {"key": string, "binding": binding}, ("key", "binding")
+                    ),
                     "topic": string,
                     "explanation": string,
                 }

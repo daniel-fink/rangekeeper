@@ -1,0 +1,10 @@
+Using Python 3.13.11 environment at: /private/tmp/rk-turn3-project-venv
+Resolved 3 packages in 463ms
+Downloading highspy (4.3MiB)
+Downloading pyomo (4.3MiB)
+ Downloaded highspy
+ Downloaded pyomo
+Prepared 2 packages in 561ms
+Installed 2 packages in 18ms
+ + highspy==1.15.1
+ + pyomo==6.10.1

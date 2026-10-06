@@ -11,6 +11,7 @@ from rangekeeper.operation import fingerprint
 from rangekeeper.workflow.ingestion import tabular
 
 from ._declarations import plain
+from ._review import clarification_html, object_index, target_links
 from .references import references
 
 
@@ -50,7 +51,7 @@ def _completeness(check) -> str:
     )
 
 
-def render(result, *, viewer_url: str = "viewer.html") -> str:
+def render(result, *, viewer_url: str = "viewer.html", compact: bool = False) -> str:
     """Gives notebook and CLI users the same inspection of Evidence, checks and
     limitations while retaining access to the underlying graph provenance.
     """
@@ -62,7 +63,17 @@ def render(result, *, viewer_url: str = "viewer.html") -> str:
         )
         summaries.append(f"<li>{escape(category)}: {counts}</li>")
     rows = []
-    for c in result.checks:
+    owners = {str(key): value for key, value in object_index(result).items()}
+    for c in sorted(
+        result.checks,
+        key=lambda c: (
+            {"difference": 0, "unavailable": 1, "agree": 2}.get(c.status, 1),
+            c.group,
+            c.scope,
+        ),
+    ):
+        if compact and c.status == "agree":
+            continue
         rows.append(
             "<tr>"
             + "".join(
@@ -79,6 +90,7 @@ def render(result, *, viewer_url: str = "viewer.html") -> str:
             + "<td>"
             + _references(c.references)
             + _completeness(c)
+            + target_links((owners[t] for t in c.targets if t in owners), viewer_url)
             + "</td></tr>"
         )
     findings = "".join(
@@ -95,7 +107,7 @@ def render(result, *, viewer_url: str = "viewer.html") -> str:
         for name, e in result.evidence.items()
     )
     detail = []
-    for name, table in result.evidence.items():
+    for name, table in () if compact else result.evidence.items():
         header = (
             "<tr><th>Row ID</th>"
             + "".join("<th>" + escape(c) + "</th>" for c in table.data.columns)
@@ -142,7 +154,7 @@ def render(result, *, viewer_url: str = "viewer.html") -> str:
     )
     effective = result.metadata.get("effective_specification")
     declarations = ""
-    if effective:
+    if effective and not compact:
         declarations = (
             "<details><summary>Shared declarations and effective specification</summary>"
             "<p>Definitions and consumer paths retain the authored reference origins.</p>"
@@ -157,7 +169,9 @@ def render(result, *, viewer_url: str = "viewer.html") -> str:
         + escape(viewer_url, quote=True)
         + '">Open graph and provenance</a></p><h2>Findings</h2><ul>'
         + findings
-        + "</ul><details><summary>Named Evidence</summary><table><tr><th>Name</th><th>Rows</th><th>Columns</th><th>Issues</th></tr>"
+        + "</ul>"
+        + clarification_html(result, viewer_url)
+        + "<details><summary>Named Evidence</summary><table><tr><th>Name</th><th>Rows</th><th>Columns</th><th>Issues</th></tr>"
         + evidence
         + "</table></details><h2>Checks</h2><table><tr><th>Group</th><th>Scope</th><th>Status</th><th>Left</th><th>Right</th><th>Explanation</th><th>Sources</th></tr>"
         + "".join(rows)
@@ -204,6 +218,9 @@ def export(result, destination: Path):
     (destination / "manifest.json").write_text(
         json.dumps(metadata, ensure_ascii=False, indent=2) + "\n"
     )
-    write_viewer([project(result.model, "Workflow Model")], destination / "viewer.html")
+    write_viewer(
+        [project(result.model, "Workflow Model", {"reviewUrl": "review.html"})],
+        destination / "viewer.html",
+    )
     (destination / "review.html").write_text(render(result))
     return destination

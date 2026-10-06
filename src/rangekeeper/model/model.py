@@ -16,6 +16,8 @@ from .._schema.records import (
     Relationship,
     Value,
     Formulation,
+    Claim,
+    Source,
 )
 from .._schema.validation import document_version
 from ..errors import RevisionConflictError, UnsupportedVersionError
@@ -141,6 +143,14 @@ class Model:
     def formulation(self, id: UUID) -> Formulation:
         """Resolve a root or nested Formulation without flattening its ownership."""
         return self._index.get(id, Formulation)
+
+    def claim(self, id: UUID) -> Claim:
+        """Resolve evidence in this pinned revision; never load an external source."""
+        return self._index.get(id, Claim)
+
+    def source(self, id: UUID) -> Source:
+        """Resolve recorded source metadata without opening its file or service."""
+        return self._index.get(id, Source)
 
     def owner_of(self, id: UUID) -> UUID | None:
         """Return the nearest identified container, or None for anonymous root ownership."""

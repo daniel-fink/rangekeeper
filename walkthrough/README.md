@@ -1,20 +1,21 @@
-# Rangekeeper Walkthrough
-This directory contains a set of Jupyter Notebooks, assembled into a Jupyter Book.
+# Rangekeeper walkthroughs
 
-## Development
-If you wish to contribute to its development, it is recommended to use [Poetry](https://python-poetry.org/) for environment and dependency management:
+The seven notebook sources use the canonical Model architecture. Run them with
+an installed RK wheel and the optional execution, calculation, dataframe, plotting
+and notebook dependencies used in the recorded acceptance environment.
 
-### Environment Setup
+The five numerical notebooks use a visible routine scenario count of four during
+acceptance. Set `RK_SCENARIO_COUNT=2000` to select the retained full comparison.
+Design notebooks default explicitly to `RK_DESIGN_MODE=fixture`. Live mode needs
+configured credentials and the pinned source; canonical mode needs a named envelope
+file and interpretation. There is no silent service/fixture fallback or publication.
 
-1. Install poetry, if you haven't yet: <https://python-poetry.org/docs/master/#installing-with-the-official-installer>
-2. Clone this repo.
-3. Use a terminal to install poetry packages from the repo's directory: `<path_to_repo>$ poetry install`
-4. Some notebooks require API access to [Speckle](https://speckle.systems/). It is recommended to use the [Poetry Dotenv Plugin](https://github.com/mpeteuil/poetry-dotenv-plugin) via `poetry self add poetry-dotenv-plugin`, and add a `.env` file in the project's root directory with your `SPECKLE_TOKEN` environment variable.
+The source notebooks are the only authored implementation. To reproduce the site,
+first execute them in fresh kernels from the same wheel, then use
+`docs/research/full-migration/turn3/build_book.py` with the executed notebook folder.
+The isolated book build disables another execution because those outputs have
+already passed fresh-kernel checks. It does not use the old Jupyter cache.
 
-
-### Updating Documentation:
-
-1. Make sure the Github Pages is being built with the `gh-pages` branch, from the `/`(root) directory
-2. Build via `poetry run jupyter-book build ../walkthrough`
-3. Commit any changes to the `main` branch
-4. While in the `main` branch, run `poetry run ghp-import -n -p -f _build/html` from this directory
+See [the upgrade guide](../docs/LEGACY_UPGRADE_GUIDE.md) and
+[Turn 3 acceptance](../docs/research/full-migration/turn3/BASELINE.md).
+GitHub Pages publication is a separate action; rebuilding locally does not publish.

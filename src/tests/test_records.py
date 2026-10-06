@@ -16,7 +16,9 @@ from rangekeeper._schema import records as r
 from rangekeeper._schema.validation import schema_for, validate
 from rangekeeper.errors import ValidationError
 from rangekeeper.model.validation import validate as validate_model
-from rangekeeper.specification.validation import validate_records as validate_specification
+from rangekeeper.specification.validation import (
+    validate_records as validate_specification,
+)
 from rangekeeper.run.validation import validate_records as validate_run
 
 EXAMPLES = Path(__file__).resolve().parents[2] / "schema/examples"
@@ -298,3 +300,15 @@ def test_timestamp_formats_are_enforced():
     for timestamp in ("nonsense", "2026-10-02T00:00:00", "2026-02-30T00:00:00Z"):
         with pytest.raises(ValidationError):
             r.Runtime(implementations=implementations, started_at=timestamp)
+
+
+def test_slot_lookup_cache_is_immutable_and_public_metadata_is_detached():
+    from rangekeeper._schema.validation import _slot_map, slots_for
+
+    declaration = _slot_map("Value")
+    with pytest.raises(TypeError):
+        declaration["id"]["options"][0]["kind"] = "string"
+    detached = slots_for("Value")
+    detached["id"]["options"][0]["kind"] = "string"
+    assert slots_for("Value")["id"]["options"][0]["kind"] != "string"
+    assert _slot_map("Value") is declaration

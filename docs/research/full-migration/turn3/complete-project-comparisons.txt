@@ -1,0 +1,6 @@
+mandarin {'directory': 'runs/5400730b-c910-43ff-a8a8-e5e529555f1d'}
+mandarin {'domain_equal': True, 'lineage_equal': True, 'checks_equal': True, 'facts_compared': 4617} new_nulls 6
+december {'directory': 'runs/cb0e371b-b724-4f5c-b6dc-ae5c8767c8e6'}
+december {'domain_equal': True, 'lineage_equal': True, 'checks_equal': True, 'facts_compared': 565} new_nulls 2
+november-r2 {'directory': 'runs/019eb9e3-cc6d-4777-a6b1-e84c862019fe'}
+november-r2 {'domain_equal': True, 'lineage_equal': True, 'checks_equal': True, 'facts_compared': 250} new_nulls 34

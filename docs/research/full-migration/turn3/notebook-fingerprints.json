@@ -1,0 +1,51 @@
+[
+  {
+    "notebook": "basic_dcf.ipynb",
+    "source_sha256": "c05ff5b8afa3d79455f56f857c7647849b2e23c9c35d0f4a56348027eceb5620",
+    "executed_sha256": "3e99e88bd5b648336d7acbcdb4269f3c388f703454e445d1b8a0f2e062994f5f",
+    "code_cells": 23,
+    "executed_cells": 23
+  },
+  {
+    "notebook": "deterministic_scenarios.ipynb",
+    "source_sha256": "4122aa195de36fc65459107a856e045aab14cec6ababdaebc9a7bd4a43343e57",
+    "executed_sha256": "90bb5edfd523815269685be477bd8a01201ece924090f4689aa74eb86703b672",
+    "code_cells": 12,
+    "executed_cells": 12
+  },
+  {
+    "notebook": "drive_model_from_design.ipynb",
+    "source_sha256": "b06be36c4c734e832795256b5065fd3aa946f3d6d423dd0855aac33c28760869",
+    "executed_sha256": "a9a8e16a377ccfbb4d710e6f3c071680a00766de41f414c4b0299a82a16f3934",
+    "code_cells": 9,
+    "executed_cells": 9
+  },
+  {
+    "notebook": "flexibility_intro.ipynb",
+    "source_sha256": "a129daed6effec90b2138ce2d81e037e3656550a67c58c400b4705acab558f2f",
+    "executed_sha256": "2b59cdccdefb309f743d548fac56157c5b3865ec8b5633c34fba25c2005dc423",
+    "code_cells": 13,
+    "executed_cells": 13
+  },
+  {
+    "notebook": "flexibility_under_uncertainty.ipynb",
+    "source_sha256": "be5441aa058e001a1eb5f00f135ee804ec0cb4a5bd4a53bc1c5bfab1f0e9d586",
+    "executed_sha256": "a138fd75171e80b40263a229d8d7f7e7adc812e171ffe14594108b00672a55a7",
+    "code_cells": 19,
+    "executed_cells": 19
+  },
+  {
+    "notebook": "load_design.ipynb",
+    "source_sha256": "055ddd566587ae2c734613fc5c8219797426445955522c371ddd50ad653f3830",
+    "executed_sha256": "8f7b2eaf2e9897896696aa6f6b1fbe9dff4ea2db2329a9d73ba259823b5170ea",
+    "code_cells": 4,
+    "executed_cells": 4
+  },
+  {
+    "notebook": "market_dynamics.ipynb",
+    "source_sha256": "8662b13eb45e71a4d8984e122610c0e7229f3a705eb72ef630e1240168b4c075",
+    "executed_sha256": "a8e9706c270d98115f400d1a9fee92e5f9efb4193d21bf3e1e59f2560f1570f1",
+    "code_cells": 11,
+    "executed_cells": 11
+  }
+]
