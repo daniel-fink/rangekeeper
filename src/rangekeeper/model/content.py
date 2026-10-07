@@ -167,3 +167,6 @@ def decode(content: PropertyContent) -> object:
 def validate_content(content: PropertyContent) -> None:
     """Check conditional shape and scalar meaning beyond structural validation."""
     decode(content)
+
+
+from .._schema.enums import ContentKind

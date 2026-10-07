@@ -1,6 +1,6 @@
 id: https://daniel-fink.github.io/rangekeeper/schema/policy
 name: rangekeeper_policy
-version: 0.1.0
+version: 0.2.0
 prefixes:
   linkml: https://w3id.org/linkml/
   rk: https://daniel-fink.github.io/rangekeeper/schema/
@@ -52,8 +52,8 @@ classes:
         multivalued: true
         inlined_as_list: true
         list_elements_ordered: true
-  DecisionPoint:
-    description: One dated policy point with explicit observations, first-match rules and fallback.
+  Decision:
+    description: One dated policy decision with explicit observations, first-match rules and fallback.
     attributes:
       id:
         range: UUID
@@ -84,7 +84,7 @@ classes:
         inlined_as_list: true
         list_elements_ordered: true
   Policy:
-    description: Finite policy owning explicit controlled targets and ordered dated decision points.
+    description: Finite policy owning explicit controlled targets and ordered dated decisions.
     attributes:
       id:
         range: UUID
@@ -97,8 +97,8 @@ classes:
         multivalued: true
         inlined_as_list: true
         list_elements_ordered: true
-      points:
-        range: DecisionPoint
+      decisions:
+        range: Decision
         required: true
         inlined: true
         multivalued: true
@@ -121,10 +121,10 @@ classes:
       available_at:
         range: date
         required: true
-  Decision:
-    description: Recorded outcome of one evaluated decision point; absence of a rule means fallback.
+  DecisionOutcome:
+    description: Recorded outcome of one evaluated decision; absence of a rule means fallback.
     attributes:
-      point:
+      decision:
         range: UUID
         required: true
       at:

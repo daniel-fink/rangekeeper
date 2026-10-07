@@ -1,5 +1,10 @@
 """Acceptance tests for the schema-derived immutable record boundary."""
 
+from rangekeeper.model import ClaimKind
+from rangekeeper.model.expression import ExpressionKind
+from rangekeeper.run import ImplementationKind
+from rangekeeper.model.expression import Operator
+
 from copy import deepcopy
 import inspect
 import json
@@ -80,9 +85,12 @@ def test_presence_zero_false_and_null():
     with pytest.raises(KeyError):
         absent.has_field("not_a_field")
     assert r.Quantity(magnitude=0, units="dimensionless").magnitude == 0
-    assert r.Expression(id=uuid4(), kind="boolean", boolean=False).boolean is False
+    assert (
+        r.Expression(id=uuid4(), kind=ExpressionKind.BOOLEAN, boolean=False).boolean
+        is False
+    )
     with pytest.raises(ValidationError):
-        r.Expression(id=uuid4(), kind="boolean", boolean=None)
+        r.Expression(id=uuid4(), kind=ExpressionKind.BOOLEAN, boolean=None)
 
 
 @pytest.mark.parametrize(
@@ -96,7 +104,10 @@ def test_invalid_numeric_inputs(magnitude):
 def test_recursive_immutability_and_detached_opaque_content():
     original = {"items": [0, False, None, {"value": "old"}]}
     record = r.Claim(
-        id=uuid4(), kind="asserted", method=r.Method(code="manual"), content=original
+        id=uuid4(),
+        kind=ClaimKind.ASSERTED,
+        method=r.Method(code="manual"),
+        content=original,
     )
     original["items"][3]["value"] = "changed"
     assert record.content["items"][3]["value"] == "old"
@@ -119,7 +130,7 @@ def test_uuid_scope_and_union():
     identity = UUID("AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA")
     record = r.Claim(
         id=identity,
-        kind="asserted",
+        kind=ClaimKind.ASSERTED,
         method=r.Method(code="manual"),
         content={"id": str(identity).upper()},
         sources=(r.Location(source=identity), identity),
@@ -135,14 +146,14 @@ def test_uuid_scope_and_union():
     with pytest.raises(TypeError):
         r.Claim(
             id=identity,
-            kind="asserted",
+            kind=ClaimKind.ASSERTED,
             method=r.Method(code="manual"),
             content=identity,
         )
     with pytest.raises(TypeError):
         r.Claim(
             id=identity,
-            kind="asserted",
+            kind=ClaimKind.ASSERTED,
             method=r.Method(code="manual"),
             content={},
             sources=(r.Quantity(magnitude=1, units="m"),),
@@ -152,28 +163,31 @@ def test_uuid_scope_and_union():
 def test_expression_shape_and_order():
     left = r.Expression(
         id=uuid4(),
-        kind="quantity",
+        kind=ExpressionKind.QUANTITY,
         quantity=r.Quantity(magnitude=2, units="dimensionless"),
     )
     right = r.Expression(
         id=uuid4(),
-        kind="quantity",
+        kind=ExpressionKind.QUANTITY,
         quantity=r.Quantity(magnitude=1, units="dimensionless"),
     )
     expression = r.Expression(
-        id=uuid4(), kind="binary", operator="subtract", operands=(left, right)
+        id=uuid4(),
+        kind=ExpressionKind.BINARY,
+        operator=Operator.SUBTRACT,
+        operands=(left, right),
     )
     assert tuple(node.id for node in expression.operands) == (left.id, right.id)
     assert r.Expression.from_data(expression.to_data()) == expression
-    with pytest.raises(ValidationError):
+    with pytest.raises(TypeError, match="Operator"):
         r.Expression(
             id=uuid4(),
-            kind="binary",
+            kind=ExpressionKind.BINARY,
             operator="not_an_operator",
             operands=(left, right),
         )
     with pytest.raises(ValidationError):
-        r.Expression(id=uuid4(), kind="quantity")
+        r.Expression(id=uuid4(), kind=ExpressionKind.QUANTITY)
 
 
 @pytest.mark.parametrize(
@@ -203,7 +217,10 @@ def test_keyed_inline_dictionary_preserves_wire_forms(address):
 def test_opaque_json_rejects_non_json(value):
     with pytest.raises((TypeError, ValueError)):
         r.Claim(
-            id=uuid4(), kind="asserted", method=r.Method(code="manual"), content=value
+            id=uuid4(),
+            kind=ClaimKind.ASSERTED,
+            method=r.Method(code="manual"),
+            content=value,
         )
 
 
@@ -212,11 +229,14 @@ def test_cycles_duplicate_keys_and_structure_diagnostics():
     cyclic["cycle"] = cyclic
     with pytest.raises(ValueError, match="cyclic"):
         r.Claim(
-            id=uuid4(), kind="asserted", method=r.Method(code="manual"), content=cyclic
+            id=uuid4(),
+            kind=ClaimKind.ASSERTED,
+            method=r.Method(code="manual"),
+            content=cyclic,
         )
     with pytest.raises(ValueError, match="duplicate JSON key"):
         r.Model.from_json('{"metadata":{"id":"a","id":"b"}}')
-    report = validate("Model", {"metadata": {"id": "bad", "schema_version": "0.6.0"}})
+    report = validate("Model", {"metadata": {"id": "bad", "schema_version": "0.7.0"}})
     assert not report.valid
     assert any(issue.path == "/metadata/id" for issue in report.issues)
     with pytest.raises(ValidationError) as raised:
@@ -276,7 +296,7 @@ import sys
 from rangekeeper._schema.records import Model, Metadata
 from rangekeeper.model.validation import validate
 from uuid import uuid4
-assert validate(Model(metadata=Metadata(id=uuid4(), schema_version="0.6.0"))).valid
+assert validate(Model(metadata=Metadata(id=uuid4(), schema_version="0.7.0"))).valid
 for prefix in ("linkml", "linkml_runtime", "numpy", "pandas", "matplotlib", "pint", "pyomo", "specklepy", "rangekeeper.graph"):
     assert not any(name == prefix or name.startswith(prefix + ".") for name in sys.modules), prefix
 """
@@ -285,7 +305,7 @@ for prefix in ("linkml", "linkml_runtime", "numpy", "pandas", "matplotlib", "pin
 
 def test_record_equality_distinguishes_json_booleans_and_numbers():
     identity = uuid4()
-    common = dict(id=identity, kind="asserted", method=r.Method(code="manual"))
+    common = dict(id=identity, kind=ClaimKind.ASSERTED, method=r.Method(code="manual"))
     assert r.Claim(content={"value": False}, **common) != r.Claim(
         content={"value": 0}, **common
     )
@@ -295,7 +315,9 @@ def test_record_equality_distinguishes_json_booleans_and_numbers():
 
 
 def test_timestamp_formats_are_enforced():
-    implementations = (r.Implementation(kind="evaluator", name="test", version="1"),)
+    implementations = (
+        r.Implementation(kind=ImplementationKind.EVALUATOR, name="test", version="1"),
+    )
     r.Runtime(implementations=implementations, started_at="2026-10-02T00:00:00Z")
     for timestamp in ("nonsense", "2026-10-02T00:00:00", "2026-02-30T00:00:00Z"):
         with pytest.raises(ValidationError):

@@ -1,28 +1,39 @@
-"""Immutable derived policy state; persistent fields remain generated records."""
+"""Immutable runtime observations and policy outcomes, with derived assignments."""
 
 from dataclasses import dataclass
 from datetime import date
-from .._schema.records import Assignment, Decision, ObservedQuantity
+
+from .._schema.records import Assignment, DecisionOutcome, ObservedQuantity
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class Observation:
-    """Only the declared, available quantities at one date; no Model/store handle."""
+    """Only quantities available at one date; no Model or resolver handle."""
 
     at: date
     quantities: tuple[ObservedQuantity, ...]
 
+    def __post_init__(self):
+        if type(self.at) is not date:
+            raise TypeError("observation at must be a date")
+        items = tuple(self.quantities)
+        if any(not isinstance(item, ObservedQuantity) for item in items):
+            raise TypeError("observation quantities must be ObservedQuantity records")
+        object.__setattr__(self, "quantities", items)
 
-@dataclass(frozen=True)
-class DecisionHistory:
-    """Earlier decisions supplied explicitly to the next decision point."""
 
-    decisions: tuple[Decision, ...] = ()
-
-
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class PolicyResult:
-    """Derived trace and explicit controls; makes no claim of solve feasibility."""
+    """Ordered outcomes make no claim about numerical feasibility."""
 
-    decisions: tuple[Decision, ...]
-    assignments: tuple[Assignment, ...]
+    outcomes: tuple[DecisionOutcome, ...]
+
+    def __post_init__(self):
+        items = tuple(self.outcomes)
+        if any(not isinstance(item, DecisionOutcome) for item in items):
+            raise TypeError("outcomes must be DecisionOutcome records")
+        object.__setattr__(self, "outcomes", items)
+
+    @property
+    def assignments(self) -> tuple[Assignment, ...]:
+        return tuple(item for outcome in self.outcomes for item in outcome.assignments)

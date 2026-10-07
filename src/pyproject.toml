@@ -10,6 +10,7 @@ readme = "README.md"
 requires-python = ">=3.10, <3.14"
 
 dependencies = [
+    "py-moneyed==3.0",
     "jsonschema>=4.26,<5",
     "rfc3339-validator>=0.1.4,<0.2",
     "pint>=0.24",
@@ -24,7 +25,7 @@ plotting = ["matplotlib>=3.10", "plotly>=6.0"]
 visualization = ["networkx>=3.1", "plotly>=6.0", "pyvis>=0.3.2"]
 speckle = ["specklepy>=2.21"]
 # Temporary predecessor group retained until official Windows connector acceptance.
-legacy = ["networkx>=3.1", "py-moneyed>=3.0", "specklepy>=2.21"]
+legacy = ["networkx>=3.1", "specklepy>=2.21"]
 execution = ["numpy>=1.24", "pyomo==6.10.1", "highspy==1.15.1"]
 yaml = ["PyYAML>=6.0.2,<7"]
 workflow = ["openpyxl>=3.1.5,<4", "PyYAML>=6.0.2,<7"]
@@ -33,8 +34,9 @@ excel = ["openpyxl>=3.1.5,<4", "PyYAML>=6.0.2,<7"]
 [dependency-groups]
 dev = ["pytest>=8.0", "black>=25.0", "numpy-financial>=1.0"]
 
-[tool.ruff.format]
-preview = true  # Uses Black's experimental formatting rules
+[tool.black]
+line-length = 88
+skip-magic-trailing-comma = false
 
 [build-system]
 requires = ["setuptools>=77"]
@@ -45,7 +47,7 @@ include = ["rangekeeper*"]
 exclude = ["*.node_modules*", "*.client*"]
 
 [tool.setuptools.package-data]
-"rangekeeper" = ["py.typed", "_currencies.json"]
+"rangekeeper" = ["py.typed"]
 "rangekeeper._schema" = ["*.json"]
 "rangekeeper.adapters.cytoscape" = ["assets/*.js", "assets/*.css", "assets/*.html", "assets/vendor/*.js", "assets/vendor/*.LICENSE", "assets/vendor/*.json"]
 

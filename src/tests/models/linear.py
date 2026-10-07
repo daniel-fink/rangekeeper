@@ -1,11 +1,12 @@
 """Readable known-data DCF composition using canonical Flow content."""
-from rangekeeper.model.flow import Flow
+
+from rangekeeper.model.flow import Flow, MissingValueHandling
 
 from dataclasses import dataclass
 from datetime import timedelta
 
 from rangekeeper.model.measure import Quantity
-from rangekeeper.duration import make_periods, offset
+from rangekeeper.duration import Frequency, PeriodTiming, make_periods, offset
 from rangekeeper.calculations import series, projection, financial
 
 
@@ -14,16 +15,16 @@ class Model:
 
     def __init__(self, params: dict):
         units = params["units"]
-        frequency = params["frequency"]
+        frequency = Frequency(params["frequency"])
         periods = make_periods(
-            offset(params["start_date"], frequency="year"),
+            offset(params["start_date"], frequency=Frequency.YEAR),
             frequency=frequency,
             count=params["num_periods"] + 1,
         )
         self.pgi = projection.project(
             Quantity(magnitude=params["initial_pgi"], units=units),
             periods=periods,
-            method="compound",
+            method=projection.ProjectionMethod.COMPOUND,
             rate=params["growth_rate"],
         )
         self.vacancy = self.pgi.scale(-params["vacancy_rate"])
@@ -39,7 +40,9 @@ class Model:
             units=units,
         )
         self.ncf_disposition = series.aggregate(
-            (self.ncf, self.disposition), join="union", missing="zero"
+            (self.ncf, self.disposition),
+            join=series.AlignmentJoin.UNION,
+            missing=MissingValueHandling.ZERO,
         ).flow
         # All proceeds share one valuation origin; terminal proceeds are discounted
         # over the full holding period instead of restarting at their first sample.
@@ -47,12 +50,16 @@ class Model:
             self.ncf_disposition, rate=params["discount_rate"]
         )
         acquisition_period = make_periods(
-            params["start_date"], frequency="year", count=1
+            params["start_date"], frequency=Frequency.YEAR, count=1
         )
         self.acquisition = Flow.from_periods(
             acquisition_period, (-abs(params["acquisition_price"]),), units=units
         )
         self.investment_cashflows = series.aggregate(
-            (self.acquisition, self.ncf_disposition), join="union", missing="zero"
+            (self.acquisition, self.ncf_disposition),
+            join=series.AlignmentJoin.UNION,
+            missing=MissingValueHandling.ZERO,
         ).flow
-        self.irr = financial.calculate_irr(self.investment_cashflows, timing="last_day")
+        self.irr = financial.calculate_irr(
+            self.investment_cashflows, timing=PeriodTiming.LAST
+        )

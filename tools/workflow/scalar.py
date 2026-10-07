@@ -5,8 +5,9 @@ mathematical authoring and execution; each transition uses the public boundary.
 """
 
 from pathlib import Path
-from rangekeeper.model.expression import Reference
 from uuid import uuid4
+
+from rangekeeper.model.expression import ExpressionKind, Operator, Reference
 
 
 def run_example(destination: Path) -> dict:
@@ -25,7 +26,7 @@ def run_example(destination: Path) -> dict:
     )
     from rangekeeper.io import yaml, json, DirectoryStore
     from rangekeeper.execution import Executor
-    from rangekeeper.run import validate
+    from rangekeeper.run import SolutionStatus, validate
 
     destination = Path(destination)
     destination.mkdir(parents=True, exist_ok=False)
@@ -107,23 +108,27 @@ def run_example(destination: Path) -> dict:
     net, gross = entity.characteristics.values
     predicate = Expression(
         id=uuid4(),
-        kind="binary",
-        operator="equal",
+        kind=ExpressionKind.BINARY,
+        operator=Operator.EQUAL,
         operands=(
-            Expression(id=uuid4(), kind="reference", target=Reference(target=gross.id)),
             Expression(
                 id=uuid4(),
-                kind="binary",
-                operator="add",
+                kind=ExpressionKind.REFERENCE,
+                target=Reference(target=gross.id),
+            ),
+            Expression(
+                id=uuid4(),
+                kind=ExpressionKind.BINARY,
+                operator=Operator.ADD,
                 operands=(
                     Expression(
                         id=uuid4(),
-                        kind="reference",
+                        kind=ExpressionKind.REFERENCE,
                         target=Reference(target=net.id),
                     ),
                     Expression(
                         id=uuid4(),
-                        kind="reference",
+                        kind=ExpressionKind.REFERENCE,
                         target=Reference(target=net.id),
                     ),
                 ),
@@ -165,7 +170,7 @@ def run_example(destination: Path) -> dict:
     def solve(input_model, assigned, quantity, unknown):
         specification = Specification.from_data(
             {
-                "metadata": {"id": str(uuid4()), "schema_version": "0.6.0"},
+                "metadata": {"id": str(uuid4()), "schema_version": "0.7.0"},
                 "model": str(input_model.id),
                 "assignments": [
                     {"target": {"target": str(assigned)}, "quantity": quantity}
@@ -175,7 +180,9 @@ def run_example(destination: Path) -> dict:
         )
         result = Executor(store).execute(specification)
         validate(result, resolver=store).raise_if_invalid()
-        assert result.report.status.solution == "feasible", result.report.to_data()
+        assert (
+            result.report.status.solution is SolutionStatus.FEASIBLE
+        ), result.report.to_data()
         return result, store.load_model(result.record.outputs[0])
 
     forward, first = solve(model, net.id, net.quantity.to_data(), gross.id)

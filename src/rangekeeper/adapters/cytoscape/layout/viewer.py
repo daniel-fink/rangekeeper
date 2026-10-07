@@ -4,6 +4,7 @@ No ingestion, graph mutation or solver invocation. A caller supplies an already
 completed display document, frozen problem, and result.
 """
 
+from rangekeeper.adapters.cytoscape.layout.result import ResultStatus
 import json
 import shutil
 from copy import deepcopy
@@ -13,10 +14,27 @@ from hashlib import sha256
 from pathlib import Path
 from tempfile import mkdtemp
 from uuid import uuid4
+from rangekeeper.io._atomic import PublishedFileError, PublishedFileInterrupted, replace
 
 from .check import check, metrics
 from .model import Problem, Rect, from_document
 from .result import Result
+
+
+class PublishedLayoutError(PublishedFileError):
+    """The layout pointer is visible; retain this bundle if its sync fails."""
+
+    def __init__(self, directory: Path, error: PublishedFileError):
+        self.directory = directory
+        super().__init__(error.path, error.error)
+
+
+class PublishedLayoutInterrupted(PublishedFileInterrupted):
+    """Retain the published bundle when cancellation interrupts its sync."""
+
+    def __init__(self, directory: Path, error: PublishedFileInterrupted):
+        self.directory = directory
+        super().__init__(error.path, error.error)
 
 
 def fingerprint(value: dict) -> str:
@@ -84,7 +102,7 @@ def validate_saved_layout(document: dict) -> None:
 def with_saved_layout(document: dict, problem: Problem, result: Result) -> dict:
     """Return a new display snapshot; reject stale, partial or diagnostic geometry."""
     if (
-        result.status not in {"feasible", "optimal"}
+        result.status not in {ResultStatus.FEASIBLE, ResultStatus.OPTIMAL}
         or result.problem_fingerprint != problem.fingerprint
     ):
         raise ValueError("A matching successful layout result is required")
@@ -138,7 +156,6 @@ def export_layout_review(
     temporary = Path(mkdtemp(prefix=".building-", dir=runs))
     identifier = str(uuid4())
     destination = runs / identifier
-    pointer = root / f".latest-{identifier}.json"
     try:
         for name, value in (
             ("problem.json", problem.document()),
@@ -148,7 +165,7 @@ def export_layout_review(
                 "run.json",
                 {
                     "completedAt": datetime.now(timezone.utc).isoformat(),
-                    "result": asdict(result),
+                    "result": result.to_mapping(),
                 },
             ),
         ):
@@ -170,18 +187,22 @@ def export_layout_review(
             json.dumps(manifest, sort_keys=True, indent=2) + "\n"
         )
         temporary.rename(destination)
-        pointer.write_text(
-            json.dumps(
-                {
-                    "run": f"runs/{identifier}",
-                    "viewer": f"runs/{identifier}/viewer.html",
-                }
+        try:
+            replace(
+                root / "latest.json",
+                json.dumps(
+                    {
+                        "run": f"runs/{identifier}",
+                        "viewer": f"runs/{identifier}/viewer.html",
+                    }
+                )
+                + "\n",
             )
-            + "\n"
-        )
-        pointer.replace(root / "latest.json")
+        except PublishedFileError as exc:
+            raise PublishedLayoutError(destination, exc) from exc
+        except PublishedFileInterrupted as exc:
+            raise PublishedLayoutInterrupted(destination, exc) from exc
     finally:
         if temporary.exists():
             shutil.rmtree(temporary)
-        pointer.unlink(missing_ok=True)
     return destination

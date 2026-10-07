@@ -4,6 +4,7 @@ The input footprints include text. Text is clipped within those footprints so th
 render cannot invent unmeasured collisions. Ellipses explicitly signal clipping.
 """
 
+from rangekeeper.adapters.cytoscape.layout.result import ResultMode
 import re
 from html import escape
 from xml.etree import ElementTree
@@ -30,7 +31,10 @@ def _text(label: str, box: Rect, color: str = "#14243a"):
 
 
 def svg(
-    problem: Problem, result: Result, *, node_colors: dict[str, str] | None = None
+    problem: Problem,
+    result: Result,
+    *,
+    node_colors: dict[str, str] | None = None,
 ) -> str:
     node_colors = node_colors or {}
     if any(
@@ -41,7 +45,7 @@ def svg(
     if not result.rectangles:
         return '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="80"><text x="16" y="40">No layout returned</text></svg>'
     findings = check(problem, result.rectangles)
-    if any(f.code != "exclusion" or result.mode == "strict" for f in findings):
+    if any(f.code != "exclusion" or result.mode == ResultMode.STRICT for f in findings):
         raise ValueError("Cannot render an unchecked layout")
     width = max(r.right for r in result.rectangles.values()) + 40
     height = max(r.bottom for r in result.rectangles.values()) + 40

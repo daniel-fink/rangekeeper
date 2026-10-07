@@ -1,5 +1,7 @@
 """Errors shared by the schema-derived record boundary."""
 
+from uuid import UUID
+
 
 class ContractError(ValueError):
     """A semantic rule failed, optionally identifying its code and JSON Pointer.
@@ -9,11 +11,17 @@ class ContractError(ValueError):
     """
 
     def __init__(
-        self, message: str, *, code: str = "semantic.contract", path: str = ""
+        self,
+        message: str,
+        *,
+        code: str = "semantic.contract",
+        path: str = "",
+        document_id: UUID | None = None,
     ) -> None:
         super().__init__(message)
         self.code = code
         self.path = path
+        self.document_id = document_id
 
 
 class ValidationError(ValueError):

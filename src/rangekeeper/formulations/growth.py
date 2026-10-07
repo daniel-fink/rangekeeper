@@ -3,12 +3,13 @@
 from uuid import UUID
 from ..model import Model
 from .._schema.records import Formulation, Reference
-from ._alignment import shape, target, owner
-from ._construction import construct
+from .flow import aligned, shape
+from .authoring import declare
+from ..model.scope import target_value
 from .expression import reference, literal, equal, add, multiply
 
 
-def build_compound(
+def compound(
     model: Model, *, id: UUID, initial: Reference, rate: Reference, result: UUID
 ) -> Formulation:
     """Declare first amount = initial, then prior amount * (1 + periodic rate).
@@ -18,7 +19,7 @@ def build_compound(
     """
     equations, prior = [], initial
     for index, item in enumerate(shape(model, result).movements):
-        current = target(result, item)
+        current = Reference(target=item.id)
         rhs = (
             reference(prior)
             if index == 0
@@ -26,12 +27,15 @@ def build_compound(
         )
         equations.append((str(item.id), equal(reference(current), rhs)))
         prior = current
-    return construct(
-        id, "compound", equations, (owner(model, initial), owner(model, rate), result)
+    return declare(
+        id,
+        "compound",
+        equations,
+        (target_value(model, initial).id, target_value(model, rate).id, result),
     )
 
 
-def build_linear(
+def linear(
     model: Model, *, id: UUID, initial: Reference, increment: Reference, result: UUID
 ) -> Formulation:
     """Declare initial + step index * increment; first index is zero.
@@ -42,15 +46,15 @@ def build_linear(
         (
             str(m.id),
             equal(
-                reference(target(result, m)),
+                reference(Reference(target=m.id)),
                 add(reference(initial), multiply(literal(i), reference(increment))),
             ),
         )
         for i, m in enumerate(shape(model, result).movements)
     ]
-    return construct(
+    return declare(
         id,
         "linear",
         equations,
-        (owner(model, initial), owner(model, increment), result),
+        (target_value(model, initial).id, target_value(model, increment).id, result),
     )

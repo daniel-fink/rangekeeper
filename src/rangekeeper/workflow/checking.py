@@ -5,14 +5,16 @@ from __future__ import annotations
 import math
 from collections.abc import Mapping
 from dataclasses import dataclass
+from enum import Enum, unique
 from typing import Any
 
 from rangekeeper.model import Assembly, Entity, Model
 from rangekeeper.graph import View
 from rangekeeper.operation import _Failure
+from rangekeeper._encoding import encode
 
 from ._declarations import fields, sequence, text
-from ._operands import operand
+from ._operands import OperandResult, operand
 from .bindings import (
     binding,
     condition,
@@ -24,33 +26,73 @@ from .bindings import (
 from .references import references
 
 
+@unique
+class CheckStatus(Enum):
+    AGREE = "agree"
+    DIFFERENCE = "difference"
+    UNAVAILABLE = "unavailable"
+
+
 @dataclass(frozen=True, slots=True)
 class CheckResult:
-    """Retains comparison operands, scope, missing contributors and model targets
-    so an agreement can be assessed beyond a summary count.
-    """
+    """Two complete operand sides and one comparison decision."""
 
     id: str
     group: str
     scope: str
-    left: object
-    right: object
-    status: str
+    left: OperandResult
+    right: OperandResult
+    status: CheckStatus
     explanation: str
     references: tuple[str, ...] = ()
-    targets: tuple[str, ...] = ()
-    known_subtotal: int | float | None = None
-    missing: tuple[str, ...] = ()
     purpose: str = "comparison"
     category: str = "comparison"
     source: str = ""
-    left_members: tuple[str, ...] = ()
-    right_members: tuple[str, ...] = ()
-    # Legacy fields above retain their left-side meaning for existing consumers.
-    left_missing: tuple[str, ...] = ()
-    right_missing: tuple[str, ...] = ()
-    left_known_subtotal: int | float | None = None
-    right_known_subtotal: int | float | None = None
+    report_counts: bool = False
+
+    def __post_init__(self):
+        if not isinstance(self.left, OperandResult) or not isinstance(
+            self.right, OperandResult
+        ):
+            raise TypeError("comparison sides must be OperandResult")
+        if not isinstance(self.status, CheckStatus):
+            raise TypeError("status must be CheckStatus")
+        if type(self.report_counts) is not bool:
+            raise TypeError("report_counts must be bool")
+
+    @property
+    def targets(self):
+        return tuple(dict.fromkeys((*self.left.targets, *self.right.targets)))
+
+    def display_value(self, side):
+        value = getattr(self, side).value
+        return len(value) if self.report_counts and value is not None else value
+
+    def to_mapping(self):
+        def side(item):
+            return {
+                "value": item.value,
+                "claims": tuple(str(c.id) for c in item.claims),
+                "references": references(item.claims),
+                "targets": item.targets,
+                "known_subtotal": item.known_subtotal,
+                "missing": item.missing,
+            }
+
+        return {
+            "id": self.id,
+            "group": self.group,
+            "scope": self.scope,
+            "left": side(self.left),
+            "right": side(self.right),
+            "status": self.status.value,
+            "explanation": self.explanation,
+            "references": self.references,
+            "purpose": self.purpose,
+            "category": self.category,
+            "source": self.source,
+            "report_counts": self.report_counts,
+        }
 
 
 _MODEL_FILTERS = {"classification", "member_of", "codes"}
@@ -188,6 +230,7 @@ def evaluate(
     """
 
     results = []
+    view = View(model)
     for c in spec["comparisons"]:
         table = outputs[c["each"]] if "each" in c else None
         if table is not None and "scope_column" in c:
@@ -202,11 +245,15 @@ def evaluate(
                     else ""
                 )
             }
-            left_result = operand(c["left"], row, table, model, by_key, outputs)
-            right_result = operand(c["right"], row, table, model, by_key, outputs)
+            left_result = operand(
+                c["left"], row, table, model, by_key, outputs, view=view
+            )
+            right_result = operand(
+                c["right"], row, table, model, by_key, outputs, view=view
+            )
             left, right = left_result.value, right_result.value
             if left is None or right is None:
-                status = "unavailable"
+                status = CheckStatus.UNAVAILABLE
             elif (
                 isinstance(left, (int, float))
                 and not isinstance(left, bool)
@@ -214,15 +261,22 @@ def evaluate(
                 and not isinstance(right, bool)
             ):
                 status = (
-                    "agree"
+                    CheckStatus.AGREE
                     if math.isclose(
                         left, right, rel_tol=0, abs_tol=c.get("tolerance", 0)
                     )
-                    else "difference"
+                    else CheckStatus.DIFFERENCE
                 )
             else:
-                status = "agree" if left == right else "difference"
-            if c.get("report_when") == "difference" and status != "difference":
+                status = (
+                    CheckStatus.AGREE
+                    if encode(left) == encode(right)
+                    else CheckStatus.DIFFERENCE
+                )
+            if (
+                c.get("report_when") == "difference"
+                and status is not CheckStatus.DIFFERENCE
+            ):
                 continue
             if c.get("report") == "counts" and any(
                 value is not None and not isinstance(value, tuple)
@@ -231,17 +285,6 @@ def evaluate(
                 raise _Failure(
                     "invalid_count_report", "Count reports require key collections"
                 )
-            members_left = (
-                left if c.get("report") == "counts" and isinstance(left, tuple) else ()
-            )
-            members_right = (
-                right
-                if c.get("report") == "counts" and isinstance(right, tuple)
-                else ()
-            )
-            if c.get("report") == "counts":
-                left = None if left is None else len(members_left)
-                right = None if right is None else len(members_right)
             extra = [
                 claim
                 for b in c.get("evidence", ())
@@ -252,8 +295,8 @@ def evaluate(
                     id=c["id"] + (":" + str(row.id) if row else ""),
                     group=c["group"],
                     scope=template(c["scope"], context),
-                    left=left,
-                    right=right,
+                    left=left_result,
+                    right=right_result,
                     status=status,
                     explanation=c.get(
                         "explanation",
@@ -266,32 +309,21 @@ def evaluate(
                             *extra,
                         )
                     ),
-                    targets=tuple(
-                        dict.fromkeys((*left_result.targets, *right_result.targets))
-                    ),
-                    known_subtotal=left_result.known_subtotal,
-                    missing=left_result.missing,
-                    left_missing=left_result.missing,
-                    right_missing=right_result.missing,
-                    left_known_subtotal=left_result.known_subtotal,
-                    right_known_subtotal=right_result.known_subtotal,
                     purpose=c.get("purpose", "comparison"),
                     category=c.get("category", "comparison"),
                     source=c.get("source", ""),
-                    left_members=members_left,
-                    right_members=members_right,
+                    report_counts=c.get("report") == "counts",
                 )
             )
-    results.extend(_invariants(spec, model))
+    results.extend(_invariants(spec, model, view))
     return tuple(results)
 
 
-def _invariants(spec, model):
+def _invariants(spec, model, view):
     results = []
     targets = (
         {f.target for f in model.provenance.facts or ()} if model.provenance else set()
     )
-    view = View(model)
     for rule in spec.get("invariants", ()):
         if rule == "fact_coverage":
             expected = {x.id for x in (*view.entities, *view.relationships)}
@@ -327,9 +359,9 @@ def _invariants(spec, model):
                 rule,
                 "Invariants",
                 rule,
-                ok,
-                True,
-                "agree" if ok else "difference",
+                OperandResult(ok),
+                OperandResult(True),
+                CheckStatus.AGREE if ok else CheckStatus.DIFFERENCE,
                 "Model structural invariant",
                 purpose="invariant",
                 category="invariant",

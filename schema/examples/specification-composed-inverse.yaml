@@ -1,12 +1,12 @@
 metadata:
-  id: 5f5be6f0-a423-5a22-89f8-bc83ac1f9d96
-  schema_version: 0.6.0
+  id: 695e2d3b-fd66-5e67-8720-1f50d68adea1
+  schema_version: 0.7.0
   name: Composed inverse valuation
   description: Combines shared requirements with investigation-specific roles. Equivalent
     to the standalone inverse example; no solver has been run.
   previous: abd75e4d-3e68-54b5-b446-2f3ea51d6c9c
 includes:
-- fb1663aa-1482-50e1-9da9-d798faa70872
+- 38a9e7e9-2eb4-5142-9570-8884a51452bb
 assignments:
 - quantity:
     magnitude: 10000000

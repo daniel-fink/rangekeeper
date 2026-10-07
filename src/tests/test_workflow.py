@@ -1,5 +1,7 @@
 """The same bounded operations build accommodation and equipment examples."""
 
+from rangekeeper.workflow.checking import CheckStatus
+
 import pytest
 import yaml
 from openpyxl import Workbook
@@ -330,8 +332,11 @@ def test_synthetic_vertical_slice(tmp_path, domain):
         "blank",
         "other",
     ]
-    assert next(c for c in built.checks if c.id == "total").status == "unavailable"
-    assert next(c for c in built.checks if c.id == "total").known_subtotal == 12
+    assert (
+        next(c for c in built.checks if c.id == "total").status
+        == CheckStatus.UNAVAILABLE
+    )
+    assert next(c for c in built.checks if c.id == "total").left.known_subtotal == 12
     encoded = graph_json.dumps(built.model)
     assert built.model.to_data() == graph_json.loads(encoded, kind=Model).to_data()
     assert encoded == graph_json.dumps(
@@ -430,8 +435,12 @@ def test_equal_counts_do_not_hide_wrong_members(tmp_path):
     rewrite(root, docs)
     result = run(load(root / "spec"), input_root=root / "inputs").output
     members = [c for c in result.checks if c.group == "Membership"]
-    assert all(c.left == c.right and c.status == "difference" for c in members)
-    assert all(c.left_members != c.right_members for c in members)
+    assert all(
+        c.display_value("left") == c.display_value("right")
+        and c.status == CheckStatus.DIFFERENCE
+        for c in members
+    )
+    assert all(c.left.value != c.right.value for c in members)
 
 
 def test_membership_checks_use_final_assemblies(tmp_path):
@@ -440,7 +449,10 @@ def test_membership_checks_use_final_assemblies(tmp_path):
     rewrite(root, docs)
     result = run(load(root / "spec"), input_root=root / "inputs").output
     members = [c for c in result.checks if c.group == "Membership"]
-    assert [(c.left, c.right, c.status) for c in members] == [
+    assert [
+        (c.display_value("left"), c.display_value("right"), c.status.value)
+        for c in members
+    ] == [
         (2, 2, "agree"),
         (1, 1, "agree"),
     ]
@@ -533,7 +545,7 @@ def test_shared_membership_does_not_double_count_atomic_total(tmp_path):
     result = run(load(root / "spec"), input_root=root / "inputs").output
     objects = {x.code: x for x in View(result.model).entities}
     assert objects["A1"].id in set(objects["L1"].entities) & set(objects["L2"].entities)
-    assert next(c for c in result.checks if c.id == "total").known_subtotal == 12
+    assert next(c for c in result.checks if c.id == "total").left.known_subtotal == 12
 
 
 def test_business_identity_independent_of_row_edition_and_value(tmp_path):
@@ -560,3 +572,54 @@ def test_business_identity_independent_of_row_edition_and_value(tmp_path):
     assert {x.id for x in before.system.relationships} == {
         x.id for x in after.system.relationships
     }
+
+
+def test_html_uses_prepared_check_sides_and_reference_data(tmp_path, monkeypatch):
+    from dataclasses import replace
+    from rangekeeper.workflow import review
+    from rangekeeper.workflow.reporting import prepare
+
+    root, _ = example(tmp_path)
+    result = run(load(root / "spec"), input_root=root / "inputs").output
+    prepared = prepare(result)
+    expected = review._render(result, prepared)
+
+    def no_reference_traversal(*args, **kwargs):
+        pytest.fail("HTML repeated prepared reference traversal")
+
+    monkeypatch.setattr(review, "references", no_reference_traversal)
+    # Rendering consumes the prepared check data, even when the input result's
+    # check tuple is absent. No side values or references are rebuilt for HTML.
+    assert review._render(replace(result, checks=()), prepared) == expected
+
+
+def test_prepared_report_keeps_distinct_artifact_claim_references():
+    from types import SimpleNamespace
+    from uuid import uuid4
+    from rangekeeper.evidence import Claim, Location, Source, tabular
+    from rangekeeper.workflow.reporting import prepare
+    from .test_model_graph import fixture
+
+    model, *_ = fixture()
+    uid, claim_id = uuid4(), uuid4()
+    key = ("rows", str(uid), "value")
+    artifacts = {}
+    for name in ("First", "Second"):
+        claim = Claim.sourced(
+            1,
+            at=Location(
+                source=Source(id=uuid4(), name=name, checksum=name),
+                reference={"file": name},
+            ),
+            id=claim_id,
+        )
+        artifacts[name] = tabular.from_claims(
+            name=name,
+            columns=("value",),
+            row_ids=(uid,),
+            claims={key: claim},
+        )
+    result = SimpleNamespace(model=model, evidence=artifacts, checks=(), metadata={})
+    references = prepare(result).cell_references
+    assert references[("First", key)] == ('First · {"file": "First"}',)
+    assert references[("Second", key)] == ('Second · {"file": "Second"}',)

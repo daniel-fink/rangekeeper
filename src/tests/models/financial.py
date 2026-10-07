@@ -4,9 +4,10 @@ from rangekeeper.calculations.account import Account
 
 from dataclasses import dataclass
 from datetime import date
-from rangekeeper.model.flow import Flow
+from rangekeeper.model.flow import Flow, MissingValueHandling
 from rangekeeper.model.measure import Quantity
-from rangekeeper.duration import make_periods
+from rangekeeper.account import CurrentInterest, InterestTreatment
+from rangekeeper.duration import Frequency, PeriodTiming, make_periods
 from rangekeeper.calculations import projection, series, account
 
 
@@ -25,10 +26,10 @@ def build_accounts(
     costs=500000.0,
     payments=1000000.0,
     interest_rate=0.05,
-    starting=date(2020, 1, 1)
+    starting=date(2020, 1, 1),
 ) -> DevelopmentAccounts:
     """Nine monthly draws, three repayments; advance transactions and capitalized debt."""
-    periods = make_periods(starting, frequency="month", count=12)
+    periods = make_periods(starting, frequency=Frequency.MONTH, count=12)
     purchase = projection.allocate(
         Quantity(magnitude=-acquisition, units="AUD"), periods=periods[:1]
     )
@@ -36,7 +37,9 @@ def build_accounts(
         Quantity(magnitude=-costs, units="AUD"), periods=periods[:9]
     )
     draws = series.aggregate(
-        (purchase, construction), join="union", missing="zero"
+        (purchase, construction),
+        join=series.AlignmentJoin.UNION,
+        missing=MissingValueHandling.ZERO,
     ).flow
     receipts = projection.allocate(
         Quantity(magnitude=payments, units="AUD"), periods=periods[9:]
@@ -46,13 +49,14 @@ def build_accounts(
     )
     debt = series.aggregate(
         (equity_account.overdraft.negate(), receipts.negate()),
-        join="union",
-        missing="zero",
+        join=series.AlignmentJoin.UNION,
+        missing=MissingValueHandling.ZERO,
     ).flow
     loan = Account.calculate(
         debt,
         starting=Quantity(magnitude=0, units="AUD"),
         rate=interest_rate / 12,
-        method="capitalized",
+        current_interest=CurrentInterest.INCLUDED,
+        treatment=InterestTreatment.FINANCED,
     )
     return DevelopmentAccounts(draws, receipts, equity_account, loan)

@@ -1,5 +1,6 @@
 """Pure finite-quantity reducers; callers explicitly normalize units first."""
 
+import builtins
 import math
 from collections.abc import Callable
 from ..model import Quantity
@@ -7,7 +8,8 @@ from .errors import AggregationError
 
 
 def _reduce(
-    values: tuple[Quantity, ...], operation: Callable[[tuple[float, ...]], float]
+    values: tuple[Quantity, ...],
+    operation: Callable[[tuple[float, ...]], float],
 ) -> Quantity:
     if not values:
         raise AggregationError("cannot reduce an empty population")
@@ -29,26 +31,26 @@ def _reduce(
     return Quantity(magnitude=result, units=values[0].units)
 
 
-def sum_quantities(values: tuple[Quantity, ...]) -> Quantity:
+def sum(values: tuple[Quantity, ...]) -> Quantity:
     """Accurately sum normalized magnitudes; empty input is an error, not zero."""
     return _reduce(values, math.fsum)
 
 
-def mean_quantities(values: tuple[Quantity, ...]) -> Quantity:
+def mean(values: tuple[Quantity, ...]) -> Quantity:
     """Average raw contributor quantities, never intermediate subtree averages."""
     return _reduce(
         values, lambda numbers: math.fsum(value / len(numbers) for value in numbers)
     )
 
 
-def min_quantity(values: tuple[Quantity, ...]) -> Quantity:
+def min(values: tuple[Quantity, ...]) -> Quantity:
     """Return the minimum normalized quantity."""
-    return _reduce(values, min)
+    return _reduce(values, builtins.min)
 
 
-def max_quantity(values: tuple[Quantity, ...]) -> Quantity:
+def max(values: tuple[Quantity, ...]) -> Quantity:
     """Return the maximum normalized quantity."""
-    return _reduce(values, max)
+    return _reduce(values, builtins.max)
 
 
-__all__ = ["sum_quantities", "mean_quantities", "min_quantity", "max_quantity"]
+__all__ = ["sum", "mean", "min", "max"]

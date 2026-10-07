@@ -1,17 +1,19 @@
 # Rangekeeper refactoring plan
 
-Status: review recommendations and agreed decisions integrated. Implementation is deferred.
+Status: all 23 intents implemented; local acceptance passed. External host checks remain as stated below.
 
-Created: 2026-10-06. Decisions integrated: 2026-10-07.
+Created: 2026-10-06. Decisions and implementation: 2026-10-07.
 
 This plan collects refactoring intents for one coordinated implementation pass.
 The integration decisions, shared contracts and work packages below coordinate
 the detailed intents. Resolve routine implementation details within these
-contracts and record them before their dependent edits. Updating this plan does
-not start implementation.
+contracts and record them before their dependent edits. The user authorized the
+implementation after the plan commit and push.
 
-The current [architecture](LIBRARY_ARCHITECTURE.md) and other guides continue to
-describe the implemented library until the refactor is complete.
+The current [architecture](LIBRARY_ARCHITECTURE.md) and other guides describe the
+new ownership. The combined implementation record tracks acceptance evidence.
+Problem and baseline sections describe the pre-refactor code; retired source paths
+remain as text. Implementation records and current guides describe the final state.
 
 ## Overall strategy: reduce and simplify
 
@@ -95,29 +97,29 @@ Apply this strategy to the current intents:
 
 | ID | Intent | Status | Coordination and prerequisites |
 | --- | --- | --- | --- |
-| [RF-001](#rf-001-move-observation-availability-rules-to-policies) | Move observation availability rules to policies and remove duplicate logic | Planned; not implemented | Isolate pure policy helpers from eager package imports |
-| [RF-002](#rf-002-use-canonical-enums-for-closed-public-choices) | Use canonical enums for closed public choices | Planned; not implemented | Generate enums and update record encoding before migrating callers; coordinate policy imports with RF-001 |
-| [RF-003](#rf-003-create-the-expression-package-and-compose-semantic-analysis) | Create the expression package and compose semantic analysis from explicit stages | Planned; not implemented | Define shared scope, inferred-domain uncertainty and analysis ownership; coordinate shared callers with RF-001 and canonical types with RF-002 |
-| [RF-004](#rf-004-separate-record-indexing-from-shared-reference-validation) | Separate record indexing from shared reference validation | Planned; not implemented | Coordinate traversal and composed scopes with RF-003, metadata generation with RF-002, and structured diagnostics with existing validators |
-| [RF-005](#rf-005-separate-formulation-rules-from-scope-preparation) | Separate Formulation rules from scope preparation and reuse located declarations | Planned; not implemented | Share scope and expression results with RF-003, traversal and reference checks with RF-004, and canonical choices with RF-002 |
-| [RF-006](#rf-006-consolidate-validation-compose-domain-checks-and-reuse-prepared-results) | Consolidate validation, compose domain checks and reuse prepared results | Planned; not implemented | Integrate RF-002 decoding, RF-003 scope/analysis, RF-004 indexing/diagnostics, RF-005 Formulations, RF-009 scoped access and RF-001 policy checks |
-| [RF-007](#rf-007-use-py-moneyed-directly-for-the-currency-catalogue) | Use py-moneyed directly for the currency catalogue | Planned; not implemented | Preserve the pinned code set, update dependency and implementation fingerprints, and retain RF-006's unit-validation behaviour |
-| [RF-008](#rf-008-share-numerical-expression-evaluation-and-give-policy-predicates-a-clear-owner) | Share numerical expression evaluation and give policy predicates a clear owner | Planned; not implemented | Coordinate expression package ownership with RF-003, pure policy imports with RF-001, operator enums with RF-002, and validation boundaries with RF-006 |
-| [RF-009](#rf-009-consolidate-scoped-target-resolution-and-recorded-scalar-access) | Consolidate scoped target resolution and recorded scalar access | Planned; not implemented | Integrate RF-003 scope, RF-004 lookup and errors, RF-006 revision-local preparation, RF-001 observations and RF-008 quantity-map keys |
-| [RF-010](#rf-010-consolidate-graph-table-projection-around-view-or-hierarchy-input) | Consolidate graph table projection around View or Hierarchy input | Planned; not implemented | Reuse RF-006 unit-string validation and RF-004 Measure lookup; migrate tree projection callers |
-| [RF-011](#rf-011-simplify-graph-reducer-names) | Simplify graph reducer names | Planned; not implemented | Migrate reducer exports, callers, documentation and typing/install fixtures; remove function-identity checks with RF-013 |
-| [RF-012](#rf-012-simplify-graph-value-selection-preparation-while-preserving-revision-safety) | Simplify graph Value selection preparation while preserving revision safety | Planned; not implemented | Coordinate RF-010 projection preflight, RF-004 catalogue lookup and RF-006 revision-local reuse; retain custom-selector validation |
-| [RF-013](#rf-013-compose-graph-reduction-and-aggregation-results) | Compose graph reduction and aggregation results | Planned; not implemented | Coordinate RF-011 reducer naming, RF-012 selection boundaries and RF-006 unit-string validation; preserve raw-contributor semantics |
-| [RF-014](#rf-014-simplify-formulation-authoring-identity-and-operation-names) | Simplify formulation authoring, identity and operation names | Planned; account schedule addition agreed; not implemented | Coordinate RF-002 operators, RF-003/RF-005 semantics, RF-009 ownership, RF-001 imports and RF-015 schedule conventions |
-| [RF-015](#rf-015-compose-account-conventions-calculation-and-formulation) | Compose account conventions, calculation and formulation | Planned; six combinations and bounded schedule agreed; not implemented | RF-002 shared choices, RF-014 authoring, RF-008 fixed-predicate execution support and RF-016/RF-017 coordinates |
-| [RF-016](#rf-016-compose-duration-operations-around-frequency-and-explicit-calendar-rules) | Compose duration operations around Frequency and explicit calendar rules | Planned; not implemented; domain decisions agreed | Integrate RF-002 duration enums and import boundaries; migrate date/period consumers for the new month-end default and alignment contracts |
-| [RF-017](#rf-017-clarify-period-boundary-fields-and-timing-names) | Clarify Period boundary fields and timing names | Planned; not implemented | Coordinate RF-002 timing enum, RF-016 calendar operations, generated Python/C# records, codecs and active consumers; retain half-open date semantics |
-| [RF-018](#rf-018-simplify-policy-ownership-evaluation-and-decision-terminology) | Simplify policy ownership, evaluation and decision terminology | Planned; not implemented | Integrate RF-001 availability/imports, RF-006 preparation, RF-008 predicates, RF-009 scalar access, RF-014 authoring and RF-017 dates; migrate declaration/outcome schema and consumers together |
-| [RF-019](#rf-019-simplify-run-validation-around-prepared-documents-and-explicit-checks) | Simplify Run validation around prepared documents and explicit report/output checks | Planned; not implemented | Reuse RF-003–RF-006 preparation and scopes, RF-009 target access and RF-018 policy outcome validation; migrate executor and conformance callers |
-| [RF-020](#rf-020-integrate-record-equivalence-and-simplify-revision-comparison) | Integrate record equivalence and simplify revision comparison | Planned; not implemented | Coordinate RF-002 record encoding, RF-004 index access and RF-006 preparation; preserve RF-012/RF-013 selector contracts and RF-019 storage boundaries; use the shared `_revision.py` guard |
-| [RF-021](#rf-021-consolidate-scenario-mechanics-and-market-contracts-with-explicit-replay-provenance) | Consolidate scenario mechanics and market contracts with explicit replay provenance | Planned; not implemented | Reconcile RF-002 method strings, RF-006 conformance reuse, RF-009 targets, RF-016/RF-017 periods, RF-018 availability and RF-020 revision identity; migrate stored method names explicitly |
-| [RF-022](#rf-022-consolidate-specification-composition-and-validation) | Consolidate Specification composition and validation | Planned; not implemented | Apply RF-003–RF-006 scope, traversal and preparation; coordinate RF-009/RF-014 target callers, RF-018 policy ownership, RF-019 Run preparation and RF-020 revision rules |
-| [RF-023](#rf-023-consolidate-workflow-around-existing-evidence-graph-and-io-owners) | Consolidate workflow around existing evidence, graph and IO owners | Planned; not implemented | Integrate RF-002 choices, RF-004/RF-006/RF-009 access and preparation, RF-011–RF-013 graph reduction and RF-020 comparison; preserve RF-019/RF-022 document and execution boundaries |
+| [RF-001](#rf-001-move-observation-availability-rules-to-policies) | Move observation availability rules to policies and remove duplicate logic | Implemented; local acceptance passed | Isolate pure policy helpers from eager package imports |
+| [RF-002](#rf-002-use-canonical-enums-for-closed-public-choices) | Use canonical enums for closed public choices | Implemented; local acceptance passed | Generate enums and update record encoding before migrating callers; coordinate policy imports with RF-001 |
+| [RF-003](#rf-003-create-the-expression-package-and-compose-semantic-analysis) | Create the expression package and compose semantic analysis from explicit stages | Implemented; local acceptance passed | Define shared scope, inferred-domain uncertainty and analysis ownership; coordinate shared callers with RF-001 and canonical types with RF-002 |
+| [RF-004](#rf-004-separate-record-indexing-from-shared-reference-validation) | Separate record indexing from shared reference validation | Implemented; local acceptance passed | Coordinate traversal and composed scopes with RF-003, metadata generation with RF-002, and structured diagnostics with existing validators |
+| [RF-005](#rf-005-separate-formulation-rules-from-scope-preparation) | Separate Formulation rules from scope preparation and reuse located declarations | Implemented; local acceptance passed | Share scope and expression results with RF-003, traversal and reference checks with RF-004, and canonical choices with RF-002 |
+| [RF-006](#rf-006-consolidate-validation-compose-domain-checks-and-reuse-prepared-results) | Consolidate validation, compose domain checks and reuse prepared results | Implemented; local acceptance passed | Integrate RF-002 decoding, RF-003 scope/analysis, RF-004 indexing/diagnostics, RF-005 Formulations, RF-009 scoped access and RF-001 policy checks |
+| [RF-007](#rf-007-use-py-moneyed-directly-for-the-currency-catalogue) | Use py-moneyed directly for the currency catalogue | Implemented; local acceptance passed | Preserve the pinned code set, update dependency and implementation fingerprints, and retain RF-006's unit-validation behaviour |
+| [RF-008](#rf-008-share-numerical-expression-evaluation-and-give-policy-predicates-a-clear-owner) | Share numerical expression evaluation and give policy predicates a clear owner | Implemented; local acceptance passed | Coordinate expression package ownership with RF-003, pure policy imports with RF-001, operator enums with RF-002, and validation boundaries with RF-006 |
+| [RF-009](#rf-009-consolidate-scoped-target-resolution-and-recorded-scalar-access) | Consolidate scoped target resolution and recorded scalar access | Implemented; local acceptance passed | Integrate RF-003 scope, RF-004 lookup and errors, RF-006 revision-local preparation, RF-001 observations and RF-008 quantity-map keys |
+| [RF-010](#rf-010-consolidate-graph-table-projection-around-view-or-hierarchy-input) | Consolidate graph table projection around View or Hierarchy input | Implemented; local acceptance passed | Reuse RF-006 unit-string validation and RF-004 Measure lookup; migrate tree projection callers |
+| [RF-011](#rf-011-simplify-graph-reducer-names) | Simplify graph reducer names | Implemented; local acceptance passed | Migrate reducer exports, callers, documentation and typing/install fixtures; remove function-identity checks with RF-013 |
+| [RF-012](#rf-012-simplify-graph-value-selection-preparation-while-preserving-revision-safety) | Simplify graph Value selection preparation while preserving revision safety | Implemented; local acceptance passed | Coordinate RF-010 projection preflight, RF-004 catalogue lookup and RF-006 revision-local reuse; retain custom-selector validation |
+| [RF-013](#rf-013-compose-graph-reduction-and-aggregation-results) | Compose graph reduction and aggregation results | Implemented; local acceptance passed | Coordinate RF-011 reducer naming, RF-012 selection boundaries and RF-006 unit-string validation; preserve raw-contributor semantics |
+| [RF-014](#rf-014-simplify-formulation-authoring-identity-and-operation-names) | Simplify formulation authoring, identity and operation names | Implemented; local acceptance passed | Coordinate RF-002 operators, RF-003/RF-005 semantics, RF-009 ownership, RF-001 imports and RF-015 schedule conventions |
+| [RF-015](#rf-015-compose-account-conventions-calculation-and-formulation) | Compose account conventions, calculation and formulation | Implemented; local acceptance passed | RF-002 shared choices, RF-014 authoring, RF-008 fixed-predicate execution support and RF-016/RF-017 coordinates |
+| [RF-016](#rf-016-compose-duration-operations-around-frequency-and-explicit-calendar-rules) | Compose duration operations around Frequency and explicit calendar rules | Implemented; local acceptance passed | Integrate RF-002 duration enums and import boundaries; migrate date/period consumers for the new month-end default and alignment contracts |
+| [RF-017](#rf-017-clarify-period-boundary-fields-and-timing-names) | Clarify Period boundary fields and timing names | Implemented; local acceptance passed | Coordinate RF-002 timing enum, RF-016 calendar operations, generated Python/C# records, codecs and active consumers; retain half-open date semantics |
+| [RF-018](#rf-018-simplify-policy-ownership-evaluation-and-decision-terminology) | Simplify policy ownership, evaluation and decision terminology | Implemented; local acceptance passed | Integrate RF-001 availability/imports, RF-006 preparation, RF-008 predicates, RF-009 scalar access, RF-014 authoring and RF-017 dates; migrate declaration/outcome schema and consumers together |
+| [RF-019](#rf-019-simplify-run-validation-around-prepared-documents-and-explicit-checks) | Simplify Run validation around prepared documents and explicit report/output checks | Implemented; local acceptance passed | Reuse RF-003–RF-006 preparation and scopes, RF-009 target access and RF-018 policy outcome validation; migrate executor and conformance callers |
+| [RF-020](#rf-020-integrate-record-equivalence-and-simplify-revision-comparison) | Integrate record equivalence and simplify revision comparison | Implemented; local acceptance passed | Coordinate RF-002 record encoding, RF-004 index access and RF-006 preparation; preserve RF-012/RF-013 selector contracts and RF-019 storage boundaries; use the shared `_revision.py` guard |
+| [RF-021](#rf-021-consolidate-scenario-mechanics-and-market-contracts-with-explicit-replay-provenance) | Consolidate scenario mechanics and market contracts with explicit replay provenance | Implemented; local acceptance passed | Reconcile RF-002 method strings, RF-006 conformance reuse, RF-009 targets, RF-016/RF-017 periods, RF-018 availability and RF-020 revision identity; migrate stored method names explicitly |
+| [RF-022](#rf-022-consolidate-specification-composition-and-validation) | Consolidate Specification composition and validation | Implemented; local acceptance passed | Apply RF-003–RF-006 scope, traversal and preparation; coordinate RF-009/RF-014 target callers, RF-018 policy ownership, RF-019 Run preparation and RF-020 revision rules |
+| [RF-023](#rf-023-consolidate-workflow-around-existing-evidence-graph-and-io-owners) | Consolidate workflow around existing evidence, graph and IO owners | Implemented; local acceptance passed | Integrate RF-002 choices, RF-004/RF-006/RF-009 access and preparation, RF-011–RF-013 graph reduction and RF-020 comparison; preserve RF-019/RF-022 document and execution boundaries |
 
 Use stable IDs as the list grows. Each new item must state the problem, intended
 ownership, affected code, preserved behaviour, exclusions, dependencies, tests and
@@ -128,8 +130,9 @@ item's scope through an incidental cleanup.
 ## Agreed integration decisions
 
 The user approved the following decisions on 2026-10-07. They replace earlier
-alternatives in this plan. Approval covers this planning update; implementation,
-commit and push remain separate actions.
+alternatives in this plan. The later instruction authorized committing and pushing
+the plan, then implementing it. The final delivery instruction also authorizes
+independent review, corrections, and committing and pushing the implementation.
 
 | Decision | Agreed contract | Owning intents |
 | --- | --- | --- |
@@ -293,6 +296,126 @@ signatures, manifest file lists, the check-export version and any version change
 needed because the checkout has advanced. These are bounded implementation checks,
 not permission to reopen the agreed behavior or add compatibility paths.
 
+## Combined implementation record
+
+The plan was committed and pushed first as `6f7764e` on `acausal-modelling`.
+All 23 intents are implemented under the agreed W1–W6 ownership and contracts.
+W7 local acceptance and the independent implementation review are recorded below.
+The user authorized review, correction, commit and push as the delivery steps.
+The unrelated edits in `README.md`, `docs/README.md`, `src/README.md` and
+`CONTRIBUTING.md` remain byte-for-byte unchanged and outside this commit.
+
+Baseline: 1,105 Python tests passed and 24 optional layout tests skipped before
+source changes. Final acceptance uses MiniZinc 2.10.1, CP-SAT 9.15 and Z3 5.1.0.0.
+Runtime Python is 3.10.19; schema tooling uses Python 3.12.12. Pyomo 6.10.1 and
+HiGHS 1.15.1 supply the real execution checks. Independent regressions first
+reproduced G1/G2 and now reject both defects. The actual query-consumer matrix
+covers all 20 combinations of measurement, property, Flow, mixed and unknown
+results with Function arguments, predicates, objectives and passive reporting.
+
+### Independent implementation review
+
+Fresh reviewers checked core preparation, graph/workflow and temporal/account
+contracts against the plan and current implementation. Additional execution probes
+checked expected failure boundaries. Eleven findings required corrections; the
+publication review also extended its checks to interruptions and competing writers.
+
+| Finding | Correction and regression |
+| --- | --- |
+| Including a Specification predecessor was rejected | Separate include edges from revision lineage; retain declaration, cycle and invalid predecessor checks |
+| Batch IDs could collide with leaf declarations | Check the batch identity against each complete leaf scope while keeping sibling scopes separate |
+| Wrong reference kinds escaped structured validation | Emit located `reference.kind` diagnostics; retain direct lookup exceptions |
+| A one-shot iterable bypassed local binding-name checks | Materialize the declarations at the helper boundary before repeated checks |
+| Binding diagnostics lost source locations | Preserve the original contributor document and binding field path, including offset roots and unit failures |
+| Derivation discarded conflicting settings Claims | Deduplicate only the same Claim object; reject distinct objects that share a UUID |
+| Publication could report failure after changing the pointer | Distinguish visible publication from confirmed durability; retain the completed output after sync, status-record or observer failure; propagate cancellation without rewriting completion; never roll back or adopt a later writer's pointer |
+| Workflow identity omitted a used validation dependency | Include jsonschema in implementation identity, exported dependency metadata and installed-wheel checks |
+| Migration could reuse a prior UUID with different letter case | Validate source Metadata and compare UUID identities before minting a revision |
+| Fixed strict arithmetic failures escaped execution | Translate unsupported computation and numerical errors to their separate execution failures; preserve UnitError |
+| Incomplete selected policy outcomes escaped evaluation | Translate the final outcome contract failure to PolicyCapabilityError; persist the failed Run without invoking a solver |
+
+Regressions first reproduced the defects. Separate reviewers rechecked the fixes,
+including valid controls and rejection boundaries. Review logs and probes are at
+`/private/tmp/rk-refactor-review-20261007-hp0frw5q`. They supplement the earlier
+acceptance evidence; temporary probes are not package inputs.
+
+### Acceptance evidence
+
+| Check | Result |
+| --- | --- |
+| Full Python suite with required layout solvers | **1,428 passed, zero skips**, using `--require-layout-solvers --ignore=tests/legacy/test_api.py`; only the three live predecessor service tests were excluded |
+| Independent implementation review | Eleven findings corrected with regressions and separate review closure; publication checks also cover interruption, status-write failure and competing writers |
+| Type checking and intentionally invalid calls | All 221 active package Python files plus seven valid typing fixtures pass; the seven invalid fixtures produce exactly 9/6/5/4/5/3/6 expected errors |
+| Installed wheel | Minimal imports, records, JSON/YAML, both stores, graph/tables/viewer assets, PyXIRR, real process-isolated forward/inverse solves, XLSX workflows, Polars and CSV pass with their optional-import checks |
+| Generated artifacts | Python generation and C# generation checks pass; generated files match the schemas and pinned generator environment |
+| Conformance | All seven suites pass: structural, native, Expression, Formulation, Model, Specification and Run; all 16 stock native fixture round trips and 759 raw/simplified schema-equivalence cases pass |
+| C# | Model/Tests and Grasshopper Components build; Components has zero warnings/errors against installed Rhino 8 assemblies; Python–C#–Python content, presence, identity and ordered-mathematics checks pass on .NET 8 |
+| Viewer | TypeScript check passes; 35 pure JavaScript tests pass; five packaged assets match a fresh in-memory build. The existing synthetic saved-layout interaction test was not run because its fixture URL was not configured |
+| Walkthroughs | All seven notebooks execute in fresh kernels, 91 code cells; fresh site builds from those outputs; all 16 browser pages pass with zero JavaScript errors, failed requests or broken images |
+| Documentation and preservation | Current API guides and examples updated; local links and `git diff --check` pass; all 171 existing files under `walkthrough/_build` remain unchanged |
+| External acceptance | Rhino host loading, Windows connector acceptance, Linux execution and remote CI were not run; local build and browser results do not establish those passes |
+
+The offline book build disables unused Thebe through supported Sphinx extension
+configuration. This removes duplicate inline declarations without editing built
+HTML. Its declared dependency versions and build instructions remain in the
+walkthrough lockfile and README. No site was published.
+
+Reproduction commands are in [Verification](VERIFICATION.md), the
+[schema guide](../schema/README.md), [C# guide](../grasshopper/README.md) and
+[walkthrough guide](../walkthrough/README.md). The local baseline, logs, source
+hashes, notebook outputs and size accounting are retained at
+`/private/tmp/rk-refactor-20261007-tuzea054`; these are evidence, not package inputs.
+
+### Size and deletion accounting
+
+The default net-reduction target was **not met**. This is the explicit combined
+exception required by the strategy above. The immutable pre-edit snapshot and
+final working tree were counted with the same physical-line and AST method,
+including new files, shared helpers and callers. Legacy runtime is unchanged.
+The runtime count includes handwritten `_schema/validation.py` and `__init__.py`;
+generated records and native bindings are counted separately.
+
+| Category | Files before → after | Lines before → after | Added / removed | Net lines |
+| --- | --- | --- | --- | --- |
+| Handwritten active Python runtime | 224 → 219 | 27,090 → 29,572 | +9,867 / −7,385 | **+2,482** |
+| Python generators | 2 → 2 | 447 → 490 | +47 / −4 | +43 |
+| Schema verification/typing tools | 19 → 19 | 1,168 → 1,172 | +132 / −128 | +4 |
+| Schema conformance tools | 9 → 9 | 3,278 → 3,321 | +102 / −59 | +43 |
+| Other tools, including the maintained book builder | 5 → 5 | 676 → 697 | +36 / −15 | +21 |
+| Python documentation examples | 2 → 2 | 267 → 267 | +5 / −5 | 0 |
+| Handwritten C# | 24 → 24 | 1,834 → 1,834 | +2 / −2 | 0 |
+| Generated Python | 2 → 3 | 8,217 → 8,544 | +556 / −229 | +327 |
+| Generated C# bundle | 5 → 5 | 10,597 → 10,718 | +403 / −282 | +121 |
+| Python tests | 70 → 83 | 17,318 → 22,044 | +5,388 / −662 | +4,726 |
+| Repository Markdown | 90 → 90 | 21,607 → 21,974 | +903 / −536 | +367 |
+
+There are 40 retired runtime paths and 35 new runtime paths: five fewer modules.
+Runtime classes increase from 167 to 210; 31 of those 43 additions are the closed
+choice enums replacing repeated string conventions. Runtime functions/methods
+increase from 936 to 1,018. Each moved or shared definition is counted once.
+Applying Black 25.9.0 independently to both snapshots gives 27,098 → 29,572 runtime
+lines (+2,474), eight fewer net lines than the physical comparison. This removes
+formatter differences; it does not claim that every formatting edit is separately
+identifiable inside a changed function. Final explicit multiline signatures are
+retained. No timing improvement or net runtime reduction is claimed.
+
+The required additions are the six account combinations and passive schedule,
+calendar rules, plain typed enums, explicit migration and replay provenance,
+query-domain uncertainty, source-located diagnostics, prepared failure results,
+truthful publication status through IO failure and cancellation, and independent
+evidence checks. Their supporting records retain distinct domain
+contracts. Removing these checks or merging policy truth with numerical acceptance
+would make the implementation smaller by discarding agreed behavior. Further
+wrapper removal would not eliminate those responsibilities.
+
+The simplification is visible in one record index, one mathematical Scope, one
+ExpressionAnalysis, one Composition, direct domain validation owners, UUID target
+access and shared graph/Evidence preparation. Retired policy, execution, Run,
+composition, ingestion and authoring forwarding paths are removed. No compatibility
+aliases, universal validation context or persistent trust cache replace them.
+The individual records below name final owners and deletion targets; shared
+package counts are not added again to these combined totals.
+
 ## Combined implementation process
 
 Implementation starts only when the user asks to execute this plan. That request
@@ -374,11 +497,11 @@ acceptance was established by this review. Re-establish the baseline at executio
 
 ### Problem and ownership
 
-[`model/_availability.py`](../src/rangekeeper/model/_availability.py) contains
+`model/_availability.py` contains
 `available_on()`. It calculates when a policy may observe a referenced quantity
 from Movement coordinates, scenario provenance and a declared availability date.
 It is active code, with one direct caller:
-[`specification/_policy_validation.py`](../src/rangekeeper/specification/_policy_validation.py),
+`specification/_policy_validation.py`,
 inside `validate_decisions()`.
 
 [`policies/observation.py`](../src/rangekeeper/policies/observation.py) independently
@@ -561,8 +684,10 @@ before claiming implementation acceptance; do not weaken the integration test.
 
 ### Implementation record
 
-Not started. Record the final changed paths, checks, outcomes and any deviations
-here after the combined implementation pass.
+Implemented in the coordinated working-tree pass. `policies/_availability.py` owns native-date availability and its operation-local evidence index. Observation construction and independent outcome validation use the same rule; `model/_availability.py` is removed.
+
+Controlled targets require an earlier outcome in both runtime and stored evidence, including Runs without outputs. G1 regressions are independent of the evaluator and solver. See the [combined acceptance record](#combined-implementation-record) for
+verification, reduction accounting and remaining platform limits.
 
 ## RF-002 Use canonical enums for closed public choices
 
@@ -923,22 +1048,22 @@ separate scope and migration planning.
 
 ### Implementation record
 
-Not started. This turn inspected source and defined the plan; it did not change
-runtime code or run implementation acceptance tests. Record final inventory
-decisions, changed paths, verification results and deviations here during the
-combined implementation pass.
+Implemented in the coordinated working-tree pass. The generator emits `_schema/enums.py` with unique plain Enums and public facade re-exports. `_records.py` encodes typed fields and decodes wire text. Handwritten calendar, account, calculation, graph, workflow and layout choices use enums at their own owners.
+
+Typed constructors/replacement reject strings and wrong enums; JSON values remain text. Worker, profile and persisted workflow boundaries encode explicitly. Generated C# wire fields retain their existing string representation and shared schema constraints. See the [combined acceptance record](#combined-implementation-record) for
+verification, reduction accounting and remaining platform limits.
 
 ## RF-003 Create the expression package and compose semantic analysis
 
 ### Problem and ownership
 
-[`model/_expression.py`](../src/rangekeeper/model/_expression.py) contains active
+`model/_expression.py` contains active
 semantic checks used by Formulation, Model, Specification and policy validation.
 Its logic is required, but its current boundary mixes declaration indexing,
 Value-content checks, Function validation, expression traversal, domain inference
 and Constraint predicate checks. Moving the file alone will not resolve this.
 
-[`model/expression.py`](../src/rangekeeper/model/expression.py) exposes generated
+`model/expression.py` exposes generated
 record classes. Replace this module with an `expression` package whose initializer
 preserves those exports. Keep generated definitions in `_schema/records.py` and
 authoring constructors in
@@ -1019,7 +1144,7 @@ Skip dependent stages after a prerequisite failure.
 Retain owner-local naming checks in Formulation orchestration. Preserve combined
 Model/Specification mathematical scopes, including Relationship Values, local
 Formulation Values and Movement references. Assess reuse of
-[`model/_index.py`](../src/rangekeeper/model/_index.py) for schema-directed traversal
+`model/_index.py` for schema-directed traversal
 and ownership rather than maintaining competing declaration rules. Its index
 over one root is not, by itself, a replacement for a combined scope.
 
@@ -1235,14 +1360,16 @@ preserve historical documentation.
 
 ### Implementation record
 
-Not started. Record the final changed paths, checks, outcomes and any deviations
-here after the combined implementation pass.
+Implemented in the coordinated working-tree pass. `model/expression/{domains,validation,evaluation}.py` replaces `_expression.py` and separates static analysis from arithmetic. One analysis indexes all nested nodes/domains and original pointers with UUID keys.
+
+Query domains come from matching static declarations; mixed or absent candidates remain unproven. Required typed arguments reject uncertainty; passive expressions remain readable. The canonical area query and caller matrix have regressions. See the [combined acceptance record](#combined-implementation-record) for
+verification, reduction accounting and remaining platform limits.
 
 ## RF-004 Separate record indexing from shared reference validation
 
 ### Problem and intent
 
-[`Index.check_known_references()`](../src/rangekeeper/model/_index.py) performs
+`Index.check_known_references()` performs
 semantic reference checking on a class that otherwise supplies declaration lookup
 and containment ownership. Its only current caller is local validation in
 [`specification/specification.py`](../src/rangekeeper/specification/specification.py).
@@ -1580,14 +1707,16 @@ current documentation with the ownership and exception-contract changes.
 
 ### Implementation record
 
-Not started. Record the final reference-check inventory, metadata decision,
-changed paths, reduction evidence, verification results and deviations here.
+Implemented in the coordinated working-tree pass. `_record_index.py` owns record traversal, identity lookup, owners and source pointers; `references.py` owns scoped reference checks. The old Model index/reference modules are removed.
+
+Schema-directed raw traversal excludes opaque property and Claim payloads. Prepared declaration lookup uses UUID keys throughout. See the [combined acceptance record](#combined-implementation-record) for
+verification, reduction accounting and remaining platform limits.
 
 ## RF-005 Separate Formulation rules from scope preparation
 
 ### Problem and ownership
 
-[`model/_formulation.py`](../src/rangekeeper/model/_formulation.py) contains active
+`model/_formulation.py` contains active
 checks used by Model validation, composed Specification validation and schema
 checks. Partial Specification validation also calls its local naming helper.
 The module's references to a fixture scope no longer describe its production role.
@@ -1666,7 +1795,7 @@ possible, with only the Formulation-specific projection needed by these callers.
 
 Reuse the collection for scope construction and validation. In particular, remove
 the nested `collect()` in
-[`specification/_validation.py`](../src/rangekeeper/specification/_validation.py),
+`specification/_validation.py`,
 which currently collects expressions and Constraints again after Formulation
 validation has already done so. Replace its rebuilt expression lookup and repeated
 objective-domain inference with RF-003's analysis result.
@@ -1797,8 +1926,10 @@ package move alone does not satisfy this intent.
 
 ### Implementation record
 
-Not started. Record the final interfaces, changed paths, deletion and size
-evidence, verification results and any deviations here.
+Implemented in the coordinated working-tree pass. `model/formulation/{traversal,preparation,validation}.py` separates located declaration discovery, Scope preparation and rule checks. `model/scope.py` owns shared mathematical lookup and recorded scalar access.
+
+The old mixed Formulation helper and repeated recursive walks are removed; failures retain original document/pointer locations. See the [combined acceptance record](#combined-implementation-record) for
+verification, reduction accounting and remaining platform limits.
 
 ## RF-006 Consolidate validation, compose domain checks and reuse prepared results
 
@@ -1998,7 +2129,7 @@ before changing orchestration; preserve `IdentityConflictError` and
 intentional reference-diagnostic changes with RF-004. Do not broaden exception
 catching to hide programming errors.
 
-Move [`recorded_unit_issues()`](../src/rangekeeper/model/_unit_validation.py) into
+Move `recorded_unit_issues()` into
 `model/validation.py` as a shared operation for Model and composed Specification
 validation. Update both callers and remove the old module without a forwarding
 alias. Its narrow Measure lookup callback remains useful: do not replace it with
@@ -2217,9 +2348,15 @@ guides to describe the final flow.
 
 ### Implementation record
 
-Not started. Record the final internal return contracts, entry-point inventory,
-changed paths, deletion and size evidence, verification results and deviations
-here during the combined implementation pass.
+Implemented in the coordinated working-tree pass. Model, Composition and Run validation now coordinate bounded domain checks through operation-local prepared results. Execution reuses the exact resolved Model and Composition from planning.
+
+Independent store snapshots, candidate acceptance and stored-outcome checks still revalidate at their own boundaries. No trusted flag or persistent validation cache was added.
+
+The final Model owners are definitions.py, system.py and provenance.py, coordinated by model/validation.py. Both old Model validation modules, model_documents, its identity envelope and generic identity collector are removed. Raw Model validation constructs one checked record; existing compositions are not recomposed, and validation retains the exact resolved Model after later semantic failure. Changed UnitSystem contexts recheck recorded units; source paths survive combined mathematical and unit checks.
+
+Size exception for the coordinated RF-003/004/005/006/009/019/020/022 package: 47 to 44 handwritten runtime files, 4,770 to 5,456 physical lines, 192 to 216 functions and 30 to 32 classes. This counts shared helpers and callers once and excludes the separately owned policy, availability, predicate, scenario and numerical-evaluation moves on both sides. Fifteen retired modules are replaced by twelve files. The net 686-line growth is not a reduction: explicit unknown-domain handling, immutable analysis/path maps, contributor source attribution, prepared failure results, UUID scalar access, strict comparison and child diagnostic context add responsibilities; final signature formatting also expands physical lines. The removed duplicate preparation paths and indexed diff reuse have focused call-count checks. No timing improvement is claimed.
+See the [combined acceptance record](#combined-implementation-record) for
+verification, reduction accounting and remaining platform limits.
 
 ## RF-007 Use py-moneyed directly for the currency catalogue
 
@@ -2350,19 +2487,20 @@ the combined checks in [Verification](VERIFICATION.md).
 
 ### Implementation record
 
-Not started. Record the dependency resolution, catalogue comparison, fingerprint
-change, deleted paths, size evidence, checks and any deviations here during the
-combined implementation pass.
+Implemented in the coordinated working-tree pass. `units.py` uses pinned `py-moneyed==3.0`; `_currencies.json` and its loader/package-data entry are removed. The active catalogue was checked against all 308 old codes before removal.
+
+Pint remains lazy. Workflow, scenario and execution provenance name the catalogue dependency; installed core imports do not load numerical packages. See the [combined acceptance record](#combined-implementation-record) for
+verification, reduction accounting and remaining platform limits.
 
 ## RF-008 Share numerical expression evaluation and give policy predicates a clear owner
 
 ### Problem and decision
 
-[`model/_predicate.py`](../src/rangekeeper/model/_predicate.py) evaluates finite
+`model/_predicate.py` evaluates finite
 policy expressions against explicitly supplied quantities. Its two callers are
 [`policies/evaluation.py`](../src/rangekeeper/policies/evaluation.py), which selects
 the first matching rule, and
-[`specification/_policy_validation.py`](../src/rangekeeper/specification/_policy_validation.py),
+`specification/_policy_validation.py`,
 which checks recorded decisions against their observations and rule order. The
 operation is required, and both callers should continue to share it.
 
@@ -2548,22 +2686,23 @@ and update current documentation before marking the intent complete.
 
 ### Implementation record
 
-Not started. Record the baseline, final interfaces, deleted branches and paths,
-size changes, test and import evidence, and any explicit behaviour corrections
-here during the combined implementation pass.
+Implemented in the coordinated working-tree pass. `model/expression/evaluation.py` owns pure supplied-value arithmetic. `policies/predicate.py` owns exact truth and short-circuiting; execution evaluates original comparisons and retains independent acceptance.
+
+Fixed strict predicates are checked before lowering and again without tolerance on the candidate. Unknown references are rejected before cancellation. Compiler/evaluator manifests include shared arithmetic and have sensitivity tests. See the [combined acceptance record](#combined-implementation-record) for
+verification, reduction accounting and remaining platform limits.
 
 ## RF-009 Consolidate scoped target resolution and recorded scalar access
 
 ### Problem and decision
 
-[`model/_references.py`](../src/rangekeeper/model/_references.py) is a 45-line
+`model/_references.py` is a 45-line
 adapter over encoded References and a prepared target index. Its four functions
 extract a target UUID string, resolve the owning Value and optional Movement,
 read declared numerical units, and obtain recorded scalar content. These rules
 are active across Model, Specification, Run and policy code.
 
 Equivalent scalar-unit and recorded-quantity rules occur in
-[`execution/symbols.py`](../src/rangekeeper/execution/symbols.py) and
+`execution/symbols.py` and
 [`policies/observation.py`](../src/rangekeeper/policies/observation.py). The main
 differences are dictionary versus generated-record representation, scope and
 caller-facing errors. Consolidate equivalent domain rules while preserving those
@@ -2727,8 +2866,10 @@ intent complete.
 
 ### Implementation record
 
-Not started. Record the final ownership, key and error contracts, deleted paths,
-size evidence, baseline disposition, verification results and deviations here.
+Implemented in the coordinated working-tree pass. Standalone Definitions helpers use a catalogue-scoped RecordIndex; repeated Model assembly/value/scalar access reuses the Model index. Prepared mathematical roles use UUID keys and `model.scope` helpers rather than execution-owned symbols.
+
+The old `execution/symbols.py` and redundant lookup wrappers are removed. Resolution keeps wrong-kind, missing and wrong-revision failures distinct. See the [combined acceptance record](#combined-implementation-record) for
+verification, reduction accounting and remaining platform limits.
 
 ## RF-010 Consolidate graph table projection around View or Hierarchy input
 
@@ -2863,12 +3004,21 @@ checks, then the combined checks in [Verification](VERIFICATION.md).
 Completion requires one type-directed public function, one row/output construction
 path, preserved flat and tree semantics, migrated callers, removal of the retired
 export and no obsolete active examples. Record baseline and final checks, deleted
-code and size changes. This intent remains planned until implementation is requested.
+code and size changes in the implementation record.
 
 ### Implementation record
 
-Not started. Record the final API, migrated callers, removed construction steps,
-size evidence, checks and deviations here during the combined implementation pass.
+`graph.projection.to_table` accepts View or Hierarchy and constructs one row
+sequence. Value-column preflight validates units and resolves each requested
+Measure once through the Model's existing index, including empty Views. Cells use
+shared owner-local selection. Hierarchy `parent_id` conflicts fail before units
+or cell projection. Classification fields also use the existing Model index.
+
+`Table` retains normalized Rows with the declared column order and copies raw
+mappings once. Constructor-count, preflight-count, ordering and immutability
+regressions verify both paths. The old tree projection/export and intermediate
+Table are removed. See the [combined acceptance record](#combined-implementation-record)
+for final verification, size accounting and platform limits.
 
 ## RF-011 Simplify graph reducer names
 
@@ -2971,9 +3121,14 @@ pre-existing failures separately from refactor results.
 
 ### Implementation record
 
-Not started. Record the final caller inventory, renamed exports, coordination with
-RF-013, size evidence and verification results during the combined implementation
-pass. No runtime changes are authorized by adding this intent.
+`graph.reducers` exposes `sum`, `mean`, `min` and `max`; no old names or
+compatibility aliases remain. Active callers use module-qualified names. The
+implementation retains `math.fsum` and explicit `builtins.min`/`builtins.max`.
+
+Independent numerical tests cover all four functions, empty inputs and cancellation.
+Existing invalid-input, unit and finite-result checks remain. The upgrade guide
+maps the four retired names. See the [combined acceptance record](#combined-implementation-record)
+for final verification, size accounting and platform limits.
 
 ## RF-012 Simplify graph Value selection preparation while preserving revision safety
 
@@ -3101,8 +3256,16 @@ verification evidence.
 
 ### Implementation record
 
-Not started. Record final preparation ownership, deleted repeated work, retained
-boundary checks, size changes and verification results during the combined pass.
+Public `select_value` still resolves an Entity UUID in the supplied Model,
+validates its requested Measure, and returns that revision's existing Value.
+Projection uses shared `_local_value` on canonical View Entities after column
+preflight. It creates no per-cell selector and builds no second Model index.
+
+Custom reduction results retain type, owner and canonical-content checks. Content
+comparison uses strict ordered, type-sensitive record equality from RF-020, not
+schema equivalence. Regressions cover stale/cross-owner results, empty-column
+preflight and callback order. See the [combined acceptance record](#combined-implementation-record)
+for final verification, size accounting and platform limits.
 
 ## RF-013 Compose graph reduction and aggregation results
 
@@ -3303,9 +3466,22 @@ migrated consumers, passing checks and recorded size evidence.
 
 ### Implementation record
 
-Not started. Record the final entry API, invariant checks, deleted state and
-branches, migrated consumers, size evidence, verification and any separately
-measured traversal changes during the combined implementation pass.
+`Aggregation` stores one immutable mapping of `AggregateEntry` values plus
+selected Value identities and completeness policy. Entries hold the available
+result and coverage; `value()` applies completeness, while `available_value()`
+works for every reducer. Parallel result maps, `_is_sum` and `known_subtotal()`
+are removed.
+
+Reduction separates contribution validation, quantity reduction and subtree
+assembly. Shared graph population collection normalizes recorded quantities and
+retains Value IDs and contributor coverage for both hierarchy and flat workflow
+callers. Hierarchy traversal retains raw contributor order and callback
+interleaving; workflow retains its flat filters, missing business keys and ordinary
+summation. It does not manufacture a Hierarchy or use graph summation implicitly.
+Constructor checks validate subtree ownership without rerunning reducers. Tests
+cover wrapped reducers, immutable copies, invalid coverage and cancellation under
+each caller's policy. See the [combined acceptance record](#combined-implementation-record)
+for final verification, size accounting and platform limits.
 
 ## RF-014 Simplify formulation authoring, identity and operation names
 
@@ -3519,9 +3695,10 @@ evidence. No full symbolic construction-loan schedule is implied.
 
 ### Implementation record
 
-Not started. Record the final authoring interfaces, identity fixtures, removed
-modules and wrappers, caller migration, baseline failure resolution, size evidence
-and verification during the combined implementation pass.
+Implemented in the coordinated working-tree pass. `formulations.authoring` exposes `identify`, `identify_tree` and `declare`; operation modules use direct verbs. Shared shape/alignment helpers live in `formulations.flow`.
+
+`_identity.py`, `_construction.py` and `_alignment.py` are removed. The shared coordinate index has no sorting or join policy. A fixture recovered from the preserved pre-implementation runtime covers standalone interest, accumulation, growth and resale declarations. A separate fixture fixes the new schedule's relation and occurrence identities. Independent numerical oracles cover the renamed builders. See the [combined acceptance record](#combined-implementation-record) for
+verification, reduction accounting and remaining platform limits.
 
 ## RF-015 Compose account conventions, calculation and formulation
 
@@ -3887,10 +4064,10 @@ No product decision remains open on whether to retain capitalized arrears.
 
 ### Implementation record
 
-Not started. Account conventions, complete legacy mapping and the bounded symbolic
-schedule were agreed on 2026-10-07. Record final signatures, explicit capability
-limits, regression results, removed branches, size changes and any deviations
-during the combined implementation pass. This planning update does not execute it.
+Implemented in the coordinated working-tree pass. `account.py` owns Balance, CurrentInterest and InterestTreatment. Numerical Account recurrence and `formulations.account.schedule` use these same choices; `interest` remains an explicit-principal operation.
+
+All six legacy mappings retain their numerical oracle. Tests cover same-day rate pairing, empty invalid rates, signed debt/overdraft recurrence, six actual solves, strict fixed-rate bounds and unsupported symbolic cases. Synthetic construction cases distinguish same-period included interest from opening-based interest with explicit later funding. Required schedule contracts add implementation code. See the [combined acceptance record](#combined-implementation-record) for
+verification, reduction accounting and remaining platform limits.
 
 ## RF-016 Compose duration operations around Frequency and explicit calendar rules
 
@@ -4147,9 +4324,10 @@ any further public rename or abstraction.
 
 ### Implementation record
 
-Not started. Record the final enums and signatures, helper ownership, migrated
-month-end callers, capability additions, deleted duplication, size evidence,
-verification results and deviations during the combined implementation pass.
+Implemented in the coordinated working-tree pass. `duration` exposes Frequency, MonthRoll, PeriodTiming and DayCount, with offset, measure, align, cover and period constructors. Month offsets default to preserving month ends.
+
+Old flags and aliases are removed. Native-date, leap-year, anchored-grid, elapsed-step, all ten signed frequency offsets, representable date limits and original-anchor extension cases pass; calendar behavior is tested separately from wire migration. See the [combined acceptance record](#combined-implementation-record) for
+verification, reduction accounting and remaining platform limits.
 
 ## RF-017 Clarify Period boundary fields and timing names
 
@@ -4340,9 +4518,10 @@ documented wire-version strategy, passing applicable checks and size evidence.
 
 ### Implementation record
 
-Not started. Record the schema/version migration, generated binding changes,
-final factory signatures, deleted old names, affected callers, size evidence and
-verification during the combined implementation pass.
+Implemented in the coordinated working-tree pass. Period/Span use start_inclusive and end_exclusive. FIRST/LAST/END timing choices are migrated across calculations, policy, scenarios, examples, fixtures and notebooks.
+
+Source-layout migration handles old fields before target construction. Python/C# generation and a bidirectional record round trip pass. Historical archived documents retain their old fields and pins. See the [combined acceptance record](#combined-implementation-record) for
+verification, reduction accounting and remaining platform limits.
 
 ## RF-018 Simplify policy ownership, evaluation and decision terminology
 
@@ -4617,14 +4796,14 @@ model-local resale construction, one source for result assignments, no history
 wrapper or unvalidated public decision step, prepared observation evidence,
 incremental prior state, policy-owned shared validation, preserved evidence and
 numerical boundaries, migrated schema/consumers/guides and recorded verification
-and size evidence. Adding this intent does not authorize implementation.
+and size evidence. Implementation follows the explicit execution instruction.
 
 ### Implementation record
 
-Not started. Record the final declaration/outcome API and wire migration,
-model-local authoring ownership, result invariants, removed repeated work and
-exports, import checks, independent evidence tests, size changes and deviations
-during the combined implementation pass.
+Implemented in the coordinated working-tree pass. `policies` is the policy facade. Decision is a declaration, DecisionOutcome is evidence, Policy.decisions and Report.outcomes use those meanings. PolicyResult stores an immutable outcome tuple with derived assignments.
+
+Specification policy modules, public decide/DecisionHistory and the package resale recipe are removed. The resale recipe now belongs to examples.investment. G1 and the full policy trace checks remain independent. See the [combined acceptance record](#combined-implementation-record) for
+verification, reduction accounting and remaining platform limits.
 
 ## RF-019 Simplify Run validation around prepared documents and explicit checks
 
@@ -4937,15 +5116,16 @@ passing applicable checks and recorded reduction evidence.
 
 ### Implementation record
 
-Not started. Record final preparation/result interfaces, state ownership, migrated
-callers, diagnostic changes, deleted code, before/after call counts, size evidence
-and verification during the combined implementation pass.
+Implemented in the coordinated working-tree pass. `run.report`, `run.outputs` and one prepared resolver-backed validator replace the old tree/resolve/publication/report modules. Outcome validation reads the input scope with the caller unit context.
+
+Historical Claims use exact type-sensitive, order-preserving content comparison. G2 covers integer/Boolean/float differences, nested values, list order and field presence. See the [combined acceptance record](#combined-implementation-record) for
+verification, reduction accounting and remaining platform limits.
 
 ## RF-020 Integrate record equivalence and simplify revision comparison
 
 ### Problem and ownership
 
-[`_comparison.py`](../src/rangekeeper/_comparison.py) combines two responsibilities.
+`_comparison.py` combines two responsibilities.
 `canonical()` builds a schema-directed comparison key for revisions, Model diffs
 and storage conflict checks. `check_revision()` enforces document kind, lineage,
 schema-version and meaningful-change rules for Model and Specification revisions.
@@ -5098,10 +5278,10 @@ and the reduction evidence required by the overall strategy.
 
 ### Implementation record
 
-Not started. Added on 2026-10-07 after source and caller review. No runtime code
-was changed and no implementation acceptance tests were run for this intent.
-Record the final revision-rule location, representation choice, deleted code,
-size evidence and verification during the combined implementation pass.
+Implemented in the coordinated working-tree pass. `_records.py` owns exact ordered comparison and schema equivalence. Model and Specification use `_revision.py` for lineage and meaningful-change checks; stores use schema equivalence for repeated writes. Stream.merge checks its Model pin and strict ordered record equality. Graph callback/revision checks also retain strict comparison; they do not use the document revision guard.
+
+`_comparison.py` is removed. Exact evidence preservation is not replaced by unordered equivalence; tests retain both contracts. See the [combined acceptance record](#combined-implementation-record) for
+verification, reduction accounting and remaining platform limits.
 
 ## RF-021 Consolidate scenario mechanics and market contracts with explicit replay provenance
 
@@ -5178,6 +5358,8 @@ digest of the following manifest encoded as UTF-8 compact, sorted-key JSON with
 - `versions`: LibraryVersion-shaped objects with `name` and `version`, sorted by
   unique name; include Python and relevant calculation dependencies. Store this
   same ordered list in CalculationProvenance.versions.
+- `currencies`: the sorted currency-code list from the immutable unit catalogue;
+  fingerprint the actual supported codes as well as the supplying dependency version.
 
 The [fingerprint inclusion rules](#fingerprint-inclusion-rules) define the scope.
 W1 records the exact final path/dependency list after module placement is fixed;
@@ -5429,10 +5611,10 @@ consumers/guides and passing checks. No implementation is authorized by this ent
 
 ### Implementation record
 
-Not started. Record final contract ownership and API exports, calculation identity
-and provenance encoding, wire/method migration, deleted duplicated work, serial
-and parallel equivalence, replay evidence, size changes and deviations during
-the combined implementation pass.
+Implemented in the coordinated working-tree pass. `scenarios.contracts` owns immutable inventories; `market` owns plan authoring and capture/realization. Sequential generation calls the calculation directly. CalculationProvenance and the complete-content revision encoding separate computation from sampling evidence.
+
+The old plan module and package forwarding functions are removed. Replay rejects unavailable calculation identity while current-format stored values remain readable. Explicit migration preserves draws and values; parallel/serial, identity and fingerprint regressions pass. Captured noise, events and zero-volatility innovations share explicit support checks. A portable revision fixture fixes calculation and environment evidence; generated-source and currency-catalogue changes alter the live fingerprint. Required provenance adds code. See the [combined acceptance record](#combined-implementation-record) for
+verification, reduction accounting and remaining platform limits.
 
 ## RF-022 Consolidate Specification composition and validation
 
@@ -5635,8 +5817,10 @@ provenance checks rather than satisfying call counts by omitting their work.
 
 ### Implementation record
 
-Not implemented. Remaining signature, prepared-result and reusable selection
-details must be settled with the linked intents before the combined pass.
+Implemented in the coordinated working-tree pass. Specification.compose creates the sole immutable Composition; Composition.validate and internal preparation reuse its exact contributors and source locations. The package-level compose/validate wrappers and target scalar/movement wrappers are removed.
+
+Local and complete settings checks enforce the same relative-tolerance bound. Planning caches exact Models for preparation; includes/cases, failure evidence and one-shot iterable cases retain their contracts. See the [combined acceptance record](#combined-implementation-record) for
+verification, reduction accounting and remaining platform limits.
 
 ## RF-023 Consolidate workflow around existing evidence, graph and IO owners
 
@@ -5893,9 +6077,12 @@ Keep bundle schemas, required artifacts and build-specific checks with their
 consumers. Reuse hashing and pointer/publication primitives where the contracts
 match. Workbench coordinates inspect, execute, verify freshness and publish. Preserve
 the before/after signature comparison and checks against the source bytes actually
-used by the build. Stage a complete bundle before publishing its pointer; failure
-must retain the previous successful pointer without presenting it as this attempt's
-output. Display/observer failures after publication must not relabel it as failed.
+used by the build. Stage a complete bundle before publishing its pointer. Failure
+before replacement must retain the previous successful pointer without presenting
+it as this attempt's output. A directory-sync failure after replacement leaves the
+new pointer visible: report the completed publication with an explicit durability
+diagnostic. Do not roll it back or report the old bundle as current. Display,
+observer and status-record failures after publication must not relabel it as failed.
 
 Move `workflow/layout_review.py` into the existing Cytoscape layout integration.
 Consume an explicitly supplied Model and verified bundle metadata, rather than a
@@ -5935,7 +6122,7 @@ actual dependency set. Keep presentation-only exclusions explicit and tested.
 
 | Provenance owner | Required semantic inputs | Distinct boundaries |
 | --- | --- | --- |
-| Workflow computation | The new evidence package, Table and record/encoding rules, used graph selection/reduction/reducer operations, domain validation and units/schema resources; include each selected handler's native computation modules and dependencies | Keep the complete installed-code audit separate; reporting, progress and viewer assets do not change assertion identities when they only present existing results |
+| Workflow computation | The new evidence package, Table and record/encoding rules, used graph selection/reduction/reducer operations, domain validation and units/schema resources, including jsonschema; include each selected handler's native computation modules and dependencies | Keep the complete installed-code audit separate; reporting, progress and viewer assets do not change assertion identities when they only present existing results |
 | Scenario calculation | Method contracts, capture-to-calculation normalization, realization/path composition, the called calculation kernels and their shared helpers, relevant units/schema resources and dependency versions | Record the calculation manifest under RF-021; keep sampling generator/seed provenance separate; include a shared sampling module only if calculation uses its code |
 | Execution compiler and evaluator | The respective preparation/normalization, compiler or arithmetic/acceptance modules and transitive semantic helpers/resources that affect that implementation's result | Give compiler and evaluator their own manifests; retain separate solver/backend version evidence and independent acceptance; replace the fixed `version="1"` identification where source changes would otherwise be invisible |
 
@@ -6039,12 +6226,37 @@ Completion requires clear existing owners, one preparation per matching operatio
 scope, shared derivation and lookup work, composed comparison sides, explicit report
 exports, preserved independent publication checks, retired aliases/modules, migrated
 consumers and passing verification. Record added/removed/net implementation size
-across every affected owner and justify necessary growth. This entry authorizes
-planning only; implementation remains deferred with the combined plan.
+across every affected owner and justify necessary growth. Implementation follows
+the execution instruction; acceptance is recorded below.
 
 ### Implementation record
 
-Not started. Record the final ownership/file map, removed code, prepared-result
-contracts, preserved or deliberately migrated identities and errors, export versions,
-call-count/scaling evidence, affected-consumer checks and total size changes during
-the combined implementation pass.
+Evidence now belongs to `evidence/`. Per-operation preparation validates once,
+retains Claim/Source indexes and fingerprints, and indexes Issue scopes. Numeric
+and text derivation share their cell-support rules. Text derivation extends the
+Issue index as earlier derived columns produce explanations; it does not rescan
+all Issues for each missing cell. Table row lookup uses one immutable index.
+
+Workflow composition shares condition, binding and support preparation across
+measurements, properties and labels. Provenance caches retain exact source
+objects and still reject conflicting UUID content. A checking pass shares one
+pinned View and the Model's existing record index. Flat totals use graph population
+collection while retaining workflow-specific eligibility and summation.
+`CheckResult` contains complete left/right operands and exports check format v2.
+
+`workflow.reporting` prepares check sides, target usage and cell references once;
+HTML rendering consumes those results. Layout review belongs to the Cytoscape
+adapter and checks supplied Model content with strict type-sensitive equality.
+Its fingerprint includes that comparison implementation. Atomic IO preserves
+separate create-only and replacement contracts. Retired ingestion, request aliases,
+`_execution` and `_audit` forwarding paths are removed.
+
+Workflow method/semantic-manifest version 5 includes moved Evidence, shared graph,
+record/index, schema, units and selected adapter code, the installed py-moneyed
+version and actual currency catalogue codes. Exact installed-code audit remains
+separate from computation identity. Regressions cover source/resource sensitivity,
+preparation counts, ordered derived dependencies, rendered prepared data and
+same-revision `0`/`False` rejection. Necessary enums and validation add code; the
+combined size record reports that growth without claiming a net reduction. See
+the [combined acceptance record](#combined-implementation-record) for final
+verification, accounting and platform limits.

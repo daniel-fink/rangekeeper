@@ -1,6 +1,6 @@
 id: https://daniel-fink.github.io/rangekeeper/schema/scenario
 name: rangekeeper_scenario
-version: 0.2.0
+version: 0.3.0
 prefixes:
   linkml: https://w3id.org/linkml/
   rk: https://daniel-fink.github.io/rangekeeper/schema/
@@ -80,6 +80,22 @@ classes:
       available_at:
         range: date
         required: true
+  CalculationProvenance:
+    description: Calculation implementation identity, separate from captured sampling provenance.
+    attributes:
+      name:
+        range: string
+        required: true
+      fingerprint:
+        range: string
+        required: true
+      versions:
+        range: LibraryVersion
+        required: true
+        inlined: true
+        multivalued: true
+        inlined_as_list: true
+        list_elements_ordered: true
   ScenarioRealization:
     description: Captured scenario inputs and paths. Stored draws permit replay without random sampling.
     attributes:
@@ -94,6 +110,9 @@ classes:
       key:
         range: Code
         required: true
+      calculation:
+        range: CalculationProvenance
+        inlined: true
       generator:
         range: string
         required: true

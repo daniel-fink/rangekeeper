@@ -6,11 +6,12 @@ available only through rangekeeper.legacy.graph and is never imported here.
 
 from importlib import import_module
 from .view import View as View
-from .hierarchy import Hierarchy as Hierarchy
+from .hierarchy import Hierarchy as Hierarchy, HierarchyKind as HierarchyKind
 from .reduction import (
     Reduction as Reduction,
     Aggregation as Aggregation,
     Coverage as Coverage,
+    CoverageStatus as CoverageStatus,
 )
 from .errors import (
     SelectionError as SelectionError,
@@ -22,9 +23,11 @@ _MODULES = {"reduction", "projection", "membership", "selection", "reducers"}
 __all__ = [
     "View",
     "Hierarchy",
+    "HierarchyKind",
     "Reduction",
     "Aggregation",
     "Coverage",
+    "CoverageStatus",
     "SelectionError",
     "HierarchyError",
     "AggregationError",

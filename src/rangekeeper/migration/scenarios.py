@@ -1,13 +1,16 @@
 """Explicit naming upgrade for the unreleased v1 scenario methods."""
 
 from uuid import UUID
-from .drafts import _revision, _movements, _references
+from .._record_index import walk_data
 from ..model import Model
 
 _METHODS = {
-    "market.v1": "market.v2",
-    "market.estimates.v1": "market.estimates.v2",
-    "independent.v1": "independent.v2",
+    "market.v1": "market",
+    "market.estimates.v1": "market.estimates",
+    "independent.v1": "market.independent",
+    "market.v2": "market",
+    "market.estimates.v2": "market.estimates",
+    "independent.v2": "market.independent",
 }
 _OUTPUTS = {
     "pricing_factor": "space_market_price_factors",
@@ -18,30 +21,20 @@ _OUTPUTS = {
 }
 
 
-def upgrade_scenario_names(data: dict, *, revision_id: UUID | None = None) -> Model:
-    """Upgrade v1 labels into a new Model revision without recalculating quantities.
-
-    Accept Model 0.5.0 or 0.6.0 with recognized v1 scenario records. Preserve existing
-    Value/Movement identities, plans' identities, quantities, claims, random
-    stream identifiers and availability dates. Only the method/name vocabulary
-    and owning Model revision change for current-format inputs. Older drafts
-    also receive Movement UUIDs and direct References through the explicit converter. Old Runs and external revision pins are
-    untouched; callers must explicitly select the upgraded revision. No IO.
-
-    This is a draft-format conversion, not a replay or a claim of a new execution.
-    Unsupported methods, conflicting names and malformed content fail validation.
-    """
-    result = _revision(data, "Model", {"0.5.0", "0.6.0"}, revision_id)
+def convert_names(result: dict) -> None:
+    """Convert recognized old scenario labels in an already copied, current-layout Model."""
     records = (result.get("provenance") or {}).get("scenarios") or []
-    if not records:
-        raise ValueError("no scenario records to upgrade")
     renames: dict[str, str] = {}
     for record in records:
         plan = record["plan"]
         method = plan["method"]
         if method not in _METHODS:
-            raise ValueError(f"expected a v1 scenario method, got {method}")
-        market = method.startswith("market.")
+            from ..scenarios.contracts import method as contract_for
+
+            contract_for(method)
+            continue
+        legacy = method.endswith(".v1")
+        market = method.startswith("market.") and legacy
         plan["method"] = _METHODS[method]
         if market:
             for parameter in plan["parameters"]:
@@ -55,7 +48,7 @@ def upgrade_scenario_names(data: dict, *, revision_id: UUID | None = None) -> Mo
                 before = binding["name"]
                 after = (
                     _OUTPUTS.get(before, before)
-                    if field == "outputs"
+                    if field == "outputs" and legacy
                     else (
                         "volatility_per_period"
                         if market and before == "volatility"
@@ -70,22 +63,22 @@ def upgrade_scenario_names(data: dict, *, revision_id: UUID | None = None) -> Mo
                             "conflicting names for a shared scenario Value"
                         )
                     renames[binding["value"]] = key
-    # Rename only canonical declarations, never opaque evidence or UUID references.
-    system = result.get("system") or {}
-    for collection in ("entities", "relationships", "assemblies"):
-        for owner in system.get(collection) or []:
-            for value in (owner.get("characteristics") or {}).get("values") or []:
-                if value["id"] in renames:
-                    value["key"] = renames[value["id"]]
+    for record, _ in walk_data("Model", result):
+        if record.get("id") in renames and "key" in record and "kind" in record:
+            record["key"] = renames[record["id"]]
 
-    def visit(formulations):
-        for formulation in formulations or []:
-            for value in formulation.get("values") or []:
-                if value["id"] in renames:
-                    value["key"] = renames[value["id"]]
-            visit(formulation.get("formulations"))
 
-    visit(system.get("formulations"))
-    _movements(result)
-    _references(result)
-    return Model.from_data(result)
+def upgrade_scenario_names(data: dict, *, revision_id: UUID | None = None) -> Model:
+    """Create a current Model revision without recomputing historical scenario paths.
+
+    Original documents, captured draws and stream IDs remain unchanged. Missing
+    historical calculation fingerprints stay absent; exact replay is unavailable.
+    """
+    from .drafts import upgrade_model
+
+    records = (data.get("provenance") or {}).get("scenarios") or []
+    if not records or not any(
+        record["plan"]["method"] in _METHODS for record in records
+    ):
+        raise ValueError("expected recognized v1 or v2 scenario methods")
+    return upgrade_model(data, revision_id=revision_id)

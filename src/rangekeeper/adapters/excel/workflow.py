@@ -14,7 +14,7 @@ from rangekeeper.workflow._contracts import (
 )
 from rangekeeper.workflow._declarations import sequence, text
 from rangekeeper.workflow._schema import obj
-from rangekeeper.workflow.ingestion import fingerprint
+from rangekeeper.evidence import fingerprint
 from rangekeeper.workflow.sources import resolve_file
 
 from . import ExtractionSpec, extract_table, read
@@ -64,6 +64,15 @@ class ExtractSpec:
         if self.unique_stop and self.specification.rows.stop_before is None:
             raise ValueError("unique_stop requires a stopping marker")
 
+    @classmethod
+    def from_mapping(cls, data):
+        return cls(
+            **{
+                **data,
+                "specification": ExtractionSpec.from_mapping(data["specification"]),
+            }
+        )
+
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class ClassifySpec:
@@ -80,6 +89,17 @@ class ClassifySpec:
         text(self.workbook)
         if not isinstance(self.specification, RowClassificationSpec):
             raise TypeError("Expected RowClassificationSpec")
+
+    @classmethod
+    def from_mapping(cls, data):
+        return cls(
+            **{
+                **data,
+                "specification": RowClassificationSpec.from_mapping(
+                    data["specification"]
+                ),
+            }
+        )
 
 
 def request_properties():
@@ -231,7 +251,6 @@ OPERATIONS = {
         describe_table,
         lambda: request_properties()["extract"],
         inputs=(("input", "workbook"),),
-        policy_type=ExtractionSpec,
         modules=MODULES,
     ),
     "classify_rows": OperationDeclaration(
@@ -240,7 +259,6 @@ OPERATIONS = {
         describe_table,
         lambda: request_properties()["classify_rows"],
         inputs=(("input", "table"), ("workbook", "workbook")),
-        policy_type=RowClassificationSpec,
         modules=MODULES,
     ),
 }

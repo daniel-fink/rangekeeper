@@ -9,7 +9,7 @@ from itertools import combinations
 from math import isfinite
 
 from uuid import UUID
-from rangekeeper.model import Model
+from rangekeeper.model import ValueKind, Model
 from rangekeeper.model.characteristics import value as find_value, label as find_label
 from rangekeeper.model.content import decode
 from rangekeeper.model.provenance import fact_for
@@ -42,12 +42,12 @@ def select(model, owner, source, key, *, units=None):
     if item is None or not resolved(model, item):
         return None
     if source == "property":
-        if item.kind != "property":
+        if item.kind is not ValueKind.PROPERTY:
             raise ValueError(f"{owner.id}/{key} is not a property Value")
         return decode(item.content) if item.content is not None else None
     if source != "quantity" or not units:
         raise ValueError("Quantity selection requires explicit units")
-    if item.kind != "measurement":
+    if item.kind is not ValueKind.MEASUREMENT:
         raise ValueError(f"{owner.id}/{key} is not a measurement Value")
     return (
         default_units.convert(item.quantity, to=units).magnitude

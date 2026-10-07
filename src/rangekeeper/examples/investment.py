@@ -4,6 +4,9 @@ This module is an example consumer, not a new domain schema. Generated Values ow
 all parameters and outputs. Construction has no random, solver or storage effects.
 """
 
+from rangekeeper.policies import ActionKind
+from rangekeeper.model import ValueKind
+
 from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any, cast
@@ -28,9 +31,15 @@ from .._schema.records import (
     Policy,
     Specification as SpecificationRecord,
 )
-from ..duration import make_periods, offset
+from ..duration import make_periods, offset, Frequency, PeriodTiming
 
-from ..formulations import build_formulation
+from ..formulations import declare
+from ..formulations.authoring import identify, identify_tree
+from ..formulations.flow import aligned, shape
+from ..formulations.expression import binary
+from ..policies import Decision, Rule, Action, ObservationBinding
+from ..model import Reference
+from ..model.expression import Operator
 from ..formulations.expression import (
     reference as ref,
     literal,
@@ -42,7 +51,7 @@ from ..formulations.expression import (
     equal,
 )
 from ..specification import Specification
-from ..specification.targets import scalar, movement, unknown_flow, assign_flow
+from ..specification.targets import unknown_flow, assign_flow
 from ..calculations import financial, series
 from ..scenarios.view import Market
 
@@ -110,14 +119,14 @@ def author(
     ):
         raise ValueError("invalid investment ratios")
     periods = make_periods(
-        offset(p["start_date"], frequency="year"),
-        frequency="year",
+        offset(p["start_date"], frequency=Frequency.YEAR),
+        frequency=Frequency.YEAR,
         count=p["num_periods"] + 1,
     )
     base = (
         scenario.model
         if scenario
-        else Model.create(metadata=Metadata(id=uuid4(), schema_version="0.6.0"))
+        else Model.create(metadata=Metadata(id=uuid4(), schema_version="0.7.0"))
     )
     if scenario and tuple(scenario.realization.plan.periods) != periods:
         raise ValueError("scenario periods must match the complete investment horizon")
@@ -139,7 +148,7 @@ def author(
             Value(
                 id=uuid4(),
                 key=name,
-                kind="measurement",
+                kind=ValueKind.MEASUREMENT,
                 measure=money if monetary else ratio,
                 quantity=Quantity(
                     magnitude=p[name], units=p["units"] if monetary else "dimensionless"
@@ -156,7 +165,7 @@ def author(
                     id=uuid4(),
                     key=f"p{i + 1}",
                     period=period,
-                    date=period.resolve(timing="last_day"),
+                    date=period.resolve(timing=PeriodTiming.LAST),
                 )
                 for i, period in enumerate(ps)
             ),
@@ -165,19 +174,21 @@ def author(
             Value(
                 id=uuid4(),
                 key=name,
-                kind="flow",
+                kind=ValueKind.FLOW,
                 measure=ratio if control else money,
                 flow=flow,
             )
         )
-    records.append(Value(id=uuid4(), key="pv", kind="measurement", measure=money))
+    records.append(
+        Value(id=uuid4(), key="pv", kind=ValueKind.MEASUREMENT, measure=money)
+    )
     # Keep a canonical local factor input when no realized scenario is supplied.
     if scenario is None:
         records.append(
             Value(
                 id=uuid4(),
                 key="space_market_price_factors",
-                kind="flow",
+                kind=ValueKind.FLOW,
                 measure=ratio,
                 flow=Flow(
                     units="dimensionless",
@@ -186,7 +197,7 @@ def author(
                             id=uuid4(),
                             key=f"p{i + 1}",
                             period=period,
-                            date=period.resolve(timing="last_day"),
+                            date=period.resolve(timing=PeriodTiming.LAST),
                             magnitude=1,
                         )
                         for i, period in enumerate(periods)
@@ -237,7 +248,7 @@ def _inputs(model):
     result = Market(model, realizations[0])
     cap_name = (
         "implied_reversion_cap_rates"
-        if realizations[0].plan.method == "market.v2"
+        if realizations[0].plan.method == "market"
         else "asset_market"
     )
     return own, result.space_market_price_factors, result.value(cap_name)
@@ -255,9 +266,11 @@ def formulate(model: Model) -> Model:
 
     def r(name, key=None):
         return ref(
-            scalar(v[name].id)
+            Reference(target=v[name].id)
             if key is None
-            else movement(next(m.id for m in _flow(v[name]).movements if m.key == key))
+            else Reference(
+                target=next(m.id for m in _flow(v[name]).movements if m.key == key)
+            )
         )
 
     def set_equation(name, key, rhs):
@@ -282,7 +295,11 @@ def formulate(model: Model) -> Model:
             multiply(
                 r("base_pgi", key),
                 ref(
-                    movement(next(m.id for m in factors.flow.movements if m.key == key))
+                    Reference(
+                        target=next(
+                            m.id for m in factors.flow.movements if m.key == key
+                        )
+                    )
                 ),
             ),
         )
@@ -301,7 +318,9 @@ def formulate(model: Model) -> Model:
     total = None
     for i, item in enumerate(_flow(v["holding"]).movements):
         key, next_key = item.key, _flow(v["ncf"]).movements[i + 1].key
-        cap = ref(movement(caps.flow.movements[i].id)) if caps else r("cap_rate")
+        cap = (
+            ref(Reference(target=caps.flow.movements[i].id)) if caps else r("cap_rate")
+        )
         set_equation("potential_sale", key, divide(r("ncf", next_key), cap))
         set_equation("operations", key, multiply(r("ncf", key), r("holding", key)))
         set_equation(
@@ -324,7 +343,7 @@ def formulate(model: Model) -> Model:
             r("discounted", key) if total is None else add(total, r("discounted", key))
         )
     set_equation("pv", None, total)
-    declarations = build_formulation(
+    declarations = declare(
         id=uuid4(),
         name="Investment equations",
         equations=equations,
@@ -352,9 +371,9 @@ def specify(
     if type(sale_period) is not int or not 1 <= sale_period <= count:
         raise ValueError("sale period outside investment horizon")
     assignments = [
-        Assignment(target=scalar(item.id), quantity=item.quantity)
+        Assignment(target=Reference(target=item.id), quantity=item.quantity)
         for item in v.values()
-        if item.kind == "measurement" and item.quantity is not None
+        if item.kind is ValueKind.MEASUREMENT and item.quantity is not None
     ]
     assignments.extend(assign_flow(model, factors.id))
     if caps:
@@ -364,13 +383,13 @@ def specify(
             assignments.extend(
                 (
                     Assignment(
-                        target=movement(_flow(v["holding"]).movements[i].id),
+                        target=Reference(target=_flow(v["holding"]).movements[i].id),
                         quantity=Quantity(
                             magnitude=int(i < sale_period), units="dimensionless"
                         ),
                     ),
                     Assignment(
-                        target=movement(_flow(v["sale"]).movements[i].id),
+                        target=Reference(target=_flow(v["sale"]).movements[i].id),
                         quantity=Quantity(
                             magnitude=int(i + 1 == sale_period), units="dimensionless"
                         ),
@@ -378,7 +397,7 @@ def specify(
                 )
             )
     unknowns = (
-        scalar(v["pv"].id),
+        Reference(target=v["pv"].id),
         *(
             target
             for name in (*_FULL, *_HORIZON)
@@ -388,7 +407,7 @@ def specify(
     )
     return Specification(
         SpecificationRecord(
-            metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
+            metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
             model=model.id,
             assignments=tuple(assignments),
             unknowns=unknowns,
@@ -434,7 +453,7 @@ def report(model: Model) -> InvestmentReport:
     sale_date = sale[0].resolve()
     first_period = _flow(v["total"]).movements[0].period
     assert first_period is not None
-    first = first_period.start
+    first = first_period.start_inclusive
     from datetime import timedelta
 
     purchase = Movement(
@@ -466,25 +485,114 @@ def report(model: Model) -> InvestmentReport:
 
 
 def build_stop_gain_resale_policy(
-    model: Model, *, threshold: float = 1.2, minimum_holding_periods: int = 3
+    model: Model,
+    *,
+    id: UUID | None = None,
+    pricing_factor: UUID | None = None,
+    holding: UUID | None = None,
+    sale: UUID | None = None,
+    threshold: float = 1.2,
+    minimum_holding_periods: int = 3,
+    mapping: Mapping[UUID, UUID] | None = None,
 ) -> Policy:
-    """Declare resale controls with an explicit market-to-investment key mapping."""
-    from ..policies import build_stop_gain_resale_policy
+    """Declare one sale at first factor > threshold, otherwise at the final horizon.
 
-    own, factors, _ = _inputs(model)
-    return build_stop_gain_resale_policy(
-        model,
-        id=uuid4(),
-        pricing_factor=factors.id,
-        holding=own["holding"].id,
-        sale=own["sale"].id,
-        threshold=threshold,
-        minimum_holding_periods=minimum_holding_periods,
-        mapping={
-            h.id: p.id
-            for h, p in zip(own["holding"].flow.movements, factors.flow.movements)
-        },
+    Decisions occur on each period's last included date. The sale period has
+    holding=1 and sale=1, so its operating cashflow is included. Later controls
+    are zero. Minimum holding is a positive count including the sale period.
+    An explicit mapping selects observed Movement UUIDs when the market extends beyond the
+    investment horizon. Availability still prevents future observations.
+    Threshold is dimensionless. No path, cashflow or Model is changed.
+    """
+    if pricing_factor is None and holding is None and sale is None:
+        own, factors, _ = _inputs(model)
+        pricing_factor, holding, sale = factors.id, own["holding"].id, own["sale"].id
+        if mapping is None:
+            mapping = {
+                h.id: p.id
+                for h, p in zip(own["holding"].flow.movements, factors.flow.movements)
+            }
+    elif pricing_factor is None or holding is None or sale is None:
+        raise ValueError("explicit resale roles must supply all three Values")
+    id = id or uuid4()
+    if mapping is None:
+        rows = aligned(model, (pricing_factor, sale), holding)
+    else:
+        factors = {m.id: m for m in shape(model, pricing_factor).movements}
+        controls = aligned(model, (sale,), holding)
+        if set(mapping) != {h.id for h, _ in controls} or not set(
+            mapping.values()
+        ) <= set(factors):
+            raise ValueError("policy mapping must cover every control coordinate")
+        rows = [(h, (factors[mapping[h.id]], matches[0])) for h, matches in controls]
+    if (
+        not rows
+        or type(minimum_holding_periods) is not int
+        or not 1 <= minimum_holding_periods <= len(rows)
+    ):
+        raise ValueError("minimum holding must lie within the declared horizon")
+    targets = tuple(
+        ref
+        for h, (_, s) in rows
+        for ref in (Reference(target=h.id), Reference(target=s.id))
     )
+
+    def assign(ref, magnitude):
+        return Action(
+            kind=ActionKind.ASSIGN,
+            target=ref,
+            quantity=Quantity(magnitude=magnitude, units="dimensionless"),
+        )
+
+    def sell(index):
+        actions = []
+        for offset, (h, (_, s)) in enumerate(rows[index:]):
+            actions.extend(
+                (
+                    assign(Reference(target=h.id), int(offset == 0)),
+                    assign(Reference(target=s.id), int(offset == 0)),
+                )
+            )
+        return (*actions, Action(kind=ActionKind.TERMINATE))
+
+    points = []
+    for index, (h, (factor, s)) in enumerate(rows):
+        at = h.resolve(timing=PeriodTiming.LAST)
+        observation = ObservationBinding(
+            name="pricing_factor", target=Reference(target=factor.id)
+        )
+        condition = identify_tree(
+            id,
+            "resale",
+            str(h.id),
+            binary(Operator.GREATER_THAN, ref(observation.target), literal(threshold)),
+        )
+        rules = (
+            (
+                Rule(
+                    id=identify(id, str(h.id), "rule"),
+                    condition=condition,
+                    actions=sell(index),
+                ),
+            )
+            if index + 1 >= minimum_holding_periods
+            else ()
+        )
+        fallback = (
+            sell(index)
+            if index == len(rows) - 1
+            else (assign(Reference(target=h.id), 1), assign(Reference(target=s.id), 0))
+        )
+        points.append(
+            Decision(
+                id=identify(id, str(h.id), "point"),
+                at=at,
+                observations=(observation,),
+                rules=rules,
+                fallback=fallback,
+            )
+        )
+    return Policy(id=id, targets=targets, decisions=tuple(points))
 
 
 def horizon_returns(model: Model) -> Flow:
@@ -498,7 +606,7 @@ def horizon_returns(model: Model) -> Flow:
     v = values(model)
     first_period = _flow(v["total"]).movements[0].period
     assert first_period is not None
-    first = first_period.start
+    first = first_period.start_inclusive
     purchase = Movement(
         id=uuid4(),
         key="acquisition",

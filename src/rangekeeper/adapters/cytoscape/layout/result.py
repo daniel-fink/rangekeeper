@@ -1,15 +1,37 @@
 """Solver-neutral results; deterministic geometry is separate from run metadata."""
 
 from dataclasses import asdict, dataclass, field
+from enum import Enum, unique
 
 from .model import Rect
 
 
+@unique
+class ResultStatus(Enum):
+    UNKNOWN = "unknown"
+    FEASIBLE = "feasible"
+    INFEASIBLE = "infeasible"
+    OPTIMAL = "optimal"
+
+
+@unique
+class StrictStatus(Enum):
+    SAT = "sat"
+    UNSAT = "unsat"
+    UNKNOWN = "unknown"
+
+
+@unique
+class ResultMode(Enum):
+    STRICT = "strict"
+    DIAGNOSTIC = "diagnostic"
+
+
 @dataclass
 class Result:
-    status: str
-    strict_status: str
-    mode: str = "strict"
+    status: ResultStatus
+    strict_status: StrictStatus
+    mode: ResultMode = ResultMode.STRICT
     rectangles: dict[str, Rect] = field(default_factory=dict)
     grids: dict[str, dict] = field(default_factory=dict)
     measurements: dict = field(default_factory=dict)
@@ -25,11 +47,25 @@ class Result:
     elapsed_seconds: float = 0
     solver_statistics: list[dict] = field(default_factory=list)
 
+    def __post_init__(self):
+        if (
+            not isinstance(self.status, ResultStatus)
+            or not isinstance(self.strict_status, StrictStatus)
+            or not isinstance(self.mode, ResultMode)
+        ):
+            raise TypeError("Result requires ResultStatus, StrictStatus and ResultMode")
+
+    def to_mapping(self):
+        data = asdict(self)
+        for name in ("status", "strict_status", "mode"):
+            data[name] = data[name].value
+        return data
+
     def geometry_document(self):
         return {
             "schema": "rk-layout-geometry-v2",
             "problem_fingerprint": self.problem_fingerprint,
-            "mode": self.mode,
+            "mode": self.mode.value,
             "rectangles": {i: asdict(r) for i, r in self.rectangles.items()},
             "grids": self.grids,
             "metrics": self.measurements,

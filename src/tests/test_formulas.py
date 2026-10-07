@@ -1,5 +1,10 @@
 """Migrated financial examples with explicit periods, units and account equations."""
 
+from rangekeeper.duration import Frequency
+from rangekeeper.calculations.series import AlignmentJoin
+from rangekeeper.model.flow import MissingValueHandling
+from rangekeeper.account import Balance, CurrentInterest, InterestTreatment
+
 from rangekeeper.calculations.account import Account
 from rangekeeper.model.flow import Flow
 
@@ -19,7 +24,9 @@ class TestFinancial:
     def test_simple_interest(self):
         example = build_accounts()
         transactions = series.aggregate(
-            (example.draws, example.payments), join="union", missing="zero"
+            (example.draws, example.payments),
+            join=AlignmentJoin.UNION,
+            missing=MissingValueHandling.ZERO,
         ).flow
         result = Account.calculate(
             transactions, starting=Quantity(magnitude=0, units="AUD"), rate=0.05 / 12
@@ -28,25 +35,25 @@ class TestFinancial:
         assert result.interest.total().magnitude == approx(694.44 + 2083.33, rel=1e-2)
 
     def test_compounded_interest(self):
-        periods = make_periods(date(2020, 1, 1), frequency="month", count=12)
+        periods = make_periods(date(2020, 1, 1), frequency=Frequency.MONTH, count=12)
         transactions = Flow.from_periods(periods, [500000] + [0] * 11, units="AUD")
         result = Account.calculate(
             transactions,
             starting=Quantity(magnitude=0, units="AUD"),
             rate=0.05 / 12,
-            method="compound",
+            treatment=InterestTreatment.FINANCED,
         )
         assert result.closing.movements[-1].magnitude == approx(525580.95)
         assert result.interest.total().magnitude == approx(25580.95)
 
     def test_amortized_loan(self):
-        periods = make_periods(date(2020, 1, 1), frequency="month", count=12)
+        periods = make_periods(date(2020, 1, 1), frequency=Frequency.MONTH, count=12)
         payments = [float(x) for x in npf.ppmt(0.05 / 12, range(1, 13), 12, -500000)]
         result = Account.calculate(
             Flow.from_periods(periods, [-x for x in payments], units="AUD"),
             starting=Quantity(magnitude=500000, units="AUD"),
             rate=0.05 / 12,
-            timing="arrears",
+            balance=Balance.OPENING,
         )
         assert result.closing.movements[-1].magnitude == approx(0, abs=1e-7)
         assert payments[0] + result.interest.movements[0].magnitude == approx(
@@ -60,7 +67,8 @@ class TestFinancial:
             example.draws.negate(),
             starting=Quantity(magnitude=0, units="AUD"),
             rate=0.05 / 12,
-            method="capitalized",
+            current_interest=CurrentInterest.INCLUDED,
+            treatment=InterestTreatment.FINANCED,
         )
         assert result.closing.movements[-1].magnitude == approx(510577.82)
         assert result.interest.total().magnitude == approx(10577.82)
@@ -75,8 +83,8 @@ class TestFinancial:
         assert example.equity.closing.movements[2].magnitude == approx(9965.32)
         profit = series.aggregate(
             (example.equity.difference(), example.loan.overdraft.negate()),
-            join="union",
-            missing="zero",
+            join=AlignmentJoin.UNION,
+            missing=MissingValueHandling.ZERO,
         ).flow
         assert profit.total().magnitude == approx(495337.17)
 

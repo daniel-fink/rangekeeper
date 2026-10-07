@@ -12,6 +12,7 @@ from types import MappingProxyType
 import pytest
 from rangekeeper import Model
 from rangekeeper.model.content import decode
+from rangekeeper.model import ValueKind
 from rangekeeper.migration import convert_graph, upgrade_model
 from rangekeeper.workflow import load, run
 
@@ -92,7 +93,7 @@ def test_repository_workflow_examples_retain_property_evidence(tmp_path, domain)
         v
         for e in model.system.entities
         for v in e.characteristics.values
-        if v.kind == "property"
+        if v.kind is ValueKind.PROPERTY
     ]
     assert len(props) == 3
     assert {decode(p.content) for p in props} == (

@@ -8,26 +8,24 @@ from rangekeeper.references import DocumentResolver
 from rangekeeper.specification import (
     Specification,
     SpecificationRecord,
-    compose,
-    validate,
 )
 
 entity = Entity(id=uuid4(), code="A")
 model = Model.create(
-    metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
+    metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
     system=System(entities=(entity,)),
 )
 identity: UUID = model.entity(entity.id).id
 revision: Model = model.revise(Update(system=System()))
 specification = Specification(
     SpecificationRecord(
-        metadata=Metadata(id=uuid4(), schema_version="0.6.0"), model=model.id
+        metadata=Metadata(id=uuid4(), schema_version="0.7.0"), model=model.id
     )
 )
 
 
 def investigation(resolver: DocumentResolver) -> tuple[UUID, ...]:
     """Consume a read-only dependency; no store implementation is assumed."""
-    composition = compose(specification, resolver=resolver)
-    validate(composition, resolver=resolver).raise_if_invalid()
-    return composition.contributors
+    composition = specification.compose(resolver=resolver)
+    composition.validate(resolver=resolver).raise_if_invalid()
+    return composition.contributor_ids

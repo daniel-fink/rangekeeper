@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from rangekeeper.model import ValueKind
+
 import json
 from hashlib import sha256
 from collections.abc import Mapping
@@ -27,11 +29,10 @@ from rangekeeper.model import (
 from rangekeeper.operation import Operation, _Failure
 from rangekeeper.operation import fingerprint as operation_fingerprint
 from rangekeeper.evidence import Claim
-from rangekeeper.model.definitions import classification
 from rangekeeper._schema.validation import document_version
 from .provenance import ProvenanceBuilder
 
-from ._model_validation import validate_measurements, validate_model
+from ._model_validation import validate_measurements, validate_model_declaration
 from .bindings import binding, condition, template
 from .references import references
 
@@ -62,9 +63,14 @@ def compose(
     Explicit phases retain canonical references without an intermediate graph
     model. This API can be used independently of YAML and workflow execution.
     """
-    validate_model(
+    validate_model_declaration(
         model, {name: "table" for name in outputs}, decision_ids=tuple(decisions)
     )
+    return _compose(model, outputs, settings, decisions, operation, namespace=namespace)
+
+
+def _compose(model, outputs, settings, decisions, operation, *, namespace):
+    """Compose declarations already checked by WorkflowSpec or public compose."""
     build = _Composition(model, outputs, settings, decisions, operation, namespace)
     build.add_objects()
     build.add_relationships()
@@ -143,14 +149,22 @@ class _Composition:
             self.identity_namespace, json.dumps([kind, key], ensure_ascii=False)
         )
 
-    def parents(self, policy, row, table):
+    def parents(self, policy, row, table, *, inputs=(), base=()):
         sources = [
             c
             for b in policy.get("evidence", ())
             for c in binding(b, row, table, self.outputs)[1]
         ]
         sources += [self.decisions[d] for d in policy.get("decisions", ())]
-        return tuple(sources)
+        return (*inputs, *sources, *base)
+
+    def bound_attributes(self, attributes, row, table):
+        """Resolve applicable attribute inputs once; retain ordered support."""
+        for attr in attributes:
+            if not condition(attr.get("when"), row, table, self.outputs):
+                continue
+            bindings = attr["bindings"] if "bindings" in attr else (attr["binding"],)
+            yield attr, (binding(b, row, table, self.outputs) for b in bindings)
 
     def attach(self, target, inputs, *, upstream=()):
         # Composition inputs are transient observations; canonical links are UUIDs.
@@ -219,11 +233,11 @@ class _Composition:
     def characteristics(self, policy, row, table, uid, base, ctx):
         """Declare owner-local Values independently of their Measure definitions."""
         values, labels = [], []
-        for attr in policy.get("measurements", ()):
-            if not condition(attr.get("when"), row, table, self.outputs):
-                continue
-            value, sources = binding(attr["binding"], row, table, self.outputs)
-            sources = (*sources, *self.parents(attr, row, table))
+        for attr, bound in self.bound_attributes(
+            policy.get("measurements", ()), row, table
+        ):
+            value, sources = next(bound)
+            sources = self.parents(attr, row, table, inputs=sources)
             measure = self.measures[attr["measure"]]
             if value is not None and type(value) not in (int, float):
                 raise _Failure(
@@ -236,7 +250,7 @@ class _Composition:
             item = Value(
                 id=self.identity("value", f"{uid}:{key}"),
                 key=key,
-                kind=attr.get("kind", "measurement"),
+                kind=ValueKind(attr.get("kind", "measurement")),
                 measure=measure.id,
                 quantity=(
                     Quantity(magnitude=value, units=measure.units)
@@ -260,7 +274,7 @@ class _Composition:
                     detail = Value(
                         id=self.identity("value", f"{uid}:{fallback['key']}"),
                         key=fallback["key"],
-                        kind="property",
+                        kind=ValueKind.PROPERTY,
                         content=encode(raw),
                     )
                     values.append(detail)
@@ -285,27 +299,24 @@ class _Composition:
                         references(sources),
                     )
                 )
-        for attr in policy.get("properties", ()):
-            if not condition(attr.get("when"), row, table, self.outputs):
-                continue
+        for attr, bound in self.bound_attributes(
+            policy.get("properties", ()), row, table
+        ):
             from rangekeeper.model.content import encode
 
-            value, sources = binding(attr["binding"], row, table, self.outputs)
+            value, sources = next(bound)
             key = attr["key"]
             item = Value(
                 id=self.identity("value", f"{uid}:{key}"),
                 key=key,
-                kind="property",
+                kind=ValueKind.PROPERTY,
                 content=encode(value),
             )
             values.append(item)
-            self.attach(item, (*sources, *self.parents(attr, row, table), *base))
-        for attr in policy.get("labels", ()):
-            if not condition(attr.get("when"), row, table, self.outputs):
-                continue
+            self.attach(item, self.parents(attr, row, table, inputs=sources, base=base))
+        for attr, bound in self.bound_attributes(policy.get("labels", ()), row, table):
             codes, sources = [], []
-            for b in attr["bindings"]:
-                value, upstream = binding(b, row, table, self.outputs)
+            for value, upstream in bound:
                 sources.extend(upstream)
                 if value is not None:
                     if value not in self.classes:
@@ -324,7 +335,9 @@ class _Composition:
                     ),
                 )
                 labels.append(item)
-                self.attach(item, (*sources, *self.parents(attr, row, table), *base))
+                self.attach(
+                    item, self.parents(attr, row, table, inputs=sources, base=base)
+                )
         return Characteristics(values=tuple(values), labels=tuple(labels))
 
     def add_relationships(self):
@@ -469,4 +482,4 @@ class _Composition:
         )
 
 
-__all__ = ["compose", "Finding", "validate_measurements", "validate_model"]
+__all__ = ["compose", "Finding", "validate_measurements", "validate_model_declaration"]

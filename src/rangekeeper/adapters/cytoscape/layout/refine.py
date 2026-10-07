@@ -4,6 +4,11 @@ Neighborhood proofs are never reported as global optimality. All full-problem
 constraints and scores remain present; objects outside a neighborhood are fixed.
 """
 
+from rangekeeper.adapters.cytoscape.layout.result import (
+    ResultMode,
+    ResultStatus,
+    StrictStatus,
+)
 from copy import deepcopy
 from math import isfinite
 from time import monotonic
@@ -41,9 +46,9 @@ def refine(
     deadline = start + time_limit
     result = deepcopy(initial)
     result.measurements = metrics(problem, result.rectangles, result.grids)
-    result.status = "feasible"
-    result.strict_status = "sat"
-    result.mode = "strict"
+    result.status = ResultStatus.FEASIBLE
+    result.strict_status = StrictStatus.SAT
+    result.mode = ResultMode.STRICT
     result.findings = []
     result.phases = []
     result.solver_statistics = []

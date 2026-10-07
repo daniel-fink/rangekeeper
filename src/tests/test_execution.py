@@ -1,5 +1,9 @@
 """Scalar acceptance through public documents and real isolated Pyomo/HiGHS runs."""
 
+from rangekeeper.run import CompletionStatus
+from rangekeeper.run import Severity, ImplementationKind
+from rangekeeper.run import SolutionStatus
+
 from copy import deepcopy
 from dataclasses import replace
 import importlib.util
@@ -89,7 +93,7 @@ def execute(store, specification):
 
 
 def output(store, run):
-    assert run.report.status.solution == "feasible", [
+    assert run.report.status.solution == SolutionStatus.FEASIBLE, [
         (d.code, d.message) for d in run.report.diagnostics
     ]
     return store.load_model(run.record.outputs[0])
@@ -157,9 +161,9 @@ def test_declared_forward_then_inverse_on_genuine_output(tmp_path, disk):
         claim.id for claim in first.provenance.claims
     }
     assert {item.kind for item in forward.report.runtime.implementations} == {
-        "compiler",
-        "solver",
-        "evaluator",
+        ImplementationKind.COMPILER,
+        ImplementationKind.SOLVER,
+        ImplementationKind.EVALUATOR,
     }
     assert any(
         d.code == "constraint_residual" and d.tolerance is not None
@@ -245,8 +249,10 @@ def test_temporary_bounds_and_inconsistent_equations(operator, bound, feasible):
     store, model = setup()
     temporary = formulation(binary(operator, reference(CAPITAL), literal(bound)))
     run = execute(store, spec(formulations=[temporary]))
-    assert run.report.status.completion == "completed"
-    assert run.report.status.solution == ("feasible" if feasible else "infeasible")
+    assert run.report.status.completion == CompletionStatus.COMPLETED
+    assert run.report.status.solution == (
+        SolutionStatus.FEASIBLE if feasible else SolutionStatus.INFEASIBLE
+    )
     if feasible:
         assert declarations(output(store, run)) == declarations(model)
         assert all(
@@ -297,7 +303,7 @@ def test_expected_failures_have_evidence_and_no_output(kind):
             )
         ]
     run = execute(store, Specification.from_data(payload))
-    assert run.report.status.completion == "failed"
+    assert run.report.status.completion == CompletionStatus.FAILED
     assert not run.record.outputs
     assert any(
         d.code
@@ -314,7 +320,7 @@ def test_underdetermined_case_returns_one_candidate_without_uniqueness_claim():
     ]
     payload["unknowns"].append(dict(target=str(RENT)))
     run = execute(store, Specification.from_data(payload))
-    assert run.report.status.solution == "feasible"
+    assert run.report.status.solution == SolutionStatus.FEASIBLE
     assert any(d.code == "underdetermined" for d in run.report.diagnostics)
 
 
@@ -322,7 +328,7 @@ class WrongCandidate:
     def solve(self, problem, *, limits, remaining):
         result = PyomoHighs().solve(problem, limits=limits, remaining=remaining)
         values = dict(result.candidate)
-        values[str(CAPITAL)] += 1000000
+        values[CAPITAL] += 1000000
         return replace(result, candidate=values)
 
 
@@ -331,21 +337,20 @@ def test_independent_acceptance_rejects_solver_claim_and_serialized_tampering():
     specification = spec()
     store.put(specification)
     run = Executor(store, backend=WrongCandidate()).execute(specification)
-    assert run.report.status.completion == "failed"
-    assert run.report.status.solution == "unknown"
+    assert run.report.status.completion == CompletionStatus.FAILED
+    assert run.report.status.solution == SolutionStatus.UNKNOWN
     assert not run.record.outputs
     assert any(d.code == "numerical_rejection" for d in run.report.diagnostics)
     assert any(
-        d.severity == "error" and d.code == "constraint_residual"
+        d.severity == Severity.ERROR and d.code == "constraint_residual"
         for d in run.report.diagnostics
     )
-    from rangekeeper.specification import compose
 
     prepared = preparation.prepare(
-        compose(specification, resolver=store), resolver=store
+        specification.compose(resolver=store), resolver=store
     )
     proposed = publication.candidate(
-        prepared, {str(NOI): 550000, str(CAPITAL): 11000000}, run_id=uuid4()
+        prepared, {NOI: 550000, CAPITAL: 11000000}, run_id=uuid4()
     )
     changed = proposed.to_data()
     next(node for node in records(changed["system"]) if node.get("id") == str(RENT))[
@@ -362,14 +367,14 @@ def test_composition_conflict_and_mixed_nested_batches_account_for_every_case():
     store.put(other)
     conflict = Specification.from_data(
         {
-            "metadata": {"id": str(uuid4()), "schema_version": "0.6.0"},
+            "metadata": {"id": str(uuid4()), "schema_version": "0.7.0"},
             "includes": [str(good.id), str(other.id)],
         }
     )
     store.put(conflict)
     batch = Specification.from_data(
         {
-            "metadata": {"id": str(uuid4()), "schema_version": "0.6.0"},
+            "metadata": {"id": str(uuid4()), "schema_version": "0.7.0"},
             "model": str(model.id),
             "cases": [str(good.id), str(conflict.id)],
         }
@@ -377,15 +382,15 @@ def test_composition_conflict_and_mixed_nested_batches_account_for_every_case():
     store.put(batch)
     outer = Specification.from_data(
         {
-            "metadata": {"id": str(uuid4()), "schema_version": "0.6.0"},
+            "metadata": {"id": str(uuid4()), "schema_version": "0.7.0"},
             "cases": [str(batch.id), str(good.id)],
         }
     )
     parent = execute(store, outer)
-    assert parent.report.status.completion == "partial"
+    assert parent.report.status.completion == CompletionStatus.PARTIAL
     nested, repeated = [store.load_run(id) for id in parent.record.spawns]
     success, failed = [store.load_run(id) for id in nested.record.spawns]
-    assert failed.report.status.solution == "not_assessed"
+    assert failed.report.status.solution == SolutionStatus.NOT_ASSESSED
     assert any(d.code == "specification_invalid" for d in failed.report.diagnostics)
     assert repeated.id != success.id
     assert set(parent.record.outputs) == set(nested.record.outputs) | set(
@@ -424,8 +429,8 @@ def test_requested_settings_are_applied_or_explicitly_accounted_for():
 def test_tiny_budget_never_claims_infeasibility():
     store, _ = setup()
     run = execute(store, spec(settings={"time_limit": 1e-7}))
-    assert run.report.status.completion == "limited"
-    assert run.report.status.solution == "not_assessed"
+    assert run.report.status.completion == CompletionStatus.LIMITED
+    assert run.report.status.solution == SolutionStatus.NOT_ASSESSED
     assert any(d.code == "attempt_deadline" for d in run.report.diagnostics)
     assert not run.record.outputs
 
@@ -445,8 +450,8 @@ def test_deadline_kills_and_reaps_a_stalled_worker(monkeypatch, tmp_path):
     started = time.monotonic()
     run = execute(store, spec(settings={"time_limit": 1}))
     assert time.monotonic() - started < 5
-    assert run.report.status.completion == "limited"
-    assert run.report.status.solution == "unknown"
+    assert run.report.status.completion == CompletionStatus.LIMITED
+    assert run.report.status.solution == SolutionStatus.UNKNOWN
     with pytest.raises(ProcessLookupError):
         os.kill(int(pid_file.read_text()), 0)
 
@@ -461,12 +466,16 @@ def test_backend_statuses_do_not_overclaim(termination):
 
     store, _ = setup()
     run = Executor(store, backend=Backend()).execute(spec())
-    assert run.report.status.solution == "unknown"
+    assert run.report.status.solution == SolutionStatus.UNKNOWN
     assert not run.record.outputs
     assert run.report.status.completion == (
-        "failed"
+        CompletionStatus.FAILED
         if termination == "error"
-        else "limited" if termination == "iterationLimit" else "completed"
+        else (
+            CompletionStatus.LIMITED
+            if termination == "iterationLimit"
+            else CompletionStatus.COMPLETED
+        )
     )
 
 
@@ -480,7 +489,7 @@ def test_missing_references_and_invalid_batch_graph_raise_before_execution():
         store.put(
             Specification.from_data(
                 {
-                    "metadata": {"id": str(id), "schema_version": "0.6.0"},
+                    "metadata": {"id": str(id), "schema_version": "0.7.0"},
                     "cases": [str(other)],
                 }
             )
@@ -507,17 +516,19 @@ def test_constant_only_assertions_and_repeated_publication(truth):
     store, model = setup(model_data=model_data)
     investigation = Specification.from_data(
         {
-            "metadata": {"id": str(uuid4()), "schema_version": "0.6.0"},
+            "metadata": {"id": str(uuid4()), "schema_version": "0.7.0"},
             "model": str(model.id),
         }
     )
     run = execute(store, investigation)
-    assert run.report.status.solution == ("feasible" if truth else "infeasible")
+    assert run.report.status.solution == (
+        SolutionStatus.FEASIBLE if truth else SolutionStatus.INFEASIBLE
+    )
     if truth:
         second = spec(
             model=output(store, run), assignments=[], unknowns=[], estimates=[]
         )
-        assert execute(store, second).report.status.solution == "feasible"
+        assert execute(store, second).report.status.solution == SolutionStatus.FEASIBLE
 
 
 def test_unconstrained_unknown_has_explicit_choice_evidence():
@@ -528,7 +539,7 @@ def test_unconstrained_unknown_has_explicit_choice_evidence():
     area = UUID("9d86011c-1658-5c10-87c1-94d281b74e96")
     investigation = Specification.from_data(
         {
-            "metadata": {"id": str(uuid4()), "schema_version": "0.6.0"},
+            "metadata": {"id": str(uuid4()), "schema_version": "0.7.0"},
             "model": str(model.id),
             "unknowns": [dict(target=str(area))],
         }
@@ -586,7 +597,7 @@ def test_real_simplex_iteration_limit_has_no_infeasibility_claim():
         )
     model = Model.from_data(
         {
-            "metadata": {"id": str(uuid4()), "schema_version": "0.6.0"},
+            "metadata": {"id": str(uuid4()), "schema_version": "0.7.0"},
             "definitions": {
                 "measures": [
                     {
@@ -622,15 +633,18 @@ def test_real_simplex_iteration_limit_has_no_infeasibility_claim():
     store.put(model)
     specification = Specification.from_data(
         {
-            "metadata": {"id": str(uuid4()), "schema_version": "0.6.0"},
+            "metadata": {"id": str(uuid4()), "schema_version": "0.7.0"},
             "model": str(model.id),
             "unknowns": [dict(target=str(id)) for id in ids],
             "settings": {"iteration_limit": 1, "time_limit": 30},
         }
     )
     run = execute(store, specification)
-    assert run.report.status.completion == "limited"
-    assert run.report.status.solution in {"feasible", "unknown"}
+    assert run.report.status.completion == CompletionStatus.LIMITED
+    assert run.report.status.solution in {
+        SolutionStatus.FEASIBLE,
+        SolutionStatus.UNKNOWN,
+    }
     evidence = json.loads(
         next(
             d.message for d in run.report.diagnostics if d.code == "solver_termination"
@@ -645,8 +659,8 @@ def test_unknown_assignment_units_still_allow_failed_run_evidence():
     payload = fresh(data("specification-forward"))
     payload["assignments"][0]["quantity"]["units"] = "not_a_known_unit"
     run = execute(store, Specification.from_data(payload))
-    assert run.report.status.completion == "failed"
-    assert run.report.status.solution == "not_assessed"
+    assert run.report.status.completion == CompletionStatus.FAILED
+    assert run.report.status.solution == SolutionStatus.NOT_ASSESSED
 
 
 @pytest.mark.parametrize(
@@ -691,7 +705,7 @@ def test_supported_arithmetic_and_conjunction(operation):
         execute(
             store, spec(formulations=[formulation(predicate)])
         ).report.status.solution
-        == "feasible"
+        == SolutionStatus.FEASIBLE
     )
 
 
@@ -705,8 +719,8 @@ def test_nonfinite_or_boolean_backend_candidates_are_never_published(magnitude):
 
     store, _ = setup()
     run = Executor(store, backend=Backend()).execute(spec())
-    assert run.report.status.completion == "failed"
-    assert run.report.status.solution == "unknown"
+    assert run.report.status.completion == CompletionStatus.FAILED
+    assert run.report.status.solution == SolutionStatus.UNKNOWN
     assert not run.record.outputs
 
 
@@ -752,5 +766,5 @@ def test_scalar_preparation_reuses_the_composed_requirements(monkeypatch):
     monkeypatch.setattr(implementation, "compose", recorded)
     monkeypatch.setattr(preparation, "prepare", reused)
     run = execute(store, specification)
-    assert run.report.status.solution == "feasible"
+    assert run.report.status.solution == SolutionStatus.FEASIBLE
     assert len(views) == 1

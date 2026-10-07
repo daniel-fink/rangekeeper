@@ -102,6 +102,62 @@ def _normalize(kind, data):
     return result
 
 
+def exact_equal(left, right) -> bool:
+    """Compare JSON values with ordered collections and type-sensitive scalars."""
+    if isinstance(left, Mapping) and isinstance(right, Mapping):
+        return left.keys() == right.keys() and all(
+            exact_equal(left[key], right[key]) for key in left
+        )
+    if isinstance(left, (tuple, list)) and isinstance(right, (tuple, list)):
+        return len(left) == len(right) and all(
+            map(lambda pair: exact_equal(*pair), zip(left, right))
+        )
+    if type(left) is not type(right):
+        return False
+    if type(left) is float:
+        return left == right and (
+            left != 0 or math.copysign(1, left) == math.copysign(1, right)
+        )
+    return left == right
+
+
+def comparison_data(kind: str, data: Mapping) -> dict:
+    """Prepare schema equivalence without copying opaque content or changing records."""
+    from ._schema.validation import _slot_map
+
+    result = dict(data)
+    for name, field in _slot_map(kind).items():
+        if name not in result or result[name] is None:
+            continue
+
+        def item(value):
+            for option in field["options"]:
+                if option["category"] in ("record", "keyed") and isinstance(
+                    value, Mapping
+                ):
+                    return comparison_data(option["kind"], value)
+            return value
+
+        if field["mapping"]:
+            result[name] = {key: item(child) for key, child in result[name].items()}
+        elif field["many"]:
+            children = [item(child) for child in result[name]]
+            if not field["ordered"]:
+                children.sort(
+                    key=lambda child: json.dumps(
+                        child,
+                        sort_keys=True,
+                        default=lambda value: (
+                            dict(value) if isinstance(value, Mapping) else list(value)
+                        ),
+                    )
+                )
+            result[name] = children
+        else:
+            result[name] = item(result[name])
+    return result
+
+
 class Record:
     """Immutable schema record. Constructors check structure, not cross-record semantics."""
 
@@ -120,6 +176,7 @@ class Record:
 
     def _encode(self, fields: Mapping[str, object]) -> dict[str, object]:
         """Encode typed field values once for both construction and replacement."""
+        from ._schema.enums import _ENUM_TYPES
         from ._schema.records import _TYPES
         from ._schema.validation import _slot_map
 
@@ -133,6 +190,14 @@ class Record:
             meta = slots[name]
 
             def encode(item):
+                enum = next(
+                    (o for o in meta["options"] if o["category"] == "enum"), None
+                )
+                if enum is not None and item is not None:
+                    expected = _ENUM_TYPES[enum["kind"]]
+                    if not isinstance(item, expected):
+                        raise TypeError(f"{name}: expected {expected.__name__}")
+                    return item.value
                 if isinstance(item, Record):
                     if not any(
                         o["category"] == "record"
@@ -219,6 +284,7 @@ class Record:
         return tuple(self._data)
 
     def _field(self, name):
+        from ._schema.enums import _ENUM_TYPES
         from ._schema.records import _TYPES
         from ._schema.validation import _slot_map
 
@@ -235,6 +301,8 @@ class Record:
 
         def decode(item):
             for option in meta["options"]:
+                if option["category"] == "enum":
+                    return _ENUM_TYPES[option["kind"]](item)
                 if option["category"] == "uuid" and isinstance(item, str):
                     return UUID(item)
                 if (
@@ -257,12 +325,22 @@ class Record:
 
         return tuple(decode(item) for item in value) if meta["many"] else decode(value)
 
+    def equivalent(self, other: object) -> bool:
+        """Compare schema content, ignoring only declared unordered collection order."""
+        return (
+            isinstance(other, Record)
+            and type(self) is type(other)
+            and exact_equal(
+                comparison_data(self._kind, self._data),
+                comparison_data(other._kind, other._data),
+            )
+        )
+
     def __eq__(self, other: object) -> bool:
         return (
             isinstance(other, Record)
             and type(self) is type(other)
-            and json.dumps(self.to_data(), sort_keys=True)
-            == json.dumps(other.to_data(), sort_keys=True)
+            and exact_equal(self._data, other._data)
         )
 
     # Python's standard unhashable marker; mypy models object.__hash__ as callable.

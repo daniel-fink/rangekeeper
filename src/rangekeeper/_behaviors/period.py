@@ -1,4 +1,4 @@
-"""Date-only interval behaviour, shared by Period and its schema subclasses."""
+"""Date-only interval behaviour shared by Period and its schema subclasses."""
 
 from __future__ import annotations
 from datetime import date, timedelta
@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
     from .._schema.records import Period
-    from ..duration.period import PeriodTiming
+    from ..duration.calendar import PeriodTiming
 
 
 class PeriodBehavior:
@@ -14,27 +14,37 @@ class PeriodBehavior:
 
     __slots__ = ()
 
+    @property
+    def first(self) -> date:
+        return cast("Period", self).start_inclusive
+
+    @property
+    def last(self) -> date:
+        return cast("Period", self).end_exclusive - timedelta(days=1)
+
+    @property
+    def end(self) -> date:
+        return cast("Period", self).end_exclusive
+
     def check(self) -> Period:
-        """Require a positive date interval [start, end)."""
+        """Require a positive date interval [start_inclusive, end_exclusive)."""
         period = cast("Period", self)
         from ..duration.calendar import elapsed_days
 
-        if elapsed_days(period.start, period.end) <= 0:
+        if elapsed_days(period.start_inclusive, period.end_exclusive) <= 0:
             raise ValueError("period end must follow start")
         return period
 
     def resolve(self, *, timing: PeriodTiming) -> date:
-        """Derive a date without storing a duplicate field.
+        """Select the first included date, last included date or excluded boundary."""
+        from ..duration.calendar import PeriodTiming
 
-        start is the first included day; last_day is the final included day; end is
-        the exclusive boundary (for example, payment on the next month's first day).
-        """
+        if not isinstance(timing, PeriodTiming):
+            raise TypeError("timing must be a PeriodTiming")
         period = cast("Period", self)
         period.check()
-        if timing == "start":
-            return period.start
-        if timing == "last_day":
-            return period.end - timedelta(days=1)
-        if timing == "end":
-            return period.end
-        raise ValueError("timing must be start, last_day or end")
+        return {
+            PeriodTiming.FIRST: period.first,
+            PeriodTiming.LAST: period.last,
+            PeriodTiming.END: period.end,
+        }[timing]

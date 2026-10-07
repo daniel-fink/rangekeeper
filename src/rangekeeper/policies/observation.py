@@ -1,74 +1,51 @@
-"""Resolve observation availability before data reaches a decision rule."""
+"""Resolve recorded or previously decided quantities at explicit observation dates."""
 
 from collections.abc import Sequence
 from datetime import date
-from ..model import Model
-from ..model._references import reference_key
 
-from .._schema.records import ObservationBinding, ObservedQuantity, Quantity, Movement
-from ..duration.calendar import require_date
+from .._schema.records import ObservationBinding, ObservedQuantity, Quantity
+from ..model import Model
+from ..model.scope import recorded_quantity, resolve_reference, scope_for_model
+from ..units import UnitSystem, default_units
+from ._availability import available_on, evidence_dates
 from .result import Observation
 
 
 class PolicyCapabilityError(ValueError):
-    """Missing/unavailable/endogenous observations cannot drive this finite policy."""
+    """Missing, unavailable or endogenous quantities cannot drive a finite policy."""
 
 
-def observe(
-    model: Model, *, at: date, bindings: Sequence[ObservationBinding]
-) -> Observation:
-    """Copy declared quantities available by at; never infer missing data as zero.
-
-    Availability cannot precede a Movement's recorded date or its realization
-    evidence. Undated period data requires explicit availability. Scalar inputs
-    also need an explicit availability date. Reading does not change the Model.
-    """
-    require_date(at)
-    evidence: dict[str, date] = {}
-    for realization in (
-        model.provenance.scenarios
-        if model.provenance and model.provenance.scenarios
-        else ()
-    ):
-        for availability in realization.availability:
-            token = reference_key(availability.target.to_data())
-            evidence[token] = max(
-                evidence.get(token, date.min), availability.available_at
-            )
+def _observe(scope, *, at, bindings, evidence, prior, controlled):
     result = []
     for binding in bindings:
-        target = binding.target
-        record = model.resolve(target)
-        owner = model.owner_of(record.id) if isinstance(record, Movement) else record.id
-        assert owner is not None
-        value = model.value(owner)
-        available = [
-            d
-            for d in (
-                binding.available_at,
-                evidence.get(reference_key(target.to_data())),
-            )
-            if d is not None
-        ]
-        if not isinstance(record, Movement):
-            quantity = value.quantity if value.kind == "measurement" else None
+        token = binding.target.target
+        if token in prior:
+            quantity, when = prior[token]
+            available = max(when, binding.available_at or when)
         else:
-            if value.kind != "flow" or value.flow is None:
+            if token in controlled:
                 raise PolicyCapabilityError(
-                    "observation requires a declared Flow shape"
+                    "policy observation requires an earlier decision; recorded controls are not current decisions"
                 )
-            item = record
-            if item.date is not None:
-                available.append(item.date)
-            elif item.period is not None:
-                # Period totals cannot be observed before their coverage is complete.
-                available.append(item.resolve(timing="last_day"))
-            quantity = (
-                None
-                if item.magnitude is None
-                else Quantity(magnitude=item.magnitude, units=value.flow.units)
+            target = binding.target.to_data()
+            _, movement = resolve_reference(target, scope.targets)
+            available = available_on(
+                movement_date=(
+                    date.fromisoformat(movement["date"])
+                    if movement and movement.get("date")
+                    else None
+                ),
+                period_end=(
+                    date.fromisoformat(movement["period"]["end_exclusive"])
+                    if movement and movement.get("period")
+                    else None
+                ),
+                scenario_dates=(evidence[token],) if token in evidence else (),
+                declared=binding.available_at,
             )
-        if not available or max(available) > at:
+            data = recorded_quantity(target, scope.targets, scope.measures)
+            quantity = Quantity.from_data(data) if data is not None else None
+        if available is None or available > at:
             raise PolicyCapabilityError(
                 f"observation {binding.name} is unavailable at {at}"
             )
@@ -79,9 +56,39 @@ def observe(
         result.append(
             ObservedQuantity(
                 name=binding.name,
-                target=target,
+                target=binding.target,
                 quantity=quantity,
-                available_at=max(available),
+                available_at=available,
             )
         )
     return Observation(at, tuple(result))
+
+
+def observe(
+    model: Model,
+    *,
+    at: date,
+    bindings: Sequence[ObservationBinding],
+    units: UnitSystem = default_units,
+) -> Observation:
+    """Read available quantities without mutation or inferred zero values.
+
+    Undated period Movements become available on their last included date. Scalar
+    observations require provenance or a declared date; explicit dates can delay
+    access but cannot advance a coordinate or provenance boundary.
+    """
+    if type(at) is not date:
+        raise TypeError("at must be a date")
+    bindings = tuple(bindings)
+    if any(not isinstance(binding, ObservationBinding) for binding in bindings):
+        raise TypeError("bindings must be ObservationBinding records")
+    scope = scope_for_model(model, units=units)
+    evidence = evidence_dates(model.provenance.to_data() if model.provenance else {})
+    return _observe(
+        scope,
+        at=at,
+        bindings=bindings,
+        evidence=evidence,
+        prior={},
+        controlled=frozenset(),
+    )

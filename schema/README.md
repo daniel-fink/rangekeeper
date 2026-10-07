@@ -8,8 +8,8 @@ why these boundaries exist.
 
 ## Contracts
 
-The document roots are Model and Specification version `0.6.0`, and Run version
-`0.3.0`. Each contains Metadata with a revision UUID. Model holds Definitions,
+The document roots are Model and Specification version `0.7.0`, and Run version
+`0.4.0`. Each contains Metadata with a revision UUID. Model holds Definitions,
 System and Provenance. Specification describes an investigation over exact
 revisions. Run records a finalized attempt and accepted outputs.
 
@@ -66,7 +66,7 @@ python schema/checks/runs.py
 
 Run from the repository root with the pinned schema environment. The checks
 separate structural conformance, native loader behavior and bounded domain rules.
-The stock LinkML loader has a known limitation for terminal policy Action shapes;
+The current stock LinkML loader passes all 16 active root-fixture round trips;
 the generated production records and semantic validators define supported runtime
 behavior. A conformance fixture is not proof of solver or external-host execution.
 

@@ -1,5 +1,7 @@
 """Prepare/check public fixtures through both canonical language boundaries."""
 
+from rangekeeper.model import ValueKind
+
 import argparse, json
 from pathlib import Path
 from uuid import uuid4
@@ -32,7 +34,7 @@ if a.mode == "prepare":
             Value(
                 id=uuid4(),
                 key="rich",
-                kind="property",
+                kind=ValueKind.PROPERTY,
                 content=encode(
                     {
                         "null": None,
@@ -47,7 +49,7 @@ if a.mode == "prepare":
             Value(
                 id=uuid4(),
                 key="presence",
-                kind="flow",
+                kind=ValueKind.FLOW,
                 measure=next(
                     m.id
                     for m in model.definitions.measures

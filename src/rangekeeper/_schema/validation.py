@@ -63,10 +63,14 @@ def validate(kind: str, data: object) -> ValidationReport:
     except (TypeError, ValueError) as error:
         return ValidationReport((Issue("structure.json", str(error)),))
     issues = []
-    for error in _validator(kind).iter_errors(data):
+    for schema_error in _validator(kind).iter_errors(data):
         path = "".join(
             "/" + str(part).replace("~", "~0").replace("/", "~1")
-            for part in error.absolute_path
+            for part in schema_error.absolute_path
         )
-        issues.append(Issue(f"structure.{error.validator}", error.message, path=path))
+        issues.append(
+            Issue(
+                f"structure.{schema_error.validator}", schema_error.message, path=path
+            )
+        )
     return ValidationReport(tuple(issues))

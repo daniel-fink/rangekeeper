@@ -4,6 +4,7 @@ from collections.abc import Sequence, Mapping
 from concurrent.futures import ProcessPoolExecutor
 from importlib.metadata import version
 import json
+import hashlib
 from typing import Any, cast
 import multiprocessing
 import math
@@ -34,7 +35,13 @@ from ..model.scenario import (
 from .._schema.records import Reference
 
 
-from .plan import make_plan, validate
+from .contracts import method, check_values, check_inputs
+from ..model._scenario import validate_plan
+from .components import _parameters
+from .implementation import calculation_provenance
+from ..duration import PeriodTiming
+from .._schema.enums import ValueKind
+from ..model.scenario import ScenarioParameter, Distribution
 from .components import (
     make_trend,
     make_volatility,
@@ -45,6 +52,64 @@ from .components import (
 from .random import create_generator, stream_identifier
 from .view import Market
 from ._paths import construct_paths
+
+
+def make_plan(
+    *,
+    periods: Sequence,
+    seed: int,
+    parameters: Mapping[str, float | Quantity | Distribution] | None = None,
+    components: Sequence[Sequence[ScenarioParameter]] = (),
+    id: UUID | None = None,
+    method: str = "market",
+) -> ScenarioPlan:
+    """Record the selected market contract, defaults and explicit parameter groups."""
+    from uuid import uuid4
+    from .contracts import method as contract_for
+
+    contract = contract_for(method)
+    values: dict[str, float | Quantity | Distribution] = {
+        name: rule.default
+        for name, rule in contract.parameters.items()
+        if rule.default is not None
+    }
+    declared = dict(parameters or {})
+    for component in components:
+        for parameter in component:
+            if parameter.name in declared:
+                raise ValueError(f"duplicate component parameter: {parameter.name}")
+            if (parameter.quantity is None) == (parameter.distribution is None):
+                raise ValueError(
+                    "component requires exactly one quantity or distribution"
+                )
+            declared[parameter.name] = (
+                parameter.quantity
+                if parameter.quantity is not None
+                else cast(Distribution, parameter.distribution)
+            )
+    if set(declared) - set(contract.parameters):
+        raise ValueError("unknown market parameter")
+    values.update(declared)
+    plan = ScenarioPlan(
+        id=id or uuid4(),
+        method=method,
+        seed=seed,
+        periods=tuple(periods),
+        parameters=_parameters(**dict(sorted(values.items()))),
+    )
+    validate(plan)
+    return plan
+
+
+def validate(plan: ScenarioPlan) -> None:
+    """Validate a complete plan without randomness or numerical generation."""
+    validate_plan(plan.to_data())
+
+
+def _scenario_key(key):
+    if not isinstance(key, str) or not key.strip():
+        raise ValueError("scenario key must be nonempty")
+    return key
 
 
 def _identity(model, plan, key):
@@ -60,11 +125,15 @@ def _flow(plan, amounts, owner: UUID):
         movements=tuple(
             Movement(
                 id=uuid5(
-                    owner, "movement/" + p.start.isoformat() + "/" + p.end.isoformat()
+                    owner,
+                    "movement/"
+                    + p.start_inclusive.isoformat()
+                    + "/"
+                    + p.end_exclusive.isoformat(),
                 ),
                 key=f"p{i + 1}",
                 period=p,
-                date=p.resolve(timing="last_day"),
+                date=p.resolve(timing=PeriodTiming.LAST),
                 magnitude=float(x),
             )
             for i, (p, x) in enumerate(zip(plan.periods, amounts))
@@ -73,60 +142,36 @@ def _flow(plan, amounts, owner: UUID):
 
 
 def _sample(model: Model, plan: ScenarioPlan, key: str) -> Model:
-    """Create an immutable draw document; the caller owns all persistence."""
-    root = _identity(model, plan, key)
-    measure_id = uuid5(root, "measure")
-    values, streams = [], []
+    """Sample inputs once, then use the same recording path as supplied captures."""
+    inputs: dict[str, Quantity | Sequence[float]] = {}
+    streams: list[RandomStream] = []
+    parameters: dict[str, float] = {}
+    contract = method(plan.method)
 
     def generator(name):
-        # Component identifiers are part of the seeded algorithm. Preserve the
-        # v1 identity when the public parameter name changes in v2.
         component = "volatility" if name == "volatility_per_period" else name
         streams.append(
             RandomStream(name=name, identifier=stream_identifier(key, component))
         )
         return create_generator(plan.seed, scenario_key=key, component=component)
 
-    parameters = {}
     for parameter in plan.parameters:
         name = parameter.name
-        assert parameter.distribution is not None or parameter.quantity is not None
-        if plan.method == "independent.v2":
-            array = (
-                parameter.distribution.sample(
-                    size=len(plan.periods), generator=generator(name)
-                )
-                if parameter.distribution
-                else (cast(Quantity, parameter.quantity).magnitude,) * len(plan.periods)
-            )
-            values.append(
-                Value(
-                    id=uuid5(root, name),
-                    key="input_" + name,
-                    kind="flow",
-                    measure=measure_id,
-                    flow=_flow(plan, array, uuid5(root, name)),
-                )
-            )
+        count = 1 if contract.scalar_parameters else len(plan.periods)
+        sampled = (
+            parameter.distribution.sample(size=count, generator=generator(name))
+            if parameter.distribution is not None
+            else (cast(Quantity, parameter.quantity).magnitude,) * count
+        )
+        if contract.scalar_parameters:
+            parameters[name] = sampled[0]
+            inputs[name] = Quantity(magnitude=sampled[0], units="dimensionless")
         else:
-            magnitude = (
-                parameter.distribution.sample(size=1, generator=generator(name))[0]
-                if parameter.distribution
-                else cast(Quantity, parameter.quantity).magnitude
-            )
-            parameters[name] = magnitude
-            values.append(
-                Value(
-                    id=uuid5(root, name),
-                    key="input_" + name,
-                    kind="measurement",
-                    measure=measure_id,
-                    quantity=Quantity(magnitude=magnitude, units="dimensionless"),
-                )
-            )
-    if plan.method.startswith("market."):
+            inputs[name] = sampled
+    check_values(plan.method, parameters)
+    if contract.scalar_parameters:
         count = len(plan.periods)
-        arrays = dict(
+        inputs.update(
             innovations=generator("innovations").normal(
                 0, parameters["volatility_per_period"], count
             ),
@@ -135,21 +180,39 @@ def _sample(model: Model, plan: ScenarioPlan, key: str) -> Model:
             ),
             events=generator("events").uniform(0, 1, count),
         )
-        for name, array in arrays.items():
+    return _record_inputs(model, plan, key, inputs, streams, "numpy.SeedSequence/PCG64")
+
+
+def _record_inputs(model, plan, key, inputs, streams, algorithm):
+    root = _identity(model, plan, key)
+    values = []
+    for name, content in inputs.items():
+        common = dict(
+            id=uuid5(root, name), key="input_" + name, measure=uuid5(root, "measure")
+        )
+        if isinstance(content, Quantity):
+            if content.units != "dimensionless":
+                raise ValueError("captured parameters require dimensionless units")
+            values.append(Value(**common, kind=ValueKind.MEASUREMENT, quantity=content))
+        else:
+            amounts = tuple(content)
+            if len(amounts) != len(plan.periods) or any(
+                isinstance(x, bool) or not math.isfinite(x) for x in amounts
+            ):
+                raise ValueError(
+                    "captured draws require finite values for every period"
+                )
             values.append(
                 Value(
-                    id=uuid5(root, name),
-                    key="input_" + name,
-                    kind="flow",
-                    measure=measure_id,
-                    flow=_flow(plan, array, uuid5(root, name)),
+                    **common,
+                    kind=ValueKind.FLOW,
+                    flow=_flow(plan, amounts, uuid5(root, name)),
                 )
             )
-    return _capture(model, plan, key, values, streams, "numpy.SeedSequence/PCG64")
+    return _capture(model, plan, key, root, values, streams, algorithm)
 
 
-def _capture(model, plan, key, values, streams, algorithm):
-    root = _identity(model, plan, key)
+def _capture(model, plan, key, root, values, streams, algorithm):
     measure_id = uuid5(root, "measure")
     realization = ScenarioRealization(
         id=root,
@@ -171,7 +234,7 @@ def _capture(model, plan, key, values, streams, algorithm):
         availability=tuple(
             ObservationAvailability(
                 target=Reference(target=m.id),
-                available_at=cast(Any, m.period).resolve(timing="last_day"),
+                available_at=cast(Any, m.period).resolve(timing=PeriodTiming.LAST),
             )
             for v in values
             if v.flow is not None
@@ -227,9 +290,7 @@ def sample(model: Model, plan: ScenarioPlan, *, scenario_key: str) -> Model:
     or write files. Use capture() when the inputs are already known.
     """
     validate(plan)
-    if not isinstance(scenario_key, str) or not scenario_key.strip():
-        raise ValueError("scenario key must be nonempty")
-    return _sample(model, plan, scenario_key)
+    return _sample(model, plan, _scenario_key(scenario_key))
 
 
 def capture(
@@ -247,34 +308,14 @@ def capture(
     nonfinite or wrongly sized inputs fail; no input or store is changed.
     """
     validate(plan)
-    if not scenario_key.strip():
-        raise ValueError("scenario key must be nonempty")
-    root = _identity(model, plan, scenario_key)
-    values = []
-    for name, content in sorted(inputs.items()):
-        common: dict[str, Any] = dict(
-            id=uuid5(root, name), key="input_" + name, measure=uuid5(root, "measure")
-        )
-        if isinstance(content, Quantity):
-            if content.units != "dimensionless":
-                raise ValueError("captured parameters require dimensionless units")
-            values.append(Value(**common, kind="measurement", quantity=content))
-        else:
-            amounts = tuple(content)
-            if len(amounts) != len(plan.periods) or any(
-                not math.isfinite(x) for x in amounts
-            ):
-                raise ValueError(
-                    "captured draws require finite values for every period"
-                )
-            values.append(
-                Value(
-                    **common, kind="flow", flow=_flow(plan, amounts, uuid5(root, name))
-                )
-            )
-    result = _capture(model, plan, scenario_key, values, (), "supplied")
-    captured_inputs(result, plan)
-    return result
+    return _record_inputs(
+        model,
+        plan,
+        _scenario_key(scenario_key),
+        dict(sorted(inputs.items())),
+        (),
+        "supplied",
+    )
 
 
 def captured_inputs(draws: Model, plan: ScenarioPlan):
@@ -284,7 +325,7 @@ def captured_inputs(draws: Model, plan: ScenarioPlan):
         if draws.provenance
         else []
     )
-    if len(matches) != 1 or matches[0].plan.to_data() != plan.to_data():
+    if len(matches) != 1 or matches[0].plan != plan:
         raise ValueError("draws must contain exactly one matching recorded plan")
     record = matches[0]
     parameters, arrays = {}, {}
@@ -308,20 +349,16 @@ def captured_inputs(draws: Model, plan: ScenarioPlan):
             arrays[binding.name] = tuple(cast(float, m.magnitude) for m in movements)
         else:
             raise ValueError("captured input must be a resolved numerical Value")
-    required_arrays = (
-        {"innovations", "noise", "events"}
-        if plan.method.startswith("market.")
-        else {"space_factor", "asset_cap"}
-    )
-    if set(arrays) != required_arrays or (
-        plan.method.startswith("market.")
-        and set(parameters) != {p.name for p in plan.parameters}
+    contract = method(plan.method)
+    if set(arrays) != set(contract.arrays) or set(parameters) != (
+        set(contract.parameters) if contract.scalar_parameters else set()
     ):
         raise ValueError("captured input inventory mismatch")
+    check_inputs(plan.method, parameters, arrays)
     for parameter in plan.parameters:
         captured = (
             arrays[parameter.name]
-            if plan.method == "independent.v2"
+            if not contract.scalar_parameters
             else (parameters[parameter.name],)
         )
         if parameter.quantity is not None and any(
@@ -343,6 +380,10 @@ def realize(model: Model, plan: ScenarioPlan, *, draws: Model) -> Market:
     dates. Forward-derived ratios carry availability at the next period end.
     """
     validate(plan)
+    return _realize(model, plan, draws=draws)
+
+
+def _realize(model, plan, *, draws):
     record, parameters, arrays = captured_inputs(draws, plan)
     if draws.metadata.previous != model.id:
         raise ValueError("draw document must derive from the supplied base Model")
@@ -352,7 +393,7 @@ def realize(model: Model, plan: ScenarioPlan, *, draws: Model) -> Market:
         Value(
             id=uuid5(record.id, "output/" + name),
             key=name,
-            kind="flow",
+            kind=ValueKind.FLOW,
             measure=measure_id,
             flow=_flow(plan, amounts, uuid5(record.id, "output/" + name)),
         )
@@ -366,13 +407,14 @@ def realize(model: Model, plan: ScenarioPlan, *, draws: Model) -> Market:
     )
     formulation["values"].extend(v.to_data() for v in values)
     updated = cast(dict[str, Any], record.to_data())
+    updated["calculation"] = calculation_provenance().to_data()
     updated["outputs"] = [Binding(name=v.key, value=v.id).to_data() for v in values]
     updated["availability"].extend(
         (
             ObservationAvailability(
                 target=Reference(target=m.id),
                 available_at=plan.periods[i + delays.get(v.key, 0)].resolve(
-                    timing="last_day"
+                    timing=PeriodTiming.LAST
                 ),
             ).to_data()
             for v in values
@@ -383,27 +425,27 @@ def realize(model: Model, plan: ScenarioPlan, *, draws: Model) -> Market:
         updated if r["id"] == str(record.id) else r
         for r in data["provenance"]["scenarios"]
     ]
+    data["metadata"] = {**model.metadata.to_data(), "previous": str(model.id)}
+    data["metadata"].pop("id", None)
+    digest = hashlib.sha256(
+        json.dumps(
+            data,
+            ensure_ascii=True,
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        ).encode("utf-8")
+    ).hexdigest()
+    data["metadata"]["id"] = str(uuid5(record.id, "realized-model/v1:" + digest))
     output = model.revise(
         Update(
             definitions=Definitions.from_data(data["definitions"]),
             system=System.from_data(data["system"]),
             provenance=Provenance.from_data(data["provenance"]),
-            metadata=Metadata.from_data(
-                {
-                    **model.metadata.to_data(),
-                    "id": str(
-                        uuid5(
-                            record.id,
-                            json.dumps(
-                                draws.to_data(), sort_keys=True, separators=(",", ":")
-                            ),
-                        )
-                    ),
-                    "previous": str(model.id),
-                }
-            ),
+            metadata=Metadata.from_data(data["metadata"]),
         )
     )
+
     return Market(output, ScenarioRealization.from_data(updated))
 
 
@@ -411,7 +453,8 @@ def _worker(payload):
     """Process boundary accepts and returns only detached dictionaries and strings."""
     model_data, plan_data, key = payload
     model, plan = Model.from_data(model_data), ScenarioPlan.from_data(plan_data)
-    result = realize(model, plan, draws=sample(model, plan, scenario_key=key))
+    validate(plan)
+    result = _generate_one(model, plan, key)
     return result.model.to_data(), result.realization.to_data()
 
 
@@ -432,13 +475,10 @@ def generate(
         or len(set(keys)) != len(keys)
     ):
         raise ValueError("unique nonempty keys and positive worker count required")
-    payloads = [(model.to_data(), plan.to_data(), key) for key in keys]
     if workers == 1:
-        output = map(_worker, payloads)
-        return tuple(
-            Market(Model.from_data(m), ScenarioRealization.from_data(r))
-            for m, r in output
-        )
+        return tuple(_generate_one(model, plan, key) for key in keys)
+    model_data, plan_data = model.to_data(), plan.to_data()
+    payloads = [(model_data, plan_data, key) for key in keys]
     with ProcessPoolExecutor(
         max_workers=workers, mp_context=multiprocessing.get_context("spawn")
     ) as pool:
@@ -446,3 +486,7 @@ def generate(
             Market(Model.from_data(m), ScenarioRealization.from_data(r))
             for m, r in pool.map(_worker, payloads)
         )
+
+
+def _generate_one(model, plan, key):
+    return _realize(model, plan, draws=_sample(model, plan, _scenario_key(key)))

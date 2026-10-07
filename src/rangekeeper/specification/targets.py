@@ -3,23 +3,14 @@
 from collections.abc import Sequence
 from uuid import UUID
 
+from .._schema.enums import ValueKind
 from .._schema.records import Assignment, Reference, Quantity
 from ..model import Model
 
 
-def scalar(value: UUID) -> Reference:
-    """Reference a whole Value; numerical roles require a scalar measurement."""
-    return Reference(target=value)
-
-
-def movement(id: UUID) -> Reference:
-    """Reference a Movement directly by its declaration UUID."""
-    return Reference(target=id)
-
-
 def _select(model: Model, value: UUID, ids: Sequence[UUID] | None):
     item = model.value(value)
-    if item.kind != "flow" or item.flow is None:
+    if item.kind is not ValueKind.FLOW or item.flow is None:
         raise ValueError("a declared Flow shape is required")
     selected = tuple(m.id for m in item.flow.movements) if ids is None else tuple(ids)
     by_id = {m.id: m for m in item.flow.movements}
@@ -29,7 +20,10 @@ def _select(model: Model, value: UUID, ids: Sequence[UUID] | None):
 
 
 def assign_flow(
-    model: Model, value: UUID, *, ids: Sequence[UUID] | None = None
+    model: Model,
+    value: UUID,
+    *,
+    ids: Sequence[UUID] | None = None,
 ) -> tuple[Assignment, ...]:
     """Copy selected recorded magnitudes into explicit assignments in Flow units.
 
@@ -41,7 +35,7 @@ def assign_flow(
         raise ValueError("cannot assign unresolved Movements")
     return tuple(
         Assignment(
-            target=movement(m.id),
+            target=Reference(target=m.id),
             quantity=Quantity(magnitude=m.magnitude, units=flow.units),
         )
         for m in selected
@@ -49,8 +43,11 @@ def assign_flow(
 
 
 def unknown_flow(
-    model: Model, value: UUID, *, ids: Sequence[UUID] | None = None
+    model: Model,
+    value: UUID,
+    *,
+    ids: Sequence[UUID] | None = None,
 ) -> tuple[Reference, ...]:
     """Declare selected Movements unknown even when recorded amounts are present."""
     _, selected = _select(model, value, ids)
-    return tuple(movement(m.id) for m in selected)
+    return tuple(Reference(target=m.id) for m in selected)

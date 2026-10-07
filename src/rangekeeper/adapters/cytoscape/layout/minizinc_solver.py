@@ -5,6 +5,11 @@ preparation, compilation and solving. Complete streamed incumbents survive a
 process timeout; every returned incumbent passes independent arithmetic checks.
 """
 
+from rangekeeper.adapters.cytoscape.layout.result import (
+    ResultMode,
+    ResultStatus,
+    StrictStatus,
+)
 import json
 import os
 import shutil
@@ -174,8 +179,8 @@ def solve(
     deadline = start + time_limit
     data, objects, groups = encode(problem, initial)
     result = Result(
-        "unknown",
-        "unknown",
+        ResultStatus.UNKNOWN,
+        StrictStatus.UNKNOWN,
         solver_version=f"{info['compiler']}; {info['backend']} {info['version']}",
         problem_fingerprint=problem.fingerprint,
     )
@@ -219,7 +224,9 @@ def solve(
                         if group == g
                     }
         findings = check(problem, rectangles)
-        if any(f.code != "exclusion" or result.mode == "strict" for f in findings):
+        if any(
+            f.code != "exclusion" or result.mode == ResultMode.STRICT for f in findings
+        ):
             raise RuntimeError(
                 f"Solver result failed independent geometry check: {findings}"
             )
@@ -231,7 +238,7 @@ def solve(
         result.grids = grids
         result.measurements = measured
         result.findings = [asdict(f) for f in findings]
-        result.status = "feasible"
+        result.status = ResultStatus.FEASIBLE
         result.incumbent_source = "solver"
         # Keep subsequent phase hints consistent with proved earlier objectives.
         for key, column in (
@@ -281,16 +288,20 @@ def solve(
             result.rectangles = deepcopy(initial.rectangles)
             result.grids = deepcopy(initial.grids)
             result.measurements = metrics(problem, result.rectangles, result.grids)
-            result.status = "feasible"
-            result.strict_status = "sat"
+            result.status = ResultStatus.FEASIBLE
+            result.strict_status = StrictStatus.SAT
             result.incumbent_source = "checked_seed"
             state = "SATISFIED"
         else:
             state = run()
             result.strict_status = (
-                "sat"
+                StrictStatus.SAT
                 if result.rectangles
-                else "unsat" if state == "UNSATISFIABLE" else "unknown"
+                else (
+                    StrictStatus.UNSAT
+                    if state == "UNSATISFIABLE"
+                    else StrictStatus.UNKNOWN
+                )
             )
             if initial is not None and state == "UNSATISFIABLE":
                 raise RuntimeError(
@@ -298,7 +309,7 @@ def solve(
                 )
         data["fixed"] = False
         if state == "UNSATISFIABLE" and allow_relaxed:
-            result.mode = "diagnostic"
+            result.mode = ResultMode.DIAGNOSTIC
             data["strict"] = False
             ids = {o.id: i for i, o in enumerate(objects, 1)}
             pairs = collision_pairs(problem, strict=False)
@@ -309,14 +320,22 @@ def solve(
             )
             state = run()
         if not result.rectangles:
-            result.status = "infeasible" if state == "UNSATISFIABLE" else "unknown"
+            result.status = (
+                ResultStatus.INFEASIBLE
+                if state == "UNSATISFIABLE"
+                else ResultStatus.UNKNOWN
+            )
             if state == "UNSATISFIABLE":
                 result.reason = "Infeasible within the supplied canvas, dimensions, spacing and pins"
         elif optimize:
             for index in indices:
                 name = SCORES[index - 1]
                 upper = result.measurements[name]
-                lower = 1 if index == 1 and result.strict_status == "unsat" else 0
+                lower = (
+                    1
+                    if index == 1 and result.strict_status == StrictStatus.UNSAT
+                    else 0
+                )
                 if upper > lower:
                     data["phase"] = index
                     data["incumbent_bound"] = upper
@@ -341,10 +360,10 @@ def solve(
             if len(result.phases) == len(indices) and all(
                 p["proven"] for p in result.phases
             ):
-                result.status = "optimal"
+                result.status = ResultStatus.OPTIMAL
                 result.reason = ""
     if neighborhood is not None and result.rectangles:
-        result.status = "feasible"
+        result.status = ResultStatus.FEASIBLE
         result.reason = "Bounded neighborhood refinement; no global optimum claimed"
         for phase in result.phases:
             phase["neighborhood_proven"] = phase["proven"]

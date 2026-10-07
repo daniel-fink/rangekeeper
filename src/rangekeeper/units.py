@@ -1,23 +1,20 @@
 """Explicit unit compatibility without locale, exchange rates, or a global registry.
 
-The currency catalogue is a pinned py-moneyed 3.0 snapshot (including historical
-codes). Every currency and dwelling count have distinct dimensions. Pint is imported
+The currency catalogue comes from pinned py-moneyed, including historical codes. Every currency and dwelling count have distinct dimensions. Pint is imported
 only when an operation needs parsing; importing the new domain API stays lightweight.
 """
 
 from dataclasses import dataclass
 from functools import lru_cache
-from importlib.resources import files
-import json
+from importlib.metadata import version
+from moneyed import list_all_currencies
 import math
 from typing import ClassVar
 
 from ._schema.records import Quantity
 from .errors import UnitError
 
-_CURRENCIES = tuple(
-    json.loads(files("rangekeeper").joinpath("_currencies.json").read_text())["codes"]
-)
+_CURRENCIES = tuple(currency.code for currency in list_all_currencies())
 
 
 @lru_cache(maxsize=16)
@@ -37,12 +34,14 @@ def _registry(currencies: tuple[str, ...]):
 class UnitSystem:
     """Immutable supported-currency selection with a private lazy Pint registry.
 
-    ``currencies`` may restrict the bundled catalogue; it cannot introduce arbitrary
+    ``currencies`` may restrict the dependency catalogue; it cannot introduce arbitrary
     aliases or exchange rules. Registry objects never escape through this interface.
     """
 
     currencies: tuple[str, ...] = _CURRENCIES
-    implementation: ClassVar[str] = "rangekeeper.units/1;currencies=py-moneyed/3.0"
+    implementation: ClassVar[str] = (
+        f"rangekeeper.units/1;currencies=py-moneyed/{version('py-moneyed')}"
+    )
 
     def __post_init__(self) -> None:
         currencies = tuple(self.currencies)
@@ -75,6 +74,10 @@ class UnitSystem:
         but a quantity must still be explicitly converted. Currencies never convert.
         """
         return self._parse(left).dimensionality == self._parse(right).dimensionality
+
+    def validate_units(self, text: str) -> None:
+        """Require valid unit text without comparing it with a second expression."""
+        self._parse(text)
 
     def multiply(self, left: str, right: str) -> str:
         """Return product units without removing dimensions or changing magnitudes."""

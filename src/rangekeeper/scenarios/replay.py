@@ -6,6 +6,11 @@ from ..model import Model
 from .market import captured_inputs, _flow
 from ._paths import construct_paths
 from .view import Market
+from .implementation import calculation_provenance
+
+
+class ReplayUnavailableError(ValueError):
+    """Stored mathematics is readable but its calculation implementation is unavailable."""
 
 
 def replay(model: Model, *, realization: UUID | None = None) -> Market:
@@ -28,6 +33,10 @@ def replay(model: Model, *, realization: UUID | None = None) -> Market:
         raise ValueError("select exactly one captured realization")
     record = candidates[0]
     _, parameters, arrays = captured_inputs(model, record.plan)
+    if record.calculation is None or record.calculation != calculation_provenance():
+        raise ReplayUnavailableError(
+            "recorded calculation implementation is unavailable for exact replay"
+        )
     paths, _ = construct_paths(record.plan.method, parameters, arrays)
     if {o.name for o in record.outputs} != set(paths):
         raise ValueError("captured output inventory mismatch")

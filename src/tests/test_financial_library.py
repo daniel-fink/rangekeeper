@@ -1,5 +1,17 @@
 """Independent finance oracles and PyXIRR integration boundary checks."""
 
+from rangekeeper.duration import Frequency, PeriodTiming, DayCount
+from rangekeeper.model.flow import MissingValueHandling
+from rangekeeper.calculations.series import (
+    AlignmentJoin,
+    AggregationReducer,
+    ResamplingReduction,
+    MeanWeighting,
+)
+from rangekeeper.calculations.projection import ProjectionMethod
+from rangekeeper.account import Balance, CurrentInterest, InterestTreatment
+from rangekeeper._schema.enums import ValueKind
+
 from rangekeeper.model.flow import Flow
 
 from datetime import date, datetime
@@ -20,10 +32,18 @@ from rangekeeper.duration.calendar import year_fraction
 @pytest.mark.parametrize(
     "convention,periods,valuation_periods",
     [
-        ("actual/365", (30 / 365, 59 / 365, 366 / 365), (0, 45 / 365, 366 / 365)),
-        ("actual/360", (30 / 360, 59 / 360, 366 / 360), (0, 45 / 360, 366 / 360)),
-        ("actual/actual", (30 / 366, 59 / 366, 1), (0, 45 / 366, 1)),
-        ("30/360", (29 / 360, 58 / 360, 1), (0, 44 / 360, 1)),
+        (
+            DayCount.ACTUAL_365,
+            (30 / 365, 59 / 365, 366 / 365),
+            (0, 45 / 365, 366 / 365),
+        ),
+        (
+            DayCount.ACTUAL_360,
+            (30 / 360, 59 / 360, 366 / 360),
+            (0, 45 / 360, 366 / 360),
+        ),
+        (DayCount.ACTUAL_ACTUAL, (30 / 366, 59 / 366, 1), (0, 45 / 366, 1)),
+        (DayCount.THIRTY_360, (29 / 360, 58 / 360, 1), (0, 44 / 360, 1)),
     ],
 )
 @pytest.mark.parametrize("rate", [0, 0.1, -0.1])
@@ -50,18 +70,18 @@ def test_explicit_valuation_before_between_and_after_payments(
 
 def test_day_count_boundaries_and_reversed_dates():
     start, end = date(2019, 12, 31), date(2020, 3, 1)
-    assert year_fraction(start, end, convention="actual/actual") == pytest.approx(
-        1 / 365 + 60 / 366
-    )
-    assert year_fraction(end, start, convention="actual/actual") == pytest.approx(
-        -(1 / 365 + 60 / 366)
-    )
     assert year_fraction(
-        date(2020, 1, 31), date(2020, 2, 29), convention="30/360"
+        start, end, convention=DayCount.ACTUAL_ACTUAL
+    ) == pytest.approx(1 / 365 + 60 / 366)
+    assert year_fraction(
+        end, start, convention=DayCount.ACTUAL_ACTUAL
+    ) == pytest.approx(-(1 / 365 + 60 / 366))
+    assert year_fraction(
+        date(2020, 1, 31), date(2020, 2, 29), convention=DayCount.THIRTY_360
     ) == pytest.approx(29 / 360)
     with pytest.raises(TypeError, match="calendar date"):
-        year_fraction(datetime(2020, 1, 1), end, convention="actual/365")
-    with pytest.raises(ValueError, match="unsupported day count"):
+        year_fraction(datetime(2020, 1, 1), end, convention=DayCount.ACTUAL_365)
+    with pytest.raises(TypeError, match="DayCount"):
         year_fraction(start, end, convention="unsupported")
 
 
@@ -126,10 +146,10 @@ def test_repeated_payment_dates_are_retained():
 @pytest.mark.parametrize(
     "convention,period",
     [
-        ("actual/365", 366 / 365),
-        ("actual/360", 366 / 360),
-        ("actual/actual", 1),
-        ("30/360", 1),
+        (DayCount.ACTUAL_365, 366 / 365),
+        (DayCount.ACTUAL_360, 366 / 360),
+        (DayCount.ACTUAL_ACTUAL, 1),
+        (DayCount.THIRTY_360, 1),
     ],
 )
 def test_irr_uses_selected_day_count(convention, period):

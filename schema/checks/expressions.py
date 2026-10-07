@@ -12,7 +12,7 @@ import re
 import subprocess
 import sys
 from tempfile import TemporaryDirectory
-from uuid import NAMESPACE_URL, uuid5
+from uuid import UUID, NAMESPACE_URL, uuid5
 
 from jsonschema import FormatChecker
 from jsonschema.validators import validator_for
@@ -25,12 +25,46 @@ import _library
 
 from rangekeeper.errors import ContractError
 from rangekeeper._validation import require_unique
-from rangekeeper.model._expression import (
-    build_scope,
+from rangekeeper.model.scope import build_scope as _build_scope
+from rangekeeper.model.expression.validation import (
     infer_expression_domain,
-    matches_domain,
     validate_constraint_predicates,
+    validate_function_signature,
 )
+from rangekeeper.model.expression.domains import compare_domains, DomainCompatibility
+
+
+def matches_domain(actual, expected, *, scope):
+    return (
+        compare_domains(actual, expected, scope=scope) is DomainCompatibility.COMPATIBLE
+    )
+
+
+from dataclasses import replace
+from types import MappingProxyType
+
+
+def build_scope(document):
+    scope = _build_scope(document)
+    for function in scope.functions.values():
+        validate_function_signature(function, scope=scope)
+    inputs = document.get("input_domains") or []
+    return replace(
+        scope,
+        values=MappingProxyType(
+            {**scope.values, **{UUID(value["id"]): value for value in inputs}}
+        ),
+        targets=MappingProxyType(
+            {**scope.targets, **{UUID(value["id"]): (value, None) for value in inputs}}
+        ),
+        domains=MappingProxyType(
+            {
+                **scope.domains,
+                **{UUID(value["id"]): value["domain"] for value in inputs},
+            }
+        ),
+        identities=scope.identities | {UUID(value["id"]) for value in inputs},
+    )
 
 
 def validate_fixture_constraints(constraints, expressions, *, scope):

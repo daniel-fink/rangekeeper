@@ -1,12 +1,12 @@
 metadata:
-  id: 790427e1-fbd3-52ed-89d4-13cf26e074f7
-  schema_version: 0.3.0
+  id: 83bd4dab-671a-5caa-b810-72a55f38e90d
+  schema_version: 0.4.0
   name: Synthetic inverse Run
   description: New synthetic 0.3.0 conformance fixture. No evaluator or solver produced
     this record; historical Runs are unchanged.
-specification: 5f5be6f0-a423-5a22-89f8-bc83ac1f9d96
+specification: 695e2d3b-fd66-5e67-8720-1f50d68adea1
 outputs:
-- ff54f83e-3e9d-58c6-bc47-9b2e7338229f
+- 57f8d97e-d795-55f0-87fc-ae67180269fd
 report:
   status:
     completion: completed
@@ -24,7 +24,7 @@ report:
     message: 'Synthetic expected residual: left side minus right side in AUD/year,
       without scaling; acceptance is absolute residual <= tolerance. Values are fixture
       expectations, not measured execution diagnostics.'
-    document: ff54f83e-3e9d-58c6-bc47-9b2e7338229f
+    document: 57f8d97e-d795-55f0-87fc-ae67180269fd
     target: d526182d-2216-5862-88b9-b5bdd5e804a5
     residual:
       magnitude: 0
@@ -37,7 +37,7 @@ report:
     message: 'Synthetic expected residual: left side minus right side in AUD/year,
       without scaling; acceptance is absolute residual <= tolerance. Values are fixture
       expectations, not measured execution diagnostics.'
-    document: ff54f83e-3e9d-58c6-bc47-9b2e7338229f
+    document: 57f8d97e-d795-55f0-87fc-ae67180269fd
     target: 02ff78c0-ec20-535d-b997-ac16d64fd944
     residual:
       magnitude: 0
@@ -49,11 +49,11 @@ report:
   - kind: validation
     at: '2026-10-01T00:00:00Z'
     message: Hypothetical validation of the composed scalar Specification.
-    document: 5f5be6f0-a423-5a22-89f8-bc83ac1f9d96
+    document: 695e2d3b-fd66-5e67-8720-1f50d68adea1
   - kind: solve
     message: Hypothetical scalar resolution; this fixture does not claim observed
       execution.
   - kind: publication
     at: '2026-10-01T00:00:01Z'
     message: Hypothetical acceptance of the expected scalar snapshot.
-    document: ff54f83e-3e9d-58c6-bc47-9b2e7338229f
+    document: 57f8d97e-d795-55f0-87fc-ae67180269fd

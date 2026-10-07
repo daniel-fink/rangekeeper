@@ -1,5 +1,19 @@
 """Independent temporal/calculation oracles and explicit migration corrections."""
 
+from rangekeeper.model.content import ContentKind
+
+from rangekeeper.duration import Frequency, PeriodTiming, DayCount
+from rangekeeper.model.flow import MissingValueHandling
+from rangekeeper.calculations.series import (
+    AlignmentJoin,
+    AggregationReducer,
+    ResamplingReduction,
+    MeanWeighting,
+)
+from rangekeeper.calculations.projection import ProjectionMethod, PaddingMode
+from rangekeeper.account import Balance, CurrentInterest, InterestTreatment
+from rangekeeper._schema.enums import ValueKind, DistributionFamily
+
 from rangekeeper.calculations.account import Account
 from rangekeeper.model.distribution import Distribution
 from rangekeeper.model.flow import Flow
@@ -35,7 +49,7 @@ from rangekeeper.io.memory import MemoryStore
 
 def annual(values, *, units="AUD"):
     return Flow.from_periods(
-        make_periods(date(2020, 1, 1), frequency="year", count=len(values)),
+        make_periods(date(2020, 1, 1), frequency=Frequency.YEAR, count=len(values)),
         values,
         units=units,
     )
@@ -108,19 +122,25 @@ def test_property_detachment_and_rejections():
 def test_model_flow_content_store_and_stream():
     flow = annual([0, None, 3])
     measure = Measure(id=uuid4(), code="rent", name="Rent", units=flow.units)
-    a = Value(id=uuid4(), key="rent", kind="flow", measure=measure.id, flow=flow)
+    a = Value(
+        id=uuid4(), key="rent", kind=ValueKind.FLOW, measure=measure.id, flow=flow
+    )
     b = Value(
-        id=uuid4(), key="other", kind="flow", measure=measure.id, flow=flow.clone()
+        id=uuid4(),
+        key="other",
+        kind=ValueKind.FLOW,
+        measure=measure.id,
+        flow=flow.clone(),
     )
     prop = Value(
         id=uuid4(),
         key="source",
-        kind="property",
+        kind=ValueKind.PROPERTY,
         content=encode({"zero": 0, "false": False}),
     )
     entity = Entity(id=uuid4(), characteristics=Characteristics(values=(a, b, prop)))
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
+        metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
         definitions=Definitions(measures=(measure,)),
         system=System(entities=(entity,)),
     )
@@ -140,7 +160,9 @@ def test_model_flow_content_store_and_stream():
 
     restored_yaml = yaml.loads(yaml.dumps(model), kind=Model)
     assert restored_yaml.to_data() == model.to_data()
-    assert type(restored_yaml.value(a.id).flow.movements[0].period.start) is date
+    assert (
+        type(restored_yaml.value(a.id).flow.movements[0].period.start_inclusive) is date
+    )
     data = restored.to_data()
     data["system"]["entities"][0]["characteristics"]["values"][0]["flow"]["movements"][
         0
@@ -173,17 +195,23 @@ def test_model_flow_content_store_and_stream():
     ],
 )
 def test_calendar_frequencies(frequency, count, end):
-    periods = make_periods(date(2020, 1, 1), frequency=frequency, count=count)
-    assert periods[-1].end == end and periods[0].end == periods[1].start
+    periods = make_periods(
+        date(2020, 1, 1), frequency=Frequency(frequency), count=count
+    )
+    assert periods[-1].end == end and periods[0].end == periods[1].start_inclusive
 
 
 def test_month_anchor_and_leap_year():
-    periods = make_periods(date(2020, 1, 31), frequency="month", count=2)
+    periods = make_periods(date(2020, 1, 31), frequency=Frequency.MONTH, count=2)
     assert periods[0].end == date(2020, 2, 29)
     assert periods[1].end == date(2020, 3, 31)
-    assert offset(date(2020, 3, 31), frequency="month", count=-1) == date(2020, 2, 29)
+    assert offset(date(2020, 3, 31), frequency=Frequency.MONTH, count=-1) == date(
+        2020, 2, 29
+    )
     assert (
-        year_fraction(date(2020, 1, 1), date(2021, 1, 1), convention="actual/actual")
+        year_fraction(
+            date(2020, 1, 1), date(2021, 1, 1), convention=DayCount.ACTUAL_ACTUAL
+        )
         == 1
     )
 
@@ -227,12 +255,12 @@ def test_units_and_factor_product():
 
 
 def test_explicit_calendar_integration():
-    periods = make_periods(date(2020, 1, 1), frequency="month", count=2)
+    periods = make_periods(date(2020, 1, 1), frequency=Frequency.MONTH, count=2)
     rates = Flow.from_periods(periods, [3660, 3660], units="AUD/year")
     assert [
         s.magnitude
         for s in series.integrate(
-            rates, day_count="actual/actual", units="AUD"
+            rates, day_count=DayCount.ACTUAL_ACTUAL, units="AUD"
         ).movements
     ] == pytest.approx([310, 290])
 
@@ -242,22 +270,31 @@ def test_missing_alignment_and_coverage():
     b = annual([2, 3, 4])
     with pytest.raises(ValueError):
         series.aggregate((a, b))
-    result = series.aggregate((a, b), missing="propagate")
+    result = series.aggregate((a, b), missing=MissingValueHandling.PROPAGATE)
     assert [s.magnitude for s in result.flow.movements] == [
         3,
         None,
         4,
     ] and result.coverage == (1, 0.5, 1)
-    assert series.aggregate((a, b), missing="skip").flow.movements[1].magnitude == 3
     assert (
-        series.aggregate((annual([None]), annual([None])), missing="skip")
+        series.aggregate((a, b), missing=MissingValueHandling.SKIP)
+        .flow.movements[1]
+        .magnitude
+        == 3
+    )
+    assert (
+        series.aggregate(
+            (annual([None]), annual([None])), missing=MissingValueHandling.SKIP
+        )
         .flow.movements[0]
         .magnitude
         is None
     )
     with pytest.raises(ValueError):
         series.align((a, annual([1])))
-    aligned = series.align((a, annual([1])), join="union", missing="zero")
+    aligned = series.align(
+        (a, annual([1])), join=AlignmentJoin.UNION, missing=MissingValueHandling.ZERO
+    )
     assert (
         aligned.flows[0].movements[1].magnitude is None
         and aligned.flows[1].movements[1].magnitude == 0
@@ -270,10 +307,15 @@ def test_resample_complete_calendar_and_explicit_reduction():
         [10, 20, 40],
         units="kWh",
     )
-    periods = make_periods(date(2020, 1, 1), frequency="month", count=3)
+    periods = make_periods(date(2020, 1, 1), frequency=Frequency.MONTH, count=3)
     with pytest.raises(ValueError):
-        series.resample(flow, periods=periods, reduction="sum")
-    result = series.resample(flow, periods=periods, reduction="sum", missing="zero")
+        series.resample(flow, periods=periods, reduction=ResamplingReduction.SUM)
+    result = series.resample(
+        flow,
+        periods=periods,
+        reduction=ResamplingReduction.SUM,
+        missing=MissingValueHandling.ZERO,
+    )
     assert [s.magnitude for s in result.flow.movements] == [
         30,
         0,
@@ -284,13 +326,13 @@ def test_resample_complete_calendar_and_explicit_reduction():
         [date(2020, 1, 1), date(2020, 1, 31)], [10, 20], units="kWh"
     )
     assert (
-        series.resample(stocks, periods=periods[:1], reduction="last")
+        series.resample(stocks, periods=periods[:1], reduction=ResamplingReduction.LAST)
         .flow.movements[0]
         .magnitude
         == 20
     )
     assert (
-        series.resample(stocks, periods=periods[:1], reduction="sum")
+        series.resample(stocks, periods=periods[:1], reduction=ResamplingReduction.SUM)
         .flow.movements[0]
         .magnitude
         == 30
@@ -299,31 +341,33 @@ def test_resample_complete_calendar_and_explicit_reduction():
 
 @pytest.mark.parametrize("kind", ["uniform", "triangular", "pert"])
 def test_distribution_sampling_and_mass(kind):
-    dist = Distribution.symmetric(kind=kind, mean=2, residual=1)
+    dist = Distribution.symmetric(kind=DistributionFamily(kind), mean=2, residual=1)
     assert sum(dist.mass([1, 1.5, 2, 2.5, 3])) == pytest.approx(1)
     assert dist.sample(size=5, generator=np.random.default_rng(7)) == dist.sample(
         size=5, generator=np.random.default_rng(7)
     )
-    assert Distribution.symmetric(kind=kind, mean=2, residual=0).sample(
-        size=3, generator=np.random.default_rng(7)
-    ) == (2, 2, 2)
+    assert Distribution.symmetric(
+        kind=DistributionFamily(kind), mean=2, residual=0
+    ).sample(size=3, generator=np.random.default_rng(7)) == (2, 2, 2)
     with pytest.raises(ValueError):
         dist.mass([1, 3, 2])
 
 
 def test_projection_and_partition_invariants():
-    assert projection.project_values(100, count=3, method="linear", rate=2) == (
+    assert projection.project_values(
+        100, count=3, method=ProjectionMethod.LINEAR, rate=2
+    ) == (
         100,
         102,
         104,
     )
     assert projection.project_values(
-        100, count=3, method="compound", rate=0.1
+        100, count=3, method=ProjectionMethod.COMPOUND, rate=0.1
     ) == pytest.approx((100, 110, 121))
     assert projection.pad(
-        [2, 3], before=1, after=2, left="unitize", right="extend"
+        [2, 3], before=1, after=2, left=PaddingMode.UNITIZE, right=PaddingMode.EXTEND
     ) == (1, 2, 3, 3, 3)
-    periods = make_periods(date(2020, 1, 1), frequency="month", count=7)
+    periods = make_periods(date(2020, 1, 1), frequency=Frequency.MONTH, count=7)
     flow = projection.allocate(
         Quantity(magnitude=100, units="kg"),
         periods=periods,
@@ -362,7 +406,16 @@ def test_account_interest_modes(method, expected):
         annual([0, 0]),
         starting=Quantity(magnitude=100, units="AUD"),
         rate=0.1,
-        method=method,
+        treatment=(
+            InterestTreatment.SEPARATE
+            if method == "simple"
+            else InterestTreatment.FINANCED
+        ),
+        current_interest=(
+            CurrentInterest.INCLUDED
+            if method == "capitalized"
+            else CurrentInterest.EXCLUDED
+        ),
     )
     assert result.closing.movements[-1].magnitude == pytest.approx(expected)
     if method != "simple":
@@ -381,7 +434,7 @@ def test_account_overdraft_and_timing():
             annual([10]),
             starting=Quantity(magnitude=100, units="AUD"),
             rate=0.1,
-            timing=timing,
+            balance=Balance.CLOSING if timing == "advance" else Balance.OPENING,
         )
         assert result.interest.movements[0].magnitude == pytest.approx(interest)
 
@@ -393,8 +446,8 @@ def test_adapter_exports_are_detached():
     frame = po.to_frame(flow)
     assert po.from_frame(frame, units=flow.units) == flow
     cells = frame.to_dicts()
-    cells[0]["period"]["start"] = "2000-01-01"
-    assert flow.movements[0].period.start == date(2020, 1, 1)
+    cells[0]["period"]["start_inclusive"] = "2000-01-01"
+    assert flow.movements[0].period.start_inclusive == date(2020, 1, 1)
 
 
 def test_dynamics_fixed_inputs():
@@ -420,18 +473,24 @@ def test_dynamics_fixed_inputs():
 def test_weighted_rates_and_partial_period_helpers():
     from rangekeeper.duration import periods_between, cover
 
-    periods = make_periods(date(2020, 1, 1), frequency="month", count=2)
+    periods = make_periods(date(2020, 1, 1), frequency=Frequency.MONTH, count=2)
     rates = Flow.from_periods(periods, (10, 20), units="AUD/year")
     target = (make_period(date(2020, 1, 1), date(2020, 3, 1)),)
     with pytest.raises(ValueError, match="weighting"):
-        series.resample(rates, periods=target, reduction="mean")
+        series.resample(rates, periods=target, reduction=ResamplingReduction.MEAN)
     result = series.resample(
-        rates, periods=target, reduction="mean", weighting="elapsed"
+        rates,
+        periods=target,
+        reduction=ResamplingReduction.MEAN,
+        weighting=MeanWeighting.ELAPSED,
     )
     assert result.flow.movements[0].magnitude == pytest.approx((31 * 10 + 29 * 20) / 60)
     assert (
         series.resample(
-            rates, periods=target, reduction="mean", weighting="observations"
+            rates,
+            periods=target,
+            reduction=ResamplingReduction.MEAN,
+            weighting=MeanWeighting.OBSERVATIONS,
         )
         .flow.movements[0]
         .magnitude
@@ -439,13 +498,13 @@ def test_weighted_rates_and_partial_period_helpers():
     )
     assert cover(periods).end == periods[-1].end
     with pytest.raises(ValueError, match="partial"):
-        periods_between(date(2020, 1, 1), date(2020, 2, 2), frequency="month")
+        periods_between(date(2020, 1, 1), date(2020, 2, 2), frequency=Frequency.MONTH)
     assert (
         len(
             periods_between(
                 date(2020, 1, 1),
                 date(2020, 2, 2),
-                frequency="month",
+                frequency=Frequency.MONTH,
                 include_partial=True,
             )
         )
@@ -457,7 +516,9 @@ def test_weighted_rates_and_partial_period_helpers():
         3,
     ]
     assert (
-        series.aggregate((annual([1, 4]), annual([3, 2])), reducer="min")
+        series.aggregate(
+            (annual([1, 4]), annual([3, 2])), reducer=AggregationReducer.MIN
+        )
         .flow.movements[1]
         .magnitude
         == 2
@@ -487,13 +548,19 @@ def test_polars_preserves_explicit_null_and_omission():
                     "id": str(uuid4()),
                     "key": "a",
                     "date": None,
-                    "period": {"start": "2020-01-01", "end": "2020-01-02"},
+                    "period": {
+                        "start_inclusive": "2020-01-01",
+                        "end_exclusive": "2020-01-02",
+                    },
                     "claims": None,
                 },
                 {
                     "id": str(uuid4()),
                     "key": "b",
-                    "period": {"start": "2020-01-02", "end": "2020-01-03"},
+                    "period": {
+                        "start_inclusive": "2020-01-02",
+                        "end_exclusive": "2020-01-03",
+                    },
                     "magnitude": None,
                 },
             ],
@@ -506,7 +573,7 @@ def test_invalid_timezone_is_a_domain_validation_error():
     with pytest.raises(ValueError, match="property content"):
         decode(
             PropertyContent(
-                kind="datetime",
+                kind=ContentKind.DATETIME,
                 text="2020-01-01T00:00:00+00:00",
                 zone="Invalid/Nowhere",
             )

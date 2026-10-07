@@ -1,5 +1,8 @@
 """Sequential scalar attempts and batches over immutable revision stores."""
 
+from rangekeeper.run import ImplementationKind
+from rangekeeper.run import StepKind
+
 from datetime import datetime, timezone
 import json
 import time
@@ -27,6 +30,7 @@ from ..run import Run, RunRecord, validate as validate_run
 from ..specification import Composition, Specification
 from ..units import UnitSystem
 from . import acceptance, compiler, preparation, publication, settings
+from .implementation import fingerprint
 from .backends import Backend
 from .backends.base import Result
 from .errors import (
@@ -56,6 +60,8 @@ class Attempt:
         tolerances: acceptance.Tolerances,
         specification: Specification,
         view: Composition | ValidationError,
+        *,
+        resolver=None,
     ) -> None:
         self.store, self.backend, self.units, self.tolerances = (
             store,
@@ -64,25 +70,30 @@ class Attempt:
             tolerances,
         )
         self.specification, self.view = specification, view
+        self.resolver = resolver if resolver is not None else store
         self.run_id, self.started, self.clock = uuid4(), _now(), time.monotonic()
         self.findings: list[Diagnostic] = []
         self.trace: list[Step] = []
         self.implementations = [
-            Implementation(kind="compiler", name="rangekeeper.scalar", version="1")
+            Implementation(
+                kind=ImplementationKind.COMPILER,
+                name="rangekeeper.scalar",
+                version=fingerprint("compiler"),
+            )
         ]
         self.limits: settings.Limits | None = None
         self.prepared: preparation.Prepared | None = None
         self.result: Result | None = None
         self.output: Model | None = None
-        self.completion: CompletionStatus = "failed"
-        self.solution: SolutionStatus = "not_assessed"
+        self.completion: CompletionStatus = CompletionStatus.FAILED
+        self.solution: SolutionStatus = SolutionStatus.NOT_ASSESSED
 
     def diagnose(
         self,
         code: str,
         message: str,
         *,
-        severity: Severity = "info",
+        severity: Severity = Severity.INFO,
         document: UUID | Unset = UNSET,
         target: UUID | Unset = UNSET,
     ) -> None:
@@ -113,11 +124,16 @@ class Attempt:
             result = self.solve(problem)
             self.accept(result)
         except AttemptDeadline as error:
-            self.completion, self.solution = "limited", "not_assessed"
-            self.diagnose("attempt_deadline", str(error), severity="warning")
+            self.completion, self.solution = (
+                CompletionStatus.LIMITED,
+                SolutionStatus.NOT_ASSESSED,
+            )
+            self.diagnose("attempt_deadline", str(error), severity=Severity.WARNING)
         except ValidationError as error:
-            self.completion, self.solution = "failed", (
-                "not_assessed" if self.prepared is None else "unknown"
+            self.completion, self.solution = CompletionStatus.FAILED, (
+                SolutionStatus.NOT_ASSESSED
+                if self.prepared is None
+                else SolutionStatus.UNKNOWN
             )
             self.diagnose(
                 (
@@ -126,16 +142,18 @@ class Attempt:
                     else "numerical_rejection"
                 ),
                 str(error),
-                severity="error",
+                severity=Severity.ERROR,
             )
         except (UnsupportedProblem, UnitError) as error:
-            self.completion, self.solution = "failed", (
-                "not_assessed" if self.result is None else "unknown"
+            self.completion, self.solution = CompletionStatus.FAILED, (
+                SolutionStatus.NOT_ASSESSED
+                if self.result is None
+                else SolutionStatus.UNKNOWN
             )
             self.diagnose(
                 "unsupported_capability",
                 str(error),
-                severity="error",
+                severity=Severity.ERROR,
                 document=(
                     error.document
                     if isinstance(error, UnsupportedProblem) and error.document
@@ -148,10 +166,13 @@ class Attempt:
                 ),
             )
         except BackendUnavailable as error:
-            self.diagnose("backend_unavailable", str(error), severity="error")
+            self.diagnose("backend_unavailable", str(error), severity=Severity.ERROR)
         except (NumericalError, ArithmeticError) as error:
-            self.completion, self.solution = "failed", "unknown"
-            self.diagnose("numerical_failure", str(error), severity="error")
+            self.completion, self.solution = (
+                CompletionStatus.FAILED,
+                SolutionStatus.UNKNOWN,
+            )
+            self.diagnose("numerical_failure", str(error), severity=Severity.ERROR)
 
         return self.finish()
 
@@ -163,14 +184,14 @@ class Attempt:
         self.findings.extend(adjustments)
         self.prepared = preparation.prepare(
             self.view,
-            resolver=self.store,
+            resolver=self.resolver,
             units=self.units,
             checkpoint=self.checkpoint,
         )
         self.checkpoint()
         self.trace.append(
             Step(
-                kind="validation",
+                kind=StepKind.VALIDATION,
                 at=_now(),
                 document=self.specification.id,
                 message="Validated additive composition, exact Model pin, scalar roles and recorded units.",
@@ -187,7 +208,7 @@ class Attempt:
             raise UnsupportedProblem("expanded constraint limit exceeded")
         self.trace.append(
             Step(
-                kind="formulation",
+                kind=StepKind.FORMULATION,
                 at=_now(),
                 message=f"Expanded {len(self.prepared.references)} scalar/Movement symbols and {len(problem.rows)} affine constraints; limits {self.limits.symbol_limit}/{self.limits.constraint_limit}.",
             )
@@ -231,7 +252,7 @@ class Attempt:
         )
         self.trace.append(
             Step(
-                kind="solve",
+                kind=StepKind.SOLVE,
                 at=_now(),
                 message=f"Backend returned {self.result.termination}; independent acceptance follows when a candidate exists.",
             )
@@ -247,12 +268,14 @@ class Attempt:
             "iterationLimit",
             "objectiveLimit",
         }
-        self.completion = "limited" if limited else "completed"
-        self.solution = "unknown"
+        self.completion = (
+            CompletionStatus.LIMITED if limited else CompletionStatus.COMPLETED
+        )
+        self.solution = SolutionStatus.UNKNOWN
         if result.termination == "provenInfeasible":
-            self.solution = "infeasible"
+            self.solution = SolutionStatus.INFEASIBLE
         elif result.termination in {"error", "interrupted"}:
-            self.completion = "failed"
+            self.completion = CompletionStatus.FAILED
         elif result.candidate is not None:
             candidate = publication.candidate(
                 self.prepared, result.candidate, run_id=self.run_id
@@ -262,14 +285,14 @@ class Attempt:
             )
             self.implementations.append(
                 Implementation(
-                    kind="evaluator",
+                    kind=ImplementationKind.EVALUATOR,
                     name="rangekeeper.scalar.original_expressions",
-                    version="1",
+                    version=fingerprint("evaluator"),
                 )
             )
             self.findings.extend(checked.diagnostics)
             if checked.accepted:
-                self.output, self.solution = candidate, "feasible"
+                self.output, self.solution = candidate, SolutionStatus.FEASIBLE
                 self.diagnose(
                     "feasible_candidate",
                     "Original expressions, assignments and bounds accepted. No uniqueness or optimization claim is made.",
@@ -285,14 +308,14 @@ class Attempt:
                             else "uniqueness_not_assessed"
                         ),
                         f"Numerical equality rank {rank} for {count} unknowns (NumPy SVD default threshold). Bounds may restrict freedom; this is one accepted candidate, not a uniqueness proof.",
-                        severity="warning",
+                        severity=Severity.WARNING,
                     )
             else:
-                self.completion = "failed"
+                self.completion = CompletionStatus.FAILED
                 self.diagnose(
                     "numerical_rejection",
                     "Serialized candidate failed independent acceptance; no output was published.",
-                    severity="error",
+                    severity=Severity.ERROR,
                 )
 
     def finish(self) -> Run:
@@ -318,12 +341,12 @@ class Attempt:
             self.diagnose(
                 "settings_adjusted",
                 "relative_tolerance and iteration_limit were not applied by a completed solver invocation; time_limit applies to the parent attempt budget when preparation established it. No infeasibility follows.",
-                severity="warning",
+                severity=Severity.WARNING,
             )
         if self.output is not None:
             self.trace.append(
                 Step(
-                    kind="publication",
+                    kind=StepKind.PUBLICATION,
                     at=_now(),
                     document=self.output.id,
                     message="Accepted serialized immutable Model; store output before finalized Run.",
@@ -350,7 +373,7 @@ class Attempt:
                     ),
                     diagnostics=tuple(self.findings),
                     trace=tuple(self.trace),
-                    decisions=() if self.prepared is None else self.prepared.decisions,
+                    outcomes=() if self.prepared is None else self.prepared.outcomes,
                 ),
             )
         )

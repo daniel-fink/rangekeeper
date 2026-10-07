@@ -5,14 +5,22 @@ from collections.abc import Sequence
 from datetime import date
 from uuid import UUID, uuid4
 import math
-from typing import TYPE_CHECKING, Literal, cast
+from typing import TYPE_CHECKING, cast
 from .._records import UNSET
+from enum import Enum, unique
 
 if TYPE_CHECKING:
     from .._schema.records import Flow, Movement, Period, Quantity
     from ..duration.period import PeriodTiming
     from ..units import UnitSystem
-Missing = Literal["error", "propagate", "skip", "zero"]
+
+
+@unique
+class MissingValueHandling(Enum):
+    ERROR = "error"
+    PROPAGATE = "propagate"
+    SKIP = "skip"
+    ZERO = "zero"
 
 
 class MovementBehavior:
@@ -36,8 +44,8 @@ class MovementBehavior:
         if movement.period is not None:
             return (
                 "period",
-                movement.period.start.isoformat(),
-                movement.period.end.isoformat(),
+                movement.period.start_inclusive.isoformat(),
+                movement.period.end_exclusive.isoformat(),
                 None if movement.date is None else movement.date.isoformat(),
             )
         if movement.date is None:
@@ -51,10 +59,10 @@ class MovementBehavior:
         changed, and payment outside its coverage period is permitted.
         """
         movement = cast("Movement", self)
-        from ..duration.calendar import require_date
+        from ..duration.calendar import require_date, PeriodTiming
 
-        if timing not in (None, "start", "last_day", "end"):
-            raise ValueError("timing must be start, last_day or end")
+        if timing is not None and not isinstance(timing, PeriodTiming):
+            raise TypeError("timing must be a PeriodTiming")
         if movement.date is not None:
             return require_date(movement.date)
         if movement.period is None:
@@ -103,9 +111,12 @@ class FlowBehavior:
             mode = period_mode
             if movement.period is not None:
                 movement.period.check()
-                if previous_end is not None and movement.period.start < previous_end:
+                if (
+                    previous_end is not None
+                    and movement.period.start_inclusive < previous_end
+                ):
                     raise ValueError("Flow periods overlap or are out of order")
-                previous_end = movement.period.end
+                previous_end = movement.period.end_exclusive
             else:
                 assert movement.date is not None
                 if previous is not None and movement.date < previous:
@@ -277,7 +288,9 @@ class FlowBehavior:
         flow = cast("Flow", self)
         return flow.scale(-1)
 
-    def total(self, *, missing: Missing = "error") -> Quantity | None:
+    def total(
+        self, *, missing: MissingValueHandling = MissingValueHandling.ERROR
+    ) -> Quantity | None:
         """Sum entries over time, retaining their units.
 
         This is a numerical sum. The model determines whether summation expresses
@@ -287,13 +300,19 @@ class FlowBehavior:
         from .._schema.records import Quantity
 
         flow.check()
-        if missing not in ("error", "propagate", "skip"):
+        if not isinstance(missing, MissingValueHandling):
+            raise TypeError("missing must be a MissingValueHandling")
+        if missing not in (
+            MissingValueHandling.ERROR,
+            MissingValueHandling.PROPAGATE,
+            MissingValueHandling.SKIP,
+        ):
             raise ValueError("total missing must be error, propagate or skip")
         values = [s.magnitude for s in flow.movements if s.magnitude is not None]
         if len(values) != len(flow.movements):
-            if missing == "error":
+            if missing == MissingValueHandling.ERROR:
                 raise ValueError("cannot total unresolved movements")
-            if missing == "propagate" or not values:
+            if missing == MissingValueHandling.PROPAGATE or not values:
                 return None
         return Quantity(magnitude=math.fsum(values), units=flow.units)
 
@@ -316,9 +335,9 @@ class FlowBehavior:
                     selected.append(movement)
             else:
                 period = movement.period
-                if period.end <= start or period.start >= end:
+                if period.end_exclusive <= start or period.start_inclusive >= end:
                     continue
-                if period.start < start or period.end > end:
+                if period.start_inclusive < start or period.end_exclusive > end:
                     raise ValueError(
                         "trim crosses a movement period; allocate explicitly"
                     )
@@ -360,7 +379,7 @@ class FlowBehavior:
         *,
         on: date | None = None,
         timing: PeriodTiming | None = None,
-        missing: Missing = "error",
+        missing: MissingValueHandling = MissingValueHandling.ERROR,
     ) -> Flow:
         """Place one total on a selected date and retain input Claims.
 
@@ -372,6 +391,14 @@ class FlowBehavior:
         from .._schema.records import Movement
         from ..duration.calendar import require_date
 
+        from ..duration.calendar import PeriodTiming
+
+        if timing is not None and not isinstance(timing, PeriodTiming):
+            raise TypeError("timing must be a PeriodTiming")
+        if not isinstance(missing, MissingValueHandling):
+            raise TypeError("missing must be a MissingValueHandling")
+        if missing is MissingValueHandling.ZERO:
+            raise ValueError("total missing must be error, propagate or skip")
         if on is not None and timing is not None:
             raise ValueError("supply on or timing, not both")
         if not flow.movements:
@@ -411,7 +438,7 @@ class FlowBehavior:
             return None
         first, last = selected[0], selected[-1]
         if first.period is not None and last.period is not None:
-            return first.period.start, last.period.end
+            return first.period.start_inclusive, last.period.end_exclusive
         return first.resolve(), last.resolve()
 
     def trim_empty(self) -> Flow:

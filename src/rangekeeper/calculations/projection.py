@@ -5,35 +5,53 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 import math
+from enum import Enum, unique
 from ..model.flow import Flow
 from ..model.duration import Period
 from ..model.measure import Quantity
 from ..model.distribution import Distribution
 
 
+@unique
+class ProjectionMethod(Enum):
+    RECURRING = "recurring"
+    LINEAR = "linear"
+    COMPOUND = "compound"
+    DYNAMIC = "dynamic"
+
+
+@unique
+class PaddingMode(Enum):
+    NIL = "nil"
+    UNITIZE = "unitize"
+    EXTEND = "extend"
+
+
 def project_values(
     initial: float,
     *,
     count: int,
-    method: str = "recurring",
+    method: ProjectionMethod = ProjectionMethod.RECURRING,
     rate: float = 0,
     origin: int = 0,
     factors: Sequence[float] | None = None,
 ) -> tuple[float, ...]:
     """Project known values: linear adds rate per index; compound multiplies (1+rate)^index."""
+    if not isinstance(method, ProjectionMethod):
+        raise TypeError("method must be a ProjectionMethod")
     if type(count) is not int or count < 0 or type(origin) is not int:
         raise ValueError("count must be nonnegative and origin must be an integer")
     if not math.isfinite(initial) or not math.isfinite(rate):
         raise ValueError("projection inputs must be finite")
-    if method == "dynamic":
+    if method == ProjectionMethod.DYNAMIC:
         if factors is None or len(factors) != count:
             raise ValueError("dynamic factors must match the requested length")
         result = tuple(initial * factor for factor in factors)
-    elif method == "recurring":
+    elif method == ProjectionMethod.RECURRING:
         result = (float(initial),) * count
-    elif method == "linear":
+    elif method == ProjectionMethod.LINEAR:
         result = tuple(initial + rate * i for i in range(origin, origin + count))
-    elif method == "compound":
+    elif method == ProjectionMethod.COMPOUND:
         result = tuple(initial * (1 + rate) ** i for i in range(origin, origin + count))
     else:
         raise ValueError("unsupported projection method")
@@ -47,19 +65,27 @@ def pad(
     *,
     before: int = 0,
     after: int = 0,
-    left: str = "nil",
-    right: str = "nil",
+    left: PaddingMode = PaddingMode.NIL,
+    right: PaddingMode = PaddingMode.NIL,
 ) -> tuple[float, ...]:
     """Add exactly the requested rows: nil=0, unitize=1, extend=nearest endpoint."""
+    if not isinstance(left, PaddingMode) or not isinstance(right, PaddingMode):
+        raise TypeError("padding modes must be PaddingMode members")
     if any(type(n) is not int or n < 0 for n in (before, after)):
         raise ValueError("padding lengths must be nonnegative integers")
 
     def fill(mode, count, endpoint):
-        if mode not in {"nil", "unitize", "extend"}:
+        if mode not in {PaddingMode.NIL, PaddingMode.UNITIZE, PaddingMode.EXTEND}:
             raise ValueError("unknown padding mode")
-        if count and mode == "extend" and endpoint is None:
+        if count and mode == PaddingMode.EXTEND and endpoint is None:
             raise ValueError("cannot extend an empty path")
-        return ({"nil": 0.0, "unitize": 1.0, "extend": endpoint}[mode],) * count
+        return (
+            {
+                PaddingMode.NIL: 0.0,
+                PaddingMode.UNITIZE: 1.0,
+                PaddingMode.EXTEND: endpoint,
+            }[mode],
+        ) * count
 
     return (
         fill(left, before, values[0] if values else None)
@@ -72,7 +98,7 @@ def project(
     initial: Quantity,
     *,
     periods: Sequence[Period],
-    method: str = "recurring",
+    method: ProjectionMethod = ProjectionMethod.RECURRING,
     rate: float = 0,
     origin: int = 0,
     factors: Sequence[float] | None = None,

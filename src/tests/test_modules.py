@@ -5,6 +5,14 @@ breaks. Dates, totals, allocation, partition meaning and detached results remain
 covered here. Plotting is tested by the installed walkthroughs and adapters.
 """
 
+from rangekeeper.duration import Frequency
+from rangekeeper.model.flow import MissingValueHandling
+from rangekeeper.calculations.series import ResamplingReduction
+from rangekeeper.calculations.projection import ProjectionMethod
+from rangekeeper.duration import MonthRoll, PeriodTiming
+
+from rangekeeper.model import ValueKind
+
 from rangekeeper.model.flow import Flow
 
 from rangekeeper.model.distribution import Distribution
@@ -51,17 +59,22 @@ def test_distribution_mass(spec):
 
 
 def test_projection_compounding():
-    factors = projection.project_values(1, count=12, method="compound", rate=0.02)
+    factors = projection.project_values(
+        1, count=12, method=ProjectionMethod.COMPOUND, rate=0.02
+    )
     assert factors[-1] == (1.02**11)
 
 
 def test_month_end_is_explicit_and_period_end_is_exclusive():
     assert offset(
-        date(2020, 2, 29), frequency="month", count=3, month_end=True
+        date(2020, 2, 29),
+        frequency=Frequency.MONTH,
+        count=3,
+        month_roll=MonthRoll.PRESERVE_END,
     ) == date(2020, 5, 31)
     period = make_period(date(2020, 2, 1), date(2020, 3, 1))
-    assert period.end - timedelta(days=1) == date(2020, 2, 29)
-    assert elapsed_days(period.start, period.end) == 29
+    assert period.end_exclusive - timedelta(days=1) == date(2020, 2, 29)
+    assert elapsed_days(period.start_inclusive, period.end_exclusive) == 29
 
 
 def test_flow_construction_detachment_and_negation():
@@ -79,11 +92,13 @@ def test_flow_construction_detachment_and_negation():
 
 
 def test_allocation_and_annual_resampling_preserve_total():
-    periods = make_periods(date(2020, 1, 1), frequency="month", count=25)
+    periods = make_periods(date(2020, 1, 1), frequency=Frequency.MONTH, count=25)
     flow = projection.allocate(Quantity(magnitude=100, units="AUD"), periods=periods)
     assert amounts(flow) == pytest.approx((4,) * 25)
-    years = make_periods(date(2020, 1, 1), frequency="year", count=3)
-    reduced = series.resample(flow.negate(), periods=years, reduction="sum")
+    years = make_periods(date(2020, 1, 1), frequency=Frequency.YEAR, count=3)
+    reduced = series.resample(
+        flow.negate(), periods=years, reduction=ResamplingReduction.SUM
+    )
     assert amounts(reduced.flow) == pytest.approx((-48, -48, -4))
     assert reduced.flow.total().magnitude == pytest.approx(-100)
 
@@ -96,8 +111,15 @@ def test_resampling_uses_declared_calendar_bins(frequency):
         units="meter",
     )
     count = {"day": 91, "month": 3, "quarter": 1, "year": 1}[frequency]
-    periods = make_periods(date(2020, 1, 1), frequency=frequency, count=count)
-    result = series.resample(source, periods=periods, reduction="sum", missing="zero")
+    periods = make_periods(
+        date(2020, 1, 1), frequency=Frequency(frequency), count=count
+    )
+    result = series.resample(
+        source,
+        periods=periods,
+        reduction=ResamplingReduction.SUM,
+        missing=MissingValueHandling.ZERO,
+    )
     assert result.flow.total().magnitude == 6
     assert tuple(m.period for m in result.flow.movements) == periods
 
@@ -106,7 +128,7 @@ def test_sampling_is_explicit_before_allocation():
     spec = Distribution.pert(lower=2, upper=8, mode=5, weighting=4, units="AUD")
     draws = spec.sample(size=20, generator=np.random.default_rng(23))
     assert all(2 <= x <= 8 for x in draws)
-    periods = make_periods(date(2020, 1, 1), frequency="month", count=25)
+    periods = make_periods(date(2020, 1, 1), frequency=Frequency.MONTH, count=25)
     for amount in draws:
         flow = projection.allocate(
             Quantity(magnitude=amount, units="AUD"), periods=periods
@@ -121,7 +143,7 @@ def test_stream_selection_and_mixed_frequency_totals():
             Quantity(magnitude=total, units="AUD"),
             periods=make_periods(
                 date(2020, 1, 1),
-                frequency=freq,
+                frequency=Frequency(freq),
                 count=count,
             ),
         )
@@ -132,33 +154,49 @@ def test_stream_selection_and_mixed_frequency_totals():
         )
     ]
     values = tuple(
-        Value(id=uuid4(), key=f"flow-{i}", kind="flow", measure=measure.id, flow=flow)
+        Value(
+            id=uuid4(),
+            key=f"flow-{i}",
+            kind=ValueKind.FLOW,
+            measure=measure.id,
+            flow=flow,
+        )
         for i, flow in enumerate(flows)
     )
     owner = Entity(id=uuid4(), characteristics=Characteristics(values=values))
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
+        metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
         definitions=Definitions(measures=(measure,)),
         system=System(entities=(owner,)),
     )
     stream = Stream.from_values(model, tuple(v.id for v in values))
     assert stream.merge(stream).values == stream.values
     assert stream.select(value_ids=(values[1].id,)).values == (values[1],)
-    years = make_periods(date(2020, 1, 1), frequency="year", count=3)
+    years = make_periods(date(2020, 1, 1), frequency=Frequency.YEAR, count=3)
     # Weekly coverage can cross a calendar-year boundary. Select payment timing
     # explicitly; a bounded coverage interval must not be assigned by accident.
     with pytest.raises(ValueError, match="crosses"):
-        series.resample(flows[1], periods=years, reduction="sum", missing="zero")
+        series.resample(
+            flows[1],
+            periods=years,
+            reduction=ResamplingReduction.SUM,
+            missing=MissingValueHandling.ZERO,
+        )
     payments = tuple(
         Flow.from_events(
-            [m.resolve(timing="last_day") for m in value.flow.movements],
+            [m.resolve(timing=PeriodTiming.LAST) for m in value.flow.movements],
             amounts(value.flow),
             units=value.flow.units,
         )
         for value in stream.values
     )
     annual = tuple(
-        series.resample(flow, periods=years, reduction="sum", missing="zero").flow
+        series.resample(
+            flow,
+            periods=years,
+            reduction=ResamplingReduction.SUM,
+            missing=MissingValueHandling.ZERO,
+        ).flow
         for flow in payments
     )
     assert series.aggregate(annual).flow.total().magnitude == pytest.approx(
@@ -167,7 +205,7 @@ def test_stream_selection_and_mixed_frequency_totals():
 
 
 def test_product_preserves_units_and_explicit_exposure_removes_time():
-    periods = make_periods(date(2020, 1, 1), frequency="month", count=1)
+    periods = make_periods(date(2020, 1, 1), frequency=Frequency.MONTH, count=1)
     rate = Flow.from_periods(periods, (math.pi,), units="AUD/meter**2/month")
     factor = Flow.from_periods(periods, (2,), units="dimensionless")
     product = series.multiply((rate, factor))
@@ -204,11 +242,14 @@ def test_segment_meaning_is_model_content_not_a_second_mutable_tree():
                     Value(
                         id=uuid4(),
                         key="bounds",
-                        kind="property",
+                        kind=ValueKind.PROPERTY,
                         content=encode((bounds.left, bounds.right)),
                     ),
                     Value(
-                        id=uuid4(), key="span", kind="property", content=encode(span)
+                        id=uuid4(),
+                        key="span",
+                        kind=ValueKind.PROPERTY,
+                        content=encode(span),
                     ),
                 )
             ),
@@ -217,7 +258,7 @@ def test_segment_meaning_is_model_content_not_a_second_mutable_tree():
     )
     parent = Assembly(id=uuid4(), name="Podium", entities=tuple(c.id for c in children))
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
+        metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
         system=System(entities=children, assemblies=(parent,)),
     )
     assert residential.right == 65
@@ -249,7 +290,7 @@ def test_type_ancestry_uses_canonical_classification_references():
         classifications=(grandparent, parent, child, *leaves),
     )
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
+        metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
         definitions=Definitions(taxonomies=(taxonomy,)),
     )
     records = {c.id: c for c in model.definitions.taxonomies[0].classifications}

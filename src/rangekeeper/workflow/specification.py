@@ -110,10 +110,10 @@ class WorkflowSpec:
                 self, key, _structured.freeze_mapping(getattr(self, key))
             )
         from rangekeeper.workflow.checking import validate_checks
-        from rangekeeper.workflow.composition import validate_model
+        from rangekeeper.workflow.composition import validate_model_declaration
 
         try:
-            validate_model(self.model, seen, self.decisions)
+            validate_model_declaration(self.model, seen, self.decisions)
         except (TypeError, ValueError, KeyError) as exc:
             raise ValueError(f"model: {exc}") from exc
         try:
@@ -195,19 +195,6 @@ def load(spec_directory: Path) -> WorkflowSpec:
         hashes=hashes,
         declarations=declarations,
     )
-
-
-def __getattr__(name):
-    # Existing Python request imports remain available without teaching the
-    # generic specification implementation about concrete adapter classes.
-    legacy = {
-        "ReadSpec": "read",
-        "ExtractSpec": "extract",
-        "ClassifySpec": "classify_rows",
-    }
-    if name in legacy:
-        return _OPERATIONS[legacy[name]].request_type
-    raise AttributeError(name)
 
 
 __all__ = [

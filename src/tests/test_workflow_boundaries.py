@@ -1,5 +1,7 @@
 """Standalone contracts at the format/workflow boundary, independent of Mandarin."""
 
+from rangekeeper.workflow.checking import CheckStatus
+
 import subprocess
 import sys
 from dataclasses import replace
@@ -15,9 +17,9 @@ from rangekeeper.workflow import source_checks
 from rangekeeper.workflow.checking import evaluate, validate_checks
 from rangekeeper.workflow.composition import compose
 from rangekeeper.workflow.implementation import manifests, semantic_digest
-from rangekeeper.workflow.ingestion import Issue, IssueSeverity, tabular
-from rangekeeper.workflow.ingestion.predicates import Predicate, select_where
-from rangekeeper.workflow.ingestion.transform import TransformSpec, transform
+from rangekeeper.evidence import Issue, Severity, tabular
+from rangekeeper.evidence.predicates import Predicate, select_where
+from rangekeeper.evidence.transform import TransformSpec, transform
 from rangekeeper.workflow.specification import StepSpec
 
 METHOD = Method(code="synthetic", version="1")
@@ -95,7 +97,7 @@ def test_colliding_projected_explanations_are_never_discarded(kind):
             rule_id="missing",
             code="absent",
             message=message,
-            severity=IssueSeverity.WARNING,
+            severity=Severity.WARNING,
             at=(scope,),
             related_claims=(missing,),
         )
@@ -272,10 +274,23 @@ def test_both_yaml_entrypoints_reject_unsafe_or_ambiguous_content(content):
 
 
 @pytest.mark.parametrize(
-    "computation_path", ["workflow/composition.py", "_behaviors/flow.py"]
+    "computation_path",
+    [
+        "workflow/composition.py",
+        "_behaviors/flow.py",
+        "evidence/_claims.py",
+        "evidence/validation.py",
+        "graph/selection.py",
+        "graph/reduction.py",
+        "graph/reducers.py",
+        "_record_index.py",
+        "_implementation.py",
+        "_yaml.py",
+    ],
 )
 def test_semantic_identity_ignores_prose_but_tracks_executable_changes(
-    tmp_path, computation_path
+    tmp_path,
+    computation_path,
 ):
     assert semantic_digest('"""one"""\nx = 1 # a') == semantic_digest(
         '"""two"""\nx = 1 # b'
@@ -350,7 +365,7 @@ def test_direct_composition_and_checking_without_workflow_spec():
         keys,
         {},
     )
-    assert checks[0].status == "agree"
+    assert checks[0].status == CheckStatus.AGREE
     assert all(graph.entity(f.target).id == f.target for f in graph.provenance.facts)
 
 
@@ -362,3 +377,138 @@ def test_generic_locations_preserve_shared_ancestors():
     right = Claim.derived(3, from_claims=(parent,), method=METHOD)
     final = Claim.derived(5, from_claims=(left, right), method=METHOD)
     assert locations(final) == (loc,)
+
+
+@pytest.mark.parametrize("path", ("workflow/reporting.py", "workflow/progress.py"))
+def test_workflow_presentation_changes_only_installed_audit(tmp_path, path):
+    presentation = tmp_path / path
+    presentation.parent.mkdir(parents=True)
+    presentation.write_text("x = 1")
+    before = manifests(tmp_path)
+    presentation.write_text("x = 2")
+    after = manifests(tmp_path)
+    assert before[0] != after[0]
+    assert before[1:] == after[1:]
+
+
+def test_workflow_currency_dependency_changes_semantic_identity(tmp_path, monkeypatch):
+    from rangekeeper.workflow import implementation
+
+    versions = {
+        "pint": "fixed",
+        "py-moneyed": "3.0",
+        "jsonschema": "fixed",
+        "rangekeeper": "fixed",
+        "pyyaml": "fixed",
+    }
+    monkeypatch.setattr(implementation, "version", versions.__getitem__)
+    before = manifests(tmp_path)
+    versions["py-moneyed"] = "changed"
+    after = manifests(tmp_path)
+    assert before[:2] == after[:2]
+    assert before[2] != after[2]
+
+
+def test_provenance_reuses_same_claim_but_checks_distinct_objects(monkeypatch):
+    from rangekeeper.workflow import provenance
+
+    original = provenance.encode
+    values = []
+
+    def counted(value):
+        values.append(value)
+        return original(value)
+
+    monkeypatch.setattr(provenance, "encode", counted)
+    claim = Claim.asserted(0, method=METHOD, id=uuid5(UID, "cached-claim"))
+    builder = provenance.ProvenanceBuilder()
+    assert builder.add(claim) == builder.add(claim) == claim.id
+    assert values == [0]
+    assert builder.add(replace(claim)) == claim.id
+    assert len(values) == 2
+    with pytest.raises(operation._Failure, match="Conflicting evidence identity"):
+        builder.add(replace(claim, value=False))
+
+
+def test_workflow_currency_catalogue_changes_semantic_identity(tmp_path, monkeypatch):
+    from rangekeeper.units import UnitSystem
+    from rangekeeper.workflow import implementation
+
+    before = manifests(tmp_path)
+    monkeypatch.setattr(
+        implementation, "default_units", UnitSystem(currencies=("AUD",))
+    )
+    after = manifests(tmp_path)
+    assert before[:2] == after[:2]
+    assert before[2] != after[2]
+
+
+def test_transform_uses_issue_scopes_for_earlier_derived_columns(monkeypatch):
+    from rangekeeper.evidence import validation
+
+    global_issue = Issue(
+        rule_id="global",
+        code="missing",
+        severity=Severity.WARNING,
+        message="Global",
+        at=((),),
+    )
+    cell_issue = Issue(
+        rule_id="cell",
+        code="missing",
+        severity=Severity.WARNING,
+        message="Cell",
+        at=(KEY,),
+    )
+    artifact = evidence(None, (global_issue, cell_issue))
+    calls = []
+    original = validation._issues_for
+
+    def counted(scopes, keys):
+        calls.append(keys)
+        return original(scopes, keys)
+
+    monkeypatch.setattr(validation, "_issues_for", counted)
+    result = transform(
+        artifact,
+        specifications={
+            "first": TransformSpec(operation="normalize", columns=("value",)),
+            "second": TransformSpec(operation="normalize", columns=("first",)),
+        },
+    ).output
+    assert result is not None
+    assert result.data.column("second") == (None,)
+    first, second = ("rows", str(UID), "first"), ("rows", str(UID), "second")
+    # One input validation, two derivations, then validation of all output cells.
+    assert calls == [(KEY,), (KEY,), (first,), (KEY,), (first,), (second,)]
+    messages = [
+        i.message for i in result.issues if i.at == (("rows", str(UID), "second"),)
+    ]
+    assert messages[:2] == ["Global", "Cell"]
+    assert len(messages) == 4
+
+
+def test_comparisons_and_invariants_share_one_pinned_view(monkeypatch):
+    from rangekeeper.workflow import checking
+    from .test_model_graph import fixture
+
+    model, *_ = fixture()
+    built = []
+    original = checking.View
+
+    def counted(candidate):
+        built.append(candidate)
+        return original(candidate)
+
+    monkeypatch.setattr(checking, "View", counted)
+    results = checking.evaluate(
+        {
+            "comparisons": (),
+            "invariants": ("fact_coverage", "membership", "defined_kinds"),
+        },
+        model,
+        {},
+        {},
+    )
+    assert len(results) == 3
+    assert built == [model]

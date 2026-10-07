@@ -79,7 +79,7 @@ class PyomoHighs:
                     None
                     if values is None
                     else MappingProxyType(
-                        {key: float(value) for key, value in values.items()}
+                        {UUID(key): float(value) for key, value in values.items()}
                     )
                 ),
                 tuple(

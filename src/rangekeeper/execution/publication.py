@@ -6,16 +6,17 @@ from uuid import UUID, uuid4
 
 from ..model import Model
 from ..model.update import Update
-from .._schema.records import Quantity, System, Provenance
+from .._schema.records import Quantity, System, Provenance, Reference
 from ..io import json
 from ..references import DocumentResolver
 from .preparation import Prepared
 from .errors import NumericalError
-from . import symbols
+from ..model.scope import target_value
+from .._record_index import walk_data
 
 
 def candidate(
-    prepared: Prepared, unknowns: Mapping[str, float], *, run_id: UUID
+    prepared: Prepared, unknowns: Mapping[UUID, float], *, run_id: UUID
 ) -> Model:
     """Construct and round-trip one candidate, preserving shape and unrelated content.
 
@@ -30,12 +31,15 @@ def candidate(
         )
     quantities = dict(prepared.assignments)
     for token, magnitude in unknowns.items():
-        quantities[token] = finite_quantity(magnitude, prepared.value_units[token])
+        try:
+            quantities[token] = finite_quantity(magnitude, prepared.value_units[token])
+        except (ArithmeticError, TypeError, ValueError) as error:
+            raise NumericalError(str(error)) from error
     data = cast(dict[str, Any], prepared.model.to_data())
     provenance = data.setdefault("provenance", {})
     claims = provenance.setdefault("claims", [])
     changed = {
-        str(symbols.owner(prepared.model, prepared.references[token]).id)
+        str(target_value(prepared.model, prepared.references[token]).id)
         for token in quantities
     }
     facts = [f for f in provenance.get("facts", []) if f["target"] not in changed]
@@ -56,45 +60,37 @@ def candidate(
         )
         return identity
 
-    def replace(node):
-        if isinstance(node, dict):
-            identity = node.get("id")
-            if identity in changed and node.get("kind") in ("measurement", "flow"):
-                if node["kind"] == "measurement":
-                    node["quantity"] = quantities[identity].to_data()
-                else:
-                    for movement in node["flow"]["movements"]:
-                        token = movement["id"]
-                        if token in quantities:
-                            amount = quantities[token].to_data()
-                            movement["magnitude"] = amount["magnitude"]
-                            movement["claims"] = [
-                                claim(
-                                    dict(
-                                        target=prepared.references[token].to_data(),
-                                        quantity=amount,
-                                    ),
-                                    (
-                                        "rangekeeper.movement.assignment"
-                                        if token in prepared.assignments
-                                        else "rangekeeper.movement.solution"
-                                    ),
-                                )
-                            ]
-                content = {
-                    name: node[name]
-                    for name in ("measure", "quantity", "flow")
-                    if name in node
-                }
-                evidence = claim(content, "rangekeeper.value.publication")
-                facts.append(dict(target=identity, claims=[evidence]))
-            for child in node.values():
-                replace(child)
-        elif isinstance(node, list):
-            for child in node:
-                replace(child)
-
-    replace(data.get("system", {}))
+    for node, _ in walk_data("System", data.get("system", {})):
+        identity = node.get("id")
+        if identity in changed and node.get("kind") in ("measurement", "flow"):
+            if node["kind"] == "measurement":
+                node["quantity"] = quantities[UUID(identity)].to_data()
+            else:
+                for movement in node["flow"]["movements"]:
+                    token = UUID(movement["id"])
+                    if token in quantities:
+                        amount = quantities[token].to_data()
+                        movement["magnitude"] = amount["magnitude"]
+                        movement["claims"] = [
+                            claim(
+                                dict(
+                                    target=prepared.references[token].to_data(),
+                                    quantity=amount,
+                                ),
+                                (
+                                    "rangekeeper.movement.assignment"
+                                    if token in prepared.assignments
+                                    else "rangekeeper.movement.solution"
+                                ),
+                            )
+                        ]
+            content = {
+                name: node[name]
+                for name in ("measure", "quantity", "flow")
+                if name in node
+            }
+            evidence = claim(content, "rangekeeper.value.publication")
+            facts.append(dict(target=identity, claims=[evidence]))
     if not quantities:
         claim(dict(model=str(prepared.model.id)), "rangekeeper.feasibility")
     provenance["facts"] = facts

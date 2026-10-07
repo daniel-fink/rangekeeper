@@ -1,11 +1,11 @@
 metadata:
-  id: 45d06a63-85fe-5d80-82a0-f55a6a06a01a
-  schema_version: 0.6.0
+  id: c6f6e5b6-a2e8-5154-bc0a-dfbf1219db4c
+  schema_version: 0.7.0
   name: Forward and inverse valuation batch
   description: Two independent investigations. Cases explicitly include their shared
     contribution; this batch supplies no solve requirements.
   previous: 25df750e-a766-5fdc-9de9-a22d779f135b
-model: e9096132-8158-56db-bc3e-b64ef7f92d4e
+model: 513e3bca-50ac-5437-95f6-9b0d628fe89d
 cases:
-- c1efd865-1463-54c1-b28b-5e689f4837ed
-- 5f5be6f0-a423-5a22-89f8-bc83ac1f9d96
+- be7ba0ee-4f5b-5cc8-8425-7b2df631d8de
+- 695e2d3b-fd66-5e67-8720-1f50d68adea1

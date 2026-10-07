@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 from rangekeeper.operation import _Failure
 from rangekeeper.evidence import locations
-from rangekeeper.workflow.ingestion import tabular
+from rangekeeper.evidence import tabular
 
 from ._declarations import fields, sequence
 from .bindings import require_columns

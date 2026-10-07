@@ -1927,6 +1927,7 @@ dependencies = [
     { name = "jsonschema" },
     { name = "pint", version = "0.24.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "pint", version = "0.25", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "py-moneyed" },
     { name = "rfc3339-validator" },
 ]
 
@@ -1960,7 +1961,6 @@ layout = [
 legacy = [
     { name = "networkx", version = "3.4.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "networkx", version = "3.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
-    { name = "py-moneyed" },
     { name = "specklepy" },
 ]
 plotting = [
@@ -2011,7 +2011,7 @@ requires-dist = [
     { name = "plotly", marker = "extra == 'visualization'", specifier = ">=6.0" },
     { name = "polars", marker = "extra == 'calculations'", specifier = ">=1.44,<2" },
     { name = "polars", marker = "extra == 'tables'", specifier = ">=1.44,<2" },
-    { name = "py-moneyed", marker = "extra == 'legacy'", specifier = ">=3.0" },
+    { name = "py-moneyed", specifier = "==3.0" },
     { name = "pyomo", marker = "extra == 'execution'", specifier = "==6.10.1" },
     { name = "pyvis", marker = "extra == 'visualization'", specifier = ">=0.3.2" },
     { name = "pyxirr", marker = "extra == 'calculations'", specifier = ">=0.10.7,<0.11" },

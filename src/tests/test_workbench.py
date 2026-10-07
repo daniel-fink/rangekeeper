@@ -1,12 +1,16 @@
 """Review sessions use ordinary synthetic workflows, never project fixtures."""
 
+from rangekeeper.workflow.workbench import AttemptStatus
+from rangekeeper.workflow.workbench import InspectionStatus
+
 import json
 from dataclasses import replace
 
 import pytest
 
 from rangekeeper.workflow import workbench
-from rangekeeper.workflow._review import clarification_html, usage
+from rangekeeper.workflow.review import clarification_html
+from rangekeeper.workflow.reporting import usage
 
 from .test_workflow import example, rewrite
 
@@ -19,21 +23,21 @@ def setup(tmp_path):
 
 def successful(root, args):
     attempt = workbench.build(root / "spec", **args)
-    assert attempt.status == "completed", attempt.diagnostics
+    assert attempt.status == AttemptStatus.COMPLETED, attempt.diagnostics
     return attempt
 
 
 def test_success_snapshot_and_deterministic_repeat(tmp_path):
     root, docs, args = setup(tmp_path)
     initial = workbench.inspect(root / "spec", **args)
-    assert initial.status == "not built"
+    assert initial.status == InspectionStatus.NOT_BUILT
     assert not args["output_root"].exists()
     events = []
     first = workbench.build(root / "spec", **args, on_progress=events.append)
-    assert first.status == "completed", first.diagnostics
+    assert first.status == AttemptStatus.COMPLETED, first.diagnostics
     assert len(repr(first)) < 1000 and len(repr(initial)) < 1000
-    assert {e.phase for e in events} >= {"workflow", "export"}
-    assert workbench.inspect(root / "spec", **args).status == "current"
+    assert {e.phase.value for e in events} >= {"workflow", "export"}
+    assert workbench.inspect(root / "spec", **args).status == InspectionStatus.CURRENT
     second = successful(root, args)
     assert first.directory is not None and second.directory is not None
     assert first.directory != second.directory
@@ -52,7 +56,7 @@ def test_success_snapshot_and_deterministic_repeat(tmp_path):
     old_review = clarification_html(first.result, "viewer.html")
     docs["decisions"]["decisions"][0]["text"] = "Edited after the build"
     rewrite(root, docs)
-    assert workbench.inspect(root / "spec", **args).status == "stale"
+    assert workbench.inspect(root / "spec", **args).status == InspectionStatus.STALE
     assert clarification_html(first.result, "viewer.html") == old_review
     assert "Edited after the build" not in old_review
 
@@ -93,7 +97,7 @@ def test_failure_preserves_success(tmp_path, monkeypatch, failure):
             workbench.build(root / "spec", **args)
     else:
         attempt = workbench.build(root / "spec", **args)
-        assert attempt.status == "failed" and attempt.result is None
+        assert attempt.status == AttemptStatus.FAILED and attempt.result is None
         assert attempt.directory is None and attempt.previous == first.directory
         assert "Previous successful run" in attempt._repr_html_()
     assert pointer.read_bytes() == original
@@ -115,13 +119,15 @@ def test_input_and_implementation_freshness(tmp_path, monkeypatch):
 
     with monkeypatch.context() as patch:
         patch.setattr(workbench, "manifests", changed)
-        assert workbench.inspect(root / "spec", **args).status == "stale"
+        assert workbench.inspect(root / "spec", **args).status == InspectionStatus.STALE
     path = root / "inputs/schedule.xlsx"
     path.write_bytes(path.read_bytes() + b"changed")
-    assert workbench.inspect(root / "spec", **args).status == "stale"
+    assert workbench.inspect(root / "spec", **args).status == InspectionStatus.STALE
     path.unlink()
     missing = workbench.inspect(root / "spec", **args)
-    assert missing.status == "invalid inputs" and missing.latest is not None
+    assert (
+        missing.status == InspectionStatus.INVALID_INPUTS and missing.latest is not None
+    )
 
 
 def test_adapter_owns_inspection(tmp_path, monkeypatch):
@@ -219,7 +225,7 @@ def test_checksum_mismatch_prevents_execution(tmp_path, monkeypatch):
 
     monkeypatch.setattr(workbench, "run", unexpected)
     inspected = workbench.inspect(root / "spec", **args)
-    assert inspected.status == "invalid inputs"
+    assert inspected.status == InspectionStatus.INVALID_INPUTS
     attempt = workbench.build(root / "spec", **args)
     assert attempt.result is None and attempt.previous == first.directory
 
@@ -241,7 +247,7 @@ def test_observer_failure_changes_no_model_or_source_fingerprint(tmp_path):
         "progress_observer_failed"
     }
     attempt = workbench.build(root / "spec", **args, on_progress=fail)
-    assert attempt.status == "completed" and attempt.diagnostics
+    assert attempt.status == AttemptStatus.COMPLETED and attempt.diagnostics
 
 
 def test_missing_measurement_keeps_descriptive_property_and_finding(tmp_path):

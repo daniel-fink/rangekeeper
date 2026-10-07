@@ -1,5 +1,7 @@
 """Account for requested settings without conflating solver and acceptance criteria."""
 
+from rangekeeper.run import Severity
+
 from dataclasses import dataclass
 
 from .._schema.records import Settings, Diagnostic
@@ -46,7 +48,7 @@ def resolve(requested: Settings | None) -> tuple[Limits, tuple[Diagnostic, ...]]
         iterations = 2147483647
         findings.append(
             Diagnostic(
-                severity="warning",
+                severity=Severity.WARNING,
                 code="settings_adjusted",
                 message="iteration_limit clamped to HiGHS maximum 2147483647.",
             )
@@ -54,7 +56,7 @@ def resolve(requested: Settings | None) -> tuple[Limits, tuple[Diagnostic, ...]]
     if requested and requested.relative_tolerance is not None:
         findings.append(
             Diagnostic(
-                severity="warning",
+                severity=Severity.WARNING,
                 code="settings_adjusted",
                 message=(
                     f"relative_tolerance={requested.relative_tolerance} is not applied: this scalar LP adapter "

@@ -5,6 +5,11 @@ the same saved incumbent. Candidate ordering and packing are heuristic, not an
 optimum or an interpretation of physical order.
 """
 
+from rangekeeper.adapters.cytoscape.layout.model import (
+    ArrangementFlow,
+    ArrangementSpacing,
+)
+from rangekeeper.adapters.cytoscape.layout.result import ResultStatus, StrictStatus
 from dataclasses import replace
 
 from .check import check, metrics
@@ -93,8 +98,8 @@ def grid_seed(problem: Problem) -> Result | None:
         layouts = set()
         for order in sorted(orders):
             columns = range(1, len(ids) + 1)
-            if setting and setting.flow != "grid":
-                columns = [1 if setting.flow == "column" else len(ids)]
+            if setting and setting.flow != ArrangementFlow.GRID:
+                columns = [1 if setting.flow == ArrangementFlow.COLUMN else len(ids)]
             for cols in columns:
                 slots = list(range(len(ids)))
                 traversals = [slots]
@@ -117,8 +122,8 @@ def grid_seed(problem: Problem) -> Result | None:
             for rank, child in enumerate(order):
                 dx = problem.padding + (rank % cols) * pitch_x
                 dy = problem.header + problem.padding + (rank // cols) * pitch_y
-                if setting and setting.flow != "grid":
-                    vertical = setting.flow == "column"
+                if setting and setting.flow != ArrangementFlow.GRID:
+                    vertical = setting.flow == ArrangementFlow.COLUMN
                     cross_span = (
                         max(a.min_width - 2 * problem.padding, pitch_x - problem.gap)
                         if vertical
@@ -130,13 +135,13 @@ def grid_seed(problem: Problem) -> Result | None:
                         "start": 0,
                         "center": (cross_span - size) // 2,
                         "end": cross_span - size,
-                    }[setting.alignment]
+                    }[setting.alignment.value]
                     if vertical:
                         dx += offset
                     else:
                         dy += offset
-                if setting and setting.spacing == "packed":
-                    if setting.flow == "column":
+                if setting and setting.spacing == ArrangementSpacing.PACKED:
+                    if setting.flow == ArrangementFlow.COLUMN:
                         dy = (
                             problem.header
                             + problem.padding
@@ -196,8 +201,8 @@ def grid_seed(problem: Problem) -> Result | None:
     if check(problem, rectangles):
         raise RuntimeError("Constructive seed failed independent checking")
     return Result(
-        "feasible",
-        "sat",
+        ResultStatus.FEASIBLE,
+        StrictStatus.SAT,
         rectangles=rectangles,
         grids=grids,
         measurements=metrics(problem, rectangles, grids),

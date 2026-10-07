@@ -1,5 +1,9 @@
 """Model-backed projections and source-building migration acceptance."""
 
+from rangekeeper.workflow.checking import CheckStatus
+
+from rangekeeper.model import ValueKind
+
 from dataclasses import replace
 from pathlib import Path
 import runpy
@@ -29,10 +33,10 @@ from rangekeeper.graph import View, Hierarchy
 from rangekeeper.graph.errors import SelectionError
 from rangekeeper.graph.projection import (
     FieldColumn,
+    EntityField,
     ValueColumn,
     LabelColumn,
     to_table,
-    to_tree_table,
 )
 from rangekeeper.errors import UnitError
 from rangekeeper.io import json, yaml, MemoryStore, DirectoryStore
@@ -49,19 +53,19 @@ def model():
     net = Value(
         id=uuid4(),
         key="net",
-        kind="measurement",
+        kind=ValueKind.MEASUREMENT,
         measure=measure.id,
         quantity=Quantity(magnitude=0, units="meter**2"),
     )
     gross = Value(
         id=uuid4(),
         key="gross",
-        kind="measurement",
+        kind=ValueKind.MEASUREMENT,
         measure=measure.id,
         quantity=Quantity(magnitude=2, units="meter**2"),
     )
     unresolved = Value(
-        id=uuid4(), key="unknown", kind="measurement", measure=measure.id
+        id=uuid4(), key="unknown", kind=ValueKind.MEASUREMENT, measure=measure.id
     )
     entity = Entity(
         id=uuid4(),
@@ -75,7 +79,7 @@ def model():
     first = Assembly(id=uuid4(), name="First", entities=(entity.id,))
     second = Assembly(id=uuid4(), name="Second", entities=(entity.id,))
     return Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
+        metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
         definitions=Definitions(measures=(measure,), taxonomies=(taxonomy,)),
         system=System(entities=(entity,), assemblies=(first, second)),
     )
@@ -116,7 +120,11 @@ def test_projection_units_and_measure_assertions_are_checked(model):
         )
     with pytest.raises(ValueError, match="duplicates"):
         to_table(
-            View(model), columns=(FieldColumn("x", "name"), FieldColumn("x", "code"))
+            View(model),
+            columns=(
+                FieldColumn("x", EntityField.NAME),
+                FieldColumn("x", EntityField.CODE),
+            ),
         )
 
 
@@ -125,7 +133,7 @@ def test_tree_projection_uses_selected_membership_and_revision(model):
     hierarchy = Hierarchy.from_membership(
         View(model, assembly=assembly.id), root=assembly.id
     )
-    table = to_tree_table(hierarchy)
+    table = to_table(hierarchy)
     assert table.column("model_id") == (model.id, model.id)
     assert table.column("entity_id") == (assembly.id, model.system.entities[0].id)
     assert table.column("parent_id") == (None, assembly.id)
@@ -198,7 +206,9 @@ def test_workflow_multiple_values_per_measure_and_snapshot_storage(tmp_path):
     )
     assert len(model.system.entities) == 3 and len(model.system.assemblies) == 2
     assert all(
-        c.status == "agree" for c in outcome.output.checks if c.purpose == "invariant"
+        c.status == CheckStatus.AGREE
+        for c in outcome.output.checks
+        if c.purpose == "invariant"
     )
     for codec in (json, yaml):
         restored = codec.loads(codec.dumps(model), kind=Model)
@@ -258,7 +268,7 @@ def test_source_dates_and_locations_survive_canonical_provenance():
         method=evidence.Method(code="test", version="1"),
     )
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
+        metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
         system=System(entities=(entity,)),
         provenance=builder.finish(),
     )

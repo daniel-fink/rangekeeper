@@ -1,13 +1,13 @@
 """Immutable descriptive differences; never an executable patch or merge."""
 
 from dataclasses import dataclass
+from collections.abc import Mapping
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from .._comparison import canonical
+from .._records import comparison_data, exact_equal
 from .._records import FrozenJSONValue, UNSET, Unset, _freeze
 from .._schema.records import Metadata
-from ._index import Index
 
 if TYPE_CHECKING:
     from .model import Model
@@ -39,11 +39,9 @@ def between(before: "Model", after: "Model") -> Diff:
     ``changes`` refer to canonical comparison order; interchange exports retain
     original order. Ordered mathematics and opaque content are never reordered.
     """
-    import json
-    from .._schema.records import Model as ModelRecord
 
-    left = Index.build(ModelRecord.from_data(before.to_data())).records
-    right = Index.build(ModelRecord.from_data(after.to_data())).records
+    left = before._index.records
+    right = after._index.records
     left = {
         key: value for key, value in left.items() if not isinstance(value, Metadata)
     }
@@ -54,32 +52,31 @@ def between(before: "Model", after: "Model") -> Diff:
         key
         for key in left.keys() & right.keys()
         if type(left[key]) is not type(right[key])
-        or canonical(left[key]._kind, left[key].to_data())
-        != canonical(right[key]._kind, right[key].to_data())
+        or not left[key].equivalent(right[key])
     )
     changes = []
 
     def visit(a, b, path):
-        if isinstance(a, dict) and isinstance(b, dict):
+        if isinstance(a, Mapping) and isinstance(b, Mapping):
             for key in sorted(a.keys() | b.keys()):
                 visit(
                     a.get(key, UNSET),
                     b.get(key, UNSET),
                     path + "/" + key.replace("~", "~0").replace("/", "~1"),
                 )
-        elif isinstance(a, list) and isinstance(b, list):
+        elif isinstance(a, (list, tuple)) and isinstance(b, (list, tuple)):
             for index in range(max(len(a), len(b))):
                 visit(
                     a[index] if index < len(a) else UNSET,
                     b[index] if index < len(b) else UNSET,
                     f"{path}/{index}",
                 )
-        elif type(a) is not type(b) or a != b:
+        elif not exact_equal(a, b):
             changes.append(Change(path, _freeze(a), _freeze(b)))
 
     visit(
-        json.loads(canonical("Model", before.to_data())),
-        json.loads(canonical("Model", after.to_data())),
+        comparison_data("Model", before._record._data),
+        comparison_data("Model", after._record._data),
         "",
     )
     return Diff(

@@ -192,6 +192,31 @@
       "title": "Binding",
       "type": "object"
     },
+    "CalculationProvenance": {
+      "additionalProperties": false,
+      "description": "Calculation implementation identity, separate from captured sampling provenance.",
+      "properties": {
+        "fingerprint": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "versions": {
+          "items": {
+            "$ref": "#/$defs/LibraryVersion"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "fingerprint",
+        "versions"
+      ],
+      "title": "CalculationProvenance",
+      "type": "object"
+    },
     "Call": {
       "additionalProperties": false,
       "description": "Application of an identified Function to positional and named expression arguments.",
@@ -584,59 +609,7 @@
     },
     "Decision": {
       "additionalProperties": false,
-      "description": "Recorded outcome of one evaluated decision point; absence of a rule means fallback.",
-      "properties": {
-        "assignments": {
-          "items": {
-            "$ref": "#/$defs/Assignment"
-          },
-          "type": "array"
-        },
-        "at": {
-          "format": "date",
-          "type": "string"
-        },
-        "observations": {
-          "items": {
-            "$ref": "#/$defs/ObservedQuantity"
-          },
-          "type": "array"
-        },
-        "point": {
-          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "type": "string"
-        },
-        "rule": {
-          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "terminated": {
-          "type": "boolean"
-        },
-        "termination_reason": {
-          "description": "Reason for termination, required when terminated is true.",
-          "type": [
-            "string",
-            "null"
-          ]
-        }
-      },
-      "required": [
-        "point",
-        "at",
-        "observations",
-        "assignments",
-        "terminated"
-      ],
-      "title": "Decision",
-      "type": "object"
-    },
-    "DecisionPoint": {
-      "additionalProperties": false,
-      "description": "One dated policy point with explicit observations, first-match rules and fallback.",
+      "description": "One dated policy decision with explicit observations, first-match rules and fallback.",
       "properties": {
         "at": {
           "format": "date",
@@ -672,7 +645,59 @@
         "rules",
         "fallback"
       ],
-      "title": "DecisionPoint",
+      "title": "Decision",
+      "type": "object"
+    },
+    "DecisionOutcome": {
+      "additionalProperties": false,
+      "description": "Recorded outcome of one evaluated decision; absence of a rule means fallback.",
+      "properties": {
+        "assignments": {
+          "items": {
+            "$ref": "#/$defs/Assignment"
+          },
+          "type": "array"
+        },
+        "at": {
+          "format": "date",
+          "type": "string"
+        },
+        "decision": {
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": "string"
+        },
+        "observations": {
+          "items": {
+            "$ref": "#/$defs/ObservedQuantity"
+          },
+          "type": "array"
+        },
+        "rule": {
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "terminated": {
+          "type": "boolean"
+        },
+        "termination_reason": {
+          "description": "Reason for termination, required when terminated is true.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "decision",
+        "at",
+        "observations",
+        "assignments",
+        "terminated"
+      ],
+      "title": "DecisionOutcome",
       "type": "object"
     },
     "Definitions": {
@@ -2477,37 +2502,37 @@
     },
     "Period": {
       "additionalProperties": false,
-      "description": "Half-open interval [start, end). Date boundaries use the Gregorian calendar; start must precede end.",
+      "description": "Half-open interval [start_inclusive, end_exclusive). Date boundaries use the Gregorian calendar; start must precede end.",
       "properties": {
-        "end": {
+        "end_exclusive": {
           "format": "date",
           "type": "string"
         },
-        "start": {
+        "start_inclusive": {
           "format": "date",
           "type": "string"
         }
       },
       "required": [
-        "start",
-        "end"
+        "start_inclusive",
+        "end_exclusive"
       ],
       "title": "Period",
       "type": "object"
     },
     "Policy": {
       "additionalProperties": false,
-      "description": "Finite policy owning explicit controlled targets and ordered dated decision points.",
+      "description": "Finite policy owning explicit controlled targets and ordered dated decisions.",
       "properties": {
+        "decisions": {
+          "items": {
+            "$ref": "#/$defs/Decision"
+          },
+          "type": "array"
+        },
         "id": {
           "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
           "type": "string"
-        },
-        "points": {
-          "items": {
-            "$ref": "#/$defs/DecisionPoint"
-          },
-          "type": "array"
         },
         "targets": {
           "items": {
@@ -2519,7 +2544,7 @@
       "required": [
         "id",
         "targets",
-        "points"
+        "decisions"
       ],
       "title": "Policy",
       "type": "object"
@@ -2969,19 +2994,19 @@
       "additionalProperties": false,
       "description": "Outcome, actual runtime, findings, and ordered execution trace of a Run.",
       "properties": {
-        "decisions": {
+        "diagnostics": {
+          "description": "Unordered findings supporting interpretation of the outcome.",
           "items": {
-            "$ref": "#/$defs/Decision"
+            "$ref": "#/$defs/Diagnostic"
           },
           "type": [
             "array",
             "null"
           ]
         },
-        "diagnostics": {
-          "description": "Unordered findings supporting interpretation of the outcome.",
+        "outcomes": {
           "items": {
-            "$ref": "#/$defs/Diagnostic"
+            "$ref": "#/$defs/DecisionOutcome"
           },
           "type": [
             "array",
@@ -3249,6 +3274,16 @@
             "$ref": "#/$defs/ObservationAvailability"
           },
           "type": "array"
+        },
+        "calculation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CalculationProvenance"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "generator": {
           "type": "string"
@@ -3555,7 +3590,7 @@
       "additionalProperties": false,
       "description": "Named extent, using the same half-open boundary convention as Period.",
       "properties": {
-        "end": {
+        "end_exclusive": {
           "format": "date",
           "type": "string"
         },
@@ -3565,14 +3600,14 @@
             "null"
           ]
         },
-        "start": {
+        "start_inclusive": {
           "format": "date",
           "type": "string"
         }
       },
       "required": [
-        "start",
-        "end"
+        "start_inclusive",
+        "end_exclusive"
       ],
       "title": "Span",
       "type": "object"

@@ -1,5 +1,8 @@
 """Determinism, captured-input replay and finite policy information boundaries."""
 
+from rangekeeper.model import ValueKind
+
+from rangekeeper._schema.enums import DistributionFamily, SolutionStatus
 from datetime import date
 from uuid import uuid4
 import pytest
@@ -15,26 +18,28 @@ from rangekeeper.model import (
 )
 from rangekeeper.model.flow import Flow, Movement
 from rangekeeper.model.scenario import Distribution
-from rangekeeper.duration import make_periods
-from rangekeeper.scenarios import make_plan, generate, replay
+from rangekeeper.duration import make_periods, Frequency
+from rangekeeper.scenarios.market import make_plan, generate
+from rangekeeper.scenarios import replay
 from rangekeeper.policies import (
     evaluate,
     observe,
-    build_stop_gain_resale_policy,
     PolicyCapabilityError,
 )
-from rangekeeper.specification.policy import ObservationBinding
-from rangekeeper.specification.targets import movement
+from rangekeeper.policies import ObservationBinding
+from rangekeeper.examples.investment import build_stop_gain_resale_policy
+from rangekeeper.model import Reference
 
 
 def base():
-    return Model.create(metadata=Metadata(id=uuid4(), schema_version="0.6.0"))
+    return Model.create(metadata=Metadata(id=uuid4(), schema_version="0.7.0"))
 
 
 def test_parallel_streams_and_replay(monkeypatch):
     model = base()
     plan = make_plan(
-        periods=make_periods(date(2027, 1, 1), frequency="year", count=4), seed=23
+        periods=make_periods(date(2027, 1, 1), frequency=Frequency.YEAR, count=4),
+        seed=23,
     )
     first = generate(model, plan, scenario_keys=("one", "two"))
     other = generate(model, plan, scenario_keys=("two", "one"), workers=2)
@@ -64,7 +69,7 @@ def test_fixed_market_oracle_and_shock_applied_once():
         shock_dissipation=0.5,
     )
     plan = make_plan(
-        periods=make_periods(date(2027, 1, 1), frequency="year", count=3),
+        periods=make_periods(date(2027, 1, 1), frequency=Frequency.YEAR, count=3),
         seed=2,
         parameters=params,
     )
@@ -78,7 +83,9 @@ def test_fixed_market_oracle_and_shock_applied_once():
     assert [
         m.magnitude for m in result.value("shock_effect").flow.movements
     ] == pytest.approx([-0.2, -0.1, -0.05])
-    ref = movement(result.value("implied_reversion_cap_rates").flow.movements[0].id)
+    ref = Reference(
+        target=result.value("implied_reversion_cap_rates").flow.movements[0].id
+    )
     with pytest.raises(PolicyCapabilityError, match="unavailable"):
         observe(
             result.model,
@@ -98,14 +105,16 @@ def test_fixed_market_oracle_and_shock_applied_once():
 
 def policy_model(factors):
     measure = Measure(id=uuid4(), code="factor", name="Factor", units="dimensionless")
-    periods = make_periods(date(2027, 1, 1), frequency="year", count=len(factors))
+    periods = make_periods(
+        date(2027, 1, 1), frequency=Frequency.YEAR, count=len(factors)
+    )
     values = []
     for name in ("pricing", "holding", "sale"):
         values.append(
             Value(
                 id=uuid4(),
                 key=name,
-                kind="flow",
+                kind=ValueKind.FLOW,
                 measure=measure.id,
                 flow=Flow(
                     units="dimensionless",
@@ -122,7 +131,7 @@ def policy_model(factors):
             )
         )
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
+        metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
         definitions=Definitions(measures=(measure,)),
         system=System(formulations=(Formulation(id=uuid4(), values=tuple(values)),)),
     )
@@ -163,8 +172,8 @@ def test_resale_dates_strict_threshold_and_holding(factors, minimum, sale):
     ]
     assert sales == [int(i + 1 == sale) for i in range(len(factors))]
     assert holding == [int(i < sale) for i in range(len(factors))]
-    assert result.decisions[-1].at == date(2026 + sale, 12, 31)
-    assert result.decisions[-1].terminated
+    assert result.outcomes[-1].at == date(2026 + sale, 12, 31)
+    assert result.outcomes[-1].terminated
     assert model.value(v["sale"].id).flow.movements[0].magnitude is None
 
 
@@ -182,7 +191,7 @@ def test_future_changes_cannot_change_earlier_decision_and_missing_is_not_zero()
     data = model.system.to_data()
     data["formulations"][0]["values"][0]["flow"]["movements"][-1]["magnitude"] = 99
     revised = model.revise(Update(system=System.from_data(data)))
-    assert evaluate(policy, model=revised).decisions[:2] == before.decisions[:2]
+    assert evaluate(policy, model=revised).outcomes[:2] == before.outcomes[:2]
     data["formulations"][0]["values"][0]["flow"]["movements"][0]["magnitude"] = None
     with pytest.raises(PolicyCapabilityError, match="unresolved"):
         evaluate(policy, model=model.revise(Update(system=System.from_data(data))))
@@ -190,12 +199,16 @@ def test_future_changes_cannot_change_earlier_decision_and_missing_is_not_zero()
 
 def test_independent_realizations_capture_distribution_draws():
     plan = make_plan(
-        periods=make_periods(date(2027, 1, 1), frequency="year", count=3),
+        periods=make_periods(date(2027, 1, 1), frequency=Frequency.YEAR, count=3),
         seed=9,
-        method="independent.v2",
+        method="market.independent",
         parameters=dict(
             space_factor=Distribution(
-                kind="pert", lower=0.5, upper=1.5, mode=1, units="dimensionless"
+                kind=DistributionFamily.PERT,
+                lower=0.5,
+                upper=1.5,
+                mode=1,
+                units="dimensionless",
             ),
             asset_cap=0.05,
         ),
@@ -208,10 +221,10 @@ def test_independent_realizations_capture_distribution_draws():
 
 
 def test_supplied_innovations_realize_without_randomness(monkeypatch):
-    from rangekeeper.scenarios import capture, realize
+    from rangekeeper.scenarios.market import capture, realize
 
     plan = make_plan(
-        periods=make_periods(date(2027, 1, 1), frequency="year", count=3),
+        periods=make_periods(date(2027, 1, 1), frequency=Frequency.YEAR, count=3),
         seed=123,
         parameters=dict(
             initial_value=2.0,
@@ -263,17 +276,17 @@ def test_policy_run_rejects_forged_information_timing_and_actions():
     store = MemoryStore()
     store.put(model)
     run = Executor(store).execute(investment.specify(model, policy=policy))
-    assert run.report.status.solution == "feasible"
+    assert run.report.status.solution is SolutionStatus.FEASIBLE
     for mutation in ("availability", "assignment", "rule", "termination"):
         data = run.to_data()
         data["metadata"]["id"] = str(uuid4())
-        decision = data["report"]["decisions"][0]
+        decision = data["report"]["outcomes"][0]
         if mutation == "availability":
             decision["observations"][0]["available_at"] = "2000-01-01"
         elif mutation == "assignment":
             decision["assignments"][0]["quantity"]["magnitude"] = 0
         elif mutation == "rule":
-            decision["rule"] = str(policy.points[0].rules[0].id)
+            decision["rule"] = str(policy.decisions[0].rules[0].id)
         else:
             decision["terminated"] = True
         candidate = Run.from_data(data)
@@ -284,7 +297,7 @@ def test_control_roles_conflict_across_contributors_and_endogenous_observation_f
     from rangekeeper.examples import investment
     from rangekeeper.execution import Executor
     from rangekeeper.io import MemoryStore
-    from rangekeeper.specification import Specification, SpecificationRecord, compose
+    from rangekeeper.specification import Specification, SpecificationRecord
     from rangekeeper.errors import ValidationError
 
     model = investment.formulate(investment.author(dict(num_periods=2)))
@@ -295,7 +308,7 @@ def test_control_roles_conflict_across_contributors_and_endogenous_observation_f
     store.put(spec)
     other = Specification(
         SpecificationRecord(
-            metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
+            metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
             model=model.id,
             policy=policy,
         )
@@ -303,17 +316,17 @@ def test_control_roles_conflict_across_contributors_and_endogenous_observation_f
     store.put(other)
     joined = Specification(
         SpecificationRecord(
-            metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
+            metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
             includes=(spec.id, other.id),
         )
     )
     with pytest.raises(ValidationError):
-        compose(joined, resolver=store)
+        joined.compose(resolver=store)
     data = spec.to_data()
     data["unknowns"].append(policy.targets[0].to_data())
     with pytest.raises(ValidationError):
-        compose(Specification.from_data(data), resolver=store)
-    observed = policy.points[0].observations[0].target
+        Specification.from_data(data).compose(resolver=store)
+    observed = policy.decisions[0].observations[0].target
     data = spec.to_data()
     data["metadata"]["id"] = str(uuid4())
     data["assignments"] = [

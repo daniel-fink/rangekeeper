@@ -139,6 +139,32 @@ public sealed class Binding : WireRecord
     }
 }
 
+/// <summary>Schema-derived CalculationProvenance wire record. Exports and nested reads are detached.</summary>
+public sealed class CalculationProvenance : WireRecord
+{
+    public CalculationProvenance() { }
+    public CalculationProvenance(JsonObject data) : base(data) { }
+
+    /// <summary>Wire field fingerprint; missing and null remain distinct.</summary>
+    public string Fingerprint
+    {
+        get => Read<string>("fingerprint");
+        init => Write("fingerprint", value);
+    }
+    /// <summary>Wire field name; missing and null remain distinct.</summary>
+    public string Name
+    {
+        get => Read<string>("name");
+        init => Write("name", value);
+    }
+    /// <summary>Wire field versions; missing and null remain distinct.</summary>
+    public IReadOnlyList<LibraryVersion> Versions
+    {
+        get => Read<IReadOnlyList<LibraryVersion>>("versions");
+        init => Write("versions", value);
+    }
+}
+
 /// <summary>Schema-derived Call wire record. Exports and nested reads are detached.</summary>
 public sealed class Call : WireRecord
 {
@@ -353,56 +379,6 @@ public sealed class Decision : WireRecord
     public Decision() { }
     public Decision(JsonObject data) : base(data) { }
 
-    /// <summary>Wire field assignments; missing and null remain distinct.</summary>
-    public IReadOnlyList<Assignment> Assignments
-    {
-        get => Read<IReadOnlyList<Assignment>>("assignments");
-        init => Write("assignments", value);
-    }
-    /// <summary>Wire field at; missing and null remain distinct.</summary>
-    public DateOnly At
-    {
-        get => Read<DateOnly>("at");
-        init => Write("at", value);
-    }
-    /// <summary>Wire field observations; missing and null remain distinct.</summary>
-    public IReadOnlyList<ObservedQuantity> Observations
-    {
-        get => Read<IReadOnlyList<ObservedQuantity>>("observations");
-        init => Write("observations", value);
-    }
-    /// <summary>Wire field point; missing and null remain distinct.</summary>
-    public Guid Point
-    {
-        get => Read<Guid>("point");
-        init => Write("point", value);
-    }
-    /// <summary>Wire field rule; missing and null remain distinct.</summary>
-    public Optional<Guid> Rule
-    {
-        get => ReadOptional<Guid>("rule");
-        init => WriteOptional("rule", value);
-    }
-    /// <summary>Wire field terminated; missing and null remain distinct.</summary>
-    public bool Terminated
-    {
-        get => Read<bool>("terminated");
-        init => Write("terminated", value);
-    }
-    /// <summary>Wire field termination_reason; missing and null remain distinct.</summary>
-    public Optional<string> TerminationReason
-    {
-        get => ReadOptional<string>("termination_reason");
-        init => WriteOptional("termination_reason", value);
-    }
-}
-
-/// <summary>Schema-derived DecisionPoint wire record. Exports and nested reads are detached.</summary>
-public sealed class DecisionPoint : WireRecord
-{
-    public DecisionPoint() { }
-    public DecisionPoint(JsonObject data) : base(data) { }
-
     /// <summary>Wire field at; missing and null remain distinct.</summary>
     public DateOnly At
     {
@@ -432,6 +408,56 @@ public sealed class DecisionPoint : WireRecord
     {
         get => Read<IReadOnlyList<Rule>>("rules");
         init => Write("rules", value);
+    }
+}
+
+/// <summary>Schema-derived DecisionOutcome wire record. Exports and nested reads are detached.</summary>
+public sealed class DecisionOutcome : WireRecord
+{
+    public DecisionOutcome() { }
+    public DecisionOutcome(JsonObject data) : base(data) { }
+
+    /// <summary>Wire field assignments; missing and null remain distinct.</summary>
+    public IReadOnlyList<Assignment> Assignments
+    {
+        get => Read<IReadOnlyList<Assignment>>("assignments");
+        init => Write("assignments", value);
+    }
+    /// <summary>Wire field at; missing and null remain distinct.</summary>
+    public DateOnly At
+    {
+        get => Read<DateOnly>("at");
+        init => Write("at", value);
+    }
+    /// <summary>Wire field decision; missing and null remain distinct.</summary>
+    public Guid Decision
+    {
+        get => Read<Guid>("decision");
+        init => Write("decision", value);
+    }
+    /// <summary>Wire field observations; missing and null remain distinct.</summary>
+    public IReadOnlyList<ObservedQuantity> Observations
+    {
+        get => Read<IReadOnlyList<ObservedQuantity>>("observations");
+        init => Write("observations", value);
+    }
+    /// <summary>Wire field rule; missing and null remain distinct.</summary>
+    public Optional<Guid> Rule
+    {
+        get => ReadOptional<Guid>("rule");
+        init => WriteOptional("rule", value);
+    }
+    /// <summary>Wire field terminated; missing and null remain distinct.</summary>
+    public bool Terminated
+    {
+        get => Read<bool>("terminated");
+        init => Write("terminated", value);
+    }
+    /// <summary>Wire field termination_reason; missing and null remain distinct.</summary>
+    public Optional<string> TerminationReason
+    {
+        get => ReadOptional<string>("termination_reason");
+        init => WriteOptional("termination_reason", value);
     }
 }
 
@@ -1359,17 +1385,17 @@ public sealed class Period : WireRecord
     public Period() { }
     public Period(JsonObject data) : base(data) { }
 
-    /// <summary>Wire field end; missing and null remain distinct.</summary>
-    public DateOnly End
+    /// <summary>Wire field end_exclusive; missing and null remain distinct.</summary>
+    public DateOnly EndExclusive
     {
-        get => Read<DateOnly>("end");
-        init => Write("end", value);
+        get => Read<DateOnly>("end_exclusive");
+        init => Write("end_exclusive", value);
     }
-    /// <summary>Wire field start; missing and null remain distinct.</summary>
-    public DateOnly Start
+    /// <summary>Wire field start_inclusive; missing and null remain distinct.</summary>
+    public DateOnly StartInclusive
     {
-        get => Read<DateOnly>("start");
-        init => Write("start", value);
+        get => Read<DateOnly>("start_inclusive");
+        init => Write("start_inclusive", value);
     }
 }
 
@@ -1379,17 +1405,17 @@ public sealed class Policy : WireRecord
     public Policy() { }
     public Policy(JsonObject data) : base(data) { }
 
+    /// <summary>Wire field decisions; missing and null remain distinct.</summary>
+    public IReadOnlyList<Decision> Decisions
+    {
+        get => Read<IReadOnlyList<Decision>>("decisions");
+        init => Write("decisions", value);
+    }
     /// <summary>Wire field id; missing and null remain distinct.</summary>
     public Guid Id
     {
         get => Read<Guid>("id");
         init => Write("id", value);
-    }
-    /// <summary>Wire field points; missing and null remain distinct.</summary>
-    public IReadOnlyList<DecisionPoint> Points
-    {
-        get => Read<IReadOnlyList<DecisionPoint>>("points");
-        init => Write("points", value);
     }
     /// <summary>Wire field targets; missing and null remain distinct.</summary>
     public IReadOnlyList<Reference> Targets
@@ -1675,17 +1701,17 @@ public sealed class Report : WireRecord
     public Report() { }
     public Report(JsonObject data) : base(data) { }
 
-    /// <summary>Wire field decisions; missing and null remain distinct.</summary>
-    public Optional<IReadOnlyList<Decision>> Decisions
-    {
-        get => ReadOptional<IReadOnlyList<Decision>>("decisions");
-        init => WriteOptional("decisions", value);
-    }
     /// <summary>Wire field diagnostics; missing and null remain distinct.</summary>
     public Optional<IReadOnlyList<Diagnostic>> Diagnostics
     {
         get => ReadOptional<IReadOnlyList<Diagnostic>>("diagnostics");
         init => WriteOptional("diagnostics", value);
+    }
+    /// <summary>Wire field outcomes; missing and null remain distinct.</summary>
+    public Optional<IReadOnlyList<DecisionOutcome>> Outcomes
+    {
+        get => ReadOptional<IReadOnlyList<DecisionOutcome>>("outcomes");
+        init => WriteOptional("outcomes", value);
     }
     /// <summary>Wire field runtime; missing and null remain distinct.</summary>
     public Optional<Runtime> Runtime
@@ -1879,6 +1905,12 @@ public sealed class ScenarioRealization : WireRecord
         get => Read<IReadOnlyList<ObservationAvailability>>("availability");
         init => Write("availability", value);
     }
+    /// <summary>Wire field calculation; missing and null remain distinct.</summary>
+    public Optional<CalculationProvenance> Calculation
+    {
+        get => ReadOptional<CalculationProvenance>("calculation");
+        init => WriteOptional("calculation", value);
+    }
     /// <summary>Wire field generator; missing and null remain distinct.</summary>
     public string Generator
     {
@@ -2049,11 +2081,11 @@ public sealed class Span : WireRecord
     public Span() { }
     public Span(JsonObject data) : base(data) { }
 
-    /// <summary>Wire field end; missing and null remain distinct.</summary>
-    public DateOnly End
+    /// <summary>Wire field end_exclusive; missing and null remain distinct.</summary>
+    public DateOnly EndExclusive
     {
-        get => Read<DateOnly>("end");
-        init => Write("end", value);
+        get => Read<DateOnly>("end_exclusive");
+        init => Write("end_exclusive", value);
     }
     /// <summary>Wire field name; missing and null remain distinct.</summary>
     public Optional<string> Name
@@ -2061,11 +2093,11 @@ public sealed class Span : WireRecord
         get => ReadOptional<string>("name");
         init => WriteOptional("name", value);
     }
-    /// <summary>Wire field start; missing and null remain distinct.</summary>
-    public DateOnly Start
+    /// <summary>Wire field start_inclusive; missing and null remain distinct.</summary>
+    public DateOnly StartInclusive
     {
-        get => Read<DateOnly>("start");
-        init => Write("start", value);
+        get => Read<DateOnly>("start_inclusive");
+        init => Write("start_inclusive", value);
     }
 }
 

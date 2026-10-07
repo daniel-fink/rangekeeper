@@ -4,15 +4,149 @@ import json
 from dataclasses import asdict
 from html import escape
 from pathlib import Path
+from urllib.parse import quote, urljoin
 
 from rangekeeper.io import json as model_json
 from rangekeeper.adapters.cytoscape import project, write_viewer
 from rangekeeper.operation import fingerprint
-from rangekeeper.workflow.ingestion import tabular
+from rangekeeper.evidence import tabular
 
 from ._declarations import plain
-from ._review import clarification_html, object_index, target_links
+from .reporting import prepare
 from .references import references
+from .checking import CheckStatus
+
+
+def target_links(targets, viewer_url):
+    """A characteristic is inspected through its actual owner in Cytoscape."""
+    links = []
+    for target in targets:
+        url = viewer_url.split("#")[0] + "#select=" + quote(target["owner"], safe="")
+        links.append(
+            '<li><a target="_blank" rel="noopener" href="'
+            + escape(url, quote=True)
+            + '">'
+            + escape(target["label"])
+            + "</a> · "
+            + escape(target["characteristic"])
+            + "</li>"
+        )
+    if not links:
+        return "<p>No supported graph target recorded.</p>"
+    return (
+        f"<details><summary>{len(links)} supported assertions</summary><ul>"
+        + "".join(links)
+        + "</ul></details>"
+    )
+
+
+def decisions_html(decisions, *, targets=None, declared=None, viewer_url="viewer.html"):
+    """Render existing questions without equating mapping approval with resolution."""
+    targets, declared = targets or {}, declared or {}
+    review_url = (
+        "" if viewer_url == "viewer.html" else urljoin(viewer_url, "review.html")
+    )
+    records = sorted(
+        decisions.get("decisions", ()),
+        key=lambda d: (d.get("status") == "accepted", d.get("id", "")),
+    )
+    parts = [
+        '<section id="clarifications"><h2>Questions and decisions</h2><p>Mapping approval and evidence completeness are separate. Questions and limitations below remain visible even for accepted mappings.</p>'
+    ]
+    for d in records:
+        identifier = d["id"]
+        attribution = d.get("source") or "Attribution not recorded"
+        date = d.get("date") or "Date not recorded"
+        refs = d.get("references") or ("Supporting source references not recorded",)
+        parts += [
+            '<details id="decision-'
+            + escape(identifier, quote=True)
+            + ('" open><summary>' if d.get("status") != "accepted" else '"><summary>')
+            + escape(
+                f"{identifier} · {d.get('status', 'Status not recorded')} · {d.get('category', '')}"
+            )
+            + "</summary>",
+            "<p>" + escape(d.get("text", "Decision text not recorded")) + "</p>",
+            "<p>" + escape(f"{attribution} · {date}") + "</p>",
+            "<p>Evidence: " + escape("; ".join(refs)) + "</p>",
+        ]
+        uses = declared.get(identifier, ())
+        parts.append(
+            "<p>Declared uses: " + escape("; ".join(uses) or "None recorded") + "</p>"
+        )
+        parts.append(target_links(targets.get(identifier, ()), viewer_url))
+        parts.append("</details>")
+    for m in decisions.get("mappings", ()):
+        identifier = m["id"]
+        parts.append(
+            '<details id="mapping-'
+            + escape(identifier, quote=True)
+            + '"><summary>'
+            + escape(
+                f"{identifier} · {m.get('title', '')} · mapping status: {m.get('status', 'not recorded')}"
+            )
+            + "</summary>"
+        )
+        for title, field in [
+            ("Question / limitation", "question"),
+            ("Proposed interpretation", "proposal"),
+            ("Graph effect", "graph_structure"),
+        ]:
+            parts.append(
+                "<p><strong>"
+                + title
+                + ":</strong> "
+                + escape(m.get(field) or "Not recorded")
+                + "</p>"
+            )
+        parts.append(
+            "<p>Evidence: "
+            + escape(
+                f"{m.get('source', 'Source not recorded')} · {m.get('sheet', 'Sheet not recorded')} · {', '.join(m.get('cells', ())) or 'Cells not recorded'}"
+            )
+            + "</p>"
+        )
+        parts.append(
+            "<p>Decisions: "
+            + ", ".join(
+                '<a href="'
+                + escape(review_url + "#decision-" + quote(d, safe=""), quote=True)
+                + '">'
+                + escape(d)
+                + "</a>"
+                for d in m.get("decisions", ())
+            )
+            + "</p>"
+        )
+        combined = {
+            (t["owner"], t["characteristic"]): t
+            for d in m.get("decisions", ())
+            for t in targets.get(d, ())
+        }
+        parts.append(target_links(combined.values(), viewer_url))
+        parts.append("</details>")
+    return (
+        "".join(parts)
+        + "</section>"
+        + """<script>
+function revealReviewAnchor(){const id=decodeURIComponent(location.hash.slice(1));
+const item=document.getElementById(id);if(item&&item.tagName==='DETAILS'){item.open=true;item.scrollIntoView();}}
+window.addEventListener('hashchange',revealReviewAnchor);revealReviewAnchor();</script>"""
+    )
+
+
+def clarification_html(result, viewer_url, *, prepared=None):
+    snapshot = result.metadata.get("review_specification")
+    if not snapshot:
+        return "<h2>Questions and decisions</h2><p>This older build did not capture authored review records.</p>"
+    prepared = prepare(result) if prepared is None else prepared
+    targets, declared = prepared.targets, prepared.declared
+    return decisions_html(
+        snapshot.get("decisions", {}),
+        targets=targets,
+        declared=declared,
+        viewer_url=viewer_url,
+    )
 
 
 def _references(items) -> str:
@@ -29,8 +163,8 @@ def _completeness(check) -> str:
     """Show each operand's missing contributors without suggesting a complete total."""
     sides = []
     for name in ("left", "right"):
-        missing = getattr(check, name + "_missing")
-        known = getattr(check, name + "_known_subtotal")
+        missing = check[name]["missing"]
+        known = check[name]["known_subtotal"]
         if missing:
             sides.append(
                 "<li>"
@@ -51,46 +185,64 @@ def _completeness(check) -> str:
     )
 
 
+def _display_value(check, side):
+    value = check[side]["value"]
+    return len(value) if check["report_counts"] and value is not None else value
+
+
 def render(result, *, viewer_url: str = "viewer.html", compact: bool = False) -> str:
     """Gives notebook and CLI users the same inspection of Evidence, checks and
     limitations while retaining access to the underlying graph provenance.
     """
+    return _render(result, prepare(result), viewer_url=viewer_url, compact=compact)
+
+
+def _render(result, prepared, *, viewer_url="viewer.html", compact=False):
     summaries = []
-    for category in dict.fromkeys(c.category for c in result.checks):
+    for category in dict.fromkeys(c["category"] for c in prepared.checks):
         counts = ", ".join(
-            f"{sum(c.category == category and c.status == status for c in result.checks)} {status}"
+            f"{sum(c['category'] == category and c['status'] == status for c in prepared.checks)} {status}"
             for status in ("agree", "unavailable", "difference")
         )
         summaries.append(f"<li>{escape(category)}: {counts}</li>")
     rows = []
-    owners = {str(key): value for key, value in object_index(result).items()}
+    owners = {str(key): value for key, value in prepared.owners.items()}
     for c in sorted(
-        result.checks,
+        prepared.checks,
         key=lambda c: (
-            {"difference": 0, "unavailable": 1, "agree": 2}.get(c.status, 1),
-            c.group,
-            c.scope,
+            {"difference": 0, "unavailable": 1, "agree": 2}.get(c["status"], 1),
+            c["group"],
+            c["scope"],
         ),
     ):
-        if compact and c.status == "agree":
+        if compact and c["status"] == CheckStatus.AGREE.value:
             continue
         rows.append(
             "<tr>"
             + "".join(
                 "<td>" + escape(str(v)) + "</td>"
                 for v in (
-                    c.group,
-                    c.scope,
-                    c.status,
-                    c.left,
-                    c.right,
-                    c.explanation,
+                    c["group"],
+                    c["scope"],
+                    c["status"],
+                    _display_value(c, "left"),
+                    _display_value(c, "right"),
+                    c["explanation"],
                 )
             )
             + "<td>"
-            + _references(c.references)
+            + _references(c["references"])
             + _completeness(c)
-            + target_links((owners[t] for t in c.targets if t in owners), viewer_url)
+            + target_links(
+                (
+                    owners[t]
+                    for t in dict.fromkeys(
+                        (*c["left"]["targets"], *c["right"]["targets"])
+                    )
+                    if t in owners
+                ),
+                viewer_url,
+            )
             + "</td></tr>"
         )
     findings = "".join(
@@ -118,7 +270,13 @@ def render(result, *, viewer_url: str = "viewer.html", compact: bool = False) ->
             cells = []
             for column in table.data.columns:
                 claim = tabular.claim(table, row.id, column)
-                title = str(claim.id) + " · " + "; ".join(references((claim,)))
+                title = (
+                    str(claim.id)
+                    + " · "
+                    + "; ".join(
+                        prepared.cell_references[(name, ("rows", str(row.id), column))]
+                    )
+                )
                 cells.append(
                     '<td title="'
                     + escape(title, quote=True)
@@ -170,7 +328,7 @@ def render(result, *, viewer_url: str = "viewer.html", compact: bool = False) ->
         + '">Open graph and provenance</a></p><h2>Findings</h2><ul>'
         + findings
         + "</ul>"
-        + clarification_html(result, viewer_url)
+        + clarification_html(result, viewer_url, prepared=prepared)
         + "<details><summary>Named Evidence</summary><table><tr><th>Name</th><th>Rows</th><th>Columns</th><th>Issues</th></tr>"
         + evidence
         + "</table></details><h2>Checks</h2><table><tr><th>Group</th><th>Scope</th><th>Status</th><th>Left</th><th>Right</th><th>Explanation</th><th>Sources</th></tr>"
@@ -194,8 +352,10 @@ def export(result, destination: Path):
     destination = Path(destination)
     destination.mkdir(parents=True, exist_ok=True)
     model_json.write(result.model, destination / "model.json")
+    prepared = prepare(result)
     checks = {
-        "checks": [asdict(c) for c in result.checks],
+        "schema": "rk.workflow-checks/v2",
+        "checks": prepared.checks,
         "source_checks": [asdict(c) for c in result.source_checks],
         "deferred_records": plain(result.metadata.get("deferred_records", ())),
         "findings": [asdict(f) for f in result.findings],
@@ -222,5 +382,5 @@ def export(result, destination: Path):
         [project(result.model, "Workflow Model", {"reviewUrl": "review.html"})],
         destination / "viewer.html",
     )
-    (destination / "review.html").write_text(render(result))
+    (destination / "review.html").write_text(_render(result, prepared))
     return destination

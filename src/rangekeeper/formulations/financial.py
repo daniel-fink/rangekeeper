@@ -4,19 +4,28 @@ from collections.abc import Mapping
 from uuid import UUID
 from ..model import Model
 from .._schema.records import Formulation, Reference
-from ._alignment import aligned, shape, target, owner
-from ._construction import construct
-from .expression import reference, literal, equal, add, divide, power, sum_expressions
+from .flow import aligned, shape
+from .authoring import declare
+from ..model.scope import target_value
+from .expression import (
+    reference,
+    literal,
+    equal,
+    add,
+    divide,
+    power,
+    sum as expression_sum,
+)
 
 
-def build_discount(
+def discount(
     model: Model,
     *,
     id: UUID,
     source: UUID,
     rate: Reference,
     result: UUID,
-    first_period: int = 1
+    first_period: int = 1,
 ) -> Formulation:
     """Declare amount / (1 + periodic rate)**n; n starts at first_period.
 
@@ -29,41 +38,46 @@ def build_discount(
         (
             m.id,
             equal(
-                reference(target(result, m)),
+                reference(Reference(target=m.id)),
                 divide(
-                    reference(target(source, matches[0])),
+                    reference(Reference(target=matches[0].id)),
                     power(add(literal(1), reference(rate)), literal(i + first_period)),
                 ),
             ),
         )
         for i, (m, matches) in enumerate(aligned(model, (source,), result))
     ]
-    return construct(id, "discount", equations, (source, owner(model, rate), result))
+    return declare(
+        id, "discount", equations, (source, target_value(model, rate).id, result)
+    )
 
 
-def build_present_value(
+def present_value(
     model: Model, *, id: UUID, source: UUID, result: Reference
 ) -> Formulation:
     """Declare total PV as an ordered sum of an explicitly discounted Flow."""
     equation = equal(
         reference(result),
-        sum_expressions(
-            [reference(target(source, m)) for m in shape(model, source).movements]
+        expression_sum(
+            [reference(Reference(target=m.id)) for m in shape(model, source).movements]
         ),
     )
-    return construct(
-        id, "present_value", [("total", equation)], (source, owner(model, result))
+    return declare(
+        id,
+        "present_value",
+        [("total", equation)],
+        (source, target_value(model, result).id),
     )
 
 
-def build_reversion(
+def reversion(
     model: Model,
     *,
     id: UUID,
     income: UUID,
     capitalization: Reference,
     result: UUID,
-    mapping: Mapping[UUID, UUID]
+    mapping: Mapping[UUID, UUID],
 ) -> Formulation:
     """Declare sale = income / capitalization using result-Movement UUID to income-Movement UUID mapping.
 
@@ -80,15 +94,18 @@ def build_reversion(
         (
             m.id,
             equal(
-                reference(target(result, m)),
+                reference(Reference(target=m.id)),
                 divide(
-                    reference(target(income, source[mapping[m.id]])),
+                    reference(Reference(target=source[mapping[m.id]].id)),
                     reference(capitalization),
                 ),
             ),
         )
         for m in destination
     ]
-    return construct(
-        id, "reversion", equations, (income, owner(model, capitalization), result)
+    return declare(
+        id,
+        "reversion",
+        equations,
+        (income, target_value(model, capitalization).id, result),
     )

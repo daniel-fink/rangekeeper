@@ -1,7 +1,6 @@
 """Typed catalogue lookup, separate from code searching."""
 
 from uuid import UUID
-
 from .._schema.records import (
     Definitions as Definitions,
     Measure,
@@ -11,25 +10,14 @@ from .._schema.records import (
 )
 from ..errors import MissingReferenceError, ReferenceTypeError
 from ..validate import require_uuid, require_text
+from .._validation import require, require_unique, require_acyclic
 
 
 def _lookup(items, identity, kind):
     require_uuid(identity, "id")
-    records = []
-    if items:
-        records.extend(items.measures or ())
-        records.extend(items.functions or ())
-        for taxonomy in items.taxonomies or ():
-            records.append(taxonomy)
-            records.extend(taxonomy.classifications)
-    for record in records:
-        if record.id == identity:
-            if not isinstance(record, kind):
-                raise ReferenceTypeError(
-                    f"{identity} is {type(record).__name__}, expected {kind.__name__}"
-                )
-            return record
-    raise MissingReferenceError(str(identity))
+    from .._record_index import RecordIndex
+
+    return RecordIndex.build(items or Definitions()).get(identity, kind)
 
 
 def measure(items: Definitions | None, id: UUID) -> Measure:
@@ -73,7 +61,9 @@ def find_taxonomies(items: Definitions | None, *, code: str) -> tuple[Taxonomy, 
 
 
 def find_classifications(
-    items: Definitions | None, *, code: str
+    items: Definitions | None,
+    *,
+    code: str,
 ) -> tuple[Classification, ...]:
     """Search across Taxonomies; the same local code can yield several matches."""
     require_text(code, "code")
@@ -114,3 +104,40 @@ __all__ = [
     "find_classifications",
     "find_functions",
 ]
+
+
+def check_definitions(definitions):
+    """Check catalogue names and Taxonomy-local ancestry."""
+    for collection in ("taxonomies", "measures", "functions"):
+        require_unique(
+            definitions.get(collection) or [],
+            "code",
+            "Function code" if collection == "functions" else f"{collection} code",
+            path=f"/definitions/{collection}",
+        )
+    for taxonomy_index, taxonomy in enumerate(definitions.get("taxonomies") or []):
+        records = taxonomy["classifications"]
+        path = f"/definitions/taxonomies/{taxonomy_index}/classifications"
+        require(bool(records), "empty Taxonomy", path=path)
+        require_unique(
+            records,
+            "code",
+            "Classification code",
+            path=f"/definitions/taxonomies/{taxonomy_index}/classifications",
+        )
+        local = {r["id"] for r in records}
+        parents = {}
+        roots = []
+        for index, record in enumerate(records):
+            parent = record.get("parent")
+            if parent is None:
+                roots.append(record)
+            else:
+                require(
+                    parent in local,
+                    "Classification parent outside Taxonomy",
+                    path=f"{path}/{index}/parent",
+                )
+                parents[record["id"]] = [parent]
+        require_acyclic(parents, "Classification parent", path=path)
+        require(len(roots) == 1, "Taxonomy must have one root", path=path)

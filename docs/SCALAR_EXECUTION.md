@@ -30,6 +30,7 @@ when NumPy is installed. Optional dependencies are listed in the [installation g
 from pathlib import Path
 from rangekeeper import Model, Specification
 from rangekeeper.execution import Executor
+from rangekeeper.run import SolutionStatus
 from rangekeeper.io import DirectoryStore, yaml
 
 examples = Path("schema/examples")
@@ -39,7 +40,7 @@ store.put(yaml.read(examples / "specification-common.yaml", kind=Specification))
 specification = yaml.read(examples / "specification-composed-forward.yaml",
                           kind=Specification)
 run = Executor(store).execute(specification)
-if run.report.status.solution == "feasible":
+if run.report.status.solution is SolutionStatus.FEASIBLE:
     output = store.load_model(run.record.outputs[0])
 ```
 
@@ -68,9 +69,9 @@ store. It never reads the synthetic expected-output fixtures as results.
 
 | Module | Responsibility |
 | --- | --- |
-| `execution/preparation.py` | Compose/validate exact revisions, retain contributor scope, collect imposed predicates and normalize assignments to Measure units. |
+| `execution/preparation.py` | Reuse the prepared exact composition and Model, retain contributor scope, collect imposed predicates and normalize assignments to Measure units. |
 | `execution/compiler.py` | Derive affine coefficients after assignments; check arithmetic capability and dimensions; retain original Constraint identity and row scaling. No Pyomo dependency. |
-| `execution/evaluator.py` | Traverse original numerical expression trees. Uses no compiled coefficients or solver variables. |
+| `execution/evaluator.py` | Traverse original comparisons with shared `model.expression.evaluation` arithmetic. Uses no compiled coefficients or solver variables. |
 | `execution/acceptance.py` | Check serialized candidate quantities, exact assignments and every original equality/bound; return dimensional residual diagnostics. |
 | `execution/publication.py` | Construct a new revision, update quantity evidence, round-trip through JSON and provide a candidate resolver for pre-publication Run validation. |
 | `execution/settings.py` | Resolve requested/default limits and account for unsupported or adjusted settings. |
@@ -91,7 +92,9 @@ The executor supports Model-owned scalar Measurements and finite Flow Movements 
 unknown roles, quantity literals, references, negation, addition, subtraction,
 multiplication with at least one fixed expression, division by a nonzero fixed
 expression, and powers that remain affine after assignment. Constraints support
-equality, nonstrict upper/lower bounds, conjunctions and Boolean constants.
+equality, nonstrict upper/lower bounds, conjunctions and Boolean constants. Strict
+comparisons are supported only when every referenced operand is explicitly fixed;
+this check precedes simplification and is repeated during acceptance.
 
 All Model and Specification Constraints are imposed. Unused reporting expressions
 remain passive, including the fixture's area query. No stored amount supplies a
@@ -101,7 +104,7 @@ equations must compare compatible dimensions. Multiplicative arithmetic that wou
 require unsupported offset-unit handling is rejected.
 
 The adapter explicitly rejects nonlinear unknown products/divisors/powers, strict
-comparisons, disjunctions, function calls, selections, imposed queries, ordered
+comparisons involving unknowns, disjunctions, function calls, selections, imposed queries, ordered
 optimization objectives and Specification-local Value publication. Rich temporal
 Values and scenario generation follow the [temporal contract](SCENARIOS_AND_POLICIES.md).
 Structural interventions and remaining external consumer migration remain later work. It never substitutes hard-coded valuation formulas.
@@ -145,7 +148,7 @@ Completely unconstrained Values use an explicitly reported zero initialization.
 
 The proposed Model is reconstructed through the public JSON codec before numerical
 checking. The evaluator reads its quantities and the original expression trees,
-not the lowered rows. Copied assignments and Boolean assertions are exact. For
+not the lowered rows. Copied assignments, Boolean assertions and supported strict comparisons are exact. For
 each numerical comparison the default tolerance is:
 
 ```text
@@ -177,3 +180,13 @@ Run, including failures; parent outputs are exactly the unique union of child ou
 consume canonical Models independently of numerical execution. Nonlinear solving,
 optimization and structural interventions require separate capability and acceptance
 contracts. See [verification](VERIFICATION.md) for current checks.
+
+## Implementation identity
+
+`execution.implementation` records distinct compiler and evaluator fingerprints.
+Each manifest includes its declared semantic Python sources, packaged schema
+resources, and relevant library versions. Shared arithmetic changes alter both
+identities. Comments and docstrings do not. Missing declared files fail explicitly.
+Solver implementation/version evidence remains owned by the backend. Workflow and
+scenario calculations share hashing mechanics but retain separate manifests and
+provenance contracts.

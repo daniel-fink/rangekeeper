@@ -1,12 +1,12 @@
 metadata:
-  id: c1efd865-1463-54c1-b28b-5e689f4837ed
-  schema_version: 0.6.0
+  id: be7ba0ee-4f5b-5cc8-8425-7b2df631d8de
+  schema_version: 0.7.0
   name: Composed forward valuation
   description: Combines shared requirements with investigation-specific roles. Equivalent
     to the standalone forward example; no solver has been run.
   previous: 6415f03f-f1a4-5ff2-b4f8-b4faaafd027e
 includes:
-- fb1663aa-1482-50e1-9da9-d798faa70872
+- 38a9e7e9-2eb4-5142-9570-8884a51452bb
 assignments:
 - quantity:
     magnitude: 30000

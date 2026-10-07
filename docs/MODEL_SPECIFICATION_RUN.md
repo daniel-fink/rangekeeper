@@ -26,8 +26,9 @@ a Value or Movement by UUID. Includes compose additive
 contributions; conflicting declarations fail. Cases describe separate attempts in
 a batch. A partial contribution can exist before all external references resolve.
 
-Composition builds a derived view without changing contributors. Validation checks
-that view against its resolver. Execution support is narrower than the full schema:
+`Specification.compose` builds a derived view without changing contributors.
+`Composition.validate` checks that view against its resolver and preserves original
+source attribution. Execution support is narrower than the full schema:
 the [executor](SCALAR_EXECUTION.md) supports finite affine feasibility, including
 temporal equations and the supported exogenous policy slice. Declaring an objective
 or nonlinear expression does not mean that executor can solve it.
@@ -40,7 +41,8 @@ solution status have different meanings. A deadline or backend error does not pr
 infeasibility. A batch accounts for each direct case and the union of its outputs.
 
 The Report retains diagnostics, runtime implementations and settings, trace steps
-and policy decisions where applicable. Local construction checks the report.
+and policy outcomes where applicable. `Policy.decisions` contains declared Decision
+records; `Report.outcomes` contains DecisionOutcome evidence. Local construction checks the report.
 Resolver-backed validation also checks document kinds, references, lineage and
 permitted publication changes. It does not rerun mathematics. Independent numerical
 acceptance occurs in execution before an output is published.
@@ -49,7 +51,8 @@ acceptance occurs in execution before an output is published.
 
 Records are immutable. Generated `replace()` builds another record while retaining
 omitted/null/empty distinctions. `Model.revise()` and `Specification.revise()` apply
-revision rules; metadata-only changes are not meaningful content revisions. Run has
+revision rules; identity-only changes are not meaningful content revisions.
+Descriptive metadata changes can be meaningful. Run has
 no revise operation because it records a finalized event.
 
 Each Model revision is a complete immutable snapshot. Creating M2 leaves M1 intact.

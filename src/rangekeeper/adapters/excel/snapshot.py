@@ -3,10 +3,11 @@
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field, fields, replace
 from types import MappingProxyType
+from typing import Any
 
 from rangekeeper import _structured
 from rangekeeper.operation import _Failure
-from rangekeeper.workflow.ingestion._encoding import encode
+from rangekeeper.evidence.errors import encode
 
 from rangekeeper import validate
 from rangekeeper.evidence import Location, Source
@@ -329,10 +330,10 @@ class Workbook(Document):
                     location=item.location, kind="worksheet", label=item.name
                 )
         elif cell is None:
-            for coordinate, item in sheet.cells.items():
-                if item.populated:
+            for coordinate, child in sheet.cells.items():
+                if child.populated:
                     yield ContentItem(
-                        location=item.location, kind="cell", label=coordinate
+                        location=child.location, kind="cell", label=coordinate
                     )
 
     def _inspect(self, location: Location) -> Inspection:
@@ -358,7 +359,10 @@ class Workbook(Document):
                     merged_ranges=sheet.merged_ranges[:50],
                 ),
             )
-        updates = {name: _short(value) for name, value in cell.observation()}
+        # Names and value types come from this validated Cell, not external input.
+        updates: dict[str, Any] = {
+            name: _short(value) for name, value in cell.observation()
+        }
         preview = replace(cell, **updates)
         return Inspection(
             location=location, kind="cell", content=preview, truncated=preview != cell

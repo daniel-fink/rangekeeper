@@ -48,8 +48,7 @@ class OperationDeclaration:
     properties: Callable[[], Mapping[str, object]]
     inputs: tuple[tuple[str, str], ...] = ()
     output: str = "table"
-    policy_type: type[Any] | None = None
-    policy_field: str = "specification"
+    repeated_inputs: tuple[str, ...] = ()
     modules: tuple[str, ...] = ()
     dependencies_used: tuple[str, ...] = ()
     inspect_input: Callable[[Any, Path], Mapping[str, object]] | None = None
@@ -67,17 +66,8 @@ class OperationDeclaration:
                 if f.default is MISSING and f.default_factory is MISSING
             },
         )
-        if self.policy_type is not None:
-            raw = data[self.policy_field]
-            if self.policy_field == "specifications":
-                if not isinstance(raw, Mapping):
-                    raise TypeError("specifications must be a mapping")
-                data[self.policy_field] = {
-                    text(k): self.policy_type.from_mapping(v) for k, v in raw.items()
-                }
-            else:
-                data[self.policy_field] = self.policy_type.from_mapping(raw)
-        return self.request_type(**data)
+        parser = getattr(self.request_type, "from_mapping", None)
+        return parser(data) if parser is not None else self.request_type(**data)
 
     def dependencies(self, request: Any) -> tuple[tuple[str, str], ...]:
         return tuple(
@@ -85,7 +75,7 @@ class OperationDeclaration:
             for field, kind in self.inputs
             for name in (
                 getattr(request, field)
-                if field == "inputs"
+                if field in self.repeated_inputs
                 else (getattr(request, field),)
             )
         )

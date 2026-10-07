@@ -7,7 +7,8 @@ its equations or treating a recorded result as a fixed input.
 ```text
 schema/                          LinkML fields and structural contracts
 src/rangekeeper/
-  _schema/, _records.py          generated immutable records and encoding
+  _schema/, _records.py          generated immutable records, enums and encoding
+  _record_index.py, _revision.py record locations and revision comparison
   _behaviors/                   field-free intrinsic record methods
   model/, specification/, run/   root facades and semantic validation
   duration/, units.py            calendar and dimensional rules
@@ -41,7 +42,7 @@ See [record contracts](RECORD_BOUNDARY.md) and [naming](RK_NAMING.md).
 ## Validation and execution
 
 Structural validation checks encoded shape. Domain validation checks identities,
-references, units and mathematical scope. `Model` builds its lookup Index once;
+references, units and mathematical scope. `Model` builds its `RecordIndex` once;
 validation reuses it. Resolver-backed checks use exact revision IDs and never
 silently substitute the newest document.
 
@@ -51,9 +52,9 @@ and separates preparation, solving, acceptance and persistence. A solver candida
 becomes an output only after the original equations accept its serialized values.
 The output is stored before its Run; storage is not a multi-document transaction.
 
-Run validation has three parts: local report checks, `Publication` checks for
-permitted changes and retained evidence, and `Tree` checks for references, batch
-accounting and lineage. These checks do not rerun a solver or prove feasibility.
+Run validation combines `run.report` local evidence checks, `run.outputs` checks
+for permitted changes and retained evidence, and one resolver-backed operation
+for references, batch accounting and lineage. These checks do not rerun a solver or prove feasibility.
 See [execution](SCALAR_EXECUTION.md) and [storage](RUN_AND_STORAGE.md).
 
 ## Data and presentation

@@ -1,5 +1,7 @@
 """Independently check proposed serialized quantities against original mathematics."""
 
+from rangekeeper.run import Severity
+
 from dataclasses import dataclass
 import math
 
@@ -8,9 +10,9 @@ from .._schema.records import Diagnostic, Quantity
 from .preparation import Prepared
 from .evaluator import comparisons
 from .errors import NumericalError
-from . import symbols
-from .._schema.records import Expression
-from ..model._index import walk
+from ..model.scope import recorded_scalar
+from .._schema.records import Expression, ExpressionKind
+from .._record_index import walk
 
 
 @dataclass(frozen=True)
@@ -56,7 +58,7 @@ def check(
     """
     values = {}
     for id in (*prepared.assignments, *prepared.unknowns):
-        value = symbols.read(candidate, prepared.references[id])
+        value = recorded_scalar(candidate, prepared.references[id])
         if value is None:
             raise NumericalError(f"candidate has no quantity for {id}")
         values[id] = prepared.units.convert(value, to=prepared.value_units[id])
@@ -67,7 +69,7 @@ def check(
             accepted = False
             diagnostics.append(
                 Diagnostic(
-                    severity="error",
+                    severity=Severity.ERROR,
                     code="assignment_rejected",
                     message="Candidate changed an explicit assignment.",
                     document=prepared.model.id,
@@ -77,7 +79,10 @@ def check(
             )
     for assertion in prepared.assertions:
         for relation, left, right, boolean in comparisons(
-            assertion.predicate, values, units=prepared.units
+            assertion.predicate,
+            values,
+            units=prepared.units,
+            fixed=prepared.assignments.keys(),
         ):
             residual = float(left.magnitude - right.magnitude)
             tolerance = (
@@ -90,23 +95,31 @@ def check(
             if not math.isfinite(residual) or not math.isfinite(tolerance):
                 raise NumericalError("acceptance residual or tolerance is not finite")
             valid = (
-                abs(residual) <= tolerance
-                if relation == "equal"
+                residual < 0
+                if relation == "less_than"
                 else (
-                    residual <= tolerance
-                    if relation == "less_than_or_equal"
-                    else -residual <= tolerance
+                    residual > 0
+                    if relation == "greater_than"
+                    else (
+                        abs(residual) <= tolerance
+                        if relation == "equal"
+                        else (
+                            residual <= tolerance
+                            if relation == "less_than_or_equal"
+                            else -residual <= tolerance
+                        )
+                    )
                 )
             )
             accepted &= valid
             diagnostics.append(
                 Diagnostic(
-                    severity="info" if valid else "error",
+                    severity=Severity.INFO if valid else Severity.ERROR,
                     code="constraint_residual",
                     message=(
                         f"Independent original-expression check: {relation}; signed residual left-right, "
                         f"unscaled in left-side units; tolerance = {tolerances.absolute} + "
-                        f"{tolerances.relative} * max(abs(left), abs(right)) (Boolean: exact). "
+                        f"{tolerances.relative} * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). "
                         f"Accepted={valid}."
                     ),
                     document=assertion.document,
@@ -115,7 +128,7 @@ def check(
                         node.target
                         for node, _, _ in walk(assertion.predicate)
                         if isinstance(node, Expression)
-                        and node.kind == "reference"
+                        and node.kind is ExpressionKind.REFERENCE
                         and node.target is not None
                     ),
                     residual=Quantity(magnitude=residual, units=left.units),

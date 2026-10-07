@@ -1,5 +1,10 @@
 # Excel source ingestion
 
+Current API ownership is documented in the [consumer guide](../../docs/CONSUMER_MIGRATION.md)
+and [workflow format contract](../../docs/GRAPH_WORKFLOW_FORMATS.md). The dated
+validation records below describe their original verification runs; they are not
+acceptance results for the current refactor.
+
 Status: first Excel slice validated on 17 September 2026. The synthetic and
 checksum-bound local JLL examples, relevant RK/Mandarin regressions and focused
 code checks passed. No Mandarin source reader has been replaced and no project
@@ -11,13 +16,13 @@ workflow described in [the workflow contract](ingestion-workflow.md).
 
 ## Ownership and public API
 
-`graph.operation` owns `Operation`, `Outcome[T]`, `Diagnostic` and
-`fingerprint(operation)`. `Method`, `Source` and `Location` remain graph-owned.
-`IssueSeverity` is reused from ingestion. `Issue` and `Evidence` retain their
+`operation` owns `Operation`, `Outcome[T]`, `Diagnostic` and
+`fingerprint(operation)`. `Method`, `Source` and `Location` belong to `evidence`.
+`Severity` re-exports the canonical generated enum. `Issue` and `Evidence` retain their
 existing contracts and fingerprint format.
 
-`graph.adapter.document` owns the `Document` interface and recorded inspection
-functions. `graph.adapter.excel` owns immutable `Workbook`, `Worksheet`, `Cell`,
+`adapters.document` owns the `Document` interface and recorded inspection
+functions. `adapters.excel` owns immutable `Workbook`, `Worksheet`, `Cell`,
 `WorksheetInspection`, typed extraction requests, `read`, `extract_table` and
 `load_specification`. Dependencies are lazy: importing these APIs does not import
 openpyxl or PyYAML. Install the `excel` extra to use the reader and YAML decoder.
@@ -26,7 +31,7 @@ ranges in RK are compatibility declarations, not a project lockfile.
 
 ```python
 from uuid import UUID
-from rangekeeper.graph.adapter import document, excel
+from rangekeeper.adapters import document, excel
 
 outcome = excel.read(
     path,

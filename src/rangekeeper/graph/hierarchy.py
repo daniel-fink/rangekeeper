@@ -2,12 +2,19 @@
 
 from collections.abc import Mapping
 from dataclasses import dataclass
+from enum import Enum, unique
 from types import MappingProxyType
 from uuid import UUID
 from ..model import Assembly
 from ..validate import require_uuid
 from .errors import HierarchyError
 from .view import View
+
+
+@unique
+class HierarchyKind(Enum):
+    RELATIONSHIPS = "relationships"
+    MEMBERSHIP = "membership"
 
 
 @dataclass(frozen=True, init=False)
@@ -31,7 +38,7 @@ class Hierarchy:
     )
     view: View
     root: UUID
-    kind: str
+    kind: HierarchyKind
     _children: Mapping[UUID, tuple[UUID, ...]]
     _parents: Mapping[UUID, UUID | None]
     _preorder: tuple[UUID, ...]
@@ -113,7 +120,14 @@ class Hierarchy:
         for name, value in (
             ("view", view),
             ("root", root),
-            ("kind", "relationships" if membership_root is None else "membership"),
+            (
+                "kind",
+                (
+                    HierarchyKind.RELATIONSHIPS
+                    if membership_root is None
+                    else HierarchyKind.MEMBERSHIP
+                ),
+            ),
             ("_children", MappingProxyType(children)),
             ("_parents", MappingProxyType(parents)),
             ("_preorder", tuple(preorder)),
@@ -156,4 +170,4 @@ class Hierarchy:
         return self._postorder
 
 
-__all__ = ["Hierarchy"]
+__all__ = ["Hierarchy", "HierarchyKind"]

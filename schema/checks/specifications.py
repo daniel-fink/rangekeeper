@@ -11,7 +11,7 @@ from pathlib import Path
 import subprocess
 import sys
 from tempfile import TemporaryDirectory
-from uuid import NAMESPACE_URL, uuid5
+from uuid import UUID, NAMESPACE_URL, uuid5
 
 from jsonschema import FormatChecker
 from jsonschema.validators import validator_for
@@ -23,7 +23,13 @@ import yaml
 import _library
 
 from rangekeeper.errors import ContractError
-from rangekeeper.specification._validation import records, validate_specification
+from rangekeeper.specification.validation import validate_specification
+from rangekeeper._record_index import walk_data
+
+
+def records(system):
+    return (record for record, _ in walk_data("System", system))
+
 
 SCHEMA = Path(__file__).resolve().parents[1]
 BIN = Path(sys.executable).parent
@@ -240,12 +246,12 @@ for document, snapshot in valid:
     before = copy.deepcopy((document, snapshot))
     validators["Specification"].validate(document)
     validators["Model"].validate(snapshot)
-    scope = validate_specification(document, snapshot, VERSION, MODEL_VERSION)
+    scope, _ = validate_specification(document, snapshot, VERSION, MODEL_VERSION)
     assert (document, snapshot) == before
 assert model == model_before
 assert (
-    validate_specification(reused, recorded, VERSION, MODEL_VERSION).values[
-        values["annual_rent_per_home"]
+    validate_specification(reused, recorded, VERSION, MODEL_VERSION)[0].values[
+        UUID(values["annual_rent_per_home"])
     ]["quantity"]["magnitude"]
     == 30000
 )
@@ -332,7 +338,8 @@ semantic_case(
 )
 semantic_case("requires an input Model", lambda p: p.pop("model"))
 semantic_case(
-    "duplicate identity", lambda p: p["metadata"].update(id=model["metadata"]["id"])
+    "Model pin targets a local declaration",
+    lambda p: p["metadata"].update(id=model["metadata"]["id"]),
 )
 semantic_case(
     "self predecessor", lambda p: p["metadata"].update(previous=p["metadata"]["id"])
@@ -396,11 +403,11 @@ semantic_case(
     base=reused,
 )
 semantic_case(
-    "non-finite supplied magnitude",
+    "non-finite",
     lambda p: p["assignments"][0]["quantity"].update(magnitude=float("inf")),
 )
 semantic_case(
-    "non-finite supplied magnitude",
+    "non-finite",
     lambda p: p["estimates"][0]["quantity"].update(magnitude=float("nan")),
 )
 semantic_case(
@@ -461,9 +468,7 @@ semantic_case("positive and finite", lambda p: p.update(settings=dict(time_limit
 semantic_case(
     "positive and finite", lambda p: p.update(settings=dict(relative_tolerance=0))
 )
-semantic_case(
-    "positive and finite", lambda p: p.update(settings=dict(time_limit=float("inf")))
-)
+semantic_case("non-finite", lambda p: p.update(settings=dict(time_limit=float("inf"))))
 semantic_case("less than one", lambda p: p.update(settings=dict(relative_tolerance=1)))
 
 # A previously unused query cannot be promoted to imposed mathematics and then

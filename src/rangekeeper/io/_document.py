@@ -4,7 +4,6 @@ from collections.abc import Mapping
 from uuid import UUID
 from typing import cast
 
-from .._comparison import canonical
 from ..errors import (
     DecodeError,
     IdentityConflictError,
@@ -56,9 +55,9 @@ def require_revision(document: Document, identity: UUID, kind: type[D]) -> D:
 
 def require_same(existing: Document, candidate: Document) -> None:
     """Compare schema-directed content, never changing stored encounter order."""
-    if type(existing) is not type(candidate) or canonical(
-        type(existing).__name__, existing.to_data()
-    ) != canonical(type(candidate).__name__, candidate.to_data()):
+    left = existing._record if isinstance(existing, Model) else existing.record
+    right = candidate._record if isinstance(candidate, Model) else candidate.record
+    if type(existing) is not type(candidate) or not left.equivalent(right):
         raise RevisionConflictError(
             f"different content or kind for revision {candidate.id}"
         )

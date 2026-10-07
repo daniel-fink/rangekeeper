@@ -138,7 +138,7 @@ public sealed class DesignExampleComponent : GH_Component
                 group["relationships"]!.AsArray().Add(Id(utility.Id+":services:"+target).ToString());
             }
         }
-        var payload=new JsonObject{["metadata"]=new JsonObject{["id"]=revision.ToString(),["schema_version"]="0.6.0"},
+        var payload=new JsonObject{["metadata"]=new JsonObject{["id"]=revision.ToString(),["schema_version"]="0.7.0"},
             ["definitions"]=new JsonObject{["taxonomies"]=new JsonArray(new JsonObject{["id"]=Id("taxonomy").ToString(),["code"]="design",["name"]="Design",["classifications"]=classes}),["measures"]=measures},
             ["system"]=new JsonObject{["entities"]=entities,["assemblies"]=new JsonArray(assemblies.Values.Select(x=>(JsonNode)x).ToArray()),["relationships"]=relationships},
             ["provenance"]=new JsonObject{["sources"]=new JsonArray(new JsonObject{["id"]=source.ToString(),["name"]=Path.GetFileName(path),["checksum"]=checksum}),["claims"]=claims,["facts"]=facts}};

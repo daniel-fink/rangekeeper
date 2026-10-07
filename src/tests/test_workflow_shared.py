@@ -52,7 +52,20 @@ def test_named_sets_match_inline_and_remain_auditable(tmp_path):
     repeat = run(load(root / "spec"), input_root=root / "inputs").output
     assert graph_json.dumps(real.model) == graph_json.dumps(repeat.model)
     assert real.metadata == repeat.metadata
-    assert real.checks == a.checks
+
+    # Both sides now retain Claim support. Authored configuration identity changes
+    # that lineage while equivalent requests retain the same comparison result.
+    def comparison_only(check):
+        return replace(
+            check,
+            left=replace(check.left, claims=()),
+            right=replace(check.right, claims=()),
+        )
+
+    assert tuple(map(comparison_only, real.checks)) == tuple(
+        map(comparison_only, a.checks)
+    )
+    assert real.checks != a.checks
     assert real.findings == a.findings
     assert [m["measure"] for m in shared.model["templates"][0]["measurements"]] == [
         "size",

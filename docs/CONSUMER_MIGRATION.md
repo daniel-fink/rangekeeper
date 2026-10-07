@@ -7,12 +7,12 @@ Source workflows build canonical Models from explicit evidence. Tables and dataf
 ```text
 rangekeeper/
   table.py                       Row, Table, TableError; no domain dependency
-  evidence.py                    transient source observations and support chains
+  evidence/                      source Claims, Evidence, transforms and fingerprints
   operation.py                   Operation, Outcome, Diagnostic; source invocations
   _encoding.py, _structured.py    exact source fingerprints and immutable requests
   graph/
     projection.py                FieldColumn, ValueColumn, LabelColumn
-                                 to_table, to_tree_table
+                                 to_table for View or Hierarchy
     view.py, hierarchy.py        pinned Model selection and traversal
   adapters/
     csv.py, polars.py            Table interchange; not Model persistence
@@ -26,8 +26,8 @@ rangekeeper/
     composition.py               compose -> Model, findings, business-key index
     provenance.py                source support -> generated Claims/Sources/Facts
     checking.py, _operands.py    source comparisons and Model invariants
-    ingestion/                   Evidence[Table], transforms, fingerprints
-    review.py, __main__.py        explicit export and CLI
+    reporting.py, review.py       shared report preparation, HTML and export
+    __main__.py                  explicit CLI
   model/, specification/, run/   canonical records and domain behaviour
   io/                            canonical JSON/YAML and revision stores
   execution/                     mathematical execution; unchanged by a workflow run
@@ -45,14 +45,14 @@ workflows, presentation, filesystem stores, or solver backends.
 ```python
 from rangekeeper.graph import View, Hierarchy
 from rangekeeper.graph.projection import (
-    FieldColumn, ValueColumn, LabelColumn, to_table, to_tree_table,
+    EntityField, FieldColumn, ValueColumn, LabelColumn, to_table,
 )
 from rangekeeper.adapters import csv, polars, cytoscape
 
 columns = (
-    FieldColumn("model_id", "model_id"),
-    FieldColumn("entity_id", "entity_id"),
-    FieldColumn("name", "name"),
+    FieldColumn("model_id", EntityField.MODEL_ID),
+    FieldColumn("entity_id", EntityField.ENTITY_ID),
+    FieldColumn("name", EntityField.NAME),
     ValueColumn("net_area", "net", "meter**2"),
     ValueColumn("gross_area", "gross", "meter**2"),
 )
@@ -63,24 +63,26 @@ csv.write(table, "areas.csv")
 cytoscape.write_viewer([cytoscape.project(model, "Review")], viewer_path)
 ```
 
-`FieldColumn(name, field)` supports `model_id`, `entity_id`, `code`, `name`,
-`entity_kind`, `classification_id`, `classification_code`, and `classification_name`.
+`FieldColumn(name, field)` requires an `EntityField` member: `MODEL_ID`,
+`ENTITY_ID`, `CODE`, `NAME`, `ENTITY_KIND`, `CLASSIFICATION_ID`,
+`CLASSIFICATION_CODE`, or `CLASSIFICATION_NAME`. Raw strings are rejected.
 `ValueColumn(name, key, units, measure=None)` selects an owner-local key. Optional
 `measure` asserts a Measure UUID; it does not select by Measure. Units are explicit.
 `LabelColumn(name, key)` returns classification UUIDs, not ambiguous codes.
 
-`to_table(view, *, columns=DEFAULT_COLUMNS, units=default_units)` returns `Table`.
+`to_table(source, *, columns=DEFAULT_COLUMNS, units=default_units)` returns `Table`.
 The defaults are Model UUID, Entity UUID, and name. Each Row ID is the Entity UUID;
-row order follows the View. Duplicate names and invalid fields raise `TableError`.
-Wrong column/View types raise `TypeError`; incompatible units raise `UnitError`;
+row order follows the View. Duplicate column names raise `TableError`.
+Wrong column, field or source types raise `TypeError`; incompatible units raise `UnitError`;
 a Measure mismatch raises `SelectionError`. Missing and unresolved quantities
 project to `None`; zero remains zero. The Model still distinguishes an absent
 Value from a declared Value without a quantity.
 
-`to_tree_table(hierarchy, *, columns=DEFAULT_COLUMNS, units=default_units)` adds
+`to_table(hierarchy, *, columns=DEFAULT_COLUMNS, units=default_units)` adds
 `parent_id` and returns preorder rows. The caller first chooses relationship or
 membership hierarchy semantics. Shared membership is not forced into one parent.
-A Table is shallowly frozen and may hold native cells; it is not an immutable
+`Table` reuses an existing Row when its ordered columns match, and indexes Row IDs
+for lookup. Reordering creates a new Row without changing the input. A Table is shallowly frozen and may hold native cells; it is not an immutable
 Model snapshot. CSV writes UUID cells as text and rejects rich cells. Polars/CSV
 readback does not restore Row identity or a Model. Canonical persistence remains
 `io.json` and `io.yaml`, with explicit `kind=Model` on reads.
@@ -143,7 +145,11 @@ they need a supported schema representation before becoming Model state.
 Check operands are now `model_keys`, `model_count`, `model_total`, and `model_value`.
 Value selection uses `value_key`; totals and individual Value comparisons require
 `units`. Business-key membership checks remain explicit. Missing contributors and
-known subtotals remain separate from complete results.
+known subtotals remain separate from complete results. Each `CheckResult` has
+`left` and `right` operand objects that retain value, Claims, targets, missing
+contributors and known subtotal. Count reports retain the original members and
+derive the displayed count. The old flattened side fields are removed;
+`checks.json` uses `rk.workflow-checks/v2` with explicit operand sides.
 
 Composition uses stable business-key UUIDs for declarations and owner-local Value
 keys. Assemblies are stored in `System.assemblies`. Model revision UUIDs are derived
@@ -167,6 +173,26 @@ fingerprints, effective configuration, and exact/semantic implementation manifes
 `run` does not write exports, publish revisions, or solve equations. `export` writes
 `model.json`, checks, a manifest, and offline review/viewer files. Use a fresh export
 directory: the canonical JSON writer does not overwrite an existing revision file.
+
+## Direct evidence and layout APIs
+
+Import `Evidence`, `Claim`, `ClaimKind`, `Severity`, `tabular`, `validate` and
+`fingerprint` from `rangekeeper.evidence`. The old `workflow.ingestion` package is
+removed. `operation.Severity`, `evidence.Severity` and `run.Severity` are the same
+generated enum; `evidence.ClaimKind` and `model.ClaimKind` are also identical.
+Typed Python APIs require enum members. YAML and JSON retain their string values.
+
+Workflow requests belong to their capability modules, such as
+`adapters.excel.workflow` and `workflow._table_operations`; the old dynamic request
+aliases in `workflow.specification` are removed. The workflow semantic manifest and
+run method use version 5. Exact installed-file hashes remain separate audit data.
+
+Layout review belongs to `adapters.cytoscape.layout.review`. Call
+`build(model, bundle=..., profile=..., output_root=...)` with a canonical Model and
+its complete review bundle. It checks the complete Model content with type-sensitive
+comparison, including distinctions such as `0` and `False`.
+It does not require a workflow Attempt. Layout result enums are owned by the layout
+package; geometry and review documents retain their existing string fields.
 
 ## Supported end-to-end example
 

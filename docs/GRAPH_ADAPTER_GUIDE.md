@@ -10,7 +10,7 @@ It is separate from the mathematical `Specification` passed to `Executor`.
 | Owner | Reason |
 | --- | --- |
 | `adapters.excel` | Preserve cell addresses, formula/cache state and physical blanks before tabulation |
-| `workflow.ingestion.Evidence` | Keep Table cells, Claim chains and applicable Issues together |
+| `evidence.Evidence` | Keep Table cells, Claim chains and applicable Issues together |
 | `operation` | Record effective inputs, parameters, method identity and an Outcome |
 | `workflow.catalog` | Select concrete operations and format integrations explicitly |
 | `workflow.composition` | Turn reviewed inputs and mappings into canonical Model declarations |
@@ -22,7 +22,10 @@ cell independently of display order. Row UUIDs survive selection and reordering.
 An Issue explains affected content; its severity alone does not decide whether a
 calculation may use it. A valid zero is never equivalent to a missing value.
 Construction validates coverage, Claim/value agreement and issue scope. This
-establishes structural trust, not business correctness.
+establishes structural trust, not business correctness. Each operation prepares an
+immutable input once, reuses its Claim and issue indexes and fingerprint, and
+validates the output independently. `ClaimKind` and `Severity` re-export the
+canonical generated enums; generic scalar encoders do not accept arbitrary enums.
 
 An `Operation` records reproducible computation identity. `Outcome` separates a
 usable result from expected input incompatibility. Caller errors remain exceptions.
@@ -46,8 +49,8 @@ classification and units belong to the declared rule that interprets the source.
 Source adapters do not silently choose a domain policy for the caller. Export does
 not authenticate, publish to a service or execute financial equations.
 
-Relevant owners are [Evidence](../src/rangekeeper/workflow/ingestion/evidence.py),
-[tabular operations](../src/rangekeeper/workflow/ingestion/tabular.py),
+Relevant owners are [Evidence](../src/rangekeeper/evidence/evidence.py),
+[tabular operations](../src/rangekeeper/evidence/tabular.py),
 [the catalog](../src/rangekeeper/workflow/catalog.py),
 [composition](../src/rangekeeper/workflow/composition.py) and
 [checking](../src/rangekeeper/workflow/checking.py).

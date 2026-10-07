@@ -14,11 +14,13 @@ from typing import TYPE_CHECKING
 from uuid import UUID
 
 from .._schema.records import Flow, Movement, Value
+from .._schema.enums import ValueKind
+from .._behaviors.flow import MissingValueHandling
 
 if TYPE_CHECKING:
     from .model import Model
 
-__all__ = ["Flow", "Movement", "Stream"]
+__all__ = ["Flow", "Movement", "Stream", "MissingValueHandling"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -34,7 +36,7 @@ class Stream:
             raise ValueError("Stream cannot count the same Value twice")
         for identity in identities:
             value = self.model.value(identity)
-            if value.kind != "flow":
+            if value.kind is not ValueKind.FLOW:
                 raise ValueError(f"Stream target is not a Flow Value: {identity}")
         object.__setattr__(self, "value_ids", identities)
 
@@ -65,10 +67,7 @@ class Stream:
 
     def merge(self, other: Stream) -> Stream:
         """Union selections in encounter order; different revisions cannot be merged."""
-        if (
-            self.model.id != other.model.id
-            or self.model.to_data() != other.model.to_data()
-        ):
+        if self.model.id != other.model.id or self.model._record != other.model._record:
             raise ValueError("Streams must pin the same Model revision and content")
         return Stream(
             self.model, tuple(dict.fromkeys(self.value_ids + other.value_ids))

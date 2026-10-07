@@ -1,7 +1,7 @@
 id: https://daniel-fink.github.io/rangekeeper/schema/run
 name: rangekeeper_run
 title: Rangekeeper Runs
-version: 0.3.0
+version: 0.4.0
 description: Finalized immutable execution records, spawned executions, accepted Model outputs, and supporting
   reports.
 prefixes:
@@ -135,8 +135,8 @@ classes:
         multivalued: true
         inlined_as_list: true
         list_elements_ordered: true
-      decisions:
-        range: Decision
+      outcomes:
+        range: DecisionOutcome
         inlined: true
         multivalued: true
         inlined_as_list: true

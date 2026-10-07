@@ -15,51 +15,11 @@ with tempfile.TemporaryDirectory(prefix="rk-mypy-") as cache:
         "--ignore-missing-imports",
         "--cache-dir=" + cache,
     ]
+    # Check every active runtime owner explicitly; followed imports are not evidence.
     sources = [
-        "rangekeeper/_schema/records.py",
-        "rangekeeper/_records.py",
-        "rangekeeper/_behaviors",
-        "rangekeeper/diagnostics.py",
-        "rangekeeper/errors.py",
-        "rangekeeper/validate.py",
-        "rangekeeper/_validation.py",
-        "rangekeeper/model",
-        "rangekeeper/duration",
-        "rangekeeper/calculations",
-        "rangekeeper/formulations",
-        "rangekeeper/scenarios",
-        "rangekeeper/policies",
-        "rangekeeper/examples",
-        "rangekeeper/adapters/plotting.py",
-        "rangekeeper/migration",
-        "rangekeeper/adapters/csv.py",
-        "rangekeeper/adapters/polars.py",
-        "rangekeeper/specification",
-        "rangekeeper/units.py",
-        "rangekeeper/references.py",
-        "rangekeeper/_comparison.py",
-        "rangekeeper/run",
-        "rangekeeper/io",
-        "rangekeeper/execution",
-        "rangekeeper/graph/__init__.py",
-        "rangekeeper/graph/view.py",
-        "rangekeeper/graph/projection.py",
-        "rangekeeper/table.py",
-        "rangekeeper/adapters/speckle",
-        "rangekeeper/adapters/cytoscape/layout",
-        "rangekeeper/workflow/workbench.py",
-        "rangekeeper/workflow/layout_review.py",
-        "rangekeeper/workflow/progress.py",
-        "rangekeeper/workflow/_artifacts.py",
-        "rangekeeper/workflow/runtime.py",
-        "rangekeeper/workflow/composition.py",
-        "rangekeeper/workflow/provenance.py",
-        "rangekeeper/graph/hierarchy.py",
-        "rangekeeper/graph/membership.py",
-        "rangekeeper/graph/selection.py",
-        "rangekeeper/graph/reduction.py",
-        "rangekeeper/graph/reducers.py",
-        "rangekeeper/__init__.py",
+        str(path.relative_to(ROOT / "src"))
+        for path in sorted((ROOT / "src/rangekeeper").rglob("*.py"))
+        if "legacy" not in path.parts and path.name != "native.py"
     ]
     subprocess.run(
         command
@@ -87,8 +47,8 @@ with tempfile.TemporaryDirectory(prefix="rk-mypy-") as cache:
     )
     print(result.stdout)
     assert result.returncode == 1, result.stderr
-    assert result.stdout.count(": error:") == 8, result.stdout
-    print("Verified eight intended static rejections")
+    assert result.stdout.count(": error:") == 9, result.stdout
+    print("Verified nine intended static rejections")
     result = subprocess.run(
         command + [str(Path(__file__).with_name("typing_domain_invalid.py"))],
         cwd=ROOT / "src",

@@ -4,6 +4,11 @@ Optimization uses incremental feasibility checks, retaining a checked incumbent
 if the time budget expires. Each lexicographic phase advances only after proof.
 """
 
+from rangekeeper.adapters.cytoscape.layout.result import (
+    ResultMode,
+    ResultStatus,
+    StrictStatus,
+)
 from dataclasses import asdict
 from math import isfinite
 from time import monotonic
@@ -42,8 +47,8 @@ def solve(
     solver.add(*formulation.strict_collisions)
     solver.add(*formulation.exclusions)
     result = Result(
-        "unknown",
-        "unknown",
+        ResultStatus.UNKNOWN,
+        StrictStatus.UNKNOWN,
         solver_version=z3.get_version_string(),
         problem_fingerprint=problem.fingerprint,
         build_seconds=monotonic() - start,
@@ -95,9 +100,9 @@ def solve(
     else:
         state = run()
         seed_model = None
-    result.strict_status = str(state)
+    result.strict_status = StrictStatus(str(state))
     if state == z3.unsat and allow_relaxed:
-        result.mode = "diagnostic"
+        result.mode = ResultMode.DIAGNOSTIC
         solver.reset()
         solver.set(random_seed=0)
         if resource_limit:
@@ -106,7 +111,9 @@ def solve(
         solver.add(*formulation.relaxed)
         state = run()
     if state != z3.sat:
-        result.status = "infeasible" if state == z3.unsat else "unknown"
+        result.status = (
+            ResultStatus.INFEASIBLE if state == z3.unsat else ResultStatus.UNKNOWN
+        )
         if state == z3.unsat:
             result.reason = (
                 "Infeasible within the supplied canvas, dimensions, spacing and pins"
@@ -115,11 +122,14 @@ def solve(
         return result
     result.first_solution_seconds = monotonic() - start
     incumbent = seed_model if seed_model is not None else solver.model()
-    result.status = "feasible"
+    result.status = ResultStatus.FEASIBLE
     if optimize:
         for name, expr in formulation.objective:
             low, high = 0, incumbent.eval(expr).as_long()
-            if name == "false_enclosures" and result.strict_status == "unsat":
+            if (
+                name == "false_enclosures"
+                and result.strict_status == StrictStatus.UNSAT
+            ):
                 low = 1
             while low < high:
                 middle = (low + high) // 2
@@ -148,7 +158,7 @@ def solve(
         if len(result.phases) == len(formulation.objective) and all(
             p["proven"] for p in result.phases
         ):
-            result.status = "optimal"
+            result.status = ResultStatus.OPTIMAL
     result.incumbent_source = "solver"
     result.rectangles = {
         i: Rect(*(incumbent.eval(v).as_long() for v in vs))
@@ -164,7 +174,7 @@ def solve(
         }
     findings = check(problem, result.rectangles)
     unexpected = [
-        f for f in findings if f.code != "exclusion" or result.mode == "strict"
+        f for f in findings if f.code != "exclusion" or result.mode == ResultMode.STRICT
     ]
     if unexpected:
         raise RuntimeError(

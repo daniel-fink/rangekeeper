@@ -4,6 +4,11 @@ The formulation owns symbolic state. The independent checker owns arithmetic
 acceptance so formulation mistakes cannot certify their own output.
 """
 
+from rangekeeper.adapters.cytoscape.layout.model import (
+    ArrangementFlow,
+    ArrangementSpacing,
+    Axis,
+)
 from typing import Any
 
 from .model import Assembly, Node, Problem, grid_templates
@@ -143,8 +148,8 @@ class Formulation:
             setting = next(
                 (v for v in problem.arrangements if v.assembly == a.id), None
             )
-            if setting and setting.flow != "grid":
-                vertical = setting.flow == "column"
+            if setting and setting.flow != ArrangementFlow.GRID:
+                vertical = setting.flow == ArrangementFlow.COLUMN
                 self.hard.append(cols == (1 if vertical else len(a.members)))
                 start = (
                     x + problem.padding
@@ -163,7 +168,7 @@ class Formulation:
                         "start": 0,
                         "center": (span - size) / 2,
                         "end": span - size,
-                    }[setting.alignment]
+                    }[setting.alignment.value]
                     self.hard.append((cx if vertical else cy) == start + offset)
                 for i in a.members:
                     for k in a.members:
@@ -219,8 +224,8 @@ class Formulation:
                     ]
                 )
                 costs.append(z3.If(cols == c, cost, 0))
-            if setting and setting.spacing == "packed":
-                vertical = setting.flow == "column"
+            if setting and setting.spacing == ArrangementSpacing.PACKED:
+                vertical = setting.flow == ArrangementFlow.COLUMN
                 packed_costs = []
                 for i in a.members:
                     offset = z3.Sum(
@@ -328,12 +333,12 @@ class Formulation:
                         "horizontal": z3.If(2 * h > w, 2 * h - w, 0),
                         "vertical": z3.If(2 * w > h, 2 * w - h, 0),
                         "balanced": z3.Abs(w - h),
-                    }[p.direction]
+                    }[p.direction.value]
                     directions.append(p.strength * problem.style_unit * d)
                 penalties = []
                 for before, after, axis in p.orders:
                     a, b = self.variables[before], self.variables[after]
-                    coordinate = 0 if axis == "x" else 1
+                    coordinate = 0 if axis == Axis.X else 1
                     deficit = (
                         2 * a[coordinate]
                         + a[coordinate + 2]

@@ -122,9 +122,10 @@ functions:
     required: true
   result:
     kind: measurement
-  semantics: Sum every element, retaining multiplicity. Members must have compatible units and measurement meaning.
-    Unresolved members remain symbolic; none are dropped. An empty collection is rejected because this signature
-    does not establish result units without a member.
+  semantics: Sum every element, retaining multiplicity. Members must have compatible
+    units and measurement meaning. Unresolved members remain symbolic; none are dropped.
+    An empty collection is rejected because this signature does not establish result
+    units without a member.
   unit_rule: The result has the common measurement units of the members.
   empty_collection: error
 - id: e101eef7-62ac-5a3e-ab82-e84b5e19d58e
@@ -141,7 +142,8 @@ functions:
     required: true
   result:
     kind: number
-  semantics: Count collection members, retaining multiplicity. An empty collection has count zero.
+  semantics: Count collection members, retaining multiplicity. An empty collection
+    has count zero.
   unit_rule: Dimensionless integer result.
   empty_collection: zero
 expressions:

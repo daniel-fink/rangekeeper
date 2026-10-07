@@ -1,8 +1,7 @@
 """Saved partial Specifications and derived complete investigation views."""
 
 from .specification import Specification as Specification
-from .composition import Composition as Composition, compose as compose
-from .validation import validate as validate
+from .composition import Composition as Composition
 from .._schema.records import (
     Specification as SpecificationRecord,
     Assignment as Assignment,
@@ -17,6 +16,8 @@ __all__ = [
     "Objective",
     "Settings",
     "Composition",
-    "compose",
-    "validate",
 ]
+
+from .._schema.enums import ObjectiveKind
+
+__all__ += ["ObjectiveKind"]

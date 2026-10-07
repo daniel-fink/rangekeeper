@@ -1,6 +1,6 @@
 metadata:
-  id: e9096132-8158-56db-bc3e-b64ef7f92d4e
-  schema_version: 0.6.0
+  id: 513e3bca-50ac-5437-95f6-9b0d628fe89d
+  schema_version: 0.7.0
   previous: 396b03f6-1ebb-59f4-b520-231242ffd645
   name: Residential project
   description: Structural and valuation conformance example with unresolved inputs;

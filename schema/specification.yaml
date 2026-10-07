@@ -1,7 +1,7 @@
 id: https://daniel-fink.github.io/rangekeeper/schema/specification
 name: rangekeeper_specification
 title: Rangekeeper Specifications
-version: 0.6.0
+version: 0.7.0
 description: Immutable, additively composable investigation requirements and explicit batches of Specifications.
 prefixes:
   linkml: https://w3id.org/linkml/

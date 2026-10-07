@@ -15,7 +15,8 @@ from pathlib import Path
 import pytest
 
 from rangekeeper.model.measure import Quantity
-from rangekeeper.duration import make_periods
+from rangekeeper.duration import Frequency, make_periods
+from rangekeeper.account import Balance, CurrentInterest, InterestTreatment
 
 from rangekeeper.calculations.dynamics.cyclicality import calculate_cycle
 
@@ -35,14 +36,23 @@ def test_account_numeric_recurrence_matches_reference(case):
     movements = [10.0, -200.0, 80.0, 400.0, -50.0]
     actual = Account.calculate(
         Flow.from_periods(
-            make_periods(date(2020, 1, 1), frequency="month", count=5),
+            make_periods(date(2020, 1, 1), frequency=Frequency.MONTH, count=5),
             movements,
             units="meter",
         ),
         starting=Quantity(magnitude=case["starting"], units="meter"),
         rate=0.01,
-        method=case["method"],
-        timing=case["timing"],
+        balance=(Balance.OPENING if case["timing"] == "arrears" else Balance.CLOSING),
+        current_interest=(
+            CurrentInterest.INCLUDED
+            if case["method"] == "capitalized"
+            else CurrentInterest.EXCLUDED
+        ),
+        treatment=(
+            InterestTreatment.SEPARATE
+            if case["method"] == "simple"
+            else InterestTreatment.FINANCED
+        ),
     )
     for flow, values in zip(
         (actual.opening, actual.closing, actual.overdraft_balance, actual.interest),

@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from numbers import Real
 from os import PathLike
 from pathlib import Path
+from typing import cast
 
 import networkx as nx
 import plotly.graph_objects as go
@@ -233,14 +234,14 @@ def _tree_projection(
             isinstance(item, Real)
             and not isinstance(item, bool)
             and math.isfinite(float(item))
-            and item >= 0
+            and float(item) >= 0
             for item in selected_values
         ):
             raise AdapterEncodingError(
                 f"visualization value column {value_column!r} must contain finite, "
                 "non-negative numbers"
             )
-        values = tuple(float(item) for item in selected_values)
+        values = tuple(float(cast(Real, item)) for item in selected_values)
         values_by_id = dict(zip(ids, values))
         for parent_id, parent_value in values_by_id.items():
             child_total = math.fsum(

@@ -1,5 +1,7 @@
 """Independent arithmetic for the complete design teaching model."""
 
+from rangekeeper.run import SolutionStatus
+
 from uuid import uuid5
 import pytest
 from rangekeeper.examples import design
@@ -22,7 +24,7 @@ def test_design_financial_components_and_provenance():
     store = MemoryStore()
     store.put(model)
     run = Executor(store).execute(design.specify(model))
-    assert run.report.status.solution == "feasible", run.report
+    assert run.report.status.solution == SolutionStatus.FEASIBLE, run.report
     output = store.load_model(run.record.outputs[0])
     v = design.values(output)
     assert output.provenance.sources == source.provenance.sources
