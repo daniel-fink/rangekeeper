@@ -1,5 +1,10 @@
 # Ingestion evidence contract
 
+Current API ownership is documented in the [consumer guide](../../docs/CONSUMER_MIGRATION.md)
+and [workflow format contract](../../docs/GRAPH_WORKFLOW_FORMATS.md). The dated
+validation records below describe their original verification runs; they are not
+acceptance results for the current refactor.
+
 Status: Evidence, document operations, Excel snapshots/extraction and shared
 table transformations are implemented as of 18 September 2026. The wider workflow
 sections also describe later stages; a general interpretation/composition YAML
@@ -23,14 +28,14 @@ immutable reference to such content. Tabular structure is one specialization.
 - Project notebooks orchestrate those operations and present review results.
 - A future service may store artifacts and expose the same operations as tools.
 
-Reuse `graph.table.Table`, and provenance `Source`, `Location`, `Claim`, `Method`,
+Reuse `table.Table`, and provenance `Source`, `Location`, `Claim`, `Method`,
 `Fact` and `Provenance`. Do not create another Record/RecordSet, source identity,
 claim graph or graph-object model. `Fact` binds evidence to an existing graph
 target; source Claims may exist before a graph is constructed.
 
 ## Core container
 
-The public type in `rangekeeper.graph.workflow.ingestion` is:
+The public type in `rangekeeper.evidence` is:
 
 ```python
 from dataclasses import dataclass
@@ -38,8 +43,8 @@ from collections.abc import Mapping
 from typing import Any, Generic, TypeVar
 from uuid import UUID
 
-from rangekeeper.graph.table import Table
-from rangekeeper.graph.provenance import Claim
+from rangekeeper.table import Table
+from rangekeeper.evidence import Claim
 
 T = TypeVar("T")
 EvidenceKey = tuple[str, ...]
@@ -232,16 +237,15 @@ The shared type describes what happened, without deciding what another operation
 may do with the evidence:
 
 ```python
-class IssueSeverity(str, Enum):
-    INFO = "info"
-    WARNING = "warning"
-    ERROR = "error"
+from rangekeeper.evidence import Severity
+
+# Severity re-exports the generated plain Enum: INFO, WARNING, ERROR.
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Issue:
     rule_id: str
     code: str
-    severity: IssueSeverity
+    severity: Severity
     message: str
     at: tuple[EvidenceKey, ...]
     related_claims: tuple[Claim[Any], ...] = ()
@@ -409,7 +413,7 @@ The first milestone implements the following, without IssueEffect:
 1. Bundle optional identity in Row, retaining mapping-based Table construction
    and ordinary CSV/pandas values; migrate row readers to row.values.
 2. Share the existing Claim/Source indexer between Provenance and Evidence.
-3. Implement Evidence, IssueSeverity, Issue and immutable values; keep contracts,
+3. Implement Evidence, Severity, Issue and immutable values; keep contracts,
    validation, encoding and tabular inspection in focused modules.
 4. Add tabular.from_claims, row, claim and issues_for; add validate/fingerprint.
 5. Test missing/conflicting values, identity, addressing, lineage and non-tabular

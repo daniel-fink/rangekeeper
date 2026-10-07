@@ -23,3 +23,19 @@ __all__ = [
     "Step",
     "validate",
 ]
+
+from .._schema.enums import (
+    CompletionStatus,
+    SolutionStatus,
+    ImplementationKind,
+    Severity,
+    StepKind,
+)
+
+__all__ += [
+    "CompletionStatus",
+    "SolutionStatus",
+    "ImplementationKind",
+    "Severity",
+    "StepKind",
+]

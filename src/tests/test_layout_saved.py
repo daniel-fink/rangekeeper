@@ -1,5 +1,11 @@
 """Packed flow parity and successful-bundle publication boundaries."""
 
+from rangekeeper.adapters.cytoscape.layout.model import (
+    ArrangementFlow,
+    ArrangementSpacing,
+    Axis,
+)
+from rangekeeper.adapters.cytoscape.layout.result import ResultMode, ResultStatus
 import json
 from copy import deepcopy
 from dataclasses import replace
@@ -24,7 +30,7 @@ from rangekeeper.adapters.cytoscape.layout.viewer import (
 )
 
 
-def problem(flow="column"):
+def problem(flow=ArrangementFlow.COLUMN):
     return Problem(
         (Node("a", "A", 60, 30), Node("b", "B", 90, 70), Node("c", "C", 50, 40)),
         (Assembly("g", "G", ("a", "b", "c"), 140),),
@@ -35,12 +41,40 @@ def problem(flow="column"):
             Preference(
                 "g",
                 orders=(
-                    ("a", "b", "y" if flow == "column" else "x"),
-                    ("b", "c", "y" if flow == "column" else "x"),
+                    (
+                        "a",
+                        "b",
+                        (
+                            Axis.Y
+                            if (
+                                flow.value
+                                if isinstance(flow, ArrangementFlow)
+                                else flow
+                            )
+                            == "column"
+                            else Axis.X
+                        ),
+                    ),
+                    (
+                        "b",
+                        "c",
+                        (
+                            Axis.Y
+                            if (
+                                flow.value
+                                if isinstance(flow, ArrangementFlow)
+                                else flow
+                            )
+                            == "column"
+                            else Axis.X
+                        ),
+                    ),
                 ),
             ),
         ),
-        arrangements=(Arrangement("g", flow, spacing="packed"),),
+        arrangements=(
+            Arrangement("g", ArrangementFlow(flow), spacing=ArrangementSpacing.PACKED),
+        ),
     )
 
 
@@ -79,7 +113,7 @@ def test_packed_uses_member_sizes_and_preserves_old_serialization(flow):
     old = replace(
         p,
         schema_version=3,
-        arrangements=(replace(p.arrangements[0], spacing="uniform"),),
+        arrangements=(replace(p.arrangements[0], spacing=ArrangementSpacing.UNIFORM),),
     )
     previous = grid_seed(old)
     assert previous is not None
@@ -87,12 +121,21 @@ def test_packed_uses_member_sizes_and_preserves_old_serialization(flow):
     assert from_document(old.document()).fingerprint == old.fingerprint
     assert from_document(p.document()) == p
     assert not check(p, r.rectangles) and r.measurements["grid_displacement"] == 0
-    axis = "height" if flow == "column" else "width"
+    axis = (
+        "height"
+        if (flow.value if isinstance(flow, ArrangementFlow) else flow) == "column"
+        else "width"
+    )
     assert getattr(r.rectangles["g"], axis) < getattr(previous.rectangles["g"], axis)
     moved = dict(r.rectangles)
     last = moved["c"]
     moved["c"] = replace(
-        last, **({"y": last.y + 1} if flow == "column" else {"x": last.x + 1})
+        last,
+        **(
+            {"y": last.y + 1}
+            if (flow.value if isinstance(flow, ArrangementFlow) else flow) == "column"
+            else {"x": last.x + 1}
+        ),
     )
     assert any(f.code == "arrangement" for f in check(p, moved))
     repeated = grid_seed(p)
@@ -112,13 +155,13 @@ def test_native_packed_contract_and_scores(flow):
     assert seed is not None
     for solve in (z3, cp):
         fixed = solve(p, initial=seed, optimize=False, time_limit=5)
-        assert fixed.status == "feasible", fixed.reason
+        assert fixed.status == ResultStatus.FEASIBLE, fixed.reason
         assert (
             fixed.rectangles == seed.rectangles
             and fixed.measurements == seed.measurements
         )
         free = solve(p, optimize=False, time_limit=5)
-        assert free.status == "feasible", free.reason
+        assert free.status == ResultStatus.FEASIBLE, free.reason
         assert not check(p, free.rectangles)
         assert metrics(p, free.rectangles, free.grids) == free.measurements
 
@@ -141,9 +184,9 @@ def test_saved_snapshot_rejects_stale_and_invalid_results_without_mutation():
     with pytest.raises(ValueError, match="fingerprint"):
         validate_document(changed)
     with pytest.raises(ValueError, match="successful"):
-        with_saved_layout(doc, p, replace(r, status="unknown"))
+        with_saved_layout(doc, p, replace(r, status=ResultStatus.UNKNOWN))
     with pytest.raises(ValueError, match="strict"):
-        with_saved_layout(doc, p, replace(r, mode="diagnostic"))
+        with_saved_layout(doc, p, replace(r, mode=ResultMode.DIAGNOSTIC))
     changed = deepcopy(saved)
     changed["positions"]["a"]["x"] += 1
     with pytest.raises(ValueError, match="centres"):

@@ -9,8 +9,8 @@ from string import Formatter
 from rangekeeper.operation import _Failure
 
 from ._declarations import fields, sequence, text
-from .ingestion import tabular
-from .ingestion.predicates import equal
+from rangekeeper.evidence import tabular
+from rangekeeper.evidence.predicates import equal
 
 
 def binding(spec, row, evidence, outputs):

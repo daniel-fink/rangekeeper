@@ -1,7 +1,7 @@
 metadata:
-  id: ff54f83e-3e9d-58c6-bc47-9b2e7338229f
-  schema_version: 0.6.0
-  previous: e9096132-8158-56db-bc3e-b64ef7f92d4e
+  id: 57f8d97e-d795-55f0-87fc-ae67180269fd
+  schema_version: 0.7.0
+  previous: 513e3bca-50ac-5437-95f6-9b0d628fe89d
   name: Synthetic inverse output
   description: Hypothetical accepted snapshot with expected scalar amounts; not a
     solver-produced Model.

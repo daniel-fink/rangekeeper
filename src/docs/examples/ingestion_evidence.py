@@ -6,9 +6,9 @@ fingerprints; package-level imports stay stable as implementation modules evolve
 
 from uuid import NAMESPACE_URL, uuid5
 
-from rangekeeper.workflow.ingestion import (
+from rangekeeper.evidence import (
     Issue,
-    IssueSeverity,
+    Severity,
     fingerprint,
     tabular,
 )
@@ -55,7 +55,7 @@ def main():
     finding = Issue(
         rule_id="read-cache",
         code="missing_formula_cache",
-        severity=IssueSeverity.WARNING,
+        severity=Severity.WARNING,
         message="The formula has no stored result.",
         at=(keys[1],),
         related_claims=(missing_raw,),
@@ -105,7 +105,7 @@ def main():
             Issue(
                 rule_id="compare-counts",
                 code="conflicting_values",
-                severity=IssueSeverity.WARNING,
+                severity=Severity.WARNING,
                 message="Two source fields disagree.",
                 at=(count_key,),
                 related_claims=candidates,

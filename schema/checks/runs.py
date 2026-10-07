@@ -23,9 +23,14 @@ import yaml
 import _library
 
 from rangekeeper.errors import ContractError
-from rangekeeper.run._report import instant
-from rangekeeper.run._tree import Tree
-from rangekeeper.specification._validation import records
+from rangekeeper.run.report import instant
+from rangekeeper.run.validation import validate_records
+from rangekeeper._record_index import walk_data
+
+
+def records(system):
+    return (record for record, _ in walk_data("System", system))
+
 
 SCHEMA = Path(__file__).resolve().parents[1]
 BIN = Path(sys.executable).parent
@@ -125,13 +130,17 @@ def shape(bundle):
 def check(root, bundle):
     before = deepcopy(bundle)
     shape(bundle)
-    visited = Tree(
-        bundle["runs"][root],
-        **bundle,
-        run_version=VERSIONS[0],
-        spec_version=VERSIONS[1],
-        model_version=VERSIONS[2],
-    ).check()
+    validate_records(bundle["runs"][root], **bundle).raise_if_invalid()
+    visited = set()
+
+    def visit(identity):
+        if identity in visited:
+            return
+        visited.add(identity)
+        for child in bundle["runs"][identity].get("spawns") or ():
+            visit(child)
+
+    visit(root)
     assert bundle == before
     return visited
 
@@ -147,18 +156,10 @@ def bad(message, edit, root="forward"):
     bundle = deepcopy(base)
     edit(bundle, bundle["runs"][ids[root]])
     shape(bundle)
-    try:
-        Tree(
-            bundle["runs"][ids[root]],
-            **bundle,
-            run_version=VERSIONS[0],
-            spec_version=VERSIONS[1],
-            model_version=VERSIONS[2],
-        ).check()
-    except ContractError as error:
-        assert message in str(error), (message, str(error))
-    else:
-        raise AssertionError(f"Missing rejection: {message}")
+    report = validate_records(bundle["runs"][ids[root]], **bundle)
+    assert not report.valid and any(
+        message in issue.message for issue in report.issues
+    ), (message, report)
     semantic.append(message)
 
 
@@ -406,7 +407,7 @@ bad(
     lambda b, r: r["report"]["diagnostics"][0].update(document=r["specification"]),
 )
 bad(
-    "non-finite diagnostic",
+    "non-finite",
     lambda b, r: r["report"]["diagnostics"][0]["residual"].update(
         magnitude=float("inf")
     ),

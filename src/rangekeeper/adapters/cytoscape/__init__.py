@@ -9,7 +9,7 @@ from enum import Enum
 from pathlib import Path
 from uuid import UUID
 
-from rangekeeper.model import Model, Assembly, Classification
+from rangekeeper.model import ValueKind, Model, Assembly, Classification
 from rangekeeper.graph import View
 from rangekeeper.model.definitions import classification, measure
 from rangekeeper.model.provenance import fact_for
@@ -52,11 +52,13 @@ def present(value: object, depth: int = 0) -> object:
             result["display_truncated"] = True
         return result
     if isinstance(value, (tuple, list, set, frozenset)):
-        items = sorted(value, key=str) if isinstance(value, (set, frozenset)) else value
-        result = [present(v, depth + 1) for v in items[:60]]
-        if len(items) > 60:
-            result.append({"display_truncated": True})
-        return result
+        sequence = (
+            sorted(value, key=str) if isinstance(value, (set, frozenset)) else value
+        )
+        cells = [present(v, depth + 1) for v in sequence[:60]]
+        if len(sequence) > 60:
+            cells.append({"display_truncated": True})
+        return cells
     if is_dataclass(value) and not isinstance(value, type):
         return {
             f.name: present(getattr(value, f.name), depth + 1)
@@ -98,14 +100,17 @@ def project(model: Model | View, name: str, config: dict | None = None) -> dict:
         key = str(identity)
         if key not in claims:
             c = all_claims[identity]
+            encoded = c.content.get("value") if isinstance(c.content, Mapping) else None
             claims[key] = {
                 "id": key,
-                "kind": c.kind,
+                "kind": c.kind.value,
                 "value": (
-                    present(c.content["value"][1])
+                    present(encoded[1])
                     if isinstance(c.content, Mapping)
                     and c.content.get("encoding") == "rk.source-value/v1"
-                    and c.content["value"][0] == "str"
+                    and isinstance(encoded, tuple)
+                    and len(encoded) == 2
+                    and encoded[0] == "str"
                     else present(c.content)
                 ),
                 "method": present(c.method.to_data()) if c.method else None,
@@ -139,7 +144,7 @@ def project(model: Model | View, name: str, config: dict | None = None) -> dict:
             "status": "recorded" if selected else "unresolved",
             "claims": [claim_row(uid) for uid in fact.claims],
             "selected": str(selected) if selected else None,
-            "reconciliation": reconciliation.status if reconciliation else None,
+            "reconciliation": reconciliation.status.value if reconciliation else None,
             "method": (
                 present(reconciliation.method.to_data())
                 if reconciliation and reconciliation.method
@@ -164,7 +169,7 @@ def project(model: Model | View, name: str, config: dict | None = None) -> dict:
                     "measureId": str(v.measure),
                     "name": v.key,
                     "code": v.key,
-                    "kind": v.kind,
+                    "kind": v.kind.value,
                     "value": (
                         {"value": v.quantity.magnitude, "units": v.quantity.units}
                         if v.quantity
@@ -174,7 +179,7 @@ def project(model: Model | View, name: str, config: dict | None = None) -> dict:
                     "fact": fact_row(v),
                 }
                 for v in values
-                if v.kind == "measurement"
+                if v.kind is ValueKind.MEASUREMENT
             ],
             "labels": [
                 {
@@ -193,7 +198,7 @@ def project(model: Model | View, name: str, config: dict | None = None) -> dict:
                     "fact": fact_row(v),
                 }
                 for v in values
-                if v.kind == "property"
+                if v.kind is ValueKind.PROPERTY
             ],
             "flows": [
                 {
@@ -203,11 +208,15 @@ def project(model: Model | View, name: str, config: dict | None = None) -> dict:
                     "fact": fact_row(v),
                 }
                 for v in values
-                if v.kind == "flow"
+                if v.kind is ValueKind.FLOW
             ],
         }
 
-    details = {str(o.id): detail(o) for o in (*view.entities, *view.relationships)}
+    details = {
+        str(o.id): detail(o)
+        for owners in (view.entities, view.relationships)
+        for o in owners
+    }
     assemblies = {
         str(e.id): {
             "name": e.name or e.code,
@@ -251,9 +260,9 @@ def project(model: Model | View, name: str, config: dict | None = None) -> dict:
 
     for node in list(adjacency):
         visit(node, [])
-    for i, e in enumerate(view.entities):
+    for i, entity in enumerate(view.entities):
         config["positions"].setdefault(
-            str(e.id), {"x": (i % 10) * 180, "y": (i // 10) * 140}
+            str(entity.id), {"x": (i % 10) * 180, "y": (i // 10) * 140}
         )
     return {
         "name": name,

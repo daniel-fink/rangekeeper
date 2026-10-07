@@ -1,43 +1,57 @@
-"""Explicit upgrades of draft documents; historical Runs are never rewritten."""
+"""Explicit source-layout upgrades; canonical readers accept current versions only."""
 
 from collections.abc import Mapping
 from uuid import UUID, uuid4, uuid5
+
 from .._records import _json_copy
-from ..model import Model
-from ..specification import Specification
-from .._schema.validation import document_version
+from .._schema.records import Metadata
+from .._schema.validation import document_version, _slot_map
+
+# These explicit differences describe the supported draft layouts. They are not
+# canonical aliases: conversion walks the source before changing any field name.
+_SOURCE_TYPES = {"Decision": "DecisionPoint", "DecisionOutcome": "Decision"}
+_TARGET_TYPES = {value: key for key, value in _SOURCE_TYPES.items()}
+_SOURCE_FIELDS = {
+    "Period": {"start_inclusive": "start", "end_exclusive": "end"},
+    "Span": {"start_inclusive": "start", "end_exclusive": "end"},
+    "Policy": {"decisions": "points"},
+    "Decision": {"decision": "point"},
+    "Report": {"outcomes": "decisions"},
+}
 
 
 def _movement_id(value, key):
-    """Map the former owner/key address deterministically, across document revisions."""
     return str(uuid5(UUID(str(value)), "movement:" + key))
 
 
 def _walk(node, kind):
-    """Traverse declared record slots only; arbitrary evidence mappings are opaque."""
-    from .._schema.validation import _slot_map
-
+    """Traverse supported source slots, excluding opaque evidence payloads."""
     if not isinstance(node, dict):
         return
     yield node, kind
-    for name, slot in _slot_map(kind).items():
-        if slot["mapping"] or name not in node:
+    renames = _SOURCE_FIELDS.get(kind, {})
+    for name, slot in _slot_map(_TARGET_TYPES.get(kind, kind)).items():
+        source = renames.get(name, name)
+        if source != name and name in node:
+            raise ValueError(f"mixed source layout: {kind}.{name}")
+        if slot["mapping"] or source not in node or node[source] is None:
             continue
-        records = [
-            option["kind"]
-            for option in slot["options"]
-            if option["category"] == "record"
-        ]
-        if not records:
+        child = next(
+            (o["kind"] for o in slot["options"] if o["category"] == "record"), None
+        )
+        if child is None:
             continue
-        children = node[name] if slot["many"] else [node[name]]
-        for child in children or []:
-            yield from _walk(child, records[0])
+        # CalculationProvenance did not exist in any supported source version.
+        if child == "CalculationProvenance":
+            raise ValueError("calculation provenance is not part of the source format")
+        child = _SOURCE_TYPES.get(child, child)
+        for value in node[source] if slot["many"] else [node[source]]:
+            yield from _walk(value, child)
 
 
-def _movements(node, kind="Model"):
-    """Add identities only to declared Flow Values; opaque evidence stays unchanged."""
-    for record, record_kind in _walk(node, kind):
+def _convert(result, kind):
+    records = list(_walk(result, kind))
+    for record, record_kind in records:
         if (
             record_kind == "Value"
             and record.get("kind") == "flow"
@@ -46,11 +60,6 @@ def _movements(node, kind="Model"):
             for movement in record["flow"]["movements"]:
                 if "id" not in movement:
                     movement["id"] = _movement_id(record["id"], movement["key"])
-
-
-def _references(node, kind="Model"):
-    """Rewrite typed references, without treating arbitrary value fields as addresses."""
-    for record, record_kind in _walk(node, kind):
         if (
             record_kind == "Expression"
             and record.get("kind") == "reference"
@@ -58,10 +67,16 @@ def _references(node, kind="Model"):
         ):
             record["target"] = {"target": record["target"]}
         if record_kind == "Reference" and "value" in record:
+            if "target" in record:
+                raise ValueError("mixed direct and owner/key Reference layout")
             value, movement = record.pop("value"), record.pop("movement", None)
             record["target"] = (
                 value if movement is None else _movement_id(value, movement)
             )
+        for target, source in _SOURCE_FIELDS.get(record_kind, {}).items():
+            if source in record:
+                record[target] = record.pop(source)
+    return result
 
 
 def _revision(data, kind, versions, revision_id):
@@ -69,27 +84,32 @@ def _revision(data, kind, versions, revision_id):
     metadata = result.get("metadata", {})
     if metadata.get("schema_version") not in versions:
         raise ValueError(f"expected {kind} version in {sorted(versions)}")
-    old = metadata["id"]
-    if revision_id is not None and str(revision_id) == old:
+    source = Metadata.from_data(metadata)
+    old = source.id
+    if revision_id is not None and (
+        not isinstance(revision_id, UUID) or revision_id in (old, source.previous)
+    ):
         raise ValueError("upgrade requires a new revision UUID")
     metadata.update(
         id=str(revision_id or uuid4()),
-        previous=old,
+        previous=str(old),
         schema_version=document_version(kind),
     )
     return result
 
 
-def upgrade_model(data: dict, *, revision_id: UUID | None = None) -> Model:
-    """Upgrade Model 0.3.0/0.4.0/0.5.0 into a complete 0.6.0 revision.
+def upgrade_model(data: dict, *, revision_id: UUID | None = None):
+    """Convert Model 0.3–0.6 into a new revision without recalculating results.
 
-    Value identities stay fixed; old owner/key addresses determine Movement UUIDs. Flow keys,
-    dates, units, ordered mathematics and provenance remain unchanged. Invalid or
-    unsupported old content fails validation; no input, store or file is changed.
+    The returned metadata.previous and metadata.id form the explicit revision map.
+    Original files, historical Runs, quantities and captured inputs stay unchanged.
     """
-    result = _revision(data, "Model", {"0.3.0", "0.4.0", "0.5.0"}, revision_id)
-    _movements(result)
-    _references(result)
+    from ..model import Model
+    from .scenarios import convert_names
+
+    result = _revision(data, "Model", {"0.3.0", "0.4.0", "0.5.0", "0.6.0"}, revision_id)
+    _convert(result, "Model")
+    convert_names(result)
     return Model.from_data(result)
 
 
@@ -99,34 +119,59 @@ def upgrade_specification(
     model: UUID | None = None,
     revisions: Mapping[UUID, UUID] | None = None,
     revision_id: UUID | None = None,
-) -> Specification:
-    """Upgrade 0.4.0/0.5.0 roles and expressions, requiring explicit new external pins.
+):
+    """Convert Specification 0.4–0.6 with explicit new Model/include/case pins.
 
-    Pass the upgraded Model UUID and a complete mapping for includes/cases. A
-    partial contribution needs neither when it has no such references. The caller
-    then performs resolver-backed validation. Old Runs keep their original pins.
+    Conversion performs no IO. Validate the new dependency graph with its resolver
+    before publication; absent/conflicting maps cannot select a latest revision.
     """
-    result = _revision(data, "Specification", {"0.4.0", "0.5.0"}, revision_id)
+    from ..specification import Specification
+
+    result = _revision(data, "Specification", {"0.4.0", "0.5.0", "0.6.0"}, revision_id)
+    revision_map = dict(revisions or {})
+    if any(
+        not isinstance(old, UUID) or not isinstance(new, UUID) or old == new
+        for old, new in revision_map.items()
+    ):
+        raise ValueError("revision mappings require distinct old and new UUIDs")
     if result.get("model") is not None:
-        if model is None:
+        old = UUID(result["model"])
+        mapped = revision_map.get(old)
+        if model is not None and (
+            not isinstance(model, UUID)
+            or model == old
+            or mapped is not None
+            and model != mapped
+        ):
+            raise ValueError("conflicting or unchanged Model revision")
+        selected = model or mapped
+        if selected is None:
             raise ValueError("upgraded Model revision must be supplied explicitly")
-        result["model"] = str(model)
+        revision_map[old] = selected
+        result["model"] = str(revision_map[old])
+    if len(set(revision_map.values())) != len(revision_map):
+        raise ValueError("conflicting revision mappings")
+    if revision_map.keys() & set(revision_map.values()):
+        raise ValueError("revision mappings cannot reuse known source UUIDs")
+    if UUID(result["metadata"]["id"]) in (
+        revision_map.keys() | set(revision_map.values())
+    ):
+        raise ValueError("Specification revision UUID conflicts with a dependency")
     for field in ("includes", "cases"):
         if result.get(field):
-            if revisions is None or any(
-                UUID(ref) not in revisions for ref in result[field]
-            ):
+            if any(UUID(ref) not in revision_map for ref in result[field]):
                 raise ValueError(f"complete upgraded {field} mapping required")
-            result[field] = [str(revisions[UUID(ref)]) for ref in result[field]]
+            result[field] = [str(revision_map[UUID(ref)]) for ref in result[field]]
     for field in ("assignments", "estimates"):
         for assignment in result.get(field) or []:
+            if "value" in assignment and "target" in assignment:
+                raise ValueError("mixed source Assignment target layout")
             if "target" not in assignment:
-                assignment["target"] = dict(value=assignment.pop("value"))
+                assignment["target"] = {"value": assignment.pop("value")}
     if result.get("unknowns") is not None:
         result["unknowns"] = [
-            dict(value=ref) if isinstance(ref, str) else ref
+            {"value": ref} if isinstance(ref, str) else ref
             for ref in result["unknowns"]
         ]
-    _movements(result, "Specification")
-    _references(result, "Specification")
+    _convert(result, "Specification")
     return Specification.from_data(result)

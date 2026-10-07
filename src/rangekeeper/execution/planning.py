@@ -7,8 +7,9 @@ from ..diagnostics import Issue, ValidationReport
 from ..errors import ValidationError, ReferenceTypeError, IdentityConflictError
 from ..io.store import RecordStore
 from ..model import Model
-from ..specification import Composition, Specification, compose
-from ..specification._composition import specification_catalogue
+from ..specification import Composition, Specification
+from ..specification.composition import compose
+from ..specification.composition import specification_catalogue
 
 
 class Plan:
@@ -20,9 +21,12 @@ class Plan:
 
     def __init__(self, store: RecordStore) -> None:
         self.store = store
+        self.models: dict[UUID, Model] = {}
+        self.specifications: dict[UUID, Specification] = {}
 
     def resolve(
-        self, root: Specification
+        self,
+        root: Specification,
     ) -> tuple[dict[UUID, Specification], dict[UUID, Composition | ValidationError]]:
         """Resolve the case graph and compose each leaf once for this execution tree.
 
@@ -34,7 +38,9 @@ class Plan:
         while pending:
             current = pending.pop()
             if current.record.model is not None:
-                model = self.store.load_model(current.record.model)
+                model = self.models.get(current.record.model)
+                if model is None:
+                    model = self.store.load_model(current.record.model)
                 if not isinstance(model, Model):
                     raise ReferenceTypeError(
                         "input reference did not resolve to a Model"
@@ -43,6 +49,7 @@ class Plan:
                     raise IdentityConflictError(
                         "input resolver returned a different revision"
                     )
+                self.models[model.id] = model
             for id in (current.record.includes or ()) + (current.record.cases or ()):
                 if id in documents:
                     continue
@@ -79,7 +86,9 @@ class Plan:
             else:
                 if current.id not in compositions:
                     try:
-                        compositions[current.id] = compose(current, resolver=self.store)
+                        compositions[current.id] = compose(
+                            current, resolver=self, documents=documents, catalogue=data
+                        )
                     except ValidationError as error:
                         compositions[current.id] = error
                 view = compositions[current.id]
@@ -101,4 +110,13 @@ class Plan:
                     )
 
         check_pins(root)
+        self.specifications = documents
         return documents, compositions
+
+    def load_model(self, identity: UUID) -> Model:
+        if identity not in self.models:
+            self.models[identity] = self.store.load_model(identity)
+        return self.models[identity]
+
+    def load_specification(self, identity: UUID) -> Specification:
+        return self.specifications[identity]

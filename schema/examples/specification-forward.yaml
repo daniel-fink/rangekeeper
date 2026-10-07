@@ -1,12 +1,12 @@
 metadata:
-  id: 2660b5a4-1780-5a59-8aac-b838299d632d
-  schema_version: 0.6.0
+  id: a1278d64-1be6-55cd-9727-a7bd70fc0f9d
+  schema_version: 0.7.0
   name: Forward valuation
   description: 'Determine NOI and capital value from supplied operating assumptions.
     Expected arithmetic: NOI 550000 AUD/year and value 11000000 AUD. No solver has
     been run.'
   previous: a7e90723-6bbc-5d2c-8f1e-d6bc28062658
-model: e9096132-8158-56db-bc3e-b64ef7f92d4e
+model: 513e3bca-50ac-5437-95f6-9b0d628fe89d
 assignments:
 - quantity:
     magnitude: 20

@@ -4,6 +4,7 @@ from __future__ import annotations
 import math
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, cast
+from .._schema.enums import DistributionFamily
 
 if TYPE_CHECKING:
     from .._schema.records import Distribution, DistributionFamily
@@ -30,12 +31,12 @@ class DistributionBehavior:
             raise ValueError("invalid distribution bounds")
         if distribution.weighting is not None and distribution.weighting < 0:
             raise ValueError("invalid distribution weighting")
-        if distribution.kind != "uniform" and (
+        if distribution.kind is not DistributionFamily.UNIFORM and (
             distribution.mode is None
             or not distribution.lower <= distribution.mode <= distribution.upper
         ):
             raise ValueError("distribution mode outside bounds")
-        default_units.compatible(distribution.units, distribution.units)
+        default_units.validate_units(distribution.units)
         return distribution
 
     @classmethod
@@ -45,7 +46,9 @@ class DistributionBehavior:
         """Declare a uniform distribution, including a point mass when bounds coincide."""
         factory = cast("type[Distribution]", cls)
 
-        result = factory(kind="uniform", lower=lower, upper=upper, units=units)
+        result = factory(
+            kind=DistributionFamily.UNIFORM, lower=lower, upper=upper, units=units
+        )
         result.check()
         return result
 
@@ -62,7 +65,11 @@ class DistributionBehavior:
         factory = cast("type[Distribution]", cls)
 
         result = factory(
-            kind="triangular", lower=lower, upper=upper, mode=mode, units=units
+            kind=DistributionFamily.TRIANGULAR,
+            lower=lower,
+            upper=upper,
+            mode=mode,
+            units=units,
         )
         result.check()
         return result
@@ -81,7 +88,7 @@ class DistributionBehavior:
         factory = cast("type[Distribution]", cls)
 
         result = factory(
-            kind="pert",
+            kind=DistributionFamily.PERT,
             lower=lower,
             upper=upper,
             mode=mode,
@@ -103,17 +110,19 @@ class DistributionBehavior:
         """Declare support mean ± residual; residual is a half-range, not full width."""
         factory = cast("type[Distribution]", cls)
 
+        if not isinstance(kind, DistributionFamily):
+            raise TypeError("kind must be DistributionFamily")
         if not math.isfinite(residual) or residual < 0:
             raise ValueError("residual must be finite and nonnegative")
-        if kind == "uniform":
+        if kind is DistributionFamily.UNIFORM:
             return factory.uniform(
                 lower=mean - residual, upper=mean + residual, units=units
             )
-        if kind == "triangular":
+        if kind is DistributionFamily.TRIANGULAR:
             return factory.triangular(
                 lower=mean - residual, upper=mean + residual, mode=mean, units=units
             )
-        if kind == "pert":
+        if kind is DistributionFamily.PERT:
             return factory.pert(
                 lower=mean - residual, upper=mean + residual, mode=mean, units=units
             )
@@ -127,11 +136,11 @@ class DistributionBehavior:
         scale = distribution.upper - distribution.lower
         if scale == 0:
             return None
-        if distribution.kind == "uniform":
+        if distribution.kind is DistributionFamily.UNIFORM:
             return stats.uniform(loc=distribution.lower, scale=scale)
         assert distribution.mode is not None  # Required by the shared semantic check.
         fraction = (distribution.mode - distribution.lower) / scale
-        if distribution.kind == "triangular":
+        if distribution.kind is DistributionFamily.TRIANGULAR:
             return stats.triang(c=fraction, loc=distribution.lower, scale=scale)
         weighting = 4.0 if distribution.weighting is None else distribution.weighting
         return stats.beta(

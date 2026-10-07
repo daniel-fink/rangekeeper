@@ -5,6 +5,9 @@ fixtures; output Models and Runs are produced by the actual library executor.
 No fixture expected-output document is read or copied as an execution result.
 """
 
+from rangekeeper.run import CompletionStatus
+from rangekeeper.run import SolutionStatus
+
 import argparse
 import json
 from pathlib import Path
@@ -41,7 +44,7 @@ def main() -> None:
     executor = Executor(store)
     forward_spec = specifications["specification-composed-forward"]
     forward = executor.execute(forward_spec)
-    if forward.report.status.solution != "feasible":
+    if forward.report.status.solution != SolutionStatus.FEASIBLE:
         raise RuntimeError(forward.report)
     first = store.load_model(forward.record.outputs[0])
 
@@ -65,14 +68,14 @@ def main() -> None:
     data["includes"] = [str(revised_common.id)]
     revised_inverse = inverse_spec.revise(SpecificationRecord.from_data(data))
     inverse = executor.execute(revised_inverse)
-    if inverse.report.status.solution != "feasible":
+    if inverse.report.status.solution != SolutionStatus.FEASIBLE:
         raise RuntimeError(inverse.report)
     second = store.load_model(inverse.record.outputs[0])
     batch_spec = Specification.from_data(
         {
             "metadata": {
                 "id": str(uuid4()),
-                "schema_version": "0.4.0",
+                "schema_version": "0.7.0",
                 "name": "Sequential scalar investigations",
             },
             "cases": [str(forward_spec.id), str(revised_inverse.id)],
@@ -107,7 +110,8 @@ def main() -> None:
         assert abs(quantities[key]["magnitude"] - expected) < 1e-6, key
     assert second.metadata.previous == first.id and first.metadata.previous == model.id
     assert (
-        batch.report.status.completion == "completed" and len(batch.record.spawns) == 2
+        batch.report.status.completion == CompletionStatus.COMPLETED
+        and len(batch.record.spawns) == 2
     )
     summary = {
         "input_model": str(model.id),

@@ -1,5 +1,7 @@
 """Model-backed graph behavior, independent of legacy Graph domain assumptions."""
 
+from rangekeeper.model import ValueKind
+
 from dataclasses import FrozenInstanceError
 import subprocess
 import sys
@@ -38,12 +40,7 @@ from rangekeeper.graph.membership import (
     containing_assemblies,
 )
 from rangekeeper.graph.selection import select_value
-from rangekeeper.graph.reducers import (
-    sum_quantities,
-    mean_quantities,
-    min_quantity,
-    max_quantity,
-)
+from rangekeeper.graph import reducers, HierarchyKind, CoverageStatus
 from rangekeeper.errors import MissingReferenceError, ReferenceTypeError, UnitError
 from rangekeeper.io import json as codec
 
@@ -74,14 +71,14 @@ def fixture(*, missing=False, overlap=False, amounts=(10, 20, 0)):
             Value(
                 id=uuid4(),
                 key="net",
-                kind="measurement",
+                kind=ValueKind.MEASUREMENT,
                 measure=measure.id,
-                **quantity
+                **quantity,
             ),
             Value(
                 id=uuid4(),
                 key="gross",
-                kind="measurement",
+                kind=ValueKind.MEASUREMENT,
                 measure=measure.id,
                 quantity=Quantity(magnitude=100, units="meter ** 2"),
             ),
@@ -109,12 +106,12 @@ def fixture(*, missing=False, overlap=False, amounts=(10, 20, 0)):
     local = Value(
         id=uuid4(),
         key="net",
-        kind="measurement",
+        kind=ValueKind.MEASUREMENT,
         measure=measure.id,
         quantity=Quantity(magnitude=777, units="meter ** 2"),
     )
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
+        metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
         definitions=Definitions(measures=(measure,), taxonomies=(taxonomy,)),
         system=System(
             entities=tuple(nodes),
@@ -129,10 +126,10 @@ def fixture(*, missing=False, overlap=False, amounts=(10, 20, 0)):
 def reduction(
     *,
     select=None,
-    reducer=sum_quantities,
+    reducer=reducers.sum,
     require_complete=True,
     contributors=None,
-    units="meter ** 2"
+    units="meter ** 2",
 ):
     return Reduction(
         select=select or select_value("net"),
@@ -243,7 +240,7 @@ def test_membership_and_relationship_direction_are_distinct():
     assert empty_edges.successors(root.id) == ()
     hierarchy = Hierarchy.from_membership(empty_edges, root=root.id)
     assert hierarchy.children(root.id) == (a.id, b.id, c.id)
-    assert hierarchy.kind == "membership"
+    assert hierarchy.kind is HierarchyKind.MEMBERSHIP
     assert not empty_edges.is_arborescence
     for func in (entities_in, relationships_in):
         with pytest.raises(ReferenceTypeError):
@@ -342,23 +339,26 @@ def test_missing_values_and_known_subtotal_do_not_become_zero():
     model, root, a, b, c, edges, _ = fixture(missing=True)
     view = View(model, assembly=root.id)
     strict = view.aggregate(reduction())
-    assert strict.root_value is None and strict.known_subtotal(root.id).magnitude == 10
+    assert strict.root_value is None and strict.available_value(root.id).magnitude == 10
     assert strict.coverage(root.id).missing == (b.id,)
     assert strict.value(b.id) is None and strict.value(c.id).magnitude == 0
     assert b.id in strict.value_ids  # unresolved content still has an identity
     assert view.aggregate(reduction(require_complete=False)).root_value.magnitude == 10
     absent = view.aggregate(reduction(select=select_value("absent")))
-    assert absent.root_value is None and absent.known_subtotal(root.id) is None
+    assert absent.root_value is None and absent.available_value(root.id) is None
     assert not absent.value_ids
     empty = view.aggregate(
         Reduction(
             select=select_value("net"),
-            reducer=sum_quantities,
+            reducer=reducers.sum,
             units="meter ** 2",
             contributors=lambda e: False,
         )
     )
-    assert empty.coverage(root.id).status == "empty" and empty.root_value is None
+    assert (
+        empty.coverage(root.id).status is CoverageStatus.EMPTY
+        and empty.root_value is None
+    )
 
 
 def test_mean_reduces_raw_contributors_not_subtree_means():
@@ -370,12 +370,11 @@ def test_mean_reduces_raw_contributors_not_subtree_means():
 
     model = revise(model, edit)
     view = View(model)
-    mean = view.aggregate(reduction(reducer=mean_quantities))
+    mean = view.aggregate(reduction(reducer=reducers.mean))
     assert mean.root_value.magnitude == 40 and mean.value(a.id).magnitude == 15
-    assert view.aggregate(reduction(reducer=min_quantity)).root_value.magnitude == 10
-    assert view.aggregate(reduction(reducer=max_quantity)).root_value.magnitude == 90
-    with pytest.raises(AggregationError):
-        mean.known_subtotal(root.id)
+    assert view.aggregate(reduction(reducer=reducers.min)).root_value.magnitude == 10
+    assert view.aggregate(reduction(reducer=reducers.max)).root_value.magnitude == 90
+    assert mean.available_value(root.id).magnitude == mean.root_value.magnitude
 
 
 def test_unit_conversion_and_incompatible_results():
@@ -452,13 +451,13 @@ def test_invalid_callback_results_are_not_silently_used(failure):
 
 def test_reducers_reject_empty_mixed_and_overflow_quantities():
     with pytest.raises(AggregationError):
-        sum_quantities(())
+        reducers.sum(())
     with pytest.raises(AggregationError):
-        sum_quantities(
+        reducers.sum(
             (Quantity(magnitude=1, units="m"), Quantity(magnitude=1, units="cm"))
         )
     with pytest.raises(AggregationError):
-        sum_quantities(
+        reducers.sum(
             (Quantity(magnitude=1e308, units="m"), Quantity(magnitude=1e308, units="m"))
         )
 
@@ -472,7 +471,7 @@ for prefix in ('pint','numpy','networkx','pandas','pyomo','highspy','matplotlib'
 from rangekeeper import Model
 from rangekeeper.model import Metadata
 from uuid import uuid4
-model=Model.create(metadata=Metadata(id=uuid4(),schema_version='0.6.0'))
+model=Model.create(metadata=Metadata(id=uuid4(),schema_version='0.7.0'))
 assert graph.View(model).entities==()
 """
     subprocess.run([sys.executable, "-c", script], check=True)
@@ -512,12 +511,10 @@ def test_aggregation_requires_a_deliberate_parent_contributor_policy():
     model, root, a, b, c, edges, _ = fixture()
     # Default includes the unmeasured Assembly, so it must not silently report complete.
     result = View(model).aggregate(
-        Reduction(
-            select=select_value("net"), reducer=sum_quantities, units="meter ** 2"
-        )
+        Reduction(select=select_value("net"), reducer=reducers.sum, units="meter ** 2")
     )
     assert result.root_value is None and result.coverage(root.id).missing == (root.id,)
-    assert result.known_subtotal(root.id).magnitude == 30
+    assert result.available_value(root.id).magnitude == 30
 
 
 def test_custom_reducer_normalizes_returned_units_and_errors_remain_visible():

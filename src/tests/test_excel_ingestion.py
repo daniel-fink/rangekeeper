@@ -15,7 +15,7 @@ import pytest
 from rangekeeper.adapters import document, excel
 from rangekeeper.adapters.errors import AdapterEncodingError
 from rangekeeper.evidence import ClaimKind, Location
-from rangekeeper.workflow.ingestion import fingerprint, tabular
+from rangekeeper.evidence import fingerprint, tabular
 
 NS = {"s": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
 
@@ -386,7 +386,7 @@ def test_fresh_process_determinism_and_optional_import_isolation(workbook_path):
 import sys
 from uuid import NAMESPACE_URL
 from rangekeeper.adapters import excel
-from rangekeeper.workflow.ingestion import fingerprint
+from rangekeeper.evidence import fingerprint
 book = excel.read(sys.argv[1], namespace=NAMESPACE_URL, source_key="jll", name="JLL").output
 spec = excel.ExtractionSpec(id="one", version=1, sheet="Unit Pricing", rows=excel.Rows(start=8,end=8), columns=(excel.Column(name="unit",column="A"),))
 print(fingerprint(excel.extract_table(book,spec).output))

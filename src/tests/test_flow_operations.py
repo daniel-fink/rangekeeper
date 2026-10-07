@@ -1,5 +1,17 @@
 """Flows carry quantities; model-selected operations supply their interpretation."""
 
+from rangekeeper.duration import Frequency, PeriodTiming, DayCount
+from rangekeeper.model.flow import MissingValueHandling
+from rangekeeper.calculations.series import (
+    AlignmentJoin,
+    AggregationReducer,
+    ResamplingReduction,
+    MeanWeighting,
+)
+from rangekeeper.calculations.projection import ProjectionMethod
+from rangekeeper.account import Balance, CurrentInterest, InterestTreatment
+from rangekeeper._schema.enums import ValueKind
+
 from uuid import uuid4
 from rangekeeper.model.flow import Flow
 
@@ -51,31 +63,37 @@ def test_model_can_select_different_reductions_for_the_same_flow(reduction, expe
     result = series.resample(
         flow,
         periods=[make_period(date(2026, 1, 1), date(2026, 2, 1))],
-        reduction=reduction,
-        weighting="observations" if reduction == "mean" else None,
+        reduction=ResamplingReduction(reduction),
+        weighting=MeanWeighting.OBSERVATIONS if reduction == "mean" else None,
     ).flow
     assert result.movements[0].magnitude == expected
     assert result.units == "AUD" and flow.to_data() == before
 
 
 def test_means_require_a_choice_and_do_not_infer_weighting_from_units():
-    periods = make_periods(date(2026, 1, 1), frequency="month", count=2)
+    periods = make_periods(date(2026, 1, 1), frequency=Frequency.MONTH, count=2)
     flow = Flow.from_periods(periods, [10, 20], units="dimensionless")
-    target = [make_period(periods[0].start, periods[-1].end)]
+    target = [make_period(periods[0].start_inclusive, periods[-1].end)]
     with pytest.raises(ValueError, match="weighting"):
-        series.resample(flow, periods=target, reduction="mean")
+        series.resample(flow, periods=target, reduction=ResamplingReduction.MEAN)
     observed = series.resample(
-        flow, periods=target, reduction="mean", weighting="observations"
+        flow,
+        periods=target,
+        reduction=ResamplingReduction.MEAN,
+        weighting=MeanWeighting.OBSERVATIONS,
     ).flow
     elapsed = series.resample(
-        flow, periods=target, reduction="mean", weighting="elapsed"
+        flow,
+        periods=target,
+        reduction=ResamplingReduction.MEAN,
+        weighting=MeanWeighting.ELAPSED,
     ).flow
     assert observed.movements[0].magnitude == 15
     assert elapsed.movements[0].magnitude == pytest.approx((31 * 10 + 28 * 20) / 59)
 
 
 def test_products_preserve_time_dimensions_and_scaled_dimensionless_units():
-    periods = make_periods(date(2026, 1, 1), frequency="month", count=1)
+    periods = make_periods(date(2026, 1, 1), frequency=Frequency.MONTH, count=1)
     rates = Flow.from_periods(periods, [2], units="AUD/day")
     factors = Flow.from_periods(periods, [50], units="percent")
     squared = series.multiply((rates, rates, factors)).convert(units="AUD**2/day**2")
@@ -97,14 +115,14 @@ def test_exposure_is_an_explicit_operation_without_a_rate_classification():
 
 
 def test_account_argument_defines_rate_role_and_checks_units():
-    periods = make_periods(date(2026, 1, 1), frequency="month", count=2)
+    periods = make_periods(date(2026, 1, 1), frequency=Frequency.MONTH, count=2)
     transactions = Flow.from_periods(periods, [0, 0], units="AUD")
     rates = Flow.from_periods(periods, [10, 20], units="percent")
     result = Account.calculate(
         transactions,
         starting=Quantity(magnitude=100, units="AUD"),
         rate=rates,
-        method="compound",
+        treatment=InterestTreatment.FINANCED,
     )
     assert [s.magnitude for s in result.closing.movements] == pytest.approx([110, 132])
     assert [s.magnitude for s in result.interest.movements] == pytest.approx([10, 22])
@@ -118,14 +136,14 @@ def test_account_argument_defines_rate_role_and_checks_units():
 
 @pytest.mark.parametrize("reduction", ["sum", "last", "mean"])
 def test_explicit_zero_fill_does_not_resolve_present_unknowns(reduction):
-    periods = make_periods(date(2026, 1, 1), frequency="month", count=3)
+    periods = make_periods(date(2026, 1, 1), frequency=Frequency.MONTH, count=3)
     flow = Flow.from_periods(periods[:2], [10, None], units="AUD")
     result = series.resample(
         flow,
         periods=periods,
-        reduction=reduction,
-        weighting="observations" if reduction == "mean" else None,
-        missing="zero",
+        reduction=ResamplingReduction(reduction),
+        weighting=MeanWeighting.OBSERVATIONS if reduction == "mean" else None,
+        missing=MissingValueHandling.ZERO,
     )
     assert [s.magnitude for s in result.flow.movements] == [10, None, 0]
     assert result.coverage == (1, 0, 0)

@@ -8,6 +8,7 @@ No old build cache or stored historical kernel state is reused.
 from pathlib import Path
 import json, shutil, subprocess, sys, yaml
 from html import escape
+from jupyter_book.config import get_default_sphinx_config
 
 ROOT = Path(__file__).resolve().parents[4]
 stage = Path(sys.argv[1])
@@ -42,6 +43,15 @@ shutil.copy2(plotly_js, stage / "_static/plotly.min.js")
 config = yaml.safe_load((stage / "_config.yml").read_text())
 config["execute"]["execute_notebooks"] = "off"
 config["sphinx"]["config"]["html_extra_path"] = []
+# This is an offline snapshot of executed notebooks. Thebe is not used, and
+# its Sphinx 7 inline configuration is emitted twice by the book build.
+config["sphinx"]["config"]["extensions"] = [
+    name
+    for name in config["sphinx"]["config"].get(
+        "extensions", get_default_sphinx_config()["extensions"]
+    )
+    if name != "sphinx_thebe"
+]
 (stage / "_config.yml").write_text(yaml.safe_dump(config, sort_keys=False))
 subprocess.run(
     [str(Path(sys.executable).parent / "jupyter-book"), "build", str(stage), "--all"],

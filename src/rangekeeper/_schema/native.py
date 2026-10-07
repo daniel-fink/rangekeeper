@@ -107,7 +107,7 @@ class RuleId(UUID):
     pass
 
 
-class DecisionPointId(UUID):
+class DecisionId(UUID):
     pass
 
 
@@ -395,7 +395,7 @@ class Report(YAMLRoot):
     runtime: Optional[Union[dict, "Runtime"]] = None
     diagnostics: Optional[Union[Union[dict, "Diagnostic"], list[Union[dict, "Diagnostic"]]]] = empty_list()
     trace: Optional[Union[Union[dict, "Step"], list[Union[dict, "Step"]]]] = empty_list()
-    decisions: Optional[Union[Union[dict, "Decision"], list[Union[dict, "Decision"]]]] = empty_list()
+    outcomes: Optional[Union[Union[dict, "DecisionOutcome"], list[Union[dict, "DecisionOutcome"]]]] = empty_list()
 
     def __post_init__(self, *_: str, **kwargs: Any):
         if self._is_empty(self.status):
@@ -410,7 +410,7 @@ class Report(YAMLRoot):
 
         self._normalize_inlined_as_list(slot_name="trace", slot_type=Step, key_name="kind", keyed=False)
 
-        self._normalize_inlined_as_list(slot_name="decisions", slot_type=Decision, key_name="point", keyed=False)
+        self._normalize_inlined_as_list(slot_name="outcomes", slot_type=DecisionOutcome, key_name="decision", keyed=False)
 
         super().__post_init__(**kwargs)
 
@@ -1174,18 +1174,18 @@ class Rule(YAMLRoot):
 
 
 @dataclass(repr=False)
-class DecisionPoint(YAMLRoot):
+class Decision(YAMLRoot):
     """
-    One dated policy point with explicit observations, first-match rules and fallback.
+    One dated policy decision with explicit observations, first-match rules and fallback.
     """
     _inherited_slots: ClassVar[list[str]] = []
 
-    class_class_uri: ClassVar[URIRef] = RK["DecisionPoint"]
-    class_class_curie: ClassVar[str] = "rk:DecisionPoint"
-    class_name: ClassVar[str] = "DecisionPoint"
-    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/DecisionPoint")
+    class_class_uri: ClassVar[URIRef] = RK["Decision"]
+    class_class_curie: ClassVar[str] = "rk:Decision"
+    class_name: ClassVar[str] = "Decision"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Decision")
 
-    id: Union[str, DecisionPointId] = None
+    id: Union[str, DecisionId] = None
     at: Union[str, XSDDate] = None
     observations: Union[Union[dict, ObservationBinding], list[Union[dict, ObservationBinding]]] = None
     rules: Union[dict[Union[str, RuleId], Union[dict, Rule]], list[Union[dict, Rule]]] = empty_dict()
@@ -1194,8 +1194,8 @@ class DecisionPoint(YAMLRoot):
     def __post_init__(self, *_: str, **kwargs: Any):
         if self._is_empty(self.id):
             self.MissingRequiredField("id")
-        if not isinstance(self.id, DecisionPointId):
-            self.id = DecisionPointId(self.id)
+        if not isinstance(self.id, DecisionId):
+            self.id = DecisionId(self.id)
 
         if self._is_empty(self.at):
             self.MissingRequiredField("at")
@@ -1220,7 +1220,7 @@ class DecisionPoint(YAMLRoot):
 @dataclass(repr=False)
 class Policy(YAMLRoot):
     """
-    Finite policy owning explicit controlled targets and ordered dated decision points.
+    Finite policy owning explicit controlled targets and ordered dated decisions.
     """
     _inherited_slots: ClassVar[list[str]] = []
 
@@ -1231,7 +1231,7 @@ class Policy(YAMLRoot):
 
     id: Union[str, PolicyId] = None
     targets: Union[Union[dict, Reference], list[Union[dict, Reference]]] = None
-    points: Union[dict[Union[str, DecisionPointId], Union[dict, DecisionPoint]], list[Union[dict, DecisionPoint]]] = empty_dict()
+    decisions: Union[dict[Union[str, DecisionId], Union[dict, Decision]], list[Union[dict, Decision]]] = empty_dict()
 
     def __post_init__(self, *_: str, **kwargs: Any):
         if self._is_empty(self.id):
@@ -1243,9 +1243,9 @@ class Policy(YAMLRoot):
             self.MissingRequiredField("targets")
         self._normalize_inlined_as_list(slot_name="targets", slot_type=Reference, key_name="target", keyed=False)
 
-        if self._is_empty(self.points):
-            self.MissingRequiredField("points")
-        self._normalize_inlined_as_list(slot_name="points", slot_type=DecisionPoint, key_name="id", keyed=True)
+        if self._is_empty(self.decisions):
+            self.MissingRequiredField("decisions")
+        self._normalize_inlined_as_list(slot_name="decisions", slot_type=Decision, key_name="id", keyed=True)
 
         super().__post_init__(**kwargs)
 
@@ -1292,18 +1292,18 @@ class ObservedQuantity(YAMLRoot):
 
 
 @dataclass(repr=False)
-class Decision(YAMLRoot):
+class DecisionOutcome(YAMLRoot):
     """
-    Recorded outcome of one evaluated decision point; absence of a rule means fallback.
+    Recorded outcome of one evaluated decision; absence of a rule means fallback.
     """
     _inherited_slots: ClassVar[list[str]] = []
 
-    class_class_uri: ClassVar[URIRef] = RK["Decision"]
-    class_class_curie: ClassVar[str] = "rk:Decision"
-    class_name: ClassVar[str] = "Decision"
-    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Decision")
+    class_class_uri: ClassVar[URIRef] = RK["DecisionOutcome"]
+    class_class_curie: ClassVar[str] = "rk:DecisionOutcome"
+    class_name: ClassVar[str] = "DecisionOutcome"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/DecisionOutcome")
 
-    point: Union[str, UUID] = None
+    decision: Union[str, UUID] = None
     at: Union[str, XSDDate] = None
     observations: Union[Union[dict, ObservedQuantity], list[Union[dict, ObservedQuantity]]] = None
     assignments: Union[Union[dict, Assignment], list[Union[dict, Assignment]]] = None
@@ -1312,10 +1312,10 @@ class Decision(YAMLRoot):
     termination_reason: Optional[str] = None
 
     def __post_init__(self, *_: str, **kwargs: Any):
-        if self._is_empty(self.point):
-            self.MissingRequiredField("point")
-        if not isinstance(self.point, UUID):
-            self.point = UUID(self.point)
+        if self._is_empty(self.decision):
+            self.MissingRequiredField("decision")
+        if not isinstance(self.decision, UUID):
+            self.decision = UUID(self.decision)
 
         if self._is_empty(self.at):
             self.MissingRequiredField("at")
@@ -1831,7 +1831,7 @@ class ScenarioPlan(YAMLRoot):
 
         if self._is_empty(self.periods):
             self.MissingRequiredField("periods")
-        self._normalize_inlined_as_list(slot_name="periods", slot_type=Period, key_name="start", keyed=False)
+        self._normalize_inlined_as_list(slot_name="periods", slot_type=Period, key_name="start_inclusive", keyed=False)
 
         if self._is_empty(self.parameters):
             self.MissingRequiredField("parameters")
@@ -1928,6 +1928,40 @@ class ObservationAvailability(YAMLRoot):
 
 
 @dataclass(repr=False)
+class CalculationProvenance(YAMLRoot):
+    """
+    Calculation implementation identity, separate from captured sampling provenance.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["CalculationProvenance"]
+    class_class_curie: ClassVar[str] = "rk:CalculationProvenance"
+    class_name: ClassVar[str] = "CalculationProvenance"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/CalculationProvenance")
+
+    name: str = None
+    fingerprint: str = None
+    versions: Union[Union[dict, LibraryVersion], list[Union[dict, LibraryVersion]]] = None
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.name):
+            self.MissingRequiredField("name")
+        if not isinstance(self.name, str):
+            self.name = str(self.name)
+
+        if self._is_empty(self.fingerprint):
+            self.MissingRequiredField("fingerprint")
+        if not isinstance(self.fingerprint, str):
+            self.fingerprint = str(self.fingerprint)
+
+        if self._is_empty(self.versions):
+            self.MissingRequiredField("versions")
+        self._normalize_inlined_as_list(slot_name="versions", slot_type=LibraryVersion, key_name="name", keyed=False)
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
 class ScenarioRealization(YAMLRoot):
     """
     Captured scenario inputs and paths. Stored draws permit replay without random sampling.
@@ -1948,6 +1982,7 @@ class ScenarioRealization(YAMLRoot):
     inputs: Union[Union[dict, Binding], list[Union[dict, Binding]]] = None
     outputs: Union[Union[dict, Binding], list[Union[dict, Binding]]] = None
     availability: Union[Union[dict, ObservationAvailability], list[Union[dict, ObservationAvailability]]] = None
+    calculation: Optional[Union[dict, CalculationProvenance]] = None
 
     def __post_init__(self, *_: str, **kwargs: Any):
         if self._is_empty(self.id):
@@ -1989,6 +2024,9 @@ class ScenarioRealization(YAMLRoot):
         if self._is_empty(self.availability):
             self.MissingRequiredField("availability")
         self._normalize_inlined_as_list(slot_name="availability", slot_type=ObservationAvailability, key_name="available_at", keyed=False)
+
+        if self.calculation is not None and not isinstance(self.calculation, CalculationProvenance):
+            self.calculation = CalculationProvenance(**as_dict(self.calculation))
 
         super().__post_init__(**kwargs)
 
@@ -2763,7 +2801,8 @@ class Assembly(Entity):
 @dataclass(repr=False)
 class Period(YAMLRoot):
     """
-    Half-open interval [start, end). Date boundaries use the Gregorian calendar; start must precede end.
+    Half-open interval [start_inclusive, end_exclusive). Date boundaries use the Gregorian calendar; start must
+    precede end.
     """
     _inherited_slots: ClassVar[list[str]] = []
 
@@ -2772,19 +2811,19 @@ class Period(YAMLRoot):
     class_name: ClassVar[str] = "Period"
     class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Period")
 
-    start: Union[str, XSDDate] = None
-    end: Union[str, XSDDate] = None
+    start_inclusive: Union[str, XSDDate] = None
+    end_exclusive: Union[str, XSDDate] = None
 
     def __post_init__(self, *_: str, **kwargs: Any):
-        if self._is_empty(self.start):
-            self.MissingRequiredField("start")
-        if not isinstance(self.start, XSDDate):
-            self.start = XSDDate(self.start)
+        if self._is_empty(self.start_inclusive):
+            self.MissingRequiredField("start_inclusive")
+        if not isinstance(self.start_inclusive, XSDDate):
+            self.start_inclusive = XSDDate(self.start_inclusive)
 
-        if self._is_empty(self.end):
-            self.MissingRequiredField("end")
-        if not isinstance(self.end, XSDDate):
-            self.end = XSDDate(self.end)
+        if self._is_empty(self.end_exclusive):
+            self.MissingRequiredField("end_exclusive")
+        if not isinstance(self.end_exclusive, XSDDate):
+            self.end_exclusive = XSDDate(self.end_exclusive)
 
         super().__post_init__(**kwargs)
 
@@ -2801,8 +2840,8 @@ class Span(Period):
     class_name: ClassVar[str] = "Span"
     class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Span")
 
-    start: Union[str, XSDDate] = None
-    end: Union[str, XSDDate] = None
+    start_inclusive: Union[str, XSDDate] = None
+    end_exclusive: Union[str, XSDDate] = None
     name: Optional[str] = None
 
     def __post_init__(self, *_: str, **kwargs: Any):
@@ -3401,8 +3440,8 @@ slots.report__diagnostics = Slot(uri=RK.diagnostics, name="report__diagnostics",
 slots.report__trace = Slot(uri=RK.trace, name="report__trace", curie=RK.curie('trace'),
                    model_uri=DEFAULT_.report__trace, domain=None, range=Optional[Union[Union[dict, Step], list[Union[dict, Step]]]])
 
-slots.report__decisions = Slot(uri=RK.decisions, name="report__decisions", curie=RK.curie('decisions'),
-                   model_uri=DEFAULT_.report__decisions, domain=None, range=Optional[Union[Union[dict, Decision], list[Union[dict, Decision]]]])
+slots.report__outcomes = Slot(uri=RK.outcomes, name="report__outcomes", curie=RK.curie('outcomes'),
+                   model_uri=DEFAULT_.report__outcomes, domain=None, range=Optional[Union[Union[dict, DecisionOutcome], list[Union[dict, DecisionOutcome]]]])
 
 slots.status__completion = Slot(uri=RK.completion, name="status__completion", curie=RK.curie('completion'),
                    model_uri=DEFAULT_.status__completion, domain=None, range=Union[str, "CompletionStatus"])
@@ -3678,20 +3717,20 @@ slots.rule__condition = Slot(uri=RK.condition, name="rule__condition", curie=RK.
 slots.rule__actions = Slot(uri=RK.actions, name="rule__actions", curie=RK.curie('actions'),
                    model_uri=DEFAULT_.rule__actions, domain=None, range=Union[Union[dict, Action], list[Union[dict, Action]]])
 
-slots.decisionPoint__id = Slot(uri=RK.id, name="decisionPoint__id", curie=RK.curie('id'),
-                   model_uri=DEFAULT_.decisionPoint__id, domain=None, range=URIRef)
+slots.decision__id = Slot(uri=RK.id, name="decision__id", curie=RK.curie('id'),
+                   model_uri=DEFAULT_.decision__id, domain=None, range=URIRef)
 
-slots.decisionPoint__at = Slot(uri=RK.at, name="decisionPoint__at", curie=RK.curie('at'),
-                   model_uri=DEFAULT_.decisionPoint__at, domain=None, range=Union[str, XSDDate])
+slots.decision__at = Slot(uri=RK.at, name="decision__at", curie=RK.curie('at'),
+                   model_uri=DEFAULT_.decision__at, domain=None, range=Union[str, XSDDate])
 
-slots.decisionPoint__observations = Slot(uri=RK.observations, name="decisionPoint__observations", curie=RK.curie('observations'),
-                   model_uri=DEFAULT_.decisionPoint__observations, domain=None, range=Union[Union[dict, ObservationBinding], list[Union[dict, ObservationBinding]]])
+slots.decision__observations = Slot(uri=RK.observations, name="decision__observations", curie=RK.curie('observations'),
+                   model_uri=DEFAULT_.decision__observations, domain=None, range=Union[Union[dict, ObservationBinding], list[Union[dict, ObservationBinding]]])
 
-slots.decisionPoint__rules = Slot(uri=RK.rules, name="decisionPoint__rules", curie=RK.curie('rules'),
-                   model_uri=DEFAULT_.decisionPoint__rules, domain=None, range=Union[dict[Union[str, RuleId], Union[dict, Rule]], list[Union[dict, Rule]]])
+slots.decision__rules = Slot(uri=RK.rules, name="decision__rules", curie=RK.curie('rules'),
+                   model_uri=DEFAULT_.decision__rules, domain=None, range=Union[dict[Union[str, RuleId], Union[dict, Rule]], list[Union[dict, Rule]]])
 
-slots.decisionPoint__fallback = Slot(uri=RK.fallback, name="decisionPoint__fallback", curie=RK.curie('fallback'),
-                   model_uri=DEFAULT_.decisionPoint__fallback, domain=None, range=Union[Union[dict, Action], list[Union[dict, Action]]])
+slots.decision__fallback = Slot(uri=RK.fallback, name="decision__fallback", curie=RK.curie('fallback'),
+                   model_uri=DEFAULT_.decision__fallback, domain=None, range=Union[Union[dict, Action], list[Union[dict, Action]]])
 
 slots.policy__id = Slot(uri=RK.id, name="policy__id", curie=RK.curie('id'),
                    model_uri=DEFAULT_.policy__id, domain=None, range=URIRef)
@@ -3699,8 +3738,8 @@ slots.policy__id = Slot(uri=RK.id, name="policy__id", curie=RK.curie('id'),
 slots.policy__targets = Slot(uri=RK.targets, name="policy__targets", curie=RK.curie('targets'),
                    model_uri=DEFAULT_.policy__targets, domain=None, range=Union[Union[dict, Reference], list[Union[dict, Reference]]])
 
-slots.policy__points = Slot(uri=RK.points, name="policy__points", curie=RK.curie('points'),
-                   model_uri=DEFAULT_.policy__points, domain=None, range=Union[dict[Union[str, DecisionPointId], Union[dict, DecisionPoint]], list[Union[dict, DecisionPoint]]])
+slots.policy__decisions = Slot(uri=RK.decisions, name="policy__decisions", curie=RK.curie('decisions'),
+                   model_uri=DEFAULT_.policy__decisions, domain=None, range=Union[dict[Union[str, DecisionId], Union[dict, Decision]], list[Union[dict, Decision]]])
 
 slots.observedQuantity__name = Slot(uri=RK.name, name="observedQuantity__name", curie=RK.curie('name'),
                    model_uri=DEFAULT_.observedQuantity__name, domain=None, range=Union[str, Code])
@@ -3714,26 +3753,26 @@ slots.observedQuantity__quantity = Slot(uri=RK.quantity, name="observedQuantity_
 slots.observedQuantity__available_at = Slot(uri=RK.available_at, name="observedQuantity__available_at", curie=RK.curie('available_at'),
                    model_uri=DEFAULT_.observedQuantity__available_at, domain=None, range=Union[str, XSDDate])
 
-slots.decision__point = Slot(uri=RK.point, name="decision__point", curie=RK.curie('point'),
-                   model_uri=DEFAULT_.decision__point, domain=None, range=Union[str, UUID])
+slots.decisionOutcome__decision = Slot(uri=RK.decision, name="decisionOutcome__decision", curie=RK.curie('decision'),
+                   model_uri=DEFAULT_.decisionOutcome__decision, domain=None, range=Union[str, UUID])
 
-slots.decision__at = Slot(uri=RK.at, name="decision__at", curie=RK.curie('at'),
-                   model_uri=DEFAULT_.decision__at, domain=None, range=Union[str, XSDDate])
+slots.decisionOutcome__at = Slot(uri=RK.at, name="decisionOutcome__at", curie=RK.curie('at'),
+                   model_uri=DEFAULT_.decisionOutcome__at, domain=None, range=Union[str, XSDDate])
 
-slots.decision__rule = Slot(uri=RK.rule, name="decision__rule", curie=RK.curie('rule'),
-                   model_uri=DEFAULT_.decision__rule, domain=None, range=Optional[Union[str, UUID]])
+slots.decisionOutcome__rule = Slot(uri=RK.rule, name="decisionOutcome__rule", curie=RK.curie('rule'),
+                   model_uri=DEFAULT_.decisionOutcome__rule, domain=None, range=Optional[Union[str, UUID]])
 
-slots.decision__observations = Slot(uri=RK.observations, name="decision__observations", curie=RK.curie('observations'),
-                   model_uri=DEFAULT_.decision__observations, domain=None, range=Union[Union[dict, ObservedQuantity], list[Union[dict, ObservedQuantity]]])
+slots.decisionOutcome__observations = Slot(uri=RK.observations, name="decisionOutcome__observations", curie=RK.curie('observations'),
+                   model_uri=DEFAULT_.decisionOutcome__observations, domain=None, range=Union[Union[dict, ObservedQuantity], list[Union[dict, ObservedQuantity]]])
 
-slots.decision__assignments = Slot(uri=RK.assignments, name="decision__assignments", curie=RK.curie('assignments'),
-                   model_uri=DEFAULT_.decision__assignments, domain=None, range=Union[Union[dict, Assignment], list[Union[dict, Assignment]]])
+slots.decisionOutcome__assignments = Slot(uri=RK.assignments, name="decisionOutcome__assignments", curie=RK.curie('assignments'),
+                   model_uri=DEFAULT_.decisionOutcome__assignments, domain=None, range=Union[Union[dict, Assignment], list[Union[dict, Assignment]]])
 
-slots.decision__terminated = Slot(uri=RK.terminated, name="decision__terminated", curie=RK.curie('terminated'),
-                   model_uri=DEFAULT_.decision__terminated, domain=None, range=Union[bool, Bool])
+slots.decisionOutcome__terminated = Slot(uri=RK.terminated, name="decisionOutcome__terminated", curie=RK.curie('terminated'),
+                   model_uri=DEFAULT_.decisionOutcome__terminated, domain=None, range=Union[bool, Bool])
 
-slots.decision__termination_reason = Slot(uri=RK.termination_reason, name="decision__termination_reason", curie=RK.curie('termination_reason'),
-                   model_uri=DEFAULT_.decision__termination_reason, domain=None, range=Optional[str])
+slots.decisionOutcome__termination_reason = Slot(uri=RK.termination_reason, name="decisionOutcome__termination_reason", curie=RK.curie('termination_reason'),
+                   model_uri=DEFAULT_.decisionOutcome__termination_reason, domain=None, range=Optional[str])
 
 slots.quantity__magnitude = Slot(uri=RK.magnitude, name="quantity__magnitude", curie=RK.curie('magnitude'),
                    model_uri=DEFAULT_.quantity__magnitude, domain=None, range=Decimal)
@@ -3932,6 +3971,15 @@ slots.observationAvailability__target = Slot(uri=RK.target, name="observationAva
 slots.observationAvailability__available_at = Slot(uri=RK.available_at, name="observationAvailability__available_at", curie=RK.curie('available_at'),
                    model_uri=DEFAULT_.observationAvailability__available_at, domain=None, range=Union[str, XSDDate])
 
+slots.calculationProvenance__name = Slot(uri=RK.name, name="calculationProvenance__name", curie=RK.curie('name'),
+                   model_uri=DEFAULT_.calculationProvenance__name, domain=None, range=str)
+
+slots.calculationProvenance__fingerprint = Slot(uri=RK.fingerprint, name="calculationProvenance__fingerprint", curie=RK.curie('fingerprint'),
+                   model_uri=DEFAULT_.calculationProvenance__fingerprint, domain=None, range=str)
+
+slots.calculationProvenance__versions = Slot(uri=RK.versions, name="calculationProvenance__versions", curie=RK.curie('versions'),
+                   model_uri=DEFAULT_.calculationProvenance__versions, domain=None, range=Union[Union[dict, LibraryVersion], list[Union[dict, LibraryVersion]]])
+
 slots.scenarioRealization__id = Slot(uri=RK.id, name="scenarioRealization__id", curie=RK.curie('id'),
                    model_uri=DEFAULT_.scenarioRealization__id, domain=None, range=URIRef)
 
@@ -3940,6 +3988,9 @@ slots.scenarioRealization__plan = Slot(uri=RK.plan, name="scenarioRealization__p
 
 slots.scenarioRealization__key = Slot(uri=RK.key, name="scenarioRealization__key", curie=RK.curie('key'),
                    model_uri=DEFAULT_.scenarioRealization__key, domain=None, range=Union[str, Code])
+
+slots.scenarioRealization__calculation = Slot(uri=RK.calculation, name="scenarioRealization__calculation", curie=RK.curie('calculation'),
+                   model_uri=DEFAULT_.scenarioRealization__calculation, domain=None, range=Optional[Union[dict, CalculationProvenance]])
 
 slots.scenarioRealization__generator = Slot(uri=RK.generator, name="scenarioRealization__generator", curie=RK.curie('generator'),
                    model_uri=DEFAULT_.scenarioRealization__generator, domain=None, range=str)
@@ -4212,11 +4263,11 @@ slots.entity__name = Slot(uri=RK.name, name="entity__name", curie=RK.curie('name
 slots.entity__characteristics = Slot(uri=RK.characteristics, name="entity__characteristics", curie=RK.curie('characteristics'),
                    model_uri=DEFAULT_.entity__characteristics, domain=None, range=Optional[Union[dict, Characteristics]])
 
-slots.period__start = Slot(uri=RK.start, name="period__start", curie=RK.curie('start'),
-                   model_uri=DEFAULT_.period__start, domain=None, range=Union[str, XSDDate])
+slots.period__start_inclusive = Slot(uri=RK.start_inclusive, name="period__start_inclusive", curie=RK.curie('start_inclusive'),
+                   model_uri=DEFAULT_.period__start_inclusive, domain=None, range=Union[str, XSDDate])
 
-slots.period__end = Slot(uri=RK.end, name="period__end", curie=RK.curie('end'),
-                   model_uri=DEFAULT_.period__end, domain=None, range=Union[str, XSDDate])
+slots.period__end_exclusive = Slot(uri=RK.end_exclusive, name="period__end_exclusive", curie=RK.curie('end_exclusive'),
+                   model_uri=DEFAULT_.period__end_exclusive, domain=None, range=Union[str, XSDDate])
 
 slots.span__name = Slot(uri=RK.name, name="span__name", curie=RK.curie('name'),
                    model_uri=DEFAULT_.span__name, domain=None, range=Optional[str])

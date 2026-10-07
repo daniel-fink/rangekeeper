@@ -43,7 +43,7 @@ them. Policy guards or action arguments may provide such requirements; their
 comparison, typing, and execution semantics will need to be specified together.
 This does not remove date or string result domains: a reference, selection, or call
 can return such content under its declared contract. For example, selecting a
-Span's `end` returns a date without a date literal node. Selector names and
+Span endpoint can return a date without a date literal node. Selector names and
 characteristic keys are schema fields, not string literal expressions.
 
 Comparisons produce Boolean expressions. A Constraint asserts that one must
@@ -89,6 +89,27 @@ uses the content's index convention. Sequences use zero-based nonnegative intege
 indices; temporal indices need the temporal content contract. Sets and bags have no
 positional indices. Missing members and out-of-range indices are errors. If an
 Entity characteristic already has a Value UUID, reference it directly.
+
+## Analysis and uncertainty
+
+`model.scope` owns UUID-keyed declaration lookup. `model.formulation` collects
+owner-local declarations with original paths. `model.expression.validation`
+checks signatures, binds arguments and analyzes each expression once; its immutable
+ExpressionAnalysis contains node, domain and path maps. Constraints and objectives
+consume those results. `domains.py` contains local rules; numerical evaluation and
+policy truth remain separate.
+
+Domain comparison is directional and returns compatible, incompatible or unproven.
+Missing units do not prove dimensionless content. A required Function argument,
+predicate or objective cannot rely on an unproven domain. Passive reporting queries
+may remain unproven, with normal structural and reference checks still applied.
+
+Static query inference filters the permitted Value declaration inventory by key
+and Measure without following graph edges. A nonempty homogeneous candidate set
+can establish an item domain. Measurement, property and Flow candidates retain
+their different kinds. Mixed or empty candidates do not prove a measurement type;
+a Measure filter alone is insufficient because Flows also carry Measures. The
+runtime result count and membership remain unknown to static validation.
 
 ## Queries and aggregations
 
@@ -185,8 +206,8 @@ At signature boundaries, the bounded checker recognizes identical unit spellings
 and the explicit `dimensionless` convention; it conservatively rejects other unit
 matches. This is not a complete compatibility or conversion algorithm. The separate
 graph fixture exercises compatible-unit conversion through the existing runtime.
-Generated constructors alone do not enforce all schema rules; validate records
-before using them. A function being evaluable does not establish that a backend
+Generated constructors enforce structure. Owning validators establish references,
+content rules and complete mathematical roles before execution. A function being evaluable does not establish that a backend
 can solve through it for the unknowns selected by a Specification.
 
 Readable formula text can be parsed into these records and retained as authoring
@@ -195,9 +216,9 @@ authority. Loading any of these records does not execute code.
 
 ## Subsequent work
 
-Model, Specification, and finalized Run records are now drafted. Prove scalar
-forward and inverse solves with actual acceptance evidence. Implement graph-query execution against the explicit membership and
-duplicate rules, followed by aggregation with symbolic members. Add rich Value
+The scalar execution subset and its independent acceptance checks are described
+in [scalar execution](SCALAR_EXECUTION.md). General symbolic graph-query execution
+and aggregation with symbolic members require further adapters. Add rich Value
 payloads and member contracts before claiming complete Flow/Account models.
 Conditionals, slicing, grouping, unknown-dependent query membership, unrestricted
 graph query languages, and general-purpose code execution are outside this draft.

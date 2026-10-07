@@ -3,26 +3,31 @@
 from __future__ import annotations
 
 import hashlib
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
 from pathlib import Path
 from types import MappingProxyType
+from typing import TYPE_CHECKING
+from uuid import UUID
 
 from rangekeeper import Model, _structured
-from rangekeeper.operation import Operation, Outcome, _Failure
-from rangekeeper.evidence import Method
-from rangekeeper.errors import ValidationError, IdentityConflictError, UnitError
+from rangekeeper.errors import IdentityConflictError, UnitError, ValidationError
+from rangekeeper.evidence import Claim, Evidence, Method
+from rangekeeper.operation import Operation, Outcome, _Failure, fingerprint
 
-from .progress import Observer, Reporter, emit
-from . import _audit
-from ._execution import Unavailable, execute_steps
+from . import implementation
+from ._contracts import ExecutionContext, Produced
+from .catalog import OPERATIONS
 from .checking import CheckResult, evaluate
-from .composition import Finding, compose
+from .composition import Finding, _compose
 from .implementation import manifests
-from .ingestion import Evidence
+from .progress import Observer, ProgressPhase, ProgressStatus, Reporter, emit
 from .source_checks import SourceCheck
 from .source_checks import evaluate as source_checks
 from .specification import WorkflowSpec
+
+if TYPE_CHECKING:
+    from .specification import StepSpec
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -46,7 +51,10 @@ class WorkflowResult:
 
 
 def run(
-    spec: WorkflowSpec, *, input_root: Path, on_progress: Observer | None = None
+    spec: WorkflowSpec,
+    *,
+    input_root: Path,
+    on_progress: Observer | None = None,
 ) -> Outcome[WorkflowResult]:
     """Build without export; observer failures are warnings, not semantic failures.
 
@@ -55,14 +63,21 @@ def run(
     before execution; unavailable operations return diagnostics with no output.
     """
     reporter = Reporter(on_progress)
-    emit(reporter, "workflow", "running")
+    emit(reporter, ProgressPhase.WORKFLOW, ProgressStatus.RUNNING)
     outcome = _run(spec, input_root=input_root, on_progress=reporter)
-    emit(reporter, "workflow", "completed" if outcome.output else "failed")
+    emit(
+        reporter,
+        ProgressPhase.WORKFLOW,
+        ProgressStatus.COMPLETED if outcome.output else ProgressStatus.FAILED,
+    )
     return replace(outcome, diagnostics=(*outcome.diagnostics, *reporter.diagnostics))
 
 
 def _run(
-    spec: WorkflowSpec, *, input_root: Path, on_progress: Observer
+    spec: WorkflowSpec,
+    *,
+    input_root: Path,
+    on_progress: Observer,
 ) -> Outcome[WorkflowResult]:
     """Execute declared operations, compose, check and return without exporting files.
 
@@ -71,16 +86,16 @@ def _run(
     """
     if not isinstance(spec, WorkflowSpec):
         raise TypeError("run requires WorkflowSpec")
-    modules, dependencies = _audit.capabilities(spec)
+    modules, dependencies = implementation.capabilities(spec)
     audit, semantic, implementation_id = manifests(
-        Path(__file__).resolve().parents[1], modules=modules
+        Path(__file__).resolve().parents[1], modules=modules, dependencies=dependencies
     )
     operation = Operation(
-        method=Method(code="rk.workflow.run", version="4"),
+        method=Method(code="rk.workflow.run", version="5"),
         specification=spec.to_mapping(),
         inputs={"implementation": implementation_id},
     )
-    namespace, settings, decisions = _audit.configuration(spec, operation)
+    namespace, settings, decisions = implementation.configuration(spec, operation)
     operations: list[Operation] = []
     try:
         produced, step_records = execute_steps(
@@ -106,8 +121,8 @@ def _run(
             },
         )
         operations.append(composition)
-        emit(on_progress, "composition", "running")
-        model, findings, by_key = compose(
+        emit(on_progress, ProgressPhase.COMPOSITION, ProgressStatus.RUNNING)
+        model, findings, by_key = _compose(
             spec.model,
             evidence,
             settings,
@@ -115,7 +130,7 @@ def _run(
             composition,
             namespace=spec.namespace,
         )
-        emit(on_progress, "composition", "completed")
+        emit(on_progress, ProgressPhase.COMPOSITION, ProgressStatus.COMPLETED)
         from rangekeeper.io.json import dumps
 
         model_hash = "sha256:" + hashlib.sha256(dumps(model).encode()).hexdigest()
@@ -129,7 +144,7 @@ def _run(
             },
         )
         operations.append(checks_operation)
-        emit(on_progress, "checks", "running")
+        emit(on_progress, ProgressPhase.CHECKS, ProgressStatus.RUNNING)
         checks = evaluate(spec.checks, model, by_key, evidence)
         source_ids = {
             item.source.id for item in produced.values() if item.source is not None
@@ -137,9 +152,9 @@ def _run(
         native_checks = source_checks(
             spec.checks.get("source_checks", ()), outputs, source_ids=source_ids
         )
-        emit(on_progress, "checks", "completed")
+        emit(on_progress, ProgressPhase.CHECKS, ProgressStatus.COMPLETED)
         operations.append(operation)
-        metadata = _audit.metadata(
+        metadata = implementation.metadata(
             spec, produced, step_records, operations, audit, semantic, dependencies
         )
         return Outcome(
@@ -163,3 +178,61 @@ def _run(
         return Outcome(operation=operation, output=None, diagnostics=(exc.diagnostic,))
     except Unavailable as exc:
         return Outcome(operation=operation, output=None, diagnostics=exc.diagnostics)
+
+
+class Unavailable(Exception):
+    """Propagate native diagnostics without discarding them or catching programmer errors."""
+
+    def __init__(self, diagnostics):
+        self.diagnostics = diagnostics
+
+
+def execute_steps(
+    steps: Sequence[StepSpec],
+    *,
+    root: Path,
+    namespace: UUID,
+    settings: Claim[str],
+    operations: list[Operation],
+    on_progress: Observer | None = None,
+) -> tuple[dict[str, Produced], dict[str, object]]:
+    """Only declared prerequisites are visible to a handler; outputs remain native."""
+    produced: dict[str, Produced] = {}
+    records: dict[str, object] = {}
+    for index, step in enumerate(steps):
+        emit(
+            on_progress,
+            ProgressPhase.STEP,
+            ProgressStatus.RUNNING,
+            step=step.id,
+            completed=index,
+            total=len(steps),
+        )
+        handler = OPERATIONS[step.operation]
+        inputs = MappingProxyType({name: produced[name].value for name in step.inputs})
+        invocation = Operation(
+            method=Method(code="rk.workflow." + step.operation, version="1"),
+            specification=step.to_mapping(),
+            inputs={name: produced[name].fingerprint for name in step.inputs},
+        )
+        operations.append(invocation)
+        result = handler.execute(
+            step.request, inputs, ExecutionContext(root, namespace, settings, step.id)
+        )
+        operations.append(result.operation)
+        if result.output is None:
+            raise Unavailable(result.diagnostics)
+        emit(
+            on_progress,
+            ProgressPhase.STEP,
+            ProgressStatus.COMPLETED,
+            step=step.id,
+            completed=index + 1,
+            total=len(steps),
+        )
+        produced[step.id] = handler.describe(result.output)
+        records[step.id] = {
+            "dispatch": fingerprint(invocation),
+            "native": (fingerprint(result.operation),),
+        }
+    return produced, records

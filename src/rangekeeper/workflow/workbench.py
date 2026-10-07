@@ -13,7 +13,8 @@ import shutil
 import sys
 import tempfile
 from collections.abc import Mapping
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
+from enum import Enum, unique
 from datetime import datetime, timezone
 from html import escape
 from importlib.metadata import version
@@ -22,19 +23,39 @@ from typing import cast
 from uuid import uuid4
 
 from rangekeeper.io import json as model_json
+from rangekeeper.io._atomic import PublishedFileError, PublishedFileInterrupted
 from rangekeeper.model import Model
 from rangekeeper.adapters.cytoscape import ASSETS
 from rangekeeper.model.diff import between
 
-from . import _audit
+from . import implementation
 from ._declarations import plain
-from .progress import Observer, Reporter, emit
-from ._review import decisions_html
+from .progress import Observer, Reporter, ProgressPhase, ProgressStatus, emit
+from .review import decisions_html
 from .catalog import OPERATIONS
 from .implementation import manifests
 from .review import export
 from .runtime import WorkflowResult, run
 from .specification import WorkflowSpec, load
+
+
+@unique
+class InspectionStatus(Enum):
+    INVALID_INPUTS = "invalid inputs"
+    NOT_BUILT = "not built"
+    PREVIOUS_OUTPUT_UNAVAILABLE = "previous output unavailable"
+    UNVERIFIED_INPUTS = "unverified inputs"
+    CURRENT = "current"
+    STALE = "stale"
+    INVALID_SPECIFICATION_OR_ENVIRONMENT = "invalid specification or environment"
+
+
+@unique
+class AttemptStatus(Enum):
+    COMPLETED = "completed"
+    FAILED = "failed"
+    INTERRUPTED = "interrupted"
+
 
 _BUNDLE = ("model.json", "checks.json", "manifest.json", "review.html", "viewer.html")
 
@@ -74,13 +95,17 @@ class Inspection:
     """A point-in-time observation; saved notebook output does not update itself."""
 
     checked_at: str
-    status: str
+    status: InspectionStatus
     specification: WorkflowSpec | None
     inputs: dict
     signature: dict
     latest: Path | None
     diagnostics: tuple[str, ...] = ()
     last_attempt: dict | None = None
+
+    def __post_init__(self):
+        if not isinstance(self.status, InspectionStatus):
+            raise TypeError("status must be InspectionStatus")
 
     def __repr__(self):
         return f"Inspection(status={self.status!r}, checked_at={self.checked_at!r}, latest={self.latest!r})"
@@ -106,7 +131,7 @@ class Inspection:
         )
         return (
             "<section><h3>Inputs and freshness · "
-            + escape(self.status)
+            + escape(self.status.value)
             + "</h3><p>Checked "
             + escape(self.checked_at)
             + ". Refresh this cell after edits; saved output is a snapshot.</p>"
@@ -147,9 +172,11 @@ def inspect(spec_directory: Path, *, input_root: Path, output_root: Path) -> Ins
         diagnostics.append("Previous output unavailable: " + str(exc))
     try:
         spec = load(Path(spec_directory))
-        modules, dependencies = _audit.capabilities(spec)
+        modules, dependencies = implementation.capabilities(spec)
         audit, _semantic, implementation_id = manifests(
-            Path(__file__).resolve().parents[1], modules=modules
+            Path(__file__).resolve().parents[1],
+            modules=modules,
+            dependencies=dependencies,
         )
         for step in spec.steps:
             handler = OPERATIONS[step.operation]
@@ -177,17 +204,25 @@ def inspect(spec_directory: Path, *, input_root: Path, output_root: Path) -> Ins
             if item["status"] != "ready":
                 diagnostics.append(f"{key}: {item.get('message', item['status'])}")
         if any(item["status"] != "ready" for item in inputs.values()):
-            state = "invalid inputs"
+            state = InspectionStatus.INVALID_INPUTS
         elif previous is None:
-            state = "not built" if not diagnostics else "previous output unavailable"
+            state = (
+                InspectionStatus.NOT_BUILT
+                if not diagnostics
+                else InspectionStatus.PREVIOUS_OUTPUT_UNAVAILABLE
+            )
         elif not previous.get("inputs_verified"):
-            state = "unverified inputs"
+            state = InspectionStatus.UNVERIFIED_INPUTS
         else:
-            state = "current" if signature == previous["signature"] else "stale"
+            state = (
+                InspectionStatus.CURRENT
+                if signature == previous["signature"]
+                else InspectionStatus.STALE
+            )
     except (
         Exception
     ) as exc:  # noqa: BLE001 -- user-facing attempt boundary retains the error type
-        state = "invalid specification or environment"
+        state = InspectionStatus.INVALID_SPECIFICATION_OR_ENVIRONMENT
         diagnostics.append(f"{type(exc).__name__}: {exc}")
     last_attempt = None
     try:
@@ -220,7 +255,7 @@ def _changes(previous, result):
     old = {
         c["id"]: c for c in json.loads((previous / "checks.json").read_text())["checks"]
     }
-    new = {c.id: plain(asdict(c)) for c in result.checks}
+    new = {c.id: plain(c.to_mapping()) for c in result.checks}
     changed = [
         key
         for key in sorted(old.keys() & new.keys())
@@ -242,7 +277,7 @@ def _changes(previous, result):
 class Attempt:
     """Always a new attempt; a failed attempt never carries a previous result."""
 
-    status: str
+    status: AttemptStatus
     started_at: str
     finished_at: str
     directory: Path | None
@@ -251,13 +286,17 @@ class Attempt:
     diagnostics: tuple[str, ...]
     changes: dict
 
+    def __post_init__(self):
+        if not isinstance(self.status, AttemptStatus):
+            raise TypeError("status must be AttemptStatus")
+
     def __repr__(self):
         return f"Attempt(status={self.status!r}, directory={self.directory!r}, diagnostics={self.diagnostics!r})"
 
     def _repr_html_(self):
         text = (
             "<h3>Build · "
-            + escape(self.status)
+            + escape(self.status.value)
             + "</h3><p>"
             + escape(self.started_at + " → " + self.finished_at)
             + "</p>"
@@ -267,11 +306,13 @@ class Attempt:
             + "".join("<li>" + escape(d) + "</li>" for d in self.diagnostics)
             + "</ul>"
         )
-        directory = self.directory if self.status == "completed" else self.previous
+        directory = (
+            self.directory if self.status is AttemptStatus.COMPLETED else self.previous
+        )
         if directory:
             label = (
                 "This successful run"
-                if self.status == "completed"
+                if self.status is AttemptStatus.COMPLETED
                 else "Previous successful run — not the failed attempt"
             )
             text += (
@@ -287,7 +328,7 @@ class Attempt:
             from collections import Counter
 
             counts = Counter(
-                c.status for c in self.result.checks if c.category == "comparison"
+                c.status.value for c in self.result.checks if c.category == "comparison"
             )
             text += (
                 "<p>"
@@ -321,6 +362,7 @@ def build(
     root = Path(output_root).resolve()
     before = inspect(spec_directory, input_root=input_root, output_root=root)
     stage = None
+    published: Attempt | None = None
     try:
         if (
             before.specification is None
@@ -352,7 +394,7 @@ def build(
             ):
                 raise ValueError(f"Source {key} changed during execution")
         changes = _changes(before.latest, result)
-        emit(reporter, "export", "running")
+        emit(reporter, ProgressPhase.EXPORT, ProgressStatus.RUNNING)
         runs = root / "runs"
         runs.mkdir(parents=True, exist_ok=True)
         stage = Path(tempfile.mkdtemp(prefix=".pending-", dir=runs))
@@ -371,57 +413,109 @@ def build(
         directory = runs / str(uuid4())
         stage.rename(directory)
         stage = None
-        # A failed status write or pointer replacement cannot invalidate old output.
-        _atomic_json(
-            root / "latest-attempt.json",
-            {
-                "status": "completed",
-                "started_at": started,
-                "finished_at": record["finished_at"],
-                "directory": str(directory.relative_to(root)),
-            },
-        )
-        _atomic_json(
-            root / "latest.json", {"directory": str(directory.relative_to(root))}
-        )
-        # Publication is complete; do not let display failures turn it into a failed build.
+        publication_diagnostics = []
+        publication_interrupt = None
         try:
-            emit(reporter, "export", "completed")
-        except Exception:  # noqa: BLE001, S110 -- publication has already succeeded
-            pass
-        return Attempt(
-            "completed",
+            _atomic_json(
+                root / "latest.json", {"directory": str(directory.relative_to(root))}
+            )
+        except PublishedFileError as exc:
+            # Replacement succeeded. Keep this result without reading back or
+            # rolling back a pointer which another writer could already replace.
+            publication_diagnostics.append(str(exc))
+        except PublishedFileInterrupted as exc:
+            publication_interrupt = exc
+            publication_diagnostics.append(str(exc))
+        published = Attempt(
+            AttemptStatus.COMPLETED,
             started,
             record["finished_at"],
             directory,
             before.latest,
             result,
-            tuple(
-                d.message for d in (*result_outcome.diagnostics, *reporter.diagnostics)
-            ),
+            tuple(d.message for d in result_outcome.diagnostics)
+            + tuple(publication_diagnostics),
             changes,
         )
-    except (Exception, KeyboardInterrupt) as exc:
-        status = "interrupted" if isinstance(exc, KeyboardInterrupt) else "failed"
-        diagnostics = (f"{type(exc).__name__}: {exc}",)
-        attempt = Attempt(
-            status, started, _now(), None, before.latest, None, diagnostics, {}
+        if publication_interrupt is not None:
+            raise publication_interrupt
+        try:
+            _atomic_json(
+                root / "latest-attempt.json",
+                {
+                    "status": "completed",
+                    "started_at": started,
+                    "finished_at": record["finished_at"],
+                    "directory": str(directory.relative_to(root)),
+                    "diagnostics": publication_diagnostics,
+                },
+            )
+        except OSError as exc:
+            publication_diagnostics.append(
+                f"Attempt record write was not confirmed: {exc}"
+            )
+            published = replace(
+                published,
+                diagnostics=(*published.diagnostics, publication_diagnostics[-1]),
+            )
+        # Publication is complete; do not let display failures turn it into a failed build.
+        try:
+            emit(reporter, ProgressPhase.EXPORT, ProgressStatus.COMPLETED)
+        except Exception:  # noqa: BLE001, S110 -- publication has already succeeded
+            pass
+        return replace(
+            published,
+            diagnostics=tuple(
+                d.message for d in (*result_outcome.diagnostics, *reporter.diagnostics)
+            )
+            + tuple(publication_diagnostics),
         )
+    except (Exception, KeyboardInterrupt) as exc:
+        status = (
+            AttemptStatus.INTERRUPTED
+            if isinstance(exc, KeyboardInterrupt)
+            else AttemptStatus.FAILED
+        )
+        diagnostics = (f"{type(exc).__name__}: {exc}",)
+        attempt = (
+            replace(published, diagnostics=(*published.diagnostics, *diagnostics))
+            if published is not None
+            else Attempt(
+                status, started, _now(), None, before.latest, None, diagnostics, {}
+            )
+        )
+        interruption = exc if isinstance(exc, KeyboardInterrupt) else None
         try:
             root.mkdir(parents=True, exist_ok=True)
             _atomic_json(
                 root / "latest-attempt.json",
                 {
-                    "status": status,
+                    "status": attempt.status.value,
                     "started_at": started,
                     "finished_at": attempt.finished_at,
-                    "diagnostics": diagnostics,
+                    "diagnostics": attempt.diagnostics,
+                    "directory": (
+                        str(attempt.directory.relative_to(root))
+                        if attempt.directory is not None
+                        else None
+                    ),
                 },
             )
-        except OSError:
-            pass  # The returned attempt still reports failure if the disk is unavailable.
-        if isinstance(exc, KeyboardInterrupt):
-            raise
+        except (OSError, KeyboardInterrupt) as record_error:
+            attempt = replace(
+                attempt,
+                diagnostics=(
+                    *attempt.diagnostics,
+                    f"Attempt record write was not confirmed: {record_error}",
+                ),
+            )
+            if isinstance(record_error, KeyboardInterrupt):
+                interruption = interruption or record_error
+        if interruption is not None:
+            if published is not None:
+                # Preserve in-memory evidence when cancellation prevents status IO.
+                setattr(interruption, "completed_attempt", attempt)
+            raise interruption
         return attempt
     finally:
         if stage is not None:
@@ -436,7 +530,7 @@ def notebook_progress():
 
     def show(event):
         if handle is not None:
-            label = f"{event.phase}: {event.status}"
+            label = f"{event.phase.value}: {event.status.value}"
             if event.step:
                 label += f" · {event.step} · {event.completed}/{event.total}"
             handle.update(HTML("<p>" + escape(label) + "</p>"))

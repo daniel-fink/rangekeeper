@@ -1,50 +1,26 @@
-"""Explicit finite policy orchestration, separate from numerical feasibility."""
+"""Finite policy orchestration, separate from numerical feasibility and storage."""
 
+from datetime import date
+from uuid import UUID
+
+from .._schema.records import ActionKind, Assignment, DecisionOutcome, Policy, Quantity
 from ..model import Model
-from ..model._predicate import evaluate as evaluate_expression
-from ..model._references import reference_key
-from .._schema.records import (
-    DecisionPoint,
-    Decision,
-    Policy,
-    Assignment,
-    ObservedQuantity,
-)
-from ..specification._policy_validation import validate_policy, validate_decisions
-from ..model._validation import validate_model
-from .._schema.validation import document_version
-from ..units import default_units
-from .observation import observe, PolicyCapabilityError
-from .result import Observation, DecisionHistory, PolicyResult
+from ..errors import ContractError
+from ..model.scope import scope_for_model
+from ..units import UnitSystem, default_units
+from ._availability import evidence_dates
+from .observation import PolicyCapabilityError, _observe
+from .predicate import evaluate as evaluate_expression
+from .result import PolicyResult
+from .validation import validate_policy, validate_outcomes
 
 
-def decide(
-    point: DecisionPoint, observation: Observation, state: DecisionHistory
-) -> Decision:
-    """Apply the first true rule atomically, or its explicit fallback.
-
-    The rule sees only the observation object. Prior decisions establish state;
-    they cannot grant access to future data or an unrestricted Model.
-    """
-    if observation.at != point.at or any(
-        o.available_at > point.at for o in observation.quantities
-    ):
-        raise PolicyCapabilityError("observation date exceeds decision boundary")
-    if state.decisions and (
-        state.decisions[-1].terminated or state.decisions[-1].at >= point.at
-    ):
-        raise PolicyCapabilityError("decision sequence is terminated or out of order")
-    if [(o.name, o.target) for o in observation.quantities] != [
-        (o.name, o.target) for o in point.observations
-    ]:
-        raise PolicyCapabilityError("observation does not match declared bindings")
-    quantities = {
-        reference_key(o.target.to_data()): o.quantity for o in observation.quantities
-    }
+def _decide(decision, observation, *, units):
+    quantities = {item.target.target: item.quantity for item in observation.quantities}
     selected = None
-    for rule in point.rules:
+    for rule in decision.rules:
         try:
-            result = evaluate_expression(rule.condition, quantities)
+            result = evaluate_expression(rule.condition, quantities, units=units)
         except (ValueError, KeyError, ArithmeticError) as error:
             raise PolicyCapabilityError(str(error)) from error
         if type(result) is not bool:
@@ -52,89 +28,77 @@ def decide(
         if result:
             selected = rule
             break
-    actions = selected.actions if selected else point.fallback
-    supplied = []
+    actions = selected.actions if selected else decision.fallback
+    assignments = []
+    terminated = False
     for action in actions:
-        if action.kind == "assign":
-            assert action.target is not None and action.quantity is not None
-            supplied.append(Assignment(target=action.target, quantity=action.quantity))
-    assignments = tuple(supplied)
-    prior = {
-        reference_key(a.target.to_data())
-        for d in state.decisions
-        for a in d.assignments
-    }
-    if any(reference_key(a.target.to_data()) in prior for a in assignments):
-        raise PolicyCapabilityError("policy cannot assign the same control twice")
-    return Decision(
-        point=point.id,
-        at=point.at,
+        if action.kind is ActionKind.ASSIGN:
+            if action.target is None or action.quantity is None:
+                raise PolicyCapabilityError(
+                    "assign action requires a target and quantity"
+                )
+            assignments.append(
+                Assignment(target=action.target, quantity=action.quantity)
+            )
+        elif action.kind is ActionKind.TERMINATE:
+            terminated = True
+    return DecisionOutcome(
+        decision=decision.id,
+        at=decision.at,
         rule=selected.id if selected else None,
         observations=observation.quantities,
-        assignments=assignments,
-        terminated=any(a.kind == "terminate" for a in actions),
+        assignments=tuple(assignments),
+        terminated=terminated,
         termination_reason=(
-            ("rule_matched" if selected else "fallback")
-            if any(a.kind == "terminate" for a in actions)
-            else None
+            ("rule_matched" if selected else "fallback") if terminated else None
         ),
     )
 
 
-def evaluate(policy: Policy, *, model: Model) -> PolicyResult:
-    """Evaluate a finite policy against a pinned known path without mutation or IO.
-
-    Only exogenous recorded quantities and earlier decisions are available. An
-    unresolved endogenous observation fails explicitly; no staged solve occurs.
-    """
-    scope = validate_model(model.to_data(), document_version("Model"))
-    validate_policy(
-        policy.to_data(), scope=scope, units_compatible=default_units.compatible
-    )
-    decisions: list[Decision] = []
-    controlled = {reference_key(t.to_data()) for t in policy.targets}
-    for point in policy.points:
-        prior = {
-            reference_key(a.target.to_data()): (a.quantity, d.at)
-            for d in decisions
-            for a in d.assignments
-        }
-        items = []
-        for binding in point.observations:
-            token = reference_key(binding.target.to_data())
-            if token in prior:
-                quantity, available = prior[token]
-                available = max(available, binding.available_at or available)
-                if available > point.at:
-                    raise PolicyCapabilityError("earlier decision is not yet available")
-                items.append(
-                    ObservedQuantity(
-                        name=binding.name,
-                        target=binding.target,
-                        quantity=quantity,
-                        available_at=available,
-                    )
-                )
-            else:
-                if token in controlled:
-                    raise PolicyCapabilityError(
-                        "policy observation requires an earlier decision; recorded controls are not current decisions"
-                    )
-                items.extend(
-                    observe(model, at=point.at, bindings=(binding,)).quantities
-                )
-        decision = decide(
-            point, Observation(point.at, tuple(items)), DecisionHistory(tuple(decisions))
+def evaluate(
+    policy: Policy,
+    *,
+    model: Model,
+    units: UnitSystem = default_units,
+) -> PolicyResult:
+    """Evaluate a validated finite declaration against one pinned recorded path."""
+    if not isinstance(policy, Policy):
+        raise TypeError("policy must be a Policy record")
+    scope = scope_for_model(model, units=units)
+    declaration = policy.to_data()
+    validate_policy(declaration, scope=scope, units_compatible=units.compatible)
+    provenance = model.provenance.to_data() if model.provenance else {}
+    evidence = evidence_dates(provenance)
+    controlled = {target.target for target in policy.targets}
+    outcomes: list[DecisionOutcome] = []
+    prior: dict[UUID, tuple[Quantity, date]] = {}
+    for decision in policy.decisions:
+        observation = _observe(
+            scope,
+            at=decision.at,
+            bindings=decision.observations,
+            evidence=evidence,
+            prior=prior,
+            controlled=controlled,
         )
-        decisions.append(decision)
-        if decision.terminated:
+        outcome = _decide(decision, observation, units=units)
+        for assignment in outcome.assignments:
+            if assignment.target.target in prior:
+                raise PolicyCapabilityError(
+                    "policy cannot assign the same control twice"
+                )
+            prior[assignment.target.target] = (assignment.quantity, outcome.at)
+        outcomes.append(outcome)
+        if outcome.terminated:
             break
-    validate_decisions(
-        policy.to_data(),
-        [d.to_data() for d in decisions],
-        scope=scope,
-        provenance=model.provenance.to_data() if model.provenance else {},
-    )
-    return PolicyResult(
-        tuple(decisions), tuple(a for d in decisions for a in d.assignments)
-    )
+    try:
+        validate_outcomes(
+            declaration,
+            [item.to_data() for item in outcomes],
+            scope=scope,
+            provenance=provenance,
+            units=units,
+        )
+    except ContractError as error:
+        raise PolicyCapabilityError(str(error)) from error
+    return PolicyResult(tuple(outcomes))

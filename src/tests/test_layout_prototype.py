@@ -1,5 +1,10 @@
 """Geometric counterexamples and corrupted outputs, not snapshots of solver code."""
 
+from rangekeeper.adapters.cytoscape.layout.result import (
+    ResultMode,
+    ResultStatus,
+    StrictStatus,
+)
 from dataclasses import replace
 from itertools import combinations
 
@@ -27,8 +32,8 @@ requires_z3 = pytest.mark.z3
 def test_feasibility_preserves_all_memberships(name):
     p = examples()[name]
     r = solve(p, time_limit=5, optimize=False)
-    assert r.status == "feasible", r.reason
-    assert r.strict_status == "sat" and not check(p, r.rectangles)
+    assert r.status == ResultStatus.FEASIBLE, r.reason
+    assert r.strict_status == StrictStatus.SAT and not check(p, r.rectangles)
     assert set(r.rectangles) == {o.id for o in (*p.nodes, *p.assemblies)}
     assert r.measurements["false_enclosures"] == 0
 
@@ -37,10 +42,13 @@ def test_feasibility_preserves_all_memberships(name):
 def test_impossible_is_not_a_solver_timeout_and_fallback_is_explicit():
     p = examples()["impossible-five"]
     strict = solve(p, time_limit=5, optimize=False)
-    assert strict.status == "infeasible" and not strict.rectangles
+    assert strict.status == ResultStatus.INFEASIBLE and not strict.rectangles
     relaxed = solve(p, time_limit=5, allow_relaxed=True)
-    assert relaxed.strict_status == "unsat" and relaxed.mode == "diagnostic"
-    assert relaxed.status in {"feasible", "optimal"}
+    assert (
+        relaxed.strict_status == StrictStatus.UNSAT
+        and relaxed.mode == ResultMode.DIAGNOSTIC
+    )
+    assert relaxed.status in {ResultStatus.FEASIBLE, ResultStatus.OPTIMAL}
     assert relaxed.findings and all(f["code"] == "exclusion" for f in relaxed.findings)
     assert relaxed.measurements["false_enclosures"] >= 1
     assert relaxed.phases[0]["lower_bound"] >= 1
@@ -49,16 +57,16 @@ def test_impossible_is_not_a_solver_timeout_and_fallback_is_explicit():
 @requires_z3
 def test_unknown_has_no_stale_geometry_or_infeasibility_claim():
     r = solve(examples()["nested"], resource_limit=1, allow_relaxed=True)
-    assert r.status == "unknown" and r.strict_status == "unknown"
-    assert r.mode == "strict" and not r.rectangles
+    assert r.status == ResultStatus.UNKNOWN and r.strict_status == StrictStatus.UNKNOWN
+    assert r.mode == ResultMode.STRICT and not r.rectangles
     assert r.reason
 
 
 @requires_z3
 def test_bounded_infeasible_can_be_fixed_by_larger_canvas():
     p = Problem((Node("n", "Node", 100, 40),), (), width=90, height=60)
-    assert solve(p).status == "infeasible"
-    assert solve(replace(p, width=120)).status == "optimal"
+    assert solve(p).status == ResultStatus.INFEASIBLE
+    assert solve(replace(p, width=120)).status == ResultStatus.OPTIMAL
 
 
 def test_grid_score_is_spacing_not_just_integer_coordinates():
@@ -103,7 +111,7 @@ def test_nested_ancestor_is_not_a_false_enclosure():
 def test_checker_rejects_mutations_to_identity_size_containment_and_collision():
     p = examples()["shared-node"]
     r = solve(p, optimize=False)
-    assert r.status == "feasible"
+    assert r.status == ResultStatus.FEASIBLE
     missing = dict(r.rectangles)
     missing.pop("s")
     assert any(f.code == "missing" for f in check(p, missing))
@@ -121,7 +129,7 @@ def test_checker_rejects_mutations_to_identity_size_containment_and_collision():
 @requires_z3
 def test_grid_includes_child_assemblies_and_checker_matches_solver():
     r = solve(examples()["nested"], time_limit=2)
-    assert r.status in {"feasible", "optimal"}
+    assert r.status in {ResultStatus.FEASIBLE, ResultStatus.OPTIMAL}
     assert "root" in r.grids
     assert r.phases[0]["value"] == r.measurements["false_enclosures"]
 
@@ -151,7 +159,7 @@ def test_five_counterexample_all_four_subsets_are_feasible():
     p = examples()["impossible-five"]
     for assemblies in combinations(p.assemblies, 4):
         r = solve(replace(p, assemblies=assemblies), time_limit=5, optimize=False)
-        assert r.status == "feasible", r.reason
+        assert r.status == ResultStatus.FEASIBLE, r.reason
         assert not check(replace(p, assemblies=assemblies), r.rectangles)
 
 

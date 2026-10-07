@@ -2,13 +2,29 @@
 
 from collections.abc import Callable
 from uuid import UUID
-from ..model import Model, Entity, Value
+from ..model import Model, Entity, Value, Measure
 from ..model.characteristics import value
-from ..model.definitions import measure as find_measure
 from ..validate import require_text, require_uuid
 from .errors import SelectionError
 
 ValueSelector = Callable[[Model, Entity], Value | None]
+
+
+def _local_value(entity: Entity, key: str, measure: UUID | None) -> Value | None:
+    """Read a canonical Entity after the caller has prepared its Model and request."""
+    selected = value(entity.characteristics, key)
+    if selected is not None and measure is not None and selected.measure != measure:
+        raise SelectionError(
+            f"Value {selected.id} at {entity.id}/{key} does not use Measure {measure}"
+        )
+    return selected
+
+
+def _recorded_quantity(selected, units, unit_system):
+    """Convert an available recorded quantity; caller retains kind eligibility."""
+    if selected is None or selected.quantity is None:
+        return None
+    return unit_system.convert(selected.quantity, to=units)
 
 
 def select_value(key: str, *, measure: UUID | None = None) -> ValueSelector:
@@ -28,13 +44,8 @@ def select_value(key: str, *, measure: UUID | None = None) -> ValueSelector:
             raise TypeError("selector requires a Model and schema Entity")
         canonical = model.entity(entity.id)
         if measure is not None:
-            find_measure(model.definitions, measure)
-        selected = value(canonical.characteristics, key)
-        if selected is not None and measure is not None and selected.measure != measure:
-            raise SelectionError(
-                f"Value {selected.id} at {canonical.id}/{key} does not use Measure {measure}"
-            )
-        return selected
+            model._index.get(measure, Measure)
+        return _local_value(canonical, key, measure)
 
     return select
 

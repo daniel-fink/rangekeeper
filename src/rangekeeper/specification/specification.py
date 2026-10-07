@@ -5,39 +5,38 @@ from dataclasses import dataclass
 import math
 from uuid import UUID
 
-from .._comparison import check_revision
+from .._revision import check_revision
 from .._schema.records import Specification as SpecificationRecord, Metadata
 from .._schema.validation import document_version
-from .._validation import bounded, require
+from .._validation import bounded, require, validate_known_reference_types
 from ..errors import UnsupportedVersionError
-from ..model._index import Index
-from ..model._formulation import validate_formulation_names
-from ._composition import compose_specification, validate_local_header
+from .._record_index import RecordIndex
+from ..model.formulation.validation import validate_formulation_names
+from .composition import (
+    Composition,
+    validate_local_header,
+    validate_settings,
+    validate_roles,
+)
+from ..references import SpecificationResolver
 
 
 def _validate_local(record: SpecificationRecord) -> None:
     """Check local ownership and roles while permitting unresolved external inputs."""
     data = record.to_data()
-    index = Index.build(record)
+    index = RecordIndex.build(record)
     version = document_version("Specification")
     if record.metadata.schema_version != version:
         raise UnsupportedVersionError(record.metadata.schema_version)
 
     def check():
         validate_local_header(data, version)
-        index.check_known_references(record)
+        validate_known_reference_types(record, index=index)
         require(
             record.metadata.previous not in index.records,
             "Specification predecessor targets current scope",
         )
-        # Includes and cases are external edges. Validate this contribution's own
-        # additive rules with those edges absent; do not fabricate referenced docs.
-        isolated = {
-            key: value
-            for key, value in data.items()
-            if key not in ("includes", "cases")
-        }
-        compose_specification(isolated, {}, version)
+        validate_roles(data)
         for field in ("includes", "cases"):
             require(
                 all(
@@ -51,11 +50,7 @@ def _validate_local(record: SpecificationRecord) -> None:
                 record.model not in index.records,
                 "Model pin targets a local declaration",
             )
-        for value in (data.get("settings") or {}).values():
-            require(
-                value is None or math.isfinite(value) and value > 0,
-                "settings must be positive and finite",
-            )
+        validate_settings(data.get("settings") or {})
 
         validate_formulation_names(data.get("formulations") or [])
 
@@ -106,6 +101,12 @@ class Specification:
 
     def __repr__(self) -> str:
         return f"Specification(id={self.id!r}, includes={len(self.record.includes or ())}, cases={len(self.record.cases or ())})"
+
+    def compose(self, *, resolver: SpecificationResolver) -> Composition:
+        """Resolve this contribution to one immutable additive investigation."""
+        from .composition import compose
+
+        return compose(self, resolver=resolver)
 
     def revise(self, replacement: SpecificationRecord) -> "Specification":
         """Accept a complete locally valid replacement with explicit new identity/lineage.

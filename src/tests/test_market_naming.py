@@ -3,6 +3,7 @@
 from rangekeeper.model.distribution import Distribution
 
 from copy import deepcopy
+from rangekeeper._schema.enums import DistributionFamily
 from datetime import date
 import json
 from pathlib import Path
@@ -12,8 +13,8 @@ import pytest
 from rangekeeper.model import Model, Metadata, Binding
 
 
-from rangekeeper.duration import make_periods
-from rangekeeper.scenarios import market, Market, replay
+from rangekeeper.duration import make_periods, Frequency
+from rangekeeper.scenarios import market, Market, replay, ReplayUnavailableError
 from rangekeeper.migration import upgrade_scenario_names
 
 FIXTURE = Path(__file__).parent / "fixtures/scenarios/market-v1.json"
@@ -27,22 +28,24 @@ RENAMES = {
 
 
 def root():
-    return Model.create(metadata=Metadata(id=UUID(int=17), schema_version="0.6.0"))
+    return Model.create(metadata=Metadata(id=UUID(int=17), schema_version="0.7.0"))
 
 
 def plan(**kwargs):
     return market.make_plan(
         id=UUID(int=18),
         seed=12345,
-        periods=make_periods(date(2021, 1, 1), frequency="year", count=6),
-        **kwargs
+        periods=make_periods(date(2021, 1, 1), frequency=Frequency.YEAR, count=6),
+        **kwargs,
     )
 
 
 def test_shared_distribution_survives_serialization_and_calculations():
     from rangekeeper._schema.records import Distribution as Generated
 
-    record = Distribution.symmetric(kind="triangular", mean=2, residual=1, units="AUD")
+    record = Distribution.symmetric(
+        kind=DistributionFamily.TRIANGULAR, mean=2, residual=1, units="AUD"
+    )
     assert type(record) is Generated
     restored = Distribution.from_json(json.dumps(record.to_data()))
     assert restored == record
@@ -55,7 +58,7 @@ def test_shared_distribution_survives_serialization_and_calculations():
     assert record.lower == 1
     with pytest.raises(AttributeError):
         record.lower = 0
-    invalid = Distribution(kind="pert", lower=2, upper=1, units="AUD")
+    invalid = Distribution(kind=DistributionFamily.PERT, lower=2, upper=1, units="AUD")
     with pytest.raises(ValueError, match="bounds"):
         invalid.sample(size=1, generator=np.random.default_rng(1))
 
@@ -109,8 +112,20 @@ def test_upgrade_and_seeded_generation_preserve_original_paths():
     upgraded = upgrade_scenario_names(before, revision_id=UUID(int=999))
     assert before == original
     assert str(upgraded.metadata.previous) == before["metadata"]["id"]
+
+    def current_periods(value):
+        result = deepcopy(value)
+        for movement in (result.get("flow") or {}).get("movements", ()):
+            if movement.get("period") is not None:
+                period = movement["period"]
+                period["start_inclusive"] = period.pop("start")
+                period["end_exclusive"] = period.pop("end")
+        return result
+
     old_values = {
-        v["id"]: v for f in before["system"]["formulations"] for v in f["values"]
+        v["id"]: current_periods(v)
+        for f in before["system"]["formulations"]
+        for v in f["values"]
     }
     for identity, value in old_values.items():
         after = upgraded.value(UUID(identity)).to_data()
@@ -120,8 +135,9 @@ def test_upgrade_and_seeded_generation_preserve_original_paths():
         assert {k: v for k, v in after.items() if k != "key"} == {
             k: v for k, v in value.items() if k != "key"
         }
-    replayed = replay(upgraded)
-    assert replayed.model == upgraded
+    with pytest.raises(ReplayUnavailableError):
+        replay(upgraded)
+    replayed = Market(upgraded, upgraded.provenance.scenarios[0])
     old_record = before["provenance"]["scenarios"][0]
     assert [s.identifier for s in replayed.realization.streams] == [
         s["identifier"] for s in old_record["streams"]

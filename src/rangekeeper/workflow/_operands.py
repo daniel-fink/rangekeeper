@@ -1,18 +1,20 @@
 """Evaluate declared comparison operands without losing either side's evidence."""
 
 from dataclasses import dataclass
+from typing import Any
 
-from rangekeeper.model import Assembly
+from rangekeeper.model import Assembly, Classification
 from rangekeeper.graph import View
+from rangekeeper.graph.selection import _recorded_quantity, _local_value
+from rangekeeper.graph.reduction import _collect_quantities
 from rangekeeper.model.characteristics import value as local_value
-from rangekeeper.model.definitions import classification
 from rangekeeper.units import default_units
 from rangekeeper.operation import _Failure
 from rangekeeper.evidence import Claim
 
 from .bindings import binding, require_columns
-from .ingestion import tabular
-from .ingestion.predicates import equal
+from rangekeeper.evidence import tabular
+from rangekeeper.evidence.predicates import equal
 
 
 @dataclass(frozen=True, slots=True)
@@ -41,7 +43,11 @@ def codes_of(entities):
 
 def table_operand(op, row, table, outputs) -> OperandResult:
     kind = op["kind"]
-    claims, targets, missing, known = ([], [], [], None)
+    claims: list[Claim] = []
+    targets: list[str] = []
+    missing: list[str] = []
+    known: int | float | None = None
+    value: Any
     selected = outputs[op["table"]]
     require_columns(selected, (op["column"], *op.get("evidence_columns", ())))
     rows = list(selected.data.rows)
@@ -75,16 +81,20 @@ def table_operand(op, row, table, outputs) -> OperandResult:
     return OperandResult(value, tuple(claims), tuple(targets), known, tuple(missing))
 
 
-def model_operand(op, row, table, model, by_key, outputs) -> OperandResult:
+def model_operand(op, row, table, model, by_key, outputs, *, view) -> OperandResult:
     kind = op["kind"]
-    claims, targets, missing, known = ([], [], [], None)
-    entities = list(View(model).entities)
+    claims: list[Claim] = []
+    targets: list[str] = []
+    missing: list[str] = []
+    known: int | float | None = None
+    value: Any
+    entities = list(view.entities)
     if "classification" in op:
         entities = [
             x
             for x in entities
             if x.classification
-            and classification(model.definitions, x.classification).code
+            and model._index.get(x.classification, Classification).code
             == op["classification"]
         ]
     if "member_of" in op:
@@ -134,18 +144,20 @@ def model_operand(op, row, table, model, by_key, outputs) -> OperandResult:
     elif kind == "model_keys":
         value = codes_of(entities)
     else:
-        values = []
-        targets = []
-        for e in entities:
-            m = local_value(e.characteristics, op["value_key"])
-            if m is None or m.quantity is None:
-                missing.append(e.code)
-            else:
-                values.append(
-                    default_units.convert(m.quantity, to=op["units"]).magnitude
-                )
-                targets.append(str(m.id))
-        known = sum(values) if values else None
+        population = _collect_quantities(
+            ((e, _local_value(e, op["value_key"], None)) for e in entities),
+            op["units"],
+            default_units,
+        )
+        missing.extend(model.entity(uid).code for uid in population.coverage.missing)
+        targets = [
+            str(population.value_ids[uid]) for uid in population.coverage.measured
+        ]
+        known = (
+            sum(q.magnitude for q in population.quantities)
+            if population.quantities
+            else None
+        )
         value = (
             known
             if entities and (not missing or not op.get("require_complete", True))
@@ -154,11 +166,11 @@ def model_operand(op, row, table, model, by_key, outputs) -> OperandResult:
     return OperandResult(value, tuple(claims), tuple(targets), known, tuple(missing))
 
 
-def operand(op, row, table, model, by_key, outputs) -> OperandResult:
+def operand(op, row, table, model, by_key, outputs, *, view=None) -> OperandResult:
     kind = op["kind"]
-    claims = []
-    targets = []
-    missing = []
+    claims: list[Claim] = []
+    targets: list[str] = []
+    missing: list[str] = []
     known = None
     if kind == "value":
         return OperandResult(op["value"])
@@ -171,14 +183,16 @@ def operand(op, row, table, model, by_key, outputs) -> OperandResult:
         key, _upstream = binding(op["key"], row, table, outputs)
         obj = by_key.get((op["identity_kind"], key))
         if obj is not None:
-            obj = model.entity(obj.id)  # Business-key indexes carry identity, not state.
+            obj = model.entity(
+                obj.id
+            )  # Business-key indexes carry identity, not state.
         item = (
             local_value(obj.characteristics, op["value_key"])
             if obj is not None
             else None
         )
         value = (
-            default_units.convert(item.quantity, to=op["units"]).magnitude
+            _recorded_quantity(item, op["units"], default_units).magnitude
             if item is not None and item.quantity is not None
             else None
         )
@@ -198,7 +212,9 @@ def operand(op, row, table, model, by_key, outputs) -> OperandResult:
         key, _upstream = binding(op["key"], row, table, outputs)
         obj = by_key.get((op["identity_kind"], key))
         if obj is not None:
-            obj = model.entity(obj.id)  # Business-key indexes carry identity, not state.
+            obj = model.entity(
+                obj.id
+            )  # Business-key indexes carry identity, not state.
         if obj is None:
             return OperandResult(
                 (), tuple(claims), tuple(targets), known, tuple(missing)
@@ -215,10 +231,18 @@ def operand(op, row, table, model, by_key, outputs) -> OperandResult:
                 x
                 for x in members
                 if x.classification
-                and classification(model.definitions, x.classification).code
+                and model._index.get(x.classification, Classification).code
                 == op["classification"]
             ]
         return OperandResult(
             codes_of(members), tuple(claims), tuple(targets), known, tuple(missing)
         )
-    return model_operand(op, row, table, model, by_key, outputs)
+    return model_operand(
+        op,
+        row,
+        table,
+        model,
+        by_key,
+        outputs,
+        view=view if view is not None else View(model),
+    )

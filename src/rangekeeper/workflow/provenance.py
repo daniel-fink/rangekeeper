@@ -6,6 +6,7 @@ from rangekeeper._records import JSONValue
 from rangekeeper._encoding import encode
 from rangekeeper._schema.records import (
     Claim,
+    ClaimKind,
     Fact,
     Location,
     Method,
@@ -28,9 +29,12 @@ class ProvenanceBuilder:
         self.sources = {}
         self.facts = []
         self._active = set()
+        self._prepared = {}
 
     def add(self, claim: evidence.Claim):
         """Retain every ancestor once; reject conflicting identities and cycles."""
+        if id(claim) in self._prepared:
+            return self._prepared[id(claim)].id
         if claim.id in self._active:
             raise _Failure("cyclic_evidence", "Source Claim support contains a cycle")
         self._active.add(claim.id)
@@ -67,7 +71,7 @@ class ProvenanceBuilder:
         )
         record = Claim(
             id=claim.id,
-            kind=claim.kind.value,
+            kind=claim.kind,
             content={
                 "encoding": "rk.source-value/v1",
                 "value": cast(JSONValue, encode(claim.value)),
@@ -77,12 +81,13 @@ class ProvenanceBuilder:
         )
         self._retain(self.claims, record)
         self._active.remove(claim.id)
+        self._prepared[id(claim)] = claim
         return claim.id
 
     @staticmethod
     def _retain(index, record):
         previous = index.get(record.id)
-        if previous is not None and previous.to_data() != record.to_data():
+        if previous is not None and previous != record:
             raise _Failure(
                 "conflicting_evidence", f"Conflicting evidence identity: {record.id}"
             )
@@ -93,7 +98,7 @@ class ProvenanceBuilder:
         support = tuple(dict.fromkeys((*upstream, *(self.add(c) for c in sources))))
         claim = Claim(
             id=id,
-            kind="derived",
+            kind=ClaimKind.DERIVED,
             content=target.to_data(),
             sources=support,
             method=Method(

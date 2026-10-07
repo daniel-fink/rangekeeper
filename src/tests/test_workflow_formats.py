@@ -1,5 +1,7 @@
 """Format-independent orchestration and explanatory failure regressions."""
 
+from rangekeeper.workflow.checking import CheckStatus
+
 from dataclasses import replace
 
 import pytest
@@ -40,17 +42,17 @@ def test_operand_missingness_retains_both_sides(built):
     total = {"kind": "table_total", "table": "items", "column": "number_size"}
     checks = evaluate(comparison(total, total), result.model, {}, result.evidence)
     check = checks[0]
-    assert check.status == "unavailable"
-    assert check.left_missing == check.right_missing and len(check.right_missing) == 1
-    assert check.left_known_subtotal == check.right_known_subtotal == 12
+    assert check.status == CheckStatus.UNAVAILABLE
+    assert check.left.missing == check.right.missing and len(check.right.missing) == 1
+    assert check.left.known_subtotal == check.right.known_subtotal == 12
     reverse = evaluate(
         comparison({"kind": "value", "value": 12}, total),
         result.model,
         {},
         result.evidence,
     )[0]
-    assert reverse.right_missing == check.right_missing
-    assert reverse.right_known_subtotal == 12
+    assert reverse.right.missing == check.right.missing
+    assert reverse.right.known_subtotal == 12
 
 
 @pytest.mark.parametrize("missing", ["filter", "value", "support", "scope"])
@@ -91,13 +93,13 @@ def test_non_excel_capability_runs_without_runner_changes(tmp_path, monkeypatch)
     from rangekeeper.io.json import dumps
     from rangekeeper.operation import _Failure, _invoke
     from rangekeeper.evidence import Method
-    from rangekeeper.workflow import _audit, catalog, schema
+    from rangekeeper.workflow import implementation, catalog, schema
     from rangekeeper.workflow._contracts import (
         OperationDeclaration,
         Produced,
         SourceCheckDeclaration,
     )
-    from rangekeeper.workflow.ingestion import fingerprint, tabular
+    from rangekeeper.evidence import fingerprint, tabular
     from rangekeeper.workflow.source_checks import SourceCheck
     from rangekeeper.workflow.specification import StepSpec, WorkflowSpec
 
@@ -214,14 +216,14 @@ def test_non_excel_capability_runs_without_runner_changes(tmp_path, monkeypatch)
     )
     # Metadata must not query unused optional packages such as openpyxl.
     requested = []
-    real_version = _audit.version
+    real_version = implementation.version
 
     def version(name):
         requested.append(name)
         assert name != "openpyxl"
         return real_version(name)
 
-    monkeypatch.setattr(_audit, "version", version)
+    monkeypatch.setattr(implementation, "version", version)
     steps = tuple(
         StepSpec.from_mapping(s)
         for s in [
@@ -367,7 +369,7 @@ def test_catalog_schema_and_parsing_agree(tmp_path):
 def test_generic_numeric_source_check(built):
     from uuid import uuid4
 
-    from rangekeeper.workflow.ingestion import Issue, IssueSeverity, tabular
+    from rangekeeper.evidence import Issue, Severity, tabular
     from rangekeeper.workflow.source_checks import evaluate
 
     uid = uuid4()
@@ -386,7 +388,7 @@ def test_generic_numeric_source_check(built):
             Issue(
                 rule_id="source",
                 code="blank_value",
-                severity=IssueSeverity.INFO,
+                severity=Severity.INFO,
                 message="Not supplied",
                 at=(("rows", str(uid), "value"),),
             ),

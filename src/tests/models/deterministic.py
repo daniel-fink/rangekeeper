@@ -2,4 +2,4 @@
 
 from rangekeeper.examples.investment import author, formulate, specify, report, values
 
-__all__ = ['author', 'formulate', 'specify', 'report', 'values']
+__all__ = ["author", "formulate", "specify", "report", "values"]

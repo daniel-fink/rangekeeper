@@ -1,5 +1,14 @@
 """Detached plotting adapters. Figures are returned; callers choose display or storage."""
 
+from enum import Enum, unique
+
+
+@unique
+class PartitionKind(Enum):
+    SUNBURST = "sunburst"
+    TREEMAP = "treemap"
+
+
 from collections.abc import Mapping, Sequence
 from ..model.flow import Flow
 from ..duration.period import PeriodTiming
@@ -44,7 +53,7 @@ def plot_distribution(
     *,
     units: str,
     title: str = "",
-    cumulative: bool = False
+    cumulative: bool = False,
 ):
     """Plot detached finite samples as histograms or empirical cumulative curves."""
     import math
@@ -80,7 +89,7 @@ def plot_pairs(
     *,
     x_label: str,
     y_label: str,
-    title: str = ""
+    title: str = "",
 ):
     """Plot paired scenario outcomes, retaining one point per shared realization."""
     import math
@@ -104,8 +113,8 @@ def plot_partition(
     *,
     units: str,
     title: str,
-    kind: str = "sunburst",
-    expense_magnitudes: bool = False
+    kind: PartitionKind = PartitionKind.SUNBURST,
+    expense_magnitudes: bool = False,
 ):
     """Plot additive detached contributor amounts on a validated tree.
 
@@ -118,8 +127,8 @@ def plot_partition(
     import math
     import plotly.graph_objects as go
 
-    if kind not in ("sunburst", "treemap"):
-        raise ValueError("kind must be sunburst or treemap")
+    if not isinstance(kind, PartitionKind):
+        raise TypeError("kind must be PartitionKind")
     ids = hierarchy.preorder()
     selected = set(ids)
     if not set(amounts) <= selected or any(
@@ -140,7 +149,7 @@ def plot_partition(
         parent = hierarchy.parent(uid)
         if parent is not None:
             totals[parent] += totals[uid]
-    trace_type = go.Sunburst if kind == "sunburst" else go.Treemap
+    trace_type = go.Sunburst if kind is PartitionKind.SUNBURST else go.Treemap
     figure = go.Figure(
         trace_type(
             ids=[str(uid) for uid in ids],

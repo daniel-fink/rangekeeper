@@ -11,7 +11,7 @@ from pathlib import Path
 import subprocess
 import sys
 from tempfile import TemporaryDirectory
-from uuid import NAMESPACE_URL, uuid5
+from uuid import UUID, NAMESPACE_URL, uuid5
 
 from jsonschema import FormatChecker
 from jsonschema.validators import validator_for
@@ -22,7 +22,7 @@ import yaml
 
 import _library
 
-from rangekeeper.model._formulation import validate_formulations
+from rangekeeper.model.formulation.preparation import prepare_formulations
 from rangekeeper.errors import ContractError
 
 SCHEMA = Path(__file__).resolve().parents[1]
@@ -169,11 +169,11 @@ valid.append(false_case)
 
 for document in valid:
     structural(document)
-    validate_formulations(document)
-assert validate_formulations(fixture).values[symbol] is noi
+    prepare_formulations(document)
+assert prepare_formulations(fixture)[0].values[UUID(symbol)] is noi
 assert (
-    validate_formulations(resolved).domains[symbol]
-    == validate_formulations(fixture).domains[symbol]
+    prepare_formulations(resolved)[0].domains[UUID(symbol)]
+    == prepare_formulations(fixture)[0].domains[UUID(symbol)]
 )
 
 invalid = []
@@ -207,7 +207,7 @@ bad = copy.deepcopy(root)
 bad["blocks"] = bad.pop("formulations")
 invalid.append(("Formulation", bad))
 invalid.append(("Formulation", dict(id=uid("child-ref"), formulations=[income["id"]])))
-invalid.append(("Formulation", dict(id=uid("local-ref"), values=[symbol])))
+invalid.append(("Formulation", dict(id=uid("local-ref"), values=[UUID(symbol)])))
 bad = copy.deepcopy(root)
 bad["formulations"][0]["expressions"][0]["kind"] = "unknown"
 invalid.append(("Formulation", bad))
@@ -323,7 +323,7 @@ case(
 for document, message in semantic:
     structural(document)
     try:
-        validate_formulations(document)
+        prepare_formulations(document)
     except ContractError as error:
         assert message in str(error), (message, str(error))
     else:
@@ -333,7 +333,7 @@ for document, message in semantic:
 cycle = dict(id=uid("cycle"))
 cycle["formulations"] = [cycle]
 try:
-    validate_formulations(dict(formulations=[cycle]))
+    prepare_formulations(dict(formulations=[cycle]))
 except ContractError as error:
     assert "cyclic containment" in str(error)
 else:
@@ -369,7 +369,7 @@ with TemporaryDirectory(prefix="rk-formulation-") as temp:
             validators["Formulation"].validate(after)
             restored_document["formulations"].append(after)
             roundtrips += 1
-        validate_formulations(restored_document)
+        prepare_formulations(restored_document)
 
 print(
     f"Passed {len(validators)} generated schemas, {len(valid)} valid fixture scopes, {len(invalid)} structural rejections,"

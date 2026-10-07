@@ -7,9 +7,9 @@ import pytest
 
 from rangekeeper import operation
 from rangekeeper.evidence import Claim, Location, Method, Source
-from rangekeeper.workflow.ingestion import (
+from rangekeeper.evidence import (
     Issue,
-    IssueSeverity,
+    Severity,
     fingerprint,
     tabular,
 )
@@ -38,7 +38,7 @@ def evidence(values, *, prefix="a", columns=("value",)):
                         rule_id="fixture",
                         code="missing_formula_cache",
                         message="No cached value",
-                        severity=IssueSeverity.ERROR,
+                        severity=Severity.ERROR,
                         at=(key,),
                         related_claims=(claim,),
                     )
@@ -110,7 +110,7 @@ def test_numbers_meanings_lineage_and_replay():
         assert tabular.claim(out, row.id, "n").sources == (source, settings)
     missing = out.data.rows[8].id
     assert tabular.issues_for(out, missing, "n")[0].code == "missing_formula_cache"
-    assert tabular.issues_for(out, missing, "n")[0].severity is IssueSeverity.ERROR
+    assert tabular.issues_for(out, missing, "n")[0].severity is Severity.ERROR
     again = tabular.numbers(raw, specifications=specs, settings=settings)
     assert fingerprint(again.output) == fingerprint(out)
     assert operation.fingerprint(again.operation) == operation.fingerprint(
@@ -286,7 +286,7 @@ def test_warnings_do_not_decide_numeric_availability():
     warning = Issue(
         rule_id="review",
         code="uncertain",
-        severity=IssueSeverity.ERROR,
+        severity=Severity.ERROR,
         message="Review source",
         at=((),),
     )
@@ -316,7 +316,7 @@ def test_selection_preserves_global_and_row_issues():
     global_issue = Issue(
         rule_id="review",
         code="uncertain",
-        severity=IssueSeverity.WARNING,
+        severity=Severity.WARNING,
         message="Review source",
         at=((),),
     )

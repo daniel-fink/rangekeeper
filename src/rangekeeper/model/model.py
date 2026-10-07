@@ -4,7 +4,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from uuid import UUID, uuid4
 
-from .._comparison import check_revision
+from .._revision import check_revision
 from .._records import Record, UNSET, Unset
 from .._schema.records import (
     Model as ModelRecord,
@@ -13,6 +13,7 @@ from .._schema.records import (
     System,
     Provenance,
     Entity,
+    Assembly,
     Relationship,
     Value,
     Movement,
@@ -25,7 +26,7 @@ from .._schema.validation import document_version
 from ..errors import UnsupportedVersionError
 from ..units import UnitSystem, default_units
 from ..validate import require_uuid, optional_text
-from ._index import Index
+from .._record_index import RecordIndex
 from .update import Update
 
 
@@ -45,11 +46,14 @@ class Model:
         "_units",
     )
     _record: ModelRecord
-    _index: Index
+    _index: RecordIndex
     _units: UnitSystem
 
     def __init__(
-        self, record: ModelRecord, *, units: UnitSystem = default_units
+        self,
+        record: ModelRecord,
+        *,
+        units: UnitSystem = default_units,
     ) -> None:
         if not isinstance(record, ModelRecord):
             raise TypeError("record must be a generated Model record")
@@ -57,7 +61,7 @@ class Model:
             raise TypeError("units must be a UnitSystem")
         if record.metadata.schema_version != document_version("Model"):
             raise UnsupportedVersionError(record.metadata.schema_version)
-        index = Index.build(record)
+        index = RecordIndex.build(record)
         from .validation import _validate
 
         _validate(record, index=index, units=units).raise_if_invalid()
@@ -68,7 +72,10 @@ class Model:
 
     @classmethod
     def from_data(
-        cls, data: Mapping[str, object], *, units: UnitSystem = default_units
+        cls,
+        data: Mapping[str, object],
+        *,
+        units: UnitSystem = default_units,
     ) -> "Model":
         """Copy, structurally and semantically validate, then freeze one revision.
 
@@ -133,6 +140,10 @@ class Model:
     def entity(self, id: UUID) -> Entity:
         """Resolve an Entity or canonical Assembly; no code/name or history fallback."""
         return self._index.get(id, Entity)
+
+    def assembly(self, id: UUID) -> Assembly:
+        """Resolve an Assembly; an ordinary Entity has the wrong record kind."""
+        return self._index.get(id, Assembly)
 
     def relationship(self, id: UUID) -> Relationship:
         """Resolve a Relationship in this revision; wrong kind and missing differ."""

@@ -6,8 +6,8 @@ from uuid import NAMESPACE_URL, uuid5
 
 from rangekeeper.operation import _Failure, _invoke
 from rangekeeper.operation import fingerprint as operation_fingerprint
-from rangekeeper.workflow.ingestion import Evidence, fingerprint, tabular
-from rangekeeper.workflow.ingestion._derivation import settings_inputs
+from rangekeeper.evidence import Evidence, fingerprint, tabular
+from rangekeeper.evidence._derivation import settings_inputs
 
 from rangekeeper.evidence import Claim, Method, locations
 from rangekeeper.table import Table

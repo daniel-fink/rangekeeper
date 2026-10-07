@@ -60,3 +60,7 @@ __all__ = [
     "Claim",
     "Fact",
 ]
+
+from .._schema.enums import ValueKind, ClaimKind, ReconciliationStatus
+
+__all__ += ["ValueKind", "ClaimKind", "ReconciliationStatus"]

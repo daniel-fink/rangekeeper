@@ -1,5 +1,11 @@
 """Explicit unwrapped geometry, score visibility and historical input compatibility."""
 
+from rangekeeper.adapters.cytoscape.layout.model import (
+    ArrangementAlignment,
+    ArrangementFlow,
+    Axis,
+)
+from rangekeeper.adapters.cytoscape.layout.result import ResultStatus
 import json
 from dataclasses import replace
 from hashlib import sha256
@@ -19,7 +25,7 @@ from rangekeeper.adapters.cytoscape.layout.model import (
 from rangekeeper.adapters.cytoscape.layout.seed import grid_seed
 
 
-def fixture(flow, alignment="start"):
+def fixture(flow, alignment=ArrangementAlignment.START):
     return Problem(
         (Node("a", "A", 31, 21), Node("b", "B", 50, 32), Node("c", "C", 20, 16)),
         (Assembly("g", "G", ("a", "b", "c"), 140),),
@@ -30,12 +36,14 @@ def fixture(flow, alignment="start"):
             Preference(
                 "g",
                 orders=(
-                    ("c", "b", "y" if flow == "column" else "x"),
-                    ("b", "a", "y" if flow == "column" else "x"),
+                    ("c", "b", Axis.Y if flow == "column" else Axis.X),
+                    ("b", "a", Axis.Y if flow == "column" else Axis.X),
                 ),
             ),
         ),
-        arrangements=(Arrangement("g", flow, alignment),),
+        arrangements=(
+            Arrangement("g", ArrangementFlow(flow), ArrangementAlignment(alignment)),
+        ),
     )
 
 
@@ -75,7 +83,7 @@ def test_old_documents_retain_fingerprint_and_order_rounding():
     # A tied-height pair diluted by a satisfied pair used to round to zero.
     old = replace(
         old,
-        preferences=(Preference("g", orders=(("a", "b", "y"), ("b", "c", "x"))),),
+        preferences=(Preference("g", orders=(("a", "b", Axis.Y), ("b", "c", Axis.X))),),
     )
     # Build an explicit single row with all centres tied on y; differing x ensures
     # a fulfilled x order dilutes the one-pixel vertical deficit.
@@ -107,13 +115,13 @@ def test_both_native_engines_obey_arrangements_and_new_scores(flow, alignment):
     assert seed is not None
     for solve in (z3, cp):
         fixed = solve(p, initial=seed, optimize=False, time_limit=5)
-        assert fixed.status == "feasible", fixed.reason
+        assert fixed.status == ResultStatus.FEASIBLE, fixed.reason
         assert (
             fixed.rectangles == seed.rectangles
             and fixed.measurements == seed.measurements
         )
         native = solve(p, optimize=False, time_limit=5)
-        assert native.status == "feasible", native.reason
+        assert native.status == ResultStatus.FEASIBLE, native.reason
         assert not check(p, native.rectangles)
         assert native.measurements == metrics(p, native.rectangles, native.grids)
 
@@ -121,9 +129,9 @@ def test_both_native_engines_obey_arrangements_and_new_scores(flow, alignment):
 def test_invalid_arrangement_profile_rejected():
     p = fixture("column")
     for settings in (
-        (Arrangement("missing", "row"),),
-        (Arrangement("g", "grid", "center"),),
-        (Arrangement("g", "column"),) * 2,
+        (Arrangement("missing", ArrangementFlow.ROW),),
+        (Arrangement("g", ArrangementFlow.GRID, ArrangementAlignment.CENTER),),
+        (Arrangement("g", ArrangementFlow.COLUMN),) * 2,
     ):
         with pytest.raises(ValueError):
             replace(p, arrangements=settings)
@@ -140,5 +148,5 @@ def test_native_engines_do_not_relax_an_impossible_unwrapped_profile():
     p = replace(fixture("row"), width=150)
     for solve in (z3, cp):
         result = solve(p, optimize=False, allow_relaxed=True, time_limit=5)
-        assert result.status == "infeasible", result.reason
+        assert result.status == ResultStatus.INFEASIBLE, result.reason
         assert not result.rectangles

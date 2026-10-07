@@ -1,5 +1,10 @@
 # Reproducible ingestion workflow
 
+Current API ownership is documented in the [consumer guide](../../docs/CONSUMER_MIGRATION.md)
+and [workflow format contract](../../docs/GRAPH_WORKFLOW_FORMATS.md). The dated
+validation records below describe their original verification runs; they are not
+acceptance results for the current refactor.
+
 Status: target architecture agreed 17 September 2026. The Evidence foundation is
 implemented. Shared operation/document contracts and the first Excel reader and
 extraction slice have passed focused validation, including synthetic and local
@@ -108,7 +113,7 @@ belong in its owning module; content-to-Claim associations belong in ingestion.
 
 ## Operation and outcome contracts
 
-These runtime types are implemented in `graph.operation`. All collections are
+These runtime types are implemented in `operation`. All collections are
 immutable snapshots.
 
 ```python
@@ -121,7 +126,7 @@ class Operation:
 @dataclass(frozen=True, slots=True, kw_only=True)
 class Diagnostic:
     code: str
-    severity: IssueSeverity
+    severity: Severity
     message: str
     locations: tuple[Location, ...] = ()
     details: Mapping[str, object] = field(default_factory=dict)
@@ -293,9 +298,9 @@ text and conversation history cannot become undeclared graph inputs.
 - Optional format-specific dependencies, loaded only by the relevant adapter.
 - Comparison against JLL/Mandarin observations before replacing project parsing.
 
-Implementation placement is graph.operation and graph.adapter.document
-for shared contracts, graph.adapter.excel for Excel behavior, and the existing
-workflow.ingestion package for Evidence. The concrete reader/extraction schema and
+Implementation placement is operation and adapters.document
+for shared contracts, adapters.excel for Excel behavior, and the existing
+evidence package for Evidence. The concrete reader/extraction schema and
 snapshot identity encoding are documented in [Excel ingestion](excel-ingestion.md).
 This first slice has passed the checks recorded there; it does not implement
 project interpretation transforms or complete graph execution from these inputs.

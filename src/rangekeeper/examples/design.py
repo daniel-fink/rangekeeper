@@ -6,6 +6,8 @@ The annual amounts use AUD explicitly. Rates described as per-area/per-volume
 are amounts per payment, not rates with an implicit time dimension.
 """
 
+from rangekeeper.model import ValueKind
+
 from collections.abc import Mapping, Sequence
 from datetime import date
 from typing import Any, cast
@@ -28,7 +30,9 @@ from ..model.definitions import find_classifications
 from ..model.flow import Flow, Movement
 from ..duration import make_periods
 
-from ..formulations import build_formulation
+from ..model.expression import Reference
+from ..formulations import declare
+from ..duration import Frequency, PeriodTiming
 from ..formulations.expression import (
     reference,
     literal,
@@ -37,10 +41,10 @@ from ..formulations.expression import (
     multiply,
     divide,
     power,
-    sum_expressions,
+    sum as expression_sum,
 )
 from ..specification import Specification
-from ..specification.targets import scalar, movement, unknown_flow
+from ..specification.targets import unknown_flow
 from .._schema.records import Assignment, Specification as SpecificationRecord
 
 # Reviewed teaching assumptions from the original design walkthrough.
@@ -134,7 +138,7 @@ def _use(model: Model, owner: UUID) -> str:
 
 def _source(model: Model, owner: UUID, key: str) -> Value:
     item = local_value(model.entity(owner).characteristics, key)
-    if item is None or item.kind != "measurement" or item.quantity is None:
+    if item is None or item.kind is not ValueKind.MEASUREMENT or item.quantity is None:
         raise ValueError(f"{owner}/{key} requires a resolved source measurement")
     return item
 
@@ -188,7 +192,7 @@ def author(
         )
     if len(selected) != len(set(selected)):
         raise ValueError("duplicate contributor")
-    periods = make_periods(date(2001, 1, 1), frequency="year", count=11)
+    periods = make_periods(date(2001, 1, 1), frequency=Frequency.YEAR, count=11)
     namespace = uuid4()
     measures = {}
     for key, unit in [
@@ -211,7 +215,7 @@ def author(
         return Value(
             id=uuid5(owner, key),
             key=key,
-            kind="measurement",
+            kind=ValueKind.MEASUREMENT,
             measure=measures[unit].id,
             **options,
         )
@@ -220,7 +224,7 @@ def author(
         return Value(
             id=uuid5(owner, key),
             key=key,
-            kind="flow",
+            kind=ValueKind.FLOW,
             measure=measures["AUD"].id,
             flow=Flow(
                 units="AUD",
@@ -229,7 +233,7 @@ def author(
                         id=uuid4(),
                         key=f"y{i + 1}",
                         period=p,
-                        date=p.resolve(timing="last_day"),
+                        date=p.resolve(timing=PeriodTiming.LAST),
                     )
                     for i, p in enumerate(periods[:count])
                 ),
@@ -278,7 +282,7 @@ def author(
         Value(
             id=uuid5(owner, "contributors"),
             key="contributors",
-            kind="property",
+            kind=ValueKind.PROPERTY,
             content=encode(tuple(selected)),
         )
     ]
@@ -328,9 +332,11 @@ def formulate(model: Model) -> Model:
     def r(item, key=None):
         bound.add(item.id)
         return reference(
-            scalar(item.id)
+            Reference(target=item.id)
             if key is None
-            else movement(next(m.id for m in item.flow.movements if m.key == key))
+            else Reference(
+                target=next(m.id for m in item.flow.movements if m.key == key)
+            )
         )
 
     def put(item, key, rhs):
@@ -434,7 +440,7 @@ def formulate(model: Model) -> Model:
             put(
                 aggregate[name],
                 key,
-                sum_expressions(
+                expression_sum(
                     [r(values(model, uid)[name], key) for uid in contributors]
                 ),
             )
@@ -465,9 +471,9 @@ def formulate(model: Model) -> Model:
     put(
         aggregate["pv"],
         None,
-        sum_expressions([r(aggregate["discounted"], f"y{i+1}") for i in range(10)]),
+        expression_sum([r(aggregate["discounted"], f"y{i+1}") for i in range(10)]),
     )
-    declaration = build_formulation(
+    declaration = declare(
         id=uuid4(),
         name="Design equations",
         equations=equations,
@@ -497,19 +503,21 @@ def specify(model: Model) -> Specification:
         if not (declaration.name or "").startswith(_PREFIX):
             continue
         for item in declaration.values or ():
-            if item.kind == "flow":
+            if item.kind is ValueKind.FLOW:
                 unknowns.extend(unknown_flow(model, item.id))
-            elif item.kind == "measurement":
+            elif item.kind is ValueKind.MEASUREMENT:
                 if item.key in ("pv", "facade_area"):
-                    unknowns.append(scalar(item.id))
+                    unknowns.append(Reference(target=item.id))
                 elif item.quantity is not None:
                     inputs[item.id] = item
     return Specification(
         SpecificationRecord(
-            metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
+            metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
             model=model.id,
             assignments=tuple(
-                Assignment(target=scalar(v.id), quantity=cast(Quantity, v.quantity))
+                Assignment(
+                    target=Reference(target=v.id), quantity=cast(Quantity, v.quantity)
+                )
                 for v in inputs.values()
             ),
             unknowns=tuple(unknowns),

@@ -16,7 +16,7 @@ from rangekeeper.adapters.document import (
 )
 from rangekeeper.adapters.errors import AdapterEncodingError
 from rangekeeper.evidence import Location, Method, Source
-from rangekeeper.workflow.ingestion import IssueSeverity
+from rangekeeper.evidence import Severity
 
 
 def invocation(spec=None, **kwargs):
@@ -32,7 +32,7 @@ def test_nested_normalization_and_independent_copies():
     result = invocation(supplied)
     diagnostic = operation.Diagnostic(
         code="layout",
-        severity=IssueSeverity.ERROR,
+        severity=Severity.ERROR,
         message="Changed",
         details=supplied,
     )
@@ -83,7 +83,7 @@ def test_outcomes_and_method_version():
     with pytest.raises(ValueError, match="diagnostic"):
         operation.Outcome(operation=invocation(), output=None)
     diagnostic = operation.Diagnostic(
-        code="missing", severity=IssueSeverity.INFO, message="Missing"
+        code="missing", severity=Severity.INFO, message="Missing"
     )
     assert (
         operation.Outcome(
@@ -94,7 +94,7 @@ def test_outcomes_and_method_version():
     assert operation.Outcome(operation=invocation(), output=()).output == ()
     # Severity does not decide availability, even for an error-labelled diagnostic.
     diagnostic = operation.Diagnostic(
-        code="qualified", severity=IssueSeverity.ERROR, message="Qualified"
+        code="qualified", severity=Severity.ERROR, message="Qualified"
     )
     assert (
         operation.Outcome(

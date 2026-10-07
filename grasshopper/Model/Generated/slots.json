@@ -217,6 +217,47 @@
       "required": true
     }
   },
+  "CalculationProvenance": {
+    "fingerprint": {
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "string"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "name": {
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "string"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "versions": {
+      "many": true,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "record",
+          "kind": "LibraryVersion"
+        }
+      ],
+      "ordered": true,
+      "required": true
+    }
+  },
   "Call": {
     "arguments": {
       "many": true,
@@ -549,99 +590,6 @@
     }
   },
   "Decision": {
-    "assignments": {
-      "many": true,
-      "mapping": false,
-      "nullable": false,
-      "options": [
-        {
-          "category": "record",
-          "kind": "Assignment"
-        }
-      ],
-      "ordered": true,
-      "required": true
-    },
-    "at": {
-      "many": false,
-      "mapping": false,
-      "nullable": false,
-      "options": [
-        {
-          "category": "primitive",
-          "kind": "date"
-        }
-      ],
-      "ordered": false,
-      "required": true
-    },
-    "observations": {
-      "many": true,
-      "mapping": false,
-      "nullable": false,
-      "options": [
-        {
-          "category": "record",
-          "kind": "ObservedQuantity"
-        }
-      ],
-      "ordered": true,
-      "required": true
-    },
-    "point": {
-      "many": false,
-      "mapping": false,
-      "nullable": false,
-      "options": [
-        {
-          "category": "uuid",
-          "kind": "UUID"
-        }
-      ],
-      "ordered": false,
-      "required": true
-    },
-    "rule": {
-      "many": false,
-      "mapping": false,
-      "nullable": true,
-      "options": [
-        {
-          "category": "uuid",
-          "kind": "UUID"
-        }
-      ],
-      "ordered": false,
-      "required": false
-    },
-    "terminated": {
-      "many": false,
-      "mapping": false,
-      "nullable": false,
-      "options": [
-        {
-          "category": "primitive",
-          "kind": "boolean"
-        }
-      ],
-      "ordered": false,
-      "required": true
-    },
-    "termination_reason": {
-      "many": false,
-      "mapping": false,
-      "nullable": true,
-      "options": [
-        {
-          "category": "primitive",
-          "kind": "string"
-        }
-      ],
-      "ordered": false,
-      "required": false
-    }
-  },
-  "DecisionPoint": {
     "at": {
       "many": false,
       "mapping": false,
@@ -706,6 +654,99 @@
       ],
       "ordered": true,
       "required": true
+    }
+  },
+  "DecisionOutcome": {
+    "assignments": {
+      "many": true,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "record",
+          "kind": "Assignment"
+        }
+      ],
+      "ordered": true,
+      "required": true
+    },
+    "at": {
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "date"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "decision": {
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "uuid",
+          "kind": "UUID"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "observations": {
+      "many": true,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "record",
+          "kind": "ObservedQuantity"
+        }
+      ],
+      "ordered": true,
+      "required": true
+    },
+    "rule": {
+      "many": false,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "uuid",
+          "kind": "UUID"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    },
+    "terminated": {
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "boolean"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "termination_reason": {
+      "many": false,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "string"
+        }
+      ],
+      "ordered": false,
+      "required": false
     }
   },
   "Definitions": {
@@ -2304,7 +2345,7 @@
     }
   },
   "Period": {
-    "end": {
+    "end_exclusive": {
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2317,7 +2358,7 @@
       "ordered": false,
       "required": true
     },
-    "start": {
+    "start_inclusive": {
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -2332,6 +2373,19 @@
     }
   },
   "Policy": {
+    "decisions": {
+      "many": true,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "record",
+          "kind": "Decision"
+        }
+      ],
+      "ordered": true,
+      "required": true
+    },
     "id": {
       "many": false,
       "mapping": false,
@@ -2343,19 +2397,6 @@
         }
       ],
       "ordered": false,
-      "required": true
-    },
-    "points": {
-      "many": true,
-      "mapping": false,
-      "nullable": false,
-      "options": [
-        {
-          "category": "record",
-          "kind": "DecisionPoint"
-        }
-      ],
-      "ordered": true,
       "required": true
     },
     "targets": {
@@ -2820,19 +2861,6 @@
     }
   },
   "Report": {
-    "decisions": {
-      "many": true,
-      "mapping": false,
-      "nullable": true,
-      "options": [
-        {
-          "category": "record",
-          "kind": "Decision"
-        }
-      ],
-      "ordered": true,
-      "required": false
-    },
     "diagnostics": {
       "many": true,
       "mapping": false,
@@ -2844,6 +2872,19 @@
         }
       ],
       "ordered": false,
+      "required": false
+    },
+    "outcomes": {
+      "many": true,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "record",
+          "kind": "DecisionOutcome"
+        }
+      ],
+      "ordered": true,
       "required": false
     },
     "runtime": {
@@ -3170,6 +3211,19 @@
       "ordered": true,
       "required": true
     },
+    "calculation": {
+      "many": false,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "record",
+          "kind": "CalculationProvenance"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    },
     "generator": {
       "many": false,
       "mapping": false,
@@ -3485,7 +3539,7 @@
     }
   },
   "Span": {
-    "end": {
+    "end_exclusive": {
       "many": false,
       "mapping": false,
       "nullable": false,
@@ -3511,7 +3565,7 @@
       "ordered": false,
       "required": false
     },
-    "start": {
+    "start_inclusive": {
       "many": false,
       "mapping": false,
       "nullable": false,

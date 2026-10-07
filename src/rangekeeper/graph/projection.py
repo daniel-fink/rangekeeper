@@ -2,31 +2,30 @@
 
 from collections.abc import Iterable
 from dataclasses import dataclass
+from enum import Enum, unique
 from uuid import UUID
 
-from ..model import Assembly
+from ..model import Assembly, Classification, Measure, ValueKind
 from ..model.characteristics import label, value
 from ..model.content import decode
-from ..model.definitions import classification, measure as find_measure
-from ..table import Row, Table, TableError
+from ..table import Row, Table, TableError, _validate_names
 from ..units import UnitSystem, default_units
 from ..validate import require_text
 from .hierarchy import Hierarchy
-from .selection import select_value
+from .selection import _local_value, select_value
 from .view import View
 
-_FIELDS = frozenset(
-    {
-        "model_id",
-        "entity_id",
-        "code",
-        "name",
-        "entity_kind",
-        "classification_id",
-        "classification_code",
-        "classification_name",
-    }
-)
+
+@unique
+class EntityField(Enum):
+    MODEL_ID = "model_id"
+    ENTITY_ID = "entity_id"
+    CODE = "code"
+    NAME = "name"
+    ENTITY_KIND = "entity_kind"
+    CLASSIFICATION_ID = "classification_id"
+    CLASSIFICATION_CODE = "classification_code"
+    CLASSIFICATION_NAME = "classification_name"
 
 
 @dataclass(frozen=True, slots=True)
@@ -34,12 +33,12 @@ class FieldColumn:
     """A named column containing a public Entity field or its pinned revision UUID."""
 
     name: str
-    field: str
+    field: EntityField
 
     def __post_init__(self):
         require_text(self.name, "column name")
-        if self.field not in _FIELDS:
-            raise TableError(f"unknown Entity field: {self.field}")
+        if not isinstance(self.field, EntityField):
+            raise TypeError("field must be EntityField")
 
 
 @dataclass(frozen=True, slots=True)
@@ -91,14 +90,14 @@ class PropertyColumn:
 
 Column = FieldColumn | ValueColumn | LabelColumn | PropertyColumn
 DEFAULT_COLUMNS = (
-    FieldColumn("model_id", "model_id"),
-    FieldColumn("entity_id", "entity_id"),
-    FieldColumn("name", "name"),
+    FieldColumn("model_id", EntityField.MODEL_ID),
+    FieldColumn("entity_id", EntityField.ENTITY_ID),
+    FieldColumn("name", EntityField.NAME),
 )
 
 
 def to_table(
-    view: View,
+    source: View | Hierarchy,
     *,
     columns: Iterable[Column] = DEFAULT_COLUMNS,
     units: UnitSystem = default_units,
@@ -109,28 +108,41 @@ def to_table(
     View context. Columns are explicit, unique names; unsupported column objects
     raise TypeError. A Table is a projection and cannot reload a Model.
     """
-    if not isinstance(view, View):
-        raise TypeError("view must be a Model-backed View")
+    if not isinstance(source, (View, Hierarchy)):
+        raise TypeError("source must be a Model-backed View or Hierarchy")
+    if isinstance(source, Hierarchy):
+        hierarchy, view = source, source.view
+    else:
+        hierarchy, view = None, source
     columns = tuple(columns)
     if any(
         not isinstance(c, (FieldColumn, ValueColumn, LabelColumn, PropertyColumn))
         for c in columns
     ):
-        raise TypeError("columns must contain FieldColumn, ValueColumn or LabelColumn")
-    names = Table((c.name for c in columns), ()).columns
+        raise TypeError(
+            "columns must contain FieldColumn, ValueColumn, LabelColumn or PropertyColumn"
+        )
+    names = _validate_names((c.name for c in columns), "columns")
+    if hierarchy is not None and "parent_id" in names:
+        raise TableError("parent_id is reserved for the tree projection")
     # Validate requested units even for an empty View or wholly missing column.
     for c in columns:
         if isinstance(c, ValueColumn):
-            units.compatible(c.units, c.units)
+            units.validate_units(c.units)
             if c.measure is not None:
-                find_measure(view.model.definitions, c.measure)
+                view.model._index.get(c.measure, Measure)
     rows = []
-    for entity in view.entities:
+    entities = (
+        view.entities
+        if hierarchy is None
+        else (view.entity(uid) for uid in hierarchy.preorder())
+    )
+    for entity in entities:
         cells = {}
         for c in columns:
             result: object
             if isinstance(c, ValueColumn):
-                item = select_value(c.key, measure=c.measure)(view.model, entity)
+                item = _local_value(entity, c.key, c.measure)
                 result = (
                     None
                     if item is None or item.quantity is None
@@ -138,7 +150,7 @@ def to_table(
                 )
             elif isinstance(c, PropertyColumn):
                 item = value(entity.characteristics, c.key)
-                if item is not None and item.kind != "property":
+                if item is not None and item.kind is not ValueKind.PROPERTY:
                     raise TableError(f"{c.key} is not a property Value")
                 result = (
                     decode(item.content)
@@ -150,63 +162,40 @@ def to_table(
                 result = (
                     None if selected_label is None else selected_label.classifications
                 )
-            elif c.field == "model_id":
+            elif c.field is EntityField.MODEL_ID:
                 result = view.model.id
-            elif c.field == "entity_id":
+            elif c.field is EntityField.ENTITY_ID:
                 result = entity.id
-            elif c.field == "entity_kind":
+            elif c.field is EntityField.ENTITY_KIND:
                 result = "assembly" if isinstance(entity, Assembly) else "entity"
-            elif c.field == "classification_id":
+            elif c.field is EntityField.CLASSIFICATION_ID:
                 result = entity.classification
-            elif c.field.startswith("classification_"):
+            elif c.field.value.startswith("classification_"):
                 kind = (
-                    classification(view.model.definitions, entity.classification)
+                    view.model._index.get(entity.classification, Classification)
                     if entity.classification
                     else None
                 )
                 result = (
-                    getattr(kind, c.field.removeprefix("classification_"))
+                    getattr(kind, c.field.value.removeprefix("classification_"))
                     if kind
                     else None
                 )
             else:
-                result = getattr(entity, c.field)
+                result = getattr(entity, c.field.value)
             cells[c.name] = result
+        if hierarchy is not None:
+            cells["parent_id"] = hierarchy.parent(entity.id)
         rows.append(Row(cells, entity.id))
-    return Table(names, rows)
-
-
-def to_tree_table(
-    hierarchy: Hierarchy,
-    *,
-    columns: Iterable[Column] = DEFAULT_COLUMNS,
-    units: UnitSystem = default_units,
-) -> Table:
-    """Return preorder rows with explicit parent_id from a validated Hierarchy.
-
-    Both relationship and membership trees are supported. Overlapping membership
-    needs an occurrence-based viewer, not this one-row-per-Entity tree format.
-    """
-    if not isinstance(hierarchy, Hierarchy):
-        raise TypeError("hierarchy must be a Hierarchy")
-    table = to_table(hierarchy.view, columns=columns, units=units)
-    if "parent_id" in table.columns:
-        raise TableError("parent_id is reserved for the tree projection")
-    return Table(
-        (*table.columns, "parent_id"),
-        (
-            Row({**table.row(uid).values, "parent_id": hierarchy.parent(uid)}, uid)
-            for uid in hierarchy.preorder()
-        ),
-    )
+    return Table(names if hierarchy is None else (*names, "parent_id"), rows)
 
 
 __all__ = [
+    "EntityField",
     "FieldColumn",
     "ValueColumn",
     "LabelColumn",
     "PropertyColumn",
     "Column",
     "to_table",
-    "to_tree_table",
 ]

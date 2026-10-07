@@ -11,8 +11,11 @@ from types import MappingProxyType
 from collections.abc import Mapping, Callable
 from uuid import UUID
 
-from .._schema.records import Expression, Quantity
-from .symbols import key
+from .._schema.records import Expression, Quantity, ExpressionKind, Operator
+from .._record_index import walk
+from ..model.expression.evaluation import evaluate as numerical, UnsupportedExpression
+from ..errors import UnitError
+import operator
 from .errors import UnsupportedProblem, NumericalError
 from .preparation import Prepared, Assertion
 
@@ -22,7 +25,7 @@ class Affine:
     """A scalar constant plus UUID-keyed coefficients, all in one result unit."""
 
     constant: float
-    coefficients: Mapping[str, float]
+    coefficients: Mapping[UUID, float]
     units: str
 
 
@@ -44,7 +47,7 @@ class Compiled:
     rows: tuple[Row, ...]
 
 
-def _affine(constant: float, coefficients: Mapping[str, float], units: str) -> Affine:
+def _affine(constant: float, coefficients: Mapping[UUID, float], units: str) -> Affine:
     if not all(math.isfinite(x) for x in (constant, *coefficients.values())):
         raise NumericalError("affine lowering produced non-finite coefficients")
     return Affine(
@@ -93,37 +96,37 @@ class Compiler:
     def expression(self, node: Expression) -> Affine:
         """Compile only arithmetic affine under this Specification's assignments."""
         self.checkpoint()
-        if node.kind == "quantity":
+        if node.kind == ExpressionKind.QUANTITY:
             assert node.quantity is not None
             return _affine(float(node.quantity.magnitude), {}, node.quantity.units)
-        if node.kind == "reference":
+        if node.kind == ExpressionKind.REFERENCE:
             assert node.target is not None
-            token = key(node.target)
+            token = node.target.target
             if token in self.prepared.assignments:
                 assigned = self.prepared.assignments[token]
                 return _affine(float(assigned.magnitude), {}, assigned.units)
             if token in self.prepared.unknowns:
                 return _affine(0, {token: 1}, self.prepared.value_units[token])
             raise UnsupportedProblem("expression reference has no explicit solve role")
-        if node.kind == "unary" and node.operator == "negate":
+        if node.kind == ExpressionKind.UNARY and node.operator == Operator.NEGATE:
             assert node.operand is not None
             value = self.expression(node.operand)
             return self.scale(value, -1, value.units)
-        if node.kind != "binary" or node.operator not in {
-            "add",
-            "subtract",
-            "multiply",
-            "divide",
-            "power",
+        if node.kind != ExpressionKind.BINARY or node.operator not in {
+            Operator.ADD,
+            Operator.SUBTRACT,
+            Operator.MULTIPLY,
+            Operator.DIVIDE,
+            Operator.POWER,
         }:
             raise UnsupportedProblem(
                 f"unsupported scalar expression: {node.kind}/{node.operator}"
             )
         assert node.operands is not None
         left, right = (self.expression(x) for x in node.operands)
-        if node.operator in {"add", "subtract"}:
-            return self.add(left, right, 1 if node.operator == "add" else -1)
-        if node.operator == "multiply":
+        if node.operator in {Operator.ADD, Operator.SUBTRACT}:
+            return self.add(left, right, 1 if node.operator == Operator.ADD else -1)
+        if node.operator == Operator.MULTIPLY:
             if left.coefficients and right.coefficients:
                 raise UnsupportedProblem(
                     "multiplication of two unknown expressions is nonlinear"
@@ -134,7 +137,7 @@ class Compiler:
                 if not right.coefficients
                 else self.scale(right, left.constant, unit)
             )
-        if node.operator == "divide":
+        if node.operator == Operator.DIVIDE:
             if right.coefficients:
                 raise UnsupportedProblem(
                     "division by an unknown expression is nonlinear"
@@ -160,9 +163,9 @@ class Compiler:
         return _affine(magnitude, {}, f"({left.units}) ** {right.constant}")
 
     def assertion(self, item: Assertion) -> tuple[Row, ...]:
-        """Flatten conjunctions; reject strict/disjunctive/non-arithmetic predicates."""
+        """Flatten conjunctions and check fixed strict predicates before lowering."""
         node = item.predicate
-        if node.kind == "binary" and node.operator == "logical_and":
+        if node.kind == ExpressionKind.BINARY and node.operator == Operator.LOGICAL_AND:
             assert node.operands is not None
             return tuple(
                 row
@@ -171,13 +174,56 @@ class Compiler:
                     Assertion(item.document, item.constraint, child)
                 )
             )
-        if node.kind == "boolean":
+        if node.kind == ExpressionKind.BOOLEAN:
             residual = _affine(0 if node.boolean else 1, {}, "dimensionless")
             return (Row(item, "equal", residual, 1),)
-        if node.kind != "binary" or node.operator not in {
-            "equal",
-            "less_than_or_equal",
-            "greater_than_or_equal",
+        if node.kind is ExpressionKind.BINARY and node.operator in (
+            Operator.LESS_THAN,
+            Operator.GREATER_THAN,
+        ):
+            if node.operands is None or len(node.operands) != 2:
+                raise UnsupportedProblem("comparison requires two operands")
+            referenced = {
+                child.target.target
+                for child, _, _ in walk(node)
+                if isinstance(child, Expression)
+                and child.kind is ExpressionKind.REFERENCE
+                and child.target is not None
+            }
+            if not referenced <= self.prepared.assignments.keys():
+                raise UnsupportedProblem(
+                    "strict predicates require only fixed assigned or literal operands"
+                )
+            try:
+                left = numerical(
+                    node.operands[0],
+                    self.prepared.assignments,
+                    units=self.prepared.units,
+                )
+                right = self.prepared.units.convert(
+                    numerical(
+                        node.operands[1],
+                        self.prepared.assignments,
+                        units=self.prepared.units,
+                    ),
+                    to=left.units,
+                )
+            except UnsupportedExpression as error:
+                raise UnsupportedProblem(str(error)) from error
+            except UnitError:
+                raise
+            except (ArithmeticError, TypeError, ValueError) as error:
+                raise NumericalError(str(error)) from error
+            compare = (
+                operator.lt if node.operator is Operator.LESS_THAN else operator.gt
+            )
+            if not compare(left.magnitude, right.magnitude):
+                raise UnsupportedProblem("fixed strict predicate is false")
+            return ()
+        if node.kind != ExpressionKind.BINARY or node.operator not in {
+            Operator.EQUAL,
+            Operator.LESS_THAN_OR_EQUAL,
+            Operator.GREATER_THAN_OR_EQUAL,
         }:
             raise UnsupportedProblem(
                 "only equality, nonstrict bounds and conjunctions are supported"
@@ -193,7 +239,7 @@ class Compiler:
             raise UnsupportedProblem(
                 "affine row exceeds the supported HiGHS numerical scaling range"
             )
-        return (Row(item, node.operator, residual, scale),)
+        return (Row(item, node.operator.value, residual, scale),)
 
 
 def compile(

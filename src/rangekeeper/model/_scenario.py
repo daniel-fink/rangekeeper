@@ -1,45 +1,35 @@
 """Pure scenario-record conformance; no numerical or random implementation imports."""
 
-import math
 from datetime import date, timedelta
+from uuid import UUID
 from .._validation import require, require_unique
 from .distribution import Distribution
-from ._references import resolve_reference, reference_key
-
-_MARKET = set(
-    "initial_value growth_rate cap_rate volatility_per_period autoregression mean_reversion space_period space_phase space_amplitude space_asymmetry asset_period asset_phase asset_amplitude asset_asymmetry noise_lower noise_upper shock_likelihood shock_dissipation shock_impact".split()
-)
+from ..scenarios.contracts import method, check_values, check_inputs
+from .scope import resolve_reference, reference_key
 
 
 def validate_plan(plan):
-    require(
-        plan["method"] in ("market.v2", "market.estimates.v2", "independent.v2"),
-        "unsupported scenario method/version",
-    )
+    contract = method(plan["method"])
     periods = plan["periods"]
     require(bool(periods), "scenario requires periods")
-    require(all(p["start"] < p["end"] for p in periods), "invalid scenario period")
     require(
-        all(a["end"] <= b["start"] for a, b in zip(periods, periods[1:])),
+        all(p["start_inclusive"] < p["end_exclusive"] for p in periods),
+        "invalid scenario period",
+    )
+    require(
+        all(
+            a["end_exclusive"] <= b["start_inclusive"]
+            for a, b in zip(periods, periods[1:])
+        ),
         "scenario periods overlap or are out of order",
     )
     params = plan["parameters"]
     require_unique(params, "name", "scenario parameter")
-    expected = (
-        (
-            _MARKET - {"space_phase", "asset_phase", "asset_period"}
-            | {
-                "space_phase_proportion",
-                "asset_phase_difference",
-                "asset_period_difference",
-            }
-        )
-        if plan["method"] == "market.estimates.v2"
-        else _MARKET if plan["method"] == "market.v2" else {"space_factor", "asset_cap"}
-    )
+    expected = set(contract.parameters)
     require(
         {p["name"] for p in params} == expected, "scenario parameter inventory mismatch"
     )
+    fixed = {}
     for p in params:
         q, d = p.get("quantity"), p.get("distribution")
         require(
@@ -47,7 +37,7 @@ def validate_plan(plan):
             "parameter requires exactly one quantity or distribution",
         )
         if q:
-            require(math.isfinite(q["magnitude"]), "non-finite scenario parameter")
+            fixed[p["name"]] = q["magnitude"]
             require(
                 q["units"] == "dimensionless",
                 "normalized market parameters require dimensionless units",
@@ -59,6 +49,8 @@ def validate_plan(plan):
                 "normalized distribution requires dimensionless units",
             )
 
+    check_values(plan["method"], fixed)
+
 
 def validate_realizations(provenance, scope):
     """Check captured input/output references and delayed observation declarations."""
@@ -68,6 +60,10 @@ def validate_realizations(provenance, scope):
         validate_plan(item["plan"])
         for field in ("inputs", "outputs", "streams", "versions"):
             require_unique(item[field], "name", f"scenario {field}")
+        if item.get("calculation") is not None:
+            require_unique(
+                item["calculation"]["versions"], "name", "calculation dependency"
+            )
         _validate_contents(item, scope)
         tokens = [reference_key(a["target"]) for a in item["availability"]]
         require(len(tokens) == len(set(tokens)), "duplicate observation availability")
@@ -80,18 +76,19 @@ def validate_realizations(provenance, scope):
                     "observation available before recorded date",
                 )
 
-        if item["plan"]["method"].startswith("market."):
+        if item["outputs"]:
             availability = {
                 reference_key(a["target"]): a["available_at"]
                 for a in item["availability"]
             }
             for binding in item["outputs"]:
-                if binding["name"] in ("implied_reversion_cap_rates", "returns"):
-                    value = scope.values[binding["value"]]
+                delay = method(item["plan"]["method"]).output_offsets[binding["name"]]
+                if delay:
+                    value = scope.values[UUID(binding["value"])]
                     for index, movement in enumerate(value["flow"]["movements"]):
                         required = (
                             date.fromisoformat(
-                                item["plan"]["periods"][index + 1]["end"]
+                                item["plan"]["periods"][index + delay]["end_exclusive"]
                             )
                             - timedelta(days=1)
                         ).isoformat()
@@ -107,37 +104,15 @@ def validate_realizations(provenance, scope):
 def _validate_contents(item, scope):
     """Enforce complete captured shapes without importing generation algorithms."""
     plan = item["plan"]
-    market = plan["method"].startswith("market.")
-    arrays = (
-        {"innovations", "noise", "events"} if market else {"space_factor", "asset_cap"}
-    )
+    contract = method(plan["method"])
+    arrays = set(contract.arrays)
     parameters = {p["name"]: p for p in plan["parameters"]}
-    required = arrays | (set(parameters) if market else set())
+    required = arrays | (set(parameters) if contract.scalar_parameters else set())
     require(
         {b["name"] for b in item["inputs"]} == required,
         "captured input inventory mismatch",
     )
-    outputs = (
-        {
-            "trend",
-            "autoregressive_returns",
-            "cumulative_volatility",
-            "space_cycle",
-            "asset_cycle",
-            "space_market",
-            "asset_market",
-            "asset_true_value",
-            "space_market_price_factors",
-            "noise_effect",
-            "shock_effect",
-            "noisy_value",
-            "historical_value",
-            "implied_reversion_cap_rates",
-            "returns",
-        }
-        if market
-        else {"space_market_price_factors", "asset_market", "historical_value"}
-    )
+    outputs = set(contract.output_offsets)
     require(
         not item["outputs"] or {b["name"] for b in item["outputs"]} == outputs,
         "captured output inventory mismatch",
@@ -146,6 +121,7 @@ def _validate_contents(item, scope):
         reference_key(a["target"]): a["available_at"] for a in item["availability"]
     }
     expected_availability = set()
+    captured, captured_arrays = {}, {}
     for field in ("inputs", "outputs"):
         for binding in item[field]:
             value, _ = resolve_reference(dict(target=binding["value"]), scope.targets)
@@ -158,11 +134,7 @@ def _validate_contents(item, scope):
                     "scenario path must be a dimensionless Flow",
                 )
                 count = len(plan["periods"]) - (
-                    1
-                    if field == "outputs"
-                    and market
-                    and name in ("implied_reversion_cap_rates", "returns")
-                    else 0
+                    contract.output_offsets[name] if field == "outputs" else 0
                 )
                 movements = flow["movements"]
                 require(len(movements) == count, "scenario path length mismatch")
@@ -179,7 +151,7 @@ def _validate_contents(item, scope):
                     token = reference_key(dict(target=movement["id"]))
                     expected_availability.add(token)
                     earliest = (
-                        date.fromisoformat(plan["periods"][index]["end"])
+                        date.fromisoformat(plan["periods"][index]["end_exclusive"])
                         - timedelta(days=1)
                     ).isoformat()
                     require(
@@ -187,6 +159,8 @@ def _validate_contents(item, scope):
                         "scenario observation precedes its period end",
                     )
                 magnitudes = [m["magnitude"] for m in movements]
+                if field == "inputs":
+                    captured_arrays[name] = magnitudes
             else:
                 quantity = value.get("quantity")
                 require(
@@ -195,6 +169,8 @@ def _validate_contents(item, scope):
                 )
                 magnitudes = [quantity["magnitude"]]
             if field == "inputs" and name in parameters:
+                if contract.scalar_parameters:
+                    captured[name] = magnitudes[0]
                 parameter = parameters[name]
                 if parameter.get("quantity") is not None:
                     require(
@@ -212,11 +188,7 @@ def _validate_contents(item, scope):
                         ),
                         "captured parameter outside distribution support",
                     )
-            if field == "inputs" and name == "events":
-                require(
-                    all(0 <= x <= 1 for x in magnitudes),
-                    "shock event draws must be in [0, 1]",
-                )
+    check_inputs(plan["method"], captured, captured_arrays)
     require(
         set(availability) == expected_availability,
         "scenario availability inventory mismatch",

@@ -16,7 +16,9 @@ owner; keep cross-record and IO operations at their explicit boundary.
 | Distribution | One LinkML-generated probability-distribution record |
 | Binding | A local name referring to a canonical Value; the container defines scope |
 | RandomStream | Recorded identity of a random sequence, separate from a Flow Stream |
-| DecisionHistory | Earlier decisions supplied to the next policy decision |
+| Decision | Dated policy declaration with observations, rules and fallback |
+| DecisionOutcome | Recorded observations, assignments and termination for one Decision |
+| CalculationProvenance | Calculation identity distinct from random-stream evidence |
 
 `schema/distribution.yaml` and `schema/binding.yaml` contain reusable contracts.
 `schema/scenario.yaml` imports them. A Formulation and a realization use the same
@@ -82,18 +84,19 @@ Black Swan is the walkthrough name for the once-per-scenario shock recipe. The
 general numerical function remains `calculate_shock`. `make_noise` declares the
 current method's uniform bounds; it does not claim support for arbitrary deal-noise
 distributions. Linked cycle estimates remain available through
-`market.estimates.v2` and explicit plan parameters.
+`market.estimates` and explicit plan parameters.
 
-`Policy`, `Rule`, `condition`, `Action`, and `Decision` retain their meanings.
-`build_stop_gain_resale_policy` names the supported resale rule. Observation
-records remain separate from DecisionHistory. Policy evaluation has no authority
+`Policy.decisions` contains declarations; `Report.outcomes` contains recorded
+`DecisionOutcome` evidence. `examples.investment.build_stop_gain_resale_policy`
+names the model-specific resale rule. Earlier outcomes are an immutable tuple. Policy evaluation has no authority
 to infer missing observations or claim numerical feasibility.
 
 
 ## Runtime services
 
 `Executor` traverses batches; `Plan` resolves their graph; `Attempt` owns one scalar
-execution. Run `Tree` and `Publication` validators have separate scopes. Layout
+execution. Run report, output and resolver-backed validation checks have separate scopes
+under one prepared validation operation. Layout
 `Formulation` owns symbolic geometry. The viewer uses `Viewer` for mutable display
 state; C# `Validator.Check` overloads distinguish structural and Model checks.
 Prefer composition between these services to inheritance with hidden state.

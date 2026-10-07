@@ -2,25 +2,17 @@
 
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
-from enum import Enum
 from typing import Generic, TypeVar
 
 from rangekeeper import validate
 from rangekeeper import _structured
 from rangekeeper.evidence import Location, Method
 
-__all__ = ["Diagnostic", "IssueSeverity", "Operation", "Outcome", "fingerprint"]
+__all__ = ["Diagnostic", "Severity", "Operation", "Outcome", "fingerprint"]
 T = TypeVar("T")
 
 
-class IssueSeverity(str, Enum):
-    """Provides a display priority for explanations; availability is decided by the
-    consuming operation, not this ranking.
-    """
-
-    INFO = "info"
-    WARNING = "warning"
-    ERROR = "error"
+from rangekeeper._schema.enums import Severity
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -63,7 +55,7 @@ class Diagnostic:
     """
 
     code: str
-    severity: IssueSeverity
+    severity: Severity
     message: str
     locations: tuple[Location, ...] = ()
     details: Mapping[str, object] = field(default_factory=dict)
@@ -71,8 +63,8 @@ class Diagnostic:
     def __post_init__(self) -> None:
         for name in ("code", "message"):
             validate.require_text(getattr(self, name), name)
-        if not isinstance(self.severity, IssueSeverity):
-            raise TypeError("severity must be IssueSeverity")
+        if not isinstance(self.severity, Severity):
+            raise TypeError("severity must be Severity")
         locations = tuple(self.locations)
         if any(not isinstance(item, Location) for item in locations):
             raise TypeError("locations must contain Location objects")
@@ -138,7 +130,7 @@ class _Failure(Exception):
         super().__init__(message)
         self.diagnostic = Diagnostic(
             code=code,
-            severity=IssueSeverity.ERROR,
+            severity=Severity.ERROR,
             message=message,
             locations=locations,
             details={} if details is None else details,

@@ -8,14 +8,15 @@ from uuid import UUID
 from .._records import Record
 from .._schema.records import Constraint, Expression, Quantity, Value, Movement
 from ..model import Model
-from ..model._index import walk
+from .._record_index import walk
 from ..model.definitions import measure
 from ..references import SpecificationResolver
-from ..specification import Composition, validate
+from ..specification import Composition
+from ..specification.validation import prepare as validate_prepared
 from ..units import UnitSystem, default_units
 from .errors import UnsupportedProblem
-from . import symbols
-from .._schema.records import Decision, Reference, Assignment
+from ..model.scope import target_units
+from .._schema.records import DecisionOutcome, Reference, Assignment
 
 
 @dataclass(frozen=True)
@@ -34,13 +35,13 @@ class Prepared:
     model: Model
     composition: Composition
     values: Mapping[UUID, Value]
-    value_units: Mapping[str, str]
-    assignments: Mapping[str, Quantity]
-    unknowns: tuple[str, ...]
+    value_units: Mapping[UUID, str]
+    assignments: Mapping[UUID, Quantity]
+    unknowns: tuple[UUID, ...]
     assertions: tuple[Assertion, ...]
     units: UnitSystem
-    references: Mapping[str, Reference]
-    decisions: tuple[Decision, ...] = ()
+    references: Mapping[UUID, Reference]
+    outcomes: tuple[DecisionOutcome, ...] = ()
 
 
 def prepare(
@@ -57,47 +58,57 @@ def prepare(
     publishes Model-owned scalar Values; local Specification Values and ordered
     optimization objectives are rejected explicitly before invoking a backend.
     """
-    validate(composition, resolver=resolver, units=units).raise_if_invalid()
+    validated = validate_prepared(composition, resolver=resolver, units=units)
+    validated.report.raise_if_invalid()
     checkpoint()
     assert composition.model_id is not None
-    model = resolver.load_model(composition.model_id)
+    model = validated.model
+    assert model is not None
     requirements = composition.requirements
     if requirements.objectives:
         raise UnsupportedProblem(
             "ordered optimization objectives are not supported by scalar feasibility execution"
         )
-    values: dict[UUID, Value] = {}
-    expressions: dict[UUID, Expression] = {}
-    declarations: list[tuple[UUID, Constraint]] = []
-
-    def collect(root: Record, document: UUID) -> None:
-        for record, _, _ in walk(root):
-            checkpoint()
-            if isinstance(record, Value):
-                values[record.id] = record
-            elif isinstance(record, Expression):
-                expressions[record.id] = record
-            elif isinstance(record, Constraint):
-                declarations.append((document, record))
-
-    if model.system is not None:
-        collect(model.system, model.id)
-    model_values = {
-        r.id for r, _, _ in walk(model._record) if isinstance(r, (Value, Movement))
+    values = {
+        identity: record
+        for identity, record in model._index.records.items()
+        if isinstance(record, Value)
     }
-    for contributor in composition.contributions:
+    expressions = {
+        identity: record
+        for identity, record in model._index.records.items()
+        if isinstance(record, Expression)
+    }
+    declarations = [
+        (model.id, record)
+        for record in model._index.records.values()
+        if isinstance(record, Constraint)
+    ]
+    model_values = {
+        identity
+        for identity, record in model._index.records.items()
+        if isinstance(record, (Value, Movement))
+    }
+    for contributor in composition.contributors:
         for formulation in contributor.record.formulations or ():
-            collect(formulation, contributor.id)
+            for record, _, _ in walk(formulation):
+                checkpoint()
+                if isinstance(record, Value):
+                    values[record.id] = record
+                elif isinstance(record, Expression):
+                    expressions[record.id] = record
+                elif isinstance(record, Constraint):
+                    declarations.append((contributor.id, record))
     role_references = list(requirements.unknowns or ()) + [
         a.target for a in requirements.assignments or ()
     ]
-    decisions: tuple[Decision, ...] = ()
+    outcomes: tuple[DecisionOutcome, ...] = ()
     policy_assignments: tuple[Assignment, ...] = ()
     if requirements.policy is not None:
-        unknown_tokens = {symbols.key(ref) for ref in requirements.unknowns or ()}
+        unknown_tokens = {ref.target for ref in requirements.unknowns or ()}
         if any(
-            symbols.key(binding.target) in unknown_tokens
-            for point in requirements.policy.points
+            binding.target.target in unknown_tokens
+            for point in requirements.policy.decisions
             for binding in point.observations
         ):
             raise UnsupportedProblem(
@@ -107,24 +118,22 @@ def prepare(
         from ..policies.observation import PolicyCapabilityError
 
         try:
-            policy_result = evaluate(requirements.policy, model=model)
+            policy_result = evaluate(requirements.policy, model=model, units=units)
             checkpoint()
         except PolicyCapabilityError as error:
             raise UnsupportedProblem(str(error)) from error
-        decisions = policy_result.decisions
+        outcomes = policy_result.outcomes
         policy_assignments = policy_result.assignments
         role_references.extend(a.target for a in policy_assignments)
     if any(ref.target not in model_values for ref in role_references):
         raise UnsupportedProblem(
             "Specification-local Value publication requires a later adapter"
         )
-    references = {symbols.key(ref): ref for ref in role_references}
-    value_units = {
-        token: symbols.units_for(model, ref) for token, ref in references.items()
-    }
+    references = {ref.target: ref for ref in role_references}
+    value_units = {token: target_units(model, ref) for token, ref in references.items()}
     assignments = {
-        symbols.key(item.target): units.convert(
-            item.quantity, to=value_units[symbols.key(item.target)]
+        item.target.target: units.convert(
+            item.quantity, to=value_units[item.target.target]
         )
         for item in (*(requirements.assignments or ()), *policy_assignments)
     }
@@ -134,12 +143,12 @@ def prepare(
         MappingProxyType(values),
         MappingProxyType(value_units),
         MappingProxyType(assignments),
-        tuple(symbols.key(ref) for ref in requirements.unknowns or ()),
+        tuple(ref.target for ref in requirements.unknowns or ()),
         tuple(
             Assertion(document, declaration, expressions[declaration.predicate])
             for document, declaration in declarations
         ),
         units,
         MappingProxyType(references),
-        decisions,
+        outcomes,
     )

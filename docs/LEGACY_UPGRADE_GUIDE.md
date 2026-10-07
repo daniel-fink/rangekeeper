@@ -24,7 +24,7 @@ model logic selects and interprets calculations. Units, coordinates, alignment,
 missingness and operation-specific numerical requirements remain checked. This
 removes the unreleased draft's `basis=` and `result_basis=` arguments. Saved draft
 payloads must have their `basis` field removed explicitly as part of a new Model
-revision; older snapshots remain historical. `Value.kind="flow"` still identifies
+revision; older snapshots remain historical. `Value.kind=ValueKind.FLOW` still identifies
 the content shape. See the [contract](CALCULATIONS.md#flow-semantics-and-explicit-operations)
 and [verification](research/full-migration/flow-semantics/README.md).
 
@@ -32,6 +32,29 @@ and [verification](research/full-migration/flow-semantics/README.md).
 operations. `rangekeeper.temporal` is removed without an alias. The records remain
 in `rangekeeper.model.duration`. Old `duration.Type/Sequence/Span` callers require
 an explicit port. The private `_legacy_duration` module has also been removed.
+
+## Current graph API changes
+
+Import `reducers` from `rangekeeper.graph` and use its qualified names:
+
+| Retired API | Replacement |
+| --- | --- |
+| `reducers.sum_quantities` | `reducers.sum` |
+| `reducers.mean_quantities` | `reducers.mean` |
+| `reducers.min_quantity` | `reducers.min` |
+| `reducers.max_quantity` | `reducers.max` |
+| `graph.projection.to_tree_table(hierarchy)` | `graph.projection.to_table(hierarchy)` |
+| `aggregation.known_subtotal(id)` | `aggregation.available_value(id)` |
+
+These names have no aliases. `to_table(view)` keeps flat View order;
+`to_table(hierarchy)` uses preorder and adds `parent_id`. Rename an old `view=`
+keyword to `source=`. `available_value()` returns the available result for every
+reducer; `value()` still applies the requested completeness policy. Construct
+`Aggregation` from `AggregateEntry(available, coverage)` entries, selected Value
+IDs and `require_complete`, instead of parallel value/coverage maps. Closed Python
+choices require enum members, including `EntityField`, `HierarchyKind` and
+`CoverageStatus`; saved JSON/YAML strings retain their documented wire values.
+See [graph contracts](GRAPH_MODEL.md) for ownership and revision checks.
 
 ## Install and check the artifact
 
@@ -83,26 +106,26 @@ from datetime import date
 from uuid import uuid4
 from rangekeeper import Model
 from rangekeeper.model import (
-    Metadata, Definitions, Measure, System, Entity, Characteristics, Value,
+    Metadata, Definitions, Measure, System, Entity, Characteristics, Value, ValueKind,
 )
 from rangekeeper.model.content import encode, decode
-from rangekeeper.model.flow import Stream
-from rangekeeper.duration import make_periods
+from rangekeeper.model.flow import Stream, MissingValueHandling
+from rangekeeper.duration import make_periods, Frequency, PeriodTiming, DayCount
 from rangekeeper.calculations import series
 
-periods = make_periods(date(2026, 1, 1), frequency="month", count=3)
+periods = make_periods(date(2026, 1, 1), frequency=Frequency.MONTH, count=3)
 flow = Flow.from_periods(periods, (10, 0, None), units='meter')
 measure = Measure(id=uuid4(), code="length", name="Length", units="meter")
-reading = Value(id=uuid4(), key="delivered", kind="flow", measure=measure.id, flow=flow)
-note = Value(id=uuid4(), key="source", kind="property", content=encode({"checked": False}))
+reading = Value(id=uuid4(), key="delivered", kind=ValueKind.FLOW, measure=measure.id, flow=flow)
+note = Value(id=uuid4(), key="source", kind=ValueKind.PROPERTY, content=encode({"checked": False}))
 owner = Entity(id=uuid4(), code="A", characteristics=Characteristics(values=(reading, note)))
 model = Model.create(
-    metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
+    metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
     definitions=Definitions(measures=(measure,)), system=System(entities=(owner,)),
 )
 stream = Stream.from_values(model, (reading.id,))
 assert decode(model.value(note.id).content) == {"checked": False}
-assert stream.flows[0].total(missing='skip').magnitude == 10
+assert stream.flows[0].total(missing=MissingValueHandling.SKIP).magnitude == 10
 ```
 
 `Model` owns the Value. `Stream` selects ordered Value UUIDs in that revision.
@@ -123,7 +146,7 @@ instead of changing their type. Pint quantities in Measurements remain supported
 ## Time, units, and arithmetic
 
 Flow coordinates have day resolution. Use Python `datetime.date` values; the wire
-format uses `YYYY-MM-DD` strings. `Period(start, end)` is half-open. There is no
+format uses `YYYY-MM-DD` strings. `Period(start_inclusive=..., end_exclusive=...)` is half-open. There is no
 `TimePoint` record or intraday Flow support. Rich property content can still retain
 source timestamps; those are not Flow coordinates. Generated Source date fields
 now return Python dates; their timestamp alternatives still return strings. Both
@@ -139,14 +162,14 @@ from rangekeeper.model.flow import Flow
 
 from rangekeeper.calculations.financial import calculate_xnpv
 assert flow.movements[0].date is None
-assert flow.movements[0].resolve(timing='last_day') == date(2026, 1, 31)
+assert flow.movements[0].resolve(timing=PeriodTiming.LAST) == date(2026, 1, 31)
 paid = Flow.from_periods(periods[:1], (100,), units='AUD', dates=(date(2026, 2, 5),))
-assert paid.movements[0].resolve(timing='start') == date(2026, 2, 5)
+assert paid.movements[0].resolve(timing=PeriodTiming.FIRST) == date(2026, 2, 5)
 pv = calculate_xnpv(paid, rate=0.1, valuation_date=date(2026, 1, 1))
 ```
 
-`start` selects the first included day; `last_day` selects the final included day;
-`end` selects the exclusive boundary. Recorded dates take precedence. Undated
+`PeriodTiming.FIRST` selects the first included day; `LAST` selects the final included day;
+`END` selects the exclusive boundary. Recorded dates take precedence. Undated
 periods require `timing=` in `calculate_xnpv`, `calculate_irr` and Polars `dates`.
 `collapse` requires a chosen `on=` date or a timing convention unless the final
 movement records a date. `calculate_pv` instead uses its explicit movement-index
@@ -156,12 +179,12 @@ keep the original Flow when individual payment facts are required.
 
 | Old call or assumption | Replacement / deliberate change |
 |---|---|
-| `duration.Type` / pandas frequency inference | Explicit `frequency="month"` etc.; ten calendar frequencies in `duration.calendar` |
+| `duration.Type` / pandas frequency inference | Explicit `frequency=Frequency.MONTH` etc.; ten calendar frequencies in `duration.calendar` |
 | Inclusive `Span.end_date` | Half-open `[start,end)` Period/Span; add one calendar day when mapping an inclusive date-only end |
 | `Flow.from_dict/from_sequence` | Explicit ordered dates/magnitudes in `Flow.from_events`; duplicate dates need keys |
 | `Flow.from_projection` | `calculations.projection.project` or `allocate`, with Quantity and Periods |
 | Mutating Flow/Stream / `duplicate` | Immutable records; new calculation result; new Model revision for persisted changes |
-| `Stream.sum/min/max` | `series.aggregate(reducer="sum" | "min" | "max")`; exact alignment by default, explicit units/missing/join |
+| `Stream.sum/min/max` | `series.aggregate(reducer=AggregationReducer.SUM)` (or `.MIN` / `.MAX`); exact alignment by default, explicit units/missing/join |
 | `Stream.product` | `series.multiply`; dimensionless factors scale quantities; unit powers remain intact |
 | Period rates treated as amounts | `series.integrate`, with explicit exposures or period day-count convention |
 | `Flow.resample(frequency)` | Explicit complete target Period grid, reduction and missing policy; every mean requires weighting |
@@ -170,7 +193,22 @@ keep the original Flow when individual payment facts are required.
 | Implicit global RNG | `distribution.sample(size=..., generator=...)` |
 | `flow.pv` | `financial.calculate_pv(rate=..., first_period=1)`; rate is per observation period |
 | `flow.npv/irr` | `calculate_xnpv(valuation_date=..., day_count=...)`; `calculate_irr(guess=...)` returns one root and residual; guess is optional; both require `timing=` for undated periods |
-| Account constructor calculates silently | `Account.calculate(..., method=..., timing=...)`; result has opening/closing/overdraft/interest Flows |
+| Account constructor calculates silently | `Account.calculate(..., balance=..., current_interest=..., treatment=...)`; result has opening/closing/overdraft/interest Flows |
+
+`Frequency`, `PeriodTiming`, `MonthRoll` and `DayCount` come from
+`rangekeeper.duration`. Frequency text from external configuration must be converted
+explicitly, for example `Frequency("month")`. Offsets and sequences default to
+`MonthRoll.PRESERVE_END`; `CLAMP` keeps the original day where possible. A former
+`month_end=True` call on a mid-month anchor needs explicit alignment first:
+`align(day, frequency=Frequency.MONTH).last`. Retain that original anchor when
+extending a sequence. Stored Period fields are `start_inclusive` and `end_exclusive`.
+
+Import `Balance`, `CurrentInterest` and `InterestTreatment` from `rangekeeper.account`.
+Simple, compound and capitalized calculations become EXCLUDED/SEPARATE,
+EXCLUDED/FINANCED and INCLUDED/FINANCED, respectively. Advance uses CLOSING;
+arrears uses OPENING. INCLUDED requires FINANCED. The default remains closing,
+excluded and separate. The passive `formulations.account.schedule` supports the
+nonnegative fixed-rate subset; signed overdrafts remain a known-data calculation.
 
 Multiplying `AUD/year` by a dimensionless market factor leaves `AUD/year`.
 Multiplying two rates retains both time dimensions. No operation strips time to
@@ -189,7 +227,7 @@ Calendar-month accrual can instead supply explicit exposure Quantities. The mode
 selects the resampling operation: for example, last for a closing balance, sum for
 receipts, or mean with a specified weighting. These choices are not inferred or
 restricted by a stored Flow kind. Bounded movements that cross target Periods fail;
-allocate them explicitly first. `missing="zero"` fills absent rows/empty target
+allocate them explicitly first. `MissingValueHandling.ZERO` fills absent rows/empty target
 groups only; it does not turn an explicitly unresolved observation into zero.
 Fractional resampling coverage counts known observations, not continuous time coverage.
 
@@ -237,8 +275,8 @@ Use `DirectoryStore` for filesystem persistence. Writes are append-only by revis
 UUID; conflicting content fails. A Flow calculation returns a detached result;
 author its result as a Value in a new Model revision when it must be retained.
 Changing a revision does not silently rewrite a Specification or historical Run.
-Model 0.3.0/0.4.0 upgrades use `migration.upgrade_model`; it creates a new UUID and
-`metadata.previous`. `migration.upgrade_specification` upgrades a 0.4.0 Specification,
+Model 0.3.0–0.6.0 upgrades use `migration.upgrade_model`; it creates a new UUID and
+`metadata.previous`. `migration.upgrade_specification` upgrades a 0.4.0–0.6.0 Specification,
 requiring the new Model UUID and explicit mappings for included/case revisions.
 Retain historical Runs with their original pinned documents and reader environment.
 
@@ -301,19 +339,19 @@ installed-wheel run and the notebook and regression evidence. The
 
 ## Movement roles, equations and draft-format changes
 
-Current Model/Specification documents use 0.6.0; Runs use 0.3.0.
+Current Model/Specification documents use 0.7.0; Runs use 0.4.0.
 References use `Reference(target=uuid)` in Python and `{target: UUID}` on the wire.
 Every Movement requires its own UUID. The optional key remains an alignment label.
 There is no `ScopedValueReference`; diagnostic participants use the owning Run's
 input Model. See [references and identity](REFERENCES.md).
 
-Use `upgrade_model` for Model 0.3.0/0.4.0/0.5.0 and `upgrade_specification` for
-Specification 0.4.0/0.5.0. The converters derive Movement UUIDs from the former
+Use `upgrade_model` for Model 0.3.0/0.4.0/0.5.0/0.6.0 and `upgrade_specification` for
+Specification 0.4.0/0.5.0/0.6.0. The converters derive Movement UUIDs from the former
 Value UUID and key, then update references to the same UUIDs. Supply upgraded
 external revision pins explicitly. Inputs and opaque Claim content remain unchanged.
 Validate the upgraded Specification with its resolver before execution.
 
-Use `specification.targets.scalar` and `movement` with the target UUID.
+Construct `Reference(target=uuid)` directly for either a Value or a Movement.
 `assign_flow(model, value, ids=...)` explicitly reuses resolved amounts;
 `unknown_flow(model, value, ids=...)` declares them unknown. Omit `ids` for all entries.
 Estimates do not fill missing assignments. A Measure is not a Value selector.
@@ -329,7 +367,7 @@ and reporting operations. This complete example is checked outside the checkout:
 from rangekeeper.examples import investment
 from rangekeeper.execution import Executor
 from rangekeeper.io import MemoryStore
-from rangekeeper.run import validate as validate_run
+from rangekeeper.run import validate as validate_run, SolutionStatus
 
 investment_model = investment.formulate(investment.author({"num_periods": 3}))
 resale_policy = investment.build_stop_gain_resale_policy(investment_model, minimum_holding_periods=1)
@@ -337,11 +375,11 @@ question = investment.specify(investment_model, policy=resale_policy)
 investment_store = MemoryStore()
 investment_store.put(investment_model)
 execution = Executor(investment_store).execute(question)
-assert execution.report.status.solution == "feasible"
+assert execution.report.status.solution is SolutionStatus.FEASIBLE
 validate_run(execution, resolver=investment_store).raise_if_invalid()
 accepted = investment_store.load_model(execution.record.outputs[0])
 report = investment.report(accepted)
-assert len(execution.report.decisions) >= 1
+assert len(execution.report.outcomes) >= 1
 assert accepted.metadata.previous == investment_model.id
 ```
 
@@ -356,11 +394,11 @@ constructor. Keep source-building `WorkflowSpec` separate from mathematical
 
 ```python
 from rangekeeper.scenarios import market, replay
-from rangekeeper.duration import make_periods
+from rangekeeper.duration import make_periods, Frequency, PeriodTiming, DayCount
 
-scenario_base = Model.create(metadata=Metadata(id=uuid4(), schema_version="0.6.0"))
+scenario_base = Model.create(metadata=Metadata(id=uuid4(), schema_version="0.7.0"))
 scenario_plan = market.make_plan(
-    periods=make_periods(date(2027, 1, 1), frequency="year", count=4), seed=23,
+    periods=make_periods(date(2027, 1, 1), frequency=Frequency.YEAR, count=4), seed=23,
 )
 scenario = market.generate(scenario_base, scenario_plan, scenario_keys=("example",))[0]
 assert replay(scenario.model).model is scenario.model
@@ -395,7 +433,7 @@ same generated record; numerical methods are no longer attached to a second
 handwritten Distribution class.
 
 `migration.upgrade_scenario_names(old_data)` explicitly converts the unreleased
-`market.v1`, `market.estimates.v1` and `independent.v1` labels into their v2 methods.
+old v1/v2 method labels into `market`, `market.estimates` and `market.independent`.
 Pass detached Model 0.5.0 or 0.6.0 data; the function returns a new Model revision and
 preserves Value UUIDs, quantities, Movement coordinates, claims and random stream
 identifiers. Codecs do not upgrade automatically. Old Runs keep their original

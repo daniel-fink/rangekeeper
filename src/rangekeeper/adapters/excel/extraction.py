@@ -11,14 +11,14 @@ from rangekeeper.operation import (
     _invoke,
     fingerprint,
 )
-from rangekeeper.workflow.ingestion import (
+from rangekeeper.evidence import (
     Evidence,
     EvidenceKey,
     Issue,
-    IssueSeverity,
+    Severity,
     tabular,
 )
-from rangekeeper.workflow.ingestion._encoding import encode
+from rangekeeper.evidence.errors import encode
 
 from rangekeeper.evidence import Claim, Method
 from rangekeeper.table import Table
@@ -197,7 +197,7 @@ def extract_table(
                         Issue(
                             rule_id=specification.id,
                             code=code,
-                            severity=IssueSeverity.WARNING,
+                            severity=Severity.WARNING,
                             message=_MESSAGES[code],
                             at=(key,),
                             related_claims=(claim,),

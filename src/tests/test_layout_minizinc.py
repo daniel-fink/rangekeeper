@@ -1,5 +1,11 @@
 """Cross-engine geometry and score parity, including failure semantics."""
 
+from rangekeeper.adapters.cytoscape.layout.model import Axis, PreferenceDirection
+from rangekeeper.adapters.cytoscape.layout.result import (
+    ResultMode,
+    ResultStatus,
+    StrictStatus,
+)
 from dataclasses import replace
 
 import pytest
@@ -22,29 +28,31 @@ pytestmark = pytest.mark.minizinc
 def test_feasible_shared_and_nested_memberships(name):
     p = examples()[name]
     r = solve(p, time_limit=5, optimize=False)
-    assert r.status == "feasible", r.reason
-    assert r.strict_status == "sat" and not check(p, r.rectangles)
+    assert r.status == ResultStatus.FEASIBLE, r.reason
+    assert r.strict_status == StrictStatus.SAT and not check(p, r.rectangles)
 
 
 def test_infeasible_and_unknown_have_distinct_fallbacks():
     impossible = Problem((Node("n", "N", 100, 40),), (), width=90, height=60)
-    assert solve(impossible, time_limit=2).status == "infeasible"
-    assert solve(replace(impossible, width=120), time_limit=2).status == "optimal"
+    assert solve(impossible, time_limit=2).status == ResultStatus.INFEASIBLE
+    assert (
+        solve(replace(impossible, width=120), time_limit=2).status
+        == ResultStatus.OPTIMAL
+    )
     r = solve(examples()["nested"], time_limit=1e-6, allow_relaxed=True)
-    assert r.status == r.strict_status == "unknown"
-    assert r.mode == "strict" and not r.rectangles
+    assert r.status is ResultStatus.UNKNOWN
+    assert r.strict_status is StrictStatus.UNKNOWN
+    assert r.mode == ResultMode.STRICT and not r.rectangles
     r = solve(
         examples()["impossible-five"], time_limit=8, allow_relaxed=True, optimize=False
     )
-    assert r.strict_status == "unsat" and r.mode == "diagnostic"
-    assert r.status == "feasible" and r.findings
+    assert r.strict_status == StrictStatus.UNSAT and r.mode == ResultMode.DIAGNOSTIC
+    assert r.status == ResultStatus.FEASIBLE and r.findings
     assert all(f["code"] == "exclusion" for f in r.findings)
 
 
 @pytest.mark.z3
-@pytest.mark.parametrize(
-    "direction", ["unspecified", "horizontal", "vertical", "balanced"]
-)
+@pytest.mark.parametrize("direction", tuple(PreferenceDirection))
 def test_fixed_seed_scores_match_both_engines(direction):
     p = Problem(
         tuple(Node(i, i, 24 + 10 * k, 20) for k, i in enumerate("abcd")),
@@ -56,7 +64,7 @@ def test_fixed_seed_scores_match_both_engines(direction):
             Preference(
                 "g",
                 direction,
-                orders=(("a", "b", "x"), ("b", "a", "x"), ("c", "d", "y")),
+                orders=(("a", "b", Axis.X), ("b", "a", Axis.X), ("c", "d", Axis.Y)),
                 affinities=(("a", "c", 37), ("b", "d", 100)),
                 strength=3,
             ),
@@ -69,7 +77,7 @@ def test_fixed_seed_scores_match_both_engines(direction):
     seed.grids["g"]["x"] += 1
     a = z3_solve(p, initial=seed, optimize=False, time_limit=5)
     b = solve(p, initial=seed, optimize=False, time_limit=5)
-    assert a.status == b.status == "feasible"
+    assert a.status == b.status == ResultStatus.FEASIBLE
     assert a.rectangles == b.rectangles == seed.rectangles
     assert a.grids == b.grids == seed.grids
     assert a.measurements == b.measurements
@@ -92,8 +100,8 @@ def test_tiny_optima_match(flexible):
             (
                 Preference(
                     "g",
-                    "horizontal",
-                    orders=(("a", "b", "x"),),
+                    PreferenceDirection.HORIZONTAL,
+                    orders=(("a", "b", Axis.X),),
                     affinities=(("a", "b", 100),),
                 ),
             )
@@ -103,7 +111,7 @@ def test_tiny_optima_match(flexible):
     )
     a = z3_solve(p, time_limit=10)
     b = solve(p, time_limit=10)
-    assert a.status == b.status == "optimal"
+    assert a.status == b.status == ResultStatus.OPTIMAL
     assert [(v["objective"], v["value"]) for v in a.phases] == [
         (v["objective"], v["value"]) for v in b.phases
     ]
@@ -112,7 +120,9 @@ def test_tiny_optima_match(flexible):
 def test_seed_validation_and_pins():
     p = Problem((Node("n", "N"),), (), pins=(("n", 100, 80),))
     r = solve(p, time_limit=3)
-    assert r.status == "optimal" and r.rectangles["n"] == Rect(100, 80, 96, 40)
+    assert r.status == ResultStatus.OPTIMAL and r.rectangles["n"] == Rect(
+        100, 80, 96, 40
+    )
     seed = grid_seed(replace(examples()["nested"], weights=Weights()))
     with pytest.raises(ValueError, match="match"):
         solve(p, initial=seed)
@@ -123,7 +133,7 @@ def test_checked_seed_survives_timeout_without_claiming_native_solution():
     seed = grid_seed(p)
     assert seed is not None
     r = solve(p, initial=seed, time_limit=1e-6)
-    assert r.status == "feasible" and r.incumbent_source == "checked_seed"
+    assert r.status == ResultStatus.FEASIBLE and r.incumbent_source == "checked_seed"
     assert r.first_solution_seconds is None and r.rectangles == seed.rectangles
     assert not r.phases[-1]["proven"]
 
@@ -151,7 +161,7 @@ def test_warm_start_is_a_hint_not_a_position_constraint():
     }
     before = deepcopy(seed)
     r = solve(p, initial=seed, time_limit=4)
-    assert r.incumbent_source == "solver" and r.status == "optimal"
+    assert r.incumbent_source == "solver" and r.status == ResultStatus.OPTIMAL
     assert r.measurements["extent"] < max(
         v.right for v in seed.rectangles.values()
     ) + max(v.bottom for v in seed.rectangles.values())
@@ -235,8 +245,8 @@ def test_neighborhood_improves_global_score_without_moving_outside_or_claiming_g
     }
     assert not check(p, rects)
     initial = Result(
-        "feasible",
-        "sat",
+        ResultStatus.FEASIBLE,
+        StrictStatus.SAT,
         rectangles=rects,
         grids=grids,
         problem_fingerprint=p.fingerprint,
@@ -244,7 +254,8 @@ def test_neighborhood_improves_global_score_without_moving_outside_or_claiming_g
     before = metrics(p, rects, grids)
     result = refine(p, initial, time_limit=4, region_limit=3, max_regions=1)
     assert (
-        result.status == "feasible" and result.incumbent_source == "neighborhood_solver"
+        result.status == ResultStatus.FEASIBLE
+        and result.incumbent_source == "neighborhood_solver"
     )
     assert result.measurements["style_cost"] < before["style_cost"]
     assert not check(p, result.rectangles)

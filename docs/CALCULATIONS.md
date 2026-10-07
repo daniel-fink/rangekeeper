@@ -56,8 +56,8 @@ contribution boundaries. See [record methods](RECORD_BOUNDARY.md).
 | `formulations` | Build declared equations for forward and inverse investigations |
 
 Dates are calendar values, never implicit timestamps. Periods are half-open:
-`[start, end)`. Financial valuation uses actual payment dates; period-only movements
-need `timing="start"`, `"end"` or `"last_day"`. Frequency and elapsed time are
+`[start_inclusive, end_exclusive)`. Financial valuation uses actual payment dates; period-only movements
+need `PeriodTiming.FIRST`, `PeriodTiming.END` or `PeriodTiming.LAST`. Frequency and elapsed time are
 explicit. Currency and time units are not stripped from quantities.
 
 Distribution sampling accepts an explicit random generator or seed according to
@@ -99,3 +99,34 @@ creates independent movements for another Value. Numerical results such as scali
 differences, aggregation, integration and valuation get fresh Movement UUIDs.
 Alignment keeps existing IDs and creates IDs for missing placeholders.
 See [references](REFERENCES.md) for revision and migration rules.
+
+## Composed account conventions
+
+Import `Balance`, `CurrentInterest` and `InterestTreatment` from
+`rangekeeper.account`. The numerical calculation and passive schedule use the same
+three choices. `Balance.OPENING` selects the signed debt before transactions;
+`CLOSING` selects it after transactions. `CurrentInterest.EXCLUDED` charges the
+positive selected principal at the per-step rate. `INCLUDED` solves the charge as
+`base * rate / (1 - rate)` and requires a rate below one.
+
+`InterestTreatment.SEPARATE` leaves interest out of closing principal; `FINANCED`
+adds it. Included current interest requires financing, so six combinations are
+valid. The default is closing, excluded, separate. The recurrence retains signed
+balances; displayed debt and overdraft balances retain their separate meanings.
+Rate Flow coordinates must match transaction coordinates and order. Validation also
+applies to empty transactions. Same-day keys never reorder transaction/rate pairs.
+
+`formulations.account.schedule` declares the same finite account mechanics with
+explicit starting balance, rate, transactions, closing and interest references.
+It requires a nonnegative-principal contract. Fixed rate bounds are ordinary
+predicates and are checked exactly. Unknown rates and piecewise overdraft branches
+remain unsupported. `account.interest` handles explicitly selected principal only.
+
+## Calendar choices
+
+`Frequency` owns the ten supported steps. `duration.offset`, `measure`, `align`,
+`cover`, `make_period`, `make_periods` and `periods_between` use native dates.
+Month offsets default to `MonthRoll.PRESERVE_END`; `CLAMP` is explicit. These rules
+are independent of the Period wire-field migration. `DayCount` owns supported
+financial year fractions; imported PyXIRR constants remain an adapter detail.
+Closed Python API choices require enum members. Wire codecs continue to use text.

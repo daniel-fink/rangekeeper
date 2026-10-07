@@ -46,15 +46,23 @@ Otherwise they generate UUIDs. Decoding never generates missing IDs. Reusing one
 Flow under a second Value would duplicate its Movement identities; call `clone()`
 to make that independent copy.
 
-## Draft upgrade
+## Explicit format migration
 
-The current document versions are Model/Specification 0.6.0 and Run 0.3.0.
+The current document versions are Model/Specification 0.7.0 and Run 0.4.0.
 `migration.upgrade_model` and `upgrade_specification` explicitly convert supported
 older drafts. A former owner/key address maps to a deterministic UUID derived from
 the Value UUID and key. This gives separately upgraded Models and Specifications
-the same target IDs. Supply new external revision pins explicitly, then validate
+the same target IDs. Period fields migrate to `start_inclusive`/`end_exclusive`;
+policy declarations use `decisions`, and outcome evidence is separate. Supply new
+external revision pins explicitly, then validate
 with a resolver. Opaque evidence and source inputs remain unchanged. No automatic
 decoder upgrade, old type alias, or historical Run rewrite is provided.
 
 See [record operations](RECORD_BOUNDARY.md), [calculations](CALCULATIONS.md) and
 [Run storage](RUN_AND_STORAGE.md) for the related contracts.
+
+Internal declaration, expression-analysis and numerical symbol tables use UUID
+keys. Conversion to wire/backend strings occurs at those boundaries. Shared record
+traversal retains original JSON pointers and never follows References or traverses
+opaque Claim content. The numerical target helpers in `model.scope` use one
+Value/Movement ownership rule; reading a quantity never creates an assignment.

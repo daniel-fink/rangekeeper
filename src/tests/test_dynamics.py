@@ -4,6 +4,8 @@ Full market realization, replay, paired financial models and declarative policy
 behaviour are covered by test_scenarios_policies, test_models and test_market_naming.
 """
 
+from rangekeeper.model.distribution import DistributionFamily
+
 from rangekeeper.model.distribution import Distribution
 
 import numpy as np
@@ -32,7 +34,9 @@ def test_autoregression_from_fixed_innovations():
 
 
 def test_noise_uses_caller_generator_without_global_state():
-    spec = Distribution.symmetric(kind="triangular", mean=0, residual=0.05)
+    spec = Distribution.symmetric(
+        kind=DistributionFamily.TRIANGULAR, mean=0, residual=0.05
+    )
     np.random.seed(29)
     before = np.random.get_state()
     left = sample_noise(spec, count=25, generator=np.random.default_rng(13))

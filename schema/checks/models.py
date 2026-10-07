@@ -23,7 +23,7 @@ import yaml
 import _library
 
 from rangekeeper.errors import ContractError
-from rangekeeper.model._validation import validate_model
+from rangekeeper.model.validation import check_model
 
 SCHEMA = Path(__file__).resolve().parents[1]
 BIN = Path(sys.executable).parent
@@ -36,9 +36,7 @@ def uid(name):
 
 validators = {}
 for cls in ("Model", "Metadata", "System"):
-    generated = json.loads(
-        _library.schema_json(cls)
-    )
+    generated = json.loads(_library.schema_json(cls))
     validator = validator_for(generated)
     validator.check_schema(generated)
     validators[cls] = validator(generated, format_checker=FormatChecker())
@@ -77,8 +75,8 @@ opaque["provenance"]["claims"][0]["content"] = {"id": fixture["metadata"]["id"]}
 valid.append(opaque)
 for document in valid:
     validators["Model"].validate(document)
-    validate_model(document, VERSION)
-validate_model(with_previous, VERSION, history=[fixture["metadata"]])
+    check_model(document, VERSION)
+check_model(with_previous, VERSION, history=[fixture["metadata"]])
 
 invalid = []
 
@@ -257,7 +255,7 @@ semantic_case(
 for document, message, history in semantic:
     validators["Model"].validate(document)
     try:
-        validate_model(document, VERSION, history=history)
+        check_model(document, VERSION, history=history)
     except ContractError as error:
         assert message in str(error), (message, str(error))
     else:
@@ -301,7 +299,7 @@ with TemporaryDirectory(prefix="rk-model-") as temp:
         after = json.loads(json_dumper.dumps(record, inject_type=False))
         assert nonempty(document) == nonempty(after), (document, after)
         validators["Model"].validate(after)
-        validate_model(after, VERSION)
+        check_model(after, VERSION)
         restored = json_loader.loads(json.dumps(after), target_class=module.Model)
         assert json.loads(json_dumper.dumps(restored, inject_type=False)) == after
 

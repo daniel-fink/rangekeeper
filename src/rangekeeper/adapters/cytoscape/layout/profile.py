@@ -3,6 +3,11 @@
 No project identifiers, source parsing, executable expressions or prior layouts.
 """
 
+from rangekeeper.adapters.cytoscape.layout.model import (
+    ArrangementFlow,
+    ArrangementSpacing,
+    PreferenceDirection,
+)
 from copy import deepcopy
 from math import isfinite
 
@@ -11,7 +16,7 @@ from uuid import UUID
 from rangekeeper.model import Model, Assembly as ModelAssembly
 from rangekeeper.model.definitions import classification
 
-from .model import Arrangement, Assembly, Node, Preference, Problem, Weights
+from .model import Axis, Arrangement, Assembly, Node, Preference, Problem, Weights
 from .similarity import Signal, affinities, select
 
 # Versioned library-owned rendering policy. Project files only bind domain fields.
@@ -159,7 +164,7 @@ def prepare(model: Model, profile: Mapping[str, object]):
             preferences.append(
                 Preference(
                     a.id,
-                    "horizontal",
+                    PreferenceDirection.HORIZONTAL,
                     affinities=edges,
                     rationale=profile["rationales"]["grid"],
                 )
@@ -168,7 +173,7 @@ def prepare(model: Model, profile: Mapping[str, object]):
         else:
             ranges = {i: values(i) for i in a.members}
             pairs = tuple(
-                (i, j, "y")
+                (i, j, Axis.Y)
                 for i, vi in ranges.items()
                 for j, vj in ranges.items()
                 if i != j
@@ -179,16 +184,20 @@ def prepare(model: Model, profile: Mapping[str, object]):
             preferences.append(
                 Preference(
                     a.id,
-                    "vertical",
+                    PreferenceDirection.VERTICAL,
                     orders=pairs,
                     rationale=profile["rationales"]["stack"],
                 )
             )
-            arrangements.append(Arrangement(a.id, "column", spacing="packed"))
+            arrangements.append(
+                Arrangement(
+                    a.id, ArrangementFlow.COLUMN, spacing=ArrangementSpacing.PACKED
+                )
+            )
             report[a.id] = {
                 "kind": "stack",
                 "ranges": ranges,
-                "orders": pairs,
+                "orders": tuple((a, b, axis.value) for a, b, axis in pairs),
                 "missing_ranges": [i for i, v in ranges.items() if not v],
             }
     from dataclasses import replace

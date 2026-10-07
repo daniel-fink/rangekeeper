@@ -13,12 +13,12 @@ from rangekeeper.adapters import csv, polars
 from rangekeeper.errors import IdentityConflictError
 from rangekeeper.evidence import Claim, Location, Method, Source
 from rangekeeper.table import Row, Table, TableError
-from rangekeeper.workflow import ingestion
-from rangekeeper.workflow.ingestion import (
+from rangekeeper import evidence as ingestion
+from rangekeeper.evidence import (
     Evidence,
     EvidenceValidationError,
     Issue,
-    IssueSeverity,
+    Severity,
     fingerprint,
     tabular,
     validate,
@@ -50,9 +50,7 @@ def address(row="r1", column="area"):
     return ("rows", str(uid(row)), column)
 
 
-def issue(
-    claim, *, key=None, code="missing_formula_cache", severity=IssueSeverity.WARNING
-):
+def issue(claim, *, key=None, code="missing_formula_cache", severity=Severity.WARNING):
     return Issue(
         rule_id="read_area",
         code=code,
@@ -79,16 +77,21 @@ def source():
 
 
 def test_public_surface():
-    assert ingestion.__all__ == [
+    assert {
+        "Claim",
+        "Source",
+        "Method",
+        "Location",
         "Evidence",
         "EvidenceKey",
         "EvidenceValidationError",
         "Issue",
-        "IssueSeverity",
+        "Severity",
         "fingerprint",
         "tabular",
         "validate",
-    ]
+    } <= set(ingestion.__all__)
+
     assert not hasattr(ingestion, "IssueEffect")
     assert not hasattr(ingestion, "Record")
     assert not hasattr(ingestion, "TabularData")
@@ -236,7 +239,7 @@ def test_missing_formula_result_and_policy_separation(source):
     # requiring a complete total must apply its own rule. No global blocking flag.
     assert not hasattr(missing, "effect")
     assert tabular.issues_for(evidence, uid("r1"), "area") == (missing,)
-    error = replace(missing, severity=IssueSeverity.ERROR)
+    error = replace(missing, severity=Severity.ERROR)
     assert table_evidence(result, issues=(error,)).data.column("area") == (None,)
     usable = sourced(source, "J9", 103)
     assert table_evidence(usable, issues=(error,)).data.column("area") == (103,)
@@ -248,7 +251,7 @@ def test_conflict_and_explicit_resolution_keep_history(source):
     conflict = Issue(
         rule_id="compare_bedrooms",
         code="conflicting_values",
-        severity=IssueSeverity.WARNING,
+        severity=Severity.WARNING,
         message="Bedroom candidates disagree",
         at=(address(column="bedrooms"),),
         related_claims=(first, second),
@@ -376,7 +379,7 @@ def test_issue_scopes_lookup_and_frozen_collections(source):
     whole = Issue(
         rule_id="review",
         code="unverified_cache",
-        severity=IssueSeverity.INFO,
+        severity=Severity.INFO,
         message="Review freshness",
         at=((),),
         details=details,
@@ -421,7 +424,7 @@ def test_issue_identity_excludes_prose_severity_details(source):
     revised = replace(
         original,
         message="New explanation",
-        severity=IssueSeverity.ERROR,
+        severity=Severity.ERROR,
         details={"count": 20},
     )
     assert original.id == revised.id
@@ -563,8 +566,8 @@ def test_fingerprint_and_issue_identity_match_before_refactor(source):
 def test_public_imports_and_constructor_validation_in_fresh_process(first):
     script = f"""
 import importlib
-importlib.import_module('rangekeeper.workflow.ingestion.' + {first!r})
-from rangekeeper.workflow.ingestion import Evidence, fingerprint, validate, tabular, EvidenceValidationError
+importlib.import_module('rangekeeper.evidence.' + {first!r})
+from rangekeeper.evidence import Evidence, fingerprint, validate, tabular, EvidenceValidationError
 from rangekeeper.table import Table
 assert callable(fingerprint) and callable(validate) and callable(tabular.row)
 empty = Evidence(name='empty', data=Table(columns=(), rows=()), claims={{}})
@@ -580,3 +583,48 @@ else:
     subprocess.run(
         [sys.executable, "-c", script], check=True, capture_output=True, text=True
     )
+
+
+@pytest.mark.parametrize("operation", ("numbers", "select_where"))
+def test_operation_prepares_each_input_once_and_validates_output(
+    source,
+    monkeypatch,
+    operation,
+):
+    import importlib
+
+    validation = importlib.import_module("rangekeeper.evidence.validation")
+    evidence = table_evidence(sourced(source, "area", 12))
+    calls = []
+    original = validation._validated_indexes
+
+    def counted(artifact):
+        calls.append(artifact)
+        return original(artifact)
+
+    monkeypatch.setattr(validation, "_validated_indexes", counted)
+    if operation == "numbers":
+        outcome = tabular.numbers(
+            evidence, specifications={"number": tabular.NumberSpec(column="area")}
+        )
+        column = "number"
+    else:
+        from rangekeeper.evidence.predicates import Predicate, select_where
+
+        outcome = select_where(evidence, predicate=Predicate("area", (12,)))
+        column = "area"
+    assert outcome.output is not None
+    assert outcome.output.data.column(column) == (12,)
+    assert sum(item is evidence for item in calls) == 1
+    assert sum(item is outcome.output for item in calls) == 1
+
+
+def test_evidence_and_operation_use_canonical_choice_classes():
+    from rangekeeper.evidence import ClaimKind
+    from rangekeeper.model import ClaimKind as ModelClaimKind
+    from rangekeeper.operation import Severity as OperationSeverity
+    from rangekeeper.run import Severity as RunSeverity
+
+    assert ClaimKind is ModelClaimKind
+    assert OperationSeverity is RunSeverity is Severity
+    assert ClaimKind.SOURCED != "sourced" and Severity.WARNING != "warning"

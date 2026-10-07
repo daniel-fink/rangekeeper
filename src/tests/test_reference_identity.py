@@ -1,5 +1,7 @@
 """UUID identity survives revisions; alignment and report scope stay explicit."""
 
+from rangekeeper.model import ValueKind
+
 from copy import deepcopy
 from datetime import date
 from uuid import UUID, uuid4
@@ -12,7 +14,7 @@ from rangekeeper.errors import (
     MissingReferenceError,
     ValidationError,
 )
-from rangekeeper.execution import symbols
+from rangekeeper.model.scope import target_value, target_units
 from rangekeeper.io import MemoryStore
 from rangekeeper.migration import upgrade_model, upgrade_specification
 from rangekeeper.model import (
@@ -27,12 +29,10 @@ from rangekeeper.model import (
     Update,
     Value,
 )
-from rangekeeper.model.flow import Flow, Movement
+from rangekeeper.model.flow import Flow, Movement, MissingValueHandling
 from rangekeeper.run import Run, validate as validate_run
 from rangekeeper.specification import (
     Specification,
-    compose,
-    validate as validate_specification,
 )
 from tests.test_domain_run import inputs, load
 
@@ -42,13 +42,13 @@ def example(flow=None):
     value = Value(
         id=uuid4(),
         key="cash",
-        kind="flow",
+        kind=ValueKind.FLOW,
         measure=measure.id,
         flow=flow or Flow.from_events([date(2027, 1, 1)], [30_000], units="AUD"),
     )
     owner = Entity(id=uuid4(), characteristics=Characteristics(values=(value,)))
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
+        metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
         definitions=Definitions(measures=(measure,)),
         system=System(entities=(owner,)),
     )
@@ -63,8 +63,8 @@ def test_reference_resolves_value_or_movement_with_units_from_owner():
     assert model.resolve(Reference(target=value.id)) == value
     assert model.resolve(ref) == model.movement(movement.id) == movement
     assert model.owner_of(movement.id) == value.id
-    assert symbols.owner(model, ref) == value
-    assert symbols.units_for(model, ref) == "AUD"
+    assert target_value(model, ref) == value
+    assert target_units(model, ref) == "AUD"
     with pytest.raises(TypeError):
         model.resolve(Reference(target=model.system.entities[0].id))
     with pytest.raises(MissingReferenceError):
@@ -159,7 +159,11 @@ def test_alignment_uses_coordinates_while_results_have_independent_ids():
         with pytest.raises(ValueError, match="repeated event"):
             Flow.from_events([day, day], [1, 2], units="AUD", keys=keys)
     later = Flow.from_events([date(2027, 2, 1)], [3], units="AUD")
-    union = series.align([left, later], join="union", missing="zero")
+    union = series.align(
+        [left, later],
+        join=series.AlignmentJoin.UNION,
+        missing=MissingValueHandling.ZERO,
+    )
     assert union.flows[0].movements[-1].id != later.movements[0].id
     assert union.flows[0].movements[0].id == left.movements[0].id
 
@@ -205,16 +209,14 @@ def test_old_owner_key_migrates_consistently_without_changing_source():
     )
     store = MemoryStore()
     store.put(upgraded)
-    validate_specification(
-        compose(question, resolver=store), resolver=store
-    ).raise_if_invalid()
+    question.compose(resolver=store).validate(resolver=store).raise_if_invalid()
 
 
 def test_diagnostic_participants_use_input_model_even_for_a_specification_subject():
     store = inputs()
     data = load("run-failed")
     spec = store.load_specification(UUID(data["specification"]))
-    model = store.load_model(compose(spec, resolver=store).model_id)
+    model = store.load_model(spec.compose(resolver=store).model_id)
     value = model.system.entities[0].characteristics.values[0]
     diagnostic = data["report"]["diagnostics"][0]
     diagnostic.update(
@@ -237,7 +239,7 @@ def test_diagnostic_participants_require_one_valid_input_scope(kind):
     data = load("run-batch" if kind == "batch" else "run-failed")
     if kind == "missing_input":
         spec = Specification.from_data(
-            {"metadata": {"id": str(uuid4()), "schema_version": "0.6.0"}}
+            {"metadata": {"id": str(uuid4()), "schema_version": "0.7.0"}}
         )
         store.put(spec)
         data["specification"] = str(spec.id)
@@ -262,7 +264,7 @@ def test_constraint_subject_and_participant_scope_are_separate():
     expression, constraint, local = uuid4(), uuid4(), uuid4()
     spec = Specification.from_data(
         {
-            "metadata": {"id": str(uuid4()), "schema_version": "0.6.0"},
+            "metadata": {"id": str(uuid4()), "schema_version": "0.7.0"},
             "model": str(model.id),
             "formulations": [
                 {

@@ -1,5 +1,10 @@
 """Independent arithmetic checker. No Z3 import or solver predicates."""
 
+from rangekeeper.adapters.cytoscape.layout.model import (
+    ArrangementFlow,
+    ArrangementSpacing,
+    Axis,
+)
 from collections.abc import Mapping
 from dataclasses import dataclass
 from itertools import combinations
@@ -79,10 +84,10 @@ def check(problem: Problem, rectangles: Mapping[str, Rect]) -> tuple[Finding, ..
                 )
     groups = {a.id: a for a in problem.assemblies}
     for setting in problem.arrangements:
-        if setting.flow == "grid":
+        if setting.flow == ArrangementFlow.GRID:
             continue
         parent = rectangles[setting.assembly]
-        vertical = setting.flow == "column"
+        vertical = setting.flow == ArrangementFlow.COLUMN
         members = groups[setting.assembly].members
         start = (
             parent.x + problem.padding
@@ -98,7 +103,7 @@ def check(problem: Problem, rectangles: Mapping[str, Rect]) -> tuple[Finding, ..
             child = rectangles[i]
             size = child.width if vertical else child.height
             offset = {"start": 0, "center": (span - size) // 2, "end": span - size}[
-                setting.alignment
+                setting.alignment.value
             ]
             if (child.x if vertical else child.y) != start + offset:
                 add(
@@ -106,7 +111,7 @@ def check(problem: Problem, rectangles: Mapping[str, Rect]) -> tuple[Finding, ..
                     [setting.assembly, i],
                     "Member violates cross-axis alignment",
                 )
-        if setting.spacing == "packed" and members:
+        if setting.spacing == ArrangementSpacing.PACKED and members:
             ordered = sorted(
                 (rectangles[i] for i in members), key=lambda r: r.y if vertical else r.x
             )
@@ -166,15 +171,17 @@ def check(problem: Problem, rectangles: Mapping[str, Rect]) -> tuple[Finding, ..
                 )
     # Group frames may overlap. Their full-width header strips are solid obstacles.
     obstacles = {n.id: rectangles[n.id] for n in problem.nodes}
-    obstacles.update({
-        a.id: Rect(
-            rectangles[a.id].x,
-            rectangles[a.id].y,
-            rectangles[a.id].width,
-            problem.header,
-        )
-        for a in problem.assemblies
-    })
+    obstacles.update(
+        {
+            a.id: Rect(
+                rectangles[a.id].x,
+                rectangles[a.id].y,
+                rectangles[a.id].width,
+                problem.header,
+            )
+            for a in problem.assemblies
+        }
+    )
     for i, j in combinations(sorted(obstacles), 2):
         if not separated(obstacles[i], obstacles[j], problem.gap):
             add(
@@ -184,7 +191,9 @@ def check(problem: Problem, rectangles: Mapping[str, Rect]) -> tuple[Finding, ..
 
 
 def metrics(
-    problem: Problem, rectangles: Mapping[str, Rect], grids: Mapping[str, dict]
+    problem: Problem,
+    rectangles: Mapping[str, Rect],
+    grids: Mapping[str, dict],
 ):
     """Arithmetic reproduction of the objective vector and explicit grid witnesses."""
     displacement = 0
@@ -225,9 +234,11 @@ def metrics(
         else:
             template = templates[witness["columns"] - 1]
         setting = next((v for v in problem.arrangements if v.assembly == a.id), None)
-        if setting and setting.flow != "grid":
+        if setting and setting.flow != ArrangementFlow.GRID:
             assert isinstance(slots, dict)  # Arrangements require weighted grids.
-            expected_columns = 1 if setting.flow == "column" else len(a.members)
+            expected_columns = (
+                1 if setting.flow == ArrangementFlow.COLUMN else len(a.members)
+            )
             if witness["columns"] != expected_columns:
                 raise ValueError("Grid columns violate unwrapped arrangement")
             for i, j in combinations(a.members, 2):
@@ -235,17 +246,17 @@ def metrics(
                 first, second = rectangles[before], rectangles[after]
                 if (
                     first.bottom + problem.gap > second.y
-                    if setting.flow == "column"
+                    if setting.flow == ArrangementFlow.COLUMN
                     else first.right + problem.gap > second.x
                 ):
                     raise ValueError("Grid slots contradict unwrapped flow order")
         local = 0
         for i, col, row in template:
             dx, dy = col * pitch_x, row * pitch_y
-            if setting and setting.spacing == "packed":
+            if setting and setting.spacing == ArrangementSpacing.PACKED:
                 assert isinstance(slots, dict)
                 previous = [j for j in a.members if slots[j] < slots[i]]
-                if setting.flow == "column":
+                if setting.flow == ArrangementFlow.COLUMN:
                     dy = sum(rectangles[j].height + problem.gap for j in previous)
                 else:
                     dx = sum(rectangles[j].width + problem.gap for j in previous)
@@ -287,12 +298,12 @@ def metrics(
                     "horizontal": max(0, 2 * h - w),
                     "vertical": max(0, 2 * w - h),
                     "balanced": abs(w - h),
-                }[p.direction] * problem.style_unit
+                }[p.direction.value] * problem.style_unit
             for before, after, axis in p.orders:
                 first, second = rectangles[before], rectangles[after]
                 ca, cb = (
                     (2 * first.x + first.width, 2 * second.x + second.width)
-                    if axis == "x"
+                    if axis == Axis.X
                     else (2 * first.y + first.height, 2 * second.y + second.height)
                 )
                 o += max(0, ca + 2 - cb)

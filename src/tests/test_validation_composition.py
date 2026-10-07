@@ -2,7 +2,12 @@
 
 from copy import deepcopy
 from dataclasses import FrozenInstanceError
-from uuid import uuid4
+from uuid import UUID, NAMESPACE_URL, uuid4, uuid5
+
+
+def uid(name):
+    return str(uuid5(NAMESPACE_URL, "core-validation-test/" + name))
+
 
 import pytest
 
@@ -15,16 +20,14 @@ from rangekeeper._validation import (
 )
 from rangekeeper.diagnostics import Issue
 from rangekeeper.errors import ContractError
-from rangekeeper.model._expression import (
-    build_scope,
+from rangekeeper.model.scope import build_scope
+from rangekeeper.model.expression.validation import (
     infer_expression_domain,
     validate_constraint_predicates,
     validate_function_signature,
 )
-from rangekeeper.model._formulation import (
-    validate_formulation_names,
-    validate_formulations,
-)
+from rangekeeper.model.formulation.validation import validate_formulation_names
+from rangekeeper.model.formulation.preparation import prepare_formulations
 from rangekeeper.validate import require_uuid
 
 
@@ -72,7 +75,7 @@ def test_cycles_have_rule_context(edges):
 
 
 def test_ownership_rejects_repeated_declarations_and_containment_cycles():
-    child = {"id": "one"}
+    child = {"id": uid("one")}
     with pytest.raises(ContractError) as failure:
         require_ownership({"items": [child, child]})
     assert failure.value.code == "semantic.identity"
@@ -116,34 +119,34 @@ def test_programming_errors_are_not_reported_as_bad_document_data():
 
 
 def test_scope_tables_are_read_only_and_checks_do_not_change_the_input():
-    measure = {"id": "measure", "units": "m^2"}
+    measure = {"id": uid("measure"), "units": "m^2"}
     data = {"definitions": {"measures": [measure]}}
     before = deepcopy(data)
     scope = build_scope(data)
-    assert scope.measures["measure"] is measure
+    assert scope.measures[UUID(uid("measure"))] is measure
     with pytest.raises(TypeError):
         scope.measures["other"] = measure
     with pytest.raises(FrozenInstanceError):
         scope.identities = frozenset()
-    assert infer_expression_domain({"id": "p", "kind": "boolean"}, scope=scope) == {
-        "kind": "boolean"
-    }
+    assert infer_expression_domain(
+        {"id": uid("p"), "kind": "boolean"}, scope=scope
+    ) == {"kind": "boolean"}
     assert data == before
 
 
 def test_constraint_names_and_predicates_are_separate_rules():
-    predicate = {"id": "predicate", "kind": "boolean"}
+    predicate = {"id": uid("predicate"), "kind": "boolean"}
     constraints = [
-        {"id": "first", "code": "limit", "predicate": "predicate"},
-        {"id": "second", "code": "limit", "predicate": "predicate"},
+        {"id": uid("first"), "code": "limit", "predicate": uid("predicate")},
+        {"id": uid("second"), "code": "limit", "predicate": uid("predicate")},
     ]
     # Two owners may reuse a code and both refer to the same predicate node.
     roots = [
-        {"id": "a", "constraints": constraints[:1], "expressions": [predicate]},
-        {"id": "b", "constraints": constraints[1:]},
+        {"id": uid("a"), "constraints": constraints[:1], "expressions": [predicate]},
+        {"id": uid("b"), "constraints": constraints[1:]},
     ]
     before = deepcopy(roots)
-    validate_formulations({"formulations": roots})
+    prepare_formulations({"formulations": roots})
     assert roots == before
     # Combining those Constraints under one owner changes only the naming rule.
     with pytest.raises(ContractError, match="duplicate Constraint code"):
@@ -178,7 +181,7 @@ def test_local_naming_rule_reports_nested_owner_without_resolving_references(
             "number",
             [
                 {
-                    "id": "number",
+                    "id": uid("number"),
                     "kind": "quantity",
                     "quantity": {"magnitude": 1, "units": "dimensionless"},
                 }
@@ -190,7 +193,7 @@ def test_local_naming_rule_reports_nested_owner_without_resolving_references(
 def test_predicate_reports_reference_and_domain_failures(predicate, expressions, code):
     with pytest.raises(ContractError) as failure:
         validate_constraint_predicates(
-            [{"id": "constraint", "predicate": predicate}],
+            [{"id": uid("constraint"), "predicate": uid(predicate)}],
             expressions,
             scope=build_scope({}),
         )
@@ -200,12 +203,21 @@ def test_predicate_reports_reference_and_domain_failures(predicate, expressions,
 
 def test_constraint_identity_cannot_collide_with_a_value_declaration():
     scope = build_scope(
-        {"input_domains": [{"id": "value", "domain": {"kind": "number"}}]}
+        {
+            "entities": [
+                {
+                    "id": uid("entity"),
+                    "characteristics": {
+                        "values": [{"id": uid("value"), "kind": "property"}]
+                    },
+                }
+            ]
+        }
     )
     with pytest.raises(ContractError, match="duplicate Constraint identity"):
         validate_constraint_predicates(
-            [{"id": "value", "predicate": "p"}],
-            [{"id": "p", "kind": "boolean"}],
+            [{"id": uid("value"), "predicate": uid("p")}],
+            [{"id": uid("p"), "kind": "boolean"}],
             scope=scope,
         )
 
@@ -213,15 +225,15 @@ def test_constraint_identity_cannot_collide_with_a_value_declaration():
 def test_expression_identity_cannot_collide_with_a_constraint():
     with pytest.raises(ContractError, match="duplicate Expression identity"):
         validate_constraint_predicates(
-            [{"id": "same", "predicate": "same"}],
-            [{"id": "same", "kind": "boolean"}],
+            [{"id": uid("same"), "predicate": uid("same")}],
+            [{"id": uid("same"), "kind": "boolean"}],
             scope=build_scope({}),
         )
 
 
 def test_signature_validation_is_independently_composable():
     function = {
-        "id": "function",
+        "id": uid("function"),
         "code": "f",
         "result": {"kind": "number"},
         "parameters": [
@@ -243,10 +255,11 @@ def test_signature_validation_is_independently_composable():
         ContractError, match="required positional parameter follows optional"
     ):
         validate_function_signature(function, scope=build_scope({}))
+    scope = build_scope({"functions": [function]})
     with pytest.raises(
         ContractError, match="required positional parameter follows optional"
     ):
-        build_scope({"functions": [function]})
+        validate_function_signature(scope.functions[UUID(uid("function"))], scope=scope)
 
 
 def test_model_and_partial_specification_share_local_naming_diagnostics():
@@ -260,14 +273,14 @@ def test_model_and_partial_specification_share_local_naming_diagnostics():
     ]
     formulations = [{"id": str(uuid4()), "constraints": constraints}]
     model = {
-        "metadata": {"id": str(uuid4()), "schema_version": "0.6.0"},
+        "metadata": {"id": str(uuid4()), "schema_version": "0.7.0"},
         "system": {"formulations": formulations},
     }
     issue = validate_model(model).issues[0]
     assert issue.code == "semantic.unique"
     assert issue.path == "/system/formulations/0/constraints/1/code"
     specification = {
-        "metadata": {"id": str(uuid4()), "schema_version": "0.6.0"},
+        "metadata": {"id": str(uuid4()), "schema_version": "0.7.0"},
         "formulations": formulations,
     }
     with pytest.raises(ValidationError) as failure:
@@ -281,7 +294,7 @@ def test_combined_entity_assembly_namespace_reports_canonical_storage_path():
     from rangekeeper.model.validation import validate
 
     model = {
-        "metadata": {"id": str(uuid4()), "schema_version": "0.6.0"},
+        "metadata": {"id": str(uuid4()), "schema_version": "0.7.0"},
         "system": {
             "entities": [{"id": str(uuid4()), "code": "same"}],
             "assemblies": [{"id": str(uuid4()), "code": "same"}],
@@ -296,7 +309,7 @@ def test_flattened_constraint_diagnostic_returns_to_its_owning_formulation():
     from rangekeeper.model.validation import validate
 
     model = {
-        "metadata": {"id": str(uuid4()), "schema_version": "0.6.0"},
+        "metadata": {"id": str(uuid4()), "schema_version": "0.7.0"},
         "system": {
             "formulations": [
                 {
@@ -326,7 +339,7 @@ def test_model_ownership_diagnostic_uses_canonical_document_shape():
 
     identity = str(uuid4())
     model = {
-        "metadata": {"id": str(uuid4()), "schema_version": "0.6.0"},
+        "metadata": {"id": str(uuid4()), "schema_version": "0.7.0"},
         "system": {"entities": [{"id": identity}], "assemblies": [{"id": identity}]},
     }
     issue = validate(model).issues[0]

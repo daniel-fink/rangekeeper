@@ -1,6 +1,7 @@
 """Known-input path construction using the characterized numerical kernels."""
 
 import math
+from .contracts import method as contract_for, check_inputs
 from ..calculations.dynamics.trend import calculate_trend
 from ..calculations.dynamics.volatility import (
     calculate_autoregression,
@@ -12,17 +13,17 @@ from ..calculations.dynamics.shock import calculate_shock
 
 def construct_paths(method, parameters, draws):
     """Return named arrays and forward-dependency offsets, with no randomness."""
-    if method == "independent.v2":
+    contract = contract_for(method)
+    check_inputs(method, parameters, draws)
+    if not contract.scalar_parameters:
         factors, caps = draws["space_factor"], draws["asset_cap"]
-        if any(c <= 0 for c in caps):
-            raise ValueError("capitalization rates must be positive")
         return {
             "space_market_price_factors": factors,
             "asset_market": caps,
             "historical_value": tuple(f / c for f, c in zip(factors, caps)),
         }, {}
     p = dict(parameters)
-    if method == "market.estimates.v2":
+    if method == "market.estimates":
         # Preserve the old linked cycle estimates: phase differences are fractions
         # of the space cycle, and period differences are measured in periods.
         p["space_phase"] = p["space_period"] * p["space_phase_proportion"]
@@ -31,10 +32,6 @@ def construct_paths(method, parameters, draws):
         )
         p["asset_period"] = p["space_period"] + p["asset_period_difference"]
     count = len(draws["innovations"])
-    if p["initial_value"] <= 0 or p["cap_rate"] <= 0 or p["volatility_per_period"] < 0:
-        raise ValueError(
-            "initial value/capitalization must be positive; volatility nonnegative"
-        )
     trend = calculate_trend(
         count=count,
         growth_rate=p["growth_rate"],
@@ -97,4 +94,4 @@ def construct_paths(method, parameters, draws):
     )
     if any(not math.isfinite(v) for values in paths.values() for v in values):
         raise ValueError("non-finite realized market path")
-    return paths, {"implied_reversion_cap_rates": 1, "returns": 1}
+    return paths, contract.output_offsets

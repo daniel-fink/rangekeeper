@@ -9,7 +9,7 @@ from copy import deepcopy
 
 from ._declarations import fields, sequence, text
 from .composition import validate_measurements
-from .ingestion.tabular import NumberSpec
+from rangekeeper.evidence.tabular import NumberSpec
 
 
 def _registry(value):

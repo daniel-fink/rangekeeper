@@ -2,7 +2,6 @@
 
 from typing import TYPE_CHECKING
 from uuid import UUID
-
 from .._schema.records import (
     Provenance as Provenance,
     Source as Source,
@@ -14,6 +13,10 @@ from .._schema.records import (
 )
 from ..errors import MissingReferenceError, ReferenceTypeError
 from ..validate import require_uuid
+from .._schema.enums import ClaimKind, ReconciliationStatus
+from collections.abc import Mapping
+from .._validation import require, require_acyclic
+
 
 if TYPE_CHECKING:
     from .model import Model
@@ -69,3 +72,85 @@ __all__ = [
     "fact_for",
     "locations",
 ]
+
+
+__all__ += ["ClaimKind", "ReconciliationStatus"]
+
+
+def check_provenance(provenance, *, scope, targets, paths):
+    """Check captured evidence relationships without evaluating Claim content."""
+    from ._scenario import validate_realizations
+
+    validate_realizations(provenance, scope)
+
+    sources = {r["id"]: r for r in provenance.get("sources") or []}
+    claims = {r["id"]: r for r in provenance.get("claims") or []}
+    for value in scope.values.values():
+        for movement in (value.get("flow") or {}).get("movements") or []:
+            require(
+                all(identity in claims for identity in movement.get("claims") or []),
+                "unknown movement Claim",
+                path=paths[movement["id"]] + "/claims",
+            )
+    parents = {}
+    for claim in claims.values():
+        path = paths[claim["id"]]
+        support = claim.get("sources") or []
+        locations = [s for s in support if isinstance(s, Mapping)]
+        upstream = [s for s in support if isinstance(s, str)]
+        require(
+            all(s["source"] in sources for s in locations),
+            "unknown Source",
+            path=path + "/sources",
+        )
+        require(
+            all(c in claims for c in upstream),
+            "unknown upstream Claim",
+            path=path + "/sources",
+        )
+        if claim["kind"] == "sourced":
+            require(
+                bool(locations),
+                "sourced Claim needs a Location",
+                path=path + "/sources",
+            )
+        if claim["kind"] == "derived":
+            require(
+                bool(upstream),
+                "derived Claim needs an upstream Claim",
+                path=path + "/sources",
+            )
+        parents[claim["id"]] = upstream
+    require_acyclic(parents, "Claim dependency", path="/provenance/claims")
+    fact_targets = set()
+    for index, fact in enumerate(provenance.get("facts") or []):
+        path = f"/provenance/facts/{index}"
+        target = fact["target"]
+        require(
+            target in targets,
+            "unknown or ineligible Fact target",
+            path=path + "/target",
+        )
+        require(
+            target not in fact_targets, "duplicate Fact target", path=path + "/target"
+        )
+        fact_targets.add(target)
+        support = fact["claims"]
+        require(bool(support), "Fact needs a Claim", path=path + "/claims")
+        require(
+            len(support) == len(set(support)),
+            "duplicate Fact Claim",
+            path=path + "/claims",
+        )
+        require(
+            all(c in claims for c in support),
+            "unknown supporting Claim",
+            path=path + "/claims",
+        )
+        reconciliation = fact.get("reconciliation")
+        if reconciliation:
+            require(
+                reconciliation["selected"] in support,
+                "selected Claim outside Fact",
+                path=path + "/reconciliation/selected",
+            )

@@ -3,16 +3,23 @@
 These operations neither solve equations nor write quantities into Models.
 """
 
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass
+from enum import Enum, unique
 from types import MappingProxyType
 from uuid import UUID
-from ..model import Entity, Value, Quantity
+from ..model import Entity, Value, Quantity, ValueKind
 from ..units import UnitSystem, default_units
 from .errors import AggregationError, SelectionError
 from .hierarchy import Hierarchy
-from .selection import ValueSelector
-from .reducers import sum_quantities
+from .selection import ValueSelector, _recorded_quantity
+
+
+@unique
+class CoverageStatus(Enum):
+    EMPTY = "empty"
+    COMPLETE = "complete"
+    INCOMPLETE = "incomplete"
 
 
 @dataclass(frozen=True)
@@ -44,86 +51,158 @@ class Coverage:
         return bool(self.selected) and not self.missing
 
     @property
-    def status(self) -> str:
+    def status(self) -> CoverageStatus:
         return (
-            "empty"
+            CoverageStatus.EMPTY
             if not self.selected
-            else "complete" if self.complete else "incomplete"
+            else CoverageStatus.COMPLETE if self.complete else CoverageStatus.INCOMPLETE
         )
 
 
 @dataclass(frozen=True)
-class Aggregation:
-    """One result per selected Entity, pinned through its immutable hierarchy.
+class AggregateEntry:
+    """Available reduction and its contributor coverage."""
 
-    value_ids records actual owner-to-Value choices, including unresolved Values.
-    Missing keys have no Value ID. Outputs are schema Quantities, never live Pint
-    objects; no mutable solver or Model state is retained.
-    """
+    available: Quantity | None
+    coverage: Coverage
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.coverage, Coverage):
+            raise TypeError("coverage must be Coverage")
+        if self.available is not None and not isinstance(self.available, Quantity):
+            raise TypeError("available must be a schema Quantity or None")
+        if bool(self.coverage.measured) != (self.available is not None):
+            raise AggregationError("measured coverage and available result must agree")
+
+
+@dataclass(frozen=True)
+class Aggregation:
+    """Immutable entries and selected Value identities, pinned to a Hierarchy."""
 
     hierarchy: Hierarchy
-    _values: Mapping[UUID, Quantity | None]
-    _coverage: Mapping[UUID, Coverage]
-    _available: Mapping[UUID, Quantity | None]
+    entries: Mapping[UUID, AggregateEntry]
     value_ids: Mapping[UUID, UUID]
-    _is_sum: bool = False
+    require_complete: bool
 
     def __post_init__(self) -> None:
         if not isinstance(self.hierarchy, Hierarchy):
             raise TypeError("hierarchy must be a Hierarchy")
-        ids = set(self.hierarchy.preorder())
-        for name in ("_values", "_coverage", "_available"):
-            items = dict(getattr(self, name))
-            if set(items) != ids:
-                raise AggregationError(
-                    "aggregation entries must exactly match the hierarchy"
-                )
-            if name == "_coverage":
-                if any(not isinstance(item, Coverage) for item in items.values()):
-                    raise TypeError("coverage entries must be Coverage objects")
-            elif any(
-                item is not None and not isinstance(item, Quantity)
-                for item in items.values()
+        if type(self.require_complete) is not bool:
+            raise TypeError("require_complete must be bool")
+        order = self.hierarchy.preorder()
+        entries, value_ids = dict(self.entries), dict(self.value_ids)
+        if set(entries) != set(order):
+            raise AggregationError(
+                "aggregation entries must exactly match the hierarchy"
+            )
+        # Each subtree is a contiguous preorder interval; no repeated subtree walks.
+        positions = {uid: position for position, uid in enumerate(order)}
+        ends: dict[UUID, int] = {}
+        for uid in self.hierarchy.postorder():
+            children = self.hierarchy.children(uid)
+            ends[uid] = ends[children[-1]] if children else positions[uid] + 1
+        for uid, entry in entries.items():
+            if not isinstance(entry, AggregateEntry):
+                raise TypeError("entries must contain AggregateEntry objects")
+            if any(
+                owner not in positions
+                or not positions[uid] <= positions[owner] < ends[uid]
+                for owner in entry.coverage.selected
             ):
-                raise TypeError("result entries must be schema Quantities or None")
-            object.__setattr__(self, name, MappingProxyType(items))
-        for owner, value_id in self.value_ids.items():
+                raise AggregationError(
+                    "coverage must belong to its corresponding subtree"
+                )
+            if any(owner not in value_ids for owner in entry.coverage.measured):
+                raise AggregationError(
+                    "measured contributors require selected Value identities"
+                )
+        selected = set(entries[self.hierarchy.root].coverage.selected)
+        for owner, value_id in value_ids.items():
             self.hierarchy.view.entity(owner)
             self.hierarchy.view.model.value(value_id)
-            if self.hierarchy.view.model.owner_of(value_id) != owner:
+            if (
+                owner not in selected
+                or self.hierarchy.view.model.owner_of(value_id) != owner
+            ):
                 raise AggregationError(
                     "value_ids must record selected owners' local Values"
                 )
-        object.__setattr__(self, "value_ids", MappingProxyType(dict(self.value_ids)))
+        object.__setattr__(self, "entries", MappingProxyType(entries))
+        object.__setattr__(self, "value_ids", MappingProxyType(value_ids))
 
     @property
     def root_value(self) -> Quantity | None:
-        """The result at the sole root, subject to the reduction's coverage policy."""
         return self.value(self.hierarchy.root)
 
     def value(self, id: UUID) -> Quantity | None:
-        """Resolve a result by selected Entity UUID; no code/name fallback."""
         self.hierarchy.view.entity(id)
-        return self._values[id]
+        entry = self.entries[id]
+        return (
+            None
+            if self.require_complete and not entry.coverage.complete
+            else entry.available
+        )
 
     def __getitem__(self, id: UUID) -> Quantity | None:
         return self.value(id)
 
     def coverage(self, id: UUID) -> Coverage:
-        """Report actual selected contributors below and including this Entity."""
         self.hierarchy.view.entity(id)
-        return self._coverage[id]
+        return self.entries[id].coverage
 
     def available_value(self, id: UUID) -> Quantity | None:
-        """Reduce measured contributors even when complete coverage is required."""
         self.hierarchy.view.entity(id)
-        return self._available[id]
+        return self.entries[id].available
 
-    def known_subtotal(self, id: UUID) -> Quantity | None:
-        """Return available sum; this interpretation applies only to sum_quantities."""
-        if not self._is_sum:
-            raise AggregationError("known_subtotal requires sum_quantities")
-        return self.available_value(id)
+
+def _reduce_quantities(values, reducer, units, unit_system):
+    if not values:
+        return None
+    result = reducer(values)
+    if not isinstance(result, Quantity):
+        raise TypeError("reducer must return a schema Quantity")
+    return unit_system.convert(result, to=units)
+
+
+@dataclass(frozen=True)
+class _Population:
+    """Raw quantities, contributor coverage and selected identities for one scope."""
+
+    quantities: tuple[Quantity, ...]
+    coverage: Coverage
+    value_ids: Mapping[UUID, UUID]
+
+
+def _collect_quantities(
+    selections: Iterable[tuple[Entity, Value | None]],
+    units: str,
+    unit_system: UnitSystem,
+) -> _Population:
+    """Collect canonical selections; callers retain eligibility and reduction policy."""
+    selected, measured, missing, quantities, value_ids = [], [], [], [], {}
+    for entity, value in selections:
+        selected.append(entity.id)
+        if value is not None:
+            value_ids[entity.id] = value.id
+        quantity = _recorded_quantity(value, units, unit_system)
+        if quantity is None:
+            missing.append(entity.id)
+        else:
+            measured.append(entity.id)
+            quantities.append(quantity)
+    return _Population(
+        tuple(quantities),
+        Coverage(tuple(selected), tuple(measured), tuple(missing)),
+        MappingProxyType(value_ids),
+    )
+
+
+def _combine_coverage(parts: tuple[Coverage, ...]) -> Coverage:
+    return Coverage(
+        tuple(uid for part in parts for uid in part.selected),
+        tuple(uid for part in parts for uid in part.measured),
+        tuple(uid for part in parts for uid in part.missing),
+    )
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -152,7 +231,7 @@ class Reduction:
             raise TypeError("require_complete must be a bool")
         if not isinstance(self.unit_system, UnitSystem):
             raise TypeError("unit_system must be a UnitSystem")
-        self.unit_system.compatible(self.units, self.units)
+        self.unit_system.validate_units(self.units)
 
     def execute(self, hierarchy: Hierarchy) -> Aggregation:
         """Return a detached derived result; never revise, persist, or execute a Model.
@@ -164,69 +243,41 @@ class Reduction:
         """
         if not isinstance(hierarchy, Hierarchy):
             raise TypeError("hierarchy must be a Hierarchy")
-        model = hierarchy.view.model
         raw: dict[UUID, tuple[Quantity, ...]] = {}
-        coverage: dict[UUID, Coverage] = {}
-        available: dict[UUID, Quantity | None] = {}
-        results: dict[UUID, Quantity | None] = {}
+        entries: dict[UUID, AggregateEntry] = {}
         value_ids: dict[UUID, UUID] = {}
         for id in hierarchy.postorder():
-            entity = hierarchy.view.entity(id)
-            eligible = True if self.contributors is None else self.contributors(entity)
-            if not isinstance(eligible, bool):
-                raise TypeError("contributors must return bool")
-            selected = self.select(model, entity) if eligible else None
-            own = None
-            if selected is not None:
-                if not isinstance(selected, Value):
-                    raise TypeError("select must return a schema Value or None")
-                canonical = model.value(selected.id)
-                if (
-                    model.owner_of(selected.id) != id
-                    or canonical.to_data() != selected.to_data()
-                ):
-                    raise SelectionError(
-                        f"selector returned a stale or nonlocal Value {selected.id} for {id}"
-                    )
-                value_ids[id] = selected.id
-                if selected.kind != "measurement":
-                    raise AggregationError(
-                        "only scalar Measurement Values are supported"
-                    )
-                if selected.quantity is not None:
-                    own = self.unit_system.convert(selected.quantity, to=self.units)
-            selected_ids = [id] if eligible else []
-            measured_ids = [id] if own is not None else []
-            missing_ids = [id] if eligible and own is None else []
-            values = [] if own is None else [own]
-            for child in hierarchy.children(id):
-                values.extend(raw[child])
-                selected_ids.extend(coverage[child].selected)
-                measured_ids.extend(coverage[child].measured)
-                missing_ids.extend(coverage[child].missing)
-            raw[id] = tuple(values)
-            coverage[id] = Coverage(
-                tuple(selected_ids), tuple(measured_ids), tuple(missing_ids)
+            own = self._contribution(hierarchy.view.model, hierarchy.view.entity(id))
+            value_ids.update(own.value_ids)
+            children = hierarchy.children(id)
+            raw[id] = (*own.quantities, *(q for child in children for q in raw[child]))
+            coverage = _combine_coverage(
+                (own.coverage, *(entries[child].coverage for child in children))
             )
-            reduced = self.reducer(raw[id]) if values else None
-            if reduced is not None:
-                if not isinstance(reduced, Quantity):
-                    raise TypeError("reducer must return a schema Quantity")
-                reduced = self.unit_system.convert(reduced, to=self.units)
-            elif values:
-                raise TypeError("reducer must return a schema Quantity")
-            available[id] = reduced
-            results[id] = (
-                None if self.require_complete and not coverage[id].complete else reduced
+            entries[id] = AggregateEntry(
+                _reduce_quantities(raw[id], self.reducer, self.units, self.unit_system),
+                coverage,
             )
-        return Aggregation(
-            hierarchy,
-            results,
-            coverage,
-            available,
-            value_ids,
-            self.reducer is sum_quantities,
-        )
+        return Aggregation(hierarchy, entries, value_ids, self.require_complete)
+
+    def _contribution(self, model, entity) -> _Population:
+        eligible = True if self.contributors is None else self.contributors(entity)
+        if not isinstance(eligible, bool):
+            raise TypeError("contributors must return bool")
+        if not eligible:
+            return _collect_quantities((), self.units, self.unit_system)
+        selected = self.select(model, entity)
+        if selected is not None:
+            if not isinstance(selected, Value):
+                raise TypeError("select must return a schema Value or None")
+            canonical = model.value(selected.id)
+            if model.owner_of(selected.id) != entity.id or canonical != selected:
+                raise SelectionError(
+                    f"selector returned a stale or nonlocal Value {selected.id} for {entity.id}"
+                )
+            if selected.kind is not ValueKind.MEASUREMENT:
+                raise AggregationError("only scalar Measurement Values are supported")
+        return _collect_quantities(((entity, selected),), self.units, self.unit_system)
 
 
-__all__ = ["Aggregation", "Coverage", "Reduction"]
+__all__ = ["Aggregation", "AggregateEntry", "Coverage", "CoverageStatus", "Reduction"]

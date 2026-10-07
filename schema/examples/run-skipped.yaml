@@ -1,10 +1,10 @@
 metadata:
-  id: 37045e56-e14c-5fb0-99e1-edd704271361
-  schema_version: 0.3.0
+  id: 836ead2b-66d0-5372-93a3-e9e8b21fe47e
+  schema_version: 0.4.0
   name: Synthetic skipped attempt
   description: New synthetic 0.3.0 conformance fixture. No evaluator or solver produced
     this record; historical Runs are unchanged.
-specification: 5f5be6f0-a423-5a22-89f8-bc83ac1f9d96
+specification: 695e2d3b-fd66-5e67-8720-1f50d68adea1
 report:
   status:
     completion: skipped
@@ -13,4 +13,4 @@ report:
   - severity: info
     code: case_skipped
     message: 'Synthetic skipped case: execution was not started.'
-    document: 5f5be6f0-a423-5a22-89f8-bc83ac1f9d96
+    document: 695e2d3b-fd66-5e67-8720-1f50d68adea1

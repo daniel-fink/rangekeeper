@@ -5,7 +5,7 @@ from rangekeeper import Model
 from rangekeeper.model import Entity, Quantity
 from rangekeeper.graph import View, Hierarchy, Reduction, Aggregation
 from rangekeeper.graph.selection import select_value
-from rangekeeper.graph.reducers import sum_quantities
+from rangekeeper.graph import reducers
 
 
 def inspect(model: Model, id: UUID) -> Quantity | None:
@@ -13,7 +13,7 @@ def inspect(model: Model, id: UUID) -> Quantity | None:
     entity: Entity = view.entity(id)
     hierarchy = Hierarchy.from_relationships(view)
     reduction = Reduction(
-        select=select_value("net"), reducer=sum_quantities, units="m ** 2"
+        select=select_value("net"), reducer=reducers.sum, units="m ** 2"
     )
     result: Aggregation = reduction.execute(hierarchy)
     return result.value(entity.id)

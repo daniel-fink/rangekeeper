@@ -1,5 +1,7 @@
 """Complete migrated teaching consumers, with independent deterministic expectations."""
 
+from rangekeeper.model.distribution import DistributionFamily
+
 import datetime
 import math
 import pytest
@@ -8,9 +10,10 @@ from rangekeeper.io import MemoryStore
 from rangekeeper.execution import Executor
 from rangekeeper.run import validate
 from rangekeeper.model import Model, Metadata
-from rangekeeper.duration import make_periods
+from rangekeeper.duration import make_periods, Frequency
+from rangekeeper._schema.enums import SolutionStatus
 from rangekeeper.model.scenario import Distribution
-from rangekeeper.scenarios import generate, make_plan
+from rangekeeper.scenarios.market import generate, make_plan
 from uuid import uuid4
 from tests.models import linear, deterministic, probabilistic, flexible
 
@@ -19,7 +22,7 @@ def execute(consumer, model, **requirements):
     store = MemoryStore()
     store.put(model)
     run = Executor(store).execute(consumer.specify(model, **requirements))
-    assert run.report.status.solution == "feasible", run.report.to_data()
+    assert run.report.status.solution is SolutionStatus.FEASIBLE, run.report.to_data()
     validate(run, resolver=store).raise_if_invalid()
     output = store.load_model(run.record.outputs[0])
     return consumer.report(output), run
@@ -65,14 +68,19 @@ def test_deterministic_horizon_comparison(initial, increment, terminal):
 
 
 def test_probabilistic_and_flexible_use_identical_captured_paths():
-    base = Model.create(metadata=Metadata(id=uuid4(), schema_version="0.6.0"))
+    base = Model.create(metadata=Metadata(id=uuid4(), schema_version="0.7.0"))
     plan = make_plan(
-        periods=make_periods(datetime.date(2021, 1, 1), frequency="year", count=4),
+        periods=make_periods(
+            datetime.date(2021, 1, 1), frequency=Frequency.YEAR, count=4
+        ),
         seed=17,
-        method="independent.v2",
+        method="market.independent",
         parameters=dict(
             space_factor=Distribution(
-                kind="uniform", lower=1.3, upper=1.4, units="dimensionless"
+                kind=DistributionFamily.UNIFORM,
+                lower=1.3,
+                upper=1.4,
+                units="dimensionless",
             ),
             asset_cap=0.05,
         ),
@@ -88,7 +96,7 @@ def test_probabilistic_and_flexible_use_identical_captured_paths():
     chosen, run = execute(flexible, model, policy=policy)
     assert chosen.sale_date == datetime.date(2022, 12, 31)
     assert fixed.sale_date == datetime.date(2023, 12, 31)
-    assert len(run.report.decisions) == 2
+    assert len(run.report.outcomes) == 2
     for name in ("space_market_price_factors", "historical_value"):
         value = scenario.value(name)
         assert (

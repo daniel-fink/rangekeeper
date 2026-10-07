@@ -3,7 +3,7 @@
 from pathlib import Path
 from rangekeeper import Model
 from rangekeeper.graph import View, Hierarchy
-from rangekeeper.graph.projection import ValueColumn, to_table, to_tree_table
+from rangekeeper.graph.projection import ValueColumn, to_table
 from rangekeeper.table import Table
 from rangekeeper.workflow.specification import WorkflowSpec
 from rangekeeper.workflow.runtime import run
@@ -11,13 +11,13 @@ from rangekeeper.workflow.runtime import run
 from rangekeeper.model import Value
 from rangekeeper.model.distribution import Distribution
 from rangekeeper.scenarios import Market
-from rangekeeper.policies import DecisionHistory
+from rangekeeper.policies import PolicyResult
 
 
 def consume(model: Model, spec: WorkflowSpec, root: Path) -> Table:
     view = View(model)
     table = to_table(view, columns=(ValueColumn("Area", "net", "meter**2"),))
-    tree = to_tree_table(Hierarchy.from_relationships(view))
+    tree = to_table(Hierarchy.from_relationships(view))
     outcome = run(spec, input_root=root)
     if outcome.output is not None:
         built: Model = outcome.output.model
@@ -29,5 +29,5 @@ def consume_market(market: "Market", distribution: "Distribution") -> "Value":
     distribution.check()
     value: Value = market.space_market_price_factors
     rates: Value = market.implied_reversion_cap_rates
-    history: DecisionHistory = DecisionHistory()
+    result: PolicyResult = PolicyResult(())
     return value

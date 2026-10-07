@@ -56,7 +56,7 @@ def calculate_xnpv(
     *,
     rate: float,
     valuation_date: date,
-    day_count: DayCount = "actual/365",
+    day_count: DayCount = DayCount.ACTUAL_365,
     timing: PeriodTiming | None = None,
 ) -> Quantity:
     """Use PyXIRR XNPV and PV to value movements on an explicit date.
@@ -69,6 +69,8 @@ def calculate_xnpv(
     import pyxirr
 
     flow.check(resolved=True)
+    if timing is not None and not isinstance(timing, PeriodTiming):
+        raise TypeError("timing must be a PeriodTiming")
     require_date(valuation_date)
     if not math.isfinite(rate) or rate <= -1:
         raise ValueError("rate must be finite and greater than -1")
@@ -100,7 +102,7 @@ def calculate_irr(
     *,
     guess: float | None = None,
     valuation_date: date | None = None,
-    day_count: DayCount = "actual/365",
+    day_count: DayCount = DayCount.ACTUAL_365,
     timing: PeriodTiming | None = None,
 ) -> IrrResult:
     """Find one dated IRR through PyXIRR, optionally supplying an initial guess.
@@ -114,6 +116,8 @@ def calculate_irr(
     import pyxirr
 
     flow.check(resolved=True)
+    if timing is not None and not isinstance(timing, PeriodTiming):
+        raise TypeError("timing must be a PeriodTiming")
     if guess is not None and (not math.isfinite(guess) or guess <= -1):
         raise ValueError("IRR guess must be finite and greater than -1")
     if valuation_date is not None:

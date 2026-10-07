@@ -10,7 +10,6 @@ from typing import TypeVar, cast
 from uuid import UUID
 
 from ._records import Record
-from ._schema.validation import validate as structure
 from .diagnostics import Issue, ValidationReport
 from .errors import ContractError
 
@@ -18,7 +17,11 @@ K = TypeVar("K", bound=Hashable)
 
 
 def require(
-    condition: object, message: str, *, code: str = "semantic.contract", path: str = ""
+    condition: object,
+    message: str,
+    *,
+    code: str = "semantic.contract",
+    path: str = "",
 ) -> None:
     """Raise ContractError with diagnostic context when a condition is false."""
     if not condition:
@@ -26,7 +29,11 @@ def require(
 
 
 def require_unique(
-    records: Iterable[Mapping[str, object]], field: str, label: str, *, path: str = ""
+    records: Iterable[Mapping[str, object]],
+    field: str,
+    label: str,
+    *,
+    path: str = "",
 ) -> None:
     """Require distinct non-null field values within this one owning collection.
 
@@ -49,7 +56,10 @@ def require_unique(
 
 
 def require_acyclic(
-    edges: Mapping[K, Iterable[K]], label: str, *, path: str = ""
+    edges: Mapping[K, Iterable[K]],
+    label: str,
+    *,
+    path: str = "",
 ) -> None:
     """Reject cycles in directed edges without requiring every target to be a key.
 
@@ -86,7 +96,7 @@ def require_ownership(document: object, *, path: str = "") -> None:
     active: set[int] = set()
 
     def visit(node, current: str) -> None:
-        if not isinstance(node, (dict, list)):
+        if not isinstance(node, (Mapping, list, tuple)):
             return
         require(
             id(node) not in active,
@@ -96,7 +106,7 @@ def require_ownership(document: object, *, path: str = "") -> None:
         )
         active.add(id(node))
         children: Iterable[tuple[object, object]]
-        if isinstance(node, dict):
+        if isinstance(node, Mapping):
             if "id" in node:
                 identity = node["id"]
                 require(
@@ -117,6 +127,25 @@ def require_ownership(document: object, *, path: str = "") -> None:
     visit(document, path)
 
 
+def require_declarations(documents):
+    """Check declaration identities through schema slots, excluding opaque payloads."""
+    from ._record_index import walk_data
+
+    identities = set()
+    for kind, data in documents:
+        for record, path in walk_data(kind, data):
+            if "id" in record:
+                identity = record["id"]
+                require(
+                    identity not in identities,
+                    f"duplicate identity: {identity}",
+                    code="semantic.identity",
+                    path=path + "/id",
+                )
+                identities.add(identity)
+    return identities
+
+
 def _document_id(data) -> UUID | None:
     try:
         return UUID(data["metadata"]["id"])
@@ -124,37 +153,48 @@ def _document_id(data) -> UUID | None:
         return None
 
 
-def checked(
-    kind: str, value: Record | Mapping[str, object], label: str, issues: list[Issue]
-) -> dict:
-    """Collect structural issues and return detached schema-normalized data.
-
-    Semantic operations must be gated on the resulting issue list being empty.
-    Schema kinds come from generated records; no field schema is duplicated here.
-    """
+def checked_record(kind, value, label, issues):
+    """Retain one structurally validated record and contextualize boundary failures."""
     from ._schema.records import _TYPES
+    from .errors import ValidationError
 
     if isinstance(value, Record):
-        if value._kind != kind:
-            issues.append(
-                Issue(
-                    "structure.kind",
-                    f"expected {kind}, received {value._kind}",
-                    path=label,
-                )
+        if value._kind == kind:
+            return value
+        issues.append(
+            Issue(
+                "structure.kind", f"expected {kind}, received {value._kind}", path=label
             )
-        value = value.to_data()
-    report = structure(kind, value)
-    issues.extend(
-        Issue(i.code, i.message, _document_id(value), label + i.path)
-        for i in report.issues
-    )
-    record_type = cast(type[Record], _TYPES[kind])
-    return {} if not report.valid else record_type.from_data(value).to_data()
+        )
+        return None
+    try:
+        return _TYPES[kind].from_data(value)
+    except ValidationError as error:
+        issues.extend(
+            Issue(issue.code, issue.message, _document_id(value), label + issue.path)
+            for issue in error.report.issues
+        )
+    except (ValueError, TypeError) as error:
+        issues.append(Issue("structure.json", str(error), _document_id(value), label))
+    return None
+
+
+def checked(
+    kind: str,
+    value: Record | Mapping[str, object],
+    label: str,
+    issues: list[Issue],
+) -> dict:
+    """Expose one detached representation from the shared structural preparation."""
+    record = checked_record(kind, value, label, issues)
+    return record.to_data() if record is not None else {}
 
 
 def bounded(
-    issues: list[Issue], operation: Callable[[], object], *, document=None
+    issues: list[Issue],
+    operation: Callable[[], object],
+    *,
+    document=None,
 ) -> ValidationReport:
     """Run one dependent stage only when prior checks passed; retain its first error.
 
@@ -166,6 +206,51 @@ def bounded(
             operation()
         except ContractError as error:
             issues.append(
-                Issue(error.code, str(error), _document_id(document), error.path)
+                Issue(
+                    error.code,
+                    str(error),
+                    error.document_id or _document_id(document),
+                    error.path,
+                )
             )
     return ValidationReport(tuple(issues))
+
+
+def validate_known_reference_types(root: Record, *, index) -> None:
+    """Check locally resolvable reference types without requiring external targets.
+
+    Partial Specifications can point outside their declaration scope. A target
+    already declared locally cannot masquerade as another record kind.
+    Complete Model/composition validation owns reference existence checks.
+    """
+    from ._record_index import walk
+    from ._records import Record
+    from ._schema.validation import _slot_map
+    from uuid import UUID
+
+    from ._schema.records import _TYPES, Reference, Value, Movement
+
+    for record, _, path in walk(root):
+        for name, field in _slot_map(record._kind).items():
+            types = tuple(
+                _TYPES[option["kind"]]
+                for option in field["options"]
+                if option["category"] == "uuid" and option["kind"] in _TYPES
+            )
+            if isinstance(record, Reference) and name == "target":
+                types = (Value, Movement)
+            if not types:
+                continue
+            value = getattr(record, name)
+            entries = enumerate(value) if isinstance(value, tuple) else ((None, value),)
+            for position, identity in entries:
+                if isinstance(identity, UUID) and identity in index.records:
+                    actual = index.records[identity]
+                    expected = ", ".join(kind.__name__ for kind in types)
+                    require(
+                        isinstance(actual, types),
+                        f"{identity} targets {actual._kind}; expected {expected}",
+                        code="reference.kind",
+                        path=f"{path}/{name}"
+                        + (f"/{position}" if position is not None else ""),
+                    )

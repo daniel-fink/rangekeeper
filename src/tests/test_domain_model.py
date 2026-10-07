@@ -1,5 +1,9 @@
 """Canonical Model behavior, atomic revisions, and schema-owned lookup scopes."""
 
+from rangekeeper.model.expression import ExpressionKind
+from rangekeeper.model.expression import Operator
+from rangekeeper.model import ValueKind
+
 from dataclasses import FrozenInstanceError
 from pathlib import Path
 from uuid import UUID, uuid4
@@ -48,20 +52,24 @@ def simple():
     first = Value(
         id=uuid4(),
         key="gross",
-        kind="measurement",
+        kind=ValueKind.MEASUREMENT,
         measure=measure.id,
         quantity=Quantity(magnitude=0, units="squaremeter"),
     )
-    second = Value(id=uuid4(), key="net", kind="measurement", measure=measure.id)
+    second = Value(
+        id=uuid4(), key="net", kind=ValueKind.MEASUREMENT, measure=measure.id
+    )
     entity = Entity(
         id=uuid4(), code="A", characteristics=Characteristics(values=(first, second))
     )
-    local = Value(id=uuid4(), key="gross", kind="measurement", measure=measure.id)
+    local = Value(
+        id=uuid4(), key="gross", kind=ValueKind.MEASUREMENT, measure=measure.id
+    )
     child = Formulation(id=uuid4(), code="area", values=(local,))
     formulation = Formulation(id=uuid4(), formulations=(child,))
     assembly = Assembly(id=uuid4(), code="group", entities=(entity.id,))
     return Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
+        metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
         definitions=Definitions(measures=(measure,)),
         system=System(
             entities=(entity,), assemblies=(assembly,), formulations=(formulation,)
@@ -166,7 +174,7 @@ def test_revision_noop_lineage_version_and_empty_sections():
     with pytest.raises(RevisionConflictError):
         before.revise(Update())
     with pytest.raises(RevisionConflictError):
-        before.revise(Update(metadata=Metadata(id=uuid4(), schema_version="0.6.0")))
+        before.revise(Update(metadata=Metadata(id=uuid4(), schema_version="0.7.0")))
     with pytest.raises(UnsupportedVersionError):
         before.revise(
             Update(
@@ -177,7 +185,7 @@ def test_revision_noop_lineage_version_and_empty_sections():
     assert after.system.to_data() == {} and before.find_entities()
     with pytest.raises(MissingReferenceError):
         after.entity(before.find_entities()[0].id)
-    minimal = Model.create(metadata=Metadata(id=uuid4(), schema_version="0.6.0"))
+    minimal = Model.create(metadata=Metadata(id=uuid4(), schema_version="0.7.0"))
     # Explicit empty and omitted sections remain distinct revision content.
     assert minimal.revise(Update(system=System())).to_data()["system"] == {}
     with pytest.raises(TypeError):
@@ -187,7 +195,7 @@ def test_revision_noop_lineage_version_and_empty_sections():
 def test_explicit_metadata_and_descriptive_revision():
     model = simple()
     metadata = Metadata(
-        id=uuid4(), schema_version="0.6.0", previous=model.id, name="named"
+        id=uuid4(), schema_version="0.7.0", previous=model.id, name="named"
     )
     revised = model.revise(Update(metadata=metadata))
     assert revised.metadata == metadata
@@ -198,7 +206,7 @@ def test_explicit_metadata_and_descriptive_revision():
                 metadata=Metadata(
                     id=model.id,
                     previous=revised.id,
-                    schema_version="0.6.0",
+                    schema_version="0.7.0",
                     name="reuse",
                 )
             )
@@ -306,17 +314,24 @@ def test_ordered_mathematics_is_not_sorted_for_revision_comparison():
     from rangekeeper.model import Expression
 
     left = Expression(
-        id=uuid4(), kind="quantity", quantity=Quantity(magnitude=1, units="m")
+        id=uuid4(),
+        kind=ExpressionKind.QUANTITY,
+        quantity=Quantity(magnitude=1, units="m"),
     )
     right = Expression(
-        id=uuid4(), kind="quantity", quantity=Quantity(magnitude=2, units="m")
+        id=uuid4(),
+        kind=ExpressionKind.QUANTITY,
+        quantity=Quantity(magnitude=2, units="m"),
     )
     expression = Expression(
-        id=uuid4(), kind="binary", operator="subtract", operands=(left, right)
+        id=uuid4(),
+        kind=ExpressionKind.BINARY,
+        operator=Operator.SUBTRACT,
+        operands=(left, right),
     )
     formulation = Formulation(id=uuid4(), expressions=(expression,))
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
+        metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
         system=System(formulations=(formulation,)),
     )
     data = model.system.to_data()

@@ -13,21 +13,18 @@ rangekeeper/
     hierarchy.py                 Hierarchy: validated relationship or membership tree
     selection.py                 select_value: explicit owner-local key selector
     reduction.py                 Reduction, Aggregation, Coverage
-    reducers.py                  sum_quantities, mean_quantities, min_quantity, max_quantity
+    reducers.py                  sum, mean, min, max
     errors.py                    SelectionError, HierarchyError, AggregationError
-    legacy/
-      view.py                    old Graph-only View for unmigrated consumers
-      reduction.py               old Measure/Feature reductions
     projection.py                Model-backed FieldColumn/ValueColumn/LabelColumn tables
-    table.py, adapter/json.py     remaining old Graph projection and persistence
+  legacy/graph/                  isolated old Graph domain and consumers
   table.py, adapters/, workflow/  shared tables and Model-backed consumers
   io/                            canonical persistence, unchanged
   execution/                     scalar executor, unchanged
 ```
 
-The new algorithms consume public Model lookup and generated records. They do not
-read `Model._index`, call another class's private traversal methods, or construct a
-second domain representation. A Hierarchy owns only derived UUID adjacency and
+The algorithms consume canonical Model records. Operation-local preparation uses
+the Model's existing index for declared Measures and local Value selection; it does
+not build another domain representation. A Hierarchy owns only derived UUID adjacency and
 traversal order. It never fabricates Relationship records for Assembly membership.
 Domain code does not import graph algorithms.
 
@@ -88,7 +85,7 @@ Relationship order. Selector/set order does not determine output order. This is 
 presentation convention, not additional schema or mathematical ordering.
 
 `Hierarchy.from_relationships(view)` and `Hierarchy.from_membership(view, root=id)`
-produce a pinned immutable tree with `root`, `kind`, `children(id)`, `parent(id)`,
+produce a pinned immutable tree with `root`, `kind` (`HierarchyKind`), `children(id)`, `parent(id)`,
 `preorder()` and `postorder()`. `HierarchyError` carries a code and relevant UUIDs:
 `empty`, `disconnected`, `cycle`, `multiple_parents`, `parallel_edges` or `root_mismatch`.
 Traversal is iterative; valid deep trees do not consume the Python call stack.
@@ -98,11 +95,11 @@ Traversal is iterative; valid deep trees do not consume the Python call stack.
 ```python
 from rangekeeper.graph import Reduction
 from rangekeeper.graph.selection import select_value
-from rangekeeper.graph.reducers import sum_quantities
+from rangekeeper.graph import reducers
 
 reduction = Reduction(
     select=select_value("annual_rent", measure=rent_measure_id),
-    reducer=sum_quantities,
+    reducer=reducers.sum,
     units="AUD/year",
     contributors=lambda entity: entity.classification == dwelling_classification_id,
     require_complete=True,
@@ -112,7 +109,7 @@ result = view.aggregate(reduction)  # validates a relationship hierarchy
 # Or: result = reduction.execute(membership_tree)
 quantity = result.value(parent_id)
 coverage = result.coverage(parent_id)
-subtotal = result.known_subtotal(parent_id)
+available = result.available_value(parent_id)
 ```
 
 The selector chooses one Value by its owner-local key. Optional `measure=` asserts
@@ -127,7 +124,7 @@ custom Model unit policy should pass the same policy here. Results are immutable
 schema Quantities. Custom reducers must return a compatible finite Quantity;
 programming errors from callbacks propagate to the caller.
 
-Built-in `sum_quantities`, `mean_quantities`, `min_quantity` and `max_quantity`
+Built-in `reducers.sum`, `reducers.mean`, `reducers.min` and `reducers.max`
 operate on nonempty tuples already normalized to identical unit spellings. Means
 use raw contributors, avoiding the incorrect mean-of-subtree-means result. Overflow
 is rejected. Empty populations remain unavailable rather than becoming zero.
@@ -141,18 +138,32 @@ population completeness.
 `Aggregation` exposes:
 
 - `value(id)` / `result[id]`, and `root_value`: the result under the coverage policy.
-- `coverage(id)`: selected, measured and missing owner UUIDs; status is `empty`,
-  `complete` or `incomplete`.
-- `available_value(id)`: reduction over measured contributors despite missing values.
-- `known_subtotal(id)`: available sum, only for the explicit `sum_quantities` reducer.
+- `coverage(id)`: selected, measured and missing owner UUIDs, with a
+  `CoverageStatus` member: `EMPTY`, `COMPLETE` or `INCOMPLETE`.
+- `available_value(id)`: reduction over measured contributors despite missing values,
+  for every reducer, including wrapped and custom reducers.
+- `entries`: one immutable `AggregateEntry(available, coverage)` per hierarchy node.
+- `require_complete`: the policy used to derive `value` from each entry.
 - `value_ids`: immutable owner-to-selected-Value IDs, including unresolved Values.
 - `hierarchy`: the selection/revision that produced the derived results.
 
 Missing keys and unresolved quantities count as missing; zero counts as measured.
-A fully missing population has no subtotal. These operations do not revise a Model,
+A fully missing population has no available result. These operations do not revise a Model,
 create provenance claims, assign solve roles, add governing mathematics, invoke a
 solver or persist anything. Use `Model.revise` explicitly for authoring and the
 scalar executor for mathematical investigation.
+
+## Table projection
+
+`graph.projection.to_table(source, columns=...)` accepts a `View` or `Hierarchy`.
+A View keeps its entity order. A Hierarchy emits preorder rows and a reserved
+`parent_id` column. `FieldColumn` takes an `EntityField` enum member. Column names,
+units and optional Measure declarations are checked once before any cells are read,
+including for an empty View. Selection still uses the owner-local Value key.
+
+`Table` reuses a normalized `Row` when its columns already have the required order.
+Raw mappings and reordered Rows are normalized once; immutable Row UUID lookup uses
+an index. See [the consumer guide](CONSUMER_MIGRATION.md) for examples and errors.
 
 ## Intentional namespace transition
 

@@ -29,3 +29,7 @@ def label(items: Characteristics | None, key: str) -> Label | None:
 
 
 __all__ = ["Characteristics", "Label", "Value", "value", "label"]
+
+from .._schema.enums import ValueKind
+
+__all__ += ["ValueKind"]

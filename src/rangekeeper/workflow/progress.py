@@ -2,18 +2,41 @@
 
 from collections.abc import Callable
 from dataclasses import dataclass
-from rangekeeper.operation import Diagnostic, IssueSeverity
+from enum import Enum, unique
+from rangekeeper.operation import Diagnostic, Severity
+
+
+@unique
+class ProgressPhase(Enum):
+    WORKFLOW = "workflow"
+    STEP = "step"
+    COMPOSITION = "composition"
+    CHECKS = "checks"
+    EXPORT = "export"
+
+
+@unique
+class ProgressStatus(Enum):
+    RUNNING = "running"
+    COMPLETED = "completed"
+    FAILED = "failed"
 
 
 @dataclass(frozen=True, slots=True)
 class Progress:
     """One phase transition; timing is excluded from semantic artifacts."""
 
-    phase: str
-    status: str
+    phase: ProgressPhase
+    status: ProgressStatus
     step: str | None = None
     completed: int = 0
     total: int = 0
+
+    def __post_init__(self):
+        if not isinstance(self.phase, ProgressPhase) or not isinstance(
+            self.status, ProgressStatus
+        ):
+            raise TypeError("Progress requires ProgressPhase and ProgressStatus")
 
 
 Observer = Callable[[Progress], None]
@@ -38,12 +61,17 @@ class Reporter:
                 self.diagnostics.append(
                     Diagnostic(
                         code="progress_observer_failed",
-                        severity=IssueSeverity.WARNING,
-                        message=f"{event.phase}: {type(exc).__name__}: {exc}",
+                        severity=Severity.WARNING,
+                        message=f"{event.phase.value}: {type(exc).__name__}: {exc}",
                     )
                 )
 
 
-def emit(observer: Observer | None, phase: str, status: str, **fields) -> None:
+def emit(
+    observer: Observer | None,
+    phase: ProgressPhase,
+    status: ProgressStatus,
+    **fields,
+) -> None:
     if observer is not None:
         observer(Progress(phase, status, **fields))

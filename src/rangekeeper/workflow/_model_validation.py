@@ -67,7 +67,7 @@ def validate_measurements(values, seen, decision_ids, measures):
                     text(missing[key])
 
 
-def validate_model(model, seen, decisions=None, *, decision_ids=None):
+def validate_model_declaration(model, seen, decisions=None, *, decision_ids=None):
     """Validate declarations; direct composition may supply already-recorded decision IDs."""
     fields(
         model,

@@ -3,3 +3,4 @@ linkml-runtime==1.11.1
 jsonschema==4.26.0
 PyYAML==6.0.3
 rfc3339-validator==0.1.4
+types-PyYAML==6.0.12.20260906

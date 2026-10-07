@@ -14,7 +14,7 @@ from uuid import NAMESPACE_URL
 
 from rangekeeper import operation
 from rangekeeper.adapters import document, excel
-from rangekeeper.workflow.ingestion import fingerprint, tabular
+from rangekeeper.evidence import fingerprint, tabular
 from rangekeeper.operation import Outcome
 from rangekeeper.evidence import Location
 

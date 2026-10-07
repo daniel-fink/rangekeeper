@@ -6,6 +6,9 @@ validated when the complete ScenarioPlan is built. Cycle amplitudes are half the
 peak-to-trough height; phase and period are measured in the plan's period steps.
 """
 
+from typing import cast
+
+from .contracts import DIRECT
 from ..model import Quantity
 from ..model.scenario import Distribution, ScenarioParameter
 
@@ -32,9 +35,9 @@ def _parameters(**values: ParameterInput) -> tuple[ScenarioParameter, ...]:
 
 def make_trend(
     *,
-    initial_value: ParameterInput = 0.05,
-    growth_rate: ParameterInput = 0.02,
-    cap_rate: ParameterInput = 0.05,
+    initial_value: ParameterInput = cast(float, DIRECT["initial_value"].default),
+    growth_rate: ParameterInput = cast(float, DIRECT["growth_rate"].default),
+    cap_rate: ParameterInput = cast(float, DIRECT["cap_rate"].default),
 ) -> tuple[ScenarioParameter, ...]:
     """Declare the initial rental level, per-period growth and long-run cap rate."""
     return _parameters(
@@ -44,9 +47,11 @@ def make_trend(
 
 def make_volatility(
     *,
-    volatility_per_period: ParameterInput = 0.03,
-    autoregression: ParameterInput = 0.2,
-    mean_reversion: ParameterInput = 0.1,
+    volatility_per_period: ParameterInput = cast(
+        float, DIRECT["volatility_per_period"].default
+    ),
+    autoregression: ParameterInput = cast(float, DIRECT["autoregression"].default),
+    mean_reversion: ParameterInput = cast(float, DIRECT["mean_reversion"].default),
 ) -> tuple[ScenarioParameter, ...]:
     """Declare innovation scale and the return/level dependence parameters."""
     return _parameters(
@@ -58,14 +63,14 @@ def make_volatility(
 
 def make_cyclicality(
     *,
-    space_period: ParameterInput = 10.0,
-    space_phase: ParameterInput = 0.0,
-    space_amplitude: ParameterInput = 0.1,
-    space_asymmetry: ParameterInput = 0.0,
-    asset_period: ParameterInput = 10.0,
-    asset_phase: ParameterInput = 2.0,
-    asset_amplitude: ParameterInput = 0.005,
-    asset_asymmetry: ParameterInput = 0.0,
+    space_period: ParameterInput = cast(float, DIRECT["space_period"].default),
+    space_phase: ParameterInput = cast(float, DIRECT["space_phase"].default),
+    space_amplitude: ParameterInput = cast(float, DIRECT["space_amplitude"].default),
+    space_asymmetry: ParameterInput = cast(float, DIRECT["space_asymmetry"].default),
+    asset_period: ParameterInput = cast(float, DIRECT["asset_period"].default),
+    asset_phase: ParameterInput = cast(float, DIRECT["asset_phase"].default),
+    asset_amplitude: ParameterInput = cast(float, DIRECT["asset_amplitude"].default),
+    asset_asymmetry: ParameterInput = cast(float, DIRECT["asset_asymmetry"].default),
 ) -> tuple[ScenarioParameter, ...]:
     """Declare two cycles from direct parameters; amplitudes are not full heights."""
     return _parameters(
@@ -81,7 +86,9 @@ def make_cyclicality(
 
 
 def make_noise(
-    *, lower: ParameterInput = -0.02, upper: ParameterInput = 0.02
+    *,
+    lower: ParameterInput = cast(float, DIRECT["noise_lower"].default),
+    upper: ParameterInput = cast(float, DIRECT["noise_upper"].default),
 ) -> tuple[ScenarioParameter, ...]:
     """Declare the uniform deal-noise bounds used by the current market method."""
     return _parameters(noise_lower=lower, noise_upper=upper)
@@ -89,9 +96,9 @@ def make_noise(
 
 def make_black_swan(
     *,
-    likelihood: ParameterInput = 0.02,
-    impact: ParameterInput = -0.2,
-    dissipation: ParameterInput = 0.5,
+    likelihood: ParameterInput = cast(float, DIRECT["shock_likelihood"].default),
+    impact: ParameterInput = cast(float, DIRECT["shock_impact"].default),
+    dissipation: ParameterInput = cast(float, DIRECT["shock_dissipation"].default),
 ) -> tuple[ScenarioParameter, ...]:
     """Declare the once-per-scenario shock recipe; its impact is applied once."""
     return _parameters(

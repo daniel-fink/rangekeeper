@@ -29,13 +29,17 @@ python tools/schema/typecheck.py
 
 Typing also needs `mypy==1.18.2`. Deliberately invalid fixtures must produce their
 expected errors; valid sources must pass. The [schema guide](../schema/README.md)
-lists seven conformance suites, including the native loader limitation.
+lists seven conformance suites. The current stock native loader also passes all
+16 active fixture round trips; old reports of its terminal-action limitation
+describe earlier generated artifacts.
 
 `tools/schema/verify_install.py` builds a wheel in a temporary environment and checks
 minimal imports, records, codecs, storage and optional runtime slices. Supply
 `--runtime-python`, `--financial-python`, `--execution-python` and `--workflow-python`
 with interpreters that have those dependencies. Add `--tables-python` to check
-Polars and CSV in the isolated environment with pandas absent. Checks use the built artifact.
+Polars and CSV in the isolated environment with pandas absent. The isolated venv
+uses `--runtime-python`; copied native extensions must match that interpreter.
+Checks use the built artifact.
 
 Do not edit package source during workflow verification: implementation fingerprints
 read the source, and a mid-test edit changes the recorded implementation identity.

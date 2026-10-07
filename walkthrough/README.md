@@ -22,6 +22,9 @@ first execute them in fresh kernels from the same wheel, then use
 `docs/research/full-migration/turn3/build_book.py` with the executed notebook folder.
 The isolated book build disables another execution because those outputs have
 already passed fresh-kernel checks. It does not use the old Jupyter cache.
+The static build also disables the unused Sphinx-Thebe extension through its
+Sphinx configuration, which prevents duplicate JavaScript declarations. Colab
+launch links remain available. Use the build dependencies in `walkthrough/uv.lock`.
 
 See [the upgrade guide](../docs/LEGACY_UPGRADE_GUIDE.md) and
 [verification guide](../docs/VERIFICATION.md).

@@ -1,16 +1,16 @@
 metadata:
-  id: be7ea554-f418-5764-932c-6d0fb3012e97
-  schema_version: 0.3.0
+  id: d4a6ba9f-d79b-5e7d-8df6-8694f8176527
+  schema_version: 0.4.0
   name: Synthetic batch Run
   description: New synthetic 0.3.0 conformance fixture. No evaluator or solver produced
     this record; historical Runs are unchanged.
-specification: 45d06a63-85fe-5d80-82a0-f55a6a06a01a
+specification: c6f6e5b6-a2e8-5154-bc0a-dfbf1219db4c
 spawns:
-- cc343536-8c15-57bb-8128-1a3d9fcde726
-- 790427e1-fbd3-52ed-89d4-13cf26e074f7
+- f66956bf-fd70-5867-89e0-ffbb67f7ca5a
+- 83bd4dab-671a-5caa-b810-72a55f38e90d
 outputs:
-- bc429c41-ecde-54b8-94e8-07aadfcdec66
-- ff54f83e-3e9d-58c6-bc47-9b2e7338229f
+- 8b702e3f-a18d-501c-b111-9138dca9686b
+- 57f8d97e-d795-55f0-87fc-ae67180269fd
 report:
   status:
     completion: completed

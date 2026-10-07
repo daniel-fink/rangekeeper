@@ -11,11 +11,11 @@ import yaml
 import _library
 
 from rangekeeper.errors import ContractError
-from rangekeeper.specification._composition import (
+from rangekeeper.specification.composition import (
     compose_specification,
     specification_catalogue,
 )
-from rangekeeper.specification._validation import validate_batch, validate_specification
+from rangekeeper.specification.validation import validate_batch, validate_specification
 
 
 def check_composition(schema, validators, module, model, version, model_version):
@@ -85,7 +85,12 @@ def check_composition(schema, validators, module, model, version, model_version)
         assert requirements(result.effective) == requirements(flat)
         assert "includes" not in result.effective
         assert (
-            result.sources[("unknowns", common["unknowns"][0]["target"])] == common_id
+            str(
+                result.sources[
+                    ("unknowns", common["unknowns"][0]["target"])
+                ].document_id
+            )
+            == common_id
         )
     paths = validate_batch(
         batch, models, version, model_version, specifications=catalogue

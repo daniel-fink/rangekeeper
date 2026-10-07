@@ -2,7 +2,42 @@
 
 import json
 from dataclasses import asdict, dataclass
+from enum import Enum, unique
 from hashlib import sha256
+
+
+@unique
+class PreferenceDirection(Enum):
+    UNSPECIFIED = "unspecified"
+    HORIZONTAL = "horizontal"
+    VERTICAL = "vertical"
+    BALANCED = "balanced"
+
+
+@unique
+class Axis(Enum):
+    X = "x"
+    Y = "y"
+
+
+@unique
+class ArrangementFlow(Enum):
+    GRID = "grid"
+    ROW = "row"
+    COLUMN = "column"
+
+
+@unique
+class ArrangementAlignment(Enum):
+    START = "start"
+    CENTER = "center"
+    END = "end"
+
+
+@unique
+class ArrangementSpacing(Enum):
+    UNIFORM = "uniform"
+    PACKED = "packed"
 
 
 @dataclass(frozen=True)
@@ -26,13 +61,19 @@ class Preference:
     """Soft intent only; pairs reference direct members, never new memberships."""
 
     assembly: str
-    direction: str = "unspecified"
+    direction: PreferenceDirection = PreferenceDirection.UNSPECIFIED
     # (before, after, axis); partial orders and even conflicting wishes are soft.
-    orders: tuple[tuple[str, str, str], ...] = ()
+    orders: tuple[tuple[str, str, Axis], ...] = ()
     # Positive affinity, 1..100. Missing evidence produces no edge.
     affinities: tuple[tuple[str, str, int], ...] = ()
     strength: int = 1
     rationale: str = ""
+
+    def __post_init__(self):
+        if not isinstance(self.direction, PreferenceDirection):
+            raise TypeError("direction must be PreferenceDirection")
+        if any(not isinstance(axis, Axis) for _, _, axis in self.orders):
+            raise TypeError("order axis must be Axis")
 
 
 @dataclass(frozen=True)
@@ -44,9 +85,17 @@ class Arrangement:
     """
 
     assembly: str
-    flow: str = "grid"
-    alignment: str = "start"
-    spacing: str = "uniform"
+    flow: ArrangementFlow = ArrangementFlow.GRID
+    alignment: ArrangementAlignment = ArrangementAlignment.START
+    spacing: ArrangementSpacing = ArrangementSpacing.UNIFORM
+
+    def __post_init__(self):
+        if (
+            not isinstance(self.flow, ArrangementFlow)
+            or not isinstance(self.alignment, ArrangementAlignment)
+            or not isinstance(self.spacing, ArrangementSpacing)
+        ):
+            raise TypeError("arrangement requires its declared option enums")
 
 
 @dataclass(frozen=True)
@@ -147,22 +196,35 @@ class Problem:
         if len({a.assembly for a in self.arrangements}) != len(self.arrangements):
             raise ValueError("Repeated arrangement")
         for a in self.arrangements:
-            if a.spacing not in {"uniform", "packed"}:
+            if a.spacing not in {ArrangementSpacing.UNIFORM, ArrangementSpacing.PACKED}:
                 raise ValueError("Unknown arrangement spacing")
-            if a.spacing == "packed" and (self.schema_version < 4 or a.flow == "grid"):
+            if a.spacing == ArrangementSpacing.PACKED and (
+                self.schema_version < 4 or a.flow == ArrangementFlow.GRID
+            ):
                 raise ValueError("Packed spacing requires v4 unwrapped flow")
-            if a.assembly not in groups or a.flow not in {"grid", "row", "column"}:
+            if a.assembly not in groups or a.flow not in {
+                ArrangementFlow.GRID,
+                ArrangementFlow.ROW,
+                ArrangementFlow.COLUMN,
+            }:
                 raise ValueError("Unknown arrangement assembly or flow")
-            if a.alignment not in {"start", "center", "end"}:
+            if a.alignment not in {
+                ArrangementAlignment.START,
+                ArrangementAlignment.CENTER,
+                ArrangementAlignment.END,
+            }:
                 raise ValueError("Unknown alignment")
-            if a.flow == "grid" and a.alignment != "start":
+            if (
+                a.flow == ArrangementFlow.GRID
+                and a.alignment != ArrangementAlignment.START
+            ):
                 raise ValueError("Wrapping grid supports start alignment only")
         for p in self.preferences:
             if p.assembly not in groups or p.direction not in {
-                "unspecified",
-                "horizontal",
-                "vertical",
-                "balanced",
+                PreferenceDirection.UNSPECIFIED,
+                PreferenceDirection.HORIZONTAL,
+                PreferenceDirection.VERTICAL,
+                PreferenceDirection.BALANCED,
             }:
                 raise ValueError("Unknown assembly or direction")
             if type(p.strength) is not int or p.strength <= 0:
@@ -170,7 +232,7 @@ class Problem:
             members = set(groups[p.assembly].members)
             pairs = set()
             for a, b, axis in p.orders:
-                if a == b or not {a, b} <= members or axis not in {"x", "y"}:
+                if a == b or not {a, b} <= members or axis not in {Axis.X, Axis.Y}:
                     raise ValueError(
                         "Order must name distinct direct members and x/y axis"
                     )
@@ -198,6 +260,14 @@ class Problem:
     def document(self):
         data = asdict(self)
         data.pop("schema_version")
+        for preference in data["preferences"]:
+            preference["direction"] = preference["direction"].value
+            preference["orders"] = tuple(
+                (a, b, axis.value) for a, b, axis in preference["orders"]
+            )
+        for arrangement in data["arrangements"]:
+            for name in ("flow", "alignment", "spacing"):
+                arrangement[name] = arrangement[name].value
         if self.schema_version == 2:
             data.pop("arrangements")
         elif self.schema_version == 3:
@@ -241,7 +311,17 @@ def from_document(document: dict) -> Problem:
         "spacing" in a for a in data.get("arrangements", ())
     ):
         raise ValueError("Spacing requires v4 schema")
-    data["arrangements"] = tuple(Arrangement(**a) for a in data.get("arrangements", ()))
+    data["arrangements"] = tuple(
+        Arrangement(
+            **{
+                **a,
+                "flow": ArrangementFlow(a.get("flow", "grid")),
+                "alignment": ArrangementAlignment(a.get("alignment", "start")),
+                "spacing": ArrangementSpacing(a.get("spacing", "uniform")),
+            }
+        )
+        for a in data.get("arrangements", ())
+    )
     data["nodes"] = tuple(Node(**n) for n in data["nodes"])
     assemblies = []
     for a in data["assemblies"]:
@@ -255,7 +335,10 @@ def from_document(document: dict) -> Problem:
     preferences = []
     for p in data.get("preferences", ()):
         fields = dict(p)
-        fields["orders"] = tuple(tuple(o) for o in p.get("orders", ()))
+        fields["direction"] = PreferenceDirection(p.get("direction", "unspecified"))
+        fields["orders"] = tuple(
+            (a, b, Axis(axis)) for a, b, axis in p.get("orders", ())
+        )
         fields["affinities"] = tuple(tuple(a) for a in p.get("affinities", ()))
         preferences.append(Preference(**fields))
     data["preferences"] = tuple(preferences)

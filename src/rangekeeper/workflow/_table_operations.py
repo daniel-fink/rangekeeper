@@ -10,10 +10,10 @@ from rangekeeper import _structured
 from ._contracts import OperationDeclaration, Produced
 from ._declarations import sequence, text
 from ._schema import obj
-from .ingestion import fingerprint, tabular
-from .ingestion.predicates import Predicate, select_where
-from .ingestion.tabular import NumberSpec
-from .ingestion.transform import TransformSpec, transform
+from rangekeeper.evidence import fingerprint, tabular
+from rangekeeper.evidence.predicates import Predicate, select_where
+from rangekeeper.evidence.tabular import NumberSpec
+from rangekeeper.evidence.transform import TransformSpec, transform
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -37,6 +37,18 @@ class NumbersSpec:
             self, "specifications", MappingProxyType(dict(self.specifications))
         )
 
+    @classmethod
+    def from_mapping(cls, data):
+        raw = data["specifications"]
+        if not isinstance(raw, Mapping):
+            raise TypeError("specifications must be a mapping")
+        return cls(
+            input=data["input"],
+            specifications={
+                text(key): NumberSpec.from_mapping(value) for key, value in raw.items()
+            },
+        )
+
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class TransformsSpec:
@@ -58,6 +70,19 @@ class TransformsSpec:
             self, "specifications", MappingProxyType(dict(self.specifications))
         )
 
+    @classmethod
+    def from_mapping(cls, data):
+        raw = data["specifications"]
+        if not isinstance(raw, Mapping):
+            raise TypeError("specifications must be a mapping")
+        return cls(
+            input=data["input"],
+            specifications={
+                text(key): TransformSpec.from_mapping(value)
+                for key, value in raw.items()
+            },
+        )
+
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class SelectSpec:
@@ -73,7 +98,7 @@ class SelectSpec:
     def __post_init__(self):
         text(self.input)
         if self.where is not None:
-            from .ingestion.predicates import Predicate
+            from rangekeeper.evidence.predicates import Predicate
 
             Predicate.from_mapping(self.where)
             if self.row_ids is not None:
@@ -225,8 +250,6 @@ OPERATIONS = {
         describe_table,
         lambda: request_properties()["numbers"],
         inputs=(("input", "table"),),
-        policy_type=NumberSpec,
-        policy_field="specifications",
     ),
     "transform": OperationDeclaration(
         TransformsSpec,
@@ -234,8 +257,6 @@ OPERATIONS = {
         describe_table,
         lambda: request_properties()["transform"],
         inputs=(("input", "table"),),
-        policy_type=TransformSpec,
-        policy_field="specifications",
     ),
     "select": OperationDeclaration(
         SelectSpec,
@@ -250,5 +271,6 @@ OPERATIONS = {
         describe_table,
         lambda: request_properties()["concat"],
         inputs=(("inputs", "table"),),
+        repeated_inputs=("inputs",),
     ),
 }

@@ -1,0 +1,569 @@
+{
+  "interest": {
+    "id": "00000000-0000-0000-0000-00000000012d",
+    "name": "interest",
+    "bindings": [
+      {
+        "name": "value_0",
+        "value": "00000000-0000-0000-0000-000000000003"
+      },
+      {
+        "name": "value_1",
+        "value": "00000000-0000-0000-0000-000000000002"
+      },
+      {
+        "name": "value_2",
+        "value": "00000000-0000-0000-0000-000000000005"
+      }
+    ],
+    "expressions": [
+      {
+        "id": "9e69a686-68a7-594f-b3a6-6d86a8216153",
+        "kind": "binary",
+        "operator": "equal",
+        "operands": [
+          {
+            "id": "2fdcf52f-0176-53fa-bdaf-8a70ebc1e29c",
+            "kind": "reference",
+            "target": {
+              "target": "00000000-0000-0000-0000-000000000028"
+            }
+          },
+          {
+            "id": "0347c886-6e3e-5d00-a4da-dec2a49e58ed",
+            "kind": "binary",
+            "operator": "multiply",
+            "operands": [
+              {
+                "id": "ecb36881-9cba-5cd5-8e79-34d2e5a2883a",
+                "kind": "reference",
+                "target": {
+                  "target": "00000000-0000-0000-0000-000000000014"
+                }
+              },
+              {
+                "id": "f65c78d0-c97b-5c98-81d3-a391f9aaab3a",
+                "kind": "reference",
+                "target": {
+                  "target": "00000000-0000-0000-0000-000000000002"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "d3181450-8fb4-5a03-9a94-9db3fd226f59",
+        "kind": "binary",
+        "operator": "greater_than_or_equal",
+        "operands": [
+          {
+            "id": "24b8d2ed-912d-5660-9e3a-6e82e0584a4f",
+            "kind": "reference",
+            "target": {
+              "target": "00000000-0000-0000-0000-000000000014"
+            }
+          },
+          {
+            "id": "36628e4b-b9a6-55a9-9c2a-48f535649f90",
+            "kind": "quantity",
+            "quantity": {
+              "magnitude": 0,
+              "units": "AUD"
+            }
+          }
+        ]
+      },
+      {
+        "id": "125fdb28-ff51-5b81-b7b8-c088e083e8bf",
+        "kind": "binary",
+        "operator": "equal",
+        "operands": [
+          {
+            "id": "f6b751c1-0ee7-5d87-a2f5-56c13fe892dc",
+            "kind": "reference",
+            "target": {
+              "target": "00000000-0000-0000-0000-000000000029"
+            }
+          },
+          {
+            "id": "69c02c03-15f1-58b2-bee5-e6c8c9fa7726",
+            "kind": "binary",
+            "operator": "multiply",
+            "operands": [
+              {
+                "id": "035140f6-eba0-5827-9835-6cd366f6c4ad",
+                "kind": "reference",
+                "target": {
+                  "target": "00000000-0000-0000-0000-000000000015"
+                }
+              },
+              {
+                "id": "3ad0b127-8f92-510f-b06f-6261e2c3e4fc",
+                "kind": "reference",
+                "target": {
+                  "target": "00000000-0000-0000-0000-000000000002"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "cee39927-d0f5-5323-a572-11bab8f1b8e8",
+        "kind": "binary",
+        "operator": "greater_than_or_equal",
+        "operands": [
+          {
+            "id": "800f56f3-9aa9-55ae-996b-0cfe58ff9980",
+            "kind": "reference",
+            "target": {
+              "target": "00000000-0000-0000-0000-000000000015"
+            }
+          },
+          {
+            "id": "b56c466b-13fb-5fde-9f40-6d9aced1cb7a",
+            "kind": "quantity",
+            "quantity": {
+              "magnitude": 0,
+              "units": "AUD"
+            }
+          }
+        ]
+      }
+    ],
+    "constraints": [
+      {
+        "id": "e29e7a3d-86fa-52f5-bf7d-612bf76e981e",
+        "predicate": "9e69a686-68a7-594f-b3a6-6d86a8216153"
+      },
+      {
+        "id": "e9ba3c76-9cd6-5c6f-a60f-db41a91ced79",
+        "predicate": "d3181450-8fb4-5a03-9a94-9db3fd226f59"
+      },
+      {
+        "id": "4a57f3e8-86f5-5c5e-aeb2-b21a5a6e91a7",
+        "predicate": "125fdb28-ff51-5b81-b7b8-c088e083e8bf"
+      },
+      {
+        "id": "a83f0c61-c417-59f3-aeab-0de4e7b36232",
+        "predicate": "cee39927-d0f5-5323-a572-11bab8f1b8e8"
+      }
+    ]
+  },
+  "accumulation": {
+    "id": "00000000-0000-0000-0000-00000000012e",
+    "name": "accumulation",
+    "bindings": [
+      {
+        "name": "value_0",
+        "value": "00000000-0000-0000-0000-000000000003"
+      },
+      {
+        "name": "value_1",
+        "value": "00000000-0000-0000-0000-000000000001"
+      },
+      {
+        "name": "value_2",
+        "value": "00000000-0000-0000-0000-000000000004"
+      }
+    ],
+    "expressions": [
+      {
+        "id": "49437797-2a35-58fc-88b3-7cd25378fd49",
+        "kind": "binary",
+        "operator": "equal",
+        "operands": [
+          {
+            "id": "94a693a6-5803-599a-9a03-4f077ad2927c",
+            "kind": "reference",
+            "target": {
+              "target": "00000000-0000-0000-0000-00000000001e"
+            }
+          },
+          {
+            "id": "7c55608b-cc40-5ce8-860a-fe050d885b37",
+            "kind": "binary",
+            "operator": "add",
+            "operands": [
+              {
+                "id": "c0920055-a1e8-5903-9438-41304574e860",
+                "kind": "reference",
+                "target": {
+                  "target": "00000000-0000-0000-0000-000000000001"
+                }
+              },
+              {
+                "id": "3bcbc5e5-3a8d-5c4c-8075-eef7954fd3d5",
+                "kind": "reference",
+                "target": {
+                  "target": "00000000-0000-0000-0000-000000000014"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "fea87c2f-3729-5783-800e-dabce2db1ad9",
+        "kind": "binary",
+        "operator": "equal",
+        "operands": [
+          {
+            "id": "9cb727ec-4868-515e-9d47-9f4a516930a5",
+            "kind": "reference",
+            "target": {
+              "target": "00000000-0000-0000-0000-00000000001f"
+            }
+          },
+          {
+            "id": "5687fc67-a002-5fc0-a395-a23cafedd017",
+            "kind": "binary",
+            "operator": "add",
+            "operands": [
+              {
+                "id": "dbfb626f-f8e0-5a0b-88db-43f82b5cc8e8",
+                "kind": "reference",
+                "target": {
+                  "target": "00000000-0000-0000-0000-00000000001e"
+                }
+              },
+              {
+                "id": "49421537-5c81-5e82-8ccc-b5dc1a1bb7f6",
+                "kind": "reference",
+                "target": {
+                  "target": "00000000-0000-0000-0000-000000000015"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "constraints": [
+      {
+        "id": "1b1b6927-8c01-5e83-8094-bc40470665eb",
+        "predicate": "49437797-2a35-58fc-88b3-7cd25378fd49"
+      },
+      {
+        "id": "f6e20f6c-2119-5847-8394-09cac1fa9465",
+        "predicate": "fea87c2f-3729-5783-800e-dabce2db1ad9"
+      }
+    ]
+  },
+  "compound": {
+    "id": "00000000-0000-0000-0000-00000000012f",
+    "name": "compound",
+    "bindings": [
+      {
+        "name": "value_0",
+        "value": "00000000-0000-0000-0000-000000000001"
+      },
+      {
+        "name": "value_1",
+        "value": "00000000-0000-0000-0000-000000000002"
+      },
+      {
+        "name": "value_2",
+        "value": "00000000-0000-0000-0000-000000000004"
+      }
+    ],
+    "expressions": [
+      {
+        "id": "744ce27c-5403-5428-b92e-6aff72eea199",
+        "kind": "binary",
+        "operator": "equal",
+        "operands": [
+          {
+            "id": "238c6e7f-8329-5f97-8450-ee5a2607935c",
+            "kind": "reference",
+            "target": {
+              "target": "00000000-0000-0000-0000-00000000001e"
+            }
+          },
+          {
+            "id": "4d80596a-f176-5476-b95c-fb757120d8d4",
+            "kind": "reference",
+            "target": {
+              "target": "00000000-0000-0000-0000-000000000001"
+            }
+          }
+        ]
+      },
+      {
+        "id": "060de0c4-567f-53dd-b6eb-6458e5f75585",
+        "kind": "binary",
+        "operator": "equal",
+        "operands": [
+          {
+            "id": "83870e75-8a28-5a2a-ac9c-6cd49b480b97",
+            "kind": "reference",
+            "target": {
+              "target": "00000000-0000-0000-0000-00000000001f"
+            }
+          },
+          {
+            "id": "1b2f72dd-82b9-5795-9282-b1e630d6e0f0",
+            "kind": "binary",
+            "operator": "multiply",
+            "operands": [
+              {
+                "id": "b3568699-de74-5d39-8a34-830430ecbcaa",
+                "kind": "reference",
+                "target": {
+                  "target": "00000000-0000-0000-0000-00000000001e"
+                }
+              },
+              {
+                "id": "ec6f697b-e28f-5aef-89c9-2d678aaa0e9e",
+                "kind": "binary",
+                "operator": "add",
+                "operands": [
+                  {
+                    "id": "6c38390e-ef53-5119-896c-8dc5d7bbccf8",
+                    "kind": "quantity",
+                    "quantity": {
+                      "magnitude": 1,
+                      "units": "dimensionless"
+                    }
+                  },
+                  {
+                    "id": "ad5b7762-2d8f-5d93-bff7-7de36d770895",
+                    "kind": "reference",
+                    "target": {
+                      "target": "00000000-0000-0000-0000-000000000002"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "constraints": [
+      {
+        "id": "5ea49b70-09de-5d6f-ba07-d71ede0a46f4",
+        "predicate": "744ce27c-5403-5428-b92e-6aff72eea199"
+      },
+      {
+        "id": "b16ecf71-0bdf-5250-9cf9-4b8b300f2d3f",
+        "predicate": "060de0c4-567f-53dd-b6eb-6458e5f75585"
+      }
+    ]
+  },
+  "resale": {
+    "id": "00000000-0000-0000-0000-000000000130",
+    "targets": [
+      {
+        "target": "00000000-0000-0000-0000-00000000001e"
+      },
+      {
+        "target": "00000000-0000-0000-0000-000000000028"
+      },
+      {
+        "target": "00000000-0000-0000-0000-00000000001f"
+      },
+      {
+        "target": "00000000-0000-0000-0000-000000000029"
+      }
+    ],
+    "points": [
+      {
+        "id": "60d186dd-3db5-523a-843f-76e5f80ee094",
+        "at": "2026-01-31",
+        "observations": [
+          {
+            "name": "pricing_factor",
+            "target": {
+              "target": "00000000-0000-0000-0000-000000000014"
+            }
+          }
+        ],
+        "rules": [
+          {
+            "id": "40b2b88a-dc45-5aae-987a-d65788fb084a",
+            "condition": {
+              "id": "35ba6397-8ddf-581a-8ceb-f84c4a9070d4",
+              "kind": "binary",
+              "operator": "greater_than",
+              "operands": [
+                {
+                  "id": "3ee64489-6e72-5636-bd8b-a7b551c16c5f",
+                  "kind": "reference",
+                  "target": {
+                    "target": "00000000-0000-0000-0000-000000000014"
+                  }
+                },
+                {
+                  "id": "59bc2f4c-83b3-5fc4-9bf0-76983d0c6f4a",
+                  "kind": "quantity",
+                  "quantity": {
+                    "magnitude": 1.2,
+                    "units": "dimensionless"
+                  }
+                }
+              ]
+            },
+            "actions": [
+              {
+                "kind": "assign",
+                "target": {
+                  "target": "00000000-0000-0000-0000-00000000001e"
+                },
+                "quantity": {
+                  "magnitude": 1,
+                  "units": "dimensionless"
+                }
+              },
+              {
+                "kind": "assign",
+                "target": {
+                  "target": "00000000-0000-0000-0000-000000000028"
+                },
+                "quantity": {
+                  "magnitude": 1,
+                  "units": "dimensionless"
+                }
+              },
+              {
+                "kind": "assign",
+                "target": {
+                  "target": "00000000-0000-0000-0000-00000000001f"
+                },
+                "quantity": {
+                  "magnitude": 0,
+                  "units": "dimensionless"
+                }
+              },
+              {
+                "kind": "assign",
+                "target": {
+                  "target": "00000000-0000-0000-0000-000000000029"
+                },
+                "quantity": {
+                  "magnitude": 0,
+                  "units": "dimensionless"
+                }
+              },
+              {
+                "kind": "terminate"
+              }
+            ]
+          }
+        ],
+        "fallback": [
+          {
+            "kind": "assign",
+            "target": {
+              "target": "00000000-0000-0000-0000-00000000001e"
+            },
+            "quantity": {
+              "magnitude": 1,
+              "units": "dimensionless"
+            }
+          },
+          {
+            "kind": "assign",
+            "target": {
+              "target": "00000000-0000-0000-0000-000000000028"
+            },
+            "quantity": {
+              "magnitude": 0,
+              "units": "dimensionless"
+            }
+          }
+        ]
+      },
+      {
+        "id": "a785b5fc-3739-557a-80de-d63854fefce4",
+        "at": "2026-02-28",
+        "observations": [
+          {
+            "name": "pricing_factor",
+            "target": {
+              "target": "00000000-0000-0000-0000-000000000015"
+            }
+          }
+        ],
+        "rules": [
+          {
+            "id": "5e0d1e20-c322-52fb-ac12-7ae178c340d7",
+            "condition": {
+              "id": "6bc4b2a2-2592-5ffe-a743-84379c35b7fd",
+              "kind": "binary",
+              "operator": "greater_than",
+              "operands": [
+                {
+                  "id": "1ffebc91-331a-56df-9167-dd4901dde242",
+                  "kind": "reference",
+                  "target": {
+                    "target": "00000000-0000-0000-0000-000000000015"
+                  }
+                },
+                {
+                  "id": "82b2c0ae-7b5e-5f15-b707-51954b60dfd0",
+                  "kind": "quantity",
+                  "quantity": {
+                    "magnitude": 1.2,
+                    "units": "dimensionless"
+                  }
+                }
+              ]
+            },
+            "actions": [
+              {
+                "kind": "assign",
+                "target": {
+                  "target": "00000000-0000-0000-0000-00000000001f"
+                },
+                "quantity": {
+                  "magnitude": 1,
+                  "units": "dimensionless"
+                }
+              },
+              {
+                "kind": "assign",
+                "target": {
+                  "target": "00000000-0000-0000-0000-000000000029"
+                },
+                "quantity": {
+                  "magnitude": 1,
+                  "units": "dimensionless"
+                }
+              },
+              {
+                "kind": "terminate"
+              }
+            ]
+          }
+        ],
+        "fallback": [
+          {
+            "kind": "assign",
+            "target": {
+              "target": "00000000-0000-0000-0000-00000000001f"
+            },
+            "quantity": {
+              "magnitude": 1,
+              "units": "dimensionless"
+            }
+          },
+          {
+            "kind": "assign",
+            "target": {
+              "target": "00000000-0000-0000-0000-000000000029"
+            },
+            "quantity": {
+              "magnitude": 1,
+              "units": "dimensionless"
+            }
+          },
+          {
+            "kind": "terminate"
+          }
+        ]
+      }
+    ]
+  }
+}

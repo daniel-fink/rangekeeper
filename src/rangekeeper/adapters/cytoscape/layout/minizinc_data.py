@@ -4,6 +4,7 @@ This module has no process or filesystem effects; solver orchestration supplies
 an optional independently checked incumbent.
 """
 
+from rangekeeper.adapters.cytoscape.layout.model import ArrangementSpacing, Axis
 from dataclasses import asdict
 from .reduction import collision_pairs
 
@@ -36,7 +37,7 @@ def encode(p, initial):
         if b.id != a.id and b.id not in descendants[a.id]
     ]
     orders = [
-        (g, ids[b], ids[e], 0 if axis == "x" else 1)
+        (g, ids[b], ids[e], 0 if axis == Axis.X else 1)
         for g, a in enumerate(groups, 1)
         if a.id in prefs
         for b, e, axis in prefs[a.id].orders
@@ -50,12 +51,13 @@ def encode(p, initial):
     data = {
         "ceil_order": p.schema_version >= 3,
         "packed": [
-            a.id in arrangements and arrangements[a.id].spacing == "packed"
+            a.id in arrangements
+            and arrangements[a.id].spacing == ArrangementSpacing.PACKED
             for a in groups
         ],
         "flow": [
             (
-                ("grid", "row", "column").index(arrangements[a.id].flow)
+                ("grid", "row", "column").index(arrangements[a.id].flow.value)
                 if a.id in arrangements
                 else 0
             )
@@ -63,7 +65,7 @@ def encode(p, initial):
         ],
         "alignment": [
             (
-                ("start", "center", "end").index(arrangements[a.id].alignment)
+                ("start", "center", "end").index(arrangements[a.id].alignment.value)
                 if a.id in arrangements
                 else 0
             )
@@ -106,7 +108,7 @@ def encode(p, initial):
         "direction": [
             (
                 ("unspecified", "horizontal", "vertical", "balanced").index(
-                    prefs[a.id].direction
+                    prefs[a.id].direction.value
                 )
                 if a.id in prefs
                 else 0

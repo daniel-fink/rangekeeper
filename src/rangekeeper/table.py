@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from types import MappingProxyType
 from uuid import UUID
 
@@ -38,6 +38,7 @@ class Table:
 
     columns: tuple[str, ...]
     rows: tuple[Row, ...]
+    _rows_by_id: Mapping[UUID, Row] = field(init=False, repr=False, compare=False)
 
     def __init__(
         self,
@@ -46,36 +47,42 @@ class Table:
     ) -> None:
         columns = _validate_names(columns, "columns")
         normalized_rows = []
-        identities = set()
+        identities = {}
         for item in rows:
-            row = item if isinstance(item, Row) else Row(values=item)
-            missing = tuple(column for column in columns if column not in row.values)
-            extra = tuple(column for column in row.values if column not in columns)
+            values = item.values if isinstance(item, Row) else item
+            if not isinstance(values, Mapping):
+                raise TypeError("Row values must be a mapping")
+            ordered = tuple(values) == columns
+            if not ordered:
+                _validate_names(values, "Row columns")
+            missing = tuple(column for column in columns if column not in values)
+            extra = tuple(column for column in values if column not in columns)
             if missing or extra:
                 raise TableError(
                     "row columns do not match Table columns: "
                     f"missing={list(missing)!r}, extra={list(extra)!r}"
                 )
+            if isinstance(item, Row) and ordered:
+                row = item
+            else:
+                row = Row(
+                    {column: values[column] for column in columns},
+                    item.id if isinstance(item, Row) else None,
+                )
             if row.id is not None:
                 if row.id in identities:
                     raise TableError("Row IDs must be unique")
-                identities.add(row.id)
-            normalized_rows.append(
-                Row(
-                    values={column: row.values[column] for column in columns}, id=row.id
-                )
-            )
+                identities[row.id] = row
+            normalized_rows.append(row)
         object.__setattr__(self, "columns", columns)
         object.__setattr__(self, "rows", tuple(normalized_rows))
+        object.__setattr__(self, "_rows_by_id", MappingProxyType(identities))
 
     def row(self, row_id: UUID) -> Row:
         """Return an identified Row; unidentified rows do not match any key."""
         if not isinstance(row_id, UUID):
             raise TypeError("row_id must be UUID")
-        for row in self.rows:
-            if row.id == row_id:
-                return row
-        raise KeyError(row_id)
+        return self._rows_by_id[row_id]
 
     def column(self, name: str) -> tuple[object, ...]:
         """Return one column in row order."""

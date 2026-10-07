@@ -1,13 +1,16 @@
 """Sequential scalar attempts and batches over immutable revision stores."""
 
+from rangekeeper.run import Severity
+from rangekeeper.run import SolutionStatus
+
 from uuid import UUID, uuid4
 
-from .._schema.records import Diagnostic, Metadata, Report, Status
+from .._schema.records import Diagnostic, Metadata, Report, Status, CompletionStatus
 from .._schema.validation import document_version
 from ..errors import ValidationError
 from ..io.store import RecordStore
 from ..run import Run, RunRecord
-from ..run._report import completion_for
+from ..run.report import completion_for
 from ..specification import Composition, Specification
 from ..units import UnitSystem, default_units
 from . import acceptance
@@ -52,19 +55,21 @@ class Executor:
         """
         if not isinstance(specification, Specification):
             raise TypeError("specification must be a Specification")
-        documents, compositions = Plan(self.store).resolve(specification)
+        plan = Plan(self.store)
+        documents, compositions = plan.resolve(specification)
         self.store.put(specification)
-        return self._execute(specification, documents, compositions)
+        return self._execute(specification, documents, compositions, plan)
 
     def _execute(
         self,
         specification: Specification,
         documents: dict[UUID, Specification],
         compositions: dict[UUID, Composition | ValidationError],
+        plan: Plan,
     ) -> Run:
         if specification.record.cases:
             children = tuple(
-                self._execute(documents[id], documents, compositions)
+                self._execute(documents[id], documents, compositions, plan)
                 for id in specification.record.cases
             )
             outputs = tuple(
@@ -72,7 +77,9 @@ class Executor:
                     id for child in children for id in child.record.outputs or ()
                 )
             )
-            completion = completion_for([child.to_data() for child in children])
+            completion = completion_for(
+                child.report.status.completion for child in children
+            )
             run = Run(
                 RunRecord(
                     metadata=Metadata(
@@ -82,11 +89,16 @@ class Executor:
                     spawns=tuple(child.id for child in children),
                     outputs=outputs,
                     report=Report(
-                        status=Status(completion=completion, solution="not_applicable"),
+                        status=Status(
+                            completion=completion,
+                            solution=SolutionStatus.NOT_APPLICABLE,
+                        ),
                         diagnostics=(
                             Diagnostic(
                                 severity=(
-                                    "info" if completion == "completed" else "warning"
+                                    Severity.INFO
+                                    if completion is CompletionStatus.COMPLETED
+                                    else Severity.WARNING
                                 ),
                                 code="batch_accounting",
                                 message=f"Sequential batch accounted for all {len(children)} direct cases; outputs are their unique accepted union.",
@@ -104,4 +116,5 @@ class Executor:
             self.tolerances,
             specification,
             compositions[specification.id],
+            resolver=plan,
         ).execute()

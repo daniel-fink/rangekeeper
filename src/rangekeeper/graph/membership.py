@@ -15,7 +15,10 @@ def _assembly(model: Model, id: UUID) -> Assembly:
 
 
 def entities_in(
-    model: Model, assembly: UUID, *, recursive: bool = False
+    model: Model,
+    assembly: UUID,
+    *,
+    recursive: bool = False,
 ) -> tuple[Entity, ...]:
     """Return unique members, excluding the root, in Model entity encounter order.
 
@@ -48,7 +51,10 @@ def relationships_in(model: Model, assembly: UUID) -> tuple[Relationship, ...]:
 
 
 def containing_assemblies(
-    model: Model, entity: UUID, *, recursive: bool = False
+    model: Model,
+    entity: UUID,
+    *,
+    recursive: bool = False,
 ) -> tuple[Assembly, ...]:
     """Return direct containers or all ancestors once, in Assembly declaration order."""
     if not isinstance(model, Model):

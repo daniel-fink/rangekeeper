@@ -1,5 +1,17 @@
 """Finite Movement equations checked against an independent temporal oracle."""
 
+from rangekeeper.duration import Frequency, PeriodTiming, DayCount
+from rangekeeper.model.flow import MissingValueHandling
+from rangekeeper.calculations.series import (
+    AlignmentJoin,
+    AggregationReducer,
+    ResamplingReduction,
+    MeanWeighting,
+)
+from rangekeeper.calculations.projection import ProjectionMethod
+from rangekeeper.account import Balance, CurrentInterest, InterestTreatment
+from rangekeeper._schema.enums import ValueKind, SolutionStatus, CompletionStatus
+
 from rangekeeper.model.expression import Reference
 from dataclasses import replace
 from datetime import date
@@ -23,8 +35,6 @@ from rangekeeper.duration.period import make_periods
 from rangekeeper.formulations import flow, growth, financial
 from rangekeeper.specification import Specification, SpecificationRecord, Assignment
 from rangekeeper.specification.targets import (
-    scalar,
-    movement,
     assign_flow,
     unknown_flow,
 )
@@ -36,9 +46,9 @@ from rangekeeper.run import validate
 def oracle():
     ids = {name: uuid4() for name in ("initial", "rate", "cash", "discounted", "pv")}
     money, ratio = uuid4(), uuid4()
-    periods = make_periods(date(2027, 1, 1), frequency="year", count=3)
+    periods = make_periods(date(2027, 1, 1), frequency=Frequency.YEAR, count=3)
     values = [
-        Value(id=ids[name], key=name, kind="measurement", measure=measure)
+        Value(id=ids[name], key=name, kind=ValueKind.MEASUREMENT, measure=measure)
         for name, measure in [("initial", money), ("rate", ratio), ("pv", money)]
     ]
     for name in ("cash", "discounted"):
@@ -46,7 +56,7 @@ def oracle():
             Value(
                 id=ids[name],
                 key=name,
-                kind="flow",
+                kind=ValueKind.FLOW,
                 measure=money,
                 flow=Flow(
                     units="AUD",
@@ -58,7 +68,7 @@ def oracle():
             )
         )
     model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
+        metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
         definitions=Definitions(
             measures=(
                 Measure(id=money, code="money", name="Money", units="AUD"),
@@ -74,22 +84,25 @@ def oracle():
         ),
     )
     equations = (
-        growth.build_compound(
+        growth.compound(
             model,
             id=uuid4(),
-            initial=scalar(ids["initial"]),
-            rate=scalar(ids["rate"]),
+            initial=Reference(target=ids["initial"]),
+            rate=Reference(target=ids["rate"]),
             result=ids["cash"],
         ),
-        financial.build_discount(
+        financial.discount(
             model,
             id=uuid4(),
             source=ids["cash"],
-            rate=scalar(ids["rate"]),
+            rate=Reference(target=ids["rate"]),
             result=ids["discounted"],
         ),
-        financial.build_present_value(
-            model, id=uuid4(), source=ids["discounted"], result=scalar(ids["pv"])
+        financial.present_value(
+            model,
+            id=uuid4(),
+            source=ids["discounted"],
+            result=Reference(target=ids["pv"]),
         ),
     )
     data = model.system.to_data()
@@ -102,20 +115,20 @@ def investigate(model, ids, *, inverse=False):
     unknown = "initial" if inverse else "pv"
     return Specification(
         SpecificationRecord(
-            metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
+            metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
             model=model.id,
             assignments=(
                 Assignment(
-                    target=scalar(ids[fixed]),
+                    target=Reference(target=ids[fixed]),
                     quantity=Quantity(magnitude=300 if inverse else 100, units="AUD"),
                 ),
                 Assignment(
-                    target=scalar(ids["rate"]),
+                    target=Reference(target=ids["rate"]),
                     quantity=Quantity(magnitude=0.1, units="dimensionless"),
                 ),
             ),
             unknowns=(
-                scalar(ids[unknown]),
+                Reference(target=ids[unknown]),
                 *unknown_flow(model, ids["cash"]),
                 *unknown_flow(model, ids["discounted"]),
             ),
@@ -128,7 +141,7 @@ def test_forward_then_inverse_temporal_oracle():
     store = MemoryStore()
     store.put(model)
     run = Executor(store).execute(investigate(model, ids))
-    assert run.report.status.solution == "feasible", run.report.to_data()
+    assert run.report.status.solution == SolutionStatus.FEASIBLE, run.report.to_data()
     validate(run, resolver=store).raise_if_invalid()
     result = store.load_model(run.record.outputs[0])
     assert [
@@ -136,7 +149,9 @@ def test_forward_then_inverse_temporal_oracle():
     ] == pytest.approx([100, 110, 121])
     assert result.value(ids["pv"]).quantity.magnitude == pytest.approx(3000 / 11)
     inverse = Executor(store).execute(investigate(result, ids, inverse=True))
-    assert inverse.report.status.solution == "feasible", inverse.report.to_data()
+    assert (
+        inverse.report.status.solution == SolutionStatus.FEASIBLE
+    ), inverse.report.to_data()
     output = store.load_model(inverse.record.outputs[0])
     assert output.value(ids["initial"]).quantity.magnitude == pytest.approx(110)
     assert output.metadata.previous == result.id
@@ -172,12 +187,12 @@ def test_explicit_flow_roles_preserve_missing_null_zero_and_unrelated_entries():
             unknown_flow(model, ids["cash"], ids=selected)
     specification = Specification(
         SpecificationRecord(
-            metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
+            metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
             model=model.id,
             assignments=(
                 Assignment(
-                    target=movement(
-                        next(
+                    target=Reference(
+                        target=next(
                             m.id
                             for m in model.value(ids["cash"]).flow.movements
                             if m.key == "y1"
@@ -187,8 +202,8 @@ def test_explicit_flow_roles_preserve_missing_null_zero_and_unrelated_entries():
                 ),
             ),
             unknowns=(
-                movement(
-                    next(
+                Reference(
+                    target=next(
                         m.id
                         for m in model.value(ids["cash"]).flow.movements
                         if m.key == "y2"
@@ -200,7 +215,7 @@ def test_explicit_flow_roles_preserve_missing_null_zero_and_unrelated_entries():
     store = MemoryStore()
     store.put(model)
     run = Executor(store).execute(specification)
-    assert run.report.status.solution == "feasible", run.report.to_data()
+    assert run.report.status.solution == SolutionStatus.FEASIBLE, run.report.to_data()
     result = store.load_model(run.record.outputs[0])
     movements = result.value(ids["cash"]).flow.movements
     assert [m.magnitude for m in movements] == [25, 0, 99]
@@ -222,18 +237,18 @@ def test_stable_references_builder_ids_and_coordinate_mismatch():
 
     model, ids = oracle()
     builder = uuid4()
-    first = growth.build_compound(
+    first = growth.compound(
         model,
         id=builder,
-        initial=scalar(ids["initial"]),
-        rate=scalar(ids["rate"]),
+        initial=Reference(target=ids["initial"]),
+        rate=Reference(target=ids["rate"]),
         result=ids["cash"],
     )
-    assert first == growth.build_compound(
+    assert first == growth.compound(
         model,
         id=builder,
-        initial=scalar(ids["initial"]),
-        rate=scalar(ids["rate"]),
+        initial=Reference(target=ids["initial"]),
+        rate=Reference(target=ids["rate"]),
         result=ids["cash"],
     )
     data = model.system.to_data()
@@ -247,22 +262,25 @@ def test_stable_references_builder_ids_and_coordinate_mismatch():
         Movement(
             id=uuid4(),
             key="inserted",
-            period=Period(start=date(2026, 1, 1), end=date(2027, 1, 1)),
+            period=Period(
+                start_inclusive=date(2026, 1, 1), end_exclusive=date(2027, 1, 1)
+            ),
         ).to_data(),
     )
     changed = model.revise(Update(system=System.from_data(data)))
-    from rangekeeper.execution.symbols import key, units_for
+    from rangekeeper.model.scope import target_units
 
-    assert key(
-        movement(
-            next(m.id for m in model.value(ids["cash"]).flow.movements if m.key == "y2")
+    reference = Reference(
+        target=next(
+            m.id for m in model.value(ids["cash"]).flow.movements if m.key == "y2"
         )
-    ) == str(model.value(ids["cash"]).flow.movements[1].id)
+    )
+    assert reference.target == model.value(ids["cash"]).flow.movements[1].id
     assert (
-        units_for(
+        target_units(
             changed,
-            movement(
-                next(
+            Reference(
+                target=next(
                     m.id
                     for m in model.value(ids["cash"]).flow.movements
                     if m.key == "y2"
@@ -272,9 +290,7 @@ def test_stable_references_builder_ids_and_coordinate_mismatch():
         == "AUD"
     )
     with pytest.raises(ValueError, match="coordinates"):
-        flow.build_sum(
-            changed, id=uuid4(), sources=[ids["cash"]], result=ids["discounted"]
-        )
+        flow.sum(changed, id=uuid4(), sources=[ids["cash"]], result=ids["discounted"])
 
 
 def test_movement_roles_conflicts_units_and_recorded_values_not_assignments():
@@ -291,7 +307,7 @@ def test_movement_roles_conflicts_units_and_recorded_values_not_assignments():
         if r["target"] != str(model.value(ids["cash"]).flow.movements[1].id)
     ]
     failed = Executor(store).execute(Specification.from_data(original))
-    assert failed.report.status.solution == "not_assessed"
+    assert failed.report.status.solution == SolutionStatus.NOT_ASSESSED
     for modify in ("duplicate", "overlap", "missing", "units"):
         data = investigate(model, ids).to_data()
         if modify == "duplicate":
@@ -299,8 +315,8 @@ def test_movement_roles_conflicts_units_and_recorded_values_not_assignments():
         elif modify == "overlap":
             data["assignments"].append(
                 dict(
-                    target=movement(
-                        next(
+                    target=Reference(
+                        target=next(
                             m.id
                             for m in model.value(ids["cash"]).flow.movements
                             if m.key == "y1"
@@ -319,7 +335,7 @@ def test_movement_roles_conflicts_units_and_recorded_values_not_assignments():
             assert modify in ("duplicate", "overlap")
         else:
             run = Executor(store).execute(spec)
-            assert run.report.status.solution == "not_assessed"
+            assert run.report.status.solution == SolutionStatus.NOT_ASSESSED
 
 
 def test_movement_candidate_rejection_and_expansion_limits():
@@ -335,7 +351,7 @@ def test_movement_candidate_rejection_and_expansion_limits():
         def solve(self, *args, **kwargs):
             result = PyomoHighs().solve(*args, **kwargs)
             candidate = dict(result.candidate)
-            candidate[str(model.value(ids["cash"]).flow.movements[1].id)] += 1
+            candidate[model.value(ids["cash"]).flow.movements[1].id] += 1
             return replace(result, candidate=candidate)
 
     run = Executor(store, backend=WrongCandidate()).execute(investigate(model, ids))
@@ -372,7 +388,7 @@ def test_preparation_deadline_and_constraint_limit_prevent_backend_call(monkeypa
     run = Executor(store, backend=ForbiddenBackend()).execute(
         Specification.from_data(spec)
     )
-    assert run.report.status.completion == "limited"
+    assert run.report.status.completion == CompletionStatus.LIMITED
     assert any(d.code == "attempt_deadline" for d in run.report.diagnostics)
 
 
@@ -386,6 +402,9 @@ def test_explicit_draft_upgrade_preserves_order_and_requires_new_pins():
 
     def unwrap(node):
         if isinstance(node, dict):
+            if "start_inclusive" in node and "end_exclusive" in node:
+                node["start"] = node.pop("start_inclusive")
+                node["end"] = node.pop("end_exclusive")
             if node.get("kind") == "reference":
                 node["target"] = node["target"]["target"]
             for value in node.values():
@@ -397,6 +416,7 @@ def test_explicit_draft_upgrade_preserves_order_and_requires_new_pins():
     # A pre-Flow-expression document: remove equations rather than inventing an
     # old scalar encoding for references that never existed in that contract.
     old["system"]["formulations"] = []
+    unwrap(old)
     before = copy.deepcopy(old)
     upgraded = upgrade_model(old)
     assert old == before and upgraded.metadata.previous == model.id
@@ -415,8 +435,8 @@ def test_explicit_draft_upgrade_preserves_order_and_requires_new_pins():
     with pytest.raises(ValueError, match="explicitly"):
         upgrade_specification(scalar_spec)
     spec = upgrade_specification(scalar_spec, model=upgraded.id)
-    assert spec.record.assignments[0].target == scalar(ids["rate"])
-    assert spec.record.unknowns == (scalar(ids["initial"]),)
+    assert spec.record.assignments[0].target == Reference(target=ids["rate"])
+    assert spec.record.unknowns == (Reference(target=ids["initial"]),)
     assert spec.record.model == upgraded.id
     assert (
         spec.metadata.previous == scalar_spec["metadata"]["id"]
@@ -441,46 +461,46 @@ def test_finite_balance_interest_scaling_sum_and_explicit_reversion_mapping():
             Value(
                 id=ids[name],
                 key=name,
-                kind="flow",
+                kind=ValueKind.FLOW,
                 measure=model.value(ids["cash"]).measure,
                 flow=Flow.from_data(template["flow"]).clone(),
             ).to_data()
         )
     model = model.revise(Update(system=System.from_data(data)))
     equations = [
-        account.build_balance(
+        flow.accumulate(
             model,
             id=uuid4(),
-            movements=ids["cash"],
-            initial=scalar(ids["initial"]),
+            source=ids["cash"],
+            initial=Reference(target=ids["initial"]),
             result=ids["discounted"],
         ),
-        account.build_interest(
+        account.interest(
             model,
             id=uuid4(),
             principal=ids["discounted"],
-            rate=scalar(ids["rate"]),
+            rate=Reference(target=ids["rate"]),
             result=ids["interest"],
             nonnegative_principal=True,
         ),
-        flow.build_scale(
+        flow.scale(
             model,
             id=uuid4(),
             source=ids["interest"],
-            factor=scalar(ids["rate"]),
+            factor=Reference(target=ids["rate"]),
             result=ids["scaled"],
         ),
-        flow.build_sum(
+        flow.sum(
             model,
             id=uuid4(),
             sources=[ids["interest"], ids["scaled"]],
             result=ids["sum"],
         ),
-        financial.build_reversion(
+        financial.reversion(
             model,
             id=uuid4(),
             income=ids["discounted"],
-            capitalization=scalar(ids["rate"]),
+            capitalization=Reference(target=ids["rate"]),
             result=ids["reversion"],
             mapping={
                 out.id: model.value(ids["discounted"]).flow.movements[(i + 1) % 3].id
@@ -493,16 +513,18 @@ def test_finite_balance_interest_scaling_sum_and_explicit_reversion_mapping():
     model = model.revise(Update(system=System.from_data(data)))
     assigned = [
         Assignment(
-            target=scalar(ids["initial"]), quantity=Quantity(magnitude=100, units="AUD")
+            target=Reference(target=ids["initial"]),
+            quantity=Quantity(magnitude=100, units="AUD"),
         ),
         Assignment(
-            target=scalar(ids["rate"]), quantity=Quantity(magnitude=10, units="percent")
+            target=Reference(target=ids["rate"]),
+            quantity=Quantity(magnitude=10, units="percent"),
         ),
     ]
     assigned.extend(
         Assignment(
-            target=movement(
-                next(
+            target=Reference(
+                target=next(
                     m.id
                     for m in model.value(ids["cash"]).flow.movements
                     if m.key == f"y{i+1}"
@@ -514,7 +536,7 @@ def test_finite_balance_interest_scaling_sum_and_explicit_reversion_mapping():
     )
     spec = Specification(
         SpecificationRecord(
-            metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
+            metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
             model=model.id,
             assignments=tuple(assigned),
             unknowns=tuple(
@@ -527,7 +549,7 @@ def test_finite_balance_interest_scaling_sum_and_explicit_reversion_mapping():
     store = MemoryStore()
     store.put(model)
     run = Executor(store).execute(spec)
-    assert run.report.status.solution == "feasible", run.report
+    assert run.report.status.solution == SolutionStatus.FEASIBLE, run.report
     output = store.load_model(run.record.outputs[0])
     for name, expected in {
         "discounted": [110, 90, 95],
@@ -540,11 +562,11 @@ def test_finite_balance_interest_scaling_sum_and_explicit_reversion_mapping():
             m.magnitude for m in output.value(ids[name]).flow.movements
         ] == pytest.approx(expected)
     with pytest.raises(ValueError, match="overdraft"):
-        account.build_interest(
+        account.interest(
             model,
             id=uuid4(),
             principal=ids["discounted"],
-            rate=scalar(ids["rate"]),
+            rate=Reference(target=ids["rate"]),
             result=ids["interest"],
             nonnegative_principal=False,
         )

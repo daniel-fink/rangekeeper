@@ -7,8 +7,8 @@ A Run records a finalized attempt. Strict codecs preserve field presence; stores
 | Package/module | Responsibility |
 | --- | --- |
 | `run/run.py` | Frozen Run facade over the generated `RunRecord`, with `from_data`, `id`, `metadata`, `record`, `report`, and detached `to_data`. No revise method. |
-| `run/_report.py`, `_tree.py`, `_publication.py` | Shared local status/report checks and existing bounded tree/publication semantics; conformance scripts use the same checks. |
-| `run/_resolve.py`, `run/validation.py` | Resolve exact document revisions; public `validate(run, *, resolver) -> ValidationReport`. Raw catalogue checks are explicitly named `validate_records`. |
+| `run/report.py`, `run/outputs.py` | Shared status/report rules and pure output conformance checks; no output helper owns traversal state. |
+| `run/validation.py` | One operation-local owner resolves exact documents, caches matching preparation, and checks the Run tree; public `validate(run, *, resolver) -> ValidationReport`. Raw catalogue checks are explicitly named `validate_records`. |
 | `references.py` | `SpecificationResolver` supplies Model/Specification reads; `DocumentResolver` extends it with Run reads. Domain code imports no IO implementation. |
 | `io/store.py` | `Document` union and `RecordStore` protocol: three typed reads plus `put(document) -> UUID`. |
 | `io/json.py`, `io/yaml.py` | Explicit-kind `loads`, `dumps`, `read`, and atomic create-only `write`. YAML is imported only when used. |
@@ -31,21 +31,21 @@ from tempfile import TemporaryDirectory
 from uuid import uuid4
 import rangekeeper as rk
 from rangekeeper.metadata import Metadata
-from rangekeeper.specification import SpecificationRecord, compose, validate as validate_specification
-from rangekeeper.run import RunRecord, Report, Status, Diagnostic, validate as validate_run
+from rangekeeper.specification import SpecificationRecord
+from rangekeeper.run import RunRecord, Report, Status, Diagnostic, CompletionStatus, SolutionStatus, Severity, validate as validate_run
 from rangekeeper.io import MemoryStore, DirectoryStore, json
 
-model = rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.6.0"))
+model = rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.7.0"))
 specification = rk.Specification(SpecificationRecord(
-    metadata=Metadata(id=uuid4(), schema_version="0.6.0"), model=model.id,
+    metadata=Metadata(id=uuid4(), schema_version="0.7.0"), model=model.id,
 ))
 run = rk.Run(RunRecord(
-    metadata=Metadata(id=uuid4(), schema_version="0.3.0", name="Synthetic example"),
+    metadata=Metadata(id=uuid4(), schema_version="0.4.0", name="Synthetic example"),
     specification=specification.id,
     report=Report(
-        status=Status(completion="failed", solution="not_assessed"),
+        status=Status(completion=CompletionStatus.FAILED, solution=SolutionStatus.NOT_ASSESSED),
         diagnostics=(Diagnostic(
-            severity="error", code="unsupported_capability",
+            severity=Severity.ERROR, code="unsupported_capability",
             message="Synthetic example: no execution backend was invoked.",
         ),),
     ),
@@ -54,11 +54,11 @@ run = rk.Run(RunRecord(
 memory = MemoryStore()
 memory.put(model)
 memory.put(specification)
-composition = compose(specification, resolver=memory)
-validate_specification(composition, resolver=memory).raise_if_invalid()
+composition = specification.compose(resolver=memory)
+composition.validate(resolver=memory).raise_if_invalid()
 validate_run(run, resolver=memory).raise_if_invalid()
 memory.put(run)
-assert memory.load_run(run.id).report.status.completion == "failed"
+assert memory.load_run(run.id).report.status.completion is CompletionStatus.FAILED
 assert json.loads(json.dumps(run), kind=rk.Run).to_data() == run.to_data()
 
 with TemporaryDirectory() as directory:
@@ -104,7 +104,23 @@ compatible assignments explicitly; the raw conformance entrypoint retains strict
 unit-spelling defaults. [Scalar execution](SCALAR_EXECUTION.md) independently
 evaluates original expressions on serialized candidates before publication.
 Specification-local Value publication and structural interventions remain unsupported
-by that adapter. No record schema was changed.
+by that adapter.
+
+Historical Claims require exact, type-sensitive preservation: changing `0` to
+`False`, changing a floating zero sign, or reordering an opaque list is a change.
+Output checks apply their explicit numerical-field allowlist separately. Store
+revision conflicts use schema equivalence; that does not relax historical evidence.
+
+Policy evidence is stored as `Report.outcomes`, containing `DecisionOutcome` records
+that name their declared `Decision`. Recorded controls cannot substitute for an
+earlier outcome. Both output and no-output validation branches use the supplied
+UnitSystem and independently check observations, actions and first matching rules.
+
+A valid composed Model pin remains available for batch assertions after a later
+mathematical failure. Child checks retain these pins for their parent; parent
+accounting does not recompose each descendant. `completion_for` consumes canonical
+CompletionStatus members and returns a member; empty input yields COMPLETED, while
+actual batch validation still enforces complete case accounting.
 
 ## Interchange contract
 
@@ -161,8 +177,11 @@ A process crash before the final link can leave an ignored temporary file, never
 final revision. This implementation requires local filesystem support for those primitives;
 it does not silently substitute an overwrite operation.
 
-IO failure after linking may leave a complete published record; callers can inspect and
-retry idempotently. There is no multi-document transaction: execution publishes
+IO failure after linking leaves a complete published record when directory sync
+fails. The internal publication error identifies the visible path; callers can
+inspect and retry idempotently. The same distinction applies to atomic pointer
+replacement: visibility can be established while durability remains unconfirmed.
+There is no multi-document transaction: execution publishes
 outputs first, then its Run, and interruption can leave unreferenced complete outputs.
 Direct filesystem edits/deletion are outside the store's immutability contract. Loading a
 Run checks local consistency; explicit resolved validation can audit its references again.

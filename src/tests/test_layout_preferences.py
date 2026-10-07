@@ -1,5 +1,13 @@
 """Evidence normalization, soft conflicting intent and independent geometry scores."""
 
+from rangekeeper.model import ValueKind
+
+from rangekeeper.adapters.cytoscape.layout.model import (
+    PreferenceDirection,
+    Axis,
+    PreferenceDirection,
+)
+from rangekeeper.adapters.cytoscape.layout.result import ResultStatus
 from dataclasses import replace
 
 import pytest
@@ -38,7 +46,7 @@ requires_z3 = pytest.mark.z3
 
 def graph_records(records):
     return Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
+        metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
         system=System(
             entities=tuple(
                 Entity(
@@ -46,7 +54,12 @@ def graph_records(records):
                     code=str(i),
                     characteristics=Characteristics(
                         values=tuple(
-                            Value(id=uuid4(), key=k, kind="property", content=encode(v))
+                            Value(
+                                id=uuid4(),
+                                key=k,
+                                kind=ValueKind.PROPERTY,
+                                content=encode(v),
+                            )
                             for k, v in row.items()
                         )
                     ),
@@ -116,7 +129,7 @@ def test_measurement_units_are_normalized_before_similarity():
         Quantity(magnitude=2, units="meter"),
     )
     graph = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.6.0"),
+        metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
         definitions=Definitions(measures=(m,)),
         system=System(
             entities=tuple(
@@ -127,7 +140,7 @@ def test_measurement_units_are_normalized_before_similarity():
                             Value(
                                 id=uuid4(),
                                 key="length",
-                                kind="measurement",
+                                kind=ValueKind.MEASUREMENT,
                                 measure=m.id,
                                 quantity=q,
                             ),
@@ -146,12 +159,12 @@ def test_measurement_units_are_normalized_before_similarity():
     assert report["columns"][0]["unit"] == "meter"
 
 
-def small(direction="horizontal"):
+def small(direction=PreferenceDirection.HORIZONTAL):
     return Problem(
         tuple(Node(i, i, 40, 24) for i in "abcd"),
         (Assembly("g", "Group", tuple("abcd")),),
         weights=Weights(),
-        preferences=(Preference("g", direction=direction),),
+        preferences=(Preference("g", direction=PreferenceDirection(direction)),),
     )
 
 
@@ -188,7 +201,10 @@ def test_shared_members_do_not_get_a_tree_seed_or_new_memberships():
         (Node("s", "Shared"), Node("a", "A"), Node("b", "B")),
         (Assembly("floor", "Floor", ("a", "s")), Assembly("core", "Core", ("s", "b"))),
         weights=Weights(),
-        preferences=(Preference("floor", "horizontal"), Preference("core", "vertical")),
+        preferences=(
+            Preference("floor", PreferenceDirection.HORIZONTAL),
+            Preference("core", PreferenceDirection.VERTICAL),
+        ),
     )
     assert grid_seed(p) is None
 
@@ -200,8 +216,8 @@ def test_conflicting_orders_are_soft_and_checker_matches_every_score():
         preferences=(
             Preference(
                 "g",
-                "horizontal",
-                orders=(("a", "b", "x"), ("b", "a", "x")),
+                PreferenceDirection.HORIZONTAL,
+                orders=(("a", "b", Axis.X), ("b", "a", Axis.X)),
                 affinities=(("a", "c", 100),),
             ),
         ),
@@ -209,7 +225,9 @@ def test_conflicting_orders_are_soft_and_checker_matches_every_score():
     seed = grid_seed(p)
     assert seed
     r = solve(p, time_limit=2, initial=seed)
-    assert r.status in {"feasible", "optimal"} and not check(p, r.rectangles)
+    assert r.status in {ResultStatus.FEASIBLE, ResultStatus.OPTIMAL} and not check(
+        p, r.rectangles
+    )
     assert r.measurements["order_score"] > 0
     assert r.measurements["style_cost"] <= seed.measurements["style_cost"]
     assert r.measurements == metrics(p, r.rectangles, r.grids)
@@ -222,12 +240,14 @@ def test_direction_and_similarity_keep_shared_membership_feasible():
         (Assembly("floor", "Floor", ("a", "s")), Assembly("core", "Core", ("s", "b"))),
         weights=Weights(),
         preferences=(
-            Preference("floor", "horizontal", affinities=(("a", "s", 100),)),
-            Preference("core", "vertical"),
+            Preference(
+                "floor", PreferenceDirection.HORIZONTAL, affinities=(("a", "s", 100),)
+            ),
+            Preference("core", PreferenceDirection.VERTICAL),
         ),
     )
     r = solve(p, time_limit=3, optimize=False)
-    assert r.status == "feasible" and not check(p, r.rectangles)
+    assert r.status == ResultStatus.FEASIBLE and not check(p, r.rectangles)
     assert set(r.rectangles) == {"s", "a", "b", "floor", "core"}
 
 
@@ -247,7 +267,7 @@ def test_empty_assemblies_have_no_direction_penalty():
         (),
         (Assembly("empty", "Empty", ()),),
         weights=Weights(),
-        preferences=(Preference("empty", "vertical"),),
+        preferences=(Preference("empty", PreferenceDirection.VERTICAL),),
     )
     r = grid_seed(p)
     assert r
@@ -259,7 +279,11 @@ def test_proximity_uses_visible_gap_not_label_width():
         (Node("a", "A", 248, 44), Node("b", "B", 248, 44)),
         (Assembly("g", "Group", ("a", "b")),),
         weights=Weights(),
-        preferences=(Preference("g", "horizontal", affinities=(("a", "b", 100),)),),
+        preferences=(
+            Preference(
+                "g", PreferenceDirection.HORIZONTAL, affinities=(("a", "b", 100),)
+            ),
+        ),
     )
     horizontal = {
         "a": Rect(16, 44, 248, 44),

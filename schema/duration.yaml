@@ -1,7 +1,7 @@
 id: https://daniel-fink.github.io/rangekeeper/schema/duration
 name: rangekeeper_duration
 title: Rangekeeper Duration
-version: 0.1.0
+version: 0.2.0
 prefixes:
   linkml: https://w3id.org/linkml/
   rk: https://daniel-fink.github.io/rangekeeper/schema/
@@ -11,12 +11,12 @@ default_prefix: rk
 default_range: string
 classes:
   Period:
-    description: Half-open interval [start, end). Date boundaries use the Gregorian calendar; start must precede end.
+    description: Half-open interval [start_inclusive, end_exclusive). Date boundaries use the Gregorian calendar; start must precede end.
     attributes:
-      start:
+      start_inclusive:
         range: date
         required: true
-      end:
+      end_exclusive:
         range: date
         required: true
   Span:

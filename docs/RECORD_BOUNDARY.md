@@ -3,8 +3,8 @@
 LinkML owns each record's fields, types, inheritance and wire format. The Python
 generator emits one immutable class for each concrete schema class. It also emits
 typed constructors, properties, `replace` methods and docstrings from schema
-descriptions. The bundle contains 72 schema classes: 71 record classes and opaque
-`Content`, represented as JSON data.
+descriptions. Opaque `Content` remains JSON data, outside schema-directed declaration
+traversal.
 
 Use the [domain API](DOMAIN_CORE.md) for complete Model and Specification revisions,
 [Run and storage](RUN_AND_STORAGE.md) for execution evidence and persistence, and the
@@ -17,8 +17,9 @@ the shared record layer and its method ownership.
 | --- | --- |
 | `schema/*.yaml` | Authoritative field, enum, inheritance and description definitions |
 | `tools/schema/generate.py` | Explicit constructors, properties, typed replacement signatures and selected behaviour inheritance |
+| `rangekeeper/_schema/enums.py` | Canonical plain Enum classes; typed fields decode members and wire data retains strings |
 | `rangekeeper/_schema/records.py` | Canonical immutable classes, including the registry used for nested decoding |
-| `rangekeeper/_records.py` | Shared field encoding, strict JSON copying, freezing, replacement and field presence |
+| `rangekeeper/_records.py` | Shared field encoding, strict JSON copying, freezing, replacement, field presence and schema equivalence |
 | `rangekeeper/_behaviors/` | Handwritten methods for Flow, Movement, Period and Distribution; no field declarations |
 | `rangekeeper/_schema/{schema,slots,manifest}.json` | Structural checks, conversion metadata and reproducible generation fingerprints |
 | `model`, `specification`, `run` | Document-wide validation, references and revision rules |
@@ -54,7 +55,8 @@ assert flow.total().magnitude == 10
 
 Constructors, `from_data` and `replace` validate structure. Generated signatures
 let type checkers reject unknown fields, wrong record types and invalid enum
-values. Runtime checks reject nonfinite numbers, cyclic data and invalid field
+values. Typed constructors and `replace` require canonical Enum members; raw wire
+strings belong at `from_data`/`from_json`. Runtime checks reject nonfinite numbers, cyclic data and invalid field
 shapes. Python `bool` is a subtype of `int`, but runtime numerical fields still
 reject it.
 
@@ -75,6 +77,12 @@ and `datetime.date` in typed fields. Datetimes are not truncated into dates. Sou
 fields that also permit timestamp strings retain those strings. UUID conversion
 applies only to schema-declared references, never to opaque content.
 
+`record == other` is type-sensitive and preserves collection order. `record.equivalent(other)`
+ignores only schema-declared unordered collection order. Both preserve scalar types,
+signed floating zero, multiplicity, field presence and opaque-content order. Neither
+performs unit conversion. Model/Specification revision checks live in `_revision.py`;
+content-hash encodings remain separate provenance contracts.
+
 ## Method contracts
 
 ```text
@@ -90,9 +98,9 @@ Flow
   from_periods(periods, magnitudes, *, units, dates=None)
   check(*, resolved=False, units=None) -> Flow
   convert(*, units, unit_system=None) / scale(factor) / negate()
-  total(*, missing="error") -> Quantity | None
+  total(*, missing=MissingValueHandling.ERROR) -> Quantity | None
   trim(*, start, end) / clean(*, remove_zeroes=False)
-  difference(*, initial=None) / collapse(*, on=None, timing=None, missing="error")
+  difference(*, initial=None) / collapse(*, on=None, timing=None, missing=MissingValueHandling.ERROR)
   extent(*, include_zeroes=False) / trim_empty()
 
 Period (also inherited by Span)
@@ -112,9 +120,9 @@ for every Movement. `Movement.number` provides a nonoptional float for arithmeti
 `Flow.clean` is a transformation: it removes unresolved movements and, when
 requested, zeroes. It is not a validation step.
 
-Periods use `[start, end)`. Movement dates can record independent payment or
+Periods use `[start_inclusive, end_exclusive)`. Movement dates can record independent payment or
 observation dates outside their coverage period. Recorded dates take precedence;
-undated period movements require `start`, `last_day` or `end` when resolving a date.
+undated period movements require `PeriodTiming.FIRST`, `LAST` or `END` when resolving a date.
 Flows carry units and coordinates. The calling model determines whether operations
 such as summation or integration express the intended quantity.
 
@@ -126,11 +134,12 @@ generator. Point masses retain the existing deterministic sampling convention.
 
 `series.align(flows, join=..., missing=...)` returns `Alignment`, which retains
 aligned Flows, original known-value coverage and the selected missing policy.
-`Alignment.reduce(reducer="sum" | "min" | "max", units=...)` shares unit conversion,
+`Alignment.reduce(reducer=AggregationReducer.SUM, units=...)` shares unit conversion,
 Claim collection and coverage calculation. `series.aggregate(...)` combines these
 two steps. Each reduction returns `Aggregation(flow, coverage)`.
 
-Exact alignment is the default. Union and intersection are explicit. Zero filling
+`AlignmentJoin.EXACT` is the default. `UNION` and `INTERSECTION` are explicit.
+Missing choices use `MissingValueHandling`; reducer choices use `AggregationReducer`. Zero filling
 applies to absent coordinates; an explicitly unresolved movement remains unresolved.
 Skip can reduce a partly known group; an entirely unknown group remains unresolved.
 Coverage reports the original known fraction, including after zero filling.

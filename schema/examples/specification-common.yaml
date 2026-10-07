@@ -1,11 +1,11 @@
 metadata:
-  id: fb1663aa-1482-50e1-9da9-d798faa70872
-  schema_version: 0.6.0
+  id: 38a9e7e9-2eb4-5142-9570-8884a51452bb
+  schema_version: 0.7.0
   name: Shared valuation requirements
   description: 'Partial contribution: shared assumptions and the NOI solve role. Rent
     and capital value roles are supplied by separate investigations.'
   previous: 0d0336b5-6cf6-56dc-a152-af084b4374d7
-model: e9096132-8158-56db-bc3e-b64ef7f92d4e
+model: 513e3bca-50ac-5437-95f6-9b0d628fe89d
 assignments:
 - quantity:
     magnitude: 20
