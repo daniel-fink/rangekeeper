@@ -1934,7 +1934,7 @@ def test_measurement_without_aggregation_rule_is_rejected(model):
 
 def test_feature_aggregation_supports_rich_values_without_mutating_them(model):
     from datetime import date
-    from rangekeeper.model.flow import Flow
+    from rangekeeper.model.flux import Flow
     from rangekeeper.calculations.series import aggregate
 
     dates = (date(2025, 1, 1), date(2025, 2, 1))

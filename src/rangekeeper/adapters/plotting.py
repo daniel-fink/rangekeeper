@@ -10,7 +10,7 @@ class PartitionKind(Enum):
 
 
 from collections.abc import Mapping, Sequence
-from rangekeeper.model.flow import Flow
+from rangekeeper.model.flux import Flow
 from rangekeeper.model.duration.period import PeriodTiming
 
 

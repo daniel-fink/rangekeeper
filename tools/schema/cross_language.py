@@ -8,7 +8,7 @@ from uuid import uuid4
 from datetime import date
 from rangekeeper_examples import design
 from rangekeeper.model import Model, Update, System, Value
-from rangekeeper.model.flow import Flow, Movement
+from rangekeeper.model.flux import Flow, Movement
 from rangekeeper.model.content import encode
 from rangekeeper.io import json as codec
 

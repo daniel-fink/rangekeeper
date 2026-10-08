@@ -30,10 +30,14 @@ def interest(
     id: UUID,
     principal: UUID,
     rate: Reference,
-    result: UUID,
+    interest: UUID,
     nonnegative_principal: bool,
 ) -> Formulation:
-    """Declare periodic principal * rate and enforce principal >= 0."""
+    """Relate principal and interest Flow Value UUIDs through a scalar rate Reference.
+
+    Rate is dimensionless per step; principal and interest have compatible units.
+    Enforce principal >= 0.
+    """
     if nonnegative_principal is not True:
         raise ValueError(
             "symbolic overdraft interest is unsupported; use known-data calculation"
@@ -41,7 +45,7 @@ def interest(
     prepared = shape(model, principal)
     equations: list[tuple[str, Expression]] = []
     for movement, matches in aligned(
-        model, (principal,), result, shapes={principal: prepared}
+        model, (principal,), interest, shapes={principal: prepared}
     ):
         p = Reference(target=matches[0].id)
         equations.extend(
@@ -64,7 +68,7 @@ def interest(
             )
         )
     return declare(
-        id, "interest", equations, (principal, target_value(model, rate).id, result)
+        id, "interest", equations, (principal, target_value(model, rate).id, interest)
     )
 
 
@@ -73,29 +77,31 @@ def schedule(
     *,
     id: UUID,
     transactions: UUID,
-    starting: Reference,
+    initial: Reference,
     rate: Reference | UUID,
-    closing: UUID,
+    balances: UUID,
     interest: UUID,
-    balance: Balance = Balance.CLOSING,
+    balance_basis: Balance = Balance.CLOSING,
     current_interest: CurrentInterest = CurrentInterest.EXCLUDED,
     treatment: InterestTreatment = InterestTreatment.SEPARATE,
     nonnegative_principal: bool,
 ) -> Formulation:
     """Declare one account schedule over explicit Values without reading magnitudes.
 
-    The transaction and result Flows share order. Flow rates match coordinates.
+    Transactions, balances and interest are Flow Value UUIDs with compatible units.
+    Initial is a scalar Reference in those units. Rate is a scalar Reference or
+    aligned Flow Value UUID, dimensionless per step. The Flows share order. Flow rates match coordinates.
     Rates must be fixed in an execution Specification; unknown-rate products and
     overdrafts are outside the supported affine execution capability.
     """
     check_conventions(
-        balance=balance, current_interest=current_interest, treatment=treatment
+        balance=balance_basis, current_interest=current_interest, treatment=treatment
     )
     if nonnegative_principal is not True:
         raise ValueError(
             "symbolic overdraft interest is unsupported; use known-data calculation"
         )
-    ids = (transactions, closing, interest) + (
+    ids = (transactions, balances, interest) + (
         () if isinstance(rate, Reference) else (rate,)
     )
     if len(set(ids)) != len(ids):
@@ -105,22 +111,22 @@ def schedule(
     if not source.movements:
         raise ValueError("account schedule requires at least one transaction")
     coordinates = tuple(m.coordinate for m in source.movements)
-    for identity in (closing, interest):
+    for identity in (balances, interest):
         if tuple(m.coordinate for m in shapes[identity].movements) != coordinates:
             raise ValueError("schedule result coordinate order must match transactions")
     sources = (transactions, interest) + (
         () if isinstance(rate, Reference) else (rate,)
     )
     equations: list[tuple[str, Expression]] = []
-    prior = starting
-    for destination, matches in aligned(model, sources, closing, shapes=shapes):
+    prior = initial
+    for destination, matches in aligned(model, sources, balances, shapes=shapes):
         transaction, charge = matches[:2]
         period_rate = (
             rate if isinstance(rate, Reference) else Reference(target=matches[2].id)
         )
         opening = reference(prior)
         before_interest = add(opening, reference(Reference(target=transaction.id)))
-        selected = opening if balance is Balance.OPENING else before_interest
+        selected = opening if balance_basis is Balance.OPENING else before_interest
         interest_symbol = reference(Reference(target=charge.id))
         rate_symbol = reference(period_rate)
         closing_symbol = reference(Reference(target=destination.id))
@@ -185,5 +191,5 @@ def schedule(
         id,
         "account_schedule",
         equations,
-        (transactions, target_value(model, starting).id, bound_rate, closing, interest),
+        (transactions, target_value(model, initial).id, bound_rate, balances, interest),
     )

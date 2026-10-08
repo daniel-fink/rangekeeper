@@ -2,11 +2,11 @@
 
 from rangekeeper.model.duration import Frequency
 from rangekeeper.calculations.series import AlignmentJoin
-from rangekeeper.model.flow import MissingValueHandling
+from rangekeeper.model.flux import MissingValueHandling
 from rangekeeper.calculations.account import Balance, CurrentInterest, InterestTreatment
 
 from rangekeeper.calculations.account import Account
-from rangekeeper.model.flow import Flow
+from rangekeeper.model.flux import Flow
 
 from datetime import date
 import math

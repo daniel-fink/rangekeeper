@@ -4,7 +4,7 @@ from importlib import import_module
 from rangekeeper.schema.records import Formulation, Binding
 from .authoring import declare
 
-_MODULES = {"account", "financial", "flow", "growth"}
+_MODULES = {"account", "financial", "flow", "growth", "hierarchy"}
 __all__ = ["Formulation", "Binding", "declare", *sorted(_MODULES)]
 
 

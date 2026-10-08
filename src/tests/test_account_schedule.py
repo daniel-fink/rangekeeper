@@ -22,7 +22,7 @@ from rangekeeper.model import (
     Quantity,
     Update,
 )
-from rangekeeper.model.flow import Flow
+from rangekeeper.model.flux import Flow
 from rangekeeper.model.expression import Reference
 from rangekeeper.schema.enums import ValueKind, Operator, SolutionStatus
 from rangekeeper.specification import Specification, SpecificationRecord, Assignment
@@ -103,9 +103,9 @@ def build(model, ids, **kwargs):
         model,
         id=u(300),
         transactions=ids["transactions"],
-        starting=Reference(target=ids["starting"]),
+        initial=Reference(target=ids["starting"]),
         rate=Reference(target=ids["rate"]),
-        closing=ids["closing"],
+        balances=ids["closing"],
         interest=ids["interest"],
         nonnegative_principal=True,
         **kwargs,
@@ -183,7 +183,9 @@ def test_shared_authoring_normalizes_duplicate_keys_and_keeps_input_trees():
 def test_schedule_rejects_inclusion_without_financing(balance):
     model, ids = fixture()
     with pytest.raises(ValueError, match="requires financed"):
-        build(model, ids, balance=balance, current_interest=CurrentInterest.INCLUDED)
+        build(
+            model, ids, balance_basis=balance, current_interest=CurrentInterest.INCLUDED
+        )
 
 
 def test_schedule_rejects_empty_and_distinct_result_roles():
@@ -251,7 +253,7 @@ def test_fixed_rate_execution_matches_independent_schedules(
 ):
     model, ids = fixture()
     formulation = build(
-        model, ids, balance=balance, current_interest=current, treatment=treatment
+        model, ids, balance_basis=balance, current_interest=current, treatment=treatment
     )
     model = model.revise(
         Update(system=model.system.replace(formulations=(formulation,)))
@@ -284,9 +286,9 @@ def test_flow_rates_match_coordinates_without_reordering_the_schedule():
         model,
         id=u(300),
         transactions=ids["transactions"],
-        starting=Reference(target=ids["starting"]),
+        initial=Reference(target=ids["starting"]),
         rate=ids["rate"],
-        closing=ids["closing"],
+        balances=ids["closing"],
         interest=ids["interest"],
         nonnegative_principal=True,
     )
@@ -306,9 +308,9 @@ def test_flow_rates_match_coordinates_without_reordering_the_schedule():
             changed,
             id=u(300),
             transactions=ids["transactions"],
-            starting=Reference(target=ids["starting"]),
+            initial=Reference(target=ids["starting"]),
             rate=ids["rate"],
-            closing=ids["closing"],
+            balances=ids["closing"],
             interest=ids["interest"],
             nonnegative_principal=True,
         )
@@ -417,22 +419,22 @@ def test_specialized_and_resale_declarations_keep_baseline_identities():
             id=u(301),
             principal=ids["transactions"],
             rate=Reference(target=ids["rate"]),
-            result=ids["interest"],
+            interest=ids["interest"],
             nonnegative_principal=True,
         ),
         "accumulation": flow.accumulate(
             model,
             id=u(302),
-            source=ids["transactions"],
+            increments=ids["transactions"],
             initial=Reference(target=ids["starting"]),
-            result=ids["closing"],
+            accumulation=ids["closing"],
         ),
         "compound": growth.compound(
             model,
             id=u(303),
             initial=Reference(target=ids["starting"]),
             rate=Reference(target=ids["rate"]),
-            result=ids["closing"],
+            series=ids["closing"],
         ),
         "resale": build_stop_gain_resale_policy(
             model,

@@ -6,7 +6,7 @@ Cycle residuals also check the defining equation independently of that fixture.
 """
 
 from rangekeeper.calculations.account import Account
-from rangekeeper.model.flow import Flow
+from rangekeeper.model.flux import Flow
 
 from datetime import date
 import json

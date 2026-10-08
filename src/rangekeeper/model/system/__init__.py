@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from .hierarchy import Hierarchy as Hierarchy, HierarchyKind as HierarchyKind
     from .reduction import (
         Reduction as Reduction,
+        Contributor as Contributor,
         Aggregation as Aggregation,
         Coverage as Coverage,
         CoverageStatus as CoverageStatus,
@@ -24,6 +25,7 @@ _EXPORTS = {
     "Hierarchy": "hierarchy",
     "HierarchyKind": "hierarchy",
     "Reduction": "reduction",
+    "Contributor": "reduction",
     "Aggregation": "reduction",
     "Coverage": "reduction",
     "CoverageStatus": "reduction",

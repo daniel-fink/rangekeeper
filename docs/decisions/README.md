@@ -10,6 +10,7 @@ current after its execution plan moves to history.
 | [ADR-002: records and identity](002-records-and-identity.md) | Implemented | Schema authority, immutable content and exact revision references |
 | [ADR-003: computation and evidence](003-computation-and-evidence.md) | Implemented | Known-data calculations, passive formulations, source evidence and independent acceptance |
 | [ADR-004: package and project ownership](004-package-and-project-ownership.md) | Implemented | Domain packages, `src/grasshopper`, examples, tools, docs and local verification |
+| [ADR-005: Flux and Stream implementation](005-flux-and-stream-implementation.md) | Implemented; locally verified | Discoverable mathematical parameter names, Stream DX, `model.flux`, Span methods, Polars calculations, acausal formulations, hierarchy, Specification roles and acceptance |
 
 The first three records summarize decisions already supported by the linked
 implementation history. They do not invent an earlier approval date. ADR-004 also
@@ -27,6 +28,7 @@ Relationships are explicit links; a decision can affect several owners.
 
 ## Work that remains explicit
 
+- Migrate the walkthrough notebooks after the completed [Flux and Stream codebase acceptance](../research/flux-stream-2026-10-08/README.md), preserving their legacy teaching intent.
 - [Windows/Rhino/connector acceptance](../contributing/windows-acceptance.md) remains
   open. Follow [legacy retirement](../contributing/legacy-retirement.md) before
   deleting any held predecessor code or tests.

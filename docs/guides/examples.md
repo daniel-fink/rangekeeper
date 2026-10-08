@@ -70,3 +70,13 @@ Test-only fixtures, such as the connector envelope, stay with their owning tests
 Captured notebooks and results under `docs/research/` are historical evidence.
 They are not maintained examples. Rebuild the walkthrough site after source
 changes before any separately authorized publication.
+
+
+## Stream and acausal hierarchy example
+
+Run `PYTHONPATH=src:examples src/.venv/bin/python -m rangekeeper_examples.flux`
+from the repository root, or use the installed development environment with
+`python -m rangekeeper_examples.flux`. The [source](../../examples/rangekeeper_examples/flux.py)
+shows labelled display, annual resampling and a connected forward/reverse
+investigation. Its codebase acceptance precedes notebook migration; see
+[ADR-005 evidence](../research/flux-stream-2026-10-08/README.md).

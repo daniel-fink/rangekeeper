@@ -51,3 +51,25 @@ def unknown_flow(
     """Declare selected Movements unknown even when recorded amounts are present."""
     _, selected = _select(model, value, ids)
     return tuple(Reference(target=m.id) for m in selected)
+
+
+def expand_targets(
+    model: Model,
+    target: UUID | Reference,
+    *,
+    ids: Sequence[UUID] | None = None,
+) -> tuple[Reference, ...]:
+    """Resolve a scalar, Movement or explicit whole-Flow selection without amounts."""
+    from rangekeeper.schema.records import Value
+    from rangekeeper.model.scope import target_units
+
+    ref = Reference(target=target) if isinstance(target, UUID) else target
+    if not isinstance(ref, Reference):
+        raise TypeError("target must be a UUID or Reference")
+    record = model._index.records.get(ref.target)
+    if isinstance(record, Value) and record.kind is ValueKind.FLOW:
+        return unknown_flow(model, record.id, ids=ids)
+    if ids is not None:
+        raise ValueError("ids is only valid for a whole-Flow target")
+    target_units(model, ref)
+    return (ref,)

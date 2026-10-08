@@ -42,7 +42,7 @@ needs them. Polars loads when an alignment or resampling operation needs it.
 ```python
 from datetime import date
 from uuid import uuid4
-from rangekeeper.model.flow import Flow, Movement
+from rangekeeper.model.flux import Flow, Movement
 
 movement = Movement(id=uuid4(), key="delivery", date=date(2026, 1, 1))
 assert not movement.has_field("magnitude")
@@ -103,6 +103,10 @@ Flow
 Period (also inherited by Span)
   check() -> Period
   resolve(*, timing) -> date
+
+Span
+  from_duration(*, name, start, frequency, count, month_roll=None) -> Span
+  periods(frequency, *, include_partial=False, month_roll=None) -> tuple[Period, ...]
 
 Distribution
   uniform(...) / triangular(...) / pert(...) / symmetric(...)

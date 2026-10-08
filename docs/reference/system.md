@@ -163,3 +163,37 @@ The old Graph domain, its View, table projection and JSON codec are isolated in
 `rangekeeper.legacy.graph` for the Windows migration/retirement gate.
 They do not sit behind the new constructors. No implicit Graph-to-Model conversion
 exists. The new adapters and source workflows do not import the old domain.
+
+## Flow hierarchy reduction
+
+```python
+from rangekeeper.model.system import Reduction, Contributor
+from rangekeeper.calculations.series import ResamplingMethod
+
+rollup = Reduction.flows(
+    key="cashflow", periods=annual_periods,
+    resampling=ResamplingMethod.SUM, contributors=Contributor.LEAVES,
+)
+result = rollup.execute(hierarchy)
+portfolio = result.root_value
+result.display()
+```
+
+The factory defaults to leaf contributors and SUM aggregation. `Contributor.ALL`
+is explicit; it can include stored parent values, so select it only when those are
+independent contributions. Scalar Reduction keeps its existing callable reducer.
+Predicate contributors remain available for numerical work.
+
+Flow reduction selects owner-local Values once, prepares/resamples the collection
+once, and batches all subtree reductions over original contributors. Missing Flow
+shapes appear in owner coverage. Unknown Movements and missing coordinates follow
+`missing=` and `join=`. `entries[entity_id].period_coverage` records the known input
+fraction at each coordinate. This is separate from selected/measured/missing owner
+coverage. `value_ids` records the chosen source Values.
+
+`rollup.formulate(hierarchy, id=..., aggregates={entity_id: flow_value_id})` returns
+passive equations for the built-in SUM rule. It supports fixed SUM/MEAN/FIRST/LAST
+resampling over original Movement references. Every selected source needs a shape,
+but its amounts can be unknown. Aggregate Values must be owned by their named
+entities. Self-contributions, incomplete source selection, callable symbolic
+selection and unsupported methods fail explicitly. Results never mutate a Model.

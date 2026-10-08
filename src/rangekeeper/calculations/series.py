@@ -8,15 +8,19 @@ and is responsible for their meaning.
 from __future__ import annotations
 
 from uuid import uuid4
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from rangekeeper.calculations._batch import Batch
 
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 import json
 import math
 from enum import Enum, unique
 
-from rangekeeper.model.flow import Flow, Movement
+from rangekeeper.model.flux import Flow, Movement
 from rangekeeper.model.duration import Period
 from rangekeeper.model.measure import Quantity
 from rangekeeper.model.duration.calendar import DayCount, elapsed_days, year_fraction
@@ -33,14 +37,14 @@ class AlignmentJoin(Enum):
 
 
 @unique
-class AggregationReducer(Enum):
+class AggregationMethod(Enum):
     SUM = "sum"
     MIN = "min"
     MAX = "max"
 
 
 @unique
-class ResamplingReduction(Enum):
+class ResamplingMethod(Enum):
     SUM = "sum"
     FIRST = "first"
     LAST = "last"
@@ -66,6 +70,7 @@ class Alignment:
     flows: tuple[Flow, ...]
     coverage: tuple[tuple[bool, ...], ...]
     missing: MissingValueHandling = MissingValueHandling.ERROR
+    _batch: Batch | None = field(default=None, init=False, repr=False, compare=False)
 
     def __post_init__(self) -> None:
         if not isinstance(self.missing, MissingValueHandling):
@@ -84,61 +89,38 @@ class Alignment:
     def reduce(
         self,
         *,
-        reducer: AggregationReducer = AggregationReducer.SUM,
+        method: AggregationMethod = AggregationMethod.SUM,
         units: str | None = None,
     ) -> Aggregation:
-        """Reduce compatible quantities with one rule for Claims and missing values.
+        """Reduce once-prepared columns; preserve original coverage and absent zeroes."""
+        from rangekeeper.calculations._batch import Batch, polars
 
-        All-missing groups remain unresolved, including with skip. Zero filling
-        applies only to absent coordinates, as selected when the alignment was made.
-        Unit conversion occurs before reduction; coverage uses the original mask.
-        """
-        if not isinstance(reducer, AggregationReducer):
-            raise TypeError("reducer must be an AggregationReducer")
-        converted = []
-        for flow, row in zip(self.flows, self.coverage):
-            result = flow.convert(units=units or self.flows[0].units)
-            if self.missing == MissingValueHandling.ZERO:
-                # Absent coordinates contribute zero in the requested units, even
-                # when conversion has an offset (for example, Celsius to Kelvin).
-                result = result.replace(
-                    movements=tuple(
-                        (
-                            movement.replace(magnitude=0.0)
-                            if not known and movement.magnitude is not None
-                            else movement
-                        )
-                        for movement, known in zip(result.movements, row)
-                    )
-                )
-            converted.append(result)
-        movements, coverage = [], []
-        for index, group in enumerate(zip(*(flow.movements for flow in converted))):
-            known = [
-                movement.number for movement in group if movement.magnitude is not None
-            ]
-            value = None
-            if known and (
-                len(known) == len(group) or self.missing == MissingValueHandling.SKIP
-            ):
-                value = (
-                    math.fsum(known)
-                    if reducer == AggregationReducer.SUM
-                    else (
-                        min(known) if reducer == AggregationReducer.MIN else max(known)
-                    )
-                )
-            claims = tuple(
-                dict.fromkeys(
-                    claim for movement in group for claim in (movement.claims or ())
-                )
+        if self._batch is None:
+            batch = Batch.prepare(self.flows)
+            pl = polars()
+            known = [known for row in self.coverage for known in row]
+            # A filled zero with false coverage denotes an absent coordinate.
+            batch = Batch(
+                batch.frame.with_columns(
+                    pl.Series("known", known, dtype=pl.Boolean),
+                    pl.Series(
+                        "present",
+                        [
+                            k or m.magnitude is None
+                            for f, row in zip(self.flows, self.coverage)
+                            for m, k in zip(f.movements, row)
+                        ],
+                        dtype=pl.Boolean,
+                    ),
+                ),
+                batch.units,
+                batch.coordinates,
+                batch.metadata,
             )
-            movements.append(
-                group[0].replace(id=uuid4(), magnitude=value, claims=claims)
-            )
-            coverage.append(sum(row[index] for row in self.coverage) / len(group))
-        return Aggregation(
-            converted[0].replace(movements=tuple(movements)).check(), tuple(coverage)
+            object.__setattr__(self, "_batch", batch)
+        assert self._batch is not None
+        return self._batch.aggregate(
+            method=method, units=units, missing=self.missing, join=AlignmentJoin.EXACT
         )
 
 
@@ -150,101 +132,48 @@ class Aggregation:
     coverage: tuple[float, ...]
 
 
-def _polars():
-    try:
-        import polars as pl
-    except ImportError as error:
-        raise ImportError(
-            "Install rangekeeper[calculations] for Flow calculations"
-        ) from error
-    return pl
-
-
 def align(
     flows: Sequence[Flow],
     *,
     join: AlignmentJoin = AlignmentJoin.EXACT,
     missing: MissingValueHandling = MissingValueHandling.ERROR,
 ) -> Alignment:
-    """Align on explicit coordinates; zero fills absent rows, never unresolved movements.
+    """Align exact coordinates; fill only absent rows when ZERO is requested."""
+    from rangekeeper.calculations._batch import Batch
 
-    Exact alignment is the default. Union/intersection must be requested. Coverage
-    records whether each input had a known movement before any requested filling.
-    """
-    if not isinstance(join, AlignmentJoin) or not isinstance(
-        missing, MissingValueHandling
-    ):
-        raise TypeError("join and missing require their enum types")
-    if not flows:
-        raise ValueError("alignment needs at least one Flow")
-    maps, templates = [], {}
-    modes: set[bool] = set()
+    if not isinstance(missing, MissingValueHandling):
+        raise TypeError("missing must be a MissingValueHandling")
+    batch = Batch.prepare(flows)
+    grid = batch.grid(join)
+    templates: dict[tuple, Movement] = {}
+    mappings = []
     for flow in flows:
-        flow.check()
-        mapping = {
-            json.dumps(key): movement
-            for key, movement in flow.coordinate_index().items()
-        }
-        maps.append(mapping)
-        templates.update(
-            {key: movement for key, movement in mapping.items() if key not in templates}
-        )
-        modes.update(movement.period is not None for movement in flow.movements)
-    if len(modes) > 1:
-        raise ValueError("cannot align event dates with period coverage")
-    keys = list(maps[0])
-    if join == AlignmentJoin.EXACT and any(
-        list(mapping) != keys for mapping in maps[1:]
-    ):
-        raise ValueError(
-            "Flow coordinates differ; request union/intersection explicitly"
-        )
-    if join == AlignmentJoin.UNION:
-        keys = list(templates)
-    elif join == AlignmentJoin.INTERSECTION:
-        keys = [key for key in keys if all(key in mapping for mapping in maps)]
-
-    def order(key: str) -> tuple[date, str]:
-        movement = templates[key]
-        period = movement.period
-        return (
-            period.start_inclusive if period is not None else movement.resolve(),
-            key,
-        )
-
-    keys.sort(key=order)
-    pl = _polars()
-    grid = pl.DataFrame({"coordinate": keys}, schema={"coordinate": pl.String})
+        mapping = flow.coordinate_index()
+        mappings.append(mapping)
+        for key, movement in mapping.items():
+            templates.setdefault(key, movement)
     aligned, coverages = [], []
-    for flow, mapping in zip(flows, maps):
-        frame = pl.DataFrame(
-            {
-                "coordinate": list(mapping),
-                "magnitude": [s.magnitude for s in mapping.values()],
-            },
-            schema={"coordinate": pl.String, "magnitude": pl.Float64},
-        )
-        values = grid.join(frame, on="coordinate", how="left", maintain_order="left")[
-            "magnitude"
-        ].to_list()
+    for flow, mapping in zip(flows, mappings):
         movements, coverage = [], []
-        for key, magnitude in zip(keys, values):
+        for index in grid:
+            key = batch.coordinates[index]
             present = key in mapping
-            known = present and magnitude is not None
-            coverage.append(known)
-            if not known and missing == MissingValueHandling.ERROR:
-                raise ValueError(f"missing/unresolved movement: {templates[key].key}")
-            if not present and missing == MissingValueHandling.ZERO:
-                magnitude = 0.0
             source = mapping.get(key, templates[key])
-            movements.append(
-                source.replace(
-                    id=source.id if present else uuid4(),
-                    magnitude=magnitude,
-                    claims=UNSET if present else (),
-                )
+            known = present and source.magnitude is not None
+            if not known and missing is MissingValueHandling.ERROR:
+                raise ValueError("missing/unresolved movement")
+            magnitude = (
+                source.magnitude
+                if present
+                else 0.0 if missing is MissingValueHandling.ZERO else None
             )
-        aligned.append(flow.replace(movements=tuple(movements)).check())
+            movements.append(
+                source
+                if present
+                else source.replace(id=uuid4(), magnitude=magnitude, claims=())
+            )
+            coverage.append(known)
+        aligned.append(flow.replace(movements=tuple(movements)))
         coverages.append(tuple(coverage))
     return Alignment(tuple(aligned), tuple(coverages), missing)
 
@@ -344,123 +273,30 @@ def resample(
     flow: Flow,
     *,
     periods: Sequence[Period],
-    reduction: ResamplingReduction,
+    method: ResamplingMethod,
     missing: MissingValueHandling = MissingValueHandling.ERROR,
     weighting: MeanWeighting | None = None,
 ) -> Aggregation:
-    """Reduce observations into a complete period grid with explicit missing rules.
+    """Group whole movements into periods; means require explicit fixed weighting."""
+    from rangekeeper.calculations._batch import Batch
 
-    The caller selects sum, first, last, min, max or mean. Means require an explicit
-    observations/elapsed weighting choice; elapsed weighting requires bounded
-    movements. No reduction is inferred from the meaning of the data. Coverage is
-    the fraction of known movements, not continuous time coverage. Bounded movements
-    cannot cross target periods; allocate them explicitly first. missing=MissingValueHandling.ZERO
-    fills empty target groups only, never unresolved entries in a populated group.
-    """
-
-    flow.check()
-    if not isinstance(missing, MissingValueHandling) or not isinstance(
-        reduction, ResamplingReduction
-    ):
-        raise TypeError("missing and reduction require their enum types")
-    if weighting is not None and not isinstance(weighting, MeanWeighting):
-        raise TypeError("weighting must be a MeanWeighting")
-    if weighting is not None and reduction != ResamplingReduction.MEAN:
-        raise ValueError("weighting applies only to means")
-    if reduction == ResamplingReduction.MEAN and weighting is None:
-        raise ValueError("means require explicit weighting")
-    if weighting == MeanWeighting.ELAPSED and any(
-        s.period is None for s in flow.movements
-    ):
-        raise ValueError("elapsed weighting requires bounded movements")
-    periods = tuple(periods)
-    for i, period in enumerate(periods):
-        period.check()
-        if i and elapsed_days(periods[i - 1].end_exclusive, period.start_inclusive) < 0:
-            raise ValueError("resampling periods overlap or are unordered")
-    groups: list[list[Movement]] = [[] for _ in periods]
-    for movement in flow.movements:
-        if movement.period is not None:
-            # Resampling period content groups by coverage, not payment date.
-            matches = [
-                i
-                for i, period in enumerate(periods)
-                if period.start_inclusive <= movement.period.start_inclusive
-                and movement.period.end_exclusive <= period.end_exclusive
-            ]
-        else:
-            point = movement.resolve()
-            matches = [
-                i
-                for i, period in enumerate(periods)
-                if period.start_inclusive <= point < period.end_exclusive
-            ]
-        if not matches:
-            raise ValueError(
-                f"movement is outside or crosses target periods: {movement.key}"
-            )
-        groups[matches[0]].append(movement)
-    pl = _polars()
-    rows = [
-        {
-            "group": i,
-            "magnitude": s.magnitude,
-            "weight": (
-                elapsed_days(s.period.start_inclusive, s.period.end_exclusive)
-                if weighting == MeanWeighting.ELAPSED and s.period is not None
-                else 1.0
-            ),
-        }
-        for i, movements in enumerate(groups)
-        for s in movements
-    ]
-    frame = pl.DataFrame(
-        rows, schema={"group": pl.Int64, "magnitude": pl.Float64, "weight": pl.Float64}
+    batch = Batch.prepare((flow,)).resample(
+        periods, methods=(method,), weightings=(weighting,), missing=missing
     )
-    if reduction == ResamplingReduction.MEAN:
-        numerator = (pl.col("magnitude") * pl.col("weight")).sum()
-        denominator = pl.col("weight").filter(pl.col("magnitude").is_not_null()).sum()
-        expr = (numerator / denominator).alias("result")
-    else:
-        expr = getattr(pl.col("magnitude"), reduction.value)().alias("result")
-    reduced = dict(frame.group_by("group", maintain_order=True).agg(expr).iter_rows())
-    values, coverages = [], []
-    for i, movements in enumerate(groups):
-        known = sum(s.magnitude is not None for s in movements)
-        complete = bool(movements) and known == len(movements)
-        coverages.append(known / len(movements) if movements else 0.0)
-        if not complete and missing == MissingValueHandling.ERROR:
-            raise ValueError(f"empty/unresolved target period: {i}")
-        value = (
-            reduced.get(i)
-            if complete or missing == MissingValueHandling.SKIP and known
-            else None
-        )
-        if not movements and missing == MissingValueHandling.ZERO:
-            value = 0.0
-        values.append(value)
-    result = Flow.from_periods(periods, values, units=flow.units)
-    result = result.replace(
-        movements=tuple(
-            s.replace(
-                magnitude=s.magnitude,
-                claims=tuple(
-                    dict.fromkeys((c for origin in group for c in origin.claims or ()))
-                ),
-            )
-            for s, group in zip(result.movements, groups)
-        )
-    ).check()
-    return Aggregation(result, tuple(coverages))
+    return Aggregation(batch.flows()[0], tuple(batch.frame["coverage"].to_list()))
 
 
 def aggregate(
     flows: Sequence[Flow],
     *,
-    reducer: AggregationReducer = AggregationReducer.SUM,
+    method: AggregationMethod = AggregationMethod.SUM,
     units: str | None = None,
     missing: MissingValueHandling = MissingValueHandling.ERROR,
     join: AlignmentJoin = AlignmentJoin.EXACT,
 ) -> Aggregation:
-    """Align and reduce compatible Flows; use Alignment.reduce to reuse a shared grid."""
-    return align(flows, join=join, missing=missing).reduce(reducer=reducer, units=units)
+    """Combine compatible flows through the shared columnar engine."""
+    from rangekeeper.calculations._batch import Batch
+
+    return Batch.prepare(flows).aggregate(
+        method=method, units=units, missing=missing, join=join
+    )

@@ -1,0 +1,29 @@
+[
+  {
+    "flows": 3,
+    "months": 132,
+    "construction": 0.27966083299543243,
+    "resample_and_sum": 0.0962744999997085,
+    "repeated_sum": 0.007459832995664328,
+    "materialize_lines": 0.006113374998676591,
+    "maxrss": 98615296
+  },
+  {
+    "flows": 100,
+    "months": 120,
+    "construction": 1.9118632090103347,
+    "resample_and_sum": 0.7581552500050748,
+    "repeated_sum": 0.010936082995613106,
+    "materialize_lines": 0.17226004200347234,
+    "maxrss": 118800384
+  },
+  {
+    "flows": 1000,
+    "months": 360,
+    "construction": 56.08162991599238,
+    "resample_and_sum": 21.903693542000838,
+    "repeated_sum": 0.023061290994519368,
+    "materialize_lines": 4.757897749994299,
+    "maxrss": 538148864
+  }
+]

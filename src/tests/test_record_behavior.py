@@ -1,8 +1,8 @@
 """Record methods preserve wire presence, identity and numerical contracts."""
 
 from rangekeeper.model.duration import PeriodTiming
-from rangekeeper.model.flow import MissingValueHandling
-from rangekeeper.calculations.series import AlignmentJoin, AggregationReducer
+from rangekeeper.model.flux import MissingValueHandling
+from rangekeeper.calculations.series import AlignmentJoin, AggregationMethod
 
 
 from rangekeeper.model import ClaimKind
@@ -131,8 +131,8 @@ def test_reduction_shares_units_claims_and_coverage(reducer, expected):
         ),
     )
     aligned = align([left, right])
-    result = aligned.reduce(reducer=AggregationReducer(reducer))
-    independent = aggregate([left, right], reducer=AggregationReducer(reducer))
+    result = aligned.reduce(method=AggregationMethod(reducer))
+    independent = aggregate([left, right], method=AggregationMethod(reducer))
     assert independent.coverage == result.coverage
     assert independent.flow.movements[0].id != result.flow.movements[0].id
     assert (
@@ -152,7 +152,7 @@ def test_reduction_distinguishes_absent_unresolved_and_zero(reducer):
     empty = r.Flow(units="m", movements=())
     skipped = aggregate(
         [known, unknown],
-        reducer=AggregationReducer(reducer),
+        method=AggregationMethod(reducer),
         missing=MissingValueHandling.SKIP,
     )
     assert skipped.flow.movements[0].number == 2
@@ -160,7 +160,7 @@ def test_reduction_distinguishes_absent_unresolved_and_zero(reducer):
     assert (
         aggregate(
             [unknown, unknown],
-            reducer=AggregationReducer(reducer),
+            method=AggregationMethod(reducer),
             missing=MissingValueHandling.SKIP,
         )
         .flow.movements[0]
@@ -170,7 +170,7 @@ def test_reduction_distinguishes_absent_unresolved_and_zero(reducer):
     assert (
         aggregate(
             [known, unknown],
-            reducer=AggregationReducer(reducer),
+            method=AggregationMethod(reducer),
             missing=MissingValueHandling.ZERO,
         )
         .flow.movements[0]
@@ -179,7 +179,7 @@ def test_reduction_distinguishes_absent_unresolved_and_zero(reducer):
     )
     filled = aggregate(
         [known, empty],
-        reducer=AggregationReducer(reducer),
+        method=AggregationMethod(reducer),
         missing=MissingValueHandling.ZERO,
         join=AlignmentJoin.UNION,
     )

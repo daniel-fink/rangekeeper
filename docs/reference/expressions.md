@@ -231,3 +231,71 @@ contracts and backend support before claiming general Flow/Account expression
 execution.
 Conditionals, slicing, grouping, unknown-dependent query membership, unrestricted
 graph query languages, and general-purpose code execution are outside this draft.
+
+## Passive Flow and hierarchy builders
+
+Builders use mathematical roles, not permanent calculation direction. A
+Specification can fix a total and solve a summand. The signatures use:
+
+| Builder | Quantity parameters |
+| --- | --- |
+| `expression.sum` | `summands` |
+| `flow.sum` | `summands`, `total` |
+| `flow.scale` | `multiplicand`, `multiplier`, `product` |
+| `flow.accumulate` | `increments`, `initial`, `accumulation` |
+| `growth.compound` | `initial`, `rate`, `series` |
+| `growth.linear` | `initial`, `increment`, `series` |
+| `financial.discount` | `series`, `rate`, `discounted` |
+| `financial.pv` | `sequence`, `value` |
+| `account.interest` | `principal`, `rate`, `interest` |
+| `account.schedule` | `transactions`, `initial`, `rate`, `balances`, `interest` |
+| `flow.aligned` | `members`, `reference` |
+| `flow.resample` | `sequence`, `resampled` |
+
+Binary expressions retain `left` and `right`. `flow.sum` accepts ordered Value IDs
+or an original `Stream.from_values` selection from the exact Model revision.
+Structural trims are supported; calculated Stream transformations require declared
+intermediate Flow Values and relationships. `flow.aligned` uses the reference
+Flow's order without reading its amounts.
+
+`flow.resample` uses the resampled Flow's bounded periods. It supports SUM, MEAN
+with fixed observation/day weights, and FIRST/LAST. All declared symbols participate,
+including unknown amounts. SKIP and PROPAGATE policies are rejected for passive
+authoring. Explicit ZERO permits an empty target group; it never replaces an unknown
+symbol. MIN/MAX require solver capabilities outside the current affine slice.
+
+`financial.pv` sums an already discounted sequence. Its saved operation name remains
+`present_value`, so existing declaration identity fixtures do not change. Other
+keyword renames also preserve expression order, binding order and declaration IDs.
+
+There is no dedicated `financial.reversion` helper. Compose a capitalisation
+relationship with ordinary expressions and an explicit Movement mapping:
+
+```python
+from rangekeeper.model.expression.authoring import equal, divide, reference
+from rangekeeper.model.formulation import declare
+from rangekeeper.model import Reference
+
+capitalisation = declare(
+    relation_id,
+    "capitalisation",
+    [(str(value_movement.id), equal(
+        reference(Reference(target=value_movement.id)),
+        divide(reference(Reference(target=income_movement.id)), reference(rate)),
+    ))],
+    [value_id, income_id, rate_value_id],
+)
+```
+
+Select income timing explicitly, such as the following period's income supporting
+a value at this period's end. Declare any sale event separately. With an explicit
+nonzero-rate domain, a product equation can permit solving the rate when the value
+is fixed. Do not rewrite saved quotient equations; an unknown divisor is outside
+the current executor's supported slice.
+
+`Reduction.flows(...).formulate(hierarchy, id=..., aggregates=...)` declares SUM
+relationships from the same original contributors used by numerical reduction.
+Aggregate Flow Values must already exist on their named entities. Use explicit
+intermediate Flow equations when those intermediate quantities need individual
+roles. See [system reductions](system.md#flow-hierarchy-reduction) and the
+[executable example](../../examples/rangekeeper_examples/flux.py).

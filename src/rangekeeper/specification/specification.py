@@ -1,6 +1,11 @@
 """A saved investigation contribution, distinct from its derived composition."""
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from rangekeeper.model import Model
+    from rangekeeper.schema.records import Reference, Quantity
 from dataclasses import dataclass
 import math
 from uuid import UUID
@@ -122,3 +127,130 @@ class Specification:
             raise TypeError("replacement must be a generated Specification record")
         check_revision(self._record, replacement)
         return type(self)(replacement)
+
+    def lock(
+        self,
+        target: "UUID | Reference",
+        quantity: "Quantity | Mapping[UUID, Quantity] | None" = None,
+        *,
+        id: UUID,
+        model: "Model",
+        ids: "Sequence[UUID] | None" = None,
+        recorded: bool = False,
+        resolver: SpecificationResolver | None = None,
+    ) -> "Specification":
+        """Return a revision with explicit assignments and matching local roles removed.
+
+        A scalar Quantity applies to each selected Movement in its stated units.
+        A mapping supplies one Quantity per selected Movement. recorded=True copies
+        recorded amounts explicitly; it cannot be combined with quantity.
+        Included roles and policy controls must be revised at their owner.
+        """
+        from rangekeeper.schema.records import Assignment, Quantity
+        from rangekeeper.specification.targets import expand_targets
+        from rangekeeper.model.scope import recorded_scalar, target_units
+        from rangekeeper.shared.units import default_units
+
+        if type(recorded) is not bool:
+            raise TypeError("recorded must be bool")
+        if recorded == (quantity is not None):
+            raise ValueError("supply quantity or explicitly request recorded=True")
+        refs = expand_targets(model, target, ids=ids)
+        if isinstance(quantity, Mapping) and set(quantity) != {
+            ref.target for ref in refs
+        }:
+            raise ValueError("quantity mapping must cover the selected targets exactly")
+        assignments = []
+        for ref in refs:
+            q = (
+                recorded_scalar(model, ref)
+                if recorded
+                else quantity[ref.target] if isinstance(quantity, Mapping) else quantity
+            )
+            if q is None:
+                raise ValueError("cannot lock an unresolved recorded amount")
+            if not isinstance(q, Quantity):
+                raise TypeError(
+                    "quantity must be a Quantity or target-to-Quantity mapping"
+                )
+            default_units.convert(q, to=target_units(model, ref))
+            assignments.append(Assignment(target=ref, quantity=q))
+        return self._edit_roles(
+            id=id,
+            model=model,
+            refs=refs,
+            assignments=tuple(assignments),
+            resolver=resolver,
+        )
+
+    def unlock(
+        self,
+        target: "UUID | Reference",
+        *,
+        id: UUID,
+        model: "Model",
+        ids: "Sequence[UUID] | None" = None,
+        resolver: SpecificationResolver | None = None,
+    ) -> "Specification":
+        """Return a revision that removes local assignments and declares selected unknowns."""
+        from rangekeeper.specification.targets import expand_targets
+
+        refs = expand_targets(model, target, ids=ids)
+        return self._edit_roles(
+            id=id, model=model, refs=refs, assignments=None, resolver=resolver
+        )
+
+    def _edit_roles(self, *, id, model, refs, assignments, resolver):
+        if self.record.cases:
+            raise ValueError("edit a concrete investigation, not a batch")
+        if self.record.includes and resolver is None:
+            raise ValueError(
+                "included Specifications require a resolver for role editing"
+            )
+        composition = self.compose(resolver=resolver)
+        if composition.model_id != model.id:
+            raise ValueError("role editing requires the exact pinned Model revision")
+        if resolver is not None:
+            pinned = resolver.load_model(model.id)
+            if pinned._record != model._record:
+                raise ValueError("Model content differs from the resolved revision")
+        targets = {ref.target for ref in refs}
+        if not targets:
+            raise ValueError("role selection is empty")
+        for contribution in composition.contributors:
+            record = contribution.record
+            if record.policy and targets & {
+                ref.target for ref in record.policy.targets
+            }:
+                raise ValueError(
+                    "policy-controlled targets must be revised through their policy"
+                )
+            if contribution.id != self.id:
+                inherited = {ref.target for ref in record.unknowns or ()}
+                inherited.update(
+                    item.target.target
+                    for field in ("assignments", "estimates")
+                    for item in getattr(record, field) or ()
+                )
+                if targets & inherited:
+                    raise ValueError(
+                        "inherited roles must be revised in the included Specification"
+                    )
+        local_assignments = tuple(
+            a for a in self.record.assignments or () if a.target.target not in targets
+        )
+        local_unknowns = tuple(
+            r for r in self.record.unknowns or () if r.target not in targets
+        )
+        estimates = tuple(
+            e for e in self.record.estimates or () if e.target.target not in targets
+        )
+        replacement = self.record.replace(
+            metadata=self.metadata.replace(id=id, previous=self.id),
+            assignments=local_assignments + (assignments or ()),
+            unknowns=local_unknowns + (refs if assignments is None else ()),
+            estimates=estimates,
+        )
+        revised = self.revise(replacement)
+        revised.compose(resolver=resolver)
+        return revised

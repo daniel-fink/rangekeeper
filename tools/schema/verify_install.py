@@ -162,9 +162,9 @@ assert flow.movements[0].replace(magnitude=3).number == 3.0
 assert not flow.replace().movements[0].has_field("magnitude")
 assert period.check().resolve(timing=PeriodTiming.LAST) == date(2026, 1, 31)
 assert Movement.__doc__ and Movement.magnitude.__doc__
-for removed in ("rangekeeper.calculations._flow", "rangekeeper.calculations.distribution"):
+for removed in ("rangekeeper.calculations._flow", "rangekeeper.calculations.distribution", "rangekeeper.model.flow"):
     assert importlib.util.find_spec(removed) is None, removed
-import rangekeeper.model.flow as flow_api
+import rangekeeper.model.flux as flow_api
 assert flow_api.Movement is Movement and not hasattr(flow_api, "FlowSample")
 assert not hasattr(flow, "basis") and not hasattr(flow, "kind")
 assert type(Period.from_data(period.to_data()).start_inclusive) is date
@@ -354,7 +354,7 @@ print('Installed wheel: canonical membership, explicit Value reduction, coverage
             cwd=temp,
             check=True,
         )
-        script = """from rangekeeper.model.flow import Flow
+        script = """from rangekeeper.model.flux import Flow
 
 from datetime import date
 import math, sys
@@ -462,7 +462,7 @@ from datetime import date
 from pathlib import Path
 from uuid import uuid4
 import polars as pl
-from rangekeeper.model.flow import Flow
+from rangekeeper.model.flux import Flow
 from rangekeeper.shared.table import Table
 from rangekeeper.adapters import csv, polars
 assert importlib.util.find_spec('pandas') is None
@@ -479,9 +479,25 @@ assert polars.to_table(polars.to_frame(mixed)) == mixed
 print('Installed wheel: Polars Flow/Table and CSV checks passed with pandas absent')
 """
         subprocess.run([str(python), "-I", "-c", script], cwd=temp, check=True)
-    print(
-        json.dumps(
-            {name: importlib.metadata.version(name) for name in DEPENDENCIES},
-            sort_keys=True,
+    if args.tables_python:
+        shutil.copy2(
+            ROOT / "examples/rangekeeper_examples/flux.py", temp / "flux_example.py"
         )
+        check = "import runpy; example=runpy.run_path('flux_example.py'); assert example['collection']().sum().movements[0].number == 960"
+        if args.execution_python:
+            check += "; result,ids=example['solve_example'](); assert result.value(ids['portfolio']).flow.movements[0].number == 2880"
+        subprocess.run([str(python), "-I", "-c", check], cwd=temp, check=True)
+        print("Installed wheel: Stream and acausal hierarchy acceptance example passed")
+    # Report the installed candidate's dependency versions, not the build environment.
+    subprocess.run(
+        [
+            str(python),
+            "-I",
+            "-c",
+            "import importlib.metadata, json; print(json.dumps({name: importlib.metadata.version(name) for name in "
+            + repr(DEPENDENCIES)
+            + "}, sort_keys=True))",
+        ],
+        cwd=temp,
+        check=True,
     )

@@ -21,7 +21,7 @@ zero. These operations have different purposes and never repair content silently
 
 ```python
 from datetime import date
-from rangekeeper.model.flow import Flow
+from rangekeeper.model.flux import Flow
 
 flow = Flow.from_events([date(2026, 1, 1)], [100], units="AUD")
 assert flow.check(resolved=True).movements[0].number == 100.0
@@ -40,6 +40,53 @@ Dimensional compatibility is necessary but does not prove the intended economics
 The caller chooses additive totals, weighted means, integration or compounding.
 Recorded Claims survive supported operations; derived results retain their declared
 contribution boundaries. See [record methods](records.md).
+
+## Coordinate flows with Stream
+
+`model.flux.Stream` accepts an ordered label-to-Flow mapping. It retains default
+`missing` and `join` policies. Model-backed selections use
+`Stream.from_values(model, value_ids, labels=None)`. Duplicate source IDs and
+ambiguous labels are errors. `select(labels)` or `select(value_ids=...)` retains
+selection order; `merge` requires compatible policies and exact Model revisions.
+
+```python
+from rangekeeper.model.flux import Stream
+from rangekeeper.model.duration import Span, Frequency
+from rangekeeper.calculations.series import ResamplingMethod
+
+span = Span.from_duration(
+    name="Operations", start=date(2027, 1, 1), frequency=Frequency.YEAR, count=1,
+)
+monthly = span.periods(Frequency.MONTH)
+income = Stream({
+    "Rent": Flow.from_periods(monthly, [100] * 12, units="AUD"),
+    "Vacancy": Flow.from_periods(monthly, [-20] * 12, units="AUD"),
+})
+annual = income.resample(span.periods(Frequency.YEAR), method=ResamplingMethod.SUM)
+annual.display()
+assert annual.sum().movements[0].number == 960
+```
+
+`sum`, `min` and `max` return Flow records. `aggregate(method=..., units=...,
+missing=..., join=...)` also returns coverage. `trim(span)` keeps whole periods.
+Resampling accepts one method or a complete label-to-method mapping. Means require
+`MeanWeighting.OBSERVATIONS` or `ELAPSED`; a weighting mapping covers exactly the
+mean lines. `stream.coverage` describes the last resampling step; aggregation
+coverage is a separate result. Source records remain unchanged.
+
+The private backend prepares compact coordinate and line columns once, retains
+immutable identity/evidence metadata, and reuses columns through selection,
+trimming, resampling and display. Native Polars operations handle bulk grouping,
+unit conversion and masks. Cancellation-sensitive sums use an `math.fsum` repair
+selected by a numerical risk check. Intermediate resampling does not reconstruct
+Flow records. Explicit `.flows` access materializes current content.
+
+Known-data operations do not create equations. Use an original Model selection
+with `model.formulation.flow.sum(summands=..., total=...)`, and declare temporal
+relationships with `flow.resample(sequence=..., resampled=..., method=...)`.
+Numerically transformed Streams cannot stand in for original Value references.
+Their `source_values` remain available for source inspection. See
+[acausal authoring](expressions.md#passive-flow-and-hierarchy-builders).
 
 ## Calendar and numerical ownership
 
@@ -90,12 +137,11 @@ Flow before placing an independent copy under a second Value.
 
 `series.align(flows, join=..., missing=...)` returns `Alignment`, which retains
 aligned Flows, original known-value coverage and the selected missing policy.
-`Alignment.reduce(reducer=AggregationReducer.SUM, units=...)` shares unit conversion,
-Claim collection and coverage calculation. `series.aggregate(...)` combines these
-two steps. Each reduction returns `Aggregation(flow, coverage)`.
+`Alignment.reduce(method=AggregationMethod.SUM, units=...)` shares unit conversion,
+Claim collection and coverage calculation. `series.aggregate(...)` uses the same bulk reduction backend. Each reduction returns `Aggregation(flow, coverage)`.
 
 `AlignmentJoin.EXACT` is the default. `UNION` and `INTERSECTION` are explicit.
-Missing choices use `MissingValueHandling`; reducer choices use `AggregationReducer`. Zero filling
+Missing choices use `MissingValueHandling`; reducer choices use `AggregationMethod`. Zero filling
 applies to absent coordinates; an explicitly unresolved movement remains unresolved.
 Skip can reduce a partly known group; an entirely unknown group remains unresolved.
 Coverage reports the original known fraction, including after zero filling.
@@ -122,7 +168,9 @@ Rate Flow coordinates must match transaction coordinates and order. Validation a
 applies to empty transactions. Same-day keys never reorder transaction/rate pairs.
 
 `model.formulation.account.schedule` declares the same finite account mechanics with
-explicit starting balance, rate, transactions, closing and interest references.
+explicit `transactions`, `initial`, `rate`, `balances` and `interest` references.
+Its convention keyword is `balance_basis`; numerical `Account.calculate` retains
+`balance`.
 It requires a nonnegative-principal contract. Fixed rate bounds are ordinary
 predicates and are checked exactly. Unknown rates and piecewise overdraft branches
 remain unsupported. `account.interest` handles explicitly selected principal only.
@@ -153,7 +201,7 @@ member for bounded periods:
 ```python
 from datetime import date
 from rangekeeper.model.duration import DayCount, Frequency, make_periods
-from rangekeeper.model.flow import Flow
+from rangekeeper.model.flux import Flow
 from rangekeeper.calculations import series
 
 periods = make_periods(date(2026, 1, 1), frequency=Frequency.MONTH, count=3)

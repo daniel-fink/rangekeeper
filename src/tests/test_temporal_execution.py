@@ -1,11 +1,11 @@
 """Finite Movement equations checked against an independent temporal oracle."""
 
 from rangekeeper.model.duration import Frequency, PeriodTiming, DayCount
-from rangekeeper.model.flow import MissingValueHandling
+from rangekeeper.model.flux import MissingValueHandling
 from rangekeeper.calculations.series import (
     AlignmentJoin,
-    AggregationReducer,
-    ResamplingReduction,
+    AggregationMethod,
+    ResamplingMethod,
     MeanWeighting,
 )
 from rangekeeper.calculations.projection import ProjectionMethod
@@ -30,9 +30,11 @@ from rangekeeper.model import (
     Quantity,
     Update,
 )
-from rangekeeper.model.flow import Flow, Movement
+from rangekeeper.model.flux import Flow, Movement
 from rangekeeper.model.duration.period import make_periods
 from rangekeeper.model.formulation import flow, growth, financial
+from rangekeeper.model.formulation.authoring import declare
+from rangekeeper.model.expression.authoring import equal, reference, divide
 from rangekeeper.specification import Specification, SpecificationRecord, Assignment
 from rangekeeper.specification.targets import assign_flow, unknown_flow
 from rangekeeper.run.execution import Executor
@@ -86,20 +88,20 @@ def oracle():
             id=uuid4(),
             initial=Reference(target=ids["initial"]),
             rate=Reference(target=ids["rate"]),
-            result=ids["cash"],
+            series=ids["cash"],
         ),
         financial.discount(
             model,
             id=uuid4(),
-            source=ids["cash"],
+            series=ids["cash"],
             rate=Reference(target=ids["rate"]),
-            result=ids["discounted"],
+            discounted=ids["discounted"],
         ),
-        financial.present_value(
+        financial.pv(
             model,
             id=uuid4(),
-            source=ids["discounted"],
-            result=Reference(target=ids["pv"]),
+            sequence=ids["discounted"],
+            value=Reference(target=ids["pv"]),
         ),
     )
     data = model.system.to_data()
@@ -239,14 +241,14 @@ def test_stable_references_builder_ids_and_coordinate_mismatch():
         id=builder,
         initial=Reference(target=ids["initial"]),
         rate=Reference(target=ids["rate"]),
-        result=ids["cash"],
+        series=ids["cash"],
     )
     assert first == growth.compound(
         model,
         id=builder,
         initial=Reference(target=ids["initial"]),
         rate=Reference(target=ids["rate"]),
-        result=ids["cash"],
+        series=ids["cash"],
     )
     data = model.system.to_data()
     cash = next(
@@ -287,7 +289,7 @@ def test_stable_references_builder_ids_and_coordinate_mismatch():
         == "AUD"
     )
     with pytest.raises(ValueError, match="coordinates"):
-        flow.sum(changed, id=uuid4(), sources=[ids["cash"]], result=ids["discounted"])
+        flow.sum(changed, id=uuid4(), summands=[ids["cash"]], total=ids["discounted"])
 
 
 def test_movement_roles_conflicts_units_and_recorded_values_not_assignments():
@@ -468,41 +470,56 @@ def test_finite_balance_interest_scaling_sum_and_explicit_reversion_mapping():
         flow.accumulate(
             model,
             id=uuid4(),
-            source=ids["cash"],
+            increments=ids["cash"],
             initial=Reference(target=ids["initial"]),
-            result=ids["discounted"],
+            accumulation=ids["discounted"],
         ),
         account.interest(
             model,
             id=uuid4(),
             principal=ids["discounted"],
             rate=Reference(target=ids["rate"]),
-            result=ids["interest"],
+            interest=ids["interest"],
             nonnegative_principal=True,
         ),
         flow.scale(
             model,
             id=uuid4(),
-            source=ids["interest"],
-            factor=Reference(target=ids["rate"]),
-            result=ids["scaled"],
+            multiplicand=ids["interest"],
+            multiplier=Reference(target=ids["rate"]),
+            product=ids["scaled"],
         ),
         flow.sum(
             model,
             id=uuid4(),
-            sources=[ids["interest"], ids["scaled"]],
-            result=ids["sum"],
+            summands=[ids["interest"], ids["scaled"]],
+            total=ids["sum"],
         ),
-        financial.reversion(
-            model,
-            id=uuid4(),
-            income=ids["discounted"],
-            capitalization=Reference(target=ids["rate"]),
-            result=ids["reversion"],
-            mapping={
-                out.id: model.value(ids["discounted"]).flow.movements[(i + 1) % 3].id
+        # Explicit mapped capitalisation; this cyclic test mapping is deliberate,
+        # not a financial timing default.
+        declare(
+            uuid4(),
+            "reversion",
+            [
+                (
+                    out.id,
+                    equal(
+                        reference(Reference(target=out.id)),
+                        divide(
+                            reference(
+                                Reference(
+                                    target=model.value(ids["discounted"])
+                                    .flow.movements[(i + 1) % 3]
+                                    .id
+                                )
+                            ),
+                            reference(Reference(target=ids["rate"])),
+                        ),
+                    ),
+                )
                 for i, out in enumerate(model.value(ids["reversion"]).flow.movements)
-            },
+            ],
+            (ids["discounted"], ids["rate"], ids["reversion"]),
         ),
     ]
     data = model.system.to_data()
@@ -564,6 +581,6 @@ def test_finite_balance_interest_scaling_sum_and_explicit_reversion_mapping():
             id=uuid4(),
             principal=ids["discounted"],
             rate=Reference(target=ids["rate"]),
-            result=ids["interest"],
+            interest=ids["interest"],
             nonnegative_principal=False,
         )

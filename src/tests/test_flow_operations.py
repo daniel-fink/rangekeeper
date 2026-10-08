@@ -1,11 +1,11 @@
 """Flows carry quantities; model-selected operations supply their interpretation."""
 
 from rangekeeper.model.duration import Frequency, PeriodTiming, DayCount
-from rangekeeper.model.flow import MissingValueHandling
+from rangekeeper.model.flux import MissingValueHandling
 from rangekeeper.calculations.series import (
     AlignmentJoin,
-    AggregationReducer,
-    ResamplingReduction,
+    AggregationMethod,
+    ResamplingMethod,
     MeanWeighting,
 )
 from rangekeeper.calculations.projection import ProjectionMethod
@@ -13,7 +13,7 @@ from rangekeeper.calculations.account import Balance, CurrentInterest, InterestT
 from rangekeeper.schema.enums import ValueKind
 
 from uuid import uuid4
-from rangekeeper.model.flow import Flow
+from rangekeeper.model.flux import Flow
 
 from rangekeeper.calculations.account import Account
 
@@ -26,7 +26,7 @@ import pytest
 from rangekeeper.calculations import series
 
 from rangekeeper.shared.errors import ValidationError
-from rangekeeper.model.flow import Movement
+from rangekeeper.model.flux import Movement
 from rangekeeper.model.measure import Quantity
 from rangekeeper.model.duration import make_period, make_periods
 
@@ -63,7 +63,7 @@ def test_model_can_select_different_reductions_for_the_same_flow(reduction, expe
     result = series.resample(
         flow,
         periods=[make_period(date(2026, 1, 1), date(2026, 2, 1))],
-        reduction=ResamplingReduction(reduction),
+        method=ResamplingMethod(reduction),
         weighting=MeanWeighting.OBSERVATIONS if reduction == "mean" else None,
     ).flow
     assert result.movements[0].magnitude == expected
@@ -75,17 +75,17 @@ def test_means_require_a_choice_and_do_not_infer_weighting_from_units():
     flow = Flow.from_periods(periods, [10, 20], units="dimensionless")
     target = [make_period(periods[0].start_inclusive, periods[-1].end)]
     with pytest.raises(ValueError, match="weighting"):
-        series.resample(flow, periods=target, reduction=ResamplingReduction.MEAN)
+        series.resample(flow, periods=target, method=ResamplingMethod.MEAN)
     observed = series.resample(
         flow,
         periods=target,
-        reduction=ResamplingReduction.MEAN,
+        method=ResamplingMethod.MEAN,
         weighting=MeanWeighting.OBSERVATIONS,
     ).flow
     elapsed = series.resample(
         flow,
         periods=target,
-        reduction=ResamplingReduction.MEAN,
+        method=ResamplingMethod.MEAN,
         weighting=MeanWeighting.ELAPSED,
     ).flow
     assert observed.movements[0].magnitude == 15
@@ -141,7 +141,7 @@ def test_explicit_zero_fill_does_not_resolve_present_unknowns(reduction):
     result = series.resample(
         flow,
         periods=periods,
-        reduction=ResamplingReduction(reduction),
+        method=ResamplingMethod(reduction),
         weighting=MeanWeighting.OBSERVATIONS if reduction == "mean" else None,
         missing=MissingValueHandling.ZERO,
     )

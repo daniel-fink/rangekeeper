@@ -9,3 +9,5 @@ Use [current guides](../README.md) for contracts and [verification](../contribut
 for commands. [Historical plans](../history/README.md) explain earlier sequencing.
 The [MiniZinc evidence](full-migration/minizinc/README.md) and
 [strict layout procedure](../contributing/layout-acceptance.md) document solver acceptance.
+
+- [Flux and Stream implementation acceptance — 2026-10-08](flux-stream-2026-10-08/README.md): numerical and acausal checks, installed wheel, performance and memory.

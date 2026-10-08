@@ -16,4 +16,6 @@ def inspect(model: Model, id: UUID) -> Quantity | None:
         select=select_value("net"), reducer=reducers.sum, units="m ** 2"
     )
     result: Aggregation = reduction.execute(hierarchy)
-    return result.value(entity.id)
+    value = result.value(entity.id)
+    assert value is None or isinstance(value, Quantity)
+    return value

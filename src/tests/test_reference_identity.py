@@ -29,7 +29,7 @@ from rangekeeper.model import (
     Update,
     Value,
 )
-from rangekeeper.model.flow import Flow, Movement, MissingValueHandling
+from rangekeeper.model.flux import Flow, Movement, MissingValueHandling
 from rangekeeper.run import Run, validate as validate_run
 from rangekeeper.specification import Specification
 from tests.test_domain_run import inputs, load

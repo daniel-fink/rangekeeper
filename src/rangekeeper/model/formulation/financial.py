@@ -1,6 +1,5 @@
-"""Declared discount and reversion equations; no financial results are calculated here."""
+"""Declared discount and present-value equations; no financial results are calculated here."""
 
-from collections.abc import Mapping
 from uuid import UUID
 from rangekeeper.model import Model
 from rangekeeper.schema.records import Formulation, Reference
@@ -22,14 +21,15 @@ def discount(
     model: Model,
     *,
     id: UUID,
-    source: UUID,
+    series: UUID,
     rate: Reference,
-    result: UUID,
+    discounted: UUID,
     first_period: int = 1,
 ) -> Formulation:
     """Declare amount / (1 + periodic rate)**n; n starts at first_period.
 
-    Rate is dimensionless per Flow step. No day-count or annualization is inferred.
+    Series and discounted identify Flow Values in compatible units.
+    Rate is a scalar Reference, dimensionless per Flow step. No day-count or annualization is inferred.
     Negative initial exponents and coordinate mismatches raise ValueError.
     """
     if type(first_period) is not int or first_period < 0:
@@ -45,67 +45,30 @@ def discount(
                 ),
             ),
         )
-        for i, (m, matches) in enumerate(aligned(model, (source,), result))
+        for i, (m, matches) in enumerate(aligned(model, (series,), discounted))
     ]
     return declare(
-        id, "discount", equations, (source, target_value(model, rate).id, result)
+        id, "discount", equations, (series, target_value(model, rate).id, discounted)
     )
 
 
-def present_value(
-    model: Model, *, id: UUID, source: UUID, result: Reference
-) -> Formulation:
-    """Declare total PV as an ordered sum of an explicitly discounted Flow."""
+def pv(model: Model, *, id: UUID, sequence: UUID, value: Reference) -> Formulation:
+    """Relate sequence (a discounted Flow Value UUID) to value (a scalar Reference).
+
+    Both have compatible amount units. This builder sums; it does not discount.
+    """
     equation = equal(
-        reference(result),
+        reference(value),
         expression_sum(
-            [reference(Reference(target=m.id)) for m in shape(model, source).movements]
+            [
+                reference(Reference(target=m.id))
+                for m in shape(model, sequence).movements
+            ]
         ),
     )
     return declare(
         id,
         "present_value",
         [("total", equation)],
-        (source, target_value(model, result).id),
-    )
-
-
-def reversion(
-    model: Model,
-    *,
-    id: UUID,
-    income: UUID,
-    capitalization: Reference,
-    result: UUID,
-    mapping: Mapping[UUID, UUID],
-) -> Formulation:
-    """Declare sale = income / capitalization using result-Movement UUID to income-Movement UUID mapping.
-
-    All result Movement UUIDs must be mapped. This makes any next-period income assumption
-    explicit. Capitalization units must turn income units into sale units.
-    """
-    source = {m.id: m for m in shape(model, income).movements}
-    destination = shape(model, result).movements
-    if set(mapping) != {m.id for m in destination} or not set(mapping.values()) <= set(
-        source
-    ):
-        raise ValueError("reversion requires a complete valid Movement mapping")
-    equations = [
-        (
-            m.id,
-            equal(
-                reference(Reference(target=m.id)),
-                divide(
-                    reference(Reference(target=source[mapping[m.id]].id)),
-                    reference(capitalization),
-                ),
-            ),
-        )
-        for m in destination
-    ]
-    return declare(
-        id,
-        "reversion",
-        equations,
-        (income, target_value(model, capitalization).id, result),
+        (sequence, target_value(model, value).id),
     )
