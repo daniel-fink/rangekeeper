@@ -10,13 +10,13 @@ rangekeeper/
     runtime.py          run(): source execution, no implicit export
     progress.py         Progress, Observer, Reporter
     workbench.py        Inspection, Attempt, inspect(), build(), notebook_progress()
-    layout_review.py    LayoutAttempt, build()
-    _artifacts.py       atomic writes shared by both local bundle builders
-    _review.py          canonical Claims, decisions and findings for presentation
-  graph/projection.py   PropertyColumn; detached rich property content
+    reporting.py        canonical Claims, decisions and findings for presentation
+  model/system/projection.py  PropertyColumn; detached rich property content
+  io/_atomic.py         atomic replacement, JSON publication and create-only writes
   adapters/
     speckle/            transport, detached objects, canonical envelope mapping
     cytoscape/layout/   detached geometry, profile, seed, checks, saved viewer
+      review.py         LayoutAttempt, build()
     plotting.py         detached component and hierarchy figures
   migration/
     graph.py            explicit old Graph wire conversion
@@ -45,13 +45,13 @@ reference; only the component project references the installed Rhino libraries.
 | `workbench.inspect(spec_directory, *, input_root, output_root)` | `Inspection`, including current source/configuration state and previous successful bundle | Reads inputs and bundle metadata; creates no files. Missing/changed inputs and damaged previous output become diagnostics. |
 | `workbench.build(spec_directory, *, input_root, output_root, on_progress=None)` | New `Attempt`; `result` exists only for this successful attempt | Writes a new checked local bundle. Failed attempts have diagnostics and no candidate. Prior success remains explicitly historical. It never substitutes for a failed build. |
 | `layout.profile.prepare(model, profile)` | Detached `Problem` and signal report | Pure preparation. Invalid versions, selectors, units or geometry declarations fail. Missing evidence cannot establish a signal. No Model writes or solve. |
-| `layout_review.build(attempt, *, profile, output_root)` | `LayoutAttempt` | Reads this successful attempt and profile, writes checked geometry/review/viewer bundle. Invalid layout or damaged/wrong Model bundle cannot advance the successful-layout pointer. |
+| `adapters.cytoscape.layout.review.build(model, *, bundle, profile, output_root)` | `LayoutAttempt` | Reads the explicit Model, successful bundle and profile; writes checked geometry/review/viewer bundle. Invalid layout or damaged/wrong Model bundle cannot advance the successful-layout pointer. |
 | `speckle.transport.receive(client, *, project_id, version_id=None, object_id=None)` | Immutable detached `Received(payload, source)` | Explicit authenticated network read. Exactly one pin is required. `TransportError` for unavailable content. No latest fallback, conversion, store or publication. |
 | `speckle.decode_model(payload)` | Immutable `Model` | Pure, strict canonical envelope decode. `MappingError` identifies path and identity. Does not infer domain membership from collection nesting. |
 | `speckle.encode_model(model, *, associations=())` | Detached envelope dictionary | Checks revision and domain associations. No SDK construction, storage or publication. |
 | `migration.speckle.convert_speckle(payload, *, mapping, revision_id=None)` | `ConversionResult(model, issues, associations, source_sha256)` | Pure explicit legacy conversion. Failure returns no partial Model. Conflicts, unsupported fields and unresolved references are reported. Inputs are unchanged. |
 | `migration.layout.upgrade_profile(profile, *, model)` | Detached profile v3 dictionary | Only discovered v1/v2 formats. Missing/ambiguous classifications or Measures fail. No automatic codec upgrade. |
-| `PropertyColumn(name, key)` with `graph.projection.to_table` | Detached table column | Selects an owner-local property Value. Does not expose mutable Model content or change quantity-column semantics. |
+| `PropertyColumn(name, key)` with `model.system.projection.to_table` | Detached table column | Selects an owner-local property Value. Does not expose mutable Model content or change quantity-column semantics. |
 | `design.author` / `formulate` / `specify` | New authored Model / Model with finite declarations / Specification | Constructors do not execute. Missing geometry quantities and ambiguous use interpretation fail. `Executor.execute` and persistence remain explicit. |
 
 Workbench and layout return records own derived presentation state, not persistent
@@ -63,8 +63,8 @@ changing the Model. Model records themselves remain deeply immutable.
 Ported features include source inspection, progress, decisions and clarifications,
 independent attempts, integrity-checked bundles, last-success navigation, and
 `model.diff` comparison. Bundles contain `model.json`; their local `run.json` is
-workbench metadata, not a mathematical Run. Shared atomic writes are in
-`workflow._artifacts`, with no layout import of a workbench private helper.
+workbench metadata, not a mathematical Run. Both bundle builders publish JSON
+through `io._atomic.replace_json`, which retains the shared atomic-write contract.
 
 Profile `rk-layout-profile-v3` resolves canonical Assemblies from
 `System.assemblies`, classification UUIDs, property Value keys, and quantity keys

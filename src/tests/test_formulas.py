@@ -1,9 +1,9 @@
 """Migrated financial examples with explicit periods, units and account equations."""
 
-from rangekeeper.duration import Frequency
+from rangekeeper.model.duration import Frequency
 from rangekeeper.calculations.series import AlignmentJoin
 from rangekeeper.model.flow import MissingValueHandling
-from rangekeeper.account import Balance, CurrentInterest, InterestTreatment
+from rangekeeper.calculations.account import Balance, CurrentInterest, InterestTreatment
 
 from rangekeeper.calculations.account import Account
 from rangekeeper.model.flow import Flow
@@ -15,7 +15,7 @@ from scipy.optimize import brentq
 from pytest import approx
 
 from rangekeeper.model.measure import Quantity
-from rangekeeper.duration import make_periods
+from rangekeeper.model.duration import make_periods
 from rangekeeper.calculations import series, account
 from tests.models.financial import build_accounts
 

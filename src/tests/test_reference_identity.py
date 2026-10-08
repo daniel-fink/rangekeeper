@@ -9,7 +9,7 @@ from uuid import UUID, uuid4
 import pytest
 
 from rangekeeper.calculations import series
-from rangekeeper.errors import (
+from rangekeeper.shared.errors import (
     IdentityConflictError,
     MissingReferenceError,
     ValidationError,
@@ -31,9 +31,7 @@ from rangekeeper.model import (
 )
 from rangekeeper.model.flow import Flow, Movement, MissingValueHandling
 from rangekeeper.run import Run, validate as validate_run
-from rangekeeper.specification import (
-    Specification,
-)
+from rangekeeper.specification import Specification
 from tests.test_domain_run import inputs, load
 
 
@@ -140,6 +138,21 @@ def test_constructor_ids_are_explicit_but_decoders_never_invent_them():
     data["movements"][0].pop("id")
     with pytest.raises(ValidationError):
         Flow.from_data(data)
+
+
+def test_coordinate_index_preserves_unresolved_records_and_rejects_duplicates():
+    day = date(2027, 1, 1)
+    movements = tuple(Movement(id=uuid4(), date=day, key=key) for key in ("z", "a"))
+    flow = Flow(units="AUD", movements=movements)
+    before = flow.to_data()
+    index = flow.coordinate_index()
+    assert tuple(index) == tuple(movement.coordinate for movement in movements)
+    assert tuple(index.values()) == movements
+    index.clear()
+    assert flow.to_data() == before
+    duplicate = movements[0].replace(id=uuid4())
+    with pytest.raises(ValueError, match="duplicate coordinates"):
+        Flow(units="AUD", movements=(*movements, duplicate)).coordinate_index()
 
 
 def test_alignment_uses_coordinates_while_results_have_independent_ids():

@@ -6,13 +6,13 @@ from uuid import uuid4
 
 import pytest
 
-from rangekeeper._schema.validation import document_version
+from rangekeeper.schema.validation import document_version
 from rangekeeper.io import MemoryStore
 from rangekeeper.model import Model
-from rangekeeper.policies import PolicyCapabilityError, evaluate
+from rangekeeper.specification.policy import PolicyCapabilityError, evaluate
 from rangekeeper.run import Run, validate
 from rangekeeper.specification import Specification
-from rangekeeper.policies import Policy
+from rangekeeper.specification.policy import Policy
 
 
 def metadata(kind):
@@ -185,7 +185,7 @@ def test_execution_manifest_tracks_shared_arithmetic_and_ignores_comments(tmp_pa
     from pathlib import Path
     import shutil
     import rangekeeper
-    from rangekeeper.execution.implementation import (
+    from rangekeeper.run.execution.implementation import (
         fingerprint,
         _COMMON,
         _GROUPS,
@@ -193,7 +193,7 @@ def test_execution_manifest_tracks_shared_arithmetic_and_ignores_comments(tmp_pa
     )
 
     source = Path(rangekeeper.__file__).parent
-    paths = {*_COMMON, *_RESOURCES, "execution/implementation.py"}
+    paths = {*_COMMON, *_RESOURCES, "run/execution/implementation.py"}
     for group in _GROUPS.values():
         paths.update(group)
     for name in paths:
@@ -218,9 +218,9 @@ def test_execution_manifest_tracks_shared_arithmetic_and_ignores_comments(tmp_pa
 def test_strict_acceptance_is_exact_and_rejects_unfixed_references_before_cancellation():
     from rangekeeper.model.expression import Expression, ExpressionKind, Operator
     from rangekeeper.model import Quantity, Reference
-    from rangekeeper.execution.evaluator import comparisons
-    from rangekeeper.execution.errors import UnsupportedProblem
-    from rangekeeper.units import default_units
+    from rangekeeper.run.execution.acceptance import _comparisons
+    from rangekeeper.run.execution.errors import UnsupportedProblem
+    from rangekeeper.shared.units import default_units
 
     target = uuid4()
     ref = Expression(
@@ -239,29 +239,29 @@ def test_strict_acceptance_is_exact_and_rejects_unfixed_references_before_cancel
     )
     values = {target: Quantity(magnitude=0, units="dimensionless")}
     relation, left, right, exact = next(
-        comparisons(predicate, values, units=default_units, fixed={target})
+        _comparisons(predicate, values, units=default_units, fixed={target})
     )
     assert relation == "less_than" and exact and left.magnitude < right.magnitude
     cancelled = predicate.replace(operands=(ref, ref.replace(id=uuid4())))
     with pytest.raises(UnsupportedProblem, match="fixed"):
-        tuple(comparisons(cancelled, values, units=default_units))
+        tuple(_comparisons(cancelled, values, units=default_units))
     relation, left, right, exact = next(
-        comparisons(cancelled, values, units=default_units, fixed={target})
+        _comparisons(cancelled, values, units=default_units, fixed={target})
     )
     assert exact and not left.magnitude < right.magnitude
 
 
 @pytest.mark.parametrize("number", [False, complex(1, 2), float("inf"), float("nan")])
 def test_shared_numerical_quantity_rejects_nonfinite_boolean_and_complex(number):
-    from rangekeeper.model.expression.evaluation import quantity
+    from rangekeeper.model.expression.evaluation import finite_quantity
 
     with pytest.raises(ValueError):
-        quantity(number, "dimensionless")
+        finite_quantity(number, "dimensionless")
 
 
 def test_policy_result_normalizes_and_checks_outcomes():
     from dataclasses import FrozenInstanceError
-    from rangekeeper.policies import DecisionOutcome, PolicyResult
+    from rangekeeper.specification.policy import DecisionOutcome, PolicyResult
     from rangekeeper.specification import Assignment
     from rangekeeper.model import Reference, Quantity
 
@@ -287,8 +287,8 @@ def test_policy_result_normalizes_and_checks_outcomes():
 
 
 def test_execution_manifest_tracks_actual_currency_catalogue(monkeypatch):
-    from rangekeeper.execution import implementation
-    from rangekeeper.units import UnitSystem
+    from rangekeeper.run.execution import implementation
+    from rangekeeper.shared.units import UnitSystem
 
     before = implementation.fingerprint("compiler")
     assert before == implementation.fingerprint("compiler")

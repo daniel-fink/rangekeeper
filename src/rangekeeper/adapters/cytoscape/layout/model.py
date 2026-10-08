@@ -244,18 +244,29 @@ class Problem:
                     raise ValueError("Affinity must be an integer from 1 to 100")
                 pairs.add(pair)
 
-    def descendants(self, identifier: str) -> frozenset[str]:
-        groups = {a.id: a for a in self.assemblies}
+    @staticmethod
+    def _descendants(groups, identifier: str) -> frozenset[str]:
         found: set[str] = set()
-
-        def visit(i):
-            for child in groups[i].members:
-                found.add(child)
-                if child in groups:
-                    visit(child)
-
-        visit(identifier)
+        pending = list(groups[identifier].members)
+        while pending:
+            child = pending.pop()
+            if child in found:
+                continue
+            found.add(child)
+            if child in groups:
+                pending.extend(groups[child].members)
         return frozenset(found)
+
+    def descendants(self, identifier: str) -> frozenset[str]:
+        """Return unique descendants without recursive traversal."""
+        return self._descendants({a.id: a for a in self.assemblies}, identifier)
+
+    def descendant_index(self) -> dict[str, frozenset[str]]:
+        """Prepare memberships for one operation; do not cache mutable inputs."""
+        groups = {a.id: a for a in self.assemblies}
+        return {
+            identifier: self._descendants(groups, identifier) for identifier in groups
+        }
 
     def document(self):
         data = asdict(self)

@@ -10,13 +10,7 @@ from itertools import combinations
 
 import pytest
 
-from rangekeeper.adapters.cytoscape.layout import (
-    Assembly,
-    Node,
-    Problem,
-    Rect,
-    check,
-)
+from rangekeeper.adapters.cytoscape.layout import Assembly, Node, Problem, Rect, check
 from rangekeeper.adapters.cytoscape.layout.check import metrics
 from rangekeeper.adapters.cytoscape.layout.examples import examples
 from rangekeeper.adapters.cytoscape.layout.z3_solver import solve
@@ -190,3 +184,89 @@ def test_unrelated_assembly_cannot_be_fully_enclosed_but_can_intersect():
     )
     intersecting = {"a": Rect(0, 0, 300, 100), "b": Rect(160, 44, 180, 100)}
     assert not check(p, intersecting)
+
+
+def test_descendant_index_handles_shared_subgraphs_and_detaches_results():
+    p = examples()["shared-child"]
+    index = p.descendant_index()
+    assert index == {a.id: p.descendants(a.id) for a in p.assemblies}
+    groups = {a.id: a for a in p.assemblies}
+    for a in p.assemblies:
+        expected = set(a.members)
+        pending = list(a.members)
+        while pending:
+            node = pending.pop()
+            for child in groups[node].members if node in groups else ():
+                if child not in expected:
+                    expected.add(child)
+                    pending.append(child)
+        assert index[a.id] == expected
+    index.clear()
+    assert p.descendant_index()
+
+
+def test_assessment_checks_once_and_preserves_independent_metrics(monkeypatch):
+    import importlib
+
+    checker = importlib.import_module("rangekeeper.adapters.cytoscape.layout.check")
+    p = Problem((Node("n", "Node", 40, 20),), ())
+    rectangles = {"n": Rect(12, 12, 40, 20)}
+    expected = metrics(p, rectangles, {})
+    original = checker.check
+    calls = []
+
+    def counted(*args):
+        calls.append(args)
+        return original(*args)
+
+    monkeypatch.setattr(checker, "check", counted)
+    findings, measured = checker.assess(p, rectangles, {})
+    assert not findings and measured == expected
+    assert len(calls) == 1
+    # Incomplete candidates retain findings without trying to measure absent geometry.
+    findings, measured = checker.assess(p, {}, {})
+    assert [f.code for f in findings] == ["missing"] and measured == {}
+    assert len(calls) == 2
+    with pytest.raises(ValueError):
+        checker.metrics(p, {}, {})
+
+
+def test_descendant_index_walks_a_deep_chain_without_recursion():
+    depth = 1100
+    groups = tuple(
+        Assembly(str(i), str(i), (str(i - 1) if i else "leaf",)) for i in range(depth)
+    )
+    problem = Problem((Node("leaf", "Leaf", 1, 1),), groups)
+    index = problem.descendant_index()
+    assert index["0"] == {"leaf"}
+    assert index[str(depth - 1)] == {"leaf", *(str(i) for i in range(depth - 1))}
+
+
+def test_formulations_and_renderer_prepare_topology_once(monkeypatch):
+    from rangekeeper.adapters.cytoscape.layout.minizinc_data import encode
+    from rangekeeper.adapters.cytoscape.layout.render import svg
+    from rangekeeper.adapters.cytoscape.layout.result import Result
+    from rangekeeper.adapters.cytoscape.layout.z3_model import Formulation
+
+    problem = Problem((Node("n", "Node", 40, 20),), ())
+    original = Problem.descendant_index
+    calls = []
+
+    def counted(self):
+        calls.append(self)
+        return original(self)
+
+    monkeypatch.setattr(Problem, "descendant_index", counted)
+    encode(problem, None)
+    assert len(calls) == 1
+    Formulation(problem)
+    assert len(calls) == 2
+    result = Result(
+        status=ResultStatus.FEASIBLE,
+        strict_status=StrictStatus.SAT,
+        problem_fingerprint=problem.fingerprint,
+    )
+    result.rectangles = {"n": Rect(12, 12, 40, 20)}
+    svg(problem, result)
+    # The emitted SVG has its own independent read-back validation boundary.
+    assert len(calls) == 4

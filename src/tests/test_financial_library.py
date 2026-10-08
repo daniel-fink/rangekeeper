@@ -1,6 +1,6 @@
 """Independent finance oracles and PyXIRR integration boundary checks."""
 
-from rangekeeper.duration import Frequency, PeriodTiming, DayCount
+from rangekeeper.model.duration import Frequency, PeriodTiming, DayCount
 from rangekeeper.model.flow import MissingValueHandling
 from rangekeeper.calculations.series import (
     AlignmentJoin,
@@ -9,8 +9,8 @@ from rangekeeper.calculations.series import (
     MeanWeighting,
 )
 from rangekeeper.calculations.projection import ProjectionMethod
-from rangekeeper.account import Balance, CurrentInterest, InterestTreatment
-from rangekeeper._schema.enums import ValueKind
+from rangekeeper.calculations.account import Balance, CurrentInterest, InterestTreatment
+from rangekeeper.schema.enums import ValueKind
 
 from rangekeeper.model.flow import Flow
 
@@ -26,7 +26,7 @@ from rangekeeper.calculations.financial import (
     calculate_xnpv,
 )
 from rangekeeper.model.flow import Movement
-from rangekeeper.duration.calendar import year_fraction
+from rangekeeper.model.duration.calendar import year_fraction
 
 
 @pytest.mark.parametrize(

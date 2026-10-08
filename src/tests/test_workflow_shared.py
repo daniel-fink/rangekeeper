@@ -10,7 +10,7 @@ from rangekeeper.model.provenance import locations
 from rangekeeper.model.characteristics import value
 from rangekeeper.model.definitions import classification
 from rangekeeper.workflow import load, run, schema
-from rangekeeper.workflow._shared import resolve_measurements
+from rangekeeper.workflow.specification import resolve_measurements
 from rangekeeper.workflow.review import export
 
 from .test_workflow import example, rewrite

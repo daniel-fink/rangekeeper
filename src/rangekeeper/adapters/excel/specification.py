@@ -5,11 +5,11 @@ from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import Any
 
-from rangekeeper._structured import freeze
+from rangekeeper.shared.structured import freeze
 
-from rangekeeper import validate
-from ..errors import AdapterEncodingError
-from ._coordinates import MAX_ROW, address, column_number
+from rangekeeper.shared import arguments as validate
+from rangekeeper.shared.errors import EncodingError
+from rangekeeper.adapters.excel._coordinates import MAX_ROW, address, column_number
 
 
 def _comparison(value: str) -> None:
@@ -226,10 +226,10 @@ def load_specification(content: str) -> ExtractionSpec:
     """Decode YAML text; no includes, executable tags, duplicate keys or silent coercion."""
     if type(content) is not str:
         raise TypeError("YAML content must be str")
-    from rangekeeper._yaml import decode
+    from rangekeeper.shared.yaml import decode
 
     try:
         supplied = decode(content)
     except ValueError as exc:
-        raise AdapterEncodingError(f"Invalid extraction YAML: {exc}") from exc
+        raise EncodingError(f"Invalid extraction YAML: {exc}") from exc
     return ExtractionSpec.from_mapping(supplied)

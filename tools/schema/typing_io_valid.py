@@ -8,7 +8,7 @@ from pathlib import Path
 from uuid import uuid4
 import rangekeeper as rk
 from rangekeeper.io import json, yaml, MemoryStore, DirectoryStore, RecordStore
-from rangekeeper.references import DocumentResolver, SpecificationResolver
+from rangekeeper.shared.references import DocumentResolver, SpecificationResolver
 from rangekeeper.model import Metadata
 from rangekeeper.run import RunRecord, Report, Status, Diagnostic, validate
 

@@ -1,12 +1,12 @@
 # Evidence table operations
 
-`rangekeeper.evidence.tabular` provides `NumberSpec`, `numbers`,
+`rangekeeper.workflow.evidence.tabular` provides `NumberSpec`, `numbers`,
 `select` and `concat`. Each operation returns `Outcome[Evidence[Table]]`, with a
 versioned `Operation` describing effective settings and ordered input fingerprints.
 These operations consume existing Evidence; they do not read workbook cells.
 
 ```python
-from rangekeeper.evidence import tabular
+from rangekeeper.workflow.evidence import tabular
 
 numeric = tabular.numbers(
     extracted,

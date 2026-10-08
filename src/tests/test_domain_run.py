@@ -9,7 +9,7 @@ import pytest
 import yaml
 
 import rangekeeper as rk
-from rangekeeper.errors import (
+from rangekeeper.shared.errors import (
     ValidationError,
     UnsupportedVersionError,
     MissingReferenceError,

@@ -3,13 +3,13 @@
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 
-from rangekeeper.operation import _Failure
-from rangekeeper.evidence import locations
-from rangekeeper.evidence import tabular
+from rangekeeper.workflow.evidence import locations
+from rangekeeper.workflow.evidence import tabular
+from rangekeeper.workflow.evidence.validation import prepare
 
-from ._declarations import fields, sequence
-from .bindings import require_columns
-from .references import format_location, references
+from rangekeeper.workflow._declarations import fields, sequence
+from rangekeeper.workflow.bindings import require_columns
+from rangekeeper.workflow.references import format_location, references
 
 
 @dataclass(frozen=True, slots=True)
@@ -29,10 +29,10 @@ class SourceCheck:
 
 def validate(specs, seen):
     """Reject incomplete declarations before any workbook is opened."""
-    from ._declarations import text
+    from rangekeeper.workflow._declarations import text
 
     common = {"id", "operation"}
-    from .catalog import SOURCE_CHECKS
+    from rangekeeper.workflow.catalog import SOURCE_CHECKS
 
     contracts = {
         "identities": ({"table", "column", "name", "explanation"}, set()),
@@ -76,9 +76,9 @@ def evaluate(specs, outputs, *, source_ids=None):
     """Reviews registered native health checks and declared Evidence scopes without
     inventing canonical graph objects for unsupported source material.
     """
-    from .catalog import SOURCE_CHECKS
+    from rangekeeper.workflow.catalog import SOURCE_CHECKS
 
-    result = []
+    result, prepared = [], {}
     for s in specs:
         op = s["operation"]
         if op in SOURCE_CHECKS:
@@ -108,10 +108,6 @@ def evaluate(specs, outputs, *, source_ids=None):
             parents = []
             if op == "identities":
                 col = s["column"]
-                if col not in table.data.columns:
-                    raise _Failure(
-                        "missing_column", "Identity check references an absent column"
-                    )
                 counts = Counter(
                     (type(r.values[col]), r.values[col]) for r in table.data.rows
                 )
@@ -164,17 +160,18 @@ def evaluate(specs, outputs, *, source_ids=None):
             for selection in s["tables"]:
                 table = outputs[selection["table"]]
                 require_columns(table, selection["columns"])
+                if id(table) not in prepared:
+                    prepared[id(table)] = prepare(table)
+                current = prepared[id(table)]
                 for row in table.data.rows:
                     for col in selection["columns"]:
-                        if col not in table.data.columns:
-                            raise _Failure(
-                                "missing_column",
-                                "Numeric check references an absent column",
-                            )
                         claim = tabular.claim(table, row.id, col)
                         if claim.value is not None:
                             continue
-                        codes = [i.code for i in tabular.issues_for(table, row.id, col)]
+                        codes = [
+                            issue.code
+                            for issue in current.issues_for(("rows", str(row.id), col))
+                        ]
                         labels = [messages[c] for c in codes if c in messages]
                         label = labels[0] if labels else "unavailable"
                         for loc in locations(claim):

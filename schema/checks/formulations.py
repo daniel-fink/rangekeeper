@@ -23,7 +23,7 @@ import yaml
 import _library
 
 from rangekeeper.model.formulation.preparation import prepare_formulations
-from rangekeeper.errors import ContractError
+from rangekeeper.shared.errors import ContractError
 
 SCHEMA = Path(__file__).resolve().parents[1]
 BIN = Path(sys.executable).parent

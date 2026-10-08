@@ -14,8 +14,8 @@ from uuid import UUID, uuid4, uuid5, NAMESPACE_URL
 
 from rangekeeper.model import Model
 from rangekeeper.model.content import encode
-from rangekeeper._records import _json_copy
-from rangekeeper._schema.validation import document_version
+from rangekeeper.schema.runtime import _json_copy
+from rangekeeper.schema.validation import document_version
 from rangekeeper.adapters.speckle.errors import MappingError
 
 _NAMESPACE = uuid5(NAMESPACE_URL, "urn:rangekeeper:migration:speckle/v1")

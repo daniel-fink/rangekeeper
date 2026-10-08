@@ -1,6 +1,6 @@
 """Flows carry quantities; model-selected operations supply their interpretation."""
 
-from rangekeeper.duration import Frequency, PeriodTiming, DayCount
+from rangekeeper.model.duration import Frequency, PeriodTiming, DayCount
 from rangekeeper.model.flow import MissingValueHandling
 from rangekeeper.calculations.series import (
     AlignmentJoin,
@@ -9,8 +9,8 @@ from rangekeeper.calculations.series import (
     MeanWeighting,
 )
 from rangekeeper.calculations.projection import ProjectionMethod
-from rangekeeper.account import Balance, CurrentInterest, InterestTreatment
-from rangekeeper._schema.enums import ValueKind
+from rangekeeper.calculations.account import Balance, CurrentInterest, InterestTreatment
+from rangekeeper.schema.enums import ValueKind
 
 from uuid import uuid4
 from rangekeeper.model.flow import Flow
@@ -25,10 +25,10 @@ import pytest
 
 from rangekeeper.calculations import series
 
-from rangekeeper.errors import ValidationError
+from rangekeeper.shared.errors import ValidationError
 from rangekeeper.model.flow import Movement
 from rangekeeper.model.measure import Quantity
-from rangekeeper.duration import make_period, make_periods
+from rangekeeper.model.duration import make_period, make_periods
 
 
 @pytest.mark.parametrize("field", ["basis", "kind"])

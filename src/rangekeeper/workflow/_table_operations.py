@@ -5,15 +5,29 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from uuid import UUID
 
-from rangekeeper import _structured
+from rangekeeper.shared import structured as _structured
 
-from ._contracts import OperationDeclaration, Produced
-from ._declarations import sequence, text
-from ._schema import obj
-from rangekeeper.evidence import fingerprint, tabular
-from rangekeeper.evidence.predicates import Predicate, select_where
-from rangekeeper.evidence.tabular import NumberSpec
-from rangekeeper.evidence.transform import TransformSpec, transform
+from rangekeeper.workflow._contracts import OperationDeclaration, Produced
+from rangekeeper.workflow._declarations import sequence, text
+from rangekeeper.workflow._schema import obj
+from rangekeeper.workflow.evidence import tabular
+from rangekeeper.workflow.evidence.predicates import Predicate, select_where
+from rangekeeper.workflow.evidence.tabular import NumberSpec
+from rangekeeper.workflow.evidence.transform import TransformSpec, transform
+
+
+def _specifications(value, kind, *, parse=False):
+    """Copy a policy mapping in encounter order, preserving each boundary's checks."""
+    if parse:
+        if not isinstance(value, Mapping):
+            raise TypeError("specifications must be a mapping")
+        return {text(key): kind.from_mapping(item) for key, item in value.items()}
+    if not isinstance(value, Mapping) or any(
+        type(key) is not str or not isinstance(item, kind)
+        for key, item in value.items()
+    ):
+        raise TypeError(f"Expected {kind.__name__} mapping")
+    return MappingProxyType(dict(value))
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -28,25 +42,17 @@ class NumbersSpec:
 
     def __post_init__(self):
         text(self.input)
-        if not isinstance(self.specifications, Mapping) or any(
-            type(k) is not str or not isinstance(v, NumberSpec)
-            for k, v in self.specifications.items()
-        ):
-            raise TypeError("Expected NumberSpec mapping")
         object.__setattr__(
-            self, "specifications", MappingProxyType(dict(self.specifications))
+            self, "specifications", _specifications(self.specifications, NumberSpec)
         )
 
     @classmethod
     def from_mapping(cls, data):
-        raw = data["specifications"]
-        if not isinstance(raw, Mapping):
-            raise TypeError("specifications must be a mapping")
         return cls(
             input=data["input"],
-            specifications={
-                text(key): NumberSpec.from_mapping(value) for key, value in raw.items()
-            },
+            specifications=_specifications(
+                data["specifications"], NumberSpec, parse=True
+            ),
         )
 
 
@@ -61,26 +67,17 @@ class TransformsSpec:
 
     def __post_init__(self):
         text(self.input)
-        if not isinstance(self.specifications, Mapping) or any(
-            type(k) is not str or not isinstance(v, TransformSpec)
-            for k, v in self.specifications.items()
-        ):
-            raise TypeError("Expected TransformSpec mapping")
         object.__setattr__(
-            self, "specifications", MappingProxyType(dict(self.specifications))
+            self, "specifications", _specifications(self.specifications, TransformSpec)
         )
 
     @classmethod
     def from_mapping(cls, data):
-        raw = data["specifications"]
-        if not isinstance(raw, Mapping):
-            raise TypeError("specifications must be a mapping")
         return cls(
             input=data["input"],
-            specifications={
-                text(key): TransformSpec.from_mapping(value)
-                for key, value in raw.items()
-            },
+            specifications=_specifications(
+                data["specifications"], TransformSpec, parse=True
+            ),
         )
 
 
@@ -98,7 +95,7 @@ class SelectSpec:
     def __post_init__(self):
         text(self.input)
         if self.where is not None:
-            from rangekeeper.evidence.predicates import Predicate
+            from rangekeeper.workflow.evidence.predicates import Predicate
 
             Predicate.from_mapping(self.where)
             if self.row_ids is not None:
@@ -239,36 +236,32 @@ def _concat(request, inputs, context):
     return tabular.concat((inputs[k] for k in request.inputs), name=context.name)
 
 
-def describe_table(value):
-    return Produced(value, fingerprint(value))
-
-
 OPERATIONS = {
     "numbers": OperationDeclaration(
         NumbersSpec,
         _numbers,
-        describe_table,
+        Produced.from_evidence,
         lambda: request_properties()["numbers"],
         inputs=(("input", "table"),),
     ),
     "transform": OperationDeclaration(
         TransformsSpec,
         _transform,
-        describe_table,
+        Produced.from_evidence,
         lambda: request_properties()["transform"],
         inputs=(("input", "table"),),
     ),
     "select": OperationDeclaration(
         SelectSpec,
         _select,
-        describe_table,
+        Produced.from_evidence,
         lambda: request_properties()["select"],
         inputs=(("input", "table"),),
     ),
     "concat": OperationDeclaration(
         ConcatSpec,
         _concat,
-        describe_table,
+        Produced.from_evidence,
         lambda: request_properties()["concat"],
         inputs=(("inputs", "table"),),
         repeated_inputs=("inputs",),

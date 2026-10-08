@@ -9,17 +9,17 @@ from uuid import NAMESPACE_URL, uuid5
 
 import pytest
 
-from rangekeeper import operation
+from rangekeeper.workflow import operation
 from rangekeeper.adapters import excel
-from rangekeeper.adapters.errors import AdapterEncodingError
-from rangekeeper.evidence import Claim, Location, Method, Source, locations
+from rangekeeper.shared.errors import EncodingError
+from rangekeeper.workflow.evidence import Claim, Location, Method, Source, locations
 from rangekeeper.workflow import source_checks
 from rangekeeper.workflow.checking import evaluate, validate_checks
 from rangekeeper.workflow.composition import compose
 from rangekeeper.workflow.implementation import manifests, semantic_digest
-from rangekeeper.evidence import Issue, Severity, tabular
-from rangekeeper.evidence.predicates import Predicate, select_where
-from rangekeeper.evidence.transform import TransformSpec, transform
+from rangekeeper.workflow.evidence import Issue, Severity, tabular
+from rangekeeper.workflow.evidence.predicates import Predicate, select_where
+from rangekeeper.workflow.evidence.transform import TransformSpec, transform
 from rangekeeper.workflow.specification import StepSpec
 
 METHOD = Method(code="synthetic", version="1")
@@ -265,11 +265,11 @@ def test_uniqueness_covers_column_before_extraction_start():
     "content", ["a: &a 1\nb: *a", "a: 1\na: 2", "a: !!python/name:os.system ''"]
 )
 def test_both_yaml_entrypoints_reject_unsafe_or_ambiguous_content(content):
-    from rangekeeper._yaml import decode
+    from rangekeeper.shared.yaml import decode
 
     with pytest.raises(ValueError):
         decode(content)
-    with pytest.raises(AdapterEncodingError):
+    with pytest.raises(EncodingError):
         excel.load_specification(content)
 
 
@@ -277,15 +277,15 @@ def test_both_yaml_entrypoints_reject_unsafe_or_ambiguous_content(content):
     "computation_path",
     [
         "workflow/composition.py",
-        "_behaviors/flow.py",
-        "evidence/_claims.py",
-        "evidence/validation.py",
-        "graph/selection.py",
-        "graph/reduction.py",
-        "graph/reducers.py",
-        "_record_index.py",
-        "_implementation.py",
-        "_yaml.py",
+        "schema/behaviors/flow.py",
+        "workflow/evidence/_claims.py",
+        "workflow/evidence/validation.py",
+        "model/system/selection.py",
+        "model/system/reduction.py",
+        "model/system/reducers.py",
+        "schema/index.py",
+        "shared/fingerprints.py",
+        "shared/yaml.py",
     ],
 )
 def test_semantic_identity_ignores_prose_but_tracks_executable_changes(
@@ -431,7 +431,7 @@ def test_provenance_reuses_same_claim_but_checks_distinct_objects(monkeypatch):
 
 
 def test_workflow_currency_catalogue_changes_semantic_identity(tmp_path, monkeypatch):
-    from rangekeeper.units import UnitSystem
+    from rangekeeper.shared.units import UnitSystem
     from rangekeeper.workflow import implementation
 
     before = manifests(tmp_path)
@@ -444,7 +444,7 @@ def test_workflow_currency_catalogue_changes_semantic_identity(tmp_path, monkeyp
 
 
 def test_transform_uses_issue_scopes_for_earlier_derived_columns(monkeypatch):
-    from rangekeeper.evidence import validation
+    from rangekeeper.workflow.evidence import validation
 
     global_issue = Issue(
         rule_id="global",

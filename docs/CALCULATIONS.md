@@ -103,7 +103,7 @@ See [references](REFERENCES.md) for revision and migration rules.
 ## Composed account conventions
 
 Import `Balance`, `CurrentInterest` and `InterestTreatment` from
-`rangekeeper.account`. The numerical calculation and passive schedule use the same
+`rangekeeper.calculations.account`. The numerical calculation and passive schedule use the same
 three choices. `Balance.OPENING` selects the signed debt before transactions;
 `CLOSING` selects it after transactions. `CurrentInterest.EXCLUDED` charges the
 positive selected principal at the per-step rate. `INCLUDED` solves the charge as
@@ -116,7 +116,7 @@ balances; displayed debt and overdraft balances retain their separate meanings.
 Rate Flow coordinates must match transaction coordinates and order. Validation also
 applies to empty transactions. Same-day keys never reorder transaction/rate pairs.
 
-`formulations.account.schedule` declares the same finite account mechanics with
+`model.formulation.account.schedule` declares the same finite account mechanics with
 explicit starting balance, rate, transactions, closing and interest references.
 It requires a nonnegative-principal contract. Fixed rate bounds are ordinary
 predicates and are checked exactly. Unknown rates and piecewise overdraft branches
@@ -124,7 +124,7 @@ remain unsupported. `account.interest` handles explicitly selected principal onl
 
 ## Calendar choices
 
-`Frequency` owns the ten supported steps. `duration.offset`, `measure`, `align`,
+`Frequency` owns the ten supported steps. `model.duration.offset`, `measure`, `align`,
 `cover`, `make_period`, `make_periods` and `periods_between` use native dates.
 Month offsets default to `MonthRoll.PRESERVE_END`; `CLAMP` is explicit. These rules
 are independent of the Period wire-field migration. `DayCount` owns supported

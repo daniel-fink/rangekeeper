@@ -4,7 +4,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from uuid import UUID, uuid4
 
-from rangekeeper import validate
+from rangekeeper.shared import arguments as validate
 from rangekeeper.legacy.graph.characteristics import Characteristics, Feature, Label, Measurement
 from rangekeeper.legacy.graph.classification import Classification
 

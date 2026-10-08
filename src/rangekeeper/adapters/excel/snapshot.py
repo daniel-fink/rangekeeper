@@ -5,20 +5,25 @@ from dataclasses import dataclass, field, fields, replace
 from types import MappingProxyType
 from typing import Any
 
-from rangekeeper import _structured
-from rangekeeper.operation import _Failure
-from rangekeeper.evidence.errors import encode
+from rangekeeper.shared import structured as _structured
+from rangekeeper.workflow.operation import _Failure
+from rangekeeper.workflow.evidence.errors import encode
 
-from rangekeeper import validate
-from rangekeeper.evidence import Location, Source
-from ..document import (
+from rangekeeper.shared import arguments as validate
+from rangekeeper.workflow.evidence import Location, Source
+from rangekeeper.adapters.document import (
     TEXT_PREVIEW_LIMIT,
     ContentItem,
     Description,
     Document,
     Inspection,
 )
-from ._coordinates import MAX_COLUMN, MAX_ROW, address, merged_bounds
+from rangekeeper.adapters.excel._coordinates import (
+    MAX_COLUMN,
+    MAX_ROW,
+    address,
+    merged_bounds,
+)
 
 
 def _short(value: object) -> object:

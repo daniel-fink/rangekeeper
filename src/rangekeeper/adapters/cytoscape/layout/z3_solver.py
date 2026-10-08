@@ -13,10 +13,10 @@ from dataclasses import asdict
 from math import isfinite
 from time import monotonic
 
-from .check import check, metrics
-from .model import Problem, Rect
-from .z3_model import Formulation
-from .result import Result
+from rangekeeper.adapters.cytoscape.layout.check import assess
+from rangekeeper.adapters.cytoscape.layout.model import Problem, Rect
+from rangekeeper.adapters.cytoscape.layout.z3_model import Formulation
+from rangekeeper.adapters.cytoscape.layout.result import Result
 
 
 def solve(
@@ -66,13 +66,13 @@ def solve(
         return state
 
     if initial is not None:
-        if initial.problem_fingerprint != problem.fingerprint or check(
-            problem, initial.rectangles
-        ):
+        if initial.problem_fingerprint != problem.fingerprint:
+            raise ValueError("Initial geometry must match the problem")
+        findings, _ = assess(problem, initial.rectangles, initial.grids)
+        if findings:
             raise ValueError(
                 "Initial geometry must match the problem and pass strict checking"
             )
-        metrics(problem, initial.rectangles, initial.grids)
         # Assumptions are scoped to this timed check. push() before the first
         # check can trigger unbounded preprocessing on the unconstrained model.
         seed_constraints: list[z3.BoolRef] = []
@@ -172,7 +172,7 @@ def solve(
         result.grids[i]["slots"] = {
             member: incumbent.eval(v).as_long() for member, v in slots.items()
         }
-    findings = check(problem, result.rectangles)
+    findings, measured = assess(problem, result.rectangles, result.grids)
     unexpected = [
         f for f in findings if f.code != "exclusion" or result.mode == ResultMode.STRICT
     ]
@@ -181,7 +181,7 @@ def solve(
             f"Solver result failed independent geometry check: {unexpected}"
         )
     result.findings = [asdict(f) for f in findings]
-    result.measurements = metrics(problem, result.rectangles, result.grids)
+    result.measurements = measured
     for name, expr in formulation.objective:
         if incumbent.eval(expr).as_long() != result.measurements[name]:
             raise RuntimeError(f"Solver/checker objective disagreement: {name}")

@@ -13,7 +13,7 @@ from datetime import date
 from typing import Any, cast
 from uuid import UUID, uuid4, uuid5
 
-from ..model import (
+from rangekeeper.model import (
     Model,
     Definitions,
     System,
@@ -24,16 +24,16 @@ from ..model import (
     Quantity,
     Formulation,
 )
-from ..model.characteristics import value as local_value
-from ..model.content import decode, encode
-from ..model.definitions import find_classifications
-from ..model.flow import Flow, Movement
-from ..duration import make_periods
+from rangekeeper.model.characteristics import value as local_value
+from rangekeeper.model.content import decode, encode
+from rangekeeper.model.definitions import find_classifications
+from rangekeeper.model.flow import Flow
+from rangekeeper.model.duration import make_periods
 
-from ..model.expression import Reference
-from ..formulations import declare
-from ..duration import Frequency, PeriodTiming
-from ..formulations.expression import (
+from rangekeeper.model.expression import Reference
+from rangekeeper.model.formulation import declare
+from rangekeeper.model.duration import Frequency, PeriodTiming
+from rangekeeper.model.expression.authoring import (
     reference,
     literal,
     equal,
@@ -43,9 +43,9 @@ from ..formulations.expression import (
     power,
     sum as expression_sum,
 )
-from ..specification import Specification
-from ..specification.targets import unknown_flow
-from .._schema.records import Assignment, Specification as SpecificationRecord
+from rangekeeper.specification import Specification
+from rangekeeper.specification.targets import unknown_flow
+from rangekeeper.schema.records import Assignment, Specification as SpecificationRecord
 
 # Reviewed teaching assumptions from the original design walkthrough.
 EFFICIENCY = dict(hotel=0.8, retail=0.675, residential=0.75, parking=0.9)
@@ -226,16 +226,13 @@ def author(
             key=key,
             kind=ValueKind.FLOW,
             measure=measures["AUD"].id,
-            flow=Flow(
+            flow=Flow.from_periods(
+                periods[:count],
+                (None,) * count,
                 units="AUD",
-                movements=tuple(
-                    Movement(
-                        id=uuid4(),
-                        key=f"y{i + 1}",
-                        period=p,
-                        date=p.resolve(timing=PeriodTiming.LAST),
-                    )
-                    for i, p in enumerate(periods[:count])
+                keys=tuple(f"y{i + 1}" for i in range(count)),
+                dates=tuple(
+                    p.resolve(timing=PeriodTiming.LAST) for p in periods[:count]
                 ),
             ),
         )
@@ -527,7 +524,7 @@ def specify(model: Model) -> Specification:
 
 def fixture() -> Model:
     """Construct a small public synthetic design; no private service data is copied."""
-    from ..migration.speckle import MappingSpec, convert_speckle
+    from rangekeeper.migration.speckle import MappingSpec, convert_speckle
 
     namespace = UUID("bce1e752-588a-4c52-a22a-43d4f87cfc9b")
     ids = {

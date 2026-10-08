@@ -13,12 +13,12 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from .._schema.records import Flow, Movement, Value
-from .._schema.enums import ValueKind
-from .._behaviors.flow import MissingValueHandling
+from rangekeeper.schema.records import Flow, Movement, Value
+from rangekeeper.schema.enums import ValueKind
+from rangekeeper.schema.behaviors.flow import MissingValueHandling
 
 if TYPE_CHECKING:
-    from .model import Model
+    from rangekeeper.model.model import Model
 
 __all__ = ["Flow", "Movement", "Stream", "MissingValueHandling"]
 

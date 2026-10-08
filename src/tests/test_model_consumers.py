@@ -29,16 +29,16 @@ from rangekeeper.model import (
     Taxonomy,
 )
 from rangekeeper.model.characteristics import value
-from rangekeeper.graph import View, Hierarchy
-from rangekeeper.graph.errors import SelectionError
-from rangekeeper.graph.projection import (
+from rangekeeper.model.system import View, Hierarchy
+from rangekeeper.model.system.errors import SelectionError
+from rangekeeper.model.system.projection import (
     FieldColumn,
     EntityField,
     ValueColumn,
     LabelColumn,
     to_table,
 )
-from rangekeeper.errors import UnitError
+from rangekeeper.shared.errors import UnitError
 from rangekeeper.io import json, yaml, MemoryStore, DirectoryStore
 from rangekeeper.adapters.cytoscape import project, validate_document
 from rangekeeper.workflow import load, run
@@ -226,10 +226,12 @@ def test_workflow_multiple_values_per_measure_and_snapshot_storage(tmp_path):
 def test_new_consumer_imports_do_not_load_legacy_domain_or_solver():
     code = """
 import sys
-from rangekeeper import workflow, adapters, table, evidence, operation
+from rangekeeper import workflow, adapters
+from rangekeeper.shared import table
+from rangekeeper.workflow import evidence, operation
 from rangekeeper.workflow import run
 from rangekeeper.adapters import document, excel, cytoscape
-assert not any(n.startswith(('rangekeeper.legacy', 'rangekeeper.graph.graph', 'rangekeeper.graph.entity', 'rangekeeper.measure', 'pyomo', 'highspy', 'networkx', 'pandas')) for n in sys.modules)
+assert not any(n.startswith(('rangekeeper.legacy', 'rangekeeper.model.system.graph', 'rangekeeper.model.system.entity', 'rangekeeper.measure', 'pyomo', 'highspy', 'networkx', 'pandas')) for n in sys.modules)
 """
     subprocess.run([sys.executable, "-c", code], check=True)
 
@@ -249,7 +251,7 @@ def test_workflow_to_real_scalar_executor(tmp_path):
 
 def test_source_dates_and_locations_survive_canonical_provenance():
     from datetime import date
-    from rangekeeper import evidence
+    from rangekeeper.workflow import evidence
     from rangekeeper.workflow.provenance import ProvenanceBuilder
     from rangekeeper.model.provenance import locations
 
@@ -282,8 +284,8 @@ def test_source_dates_and_locations_survive_canonical_provenance():
 
 def test_direct_composition_rejects_features(tmp_path):
     from rangekeeper.workflow.composition import compose
-    from rangekeeper.evidence import Claim, Method
-    from rangekeeper.operation import Operation
+    from rangekeeper.workflow.evidence import Claim, Method
+    from rangekeeper.workflow.operation import Operation
 
     root, _ = example(tmp_path)
     spec = load(root / "spec")

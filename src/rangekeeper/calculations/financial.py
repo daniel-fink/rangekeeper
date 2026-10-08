@@ -14,10 +14,14 @@ from dataclasses import dataclass
 from datetime import date
 import math
 
-from ..model.flow import Flow
-from ..model.measure import Quantity
-from ..duration.period import PeriodTiming
-from ..duration.calendar import DayCount, require_date, resolve_day_count
+from rangekeeper.model.flow import Flow
+from rangekeeper.model.measure import Quantity
+from rangekeeper.model.duration.period import PeriodTiming
+from rangekeeper.model.duration.calendar import (
+    DayCount,
+    require_date,
+    resolve_day_count,
+)
 
 
 def _require_result(value: float | None, operation: str) -> float:

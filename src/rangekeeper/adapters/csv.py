@@ -8,9 +8,9 @@ from uuid import UUID
 
 import polars as pl
 
-from ..table import Table
-from .errors import AdapterEncodingError
-from .polars import to_table
+from rangekeeper.shared.table import Table
+from rangekeeper.shared.errors import EncodingError
+from rangekeeper.adapters.polars import to_table
 
 __all__ = ["read", "write"]
 
@@ -62,7 +62,7 @@ def _scalar(
         return str(value)
     if isinstance(value, Real) and math.isfinite(float(value)):
         return str(value)
-    raise AdapterEncodingError(
+    raise EncodingError(
         f"CSV row {row_index} column {column!r} has unsupported value type "
         f"{type(value).__name__}"
     )

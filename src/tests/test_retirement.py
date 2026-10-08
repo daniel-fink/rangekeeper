@@ -8,6 +8,33 @@ import rangekeeper
 
 
 RETIRED = (
+    "_schema",
+    "_records",
+    "_record_index",
+    "_revision",
+    "_behaviors",
+    "_coordinates",
+    "_implementation",
+    "_validation",
+    "_encoding",
+    "_structured",
+    "_yaml",
+    "account",
+    "table",
+    "units",
+    "references",
+    "diagnostics",
+    "errors",
+    "validate",
+    "metadata",
+    "graph",
+    "formulations",
+    "duration",
+    "scenarios",
+    "policies",
+    "execution",
+    "evidence",
+    "operation",
     "flux",
     "_legacy_duration",
     "distribution",
@@ -41,12 +68,14 @@ def test_canonical_imports_leave_held_domain_and_optional_libraries_unloaded():
     script = """
 import sys
 import rangekeeper
-from rangekeeper import duration, calculations, formulations, scenarios, policies
-from rangekeeper.graph import View
+from rangekeeper import calculations
+from rangekeeper.model import duration, formulation, scenario
+from rangekeeper.specification import policy
+from rangekeeper.model.system import View
 from rangekeeper.workflow import load, run
 from rangekeeper.adapters.speckle import decode_model
 from rangekeeper.migration import convert_graph
-for name in ('rangekeeper.api', 'rangekeeper.measure', 'rangekeeper.graph.graph',
+for name in ('rangekeeper.api', 'rangekeeper.measure', 'rangekeeper.model.system.graph',
              'rangekeeper.legacy', 'specklepy', 'matplotlib', 'plotly',
              'pandas', 'numpy', 'scipy', 'pyomo', 'highspy', 'numba', 'multiprocess'):
     assert not any(m == name or m.startswith(name + '.') for m in sys.modules), name

@@ -1,6 +1,6 @@
 """Owner-local Formulation declaration rules."""
 
-from ..._validation import require_unique
+from rangekeeper.shared.validation import require_unique
 
 
 def validate_formulation_names(formulations, *, path="/formulations") -> None:

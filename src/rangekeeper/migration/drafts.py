@@ -3,9 +3,9 @@
 from collections.abc import Mapping
 from uuid import UUID, uuid4, uuid5
 
-from .._records import _json_copy
-from .._schema.records import Metadata
-from .._schema.validation import document_version, _slot_map
+from rangekeeper.schema.runtime import _json_copy
+from rangekeeper.schema.records import Metadata
+from rangekeeper.schema.validation import document_version, _slot_map
 
 # These explicit differences describe the supported draft layouts. They are not
 # canonical aliases: conversion walks the source before changing any field name.
@@ -104,8 +104,8 @@ def upgrade_model(data: dict, *, revision_id: UUID | None = None):
     The returned metadata.previous and metadata.id form the explicit revision map.
     Original files, historical Runs, quantities and captured inputs stay unchanged.
     """
-    from ..model import Model
-    from .scenarios import convert_names
+    from rangekeeper.model import Model
+    from rangekeeper.migration.scenarios import convert_names
 
     result = _revision(data, "Model", {"0.3.0", "0.4.0", "0.5.0", "0.6.0"}, revision_id)
     _convert(result, "Model")
@@ -125,7 +125,7 @@ def upgrade_specification(
     Conversion performs no IO. Validate the new dependency graph with its resolver
     before publication; absent/conflicting maps cannot select a latest revision.
     """
-    from ..specification import Specification
+    from rangekeeper.specification import Specification
 
     result = _revision(data, "Specification", {"0.4.0", "0.5.0", "0.6.0"}, revision_id)
     revision_map = dict(revisions or {})

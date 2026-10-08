@@ -1,6 +1,6 @@
 """Date-only coordinates, independent payment dates and explicit timing contracts."""
 
-from rangekeeper.duration import Frequency, PeriodTiming, DayCount
+from rangekeeper.model.duration import Frequency, PeriodTiming, DayCount
 from rangekeeper.model.flow import MissingValueHandling
 from rangekeeper.calculations.series import (
     AlignmentJoin,
@@ -9,8 +9,8 @@ from rangekeeper.calculations.series import (
     MeanWeighting,
 )
 from rangekeeper.calculations.projection import ProjectionMethod
-from rangekeeper.account import Balance, CurrentInterest, InterestTreatment
-from rangekeeper._schema.enums import ValueKind
+from rangekeeper.calculations.account import Balance, CurrentInterest, InterestTreatment
+from rangekeeper.schema.enums import ValueKind
 
 from rangekeeper.model.flow import Flow
 
@@ -19,10 +19,10 @@ from datetime import date, datetime, timezone
 
 import pytest
 
-from rangekeeper.errors import ValidationError
+from rangekeeper.shared.errors import ValidationError
 from rangekeeper.model.duration import Period
 from rangekeeper.model.flow import Movement
-from rangekeeper.duration import make_period, make_periods, offset
+from rangekeeper.model.duration import make_period, make_periods, offset
 from rangekeeper.calculations import financial, series
 
 
@@ -31,7 +31,7 @@ JANUARY = make_period(date(2026, 1, 1), date(2026, 2, 1))
 
 def test_schema_date_or_timestamp_union_retains_timestamp_support():
     from uuid import uuid4
-    from rangekeeper._schema.records import Source
+    from rangekeeper.schema.records import Source
 
     source = Source(
         id=uuid4(),

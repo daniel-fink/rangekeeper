@@ -5,20 +5,24 @@ from dataclasses import dataclass
 import math
 from uuid import UUID
 
-from .._revision import check_revision
-from .._schema.records import Specification as SpecificationRecord, Metadata
-from .._schema.validation import document_version
-from .._validation import bounded, require, validate_known_reference_types
-from ..errors import UnsupportedVersionError
-from .._record_index import RecordIndex
-from ..model.formulation.validation import validate_formulation_names
-from .composition import (
+from rangekeeper.schema.revision import check_revision
+from rangekeeper.schema.records import Specification as SpecificationRecord, Metadata
+from rangekeeper.schema.validation import document_version
+from rangekeeper.shared.validation import (
+    bounded,
+    require,
+    validate_known_reference_types,
+)
+from rangekeeper.shared.errors import UnsupportedVersionError
+from rangekeeper.schema.index import RecordIndex
+from rangekeeper.model.formulation.validation import validate_formulation_names
+from rangekeeper.specification.composition import (
     Composition,
     validate_local_header,
     validate_settings,
     validate_roles,
 )
-from ..references import SpecificationResolver
+from rangekeeper.shared.references import SpecificationResolver
 
 
 def _validate_local(record: SpecificationRecord) -> None:
@@ -104,7 +108,7 @@ class Specification:
 
     def compose(self, *, resolver: SpecificationResolver) -> Composition:
         """Resolve this contribution to one immutable additive investigation."""
-        from .composition import compose
+        from rangekeeper.specification.composition import compose
 
         return compose(self, resolver=resolver)
 

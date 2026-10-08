@@ -9,7 +9,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from itertools import combinations
 
-from .model import Problem, Rect, grid_templates
+from rangekeeper.adapters.cytoscape.layout.model import Problem, Rect, grid_templates
 
 
 @dataclass(frozen=True)
@@ -29,6 +29,11 @@ def separated(a: Rect, b: Rect, gap: int = 0) -> bool:
 
 
 def check(problem: Problem, rectangles: Mapping[str, Rect]) -> tuple[Finding, ...]:
+    return _check(problem, rectangles, problem.descendant_index())
+
+
+def _check(problem, rectangles, descendants_by_id) -> tuple[Finding, ...]:
+    """Check with the topology prepared by this operation from the same Problem."""
     findings: list[Finding] = []
 
     def add(code, ids, text):
@@ -72,7 +77,7 @@ def check(problem: Problem, rectangles: Mapping[str, Rect]) -> tuple[Finding, ..
                 and c.bottom <= r.bottom - problem.padding
             ):
                 add("containment", [i, a.id], "Member footprint outside content region")
-        descendants = problem.descendants(a.id)
+        descendants = descendants_by_id[a.id]
         for n in problem.nodes:
             if n.id not in descendants and not separated(
                 rectangles[n.id], r, problem.gap
@@ -152,7 +157,7 @@ def check(problem: Problem, rectangles: Mapping[str, Rect]) -> tuple[Finding, ..
     # Partial overlap can express shared membership. Full enclosure of an
     # unrelated assembly would incorrectly suggest assembly membership.
     for outer in problem.assemblies:
-        descendants = problem.descendants(outer.id)
+        descendants = descendants_by_id[outer.id]
         r = rectangles[outer.id]
         for inner in problem.assemblies:
             if inner.id == outer.id or inner.id in descendants:
@@ -190,10 +195,32 @@ def check(problem: Problem, rectangles: Mapping[str, Rect]) -> tuple[Finding, ..
     return tuple(findings)
 
 
+def assess(
+    problem: Problem,
+    rectangles: Mapping[str, Rect],
+    grids: Mapping[str, dict],
+) -> tuple[tuple[Finding, ...], dict]:
+    """Check geometry once and measure only a structurally admissible candidate."""
+    findings = check(problem, rectangles)
+    if any(f.code != "exclusion" for f in findings):
+        return findings, {}
+    return findings, _metrics(problem, rectangles, grids, findings)
+
+
 def metrics(
     problem: Problem,
     rectangles: Mapping[str, Rect],
     grids: Mapping[str, dict],
+):
+    """Measure an independent candidate, including its exclusion findings."""
+    return _metrics(problem, rectangles, grids, check(problem, rectangles))
+
+
+def _metrics(
+    problem: Problem,
+    rectangles: Mapping[str, Rect],
+    grids: Mapping[str, dict],
+    findings: tuple[Finding, ...],
 ):
     """Arithmetic reproduction of the objective vector and explicit grid witnesses."""
     displacement = 0
@@ -272,9 +299,7 @@ def metrics(
     # Origin is fixed at the canvas top-left. Including unused leading margin in
     # extent breaks translation symmetry without selecting an arbitrary node.
     result = {
-        "false_enclosures": sum(
-            f.code == "exclusion" for f in check(problem, rectangles)
-        ),
+        "false_enclosures": sum(f.code == "exclusion" for f in findings),
         "grid_displacement": displacement,
         "extent": width + height,
         "width": width,

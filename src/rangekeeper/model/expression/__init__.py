@@ -1,6 +1,6 @@
 """Schema-derived expression records; fields and constructors are generated from LinkML."""
 
-from ..._schema.records import (
+from rangekeeper.schema.records import (
     Expression as Expression,
     Reference as Reference,
     Constraint as Constraint,
@@ -30,7 +30,7 @@ __all__ = [
     "Criterion",
 ]
 
-from ..._schema.enums import (
+from rangekeeper.schema.enums import (
     Cardinality,
     CollectionKind,
     Depth,

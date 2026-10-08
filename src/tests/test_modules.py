@@ -5,11 +5,11 @@ breaks. Dates, totals, allocation, partition meaning and detached results remain
 covered here. Plotting is tested by the installed walkthroughs and adapters.
 """
 
-from rangekeeper.duration import Frequency
+from rangekeeper.model.duration import Frequency
 from rangekeeper.model.flow import MissingValueHandling
 from rangekeeper.calculations.series import ResamplingReduction
 from rangekeeper.calculations.projection import ProjectionMethod
-from rangekeeper.duration import MonthRoll, PeriodTiming
+from rangekeeper.model.duration import MonthRoll, PeriodTiming
 
 from rangekeeper.model import ValueKind
 
@@ -28,8 +28,8 @@ import pytest
 from rangekeeper import Model
 from rangekeeper.calculations import projection, series
 from rangekeeper.calculations.interval import Interval
-from rangekeeper.duration import make_periods, make_period, offset
-from rangekeeper.duration.calendar import elapsed_days
+from rangekeeper.model.duration import make_periods, make_period, offset
+from rangekeeper.model.duration.calendar import elapsed_days
 from rangekeeper.model import (
     Metadata,
     System,

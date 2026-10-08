@@ -13,8 +13,8 @@ def obj(properties, required=()):
 
 
 def schema():
-    from ._table_operations import number_schema
-    from .catalog import OPERATIONS
+    from rangekeeper.workflow._table_operations import number_schema
+    from rangekeeper.workflow.catalog import OPERATIONS
 
     string = {"type": "string", "minLength": 1}
     names = {"type": "array", "items": string}

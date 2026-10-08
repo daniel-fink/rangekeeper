@@ -48,7 +48,7 @@ exclude = ["*.node_modules*", "*.client*"]
 
 [tool.setuptools.package-data]
 "rangekeeper" = ["py.typed"]
-"rangekeeper._schema" = ["*.json"]
+"rangekeeper.schema" = ["*.json"]
 "rangekeeper.adapters.cytoscape" = ["assets/*.js", "assets/*.css", "assets/*.html", "assets/vendor/*.js", "assets/vendor/*.LICENSE", "assets/vendor/*.json"]
 
 "rangekeeper.adapters.cytoscape.layout" = ["*.mzn"]

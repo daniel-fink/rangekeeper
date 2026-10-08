@@ -4,7 +4,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from types import MappingProxyType
 from uuid import UUID
-from .._validation import require
+from rangekeeper.shared.validation import require
 
 
 @dataclass(frozen=True)
@@ -134,7 +134,7 @@ def recorded_quantity(reference: dict, targets, measures):
 
 
 def _model_target(model, target):
-    from .._schema.records import Movement
+    from rangekeeper.schema.records import Movement
 
     record = model.resolve(target)
     if isinstance(record, Movement):
@@ -148,7 +148,7 @@ def target_value(model, target):
 
 
 def _model_units(model, value, movement):
-    from .._schema.records import Measure
+    from rangekeeper.schema.records import Measure
 
     return _scalar_units(
         value._data,
@@ -165,7 +165,7 @@ def target_units(model, target) -> str:
 
 def recorded_scalar(model, target):
     """Read explicit scalar content using the same eligibility rules as validation."""
-    from .._schema.records import Quantity
+    from rangekeeper.schema.records import Quantity
 
     value, movement = _model_target(model, target)
     units = _model_units(model, value, movement)
@@ -178,9 +178,9 @@ def recorded_scalar(model, target):
     return value.quantity
 
 
-def scope_for_model(model, *, units=None):
+def scope_for_model(model):
     """Prepare a validated immutable Model without export, reconstruction or analysis."""
-    from .._schema.records import Entity, Value
+    from rangekeeper.schema.records import Entity, Value
 
     definitions = model._record._data.get("definitions") or {}
     system = model._record._data.get("system") or {}
@@ -205,8 +205,8 @@ def scope_for_model(model, *, units=None):
 
 def validate_values(scope):
     """Check intrinsic Value content after declaration identities are indexed."""
-    from .content import validate_content
-    from .._schema.records import Flow, PropertyContent
+    from rangekeeper.model.content import validate_content
+    from rangekeeper.schema.records import Flow, PropertyContent
 
     for value in scope.values.values():
         kind = value["kind"]

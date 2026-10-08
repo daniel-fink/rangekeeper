@@ -16,8 +16,8 @@ workflow described in [the workflow contract](ingestion-workflow.md).
 
 ## Ownership and public API
 
-`operation` owns `Operation`, `Outcome[T]`, `Diagnostic` and
-`fingerprint(operation)`. `Method`, `Source` and `Location` belong to `evidence`.
+`workflow.operation` owns `Operation`, `Outcome[T]`, `Diagnostic` and
+`fingerprint(operation)`. `Method`, `Source` and `Location` belong to `workflow.evidence`.
 `Severity` re-exports the canonical generated enum. `Issue` and `Evidence` retain their
 existing contracts and fingerprint format.
 
@@ -66,7 +66,7 @@ and scalar types matter. In particular `1`, `1.0`, `True` and `"1"` differ.
 | `Table` and `Row` | These remain extracted data. Excel `Column`, `Rows`, `StopBefore` and `Expectations` are extraction instructions, not replacement table structures. |
 | `Evidence` and `Issue` | These describe produced content and addressed issues. `Outcome`/`Diagnostic` describe an invocation, including failure before any content exists. |
 | Existing scalar encoder and digest helpers | Structured specification encoding reuses these primitives, adding only mapping/sequence structure; Evidence payload restrictions remain unchanged. |
-| `rangekeeper.validate` | Shared text/UUID checks are reused. Format/schema/address checks stay in the adapter. |
+| `rangekeeper.shared.arguments` | Shared text/UUID checks are reused. Format/schema/address checks stay in the adapter. |
 
 Excel coordinate rules live independently in `_coordinates.py`, so native
 snapshots do not depend on the extraction request schema. Missing-sheet handling

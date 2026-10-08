@@ -16,7 +16,7 @@ import yaml as pyyaml
 import rangekeeper as rk
 from rangekeeper.io import json, yaml, MemoryStore, DirectoryStore
 from rangekeeper.model import Metadata, System, Entity, Update
-from rangekeeper.errors import (
+from rangekeeper.shared.errors import (
     DecodeError,
     ValidationError,
     RevisionConflictError,

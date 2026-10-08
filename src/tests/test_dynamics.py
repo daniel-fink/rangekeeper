@@ -10,10 +10,9 @@ from rangekeeper.model.distribution import Distribution
 
 import numpy as np
 import pytest
-from rangekeeper.calculations.dynamics.trend import calculate_trend
-from rangekeeper.calculations.dynamics.noise import sample_noise
-from rangekeeper.calculations.dynamics.volatility import calculate_autoregression
-from rangekeeper.calculations.dynamics.shock import calculate_shock
+from rangekeeper.calculations.dynamics import calculate_trend
+from rangekeeper.calculations.dynamics import calculate_autoregression
+from rangekeeper.calculations.dynamics import calculate_shock
 
 
 def test_trend_preserves_explicit_initial_value_and_default_price_factor():
@@ -39,8 +38,8 @@ def test_noise_uses_caller_generator_without_global_state():
     )
     np.random.seed(29)
     before = np.random.get_state()
-    left = sample_noise(spec, count=25, generator=np.random.default_rng(13))
-    right = sample_noise(spec, count=25, generator=np.random.default_rng(13))
+    left = spec.sample(size=25, generator=np.random.default_rng(13))
+    right = spec.sample(size=25, generator=np.random.default_rng(13))
     assert left == right and len(left) == 25
     assert all(-0.05 <= x <= 0.05 for x in left)
     after = np.random.get_state()

@@ -13,10 +13,10 @@ from copy import deepcopy
 from math import isfinite
 from time import monotonic
 
-from .check import check, metrics
-from .minizinc_solver import solve
-from .model import Problem
-from .result import Result
+from rangekeeper.adapters.cytoscape.layout.check import assess
+from rangekeeper.adapters.cytoscape.layout.minizinc_solver import solve
+from rangekeeper.adapters.cytoscape.layout.model import Problem
+from rangekeeper.adapters.cytoscape.layout.result import Result
 
 
 def refine(
@@ -34,18 +34,17 @@ def refine(
         or max_regions < 1
     ):
         raise ValueError("Positive finite budgets and positive max_regions required")
-    if (
-        problem.weights is None
-        or initial.problem_fingerprint != problem.fingerprint
-        or check(problem, initial.rectangles)
-    ):
+    if problem.weights is None or initial.problem_fingerprint != problem.fingerprint:
         raise ValueError(
             "Refinement needs preference weights and a matching checked strict seed"
         )
+    findings, measured = assess(problem, initial.rectangles, initial.grids)
+    if findings:
+        raise ValueError("Refinement needs a checked strict seed")
     start = monotonic()
     deadline = start + time_limit
     result = deepcopy(initial)
-    result.measurements = metrics(problem, result.rectangles, result.grids)
+    result.measurements = measured
     result.status = ResultStatus.FEASIBLE
     result.strict_status = StrictStatus.SAT
     result.mode = ResultMode.STRICT

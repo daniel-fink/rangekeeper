@@ -4,6 +4,13 @@ The three roots separate declared project knowledge, an investigation, and evide
 of what happened. Each root has revision metadata. UUID references identify exact
 revisions; a display name never resolves a document implicitly.
 
+Import the three facades from `rangekeeper`. Their capability packages follow
+their ownership: `model.system` owns graph views, `model.formulation` owns passive
+equation builders, `model.duration` owns calendar rules, and `model.scenario` owns
+captured futures. Policy operations belong to `specification.policy`; numerical
+execution belongs to `run.execution`. Generated records and their runtime live in
+`schema`, while reusable tables, units and resolver contracts live in `shared`.
+
 ## Model
 
 A Model declares Definitions, System content and Provenance. Definitions include

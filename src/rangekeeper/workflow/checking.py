@@ -9,13 +9,13 @@ from enum import Enum, unique
 from typing import Any
 
 from rangekeeper.model import Assembly, Entity, Model
-from rangekeeper.graph import View
-from rangekeeper.operation import _Failure
-from rangekeeper._encoding import encode
+from rangekeeper.model.system import View
+from rangekeeper.workflow.operation import _Failure
+from rangekeeper.shared.encoding import encode
 
-from ._declarations import fields, sequence, text
-from ._operands import OperandResult, operand
-from .bindings import (
+from rangekeeper.workflow._declarations import fields, sequence, text
+from rangekeeper.workflow._operands import OperandResult, operand
+from rangekeeper.workflow.bindings import (
     binding,
     condition,
     require_columns,
@@ -23,7 +23,7 @@ from .bindings import (
     validate_binding,
     validate_condition,
 )
-from .references import references
+from rangekeeper.workflow.references import references
 
 
 @unique

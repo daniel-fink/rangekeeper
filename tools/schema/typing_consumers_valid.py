@@ -2,16 +2,16 @@
 
 from pathlib import Path
 from rangekeeper import Model
-from rangekeeper.graph import View, Hierarchy
-from rangekeeper.graph.projection import ValueColumn, to_table
-from rangekeeper.table import Table
+from rangekeeper.model.system import View, Hierarchy
+from rangekeeper.model.system.projection import ValueColumn, to_table
+from rangekeeper.shared.table import Table
 from rangekeeper.workflow.specification import WorkflowSpec
 from rangekeeper.workflow.runtime import run
 
 from rangekeeper.model import Value
 from rangekeeper.model.distribution import Distribution
-from rangekeeper.scenarios import Market
-from rangekeeper.policies import PolicyResult
+from rangekeeper.model.scenario import Market
+from rangekeeper.specification.policy import PolicyResult
 
 
 def consume(model: Model, spec: WorkflowSpec, root: Path) -> Table:

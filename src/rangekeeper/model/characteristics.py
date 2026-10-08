@@ -1,11 +1,11 @@
 """Owner-local Value/Label access; Measure identity is not a unique Value key."""
 
-from .._schema.records import (
+from rangekeeper.schema.records import (
     Characteristics as Characteristics,
     Label as Label,
     Value as Value,
 )
-from ..validate import require_text
+from rangekeeper.shared.arguments import require_text
 
 
 def value(items: Characteristics | None, key: str) -> Value | None:
@@ -30,6 +30,6 @@ def label(items: Characteristics | None, key: str) -> Label | None:
 
 __all__ = ["Characteristics", "Label", "Value", "value", "label"]
 
-from .._schema.enums import ValueKind
+from rangekeeper.schema.enums import ValueKind
 
 __all__ += ["ValueKind"]

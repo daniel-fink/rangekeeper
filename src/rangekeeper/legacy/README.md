@@ -13,7 +13,7 @@ from rangekeeper.legacy.api import Speckle
 The old `rangekeeper.api`, `rangekeeper.measure`, `rangekeeper.graph.Graph` and
 `rangekeeper.graph.legacy` paths have no aliases. The former nested graph View and
 reduction code now lives directly in `legacy.graph.view` and `legacy.graph.reduction`.
-Canonical `rangekeeper.graph.View` still accepts only Models.
+Canonical `rangekeeper.model.system.View` still accepts only Models.
 
 Predecessor code can use shared validation, Evidence and table utilities. Canonical
 code must not import this package. JSON wire tags are unchanged; Python module paths

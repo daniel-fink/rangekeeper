@@ -3,7 +3,7 @@
 from rangekeeper.model.distribution import Distribution
 
 from copy import deepcopy
-from rangekeeper._schema.enums import DistributionFamily
+from rangekeeper.schema.enums import DistributionFamily
 from datetime import date
 import json
 from pathlib import Path
@@ -13,8 +13,8 @@ import pytest
 from rangekeeper.model import Model, Metadata, Binding
 
 
-from rangekeeper.duration import make_periods, Frequency
-from rangekeeper.scenarios import market, Market, replay, ReplayUnavailableError
+from rangekeeper.model.duration import make_periods, Frequency
+from rangekeeper.model.scenario import market, Market, replay, ReplayUnavailableError
 from rangekeeper.migration import upgrade_scenario_names
 
 FIXTURE = Path(__file__).parent / "fixtures/scenarios/market-v1.json"
@@ -41,7 +41,7 @@ def plan(**kwargs):
 
 
 def test_shared_distribution_survives_serialization_and_calculations():
-    from rangekeeper._schema.records import Distribution as Generated
+    from rangekeeper.schema.records import Distribution as Generated
 
     record = Distribution.symmetric(
         kind=DistributionFamily.TRIANGULAR, mean=2, residual=1, units="AUD"

@@ -6,9 +6,10 @@ import json
 from uuid import UUID, uuid4
 import pytest
 
-from rangekeeper.account import Balance, CurrentInterest, InterestTreatment
-from rangekeeper.duration import Frequency, make_periods
-from rangekeeper.formulations import account, declare, flow, expression
+from rangekeeper.calculations.account import Balance, CurrentInterest, InterestTreatment
+from rangekeeper.model.duration import Frequency, make_periods
+from rangekeeper.model.formulation import account, declare, flow
+from rangekeeper.model.expression import authoring as expression
 from rangekeeper.model import (
     Model,
     Metadata,
@@ -23,7 +24,7 @@ from rangekeeper.model import (
 )
 from rangekeeper.model.flow import Flow
 from rangekeeper.model.expression import Reference
-from rangekeeper._schema.enums import ValueKind, Operator, SolutionStatus
+from rangekeeper.schema.enums import ValueKind, Operator, SolutionStatus
 from rangekeeper.specification import Specification, SpecificationRecord, Assignment
 from rangekeeper.specification.targets import unknown_flow
 from rangekeeper.io import MemoryStore
@@ -316,7 +317,7 @@ def test_flow_rates_match_coordinates_without_reordering_the_schedule():
 def execute_schedule(
     model, ids, *, starting=100, rate=10, fixed_rate=True, transaction_amounts=(20, -30)
 ):
-    from rangekeeper.execution import Executor
+    from rangekeeper.run.execution import Executor
 
     assignments = [
         Assignment(
@@ -400,7 +401,7 @@ def test_symbolic_schedule_does_not_clip_overdrafts():
 
 
 def test_specialized_and_resale_declarations_keep_baseline_identities():
-    from rangekeeper.formulations import growth
+    from rangekeeper.model.formulation import growth
     from rangekeeper.examples.investment import build_stop_gain_resale_policy
 
     model, ids = fixture()

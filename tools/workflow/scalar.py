@@ -25,7 +25,7 @@ def run_example(destination: Path) -> dict:
         Constraint,
     )
     from rangekeeper.io import yaml, json, DirectoryStore
-    from rangekeeper.execution import Executor
+    from rangekeeper.run.execution import Executor
     from rangekeeper.run import SolutionStatus, validate
 
     destination = Path(destination)

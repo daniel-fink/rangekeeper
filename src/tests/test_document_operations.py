@@ -6,17 +6,12 @@ from uuid import NAMESPACE_URL, uuid5
 
 import pytest
 
-from rangekeeper import operation
+from rangekeeper.workflow import operation
 from rangekeeper.adapters import document
-from rangekeeper.adapters.document import (
-    ContentItem,
-    Description,
-    Document,
-    Inspection,
-)
-from rangekeeper.adapters.errors import AdapterEncodingError
-from rangekeeper.evidence import Location, Method, Source
-from rangekeeper.evidence import Severity
+from rangekeeper.adapters.document import ContentItem, Description, Document, Inspection
+from rangekeeper.shared.errors import EncodingError
+from rangekeeper.workflow.evidence import Location, Method, Source
+from rangekeeper.workflow.evidence import Severity
 
 
 def invocation(spec=None, **kwargs):
@@ -51,14 +46,14 @@ def test_nested_normalization_and_independent_copies():
     "value", [object(), lambda: None, float("nan"), float("inf"), {1: "x"}]
 )
 def test_reject_unsupported_specification_values(value):
-    with pytest.raises(AdapterEncodingError):
+    with pytest.raises(EncodingError):
         invocation({"target": value})
 
 
 def test_cycles_rejected_and_shared_containers_allowed():
     cyclic = []
     cyclic.append(cyclic)
-    with pytest.raises(AdapterEncodingError, match="Cyclic"):
+    with pytest.raises(EncodingError, match="Cyclic"):
         invocation({"target": cyclic})
     shared = [1]
     assert invocation({"a": shared, "b": shared}).specification["a"] == (1,)

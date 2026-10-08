@@ -4,13 +4,13 @@ from collections.abc import Mapping
 from uuid import UUID
 from typing import cast
 
-from ..errors import (
+from rangekeeper.shared.errors import (
     DecodeError,
     IdentityConflictError,
     ReferenceTypeError,
     RevisionConflictError,
 )
-from .store import Document, D, Model, Specification, Run
+from rangekeeper.io.store import Document, D, Model, Specification, Run
 
 KINDS: dict[str, type[Document]] = {
     kind.__name__: kind for kind in (Model, Specification, Run)

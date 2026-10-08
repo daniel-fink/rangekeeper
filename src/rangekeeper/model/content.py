@@ -15,7 +15,7 @@ from types import MappingProxyType
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
-from .._schema.records import PropertyContent
+from rangekeeper.schema.records import PropertyContent
 
 
 def encode(value: object) -> PropertyContent:
@@ -169,4 +169,4 @@ def validate_content(content: PropertyContent) -> None:
     decode(content)
 
 
-from .._schema.enums import ContentKind
+from rangekeeper.schema.enums import ContentKind

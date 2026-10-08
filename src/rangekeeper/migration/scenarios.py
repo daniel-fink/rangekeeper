@@ -1,8 +1,8 @@
 """Explicit naming upgrade for the unreleased v1 scenario methods."""
 
 from uuid import UUID
-from .._record_index import walk_data
-from ..model import Model
+from rangekeeper.schema.index import walk_data
+from rangekeeper.model import Model
 
 _METHODS = {
     "market.v1": "market",
@@ -29,7 +29,7 @@ def convert_names(result: dict) -> None:
         plan = record["plan"]
         method = plan["method"]
         if method not in _METHODS:
-            from ..scenarios.contracts import method as contract_for
+            from rangekeeper.model.scenario.contracts import method as contract_for
 
             contract_for(method)
             continue
@@ -74,7 +74,7 @@ def upgrade_scenario_names(data: dict, *, revision_id: UUID | None = None) -> Mo
     Original documents, captured draws and stream IDs remain unchanged. Missing
     historical calculation fingerprints stay absent; exact replay is unavailable.
     """
-    from .drafts import upgrade_model
+    from rangekeeper.migration.drafts import upgrade_model
 
     records = (data.get("provenance") or {}).get("scenarios") or []
     if not records or not any(

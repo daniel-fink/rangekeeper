@@ -10,8 +10,8 @@ It is separate from the mathematical `Specification` passed to `Executor`.
 | Owner | Reason |
 | --- | --- |
 | `adapters.excel` | Preserve cell addresses, formula/cache state and physical blanks before tabulation |
-| `evidence.Evidence` | Keep Table cells, Claim chains and applicable Issues together |
-| `operation` | Record effective inputs, parameters, method identity and an Outcome |
+| `workflow.evidence.Evidence` | Keep Table cells, Claim chains and applicable Issues together |
+| `workflow.operation` | Record effective inputs, parameters, method identity and an Outcome |
 | `workflow.catalog` | Select concrete operations and format integrations explicitly |
 | `workflow.composition` | Turn reviewed inputs and mappings into canonical Model declarations |
 | `workflow.checking` | Attach declared source and Model checks without repairing source content |
@@ -49,8 +49,8 @@ classification and units belong to the declared rule that interprets the source.
 Source adapters do not silently choose a domain policy for the caller. Export does
 not authenticate, publish to a service or execute financial equations.
 
-Relevant owners are [Evidence](../src/rangekeeper/evidence/evidence.py),
-[tabular operations](../src/rangekeeper/evidence/tabular.py),
+Relevant owners are [Evidence](../src/rangekeeper/workflow/evidence/evidence.py),
+[tabular operations](../src/rangekeeper/workflow/evidence/tabular.py),
 [the catalog](../src/rangekeeper/workflow/catalog.py),
 [composition](../src/rangekeeper/workflow/composition.py) and
 [checking](../src/rangekeeper/workflow/checking.py).

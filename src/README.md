@@ -13,6 +13,13 @@ release. See the [architecture](../docs/LIBRARY_ARCHITECTURE.md),
 [upgrade guide](../docs/LEGACY_UPGRADE_GUIDE.md) and
 [verification guide](../docs/VERIFICATION.md).
 
+Import `Model`, `Specification` and `Run` from `rangekeeper`. Use explicit capability
+paths for other operations, such as `rangekeeper.model.system`,
+`rangekeeper.model.formulation`, `rangekeeper.run.execution` and
+`rangekeeper.workflow.evidence`. Detached `Table` and `Row` come from
+`rangekeeper.shared.table`. See the
+[package ownership guide](../docs/README.md#package-ownership-and-imports) for the full map.
+
 ## Installation
 
 Run installation commands from this `src` directory. Core installation is:

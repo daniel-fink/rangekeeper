@@ -1,7 +1,7 @@
 """Experimental layout contract and checker; no solver or production viewer side effects."""
 
-from .check import Finding, check
-from .model import (
+from rangekeeper.adapters.cytoscape.layout.check import Finding, check
+from rangekeeper.adapters.cytoscape.layout.model import (
     PreferenceDirection,
     Axis,
     ArrangementFlow,

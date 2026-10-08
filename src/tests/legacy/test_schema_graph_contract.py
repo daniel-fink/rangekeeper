@@ -13,30 +13,9 @@ from uuid import UUID
 
 import pytest
 
-from rangekeeper.legacy.graph import (
-    Assembly,
-    Characteristics,
-    Classification,
-    Definitions,
-    Entity,
-    Graph,
-    Label,
-    Measurement,
-    Relationship,
-    Taxonomy,
-)
+from rangekeeper.legacy.graph import Assembly, Characteristics, Classification, Definitions, Entity, Graph, Label, Measurement, Relationship, Taxonomy
 from rangekeeper.legacy.graph.adapter import json as adapter
-from rangekeeper.legacy.graph.provenance import (
-    Claim,
-    ClaimKind,
-    Fact,
-    Location,
-    Method,
-    Provenance,
-    Reconciliation,
-    ReconciliationStatus,
-    Source,
-)
+from rangekeeper.legacy.graph.provenance import Claim, ClaimKind, Fact, Location, Method, Provenance, Reconciliation, ReconciliationStatus, Source
 from rangekeeper.legacy.measure import Index, Measure
 
 

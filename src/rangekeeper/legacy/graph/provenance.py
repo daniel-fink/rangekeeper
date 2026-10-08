@@ -10,7 +10,7 @@ from uuid import UUID, uuid4
 
 import pint
 
-from rangekeeper import validate
+from rangekeeper.shared import arguments as validate
 from rangekeeper.legacy.graph.assembly import Assembly
 from rangekeeper.legacy.graph.characteristics import Feature, Label, Measurement
 from rangekeeper.legacy.graph.classification import Classification
@@ -38,7 +38,7 @@ __all__ = [
 ]
 
 
-from rangekeeper.evidence import Source, Location, ClaimKind, Method, Claim, locations
+from rangekeeper.workflow.evidence import Source, Location, ClaimKind, Method, Claim, locations
 
 
 @dataclass(frozen=True, slots=True)
@@ -223,12 +223,12 @@ def _index_evidence(
     return _index_claims(claim for fact in facts for claim in fact.claims)
 
 
-from rangekeeper.evidence import _index_claims as _source_index_claims
+from rangekeeper.workflow.evidence import _index_claims as _source_index_claims
 
 
 def _index_claims(roots):
     """Translate the shared source identity error for retiring Graph callers."""
-    from rangekeeper.errors import IdentityConflictError as SourceConflict
+    from rangekeeper.shared.errors import IdentityConflictError as SourceConflict
 
     try:
         return _source_index_claims(roots)

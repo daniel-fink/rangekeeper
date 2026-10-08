@@ -7,17 +7,13 @@ Specification-local Value publication and structural interventions need adapters
 """
 
 from copy import deepcopy
-from .._records import exact_equal
+from rangekeeper.schema.runtime import exact_equal
 import math
 from uuid import UUID
 
-from rangekeeper.model.scope import (
-    reference_key,
-    recorded_quantity,
-    numerical_units,
-)
-from rangekeeper._validation import require
-from .._record_index import walk_data
+from rangekeeper.model.scope import reference_key, recorded_quantity, numerical_units
+from rangekeeper.shared.validation import require
+from rangekeeper.schema.index import walk_data
 
 
 def validate_outputs(
@@ -35,7 +31,7 @@ def validate_outputs(
     assignments = list(effective.get("assignments") or [])
     decisions = run["report"].get("outcomes") or []
     if effective.get("policy"):
-        from rangekeeper.policies.validation import validate_outcomes
+        from rangekeeper.specification.policy.validation import validate_outcomes
 
         assignments.extend(
             validate_outcomes(

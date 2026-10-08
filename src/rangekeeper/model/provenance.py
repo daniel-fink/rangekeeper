@@ -2,7 +2,7 @@
 
 from typing import TYPE_CHECKING
 from uuid import UUID
-from .._schema.records import (
+from rangekeeper.schema.records import (
     Provenance as Provenance,
     Source as Source,
     Claim as Claim,
@@ -11,15 +11,15 @@ from .._schema.records import (
     Method as Method,
     Reconciliation as Reconciliation,
 )
-from ..errors import MissingReferenceError, ReferenceTypeError
-from ..validate import require_uuid
-from .._schema.enums import ClaimKind, ReconciliationStatus
+from rangekeeper.shared.errors import MissingReferenceError, ReferenceTypeError
+from rangekeeper.shared.arguments import require_uuid
+from rangekeeper.schema.enums import ClaimKind, ReconciliationStatus
 from collections.abc import Mapping
-from .._validation import require, require_acyclic
+from rangekeeper.shared.validation import require, require_acyclic
 
 
 if TYPE_CHECKING:
-    from .model import Model
+    from rangekeeper.model.model import Model
 
 
 def fact_for(model: "Model", target: UUID) -> Fact | None:
@@ -79,7 +79,7 @@ __all__ += ["ClaimKind", "ReconciliationStatus"]
 
 def check_provenance(provenance, *, scope, targets, paths):
     """Check captured evidence relationships without evaluating Claim content."""
-    from ._scenario import validate_realizations
+    from rangekeeper.model.scenario.contracts import validate_realizations
 
     validate_realizations(provenance, scope)
 

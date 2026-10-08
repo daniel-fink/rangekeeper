@@ -6,11 +6,51 @@ from uuid import uuid4
 from dataclasses import dataclass
 import math
 
-from ..account import Balance, CurrentInterest, InterestTreatment, check_conventions
-from .._coordinates import index
-from ..model.flow import Flow
-from ..model.measure import Quantity
-from ..units import default_units
+from rangekeeper.model.flow import Flow
+from rangekeeper.model.measure import Quantity
+from rangekeeper.shared.units import default_units
+
+
+from enum import Enum, unique
+
+
+@unique
+class Balance(Enum):
+    OPENING = "opening"
+    CLOSING = "closing"
+
+
+@unique
+class CurrentInterest(Enum):
+    EXCLUDED = "excluded"
+    INCLUDED = "included"
+
+
+@unique
+class InterestTreatment(Enum):
+    SEPARATE = "separate"
+    FINANCED = "financed"
+
+
+def check_conventions(
+    *,
+    balance: Balance,
+    current_interest: CurrentInterest,
+    treatment: InterestTreatment,
+) -> None:
+    """Require named choices and reject self-inclusion without financing."""
+    for value, kind in (
+        (balance, Balance),
+        (current_interest, CurrentInterest),
+        (treatment, InterestTreatment),
+    ):
+        if not isinstance(value, kind):
+            raise TypeError(f"account option must be a {kind.__name__}")
+    if (
+        current_interest is CurrentInterest.INCLUDED
+        and treatment is InterestTreatment.SEPARATE
+    ):
+        raise ValueError("included current interest requires financed treatment")
 
 
 def _check_rate(rate: float, current_interest: CurrentInterest) -> float:
@@ -66,13 +106,13 @@ class Account:
             balance=balance, current_interest=current_interest, treatment=treatment
         )
         transactions.check(resolved=True)
-        coordinates = index(transactions.movements)
+        coordinates = transactions.coordinate_index()
         running = default_units.convert(starting, to=transactions.units).magnitude
         if not math.isfinite(running):
             raise ValueError("starting balance must be finite")
         if isinstance(rate, Flow):
             rate.check(resolved=True)
-            rates = index(rate.convert(units="dimensionless").movements)
+            rates = rate.convert(units="dimensionless").coordinate_index()
             if tuple(rates) != tuple(coordinates):
                 raise ValueError(
                     "Flow coordinates differ; rate order must match transactions"

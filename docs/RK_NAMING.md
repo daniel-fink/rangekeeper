@@ -35,14 +35,14 @@ See [record ownership and contracts](RECORD_BOUNDARY.md).
 
 ## Composable authoring
 
-`scenarios.market` exposes `make_plan`, `make_trend`, `make_volatility`,
+`model.scenario.market` exposes `make_plan`, `make_trend`, `make_volatility`,
 `make_cyclicality`, `make_noise`, `make_black_swan`, `sample`, `capture`, `realize`
 and `generate`. Component constructors return tuples of generated
 ScenarioParameter records. They do not sample or create output Flows. Duplicate
 explicit parameters across components or the parameter mapping fail.
 
 ```python
-from rangekeeper.scenarios import market
+from rangekeeper.model.scenario import market
 
 plan = market.make_plan(periods=periods, seed=23, components=(
     market.make_trend(growth_rate=.02),

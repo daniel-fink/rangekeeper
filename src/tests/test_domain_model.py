@@ -29,7 +29,7 @@ from rangekeeper.model import (
 from rangekeeper.model import characteristics, definitions, provenance
 from rangekeeper.model.diff import between
 from rangekeeper.model.validation import validate
-from rangekeeper.errors import (
+from rangekeeper.shared.errors import (
     MissingReferenceError,
     ReferenceTypeError,
     IdentityConflictError,
@@ -38,7 +38,7 @@ from rangekeeper.errors import (
     ValidationError,
     UnitError,
 )
-from rangekeeper.units import UnitSystem, default_units
+from rangekeeper.shared.units import UnitSystem, default_units
 
 EXAMPLES = Path(__file__).resolve().parents[2] / "schema/examples"
 

@@ -16,8 +16,16 @@ from uuid import UUID
 from rangekeeper.model import Model, Assembly as ModelAssembly
 from rangekeeper.model.definitions import classification
 
-from .model import Axis, Arrangement, Assembly, Node, Preference, Problem, Weights
-from .similarity import Signal, affinities, select
+from rangekeeper.adapters.cytoscape.layout.model import (
+    Axis,
+    Arrangement,
+    Assembly,
+    Node,
+    Preference,
+    Problem,
+    Weights,
+)
+from rangekeeper.adapters.cytoscape.layout.similarity import Signal, affinities, select
 
 # Versioned library-owned rendering policy. Project files only bind domain fields.
 _STACKED_COMPACT_V1: dict = {
@@ -132,11 +140,12 @@ def prepare(model: Model, profile: Mapping[str, object]):
         **profile["spacing"],
         weights=Weights(**profile["weights"]),
     )
+    descendants_by_id = base.descendant_index()
     preferences, arrangements, report = [], [], {}
 
     def values(identifier):
         candidates = (
-            [entities[i] for i in {identifier, *base.descendants(identifier)}]
+            [entities[i] for i in {identifier, *descendants_by_id[identifier]}]
             if isinstance(entities[identifier], ModelAssembly)
             else [entities[identifier]]
         )

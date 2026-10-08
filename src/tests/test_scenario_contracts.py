@@ -9,15 +9,15 @@ from uuid import UUID, uuid5
 
 import pytest
 
-from rangekeeper.duration import Frequency, make_periods
+from rangekeeper.model.duration import Frequency, make_periods
 from rangekeeper.model import Model, Metadata, Update, Provenance, Quantity
-from rangekeeper.scenarios import market, replay, ReplayUnavailableError
-from rangekeeper.scenarios.implementation import (
+from rangekeeper.model.scenario import market, replay, ReplayUnavailableError
+from rangekeeper.model.scenario.implementation import (
     calculation_manifest,
     SOURCE_PATHS,
     RESOURCE_PATHS,
 )
-from rangekeeper._implementation import manifest_digest
+from rangekeeper.shared.fingerprints import manifest_digest
 
 
 def base():
@@ -132,6 +132,13 @@ def test_replay_unavailable_does_not_prevent_current_model_reading():
 
 
 def test_manifest_uses_portable_paths_and_explicit_source_dependencies(tmp_path):
+    kernels = (
+        "calculate_trend",
+        "calculate_cycle",
+        "calculate_autoregression",
+        "accumulate_volatility",
+        "calculate_shock",
+    )
     for name in SOURCE_PATHS:
         path = tmp_path / name
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -140,18 +147,21 @@ def test_manifest_uses_portable_paths_and_explicit_source_dependencies(tmp_path)
         path = tmp_path / name
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text("{}")
+    changed = tmp_path / "calculations/dynamics.py"
+    kernel_source = "\n\n".join(f"def {name}():\n    return 1" for name in kernels)
+    changed.write_text(kernel_source)
     versions = [{"name": "python", "version": "fixture"}]
     original = calculation_manifest(package=tmp_path, versions=versions)
     assert all(not Path(name).is_absolute() for name in original["sources"])
     assert {
-        "_schema/records.py",
-        "_schema/enums.py",
-        "_schema/validation.py",
+        "schema/records.py",
+        "schema/enums.py",
+        "schema/validation.py",
     } <= original["sources"].keys()
     assert "_coordinates.py" not in original["sources"]
-    assert "duration/period.py" not in original["sources"]
+    assert "model/duration/period.py" not in original["sources"]
     # Record construction and typed enum decoding affect the calculated wire result.
-    for name in ("_schema/records.py", "_schema/enums.py", "_schema/validation.py"):
+    for name in ("schema/records.py", "schema/enums.py", "schema/validation.py"):
         source = tmp_path / name
         before_source = source.read_text()
         source.write_text("def value():\n    return 2\n")
@@ -160,19 +170,24 @@ def test_manifest_uses_portable_paths_and_explicit_source_dependencies(tmp_path)
     assert manifest_digest(original) == manifest_digest(
         calculation_manifest(package=tmp_path, versions=versions)
     )
-    changed = tmp_path / "calculations/dynamics/volatility.py"
     changed.write_text(
-        '"""different documentation"""\n# ignored comment\ndef value():\n    return 1\n'
+        '"""different documentation"""\n# ignored comment\n' + kernel_source
     )
     assert calculation_manifest(package=tmp_path, versions=versions) == original
-    changed.write_text("def value():\n    return 2\n")
-    assert manifest_digest(
-        calculation_manifest(package=tmp_path, versions=versions)
-    ) != manifest_digest(original)
+    for name in kernels:
+        changed.write_text(
+            kernel_source.replace(
+                f"def {name}():\n    return 1", f"def {name}():\n    return 2"
+            )
+        )
+        assert manifest_digest(
+            calculation_manifest(package=tmp_path, versions=versions)
+        ) != manifest_digest(original), name
+    changed.write_text(kernel_source)
     # Sampling and display files are deliberately outside calculation provenance.
     before = calculation_manifest(package=tmp_path, versions=versions)
-    (tmp_path / "scenarios/random.py").write_text('raise RuntimeError("sampling")')
-    (tmp_path / "scenarios/view.py").write_text('raise RuntimeError("display")')
+    (tmp_path / "model/scenario/random.py").write_text('raise RuntimeError("sampling")')
+    (tmp_path / "model/scenario/view.py").write_text('raise RuntimeError("display")')
     assert calculation_manifest(package=tmp_path, versions=versions) == before
     changed.unlink()
     with pytest.raises(FileNotFoundError):
@@ -231,8 +246,8 @@ def test_capture_and_model_loading_reject_draws_outside_support(
 
 
 def test_calculation_identity_includes_the_actual_currency_catalogue(monkeypatch):
-    from rangekeeper.scenarios import implementation
-    from rangekeeper.units import UnitSystem
+    from rangekeeper.model.scenario import implementation
+    from rangekeeper.shared.units import UnitSystem
 
     monkeypatch.setattr(
         implementation, "default_units", UnitSystem(currencies=("AUD", "USD"))

@@ -4,9 +4,9 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from uuid import UUID, uuid4
 
-from .._revision import check_revision
-from .._records import Record, UNSET, Unset
-from .._schema.records import (
+from rangekeeper.schema.revision import check_revision
+from rangekeeper.schema.runtime import Record, UNSET, Unset
+from rangekeeper.schema.records import (
     Model as ModelRecord,
     Metadata,
     Definitions,
@@ -22,12 +22,12 @@ from .._schema.records import (
     Claim,
     Source,
 )
-from .._schema.validation import document_version
-from ..errors import UnsupportedVersionError
-from ..units import UnitSystem, default_units
-from ..validate import require_uuid, optional_text
-from .._record_index import RecordIndex
-from .update import Update
+from rangekeeper.schema.validation import document_version
+from rangekeeper.shared.errors import UnsupportedVersionError
+from rangekeeper.shared.units import UnitSystem, default_units
+from rangekeeper.shared.arguments import require_uuid, optional_text
+from rangekeeper.schema.index import RecordIndex
+from rangekeeper.model.update import Update
 
 
 @dataclass(frozen=True, init=False, eq=False)
@@ -62,7 +62,7 @@ class Model:
         if record.metadata.schema_version != document_version("Model"):
             raise UnsupportedVersionError(record.metadata.schema_version)
         index = RecordIndex.build(record)
-        from .validation import _validate
+        from rangekeeper.model.validation import _validate
 
         _validate(record, index=index, units=units).raise_if_invalid()
         # Publish state only after both structural/local indexes and semantics pass.

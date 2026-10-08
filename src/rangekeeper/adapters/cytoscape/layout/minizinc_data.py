@@ -6,7 +6,7 @@ an optional independently checked incumbent.
 
 from rangekeeper.adapters.cytoscape.layout.model import ArrangementSpacing, Axis
 from dataclasses import asdict
-from .reduction import collision_pairs
+from rangekeeper.adapters.cytoscape.layout.reduction import _collision_pairs
 
 
 def encode(p, initial):
@@ -17,8 +17,8 @@ def encode(p, initial):
     ids = {o.id: i for i, o in enumerate(objects, 1)}
     prefs = {v.assembly: v for v in p.preferences}
     arrangements = {v.assembly: v for v in p.arrangements}
-    pairs = collision_pairs(p)
-    descendants = {a.id: p.descendants(a.id) for a in groups}
+    descendants = p.descendant_index()
+    pairs = _collision_pairs(p, descendants)
     membership = [
         (g, ids[i], rank)
         for g, a in enumerate(groups, 1)

@@ -1,63 +1,28 @@
-"""Canonical domain records and explicit, lazy capability packages.
-
-Temporary predecessors are isolated in rangekeeper.legacy while the Windows
-connector gate is open. Numerical work uses calculations and formulations.
-"""
+"""Immutable Model, Specification and Run roots with explicit capability packages."""
 
 from importlib import import_module
 from types import ModuleType
-
-from . import validate as validate
-from .model import Model as Model
-from .specification import Specification as Specification
-from .run import Run as Run
+from .model import Model
+from .specification import Specification
+from .run import Run
 
 _LAZY_MODULES = frozenset(
     {
-        "execution",
+        "schema",
+        "shared",
+        "model",
+        "specification",
+        "run",
         "calculations",
-        "formulations",
-        "scenarios",
-        "policies",
-        "migration",
-        "legacy",
-        "adapters",
         "workflow",
-        "table",
-        "evidence",
-        "operation",
+        "adapters",
         "io",
-        "units",
-        "graph",
-        "duration",
+        "migration",
+        "examples",
+        "legacy",
     }
 )
-
-__all__ = [
-    "Model",
-    "Specification",
-    "Run",
-    "model",
-    "specification",
-    "run",
-    "io",
-    "units",
-    "execution",
-    "calculations",
-    "formulations",
-    "scenarios",
-    "policies",
-    "migration",
-    "legacy",
-    "adapters",
-    "workflow",
-    "table",
-    "evidence",
-    "operation",
-    "duration",
-    "graph",
-    "validate",
-]
+__all__ = ["Model", "Specification", "Run", *sorted(_LAZY_MODULES)]
 
 
 def __getattr__(name: str) -> ModuleType:

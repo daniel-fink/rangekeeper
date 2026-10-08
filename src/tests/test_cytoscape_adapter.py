@@ -4,7 +4,7 @@ from copy import deepcopy
 import pytest
 
 from uuid import uuid4
-from rangekeeper.graph import View
+from rangekeeper.model.system import View
 from rangekeeper.model import (
     Model,
     Metadata,
@@ -101,3 +101,20 @@ def test_invalid_display_documents_fail_before_export(tmp_path):
     assert not (tmp_path / "bad.html").exists()
     with pytest.raises(ValueError, match="Unknown viewer configuration"):
         project(graph, "Example", {"elements": []})
+
+
+def test_projection_materializes_each_selection_once(monkeypatch):
+    model, box, a, _ = fixture()
+    view = View(model, entities=(box.id, a.id))
+    expected = project(view, "Selected")
+    calls = {"entities": 0, "relationships": 0}
+    for name in calls:
+        original = getattr(View, name).fget
+
+        def counted(self, name=name, original=original):
+            calls[name] += 1
+            return original(self)
+
+        monkeypatch.setattr(View, name, property(counted))
+    assert project(view, "Selected") == expected
+    assert calls == {"entities": 1, "relationships": 1}

@@ -6,13 +6,17 @@ rely on exclusion constraints, so it restores the affected collision pairs.
 
 from itertools import combinations
 
-from .model import Problem
+from rangekeeper.adapters.cytoscape.layout.model import Problem
 
 
 def collision_pairs(problem: Problem, *, strict: bool = True):
+    return _collision_pairs(problem, problem.descendant_index(), strict=strict)
+
+
+def _collision_pairs(problem, descendants, *, strict=True):
+    """Use topology prepared locally for this formulation operation."""
     nodes = {n.id for n in problem.nodes}
     groups = {a.id for a in problem.assemblies}
-    descendants = {a.id: problem.descendants(a.id) for a in problem.assemblies}
     ancestors = {
         i: frozenset(a for a in groups if i in descendants[a]) for i in nodes | groups
     }

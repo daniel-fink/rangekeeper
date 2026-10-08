@@ -8,7 +8,7 @@ import sys
 
 import pytest
 import rangekeeper
-from rangekeeper import graph
+from rangekeeper.model import system as graph
 
 
 @pytest.mark.parametrize("name", ("api", "measure"))
@@ -18,11 +18,13 @@ def test_old_root_module_paths_are_absent(name):
     assert importlib.util.find_spec(f"rangekeeper.{name}") is None
 
 
-def test_graph_surface_contains_only_model_operations():
+def test_system_surface_exposes_canonical_records_and_model_operations():
+    from rangekeeper.schema import records
+
+    for name in ("System", "Entity", "Assembly", "Relationship"):
+        assert getattr(graph, name) is getattr(records, name)
     for name in (
         "Graph",
-        "Entity",
-        "Assembly",
         "Characteristics",
         "Definitions",
         "Measurement",
@@ -54,7 +56,9 @@ def test_graph_surface_contains_only_model_operations():
         "adapter",
         "legacy",
     ):
-        assert importlib.util.find_spec(f"rangekeeper.graph.{name}") is None, name
+        assert (
+            importlib.util.find_spec(f"rangekeeper.model.system.{name}") is None
+        ), name
 
 
 def test_canonical_sources_do_not_import_the_predecessor():
@@ -91,7 +95,7 @@ def test_wire_conversion_remains_available_without_legacy():
 from pathlib import Path
 import sys
 from rangekeeper.migration import convert_graph
-from rangekeeper.graph import View
+from rangekeeper.model.system import View
 result = convert_graph(Path(sys.argv[1]).read_text())
 assert result.model is not None and not result.issues
 assert len(View(result.model).entities) == 2

@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from .snapshot import Cell, Workbook
+from rangekeeper.adapters.excel.snapshot import Cell, Workbook
 
 
 @dataclass(frozen=True, slots=True)

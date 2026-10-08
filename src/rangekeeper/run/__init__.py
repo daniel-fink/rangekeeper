@@ -1,8 +1,8 @@
 """Finalized Run records and explicit cross-document validation."""
 
-from .run import Run
-from .validation import validate
-from .._schema.records import (
+from rangekeeper.run.run import Run
+from rangekeeper.run.validation import validate
+from rangekeeper.schema.records import (
     Run as RunRecord,
     Report,
     Status,
@@ -24,7 +24,7 @@ __all__ = [
     "validate",
 ]
 
-from .._schema.enums import (
+from rangekeeper.schema.enums import (
     CompletionStatus,
     SolutionStatus,
     ImplementationKind,

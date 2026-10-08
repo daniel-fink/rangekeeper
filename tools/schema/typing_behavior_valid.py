@@ -6,7 +6,7 @@ from datetime import date
 from uuid import uuid4
 from rangekeeper.model.flow import Flow, Movement
 from rangekeeper.model.distribution import Distribution
-from rangekeeper._schema.records import Assembly, Span, Value
+from rangekeeper.schema.records import Assembly, Span, Value
 from rangekeeper.calculations.account import Account
 from rangekeeper.calculations.series import Aggregation, AggregationReducer, align
 

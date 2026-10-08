@@ -1,8 +1,8 @@
 """Saved partial Specifications and derived complete investigation views."""
 
-from .specification import Specification as Specification
-from .composition import Composition as Composition
-from .._schema.records import (
+from rangekeeper.specification.specification import Specification as Specification
+from rangekeeper.specification.composition import Composition as Composition
+from rangekeeper.schema.records import (
     Specification as SpecificationRecord,
     Assignment as Assignment,
     Objective as Objective,
@@ -18,6 +18,6 @@ __all__ = [
     "Composition",
 ]
 
-from .._schema.enums import ObjectiveKind
+from rangekeeper.schema.enums import ObjectiveKind
 
 __all__ += ["ObjectiveKind"]

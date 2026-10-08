@@ -26,7 +26,7 @@ from rangekeeper.model import (
     Formulation,
     Update,
 )
-from rangekeeper.graph import (
+from rangekeeper.model.system import (
     View,
     Hierarchy,
     Reduction,
@@ -34,14 +34,18 @@ from rangekeeper.graph import (
     HierarchyError,
     AggregationError,
 )
-from rangekeeper.graph.membership import (
+from rangekeeper.model.system.membership import (
     entities_in,
     relationships_in,
     containing_assemblies,
 )
-from rangekeeper.graph.selection import select_value
-from rangekeeper.graph import reducers, HierarchyKind, CoverageStatus
-from rangekeeper.errors import MissingReferenceError, ReferenceTypeError, UnitError
+from rangekeeper.model.system.selection import select_value
+from rangekeeper.model.system import reducers, HierarchyKind, CoverageStatus
+from rangekeeper.shared.errors import (
+    MissingReferenceError,
+    ReferenceTypeError,
+    UnitError,
+)
 from rangekeeper.io import json as codec
 
 
@@ -465,8 +469,8 @@ def test_reducers_reject_empty_mixed_and_overflow_quantities():
 def test_imports_are_lightweight():
     script = """
 import sys
-import rangekeeper.graph as graph
-for prefix in ('pint','numpy','networkx','pandas','pyomo','highspy','matplotlib','specklepy','rangekeeper.legacy','rangekeeper.graph.graph'):
+import rangekeeper.model.system as graph
+for prefix in ('pint','numpy','networkx','pandas','pyomo','highspy','matplotlib','specklepy','rangekeeper.legacy','rangekeeper.model.system.graph'):
     assert not any(name==prefix or name.startswith(prefix+'.') for name in sys.modules),prefix
 from rangekeeper import Model
 from rangekeeper.model import Metadata

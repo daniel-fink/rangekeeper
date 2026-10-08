@@ -34,7 +34,7 @@ and mathematical syntax.
 The YAML files in this directory divide the schema by domain responsibility.
 The generator combines the root schemas and resolves their imports into one bundle. Examples and conformance cases are in
 `examples/` and `checks/`. Generated Python records, schemas, slots and a source
-manifest are packaged under `src/rangekeeper/_schema`. Generated C# records and
+manifest are packaged under `src/rangekeeper/schema`. Generated C# records and
 transport metadata are under `grasshopper/Model/Generated`.
 
 Do not edit generated files. From the repository root, in the pinned schema tool
@@ -47,7 +47,7 @@ python tools/schema/generate.py --check
 python tools/schema/generate_csharp.py --check
 ```
 
-Python mixins under `_behaviors` declare no fields. The generator attaches them to
+Python mixins under `src/rangekeeper/schema/behaviors` declare no fields. The generator attaches them to
 selected records and generates typed `replace()` methods. Schema descriptions
 supply record and property docstrings. C# serialization preserves field presence;
 its authoring Validator checks embedded structure and local references.

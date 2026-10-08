@@ -4,15 +4,15 @@ from collections.abc import Mapping
 import math
 from uuid import UUID
 
-from ..._schema.records import Expression, ExpressionKind, Operator, Quantity
-from ...units import UnitSystem
+from rangekeeper.schema.records import Expression, ExpressionKind, Operator, Quantity
+from rangekeeper.shared.units import UnitSystem
 
 
 class UnsupportedExpression(ValueError):
     """The expression is outside the finite numerical arithmetic contract."""
 
 
-def quantity(magnitude: float, units: str) -> Quantity:
+def finite_quantity(magnitude: float, units: str) -> Quantity:
     """Reject Boolean, complex and nonfinite numerical results."""
     if type(magnitude) not in (int, float) or not math.isfinite(magnitude):
         raise ValueError("expression evaluation produced a non-finite magnitude")
@@ -38,7 +38,7 @@ def evaluate(
         if node.operand is None:
             raise ValueError("negation requires an operand")
         value = evaluate(node.operand, values, units=units)
-        return quantity(-float(value.magnitude), value.units)
+        return finite_quantity(-float(value.magnitude), value.units)
     if node.kind is not ExpressionKind.BINARY or node.operator not in {
         Operator.ADD,
         Operator.SUBTRACT,
@@ -55,10 +55,12 @@ def evaluate(
     a, b = float(left.magnitude), float(right.magnitude)
     if node.operator in (Operator.ADD, Operator.SUBTRACT):
         b = float(units.convert(right, to=left.units).magnitude)
-        return quantity(a + b if node.operator is Operator.ADD else a - b, left.units)
+        return finite_quantity(
+            a + b if node.operator is Operator.ADD else a - b, left.units
+        )
     if node.operator is Operator.MULTIPLY:
-        return quantity(a * b, f"({left.units}) * ({right.units})")
+        return finite_quantity(a * b, f"({left.units}) * ({right.units})")
     if node.operator is Operator.DIVIDE:
-        return quantity(a / b, f"({left.units}) / ({right.units})")
+        return finite_quantity(a / b, f"({left.units}) / ({right.units})")
     b = float(units.convert(right, to="dimensionless").magnitude)
-    return quantity(a**b, f"({left.units}) ** {b}")
+    return finite_quantity(a**b, f"({left.units}) ** {b}")

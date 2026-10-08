@@ -28,15 +28,21 @@ from rangekeeper.model import Model
 from rangekeeper.adapters.cytoscape import ASSETS
 from rangekeeper.model.diff import between
 
-from . import implementation
-from ._declarations import plain
-from .progress import Observer, Reporter, ProgressPhase, ProgressStatus, emit
-from .review import decisions_html
-from .catalog import OPERATIONS
-from .implementation import manifests
-from .review import export
-from .runtime import WorkflowResult, run
-from .specification import WorkflowSpec, load
+from rangekeeper.workflow import implementation
+from rangekeeper.workflow._declarations import plain
+from rangekeeper.workflow.progress import (
+    Observer,
+    Reporter,
+    ProgressPhase,
+    ProgressStatus,
+    emit,
+)
+from rangekeeper.workflow.review import decisions_html
+from rangekeeper.workflow.catalog import OPERATIONS
+from rangekeeper.workflow.implementation import manifests
+from rangekeeper.workflow.review import export
+from rangekeeper.workflow.runtime import WorkflowResult, run
+from rangekeeper.workflow.specification import WorkflowSpec, load
 
 
 @unique
@@ -68,7 +74,7 @@ def _hash(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-from ._artifacts import write_json as _atomic_json
+from rangekeeper.io._atomic import replace_json
 
 
 def _latest(root):
@@ -409,14 +415,14 @@ def build(
             "artifacts": {name: _hash(stage / name) for name in _BUNDLE},
             "changes": changes,
         }
-        _atomic_json(stage / "run.json", record)
+        replace_json(stage / "run.json", record)
         directory = runs / str(uuid4())
         stage.rename(directory)
         stage = None
         publication_diagnostics = []
         publication_interrupt = None
         try:
-            _atomic_json(
+            replace_json(
                 root / "latest.json", {"directory": str(directory.relative_to(root))}
             )
         except PublishedFileError as exc:
@@ -440,7 +446,7 @@ def build(
         if publication_interrupt is not None:
             raise publication_interrupt
         try:
-            _atomic_json(
+            replace_json(
                 root / "latest-attempt.json",
                 {
                     "status": "completed",
@@ -487,7 +493,7 @@ def build(
         interruption = exc if isinstance(exc, KeyboardInterrupt) else None
         try:
             root.mkdir(parents=True, exist_ok=True)
-            _atomic_json(
+            replace_json(
                 root / "latest-attempt.json",
                 {
                     "status": attempt.status.value,

@@ -9,7 +9,7 @@ from uuid import UUID, uuid4
 import moneyed
 import pint
 
-from rangekeeper import validate
+from rangekeeper.shared import arguments as validate
 
 
 class Index:

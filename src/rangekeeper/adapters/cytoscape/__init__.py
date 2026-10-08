@@ -10,12 +10,12 @@ from pathlib import Path
 from uuid import UUID
 
 from rangekeeper.model import ValueKind, Model, Assembly, Classification
-from rangekeeper.graph import View
+from rangekeeper.model.system import View
 from rangekeeper.model.definitions import classification, measure
 from rangekeeper.model.provenance import fact_for
 from rangekeeper.model.content import decode
 
-from .document import validate_document
+from rangekeeper.adapters.cytoscape.document import validate_document
 
 __all__ = ["ASSETS", "present", "project", "validate_document", "write_viewer"]
 
@@ -90,6 +90,9 @@ def project(model: Model | View, name: str, config: dict | None = None) -> dict:
         raise TypeError("project requires a Model or Model-backed View")
     view = model if isinstance(model, View) else View(model)
     model = view.model
+    entities, relationships = view.entities, view.relationships
+    entity_ids = {item.id for item in entities}
+    relationship_ids = {item.id for item in relationships}
     evidence = model.provenance
     all_claims = {c.id: c for c in evidence.claims or ()} if evidence else {}
     sources = {s.id: s for s in evidence.sources or ()} if evidence else {}
@@ -213,27 +216,21 @@ def project(model: Model | View, name: str, config: dict | None = None) -> dict:
         }
 
     details = {
-        str(o.id): detail(o)
-        for owners in (view.entities, view.relationships)
-        for o in owners
+        str(o.id): detail(o) for owners in (entities, relationships) for o in owners
     }
     assemblies = {
         str(e.id): {
             "name": e.name or e.code,
-            "entities": sorted(
-                str(i) for i in (e.entities or ()) if i in {n.id for n in view.entities}
-            ),
+            "entities": sorted(str(i) for i in (e.entities or ()) if i in entity_ids),
             "relationships": sorted(
-                str(i)
-                for i in (e.relationships or ())
-                if i in {r.id for r in view.relationships}
+                str(i) for i in (e.relationships or ()) if i in relationship_ids
             ),
         }
-        for e in view.entities
+        for e in entities
         if isinstance(e, Assembly)
     }
     parents: dict[str, list[str]] = defaultdict(list)
-    for e in view.relationships:
+    for e in relationships:
         if str(e.classification) in config.get("containmentClassifications", []):
             parents[str(e.target)].append(str(e.source))
     ambiguous = sorted(i for i, items in parents.items() if len(set(items)) > 1)
@@ -260,7 +257,7 @@ def project(model: Model | View, name: str, config: dict | None = None) -> dict:
 
     for node in list(adjacency):
         visit(node, [])
-    for i, entity in enumerate(view.entities):
+    for i, entity in enumerate(entities):
         config["positions"].setdefault(
             str(entity.id), {"x": (i % 10) * 180, "y": (i // 10) * 140}
         )
@@ -284,7 +281,7 @@ def project(model: Model | View, name: str, config: dict | None = None) -> dict:
                     },
                     "position": config["positions"].get(str(e.id), {"x": 0, "y": 0}),
                 }
-                for e in view.entities
+                for e in entities
             ],
             *[
                 {
@@ -302,7 +299,7 @@ def project(model: Model | View, name: str, config: dict | None = None) -> dict:
                         "kind": "relationship",
                     }
                 }
-                for e in view.relationships
+                for e in relationships
             ],
         ],
         "assemblies": assemblies,

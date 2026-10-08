@@ -28,14 +28,14 @@ immutable reference to such content. Tabular structure is one specialization.
 - Project notebooks orchestrate those operations and present review results.
 - A future service may store artifacts and expose the same operations as tools.
 
-Reuse `table.Table`, and provenance `Source`, `Location`, `Claim`, `Method`,
+Reuse `shared.table.Table`, and provenance `Source`, `Location`, `Claim`, `Method`,
 `Fact` and `Provenance`. Do not create another Record/RecordSet, source identity,
 claim graph or graph-object model. `Fact` binds evidence to an existing graph
 target; source Claims may exist before a graph is constructed.
 
 ## Core container
 
-The public type in `rangekeeper.evidence` is:
+The public type in `rangekeeper.workflow.evidence` is:
 
 ```python
 from dataclasses import dataclass
@@ -43,8 +43,8 @@ from collections.abc import Mapping
 from typing import Any, Generic, TypeVar
 from uuid import UUID
 
-from rangekeeper.table import Table
-from rangekeeper.evidence import Claim
+from rangekeeper.shared.table import Table
+from rangekeeper.workflow.evidence import Claim
 
 T = TypeVar("T")
 EvidenceKey = tuple[str, ...]
@@ -237,7 +237,7 @@ The shared type describes what happened, without deciding what another operation
 may do with the evidence:
 
 ```python
-from rangekeeper.evidence import Severity
+from rangekeeper.workflow.evidence import Severity
 
 # Severity re-exports the generated plain Enum: INFO, WARNING, ERROR.
 
@@ -344,8 +344,9 @@ an import cycle. Public `validate(evidence)` returns None. Fingerprinting uses
 the same private validation pass and its resulting provenance indexes, without
 traversing provenance twice. Public package-level imports remain unchanged.
 
-The private `_encoding.py` module contains immutable-value encoding, canonical
-JSON and hashing. It depends only on the standard library and ingestion errors.
+The `shared/encoding.py` module contains immutable-value encoding, canonical
+JSON and hashing. It depends only on the standard library and shared errors.
+`workflow.evidence.errors` translates encoding failures into Evidence validation errors.
 Issue identity and artifact fingerprinting share these encoding rules.
 
 `frozen=True` is shallow. The implemented snapshot contract accepts exact immutable
@@ -499,7 +500,7 @@ needed. Readers, transformation execution and YAML migration remain deferred.
 
 The profile abstraction has been removed in favor of explicit Table validation.
 Contracts, validation and artifact fingerprinting now have separate modules;
-primitive encoding is in _encoding.py, and identity lookup is Table.row(UUID).
+primitive encoding is in shared/encoding.py, and identity lookup is Table.row(UUID).
 
 Validation: 234 tests passed across ingestion evidence, adapters, immutable graph,
 Cytoscape and Mandarin. Captured pre-refactor available/missing fingerprints and

@@ -5,11 +5,16 @@ from uuid import uuid4
 
 import pytest
 
-from rangekeeper.graph import Coverage, Hierarchy, View, reducers
-from rangekeeper.graph.errors import AggregationError
-from rangekeeper.graph.projection import EntityField, FieldColumn, ValueColumn, to_table
-from rangekeeper.graph.reduction import AggregateEntry, Aggregation
-from rangekeeper.table import Row, Table, TableError
+from rangekeeper.model.system import Coverage, Hierarchy, View, reducers
+from rangekeeper.model.system.errors import AggregationError
+from rangekeeper.model.system.projection import (
+    EntityField,
+    FieldColumn,
+    ValueColumn,
+    to_table,
+)
+from rangekeeper.model.system.reduction import AggregateEntry, Aggregation
+from rangekeeper.shared.table import Row, Table, TableError
 
 from .test_model_graph import fixture, reduction
 
@@ -30,7 +35,7 @@ def test_table_retains_normalized_rows_and_rebuilds_only_changed_order():
 
 
 def test_projection_prepares_columns_before_cells_and_uses_hierarchy_order(monkeypatch):
-    from rangekeeper.graph import projection
+    from rangekeeper.model.system import projection
 
     model, root, *_ = fixture()
     hierarchy = Hierarchy(View(model))
@@ -91,7 +96,7 @@ def test_table_constructs_each_raw_mapping_row_once(monkeypatch):
 
 
 def test_reduction_preserves_callback_interleaving_and_raw_contributor_order():
-    from rangekeeper.graph.selection import select_value
+    from rangekeeper.model.system.selection import select_value
 
     model, *_ = fixture()
     events = []
@@ -142,7 +147,7 @@ def test_shared_population_keeps_flat_and_hierarchy_policies_distinct():
 
 
 def test_projection_preflights_each_measure_once_and_reserved_name_first(monkeypatch):
-    from rangekeeper._record_index import RecordIndex
+    from rangekeeper.schema.index import RecordIndex
     from rangekeeper.model import Measure
 
     model, _, _, _, _, _, measure = fixture()
@@ -202,7 +207,7 @@ def test_reducers_have_independent_finite_results_and_empty_errors(reduce):
 
 
 def test_canonical_classification_lookups_reuse_the_model_index(monkeypatch):
-    from rangekeeper._record_index import RecordIndex
+    from rangekeeper.schema.index import RecordIndex
     from rangekeeper.workflow._operands import operand
 
     model, *_ = fixture()

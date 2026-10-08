@@ -6,30 +6,10 @@ from zoneinfo import ZoneInfo
 
 import pytest
 
-from rangekeeper.legacy.graph import (
-    Assembly,
-    Characteristics,
-    Classification,
-    Definitions,
-    Entity,
-    Feature,
-    Graph,
-    Measurement,
-    Relationship,
-    Taxonomy,
-)
+from rangekeeper.legacy.graph import Assembly, Characteristics, Classification, Definitions, Entity, Feature, Graph, Measurement, Relationship, Taxonomy
 from rangekeeper.legacy.graph.adapter import json as adapter
-from rangekeeper.adapters.errors import AdapterEncodingError
-from rangekeeper.legacy.graph.provenance import (
-    Claim,
-    Fact,
-    Location,
-    Method,
-    Provenance,
-    Reconciliation,
-    ReconciliationStatus,
-    Source,
-)
+from rangekeeper.shared.errors import EncodingError
+from rangekeeper.legacy.graph.provenance import Claim, Fact, Location, Method, Provenance, Reconciliation, ReconciliationStatus, Source
 from rangekeeper.legacy.graph.revision import Diff
 from rangekeeper.legacy.measure import Index, Measure, QuantityKind
 
@@ -135,7 +115,7 @@ def test_roundtrip_preserves_canonical_references_and_types(tmp_path):
 def test_invalid_documents_fail(change):
     doc = json.loads(adapter.dumps(example()))
     change(doc)
-    with pytest.raises(AdapterEncodingError):
+    with pytest.raises(EncodingError):
         adapter.loads(json.dumps(doc))
 
 
@@ -152,7 +132,7 @@ def test_unknown_payload_and_cycles_do_not_overwrite(tmp_path):
                 ),
             )
         )
-        with pytest.raises(AdapterEncodingError):
+        with pytest.raises(EncodingError):
             adapter.write(graph, path)
         assert path.read_text() == "previous"
     data = []
@@ -166,12 +146,12 @@ def test_unknown_payload_and_cycles_do_not_overwrite(tmp_path):
             ),
         )
     )
-    with pytest.raises(AdapterEncodingError, match="Cyclic"):
+    with pytest.raises(EncodingError, match="Cyclic"):
         adapter.dumps(graph)
 
 
 def test_duplicate_json_keys_and_unregistered_types():
-    with pytest.raises(AdapterEncodingError):
+    with pytest.raises(EncodingError):
         adapter.loads('{"format":"rk.legacy.graph","format":"other"}')
     with pytest.raises(TypeError):
         adapter.dumps({})
@@ -222,7 +202,7 @@ def test_malformed_payload_tags_fail(payload):
     document = json.loads(adapter.dumps(graph))
     feature = next(r for r in document["objects"] if r["type"] == "Feature")
     feature["fields"]["value"] = payload
-    with pytest.raises(AdapterEncodingError):
+    with pytest.raises(EncodingError):
         adapter.loads(json.dumps(document))
 
 

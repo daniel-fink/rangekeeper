@@ -2,7 +2,7 @@
 
 import json
 from collections.abc import Mapping
-from rangekeeper._records import _json_copy
+from rangekeeper.schema.runtime import _json_copy
 
 
 def detach(value: object) -> dict:

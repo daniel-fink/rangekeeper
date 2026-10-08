@@ -2,7 +2,7 @@
 
 from rangekeeper.model import ValueKind
 
-from rangekeeper._schema.enums import DistributionFamily, SolutionStatus
+from rangekeeper.schema.enums import DistributionFamily, SolutionStatus
 from datetime import date
 from uuid import uuid4
 import pytest
@@ -18,15 +18,11 @@ from rangekeeper.model import (
 )
 from rangekeeper.model.flow import Flow, Movement
 from rangekeeper.model.scenario import Distribution
-from rangekeeper.duration import make_periods, Frequency
-from rangekeeper.scenarios.market import make_plan, generate
-from rangekeeper.scenarios import replay
-from rangekeeper.policies import (
-    evaluate,
-    observe,
-    PolicyCapabilityError,
-)
-from rangekeeper.policies import ObservationBinding
+from rangekeeper.model.duration import make_periods, Frequency
+from rangekeeper.model.scenario.market import make_plan, generate
+from rangekeeper.model.scenario import replay
+from rangekeeper.specification.policy import evaluate, observe, PolicyCapabilityError
+from rangekeeper.specification.policy import ObservationBinding
 from rangekeeper.examples.investment import build_stop_gain_resale_policy
 from rangekeeper.model import Reference
 
@@ -50,7 +46,7 @@ def test_parallel_streams_and_replay(monkeypatch):
     def forbidden(*args, **kwargs):
         raise AssertionError("replay drew randomness")
 
-    monkeypatch.setattr("rangekeeper.scenarios.market.create_generator", forbidden)
+    monkeypatch.setattr("rangekeeper.model.scenario.market.create_generator", forbidden)
     assert replay(first[0].model).model is first[0].model
 
 
@@ -221,7 +217,7 @@ def test_independent_realizations_capture_distribution_draws():
 
 
 def test_supplied_innovations_realize_without_randomness(monkeypatch):
-    from rangekeeper.scenarios.market import capture, realize
+    from rangekeeper.model.scenario.market import capture, realize
 
     plan = make_plan(
         periods=make_periods(date(2027, 1, 1), frequency=Frequency.YEAR, count=3),
@@ -248,7 +244,7 @@ def test_supplied_innovations_realize_without_randomness(monkeypatch):
     def forbidden(*args, **kwargs):
         raise AssertionError("known-input construction drew randomness")
 
-    monkeypatch.setattr("rangekeeper.scenarios.market.create_generator", forbidden)
+    monkeypatch.setattr("rangekeeper.model.scenario.market.create_generator", forbidden)
     draws = capture(model, plan, scenario_key="known", inputs=inputs)
     result = realize(model, plan, draws=draws)
     assert [
@@ -267,7 +263,7 @@ def test_supplied_innovations_realize_without_randomness(monkeypatch):
 
 def test_policy_run_rejects_forged_information_timing_and_actions():
     from rangekeeper.examples import investment
-    from rangekeeper.execution import Executor
+    from rangekeeper.run.execution import Executor
     from rangekeeper.io import MemoryStore
     from rangekeeper.run import Run, validate
 
@@ -295,10 +291,10 @@ def test_policy_run_rejects_forged_information_timing_and_actions():
 
 def test_control_roles_conflict_across_contributors_and_endogenous_observation_fails():
     from rangekeeper.examples import investment
-    from rangekeeper.execution import Executor
+    from rangekeeper.run.execution import Executor
     from rangekeeper.io import MemoryStore
     from rangekeeper.specification import Specification, SpecificationRecord
-    from rangekeeper.errors import ValidationError
+    from rangekeeper.shared.errors import ValidationError
 
     model = investment.formulate(investment.author(dict(num_periods=2)))
     policy = investment.build_stop_gain_resale_policy(model, minimum_holding_periods=1)

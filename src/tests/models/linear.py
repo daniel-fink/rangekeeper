@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from datetime import timedelta
 
 from rangekeeper.model.measure import Quantity
-from rangekeeper.duration import Frequency, PeriodTiming, make_periods, offset
+from rangekeeper.model.duration import Frequency, PeriodTiming, make_periods, offset
 from rangekeeper.calculations import series, projection, financial
 
 

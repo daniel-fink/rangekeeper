@@ -4,11 +4,11 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from uuid import UUID
 
-from .._schema.records import Run as RunRecord, Metadata, Report
-from .._schema.validation import document_version
-from .._validation import bounded
-from ..errors import UnsupportedVersionError
-from .report import validate_local
+from rangekeeper.schema.records import Run as RunRecord, Metadata, Report
+from rangekeeper.schema.validation import document_version
+from rangekeeper.shared.validation import bounded
+from rangekeeper.shared.errors import UnsupportedVersionError
+from rangekeeper.run.report import validate_local
 
 
 @dataclass(frozen=True, init=False, eq=False)

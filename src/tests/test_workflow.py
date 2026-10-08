@@ -8,7 +8,7 @@ from openpyxl import Workbook
 
 from rangekeeper.io import json as graph_json
 from rangekeeper import Model
-from rangekeeper.graph import View
+from rangekeeper.model.system import View
 from rangekeeper.model.characteristics import value
 from rangekeeper.workflow import load, run, schema
 from rangekeeper.workflow.review import export
@@ -596,7 +596,7 @@ def test_html_uses_prepared_check_sides_and_reference_data(tmp_path, monkeypatch
 def test_prepared_report_keeps_distinct_artifact_claim_references():
     from types import SimpleNamespace
     from uuid import uuid4
-    from rangekeeper.evidence import Claim, Location, Source, tabular
+    from rangekeeper.workflow.evidence import Claim, Location, Source, tabular
     from rangekeeper.workflow.reporting import prepare
     from .test_model_graph import fixture
 

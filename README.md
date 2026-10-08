@@ -14,6 +14,8 @@ design models to canonical records. Polars serves detached tables and CSV.
 
 This checkout contains a pre-1.0 redesign that is not yet the published PyPI API.
 Use the source installation instructions and the upgrade guide together.
+The [package ownership and import guide](docs/README.md#package-ownership-and-imports)
+lists the current namespaces; `Model`, `Specification` and `Run` remain root imports.
 
 | Project or guide | Start here |
 | --- | --- |

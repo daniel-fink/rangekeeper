@@ -4,10 +4,10 @@ from dataclasses import dataclass
 from collections.abc import Mapping
 from types import MappingProxyType
 from uuid import UUID
-from ..._validation import require
-from ...errors import ContractError
-from ..scope import Scope, resolve_reference
-from .domains import (
+from rangekeeper.shared.validation import require
+from rangekeeper.shared.errors import ContractError
+from rangekeeper.model.scope import Scope, resolve_reference
+from rangekeeper.model.expression.domains import (
     compare_domains,
     DomainCompatibility,
     infer_operator_domain,

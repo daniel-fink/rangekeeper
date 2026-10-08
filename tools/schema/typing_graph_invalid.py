@@ -1,9 +1,9 @@
 """These calls must be statically rejected."""
 
 from rangekeeper import Model
-from rangekeeper.graph import View, Reduction
-from rangekeeper.graph.selection import select_value
-from rangekeeper.graph import reducers
+from rangekeeper.model.system import View, Reduction
+from rangekeeper.model.system.selection import select_value
+from rangekeeper.model.system import reducers
 
 
 def reject(model: Model) -> None:

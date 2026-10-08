@@ -6,7 +6,7 @@ from dataclasses import replace
 
 import pytest
 
-from rangekeeper.evidence import Claim, Location, Source
+from rangekeeper.workflow.evidence import Claim, Location, Source
 from rangekeeper.workflow import load, run
 from rangekeeper.workflow.checking import evaluate
 from rangekeeper.workflow.references import references
@@ -89,17 +89,17 @@ def test_non_excel_capability_runs_without_runner_changes(tmp_path, monkeypatch)
     from dataclasses import dataclass
     from uuid import uuid5
 
-    from rangekeeper import _structured
+    from rangekeeper.shared import structured as _structured
     from rangekeeper.io.json import dumps
-    from rangekeeper.operation import _Failure, _invoke
-    from rangekeeper.evidence import Method
-    from rangekeeper.workflow import implementation, catalog, schema
+    from rangekeeper.workflow.operation import _Failure, _invoke
+    from rangekeeper.workflow.evidence import Method
+    from rangekeeper.workflow import implementation, provenance, catalog, schema
     from rangekeeper.workflow._contracts import (
         OperationDeclaration,
         Produced,
         SourceCheckDeclaration,
     )
-    from rangekeeper.evidence import fingerprint, tabular
+    from rangekeeper.workflow.evidence import fingerprint, tabular
     from rangekeeper.workflow.source_checks import SourceCheck
     from rangekeeper.workflow.specification import StepSpec, WorkflowSpec
 
@@ -193,7 +193,7 @@ def test_non_excel_capability_runs_without_runner_changes(tmp_path, monkeypatch)
         OperationDeclaration(
             ExtractRecords,
             extract_records,
-            lambda value: Produced(value, fingerprint(value)),
+            Produced.from_evidence,
             lambda: {"input": {"type": "string"}},
             inputs=(("input", "record_document"),),
         ),
@@ -224,6 +224,7 @@ def test_non_excel_capability_runs_without_runner_changes(tmp_path, monkeypatch)
         return real_version(name)
 
     monkeypatch.setattr(implementation, "version", version)
+    monkeypatch.setattr(provenance, "version", version)
     steps = tuple(
         StepSpec.from_mapping(s)
         for s in [
@@ -311,7 +312,7 @@ def test_foundations_do_not_load_workflow_or_adapters():
         [
             sys.executable,
             "-c",
-            "import sys; from rangekeeper import operation, _structured; assert not any(n.startswith(('rangekeeper.workflow', 'rangekeeper.adapters')) for n in sys.modules)",
+            "import sys; from rangekeeper.workflow import operation; from rangekeeper.shared import structured; assert not any(n.startswith(('rangekeeper.workflow.runtime', 'rangekeeper.workflow.catalog', 'rangekeeper.workflow.specification', 'rangekeeper.adapters')) for n in sys.modules)",
         ],
         check=True,
     )
@@ -369,7 +370,7 @@ def test_catalog_schema_and_parsing_agree(tmp_path):
 def test_generic_numeric_source_check(built):
     from uuid import uuid4
 
-    from rangekeeper.evidence import Issue, Severity, tabular
+    from rangekeeper.workflow.evidence import Issue, Severity, tabular
     from rangekeeper.workflow.source_checks import evaluate
 
     uid = uuid4()

@@ -2,8 +2,8 @@
 
 from dataclasses import dataclass
 
-from .._records import UNSET, Unset
-from .._schema.records import Definitions, Metadata, Provenance, System
+from rangekeeper.schema.runtime import UNSET, Unset
+from rangekeeper.schema.records import Definitions, Metadata, Provenance, System
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

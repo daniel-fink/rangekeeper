@@ -8,7 +8,7 @@ from uuid import UUID, uuid4
 
 import pint
 
-from rangekeeper import validate
+from rangekeeper.shared import arguments as validate
 from rangekeeper.legacy.measure import Measure
 from rangekeeper.legacy.graph.classification import Classification
 

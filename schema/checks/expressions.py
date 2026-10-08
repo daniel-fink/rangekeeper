@@ -23,8 +23,8 @@ import yaml
 
 import _library
 
-from rangekeeper.errors import ContractError
-from rangekeeper._validation import require_unique
+from rangekeeper.shared.errors import ContractError
+from rangekeeper.shared.validation import require_unique
 from rangekeeper.model.scope import build_scope as _build_scope
 from rangekeeper.model.expression.validation import (
     infer_expression_domain,

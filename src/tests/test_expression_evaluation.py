@@ -7,14 +7,14 @@ from uuid import uuid4
 
 import pytest
 
-from rangekeeper.errors import UnitError
+from rangekeeper.shared.errors import UnitError
 from rangekeeper.model import Quantity, Reference
 from rangekeeper.model.expression import Expression, ExpressionKind, Operator
 from rangekeeper.model.expression.evaluation import evaluate as numerical
-from rangekeeper.policies.predicate import evaluate as predicate
-from rangekeeper.execution.evaluator import comparisons
-from rangekeeper.execution.errors import NumericalError, UnsupportedProblem
-from rangekeeper.units import default_units
+from rangekeeper.specification.policy.predicate import evaluate as predicate
+from rangekeeper.run.execution.acceptance import _comparisons
+from rangekeeper.run.execution.errors import NumericalError, UnsupportedProblem
+from rangekeeper.shared.units import default_units
 
 
 def literal(amount, units="dimensionless"):
@@ -103,7 +103,7 @@ def test_near_equality_is_exact_for_policy_but_has_an_acceptance_residual():
     expression = binary(Operator.EQUAL, literal(1), literal(1 + 1e-10))
     assert predicate(expression, {}, units=default_units) is False
     relation, left, right, exact = next(
-        comparisons(expression, {}, units=default_units)
+        _comparisons(expression, {}, units=default_units)
     )
     residual = left.magnitude - right.magnitude
     assert relation == "equal" and not exact and residual < 0
@@ -175,7 +175,7 @@ def test_policy_arithmetic_errors_and_numerical_acceptance_translation(
         predicate(expression, {}, units=default_units)
     comparison = binary(Operator.EQUAL, expression, literal(0))
     with pytest.raises(NumericalError):
-        tuple(comparisons(comparison, {}, units=default_units))
+        tuple(_comparisons(comparison, {}, units=default_units))
 
 
 def test_conjunction_diagnostics_preserve_expression_order():
@@ -184,17 +184,17 @@ def test_conjunction_diagnostics_preserve_expression_order():
         binary(Operator.EQUAL, literal(2), literal(1)),
         binary(Operator.LESS_THAN_OR_EQUAL, literal(3), literal(5)),
     )
-    results = tuple(comparisons(expression, {}, units=default_units))
+    results = tuple(_comparisons(expression, {}, units=default_units))
     assert [
         (relation, left.magnitude - right.magnitude)
         for relation, left, right, _ in results
     ] == [("equal", 1), ("less_than_or_equal", -2)]
     with pytest.raises(UnsupportedProblem):
-        tuple(comparisons(literal(1), {}, units=default_units))
+        tuple(_comparisons(literal(1), {}, units=default_units))
 
 
 def test_availability_combines_dates_without_runtime_imports():
-    from rangekeeper.policies._availability import available_on
+    from rangekeeper.specification.policy._availability import available_on
 
     assert available_on() is None
     assert available_on(period_end=date(2027, 2, 1)) == date(2027, 1, 31)
@@ -207,20 +207,20 @@ def test_availability_combines_dates_without_runtime_imports():
         declared=date(2027, 1, 5),
     ) == date(2027, 1, 5)
     for imports in (
-        "import rangekeeper.specification.validation; import rangekeeper.policies._availability",
-        "import rangekeeper.policies._availability; import rangekeeper.specification.validation",
+        "import rangekeeper.specification.validation; import rangekeeper.specification.policy._availability",
+        "import rangekeeper.specification.policy._availability; import rangekeeper.specification.validation",
     ):
         subprocess.run(
             [
                 sys.executable,
                 "-c",
                 imports
-                + "; import sys; assert not any(n.startswith(('rangekeeper.policies.evaluation', 'rangekeeper.execution.compiler', 'numpy', 'scipy', 'pint', 'pyomo')) for n in sys.modules)",
+                + "; import sys; assert not any(n.startswith(('rangekeeper.specification.policy.evaluation', 'rangekeeper.run.execution.compiler', 'numpy', 'scipy', 'pint', 'pyomo')) for n in sys.modules)",
             ],
             check=True,
         )
     for imports in (
-        "import rangekeeper.specification.validation; from rangekeeper.policies import evaluate",
-        "from rangekeeper.policies import evaluate; import rangekeeper.specification.validation",
+        "import rangekeeper.specification.validation; from rangekeeper.specification.policy import evaluate",
+        "from rangekeeper.specification.policy import evaluate; import rangekeeper.specification.validation",
     ):
         subprocess.run([sys.executable, "-c", imports], check=True)

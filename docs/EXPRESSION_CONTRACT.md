@@ -4,6 +4,10 @@ This guide specifies representations and meaning. Structural and bounded semanti
 checks enforce this contract. The [executor](SCALAR_EXECUTION.md) implements the
 documented affine subset; representation alone does not promise execution support.
 
+Use `rangekeeper.model.expression.authoring` for passive literal, reference and
+operator constructors. `rangekeeper.model.formulation` owns equation builders;
+these builders return declarations and do not read recorded amounts or solve them.
+
 ## Composition and identity
 
 An Expression is passive mathematical syntax. Each node has a stable UUID and

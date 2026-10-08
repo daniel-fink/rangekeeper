@@ -13,8 +13,8 @@ from uuid import UUID, uuid5
 from xml.etree import ElementTree as ET
 from zipfile import BadZipFile, ZipFile
 
-from rangekeeper import _structured
-from rangekeeper.operation import (
+from rangekeeper.shared import structured as _structured
+from rangekeeper.workflow.operation import (
     Operation,
     Outcome,
     _Failure,
@@ -22,10 +22,10 @@ from rangekeeper.operation import (
     fingerprint,
 )
 
-from rangekeeper import validate
-from rangekeeper.evidence import Location, Method, Source
-from ._coordinates import address
-from .snapshot import Cell, Workbook, Worksheet
+from rangekeeper.shared import arguments as validate
+from rangekeeper.workflow.evidence import Location, Method, Source
+from rangekeeper.adapters.excel._coordinates import address
+from rangekeeper.adapters.excel.snapshot import Cell, Workbook, Worksheet
 
 if TYPE_CHECKING:
     from openpyxl.workbook.workbook import Workbook as NativeWorkbook

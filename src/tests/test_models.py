@@ -7,13 +7,13 @@ import math
 import pytest
 from rangekeeper.calculations import series
 from rangekeeper.io import MemoryStore
-from rangekeeper.execution import Executor
+from rangekeeper.run.execution import Executor
 from rangekeeper.run import validate
 from rangekeeper.model import Model, Metadata
-from rangekeeper.duration import make_periods, Frequency
-from rangekeeper._schema.enums import SolutionStatus
+from rangekeeper.model.duration import make_periods, Frequency
+from rangekeeper.schema.enums import SolutionStatus
 from rangekeeper.model.scenario import Distribution
-from rangekeeper.scenarios.market import generate, make_plan
+from rangekeeper.model.scenario.market import generate, make_plan
 from uuid import uuid4
 from tests.models import linear, deterministic, probabilistic, flexible
 

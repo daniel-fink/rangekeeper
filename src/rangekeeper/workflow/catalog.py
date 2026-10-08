@@ -6,7 +6,7 @@ entry points, registration decorators or configuration-selected imports are used
 
 from rangekeeper.adapters.excel import workflow as excel
 
-from . import _table_operations as tables
+from rangekeeper.workflow import _table_operations as tables
 
 OPERATIONS = {**excel.OPERATIONS, **tables.OPERATIONS}
 SOURCE_CHECKS = excel.SOURCE_CHECKS

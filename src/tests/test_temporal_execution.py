@@ -1,6 +1,6 @@
 """Finite Movement equations checked against an independent temporal oracle."""
 
-from rangekeeper.duration import Frequency, PeriodTiming, DayCount
+from rangekeeper.model.duration import Frequency, PeriodTiming, DayCount
 from rangekeeper.model.flow import MissingValueHandling
 from rangekeeper.calculations.series import (
     AlignmentJoin,
@@ -9,8 +9,8 @@ from rangekeeper.calculations.series import (
     MeanWeighting,
 )
 from rangekeeper.calculations.projection import ProjectionMethod
-from rangekeeper.account import Balance, CurrentInterest, InterestTreatment
-from rangekeeper._schema.enums import ValueKind, SolutionStatus, CompletionStatus
+from rangekeeper.calculations.account import Balance, CurrentInterest, InterestTreatment
+from rangekeeper.schema.enums import ValueKind, SolutionStatus, CompletionStatus
 
 from rangekeeper.model.expression import Reference
 from dataclasses import replace
@@ -31,14 +31,11 @@ from rangekeeper.model import (
     Update,
 )
 from rangekeeper.model.flow import Flow, Movement
-from rangekeeper.duration.period import make_periods
-from rangekeeper.formulations import flow, growth, financial
+from rangekeeper.model.duration.period import make_periods
+from rangekeeper.model.formulation import flow, growth, financial
 from rangekeeper.specification import Specification, SpecificationRecord, Assignment
-from rangekeeper.specification.targets import (
-    assign_flow,
-    unknown_flow,
-)
-from rangekeeper.execution import Executor
+from rangekeeper.specification.targets import assign_flow, unknown_flow
+from rangekeeper.run.execution import Executor
 from rangekeeper.io import MemoryStore
 from rangekeeper.run import validate
 
@@ -159,8 +156,8 @@ def test_forward_then_inverse_temporal_oracle():
 
 
 def test_explicit_flow_roles_preserve_missing_null_zero_and_unrelated_entries():
-    from rangekeeper._schema.records import Formulation
-    from rangekeeper.errors import ValidationError
+    from rangekeeper.schema.records import Formulation
+    from rangekeeper.shared.errors import ValidationError
 
     model, ids = oracle()
     data = model.system.to_data()
@@ -294,7 +291,7 @@ def test_stable_references_builder_ids_and_coordinate_mismatch():
 
 
 def test_movement_roles_conflicts_units_and_recorded_values_not_assignments():
-    from rangekeeper.errors import ValidationError
+    from rangekeeper.shared.errors import ValidationError
 
     model, ids = oracle()
     store = MemoryStore()
@@ -339,8 +336,8 @@ def test_movement_roles_conflicts_units_and_recorded_values_not_assignments():
 
 
 def test_movement_candidate_rejection_and_expansion_limits():
-    from rangekeeper.execution.backends import PyomoHighs
-    from rangekeeper._schema.records import Settings
+    from rangekeeper.run.execution.backends import PyomoHighs
+    from rangekeeper.schema.records import Settings
 
     model, ids = oracle()
     store = MemoryStore()
@@ -366,7 +363,7 @@ def test_movement_candidate_rejection_and_expansion_limits():
 
 def test_preparation_deadline_and_constraint_limit_prevent_backend_call(monkeypatch):
     import time
-    from rangekeeper.execution import preparation
+    from rangekeeper.run.execution import preparation
 
     model, ids = oracle()
     store = MemoryStore()
@@ -448,7 +445,7 @@ def test_explicit_draft_upgrade_preserves_order_and_requires_new_pins():
 
 def test_finite_balance_interest_scaling_sum_and_explicit_reversion_mapping():
     """Use independently computed amounts to exercise the remaining builders."""
-    from rangekeeper.formulations import account
+    from rangekeeper.model.formulation import account
 
     model, ids = oracle()
     data = model.system.to_data()

@@ -4,7 +4,7 @@ This module is an example consumer, not a new domain schema. Generated Values ow
 all parameters and outputs. Construction has no random, solver or storage effects.
 """
 
-from rangekeeper.policies import ActionKind
+from rangekeeper.specification.policy import ActionKind
 from rangekeeper.model import ValueKind
 
 from collections.abc import Mapping
@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from typing import Any, cast
 from datetime import date
 from uuid import UUID, uuid4
-from ..model import (
+from rangekeeper.model import (
     Model,
     Metadata,
     Definitions,
@@ -23,24 +23,24 @@ from ..model import (
     Value,
     Update,
 )
-from ..model.flow import Flow, Movement
-from ..model.scenario import ScenarioRealization
-from .._schema.records import (
+from rangekeeper.model.flow import Flow, Movement
+from rangekeeper.model.scenario import ScenarioRealization
+from rangekeeper.schema.records import (
     Reference,
     Assignment,
     Policy,
     Specification as SpecificationRecord,
 )
-from ..duration import make_periods, offset, Frequency, PeriodTiming
+from rangekeeper.model.duration import make_periods, offset, Frequency, PeriodTiming
 
-from ..formulations import declare
-from ..formulations.authoring import identify, identify_tree
-from ..formulations.flow import aligned, shape
-from ..formulations.expression import binary
-from ..policies import Decision, Rule, Action, ObservationBinding
-from ..model import Reference
-from ..model.expression import Operator
-from ..formulations.expression import (
+from rangekeeper.model.formulation import declare
+from rangekeeper.model.formulation.authoring import identify, identify_tree
+from rangekeeper.model.formulation.flow import aligned, shape
+from rangekeeper.model.expression.authoring import binary
+from rangekeeper.specification.policy import Decision, Rule, Action, ObservationBinding
+from rangekeeper.model import Reference
+from rangekeeper.model.expression import Operator
+from rangekeeper.model.expression.authoring import (
     reference as ref,
     literal,
     add,
@@ -50,10 +50,10 @@ from ..formulations.expression import (
     power,
     equal,
 )
-from ..specification import Specification
-from ..specification.targets import unknown_flow, assign_flow
-from ..calculations import financial, series
-from ..scenarios.view import Market
+from rangekeeper.specification import Specification
+from rangekeeper.specification.targets import unknown_flow, assign_flow
+from rangekeeper.calculations import financial, series
+from rangekeeper.model.scenario.view import Market
 
 _DEFAULTS = dict(
     units="AUD",
@@ -158,17 +158,12 @@ def author(
     for name in (*_FULL, *_HORIZON):
         ps = periods if name in _FULL else periods[:-1]
         control = name in ("holding", "sale")
-        flow = Flow(
+        flow = Flow.from_periods(
+            ps,
+            (None,) * len(ps),
             units="dimensionless" if control else p["units"],
-            movements=tuple(
-                Movement(
-                    id=uuid4(),
-                    key=f"p{i + 1}",
-                    period=period,
-                    date=period.resolve(timing=PeriodTiming.LAST),
-                )
-                for i, period in enumerate(ps)
-            ),
+            keys=tuple(f"p{i + 1}" for i in range(len(ps))),
+            dates=tuple(period.resolve(timing=PeriodTiming.LAST) for period in ps),
         )
         records.append(
             Value(
@@ -190,17 +185,13 @@ def author(
                 key="space_market_price_factors",
                 kind=ValueKind.FLOW,
                 measure=ratio,
-                flow=Flow(
+                flow=Flow.from_periods(
+                    periods,
+                    (1,) * len(periods),
                     units="dimensionless",
-                    movements=tuple(
-                        Movement(
-                            id=uuid4(),
-                            key=f"p{i + 1}",
-                            period=period,
-                            date=period.resolve(timing=PeriodTiming.LAST),
-                            magnitude=1,
-                        )
-                        for i, period in enumerate(periods)
+                    keys=tuple(f"p{i + 1}" for i in range(len(periods))),
+                    dates=tuple(
+                        period.resolve(timing=PeriodTiming.LAST) for period in periods
                     ),
                 ),
             )

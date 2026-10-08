@@ -1,6 +1,7 @@
 """Publish complete UTF-8 files atomically without overwriting existing names."""
 
 import errno
+import json
 import os
 from pathlib import Path
 import tempfile
@@ -51,6 +52,11 @@ def replace(path: Path, text: str) -> Path:
     published replacement without accounting for a possible subsequent writer.
     """
     return _write(path, text, replace=True)
+
+
+def replace_json(path: Path, value: object) -> Path:
+    """Replace JSON with the review encoding and retain publication/durability errors."""
+    return replace(path, json.dumps(value, ensure_ascii=False, indent=2) + "\n")
 
 
 def _write(path: Path, text: str, *, replace: bool) -> Path:

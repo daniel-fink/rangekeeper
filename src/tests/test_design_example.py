@@ -5,7 +5,7 @@ from rangekeeper.run import SolutionStatus
 from uuid import uuid5
 import pytest
 from rangekeeper.examples import design
-from rangekeeper.execution import Executor
+from rangekeeper.run.execution import Executor
 from rangekeeper.io.memory import MemoryStore
 from rangekeeper.model import Update, System
 
