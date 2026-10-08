@@ -1,7 +1,8 @@
 # ADR-005 Flux and Stream implementation
 
-Status: implemented and locally verified on 2026-10-08. Notebook migration remains
-a separate phase. See the [acceptance record](../research/flux-stream-2026-10-08/README.md)
+Status: implemented and locally verified on 2026-10-08. The first notebook migration
+is also accepted; six notebooks remain in that separate phase. See the
+[codebase acceptance record](../research/flux-stream-2026-10-08/README.md)
 for source hashes, the installed wheel, tests, timings, memory costs and external limits.
 
 Implementation used the actual working tree at `53d9bfa`, preserving existing local
@@ -10,8 +11,9 @@ checks, and the installed-wheel Stream and acausal hierarchy examples. The same
 equations solve forward and backward, including the specified 220 rent result.
 
 The design and execution plan below are retained as the architectural contract.
-The current API references describe the delivered interfaces. Notebook code,
-narrative and output migration have not started in this phase.
+The current API references describe the delivered interfaces. The later
+[first-notebook acceptance](../research/basic-dcf-2026-10-08/README.md) records its
+code, narrative and output migration.
 
 Restore Stream as the main interface for coordinating, displaying, resampling and
 combining flows. Use Polars for bulk calculations and reuse prepared columns
@@ -988,10 +990,13 @@ verbs are `extrapolate(initial=..., periods=...)` and
 and `allocate` without aliases. `Distribution`, `negate()` and `collapse()` retain
 their meanings. See the [API acceptance](../research/basic-dcf-2026-10-08/api.md).
 
-After that acceptance, migrate the first walkthrough from its legacy teaching
-baseline. Preserve its guidance, intermediate inspections and financial example;
-amend prose where the current contracts require it. Execute in a fresh kernel and
-review the rendered notebook before applying the approach to the remaining series.
+The first walkthrough is migrated from its legacy teaching baseline, with its
+guidance, intermediate inspections and financial example retained. Its 26 code
+cells execute in a fresh kernel against the candidate wheel and reproduce the
+$1,000 present value. See [notebook acceptance](../research/basic-dcf-2026-10-08/README.md)
+for the teaching mapping, rendered review and build scope. Apply this approach to
+the remaining six notebooks next; their migration and full-book acceptance remain
+open.
 
 ## Source and caller checklist
 
@@ -1012,7 +1017,7 @@ Use this checklist at implementation start; refresh it if the checkout changes.
 | Presentation | `src/rangekeeper/adapters/polars.py`; retain its existing lossless Flow interchange separately from Stream display projection |
 | Typing and installation | `tools/schema/typing_behavior_{valid,invalid}.py`, `verify_install.py`, `cross_language.py`; optional import checks |
 | Current documentation | Architecture; records, calculations, expressions, Specifications, execution, system and table references; scenarios/policies and upgrade guidance |
-| Deferred teaching migration | `examples/walkthrough/basic_dcf.ipynb` first, then the remaining notebooks after codebase acceptance |
+| Teaching migration | `examples/walkthrough/basic_dcf.ipynb` accepted; remaining six notebooks and full-book acceptance deferred |
 
 Review implementation fingerprint manifests when moving or adding code that their
 consumers execute. Add actual semantic dependencies where needed, without including

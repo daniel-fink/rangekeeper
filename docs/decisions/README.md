@@ -28,7 +28,7 @@ Relationships are explicit links; a decision can affect several owners.
 
 ## Work that remains explicit
 
-- Migrate the walkthrough notebooks after the completed [Flux and Stream codebase acceptance](../research/flux-stream-2026-10-08/README.md), preserving their legacy teaching intent.
+- The [first walkthrough migration](../research/basic-dcf-2026-10-08/README.md) follows the completed [Flux and Stream codebase acceptance](../research/flux-stream-2026-10-08/README.md). Migrate the remaining six notebooks with the same legacy teaching fidelity, then verify the complete book.
 - [Windows/Rhino/connector acceptance](../contributing/windows-acceptance.md) remains
   open. Follow [legacy retirement](../contributing/legacy-retirement.md) before
   deleting any held predecessor code or tests.

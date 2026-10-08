@@ -1,10 +1,17 @@
 # Run the walkthroughs
 
-The seven notebook sources under
-[`examples/walkthrough/`](../../examples/walkthrough) use canonical Models. Their
-shared builders live in `examples/rangekeeper_examples/`. Install both from the
-same checkout. Live design receive also needs the `speckle` extra; fixture mode
-needs no service SDK.
+The seven notebook sources live under
+[`examples/walkthrough/`](../../examples/walkthrough). The first,
+[`basic_dcf.ipynb`](../../examples/walkthrough/basic_dcf.ipynb), introduces Flow,
+Span, projection and Stream calculations before Model authoring. Its current
+Flux/Stream migration has [execution and rendered acceptance](../research/basic-dcf-2026-10-08/README.md).
+The remaining six notebooks use shared canonical Model builders. Those notebooks
+still need this migration; their stored outputs do not establish acceptance
+against the current API.
+
+Shared builders live in `examples/rangekeeper_examples/`. Install both packages
+from the same checkout. Live design receive also needs the `speckle` extra;
+fixture mode needs no service SDK.
 
 ## Explore the notebooks
 
@@ -20,8 +27,9 @@ The lockfile resolves Rangekeeper from `../..` and the example builders from
 `..`. Polars is the dataframe dependency. These paths prevent the environment
 from silently selecting an older published API.
 
-The five numerical notebooks expose `RK_SCENARIO_COUNT`. Use four scenarios for
+The four later numerical notebooks expose `RK_SCENARIO_COUNT`. Use four scenarios for
 routine acceptance, or `RK_SCENARIO_COUNT=2000` for the retained full comparison.
+The first notebook has one fixed DCF example and does not use a scenario count.
 The two design notebooks default to `RK_DESIGN_MODE=fixture`. Live mode needs
 configured credentials and an explicit source pin; canonical mode needs a named
 envelope file and interpretation. A failed live read does not switch to fixture
@@ -52,6 +60,9 @@ Use a registered kernel for that environment, or supply its name through
 name selects the candidate-wheel environment. Inspect execution errors, tables,
 figures, mode declarations and expected financial results. Preserve the outputs
 with the acceptance result.
+
+During the staged Flux/Stream migration, execute `basic_dcf.ipynb` by name instead
+of using `*.ipynb`. Expand acceptance to each later notebook after its migration.
 
 ## Design example conventions
 
@@ -89,6 +100,12 @@ The static build disables the unused Sphinx-Thebe extension to avoid duplicate
 JavaScript declarations. Colab launch links remain available. Inspect navigation,
 resource links, citations, tables and figures in the built site. A local rebuild
 does not publish GitHub Pages; publication is a separate action.
+
+For a single-notebook migration, build a separate preview with a temporary table
+of contents that includes the introduction and the accepted chapter only. Use
+its fresh outputs and disable execution during the build. Record this limited
+scope; it does not establish acceptance of the complete book. Keep the tracked
+site snapshot until all chapters have been migrated and verified together.
 
 See [examples](examples.md), [upgrading](upgrading.md) and
 [verification](../contributing/verification.md) for related procedures.
