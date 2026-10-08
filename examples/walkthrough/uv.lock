@@ -1941,11 +1941,8 @@ execution = [
     { name = "numpy" },
     { name = "pyomo" },
 ]
-plotting = [
-    { name = "matplotlib" },
-    { name = "plotly" },
-]
 visualization = [
+    { name = "matplotlib" },
     { name = "networkx" },
     { name = "plotly" },
     { name = "pyvis" },
@@ -1959,24 +1956,19 @@ workflow = [
 requires-dist = [
     { name = "highspy", marker = "extra == 'execution'", specifier = "==1.15.1" },
     { name = "jsonschema", specifier = ">=4.26,<5" },
-    { name = "matplotlib", marker = "extra == 'plotting'", specifier = ">=3.10" },
+    { name = "matplotlib", marker = "extra == 'visualization'", specifier = ">=3.10" },
     { name = "networkx", marker = "extra == 'legacy'", specifier = ">=3.1" },
     { name = "networkx", marker = "extra == 'visualization'", specifier = ">=3.1" },
     { name = "numpy", marker = "extra == 'calculations'", specifier = ">=1.24" },
     { name = "numpy", marker = "extra == 'execution'", specifier = ">=1.24" },
-    { name = "openpyxl", marker = "extra == 'excel'", specifier = ">=3.1.5,<4" },
     { name = "openpyxl", marker = "extra == 'workflow'", specifier = ">=3.1.5,<4" },
     { name = "pint", specifier = ">=0.24" },
-    { name = "plotly", marker = "extra == 'plotting'", specifier = ">=6.0" },
     { name = "plotly", marker = "extra == 'visualization'", specifier = ">=6.0" },
     { name = "polars", marker = "extra == 'calculations'", specifier = ">=1.44,<2" },
-    { name = "polars", marker = "extra == 'tables'", specifier = ">=1.44,<2" },
     { name = "py-moneyed", specifier = "==3.0" },
     { name = "pyomo", marker = "extra == 'execution'", specifier = "==6.10.1" },
     { name = "pyvis", marker = "extra == 'visualization'", specifier = ">=0.3.2" },
     { name = "pyxirr", marker = "extra == 'calculations'", specifier = ">=0.10.7,<0.11" },
-    { name = "pyxirr", marker = "extra == 'financial'", specifier = ">=0.10.7,<0.11" },
-    { name = "pyyaml", marker = "extra == 'excel'", specifier = ">=6.0.2,<7" },
     { name = "pyyaml", marker = "extra == 'workflow'", specifier = ">=6.0.2,<7" },
     { name = "pyyaml", marker = "extra == 'yaml'", specifier = ">=6.0.2,<7" },
     { name = "rfc3339-validator", specifier = ">=0.1.4,<0.2" },
@@ -1985,7 +1977,7 @@ requires-dist = [
     { name = "specklepy", marker = "extra == 'speckle'", specifier = ">=2.21" },
     { name = "z3-solver", marker = "extra == 'layout'", specifier = "==5.1.0.0" },
 ]
-provides-extras = ["layout", "calculations", "financial", "tables", "plotting", "visualization", "speckle", "legacy", "execution", "yaml", "workflow", "excel"]
+provides-extras = ["layout", "calculations", "visualization", "speckle", "legacy", "execution", "yaml", "workflow"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -2010,7 +2002,7 @@ dependencies = [
     { name = "jupyter-book" },
     { name = "notebook" },
     { name = "plotly" },
-    { name = "rangekeeper", extra = ["calculations", "execution", "plotting", "visualization", "workflow"] },
+    { name = "rangekeeper", extra = ["calculations", "execution", "visualization", "workflow"] },
     { name = "rangekeeper-examples" },
     { name = "scipy-stubs" },
 ]
@@ -2022,7 +2014,7 @@ requires-dist = [
     { name = "jupyter-book", specifier = "<2.0" },
     { name = "notebook", specifier = ">=7.5" },
     { name = "plotly", specifier = ">=6.5" },
-    { name = "rangekeeper", extras = ["calculations", "execution", "plotting", "visualization", "workflow"], directory = "../../" },
+    { name = "rangekeeper", extras = ["calculations", "execution", "visualization", "workflow"], directory = "../../" },
     { name = "rangekeeper-examples", editable = "../" },
     { name = "scipy-stubs", specifier = ">=1.16" },
 ]

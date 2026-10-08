@@ -70,23 +70,47 @@ See [graph contracts](../reference/system.md) for ownership and revision checks.
 
 ## Install and check the artifact
 
-From a checkout containing this change, build/install the package from `src`.
+From a checkout containing this change, build/install the package from the repository root.
 See the [installation guide](installation.md) for supported Python versions
 and the [verification guide](../contributing/verification.md) for current checks.
 Install only the extras your consumer needs. Core records, units and JSON stores
-need none; source builds use `[workflow,excel]`.
+need none; source builds use `[workflow]`.
 
 ```sh
-python -m pip install '.[calculations,tables,yaml,workflow,execution,plotting,visualization]'
+python -m pip install '.[calculations,yaml,workflow,execution,visualization]'
 python -c 'import rangekeeper; print(rangekeeper.__file__)'
 ```
 
 Run notebooks from a fresh kernel using that environment. Execution dependencies
-remain a separate `execution` extra. `financial` installs PyXIRR without the wider
-calculation stack; `speckle` adds the SDK for explicit live receive. Notebook tools
+remain a separate `execution` extra. `calculations` includes PyXIRR and Polars;
+`speckle` adds the SDK for explicit live receive. Notebook tools
 are installed separately. The temporary `legacy` extra is only for the held old API. Do not copy a notebook's stored output and
 call that an executed migration. Record the source revision and wheel hash; an
 unreleased change can share a package version with an earlier artifact.
+
+## Installation extra migration
+
+Use these capability groups when updating installation commands and dependency
+specifications. Retired names have no aliases; replace them explicitly before
+installing, as package installers can warn about an unknown extra and omit its
+intended dependencies.
+
+| Retired extra | Replacement |
+| --- | --- |
+| `financial` | `calculations` |
+| `tables` | `calculations` |
+| `plotting` | `visualization` |
+| `excel` | `workflow` |
+
+`calculations` now covers financial valuation, numerical/scenario operations,
+Polars and CSV. `visualization` combines Matplotlib/Plotly plots and PyVis graph
+presentation. `workflow` covers source interpretation and Excel extraction.
+The smaller financial-only and table-only installation profiles are retired.
+Python module names and lazy import behavior are unchanged.
+
+`execution`, `layout`, `speckle`, `yaml` and the temporary `legacy` extra remain
+separate. Existing dependency version ranges are retained. The example package
+and walkthrough environment remain development/teaching projects.
 
 ## Record methods and replacement
 
@@ -390,7 +414,7 @@ and the [retirement register](../research/full-migration/turn3/RETIREMENT.md) fo
 
 ## Dataframe migration
 
-Install the `tables` extra, or `calculations`, for Polars. The `pandas` extra and
+Install the `calculations` extra for Polars. The `pandas` extra and
 adapter are removed. Replace Table `to_dataframe` with `polars.to_frame`, and
 `from_dataframe` with `polars.to_table`. Replace Flow `to_series` with `polars.dates`;
 its date is an explicit column. Use canonical Flow records for arithmetic.

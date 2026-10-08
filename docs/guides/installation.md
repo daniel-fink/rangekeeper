@@ -16,21 +16,21 @@ python -m pip install .
 | Extra | Capability |
 | --- | --- |
 | `yaml` | Strict YAML codecs |
-| `workflow` or `excel` | Source workflows, Excel reading, workbench and HTML review |
-| `financial` | PyXIRR valuation, IRR and day-count calculations |
-| `calculations` | Known-data Flow operations, distributions and scenario kernels |
+| `workflow` | Source workflows, Excel reading, workbench and HTML review |
+| `calculations` | Financial valuation, Flow operations, distributions, scenario kernels, Polars and CSV |
 | `execution` | Pyomo/HiGHS numerical execution |
-| `tables` | Detached Polars and CSV adapters |
-| `plotting` | Matplotlib Flow plots and Plotly presentation |
-| `visualization` | PyVis and Plotly graph presentation |
+| `visualization` | Matplotlib and Plotly plots, plus PyVis graph presentation |
 | `speckle` | Explicit Speckle receive operations |
 | `layout` | Optional Z3 presentation layout solver |
 | `legacy` | Held predecessor Graph/Measure/Speckle group; see [retirement](../contributing/legacy-retirement.md) |
 
+Extras describe installation choices. They do not change the module hierarchy.
+See [upgrading](upgrading.md#installation-extra-migration) for retired extra names.
+
 For the numerical and design examples, run from the repository root:
 
 ```sh
-python -m pip install '.[calculations,execution,tables,plotting,visualization,workflow]' ./examples
+python -m pip install '.[calculations,execution,visualization,workflow]' ./examples
 ```
 
 The separate example distribution supplies `rangekeeper_examples`. Install it from

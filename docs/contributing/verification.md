@@ -62,6 +62,9 @@ Use `--wheel /absolute/path/to/candidate.whl` to check an already built artifact
 Supply `--runtime-python`, `--financial-python`, `--execution-python` and
 `--workflow-python` with interpreters that have the required dependencies.
 `--tables-python` adds Polars/CSV checks in an isolated environment without pandas.
+These interpreter options select verification slices, not installation extra
+names. The financial and table slices still check narrow import boundaries within
+the combined `calculations` capability.
 Copied native extensions must match the runtime interpreter. These checks use
 the built artifact; source-tree imports alone do not establish wheel correctness.
 

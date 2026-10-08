@@ -12,7 +12,7 @@ dependencies = [
     "jupyter-book< 2.0",
     "notebook>=7.5",
     "plotly>=6.5",
-    "rangekeeper[calculations,execution,plotting,visualization,workflow]>=0.8",
+    "rangekeeper[calculations,execution,visualization,workflow]>=0.8",
     "scipy-stubs>=1.16",
     "rangekeeper-examples",
 ]

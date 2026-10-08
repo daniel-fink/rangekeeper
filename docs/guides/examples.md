@@ -4,7 +4,7 @@ Maintained examples live in [`examples/`](../../examples). Install the library
 and the example builders from the same checkout. From the repository root:
 
 ```sh
-python -m pip install '.[calculations,execution,tables,plotting,visualization,workflow]' ./examples
+python -m pip install '.[calculations,execution,visualization,workflow]' ./examples
 ```
 
 The `rangekeeper-examples` distribution supplies `rangekeeper_examples`. It is a

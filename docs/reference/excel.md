@@ -16,7 +16,7 @@ Outcomes. Source/Location/Claim/Method objects belong to transient workflow
 Evidence; composition converts them to canonical Model provenance.
 
 Importing the direct Excel API does not import openpyxl or PyYAML. Install the
-`excel` extra to read workbooks and decode extraction YAML. Pin the actual project
+`workflow` extra to read workbooks and decode extraction YAML. Pin the actual project
 environment for reproducible execution.
 
 ```python
