@@ -109,7 +109,8 @@ explicit. Currency and time units are not stripped from quantities.
 
 `Distribution.sample(size=..., generator=...)` requires an explicit random
 generator. Scenario plans own seed-based stream construction. Distribution algorithms load SciPy only when needed. Financial valuation
-can use the smaller `financial` extra without a dataframe or SciPy import.
+uses the `calculations` extra; the valuation operation itself does not import
+a dataframe library or SciPy.
 
 ## Detached tables and plots
 

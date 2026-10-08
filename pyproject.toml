@@ -30,17 +30,18 @@ calculations = [
     "scipy>=1.12",
     "pyxirr>=0.10.7,<0.11",
 ]
-financial = ["pyxirr>=0.10.7,<0.11"]
-tables = ["polars>=1.44,<2"]
-plotting = ["matplotlib>=3.10", "plotly>=6.0"]
-visualization = ["networkx>=3.1", "plotly>=6.0", "pyvis>=0.3.2"]
+visualization = [
+    "matplotlib>=3.10",
+    "plotly>=6.0",
+    "networkx>=3.1",
+    "pyvis>=0.3.2",
+]
 speckle = ["specklepy>=2.21"]
 # Temporary predecessor group retained until official Windows connector acceptance.
 legacy = ["networkx>=3.1", "specklepy>=2.21"]
 execution = ["numpy>=1.24", "pyomo==6.10.1", "highspy==1.15.1"]
 yaml = ["PyYAML>=6.0.2,<7"]
 workflow = ["openpyxl>=3.1.5,<4", "PyYAML>=6.0.2,<7"]
-excel = ["openpyxl>=3.1.5,<4", "PyYAML>=6.0.2,<7"]
 
 [dependency-groups]
 dev = [

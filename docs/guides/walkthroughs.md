@@ -30,7 +30,7 @@ mode. The notebooks do not publish.
 ## Execute for acceptance
 
 Use the candidate wheel and matching example package in a separate environment,
-with the calculation, execution, table, plotting, visualization and workflow extras
+with the `calculations`, `execution`, `visualization` and `workflow` extras
 plus `nbclient`, `nbformat`, `nbconvert` and `ipykernel`. Record the wheel hash and
 interpreter. A fresh kernel must execute each notebook from top to bottom.
 

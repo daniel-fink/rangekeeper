@@ -103,9 +103,11 @@ and receipt need their own acceptance evidence; portable tests cannot establish 
 ## Dependency boundaries
 
 Core imports load no dataframe, plotting library, service SDK or solver. Extras
-install optional operations explicitly. `tables` installs Polars; `calculations`
-also includes it for the numerical walkthroughs. `financial` supports PyXIRR
-without SciPy or dataframe imports. Pyomo and HiGHS run in the execution worker.
+install optional capabilities: `calculations` includes financial valuation,
+scenario kernels and Polars/CSV; `visualization` includes plots and graph
+presentation; `workflow` includes Excel and source interpretation. Financial
+valuation still imports no SciPy or dataframe library unless another operation
+needs one. Pyomo and HiGHS remain in the `execution` extra and run in the worker.
 
 Canonical modules do not import `legacy`. Historical conversion reads wire data
 without constructing predecessor classes. The isolated predecessor code remains

@@ -307,7 +307,7 @@ def read(
         if parser_version is None:
             raise _Failure(
                 "dependency_unavailable",
-                "Install Rangekeeper[excel] to read XLSX",
+                "Install Rangekeeper[workflow] to read XLSX",
                 locations=(Location(source=source),),
                 details={"dependency": "openpyxl"},
             )

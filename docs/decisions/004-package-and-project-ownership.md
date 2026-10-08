@@ -82,6 +82,38 @@ Windows/Rhino/service result. The native build, cross-language checks, schema
 conformance and notebook/book results from the preceding organization pass are
 recorded in the [documentation implementation record](../history/plans/DOCUMENTATION_PLAN.md#implementation-record-2026-10-08).
 
+## Installation capabilities
+
+On 2026-10-08, the user approved consolidating overlapping extras into useful
+installation choices: `financial` and `tables` join `calculations`; `plotting`
+joins `visualization`; `excel` joins `workflow`. The standalone `yaml`, `execution`,
+`layout`, `speckle` and held `legacy` groups remain. This reduces twelve groups
+to eight without renaming modules or changing their lazy import boundaries.
+
+The earlier package move retained the old extras to preserve installation
+behavior. This subsequent decision retires the four narrower names without
+aliases. Users who selected only financial or table operations now install the
+combined calculation dependencies. Visualization also installs Matplotlib.
+All former capability dependencies remain available and their version ranges
+are retained. The [upgrade mapping](../guides/upgrading.md#installation-extra-migration)
+and [installation guide](../guides/installation.md#choose-capabilities) own the
+current user instructions. Narrow import checks remain useful independently of
+how packages are installed.
+
+Local acceptance of this consolidation on 2026-10-08 used Python 3.10.19,
+starting from `ece8ff8` with the changes described above:
+
+- `uv lock --check --offline` passed for the root and walkthrough projects.
+  Package versions in both lockfiles and core dependency requirements are unchanged.
+- `uv sync --all-extras --group dev --locked` completed. Calculation,
+  visualization and workflow dependency imports passed.
+- A fresh wheel exposes exactly eight extras. Its dependency requirements match
+  the combined former groups. All isolated installed-package checks passed,
+  including financial, execution, workflow, Polars/CSV and Stream checks.
+- The Excel ingestion, financial library, adapter and Flux/Stream test modules
+  passed: **121 tests, zero skips**. Documentation checks passed for 65 pages and
+  navigation to 39 current pages. Notebook execution remains a separate phase.
+
 ## Verification ownership
 
 On 2026-10-08, the user selected explicit local verification and requested removal
