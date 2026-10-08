@@ -92,7 +92,7 @@ def pad(
     )
 
 
-def project(
+def extrapolate(
     initial: Quantity,
     *,
     periods: Sequence[Period],
@@ -116,14 +116,14 @@ def project(
     )
 
 
-def allocate(
+def distribute(
     quantity: Quantity,
     *,
     periods: Sequence[Period],
     distribution: Distribution | None = None,
     weights: Sequence[float] | None = None,
 ) -> Flow:
-    """Allocate a total without changing mass; explicit weights must already sum to one.
+    """Distribute a total without changing mass; explicit weights must sum to one.
 
     A distribution allocates equal increments of its support, not equal durations.
     Supply explicit duration weights when allocation should follow elapsed time.

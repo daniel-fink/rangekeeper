@@ -470,13 +470,21 @@ assert importlib.util.find_spec('rangekeeper.adapters.pandas') is None
 flow = Flow.from_events([date(2026, 1, 1)], [0], units='AUD')
 assert polars.from_frame(polars.to_frame(flow), units='AUD') == flow
 assert polars.dates(flow)['date'].to_list() == [date(2026, 1, 1)]
+assert '&lt;Cash&gt; [AUD]' in flow.display(name='<Cash>')._repr_html_()
+assert 'Flow [AUD]' in flow._repr_html_()
+from rangekeeper.model.duration import Span, Frequency
+from rangekeeper.model.measure import Quantity
+from rangekeeper.calculations import projection
+periods = Span.from_duration(name='Forecast', start=date(2026, 1, 1), frequency=Frequency.YEAR, count=2).periods(frequency=Frequency.YEAR)
+assert [m.number for m in projection.extrapolate(initial=Quantity(magnitude=100, units='AUD'), periods=periods, method=projection.ProjectionMethod.COMPOUND, rate=0.02).movements] == [100, 102]
+assert projection.distribute(quantity=Quantity(magnitude=100, units='AUD'), periods=periods, weights=(0.25, 0.75)).total().magnitude == 100
 table = Table(columns=('code', 'status', 'value'), rows=({'code': '001', 'status': 'NA', 'value': None},))
 assert polars.to_table(polars.to_frame(table)) == table
 path = csv.write(table, Path('table.csv'))
 assert csv.read(path, schema_overrides={'code': pl.String}) == table
 mixed = Table(columns=('value',), rows=({'value': uuid4()}, {'value': {'x': (1, 2)}}))
 assert polars.to_table(polars.to_frame(mixed)) == mixed
-print('Installed wheel: Polars Flow/Table and CSV checks passed with pandas absent')
+print('Installed wheel: Flow display, projection verbs, Polars Flow/Table and CSV passed with pandas absent')
 """
         subprocess.run([str(python), "-I", "-c", script], cwd=temp, check=True)
     if args.tables_python:

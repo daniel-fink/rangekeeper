@@ -118,7 +118,12 @@ table = csv.read("areas.csv", schema_overrides={"code": pl.String})
 CSV and ordinary dataframe round trips do not restore Row UUIDs, Claims or a Model.
 Export the required evidence separately under an explicit format contract.
 
-## Stream display
+## Flow and Stream display
+
+`flow.display(name="Rent")` presents one Flow with the same renderer used by
+Stream. The name defaults to `Flow` and changes only the display label. Both Flow
+and Stream support notebook rich display. Rendering requires the `calculations`
+extra; constructing a display object does not import Polars or IPython.
 
 `Stream({"Rent": rent, "Expenses": expenses}).display()` returns a plain-text and
 HTML table. Notebook rich display uses the same projection. Labels and units are

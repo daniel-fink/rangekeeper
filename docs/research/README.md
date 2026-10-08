@@ -11,3 +11,4 @@ The [MiniZinc evidence](full-migration/minizinc/README.md) and
 [strict layout procedure](../contributing/layout-acceptance.md) document solver acceptance.
 
 - [Flux and Stream implementation acceptance — 2026-10-08](flux-stream-2026-10-08/README.md): numerical and acausal checks, installed wheel, performance and memory.
+- [First walkthrough API acceptance — 2026-10-08](basic-dcf-2026-10-08/api.md): direct Flow display, projection verbs and codebase verification.

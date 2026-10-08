@@ -90,6 +90,14 @@ Their `source_values` remain available for source inspection. See
 
 ## Calendar and numerical ownership
 
+`projection.extrapolate(initial=..., periods=..., method=..., rate=...)` extends
+an initial Quantity into a Flow. Compound growth starts at exponent zero unless
+`origin` is supplied. `projection.distribute(quantity=..., periods=...,
+distribution=...)` spreads a total using a Distribution's interval masses and
+preserves that total. Explicit `weights=` can replace a distribution. Neither
+operation declares equations or selects unknowns. `project_values` remains the
+numeric sequence helper used by extrapolation and dynamics.
+
 | Owner | Responsibility |
 | --- | --- |
 | `model.duration` | Native Gregorian dates, Period coverage, explicit frequencies and timing |

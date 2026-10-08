@@ -368,7 +368,7 @@ def test_projection_and_partition_invariants():
         [2, 3], before=1, after=2, left=PaddingMode.UNITIZE, right=PaddingMode.EXTEND
     ) == (1, 2, 3, 3, 3)
     periods = make_periods(date(2020, 1, 1), frequency=Frequency.MONTH, count=7)
-    flow = projection.allocate(
+    flow = projection.distribute(
         Quantity(magnitude=100, units="kg"),
         periods=periods,
         distribution=Distribution.pert(),

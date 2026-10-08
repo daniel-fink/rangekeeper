@@ -981,6 +981,13 @@ Codebase completion requires:
 5. Current documentation matches the implementation and local documentation checks
    pass. All remaining work and untested platforms are recorded explicitly.
 
+The notebook-facing follow-up on 2026-10-08 adds `Flow.display(name=...)` and
+rich notebook display through the shared Stream renderer. The agreed projection
+verbs are `extrapolate(initial=..., periods=...)` and
+`distribute(quantity=..., periods=..., distribution=...)`, replacing `project`
+and `allocate` without aliases. `Distribution`, `negate()` and `collapse()` retain
+their meanings. See the [API acceptance](../research/basic-dcf-2026-10-08/api.md).
+
 After that acceptance, migrate the first walkthrough from its legacy teaching
 baseline. Preserve its guidance, intermediate inspections and financial example;
 amend prose where the current contracts require it. Execute in a fresh kernel and

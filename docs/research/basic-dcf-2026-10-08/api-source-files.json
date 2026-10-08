@@ -1,0 +1,11 @@
+{
+  "src/rangekeeper/calculations/projection.py": "0bfd81f539737cccb97606afb5db5d233fe6cbad5479cfba5f4b0c1f308bc7c3",
+  "src/rangekeeper/schema/behaviors/flow.py": "f735af9f12d19d11b02ce03870b98c9c1a256deacc6b9390f1cdea6c9bd55360",
+  "src/tests/models/financial.py": "4de132812ff4607400f49c6e5065cdbf381e700a57a7115e3363e0da22e8791c",
+  "src/tests/models/linear.py": "bf914f476aa330058e610363521cf6bd4b6fff701d3222ebd3059c18f0a37780",
+  "src/tests/test_calculations.py": "73a78a90f0d199c99ebd5f49814ed728eb24b7e48589fc4ce7e80fea489d24ab",
+  "src/tests/test_flux_stream.py": "1a1abccef70e2be0a9bcae9948d01ff7477b31f2894404ff6868ac665daa295f",
+  "src/tests/test_modules.py": "ab09be8bed023501c6e06cd25100d9e8d8125c499757cd132d54649685a3db93",
+  "src/tests/test_projections.py": "fec905828b810aafe86274f051e7194f5de7cb09f20183152665d928e0858238",
+  "tools/schema/verify_install.py": "a2732a57a981940cab5beb6474ef681c5b0332958ea9d31495e1f04ea6cbd446"
+}

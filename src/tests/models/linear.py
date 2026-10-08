@@ -21,7 +21,7 @@ class Model:
             frequency=frequency,
             count=params["num_periods"] + 1,
         )
-        self.pgi = projection.project(
+        self.pgi = projection.extrapolate(
             Quantity(magnitude=params["initial_pgi"], units=units),
             periods=periods,
             method=projection.ProjectionMethod.COMPOUND,

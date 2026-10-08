@@ -10,6 +10,7 @@ from rangekeeper.schema.runtime import UNSET
 from enum import Enum, unique
 
 if TYPE_CHECKING:
+    from rangekeeper.adapters.presentation import StreamTable
     from rangekeeper.schema.records import Flow, Movement, Period, Quantity
     from rangekeeper.model.duration.period import PeriodTiming
     from rangekeeper.shared.units import UnitSystem
@@ -76,6 +77,28 @@ class FlowBehavior:
     """Validate or transform one immutable Flow, preserving coordinate meaning."""
 
     __slots__ = ()
+
+    def display(
+        self,
+        *,
+        name: str | None = None,
+        transpose: bool = False,
+        precision: int = 2,
+    ) -> StreamTable:
+        """Present one labelled line through the shared Stream table renderer.
+
+        The name is a display label only. Rendering preserves the Flow's units,
+        coordinates, unresolved amounts and canonical content.
+        """
+        from rangekeeper.model.flux import Stream
+
+        return Stream({"Flow" if name is None else name: cast("Flow", self)}).display(
+            transpose=transpose,
+            precision=precision,
+        )
+
+    def _repr_html_(self) -> str:
+        return self.display()._repr_html_()
 
     def coordinate_index(self) -> dict[tuple, Movement]:
         """Index exact coordinates in encounter order, rejecting ambiguous matches.
