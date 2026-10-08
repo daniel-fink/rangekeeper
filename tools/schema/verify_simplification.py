@@ -45,7 +45,7 @@ with tempfile.TemporaryDirectory(prefix="rk-simplification-") as directory:
             ("extra", {"unexpected": True}),
         ]:
             cases.append((kind, label, value))
-    for path in (ROOT / "schema/examples").glob("*.yaml"):
+    for path in (ROOT / "examples/schema").glob("*.yaml"):
         data = yaml.safe_load(path.read_text())
         if "metadata" not in data:
             continue

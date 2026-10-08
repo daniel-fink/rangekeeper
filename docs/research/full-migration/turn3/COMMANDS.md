@@ -92,7 +92,7 @@ First-time restoration uses the checked package lockfiles and local Rhino 8
 references. Run `grasshopper/Tests/bin/Debug/net8.0/Tests.dll` with the
 Rhino arm64 .NET runtime and `DIRECTORY/python.json DIRECTORY/csharp.json` as its arguments, then
 run `cross_language.py check` with the same directory. See
-[grasshopper/README.md](../../../../grasshopper/README.md) for the complete host
+[grasshopper/README.md](../../../guides/grasshopper.md) for the complete host
 commands and reference paths.
 
 In a fresh Rhino 8 process, run `grasshopper/Tests/accept_rhino.py` through

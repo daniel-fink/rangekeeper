@@ -2,7 +2,7 @@
 
 Observed 2026-10-02 on `acausal-modelling`, HEAD
 `c91a76c941bac0a26fa18ad5a3105ab4641f22f0`. This covers work units 3A/3B; see the
-[implemented API guide](../../../DOMAIN_CORE.md). It follows the preserved
+[implemented API guide](../../../reference/model.md). It follows the preserved
 [Turn 1 results](../turn1/README.md) and [original baseline](../BASELINE.md).
 
 ## Results

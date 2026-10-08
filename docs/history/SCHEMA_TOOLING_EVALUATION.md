@@ -4,7 +4,7 @@
 
 **Historical research, with current decision:** Daniel selected LinkML on
 2026-10-02; see the [decision record](../research/current-schema-comparison/DECISION.md)
-and [library architecture](../LIBRARY_ARCHITECTURE.md). Recommendations and open
+and [library architecture](../concepts/architecture.md). Recommendations and open
 choices below describe the 2026-09-24 study, not the current work queue. Its
 measured observations remain unchanged.
 

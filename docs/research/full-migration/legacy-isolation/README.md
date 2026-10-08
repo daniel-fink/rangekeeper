@@ -1,7 +1,7 @@
 # Legacy isolation evidence — 6 October 2026
 
 The held predecessor is relocated, not deleted. See the
-[namespace contract](../../../LEGACY_ISOLATION.md) and
+[namespace contract](../../../contributing/legacy-retirement.md) and
 [remaining Windows gate](../turn4/RETIREMENT.md).
 
 Starting HEAD is `305f3ff6d460834ea803bae2fa6ad5c48a1627c9`, with the accepted

@@ -1,6 +1,6 @@
 # Composable validation refactor — 2026-10-02
 
-Implemented after Turn 2, before Turn 3. The [domain guide](../../../DOMAIN_CORE.md#composable-validation)
+Implemented after Turn 2, before Turn 3. The [domain guide](../../../reference/model.md#composable-validation)
 documents module ownership, operations, and limits. No schema, fixture, solver,
 consumer implementation, or existing test expectation was changed.
 

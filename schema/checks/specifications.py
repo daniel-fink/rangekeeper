@@ -85,9 +85,9 @@ assert objectives_slot.range == "Objective" and objectives_slot.multivalued
 assert objectives_slot.inlined and objectives_slot.inlined_as_list
 assert objectives_slot.list_elements_ordered
 
-model = yaml.safe_load((SCHEMA / "examples/model.yaml").read_text())
+model = yaml.safe_load((SCHEMA.parent / "examples/schema/model.yaml").read_text())
 forward, inverse, optimization, multiple = [
-    yaml.safe_load((SCHEMA / f"examples/specification-{name}.yaml").read_text())
+    yaml.safe_load((SCHEMA.parent / f"examples/schema/specification-{name}.yaml").read_text())
     for name in ("forward", "inverse", "optimization", "objectives")
 ]
 model_before = copy.deepcopy(model)

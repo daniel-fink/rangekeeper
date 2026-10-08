@@ -3,20 +3,20 @@
 > Historical design or implementation record. Names, commands and status below describe that checkpoint. Use the [current documentation](../README.md) for supported APIs.
 
 > Historical source/Graph contract, superseded for new builds on 2026-10-03.
-> Use [Model consumer migration](../CONSUMER_MIGRATION.md) for the current packages,
+> Use [Model consumer migration](../reference/tables.md) for the current packages,
 > workflow version 2, Value keys, and Model export. The earlier API names and
 > acceptance results below remain evidence for the external migration gate (6E).
 
-For the purpose of each API, read [Why the adapter APIs exist](../GRAPH_ADAPTER_GUIDE.md).
+For the purpose of each API, read [Why the adapter APIs exist](../concepts/source-workflows.md).
 The [boundary review](GRAPH_ADAPTER_REVIEW.md) records historical findings and
-implemented resolutions. The [format-independent follow-up](../GRAPH_WORKFLOW_FORMATS.md)
+implemented resolutions. The [format-independent follow-up](../reference/workflow.md)
 records the later delivery.
 
 **Scope, 2026-10-02:** these are the existing graph persistence and source-building
 APIs. Their `model.yaml`, `WorkflowSpec`, and workflow `run` are not the new
 schema Model, mathematical Specification, or finalized Run. The graph JSON format
 below is not the new Model interchange contract. Follow the
-[library plan](../LIBRARY_ARCHITECTURE.md) for their staged migration.
+[library plan](../concepts/architecture.md) for their staged migration.
 
 Install `rangekeeper[workflow]` for the bounded Excel/YAML workflow. YAML support is
 optional and uses PyYAML's safe loader with duplicate-key and alias rejection. No
@@ -275,7 +275,7 @@ editions. Repeated runs of identical inputs produce identical graph/Claim bytes.
 Environment/checkpoint manifests should additionally pin repository revisions or
 an exact uncommitted patch overlay; an editable dependency alone is not a pin.
 
-See [the synthetic examples](../../src/examples/workflow/README.md). The contract suite
+See [the synthetic examples](../guides/source-workflows.md). The contract suite
 covers canonical serialization, unsafe/malformed specs, cache/error/missingness
 handling, conflicting interpretations, identity stability, wrong equal-count joins,
 cycles, shared memberships, coverage and incomplete totals.
@@ -285,7 +285,7 @@ cycles, shared memberships, coverage and incomplete totals.
 The CLI is `python -m rangekeeper.graph.workflow`; ingestion is imported from
 `rangekeeper.graph.workflow.ingestion`. Format adapters remain under
 `rangekeeper.graph.adapter`. The former adapter workflow/ingestion module paths
-are no longer the public API. See the [API rationale guide](../GRAPH_ADAPTER_GUIDE.md)
+are no longer the public API. See the [API rationale guide](../concepts/source-workflows.md)
 for direct composition/checking and shared-contract ownership.
 
 Configuration fingerprints include the complete settings Claim lineage. Distinct
@@ -306,7 +306,7 @@ change within the declared computation set invalidates derived identities.
 The existing operation names and YAML shape are unchanged by the format-boundary
 refactor. Operations are explicitly registered by RK code; their native input and
 output kinds are validated before execution. YAML cannot install a handler or
-select an import. See [ownership and extension guidance](../GRAPH_WORKFLOW_FORMATS.md).
+select an import. See [ownership and extension guidance](../reference/workflow.md).
 
 Check results now retain both operands' missing contributors and known subtotals.
 The older `missing` and `known_subtotal` fields retain their left-side meaning.

@@ -40,7 +40,7 @@ from rangekeeper.shared.errors import (
 )
 from rangekeeper.shared.units import UnitSystem, default_units
 
-EXAMPLES = Path(__file__).resolve().parents[2] / "schema/examples"
+EXAMPLES = Path(__file__).resolve().parents[2] / "examples/schema"
 
 
 def load(name="model"):

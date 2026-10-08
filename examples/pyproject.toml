@@ -1,0 +1,15 @@
+[project]
+name = "rangekeeper-examples"
+version = "0.1.0"
+description = "Repository examples for the matching Rangekeeper checkout"
+readme = { text = "Install alongside the matching Rangekeeper checkout. See docs/guides/examples.md in the repository.", content-type = "text/plain" }
+requires-python = ">=3.10, <3.14"
+# The matching Rangekeeper build and its optional extras are installed explicitly.
+dependencies = []
+
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["rangekeeper_examples*"]

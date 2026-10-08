@@ -2,7 +2,7 @@
 
 from rangekeeper.model.scenario.market import make_plan, generate, realize
 from rangekeeper.model.scenario import replay
-from rangekeeper.examples.investment import author, formulate, specify, report, values
+from rangekeeper_examples.investment import author, formulate, specify, report, values
 
 __all__ = [
     "make_plan",

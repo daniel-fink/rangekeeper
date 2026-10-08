@@ -2,7 +2,7 @@
 
 > Historical design or implementation record. Names, commands and status below describe that checkpoint. Use the [current documentation](../README.md) for supported APIs.
 
-**Naming follow-up, 2026-10-06:** [RK vocabulary alignment](../RK_NAMING.md) is implemented.
+**Naming follow-up, 2026-10-06:** [RK vocabulary alignment](../contributing/README.md) is implemented.
 The current check is 971 passing local tests, all seven schema suites, static
 and installed-package checks, and five executed walkthroughs. This supersedes
 older counts below. Market methods use v2 names with an explicit draft upgrade.
@@ -199,7 +199,7 @@ available; `value(name)` rejects ambiguous names. Access performs no calculation
 Duplicate explicit parameters fail. Space-cycle variation remains centred on zero;
 the multiplier is one plus that variation. Amplitude remains half the full height.
 
-The [naming update](../RK_NAMING.md) documents the shared generated Distribution,
+The [naming update](../contributing/README.md) documents the shared generated Distribution,
 Binding and RandomStream records, DecisionHistory, and the explicit v1-to-v2
 scenario upgrade. Original Runs and research evidence retain their old formats.
 
@@ -253,7 +253,7 @@ can improve or reduce realized value; it does not guarantee sale at the market p
 
 Plotting consumes detached data and returns figures. There is no locale-dependent
 calculation, `update_class`, or hidden constructor execution in migrated consumers.
-See the [upgrade guide](../LEGACY_UPGRADE_GUIDE.md) and the
+See the [upgrade guide](../guides/upgrading.md) and the
 [retained-dependency inventory](../research/full-migration/turn2/legacy-dependencies.json).
 
 ## Verification and remaining work

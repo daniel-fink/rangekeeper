@@ -14,7 +14,7 @@ CUE 0.17.1 does not preserve all observed validation behavior. This rules out
 treating that import route as a drop-in replacement. It does not establish
 whether a schema authored directly in CUE would be preferable.
 
-This work follows the [library architecture plan](../../LIBRARY_ARCHITECTURE.md).
+This work follows the [library architecture plan](../../concepts/architecture.md).
 The [earlier comparison](../schema-tooling/README.md) tested a smaller vocabulary;
 its retained evidence is unchanged. No executor or solver has been implemented.
 

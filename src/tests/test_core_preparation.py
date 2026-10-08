@@ -54,7 +54,7 @@ class Resolver:
 
 
 def fixture_model():
-    path = Path(__file__).resolve().parents[2] / "schema/examples/model.yaml"
+    path = Path(__file__).resolve().parents[2] / "examples/schema/model.yaml"
     return Model.from_data(yaml.safe_load(path.read_text()))
 
 
@@ -473,7 +473,7 @@ def test_preparation_rechecks_model_units_under_a_different_caller_context():
 def test_run_child_diagnostics_identify_the_child_and_report_field():
     from rangekeeper.run.validation import validate_records
 
-    examples = Path(__file__).resolve().parents[2] / "schema/examples"
+    examples = Path(__file__).resolve().parents[2] / "examples/schema"
 
     def catalogue(pattern):
         records = [yaml.safe_load(path.read_text()) for path in examples.glob(pattern)]

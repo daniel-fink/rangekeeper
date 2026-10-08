@@ -19,7 +19,7 @@ from rangekeeper.legacy.graph.provenance import Claim, ClaimKind, Fact, Location
 from rangekeeper.legacy.measure import Index, Measure
 
 
-EXAMPLES = Path(__file__).resolve().parents[3] / "schema/examples"
+EXAMPLES = Path(__file__).resolve().parents[3] / "examples/schema"
 
 
 def load_document(text):

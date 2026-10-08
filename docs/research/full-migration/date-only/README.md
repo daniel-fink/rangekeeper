@@ -31,7 +31,7 @@ and the mandatory IRR bracket with PyXIRR. Results below are this earlier checkp
   timestamps retain their separate supported meanings.
 
 See [implementation interfaces](../../../history/FULL_MIGRATION_TURN1.md),
-[API catalog](api.json), and the [upgrade guide](../../../LEGACY_UPGRADE_GUIDE.md).
+[API catalog](api.json), and the [upgrade guide](../../../guides/upgrading.md).
 
 ## Verification
 

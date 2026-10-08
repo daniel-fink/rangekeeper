@@ -26,7 +26,7 @@ from rangekeeper.shared.errors import (
     UnsupportedVersionError,
 )
 
-EXAMPLES = Path(__file__).resolve().parents[2] / "schema/examples"
+EXAMPLES = Path(__file__).resolve().parents[2] / "examples/schema"
 FIXTURES = sorted(
     p
     for p in EXAMPLES.glob("*.yaml")

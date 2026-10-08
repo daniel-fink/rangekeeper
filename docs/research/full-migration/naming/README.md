@@ -5,7 +5,7 @@ Starting HEAD: `7b8dcd46fe56a0ee0e599323020b85df1818b9eb` on
 not commit, push, remove old service consumers, or rewrite earlier evidence.
 The unrelated `.gitignore` change and Syncthing lock conflict copy are preserved.
 
-See [RK naming](../../../RK_NAMING.md) for the API and migration contract.
+See [RK naming](../../../contributing/README.md) for the API and migration contract.
 
 ## Inputs and environment
 

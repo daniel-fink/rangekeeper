@@ -1,6 +1,6 @@
 """Flexible consumer: policy declarations supply controls before the numerical solve."""
 
-from rangekeeper.examples.investment import (
+from rangekeeper_examples.investment import (
     author,
     formulate,
     specify,

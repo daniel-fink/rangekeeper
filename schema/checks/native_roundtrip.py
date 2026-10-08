@@ -115,7 +115,7 @@ with TemporaryDirectory(prefix="rk-native-") as temp:
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
-    fixture = json.loads((SCHEMA / "examples/structural-graph.json").read_text())
+    fixture = json.loads((SCHEMA.parent / "examples/schema/structural-graph.json").read_text())
     for content in (
         None,
         {"magnitude": 0, "units": "m^2"},
@@ -133,10 +133,10 @@ with TemporaryDirectory(prefix="rk-native-") as temp:
         assert encoded.get("quantity") == content
         if content is not None:
             assert isinstance(record.quantity, module.Quantity)
-    readme = yaml.safe_load(
-        (SCHEMA.parent / "docs/SCHEMA_EXAMPLES.md").read_text().split("```yaml\n", 1)[1].split("```", 1)[0]
+    ownership = yaml.safe_load(
+        (SCHEMA.parent / "examples/schema/ownership.yaml").read_text()
     )
-    for example in (fixture, readme):
+    for example in (fixture, ownership):
         record = json_loader.loads(json.dumps(example), target_class=module.Example)
         apartment = record.entities[0]
         assert isinstance(apartment.classification, module.ClassificationId)

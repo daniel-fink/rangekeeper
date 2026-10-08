@@ -11,7 +11,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "src/rangekeeper/schema"
-DEST = ROOT / "grasshopper/Model/Generated"
+DEST = ROOT / "src/grasshopper/Model/Generated"
 
 
 def name(value):

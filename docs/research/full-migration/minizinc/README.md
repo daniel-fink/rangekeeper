@@ -13,7 +13,7 @@ solver deadlines are unchanged.
   hash and path. The adjacent `env.sh` sets `RK_MINIZINC` for a shell; no shell
   startup file was changed.
 - Added checksum-pinned macOS and Linux bundle setup in
-  [`tools/layout/`](../../../../tools/layout/README.md). Z3 remains the declared
+  [`tools/layout/`](../../../contributing/layout-acceptance.md). Z3 remains the declared
   optional `z3-solver==5.1.0.0` dependency. Runtime package requirements and locks
   were not changed in this task.
 - Replaced per-file solver detection with the shared `tests.layout_support`
@@ -77,7 +77,7 @@ PYTHONDONTWRITEBYTECODE=1 MPLCONFIGDIR=/private/tmp/rk-minizinc-full-mpl \
 Use new evidence paths when repeating it. The three excluded live service tests
 are not included in the 1,097 passing count.
 
-See the [setup and acceptance guide](../../../../tools/layout/README.md) for a new
+See the [setup and acceptance guide](../../../contributing/layout-acceptance.md) for a new
 machine. The runner ignores inherited `PYTEST_ADDOPTS` and does not change the
 global environment. Ordinary tests can still skip absent optional solvers;
 `--require-layout-solvers` makes such gaps fail acceptance.

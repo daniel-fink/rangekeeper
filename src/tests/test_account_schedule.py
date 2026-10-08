@@ -402,7 +402,7 @@ def test_symbolic_schedule_does_not_clip_overdrafts():
 
 def test_specialized_and_resale_declarations_keep_baseline_identities():
     from rangekeeper.model.formulation import growth
-    from rangekeeper.examples.investment import build_stop_gain_resale_policy
+    from rangekeeper_examples.investment import build_stop_gain_resale_policy
 
     model, ids = fixture()
     expected = json.loads(

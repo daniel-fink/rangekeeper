@@ -1,81 +1,56 @@
 # Rangekeeper documentation
 
-Rangekeeper separates project facts and equations (`Model`), investigation choices
-(`Specification`), and finalized execution evidence (`Run`). The package uses
-immutable records, exact revision references and explicit execution boundaries.
+Start with the task below. Current instructions describe this checkout's pre-1.0
+API. Historical records retain the contracts and results from their recorded date.
 
-## Package ownership and imports
+## Understand the framework
 
-`Model`, `Specification` and `Run` remain available from the package root. Import
-other capabilities from their owner:
+- [Model, Specification and Run](concepts/model-specification-run.md): facts and
+  equations, investigation choices, and finalized evidence.
+- [Architecture](concepts/architecture.md): package ownership, imports, repository
+  structure and dependency boundaries.
+- [Source workflows](concepts/source-workflows.md): source interpretation,
+  provenance and reproducible builds.
 
-| Package | Responsibility and common imports |
+## Use a capability
+
+| Task | Guide |
 | --- | --- |
-| `rangekeeper.schema` | Generated records and enums, structural validation, record runtime and revision indexes; `Metadata` |
-| `rangekeeper.shared` | Explicit leaf modules for `table.Table`/`Row`, `units`, `references`, `diagnostics`, `errors` and validation mechanics |
-| `rangekeeper.model` | Model declarations and validation; `system.View`/`Hierarchy`, `duration` calendars, `scenario` capture/replay, `expression` analysis and `formulation` builders |
-| `rangekeeper.specification` | Investigation requirements and composition; `policy` declarations, observation and causal evaluation |
-| `rangekeeper.run` | Finalized reports and validation; `execution.Executor` for solving and independent acceptance |
-| `rangekeeper.calculations` | Known-data calculations, account conventions and deterministic `dynamics` functions |
-| `rangekeeper.workflow` | Source configuration, Evidence operations, Model composition and builds; lightweight `evidence` and `operation` contracts |
-| `rangekeeper.adapters` | File, service and presentation boundaries |
-| `rangekeeper.io` | Explicit JSON/YAML codecs and append-only revision stores |
+| Install this checkout and choose extras | [Installation](guides/installation.md) |
+| Run an example or inspect a wire fixture | [Examples](guides/examples.md) |
+| Execute the notebooks or build their site | [Walkthroughs](guides/walkthroughs.md) |
+| Build and review a source workflow | [Source workflows](guides/source-workflows.md) |
+| Build the native components and check a Rhino model | [Grasshopper](guides/grasshopper.md) |
+| Migrate an earlier consumer or document | [Upgrading](guides/upgrading.md) |
 
-```python
-from rangekeeper import Model, Specification, Run
-from rangekeeper.schema import Metadata
-from rangekeeper.shared.table import Table, Row
-from rangekeeper.model.system import View, Hierarchy
-from rangekeeper.model.duration import Period, Span, make_periods
-from rangekeeper.model.formulation import flow
-from rangekeeper.run.execution import Executor
-from rangekeeper.workflow.evidence import Evidence, Claim
-```
+## Look up a contract
 
-`Table` and `Row` retain their names and contracts. The former root utility,
-`graph`, `duration`, `formulations`, `scenarios`, `policies`, `execution` and
-`evidence` paths have no compatibility aliases. Workflow configuration is separate
-from a mathematical `Specification`. Importing record or source contracts does not
-load the workflow runner or numerical solvers.
-
-## Guides
-
-Start with [architecture](LIBRARY_ARCHITECTURE.md), then use the guide for your task:
-
-| Guide | Purpose |
+| Area | Reference |
 | --- | --- |
-| [Object model](MODEL_SPECIFICATION_RUN.md) | Why the three roots and their ownership boundaries exist |
-| [References and identity](REFERENCES.md) | UUIDs, revision scope, Flow copying and draft upgrades |
-| [Records and methods](RECORD_BOUNDARY.md) | Generated fields, immutable replacement and intrinsic behavior |
-| [Domain operations](DOMAIN_CORE.md) | Authoring, lookup, revision, composition and validation |
-| [Calculations](CALCULATIONS.md) | Movement, Flow, calendar, unit and missing-value rules |
-| [Expressions](EXPRESSION_CONTRACT.md) | Mathematical syntax, references, Functions, queries and constraints |
-| [Execution](SCALAR_EXECUTION.md) | Affine feasibility, deadlines, independent acceptance and publication |
-| [Scenarios and policies](SCENARIOS_AND_POLICIES.md) | Temporal formulations, captured futures and causal policy replay |
-| [Runs and storage](RUN_AND_STORAGE.md) | Finalized reports, strict codecs and immutable revision stores |
-| [Graph operations](GRAPH_MODEL.md) | Views, membership, hierarchy and explicit reductions |
-| [Tables and consumers](CONSUMER_MIGRATION.md) | Polars, CSV, source workflows and evidence boundaries |
-| [Workflow formats](GRAPH_WORKFLOW_FORMATS.md) | Format-independent source execution |
-| [Workflow rationale](GRAPH_ADAPTER_GUIDE.md) | Evidence, operations and ownership |
-| [Integrations](INTEGRATIONS.md) | Workbench, design transport, C# and host boundaries |
-| [Names](RK_NAMING.md) | Domain nouns, operations and naming rules |
-| [Upgrade guide](LEGACY_UPGRADE_GUIDE.md) | Deliberate pre-1.0 API changes |
-| [Verification](VERIFICATION.md) | Reproducible checks and their limits |
+| Common record rules | [Records](reference/records.md), [identity and revisions](reference/identity.md) |
+| Document roots | [Model](reference/model.md), [Specification](reference/specification.md), [Run and storage](reference/run-and-storage.md) |
+| Mathematics | [Expressions](reference/expressions.md), [calculations](reference/calculations.md), [execution](reference/execution.md) |
+| Futures and choices | [Scenarios and policies](reference/scenarios-and-policies.md) |
+| Structure and projection | [System views and reductions](reference/system.md), [tables](reference/tables.md) |
+| Source interpretation | [Workflow](reference/workflow.md), [evidence](reference/evidence.md), [Excel](reference/excel.md) |
+| External presentation and transport | [Viewer and layout](reference/viewer.md), [design transport](reference/design-transport.md) |
 
-The [schema guide](../schema/README.md) owns schema files and generation commands.
-The [Python README](../src/README.md) owns installation and extras.
-The [walkthroughs](../walkthrough/README.md) provide executable examples.
-The [viewer](../src/rangekeeper/adapters/cytoscape/README.md) and
-[strict layout procedure](../tools/layout/README.md) cover offline presentation.
+## Contribute a change
 
-The official Windows connector acceptance gate remains open. The isolated
-predecessor trees remain for that gate; see [legacy isolation](LEGACY_ISOLATION.md)
-and the [Windows procedure](../grasshopper/WINDOWS_DEVELOPMENT.md).
+Start with [development and conventions](contributing/README.md). Agents and
+developers apply [documentation upkeep](contributing/documentation.md) in the
+same change, including plan status, archiving and navigation.
 
-The [refactoring register](REFACTORING_PLAN.md) and
-[follow-up register](REFACTORING_FOLLOWUP_PLAN.md) record the implementation intents
-and their verification requirements. These maintained guides describe the current
-package structure.
+- [Verification](contributing/verification.md): test, build and evidence boundaries.
+- [Schema development](contributing/schema.md): generation, typing and conformance.
+- [Layout acceptance](contributing/layout-acceptance.md): pinned engines and strict checks.
+- [Windows acceptance](contributing/windows-acceptance.md): the open Rhino/connector gate.
+- [Legacy retirement](contributing/legacy-retirement.md): held source and removal requirements.
 
-Dated plans are in [history](history/README.md). Captured results are in
-[research](research/README.md); neither overrides the current guides.
+## Inspect a decision or historical result
+
+Use the [decision index](decisions/README.md) for accepted choices, their rationale,
+implementation records and remaining work. [History](history/README.md) contains
+completed plans and dated narratives. [Research](research/README.md) retains
+captured experiments and verification evidence. A local result does not establish
+remote CI, Windows host or service acceptance.

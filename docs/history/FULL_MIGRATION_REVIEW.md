@@ -4,7 +4,7 @@
 
 **Legacy isolation, 2026-10-06:** held Python code is now in `rangekeeper.legacy`,
 predecessor tests in `src/tests/legacy`, and excluded C# code in `grasshopper/legacy`.
-Old public paths have no aliases. See [the boundary and current checks](../LEGACY_ISOLATION.md).
+Old public paths have no aliases. See [the boundary and current checks](../contributing/legacy-retirement.md).
 The Windows gate remains open; earlier Turn 4 results below describe the preceding wheel.
 
 **Turn 4 update, 2026-10-06:** [Permitted legacy retirement](FULL_MIGRATION_TURN4.md)
@@ -24,7 +24,7 @@ Values or owner-local Movement keys. The canonical calendar package is `duration
 `temporal` has no public alias. Finite Flow formulations, captured scenario replay,
 exogenous declarative policies and the four numerical walkthroughs are implemented.
 See [verification](../research/full-migration/turn2/README.md) and the
-[upgrade guide](../LEGACY_UPGRADE_GUIDE.md). Turn 3 completes remaining consumers and
+[upgrade guide](../guides/upgrading.md). Turn 3 completes remaining consumers and
 integrations; Turn 4 retires obsolete code after their acceptance gates.
 The dated checkpoint descriptions below remain historical context.
 

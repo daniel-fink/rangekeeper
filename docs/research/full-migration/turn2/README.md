@@ -128,7 +128,7 @@ CDF is explicitly a small empirical sample, not a smooth fitted distribution.
 
 Earlier directories are retained, not overwritten. They are not current pass counts.
 
-1. The namespace-only gate in [duration](duration/) passed 147 focused tests,
+1. The namespace-only gate in [duration](duration) passed 147 focused tests,
    seven schema suites, generation, typing, installed checks and the basic DCF.
    [duration-transition.json](duration-transition.json) is the caller list at that
    earlier gate; the final inventory supersedes it after consumer migration.

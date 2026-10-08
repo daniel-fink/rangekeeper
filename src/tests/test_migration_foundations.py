@@ -79,13 +79,13 @@ def test_model_upgrade_requires_explicit_new_revision():
 @pytest.mark.parametrize("domain", ["accommodation", "equipment"])
 def test_repository_workflow_examples_retain_property_evidence(tmp_path, domain):
     spec = importlib.util.spec_from_file_location(
-        "example_inputs", ROOT / "src/examples/workflow/create_inputs.py"
+        "example_inputs", ROOT / "examples/workflow/create_inputs.py"
     )
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     module.create(tmp_path, domain)
     outcome = run(
-        load(ROOT / "src/examples/workflow" / domain / "spec"), input_root=tmp_path
+        load(ROOT / "examples/workflow" / domain / "spec"), input_root=tmp_path
     )
     assert outcome.output is not None, outcome.diagnostics
     model = outcome.output.model

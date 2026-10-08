@@ -1,0 +1,143 @@
+# Generated records and domain methods
+
+LinkML owns each record's fields, types, inheritance and wire format. The Python
+generator emits one immutable class for each concrete schema class. It also emits
+typed constructors, properties, `replace` methods and docstrings from schema
+descriptions. Opaque `Content` remains JSON data, outside schema-directed declaration
+traversal.
+
+Use the [domain API](model.md) for complete Model and Specification revisions,
+[Run and storage](run-and-storage.md) for execution evidence and persistence, and the
+[upgrade guide](../guides/upgrading.md) when migrating callers. This page defines
+the shared record layer and its method ownership.
+
+## Ownership
+
+| Location | Responsibility |
+| --- | --- |
+| `schema/*.yaml` | Authoritative field, enum, inheritance and description definitions |
+| `tools/schema/generate.py` | Explicit constructors, properties, typed replacement signatures and selected behaviour inheritance |
+| `rangekeeper/schema/enums.py` | Canonical plain Enum classes; typed fields decode members and wire data retains strings |
+| `rangekeeper/schema/records.py` | Canonical immutable classes, including the registry used for nested decoding |
+| `rangekeeper/schema/runtime.py` | Shared field encoding, strict JSON copying, freezing, replacement, field presence and schema equivalence |
+| `rangekeeper/schema/behaviors/` | Handwritten methods for Flow, Movement, Period and Distribution; no field declarations |
+| `rangekeeper/schema/{schema,slots,manifest}.json` | Structural checks, conversion metadata and reproducible generation fingerprints |
+| `model`, `specification`, `run` | Document-wide validation, references and revision rules |
+| `calculations` | Operations that combine records or require an explicit financial or temporal interpretation |
+
+The generator explicitly attaches field-free behaviour mixins. It does not patch
+classes after import. Direct construction, `from_data`, `from_json` and nested
+property decoding therefore return the same class with the same methods. Schema
+inheritance remains intact: `Assembly` is an `Entity`; `Span` is a `Period`.
+Workflow computation fingerprints include the behaviour modules, so changes to
+these methods affect recorded computation identity.
+
+Handwritten methods use local imports for schema constructors and optional
+numerical libraries. Importing records does not load a solver, dataframe, plotting
+library or random generator. SciPy and NumPy load when a Distribution calculation
+needs them. Polars loads when an alignment or resampling operation needs it.
+
+## Construction and replacement
+
+```python
+from datetime import date
+from uuid import uuid4
+from rangekeeper.model.flow import Flow, Movement
+
+movement = Movement(id=uuid4(), key="delivery", date=date(2026, 1, 1))
+assert not movement.has_field("magnitude")
+resolved = movement.replace(magnitude=10, claims=())
+assert resolved.number == 10.0
+assert movement.magnitude is None
+flow = Flow(units="m", movements=(resolved,)).check(resolved=True)
+assert flow.total().magnitude == 10
+```
+
+Constructors, `from_data` and `replace` validate structure. Generated signatures
+let type checkers reject unknown fields, wrong record types and invalid enum
+values. Typed constructors and `replace` require canonical Enum members; raw wire
+strings belong at `from_data`/`from_json`. Runtime checks reject nonfinite numbers, cyclic data and invalid field
+shapes. Python `bool` is a subtype of `int`, but runtime numerical fields still
+reject it.
+
+`replace` returns a new record. It uses the same field encoder and structural
+validation as construction. An omitted argument, or `UNSET`, retains the old
+field's presence and value. Explicit `None` records null where the schema permits
+it; `()` records an empty collection. A no-argument replacement preserves omitted,
+null and empty fields exactly. Replacement does not remove a present field;
+construct from an explicitly edited data mapping when that is required.
+
+Replacement does not mint a document revision or certify document-wide semantics.
+Use `Model.revise` or `Specification.revise` to check lineage and meaningful change.
+Both facades use the same revision comparison rules, but retain their own domain
+validation. A new UUID alone is not a meaningful revision.
+
+`to_data` returns detached JSON-compatible data. Dates use ISO strings on the wire
+and `datetime.date` in typed fields. Datetimes are not truncated into dates. Source
+fields that also permit timestamp strings retain those strings. UUID conversion
+applies only to schema-declared references, never to opaque content.
+
+Equality and revision comparison use the [identity contract](identity.md#comparison-rules).
+Neither operation converts units.
+
+## Method contracts
+
+```text
+Movement
+  number -> float                         finite magnitude; unresolved raises
+  coordinate -> tuple                     alignment coordinate, independent of UUID
+  resolve(*, timing=None) -> date          recorded date, or explicit period rule
+  replace(*, ...) -> Movement              typed, immutable structural replacement
+
+Flow
+  clone() -> Flow                         independent Movement UUIDs
+  from_events(dates, magnitudes, *, units, keys=None)
+  from_periods(periods, magnitudes, *, units, dates=None)
+  check(*, resolved=False, units=None) -> Flow
+  convert(*, units, unit_system=None) / scale(factor) / negate()
+  total(*, missing=MissingValueHandling.ERROR) -> Quantity | None
+  trim(*, start, end) / clean(*, remove_zeroes=False)
+  difference(*, initial=None) / collapse(*, on=None, timing=None, missing=MissingValueHandling.ERROR)
+  extent(*, include_zeroes=False) / trim_empty()
+
+Period (also inherited by Span)
+  check() -> Period
+  resolve(*, timing) -> date
+
+Distribution
+  uniform(...) / triangular(...) / pert(...) / symmetric(...)
+  check() -> Distribution
+  sample(*, size, generator) -> tuple[float, ...]
+  cdf(values) / mass(boundaries) -> tuple[float, ...]
+```
+
+`check` raises on invalid content and otherwise returns the same object. It does
+not repair data. `Flow.check(resolved=True)` additionally requires a finite number
+for every Movement. `Movement.number` provides a nonoptional float for arithmetic.
+`Flow.clean` is a transformation: it removes unresolved movements and, when
+requested, zeroes. It is not a validation step.
+
+Periods use `[start_inclusive, end_exclusive)`. Movement dates can record independent payment or
+observation dates outside their coverage period. Recorded dates take precedence;
+undated period movements require `PeriodTiming.FIRST`, `LAST` or `END` when resolving a date.
+Flows carry units and coordinates. The calling model determines whether operations
+such as summation or integration express the intended quantity.
+
+`Distribution.cdf` is the cumulative distribution function. `mass` returns interval
+probabilities. Samples use the declared units and advance only the supplied NumPy
+generator. Point masses retain the existing deterministic sampling convention.
+
+## Operations across records
+
+Use [calculations](calculations.md) for alignment, aggregation, accounts and
+financial valuation; [Model](model.md) for document lookup and revision;
+and [Specification](specification.md) for additive composition.
+These operations have no single nested record owner. They do not add another
+field schema or change a record's intrinsic methods.
+
+## Generation and verification
+
+Generated files must not be edited by hand. Change the LinkML source and run the
+[schema generation procedure](../contributing/schema.md). LinkML is not a runtime dependency.
+The [verification procedure](../contributing/verification.md) covers native loading, typed
+constructors, deliberate rejection cases, installed wheels and lazy imports.

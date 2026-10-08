@@ -6,7 +6,7 @@ import argparse, json
 from pathlib import Path
 from uuid import uuid4
 from datetime import date
-from rangekeeper.examples import design
+from rangekeeper_examples import design
 from rangekeeper.model import Model, Update, System, Value
 from rangekeeper.model.flow import Flow, Movement
 from rangekeeper.model.content import encode

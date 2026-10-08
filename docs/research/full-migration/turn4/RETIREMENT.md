@@ -4,7 +4,7 @@ The permitted numerical/presentation group is removed. The following group is
 **held for official Windows connector publication/receive acceptance**. It is
 retained as one dependency group, now isolated under `legacy/`: its `api.py`
 constructs old graph objects and its Characteristics/definitions use its own
-`measure.py`. See [relocation and fresh checks](../../../LEGACY_ISOLATION.md).
+`measure.py`. See [relocation and fresh checks](../../../contributing/legacy-retirement.md).
 
 | Retained implementation | Removal condition |
 |---|---|
@@ -15,7 +15,7 @@ constructs old graph objects and its Characteristics/definitions use its own
 | `grasshopper/legacy/`: excluded C# source, tests and resources | Close the Windows gate, then remove excluded implementations; preserve original Rhino/GHX files as historical evidence |
 | Temporary `legacy` dependency extra | Remove after the dependency group above has no callers |
 
-The procedure is [Windows development and acceptance](../../../../grasshopper/WINDOWS_DEVELOPMENT.md).
+The procedure is [Windows development and acceptance](../../../contributing/windows-acceptance.md).
 It requires an available host and a concrete approved publication destination.
 No new publication is authorised by this retirement work. Mac Rhino checks,
 offline envelopes and Python read acceptance do not close the Windows gate.

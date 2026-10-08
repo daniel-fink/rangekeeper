@@ -2,7 +2,7 @@
 
 **Historical evidence:** this smaller study is preserved for reproduction.
 The [accepted LinkML decision](../current-schema-comparison/DECISION.md) and
-[current library plan](../../LIBRARY_ARCHITECTURE.md) govern continuation; rerunning
+[current library plan](../../concepts/architecture.md) govern continuation; rerunning
 or extending this study is not a prerequisite for the next implementation stage.
 
 Companion evidence for [the schema tooling review](../../history/SCHEMA_TOOLING_EVALUATION.md),

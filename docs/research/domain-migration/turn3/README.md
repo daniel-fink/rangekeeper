@@ -2,7 +2,7 @@
 
 Implemented and verified locally on 2026-10-02. Work units **3C and 4** complete the
 three implementation turns following the domain migration baseline. Read the
-[public API guide](../../../RUN_AND_STORAGE.md) for interfaces, examples, error
+[public API guide](../../../reference/run-and-storage.md) for interfaces, examples, error
 behavior and publication guarantees. The next implementation checkpoint is Step 5,
 scalar execution with Pyomo/HiGHS; no new-schema executor ran during this work.
 

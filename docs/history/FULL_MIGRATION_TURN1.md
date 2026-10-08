@@ -2,7 +2,7 @@
 
 > Historical design or implementation record. Names, commands and status below describe that checkpoint. Use the [current documentation](../README.md) for supported APIs.
 
-Current intrinsic method ownership is defined in the [record boundary](../RECORD_BOUNDARY.md).
+Current intrinsic method ownership is defined in the [record boundary](../reference/records.md).
 
 **Turn 2 update, 2026-10-06:** [Temporal equations, scenarios and policies](FULL_MIGRATION_TURN2.md)
 now use Model/Specification 0.5.0 and Run 0.2.0. `ValueReference` addresses scalar
@@ -10,7 +10,7 @@ Values or owner-local Movement keys. The canonical calendar package is `duration
 `temporal` has no public alias. Finite Flow formulations, captured scenario replay,
 exogenous declarative policies and the four numerical walkthroughs are implemented.
 See [verification](../research/full-migration/turn2/README.md) and the
-[upgrade guide](../LEGACY_UPGRADE_GUIDE.md). Turn 3 completes remaining consumers and
+[upgrade guide](../guides/upgrading.md). Turn 3 completes remaining consumers and
 integrations; Turn 4 retires obsolete code after their acceptance gates.
 The dated checkpoint descriptions below remain historical context.
 
@@ -117,13 +117,13 @@ JSON/YAML field all use the new names. `movement_coordinate` replaces
 `Flow.replace(movements=...).check()`. Resolve a date with `movement.resolve(timing=...)`.
 The fields `key`, `date`, `period`, `magnitude` and `claims`, their validation,
 and the arithmetic remain unchanged. Movement does not add a semantic kind.
-Statistical sampling remains distinct from Movements. The later [naming update](../RK_NAMING.md) places this operation at `distribution.sample(...)`, using the shared generated Distribution record.
+Statistical sampling remains distinct from Movements. The later [naming update](../contributing/README.md) places this operation at `distribution.sample(...)`, using the shared generated Distribution record.
 
 This is a breaking correction to the unreleased Model 0.4.0 draft, with no
 compatibility aliases or silent loader conversion. Old `samples` payloads fail,
 including payloads which also contain `movements`. Rename the field explicitly
 when upgrading a saved draft, preserve entry order and all entry fields, and
-retain revision history. See the [upgrade guide](../LEGACY_UPGRADE_GUIDE.md) and
+retain revision history. See the [upgrade guide](../guides/upgrading.md) and
 [verification](../research/full-migration/movement-naming/README.md).
 
 ## Ownership and interfaces
@@ -215,7 +215,7 @@ entering the library, whose 0.10.7 empty-date path panics. No new schema is invo
 The declaration/callable inventory is also retained in the source docstrings and
 [API catalog](../research/full-migration/movement-naming/api.json). Each catalog entry identifies
 its module, signature, return annotation, and docstring. The module tree above
-identifies ownership; the [upgrade guide](../LEGACY_UPGRADE_GUIDE.md) supplies examples.
+identifies ownership; the [upgrade guide](../guides/upgrading.md) supplies examples.
 
 ## Duration namespace migration
 
