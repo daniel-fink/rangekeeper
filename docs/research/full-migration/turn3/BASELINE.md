@@ -126,7 +126,7 @@ acceptance uses the separately recorded browser test.
 
 The **Windows official connector gate remains open**. It requires an available
 Windows host and an approved publication destination. Offline fixtures and Mac
-Rhino acceptance cannot close it. See the [procedure](../../../../grasshopper/WINDOWS_DEVELOPMENT.md)
+Rhino acceptance cannot close it. See the [procedure](../../../contributing/windows-acceptance.md)
 and [official installation requirements](https://docs.speckle.systems/connectors/installation).
 MiniZinc is an additional optional-environment limitation. Hypar is retired;
 Browser/outliner remains on hold. Retained old code is governed by the removal

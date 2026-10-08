@@ -29,7 +29,7 @@ aliases. Old `samples` payloads are rejected, including payloads containing both
 field names. Upgrade saved draft data explicitly, preserve entry order and every
 entry field, and save a new Model revision. Do not overwrite historical snapshots.
 See the [contract](../../../history/FULL_MIGRATION_TURN1.md#movement-naming) and
-[upgrade guide](../../../LEGACY_UPGRADE_GUIDE.md).
+[upgrade guide](../../../guides/upgrading.md).
 
 ## Results
 

@@ -52,7 +52,7 @@ assert formulations.range == "Formulation" and formulations.inlined_as_list
 functions = view.induced_slot("functions", "Definitions")
 assert functions.range == "Function" and functions.inlined_as_list
 
-fixture = yaml.safe_load((SCHEMA / "examples/model.yaml").read_text())
+fixture = yaml.safe_load((SCHEMA.parent / "examples/schema/model.yaml").read_text())
 initial = dict(metadata=dict(id=uid("minimal"), schema_version=VERSION))
 valid = [fixture, initial]
 with_previous = copy.deepcopy(fixture)

@@ -3,17 +3,17 @@
 > Historical design or implementation record. Names, commands and status below describe that checkpoint. Use the [current documentation](../README.md) for supported APIs.
 
 > Historical source/Graph contract, superseded for new builds on 2026-10-03.
-> Use [Model consumer migration](../CONSUMER_MIGRATION.md) for the current packages,
+> Use [Model consumer migration](../reference/tables.md) for the current packages,
 > workflow version 2, Value keys, and Model export. The earlier API names and
 > acceptance results below remain evidence for the external migration gate (6E).
 
 **Scope, 2026-10-02:** this is a dated review and resolution record for existing
-graph ingestion. Follow [LIBRARY_ARCHITECTURE.md](../LIBRARY_ARCHITECTURE.md) for the
+graph ingestion. Follow [LIBRARY_ARCHITECTURE.md](../concepts/architecture.md) for the
 current domain replacement and migration sequence. Historical recommendations
 below are not additional prerequisites for the scalar executor.
 
 For the subsequent format-independent execution review and implementation, see
-[GRAPH_WORKFLOW_FORMATS.md](../GRAPH_WORKFLOW_FORMATS.md). The dated findings below
+[GRAPH_WORKFLOW_FORMATS.md](../reference/workflow.md). The dated findings below
 remain a historical record. The initial refactor was subsequently committed as
 `7f7098c`; the format-independent follow-up is committed as `588b5b4`.
 
@@ -70,9 +70,9 @@ one package would hide those differences rather than reduce maintenance.
 
 ### 1. Share derivation support; fix divergent lineage and Issue handling
 
-[tabular.numbers](../../src/rangekeeper/workflow/ingestion/tabular.py) fingerprints
+[tabular.numbers](https://github.com/daniel-fink/rangekeeper/blob/6f7764ee9dd97c27373cb5881314b0f6674e5519/src/rangekeeper/workflow/ingestion/tabular.py) fingerprints
 the complete settings Claim lineage by making temporary one-cell Evidence.
-[transform](../../src/rangekeeper/workflow/ingestion/transform.py) and
+[transform](https://github.com/daniel-fink/rangekeeper/blob/6f7764ee9dd97c27373cb5881314b0f6674e5519/src/rangekeeper/workflow/ingestion/transform.py) and
 [classify_rows](../../src/rangekeeper/adapters/excel/classification.py) record only
 its ID. The latter operations also independently assemble derived Claim IDs and
 parents. Extract a small internal Claim-lineage fingerprint helper and shared

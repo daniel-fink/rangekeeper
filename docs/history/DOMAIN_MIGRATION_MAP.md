@@ -4,7 +4,7 @@
 
 **Legacy isolation, 2026-10-06:** held Python code is now in `rangekeeper.legacy`,
 predecessor tests in `src/tests/legacy`, and excluded C# code in `grasshopper/legacy`.
-Old public paths have no aliases. See [the boundary and current checks](../LEGACY_ISOLATION.md).
+Old public paths have no aliases. See [the boundary and current checks](../contributing/legacy-retirement.md).
 The Windows gate remains open; earlier Turn 4 results below describe the preceding wheel.
 
 **Turn 4 update, 2026-10-06:** [Permitted legacy retirement](FULL_MIGRATION_TURN4.md)
@@ -24,7 +24,7 @@ Values or owner-local Movement keys. The canonical calendar package is `duration
 `temporal` has no public alias. Finite Flow formulations, captured scenario replay,
 exogenous declarative policies and the four numerical walkthroughs are implemented.
 See [verification](../research/full-migration/turn2/README.md) and the
-[upgrade guide](../LEGACY_UPGRADE_GUIDE.md). Turn 3 completes remaining consumers and
+[upgrade guide](../guides/upgrading.md). Turn 3 completes remaining consumers and
 integrations; Turn 4 retires obsolete code after their acceptance gates.
 The dated checkpoint descriptions below remain historical context.
 
@@ -42,7 +42,7 @@ and [verification](../research/full-migration/flow-semantics/README.md).
 implements Model 0.4.0 rich properties and Flow Values, `model.duration`,
 `temporal`, `calculations`, detached dataframe adapters, and explicit Graph conversion.
 The basic DCF notebook, financial test model and synthetic source workflows migrated.
-Read the [upgrade guide](../LEGACY_UPGRADE_GUIDE.md) and [verification](../research/full-migration/turn1/README.md).
+Read the [upgrade guide](../guides/upgrading.md) and [verification](../research/full-migration/turn1/README.md).
 Turn 2 is implemented; see the current contract and verification linked above.
 Turns 3–4 finish remaining consumers and retire old modules. The six-checkpoint
 history below remains the scalar/core work record; full migration is not complete.
@@ -52,21 +52,21 @@ all remaining older modules, temporal/numerical redesign, consumer proof and
 upgrade guidance. Its [symbol inventory](../research/full-migration/SYMBOLS.md)
 expands the earlier grouped numerical row; proposed APIs remain subject to review.
 
-**2026-10-03 update:** [Step 6C/6D](../CONSUMER_MIGRATION.md) is implemented.
+**2026-10-03 update:** [Step 6C/6D](../reference/tables.md) is implemented.
 The responsibility inventory below retains its Step 1 baseline; current consumers
 use `table`, `adapters`, and `workflow`, with `WorkflowResult.model`. External
 consumer migration (6E) and old-domain retirement (6F) remain.
 
 Status: Step 1 design and baseline completed 2026-10-02. This is the recommended
 implementation contract for Steps 2–4. Work units 2A/2B are now implemented;
-see [record boundary](../RECORD_BOUNDARY.md) for working APIs and verified limits.
-Work units 3A/3B are also implemented; [domain APIs](../DOMAIN_CORE.md) records the
+see [record boundary](../reference/records.md) for working APIs and verified limits.
+Work units 3A/3B are also implemented; [domain APIs](../reference/model.md) records the
 working facade/resolver interfaces and their bounded semantics.
-[Run/storage](../RUN_AND_STORAGE.md), [scalar execution](../SCALAR_EXECUTION.md) and
-[Model-backed graph operations](../GRAPH_MODEL.md) are now implemented. Those guides
+[Run/storage](../reference/run-and-storage.md), [scalar execution](../reference/execution.md) and
+[Model-backed graph operations](../reference/system.md) are now implemented. Those guides
 record current APIs; remaining consumer interfaces below are migration contracts. Read together with
 [the observed baseline](../research/domain-migration/BASELINE.md), the
-[work plan](DOMAIN_MIGRATION_PLAN.md), and [architecture](../LIBRARY_ARCHITECTURE.md).
+[work plan](DOMAIN_MIGRATION_PLAN.md), and [architecture](../concepts/architecture.md).
 The baseline inspected 93 Python modules, seven walkthrough notebooks, and the
 available Mandarin/East Whisman consumer references. Live services, external
 project execution, and Rhino/Grasshopper remain unverified.
@@ -151,7 +151,7 @@ symbol locations, imports, notebook code references, and inspected consumer hash
   `metadata.id`; it creates no second identifier. No generic inheritance hierarchy
   combining Model/Specification/Run behavior beyond private record plumbing.
 
-The subsequent [validation refinement](../DOMAIN_CORE.md#composable-validation) is
+The subsequent [validation refinement](../reference/model.md#ownership-and-preparation) is
 implemented: `validate.py` owns argument guards, `_validation.py` owns generic semantic
 invariants and stage orchestration, and domain modules own their rule composition.
 `Scope` is lookup data; expression inference and predicate validation are functions
@@ -175,7 +175,7 @@ This is a creation sequence, not an instruction to move the existing tree at onc
 | `io/{json,yaml,store,memory,directory}.py` | Format codecs; writable `RecordStore`; `MemoryStore`, `DirectoryStore`. |
 | `units.py` | `UnitSystem`, `default_units`; no schema authority or solving. |
 | `graph/{view,traversal,reduction,table}.py` | Model-backed View and graph algorithms, migrated after core. |
-| `execution/`, `formulations/` | Step 5 implements preparation/compiler/evaluator/acceptance/publication/backend orchestration; see [scalar execution](../SCALAR_EXECUTION.md). Richer mathematical construction remains future work. No execution implementation was part of Steps 2–4. |
+| `execution/`, `formulations/` | Step 5 implements preparation/compiler/evaluator/acceptance/publication/backend orchestration; see [scalar execution](../reference/execution.md). Richer mathematical construction remains future work. No execution implementation was part of Steps 2–4. |
 | Root and package `__init__.py`, `py.typed` | Small explicit public exports, lazy optional integrations, packaged typing. |
 
 Dependency order: generated records/private record support → document facades and
@@ -239,8 +239,8 @@ The Step 1 probe established feasibility and deliberately omitted
 semantic entrypoints, stores, index caching, constructor validation, complete union
 annotations, and a static checker run. Generated constructors, shared bounded validation and static checking are now
 implemented and verified in [Turn 1](../research/domain-migration/turn1/README.md);
-Model/Specification facades and indexes are now implemented in [Turn 2](../DOMAIN_CORE.md);
-[Turn 3](../RUN_AND_STORAGE.md) now implements Run, codecs, stores and final public exports.
+Model/Specification facades and indexes are now implemented in [Turn 2](../reference/model.md);
+[Turn 3](../reference/run-and-storage.md) now implements Run, codecs, stores and final public exports.
 
 ## Public interface contract
 
@@ -249,7 +249,7 @@ root facades; `EntityLike = Entity | Assembly`; generated nested types are immut
 `Unset` denotes omitted operation arguments, not a serialized schema value.
 All collections returned by domain operations are immutable. None initializes a
 solver. Model/Specification operations are now implemented as documented in
-[DOMAIN_CORE.md](../DOMAIN_CORE.md); [Turn 3](../RUN_AND_STORAGE.md) implements the Run/IO signatures.
+[DOMAIN_CORE.md](../reference/model.md); [Turn 3](../reference/run-and-storage.md) implements the Run/IO signatures.
 Specification exposes generated fields through `.record`; Composition also retains
 immutable `.contributions` snapshots. `SpecificationResolver` provides the two investigation
 lookups; `DocumentResolver` extends it with the implemented Run lookup.
@@ -388,13 +388,13 @@ unit settings; it receives `DocumentResolver`/`RecordStore` through injection.
 Prepared equations, backend state, candidate quantities and acceptance results are
 runtime-only objects. The acceptance evaluator traverses original expressions and
 must not import the Pyomo adapter. `Executor.execute(specification) -> Run` is now
-implemented in [Step 5](../SCALAR_EXECUTION.md), separately from the Step 2–4 scope.
+implemented in [Step 5](../reference/execution.md), separately from the Step 2–4 scope.
 
 ## Usage contracts
 
 End-to-end examples below combine implemented domain/IO/root APIs with graph APIs
 that remain design targets; see the implemented guides for runnable core examples.
-For executable Turn 2 examples, use [the domain API guide](../DOMAIN_CORE.md).
+For executable Turn 2 examples, use [the domain API guide](../reference/model.md).
 
 ```python
 from uuid import uuid4

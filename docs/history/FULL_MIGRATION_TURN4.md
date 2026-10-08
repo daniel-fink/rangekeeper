@@ -4,7 +4,7 @@
 
 **Legacy isolation, 2026-10-06:** held Python code is now in `rangekeeper.legacy`,
 predecessor tests in `src/tests/legacy`, and excluded C# code in `grasshopper/legacy`.
-Old public paths have no aliases. See [the boundary and current checks](../LEGACY_ISOLATION.md).
+Old public paths have no aliases. See [the boundary and current checks](../contributing/legacy-retirement.md).
 The Windows gate remains open; earlier Turn 4 results below describe the preceding wheel.
 
 The permitted retirement slice is implemented and locally accepted. **Full legacy
@@ -60,7 +60,7 @@ numerical, dataframe, plotting, service or solver implementation. `[workflow,exc
 runs the real source builds with no NumPy, pandas, Polars, networkx, Speckle, Pyomo
 or Plotly installed. Numerical helpers do not represent persistent content or
 infer Flow semantics. Removed names fail rather than dispatch to a second API.
-Use [the upgrade guide](../LEGACY_UPGRADE_GUIDE.md) for construction, migration and
+Use [the upgrade guide](../guides/upgrading.md) for construction, migration and
 explicit calculation examples. [Behaviour mapping](../research/full-migration/turn4/BEHAVIOUR.md)
 explains each retired responsibility and the deliberate changes.
 

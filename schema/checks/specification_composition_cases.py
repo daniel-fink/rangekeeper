@@ -22,7 +22,7 @@ def check_composition(schema, validators, module, model, version, model_version)
     names = ("common", "composed-forward", "composed-inverse", "batch")
     docs = {
         name: yaml.safe_load(
-            (schema / f"examples/specification-{name}.yaml").read_text()
+            (schema.parent / f"examples/schema/specification-{name}.yaml").read_text()
         )
         for name in names
     }
@@ -79,7 +79,7 @@ def check_composition(schema, validators, module, model, version, model_version)
 
     for name, doc in (("forward", forward), ("inverse", inverse)):
         flat = yaml.safe_load(
-            (schema / f"examples/specification-{name}.yaml").read_text()
+            (schema.parent / f"examples/schema/specification-{name}.yaml").read_text()
         )
         result = check(doc)
         assert requirements(result.effective) == requirements(flat)
@@ -240,7 +240,7 @@ def check_composition(schema, validators, module, model, version, model_version)
 
     # Omission/empty lists are neutral; objectives are supplied as a whole.
     optimization = yaml.safe_load(
-        (schema / "examples/specification-objectives.yaml").read_text()
+        (schema.parent / "examples/schema/specification-objectives.yaml").read_text()
     )
     criteria = record("criteria", objectives=optimization.pop("objectives"))
     optimization["includes"] = [criteria["metadata"]["id"]]
@@ -294,7 +294,7 @@ def check_composition(schema, validators, module, model, version, model_version)
 
     # Cross-contributor references resolve in the effective mathematical scope.
     opt = yaml.safe_load(
-        (schema / "examples/specification-optimization.yaml").read_text()
+        (schema.parent / "examples/schema/specification-optimization.yaml").read_text()
     )
     maths = record("maths", formulations=opt.pop("formulations"))
     opt["includes"] = [maths["metadata"]["id"]]

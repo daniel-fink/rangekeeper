@@ -241,7 +241,7 @@ def test_workflow_to_real_scalar_executor(tmp_path):
 
     if any(importlib.util.find_spec(name) is None for name in ("pyomo", "highspy")):
         pytest.skip("requires the optional execution extra")
-    script = Path(__file__).resolve().parents[2] / "tools/workflow/scalar.py"
+    script = Path(__file__).resolve().parents[2] / "examples/workflow/scalar.py"
     summary = runpy.run_path(str(script))["run_example"](tmp_path / "example")
     assert summary["forward_gross"]["magnitude"] == 20
     assert summary["inverse_net"]["magnitude"] == 25

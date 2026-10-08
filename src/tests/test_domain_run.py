@@ -17,7 +17,7 @@ from rangekeeper.shared.errors import (
 from rangekeeper.io import MemoryStore
 from rangekeeper.run import Run, RunRecord, validate
 
-EXAMPLES = Path(__file__).resolve().parents[2] / "schema/examples"
+EXAMPLES = Path(__file__).resolve().parents[2] / "examples/schema"
 
 
 def load(name):

@@ -12,7 +12,7 @@ import pytest
 
 from rangekeeper.adapters.cytoscape.layout import Assembly, Node, Problem, Rect
 from rangekeeper.adapters.cytoscape.layout.check import check
-from rangekeeper.adapters.cytoscape.layout.examples import examples
+from rangekeeper_examples.layout import examples
 from rangekeeper.adapters.cytoscape.layout.minizinc_solver import solve
 from rangekeeper.adapters.cytoscape.layout.model import Preference, Weights
 from rangekeeper.adapters.cytoscape.layout.seed import grid_seed

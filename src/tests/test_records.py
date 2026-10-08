@@ -26,7 +26,7 @@ from rangekeeper.specification.validation import (
 )
 from rangekeeper.run.validation import validate_records as validate_run
 
-EXAMPLES = Path(__file__).resolve().parents[2] / "schema/examples"
+EXAMPLES = Path(__file__).resolve().parents[2] / "examples/schema"
 FIXTURES = sorted(
     path
     for path in EXAMPLES.glob("*.yaml")

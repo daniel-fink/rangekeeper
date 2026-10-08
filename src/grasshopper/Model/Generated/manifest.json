@@ -1,0 +1,14 @@
+{
+  "inputs": {
+    "src/rangekeeper/adapters/speckle/contract.json": "92292288d4581851ecb6e298b510959c67efb17a279afced005a7af60a1f733a",
+    "src/rangekeeper/schema/schema.json": "459bce9b199b92cfcfec6a37c4594fbbd56e84d01d1d49f5f80e021059c1f559",
+    "src/rangekeeper/schema/slots.json": "ff99c2200f446092aa786ecf50560eade8f425478fada9f9f8ee499c3eb2643b",
+    "tools/schema/generate_csharp.py": "d71c8cb46b2a35e779f1fe6f55cffa61692440f7d8b75e8778e8bf62adb08de5"
+  },
+  "outputs": {
+    "Records.cs": "c1b7ab3cee3c712c37478b77b7134591ff44e43df3157d85d1686679228aed61",
+    "TransportContract.cs": "6ceb05ef315749018afc2478d330d35ad28569b17afabd531c7bda00b5d8cee7",
+    "schema.json": "459bce9b199b92cfcfec6a37c4594fbbd56e84d01d1d49f5f80e021059c1f559",
+    "slots.json": "ff99c2200f446092aa786ecf50560eade8f425478fada9f9f8ee499c3eb2643b"
+  }
+}

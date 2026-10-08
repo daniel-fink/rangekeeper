@@ -81,7 +81,7 @@ assert not view.induced_slot("spawns", "Run").list_elements_ordered
 
 
 def load(name):
-    return yaml.safe_load((SCHEMA / "examples" / f"{name}.yaml").read_text())
+    return yaml.safe_load((SCHEMA.parent / "examples/schema" / f"{name}.yaml").read_text())
 
 
 base = dict(
@@ -96,7 +96,7 @@ base = dict(
         d["metadata"]["id"]: d
         for d in (
             yaml.safe_load(p.read_text())
-            for p in (SCHEMA / "examples").glob("specification-*.yaml")
+            for p in (SCHEMA.parent / "examples/schema").glob("specification-*.yaml")
         )
     },
     models={

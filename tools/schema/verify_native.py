@@ -30,7 +30,7 @@ def normalized(value, key=None):
 
 
 count = 0
-for path in sorted((ROOT / "schema/examples").glob("*.yaml")):
+for path in sorted((ROOT / "examples/schema").glob("*.yaml")):
     kind = path.stem.split("-")[0].capitalize()
     if kind not in ("Model", "Specification", "Run"):
         continue

@@ -3,7 +3,7 @@
 Implementation date: 2026-10-03 Australia/Sydney. This slice introduces canonical
 Model-backed View, explicit relationship/membership Hierarchy, owner-local Value
 selection, pure quantity reducers and immutable Aggregation/Coverage. See the
-[API guide and remaining Step 6 slices](../../GRAPH_MODEL.md).
+[API guide and remaining Step 6 slices](../../reference/system.md).
 
 It began on `acausal-modelling` at `53f5d3e72f97b7099bcc7973386ba47ccb4b7784`, with
 the completed Step 5 implementation already present as uncommitted work. Before

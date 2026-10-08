@@ -89,7 +89,7 @@ def main():
             *tests,
             ROOT / "src/tests/layout_support.py",
             ROOT / "src/tests/conftest.py",
-            ROOT / "src/pyproject.toml",
+            ROOT / "pyproject.toml",
             *Path(__file__).parent.glob("*.py"),
             Path(__file__).with_name("toolchain.json"),
             *(ROOT / "src/rangekeeper/adapters/cytoscape/layout").glob("*.py"),

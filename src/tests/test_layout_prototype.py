@@ -12,7 +12,7 @@ import pytest
 
 from rangekeeper.adapters.cytoscape.layout import Assembly, Node, Problem, Rect, check
 from rangekeeper.adapters.cytoscape.layout.check import metrics
-from rangekeeper.adapters.cytoscape.layout.examples import examples
+from rangekeeper_examples.layout import examples
 from rangekeeper.adapters.cytoscape.layout.z3_solver import solve
 
 requires_z3 = pytest.mark.z3

@@ -2,7 +2,7 @@
 
 Observed 2026-10-03 on `acausal-modelling`, starting at
 `53f5d3e72f97b7099bcc7973386ba47ccb4b7784`. This slice implements
-[Model tables, adapters, and source workflows](../../CONSUMER_MIGRATION.md).
+[Model tables, adapters, and source workflows](../../reference/tables.md).
 No commit, push, release, or external project migration was performed.
 
 ## Results

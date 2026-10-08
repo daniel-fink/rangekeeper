@@ -23,7 +23,7 @@ from rangekeeper.model.scenario.market import make_plan, generate
 from rangekeeper.model.scenario import replay
 from rangekeeper.specification.policy import evaluate, observe, PolicyCapabilityError
 from rangekeeper.specification.policy import ObservationBinding
-from rangekeeper.examples.investment import build_stop_gain_resale_policy
+from rangekeeper_examples.investment import build_stop_gain_resale_policy
 from rangekeeper.model import Reference
 
 
@@ -262,7 +262,7 @@ def test_supplied_innovations_realize_without_randomness(monkeypatch):
 
 
 def test_policy_run_rejects_forged_information_timing_and_actions():
-    from rangekeeper.examples import investment
+    from rangekeeper_examples import investment
     from rangekeeper.run.execution import Executor
     from rangekeeper.io import MemoryStore
     from rangekeeper.run import Run, validate
@@ -290,7 +290,7 @@ def test_policy_run_rejects_forged_information_timing_and_actions():
 
 
 def test_control_roles_conflict_across_contributors_and_endogenous_observation_fails():
-    from rangekeeper.examples import investment
+    from rangekeeper_examples import investment
     from rangekeeper.run.execution import Executor
     from rangekeeper.io import MemoryStore
     from rangekeeper.specification import Specification, SpecificationRecord

@@ -51,7 +51,7 @@ def unique_keys(pairs):
 
 
 fixture = json.loads(
-    (SCHEMA / "examples/structural-graph.json").read_text(),
+    (SCHEMA.parent / "examples/schema/structural-graph.json").read_text(),
     object_pairs_hook=unique_keys,
 )
 
@@ -69,13 +69,13 @@ def validate_example(example):
 
 
 validate_example(fixture)
-# The documented first YAML block is instance data under the same record profile.
+# The documented ownership fragment is checked under the same record profile.
 import yaml
 
-readme = yaml.safe_load(
-    (SCHEMA.parent / "docs/SCHEMA_EXAMPLES.md").read_text().split("```yaml\n", 1)[1].split("```", 1)[0]
+ownership = yaml.safe_load(
+    (SCHEMA.parent / "examples/schema/ownership.yaml").read_text()
 )
-validate_example(readme)
+validate_example(ownership)
 
 cases = []
 measurement = {

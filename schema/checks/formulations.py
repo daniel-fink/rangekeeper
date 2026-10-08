@@ -76,8 +76,8 @@ def structural(document):
             validators[cls].validate(record)
 
 
-fixture = yaml.safe_load((SCHEMA / "examples/valuation-formulations.yaml").read_text())
-scalar = yaml.safe_load((SCHEMA / "examples/valuation-expressions.yaml").read_text())
+fixture = yaml.safe_load((SCHEMA.parent / "examples/schema/valuation-formulations.yaml").read_text())
+scalar = yaml.safe_load((SCHEMA.parent / "examples/schema/valuation-expressions.yaml").read_text())
 root = fixture["formulations"][0]
 income, capital = root["formulations"]
 noi = root["values"][0]
@@ -139,7 +139,7 @@ valid.append(resolved)
 
 # Relationship-owned Values are also eligible shared symbols.
 relationship_case = copy.deepcopy(fixture)
-graph = json.loads((SCHEMA / "examples/structural-graph.json").read_text())
+graph = json.loads((SCHEMA.parent / "examples/schema/structural-graph.json").read_text())
 relationship = copy.deepcopy(graph["relationships"][0])
 relationship_case["definitions"]["taxonomies"] = copy.deepcopy(
     graph["definitions"]["taxonomies"]

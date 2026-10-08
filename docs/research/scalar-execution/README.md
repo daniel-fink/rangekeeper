@@ -2,14 +2,14 @@
 
 Verified 2026-10-03 Australia/Sydney, from `acausal-modelling` at
 `53f5d3e72f97b7099bcc7973386ba47ccb4b7784`. Step 5 is implemented in
-`src/rangekeeper/execution/`; see the [API and capability guide](../../SCALAR_EXECUTION.md).
+`src/rangekeeper/execution/`; see the [API and capability guide](../../reference/execution.md).
 This is local implementation evidence; no commit, push, remote CI run or consumer
 migration is claimed. The starting checkout had only the unrelated `.gitignore`
 edit, preserved byte-for-byte.
 
 ## Actual valuation results
 
-The [example script](../../../tools/execution/valuation.py) loads only the input
+The [example script](../../../examples/execution/valuation.py) loads only the input
 Model and Specification fixtures. It executes forward, revises Specifications to
 pin that genuine output, executes inverse, and executes a sequential two-case batch.
 It does not load synthetic expected-output Models or Runs.

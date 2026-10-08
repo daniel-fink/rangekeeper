@@ -27,7 +27,7 @@ from rangekeeper.run.execution import preparation, compiler, acceptance, publica
 from rangekeeper.run.execution.backends import PyomoHighs, Result
 from rangekeeper.run.execution.errors import NumericalError
 
-EXAMPLES = Path(__file__).resolve().parents[2] / "schema/examples"
+EXAMPLES = Path(__file__).resolve().parents[2] / "examples/schema"
 HOME = UUID("194afc26-3e2e-507b-ad0c-a73a4b0b2ccd")
 RENT = UUID("e3fb1434-5371-5bcb-b0b8-e3af2bf65022")
 NOI = UUID("9324f928-cfc8-50bb-ba99-fe8c02a6dbd2")

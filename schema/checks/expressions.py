@@ -8,7 +8,6 @@ import copy
 import importlib.util
 import json
 from pathlib import Path
-import re
 import subprocess
 import sys
 from tempfile import TemporaryDirectory
@@ -111,7 +110,7 @@ assert view.induced_slot("target", "Expression").inlined
 valid = []
 fixtures = []
 for name in ("valuation-expressions", "query-aggregation", "function-expressions"):
-    fixture = yaml.safe_load((SCHEMA / f"examples/{name}.yaml").read_text())
+    fixture = yaml.safe_load((SCHEMA.parent / f"examples/schema/{name}.yaml").read_text())
     fixtures.append(fixture)
     validators["Definitions"].validate(fixture["definitions"])
     for collection, cls in [
@@ -139,32 +138,19 @@ scalar, graph, rich = fixtures
 assert infer_expression_domain(rich["expressions"][2], scope=build_scope(rich)) == dict(
     kind="date"
 )
-readme = [
-    yaml.safe_load(block)
-    for block in re.findall(
-        r"```yaml\n(.*?)```",
-        (SCHEMA.parent / "docs/SCHEMA_EXAMPLES.md").read_text(),
-        re.DOTALL,
-    )
-    if "kind: binary" in block
-]
-assert len(readme) == 1
-infer_expression_domain(readme[0], scope=build_scope(scalar))
-valid.extend(("Expression", item) for item in readme)
-readme_constraints = [
-    yaml.safe_load(block)
-    for block in re.findall(
-        r"```yaml\n(.*?)```",
-        (SCHEMA.parent / "docs/SCHEMA_EXAMPLES.md").read_text(),
-        re.DOTALL,
-    )
-    if "\npredicate: " in block
-]
-assert len(readme_constraints) == 1
-validate_fixture_constraints(
-    readme_constraints, scalar["expressions"], scope=build_scope(scalar)
+# Guide links and conformance use the same independently maintained fragments.
+example_expression = yaml.safe_load(
+    (SCHEMA.parent / "examples/schema/binary-expression.yaml").read_text()
 )
-valid.extend(("Constraint", item) for item in readme_constraints)
+infer_expression_domain(example_expression, scope=build_scope(scalar))
+valid.append(("Expression", example_expression))
+example_constraint = yaml.safe_load(
+    (SCHEMA.parent / "examples/schema/constraint.yaml").read_text()
+)
+validate_fixture_constraints(
+    [example_constraint], scalar["expressions"], scope=build_scope(scalar)
+)
+valid.append(("Constraint", example_constraint))
 valid.extend(
     ("Domain", record)
     for record in (

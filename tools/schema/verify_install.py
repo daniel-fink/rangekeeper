@@ -13,6 +13,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from zipfile import ZipFile
 
 ROOT = Path(__file__).resolve().parents[2]
 parser = argparse.ArgumentParser()
@@ -53,11 +54,11 @@ with tempfile.TemporaryDirectory(prefix="rk-installed-records-") as directory:
     if args.wheel is None:
         stage = temp / "stage"
         stage.mkdir()
-        for name in ("pyproject.toml", "README.md"):
-            shutil.copy2(ROOT / "src" / name, stage / name)
+        for name in ("pyproject.toml", "README.md", "LICENSE"):
+            shutil.copy2(ROOT / name, stage / name)
         shutil.copytree(
             ROOT / "src/rangekeeper",
-            stage / "rangekeeper",
+            stage / "src/rangekeeper",
             ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "node_modules"),
         )
         wheel_dir = temp / "wheel"
@@ -75,6 +76,14 @@ with tempfile.TemporaryDirectory(prefix="rk-installed-records-") as directory:
         wheel = next(wheel_dir.glob("*.whl"))
     else:
         wheel = args.wheel.resolve(strict=True)
+    with ZipFile(wheel) as archive:
+        licenses = [
+            name
+            for name in archive.namelist()
+            if name.endswith(".dist-info/licenses/LICENSE")
+        ]
+        assert len(licenses) == 1, "wheel must contain the project license"
+        assert archive.read(licenses[0]) == (ROOT / "LICENSE").read_bytes()
     venv = temp / "venv"
     subprocess.run(
         [args.runtime_python, "-m", "venv", "--without-pip", str(venv)], check=True
@@ -287,7 +296,7 @@ for name in ('Pint', 'flexcache', 'flexparser', 'platformdirs', 'PyYAML'):
     subprocess.run(
         [args.runtime_python, "-c", copy_dependencies, str(site)], cwd=temp, check=True
     )
-    shutil.copytree(ROOT / "schema/examples", temp / "examples")
+    shutil.copytree(ROOT / "examples/schema", temp / "examples")
     script = """
 from pathlib import Path
 import sys
@@ -423,7 +432,7 @@ print('Installed wheel: actual process-isolated forward/inverse solves, output r
             raise ValueError(
                 "--workflow-python requires --execution-python for the full acceptance example"
             )
-        shutil.copy2(ROOT / "tools/workflow/scalar.py", temp / "source-example.py")
+        shutil.copy2(ROOT / "examples/workflow/scalar.py", temp / "source-example.py")
         script = """
 import importlib.metadata, json, runpy, sys
 from pathlib import Path

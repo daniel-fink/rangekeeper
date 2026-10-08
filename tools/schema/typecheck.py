@@ -25,6 +25,10 @@ with tempfile.TemporaryDirectory(prefix="rk-mypy-") as cache:
         command
         + sources
         + [
+            str(path)
+            for path in sorted((ROOT / "examples/rangekeeper_examples").glob("*.py"))
+        ]
+        + [
             str(Path(__file__).with_name(name))
             for name in (
                 "typing_valid.py",

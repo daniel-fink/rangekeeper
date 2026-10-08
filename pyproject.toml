@@ -1,0 +1,86 @@
+[project]
+name = "Rangekeeper"
+version = "0.8.71"
+description = "Algorithmic modelling for project finance"
+authors = [
+    { name = "Daniel Fink", email = "danfink@mit.edu" }
+]
+license = "MPL-2.0"
+readme = "README.md"
+license-files = ["LICENSE"]
+requires-python = ">=3.10, <3.14"
+
+dependencies = [
+    "py-moneyed==3.0",
+    "jsonschema>=4.26,<5",
+    "rfc3339-validator>=0.1.4,<0.2",
+    "pint>=0.24",
+]
+
+[project.urls]
+Repository = "https://github.com/daniel-fink/rangekeeper"
+Documentation = "https://github.com/daniel-fink/rangekeeper#readme"
+Issues = "https://github.com/daniel-fink/rangekeeper/issues"
+
+[project.optional-dependencies]
+layout = ["z3-solver==5.1.0.0"]
+calculations = [
+    "polars>=1.44,<2",
+    "numpy>=1.24",
+    "scipy>=1.12",
+    "pyxirr>=0.10.7,<0.11",
+]
+financial = ["pyxirr>=0.10.7,<0.11"]
+tables = ["polars>=1.44,<2"]
+plotting = ["matplotlib>=3.10", "plotly>=6.0"]
+visualization = ["networkx>=3.1", "plotly>=6.0", "pyvis>=0.3.2"]
+speckle = ["specklepy>=2.21"]
+# Temporary predecessor group retained until official Windows connector acceptance.
+legacy = ["networkx>=3.1", "specklepy>=2.21"]
+execution = ["numpy>=1.24", "pyomo==6.10.1", "highspy==1.15.1"]
+yaml = ["PyYAML>=6.0.2,<7"]
+workflow = ["openpyxl>=3.1.5,<4", "PyYAML>=6.0.2,<7"]
+excel = ["openpyxl>=3.1.5,<4", "PyYAML>=6.0.2,<7"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "black>=25.0",
+    "numpy-financial>=1.0",
+    "rangekeeper-examples",
+]
+
+[tool.uv.sources]
+rangekeeper-examples = { path = "examples", editable = true }
+
+[tool.black]
+line-length = 88
+skip-magic-trailing-comma = false
+
+[build-system]
+requires = ["setuptools>=77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["rangekeeper", "rangekeeper.*"]
+namespaces = false
+exclude = ["*.node_modules*", "*.client*"]
+
+[tool.setuptools.package-data]
+"rangekeeper" = ["py.typed"]
+"rangekeeper.schema" = ["*.json"]
+"rangekeeper.adapters.cytoscape" = [
+    "assets/*.js",
+    "assets/*.css",
+    "assets/*.html",
+    "assets/vendor/*.js",
+    "assets/vendor/*.LICENSE",
+    "assets/vendor/*.json",
+]
+"rangekeeper.adapters.cytoscape.layout" = ["*.mzn"]
+"rangekeeper.adapters.speckle" = ["contract.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["src/tests"]
+pythonpath = ["src"]

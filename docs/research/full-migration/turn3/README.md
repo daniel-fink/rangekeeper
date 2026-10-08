@@ -13,7 +13,7 @@ and what the unresolved Windows connector gate still holds.
 | Python generation | Fresh | [result](accepted-generation.txt) |
 | Static typing | 168 source files pass; all intended invalid calls rejected | [result](complete-typing.txt) |
 | Exact installed wheel | Records, codecs, stores, lightweight imports, artifacts, numerical library, scalar execution and source workflow pass | [result](complete-installed.txt), [wheel](complete-wheel.txt), [fingerprint](artifact-final.json) |
-| Seven walkthroughs | All run from that wheel in fresh kernels; four paired uncertainty scenarios | [commands/results](complete-notebooks.txt), [source/output fingerprints](notebook-fingerprints.json), [generated site](../../../../walkthrough/_build/html/index.html) |
+| Seven walkthroughs | All run from that wheel in fresh kernels; four paired uncertainty scenarios | [commands/results](complete-notebooks.txt), [source/output fingerprints](notebook-fingerprints.json), [generated site](../../../../examples/walkthrough/_build/html/index.html) |
 | Upgrade-guide examples | Pass outside the checkout | [script](guide_example.py), [captured output](complete-guide.txt) (empty on success) |
 | Viewer | 35 unit checks pass; browser-only case then passes in actual Chrome | [unit](viewer-tests.txt), [browser](viewer-browser.txt) |
 | Workbench, layouts and transport | Included in full suite; 86 scoped tests pass, 24 MiniZinc skips | [JUnit](complete-suite.xml), [scoped result](complete-layout.txt) |
@@ -40,7 +40,7 @@ The 24 skipped tests require MiniZinc (18 CP-SAT checks, four dual-engine checks
 two optional-solver checks). The three old live tests are excluded rather than
 silently marked passing. The seven warnings are retained legacy pandas aliases.
 The Windows official connector gate remains open, with an explicit fixture and
-[acceptance procedure](../../../../grasshopper/WINDOWS_DEVELOPMENT.md). No external
+[acceptance procedure](../../../contributing/windows-acceptance.md). No external
 publication was attempted. Hypar is retired; Browser/outliner remains on hold.
 
 Real source data, live payloads, real output Models, private comparison maps,

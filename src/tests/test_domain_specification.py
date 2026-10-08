@@ -21,7 +21,7 @@ from rangekeeper.shared.errors import (
     UnsupportedVersionError,
 )
 
-EXAMPLES = Path(__file__).resolve().parents[2] / "schema/examples"
+EXAMPLES = Path(__file__).resolve().parents[2] / "examples/schema"
 
 
 def load(name):

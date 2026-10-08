@@ -3,13 +3,13 @@
 Observed 2026-10-02 on `acausal-modelling`, HEAD
 `c91a76c941bac0a26fa18ad5a3105ab4641f22f0`. Changes are uncommitted.
 This record follows the historical [Step 1 baseline](../BASELINE.md); it does not
-replace those measurements. See [working interfaces](../../../RECORD_BOUNDARY.md).
+replace those measurements. See [working interfaces](../../../reference/records.md).
 
 ## Final results
 
 | Check | Result | Evidence |
 | --- | --- | --- |
-| Reproducible generation | All five artifacts match regeneration, 50 LinkML classes accounted for. | [log](regenerate-check.log), [manifest](../../../../src/rangekeeper/_schema/manifest.json) |
+| Reproducible generation | All five artifacts match regeneration, 50 LinkML classes accounted for. | [log](regenerate-check.log), [manifest](https://github.com/daniel-fink/rangekeeper/blob/5a111b00bb4990a883af08d6ccbc7561b4bab445/src/rangekeeper/_schema/manifest.json) |
 | Static typing, mypy 1.18.2 | Seven checked source/example files pass; eight deliberately invalid calls are rejected. | [log](typing-verified.log) |
 | Shared native bundle | 16 Model/Specification/Run fixture round trips pass, with stock LinkML normalization explicitly distinguished from exact immutable-record export. | [log](native-verified.log) |
 | Isolated installed wheel | Packaged schema/manifest/native/typing artifacts, construction, validation, timestamp rejection and lightweight imports pass outside the checkout. | [log](installed-verified.log) |

@@ -18,7 +18,6 @@ _LAZY_MODULES = frozenset(
         "adapters",
         "io",
         "migration",
-        "examples",
         "legacy",
     }
 )
