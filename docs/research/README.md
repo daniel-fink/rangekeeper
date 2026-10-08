@@ -12,3 +12,4 @@ The [MiniZinc evidence](full-migration/minizinc/README.md) and
 
 - [Flux and Stream implementation acceptance — 2026-10-08](flux-stream-2026-10-08/README.md): numerical and acausal checks, installed wheel, performance and memory.
 - [First walkthrough acceptance — 2026-10-08](basic-dcf-2026-10-08/README.md): legacy teaching fidelity, fresh notebook execution and rendered review, following [API acceptance](basic-dcf-2026-10-08/api.md) for direct Flow display and projection verbs.
+- [Native Polars display acceptance — 2026-10-08](native-polars-display-2026-10-08/README.md): shared native rendering, configuration isolation and refreshed first-walkthrough outputs.

@@ -1,0 +1,39 @@
+{
+  "python": "3.12.12 (main, Jan 14 2026, 23:36:32) [Clang 21.1.4 ]",
+  "executable": "/var/folders/sk/cjq5zjks7gx_3tf9m67y43xr0000gn/T/rk-walkthrough-01-2qgq0pdv/notebook-env/bin/python",
+  "rangekeeper_file": "/var/folders/sk/cjq5zjks7gx_3tf9m67y43xr0000gn/T/rk-walkthrough-01-2qgq0pdv/notebook-env/lib/python3.12/site-packages/rangekeeper/__init__.py",
+  "versions": {
+    "rangekeeper": "0.8.71",
+    "rangekeeper-examples": "0.1.0",
+    "polars": "1.44.2",
+    "numpy": "2.3.5",
+    "nbclient": "0.10.2",
+    "nbformat": "5.10.4",
+    "jupyter-book": "1.0.4.post1"
+  },
+  "holding_period_count": 10,
+  "forecast_period_count": 11,
+  "sale_period_start": "2010-01-01",
+  "sale_period_end": "2011-01-01",
+  "first_year_net_cashflow": 50.0,
+  "next_year_net_cashflow": 60.94972099973786,
+  "reversion_value": 1218.9944199947572,
+  "final_receipt": 1278.7490484258728,
+  "property_pv": 999.9999999999997,
+  "annual_transactions": [
+    300.0,
+    200.0
+  ],
+  "elapsed_seconds": 3.728,
+  "base_commit": "e4e961f55cb0f1fb4e891729624c452506b0ac44",
+  "source_files": {
+    "src/rangekeeper/adapters/presentation.py": "2736a0e11d704f1d7b46b599b76597d6f7506e01e0df06fb1603445c0340f36c",
+    "src/tests/test_flux_stream.py": "d7fe25200a12d37d374e7724aef48804c4aa5a11c80c99f88e875f239e5ede05",
+    "tools/schema/verify_install.py": "1396064414cdf490feb94d582d1e903365930a00c6e3703c6bfcc24715696654"
+  },
+  "wheel_sha256": "35a086f6d72f469cae33ba009343d8bc62c1c711546e8bef79c1bb47d3aaa5fd",
+  "cell_count": 59,
+  "code_cell_count": 26,
+  "html_output_count": 15,
+  "notebook_sha256": "6dcaa36e03db5a8a6eaf0389f896feaaa3a542fa18ac119b3fb3817b81abf10d"
+}

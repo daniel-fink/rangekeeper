@@ -998,6 +998,14 @@ for the teaching mapping, rendered review and build scope. Apply this approach t
 the remaining six notebooks next; their migration and full-book acceptance remain
 open.
 
+The subsequent display simplification delegates HTML and text rendering to
+Polars. `Flow.display()` and `Stream.display()` keep their interfaces and lazy
+imports. A detached presentation frame preserves labels, units, orientation,
+precision and distinct missing states. Scoped configuration shows the full
+selection without changing the caller's settings. Handwritten table markup,
+footer markup and text padding are removed; the legend is part of the reference
+and notebook guidance. See the [native Polars display acceptance](../research/native-polars-display-2026-10-08/README.md).
+
 ## Source and caller checklist
 
 Use this checklist at implementation start; refresh it if the checkout changes.

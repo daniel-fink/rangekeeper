@@ -1,8 +1,7 @@
-"""Escaped HTML and plain text over the same numeric Stream projection."""
+"""Native Polars display over a detached, formatted Stream projection."""
 
 from dataclasses import dataclass
-from datetime import date, timedelta
-from html import escape
+from datetime import date
 
 
 def _coordinate_label(coordinate):
@@ -71,29 +70,36 @@ class StreamTable:
             for i, period in enumerate(periods)
         ]
 
-    def _repr_html_(self):
+    def _render(self, *, html: bool):
+        from rangekeeper.calculations._batch import polars
+
+        pl = polars()
         headers, rows = self._cells()
-        header = (
-            "<tr>" + "".join(f"<th>{escape(cell)}</th>" for cell in headers) + "</tr>"
+        frame = pl.DataFrame(
+            rows,
+            # Object cells let Polars display the prepared strings without the
+            # literal quotation marks its HTML renderer adds to String columns.
+            schema=[(header, pl.Object) for header in headers],
+            orient="row",
         )
-        body = "".join(
-            "<tr>" + "".join(f"<td>{escape(cell)}</td>" for cell in row) + "</tr>"
-            for row in rows
-        )
-        return f"<table><thead>{header}</thead><tbody>{body}</tbody></table><small>— absent; ? unknown. Period end boundaries are exclusive.</small>"
+        # Display strings preserve missing states and precision without changing
+        # numeric exports. Scope the native renderer's settings to this call.
+        with pl.Config(
+            tbl_hide_column_names=False,
+            tbl_hide_column_data_types=True,
+            tbl_hide_dataframe_shape=True,
+            tbl_rows=-1,
+            tbl_cols=-1,
+            tbl_width_chars=-1,
+            fmt_str_lengths=max(len(cell) for row in [headers, *rows] for cell in row),
+        ):
+            return frame._repr_html_() if html else str(frame)
+
+    def _repr_html_(self):
+        return self._render(html=True)
 
     def __str__(self):
-        headers, rows = self._cells()
-        widths = [
-            max(len(row[i]) for row in [headers, *rows]) for i in range(len(headers))
-        ]
-        return (
-            "\n".join(
-                " | ".join(cell.ljust(width) for cell, width in zip(row, widths))
-                for row in [headers, *rows]
-            )
-            + "\n— absent; ? unknown."
-        )
+        return self._render(html=False)
 
     def __repr__(self):
         return str(self)
