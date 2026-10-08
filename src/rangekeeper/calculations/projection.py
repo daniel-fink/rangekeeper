@@ -6,7 +6,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 import math
 from enum import Enum, unique
-from rangekeeper.model.flow import Flow
+from rangekeeper.model.flux import Flow
 from rangekeeper.model.duration import Period
 from rangekeeper.model.measure import Quantity
 from rangekeeper.model.distribution import Distribution

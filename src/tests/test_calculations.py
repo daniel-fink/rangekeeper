@@ -3,11 +3,11 @@
 from rangekeeper.model.content import ContentKind
 
 from rangekeeper.model.duration import Frequency, PeriodTiming, DayCount
-from rangekeeper.model.flow import MissingValueHandling
+from rangekeeper.model.flux import MissingValueHandling
 from rangekeeper.calculations.series import (
     AlignmentJoin,
-    AggregationReducer,
-    ResamplingReduction,
+    AggregationMethod,
+    ResamplingMethod,
     MeanWeighting,
 )
 from rangekeeper.calculations.projection import ProjectionMethod, PaddingMode
@@ -16,7 +16,7 @@ from rangekeeper.schema.enums import ValueKind, DistributionFamily
 
 from rangekeeper.calculations.account import Account
 from rangekeeper.model.distribution import Distribution
-from rangekeeper.model.flow import Flow
+from rangekeeper.model.flux import Flow
 
 from datetime import date, datetime, time, timedelta
 from types import MappingProxyType
@@ -27,7 +27,7 @@ import numpy as np
 import pytest
 from rangekeeper import Model
 from rangekeeper.model.content import encode, decode
-from rangekeeper.model.flow import Stream
+from rangekeeper.model.flux import Stream
 from rangekeeper.schema.records import (
     Metadata,
     Entity,
@@ -309,11 +309,11 @@ def test_resample_complete_calendar_and_explicit_reduction():
     )
     periods = make_periods(date(2020, 1, 1), frequency=Frequency.MONTH, count=3)
     with pytest.raises(ValueError):
-        series.resample(flow, periods=periods, reduction=ResamplingReduction.SUM)
+        series.resample(flow, periods=periods, method=ResamplingMethod.SUM)
     result = series.resample(
         flow,
         periods=periods,
-        reduction=ResamplingReduction.SUM,
+        method=ResamplingMethod.SUM,
         missing=MissingValueHandling.ZERO,
     )
     assert [s.magnitude for s in result.flow.movements] == [
@@ -326,13 +326,13 @@ def test_resample_complete_calendar_and_explicit_reduction():
         [date(2020, 1, 1), date(2020, 1, 31)], [10, 20], units="kWh"
     )
     assert (
-        series.resample(stocks, periods=periods[:1], reduction=ResamplingReduction.LAST)
+        series.resample(stocks, periods=periods[:1], method=ResamplingMethod.LAST)
         .flow.movements[0]
         .magnitude
         == 20
     )
     assert (
-        series.resample(stocks, periods=periods[:1], reduction=ResamplingReduction.SUM)
+        series.resample(stocks, periods=periods[:1], method=ResamplingMethod.SUM)
         .flow.movements[0]
         .magnitude
         == 30
@@ -477,11 +477,11 @@ def test_weighted_rates_and_partial_period_helpers():
     rates = Flow.from_periods(periods, (10, 20), units="AUD/year")
     target = (make_period(date(2020, 1, 1), date(2020, 3, 1)),)
     with pytest.raises(ValueError, match="weighting"):
-        series.resample(rates, periods=target, reduction=ResamplingReduction.MEAN)
+        series.resample(rates, periods=target, method=ResamplingMethod.MEAN)
     result = series.resample(
         rates,
         periods=target,
-        reduction=ResamplingReduction.MEAN,
+        method=ResamplingMethod.MEAN,
         weighting=MeanWeighting.ELAPSED,
     )
     assert result.flow.movements[0].magnitude == pytest.approx((31 * 10 + 29 * 20) / 60)
@@ -489,7 +489,7 @@ def test_weighted_rates_and_partial_period_helpers():
         series.resample(
             rates,
             periods=target,
-            reduction=ResamplingReduction.MEAN,
+            method=ResamplingMethod.MEAN,
             weighting=MeanWeighting.OBSERVATIONS,
         )
         .flow.movements[0]
@@ -516,9 +516,7 @@ def test_weighted_rates_and_partial_period_helpers():
         3,
     ]
     assert (
-        series.aggregate(
-            (annual([1, 4]), annual([3, 2])), reducer=AggregationReducer.MIN
-        )
+        series.aggregate((annual([1, 4]), annual([3, 2])), method=AggregationMethod.MIN)
         .flow.movements[1]
         .magnitude
         == 2
@@ -537,7 +535,7 @@ def test_distinct_property_and_flow_roles_reject_malformed_content():
 
 
 def test_polars_preserves_explicit_null_and_omission():
-    from rangekeeper.model.flow import Flow
+    from rangekeeper.model.flux import Flow
     from rangekeeper.adapters.polars import to_frame, from_frame
 
     flow = Flow.from_data(

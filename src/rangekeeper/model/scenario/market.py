@@ -23,7 +23,7 @@ from rangekeeper.model import (
     Value,
     Quantity,
 )
-from rangekeeper.model.flow import Flow, Movement
+from rangekeeper.model.flux import Flow, Movement
 from rangekeeper.model.scenario import (
     ScenarioPlan,
     ScenarioRealization,

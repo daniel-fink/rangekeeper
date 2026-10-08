@@ -15,7 +15,7 @@ from rangekeeper.model.duration import (
     make_period,
 )
 from rangekeeper.model.duration import Period, Span
-from rangekeeper.model.flow import Flow
+from rangekeeper.model.flux import Flow
 
 
 def test_month_rules_keep_the_original_anchor():

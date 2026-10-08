@@ -111,3 +111,16 @@ Canonical modules do not import `legacy`. Historical conversion reads wire data
 without constructing predecessor classes. The isolated predecessor code remains
 until the [Windows gate](../contributing/legacy-retirement.md) closes. No compatibility aliases
 restore retired public paths.
+
+## Flow coordination and acausal relations
+
+`model.flux.Stream` coordinates immutable flows and owns private reusable
+calculation state. `calculations._batch` performs bulk Polars operations.
+`model._flow_mapping` supplies fixed, amount-independent period membership to
+both numerical calculations and passive formulations. Canonical Flow and Movement
+records remain the persistent representation; frames and caches are never saved.
+
+Specifications own solve roles. Stream calculations do not assign roles or declare
+equations. Formulation builders consume explicit Value/Movement references and
+return ordinary expression records. The existing affine compiler and independent
+acceptance evaluator govern each investigation. See [ADR-005](../decisions/005-flux-and-stream-implementation.md).

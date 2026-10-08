@@ -35,6 +35,7 @@ BEHAVIORS = {
     "Flow": ("flow", "FlowBehavior"),
     "Movement": ("flow", "MovementBehavior"),
     "Period": ("period", "PeriodBehavior"),
+    "Span": ("span", "SpanBehavior"),
     "Distribution": ("distribution", "DistributionBehavior"),
 }
 

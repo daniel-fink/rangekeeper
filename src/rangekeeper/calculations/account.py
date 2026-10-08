@@ -6,7 +6,7 @@ from uuid import uuid4
 from dataclasses import dataclass
 import math
 
-from rangekeeper.model.flow import Flow
+from rangekeeper.model.flux import Flow
 from rangekeeper.model.measure import Quantity
 from rangekeeper.shared.units import default_units
 

@@ -1,18 +1,18 @@
 """Date-only coordinates, independent payment dates and explicit timing contracts."""
 
 from rangekeeper.model.duration import Frequency, PeriodTiming, DayCount
-from rangekeeper.model.flow import MissingValueHandling
+from rangekeeper.model.flux import MissingValueHandling
 from rangekeeper.calculations.series import (
     AlignmentJoin,
-    AggregationReducer,
-    ResamplingReduction,
+    AggregationMethod,
+    ResamplingMethod,
     MeanWeighting,
 )
 from rangekeeper.calculations.projection import ProjectionMethod
 from rangekeeper.calculations.account import Balance, CurrentInterest, InterestTreatment
 from rangekeeper.schema.enums import ValueKind
 
-from rangekeeper.model.flow import Flow
+from rangekeeper.model.flux import Flow
 
 from uuid import uuid4
 from datetime import date, datetime, timezone
@@ -21,7 +21,7 @@ import pytest
 
 from rangekeeper.shared.errors import ValidationError
 from rangekeeper.model.duration import Period
-from rangekeeper.model.flow import Movement
+from rangekeeper.model.flux import Movement
 from rangekeeper.model.duration import make_period, make_periods, offset
 from rangekeeper.calculations import financial, series
 
@@ -129,7 +129,7 @@ def test_payment_date_is_independent_of_coverage():
         flow.trim(start=date(2026, 1, 2), end=JANUARY.end)
     # Period aggregation states coverage, rather than inventing one payment date.
     aggregated = series.resample(
-        flow, periods=[JANUARY], reduction=ResamplingReduction.SUM
+        flow, periods=[JANUARY], method=ResamplingMethod.SUM
     ).flow
     assert aggregated.movements[0].magnitude == 100
     assert "date" not in aggregated.movements[0].field_names()

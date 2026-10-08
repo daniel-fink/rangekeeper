@@ -70,11 +70,11 @@ def equal(left: Expression, right: Expression, *, id: UUID | None = None) -> Exp
     return binary(Operator.EQUAL, left, right, id=id)
 
 
-def sum(expressions: Sequence[Expression]) -> Expression:
+def sum(summands: Sequence[Expression]) -> Expression:
     """Declare a left-associated sum in supplied order; reject an empty sequence."""
-    if not expressions:
+    if not summands:
         raise ValueError("sum requires at least one expression")
-    result = expressions[0]
-    for item in expressions[1:]:
+    result = summands[0]
+    for item in summands[1:]:
         result = add(result, item)
     return result

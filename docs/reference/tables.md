@@ -81,7 +81,7 @@ and cannot be read back as Models.
 
 ## Polars
 
-`rangekeeper.adapters.polars.to_frame(Table | Flow)` returns detached columns.
+`rangekeeper.adapters.polars.to_frame(Table | Flow | Stream)` returns detached columns.
 For Tables, row IDs and Claims remain separate metadata. Homogeneous supported
 scalars use native Polars columns; opaque or mixed cells use Object columns to
 avoid silent coercion. `to_table(frame)` copies frame cells into unidentified Rows.
@@ -117,3 +117,23 @@ table = csv.read("areas.csv", schema_overrides={"code": pl.String})
 
 CSV and ordinary dataframe round trips do not restore Row UUIDs, Claims or a Model.
 Export the required evidence separately under an explicit format contract.
+
+## Stream display
+
+`Stream({"Rent": rent, "Expenses": expenses}).display()` returns a plain-text and
+HTML table. Notebook rich display uses the same projection. Labels and units are
+shown by default; UUIDs are not. `transpose=True` puts line items on rows.
+`precision=2` changes formatting only. HTML labels are escaped. `—` means an absent
+coordinate, `?` means an unknown amount, and a known zero is shown as `0.00`.
+
+Display uses the Stream's alignment policy and does not resample or invent payment
+dates. Period labels describe coverage. Coordinate conflicts identify the lines
+that need explicit alignment or resampling. Use `join=AlignmentJoin.UNION` on the
+Stream to display gaps across compatible coordinates.
+
+`stream.to_frame()` and `polars.to_frame(stream)` return detached numeric line
+columns with `date`, `period_start`, `period_end` and `key` coordinates. Those four
+names are reserved in this projection. Line labels are the numeric column names;
+units remain on the Stream. Absence and unknown amounts both project to null in
+this numeric export; the display and source metadata distinguish them. This is
+not the lossless Flow interchange format described above.

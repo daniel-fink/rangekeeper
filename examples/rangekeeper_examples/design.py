@@ -27,7 +27,7 @@ from rangekeeper.model import (
 from rangekeeper.model.characteristics import value as local_value
 from rangekeeper.model.content import decode, encode
 from rangekeeper.model.definitions import find_classifications
-from rangekeeper.model.flow import Flow
+from rangekeeper.model.flux import Flow
 from rangekeeper.model.duration import make_periods
 
 from rangekeeper.model.expression import Reference

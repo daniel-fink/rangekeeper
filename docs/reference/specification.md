@@ -117,3 +117,24 @@ ExpressionAnalysis once for that operation. It checks declaration ownership,
 references, domains and solve roles. It does not execute queries, certify numerical
 feasibility or establish backend support. A structurally valid objective or
 Function can still be unsupported by the selected executor.
+
+## Lock and unlock quantities
+
+`specification.lock(target, quantity, id=..., model=...)` returns a new revision
+with explicit assignments. `unlock(target, id=..., model=...)` removes matching
+local assignments and declares unknowns. Both retain the equations and unrelated
+Specification content. The new metadata records `previous=specification.id`.
+Neither method saves or executes the revision.
+
+A target can be a scalar Reference, Movement UUID or Flow Value UUID. For a Flow,
+`ids=` selects Movement UUIDs; omission selects all its declared Movements. One
+Quantity applies to every selected target, or a mapping supplies a Quantity per
+selected UUID. Use `recorded=True` instead of quantity to copy recorded values
+explicitly; unresolved amounts fail. An omitted quantity never means reuse.
+
+A lock removes matching local unknowns and estimates. Role editing requires the
+pinned Model. Included contributions require `resolver=`; inherited roles and
+policy-controlled targets must be edited at their owner. Composition is checked
+after editing, and normal execution still performs full effective validation.
+Annual totals alone do not determine monthly allocations; an underdetermined
+investigation returns a feasible candidate with a rank diagnostic.

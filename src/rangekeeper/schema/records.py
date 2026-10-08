@@ -9,6 +9,7 @@ from .runtime import Record, Unset, UNSET, FrozenJSONValue, JSONValue
 from .behaviors.flow import FlowBehavior
 from .behaviors.flow import MovementBehavior
 from .behaviors.period import PeriodBehavior
+from .behaviors.span import SpanBehavior
 from .behaviors.distribution import DistributionBehavior
 
 from .enums import ActionKind as ActionKind
@@ -3450,7 +3451,7 @@ class Source(Record):
         return cast('str | None', self._field('author'))
 
 
-class Span(Period):
+class Span(SpanBehavior, Period):
     'Named extent, using the same half-open boundary convention as Period.'
     __slots__ = ()
     _kind = 'Span'

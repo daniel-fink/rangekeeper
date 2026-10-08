@@ -6,14 +6,14 @@ covered here. Plotting is tested by the installed walkthroughs and adapters.
 """
 
 from rangekeeper.model.duration import Frequency
-from rangekeeper.model.flow import MissingValueHandling
-from rangekeeper.calculations.series import ResamplingReduction
+from rangekeeper.model.flux import MissingValueHandling
+from rangekeeper.calculations.series import ResamplingMethod
 from rangekeeper.calculations.projection import ProjectionMethod
 from rangekeeper.model.duration import MonthRoll, PeriodTiming
 
 from rangekeeper.model import ValueKind
 
-from rangekeeper.model.flow import Flow
+from rangekeeper.model.flux import Flow
 
 from rangekeeper.model.distribution import Distribution
 
@@ -43,7 +43,7 @@ from rangekeeper.model import (
 )
 from rangekeeper.model.content import encode, decode
 
-from rangekeeper.model.flow import Stream
+from rangekeeper.model.flux import Stream
 from rangekeeper.model.measure import Measure, Quantity
 
 
@@ -96,9 +96,7 @@ def test_allocation_and_annual_resampling_preserve_total():
     flow = projection.allocate(Quantity(magnitude=100, units="AUD"), periods=periods)
     assert amounts(flow) == pytest.approx((4,) * 25)
     years = make_periods(date(2020, 1, 1), frequency=Frequency.YEAR, count=3)
-    reduced = series.resample(
-        flow.negate(), periods=years, reduction=ResamplingReduction.SUM
-    )
+    reduced = series.resample(flow.negate(), periods=years, method=ResamplingMethod.SUM)
     assert amounts(reduced.flow) == pytest.approx((-48, -48, -4))
     assert reduced.flow.total().magnitude == pytest.approx(-100)
 
@@ -117,7 +115,7 @@ def test_resampling_uses_declared_calendar_bins(frequency):
     result = series.resample(
         source,
         periods=periods,
-        reduction=ResamplingReduction.SUM,
+        method=ResamplingMethod.SUM,
         missing=MissingValueHandling.ZERO,
     )
     assert result.flow.total().magnitude == 6
@@ -179,7 +177,7 @@ def test_stream_selection_and_mixed_frequency_totals():
         series.resample(
             flows[1],
             periods=years,
-            reduction=ResamplingReduction.SUM,
+            method=ResamplingMethod.SUM,
             missing=MissingValueHandling.ZERO,
         )
     payments = tuple(
@@ -194,7 +192,7 @@ def test_stream_selection_and_mixed_frequency_totals():
         series.resample(
             flow,
             periods=years,
-            reduction=ResamplingReduction.SUM,
+            method=ResamplingMethod.SUM,
             missing=MissingValueHandling.ZERO,
         ).flow
         for flow in payments

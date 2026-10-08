@@ -16,15 +16,21 @@ from rangekeeper.model.expression.authoring import (
 
 
 def compound(
-    model: Model, *, id: UUID, initial: Reference, rate: Reference, result: UUID
+    model: Model,
+    *,
+    id: UUID,
+    initial: Reference,
+    rate: Reference,
+    series: UUID,
 ) -> Formulation:
     """Declare first amount = initial, then prior amount * (1 + periodic rate).
 
-    All amounts can remain unresolved. A fixed dimensionless rate makes the
+    Initial and rate are scalar References; series is a Flow Value UUID.
+    Initial uses series units; rate is dimensionless. All amounts can remain unresolved. A fixed dimensionless rate makes the
     equations affine; an unknown rate generally does not. No amounts are read.
     """
     equations, prior = [], initial
-    for index, item in enumerate(shape(model, result).movements):
+    for index, item in enumerate(shape(model, series).movements):
         current = Reference(target=item.id)
         rhs = (
             reference(prior)
@@ -37,16 +43,22 @@ def compound(
         id,
         "compound",
         equations,
-        (target_value(model, initial).id, target_value(model, rate).id, result),
+        (target_value(model, initial).id, target_value(model, rate).id, series),
     )
 
 
 def linear(
-    model: Model, *, id: UUID, initial: Reference, increment: Reference, result: UUID
+    model: Model,
+    *,
+    id: UUID,
+    initial: Reference,
+    increment: Reference,
+    series: UUID,
 ) -> Formulation:
     """Declare initial + step index * increment; first index is zero.
 
-    Increment has amount units, not a dimensionless proportional rate.
+    Initial and increment are scalar References in the series Flow units.
+    Series is a Flow Value UUID. Increment is an amount, not a proportional rate.
     """
     equations = [
         (
@@ -56,11 +68,11 @@ def linear(
                 add(reference(initial), multiply(literal(i), reference(increment))),
             ),
         )
-        for i, m in enumerate(shape(model, result).movements)
+        for i, m in enumerate(shape(model, series).movements)
     ]
     return declare(
         id,
         "linear",
         equations,
-        (target_value(model, initial).id, target_value(model, increment).id, result),
+        (target_value(model, initial).id, target_value(model, increment).id, series),
     )

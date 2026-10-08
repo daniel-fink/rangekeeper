@@ -16,7 +16,7 @@ from rangekeeper.model import (
     Definitions,
     Measure,
 )
-from rangekeeper.model.flow import Flow, Movement
+from rangekeeper.model.flux import Flow, Movement
 from rangekeeper.model.scenario import Distribution
 from rangekeeper.model.duration import make_periods, Frequency
 from rangekeeper.model.scenario.market import make_plan, generate

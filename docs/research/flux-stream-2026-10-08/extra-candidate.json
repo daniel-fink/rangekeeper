@@ -1,0 +1,13 @@
+[
+  {
+    "case": "mixed_sparse_100_lines",
+    "execute": 0.21629300000495277,
+    "maxrss": 101056512
+  },
+  {
+    "case": "hierarchy_100_by_10_by_120",
+    "construction": 65.7752737080009,
+    "execute": 9.613923375000013,
+    "maxrss": 584712192
+  }
+]

@@ -56,7 +56,7 @@ content-hash encodings remain separate provenance contracts.
 
 Store idempotency and revision conflict checks use schema equivalence. Run output
 validation uses exact comparison for preserved historical Claims. A schema-unordered
-collection rule must not erase ordering inside opaque evidence. `Stream.merge`
+collection rule must not erase ordering inside opaque evidence. Model-backed `Stream.merge`
 requires the same Model revision and exactly equal Model content; schema equivalence
 alone does not establish that two pinned views refer to the same snapshot content.
 
@@ -76,3 +76,11 @@ keys. Conversion to wire/backend strings occurs at those boundaries. Shared reco
 traversal retains original JSON pointers and never follows References or traverses
 opaque Claim content. The numerical target helpers in `model.scope` use one
 Value/Movement ownership rule; reading a quantity never creates an assignment.
+
+
+Model-backed Stream calculations retain source Value references separately from
+current derived content. `.source_values` exposes those originals; transformed
+Streams cannot be used as original Value selections in passive builders. Numerical
+resampling and aggregation use new Movement IDs. Structural trimming retains IDs.
+Builder keyword renames preserve saved operation strings, operand/binding order
+and declaration IDs. Python `financial.pv` retains the saved `present_value` name.

@@ -21,7 +21,7 @@ The former paths have no aliases. Import deterministic kernel functions directly
 from `rangekeeper.calculations.dynamics`; its old submodules are removed.
 See the [package map](../concepts/architecture.md).
 
-**Movement naming, 2026-10-06:** import `Movement` from `rangekeeper.model.flow`
+**Movement naming, 2026-10-06:** import `Movement` from `rangekeeper.model.flux`
 and use `Flow.movements`. These replace `FlowSample` and `Flow.samples` in Python
 and the `samples` field in JSON/YAML. Use `movement.coordinate` for alignment
 identity and `movement.resolve(timing=...)` for an explicit date convention. There are no aliases.
@@ -114,8 +114,9 @@ and private Flow helpers have no compatibility aliases.
 
 Use the [Model authoring example](../reference/model.md#authoring-lookup-and-revisions).
 Author measurements and Flow Values with an explicit Measure and an owner-local
-key. `Stream` selects ordered Value UUIDs from one immutable Model revision; it is
-not a mutable replacement for Model ownership. Two Values can use one Measure.
+key. `Stream.from_values` selects ordered Value UUIDs from one immutable Model
+revision. `Stream({label: flow})` coordinates directly supplied flows. Both are
+immutable and preserve Model ownership. Two Values can use one Measure.
 Names are search fields, while UUIDs establish identity.
 
 Encode and decode properties through `model.content`. The [property contract](../reference/model.md#property-content)
@@ -152,7 +153,7 @@ keep the original Flow when individual payment facts are required.
 | `Flow.from_dict/from_sequence` | Explicit ordered dates/magnitudes in `Flow.from_events`; duplicate dates need keys |
 | `Flow.from_projection` | `calculations.projection.project` or `allocate`, with Quantity and Periods |
 | Mutating Flow/Stream / `duplicate` | Immutable records; new calculation result; new Model revision for persisted changes |
-| `Stream.sum/min/max` | `series.aggregate(reducer=AggregationReducer.SUM)` (or `.MIN` / `.MAX`); exact alignment by default, explicit units/missing/join |
+| `Stream.sum/min/max` | `Stream({label: flow}).sum/min/max()`; `aggregate(method=...)` also returns coverage; exact alignment by default |
 | `Stream.product` | `series.multiply`; dimensionless factors scale quantities; unit powers remain intact |
 | Period rates treated as amounts | `series.integrate`, with explicit exposures or period day-count convention |
 | `Flow.resample(frequency)` | Explicit complete target Period grid, reduction and missing policy; every mean requires weighting |
@@ -402,3 +403,21 @@ Example builders now live in `examples/rangekeeper_examples`. Install `./example
 with the matching library, then import `rangekeeper_examples.design` or
 `rangekeeper_examples.investment`. The library no longer exports
 `rangekeeper.examples`. See [the examples guide](examples.md).
+
+## ADR-005 API migration
+
+The public Flow module is `rangekeeper.model.flux`; `model.flow` has no forwarding
+alias. Import `ResamplingMethod` and `AggregationMethod` from `calculations.series`
+and use `method=`. Callable hierarchy `reducer=` remains unchanged.
+
+Passive builder argument names follow the [mathematical-role inventory](../reference/expressions.md#passive-flow-and-hierarchy-builders).
+Rename the Python `financial.present_value` call to `financial.pv(sequence=...,
+value=...)`. Its stored declaration name stays unchanged. Compose reversion with
+explicit expressions and Movement mapping. Existing saved Formulations remain valid.
+Use `balance_basis=` for passive account schedules; numerical `Account.calculate`
+continues to use `balance=`.
+
+`Span.from_duration` creates a named extent; `.periods(frequency)` partitions it
+with existing calendar rules. Stream display needs line labels and Flow content;
+manual joins are no longer required. Notebook API migration and rendered notebook
+acceptance remain a separate phase after this codebase change.

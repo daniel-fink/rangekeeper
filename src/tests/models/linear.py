@@ -1,6 +1,6 @@
 """Readable known-data DCF composition using canonical Flow content."""
 
-from rangekeeper.model.flow import Flow, MissingValueHandling
+from rangekeeper.model.flux import Flow, MissingValueHandling
 
 from dataclasses import dataclass
 from datetime import timedelta

@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from datetime import date
 import math
 
-from rangekeeper.model.flow import Flow
+from rangekeeper.model.flux import Flow
 from rangekeeper.model.measure import Quantity
 from rangekeeper.model.duration.period import PeriodTiming
 from rangekeeper.model.duration.calendar import (
