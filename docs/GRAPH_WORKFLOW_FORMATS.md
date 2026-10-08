@@ -14,23 +14,27 @@ Model and Specification revisions separately. See [consumer contracts](CONSUMER_
 | `adapters/excel/inspection.py` | Inspect cached formulas and error cells in the existing Workbook snapshot. Its health observations have no dependency on workflow result types. |
 | `workflow/_table_operations.py` | Connect existing format-independent Evidence transformations to declarations; own their request contracts and schema fields. |
 | `workflow/runtime.py` | Establish configuration, resolve named outputs, execute declared steps, retain native operation records, compose, check and return. It contains no Excel import, native type switch or format operation names. |
-| `workflow/implementation.py` | Establish configuration/decision lineage, retain source and deferred-record metadata, and fingerprint shared computation plus selected capabilities' declared module groups. |
-| `workflow/_schema.py`, `specification.py` | Assemble the published step schema and load/validate the four reviewed documents. Shared policy expansion still precedes request construction. |
+| `workflow/implementation.py` | Fingerprint shared computation and the declared module groups for selected capabilities; retain the full installed-code audit separately. |
+| `workflow/provenance.py` | Establish configuration/decision lineage, convert source support to canonical records, and retain source and deferred-record metadata. |
+| `workflow/_schema.py`, `specification.py` | Assemble the published step schema and load/validate the four reviewed documents. The specification owner expands shared number and measurement declarations before request construction. |
 | `workflow/_model_validation.py`, `composition.py` | Validate declarations, then build definitions, object characteristics, relationships and final Assembly membership. One private construction object owns temporary indexes and attaches final object Facts after membership finalization. |
 | `workflow/_operands.py`, `checking.py` | Keep each operand's value, support, targets and completeness together; evaluate comparisons and graph invariants separately. |
 | `workflow/references.py` | Preserve every Location. Registered formatters improve presentation; other locations use a deterministic structured fallback. |
-| `_encoding.py`, `_structured.py`, `operation.py` | Shared scalar encoding, structured requests, severity and invocation contracts with no dependency on Evidence operations or adapters. |
+| `shared/encoding.py`, `shared/structured.py`, `workflow/operation.py` | Shared scalar encoding and structured requests; lightweight source invocation contracts load no catalog, runner or adapter. |
 
-`AdapterError` and `AdapterEncodingError` remain compatibility imports for the shared
-boundary errors. Evidence-specific encoding failures still raise
+Use `BoundaryError` and `EncodingError` from `rangekeeper.shared.errors`. The former
+`AdapterError` and `AdapterEncodingError` aliases are removed. Evidence-specific encoding failures still raise
 `EvidenceValidationError`. Request types are imported from their capability owner,
 such as `adapters.excel.workflow` or `workflow._table_operations`; the dynamic
 aliases in `workflow.specification` are removed.
 
-`evidence/` owns Claims, Table Evidence, validation, fingerprints and transforms.
+`workflow/evidence/` owns Claims, Table Evidence, validation, fingerprints and transforms.
+`Produced.from_evidence` retains the exact Evidence object and its fingerprint without
+creating a native Source. Source checks reuse preparation only for the same Evidence
+object within one call. Each new call prepares its inputs again.
 `workflow.reporting` prepares shared report data once for HTML and exported checks;
 `workflow.review` owns HTML and publication. `io._atomic` owns file replacement and
-create-only mechanics. Layout review is separate at
+create-only mechanics; both review builders use its `replace_json` operation. Layout review is separate at
 `adapters.cytoscape.layout.review`, with an explicit Model and bundle input.
 
 Publication distinguishes visibility from durability. A failure before pointer

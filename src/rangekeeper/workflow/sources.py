@@ -3,7 +3,7 @@
 import hashlib
 from pathlib import Path
 
-from rangekeeper.operation import _Failure
+from rangekeeper.workflow.operation import _Failure
 
 
 def resolve_file(root: Path, filenames: tuple[str, ...], source_key: str) -> Path:

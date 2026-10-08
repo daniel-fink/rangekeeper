@@ -5,14 +5,9 @@ from uuid import NAMESPACE_URL, uuid5
 
 import pytest
 
-from rangekeeper import operation
-from rangekeeper.evidence import Claim, Location, Method, Source
-from rangekeeper.evidence import (
-    Issue,
-    Severity,
-    fingerprint,
-    tabular,
-)
+from rangekeeper.workflow import operation
+from rangekeeper.workflow.evidence import Claim, Location, Method, Source
+from rangekeeper.workflow.evidence import Issue, Severity, fingerprint, tabular
 
 
 def uid(value):
@@ -68,18 +63,20 @@ def test_spec_strict_and_immutable():
 
 
 def test_numbers_meanings_lineage_and_replay():
-    raw = evidence([
-        (0,),
-        (4.0,),
-        (4.5,),
-        (-1,),
-        (True,),
-        ("4",),
-        (" — ",),
-        (" ",),
-        (None,),
-        (10**400,),
-    ])
+    raw = evidence(
+        [
+            (0,),
+            (4.0,),
+            (4.5,),
+            (-1,),
+            (True,),
+            ("4",),
+            (" — ",),
+            (" ",),
+            (None,),
+            (10**400,),
+        ]
+    )
     settings = Claim.asserted(
         "policy", id=uid("settings"), method=Method(code="test", version="1")
     )

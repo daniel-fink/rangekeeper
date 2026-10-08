@@ -10,8 +10,8 @@ class PartitionKind(Enum):
 
 
 from collections.abc import Mapping, Sequence
-from ..model.flow import Flow
-from ..duration.period import PeriodTiming
+from rangekeeper.model.flow import Flow
+from rangekeeper.model.duration.period import PeriodTiming
 
 
 def plot_flows(

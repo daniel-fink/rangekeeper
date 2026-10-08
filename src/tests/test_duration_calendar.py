@@ -3,7 +3,7 @@
 from datetime import date, datetime
 import pytest
 
-from rangekeeper.duration import (
+from rangekeeper.model.duration import (
     Frequency,
     MonthRoll,
     PeriodTiming,

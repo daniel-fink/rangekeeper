@@ -50,7 +50,7 @@ from rangekeeper.legacy.graph.provenance import (
     RelationshipState,
     Source,
 )
-from rangekeeper.adapters.errors import AdapterEncodingError
+from rangekeeper.shared.errors import EncodingError
 
 __all__ = ["dumps", "loads", "read", "write"]
 _TYPES = {
@@ -136,7 +136,7 @@ def dumps(graph: Graph) -> str:
             return {"int": str(value)}
         if kind is float:
             if not math.isfinite(value):
-                raise AdapterEncodingError("Non-finite floats are not supported")
+                raise EncodingError("Non-finite floats are not supported")
             return {"float": value.hex()}
         if kind is UUID:
             return {"uuid": str(value)}
@@ -151,7 +151,7 @@ def dumps(graph: Graph) -> str:
                 timezone,
                 ZoneInfo,
             ):
-                raise AdapterEncodingError("Unsupported timezone type")
+                raise EncodingError("Unsupported timezone type")
             return {
                 kind.__name__: [
                     value.isoformat(),
@@ -175,7 +175,7 @@ def dumps(graph: Graph) -> str:
                     if original is not value and record is not None:
                         other = {k: encode(v) for k, v in _fields(value).items()}
                         if other != record["fields"]:
-                            raise AdapterEncodingError(f"Conflicting identity {key}")
+                            raise EncodingError(f"Conflicting identity {key}")
                     return {"ref": key}
                 records[key] = (value, None)
                 payload = {k: encode(v) for k, v in _fields(value).items()}
@@ -190,7 +190,7 @@ def dumps(graph: Graph) -> str:
             }
         if kind in (dict, MappingProxyType, list, tuple, frozenset):
             if id(value) in active:
-                raise AdapterEncodingError("Cyclic payload container")
+                raise EncodingError("Cyclic payload container")
             active.add(id(value))
             try:
                 if kind in (dict, MappingProxyType):
@@ -205,7 +205,7 @@ def dumps(graph: Graph) -> str:
                 return {kind.__name__: encoded}
             finally:
                 active.remove(id(value))
-        raise AdapterEncodingError(
+        raise EncodingError(
             f"Unsupported graph payload type: {kind.__module__}.{kind.__qualname__}"
         )
 
@@ -231,7 +231,7 @@ def _unique(pairs):
     result = {}
     for key, value in pairs:
         if key in result:
-            raise AdapterEncodingError(f"Duplicate JSON key: {key}")
+            raise EncodingError(f"Duplicate JSON key: {key}")
         result[key] = value
     return result
 
@@ -252,15 +252,15 @@ def loads(content: str) -> Graph:
             or type(document["version"]) is not int
             or document["version"] != 1
         ):
-            raise AdapterEncodingError("Unsupported graph document or version")
+            raise EncodingError("Unsupported graph document or version")
         records, built, active = {}, {}, set()
         if type(document["objects"]) is not list:
-            raise AdapterEncodingError("objects must be an ordered record list")
+            raise EncodingError("objects must be an ordered record list")
         for item in document["objects"]:
             if set(item) != {"key", "type", "fields"} or item["key"] in records:
-                raise AdapterEncodingError("Malformed or duplicate identity record")
+                raise EncodingError("Malformed or duplicate identity record")
             if _TYPES.get(item["type"]) not in _IDENTIFIED:
-                raise AdapterEncodingError(
+                raise EncodingError(
                     "Identity record must name an identified RK type"
                 )
             records[item["key"]] = item
@@ -268,7 +268,7 @@ def loads(content: str) -> Graph:
         def construct(name, payload):
             cls = _TYPES.get(name)
             if cls is None:
-                raise AdapterEncodingError(f"Unsupported RK type: {name}")
+                raise EncodingError(f"Unsupported RK type: {name}")
             expected = (
                 {"taxonomies", "measures"}
                 if cls is Definitions
@@ -279,34 +279,34 @@ def loads(content: str) -> Graph:
                 )
             )
             if type(payload) is not dict or set(payload) != expected:
-                raise AdapterEncodingError(f"Invalid fields for {name}")
+                raise EncodingError(f"Invalid fields for {name}")
             return cls(**{k: decode(v) for k, v in payload.items()})
 
         def decode(value):
             if value is None or type(value) in (str, bool):
                 return value
             if type(value) is not dict:
-                raise AdapterEncodingError("Expected a tagged value")
+                raise EncodingError("Expected a tagged value")
             if set(value) == {"object", "fields"}:
                 if _TYPES.get(value["object"]) in _IDENTIFIED:
-                    raise AdapterEncodingError("Identified objects require references")
+                    raise EncodingError("Identified objects require references")
                 return construct(value["object"], value["fields"])
             if len(value) != 1:
-                raise AdapterEncodingError("Invalid typed value")
+                raise EncodingError("Invalid typed value")
             tag, data = next(iter(value.items()))
             if type(tag) is not str:
-                raise AdapterEncodingError("Value tags must be text")
+                raise EncodingError("Value tags must be text")
             if tag == "ref":
                 if data not in records:
-                    raise AdapterEncodingError(f"Dangling reference: {data}")
+                    raise EncodingError(f"Dangling reference: {data}")
                 if data in active:
-                    raise AdapterEncodingError(f"Cyclic object reference: {data}")
+                    raise EncodingError(f"Cyclic object reference: {data}")
                 if data not in built:
                     active.add(data)
                     record = records[data]
                     item = construct(record["type"], record["fields"])
                     if data != f"{type(item).__name__}:{item.id}":
-                        raise AdapterEncodingError(
+                        raise EncodingError(
                             "Identity record key disagrees with UUID"
                         )
                     built[data] = item
@@ -314,12 +314,12 @@ def loads(content: str) -> Graph:
                 return built[data]
             if tag == "int" and type(data) is str:
                 if re.fullmatch(r"0|-?[1-9][0-9]*", data) is None:
-                    raise AdapterEncodingError("Expected canonical integer text")
+                    raise EncodingError("Expected canonical integer text")
                 return int(data)
             if tag == "float" and type(data) is str:
                 result = float.fromhex(data)
                 if not math.isfinite(result) or result.hex() != data:
-                    raise AdapterEncodingError(
+                    raise EncodingError(
                         "Expected finite canonical hexadecimal float"
                     )
                 return result
@@ -328,7 +328,7 @@ def loads(content: str) -> Graph:
             if tag == "enum" and type(data) is list and len(data) == 2:
                 name, enum_value = data
                 if type(name) is not str or type(enum_value) is not str:
-                    raise AdapterEncodingError("Invalid enum payload")
+                    raise EncodingError("Invalid enum payload")
                 return _ENUMS[name](enum_value)
             if tag in ("datetime", "time") and type(data) is list and len(data) == 3:
                 text, fold, zone = data
@@ -338,13 +338,13 @@ def loads(content: str) -> Graph:
                     or fold not in (0, 1)
                     or (zone is not None and type(zone) is not str)
                 ):
-                    raise AdapterEncodingError("Invalid temporal payload")
+                    raise EncodingError("Invalid temporal payload")
                 result = (datetime if tag == "datetime" else time).fromisoformat(text)
                 if zone is not None:
                     # Preserve named-zone semantics as well as its recorded offset.
                     result = result.replace(tzinfo=ZoneInfo(zone), fold=fold)
                     if result.isoformat() != text:
-                        raise AdapterEncodingError(
+                        raise EncodingError(
                             "Timezone offset does not match recorded value"
                         )
                 return result.replace(fold=fold)
@@ -352,10 +352,10 @@ def loads(content: str) -> Graph:
                 return date.fromisoformat(data)
             if tag == "timedelta" and type(data) is list and len(data) == 3:
                 if any(type(v) is not int for v in data):
-                    raise AdapterEncodingError("Invalid timedelta payload")
+                    raise EncodingError("Invalid timedelta payload")
                 days, seconds, microseconds = cast(list[int], data)
                 if not 0 <= seconds < 86400 or not 0 <= microseconds < 1000000:
-                    raise AdapterEncodingError("Invalid timedelta payload")
+                    raise EncodingError("Invalid timedelta payload")
                 return timedelta(days=days, seconds=seconds, microseconds=microseconds)
             if tag == "unit" and type(data) is str:
                 return Index.registry.Unit(data)
@@ -367,20 +367,20 @@ def loads(content: str) -> Graph:
             ):
                 magnitude = decode(data[0])
                 if type(magnitude) not in (int, float):
-                    raise AdapterEncodingError(
+                    raise EncodingError(
                         "Quantity magnitude must be a supported finite scalar"
                     )
                 return Index.registry.Quantity(magnitude, data[1])
             if tag in ("list", "tuple", "frozenset") and type(data) is list:
                 items = [decode(v) for v in data]
                 if tag == "frozenset" and len(frozenset(items)) != len(items):
-                    raise AdapterEncodingError("Duplicate frozenset members")
+                    raise EncodingError("Duplicate frozenset members")
                 return {"list": list, "tuple": tuple, "frozenset": frozenset}[tag](
                     items
                 )
             if tag in ("dict", "mappingproxy") and type(data) is list:
                 if any(type(pair) is not list or len(pair) != 2 for pair in data):
-                    raise AdapterEncodingError(
+                    raise EncodingError(
                         "Mapping entries must be ordered key/value pairs"
                     )
                 pairs = [
@@ -389,15 +389,15 @@ def loads(content: str) -> Graph:
                 ]
                 result = _unique(pairs)
                 return MappingProxyType(result) if tag == "mappingproxy" else result
-            raise AdapterEncodingError(f"Unsupported value tag: {tag}")
+            raise EncodingError(f"Unsupported value tag: {tag}")
 
         graph = decode(document["root"])
         if not isinstance(graph, Graph):
-            raise AdapterEncodingError("Root must be a Graph")
+            raise EncodingError("Root must be a Graph")
         if set(built) != set(records):
-            raise AdapterEncodingError("Unreferenced object records")
+            raise EncodingError("Unreferenced object records")
         return graph
-    except AdapterEncodingError:
+    except EncodingError:
         raise
     except (
         ValueError,
@@ -407,7 +407,7 @@ def loads(content: str) -> Graph:
         AttributeError,
         RecursionError,
     ) as exc:
-        raise AdapterEncodingError(f"Invalid graph document: {exc}") from exc
+        raise EncodingError(f"Invalid graph document: {exc}") from exc
 
 
 def write(graph: Graph, path: Path) -> Path:

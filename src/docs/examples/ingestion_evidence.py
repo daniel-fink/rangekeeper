@@ -6,13 +6,8 @@ fingerprints; package-level imports stay stable as implementation modules evolve
 
 from uuid import NAMESPACE_URL, uuid5
 
-from rangekeeper.evidence import (
-    Issue,
-    Severity,
-    fingerprint,
-    tabular,
-)
-from rangekeeper.evidence import Claim, Location, Method, Source
+from rangekeeper.workflow.evidence import Issue, Severity, fingerprint, tabular
+from rangekeeper.workflow.evidence import Claim, Location, Method, Source
 
 
 def identifier(key):

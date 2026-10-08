@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from types import MappingProxyType
 from uuid import UUID, uuid4
 
-from rangekeeper import validate
+from rangekeeper.shared import arguments as validate
 from rangekeeper.legacy.graph._catalog import Catalog
 from rangekeeper.legacy.graph.classification import Classification
 

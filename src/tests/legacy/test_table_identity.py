@@ -1,14 +1,7 @@
 """Legacy projection keeps row identities alongside values."""
 
 from uuid import uuid5, NAMESPACE_URL
-from rangekeeper.legacy.graph import (
-    Classification,
-    Definitions,
-    Entity,
-    Graph,
-    Relationship,
-    Taxonomy,
-)
+from rangekeeper.legacy.graph import Classification, Definitions, Entity, Graph, Relationship, Taxonomy
 
 
 def uid(key):

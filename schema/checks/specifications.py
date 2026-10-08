@@ -22,9 +22,9 @@ import yaml
 
 import _library
 
-from rangekeeper.errors import ContractError
+from rangekeeper.shared.errors import ContractError
 from rangekeeper.specification.validation import validate_specification
-from rangekeeper._record_index import walk_data
+from rangekeeper.schema.index import walk_data
 
 
 def records(system):

@@ -8,13 +8,13 @@ from urllib.parse import quote, urljoin
 
 from rangekeeper.io import json as model_json
 from rangekeeper.adapters.cytoscape import project, write_viewer
-from rangekeeper.operation import fingerprint
-from rangekeeper.evidence import tabular
+from rangekeeper.workflow.operation import fingerprint
+from rangekeeper.workflow.evidence import tabular
 
-from ._declarations import plain
-from .reporting import prepare
-from .references import references
-from .checking import CheckStatus
+from rangekeeper.workflow._declarations import plain
+from rangekeeper.workflow.reporting import prepare
+from rangekeeper.workflow.references import references
+from rangekeeper.workflow.checking import CheckStatus
 
 
 def target_links(targets, viewer_url):

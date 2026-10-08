@@ -9,12 +9,7 @@ from pathlib import Path
 import pytest
 
 from rangekeeper.adapters.cytoscape.layout.check import check
-from rangekeeper.adapters.cytoscape.layout.model import (
-    Assembly,
-    Node,
-    Problem,
-    Rect,
-)
+from rangekeeper.adapters.cytoscape.layout.model import Assembly, Node, Problem, Rect
 
 CLIENT = Path(__file__).parents[1] / "rangekeeper/adapters/cytoscape/client"
 

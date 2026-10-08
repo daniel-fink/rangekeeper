@@ -5,12 +5,12 @@ from collections.abc import Mapping
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from .._records import comparison_data, exact_equal
-from .._records import FrozenJSONValue, UNSET, Unset, _freeze
-from .._schema.records import Metadata
+from rangekeeper.schema.runtime import comparison_data, exact_equal
+from rangekeeper.schema.runtime import FrozenJSONValue, UNSET, Unset, _freeze
+from rangekeeper.schema.records import Metadata
 
 if TYPE_CHECKING:
-    from .model import Model
+    from rangekeeper.model.model import Model
 
 
 @dataclass(frozen=True, slots=True)

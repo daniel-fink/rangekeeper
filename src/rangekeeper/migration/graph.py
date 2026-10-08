@@ -16,10 +16,10 @@ from types import MappingProxyType
 from uuid import UUID, uuid4
 from zoneinfo import ZoneInfo
 
-from ..model import Model
-from ..model.content import encode
-from .._schema.validation import document_version
-from .._records import _json_copy
+from rangekeeper.model import Model
+from rangekeeper.model.content import encode
+from rangekeeper.schema.validation import document_version
+from rangekeeper.schema.runtime import _json_copy
 
 
 @dataclass(frozen=True, slots=True)

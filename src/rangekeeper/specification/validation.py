@@ -10,37 +10,37 @@ mathematics require a graph adapter and are reported explicitly as unsupported.
 import math
 from typing import TYPE_CHECKING, Any, cast
 from uuid import UUID
-from ..model.scope import Scope, reference_key, numerical_units
-from rangekeeper._validation import require, require_declarations, require_acyclic
+from rangekeeper.model.scope import Scope, reference_key, numerical_units
+from rangekeeper.shared.validation import require, require_declarations, require_acyclic
 from rangekeeper.model.expression.validation import ExpressionAnalysis
 from rangekeeper.model.formulation.preparation import prepare_formulations
 from rangekeeper.model.validation import check_model
 from rangekeeper.specification.composition import (
     batch_cases,
-    compose_specification,
     specification_catalogue,
+    validate_roles,
 )
-from .._record_index import walk_data
+from rangekeeper.schema.index import walk_data
 from collections.abc import Callable, Mapping
-from .._records import Record
-from .._schema.validation import document_version
-from .._validation import bounded, checked
-from ..diagnostics import Issue, ValidationReport
-from .composition import compose_specification, Composition
-from ..errors import (
+from rangekeeper.schema.runtime import Record
+from rangekeeper.schema.validation import document_version
+from rangekeeper.shared.validation import bounded, checked
+from rangekeeper.shared.diagnostics import Issue, ValidationReport
+from rangekeeper.specification.composition import compose_specification, Composition
+from rangekeeper.shared.errors import (
     ContractError,
     MissingReferenceError,
     ReferenceTypeError,
     IdentityConflictError,
     UnitError,
 )
-from ..references import SpecificationResolver
-from ..units import UnitSystem, default_units
+from rangekeeper.shared.references import SpecificationResolver
+from rangekeeper.shared.units import UnitSystem, default_units
 from dataclasses import dataclass
 
 
 if TYPE_CHECKING:
-    from ..model.model import Model
+    from rangekeeper.model.model import Model
 
 
 def validate_specification(
@@ -236,12 +236,8 @@ def _validate_concrete(
         return numerical_units(target, scope.targets, scope.measures)
 
     def supplied(collection):
-        targets = set()
         for assignment in specification.get(collection) or []:
             target = assignment["target"]
-            key = reference_key(target)
-            require(key not in targets, f"duplicate {collection} target")
-            targets.add(key)
             expected = eligible(target)
             quantity = assignment["quantity"]
             require(
@@ -257,26 +253,24 @@ def _validate_concrete(
                 require(
                     units_compatible(actual, expected), "incompatible supplied units"
                 )
-        return targets
 
-    assigned = supplied("assignments")
+    roles = validate_roles(specification)
+    assigned, unknowns, controlled = (
+        roles["assignments"],
+        roles["unknowns"],
+        roles["policy"],
+    )
+    supplied("assignments")
     references = specification.get("unknowns") or []
-    unknowns = {reference_key(r) for r in references}
-    require(len(references) == len(unknowns), "duplicate unknown")
     for target in references:
         eligible(target)
-    require(not assigned & unknowns, "assigned and unknown roles overlap")
-    estimates = supplied("estimates")
-    require(estimates <= unknowns, "estimate target is not an unknown")
-    controlled = set()
+    supplied("estimates")
+    require(roles["estimates"] <= unknowns, "estimate target is not an unknown")
     if specification.get("policy"):
-        from ..policies.validation import validate_policy
+        from rangekeeper.specification.policy.validation import validate_policy
 
-        controlled = validate_policy(
+        validate_policy(
             specification["policy"], scope=scope, units_compatible=units_compatible
-        )
-        require(
-            not controlled & (assigned | unknowns), "policy-controlled roles overlap"
         )
 
     # Imposed predicates and every objective need role completeness. Unused
@@ -312,7 +306,7 @@ def _validate_concrete(
         "missing solve role for required Value",
     )
 
-    from .composition import validate_settings
+    from rangekeeper.specification.composition import validate_settings
 
     validate_settings(specification.get("settings") or {})
     return scope, analysis
@@ -413,9 +407,9 @@ def prepare(
     units: UnitSystem = default_units,
 ) -> PreparedValidation:
     """Check one composition without recomposing; retain successful prerequisites."""
-    from ..model.model import Model
-    from .._schema.records import Measure
-    from ..model.validation import recorded_unit_issues
+    from rangekeeper.model.model import Model
+    from rangekeeper.schema.records import Measure
+    from rangekeeper.model.validation import recorded_unit_issues
 
     if not isinstance(composition, Composition):
         raise TypeError("composition must be a Composition")

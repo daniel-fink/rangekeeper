@@ -1,7 +1,7 @@
 """Four intentional type errors, checked by the generation CI tool."""
 
 from rangekeeper import Model, Specification
-from rangekeeper.execution import Executor, Tolerances
+from rangekeeper.run.execution import Executor, Tolerances
 from rangekeeper.io import MemoryStore
 
 

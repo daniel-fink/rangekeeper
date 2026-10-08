@@ -22,11 +22,11 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from time import monotonic
 
-from .check import check, metrics
-from .model import Problem, Rect
-from .minizinc_data import encode
-from .reduction import collision_pairs
-from .result import Result
+from rangekeeper.adapters.cytoscape.layout.check import assess
+from rangekeeper.adapters.cytoscape.layout.model import Problem, Rect
+from rangekeeper.adapters.cytoscape.layout.minizinc_data import encode
+from rangekeeper.adapters.cytoscape.layout.reduction import collision_pairs
+from rangekeeper.adapters.cytoscape.layout.result import Result
 
 SCORES = (
     "false_enclosures",
@@ -160,13 +160,15 @@ def solve(
     if not isfinite(time_limit) or time_limit <= 0:
         raise ValueError("time_limit must be positive and finite")
     if initial is not None:
-        if initial.problem_fingerprint != problem.fingerprint or check(
-            problem, initial.rectangles
-        ):
+        if initial.problem_fingerprint != problem.fingerprint:
+            raise ValueError("Initial geometry must match the problem")
+        findings, initial_measurements = assess(
+            problem, initial.rectangles, initial.grids
+        )
+        if findings:
             raise ValueError(
                 "Initial geometry must match the problem and pass strict checking"
             )
-        metrics(problem, initial.rectangles, initial.grids)
     if neighborhood is not None:
         known = {n.id for n in problem.nodes} | {a.id for a in problem.assemblies}
         if initial is None or not neighborhood or not set(neighborhood) <= known:
@@ -223,14 +225,13 @@ def solve(
                         for k, (group, i) in enumerate(zip(data["mg"], data["mo"]))
                         if group == g
                     }
-        findings = check(problem, rectangles)
+        findings, measured = assess(problem, rectangles, grids)
         if any(
             f.code != "exclusion" or result.mode == ResultMode.STRICT for f in findings
         ):
             raise RuntimeError(
                 f"Solver result failed independent geometry check: {findings}"
             )
-        measured = metrics(problem, rectangles, grids)
         for i, name in enumerate(SCORES):
             if name in measured and solution["scores"][i] != measured[name]:
                 raise RuntimeError(f"Solver/checker objective disagreement: {name}")
@@ -287,7 +288,7 @@ def solve(
             # solver compilation. Keep its origin distinct from native solutions.
             result.rectangles = deepcopy(initial.rectangles)
             result.grids = deepcopy(initial.grids)
-            result.measurements = metrics(problem, result.rectangles, result.grids)
+            result.measurements = deepcopy(initial_measurements)
             result.status = ResultStatus.FEASIBLE
             result.strict_status = StrictStatus.SAT
             result.incumbent_source = "checked_seed"

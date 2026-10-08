@@ -17,9 +17,9 @@ from uuid import UUID, uuid4
 import pytest
 import yaml
 
-from rangekeeper._schema import records as r
-from rangekeeper._schema.validation import schema_for, validate
-from rangekeeper.errors import ValidationError
+from rangekeeper.schema import records as r
+from rangekeeper.schema.validation import schema_for, validate
+from rangekeeper.shared.errors import ValidationError
 from rangekeeper.model.validation import validate as validate_model
 from rangekeeper.specification.validation import (
     validate_records as validate_specification,
@@ -293,11 +293,11 @@ def test_shared_specification_and_run_validation():
 def test_lightweight_imports():
     script = """
 import sys
-from rangekeeper._schema.records import Model, Metadata
+from rangekeeper.schema.records import Model, Metadata
 from rangekeeper.model.validation import validate
 from uuid import uuid4
 assert validate(Model(metadata=Metadata(id=uuid4(), schema_version="0.7.0"))).valid
-for prefix in ("linkml", "linkml_runtime", "numpy", "pandas", "matplotlib", "pint", "pyomo", "specklepy", "rangekeeper.graph"):
+for prefix in ("linkml", "linkml_runtime", "numpy", "pandas", "matplotlib", "pint", "pyomo", "specklepy", "rangekeeper.model.system.view", "rangekeeper.model.system.hierarchy", "rangekeeper.model.system.reduction"):
     assert not any(name == prefix or name.startswith(prefix + ".") for name in sys.modules), prefix
 """
     subprocess.run([sys.executable, "-c", script], check=True)
@@ -325,7 +325,7 @@ def test_timestamp_formats_are_enforced():
 
 
 def test_slot_lookup_cache_is_immutable_and_public_metadata_is_detached():
-    from rangekeeper._schema.validation import _slot_map, slots_for
+    from rangekeeper.schema.validation import _slot_map, slots_for
 
     declaration = _slot_map("Value")
     with pytest.raises(TypeError):
@@ -334,3 +334,40 @@ def test_slot_lookup_cache_is_immutable_and_public_metadata_is_detached():
     detached["id"]["options"][0]["kind"] = "string"
     assert slots_for("Value")["id"]["options"][0]["kind"] != "string"
     assert _slot_map("Value") is declaration
+
+
+def test_construction_copies_once_and_keeps_boundary_failures(monkeypatch):
+    from rangekeeper.schema import runtime
+
+    original = runtime._json_copy
+    roots = []
+
+    def counted(value, active=None):
+        if active is None:
+            roots.append(value)
+        return original(value, active)
+
+    monkeypatch.setattr(runtime, "_json_copy", counted)
+    data = {
+        "id": str(uuid4()),
+        "kind": "asserted",
+        "method": {"code": "manual"},
+        "content": {"items": [0, False, {"nested": "original"}]},
+    }
+    record = r.Claim.from_data(data)
+    assert len(roots) == 1 and roots[0] is data
+    data["content"]["items"][2]["nested"] = "changed"
+    assert record.content["items"][2]["nested"] == "original"
+    roots.clear()
+    assert validate("Claim", data).valid
+    assert len(roots) == 1 and roots[0] is data
+    cyclic = []
+    cyclic.append(cyclic)
+    with pytest.raises(ValueError, match="cyclic"):
+        r.Claim.from_data({**data, "content": cyclic})
+    report = validate("Claim", {**data, "content": cyclic})
+    assert [issue.code for issue in report.issues] == ["structure.json"]
+    malformed = {**data, "kind": "unsupported"}
+    with pytest.raises(ValidationError):
+        r.Claim.from_data(malformed)
+    assert not validate("Claim", malformed).valid

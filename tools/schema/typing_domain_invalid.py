@@ -2,7 +2,7 @@
 
 from uuid import uuid4
 from rangekeeper.model import Model, Metadata, Update
-from rangekeeper.references import DocumentResolver
+from rangekeeper.shared.references import DocumentResolver
 from rangekeeper.specification import Specification
 
 model = Model.create(metadata=Metadata(id=uuid4(), schema_version="0.7.0"))

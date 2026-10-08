@@ -12,9 +12,9 @@ from rangekeeper.adapters.cytoscape.layout.model import (
 from rangekeeper.adapters.cytoscape.layout.result import ResultStatus, StrictStatus
 from dataclasses import replace
 
-from .check import check, metrics
-from .model import Assembly, Node, Problem, Rect
-from .result import Result
+from rangekeeper.adapters.cytoscape.layout.check import assess, metrics
+from rangekeeper.adapters.cytoscape.layout.model import Assembly, Node, Problem, Rect
+from rangekeeper.adapters.cytoscape.layout.result import Result
 
 
 def grid_seed(problem: Problem) -> Result | None:
@@ -198,14 +198,15 @@ def grid_seed(problem: Problem) -> Result | None:
     if built is None:
         return None
     rectangles, grids = built
-    if check(problem, rectangles):
+    findings, measured = assess(problem, rectangles, grids)
+    if findings:
         raise RuntimeError("Constructive seed failed independent checking")
     return Result(
         ResultStatus.FEASIBLE,
         StrictStatus.SAT,
         rectangles=rectangles,
         grids=grids,
-        measurements=metrics(problem, rectangles, grids),
+        measurements=measured,
         problem_fingerprint=problem.fingerprint,
         reason="Checked recursive grid seed; no optimum claimed",
     )

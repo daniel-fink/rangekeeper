@@ -4,15 +4,7 @@ from dataclasses import replace
 
 import pytest
 
-from rangekeeper.legacy.graph import (
-    Assembly,
-    Classification,
-    Definitions,
-    Entity,
-    Graph,
-    Taxonomy,
-    UnknownDefinitionError,
-)
+from rangekeeper.legacy.graph import Assembly, Classification, Definitions, Entity, Graph, Taxonomy, UnknownDefinitionError
 from rangekeeper.legacy.measure import Index, Measure
 
 

@@ -9,7 +9,7 @@ A Run records a finalized attempt. Strict codecs preserve field presence; stores
 | `run/run.py` | Frozen Run facade over the generated `RunRecord`, with `from_data`, `id`, `metadata`, `record`, `report`, and detached `to_data`. No revise method. |
 | `run/report.py`, `run/outputs.py` | Shared status/report rules and pure output conformance checks; no output helper owns traversal state. |
 | `run/validation.py` | One operation-local owner resolves exact documents, caches matching preparation, and checks the Run tree; public `validate(run, *, resolver) -> ValidationReport`. Raw catalogue checks are explicitly named `validate_records`. |
-| `references.py` | `SpecificationResolver` supplies Model/Specification reads; `DocumentResolver` extends it with Run reads. Domain code imports no IO implementation. |
+| `shared/references.py` | `SpecificationResolver` supplies Model/Specification reads; `DocumentResolver` extends it with Run reads. Domain code imports no IO implementation. |
 | `io/store.py` | `Document` union and `RecordStore` protocol: three typed reads plus `put(document) -> UUID`. |
 | `io/json.py`, `io/yaml.py` | Explicit-kind `loads`, `dumps`, `read`, and atomic create-only `write`. YAML is imported only when used. |
 | `io/memory.py`, `io/directory.py` | `MemoryStore()` and `DirectoryStore(root)` implement immutable revision storage. |
@@ -30,7 +30,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from uuid import uuid4
 import rangekeeper as rk
-from rangekeeper.metadata import Metadata
+from rangekeeper.schema import Metadata
 from rangekeeper.specification import SpecificationRecord
 from rangekeeper.run import RunRecord, Report, Status, Diagnostic, CompletionStatus, SolutionStatus, Severity, validate as validate_run
 from rangekeeper.io import MemoryStore, DirectoryStore, json

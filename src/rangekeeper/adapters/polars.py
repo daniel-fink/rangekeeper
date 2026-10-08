@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 from typing import TYPE_CHECKING
-from ..model.flow import Flow
-from ..table import Table
-from ..duration.period import PeriodTiming
+from rangekeeper.model.flow import Flow
+from rangekeeper.shared.table import Table
+from rangekeeper.model.duration.period import PeriodTiming
 
 if TYPE_CHECKING:
     from polars import DataFrame

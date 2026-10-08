@@ -6,9 +6,13 @@ from uuid import UUID, uuid4
 import pytest
 import yaml
 
-from rangekeeper._record_index import RecordIndex, walk_data
-from rangekeeper._records import exact_equal
-from rangekeeper.errors import ContractError, IdentityConflictError, ReferenceTypeError
+from rangekeeper.schema.index import RecordIndex, walk_data
+from rangekeeper.schema.runtime import exact_equal
+from rangekeeper.shared.errors import (
+    ContractError,
+    IdentityConflictError,
+    ReferenceTypeError,
+)
 from rangekeeper.model import (
     Model,
     Definitions,
@@ -37,6 +41,7 @@ class Resolver:
         self.model = model
         self.specifications = {item.id: item for item in specifications}
         self.model_calls = []
+        self.specification_calls = []
 
     def load_model(self, identity):
         self.model_calls.append(identity)
@@ -44,6 +49,7 @@ class Resolver:
         return self.model
 
     def load_specification(self, identity):
+        self.specification_calls.append(identity)
         return self.specifications[identity]
 
 
@@ -58,6 +64,42 @@ def specification(**fields):
             metadata=Metadata(id=uuid4(), schema_version="0.7.0"), **fields
         )
     )
+
+
+@pytest.mark.parametrize("leaf_count", (1, 10, 50))
+def test_batch_preparation_exports_and_resolves_each_revision_once(
+    monkeypatch,
+    leaf_count,
+):
+    from collections import Counter
+    from rangekeeper.run.execution.planning import Plan
+
+    model = Model.create(metadata=Metadata(id=uuid4(), schema_version="0.7.0"))
+    common = specification(model=model.id)
+    leaves = tuple(specification(includes=(common.id,)) for _ in range(leaf_count))
+    root = specification(cases=tuple(leaf.id for leaf in leaves))
+    resolver = Resolver(model, common, *leaves)
+    exports = Counter()
+    original = Specification.to_data
+
+    def exported(document):
+        exports[document.id] += 1
+        return original(document)
+
+    monkeypatch.setattr(Specification, "to_data", exported)
+    documents, compositions = Plan(resolver).resolve(root)
+
+    assert exports == {identity: 1 for identity in documents}
+    assert len(documents) == leaf_count + 2
+    assert Counter(resolver.specification_calls) == {
+        identity: 1 for identity in documents if identity != root.id
+    }
+    assert resolver.model_calls == [model.id]
+    for leaf in leaves:
+        composition = compositions[leaf.id]
+        assert composition.model_id == model.id
+        assert {item.id for item in composition.contributors} == {common.id, leaf.id}
+        assert all(item is documents[item.id] for item in composition.contributors)
 
 
 def test_index_retains_paths_and_rejects_duplicate_catalogue_identity():
@@ -160,7 +202,7 @@ def test_unknown_units_do_not_prove_dimensionless_arguments():
     "consumer", ["function", "predicate", "objective", "reporting"]
 )
 def test_query_domain_acceptance_at_actual_consumer_boundaries(kinds, consumer):
-    from rangekeeper.errors import ValidationError
+    from rangekeeper.shared.errors import ValidationError
 
     measure, entity, function = (str(uuid4()) for _ in range(3))
     values = [
@@ -386,16 +428,16 @@ def test_model_raw_preparation_checks_structure_once_and_preserves_history_error
     monkeypatch,
 ):
     from rangekeeper.model.validation import validate
-    import rangekeeper._schema.validation as structure
+    import rangekeeper.schema.validation as structure
 
-    original = structure.validate
+    original = structure._validate_json
     calls = []
 
     def counted(kind, value):
         calls.append(kind)
         return original(kind, value)
 
-    monkeypatch.setattr(structure, "validate", counted)
+    monkeypatch.setattr(structure, "_validate_json", counted)
     assert validate(dict(metadata=dict(id=str(uuid4()), schema_version="0.7.0"))).valid
     assert calls.count("Model") == 1
     report = validate({"metadata": {}}, history=[{"schema_version": "0.7.0"}])
@@ -404,7 +446,7 @@ def test_model_raw_preparation_checks_structure_once_and_preserves_history_error
 
 def test_preparation_rechecks_model_units_under_a_different_caller_context():
     from rangekeeper.model import System, Value, ValueKind
-    from rangekeeper.units import UnitSystem
+    from rangekeeper.shared.units import UnitSystem
 
     currency = Measure(id=uuid4(), code="money", name="Money", units="USD")
     value = Value(
@@ -457,9 +499,9 @@ def test_supplied_units_reach_policy_runtime_and_stored_run_outcomes(published):
     """Exercise real converted comparisons through both public entry points."""
     from copy import deepcopy
     from rangekeeper.io import MemoryStore
-    from rangekeeper.policies import Policy, evaluate
+    from rangekeeper.specification.policy import Policy, evaluate
     from rangekeeper.run import Run, validate
-    from rangekeeper.units import UnitSystem
+    from rangekeeper.shared.units import UnitSystem
 
     conversions = []
 

@@ -12,14 +12,14 @@ mathematics. Generated records remain the only Python field definitions.
 
 | Module | Implemented responsibility |
 | --- | --- |
-| `model/model.py`, `_record_index.py` | Immutable Model facade; schema-directed revision-local UUID/type/owner indexes with original declaration paths. |
-| `model/{entity,assembly,relationship,system,measure}.py`, `model/{expression,formulation}/`, `metadata.py` | Explicit aliases of generated nested records, without handwritten field copies. |
+| `model/model.py`, `schema/index.py` | Immutable Model facade; schema-directed revision-local UUID/type/owner indexes with original declaration paths. |
+| `model/{entity,assembly,relationship,measure}.py`, `model/{system,expression,formulation}/`, `schema/` | Explicit aliases of generated nested records, without handwritten field copies. |
 | `model/{characteristics,definitions,provenance}.py` | Owner-local Value/Label lookup; catalogue UUID lookup versus code search; Fact and upstream Location traversal. |
-| `model/{update,diff}.py`, `_records.py`, `_revision.py` | Atomic complete-section replacement and descriptive comparison, using generated ordering metadata. |
-| `units.py`, `model/validation.py` | Private lazy Pint registry, declared py-moneyed currency catalogue and shared checks for declared/recorded units. |
+| `model/{update,diff}.py`, `schema/runtime.py`, `schema/revision.py` | Atomic complete-section replacement and descriptive comparison, using generated ordering metadata. |
+| `shared/units.py`, `model/validation.py` | Private lazy Pint registry, declared py-moneyed currency catalogue and shared checks for declared/recorded units. |
 | `specification/specification.py` | Immutable locally valid saved contribution or batch. |
 | `specification/composition.py` | Immutable effective requirements, contributor identities/snapshots and source paths. |
-| `specification/validation.py`, `references.py` | Complete investigation validation against an injected read-only resolver. |
+| `specification/validation.py`, `shared/references.py` | Complete investigation validation against an injected read-only resolver. |
 
 Model owns its revision-local index. Lookup, diff and internal preparation reuse
 that index. Standalone Definitions helpers build a catalogue-scoped index, so a
@@ -35,12 +35,12 @@ acceptance/rejection contract.
 
 | Module | Responsibility and operations |
 | --- | --- |
-| `validate.py` | Python argument guards: `require_uuid`, `require_text`, `require_code`. Invalid caller arguments raise `TypeError`/`ValueError`; these functions do not inspect documents. |
-| `_validation.py` | Domain-independent `require`, `require_unique`, `require_acyclic`, `require_ownership`; single record preparation via `checked_record` and its mapping boundary `checked` and prerequisite gating/report conversion via `bounded`. |
+| `shared/arguments.py` | Python argument guards: `require_uuid`, `require_text`, `require_code`. Invalid caller arguments raise `TypeError`/`ValueError`; these functions do not inspect documents. |
+| `shared/validation.py` | Domain-independent `require`, `require_unique`, `require_acyclic`, `require_ownership`; single record preparation via `checked_record` and its mapping boundary `checked` and prerequisite gating/report conversion via `bounded`. |
 | `model/formulation/` | Owner-local naming rules, ordered declaration locations and `prepare_formulations`, which returns Scope, ExpressionAnalysis and located Formulations. |
 | `model/scope.py`, `model/expression/` | UUID-keyed declaration and target lookup; separate content/signature checks; one expression analysis; directional domain comparison and predicate checks. |
 | `{model,specification,run}/validation.py` | Public report-returning orchestration; domain-specific rules remain in their owning packages. |
-| `diagnostics.py`, `errors.py` | `Issue`, `ValidationReport`, and `ContractError` with optional rule code and JSON Pointer. |
+| `shared/diagnostics.py`, `shared/errors.py` | `Issue`, `ValidationReport`, and `ContractError` with optional rule code and JSON Pointer. |
 
 `Scope` contains lookup data only. Its tables and identity set are read-only, but
 record values are borrowed from a prepared envelope: it is temporary analysis state,
@@ -56,7 +56,7 @@ single expression node. There is no `check_codes` switch. Conformance expression
 fixtures explicitly check their single code collection before predicate validation.
 
 Generic helpers do not import Model, Specification, Run, or IO behavior. Domain
-packages import them directly; errors are imported from `errors.py`. Argument guards
+packages import them directly; errors are imported from `shared/errors.py`. Argument guards
 retain their existing runtime behavior; `is_text` now supplies a `TypeGuard[str]`
 annotation so static checking understands the returned value type.
 
@@ -85,7 +85,7 @@ reusing mathematical preparation.
 
 ```python
 from uuid import uuid4
-from rangekeeper.metadata import Metadata
+from rangekeeper.schema import Metadata
 from rangekeeper.model import (
     Model, Entity, System, Definitions, Measure, Quantity,
     Characteristics, Value, ValueKind, Update,
@@ -159,7 +159,7 @@ known local reference kinds, duplicate requirements, roles, settings and header 
 External references and incomplete solve roles are permitted in a saved contribution.
 
 ```python
-from rangekeeper.errors import MissingReferenceError
+from rangekeeper.shared.errors import MissingReferenceError
 from rangekeeper.specification import Specification, SpecificationRecord
 from rangekeeper.model.expression import Reference
 

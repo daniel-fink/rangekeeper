@@ -22,7 +22,7 @@ from linkml.generators.pythongen import PythonGenerator
 from linkml_runtime.utils.schemaview import SchemaView
 
 ROOT = Path(__file__).resolve().parents[2]
-DESTINATION = ROOT / "src/rangekeeper/_schema"
+DESTINATION = ROOT / "src/rangekeeper/schema"
 PINNED = {
     "linkml": "1.11.1",
     "linkml-runtime": "1.11.1",
@@ -222,9 +222,9 @@ def generate():
             "from collections.abc import Mapping",
             "from uuid import UUID",
             "from datetime import date as Date",
-            "from .._records import Record, Unset, UNSET, FrozenJSONValue, JSONValue",
+            "from .runtime import Record, Unset, UNSET, FrozenJSONValue, JSONValue",
             *[
-                f"from .._behaviors.{module} import {behavior}"
+                f"from .behaviors.{module} import {behavior}"
                 for module, behavior in BEHAVIORS.values()
             ],
             "",

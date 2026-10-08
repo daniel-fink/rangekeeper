@@ -18,14 +18,14 @@ from uuid import UUID, uuid4
 import pytest
 
 from rangekeeper import Model, Specification
-from rangekeeper.errors import MissingReferenceError, ValidationError
+from rangekeeper.shared.errors import MissingReferenceError, ValidationError
 from rangekeeper.io import MemoryStore, DirectoryStore, yaml
 from rangekeeper.run import validate
 from rangekeeper.specification import SpecificationRecord
-from rangekeeper.execution import Executor, Tolerances
-from rangekeeper.execution import preparation, compiler, acceptance, publication
-from rangekeeper.execution.backends import PyomoHighs, Result
-from rangekeeper.execution.errors import NumericalError
+from rangekeeper.run.execution import Executor, Tolerances
+from rangekeeper.run.execution import preparation, compiler, acceptance, publication
+from rangekeeper.run.execution.backends import PyomoHighs, Result
+from rangekeeper.run.execution.errors import NumericalError
 
 EXAMPLES = Path(__file__).resolve().parents[2] / "schema/examples"
 HOME = UUID("194afc26-3e2e-507b-ad0c-a73a4b0b2ccd")
@@ -436,7 +436,7 @@ def test_tiny_budget_never_claims_infeasibility():
 
 
 def test_deadline_kills_and_reaps_a_stalled_worker(monkeypatch, tmp_path):
-    from rangekeeper.execution.backends import pyomo
+    from rangekeeper.run.execution.backends import pyomo
 
     real_run = subprocess.run
     pid_file = tmp_path / "worker.pid"
@@ -746,7 +746,7 @@ def test_scalar_execution_retains_unrelated_rich_content():
 
 
 def test_scalar_preparation_reuses_the_composed_requirements(monkeypatch):
-    from rangekeeper.execution import planning as implementation
+    from rangekeeper.run.execution import planning as implementation
 
     store, _ = setup()
     specification = spec()

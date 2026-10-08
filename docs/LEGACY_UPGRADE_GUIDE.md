@@ -9,6 +9,18 @@ under `rangekeeper.legacy`. The old root and `graph` paths have no aliases; see
 [legacy isolation](LEGACY_ISOLATION.md).
 Do not build new consumers on that group or treat old Graph JSON as Model JSON.
 
+**Package ownership, 2026-10-08:** root `Model`, `Specification` and `Run` imports
+remain. Import Table/Row from `rangekeeper.shared.table`, Model graph operations
+from `rangekeeper.model.system`, passive equations from
+`rangekeeper.model.formulation`, captured futures from `rangekeeper.model.scenario`,
+policy operations from `rangekeeper.specification.policy`, and the executor from
+`rangekeeper.run.execution`. Source Evidence and invocation contracts live in
+`rangekeeper.workflow.evidence` and `rangekeeper.workflow.operation`. Import Metadata
+from `rangekeeper.schema` and boundary errors from `rangekeeper.shared.errors`.
+The former paths have no aliases. Import deterministic kernel functions directly
+from `rangekeeper.calculations.dynamics`; its old submodules are removed.
+See the [package map](README.md#package-ownership-and-imports).
+
 **Movement naming, 2026-10-06:** import `Movement` from `rangekeeper.model.flow`
 and use `Flow.movements`. These replace `FlowSample` and `Flow.samples` in Python
 and the `samples` field in JSON/YAML. Use `movement.coordinate` for alignment
@@ -28,14 +40,14 @@ revision; older snapshots remain historical. `Value.kind=ValueKind.FLOW` still i
 the content shape. See the [contract](CALCULATIONS.md#flow-semantics-and-explicit-operations)
 and [verification](research/full-migration/flow-semantics/README.md).
 
-**Duration namespace, 2026-10-06:** use `rangekeeper.duration` for calendar
-operations. `rangekeeper.temporal` is removed without an alias. The records remain
-in `rangekeeper.model.duration`. Old `duration.Type/Sequence/Span` callers require
+**Duration namespace:** use `rangekeeper.model.duration` for calendar operations
+and Period/Span records. The former `rangekeeper.temporal` and `rangekeeper.duration`
+paths are removed without aliases. Old `duration.Type/Sequence/Span` callers require
 an explicit port. The private `_legacy_duration` module has also been removed.
 
 ## Current graph API changes
 
-Import `reducers` from `rangekeeper.graph` and use its qualified names:
+Import `reducers` from `rangekeeper.model.system` and use its qualified names:
 
 | Retired API | Replacement |
 | --- | --- |
@@ -43,7 +55,7 @@ Import `reducers` from `rangekeeper.graph` and use its qualified names:
 | `reducers.mean_quantities` | `reducers.mean` |
 | `reducers.min_quantity` | `reducers.min` |
 | `reducers.max_quantity` | `reducers.max` |
-| `graph.projection.to_tree_table(hierarchy)` | `graph.projection.to_table(hierarchy)` |
+| `graph.projection.to_tree_table(hierarchy)` | `model.system.projection.to_table(hierarchy)` |
 | `aggregation.known_subtotal(id)` | `aggregation.available_value(id)` |
 
 These names have no aliases. `to_table(view)` keeps flat View order;
@@ -110,7 +122,7 @@ from rangekeeper.model import (
 )
 from rangekeeper.model.content import encode, decode
 from rangekeeper.model.flow import Stream, MissingValueHandling
-from rangekeeper.duration import make_periods, Frequency, PeriodTiming, DayCount
+from rangekeeper.model.duration import make_periods, Frequency, PeriodTiming, DayCount
 from rangekeeper.calculations import series
 
 periods = make_periods(date(2026, 1, 1), frequency=Frequency.MONTH, count=3)
@@ -179,7 +191,7 @@ keep the original Flow when individual payment facts are required.
 
 | Old call or assumption | Replacement / deliberate change |
 |---|---|
-| `duration.Type` / pandas frequency inference | Explicit `frequency=Frequency.MONTH` etc.; ten calendar frequencies in `duration.calendar` |
+| `duration.Type` / pandas frequency inference | Explicit `frequency=Frequency.MONTH` etc.; ten calendar frequencies in `model.duration.calendar` |
 | Inclusive `Span.end_date` | Half-open `[start,end)` Period/Span; add one calendar day when mapping an inclusive date-only end |
 | `Flow.from_dict/from_sequence` | Explicit ordered dates/magnitudes in `Flow.from_events`; duplicate dates need keys |
 | `Flow.from_projection` | `calculations.projection.project` or `allocate`, with Quantity and Periods |
@@ -196,18 +208,18 @@ keep the original Flow when individual payment facts are required.
 | Account constructor calculates silently | `Account.calculate(..., balance=..., current_interest=..., treatment=...)`; result has opening/closing/overdraft/interest Flows |
 
 `Frequency`, `PeriodTiming`, `MonthRoll` and `DayCount` come from
-`rangekeeper.duration`. Frequency text from external configuration must be converted
+`rangekeeper.model.duration`. Frequency text from external configuration must be converted
 explicitly, for example `Frequency("month")`. Offsets and sequences default to
 `MonthRoll.PRESERVE_END`; `CLAMP` keeps the original day where possible. A former
 `month_end=True` call on a mid-month anchor needs explicit alignment first:
 `align(day, frequency=Frequency.MONTH).last`. Retain that original anchor when
 extending a sequence. Stored Period fields are `start_inclusive` and `end_exclusive`.
 
-Import `Balance`, `CurrentInterest` and `InterestTreatment` from `rangekeeper.account`.
+Import `Balance`, `CurrentInterest` and `InterestTreatment` from `rangekeeper.calculations.account`.
 Simple, compound and capitalized calculations become EXCLUDED/SEPARATE,
 EXCLUDED/FINANCED and INCLUDED/FINANCED, respectively. Advance uses CLOSING;
 arrears uses OPENING. INCLUDED requires FINANCED. The default remains closing,
-excluded and separate. The passive `formulations.account.schedule` supports the
+excluded and separate. The passive `model.formulation.account.schedule` supports the
 nonnegative fixed-rate subset; signed overdrafts remain a known-data calculation.
 
 Multiplying `AUD/year` by a dimensionless market factor leaves `AUD/year`.
@@ -365,7 +377,7 @@ and reporting operations. This complete example is checked outside the checkout:
 
 ```python
 from rangekeeper.examples import investment
-from rangekeeper.execution import Executor
+from rangekeeper.run.execution import Executor
 from rangekeeper.io import MemoryStore
 from rangekeeper.run import validate as validate_run, SolutionStatus
 
@@ -383,7 +395,7 @@ assert len(execution.report.outcomes) >= 1
 assert accepted.metadata.previous == investment_model.id
 ```
 
-Use `formulations` builders for declarations and `calculations` for known-data
+Use `model.formulation` builders for declarations and `calculations` for known-data
 results. Fixed-rate growth and discounting can solve forward or inverse initial
 amounts. General IRR and unknown discount/growth rates are not affine investigations.
 Do not embed Python callbacks in policy records or perform calculations in a model
@@ -393,8 +405,8 @@ constructor. Keep source-building `WorkflowSpec` separate from mathematical
 ## Captured scenarios and policy comparisons
 
 ```python
-from rangekeeper.scenarios import market, replay
-from rangekeeper.duration import make_periods, Frequency, PeriodTiming, DayCount
+from rangekeeper.model.scenario import market, replay
+from rangekeeper.model.duration import make_periods, Frequency, PeriodTiming, DayCount
 
 scenario_base = Model.create(metadata=Metadata(id=uuid4(), schema_version="0.7.0"))
 scenario_plan = market.make_plan(
@@ -451,7 +463,9 @@ its finding alongside an unresolved quantity. Workflow checks use Model operands
 `workbench.inspect` reads without writing. `workbench.build` writes a new local
 attempt bundle with `model.json`. Only `attempt.result` from that successful
 attempt is current. Never substitute `attempt.previous` after failure. Use
-`layout_review.build` as a separate presentation step. Upgrade v1/v2 profiles
+`adapters.cytoscape.layout.review.build(model, bundle=..., profile=..., output_root=...)`
+as a separate presentation step. Pass the Model and bundle from the successful
+attempt explicitly. Upgrade v1/v2 profiles
 explicitly with `migration.layout.upgrade_profile(profile, model=model)`; v3 uses
 classification UUIDs, owner-local Value keys and explicit units.
 

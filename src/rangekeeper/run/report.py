@@ -6,7 +6,7 @@ Tree validation adds exact revision and publication checks after resolution.
 
 from datetime import datetime
 import math
-from .._validation import require
+from rangekeeper.shared.validation import require
 
 
 def instant(value):
@@ -17,7 +17,7 @@ def instant(value):
 
 def completion_for(completions):
     """Combine child completion states; an empty sequence is completed."""
-    from .._schema.enums import CompletionStatus
+    from rangekeeper.schema.enums import CompletionStatus
 
     states = tuple(completions)
     if any(not isinstance(state, CompletionStatus) for state in states):

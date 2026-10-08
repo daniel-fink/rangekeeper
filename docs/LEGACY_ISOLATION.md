@@ -8,7 +8,7 @@ strict acceptance procedure and do not change the connector gate.
 
 ```text
 src/rangekeeper/
-  graph/                         Model-backed views, hierarchy and reductions
+  model/system/                  Model-backed views, hierarchy and reductions
   model/                         canonical domain records
   migration/                     explicit historical wire converters
   legacy/
@@ -36,7 +36,7 @@ Use canonical records and operations for new work:
 ```python
 from rangekeeper import Model
 from rangekeeper.model import Entity, Assembly, Measure
-from rangekeeper.graph import View
+from rangekeeper.model.system import View
 from rangekeeper.migration import convert_graph
 ```
 
@@ -51,8 +51,8 @@ from rangekeeper.legacy.api import Speckle
 The former `rangekeeper.api`, `rangekeeper.measure`, old domain exports from
 `rangekeeper.graph`, and `rangekeeper.graph.legacy` paths have no aliases.
 The predecessor View and reduction code now lives directly in `legacy.graph`.
-The canonical `graph.errors` contains only Model-operation errors; predecessor
-errors live with the predecessor. Shared encoding errors remain in root `errors`.
+The canonical `model.system.errors` contains only Model-operation errors; predecessor
+errors live with the predecessor. Shared encoding errors live in `shared.errors`.
 
 Dependency direction is explicit: predecessor code can use shared Evidence,
 validation and table utilities; canonical code must not import `legacy`.

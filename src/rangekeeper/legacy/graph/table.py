@@ -7,7 +7,7 @@ import networkx as nx
 import pint
 
 from rangekeeper.legacy.measure import Measure
-from rangekeeper.table import Row, Table as BaseTable, TableError, _validate_names
+from rangekeeper.shared.table import Row, Table as BaseTable, TableError, _validate_names
 from rangekeeper.legacy.graph.assembly import Assembly
 from rangekeeper.legacy.graph.entity import Entity
 from rangekeeper.legacy.graph.view import View
@@ -35,7 +35,7 @@ _DEFAULT_FIELDS = (
 
 
 class Table(BaseTable):
-    """Retiring Graph-only projection; generic table storage lives at rk.table."""
+    """Retiring Graph-only projection; generic table storage lives at rangekeeper.shared.table."""
 
     @classmethod
     def from_view(

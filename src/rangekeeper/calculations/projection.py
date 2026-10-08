@@ -6,10 +6,10 @@ from __future__ import annotations
 from collections.abc import Sequence
 import math
 from enum import Enum, unique
-from ..model.flow import Flow
-from ..model.duration import Period
-from ..model.measure import Quantity
-from ..model.distribution import Distribution
+from rangekeeper.model.flow import Flow
+from rangekeeper.model.duration import Period
+from rangekeeper.model.measure import Quantity
+from rangekeeper.model.distribution import Distribution
 
 
 @unique
@@ -75,8 +75,6 @@ def pad(
         raise ValueError("padding lengths must be nonnegative integers")
 
     def fill(mode, count, endpoint):
-        if mode not in {PaddingMode.NIL, PaddingMode.UNITIZE, PaddingMode.EXTEND}:
-            raise ValueError("unknown padding mode")
         if count and mode == PaddingMode.EXTEND and endpoint is None:
             raise ValueError("cannot extend an empty path")
         return (

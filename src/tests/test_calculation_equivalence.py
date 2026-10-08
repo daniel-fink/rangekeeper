@@ -15,10 +15,10 @@ from pathlib import Path
 import pytest
 
 from rangekeeper.model.measure import Quantity
-from rangekeeper.duration import Frequency, make_periods
-from rangekeeper.account import Balance, CurrentInterest, InterestTreatment
+from rangekeeper.model.duration import Frequency, make_periods
+from rangekeeper.calculations.account import Balance, CurrentInterest, InterestTreatment
 
-from rangekeeper.calculations.dynamics.cyclicality import calculate_cycle
+from rangekeeper.calculations.dynamics import calculate_cycle
 
 
 REFERENCE = json.loads(

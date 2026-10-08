@@ -6,8 +6,8 @@ import json
 from uuid import UUID
 from rangekeeper.model import Model
 from rangekeeper.io import json as codec
-from rangekeeper._records import _json_copy
-from .errors import MappingError
+from rangekeeper.schema.runtime import _json_copy
+from rangekeeper.adapters.speckle.errors import MappingError
 
 # The same contract file drives C# constants and cross-language fixtures.
 CONTRACT = json.loads(files(__package__).joinpath("contract.json").read_text())

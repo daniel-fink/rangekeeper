@@ -1,9 +1,9 @@
 {
   "inputs": {
-    "src/rangekeeper/_schema/schema.json": "459bce9b199b92cfcfec6a37c4594fbbd56e84d01d1d49f5f80e021059c1f559",
-    "src/rangekeeper/_schema/slots.json": "ff99c2200f446092aa786ecf50560eade8f425478fada9f9f8ee499c3eb2643b",
     "src/rangekeeper/adapters/speckle/contract.json": "92292288d4581851ecb6e298b510959c67efb17a279afced005a7af60a1f733a",
-    "tools/schema/generate_csharp.py": "5d2c8f6f85919087de318592450221e139d3169a46de45bf9381d703a6dcc77a"
+    "src/rangekeeper/schema/schema.json": "459bce9b199b92cfcfec6a37c4594fbbd56e84d01d1d49f5f80e021059c1f559",
+    "src/rangekeeper/schema/slots.json": "ff99c2200f446092aa786ecf50560eade8f425478fada9f9f8ee499c3eb2643b",
+    "tools/schema/generate_csharp.py": "499377ae074d985d0fb23989eeb6f01b962b13909e015a210227751da4c62590"
   },
   "outputs": {
     "Records.cs": "c1b7ab3cee3c712c37478b77b7134591ff44e43df3157d85d1686679228aed61",

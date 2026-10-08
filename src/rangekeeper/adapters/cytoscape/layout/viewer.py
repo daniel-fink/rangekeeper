@@ -16,9 +16,9 @@ from tempfile import mkdtemp
 from uuid import uuid4
 from rangekeeper.io._atomic import PublishedFileError, PublishedFileInterrupted, replace
 
-from .check import check, metrics
-from .model import Problem, Rect, from_document
-from .result import Result
+from rangekeeper.adapters.cytoscape.layout.check import assess
+from rangekeeper.adapters.cytoscape.layout.model import Problem, Rect, from_document
+from rangekeeper.adapters.cytoscape.layout.result import Result
 
 
 class PublishedLayoutError(PublishedFileError):
@@ -78,10 +78,8 @@ def validate_saved_layout(document: dict) -> None:
         a.id: set(a.members) for a in problem.assemblies
     } != {i: set(a["entities"]) for i, a in document["assemblies"].items()}:
         raise ValueError("Saved layout identities or memberships do not match")
-    if (
-        check(problem, rectangles)
-        or metrics(problem, rectangles, geometry["grids"]) != geometry["metrics"]
-    ):
+    findings, measured = assess(problem, rectangles, geometry["grids"])
+    if findings or measured != geometry["metrics"]:
         raise ValueError("Saved layout failed independent geometry/score validation")
     if problem.header < 28 or any(
         r.width < 32 or r.height < 28 for r in rectangles.values()
@@ -142,8 +140,8 @@ def export_layout_review(
     An interruption may leave an unreferenced temporary/run directory; it cannot
     make the pointer refer to a partial bundle. Runtime metadata is separate.
     """
-    from .. import write_viewer
-    from .render import svg
+    from rangekeeper.adapters.cytoscape import write_viewer
+    from rangekeeper.adapters.cytoscape.layout.render import svg
 
     output = with_saved_layout(document, problem, result)
     if output.get("reviewUrl") and review_html is None:

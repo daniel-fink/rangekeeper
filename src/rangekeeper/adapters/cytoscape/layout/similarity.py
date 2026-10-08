@@ -13,7 +13,7 @@ from rangekeeper.model import ValueKind, Model
 from rangekeeper.model.characteristics import value as find_value, label as find_label
 from rangekeeper.model.content import decode
 from rangekeeper.model.provenance import fact_for
-from rangekeeper.units import default_units
+from rangekeeper.shared.units import default_units
 
 
 @dataclass(frozen=True)

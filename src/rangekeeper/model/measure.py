@@ -1,6 +1,6 @@
 """Schema-derived measure records; fields and constructors are generated from LinkML."""
 
-from .._schema.records import (
+from rangekeeper.schema.records import (
     Measure as Measure,
     Quantity as Quantity,
     Measurement as Measurement,

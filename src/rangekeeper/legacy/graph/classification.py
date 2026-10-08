@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from uuid import UUID, uuid4
 
-from rangekeeper import validate
+from rangekeeper.shared import arguments as validate
 
 
 __all__ = ["Classification"]

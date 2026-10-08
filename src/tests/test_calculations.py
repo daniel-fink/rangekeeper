@@ -2,7 +2,7 @@
 
 from rangekeeper.model.content import ContentKind
 
-from rangekeeper.duration import Frequency, PeriodTiming, DayCount
+from rangekeeper.model.duration import Frequency, PeriodTiming, DayCount
 from rangekeeper.model.flow import MissingValueHandling
 from rangekeeper.calculations.series import (
     AlignmentJoin,
@@ -11,8 +11,8 @@ from rangekeeper.calculations.series import (
     MeanWeighting,
 )
 from rangekeeper.calculations.projection import ProjectionMethod, PaddingMode
-from rangekeeper.account import Balance, CurrentInterest, InterestTreatment
-from rangekeeper._schema.enums import ValueKind, DistributionFamily
+from rangekeeper.calculations.account import Balance, CurrentInterest, InterestTreatment
+from rangekeeper.schema.enums import ValueKind, DistributionFamily
 
 from rangekeeper.calculations.account import Account
 from rangekeeper.model.distribution import Distribution
@@ -28,7 +28,7 @@ import pytest
 from rangekeeper import Model
 from rangekeeper.model.content import encode, decode
 from rangekeeper.model.flow import Stream
-from rangekeeper._schema.records import (
+from rangekeeper.schema.records import (
     Metadata,
     Entity,
     Value,
@@ -40,7 +40,7 @@ from rangekeeper._schema.records import (
 )
 from rangekeeper.model.measure import Quantity
 from rangekeeper.model import distribution as distributions
-from rangekeeper.duration import make_periods, make_period, offset, year_fraction
+from rangekeeper.model.duration import make_periods, make_period, offset, year_fraction
 from rangekeeper.calculations import series, projection, financial, account
 from rangekeeper.calculations.interval import Interval
 from rangekeeper.io import json as codec
@@ -451,12 +451,12 @@ def test_adapter_exports_are_detached():
 
 
 def test_dynamics_fixed_inputs():
-    from rangekeeper.calculations.dynamics.cyclicality import calculate_cycle
-    from rangekeeper.calculations.dynamics.volatility import (
+    from rangekeeper.calculations.dynamics import calculate_cycle
+    from rangekeeper.calculations.dynamics import (
         calculate_autoregression,
         accumulate_volatility,
     )
-    from rangekeeper.calculations.dynamics.shock import calculate_shock
+    from rangekeeper.calculations.dynamics import calculate_shock
 
     assert calculate_cycle(count=4, period=4, phase=0, amplitude=2) == pytest.approx(
         [0, 2, 0, -2]
@@ -471,7 +471,7 @@ def test_dynamics_fixed_inputs():
 
 
 def test_weighted_rates_and_partial_period_helpers():
-    from rangekeeper.duration import periods_between, cover
+    from rangekeeper.model.duration import periods_between, cover
 
     periods = make_periods(date(2020, 1, 1), frequency=Frequency.MONTH, count=2)
     rates = Flow.from_periods(periods, (10, 20), units="AUD/year")
@@ -527,7 +527,7 @@ def test_weighted_rates_and_partial_period_helpers():
 
 def test_distinct_property_and_flow_roles_reject_malformed_content():
     from tests.test_execution import data
-    from rangekeeper.errors import ValidationError
+    from rangekeeper.shared.errors import ValidationError
 
     base = data("model")
     value = base["system"]["entities"][0]["characteristics"]["values"][0]

@@ -79,6 +79,6 @@ def validate_document(document: dict) -> None:
         raise ValueError("Layout anchor outside display scope")
 
     if "savedLayout" in document:
-        from .layout.viewer import validate_saved_layout
+        from rangekeeper.adapters.cytoscape.layout.viewer import validate_saved_layout
 
         validate_saved_layout(document)

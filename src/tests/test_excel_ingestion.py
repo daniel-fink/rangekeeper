@@ -13,9 +13,9 @@ from zipfile import ZipFile
 import pytest
 
 from rangekeeper.adapters import document, excel
-from rangekeeper.adapters.errors import AdapterEncodingError
-from rangekeeper.evidence import ClaimKind, Location
-from rangekeeper.evidence import fingerprint, tabular
+from rangekeeper.shared.errors import EncodingError
+from rangekeeper.workflow.evidence import ClaimKind, Location
+from rangekeeper.workflow.evidence import fingerprint, tabular
 
 NS = {"s": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
 
@@ -376,7 +376,7 @@ columns:
         text.replace("start: 1", "start: 1, start: 2"),
         "!!python/object/apply:os.system ['echo wrong']",
     ):
-        with pytest.raises(AdapterEncodingError):
+        with pytest.raises(EncodingError):
             excel.load_specification(invalid)
 
 
@@ -386,7 +386,7 @@ def test_fresh_process_determinism_and_optional_import_isolation(workbook_path):
 import sys
 from uuid import NAMESPACE_URL
 from rangekeeper.adapters import excel
-from rangekeeper.evidence import fingerprint
+from rangekeeper.workflow.evidence import fingerprint
 book = excel.read(sys.argv[1], namespace=NAMESPACE_URL, source_key="jll", name="JLL").output
 spec = excel.ExtractionSpec(id="one", version=1, sheet="Unit Pricing", rows=excel.Rows(start=8,end=8), columns=(excel.Column(name="unit",column="A"),))
 print(fingerprint(excel.extract_table(book,spec).output))
@@ -402,7 +402,7 @@ def guarded(name, *args, **kwargs):
     return original(name, *args, **kwargs)
 builtins.__import__ = guarded
 from rangekeeper.adapters import document
-from rangekeeper import operation
+from rangekeeper.workflow import operation
 from rangekeeper.adapters import excel
 assert excel.ExtractionSpec
 """
@@ -478,7 +478,7 @@ def test_missing_inspection_sheet_uses_actual_workbook_root(workbook_path):
 def test_resolved_defaults_and_yaml_mapping_order_have_identical_operations(
     workbook_path,
 ):
-    from rangekeeper.operation import fingerprint as operation_fingerprint
+    from rangekeeper.workflow.operation import fingerprint as operation_fingerprint
 
     book = read(workbook_path).output
     implicit = declaration()

@@ -1,6 +1,6 @@
 # Scalar execution with Pyomo and HiGHS
 
-The execution package implements **actual affine feasibility execution** in `rangekeeper.execution`.
+The execution package implements **actual affine feasibility execution** in `rangekeeper.run.execution`.
 The executor reads the canonical Model and an additive Specification composition,
 lowers declared mathematics, solves in a separate process, independently evaluates
 the original expressions on serialized candidate quantities, and publishes accepted
@@ -22,14 +22,14 @@ python -m pip install './src[execution,yaml]'
 ```
 
 The backend pins are `pyomo==6.10.1` and `highspy==1.15.1`. Importing
-`rangekeeper` or `rangekeeper.execution` does not load either backend. Pyomo/HiGHS
+`rangekeeper` or `rangekeeper.run.execution` does not load either backend. Pyomo/HiGHS
 load in a child process when solving. Pint may load NumPy during unit operations
 when NumPy is installed. Optional dependencies are listed in the [installation guide](../src/README.md).
 
 ```python
 from pathlib import Path
 from rangekeeper import Model, Specification
-from rangekeeper.execution import Executor
+from rangekeeper.run.execution import Executor
 from rangekeeper.run import SolutionStatus
 from rangekeeper.io import DirectoryStore, yaml
 
@@ -69,16 +69,15 @@ store. It never reads the synthetic expected-output fixtures as results.
 
 | Module | Responsibility |
 | --- | --- |
-| `execution/preparation.py` | Reuse the prepared exact composition and Model, retain contributor scope, collect imposed predicates and normalize assignments to Measure units. |
-| `execution/compiler.py` | Derive affine coefficients after assignments; check arithmetic capability and dimensions; retain original Constraint identity and row scaling. No Pyomo dependency. |
-| `execution/evaluator.py` | Traverse original comparisons with shared `model.expression.evaluation` arithmetic. Uses no compiled coefficients or solver variables. |
-| `execution/acceptance.py` | Check serialized candidate quantities, exact assignments and every original equality/bound; return dimensional residual diagnostics. |
-| `execution/publication.py` | Construct a new revision, update quantity evidence, round-trip through JSON and provide a candidate resolver for pre-publication Run validation. |
-| `execution/settings.py` | Resolve requested/default limits and account for unsupported or adjusted settings. |
-| `execution/backends/base.py` | Narrow problem/result protocol; a backend candidate is a claim awaiting acceptance. |
-| `execution/backends/pyomo.py`, `_worker.py` | Parent deadline and private numerical JSON protocol; child builds Pyomo variables/constraints, invokes HiGHS and reports observed status/options/versions/counts. |
-| `execution/executor.py`, `planning.py` | Sequential batches, reference resolution and one composition per leaf. |
-| `execution/attempt.py` | Per-attempt deadline, preparation, backend result, independent acceptance and output-before-Run persistence. |
+| `run/execution/preparation.py` | Reuse the prepared exact composition and Model, retain contributor scope, collect imposed predicates and normalize assignments to Measure units. |
+| `run/execution/compiler.py` | Derive affine coefficients after assignments; check arithmetic capability and dimensions; retain original Constraint identity and row scaling. No Pyomo dependency. |
+| `run/execution/acceptance.py` | Check serialized candidate quantities, exact assignments and every original equality/bound with `model.expression.evaluation` arithmetic; return dimensional residual diagnostics without compiled coefficients or solver variables. |
+| `run/execution/publication.py` | Construct a new revision, update quantity evidence, round-trip through JSON and provide a candidate resolver for pre-publication Run validation. |
+| `run/execution/settings.py` | Resolve requested/default limits and account for unsupported or adjusted settings. |
+| `run/execution/backends/base.py` | Narrow problem/result protocol; a backend candidate is a claim awaiting acceptance. |
+| `run/execution/backends/pyomo.py`, `_worker.py` | Parent deadline and private numerical JSON protocol; child builds Pyomo variables/constraints, invokes HiGHS and reports observed status/options/versions/counts. |
+| `run/execution/executor.py`, `planning.py` | Sequential batches, reference resolution and one composition per leaf. |
+| `run/execution/attempt.py` | Per-attempt deadline, preparation, backend result, independent acceptance and output-before-Run persistence. |
 
 Derived preparation/compiler/result objects are runtime operations, not a second
 authoritative field schema. Domain classes do not import execution or solvers.
@@ -183,7 +182,7 @@ contracts. See [verification](VERIFICATION.md) for current checks.
 
 ## Implementation identity
 
-`execution.implementation` records distinct compiler and evaluator fingerprints.
+`run.execution.implementation` records distinct compiler and evaluator fingerprints.
 Each manifest includes its declared semantic Python sources, packaged schema
 resources, and relevant library versions. Shared arithmetic changes alter both
 identities. Comments and docstrings do not. Missing declared files fail explicitly.

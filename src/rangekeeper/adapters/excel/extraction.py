@@ -3,27 +3,27 @@
 from typing import Any
 from uuid import UUID, uuid5
 
-from rangekeeper import _structured
-from rangekeeper.operation import (
+from rangekeeper.shared import structured as _structured
+from rangekeeper.workflow.operation import (
     Operation,
     Outcome,
     _Failure,
     _invoke,
     fingerprint,
 )
-from rangekeeper.evidence import (
+from rangekeeper.workflow.evidence import (
     Evidence,
     EvidenceKey,
     Issue,
     Severity,
     tabular,
 )
-from rangekeeper.evidence.errors import encode
+from rangekeeper.workflow.evidence.errors import encode
 
-from rangekeeper.evidence import Claim, Method
-from rangekeeper.table import Table
-from .snapshot import Cell, Workbook, Worksheet
-from .specification import ExtractionSpec
+from rangekeeper.workflow.evidence import Claim, Method
+from rangekeeper.shared.table import Table
+from rangekeeper.adapters.excel.snapshot import Cell, Workbook, Worksheet
+from rangekeeper.adapters.excel.specification import ExtractionSpec
 
 _METHOD = Method(code="rk.excel.extract_table", version="2")
 _VALUE_METHOD = Method(code="rk.excel.stored_value", version="1")

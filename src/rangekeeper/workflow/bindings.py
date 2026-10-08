@@ -6,11 +6,11 @@ graph objects or require workflow execution.
 
 from string import Formatter
 
-from rangekeeper.operation import _Failure
+from rangekeeper.workflow.operation import _Failure
 
-from ._declarations import fields, sequence, text
-from rangekeeper.evidence import tabular
-from rangekeeper.evidence.predicates import equal
+from rangekeeper.workflow._declarations import fields, sequence, text
+from rangekeeper.workflow.evidence import tabular
+from rangekeeper.workflow.evidence.predicates import equal
 
 
 def binding(spec, row, evidence, outputs):

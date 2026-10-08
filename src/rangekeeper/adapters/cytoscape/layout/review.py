@@ -11,7 +11,7 @@ from time import perf_counter
 
 import yaml  # type: ignore[import-untyped]
 
-from rangekeeper import _records
+from rangekeeper.schema import runtime as _records
 from rangekeeper.adapters.cytoscape import ASSETS, project
 from rangekeeper.adapters.cytoscape.layout import profile as profiles
 from rangekeeper.adapters.cytoscape.layout.seed import grid_seed
@@ -22,17 +22,13 @@ from rangekeeper.adapters.cytoscape.layout.viewer import (
 )
 
 from rangekeeper.io import _atomic
-from rangekeeper.io._atomic import replace
+from rangekeeper.io._atomic import replace_json
 from rangekeeper.model import Model
-
-
-def _atomic_json(path, value):
-    return replace(path, json.dumps(value, ensure_ascii=False, indent=2) + "\n")
 
 
 def _record_attempt(root, outcome):
     root.mkdir(parents=True, exist_ok=True)
-    _atomic_json(
+    replace_json(
         root / "latest-attempt.json",
         {
             "status": outcome.status.value,

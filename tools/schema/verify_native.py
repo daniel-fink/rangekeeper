@@ -11,8 +11,8 @@ from linkml_runtime.dumpers import json_dumper
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
-from rangekeeper._schema import native
-from rangekeeper._schema.validation import validate
+from rangekeeper.schema import native
+from rangekeeper.schema.validation import validate
 
 
 def normalized(value, key=None):

@@ -6,8 +6,8 @@ from dataclasses import dataclass
 from datetime import date
 from rangekeeper.model.flow import Flow, MissingValueHandling
 from rangekeeper.model.measure import Quantity
-from rangekeeper.account import CurrentInterest, InterestTreatment
-from rangekeeper.duration import Frequency, PeriodTiming, make_periods
+from rangekeeper.calculations.account import CurrentInterest, InterestTreatment
+from rangekeeper.model.duration import Frequency, PeriodTiming, make_periods
 from rangekeeper.calculations import projection, series, account
 
 

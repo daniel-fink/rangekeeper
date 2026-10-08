@@ -4,8 +4,8 @@ import argparse
 import json
 from pathlib import Path
 
-from .graph import convert_graph
-from ..io import json as codec
+from rangekeeper.migration.graph import convert_graph
+from rangekeeper.io import json as codec
 
 
 def main() -> int:

@@ -26,15 +26,15 @@ from rangekeeper.model import (
     System,
     Metadata,
 )
-from rangekeeper.operation import Operation, _Failure
-from rangekeeper.operation import fingerprint as operation_fingerprint
-from rangekeeper.evidence import Claim
-from rangekeeper._schema.validation import document_version
-from .provenance import ProvenanceBuilder
+from rangekeeper.workflow.operation import Operation, _Failure
+from rangekeeper.workflow.operation import fingerprint as operation_fingerprint
+from rangekeeper.workflow.evidence import Claim
+from rangekeeper.schema.validation import document_version
+from rangekeeper.workflow.provenance import ProvenanceBuilder
 
-from ._model_validation import validate_measurements, validate_model_declaration
-from .bindings import binding, condition, template
-from .references import references
+from rangekeeper.workflow import _model_validation
+from rangekeeper.workflow.bindings import binding, condition, template
+from rangekeeper.workflow.references import references
 
 
 @dataclass(frozen=True, slots=True)
@@ -63,7 +63,7 @@ def compose(
     Explicit phases retain canonical references without an intermediate graph
     model. This API can be used independently of YAML and workflow execution.
     """
-    validate_model_declaration(
+    _model_validation.validate_model_declaration(
         model, {name: "table" for name in outputs}, decision_ids=tuple(decisions)
     )
     return _compose(model, outputs, settings, decisions, operation, namespace=namespace)
@@ -400,8 +400,8 @@ class _Composition:
                 self.edge_claims[uid] = self.attach(edge, upstream)
 
     def finalize_memberships(self):
-        from rangekeeper._validation import require_acyclic
-        from rangekeeper.errors import ContractError
+        from rangekeeper.shared.validation import require_acyclic
+        from rangekeeper.shared.errors import ContractError
 
         # Membership is selected once by canonical classification identity. A scan
         # per owner needlessly repeated every generated-record lookup on large sources.
@@ -482,4 +482,4 @@ class _Composition:
         )
 
 
-__all__ = ["compose", "Finding", "validate_measurements", "validate_model_declaration"]
+__all__ = ["compose", "Finding"]

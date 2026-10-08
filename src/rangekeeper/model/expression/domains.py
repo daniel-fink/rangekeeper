@@ -1,7 +1,7 @@
 """Local expression domain rules; no traversal, graph execution or evaluation."""
 
-from ..scope import Scope
-from ..._validation import require
+from rangekeeper.model.scope import Scope
+from rangekeeper.shared.validation import require
 from enum import Enum
 from uuid import UUID
 from typing import cast

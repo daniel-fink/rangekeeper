@@ -2,9 +2,9 @@
 
 from collections.abc import Mapping, Sequence, Callable
 from typing import TYPE_CHECKING
-from .._records import Record
-from .._schema.validation import document_version
-from .._validation import (
+from rangekeeper.schema.runtime import Record
+from rangekeeper.schema.validation import document_version
+from rangekeeper.shared.validation import (
     bounded,
     checked,
     checked_record,
@@ -12,8 +12,8 @@ from .._validation import (
     require_acyclic,
     require_declarations,
 )
-from ..diagnostics import Issue, ValidationReport
-from .._schema.records import (
+from rangekeeper.shared.diagnostics import Issue, ValidationReport
+from rangekeeper.schema.records import (
     Model as ModelRecord,
     Measure,
     Domain,
@@ -21,18 +21,18 @@ from .._schema.records import (
     Value,
     Flow,
 )
-from ..units import UnitSystem, default_units
-from .._record_index import RecordIndex, walk, walk_data
+from rangekeeper.shared.units import UnitSystem, default_units
+from rangekeeper.schema.index import RecordIndex, walk, walk_data
 from uuid import UUID
-from ..errors import UnitError
-from .definitions import check_definitions
-from .system import check_system
-from .provenance import check_provenance
-from .formulation.preparation import prepare_formulations
+from rangekeeper.shared.errors import UnitError
+from rangekeeper.model.definitions import check_definitions
+from rangekeeper.model.system.validation import check_system
+from rangekeeper.model.provenance import check_provenance
+from rangekeeper.model.formulation.preparation import prepare_formulations
 
 
 if TYPE_CHECKING:
-    from .model import Model
+    from rangekeeper.model.model import Model
 
 
 def validate(
@@ -47,7 +47,7 @@ def validate(
     recorded Value quantities to their Measures; they do not infer equation units
     or inspect arbitrary Claim content. Input/export data is never mutated.
     """
-    from .model import Model
+    from rangekeeper.model.model import Model
 
     if isinstance(model, Model):
         return _validate(

@@ -1,21 +1,21 @@
 """Typed catalogue lookup, separate from code searching."""
 
 from uuid import UUID
-from .._schema.records import (
+from rangekeeper.schema.records import (
     Definitions as Definitions,
     Measure,
     Taxonomy,
     Classification,
     Function,
 )
-from ..errors import MissingReferenceError, ReferenceTypeError
-from ..validate import require_uuid, require_text
-from .._validation import require, require_unique, require_acyclic
+from rangekeeper.shared.errors import MissingReferenceError, ReferenceTypeError
+from rangekeeper.shared.arguments import require_uuid, require_text
+from rangekeeper.shared.validation import require, require_unique, require_acyclic
 
 
 def _lookup(items, identity, kind):
     require_uuid(identity, "id")
-    from .._record_index import RecordIndex
+    from rangekeeper.schema.index import RecordIndex
 
     return RecordIndex.build(items or Definitions()).get(identity, kind)
 

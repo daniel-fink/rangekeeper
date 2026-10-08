@@ -6,31 +6,32 @@ Source workflows build canonical Models from explicit evidence. Tables and dataf
 
 ```text
 rangekeeper/
-  table.py                       Row, Table, TableError; no domain dependency
-  evidence/                      source Claims, Evidence, transforms and fingerprints
-  operation.py                   Operation, Outcome, Diagnostic; source invocations
-  _encoding.py, _structured.py    exact source fingerprints and immutable requests
-  graph/
+  shared/
+    table.py                     Row, Table, TableError; no domain dependency
+    encoding.py, structured.py    exact source fingerprints and immutable requests
+  model/system/
     projection.py                FieldColumn, ValueColumn, LabelColumn
                                  to_table for View or Hierarchy
-    view.py, hierarchy.py        pinned Model selection and traversal
+    view.py, hierarchy.py         pinned Model selection and traversal
   adapters/
-    csv.py, polars.py            Table interchange; not Model persistence
-    document.py, excel/          native source snapshots and evidence extraction
-    visualization.py            Model-backed View and Table presentation
+    csv.py, polars.py             Table interchange; not Model persistence
+    document.py, excel/           native source snapshots and evidence extraction
+    visualization.py             Model-backed View and Table presentation
     cytoscape/                   Model/View projection and packaged offline viewer
   workflow/
+    evidence/                    source Claims, Evidence, transforms and fingerprints
+    operation.py                 Operation, Outcome, Diagnostic; source invocations
     specification.py, _schema.py WorkflowSpec, StepSpec, load, schema
     catalog.py, _contracts.py     closed capabilities and explicit input wiring
     runtime.py                   run -> Outcome[WorkflowResult]
     composition.py               compose -> Model, findings, business-key index
-    provenance.py                source support -> generated Claims/Sources/Facts
-    checking.py, _operands.py    source comparisons and Model invariants
+    provenance.py                configuration lineage, Claims/Sources/Facts and metadata
+    checking.py, _operands.py     source comparisons and Model invariants
     reporting.py, review.py       shared report preparation, HTML and export
     __main__.py                  explicit CLI
   model/, specification/, run/   canonical records and domain behaviour
   io/                            canonical JSON/YAML and revision stores
-  execution/                     mathematical execution; unchanged by a workflow run
+  run/execution/                 mathematical execution; unchanged by a workflow run
 ```
 
 The adapter and workflow implementations were moved, not copied into a second
@@ -43,8 +44,8 @@ workflows, presentation, filesystem stores, or solver backends.
 ## Tables and presentation
 
 ```python
-from rangekeeper.graph import View, Hierarchy
-from rangekeeper.graph.projection import (
+from rangekeeper.model.system import View, Hierarchy
+from rangekeeper.model.system.projection import (
     EntityField, FieldColumn, ValueColumn, LabelColumn, to_table,
 )
 from rangekeeper.adapters import csv, polars, cytoscape
@@ -177,9 +178,10 @@ directory: the canonical JSON writer does not overwrite an existing revision fil
 ## Direct evidence and layout APIs
 
 Import `Evidence`, `Claim`, `ClaimKind`, `Severity`, `tabular`, `validate` and
-`fingerprint` from `rangekeeper.evidence`. The old `workflow.ingestion` package is
-removed. `operation.Severity`, `evidence.Severity` and `run.Severity` are the same
-generated enum; `evidence.ClaimKind` and `model.ClaimKind` are also identical.
+`fingerprint` from `rangekeeper.workflow.evidence`. The old `workflow.ingestion` package is
+removed. `workflow.operation.Severity`, `workflow.evidence.Severity` and
+`run.Severity` are the same generated enum; `workflow.evidence.ClaimKind` and
+`model.ClaimKind` are also identical.
 Typed Python APIs require enum members. YAML and JSON retain their string values.
 
 Workflow requests belong to their capability modules, such as

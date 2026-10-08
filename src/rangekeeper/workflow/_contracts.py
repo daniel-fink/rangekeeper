@@ -9,10 +9,10 @@ from pathlib import Path
 from typing import Any
 from uuid import UUID
 
-from rangekeeper.operation import Outcome
-from rangekeeper.evidence import Claim, Source
+from rangekeeper.workflow.operation import Outcome
+from rangekeeper.workflow.evidence import Claim, Evidence, Source, fingerprint
 
-from ._declarations import fields, plain, text
+from rangekeeper.workflow._declarations import fields, plain, text
 
 
 @dataclass(frozen=True, slots=True)
@@ -32,6 +32,11 @@ class Produced:
     value: object
     fingerprint: str
     source: Source | None = None
+
+    @classmethod
+    def from_evidence(cls, value: Evidence) -> "Produced":
+        """Retain the exact Evidence and its fingerprint, without inventing a native Source."""
+        return cls(value, fingerprint(value))
 
 
 @dataclass(frozen=True, slots=True)

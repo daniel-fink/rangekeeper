@@ -7,7 +7,7 @@ from rangekeeper.model import ValueKind
 from uuid import UUID, uuid4
 from datetime import date
 
-from rangekeeper._schema.records import (
+from rangekeeper.schema.records import (
     Assembly,
     Characteristics,
     Claim,

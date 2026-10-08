@@ -13,10 +13,10 @@ import networkx as nx
 import plotly.graph_objects as go
 from pyvis.network import Network
 
-from ..table import Table
-from ..graph import View
-from ..model.definitions import classification as find_classification
-from .errors import AdapterEncodingError
+from rangekeeper.shared.table import Table
+from rangekeeper.model.system import View
+from rangekeeper.model.definitions import classification as find_classification
+from rangekeeper.shared.errors import EncodingError
 
 __all__ = ["graph_html", "icicle", "sunburst", "treemap"]
 
@@ -83,7 +83,7 @@ def graph_html(
         try:
             network.set_options(json.dumps(dict(options), allow_nan=False))
         except (TypeError, ValueError) as error:
-            raise AdapterEncodingError(f"invalid PyVis options: {error}") from error
+            raise EncodingError(f"invalid PyVis options: {error}") from error
 
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -187,13 +187,11 @@ def _tree_projection(
         required.add(value_column)
     missing = required.difference(table.columns)
     if missing:
-        raise AdapterEncodingError(
-            f"arborescence Table is missing columns: {sorted(missing)}"
-        )
+        raise EncodingError(f"arborescence Table is missing columns: {sorted(missing)}")
 
     ids = tuple(str(row.values["entity_id"]) for row in table.rows)
     if len(ids) != len(set(ids)):
-        raise AdapterEncodingError("entity_id values must be unique")
+        raise EncodingError("entity_id values must be unique")
     id_set = set(ids)
     raw_parents = tuple(
         None if row.values["parent_id"] is None else str(row.values["parent_id"])
@@ -203,7 +201,7 @@ def _tree_projection(
         parent is None or isinstance(parent, str) and parent in id_set
         for parent in raw_parents
     ):
-        raise AdapterEncodingError("parent_id values must be None or reference a row")
+        raise EncodingError("parent_id values must be None or reference a row")
 
     graph = nx.DiGraph()
     graph.add_nodes_from(ids)
@@ -213,7 +211,7 @@ def _tree_projection(
         if parent is not None
     )
     if not graph or not nx.is_arborescence(graph):
-        raise AdapterEncodingError("Table rows must form one arborescence")
+        raise EncodingError("Table rows must form one arborescence")
 
     labels = []
     for entity_id, row in zip(ids, table.rows):
@@ -223,7 +221,7 @@ def _tree_projection(
         elif isinstance(label, str):
             labels.append(label)
         else:
-            raise AdapterEncodingError(
+            raise EncodingError(
                 f"visualization label column {label_column!r} must contain "
                 "strings or missing values"
             )
@@ -237,7 +235,7 @@ def _tree_projection(
             and float(item) >= 0
             for item in selected_values
         ):
-            raise AdapterEncodingError(
+            raise EncodingError(
                 f"visualization value column {value_column!r} must contain finite, "
                 "non-negative numbers"
             )
@@ -255,7 +253,7 @@ def _tree_projection(
                 rel_tol=1e-9,
                 abs_tol=1e-12,
             ):
-                raise AdapterEncodingError(
+                raise EncodingError(
                     f"visualization value column {value_column!r} has parent "
                     f"{parent_id!r} total {parent_value} below child total "
                     f"{child_total}"

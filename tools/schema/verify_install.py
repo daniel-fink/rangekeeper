@@ -139,8 +139,8 @@ import sys
 from uuid import uuid4
 from datetime import date
 import rangekeeper
-from rangekeeper._schema.records import Model, Metadata, Runtime, Period, Flow, Movement, Source
-from rangekeeper.duration import PeriodTiming
+from rangekeeper.schema.records import Model, Metadata, Runtime, Period, Flow, Movement, Source
+from rangekeeper.model.duration import PeriodTiming
 from rangekeeper.model.validation import validate
 period = Period(start_inclusive=date(2026, 1, 1), end_exclusive=date(2026, 2, 1))
 movement = Movement(id=uuid4(), key="january", period=period)
@@ -164,16 +164,21 @@ source = Source(id=uuid4(), name="Schedule", checksum="abc",
 assert source.issued_at == date(2026, 1, 1)
 assert source.received_at == "2026-01-02T09:30:00+11:00"
 print("Installed wheel: date fields and source timestamp alternatives passed")
-from rangekeeper.errors import ValidationError
+from rangekeeper.shared.errors import ValidationError
 assert 'stage' not in rangekeeper.__file__
 assert 'site-packages' in rangekeeper.__file__
 assert validate(Model(metadata=Metadata(id=uuid4(), schema_version='0.7.0'))).valid
 assert files('rangekeeper').joinpath('py.typed').is_file()
 assert not files('rangekeeper').joinpath('_currencies.json').is_file()
-from rangekeeper.units import UnitSystem
+from rangekeeper.shared.units import UnitSystem
 assert 'py-moneyed/3.0' in UnitSystem.implementation
 for name in ('api', 'measure', 'flux', '_legacy_duration', 'distribution', 'extrapolation', 'projection',
-             'formula', 'dynamics', 'segmentation', 'policy', 'format', 'space'):
+             'formula', 'dynamics', 'segmentation', 'policy', 'format', 'space',
+             '_schema', '_records', '_record_index', '_revision', '_behaviors',
+             'graph', 'formulations', 'duration', 'scenarios', 'policies', 'execution',
+             'evidence', 'operation', 'account', 'metadata', 'table', 'units',
+             'references', 'diagnostics', 'errors', 'validate', '_validation',
+             '_encoding', '_structured', '_yaml', '_implementation'):
     assert importlib.util.find_spec('rangekeeper.' + name) is None, name
     assert not hasattr(rangekeeper, name), name
 assert not hasattr(rangekeeper, 'update_class')
@@ -183,7 +188,7 @@ for resource in ('workflow/workbench.py', 'adapters/cytoscape/layout/review.py',
 from rangekeeper.adapters.speckle import decode_model, encode_model
 assert 'specklepy' not in sys.modules
 for name in ('schema.json', 'slots.json', 'manifest.json', 'native.py'):
-    assert files('rangekeeper._schema').joinpath(name).is_file()
+    assert files('rangekeeper.schema').joinpath(name).is_file()
 data = {'implementations': [{'kind': 'evaluator', 'name': 'test', 'version': '1'}],
         'started_at': '2026-10-02T00:00:00Z'}
 Runtime.from_data(data)
@@ -195,7 +200,8 @@ else:
     raise AssertionError('timestamp format silently accepted')
 for name in ('linkml', 'linkml_runtime', 'numpy', 'pandas', 'pint', 'pyomo', 'specklepy'):
     assert importlib.util.find_spec(name) is None, name
-assert 'rangekeeper.graph' not in sys.modules
+for name in ('view', 'hierarchy', 'reduction'):
+    assert 'rangekeeper.model.system.' + name not in sys.modules
 from rangekeeper.model import Model as DomainModel, Entity, System, Update
 from rangekeeper.specification import Specification, SpecificationRecord
 entity = Entity(id=uuid4(), code='A')
@@ -212,7 +218,9 @@ class Resolver:
         raise AssertionError('No includes expected')
 composition = spec.compose(resolver=Resolver())
 assert composition.validate(resolver=Resolver()).valid
-assert 'pint' not in sys.modules and 'rangekeeper.graph' not in sys.modules
+assert 'pint' not in sys.modules
+for name in ('view', 'hierarchy', 'reduction'):
+    assert 'rangekeeper.model.system.' + name not in sys.modules
 print('Installed wheel: records, packaged artifacts, validation, timestamps and lightweight imports passed')
 print('Installed wheel: public Model lookup/revision and Specification composition/validation passed')
 assert rangekeeper.Model is DomainModel and rangekeeper.Specification is Specification
@@ -236,24 +244,24 @@ with TemporaryDirectory() as directory:
             store.put(doc)
             assert json.loads(json.dumps(doc), kind=type(doc)).to_data() == doc.to_data()
         assert store.load_run(failed.id).to_data() == failed.to_data()
-for prefix in ('yaml', 'pint', 'pandas', 'numpy', 'networkx', 'matplotlib', 'specklepy', 'pyomo', 'highspy', 'rangekeeper.graph'):
+for prefix in ('yaml', 'pint', 'pandas', 'numpy', 'networkx', 'matplotlib', 'specklepy', 'pyomo', 'highspy', 'rangekeeper.model.system.view', 'rangekeeper.model.system.hierarchy', 'rangekeeper.model.system.reduction'):
     assert not any(name == prefix or name.startswith(prefix + '.') for name in sys.modules), prefix
 print('Installed wheel: all public roots, JSON and both revision stores passed without optional imports')
-from rangekeeper.graph import View, Hierarchy
+from rangekeeper.model.system import View, Hierarchy
 view = View(domain)
 assert view.entity(entity.id) is domain.entity(entity.id)
 assert Hierarchy.from_relationships(view).preorder() == (entity.id,)
-for prefix in ('pint', 'numpy', 'networkx', 'pandas', 'pyomo', 'highspy', 'rangekeeper.legacy', 'rangekeeper.graph.graph'):
+for prefix in ('pint', 'numpy', 'networkx', 'pandas', 'pyomo', 'highspy', 'rangekeeper.legacy', 'rangekeeper.graph'):
     assert not any(name == prefix or name.startswith(prefix + '.') for name in sys.modules), prefix
-from rangekeeper.graph.projection import to_table
-from rangekeeper.table import Table
+from rangekeeper.model.system.projection import to_table
+from rangekeeper.shared.table import Table
 from rangekeeper.adapters.cytoscape import project, write_viewer
 assert to_table(view).column('model_id') == (domain.id,)
 assert to_table(Hierarchy.from_relationships(view)).column('parent_id') == (None,)
 with TemporaryDirectory() as destination:
     exported = write_viewer([project(domain, 'Installed Model')], Path(destination) / 'viewer.html')
     assert exported.is_file() and 'cytoscape' in exported.read_text()
-for prefix in ('pint', 'numpy', 'networkx', 'pandas', 'pyomo', 'highspy', 'rangekeeper.legacy', 'rangekeeper.graph.graph'):
+for prefix in ('pint', 'numpy', 'networkx', 'pandas', 'pyomo', 'highspy', 'rangekeeper.legacy', 'rangekeeper.graph'):
     assert not any(name == prefix or name.startswith(prefix + '.') for name in sys.modules), prefix
 print('Installed wheel: Model graph, tables and offline viewer assets passed without legacy or numerical imports')
 """
@@ -299,18 +307,18 @@ for store in (MemoryStore(), DirectoryStore(Path('revisions'))):
         assert validate(store.load_run(run.id), resolver=store).valid
     spec = yaml.read(examples / 'specification-composed-forward.yaml', kind=rk.Specification)
     assert spec.compose(resolver=store).validate(resolver=store).valid
-    from rangekeeper.execution import Executor
+    from rangekeeper.run.execution import Executor
     unavailable = Executor(store).execute(spec)
     assert unavailable.report.status.completion is CompletionStatus.FAILED
     assert unavailable.report.status.solution is SolutionStatus.NOT_ASSESSED
     assert any(d.code == 'backend_unavailable' for d in unavailable.report.diagnostics)
-for prefix in ('linkml', 'linkml_runtime', 'numpy', 'pandas', 'networkx', 'matplotlib', 'specklepy', 'pyomo', 'highspy', 'rangekeeper.graph'):
+for prefix in ('linkml', 'linkml_runtime', 'numpy', 'pandas', 'networkx', 'matplotlib', 'specklepy', 'pyomo', 'highspy', 'rangekeeper.model.system.view', 'rangekeeper.model.system.hierarchy', 'rangekeeper.model.system.reduction'):
     assert not any(name == prefix or name.startswith(prefix + '.') for name in sys.modules), prefix
 print('Installed wheel: all unit-bearing Model/Specification/Run fixtures, composition, JSON/YAML and both stores passed')
 from uuid import uuid4
-from rangekeeper.graph import View, Hierarchy, Reduction
-from rangekeeper.graph.selection import select_value
-from rangekeeper.graph import reducers
+from rangekeeper.model.system import View, Hierarchy, Reduction
+from rangekeeper.model.system.selection import select_value
+from rangekeeper.model.system import reducers
 from rangekeeper.model import Metadata, Definitions, Measure, System, Entity, Assembly, Characteristics, Value, ValueKind, Quantity
 measure = Measure(id=uuid4(), code='area', name='Area', units='meter ** 2')
 value = Value(id=uuid4(), key='net', kind=ValueKind.MEASUREMENT, measure=measure.id, quantity=Quantity(magnitude=12, units='meter ** 2'))
@@ -322,7 +330,7 @@ result = Reduction(select=select_value('net'), reducer=reducers.sum, units='cent
 assert result.root_value.magnitude == 120000 and result.coverage(group.id).complete
 assert result.value_ids[entity.id] == value.id
 assert json.loads(json.dumps(model), kind=rk.Model).to_data() == model.to_data()
-for prefix in ('networkx', 'pandas', 'rangekeeper.legacy', 'rangekeeper.graph.graph', 'pyomo', 'highspy'):
+for prefix in ('networkx', 'pandas', 'rangekeeper.legacy', 'rangekeeper.graph', 'pyomo', 'highspy'):
     assert not any(name == prefix or name.startswith(prefix + '.') for name in sys.modules), prefix
 print('Installed wheel: canonical membership, explicit Value reduction, coverage and conversion passed')
 """
@@ -344,7 +352,7 @@ import math, sys
 import pyxirr
 from rangekeeper.calculations.financial import calculate_pv, calculate_xnpv, calculate_irr
 
-from rangekeeper.duration import make_periods, Frequency, PeriodTiming
+from rangekeeper.model.duration import make_periods, Frequency, PeriodTiming
 flow = Flow.from_events([date(2026, 1, 1), date(2027, 1, 1)], [-100, 110], units='AUD')
 assert abs(calculate_xnpv(flow, rate=.1, valuation_date=date(2026, 1, 1)).magnitude) < 1e-9
 result = calculate_irr(flow)
@@ -375,9 +383,9 @@ from uuid import UUID, uuid4
 import sys
 import rangekeeper as rk
 from rangekeeper.io import yaml, DirectoryStore
-from rangekeeper.execution import Executor
+from rangekeeper.run.execution import Executor
 from rangekeeper.run import validate, CompletionStatus, SolutionStatus
-for prefix in ('pyomo', 'highspy', 'numpy', 'rangekeeper.graph'):
+for prefix in ('pyomo', 'highspy', 'numpy', 'rangekeeper.model.system.view', 'rangekeeper.model.system.hierarchy', 'rangekeeper.model.system.reduction'):
     assert not any(name == prefix or name.startswith(prefix + '.') for name in sys.modules), prefix
 store = DirectoryStore(Path('executed'))
 model = yaml.read(Path('examples/model.yaml'), kind=rk.Model)
@@ -396,7 +404,7 @@ second = store.load_model(inverse.record.outputs[0])
 assert abs(second.value(UUID('e3fb1434-5371-5bcb-b0b8-e3af2bf65022')).quantity.magnitude - 27500) < 1e-6
 assert second.metadata.previous == first.id
 assert validate(inverse, resolver=store).valid
-for prefix in ('pyomo', 'highspy', 'rangekeeper.graph', 'linkml', 'linkml_runtime'):
+for prefix in ('pyomo', 'highspy', 'rangekeeper.model.system.view', 'rangekeeper.model.system.hierarchy', 'rangekeeper.model.system.reduction', 'linkml', 'linkml_runtime'):
     assert not any(name == prefix or name.startswith(prefix + '.') for name in sys.modules), prefix
 print('Installed wheel: actual process-isolated forward/inverse solves, output reuse, acceptance and disk publication passed')
 """
@@ -424,7 +432,7 @@ metadata = json.loads(Path('source-example/workflow/manifest.json').read_text())
 assert metadata['dependencies']['jsonschema'] == importlib.metadata.version('jsonschema')
 assert summary['forward_gross']['magnitude'] == 20
 assert summary['inverse_net']['magnitude'] == 25
-for prefix in ('rangekeeper.legacy', 'rangekeeper.graph.graph', 'rangekeeper.graph.entity', 'rangekeeper.measure', 'networkx', 'pandas', 'pyomo', 'highspy'):
+for prefix in ('rangekeeper.legacy', 'rangekeeper.graph', 'rangekeeper.model.entity', 'rangekeeper.measure', 'networkx', 'pandas', 'pyomo', 'highspy'):
     assert not any(name == prefix or name.startswith(prefix + '.') for name in sys.modules), prefix
 print('Installed wheel: XLSX workflow, Model provenance, YAML/JSON, stores and real forward/inverse execution passed')
 """
@@ -446,7 +454,7 @@ from pathlib import Path
 from uuid import uuid4
 import polars as pl
 from rangekeeper.model.flow import Flow
-from rangekeeper.table import Table
+from rangekeeper.shared.table import Table
 from rangekeeper.adapters import csv, polars
 assert importlib.util.find_spec('pandas') is None
 assert importlib.util.find_spec('rangekeeper.adapters.pandas') is None

@@ -17,11 +17,11 @@ the shared record layer and its method ownership.
 | --- | --- |
 | `schema/*.yaml` | Authoritative field, enum, inheritance and description definitions |
 | `tools/schema/generate.py` | Explicit constructors, properties, typed replacement signatures and selected behaviour inheritance |
-| `rangekeeper/_schema/enums.py` | Canonical plain Enum classes; typed fields decode members and wire data retains strings |
-| `rangekeeper/_schema/records.py` | Canonical immutable classes, including the registry used for nested decoding |
-| `rangekeeper/_records.py` | Shared field encoding, strict JSON copying, freezing, replacement, field presence and schema equivalence |
-| `rangekeeper/_behaviors/` | Handwritten methods for Flow, Movement, Period and Distribution; no field declarations |
-| `rangekeeper/_schema/{schema,slots,manifest}.json` | Structural checks, conversion metadata and reproducible generation fingerprints |
+| `rangekeeper/schema/enums.py` | Canonical plain Enum classes; typed fields decode members and wire data retains strings |
+| `rangekeeper/schema/records.py` | Canonical immutable classes, including the registry used for nested decoding |
+| `rangekeeper/schema/runtime.py` | Shared field encoding, strict JSON copying, freezing, replacement, field presence and schema equivalence |
+| `rangekeeper/schema/behaviors/` | Handwritten methods for Flow, Movement, Period and Distribution; no field declarations |
+| `rangekeeper/schema/{schema,slots,manifest}.json` | Structural checks, conversion metadata and reproducible generation fingerprints |
 | `model`, `specification`, `run` | Document-wide validation, references and revision rules |
 | `calculations` | Operations that combine records or require an explicit financial or temporal interpretation |
 
@@ -80,7 +80,7 @@ applies only to schema-declared references, never to opaque content.
 `record == other` is type-sensitive and preserves collection order. `record.equivalent(other)`
 ignores only schema-declared unordered collection order. Both preserve scalar types,
 signed floating zero, multiplicity, field presence and opaque-content order. Neither
-performs unit conversion. Model/Specification revision checks live in `_revision.py`;
+performs unit conversion. Model/Specification revision checks live in `schema/revision.py`;
 content-hash encodings remain separate provenance contracts.
 
 ## Method contracts
@@ -147,7 +147,7 @@ Coverage reports the original known fraction, including after zero filling.
 `series.multiply`, `integrate` and `resample` retain explicit calculation contracts.
 `Account.calculate(...)` returns opening, closing, overdraft and interest Flows.
 Financial valuation remains in `calculations.financial`, with explicit timing and
-PyXIRR conventions. Calendar grids remain in `duration.period`.
+PyXIRR conventions. Calendar grids remain in `model.duration.period`.
 
 A Model facade builds its ownership index once and reuses it for validation and
 lookup. Scalar execution composes a Specification once, then passes that exact

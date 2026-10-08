@@ -1,8 +1,8 @@
 """Synthetic, source-independent review cases."""
 
-from .model import Assembly as A
-from .model import Node as N
-from .model import Problem
+from rangekeeper.adapters.cytoscape.layout.model import Assembly as A
+from rangekeeper.adapters.cytoscape.layout.model import Node as N
+from rangekeeper.adapters.cytoscape.layout.model import Problem
 
 
 def examples():

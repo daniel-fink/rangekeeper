@@ -3,10 +3,10 @@
 from typing import Protocol, TypeAlias, TypeVar
 from uuid import UUID
 
-from ..model.model import Model
-from ..specification.specification import Specification
-from ..run.run import Run
-from ..references import DocumentResolver
+from rangekeeper.model.model import Model
+from rangekeeper.specification.specification import Specification
+from rangekeeper.run.run import Run
+from rangekeeper.shared.references import DocumentResolver
 
 Document: TypeAlias = Model | Specification | Run
 D = TypeVar("D", bound=Document)

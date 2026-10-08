@@ -84,14 +84,14 @@ def test_failure_preserves_success(tmp_path, monkeypatch, failure):
 
         monkeypatch.setattr(workbench, "export", fail)
     else:
-        original_write = workbench._atomic_json
+        original_write = workbench.replace_json
 
         def fail(path, value):
             if path.name == "latest.json":
                 raise OSError("Pointer failure")
             return original_write(path, value)
 
-        monkeypatch.setattr(workbench, "_atomic_json", fail)
+        monkeypatch.setattr(workbench, "replace_json", fail)
     if failure == "interrupt":
         with pytest.raises(KeyboardInterrupt):
             workbench.build(root / "spec", **args)

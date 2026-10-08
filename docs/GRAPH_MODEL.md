@@ -6,20 +6,22 @@ Views select canonical Model objects. Membership and hierarchy are explicit proj
 
 ```text
 rangekeeper/
-  model/                         canonical generated records, lookup and revisions
-  graph/
-    view.py                      View: immutable Model + selected UUIDs
-    membership.py                entities_in, relationships_in, containing_assemblies
-    hierarchy.py                 Hierarchy: validated relationship or membership tree
-    selection.py                 select_value: explicit owner-local key selector
-    reduction.py                 Reduction, Aggregation, Coverage
-    reducers.py                  sum, mean, min, max
-    errors.py                    SelectionError, HierarchyError, AggregationError
-    projection.py                Model-backed FieldColumn/ValueColumn/LabelColumn tables
+  model/                         canonical record APIs, lookup and revisions
+    system/
+      validation.py              domain-owned System checks
+      view.py                    View: immutable Model + selected UUIDs
+      membership.py              entities_in, relationships_in, containing_assemblies
+      hierarchy.py               Hierarchy: relationship or membership tree
+      selection.py               select_value: explicit owner-local key selector
+      reduction.py               Reduction, Aggregation, Coverage
+      reducers.py                sum, mean, min, max
+      errors.py                  SelectionError, HierarchyError, AggregationError
+      projection.py              Model-backed tables for View or Hierarchy
   legacy/graph/                  isolated old Graph domain and consumers
-  table.py, adapters/, workflow/  shared tables and Model-backed consumers
-  io/                            canonical persistence, unchanged
-  execution/                     scalar executor, unchanged
+  shared/table.py                detached Table and optional Row identity
+  adapters/, workflow/           Model-backed consumers
+  io/                            canonical persistence
+  run/execution/                 scalar executor
 ```
 
 The algorithms consume canonical Model records. Operation-local preparation uses
@@ -28,7 +30,7 @@ not build another domain representation. A Hierarchy owns only derived UUID adja
 traversal order. It never fabricates Relationship records for Assembly membership.
 Domain code does not import graph algorithms.
 
-Importing `rangekeeper.graph` loads neither legacy Graph nor Pint, NetworkX, pandas,
+Importing `rangekeeper.model.system` loads neither legacy Graph nor Pint, NetworkX, pandas,
 plotting, service integrations or solvers. Unit-bearing reductions explicitly use
 `UnitSystem`, which loads Pint when needed. Tree validation/traversal uses Python
 collections and iterative traversal; no NetworkX dependency is needed for this slice.
@@ -36,8 +38,8 @@ collections and iterative traversal; no NetworkX dependency is needed for this s
 ## Selection and traversal
 
 ```python
-from rangekeeper.graph import View, Hierarchy
-from rangekeeper.graph.membership import entities_in, containing_assemblies
+from rangekeeper.model.system import View, Hierarchy
+from rangekeeper.model.system.membership import entities_in, containing_assemblies
 
 view = View(model, assembly=assembly_id)
 children = view.successors(parent_id)   # selected Relationships only
@@ -93,9 +95,9 @@ Traversal is iterative; valid deep trees do not consume the Python call stack.
 ## Explicit recorded-Value reduction
 
 ```python
-from rangekeeper.graph import Reduction
-from rangekeeper.graph.selection import select_value
-from rangekeeper.graph import reducers
+from rangekeeper.model.system import Reduction
+from rangekeeper.model.system.selection import select_value
+from rangekeeper.model.system import reducers
 
 reduction = Reduction(
     select=select_value("annual_rent", measure=rent_measure_id),
@@ -155,7 +157,7 @@ scalar executor for mathematical investigation.
 
 ## Table projection
 
-`graph.projection.to_table(source, columns=...)` accepts a `View` or `Hierarchy`.
+`model.system.projection.to_table(source, columns=...)` accepts a `View` or `Hierarchy`.
 A View keeps its entity order. A Hierarchy emits preorder rows and a reserved
 `parent_id` column. `FieldColumn` takes an `EntityField` enum member. Column names,
 units and optional Measure declarations are checked once before any cells are read,
@@ -167,7 +169,7 @@ an index. See [the consumer guide](CONSUMER_MIGRATION.md) for examples and error
 
 ## Intentional namespace transition
 
-`graph.View` and `graph.reduction` mean Model-backed operations and reject old
+`model.system.View` and `model.system.reduction` are Model-backed operations and reject old
 Graph inputs. New records come from `rangekeeper.model`. Tables, presentation,
 and source workflows have moved to the [6C/6D packages](CONSUMER_MIGRATION.md).
 

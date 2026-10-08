@@ -10,11 +10,11 @@ import pint
 import pytest
 
 from rangekeeper.adapters import csv, polars
-from rangekeeper.errors import IdentityConflictError
-from rangekeeper.evidence import Claim, Location, Method, Source
-from rangekeeper.table import Row, Table, TableError
-from rangekeeper import evidence as ingestion
-from rangekeeper.evidence import (
+from rangekeeper.shared.errors import IdentityConflictError
+from rangekeeper.workflow.evidence import Claim, Location, Method, Source
+from rangekeeper.shared.table import Row, Table, TableError
+from rangekeeper.workflow import evidence as ingestion
+from rangekeeper.workflow.evidence import (
     Evidence,
     EvidenceValidationError,
     Issue,
@@ -566,9 +566,9 @@ def test_fingerprint_and_issue_identity_match_before_refactor(source):
 def test_public_imports_and_constructor_validation_in_fresh_process(first):
     script = f"""
 import importlib
-importlib.import_module('rangekeeper.evidence.' + {first!r})
-from rangekeeper.evidence import Evidence, fingerprint, validate, tabular, EvidenceValidationError
-from rangekeeper.table import Table
+importlib.import_module('rangekeeper.workflow.evidence.' + {first!r})
+from rangekeeper.workflow.evidence import Evidence, fingerprint, validate, tabular, EvidenceValidationError
+from rangekeeper.shared.table import Table
 assert callable(fingerprint) and callable(validate) and callable(tabular.row)
 empty = Evidence(name='empty', data=Table(columns=(), rows=()), claims={{}})
 assert validate(empty) is None
@@ -593,7 +593,7 @@ def test_operation_prepares_each_input_once_and_validates_output(
 ):
     import importlib
 
-    validation = importlib.import_module("rangekeeper.evidence.validation")
+    validation = importlib.import_module("rangekeeper.workflow.evidence.validation")
     evidence = table_evidence(sourced(source, "area", 12))
     calls = []
     original = validation._validated_indexes
@@ -609,7 +609,7 @@ def test_operation_prepares_each_input_once_and_validates_output(
         )
         column = "number"
     else:
-        from rangekeeper.evidence.predicates import Predicate, select_where
+        from rangekeeper.workflow.evidence.predicates import Predicate, select_where
 
         outcome = select_where(evidence, predicate=Predicate("area", (12,)))
         column = "area"
@@ -620,9 +620,9 @@ def test_operation_prepares_each_input_once_and_validates_output(
 
 
 def test_evidence_and_operation_use_canonical_choice_classes():
-    from rangekeeper.evidence import ClaimKind
+    from rangekeeper.workflow.evidence import ClaimKind
     from rangekeeper.model import ClaimKind as ModelClaimKind
-    from rangekeeper.operation import Severity as OperationSeverity
+    from rangekeeper.workflow.operation import Severity as OperationSeverity
     from rangekeeper.run import Severity as RunSeverity
 
     assert ClaimKind is ModelClaimKind

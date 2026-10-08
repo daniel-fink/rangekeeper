@@ -5,7 +5,7 @@ from fractions import Fraction
 import math
 import pytest
 
-from rangekeeper.account import Balance, CurrentInterest, InterestTreatment
+from rangekeeper.calculations.account import Balance, CurrentInterest, InterestTreatment
 from rangekeeper.calculations.account import Account
 from rangekeeper.model.flow import Flow
 from rangekeeper.model.measure import Quantity

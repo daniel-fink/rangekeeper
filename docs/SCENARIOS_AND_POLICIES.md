@@ -29,24 +29,23 @@ See [calendar and account contracts](CALCULATIONS.md).
 | --- | --- |
 | `model.expression` | Generated expression exports, static domains, validation and pure numerical arithmetic |
 | `model.scope` | UUID-indexed mathematical declarations and explicit recorded scalar access |
-| `model._scenario` | Lightweight captured-record conformance, without random generation |
-| `formulations.authoring` | `identify`, `identify_tree` and `declare` for stable declaration identities |
-| `formulations.flow` | `sum`, `scale`, `accumulate`, and symbolic shape/alignment helpers |
-| `formulations.growth` | `linear` and `compound` |
-| `formulations.financial` | `discount`, `present_value` and `reversion` |
-| `formulations.account` | Explicit principal `interest` and coordinated passive `schedule` |
-| `scenarios.contracts` | Immutable method, parameter, input and output inventories |
-| `scenarios.market` | `make_plan`, `validate`, `sample`, `capture`, `realize` and `generate` |
-| `scenarios.implementation` | Calculation provenance and its declared source/dependency manifest |
-| `scenarios.replay` | Check saved paths against captured inputs and the available calculation |
-| `policies` | Generated declarations/outcomes, `evaluate`, `observe` and derived results |
-| `policies._availability` | Pure date rule, shared by runtime observation and stored-evidence checks |
-| `policies.predicate` | Exact Boolean truth and short-circuiting; arithmetic uses the shared evaluator |
-| `policies.validation` | Policy declaration and independent stored-outcome checks |
+| `model.formulation.authoring` | `identify`, `identify_tree` and `declare` for stable declaration identities |
+| `model.formulation.flow` | `sum`, `scale`, `accumulate`, and symbolic shape/alignment helpers |
+| `model.formulation.growth` | `linear` and `compound` |
+| `model.formulation.financial` | `discount`, `present_value` and `reversion` |
+| `model.formulation.account` | Explicit principal `interest` and coordinated passive `schedule` |
+| `model.scenario.contracts` | Immutable method, parameter, input and output inventories; captured-record conformance without random generation |
+| `model.scenario.market` | `make_plan`, `validate`, `sample`, `capture`, `realize` and `generate` |
+| `model.scenario.implementation` | Calculation provenance and its declared source/dependency manifest |
+| `model.scenario.replay` | Check saved paths against captured inputs and the available calculation |
+| `specification.policy` | Generated declarations/outcomes, `evaluate`, `observe` and derived results |
+| `specification.policy._availability` | Pure date rule, shared by runtime observation and stored-evidence checks |
+| `specification.policy.predicate` | Exact Boolean truth and short-circuiting; arithmetic uses the shared evaluator |
+| `specification.policy.validation` | Policy declaration and independent stored-outcome checks |
 | `examples.investment` | The model-specific resale policy and investment author/formulate/specify/report operations |
 
 Builders return immutable declarations. They do not solve or read recorded amounts
-as hidden constants. `formulations.authoring.declare(id, name, equations, values)`
+as hidden constants. `model.formulation.authoring.declare(id, name, equations, values)`
 assembles custom finite mathematics. IDs use the Formulation UUID, operation,
 Movement UUID or equation label, and expression path. Operand order is preserved.
 Coordinate mismatches and ambiguous duplicates fail. Reversion uses an explicit
@@ -76,7 +75,7 @@ independent acceptance, implementation fingerprints and publication.
 
 ## Captured scenarios and replay
 
-Use `from rangekeeper.scenarios import market`. Stable method codes are `market`,
+Use `from rangekeeper.model.scenario import market`. Stable method codes are `market`,
 `market.estimates` and `market.independent`. `market.sample` records random inputs only; `market.capture`
 records supplied inputs without randomness. `market.realize(model, plan, draws=)`
 constructs paths from a draw Model derived from that base. `market.generate`
@@ -98,7 +97,7 @@ nonfinite values forbidden, SHA256, then UUID5 under the realization UUID with
 `realized-model/v1:`. Changed paths or calculation code therefore change the
 revision; declaration IDs and sampling streams remain stable.
 
-`scenarios.replay` never draws again. It requires captured inputs, checks calculation
+`model.scenario.replay` never draws again. It requires captured inputs, checks calculation
 identity, and compares recomputed paths with saved paths. `ReplayUnavailableError`
 means the saved result is readable but its calculation implementation is unavailable.
 It differs from `UnsupportedVersionError`, which rejects a document version at
@@ -114,7 +113,7 @@ ratios cannot be observed until their required next period ends.
 ## Policy declarations and evidence
 
 Import `Policy`, `Decision`, `Rule`, `Action`, `ActionKind` and `DecisionOutcome`
-from `rangekeeper.policies`. `Policy.decisions` contains dated declarations;
+from `rangekeeper.specification.policy`. `Policy.decisions` contains dated declarations;
 `Report.outcomes` contains evidence. Each outcome's `decision` identifies its
 declaration. There is no public `decide` or `DecisionHistory` wrapper.
 

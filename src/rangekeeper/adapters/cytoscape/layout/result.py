@@ -3,7 +3,7 @@
 from dataclasses import asdict, dataclass, field
 from enum import Enum, unique
 
-from .model import Rect
+from rangekeeper.adapters.cytoscape.layout.model import Rect
 
 
 @unique

@@ -1,6 +1,6 @@
 """Record methods preserve wire presence, identity and numerical contracts."""
 
-from rangekeeper.duration import PeriodTiming
+from rangekeeper.model.duration import PeriodTiming
 from rangekeeper.model.flow import MissingValueHandling
 from rangekeeper.calculations.series import AlignmentJoin, AggregationReducer
 
@@ -15,12 +15,12 @@ from uuid import UUID, uuid4
 
 import pytest
 
-from rangekeeper._records import UNSET
-from rangekeeper._schema import records as r
+from rangekeeper.schema.runtime import UNSET
+from rangekeeper.schema import records as r
 from rangekeeper.calculations.series import aggregate, align
-from rangekeeper.errors import ValidationError
+from rangekeeper.shared.errors import ValidationError
 from rangekeeper.model import Model
-from rangekeeper._record_index import RecordIndex
+from rangekeeper.schema.index import RecordIndex
 from rangekeeper.model.validation import validate
 
 DAY = date(2026, 1, 1)

@@ -5,9 +5,9 @@ from uuid import uuid4
 import pytest
 
 from rangekeeper import Model, Specification
-from rangekeeper.execution import Executor
+from rangekeeper.run.execution import Executor
 from rangekeeper.io import MemoryStore
-from rangekeeper.policies import Policy, PolicyCapabilityError, evaluate
+from rangekeeper.specification.policy import Policy, PolicyCapabilityError, evaluate
 from rangekeeper.run import CompletionStatus, SolutionStatus, validate
 
 

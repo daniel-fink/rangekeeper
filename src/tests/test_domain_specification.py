@@ -11,11 +11,8 @@ import pytest
 import yaml
 
 from rangekeeper.model import Model, Metadata, Formulation, Value, Quantity
-from rangekeeper.specification import (
-    Specification,
-    SpecificationRecord,
-)
-from rangekeeper.errors import (
+from rangekeeper.specification import Specification, SpecificationRecord
+from rangekeeper.shared.errors import (
     ValidationError,
     MissingReferenceError,
     ReferenceTypeError,

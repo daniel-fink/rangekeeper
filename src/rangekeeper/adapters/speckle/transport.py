@@ -3,9 +3,9 @@
 from dataclasses import dataclass
 from importlib.metadata import version
 from collections.abc import Mapping
-from rangekeeper import _structured
-from .errors import TransportError
-from .objects import detach
+from rangekeeper.shared import structured as _structured
+from rangekeeper.adapters.speckle.errors import TransportError
+from rangekeeper.adapters.speckle.objects import detach
 
 
 @dataclass(frozen=True, slots=True)

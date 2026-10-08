@@ -10,24 +10,31 @@ from types import MappingProxyType
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from rangekeeper import Model, _structured
-from rangekeeper.errors import IdentityConflictError, UnitError, ValidationError
-from rangekeeper.evidence import Claim, Evidence, Method
-from rangekeeper.operation import Operation, Outcome, _Failure, fingerprint
+from rangekeeper import Model
+from rangekeeper.shared import structured as _structured
+from rangekeeper.shared.errors import IdentityConflictError, UnitError, ValidationError
+from rangekeeper.workflow.evidence import Claim, Evidence, Method
+from rangekeeper.workflow.operation import Operation, Outcome, _Failure, fingerprint
 
-from . import implementation
-from ._contracts import ExecutionContext, Produced
-from .catalog import OPERATIONS
-from .checking import CheckResult, evaluate
-from .composition import Finding, _compose
-from .implementation import manifests
-from .progress import Observer, ProgressPhase, ProgressStatus, Reporter, emit
-from .source_checks import SourceCheck
-from .source_checks import evaluate as source_checks
-from .specification import WorkflowSpec
+from rangekeeper.workflow import implementation, provenance
+from rangekeeper.workflow._contracts import ExecutionContext, Produced
+from rangekeeper.workflow.catalog import OPERATIONS
+from rangekeeper.workflow.checking import CheckResult, evaluate
+from rangekeeper.workflow.composition import Finding, _compose
+from rangekeeper.workflow.implementation import manifests
+from rangekeeper.workflow.progress import (
+    Observer,
+    ProgressPhase,
+    ProgressStatus,
+    Reporter,
+    emit,
+)
+from rangekeeper.workflow.source_checks import SourceCheck
+from rangekeeper.workflow.source_checks import evaluate as source_checks
+from rangekeeper.workflow.specification import WorkflowSpec
 
 if TYPE_CHECKING:
-    from .specification import StepSpec
+    from rangekeeper.workflow.specification import StepSpec
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -95,7 +102,7 @@ def _run(
         specification=spec.to_mapping(),
         inputs={"implementation": implementation_id},
     )
-    namespace, settings, decisions = implementation.configuration(spec, operation)
+    namespace, settings, decisions = provenance.configuration(spec, operation)
     operations: list[Operation] = []
     try:
         produced, step_records = execute_steps(
@@ -154,7 +161,7 @@ def _run(
         )
         emit(on_progress, ProgressPhase.CHECKS, ProgressStatus.COMPLETED)
         operations.append(operation)
-        metadata = implementation.metadata(
+        metadata = provenance.metadata(
             spec, produced, step_records, operations, audit, semantic, dependencies
         )
         return Outcome(

@@ -2,13 +2,10 @@
 
 from uuid import UUID, uuid4
 
-from rangekeeper.metadata import Metadata
+from rangekeeper.schema import Metadata
 from rangekeeper.model import Model, Entity, System, Update
-from rangekeeper.references import DocumentResolver
-from rangekeeper.specification import (
-    Specification,
-    SpecificationRecord,
-)
+from rangekeeper.shared.references import DocumentResolver
+from rangekeeper.specification import Specification, SpecificationRecord
 
 entity = Entity(id=uuid4(), code="A")
 model = Model.create(

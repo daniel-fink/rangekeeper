@@ -353,7 +353,7 @@ def test_migration_accepts_fresh_uuid_and_canonicalizes_mixed_case_lineage(upgra
     "malformed", ["not-a-uuid", 123, "a" * 32, "{AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA}"]
 )
 def test_migration_preserves_the_strict_source_uuid_boundary(upgrade, field, malformed):
-    from rangekeeper.errors import ValidationError
+    from rangekeeper.shared.errors import ValidationError
 
     source = {
         "metadata": {

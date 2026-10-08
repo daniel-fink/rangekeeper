@@ -3,9 +3,9 @@
 The held Graph predecessor is isolated in rangekeeper.legacy.graph.
 """
 
-from .model import Model as Model
-from .update import Update as Update
-from .._schema.records import (
+from rangekeeper.model.model import Model as Model
+from rangekeeper.model.update import Update as Update
+from rangekeeper.schema.records import (
     Metadata as Metadata,
     Definitions as Definitions,
     System as System,
@@ -61,6 +61,6 @@ __all__ = [
     "Fact",
 ]
 
-from .._schema.enums import ValueKind, ClaimKind, ReconciliationStatus
+from rangekeeper.schema.enums import ValueKind, ClaimKind, ReconciliationStatus
 
 __all__ += ["ValueKind", "ClaimKind", "ReconciliationStatus"]

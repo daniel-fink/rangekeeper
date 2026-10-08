@@ -8,10 +8,10 @@ from uuid import uuid4
 
 import pytest
 
-from rangekeeper.evidence import Claim, Location, Source, tabular
-from rangekeeper.evidence.transform import TransformSpec, transform
+from rangekeeper.workflow.evidence import Claim, Location, Source, tabular
+from rangekeeper.workflow.evidence.transform import TransformSpec, transform
 from rangekeeper.io import _atomic
-from rangekeeper.workflow import implementation, workbench
+from rangekeeper.workflow import implementation, provenance, workbench
 from rangekeeper.workflow.specification import load
 
 from .test_workbench import setup, successful
@@ -164,7 +164,8 @@ def test_jsonschema_version_changes_workflow_identity_and_metadata(
     assert before[:2] == after[:2]
     assert before[2] != after[2]
     assert "jsonschema" in dependencies
-    metadata = implementation.metadata(spec, {}, (), (), {}, {}, dependencies)
+    monkeypatch.setattr(provenance, "version", implementation.version)
+    metadata = provenance.metadata(spec, {}, (), (), {}, {}, dependencies)
     assert metadata["dependencies"]["jsonschema"] == "999.review"
 
 
@@ -174,14 +175,14 @@ def test_workbench_status_record_failure_keeps_completed_publication(
     monkeypatch.setattr(workbench, "manifests", lambda *a, **k: ({}, {}, "fixed"))
     root, _, args = setup(tmp_path)
     first = successful(root, args)
-    write = workbench._atomic_json
+    write = workbench.replace_json
 
     def fail_status(path, value):
         if path.name == "latest-attempt.json":
             raise OSError(errno.EIO, "attempt record failed")
         return write(path, value)
 
-    monkeypatch.setattr(workbench, "_atomic_json", fail_status)
+    monkeypatch.setattr(workbench, "replace_json", fail_status)
     result = workbench.build(root / "spec", **args)
     assert result.status is workbench.AttemptStatus.COMPLETED
     assert result.result is not None and result.directory != first.directory
@@ -343,7 +344,7 @@ def test_interruption_after_publication_preserves_completed_evidence(
         pointer_key = "run"
     pointer = output / "latest.json"
     previous = pointer.read_bytes()
-    write, sync = module._atomic_json, _atomic._sync_directory
+    write, sync = module.replace_json, _atomic._sync_directory
     interrupted = False
 
     def write_status(path, value):
@@ -369,7 +370,7 @@ def test_interruption_after_publication_preserves_completed_evidence(
             raise KeyboardInterrupt("directory sync interrupted")
         return sync(parent)
 
-    monkeypatch.setattr(module, "_atomic_json", write_status)
+    monkeypatch.setattr(module, "replace_json", write_status)
     monkeypatch.setattr(_atomic, "_sync_directory", sync_pointer)
     with pytest.raises(KeyboardInterrupt) as caught:
         build()

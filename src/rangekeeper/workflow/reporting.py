@@ -6,7 +6,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from uuid import UUID
 
-from .references import references
+from rangekeeper.workflow.references import references
 
 
 def decision_records(model, claim_ids, *, claims=None):

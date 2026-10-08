@@ -11,25 +11,25 @@ from uuid import UUID
 import math
 from typing import TYPE_CHECKING
 from collections.abc import Mapping
-from ..references import SpecificationResolver
-from ..units import UnitSystem, default_units
-from ..diagnostics import ValidationReport
-from .._schema.records import Specification as SpecificationRecord
-from .._schema.validation import document_version
-from ..errors import (
+from rangekeeper.shared.references import SpecificationResolver
+from rangekeeper.shared.units import UnitSystem, default_units
+from rangekeeper.shared.diagnostics import ValidationReport
+from rangekeeper.schema.records import Specification as SpecificationRecord
+from rangekeeper.schema.validation import document_version
+from rangekeeper.shared.errors import (
     IdentityConflictError,
     ReferenceTypeError,
     ValidationError,
     ContractError,
 )
-from .._validation import bounded
-from ..model.scope import reference_key
+from rangekeeper.shared.validation import bounded
+from rangekeeper.model.scope import reference_key
 from dataclasses import dataclass
-from rangekeeper._validation import require, require_ownership, require_acyclic
+from rangekeeper.shared.validation import require, require_ownership, require_acyclic
 
 
 if TYPE_CHECKING:
-    from .specification import Specification
+    from rangekeeper.specification.specification import Specification
 
 
 REQUIREMENTS = (
@@ -105,8 +105,8 @@ class Composition:
         resolver: SpecificationResolver,
         units: UnitSystem = default_units,
     ) -> ValidationReport:
-        from ..units import default_units
-        from .validation import prepare
+        from rangekeeper.shared.units import default_units
+        from rangekeeper.specification.validation import prepare
 
         return prepare(self, resolver=resolver, units=units or default_units).report
 
@@ -125,6 +125,7 @@ def validate_settings(settings):
 
 
 def validate_roles(document):
+    """Return local role sets after checking duplicates and disjoint ownership."""
     groups = {}
     for field in ("assignments", "unknowns", "estimates"):
         values = [
@@ -140,13 +141,16 @@ def validate_roles(document):
         not groups["assignments"] & groups["unknowns"],
         "assigned and unknown roles overlap",
     )
-    if document.get("policy"):
-        controls = [reference_key(ref) for ref in document["policy"]["targets"]]
-        require(len(controls) == len(set(controls)), "duplicate policy-controlled role")
-        require(
-            not set(controls) & (groups["assignments"] | groups["unknowns"]),
-            "policy-controlled roles overlap",
-        )
+    controls = [
+        reference_key(ref) for ref in (document.get("policy") or {}).get("targets", ())
+    ]
+    groups["policy"] = set(controls)
+    require(len(controls) == len(groups["policy"]), "duplicate policy-controlled role")
+    require(
+        not groups["policy"] & (groups["assignments"] | groups["unknowns"]),
+        "policy-controlled roles overlap",
+    )
+    return groups
 
 
 def specification_catalogue(root, specifications, schema_version):
@@ -220,7 +224,7 @@ def compose_specification(
     contributors = tuple(catalogue[key] for key in sorted(included))
     require_ownership(list(contributors))
     effective = {"metadata": deepcopy(specification["metadata"])}
-    sources, model_ids, assigned, unknowns = {}, set(), set(), set()
+    sources, model_ids = {}, set()
 
     def claim(key, source, path):
         require(
@@ -230,30 +234,17 @@ def compose_specification(
         sources[key] = Source(UUID(source), path)
 
     for doc in contributors:
+        validate_roles(doc)
         source = doc["metadata"]["id"]
         if doc.get("model") is not None:
             model_ids.add(doc["model"])
         for field in ("assignments", "unknowns", "estimates"):
-            local = set()
             for position, entry in enumerate(doc.get(field) or []):
                 target = reference_key(
                     entry if field == "unknowns" else entry["target"]
                 )
-                require(
-                    target not in local,
-                    (
-                        "duplicate unknown"
-                        if field == "unknowns"
-                        else f"duplicate {field} target"
-                    ),
-                )
-                local.add(target)
                 claim((field, str(target)), source, f"/{field}/{position}")
                 effective.setdefault(field, []).append(deepcopy(entry))
-            if field == "assignments":
-                assigned.update(local)
-            elif field == "unknowns":
-                unknowns.update(local)
         for name, value in (doc.get("settings") or {}).items():
             if value is not None:
                 claim(("settings", name), source, f"/settings/{name}")
@@ -273,14 +264,8 @@ def compose_specification(
     require(len(model_ids) <= 1, "conflicting input Model revisions")
     if model_ids:
         effective["model"] = next(iter(model_ids))
-    require(not assigned & unknowns, "assigned and unknown roles overlap")
-    if effective.get("policy"):
-        controls = [reference_key(ref) for ref in effective["policy"]["targets"]]
-        require(len(controls) == len(set(controls)), "duplicate policy-controlled role")
-        require(
-            not set(controls) & (assigned | unknowns), "policy-controlled roles overlap"
-        )
-    from .specification import Specification
+    validate_roles(effective)
+    from rangekeeper.specification.specification import Specification
 
     snapshots = []
     for document in contributors:
@@ -330,19 +315,17 @@ def batch_cases(specification, specifications, schema_version, *, catalogue=None
     yield from walk(specification, (specification["metadata"]["id"],), ())
 
 
-def compose(
+def collect_specifications(
     root: "Specification",
     *,
     resolver: SpecificationResolver,
-    documents=None,
-    catalogue=None,
-) -> Composition:
-    """Resolve each included revision once and retain each exact snapshot."""
-    from .specification import Specification
+):
+    """Resolve and export each reachable revision once, then check its graph."""
+    from rangekeeper.specification.specification import Specification
 
     if not isinstance(root, Specification):
         raise TypeError("root must be a Specification")
-    documents = dict(documents or {root.id: root})
+    documents = {root.id: root}
     pending = [root]
     while pending:
         current = pending.pop()
@@ -363,18 +346,42 @@ def compose(
                 )
             documents[identity] = found
             pending.append(found)
+    catalogue = {str(key): value.to_data() for key, value in documents.items()}
+    bounded(
+        [],
+        lambda: specification_catalogue(
+            catalogue[str(root.id)], catalogue, document_version("Specification")
+        ),
+        document=catalogue[str(root.id)],
+    ).raise_if_invalid()
+    return documents, catalogue
+
+
+def compose(
+    root: "Specification",
+    *,
+    resolver: SpecificationResolver,
+    documents=None,
+    catalogue=None,
+) -> Composition:
+    """Compose exact resolved snapshots without rebuilding a supplied catalogue."""
+    if documents is None and catalogue is None:
+        documents, catalogue = collect_specifications(root, resolver=resolver)
+    elif documents is None or catalogue is None:
+        raise TypeError("documents and catalogue must be supplied together")
+    data = catalogue[str(root.id)]
     result = None
 
     def check():
         nonlocal result
         result = compose_specification(
-            root.to_data(),
-            {str(key): value.to_data() for key, value in documents.items()},
+            data,
+            catalogue,
             document_version("Specification"),
             documents=documents,
             catalogue=catalogue,
         )
 
-    bounded([], check, document=root.to_data()).raise_if_invalid()
+    bounded([], check, document=data).raise_if_invalid()
     assert result is not None
     return result

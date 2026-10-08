@@ -4,17 +4,17 @@ from dataclasses import dataclass
 from typing import Any
 
 from rangekeeper.model import Assembly, Classification
-from rangekeeper.graph import View
-from rangekeeper.graph.selection import _recorded_quantity, _local_value
-from rangekeeper.graph.reduction import _collect_quantities
+from rangekeeper.model.system import View
+from rangekeeper.model.system.selection import _recorded_quantity, _local_value
+from rangekeeper.model.system.reduction import _collect_quantities
 from rangekeeper.model.characteristics import value as local_value
-from rangekeeper.units import default_units
-from rangekeeper.operation import _Failure
-from rangekeeper.evidence import Claim
+from rangekeeper.shared.units import default_units
+from rangekeeper.workflow.operation import _Failure
+from rangekeeper.workflow.evidence import Claim
 
-from .bindings import binding, require_columns
-from rangekeeper.evidence import tabular
-from rangekeeper.evidence.predicates import equal
+from rangekeeper.workflow.bindings import binding, require_columns
+from rangekeeper.workflow.evidence import tabular
+from rangekeeper.workflow.evidence.predicates import equal
 
 
 @dataclass(frozen=True, slots=True)

@@ -11,8 +11,13 @@ from rangekeeper.adapters.cytoscape.layout.model import (
 )
 from typing import Any
 
-from .model import Assembly, Node, Problem, grid_templates
-from .reduction import collision_pairs
+from rangekeeper.adapters.cytoscape.layout.model import (
+    Assembly,
+    Node,
+    Problem,
+    grid_templates,
+)
+from rangekeeper.adapters.cytoscape.layout.reduction import _collision_pairs
 
 
 class Formulation:
@@ -22,13 +27,13 @@ class Formulation:
         import z3
 
         self.z3, self.problem = z3, problem
-        self.geometry()
+        descendants = self.geometry()
         self.grids()
         self.extent()
         self.preferences()
         self.relaxed = [
             self.apart(self.obstacles[i], self.obstacles[j])
-            for i, j in collision_pairs(problem, strict=False)
+            for i, j in _collision_pairs(problem, descendants, strict=False)
         ]
 
     def apart(self, a, b):
@@ -44,9 +49,10 @@ class Formulation:
             v + bh + problem.gap <= y,
         )
 
-    def geometry(self) -> None:
+    def geometry(self) -> dict[str, frozenset[str]]:
         """Constrain bounds, membership, pins and strict exclusions."""
         problem, z3 = self.problem, self.z3
+        descendants_by_id = problem.descendant_index()
         self.hard: list[Any] = []
         self.exclusions: list[Any] = []
         objects: list[Node | Assembly] = [*problem.nodes, *problem.assemblies]
@@ -88,7 +94,7 @@ class Formulation:
                         cy + ch <= y + h - problem.padding,
                     ]
                 )
-            descendants = problem.descendants(a.id)
+            descendants = descendants_by_id[a.id]
             for n in problem.nodes:
                 if n.id not in descendants:
                     self.exclusions.append(
@@ -96,7 +102,7 @@ class Formulation:
                     )
             self.obstacles[a.id] = (x, y, w, problem.header)
         for outer in problem.assemblies:
-            descendants = problem.descendants(outer.id)
+            descendants = descendants_by_id[outer.id]
             x, y, w, h = self.variables[outer.id]
             for inner in problem.assemblies:
                 if inner.id == outer.id or inner.id in descendants:
@@ -107,8 +113,10 @@ class Formulation:
                 )
         self.strict_collisions = [
             self.apart(self.obstacles[i], self.obstacles[j])
-            for i, j in collision_pairs(problem)
+            for i, j in _collision_pairs(problem, descendants_by_id)
         ]
+
+        return descendants_by_id
 
     def grids(self) -> None:
         """Constrain member slots and grid or packed arrangements."""

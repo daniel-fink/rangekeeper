@@ -11,15 +11,15 @@ def uid(name):
 
 import pytest
 
-from rangekeeper._validation import (
+from rangekeeper.shared.validation import (
     bounded,
     require,
     require_acyclic,
     require_ownership,
     require_unique,
 )
-from rangekeeper.diagnostics import Issue
-from rangekeeper.errors import ContractError
+from rangekeeper.shared.diagnostics import Issue
+from rangekeeper.shared.errors import ContractError
 from rangekeeper.model.scope import build_scope
 from rangekeeper.model.expression.validation import (
     infer_expression_domain,
@@ -28,7 +28,7 @@ from rangekeeper.model.expression.validation import (
 )
 from rangekeeper.model.formulation.validation import validate_formulation_names
 from rangekeeper.model.formulation.preparation import prepare_formulations
-from rangekeeper.validate import require_uuid
+from rangekeeper.shared.arguments import require_uuid
 
 
 def test_argument_guards_are_distinct_from_semantic_rules():
@@ -263,7 +263,7 @@ def test_signature_validation_is_independently_composable():
 
 
 def test_model_and_partial_specification_share_local_naming_diagnostics():
-    from rangekeeper.errors import ValidationError
+    from rangekeeper.shared.errors import ValidationError
     from rangekeeper.model.validation import validate as validate_model
     from rangekeeper.specification import Specification
 

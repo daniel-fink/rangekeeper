@@ -4,7 +4,7 @@ from rangekeeper.model.expression import ExpressionKind
 from rangekeeper.model import ValueKind
 
 from uuid import uuid4
-from rangekeeper._schema.records import Entity, Expression, Location, Quantity
+from rangekeeper.schema.records import Entity, Expression, Location, Quantity
 
 Entity()  # Missing required identity.
 Entity(id="not a UUID")

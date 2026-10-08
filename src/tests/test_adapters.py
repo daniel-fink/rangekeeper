@@ -6,16 +6,17 @@ import polars as pl
 import pint
 import pytest
 
+from rangekeeper.shared.errors import EncodingError
+
 import rangekeeper as rk
 
 adapter = rk.adapters
-table_module = rk.table
+from rangekeeper.shared import table as table_module
+from rangekeeper.model import system
 
 
 def test_supported_adapter_and_table_surfaces_are_explicit():
     assert adapter.__all__ == [
-        "AdapterEncodingError",
-        "AdapterError",
         "csv",
         "cytoscape",
         "document",
@@ -28,7 +29,7 @@ def test_supported_adapter_and_table_surfaces_are_explicit():
     assert table_module.__all__ == ["Row", "Table", "TableError"]
     for retired in ("json", "SpeckleImportError", "SpeckleConflictError"):
         assert not hasattr(adapter, retired)
-    assert not hasattr(rk.graph, "materialization")
+    assert not hasattr(system, "materialization")
     for retired in (
         "MaterializationError",
         "Snapshot",
@@ -139,7 +140,7 @@ def test_csv_rejects_rich_values_instead_of_stringifying_them(tmp_path):
         rows=({"labels": (("taxonomy", "code"),)},),
     )
 
-    with pytest.raises(adapter.AdapterEncodingError, match="tuple"):
+    with pytest.raises(EncodingError, match="tuple"):
         adapter.csv.write(table, tmp_path / "table.csv")
 
 
@@ -162,7 +163,7 @@ def test_csv_rejects_non_finite_numbers(tmp_path):
         rows=({"value": float("nan")},),
     )
 
-    with pytest.raises(adapter.AdapterEncodingError, match="float"):
+    with pytest.raises(EncodingError, match="float"):
         adapter.csv.write(table, tmp_path / "non-finite.csv")
 
 
@@ -189,7 +190,7 @@ def test_csv_accepts_real_scalars_creates_parents_and_returns_path(tmp_path):
 def test_csv_rejects_unsupported_scalar_boundaries(tmp_path, value):
     table = table_module.Table(columns=("value",), rows=({"value": value},))
 
-    with pytest.raises(adapter.AdapterEncodingError):
+    with pytest.raises(EncodingError):
         adapter.csv.write(table, tmp_path / "invalid.csv")
 
 
@@ -204,7 +205,7 @@ def visualization_fixture():
         Classification,
         Taxonomy,
     )
-    from rangekeeper.graph import View
+    from rangekeeper.model.system import View
 
     node = Classification(id=uuid4(), code="node", name="Node")
     contains = Classification(
@@ -262,7 +263,7 @@ def test_graph_html_visualization_writes_the_selected_view(tmp_path):
 def test_graph_html_wraps_invalid_json_options(tmp_path, options):
     view, _ = visualization_fixture()
 
-    with pytest.raises(adapter.AdapterEncodingError, match="invalid PyVis options"):
+    with pytest.raises(EncodingError, match="invalid PyVis options"):
         adapter.visualization.graph_html(
             view,
             tmp_path / "graph.html",
@@ -301,9 +302,9 @@ def test_arborescence_visualization_rejects_rich_or_invalid_values():
         ),
     )
 
-    with pytest.raises(adapter.AdapterEncodingError, match="finite"):
+    with pytest.raises(EncodingError, match="finite"):
         adapter.visualization.sunburst(rich, value_column="total")
-    with pytest.raises(adapter.AdapterEncodingError, match="missing columns"):
+    with pytest.raises(EncodingError, match="missing columns"):
         adapter.visualization.treemap(
             table_module.Table(columns=("entity_id",), rows=()),
         )
@@ -324,7 +325,7 @@ def test_arborescence_visualization_label_fallback_and_validation():
         columns=("entity_id", "parent_id", "name"),
         rows=({"entity_id": "root", "parent_id": None, "name": 42},),
     )
-    with pytest.raises(adapter.AdapterEncodingError, match="strings"):
+    with pytest.raises(EncodingError, match="strings"):
         adapter.visualization.icicle(invalid)
 
 
@@ -363,7 +364,7 @@ def test_arborescence_visualization_rejects_invalid_topology(rows, message):
         columns=("entity_id", "parent_id", "name"),
         rows=rows,
     )
-    with pytest.raises(adapter.AdapterEncodingError, match=message):
+    with pytest.raises(EncodingError, match=message):
         adapter.visualization.treemap(table)
 
 
@@ -380,7 +381,7 @@ def test_arborescence_visualization_rejects_invalid_numeric_values(value):
             },
         ),
     )
-    with pytest.raises(adapter.AdapterEncodingError, match="non-negative"):
+    with pytest.raises(EncodingError, match="non-negative"):
         adapter.visualization.sunburst(table, value_column="total")
 
 
@@ -397,12 +398,12 @@ def test_arborescence_visualization_rejects_child_totals_above_parent():
             },
         ),
     )
-    with pytest.raises(adapter.AdapterEncodingError, match="below child total"):
+    with pytest.raises(EncodingError, match="below child total"):
         adapter.visualization.icicle(table, value_column="total")
 
 
 def test_csv_projects_revision_and_entity_uuids_as_text(tmp_path):
-    from rangekeeper.graph.projection import to_table
+    from rangekeeper.model.system.projection import to_table
 
     view, _ = visualization_fixture()
     table = to_table(view)

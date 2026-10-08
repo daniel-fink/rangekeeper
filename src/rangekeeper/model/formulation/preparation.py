@@ -8,14 +8,23 @@ Neither path evaluates quantities, executes graph queries or invokes a solver.
 import math
 from uuid import UUID
 
-from rangekeeper._validation import require, require_unique, require_ownership
+from rangekeeper.shared.validation import require, require_unique, require_ownership
 from rangekeeper.model.scope import build_scope, validate_values
 from rangekeeper.model.expression.validation import (
     validate_constraint_predicates,
     validate_function_signature,
 )
-from .validation import validate_formulation_names
-from .traversal import walk_formulations
+from rangekeeper.model.formulation.validation import validate_formulation_names
+
+
+def _walk_formulations(formulations, path):
+    """Yield root and nested Formulations with their original document locations."""
+    for index, formulation in enumerate(formulations):
+        current = f"{path}/{index}"
+        yield formulation, current
+        yield from _walk_formulations(
+            formulation.get("formulations") or [], current + "/formulations"
+        )
 
 
 def prepare_formulations(document, additional_formulations=(), *, path=""):
@@ -41,8 +50,8 @@ def prepare_formulations(document, additional_formulations=(), *, path=""):
     validate_formulation_names(roots, path=path + "/formulations")
     validate_formulation_names(additional_formulations, path="/additional_formulations")
     located = [
-        *walk_formulations(roots, path + "/formulations"),
-        *walk_formulations(additional_formulations, "/additional_formulations"),
+        *_walk_formulations(roots, path + "/formulations"),
+        *_walk_formulations(additional_formulations, "/additional_formulations"),
     ]
     formulations = [formulation for formulation, _ in located]
     local_values = [

@@ -10,7 +10,7 @@ import yaml
 
 import _library
 
-from rangekeeper.errors import ContractError
+from rangekeeper.shared.errors import ContractError
 from rangekeeper.specification.composition import (
     compose_specification,
     specification_catalogue,

@@ -96,4 +96,4 @@ def _format_ids(ids: Iterable[UUID]) -> str:
     return ", ".join(str(item) for item in sorted(ids, key=str))
 
 
-from rangekeeper.errors import BoundaryError, EncodingError, ValueEncodingError
+from rangekeeper.shared.errors import BoundaryError, EncodingError, ValueEncodingError

@@ -2,40 +2,44 @@
 
 from collections.abc import Mapping
 from typing import TYPE_CHECKING
-from .._records import Record, exact_equal
-from .._schema.validation import document_version
-from .._validation import bounded, checked
-from ..diagnostics import Issue, ValidationReport
-from ..units import UnitSystem, default_units
-from .._schema.records import Quantity, Diagnostic, Step
-from ..errors import (
+from rangekeeper.schema.runtime import Record, exact_equal
+from rangekeeper.schema.validation import document_version
+from rangekeeper.shared.validation import bounded, checked
+from rangekeeper.shared.diagnostics import Issue, ValidationReport
+from rangekeeper.shared.units import UnitSystem, default_units
+from rangekeeper.schema.records import Quantity, Diagnostic, Step
+from rangekeeper.shared.errors import (
     UnitError,
     MissingReferenceError,
     ReferenceTypeError,
     IdentityConflictError,
 )
 from uuid import UUID
-from ..model.model import Model
-from ..specification.specification import Specification
-from ..references import DocumentResolver
+from rangekeeper.model.model import Model
+from rangekeeper.specification.specification import Specification
+from rangekeeper.shared.references import DocumentResolver
 from rangekeeper.model.scope import resolve_reference
-from rangekeeper.errors import ContractError
-from rangekeeper._validation import require, require_acyclic
+from rangekeeper.shared.errors import ContractError
+from rangekeeper.shared.validation import require, require_acyclic
 from rangekeeper.model.validation import check_model
 from rangekeeper.specification.composition import (
     compose_specification,
     specification_catalogue,
 )
 from rangekeeper.specification.validation import validate_specification
-from .report import completion_for, validate_non_batch_status, validate_report
-from .outputs import validate_outputs
-from .._record_index import walk_data
-from .._schema.enums import CompletionStatus
+from rangekeeper.run.report import (
+    completion_for,
+    validate_non_batch_status,
+    validate_report,
+)
+from rangekeeper.run.outputs import validate_outputs
+from rangekeeper.schema.index import walk_data
+from rangekeeper.schema.enums import CompletionStatus
 
 
 if TYPE_CHECKING:
-    from .run import Run
-    from ..references import DocumentResolver
+    from rangekeeper.run.run import Run
+    from rangekeeper.shared.references import DocumentResolver
 
 
 def validate_records(
@@ -115,8 +119,8 @@ def validate(
     Assignments are compared after explicit conversion to output Measure units;
     this does not evaluate equations or certify a solver's numerical claims.
     """
-    from .run import Run
-    from ..errors import (
+    from rangekeeper.run.run import Run
+    from rangekeeper.shared.errors import (
         MissingReferenceError,
         ReferenceTypeError,
         IdentityConflictError,
@@ -157,7 +161,7 @@ def collect_documents(
     Historical predecessors are not required to interpret the current document.
     Untyped report-document references use the resolver's three typed lookups.
     """
-    from .run import Run
+    from rangekeeper.run.run import Run
 
     found: dict[UUID, Model | Specification | Run] = {root.id: root}
     pending: list[Model | Specification | Run] = [root]
@@ -432,7 +436,7 @@ class _RunValidation:
                             run["report"].get("outcomes") or solution != "not_assessed"
                         )
                     ):
-                        from rangekeeper.policies.validation import (
+                        from rangekeeper.specification.policy.validation import (
                             validate_outcomes,
                         )
 

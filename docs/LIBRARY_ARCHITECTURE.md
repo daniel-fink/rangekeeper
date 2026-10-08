@@ -7,21 +7,23 @@ its equations or treating a recorded result as a fixed input.
 ```text
 schema/                          LinkML fields and structural contracts
 src/rangekeeper/
-  _schema/, _records.py          generated immutable records, enums and encoding
-  _record_index.py, _revision.py record locations and revision comparison
-  _behaviors/                   field-free intrinsic record methods
-  model/, specification/, run/   root facades and semantic validation
-  duration/, units.py            calendar and dimensional rules
-  calculations/, formulations/  known-data arithmetic and declared equations
-  scenarios/, policies/         captured futures and causal decisions
-  execution/                    preparation, solve, acceptance, publication
-  graph/                        views, membership, traversal and reductions
-  table.py                      detached cells and optional row identity
-  workflow/                     source evidence, composition and builds
-  adapters/                     file, service and presentation boundaries
-  io/                           strict codecs and append-only revision stores
-  migration/                    explicit historical wire conversion
-  legacy/                       predecessor code held for the Windows gate
+  schema/                        generated records/enums, runtime, indexes and behaviors
+  shared/                        tables, units, references, diagnostics and validation
+  model/                         Model facade, declarations and semantic validation
+    system/                      System records, views, membership and reductions
+    expression/, formulation/    expression analysis and passive equation authoring
+    duration/, scenario/         calendar rules, captured futures and replay
+  specification/                 investigation requirements and composition
+    policy/                      declarations, observation and causal evaluation
+  run/                           finalized execution evidence and validation
+    execution/                   preparation, solve, acceptance and publication
+  calculations/                  known-data arithmetic and deterministic kernels
+  workflow/                      source configuration, composition and builds
+    evidence/, operation.py      native Claims, Evidence and invocation contracts
+  adapters/                      file, service and presentation boundaries
+  io/                            strict codecs and append-only revision stores
+  migration/                     explicit historical wire conversion
+  legacy/                        predecessor code held for the Windows gate
 ```
 
 ## Records and behavior

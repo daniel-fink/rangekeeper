@@ -3,7 +3,7 @@
 from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum, unique
-from rangekeeper.operation import Diagnostic, Severity
+from rangekeeper.workflow.operation import Diagnostic, Severity
 
 
 @unique

@@ -9,9 +9,9 @@ import re
 from html import escape
 from xml.etree import ElementTree
 
-from .check import check
-from .model import Problem, Rect
-from .z3_solver import Result
+from rangekeeper.adapters.cytoscape.layout.check import check, _check
+from rangekeeper.adapters.cytoscape.layout.model import Problem, Rect
+from rangekeeper.adapters.cytoscape.layout.result import Result
 
 PALETTE = ("#2563eb", "#b45309", "#7c3aed", "#047857", "#be185d", "#0e7490")
 
@@ -44,7 +44,8 @@ def svg(
         raise ValueError("Node colors must be six-digit hex colors")
     if not result.rectangles:
         return '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="80"><text x="16" y="40">No layout returned</text></svg>'
-    findings = check(problem, result.rectangles)
+    descendants_by_id = problem.descendant_index()
+    findings = _check(problem, result.rectangles, descendants_by_id)
     if any(f.code != "exclusion" or result.mode == ResultMode.STRICT for f in findings):
         raise ValueError("Cannot render an unchecked layout")
     width = max(r.right for r in result.rectangles.values()) + 40
@@ -58,7 +59,7 @@ def svg(
     ]
     # Draw large containing frames first; object IDs are preserved as attributes.
     assemblies = sorted(
-        problem.assemblies, key=lambda a: (-len(problem.descendants(a.id)), a.id)
+        problem.assemblies, key=lambda a: (-len(descendants_by_id[a.id]), a.id)
     )
     colors = {
         a.id: PALETTE[i % len(PALETTE)]
@@ -87,7 +88,7 @@ def svg(
         r = result.rectangles[n.id]
         color = "#dc2626" if n.id in conflicts else "#334155"
         memberships = [
-            a.label for a in problem.assemblies if n.id in problem.descendants(a.id)
+            a.label for a in problem.assemblies if n.id in descendants_by_id[a.id]
         ]
         parts.extend(
             [

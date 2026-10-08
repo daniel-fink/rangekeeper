@@ -14,11 +14,13 @@ from rangekeeper.workflow._contracts import (
 )
 from rangekeeper.workflow._declarations import sequence, text
 from rangekeeper.workflow._schema import obj
-from rangekeeper.evidence import fingerprint
 from rangekeeper.workflow.sources import resolve_file
 
-from . import ExtractionSpec, extract_table, read
-from .classification import RowClassificationSpec, classify_rows
+from rangekeeper.adapters.excel import ExtractionSpec, extract_table, read
+from rangekeeper.adapters.excel.classification import (
+    RowClassificationSpec,
+    classify_rows,
+)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -165,7 +167,7 @@ def request_properties():
 
 def inspect_input(request, root):
     """Read bytes and declared edition only; never recalculate or modify a workbook."""
-    from rangekeeper.operation import _Failure
+    from rangekeeper.workflow.operation import _Failure
 
     try:
         path = resolve_file(root, request.files, request.source_key)
@@ -229,10 +231,6 @@ def describe_book(value):
     return Produced(value, value.fingerprint, value.source)
 
 
-def describe_table(value):
-    return Produced(value, fingerprint(value))
-
-
 MODULES = ("adapters/excel/",)
 OPERATIONS = {
     "read": OperationDeclaration(
@@ -248,7 +246,7 @@ OPERATIONS = {
     "extract": OperationDeclaration(
         ExtractSpec,
         _extract,
-        describe_table,
+        Produced.from_evidence,
         lambda: request_properties()["extract"],
         inputs=(("input", "workbook"),),
         modules=MODULES,
@@ -256,7 +254,7 @@ OPERATIONS = {
     "classify_rows": OperationDeclaration(
         ClassifySpec,
         _classify,
-        describe_table,
+        Produced.from_evidence,
         lambda: request_properties()["classify_rows"],
         inputs=(("input", "table"), ("workbook", "workbook")),
         modules=MODULES,
@@ -274,7 +272,7 @@ def format_reference(location):
 def record_reference(location):
     if set(location.reference) != {"sheet", "cell"}:
         return None
-    from ._coordinates import address
+    from rangekeeper.adapters.excel._coordinates import address
 
     row, _ = address(location.reference["cell"])
     return f"{location.source.checksum}:{location.reference['sheet']}:{row}"
@@ -283,7 +281,7 @@ def record_reference(location):
 def _health(spec, inputs):
     from rangekeeper.workflow.source_checks import SourceCheck
 
-    from .inspection import health
+    from rangekeeper.adapters.excel.inspection import health
 
     book = inputs[spec["workbook"]]
     return tuple(

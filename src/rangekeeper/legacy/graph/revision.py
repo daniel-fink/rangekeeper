@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from typing import Any, Generic, TypeVar
 from uuid import UUID, uuid4
 
-from rangekeeper import validate
+from rangekeeper.shared import arguments as validate
 from rangekeeper.legacy.measure import Measure
 from rangekeeper.legacy.graph.characteristics import Feature, Label, Measurement
 from rangekeeper.legacy.graph.classification import Classification

@@ -22,7 +22,7 @@ import yaml
 
 import _library
 
-from rangekeeper.errors import ContractError
+from rangekeeper.shared.errors import ContractError
 from rangekeeper.model.validation import check_model
 
 SCHEMA = Path(__file__).resolve().parents[1]

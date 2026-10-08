@@ -2,7 +2,7 @@
 
 from pathlib import Path
 from rangekeeper import Model, Specification
-from rangekeeper.graph.projection import ValueColumn, to_table
+from rangekeeper.model.system.projection import ValueColumn, to_table
 from rangekeeper.workflow.runtime import run
 
 

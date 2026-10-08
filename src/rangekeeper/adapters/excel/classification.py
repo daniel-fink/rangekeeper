@@ -4,14 +4,14 @@ import re
 from dataclasses import dataclass
 from uuid import NAMESPACE_URL, uuid5
 
-from rangekeeper.operation import _Failure, _invoke
-from rangekeeper.operation import fingerprint as operation_fingerprint
-from rangekeeper.evidence import Evidence, fingerprint, tabular
-from rangekeeper.evidence._derivation import settings_inputs
+from rangekeeper.workflow.operation import _Failure, _invoke
+from rangekeeper.workflow.operation import fingerprint as operation_fingerprint
+from rangekeeper.workflow.evidence import Evidence, fingerprint, tabular
+from rangekeeper.workflow.evidence._derivation import settings_inputs
 
-from rangekeeper.evidence import Claim, Method, locations
-from rangekeeper.table import Table
-from .snapshot import Workbook
+from rangekeeper.workflow.evidence import Claim, Method, locations
+from rangekeeper.shared.table import Table
+from rangekeeper.adapters.excel.snapshot import Workbook
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

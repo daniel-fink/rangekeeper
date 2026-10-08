@@ -16,14 +16,13 @@ import json
 import math
 from enum import Enum, unique
 
-from ..model.flow import Flow, Movement
-from ..model.duration import Period
-from ..model.measure import Quantity
-from ..duration.calendar import DayCount, elapsed_days, year_fraction
-from ..units import default_units
-from .._behaviors.flow import MissingValueHandling
-from .._coordinates import index
-from .._records import UNSET
+from rangekeeper.model.flow import Flow, Movement
+from rangekeeper.model.duration import Period
+from rangekeeper.model.measure import Quantity
+from rangekeeper.model.duration.calendar import DayCount, elapsed_days, year_fraction
+from rangekeeper.shared.units import default_units
+from rangekeeper.schema.behaviors.flow import MissingValueHandling
+from rangekeeper.schema.runtime import UNSET
 
 
 @unique
@@ -73,13 +72,6 @@ class Alignment:
             raise TypeError("missing must be a MissingValueHandling")
         if not self.flows or len(self.coverage) != len(self.flows):
             raise ValueError("alignment requires one coverage row per Flow")
-        if self.missing not in (
-            MissingValueHandling.ERROR,
-            MissingValueHandling.PROPAGATE,
-            MissingValueHandling.SKIP,
-            MissingValueHandling.ZERO,
-        ):
-            raise ValueError("invalid missing policy")
         coordinates = tuple(m.coordinate for m in self.flows[0].movements)
         for flow, row in zip(self.flows, self.coverage):
             flow.check(resolved=self.missing == MissingValueHandling.ERROR)
@@ -103,12 +95,6 @@ class Alignment:
         """
         if not isinstance(reducer, AggregationReducer):
             raise TypeError("reducer must be an AggregationReducer")
-        if reducer not in (
-            AggregationReducer.SUM,
-            AggregationReducer.MIN,
-            AggregationReducer.MAX,
-        ):
-            raise ValueError("reducer must be sum, min or max")
         converted = []
         for flow, row in zip(self.flows, self.coverage):
             result = flow.convert(units=units or self.flows[0].units)
@@ -189,17 +175,6 @@ def align(
         missing, MissingValueHandling
     ):
         raise TypeError("join and missing require their enum types")
-    if join not in (
-        AlignmentJoin.EXACT,
-        AlignmentJoin.UNION,
-        AlignmentJoin.INTERSECTION,
-    ) or missing not in (
-        MissingValueHandling.ERROR,
-        MissingValueHandling.PROPAGATE,
-        MissingValueHandling.SKIP,
-        MissingValueHandling.ZERO,
-    ):
-        raise ValueError("invalid alignment or missing policy")
     if not flows:
         raise ValueError("alignment needs at least one Flow")
     maps, templates = [], {}
@@ -207,7 +182,8 @@ def align(
     for flow in flows:
         flow.check()
         mapping = {
-            json.dumps(key): movement for key, movement in index(flow.movements).items()
+            json.dumps(key): movement
+            for key, movement in flow.coordinate_index().items()
         }
         maps.append(mapping)
         templates.update(
@@ -389,27 +365,7 @@ def resample(
         raise TypeError("missing and reduction require their enum types")
     if weighting is not None and not isinstance(weighting, MeanWeighting):
         raise TypeError("weighting must be a MeanWeighting")
-    if missing not in (
-        MissingValueHandling.ERROR,
-        MissingValueHandling.PROPAGATE,
-        MissingValueHandling.SKIP,
-        MissingValueHandling.ZERO,
-    ):
-        raise ValueError("invalid missing policy")
-    if reduction not in {
-        ResamplingReduction.SUM,
-        ResamplingReduction.FIRST,
-        ResamplingReduction.LAST,
-        ResamplingReduction.MEAN,
-        ResamplingReduction.MIN,
-        ResamplingReduction.MAX,
-    }:
-        raise ValueError("unsupported resampling reduction")
-    if (
-        weighting not in (None, MeanWeighting.OBSERVATIONS, MeanWeighting.ELAPSED)
-        or weighting is not None
-        and reduction != ResamplingReduction.MEAN
-    ):
+    if weighting is not None and reduction != ResamplingReduction.MEAN:
         raise ValueError("weighting applies only to means")
     if reduction == ResamplingReduction.MEAN and weighting is None:
         raise ValueError("means require explicit weighting")

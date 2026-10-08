@@ -15,6 +15,35 @@ new ownership. The combined implementation record tracks acceptance evidence.
 Problem and baseline sections describe the pre-refactor code; retired source paths
 remain as text. Implementation records and current guides describe the final state.
 
+## Post-implementation structural review
+
+The 2026-10-07 review of all 244 Python files at `5a111b0` found remaining
+simplification work and additional ownership improvements. Local acceptance of
+RF-001–RF-023 does not establish that every reduction objective was achieved.
+The [size record](#size-and-deletion-accounting) already records the net-growth
+exception. The implementation records and acceptance results below remain the
+historical record of that pass.
+
+The [follow-up plan](REFACTORING_FOLLOWUP_PLAN.md) owns RF-024–RF-034, implemented
+on 2026-10-08. Its [implementation record](REFACTORING_FOLLOWUP_PLAN.md#implementation-record)
+owns the final package hierarchy, reductions and new acceptance evidence. The
+RF-001–RF-023 record below remains historical.
+
+| Review finding | Earlier objective | Follow-up owner |
+| --- | --- | --- |
+| Repeated Specification exports, graph collection and role checks; unused prepared state | RF-005, RF-006, RF-009, RF-022 | [RF-024](REFACTORING_FOLLOWUP_PLAN.md#rf-024-specification-and-execution-preparation) |
+| Repeated copying within record construction | RF-006, RF-020 | [RF-025](REFACTORING_FOLLOWUP_PLAN.md#rf-025-record-construction) |
+| Flow coordinate helper ownership and repeated authoring/choice checks | RF-002, RF-014, RF-015 | [RF-026](REFACTORING_FOLLOWUP_PLAN.md#rf-026-flow-operations-and-callers) |
+| Scenario conformance ownership, repeated captured-content validation and dynamics consolidation | RF-021 | [RF-027](REFACTORING_FOLLOWUP_PLAN.md#rf-027-scenario-contracts-and-sampling), [RF-033](REFACTORING_FOLLOWUP_PLAN.md#rf-033-dynamics-consolidation) |
+| Workflow forwarding, provenance ownership and repeated Evidence preparation | RF-023 | [RF-028](REFACTORING_FOLLOWUP_PLAN.md#rf-028-workflow-ownership), [RF-029](REFACTORING_FOLLOWUP_PLAN.md#rf-029-evidence-preparation-for-source-checks) |
+| Duplicate atomic JSON publication wrappers | RF-023 | [RF-030](REFACTORING_FOLLOWUP_PLAN.md#rf-030-atomic-json-publication) |
+| Repeated adapter/layout preparation and indirect imports | Additional consumer improvements related to RF-010–RF-013 and RF-023 | [RF-031](REFACTORING_FOLLOWUP_PLAN.md#rf-031-adapter-and-layout-preparation) |
+| Thin execution evaluator and accidental re-export | RF-008 | [RF-032](REFACTORING_FOLLOWUP_PLAN.md#rf-032-execution-acceptance-ownership) |
+
+This note does not reopen the schema migration or mark external acceptance as
+passed. Rhino host loading, Windows connector acceptance, Linux execution and
+remote CI retain the status in the [acceptance record](#acceptance-evidence).
+
 ## Overall strategy: reduce and simplify
 
 The primary goal is a smaller codebase that is easier to understand and change.

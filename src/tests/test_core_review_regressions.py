@@ -4,9 +4,9 @@ from uuid import UUID, uuid4
 
 import pytest
 
-from rangekeeper._record_index import RecordIndex
-from rangekeeper._schema.validation import document_version
-from rangekeeper.errors import ContractError, ReferenceTypeError, ValidationError
+from rangekeeper.schema.index import RecordIndex
+from rangekeeper.schema.validation import document_version
+from rangekeeper.shared.errors import ContractError, ReferenceTypeError, ValidationError
 from rangekeeper.model import Model, Value
 from rangekeeper.model.formulation.validation import validate_formulation_names
 from rangekeeper.specification import Specification, SpecificationRecord
