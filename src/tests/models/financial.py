@@ -30,10 +30,10 @@ def build_accounts(
 ) -> DevelopmentAccounts:
     """Nine monthly draws, three repayments; advance transactions and capitalized debt."""
     periods = make_periods(starting, frequency=Frequency.MONTH, count=12)
-    purchase = projection.allocate(
+    purchase = projection.distribute(
         Quantity(magnitude=-acquisition, units="AUD"), periods=periods[:1]
     )
-    construction = projection.allocate(
+    construction = projection.distribute(
         Quantity(magnitude=-costs, units="AUD"), periods=periods[:9]
     )
     draws = series.aggregate(
@@ -41,7 +41,7 @@ def build_accounts(
         join=series.AlignmentJoin.UNION,
         missing=MissingValueHandling.ZERO,
     ).flow
-    receipts = projection.allocate(
+    receipts = projection.distribute(
         Quantity(magnitude=payments, units="AUD"), periods=periods[9:]
     )
     equity_account = Account.calculate(

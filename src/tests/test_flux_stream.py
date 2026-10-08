@@ -50,11 +50,49 @@ def test_collection_and_column_reuse(monkeypatch):
 
 
 def test_minimal_import_and_immutable_stream():
-    code = "from rangekeeper.model.flux import Stream; import sys; Stream({}); assert not {'polars','matplotlib','pyomo.environ','IPython'} & set(sys.modules)"
+    code = "from rangekeeper.model.flux import Flow, Stream; import sys; Stream({}); Flow(units='AUD', movements=()).display(); assert not {'polars','matplotlib','pyomo.environ','IPython'} & set(sys.modules)"
     subprocess.run([sys.executable, "-c", code], check=True)
     stream = Stream({})
     with pytest.raises(AttributeError):
         stream.labels = ("edited",)
+
+
+@pytest.mark.parametrize("period_content", [False, True])
+def test_flow_display_preserves_records_and_uses_shared_rendering(period_content):
+    start = date(2027, 1, 1)
+    amounts = [0, None, -1.234]
+    source = (
+        Flow.from_periods(
+            make_periods(start, frequency=Frequency.MONTH, count=3),
+            amounts,
+            units="AUD",
+        )
+        if period_content
+        else Flow.from_events(
+            [date(2027, 1, day) for day in (1, 2, 3)], amounts, units="AUD"
+        )
+    )
+    recorded = source.to_data()
+    table = source.display(name="<Cash>", transpose=True, precision=3)
+    html = table._repr_html_()
+    assert "&lt;Cash&gt; [AUD]" in html and "<Cash>" not in html
+    assert "0.000" in html and "?" in html and "-1.234" in html
+    assert "Jan 2027" in html if period_content else "2027-01-01" in html
+    assert (
+        html
+        == Stream({"<Cash>": source}).display(transpose=True, precision=3)._repr_html_()
+    )
+    assert "Flow [AUD]" in source._repr_html_()
+    assert "-1.23" in str(source.display())
+    assert source.to_data() == recorded
+
+
+def test_empty_flow_display_and_invalid_presentation_options():
+    source = Flow(units="AUD", movements=())
+    assert "Flow [AUD]" in source._repr_html_()
+    for options in ({"name": ""}, {"precision": -1}, {"transpose": "yes"}):
+        with pytest.raises((TypeError, ValueError)):
+            source.display(**options)
 
 
 def test_span_anchor_partial_and_decoded_behavior():

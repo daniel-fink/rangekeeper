@@ -175,7 +175,7 @@ keep the original Flow when individual payment facts are required.
 | `duration.Type` / pandas frequency inference | Explicit `frequency=Frequency.MONTH` etc.; ten calendar frequencies in `model.duration.calendar` |
 | Inclusive `Span.end_date` | Half-open `[start,end)` Period/Span; add one calendar day when mapping an inclusive date-only end |
 | `Flow.from_dict/from_sequence` | Explicit ordered dates/magnitudes in `Flow.from_events`; duplicate dates need keys |
-| `Flow.from_projection` | `calculations.projection.project` or `allocate`, with Quantity and Periods |
+| `Flow.from_projection` | `calculations.projection.extrapolate` or `distribute`, with Quantity and Periods |
 | Mutating Flow/Stream / `duplicate` | Immutable records; new calculation result; new Model revision for persisted changes |
 | `Stream.sum/min/max` | `Stream({label: flow}).sum/min/max()`; `aggregate(method=...)` also returns coverage; exact alignment by default |
 | `Stream.product` | `series.multiply`; dimensionless factors scale quantities; unit powers remain intact |
@@ -429,6 +429,17 @@ with the matching library, then import `rangekeeper_examples.design` or
 `rangekeeper.examples`. See [the examples guide](examples.md).
 
 ## ADR-005 API migration
+
+Projection calculation verbs are `extrapolate(initial=..., periods=...)` and
+`distribute(quantity=..., periods=..., distribution=...)`. These replace `project`
+and `allocate` without aliases. `Distribution` retains the distribution shape;
+`distribute` applies it while preserving the supplied total. `project_values`
+remains the lower-level numeric sequence helper.
+
+Use `flow.display(name=...)` for a single line and `stream.display()` for a
+collection. Both use the same notebook renderer. Display names are presentation
+labels and do not change canonical records. `negate()` and `collapse(on=...)`
+remain available; collapse places one summed movement on the selected date.
 
 The public Flow module is `rangekeeper.model.flux`; `model.flow` has no forwarding
 alias. Import `ResamplingMethod` and `AggregationMethod` from `calculations.series`

@@ -99,6 +99,7 @@ Flow
   trim(*, start, end) / clean(*, remove_zeroes=False)
   difference(*, initial=None) / collapse(*, on=None, timing=None, missing=MissingValueHandling.ERROR)
   extent(*, include_zeroes=False) / trim_empty()
+  display(*, name=None, transpose=False, precision=2) -> StreamTable
 
 Period (also inherited by Span)
   check() -> Period
@@ -126,6 +127,10 @@ observation dates outside their coverage period. Recorded dates take precedence;
 undated period movements require `PeriodTiming.FIRST`, `LAST` or `END` when resolving a date.
 Flows carry units and coordinates. The calling model determines whether operations
 such as summation or integration express the intended quantity.
+
+`Flow.display()` and notebook rich display use the shared Stream table renderer.
+The optional `name` labels the table only; it does not add a field to the Flow.
+See [table display](tables.md#flow-and-stream-display) for formatting and missing states.
 
 `Distribution.cdf` is the cumulative distribution function. `mass` returns interval
 probabilities. Samples use the declared units and advance only the supplied NumPy

@@ -44,7 +44,7 @@ def test_padding_is_explicit_and_preserves_projection_origin():
 
 def test_pert_allocation_preserves_mass_without_padding_observations():
     periods = make_periods(date(2000, 1, 1), frequency=Frequency.MONTH, count=12)
-    flow = projection.allocate(
+    flow = projection.distribute(
         Quantity(magnitude=1, units="meter"),
         periods=periods,
         distribution=Distribution.pert(),

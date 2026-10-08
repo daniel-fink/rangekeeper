@@ -93,7 +93,7 @@ def test_flow_construction_detachment_and_negation():
 
 def test_allocation_and_annual_resampling_preserve_total():
     periods = make_periods(date(2020, 1, 1), frequency=Frequency.MONTH, count=25)
-    flow = projection.allocate(Quantity(magnitude=100, units="AUD"), periods=periods)
+    flow = projection.distribute(Quantity(magnitude=100, units="AUD"), periods=periods)
     assert amounts(flow) == pytest.approx((4,) * 25)
     years = make_periods(date(2020, 1, 1), frequency=Frequency.YEAR, count=3)
     reduced = series.resample(flow.negate(), periods=years, method=ResamplingMethod.SUM)
@@ -128,7 +128,7 @@ def test_sampling_is_explicit_before_allocation():
     assert all(2 <= x <= 8 for x in draws)
     periods = make_periods(date(2020, 1, 1), frequency=Frequency.MONTH, count=25)
     for amount in draws:
-        flow = projection.allocate(
+        flow = projection.distribute(
             Quantity(magnitude=amount, units="AUD"), periods=periods
         )
         assert flow.total().magnitude == pytest.approx(amount)
@@ -137,7 +137,7 @@ def test_sampling_is_explicit_before_allocation():
 def test_stream_selection_and_mixed_frequency_totals():
     measure = Measure(id=uuid4(), code="cash", name="Cash", units="AUD")
     flows = [
-        projection.allocate(
+        projection.distribute(
             Quantity(magnitude=total, units="AUD"),
             periods=make_periods(
                 date(2020, 1, 1),
