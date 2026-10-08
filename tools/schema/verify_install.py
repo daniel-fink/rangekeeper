@@ -472,6 +472,20 @@ assert polars.from_frame(polars.to_frame(flow), units='AUD') == flow
 assert polars.dates(flow)['date'].to_list() == [date(2026, 1, 1)]
 assert '&lt;Cash&gt; [AUD]' in flow.display(name='<Cash>')._repr_html_()
 assert 'Flow [AUD]' in flow._repr_html_()
+from rangekeeper.model.flux import Stream
+from rangekeeper.calculations.series import AlignmentJoin
+sparse = Flow.from_events([date(2026, 1, 1), date(2026, 1, 2)], [0, None], units='AUD')
+full = Flow.from_events([date(2026, 1, day) for day in range(1, 13)], [1234.567] * 12, units='AUD')
+display_stream = Stream({'Receipts': sparse, 'Balance': full}, join=AlignmentJoin.UNION)
+with pl.Config(tbl_rows=2, tbl_cols=1, float_precision=0):
+    config = pl.Config.state()
+    for transpose in (False, True):
+        table = display_stream.display(transpose=transpose, precision=3)
+        for rendered in (table._repr_html_(), str(table)):
+            assert all(value in rendered for value in ('Receipts [AUD]', '2026-01-12', '0.000', '?', '—', '1,234.567'))
+            assert 'shape:' not in rendered
+    assert pl.Config.state() == config
+assert display_stream.to_frame()['Receipts'].to_list() == [0, None] + [None] * 10
 from rangekeeper.model.duration import Span, Frequency
 from rangekeeper.model.measure import Quantity
 from rangekeeper.calculations import projection
@@ -484,7 +498,7 @@ path = csv.write(table, Path('table.csv'))
 assert csv.read(path, schema_overrides={'code': pl.String}) == table
 mixed = Table(columns=('value',), rows=({'value': uuid4()}, {'value': {'x': (1, 2)}}))
 assert polars.to_table(polars.to_frame(mixed)) == mixed
-print('Installed wheel: Flow display, projection verbs, Polars Flow/Table and CSV passed with pandas absent')
+print('Installed wheel: native Polars Flow/Stream display, projection verbs, Polars Flow/Table and CSV passed with pandas absent')
 """
         subprocess.run([str(python), "-I", "-c", script], cwd=temp, check=True)
     if args.tables_python:

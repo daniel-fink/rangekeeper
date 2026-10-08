@@ -125,11 +125,21 @@ Stream. The name defaults to `Flow` and changes only the display label. Both Flo
 and Stream support notebook rich display. Rendering requires the `calculations`
 extra; constructing a display object does not import Polars or IPython.
 
-`Stream({"Rent": rent, "Expenses": expenses}).display()` returns a plain-text and
-HTML table. Notebook rich display uses the same projection. Labels and units are
-shown by default; UUIDs are not. `transpose=True` puts line items on rows.
-`precision=2` changes formatting only. HTML labels are escaped. `—` means an absent
-coordinate, `?` means an unknown amount, and a known zero is shown as `0.00`.
+`Stream({"Rent": rent, "Expenses": expenses}).display()` returns a lazy display
+wrapper. It prepares a detached presentation DataFrame and delegates HTML and
+plain-text rendering to Polars. Notebook rich display uses the same projection.
+Labels and units are shown by default; UUIDs are not. `transpose=True` puts line
+items on rows. `precision=2` changes formatting only. Polars escapes HTML labels.
+`—` means an absent coordinate, `?` means an unknown amount, and a known zero is
+shown as `0.00`. These meanings are documented here and in the walkthrough rather
+than appended as a custom HTML footer.
+
+Display shows the full selection and full labels, with column types and DataFrame
+shape hidden. Its scoped Polars configuration restores the caller's settings on
+success or failure. The private presentation frame holds formatted strings in
+object columns so native HTML does not add literal quotation marks. This frame
+is only for display; it is not used in calculations or numeric exports. No extra
+table-rendering package is required.
 
 Display uses the Stream's alignment policy and does not resample or invent payment
 dates. Period labels describe coverage. Coordinate conflicts identify the lines

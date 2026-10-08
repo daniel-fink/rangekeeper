@@ -5,6 +5,8 @@ The seven notebook sources live under
 [`basic_dcf.ipynb`](../../examples/walkthrough/basic_dcf.ipynb), introduces Flow,
 Span, projection and Stream calculations before Model authoring. Its current
 Flux/Stream migration has [execution and rendered acceptance](../research/basic-dcf-2026-10-08/README.md).
+The subsequent [native Polars display acceptance](../research/native-polars-display-2026-10-08/README.md)
+records the current renderer and refreshed notebook outputs.
 The remaining six notebooks use shared canonical Model builders. Those notebooks
 still need this migration; their stored outputs do not establish acceptance
 against the current API.

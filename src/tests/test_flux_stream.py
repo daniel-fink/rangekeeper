@@ -95,6 +95,95 @@ def test_empty_flow_display_and_invalid_presentation_options():
             source.display(**options)
 
 
+@pytest.mark.parametrize("transpose", [False, True])
+def test_native_display_shows_full_selection_and_restores_config(transpose):
+    import polars as pl
+
+    periods = make_periods(date(2001, 1, 1), frequency=Frequency.YEAR, count=80)
+    label = "Income from the property's commercial and residential tenancies"
+    source = Flow.from_periods(periods, [1234.567] * 80, units="AUD")
+    table = Stream({label: source, "Other": source}).display(
+        transpose=transpose, precision=1
+    )
+    with pl.Config(
+        tbl_rows=2,
+        tbl_cols=1,
+        tbl_width_chars=12,
+        fmt_str_lengths=6,
+        tbl_hide_column_names=True,
+        float_precision=0,
+        thousands_separator=".",
+        decimal_separator=",",
+    ):
+        before = pl.Config.state()
+        html, text = table._repr_html_(), str(table)
+        assert pl.Config.state() == before
+    for rendered in (html, text):
+        assert "Other [AUD]" in rendered and "1,234.6" in rendered
+        assert "shape:" not in rendered
+        assert all(str(year) in rendered for year in range(2001, 2081))
+    assert label in text
+    assert "commercial and residential tenancies [AUD]" in html
+    assert "&quot;1,234.6&quot;" not in html
+
+
+@pytest.mark.parametrize("method", ["_repr_html_", "__str__"])
+def test_native_display_restores_config_after_renderer_failure(monkeypatch, method):
+    import polars as pl
+
+    table = Flow.from_events([date(2027, 1, 1)], [1], units="AUD").display()
+
+    def fail_render(self):
+        raise RuntimeError("native rendering failed")
+
+    monkeypatch.setattr(pl.DataFrame, method, fail_render)
+    with pl.Config(tbl_rows=3, tbl_hide_dataframe_shape=False):
+        before = pl.Config.state()
+        with pytest.raises(RuntimeError, match="native rendering failed"):
+            getattr(table, method)()
+        assert pl.Config.state() == before
+
+
+@pytest.mark.parametrize("transpose", [False, True])
+def test_native_display_missing_states_and_numeric_export(transpose):
+    import polars as pl
+
+    periods = make_periods(date(2027, 1, 1), frequency=Frequency.MONTH, count=3)
+    receipts = Flow.from_periods(periods[:2], [0, None], units="AUD")
+    stream = Stream(
+        {
+            "Receipts": receipts,
+            "Expenses": Flow.from_periods(periods, [-1234.567] * 3, units="AUD"),
+        },
+        join=Join.UNION,
+    )
+    recorded = receipts.to_data()
+    table = stream.display(transpose=transpose, precision=3)
+    for rendered in (table._repr_html_(), str(table)):
+        assert all(value in rendered for value in ("0.000", "?", "—", "-1,234.567"))
+    assert "&quot;0.000&quot;" not in table._repr_html_()
+    numeric = stream.to_frame()
+    assert numeric["Receipts"].dtype == pl.Float64
+    assert numeric["Receipts"].to_list() == [0, None, None]
+    assert numeric["Expenses"].to_list() == [-1234.567] * 3
+    assert receipts.to_data() == recorded
+
+
+@pytest.mark.parametrize("transpose", [False, True])
+def test_native_display_empty_collections(transpose):
+    table = Stream({"Empty": Flow(units="AUD", movements=())}).display(
+        transpose=transpose
+    )
+    for rendered in (table._repr_html_(), str(table)):
+        assert ("Line item" if transpose else "Period / date") in rendered
+        assert "Empty [AUD]" in rendered
+    # A selection with no Flows retains its existing alignment error.
+    empty = Stream({}).display(transpose=transpose)
+    for render in (empty._repr_html_, empty.__str__):
+        with pytest.raises(ValueError, match="at least one Flow"):
+            render()
+
+
 def test_span_anchor_partial_and_decoded_behavior():
     span = Span.from_duration(
         name="Leap", start=date(2024, 1, 31), frequency=Frequency.MONTH, count=3

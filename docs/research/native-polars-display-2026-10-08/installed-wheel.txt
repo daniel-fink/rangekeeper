@@ -1,0 +1,14 @@
+WARNING: The directory '/Users/daniel/Library/Caches/pip' or its parent directory is not owned or is not writable by the current user. The cache has been disabled. Check the permissions and owner of that directory. If executing pip with sudo, you should use sudo's -H flag.
+Processing /private/var/folders/sk/cjq5zjks7gx_3tf9m67y43xr0000gn/T/rk-polars-display-z8eemyc1/wheel/rangekeeper-0.8.71-py3-none-any.whl
+Installing collected packages: rangekeeper
+Successfully installed rangekeeper-0.8.71
+Installed wheel: date fields and source timestamp alternatives passed
+Installed wheel: records, packaged artifacts, validation, timestamps and lightweight imports passed
+Installed wheel: public Model lookup/revision and Specification composition/validation passed
+Installed wheel: all public roots, JSON and both revision stores passed without optional imports
+Installed wheel: Model graph, tables and offline viewer assets passed without legacy or numerical imports
+Installed wheel: all unit-bearing Model/Specification/Run fixtures, composition, JSON/YAML and both stores passed
+Installed wheel: canonical membership, explicit Value reduction, coverage and conversion passed
+Installed wheel: native Polars Flow/Stream display, projection verbs, Polars Flow/Table and CSV passed with pandas absent
+{"Babel": "2.17.0", "attrs": "25.3.0", "jsonschema": "4.26.0", "jsonschema-specifications": "2025.9.1", "py-moneyed": "3.0", "referencing": "0.37.0", "rfc3339-validator": "0.1.4", "rpds-py": "0.30.0", "six": "1.17.0", "typing-extensions": "4.15.0"}
+Installed wheel: Stream and acausal hierarchy acceptance example passed
