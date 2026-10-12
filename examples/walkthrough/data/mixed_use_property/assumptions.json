@@ -1,0 +1,108 @@
+{
+  "annual_opex_growth": 0.035,
+  "capex_growth_per_payment_interval": 0.035,
+  "capital_payments": [
+    {
+      "date": "2005-12-31",
+      "growth_exponent": 0
+    },
+    {
+      "date": "2010-12-31",
+      "growth_exponent": 1
+    }
+  ],
+  "currency": "AUD",
+  "forecast_span": {
+    "end_exclusive": "2012-01-01",
+    "start_inclusive": "2001-01-01"
+  },
+  "holding_span": {
+    "end_exclusive": "2011-01-01",
+    "start_inclusive": "2001-01-01"
+  },
+  "legacy_correction": "Include utility-only capital expenditure in NACF even where an object has no income or OPEX",
+  "reporting": {
+    "root_contributors": "Unique floor and physical utility identities in the spatial hierarchy",
+    "shared_costs": "Show plinth and shared plant separately; no implied allocation to buildings",
+    "utilities_group": "Inspection grouping of the same physical utilities; not additional costs"
+  },
+  "source": {
+    "commit": "6732e83d277c8de81f3dec2906e06d0e75d3b6fa",
+    "notebook": "walkthrough/drive_model_from_design.ipynb",
+    "zero_based_cells": {
+      "capital_projection": [
+        61,
+        63
+      ],
+      "capitalization": 94,
+      "costs": 58,
+      "dates": 28,
+      "discount": 99,
+      "income": 26
+    }
+  },
+  "status": "Legacy teaching assumptions retained for notebook 02; not market estimates or measured geometry",
+  "timing": {
+    "annual_discount_rate": 0.07,
+    "discount_exponents": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "exit_capitalization_rate": 0.05,
+    "first_income_growth_exponent": 0,
+    "operating_payments": "year_end",
+    "sale_basis": "2011 NACF after all intended capital expenditure",
+    "sale_date": "2010-12-31"
+  },
+  "use_assumptions": {
+    "hotel": {
+      "annual_income_growth": 0.035,
+      "efficiency": 0.8,
+      "facade_opex_AUD_per_m2_per_year": -50,
+      "floor_capex_AUD_per_m2_per_payment": -100,
+      "floor_opex_AUD_per_m2_per_year": -175,
+      "initial_rent_AUD_per_m2_per_year": 750,
+      "vacancy": 0.025
+    },
+    "parking": {
+      "annual_income_growth": 0,
+      "efficiency": 0.9,
+      "facade_opex_AUD_per_m2_per_year": -25,
+      "floor_capex_AUD_per_m2_per_payment": -50,
+      "floor_opex_AUD_per_m2_per_year": -65,
+      "initial_rent_AUD_per_m2_per_year": 0,
+      "vacancy": 0
+    },
+    "residential": {
+      "annual_income_growth": 0.055,
+      "efficiency": 0.75,
+      "facade_opex_AUD_per_m2_per_year": -50,
+      "floor_capex_AUD_per_m2_per_payment": -75,
+      "floor_opex_AUD_per_m2_per_year": -125,
+      "initial_rent_AUD_per_m2_per_year": 600,
+      "vacancy": 0.015
+    },
+    "retail": {
+      "annual_income_growth": 0.075,
+      "efficiency": 0.675,
+      "facade_opex_AUD_per_m2_per_year": -100,
+      "floor_capex_AUD_per_m2_per_payment": -150,
+      "floor_opex_AUD_per_m2_per_year": -225,
+      "initial_rent_AUD_per_m2_per_year": 1000,
+      "vacancy": 0.075
+    }
+  },
+  "utility_capex_AUD_per_m3_per_payment": {
+    "cores": -100,
+    "plant": -1000
+  },
+  "worked_floor_id": "22851887-f9ee-4aa8-8755-bc021c3a3b30"
+}

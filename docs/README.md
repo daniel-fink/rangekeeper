@@ -19,6 +19,7 @@ API. Historical records retain the contracts and results from their recorded dat
 | Install this checkout and choose extras | [Installation](guides/installation.md) |
 | Run an example or inspect a wire fixture | [Examples](guides/examples.md) |
 | Execute the notebooks or build their site | [Walkthroughs](guides/walkthroughs.md) |
+| Inspect the continuing walkthrough project and its source package | [Mixed-use project brief](guides/mixed-use-project.md) |
 | Build and review a source workflow | [Source workflows](guides/source-workflows.md) |
 | Build the native components and check a Rhino model | [Grasshopper](guides/grasshopper.md) |
 | Migrate an earlier consumer or document | [Upgrading](guides/upgrading.md) |
@@ -50,7 +51,9 @@ same change, including plan status, archiving and navigation.
 ## Inspect a decision or historical result
 
 Use the [decision index](decisions/README.md) for accepted choices, their rationale,
-implementation records and remaining work. [History](history/README.md) contains
+implementation records and remaining work. The active
+[walkthrough curriculum](decisions/006-walkthrough-curriculum.md) defines the six
+lessons and their preparation and capability dependencies. [History](history/README.md) contains
 completed plans and dated narratives. [Research](research/README.md) retains
 captured experiments and verification evidence. A local result does not establish
 remote CI, Windows host or service acceptance.

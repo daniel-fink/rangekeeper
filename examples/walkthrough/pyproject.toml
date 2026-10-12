@@ -7,9 +7,8 @@ license = "MPL-2.0"
 readme = { text = "See docs/guides/walkthroughs.md in the Rangekeeper repository.", content-type = "text/plain" }
 requires-python = ">=3.12, <3.14"
 dependencies = [
-    "ghp-import>=2.1",
     "jupyter>=1.1",
-    "jupyter-book< 2.0",
+    "jupyter-book>=2,<3",
     "notebook>=7.5",
     "plotly>=6.5",
     "rangekeeper[calculations,execution,visualization,workflow]>=0.8",

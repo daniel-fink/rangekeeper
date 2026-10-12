@@ -1,71 +1,138 @@
-"""Regenerate the walkthrough site from the accepted, freshly executed notebooks.
+"""Build the accepted Jupyter Book 2 chapters from fresh notebook outputs.
 
-This does not publish. The original notebook files remain the only authoring
-source. The temporary book receives supplied, freshly verified execution outputs.
-No old build cache or stored historical kernel state is reused.
+The table of contents in myst.yml is the chapter acceptance list. This command
+stages one copy of those sources and does not execute notebooks or publish them.
 """
 
+import argparse
+import json
 from pathlib import Path
-import json, shutil, subprocess, sys, yaml
-from html import escape
-from jupyter_book.config import get_default_sphinx_config, yaml_to_sphinx
+import re
+import shutil
+import subprocess
+import sys
+
+import nbformat
+import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
-stage = Path(sys.argv[1])
-executed = Path(sys.argv[2])
-stage.mkdir(parents=True, exist_ok=False)
-for name in ("_config.yml", "_toc.yml", "intro.md", "references.bib"):
-    shutil.copy2(ROOT / "examples/walkthrough" / name, stage / name)
-for name in ("resources", "_static"):
-    if (ROOT / "examples/walkthrough" / name).is_dir():
-        shutil.copytree(ROOT / "examples/walkthrough" / name, stage / name)
-for notebook in (ROOT / "examples/walkthrough").glob("*.ipynb"):
-    assert (executed / notebook.name).is_file(), notebook
-    document = json.loads((executed / notebook.name).read_text())
-    # Jupyter Book 1 does not render Plotly's notebook MIME type. Derive HTML
-    # from the captured figure data, with one local JS asset and no network.
-    for cell_index, cell in enumerate(document["cells"]):
-        for output_index, output in enumerate(cell.get("outputs", [])):
-            data = output.get("data", {})
-            figure = data.pop("application/vnd.plotly.v1+json", None)
-            if figure is not None:
-                identity = f"plotly-{notebook.stem}-{cell_index}-{output_index}"
-                payload = json.dumps(figure).replace("<", "\\u003c")
-                data["text/html"] = (
-                    f'<div id="{escape(identity)}" style="width:100%;height:600px"></div>'
-                    f'<script src="_static/plotly.min.js"></script><script>'
-                    f"var figure={payload};Plotly.newPlot({json.dumps(identity)},figure.data,figure.layout,figure.config);</script>"
-                )
-    (stage / notebook.name).write_text(json.dumps(document, indent=1))
-plotly_js = Path(sys.argv[3])
-(stage / "_static").mkdir(exist_ok=True)
-shutil.copy2(plotly_js, stage / "_static/plotly.min.js")
-config = yaml.safe_load((stage / "_config.yml").read_text())
-config["execute"]["execute_notebooks"] = "off"
-config["sphinx"]["config"]["html_extra_path"] = []
-# This is an offline snapshot of executed notebooks. Thebe is not used, and
-# its Sphinx 7 inline configuration is emitted twice by the book build.
-sphinx_config, overrides, _ = yaml_to_sphinx(config)
-# Resolve the book settings first: bibliography and extra extensions are added
-# here and would be lost by replacing them with Sphinx's default list.
-config["sphinx"]["config"]["extensions"] = [
-    name
-    for name in overrides.get(
-        "extensions",
-        sphinx_config.get("extensions", get_default_sphinx_config()["extensions"]),
+SOURCE = ROOT / "examples/walkthrough"
+
+
+def chapter_files(entries):
+    for entry in entries:
+        if "file" in entry:
+            yield entry["file"]
+        yield from chapter_files(entry.get("children", []))
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("stage", type=Path, help="New directory for the staged book")
+    parser.add_argument("executed", type=Path, help="Freshly executed notebooks")
+    parser.add_argument(
+        "--preview-chapter",
+        action="append",
+        default=[],
+        help="Review a candidate chapter without adding it to the accepted TOC",
     )
-    if name != "sphinx_thebe"
-]
-(stage / "_config.yml").write_text(yaml.safe_dump(config, sort_keys=False))
-subprocess.run(
-    [str(Path(sys.executable).parent / "jupyter-book"), "build", str(stage), "--all"],
-    check=True,
-)
-# Keep one copy of offline notebook artifacts, at their declared relative URLs.
-if (executed / "design-output").exists():
-    shutil.copytree(
-        executed / "design-output",
-        stage / "_build/html/design-output",
-        dirs_exist_ok=True,
+    args = parser.parse_args()
+    config = yaml.safe_load((SOURCE / "myst.yml").read_text())
+    for name in args.preview_chapter:
+        path = Path(name)
+        if path.name != name or path.suffix != ".ipynb":
+            raise ValueError("Preview chapters must be notebook filenames")
+        if name not in chapter_files(config["project"]["toc"]):
+            config["project"]["toc"].append({"file": name})
+    files = list(chapter_files(config["project"]["toc"]))
+    # Notebook source equality is not sufficient once cells import local helpers.
+    # Compare the code copied into the execution directory before staging it.
+    helpers = SOURCE / "helpers"
+    expected_helpers = {
+        p.relative_to(helpers): p.read_bytes()
+        for p in helpers.rglob("*")
+        if p.is_file() and "__pycache__" not in p.parts
+    }
+    executed_helpers = args.executed / "helpers"
+    actual_helpers = {
+        p.relative_to(executed_helpers): p.read_bytes()
+        for p in executed_helpers.rglob("*")
+        if p.is_file() and "__pycache__" not in p.parts
+    }
+    if actual_helpers != expected_helpers:
+        raise ValueError(
+            "Executed walkthrough helpers do not match source; copy them and re-execute"
+        )
+    notebooks = {}
+    # Validate before creating the stage or invoking the renderer.
+    for name in files:
+        if Path(name).suffix != ".ipynb":
+            continue
+        authored = nbformat.read(SOURCE / name, as_version=4)
+        executed = nbformat.read(args.executed / name, as_version=4)
+        nbformat.validate(executed)
+        if [(c.cell_type, c.source) for c in authored.cells] != [
+            (c.cell_type, c.source) for c in executed.cells
+        ]:
+            raise ValueError(f"Executed notebook does not match source: {name}")
+        code = [c for c in executed.cells if c.cell_type == "code" and c.source.strip()]
+        if [c.execution_count for c in code] != list(range(1, len(code) + 1)):
+            raise ValueError(f"Notebook needs a complete fresh execution: {name}")
+        if any(o.output_type == "error" for c in code for o in c.outputs):
+            raise ValueError(f"Notebook contains an execution error: {name}")
+        notebooks[name] = executed
+
+    stage = args.stage.resolve()
+    stage.mkdir(parents=True, exist_ok=False)
+    (stage / "myst.yml").write_text(yaml.safe_dump(config, sort_keys=False))
+    shutil.copy2(SOURCE / "references.bib", stage / "references.bib")
+    for name in ("resources", "_static", "data", "helpers"):
+        if (SOURCE / name).is_dir():
+            shutil.copytree(
+                SOURCE / name,
+                stage / name,
+                ignore=shutil.ignore_patterns("__pycache__"),
+            )
+    for name in files:
+        target = stage / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        if name in notebooks:
+            # Book routes have a chapter directory; notebook servers do not.
+            # Rewrite only our local output iframe paths in the staged copy.
+            for cell in notebooks[name].cells:
+                for output in cell.get("outputs", []):
+                    data = output.get("data", {})
+                    if "text/html" in data:
+                        data["text/html"] = re.sub(
+                            r'(src=")(resources/|design-output/)',
+                            r"\1../\2",
+                            data["text/html"],
+                        )
+            nbformat.write(notebooks[name], target)
+        else:
+            shutil.copy2(SOURCE / name, target)
+    if (args.executed / "design-output").exists():
+        shutil.copytree(args.executed / "design-output", stage / "design-output")
+    subprocess.run(
+        [
+            str(Path(sys.executable).parent / "jupyter-book"),
+            "build",
+            "--html",
+            "--strict",
+        ],
+        cwd=stage,
+        check=True,
     )
-print("Built", stage / "_build/html")
+    # Raw HTML iframes are not discovered as MyST image dependencies. Keep their
+    # relative assets together, including the offline viewer's source archive.
+    for name in ("resources", "design-output", "data", "helpers"):
+        if (stage / name).is_dir():
+            shutil.copytree(
+                stage / name, stage / "_build/html" / name, dirs_exist_ok=True
+            )
+    print("Built", stage / "_build/html")
+    print("Chapters:", json.dumps(files))
+
+
+if __name__ == "__main__":
+    main()

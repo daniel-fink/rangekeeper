@@ -1,0 +1,268 @@
+# Mixed use property project brief
+
+This is the continuing project for walkthrough notebooks 02–06. Notebook 02 asks
+how its spaces, buildings and shared systems produce income, costs and value.
+Later lessons add a development plan, inverse financial questions, uncertain
+markets and flexibility strategies.
+
+The reference is the actual legacy Rangekeeper design. Its complete pinned source
+was captured on 2026-10-12 and converted to the current canonical Model. The
+[source package](../../examples/walkthrough/data/mixed_use_property) contains the
+original transport records, external geometry associations, canonical Model and
+an independently reconciled inventory. The
+[chapter outline](../decisions/006-notebook-02-outline.md) owns the teaching sequence
+and required visual aids; [ADR-006](../decisions/006-walkthrough-curriculum.md) owns
+the complete curriculum.
+
+## The property
+
+The design comprises two mixed-use buildings over a shared basement plinth.
+Building A combines a hotel, residential accommodation, retail and parking.
+Building B combines residential accommodation, retail and parking. The plinth
+contains two basement parking levels and shared plant. Each building has a core
+system. The service relationships connect these physical components.
+
+For notebook 02, treat this as a proposed completed property with a fixed use mix.
+The source does not establish a site address, construction programme, funding plan,
+market forecast or permission for an alternative use. Those belong to later,
+explicit teaching assumptions.
+
+### Verified quantities
+
+These are sums of the 33 unique floor objects, not sums of floor values and parent
+totals. Floor objects are spatial components; their count is not the number of
+distinct building storeys. Some share a name or elevation.
+
+| Component | Use | Floor objects | Gross floor area (m²) |
+| --- | --- | ---: | ---: |
+| Building A | Hotel | 14 | 11,716.69 |
+| Building A | Residential | 4 | 2,308.32 |
+| Building A | Retail | 2 | 1,511.83 |
+| Building A | Parking | 1 | 1,038.79 |
+| Building B | Residential | 8 | 11,442.74 |
+| Building B | Retail | 1 | 815.98 |
+| Building B | Parking | 1 | 1,178.16 |
+| Shared basement plinth | Parking | 2 | 12,773.74 |
+| **Property** | **All uses** | **33** | **42,786.26** |
+
+Building A totals 16,575.63 m²; Building B totals 13,436.88 m². The property total
+includes parking. It is neither lettable area nor an assertion about a statutory
+floor-area definition. Calculations retain source precision; this table rounds
+for display.
+
+### Objects and relationships
+
+The source has 50 domain objects: one property, three objects classified as
+buildings (including the plinth), nine spaces, 33 floors and four objects classified
+as utilities. The latter comprise three physical utility objects and one grouping.
+The canonical Model stores 36 Entities and 14 Assemblies without duplicating them.
+
+| Relationship | Count | Interpretation |
+| --- | ---: | --- |
+| `spatiallyContains` | 49 | One rooted spatial hierarchy spanning all 50 objects |
+| `services` | 11 | Plant and core service dependencies |
+| `contains` | 3 | The utilities assembly groups the plant and two core systems |
+
+The shared plant serves the plinth parking and both building core systems. Building
+A's cores serve its hotel, residential, parking and two retail spaces. Building
+B's cores serve its residential, retail and parking spaces.
+
+The two Building A retail spaces have the same label but different identities.
+Building B also has two distinct residential Floor 0 objects. Preserve them. In
+the notebook, introduce this briefly when selecting an object rather than as a
+separate identity lesson.
+
+### Source characteristics and geometry
+
+Floor objects record GFA (m²), perimeter (m), floor-to-floor height (m), finished
+floor elevation (m) and floor number. Spaces record their use and volume (m³).
+Floor use is obtained from its spatial parent; it is not inserted into the source
+Model as if directly observed on that floor.
+
+| Utility object | Source volume (m³) | Spatial parent |
+| --- | ---: | --- |
+| Shared plinth plant | 643.105790 | Plinth |
+| Building A cores | 11,086.180775 | Building A |
+| Building B cores | 8,656.633886 | Building B |
+
+The archive retains original Breps, display meshes, curves, materials, context and
+property geometry. Geometry stays outside the canonical Model. The 52 association
+records cover all 50 domain identities; multiple source representations do not
+create extra domain objects.
+
+All 144 mapped measurements and 45 properties agree with the captured source.
+The 33 floor areas and three physical utility volumes also agree with their
+supplied Brep summaries within absolute tolerance `1e-7` and relative tolerance
+`1e-10`. This checks two recorded representations. It does not independently
+recompute Brep geometry or establish browser-viewer acceptance.
+
+## Financial assumptions for notebook 02
+
+Retain the following legacy teaching assumptions to preserve the example's
+meaning. They are not current market estimates or source geometry facts. The
+readable [assumptions file](../../examples/walkthrough/data/mixed_use_property/assumptions.json)
+records the source notebook cells and conventions separately from `model.json`.
+
+### Income
+
+| Use | Efficiency | Initial rent (AUD/m² per year) | Annual income growth | Vacancy |
+| --- | ---: | ---: | ---: | ---: |
+| Hotel | 0.800 | 750 | 3.5% | 2.5% |
+| Residential | 0.750 | 600 | 5.5% | 1.5% |
+| Retail | 0.675 | 1,000 | 7.5% | 7.5% |
+| Parking | 0.900 | 0 | 0% | 0% |
+
+Initial potential income is GFA × efficiency × rent. Vacancy is a deduction from
+potential income. Zero parking rent is an explicit simplification; parking still
+incurs operating and capital costs.
+
+Use Building A hotel Floor 1 as the first worked object. Its GFA is
+1,697.4515719337053 m². The retained assumptions produce initial potential income
+of AUD 1,018,470.94 and effective income of AUD 993,009.17. Show this arithmetic
+before applying it to every floor. Its identifier is
+`22851887-f9ee-4aa8-8755-bc021c3a3b30`.
+
+### Operating and periodic capital expenditure
+
+Negative amounts are deductions. Floor and facade OPEX grow 3.5% each year.
+Facade area uses perimeter × floor-to-floor height as the inherited proxy. Explain
+that this does not prove that every measured boundary is an external facade.
+
+| Use | Floor OPEX (AUD/m² per year) | Facade OPEX (AUD/m² per year) | Floor CAPEX (AUD/m² per capital payment) |
+| --- | ---: | ---: | ---: |
+| Hotel | -175 | -50 | -100 |
+| Residential | -125 | -50 | -75 |
+| Retail | -225 | -100 | -150 |
+| Parking | -65 | -25 | -50 |
+
+Core CAPEX is AUD -100/m³ per capital payment; plant CAPEX is AUD -1,000/m³ per
+capital payment. The example's capital payments occur on 2005-12-31 and 2010-12-31.
+Retain the inherited 3.5% increase **per capital-payment interval**: exponents zero
+and one for those two payments. Do not silently reinterpret it as annual compounding.
+This convention concerns periodic asset expenditure, not development cost.
+
+### Dates and valuation
+
+- Holding span: 2001-01-01 inclusive to 2011-01-01 exclusive, ten annual periods.
+- Forecast span: 2001-01-01 inclusive to 2012-01-01 exclusive; 2011 supplies the
+  next-period income used at sale.
+- Annual operating receipts and expenditure occur at year end. Year 2001 uses
+  the initial amounts with growth exponent zero.
+- NOI is effective income plus signed operating expenditure. NACF is NOI plus
+  signed capital expenditure, including utility-only costs.
+- Sale proceeds are 2011 NACF divided by the 5% exit capitalization rate, received
+  on 2010-12-31. This is the inherited NACF convention, not NOI capitalization.
+- Discount the ten holding-period net cash flows at 7%, using year-end exponents
+  one through ten. Notebook 02 calculates asset value; it does not model an
+  acquisition price, project debt or an equity return.
+
+### Reporting and contributor selection
+
+Keep the physical spatial hierarchy unchanged. Building totals can include their
+own floor and core costs. The plinth has its parking and shared plant costs.
+Show the plinth/shared costs separately in the property reconciliation; do not
+allocate them to buildings without an explicit additional rule.
+
+The utilities grouping is an inspection view over the same three physical
+objects. Its costs are not additional to those already counted through their
+spatial parents. For the root calculation, select each floor and physical utility
+once. An empty grouping is not evidence of a measured zero.
+
+The legacy notebook's NACF construction can omit utility-only capital expenditure
+because it first requires income or OPEX. Preserve the intended costs, not that
+omission. Verify NOI + CAPEX = NACF and component-to-property reconciliation; an
+old displayed valuation is not the acceptance target.
+
+## Visual project brief
+
+The notebook opens with the Speckle 3D view and the legacy property-as-graph image.
+It then loads the Model and displays the full interactive graph. The relationship
+section explains overlapping assemblies. The spatial graph precedes GFA aggregation. Income and cost
+charts reuse that hierarchy, and the 3D plant/core view sits beside utility costs.
+
+The [detailed visual inventory](../decisions/006-notebook-02-outline.md#visual-requirements)
+specifies the required images, PyVis graphs and Plotly charts. A current record
+diagram replaces the legacy object-model diagram. The original hosted viewer reports an expired model. Notebook 02 therefore uses
+Speckle's viewer SDK locally, reading the complete archive. It supplies context,
+property, floor and services views, object selection and recorded properties.
+Static mesh images remain available as references outside the chapter. The
+[chapter acceptance](../research/notebook-02-2026-10-12/README.md) records interaction
+checks; the hosted saved views are not claimed to work. The
+[condensed revision](../research/notebook-02-2026-10-13/README.md) retains the inline
+3D-to-graph illustration, uses four sunbursts and moves presentation code into
+`examples/walkthrough/helpers/plot.py`.
+
+## Source package and reproducibility
+
+The original source pin is project `c0f66c35e3`, object
+`e7acaac21ae7e9369339900a4aaeb827`. The historical model is `119ad04487` and the
+notebooks also name version `9a9670946f`. Acquisition used the explicit object
+pin; it did not select latest or claim that historical version resolution worked.
+The original property collection is `bed351126771f61e3d6255c18cd48aa5`.
+
+| File | Purpose |
+| --- | --- |
+| [manifest.json](../../examples/walkthrough/data/mixed_use_property/manifest.json) | Source pins, capture details, file sizes and SHA-256 hashes |
+| [transport.json.gz](../../examples/walkthrough/data/mixed_use_property/transport.json.gz) | All 3,007 original transport JSON records, including complete geometry and context |
+| [model.json](../../examples/walkthrough/data/mixed_use_property/model.json) | Current canonical domain Model with source provenance |
+| [mapping.json](../../examples/walkthrough/data/mixed_use_property/mapping.json) | Explicit classifications, units and property interpretation |
+| [associations.json](../../examples/walkthrough/data/mixed_use_property/associations.json) | Model-scoped domain-to-original-content associations |
+| [inventory.csv](../../examples/walkthrough/data/mixed_use_property/inventory.csv) | Derived readable inventory; source use and parent-derived effective use remain distinct |
+| [relationships.csv](../../examples/walkthrough/data/mixed_use_property/relationships.csv) | Explicit relationship endpoints, labels and identities |
+| [audit.json](../../examples/walkthrough/data/mixed_use_property/audit.json) | Counts, exact graph reconciliation, quantity checks and geometry-summary checks |
+| [assumptions.json](../../examples/walkthrough/data/mixed_use_property/assumptions.json) | Separate legacy teaching assumptions and calculation conventions |
+
+SDK reserialization changes content IDs for this historical payload. The package
+therefore retains original transport strings. The offline preparation tool expands
+references and removes only redundant `__closure` indexes before invoking the
+existing legacy converter. All original records and indexes remain in the archive.
+The resulting source checksum refers to that expanded conversion input.
+
+From the repository root, with the matching Rangekeeper environment installed:
+
+```sh
+python tools/docs/prepare_property.py verify
+```
+
+This checks hashes, complete transport closure, deterministic offline reconstruction,
+all domain identities and relationship triples against the pinned legacy graph,
+mapped values, geometry summaries and canonical codec round trips. It requires
+the recorded legacy Git commit locally; it needs no network or credentials.
+
+For a deliberate new capture, install the `speckle` extra and `python-dotenv`, and
+use a new output path. The capture reads `SPECKLE_TOKEN` from the environment or
+the existing repository `src/.env`. It writes source data only and does not publish:
+
+```sh
+python tools/docs/prepare_property.py capture --output /tmp/rk-property-capture.json
+python tools/docs/prepare_property.py build \
+  --transport /tmp/rk-property-capture.json \
+  --output /tmp/rk-property-package \
+  --captured-on YYYY-MM-DD \
+  --sdk-version VERSION
+```
+
+Use the actual capture date and SDK version. Build rejects an existing destination.
+Routine notebook loading only needs the canonical Model:
+
+```python
+from pathlib import Path
+from rangekeeper.io import json as codec
+from rangekeeper.model import Model
+
+# Working directory: examples/walkthrough
+model = codec.read(Path("data/mixed_use_property/model.json"), kind=Model)
+```
+
+The source preparation [evidence](../research/notebook-02-source-2026-10-12/README.md)
+records the source verification scope. The separate
+[notebook acceptance](../research/notebook-02-2026-10-12/README.md) records execution,
+independent financial reconciliation and local viewer/book review. Notebook 02 is
+now included in `myst.yml`.
+
+## Decisions deferred to later notebooks
+
+Construction dates, costs and phase boundaries; initial site use; financing and
+funding limits; market drivers and correlations; alternative uses and their
+physical provisions; and decision rules remain explicit later work. Do not infer
+these from the source geometry or the operating-property assumptions above.

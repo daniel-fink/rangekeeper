@@ -1,0 +1,22 @@
+[
+  {
+    "case": "missing",
+    "rejected": true,
+    "message": "FileNotFoundError: [Errno 2] No such file or directory: '/var/folders/sk/cjq5zjks7gx_3tf9m67y43xr0000gn/T/rk-book-v2-k_5bzlbs/guard-missing/basic_dcf.ipynb'"
+  },
+  {
+    "case": "source-mismatch",
+    "rejected": true,
+    "message": "ValueError: Executed notebook does not match source: basic_dcf.ipynb"
+  },
+  {
+    "case": "unexecuted",
+    "rejected": true,
+    "message": "ValueError: Notebook needs a complete fresh execution: basic_dcf.ipynb"
+  },
+  {
+    "case": "error-output",
+    "rejected": true,
+    "message": "ValueError: Notebook contains an execution error: basic_dcf.ipynb"
+  }
+]

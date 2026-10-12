@@ -108,6 +108,14 @@ presentation. `workflow` covers source interpretation and Excel extraction.
 The smaller financial-only and table-only installation profiles are retired.
 Python module names and lazy import behavior are unchanged.
 
+The current `rangekeeper.adapters.plotting` functions return Plotly `Figure`
+objects. Replace Matplotlib calls such as `figure.axes`, `tight_layout()` and
+`savefig()` with Plotly's `update_xaxes()`, `update_layout()` and `write_html()`.
+Leave the Figure as the final notebook expression or use `display(figure)`;
+remove a trailing semicolon that would suppress that output. Matplotlib remains
+installed for older examples. The walkthrough's shared style is documented in
+[Run the walkthroughs](walkthroughs.md#shared-chart-style).
+
 `execution`, `layout`, `speckle`, `yaml` and the temporary `legacy` extra remain
 separate. Existing dependency version ranges are retained. The example package
 and walkthrough environment remain development/teaching projects.

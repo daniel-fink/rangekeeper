@@ -1,0 +1,42 @@
+building myst-cli session with API URL: https://api.mystmd.org
+🌎 Building Jupyter Book (via myst) site
+🔍 Querying template metadata from https://api.mystmd.org/templates/site/myst/book-theme
+🐕 Fetching template from https://github.com/myst-templates/book-theme/archive/refs/heads/main.zip
+💾 Saved template to path _build/templates/site/myst/book-theme
+Building the base site.
+To set a baseurl (e.g. GitHub pages) use "BASE_URL" environment variable.
+⤵️  Installing web libraries (can take up to 60 s)
+📦 Installed web libraries in 680 ms
+📖 Built intro.md in 93 ms.
+📖 Built basic_dcf.ipynb in 114 ms.
+📖 Built design_to_value.ipynb in 123 ms.
+⚠️  _build/site/public/devModelGraph-fc3c976b9af2cf3c3a2ceb942b5f9673.jpg Image is too large (3.23 MB) to convert to webp (build will be slow).
+⚠️  _build/site/public/devModelGraph-fc3c976b9af2cf3c3a2ceb942b5f9673.jpg Image is too large (3.23 MB) to convert to webp (build will be slow).
+📚 Built 3 pages for project in 209 ms.
+
+
+	✨✨✨  Starting Book Theme  ✨✨✨
+
+
+
+🔌 Server started on port 3000!  🥳 🎉
+
+
+	👉  http://localhost:3000  👈
+
+
+(node:32139) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+
+💌 GET  / 200 - - 41.114 ms
+GET /basic-dcf 200 - - 56.600 ms
+GET /index.json 200 - - 68.591 ms
+GET /basic-dcf.json 200 - - 69.013 ms
+GET /design-to-value 200 - - 68.210 ms
+💌 GET  /robots.txt 200 - - 0.634 ms
+💌 GET  /sitemap_style.xsl 200 - - 0.756 ms
+💌 GET  /sitemap.xml 200 - - 4.379 ms
+GET /myst-theme.css 200 - - 10.116 ms
+💌 GET  /design-to-value.json 200 - - 9.509 ms
+💌 GET  /favicon.ico 200 - - 97.150 ms
+Built /private/tmp/rk-notebook02-condensed/book-reviewed/_build/html
+Chapters: ["intro.md", "basic_dcf.ipynb", "design_to_value.ipynb"]
