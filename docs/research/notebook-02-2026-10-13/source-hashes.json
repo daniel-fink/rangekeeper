@@ -1,0 +1,17 @@
+{
+  "examples/walkthrough/design_to_value.ipynb": "46d4beea5a4b57921763ba6f72657ee534f719eeab73f4e3d53e6034a616134e",
+  "examples/walkthrough/data/mixed_use_property/manifest.json": "13dbc726e983c070d8334affb4e0d3a6315ff47da414f7033892737c37e5ea8e",
+  "tools/docs/build_book.py": "b67179d45266faf7571eeec8a762b94252b6183b1d668fd349fe268f0243ac00",
+  "examples/walkthrough/myst.yml": "cf0c71dd4c81a83152aa00fe15fb62ea765b710c80a1115e40f46e5d8bb87567",
+  "examples/walkthrough/helpers/__init__.py": "51e0d2729e7e2aec0471d85fa9ebc7d6d248465e623b56de92886c4a3a1f9d62",
+  "examples/walkthrough/helpers/plot.py": "a93c7ce919381c0c6addc3d25a72f5410d49c66f5b8fd02dd33a4b3b1d344a8a",
+  "examples/walkthrough/design-output/notebook-02/capex-sunburst.html": "b732cb6fd9dd4e1ba70d39d8a1c7f84bf17bf6cdc9fb54341ad9aedc7e621b89",
+  "examples/walkthrough/design-output/notebook-02/gfa-sunburst.html": "5b834c7c0083f1577566bfde228a5eea5e2b50ca28d8ee1ddc7b8a42acd86592",
+  "examples/walkthrough/design-output/notebook-02/income-sunburst.html": "2fbc37ac6c79ce90d168bcaeb2df0643cdad7c3b2ba33a3f2277b512c5d4ff13",
+  "examples/walkthrough/design-output/notebook-02/opex-sunburst.html": "d427fdd72ceddd974dcf3bfe9a730b2912e1448c84e99d4b25c268018c95968b",
+  "examples/walkthrough/design-output/notebook-02/plotly.min.js": "6ceddd4bac82a64f5a2b8814a4d10bb4288379262f1989caee3148e7c3509c72",
+  "examples/walkthrough/design-output/notebook-02/property.html": "853d787b25a1f7d746baf9106a6cf3f363d97235d0aae95848d655de41a045b4",
+  "examples/walkthrough/design-output/notebook-02/services.html": "89c208b0d22da236b5c71fb05944ea79661c0ba72096152d21147c9d0052e2b1",
+  "examples/walkthrough/design-output/notebook-02/spatial.html": "e608476935c883c0c47d5f91bb3f63b7690dc05fdd433020d7f94fc9134f4651",
+  "candidate_wheel": "b921cfe6fee3a32362513d571041fa629834e4f5d537a4f3cddbe49883447a2a"
+}

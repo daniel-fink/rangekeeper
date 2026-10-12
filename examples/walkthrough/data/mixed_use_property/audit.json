@@ -1,0 +1,298 @@
+{
+  "areas": [
+    {
+      "building": "buildingA",
+      "floor_objects": 14,
+      "gfa_m2": 11716.690053909613,
+      "use": "hotel"
+    },
+    {
+      "building": "buildingA",
+      "floor_objects": 1,
+      "gfa_m2": 1038.786936414883,
+      "use": "parking"
+    },
+    {
+      "building": "buildingA",
+      "floor_objects": 4,
+      "gfa_m2": 2308.3223687732007,
+      "use": "residential"
+    },
+    {
+      "building": "buildingA",
+      "floor_objects": 2,
+      "gfa_m2": 1511.8307150059297,
+      "use": "retail"
+    },
+    {
+      "building": "buildingB",
+      "floor_objects": 1,
+      "gfa_m2": 1178.164751765595,
+      "use": "parking"
+    },
+    {
+      "building": "buildingB",
+      "floor_objects": 8,
+      "gfa_m2": 11442.736623932446,
+      "use": "residential"
+    },
+    {
+      "building": "buildingB",
+      "floor_objects": 1,
+      "gfa_m2": 815.9834537340322,
+      "use": "retail"
+    },
+    {
+      "building": "plinth",
+      "floor_objects": 2,
+      "gfa_m2": 12773.744211103238,
+      "use": "parking"
+    }
+  ],
+  "assemblies": 14,
+  "associations": 52,
+  "classifications": {
+    "building": 3,
+    "floor": 33,
+    "property": 1,
+    "space": 9,
+    "utilities": 4
+  },
+  "converter_sha256": "89bd3d03a77051d60a4e58b4d4ab38a5ac2de1af316b40eea8215385a015885c",
+  "entities": 36,
+  "geometry_check_scope": "Compare supplied Brep area/volume summaries; no independent BRep recomputation or viewer acceptance.",
+  "geometry_summary_checks": [
+    {
+      "field": "volume",
+      "geometry_summary": 643.1057895134292,
+      "id": "938f4cf1-d307-4160-9538-d4bfa9583ad8",
+      "source": 643.1057895134292
+    },
+    {
+      "field": "gfa",
+      "geometry_summary": 6386.872105551622,
+      "id": "c3ebe151-1e0c-45c6-8852-7ea21f72290e",
+      "source": 6386.872105551622
+    },
+    {
+      "field": "gfa",
+      "geometry_summary": 6386.872105551616,
+      "id": "e84b8c35-fd4a-49fc-b4c9-e318a958685b",
+      "source": 6386.872105551616
+    },
+    {
+      "field": "volume",
+      "geometry_summary": 11086.180775162677,
+      "id": "7eec5208-fc0e-4dfd-bd0b-b1d226b2e97e",
+      "source": 11086.180774783199
+    },
+    {
+      "field": "gfa",
+      "geometry_summary": 722.7158196123975,
+      "id": "d45316af-5763-4b39-8e39-dc7645c39ec2",
+      "source": 722.7158196123975
+    },
+    {
+      "field": "gfa",
+      "geometry_summary": 789.1148953935323,
+      "id": "75c85658-55c8-4bd0-9d0c-c03a9b2c6169",
+      "source": 789.1148953935323
+    },
+    {
+      "field": "gfa",
+      "geometry_summary": 1038.786936414883,
+      "id": "99dae6a3-d102-4525-9f3a-b8ee50a9c45f",
+      "source": 1038.786936414883
+    },
+    {
+      "field": "gfa",
+      "geometry_summary": 750.1407896005172,
+      "id": "507e4ef2-fe13-44d7-af5f-bcf717b3de53",
+      "source": 750.1407896005172
+    },
+    {
+      "field": "gfa",
+      "geometry_summary": 750.1407896007512,
+      "id": "bb815059-7516-45df-8fac-16f0e62242f3",
+      "source": 750.1407896007512
+    },
+    {
+      "field": "gfa",
+      "geometry_summary": 57.899999971649905,
+      "id": "bf5a4444-6abd-4b89-b7a8-d758df5134fe",
+      "source": 57.899999971649805
+    },
+    {
+      "field": "gfa",
+      "geometry_summary": 750.1407896002826,
+      "id": "dbf25b07-6f85-45bb-905c-de5b8562f5e7",
+      "source": 750.1407896002826
+    },
+    {
+      "field": "gfa",
+      "geometry_summary": 756.9211736923579,
+      "id": "192fb1b2-fc6c-4b42-8135-45cbcbead777",
+      "source": 756.9211736923579
+    },
+    {
+      "field": "gfa",
+      "geometry_summary": 1697.4515719337053,
+      "id": "22851887-f9ee-4aa8-8755-bc021c3a3b30",
+      "source": 1697.4515719337053
+    },
+    {
+      "field": "gfa",
+      "geometry_summary": 756.9211737190157,
+      "id": "250edc28-32de-4633-add0-a384305b5e87",
+      "source": 756.9211737190157
+    },
+    {
+      "field": "gfa",
+      "geometry_summary": 756.921173696801,
+      "id": "49d884ea-f590-46a3-a662-db5e73190848",
+      "source": 756.921173696801
+    },
+    {
+      "field": "gfa",
+      "geometry_summary": 756.9211737012436,
+      "id": "56eec388-d1bb-4de7-92a8-be8202d5be2d",
+      "source": 756.9211737012436
+    },
+    {
+      "field": "gfa",
+      "geometry_summary": 1068.2083253177702,
+      "id": "5f90565d-44c0-4de2-b510-d263599953f5",
+      "source": 1068.2083253177702
+    },
+    {
+      "field": "gfa",
+      "geometry_summary": 756.9211736879156,
+      "id": "85305abb-0e6f-4c8f-bf27-553292e317e9",
+      "source": 756.9211736879156
+    },
+    {
+      "field": "gfa",
+      "geometry_summary": 756.921173705687,
+      "id": "9151983a-1344-4c88-81f3-76cd4ca8ec6d",
+      "source": 756.921173705687
+    },
+    {
+      "field": "gfa",
+      "geometry_summary": 756.9211737101299,
+      "id": "9582fd3c-ce66-42c7-8675-39b04b7a4689",
+      "source": 756.9211737101299
+    },
+    {
+      "field": "gfa",
+      "geometry_summary": 756.9211737234584,
+      "id": "9bdec185-a51b-4845-b746-ddcd3e3fa433",
+      "source": 756.9211737234584
+    },
+    {
+      "field": "gfa",
+      "geometry_summary": 111.69000007803854,
+      "id": "bc265fcf-d0f6-4d22-8e92-d8f86f4d707a",
+      "source": 111.69000003780712
+    },
+    {
+      "field": "gfa",
+      "geometry_summary": 1270.1284195412472,
+      "id": "d67cc046-9c03-4e43-b1b5-876417dbcdda",
+      "source": 1270.1284195412472
+    },
+    {
+      "field": "gfa",
+      "geometry_summary": 756.9211737145721,
+      "id": "e4f25e01-0e9d-4fd2-b705-96d118802468",
+      "source": 756.9211737145721
+    },
+    {
+      "field": "gfa",
+      "geometry_summary": 756.9211737279013,
+      "id": "f7b76e8b-93f0-47c6-8666-05c541c19e25",
+      "source": 756.9211737279013
+    },
+    {
+      "field": "volume",
+      "geometry_summary": 8656.63388583836,
+      "id": "cb5a02f7-b1b9-4a32-95b8-bbb70a946230",
+      "source": 8656.633885806197
+    },
+    {
+      "field": "gfa",
+      "geometry_summary": 815.9834537340322,
+      "id": "bb756739-0f7c-43ec-874a-ec0def2ca9e4",
+      "source": 815.9834537340322
+    },
+    {
+      "field": "gfa",
+      "geometry_summary": 765.9416309373975,
+      "id": "0c018f4e-85d1-45ca-a83a-e3047e63ea6e",
+      "source": 765.9416309373975
+    },
+    {
+      "field": "gfa",
+      "geometry_summary": 2361.0560346896077,
+      "id": "15c0f8fb-5a62-4f60-94fc-5f1ea1a79f76",
+      "source": 2361.0560346896077
+    },
+    {
+      "field": "gfa",
+      "geometry_summary": 2015.9560346376097,
+      "id": "1b966f89-f491-425e-9da1-ad0ad124cae4",
+      "source": 2015.9560346376097
+    },
+    {
+      "field": "gfa",
+      "geometry_summary": 875.0148999001325,
+      "id": "1df6c7b8-7e0a-4347-b94c-82324a5c4765",
+      "source": 875.0148999001325
+    },
+    {
+      "field": "gfa",
+      "geometry_summary": 2361.056034696899,
+      "id": "5ffdc26b-ed78-45e7-95a7-93114f38437b",
+      "source": 2361.056034696899
+    },
+    {
+      "field": "gfa",
+      "geometry_summary": 172.74105438746574,
+      "id": "7f876f6b-5eef-44d0-b9be-39b08176e2e4",
+      "source": 172.74105438746574
+    },
+    {
+      "field": "gfa",
+      "geometry_summary": 2015.9560347697702,
+      "id": "aece3428-b220-4ced-a819-15cdb72166aa",
+      "source": 2015.9560347697702
+    },
+    {
+      "field": "gfa",
+      "geometry_summary": 875.0148999135638,
+      "id": "f3ff41c9-c6e6-4bcb-8d36-c7acfbecf839",
+      "source": 875.0148999135638
+    },
+    {
+      "field": "gfa",
+      "geometry_summary": 1178.164751765595,
+      "id": "3623f3aa-9226-46d1-9e2f-b3e82e0f187f",
+      "source": 1178.164751765595
+    }
+  ],
+  "gfa_m2": 42786.25911463894,
+  "legacy_commit": "6732e83d277c8de81f3dec2906e06d0e75d3b6fa",
+  "legacy_graph_exact_identity_and_edge_match": true,
+  "measurements_checked": 144,
+  "model_revision": "37565d7c-f2fb-5ddd-9c4d-e5faacd5c2e0",
+  "project_objects": 50,
+  "properties_checked": 45,
+  "relationships": {
+    "contains": 3,
+    "services": 11,
+    "spatiallyContains": 49
+  },
+  "root_id": "afe8e730-ad0f-4c2a-a15c-e249e4518fa8",
+  "source_sha256": "1b9e0e1231b87902227df0b8738b96b18c7ed3ce1f171014a9c5d73e3909299a",
+  "status": "passed",
+  "transport_objects": 3007
+}

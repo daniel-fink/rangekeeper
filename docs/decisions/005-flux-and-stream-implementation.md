@@ -1,7 +1,9 @@
 # ADR-005 Flux and Stream implementation
 
 Status: implemented and locally verified on 2026-10-08. The first notebook migration
-is also accepted; six notebooks remain in that separate phase. See the
+is also accepted. Further walkthrough work follows the
+[agreed six-lesson curriculum](006-walkthrough-curriculum.md), which consolidates
+the other six source notebooks into five further lessons. See the
 [codebase acceptance record](../research/flux-stream-2026-10-08/README.md)
 for source hashes, the installed wheel, tests, timings, memory costs and external limits.
 

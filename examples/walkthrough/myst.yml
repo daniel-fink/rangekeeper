@@ -1,0 +1,23 @@
+version: 1
+project:
+  id: rangekeeper-walkthrough
+  title: Rangekeeper
+  authors:
+    - name: Daniel Fink
+  copyright: '2026'
+  github: https://github.com/daniel-fink/rangekeeper
+  bibliography:
+    - references.bib
+  # Add chapters only after their current-code migration and acceptance.
+  toc:
+    - file: intro.md
+    - title: Real Estate Flexibility and Valuation under Uncertainty
+      children:
+        - file: basic_dcf.ipynb
+        - file: design_to_value.ipynb
+site:
+  template: book-theme
+  options:
+    logo: resources/rangekeeper.jpg
+    logo_text: Rangekeeper
+    style: _static/book.css

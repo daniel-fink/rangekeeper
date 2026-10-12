@@ -1,0 +1,26 @@
+{
+  "classifications": [
+    "property",
+    "building",
+    "space",
+    "floor",
+    "utilities"
+  ],
+  "measurements": {
+    "ffl": "meter",
+    "ftf": "meter",
+    "gfa": "meter ** 2",
+    "perimeter": "meter",
+    "volume": "meter ** 3"
+  },
+  "properties": [
+    "use",
+    "number"
+  ],
+  "relationships": [
+    "spatiallyContains",
+    "services",
+    "contains"
+  ],
+  "source_name": "Speckle c0f66c35e3/e7acaac21ae7e9369339900a4aaeb827"
+}

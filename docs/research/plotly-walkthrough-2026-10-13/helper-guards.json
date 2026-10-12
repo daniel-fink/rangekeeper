@@ -1,0 +1,10 @@
+[
+  {
+    "case": "missing-js",
+    "rejected_before_staging": true
+  },
+  {
+    "case": "stale-js",
+    "rejected_before_staging": true
+  }
+]

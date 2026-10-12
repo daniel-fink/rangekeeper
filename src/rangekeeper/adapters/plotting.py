@@ -1,4 +1,4 @@
-"""Detached plotting adapters. Figures are returned; callers choose display or storage."""
+"""Detached Plotly adapters. Callers choose styling, display and storage."""
 
 from enum import Enum, unique
 
@@ -20,31 +20,36 @@ def plot_flows(
     """Plot named resolved Flows by date, with explicit unit labels.
 
     Missing magnitudes fail. Period-only data requires an explicit date convention.
-    Mixed units use distinct axes; no implicit conversion or time stripping occurs.
+    Mixed units use separate panels; no implicit conversion or time stripping occurs.
+    Returns a Plotly Figure without changing the session's default template.
     """
-    import matplotlib.pyplot as plt
+    import plotly.graph_objects as go
+    from plotly.subplots import make_subplots
 
     units = list(dict.fromkeys(flow.units for flow in flows.values()))
     if not units:
         raise ValueError("plot requires Flows")
-    figure, axes = plt.subplots(
-        len(units), 1, squeeze=False, figsize=(10, 3.5 * len(units))
-    )
+    figure = make_subplots(rows=len(units), cols=1, shared_xaxes=True)
     for label, flow in flows.items():
         if any(m.magnitude is None for m in flow.movements):
             raise ValueError("plot requires resolved magnitudes")
-        axis = axes[units.index(flow.units), 0]
-        axis.plot(
-            [m.resolve(timing=timing) for m in flow.movements],
-            [m.magnitude for m in flow.movements],
-            label=label,
+        row = units.index(flow.units) + 1
+        figure.add_trace(
+            go.Scatter(
+                x=[m.resolve(timing=timing) for m in flow.movements],
+                y=[m.magnitude for m in flow.movements],
+                name=label,
+                mode="lines+markers",
+                hovertemplate="%{x|%d %b %Y}<br>%{y:,.2f} "
+                + flow.units
+                + "<extra>%{fullData.name}</extra>",
+            ),
+            row=row,
+            col=1,
         )
-        axis.set_ylabel(flow.units)
-        axis.set_xlabel("Date")
-        axis.legend()
-        axis.grid(alpha=0.2)
-    figure.suptitle(title)
-    figure.tight_layout()
+        figure.update_yaxes(title_text=flow.units, row=row, col=1)
+    figure.update_xaxes(type="date", title_text="Date", row=len(units), col=1)
+    figure.update_layout(title=title, height=280 * len(units) + 160)
     return figure
 
 
@@ -57,29 +62,42 @@ def plot_distribution(
 ):
     """Plot detached finite samples as histograms or empirical cumulative curves."""
     import math
-    import matplotlib.pyplot as plt
+    import plotly.graph_objects as go
 
-    figure, axis = plt.subplots(figsize=(9, 4))
+    figure = go.Figure()
     for name, values in samples.items():
         values = tuple(values)
         if not values or any(not math.isfinite(x) for x in values):
             raise ValueError("distribution requires nonempty finite samples")
         if cumulative:
-            axis.step(
-                sorted(values),
-                [(i + 1) / len(values) for i in range(len(values))],
-                where="post",
-                label=name,
+            figure.add_trace(
+                go.Scatter(
+                    x=sorted(values),
+                    y=[(i + 1) / len(values) for i in range(len(values))],
+                    name=name,
+                    mode="lines",
+                    line_shape="hv",
+                )
             )
         else:
-            axis.hist(
-                values, bins=min(30, max(3, len(values) // 3)), alpha=0.5, label=name
+            figure.add_trace(
+                go.Histogram(
+                    x=values,
+                    nbinsx=min(30, max(3, len(values) // 3)),
+                    opacity=0.55,
+                    name=name,
+                    bingroup="samples",
+                )
             )
-    axis.set_xlabel(units)
-    axis.set_ylabel("Cumulative probability" if cumulative else "Scenario count")
-    axis.set_title(title)
-    axis.legend()
-    figure.tight_layout()
+    figure.update_layout(
+        title=title,
+        xaxis_title=units,
+        yaxis_title="Cumulative probability" if cumulative else "Scenario count",
+        barmode="overlay",
+        height=440,
+    )
+    if cumulative:
+        figure.update_yaxes(range=[0, 1], tickformat=".0%")
     return figure
 
 
@@ -93,17 +111,14 @@ def plot_pairs(
 ):
     """Plot paired scenario outcomes, retaining one point per shared realization."""
     import math
-    import matplotlib.pyplot as plt
+    import plotly.graph_objects as go
 
     if len(x) != len(y) or not x or any(not math.isfinite(v) for v in (*x, *y)):
         raise ValueError("paired plot requires matching finite samples")
-    figure, axis = plt.subplots(figsize=(7, 4))
-    axis.scatter(x, y, color="#285f8f", marker="o")
-    axis.set_xlabel(x_label)
-    axis.set_ylabel(y_label)
-    axis.set_title(title)
-    axis.grid(alpha=0.2)
-    figure.tight_layout()
+    figure = go.Figure(go.Scatter(x=list(x), y=list(y), mode="markers"))
+    figure.update_layout(
+        title=title, xaxis_title=x_label, yaxis_title=y_label, height=440
+    )
     return figure
 
 
