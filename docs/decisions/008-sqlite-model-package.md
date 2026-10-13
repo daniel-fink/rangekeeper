@@ -171,6 +171,32 @@ There is no automatic bidirectional synchronisation between Model and Geometry.
 
 ## Parquet storage and DuckDB queries
 
+Expose **one Package access layer** for Model queries, source queries, Entity
+associations, provenance, geometry representations, placement and assets. DuckDB
+and provider adapters are internal tools of that layer. They are not separate
+public services. All operations share exact Package/Model identity, authorisation,
+source resolution and cache scoping. HTTP, MCP and local callers use the same
+operation semantics through their host adapters.
+
+```mermaid
+flowchart LR
+    R[RK Model in Parquet] --> Q
+    G[Pinned native Geometry] --> A
+    subgraph Access[Package access layer]
+        Q[DuckDB queries] --> I[One bounded access interface]
+        A[Provider adapters] --> Q
+        A --> I
+    end
+    I --> V[Shared viewer components]
+    I --> P[Rebuildable Payload collections]
+```
+
+Structured results and streamed assets can use different response forms within
+this interface. Ordinary queries still avoid geometry-blob reads. DuckDB can read
+geometry blobs stored in Parquet; the provider adapter interprets their encoding,
+representation roles and placement. The renderer chooses the display conversion.
+One access layer does not require a separate server process for each internal tool.
+
 Adopt the separation of columnar data, explicit relations and geometry used by
 Speckle, while retaining RK's own schema and domain meaning. Do not encode all RK
 records as Speckle objects or replace typed RK Values, units and provenance with an
@@ -181,11 +207,13 @@ untyped EAV store. EAV can serve source-variable properties where appropriate.
 | RK LinkML schema and generated contract | Authority for RK records, fields, references and semantic validation. Drives the versioned Parquet mapping; do not maintain a second handwritten domain schema. |
 | RK Parquet tables | Lossless serialization of Model content, including Entity associations and separate provenance. Preserve presence versus null, scalar/union types, units, ordered and empty collections, ownership and UUID references. |
 | Native Geometry dataset | Retained provider data, including its properties, relations and assets. The Speckle adapter reads its native Parquet tables; other providers can use other formats. |
-| DuckDB reader | Queries RK tables and supported Geometry tables, joins through explicit Entity mappings, and supplies bounded results. An embedded query engine, not the Model's identity or a required `.duckdb` delivery file. |
-| Shared query contract and projections | One meaning for object, Value, evidence, membership, graph, source-selection and asset queries across hosts. Viewer owns presentation projections; MCP owns authorised service access. |
+| DuckDB reader inside Package access | Queries RK tables and supported Geometry tables, joins through explicit Entity mappings, and supplies bounded results. An embedded query engine, not the Model's identity or a required `.duckdb` delivery file. |
+| Provider adapters inside Package access | Interpret source identities, properties, relations, geometry encodings, representation roles, placement and assets under the shared identity/access rules. |
+| Package access contract and projections | One meaning for object, Value, evidence, membership, graph, source-selection and asset operations across hosts. Viewer owns presentation projections; MCP owns authorised service access. |
 | Payload application database | Users, permissions, sessions, catalogue and optional rebuildable collection projections for native controls. The current host uses SQLite. It is not canonical Model or Geometry storage. |
 
-The first service path runs DuckDB behind authorised query operations. Standalone
+The first service path exposes Package access with DuckDB and provider adapters
+behind its authorised operations. Standalone
 and focused clients request bounded data through their host adapters; they do not
 need to download the whole Package, execute arbitrary SQL or run DuckDB-Wasm.
 Offline local readers can use the same query contract. Browser-local engines and
@@ -386,7 +414,7 @@ order; the earlier SQLite proof remains input evidence, not completion of step A
 | Step | Work and concrete result | Acceptance and user review |
 | --- | --- | --- |
 | A: Schema, Parquet and Package lifecycle | Specify provider-neutral Geometry types, Model-owned Entity mappings, separate provenance addresses, identity rules and migration. Derive Parquet tables from the RK schema; prove complete reconstruction and a DuckDB query prototype. Pin Speckle 2026.9 and its exact specification; build a native fixture, validator, shared conformance cases and offline reopen proof. Preserve the legacy reader boundary. | Pass P1–P5 below and measure representative P6 reads before storage adoption. Review the concrete schema, manifest, associations, provenance, table mapping, query costs, change cases and reopened artifact before adopting the public format and wiring hosts to it. |
-| B: Shared reads and host adapter | Implement bounded DuckDB-backed object/value/evidence/graph/source queries and separate geometry asset access for one exact Package. Connect shared components and any rebuildable Payload projections required by native controls. | Pass P6–P7 and the full-browser portion of P8 against the same conformance fixtures. Measure direct-service and projected reads, including rebuild cost. Keep Payload's application database separate from the Package. Repeat v4 host checks. |
+| B: Package access and host adapter | Implement one Package access interface for bounded Model/source/provenance queries and geometry/asset operations, with DuckDB and provider adapters inside it. Connect shared components and any rebuildable Payload projections required by native controls. | Pass P6–P7 and the full-browser portion of P8 against the same conformance fixtures, including shared access and identity checks across structured and asset responses. Measure direct-service and projected reads, including rebuild cost. Keep Payload's application database separate from the Package. Repeat v4 host checks. |
 | C: Navigation and inspector | Trial the tree library; finish occurrence, browse/inspect and restore rules; compose the same inspector and tree in the full browser and independent shell. | Use Viewer's browsing matrix. Review the actual tree, selection and inspector behaviour after automated and browser checks. |
 | D: Focused resources and workflow | Connect MCP Package access and component dispatch; verify real ChatGPT tree/inspector then graph/3D, standalone deep links, and build/reopen workflow. | Pass P8 in actual hosts. Review focused UI beside the full browser; test full-browser embedding separately if claimed. |
 
@@ -396,6 +424,12 @@ when access and dependencies are ready. The entire spike is not one unattended
 turn: schema/artifact review after A and product review after B/C remain deliberate
 checkpoints. User interpretation review belongs inside the ingestion workflow.
 Routine reversible fixes and verification do not need separate permission stops.
+
+Review and test the existing local UI now, using its current JSON/SQLite and legacy
+Geometry fixtures. This brings product feedback forward without adopting the new
+Package format. A remains the gate for new Package integration; repeat the UI cases
+through the Package access layer when B is ready. Keep this baseline evidence
+separate from Parquet, native Speckle 2026.9 and ChatGPT acceptance.
 
 ### Package acceptance criteria
 
