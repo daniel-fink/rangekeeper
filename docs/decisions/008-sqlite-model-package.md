@@ -375,7 +375,7 @@ Primary references: [SQLite application files](https://www.sqlite.org/appfilefor
 
 ## Spike steps, turn bundles and review
 
-The published [Viewer spike plan](https://github.com/daniel-fink/whirlwind-viewer/blob/e12a80868d3feb97f7d98e61b997adeb9048f067/docs/decisions/001-viewer-plan.md)
+The published [Viewer spike plan](https://github.com/daniel-fink/whirlwind-viewer/blob/0eb06660c4b0f3aa8f06ee5b55580f58ba83b9b6/docs/decisions/001-viewer-plan.md)
 owns host sequencing and links its browsing, tree, ChatGPT and Payload v4 checks.
 This ADR owns the canonical Package contract and P1–P8 criteria.
 
