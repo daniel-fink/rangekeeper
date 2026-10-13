@@ -1,125 +1,171 @@
-# ADR-008: Model and Speckle Package contract
+# ADR-008: Model and Geometry Package contract
 
-Status: Package contract agreed on 13 October 2026; implementation pending. The
-SQLite development experiment is retained as earlier evidence. It does not
-implement this contract. No installed API or public Model schema changes here.
+Status: Package contract agreed on 13 October 2026; provider-neutral Geometry
+terminology adopted the same day. Implementation is pending. The SQLite development
+experiment is retained as earlier evidence. It does not implement this contract.
+No installed API or public Model schema changes here.
 
 ## Intention
 
 Support source files → informed user decisions → a reproducible RK Model →
-inspection. Keep the Speckle source package beside the Model, with explicit,
-verifiable links between them. The same Package must support independent browser,
-ChatGPT and future native interfaces without making a renderer part of RK semantics.
+inspection. Keep Geometry beside the Model, with explicit, verifiable links
+between them. The same Package must support independent browser, ChatGPT and
+future native interfaces without making a renderer part of RK semantics.
 
 ## Contract and terms
 
-**One Speckle-backed Package contains exactly one immutable Model, pinned to
-exactly one Speckle bundle. The Model owns the bundle pin and the mappings.**
+**One Package with Geometry contains exactly one immutable Model, pinned to
+exactly one Geometry dataset. The Model owns the Geometry pin and mappings.**
 
 | Term | Meaning |
 | --- | --- |
-| Model | The canonical RK Model, including its source bundle pin and mappings under the future schema. Use “new Model” when this content changes; no separate “RK revision” object is introduced. |
-| Speckle bundle | The retained native source package: objects, properties, relations, geometry and required assets. It is not reduced to a mesh collection or flattened into RK entities. |
-| Package | The immutable delivery unit that identifies and contains that Model and its exact bundle. A manifest records their identities and integrity information. |
+| Model | The canonical RK Model, including its Geometry pin and mappings under the future schema. Use “new Model” when this content changes; no separate “RK revision” object is introduced. |
+| Geometry | The retained spatial source dataset, in its declared provider format. This includes source objects, properties, relations, geometric representations and required assets. The term does not restrict its content to meshes or flatten it into RK entities. |
+| Package | The immutable delivery unit that identifies and contains that Model and its exact Geometry. A manifest records their identities and integrity information. |
 
-This is a **Speckle-backed Package profile**. Ordinary RK Models without geometry
-or a Speckle source remain valid. They do not require an empty fabricated bundle.
+These cardinality rules apply to **Packages with Geometry**. Ordinary RK Models
+without Geometry remain valid. They do not require a fabricated empty dataset.
 The schema extension, migration and concrete field names remain implementation work.
 
-The Model's pin must identify exact bundle content by a digest and retain its
-Speckle project/model/version address when available. A mutable alias such as
-`latest` is not a pin. A different pinned source version creates a new Model even
-when its bundle bytes happen to match. Record an unavailable source version as
-unavailable; do not invent one or use a URL as an integrity check.
+The Model's pin must identify exact Geometry content by a digest, its provider and
+format/schema identity, and its source version/address when available. A mutable
+alias such as `latest` is not a pin. A different pinned source version creates a
+new Model even when source bytes happen to match. Record an unavailable source
+version as unavailable; do not invent one or use a URL as an integrity check.
 
-Mappings belong to the Model. They identify their RK target and the source bundle,
-object, property, relation or geometry representation they address. Source key
-spaces and scopes must be explicit: object IDs, relation node IDs, geometry IDs,
-application IDs and instance paths are not interchangeable. Allow many-to-many
-associations and valid RK objects with no source association. Do not assume one
-Speckle object equals one RK Entity. Mappings can also concern Values and Relationships.
+Mappings belong to the Model. They identify their RK target and the Geometry
+object, property, relation or representation they address. Source selectors carry
+their provider-defined key space, scope and instance path. They are not assumed to
+be globally unique or interchangeable. Allow many-to-many associations and valid
+RK objects with no Geometry association. Do not assume one source object equals
+one RK Entity. Mappings can also concern Values and Relationships.
+
+### Provider-neutral schema vocabulary
+
+Use **Geometry** for the canonical concept in documentation, schema types and
+public APIs. Use provider-neutral field names for its pin, descriptor and mappings;
+do not introduce a canonical `SpeckleBundle` type or `speckle_*` fields. Keep
+provider-specific names in adapter implementations and provider metadata. This is
+a naming requirement for the pending schema extension, not a new installed record.
+
+The Geometry descriptor must distinguish:
+
+| Information | Purpose |
+| --- | --- |
+| Provider and format | Select the appropriate reader/validator without changing the Geometry concept. |
+| Format/schema version and exact specification pin | State which source contract defines the retained data. Keep the upstream release label separate from the executable specification version/hash. |
+| Content digest and required file inventory | Identify the exact retained Geometry independently of its storage location. |
+| Source address and version, when available | Preserve provenance in the provider's own namespace. These values do not replace the content digest. |
+
+The field layout and validation types belong to step A. Provider identifiers must
+be extensible; the first planned adapter targets Speckle. An unsupported provider or
+schema must produce an explicit unsupported-format result, not a fallback to the
+Speckle decoder. Replacing the provider or changing the pinned format/schema is a
+pin change and therefore creates a new Model and Package. This boundary permits
+future providers; it does not imply automatic or lossless format conversion.
+
+### First Geometry implementation: Speckle 2026.9
+
+The first planned provider is **Speckle**, using its **2026.9 object-model/bundle
+schema**. Geometry is stored as the native Speckle bundle in that profile. Keep
+“Speckle bundle” for descriptions of that concrete encoding, not as the canonical
+RK type or the name of the second Package component.
+
+The 2026.9 release label is not the bundle specification's own `schema_version`
+or `specHash`. Pin the exact specification commit/lockfile and decoder versions
+when implementing this profile; do not use `2026.9` alone as its integrity or
+compatibility check. Retain Speckle project/model/version addressing in provider
+metadata when available. Speckle object IDs, relation node IDs, geometry IDs,
+application IDs and instance paths retain their distinct source meanings.
+
+The current retained object-graph capture is a legacy Speckle encoding. It does not
+implement or prove 2026.9 native-bundle support. Do not relabel that fixture, codec
+or its recorded evidence as 2026.9 data.
 
 ### Change rules
 
-| Change | Model | Speckle bundle | Package |
+| Change | Model | Geometry | Package |
 | --- | --- | --- | --- |
-| RK domain content changes | New Model | Same bundle may be reused | New Package |
-| Source bundle content changes | New Model, because its pin changes | New bundle content | New Package |
-| Pinned Speckle source version changes | New Model, even if source bytes match | Retain exact content and new version address | New Package |
-| Mapping or canonical association changes | New Model | Same bundle may be reused | New Package |
+| RK domain content changes | New Model | Same Geometry may be reused | New Package |
+| Geometry content changes | New Model, because its pin changes | New Geometry content | New Package |
+| Pinned source version changes | New Model, even if source bytes match | Retain exact content and new version address | New Package |
+| Geometry provider or pinned format/schema changes | New Model, because its pin changes | New descriptor and exact content pin | New Package |
+| Mapping or canonical association changes | New Model | Same Geometry may be reused | New Package |
 | Model pin or other canonical Package content changes | New Model if Model content changes | Exact content remains pinned | New Package |
-| Camera, selection, renderer conversion or render cache changes outside canonical contents | Same Model | Same bundle | Same Package |
-| Copy, archive compression or derived SQLite index changes, with identical canonical contents | Same Model | Same bundle | Same Package; delivery file hash may differ |
+| Camera, selection, renderer conversion or render cache changes outside canonical contents | Same Model | Same Geometry | Same Package |
+| Copy, archive compression or derived SQLite index changes, with identical canonical contents | Same Model | Same Geometry | Same Package; delivery file hash may differ |
 
 Stable Entity and Value UUIDs can persist across Models. The Model identity must
 change when its canonical content changes. Reject any attempt to publish one
-Model identity with a different bundle pin or mappings. Never silently update the
-bundle under an existing Package. Retaining an unchanged bundle in several Packages
-is valid; each Package must still resolve its exact content independently.
+Model identity with a different Geometry pin or mappings. Never silently update
+Geometry under an existing Package. Retaining unchanged Geometry in several
+Packages is valid; each Package must resolve its exact content independently.
 
 This rule applies when a Package is built or published. Editing can use a mutable
 workspace before publication; it does not mutate an already published Package.
 
 ### Integrity and physical storage
 
-Keep the native Speckle bundle adjacent to the RK data. Logical separation does
-not require separate downloads: a portable container could contain a manifest,
-an RK SQLite database and the original Speckle files. This supersedes the earlier
-“one Model = one physical SQLite file” proposal. SQLite remains a candidate RK
-store; the archive format, database layout and canonical digest algorithm are not
-adopted by this decision. Native bundle bytes must survive packaging unchanged.
+Keep Geometry adjacent to the RK data in its declared native format. Logical
+separation does not require separate downloads: a portable container could contain
+a manifest, an RK SQLite database and the original Geometry files. This supersedes
+the earlier “one Model = one physical SQLite file” proposal. SQLite remains a
+candidate RK store; the archive format, database layout and canonical digest
+algorithm are not adopted by this decision. Native source bytes must survive
+packaging unchanged.
 
 Separate logical Model/Package identity from a delivery file's byte hash. The
-bundle digest must cover a defined, complete source file inventory. The Package
-manifest must bind the Model and bundle and their required format/schema versions.
-There must be no circular hash: the Model pins the source bundle; the outer Package
-identifies the Model and bundle. The Model must not contain its enclosing Package
-digest. Derived database indexes and rendering caches cannot become new authorities
-for mappings or source content.
+Geometry content digest must cover a defined, complete source file inventory.
+The Package manifest binds the Model and Geometry and their required format/schema
+versions. There must be no circular hash: the Model pins Geometry; the outer
+Package identifies the Model and Geometry. The Model must not contain its enclosing
+Package digest. Derived database indexes and rendering caches cannot become new
+authorities for mappings or source content.
 
 Validate the pin, contents, source selectors, RK targets and required asset closure
 before accepting a Package. A valid package does not prove that a user's source
 interpretation is correct. Source acceptance remains an explicit ingestion step.
-There is no automatic bidirectional synchronisation between the two models.
+There is no automatic bidirectional synchronisation between Model and Geometry.
 
 ## Ownership and geometry boundary
 
 | Owner | Responsibility |
 | --- | --- |
-| Rangekeeper | Canonical Model schema, source binding and representation contract, Model identity, serialisation and semantic validation |
-| Speckle specification and source adapter | Native bundle format and source semantics; format-specific decoding and source integrity checks |
+| Rangekeeper | Canonical Model schema, Geometry binding and representation contract, Model identity, serialisation and semantic validation |
+| Geometry provider specification and adapter | Native source format and semantics; format-specific decoding and source integrity checks. Speckle 2026.9 is the first planned implementation. |
 | Whirlwind MCP | Source acquisition, user decisions, builds, Package assembly/publication and authorised service access |
 | Whirlwind Viewer | Bounded projections, component queries, geometry conversion, rendering and host adapters |
 | Hosting application | Package/Model catalogue, users, permissions and session state |
 
 Specification and Run retain their separate meanings. Preserve provenance without
 requiring every original source-workspace file to be a Package asset. The chosen
-source profile must declare what it contains and what is required for offline use.
+Geometry profile declares what it contains and what is required for offline use.
 
-Define a general source binding/representation contract before deciding whether to
-add a geometry Value kind or store a geometry binding in characteristics. Do not
-copy Speckle's geometry schema into RK or force its entire graph into RK's schema.
+Define a general Geometry binding/representation contract before deciding whether
+to add a geometry Value kind or store a binding in characteristics. Do not copy a
+provider's geometry schema into RK or force its entire graph into RK's schema.
 Keep source properties and relations available for inspection even when they have
 no RK counterpart. EAV means entity–attribute–value; a source property table using
 that layout does not make the source graph equivalent to the RK domain model.
 
 Preserve source units, coordinate systems, transform chains, nested instances and
 placement identity. RK Assembly membership does not define spatial placement.
-Source geometry roles such as DISPLAY, SOLID and CENTERLINE have distinct meanings;
-source containment and hosting relations must not automatically become RK membership.
-Keep authored geometry and source appearance in the retained bundle. An interface
-owns triangulation, level of detail, display-only overrides, camera and caches.
-A different web or native renderer can display the same Package differently without
-changing it. An edit to retained source geometry or placement creates a new Package.
+Provider-defined roles have distinct meanings: for example, Speckle's DISPLAY,
+SOLID and CENTERLINE. Source containment and hosting relations must not automatically
+become RK membership. Keep authored geometry and source appearance in Geometry.
+An interface owns triangulation, level of detail, display-only overrides, camera
+and caches. A different web or native renderer can display the same Package
+differently without changing it. An edit to retained source geometry or placement
+creates a new Model and Package.
 
-Use format-specific adapters for native bundles and legacy Speckle object graphs.
-Do not require legacy root objects, detached references or `__closure` fields in
-the native bundle contract. The existing capture and viewer loader prove only the
-legacy path. Pin the actual bundle specification commit, schema version and decoder
-versions when implementing the native path; following `main` is not a compatibility test.
+Use format-specific adapters. In the Speckle implementation, native 2026.9 bundles
+and legacy object graphs have different contracts. Do not require legacy root
+objects, detached references or `__closure` fields in the native bundle contract.
+The existing capture and viewer loader prove only the legacy path.
 
-Primary source specifications: [Speckle bundle specification](https://github.com/specklesystems/speckle-bundle-spec),
-[relations](https://docs.speckle.systems/next/developers/object-model/relations) and
+Primary references for the first provider:
+[Speckle bundle specification](https://github.com/specklesystems/speckle-bundle-spec),
+[2026.9 relations](https://docs.speckle.systems/next/developers/object-model/relations) and
 [viewer bundle loading](https://docs.speckle.systems/next/developers/viewer/loading-bundles).
 These define source formats and adapter options, not local implementation acceptance.
 
@@ -239,7 +285,7 @@ proof remains input evidence, not completion of step A.
 
 | Step | Work and concrete result | Acceptance and user review |
 | --- | --- | --- |
-| A: Schema and Package lifecycle | Specify the Model-owned pin/mappings, identity rules and migration; pin the native Speckle spec; build a native fixture, Package validator and offline reopen proof. Compare the RK storage mapping and preserve the legacy reader boundary. | Pass P1–P5 below. Review the concrete schema, manifest, mappings, change cases and reopened artifact before adopting the public format and wiring hosts to it. |
+| A: Schema and Package lifecycle | Specify provider-neutral Geometry types and Model-owned pin/mappings, identity rules and migration; pin the Speckle 2026.9 profile and exact specification; build a native fixture, Package validator and offline reopen proof. Compare the RK storage mapping and preserve the legacy reader boundary. | Pass P1–P5 below. Review the concrete schema, manifest, mappings, change cases and reopened artifact before adopting the public format and wiring hosts to it. |
 | B: Shared reads and host adapter | Define bounded object/value/evidence/graph/source/geometry reads for one exact Package; connect shared Viewer components; compare a read service with native Payload projections. | Pass P6–P7 and the full-browser portion of P8. Keep Payload's application database separate from the immutable Package. Repeat v4 host checks. |
 | C: Navigation and inspector | Trial the tree library; finish occurrence, browse/inspect and restore rules; compose the same inspector and tree in the full browser and independent shell. | Use Viewer's browsing matrix. Review the actual tree, selection and inspector behaviour after automated and browser checks. |
 | D: Focused resources and workflow | Connect MCP Package access and component dispatch; verify real ChatGPT tree/inspector then graph/3D, standalone deep links, and build/reopen workflow. | Pass P8 in actual hosts. Review focused UI beside the full browser; test full-browser embedding separately if claimed. |
@@ -255,19 +301,19 @@ Routine reversible fixes and verification do not need separate permission stops.
 
 | ID | Required evidence |
 | --- | --- |
-| P1: Cardinality and identity | A valid Speckle-backed Package contains one Model and one pinned bundle. Reject missing/extra bundles, mismatched pins, and reuse of a Model identity with changed canonical content. Geometry-free Models remain valid outside this profile. |
-| P2: Change matrix | RK-only, bundle-only, source-version-only and mapping-only changes each produce a new Model and Package. Bundle-only changes cannot retain the old Model identity. Stable Entity/Value UUIDs and reuse of an unchanged bundle work. |
-| P3: Integrity and reopening | Reopen a copied Package offline without the source server or original capture. Reject tampered/missing source files, wrong digests/versions and invalid mappings before publication. Preserve native bundle bytes; verify all declared required assets. |
-| P4: Source semantics | Test many-to-many and absent associations, non-geometry properties/relations, scoped selectors, units, nested instances and transforms. Preserve geometry roles and placement without inferring placement from RK Assembly membership. |
-| P5: Schema and storage | Reconstruct the Model under the new schema; preserve field presence, scalar types, order and provenance. Verify migrations and explicit handling of unsupported formats. Distinguish logical content identity from storage-byte hashes and exclude circular digests. |
+| P1: Cardinality and identity | A valid Package with Geometry contains one Model and one pinned Geometry dataset. Reject missing/extra datasets, mismatched pins, and reuse of a Model identity with changed canonical content. Geometry-free Models remain valid outside this profile. |
+| P2: Change matrix | RK-only, Geometry-only, source-version-only, provider/format/schema-only and mapping-only changes each produce a new Model and Package. Geometry-only changes cannot retain the old Model identity. Stable Entity/Value UUIDs and reuse of unchanged Geometry work. |
+| P3: Integrity and reopening | Reopen a copied Package offline without the source server or original capture. Reject tampered/missing source files, wrong digests/versions and invalid mappings before publication. Preserve native Geometry bytes; verify all declared required assets. |
+| P4: Source semantics | Test many-to-many and absent associations, non-geometry properties/relations, scoped selectors, units, nested instances and transforms. Preserve provider-defined geometry roles and placement without inferring placement from RK Assembly membership. |
+| P5: Schema and storage | Reconstruct the Model under the new schema; preserve field presence, scalar types, order and provenance. Verify migrations, provider-neutral type/field names, extensible provider metadata and explicit rejection of unsupported providers/formats. Distinguish logical content identity from storage-byte hashes and exclude circular digests. |
 | P6: Bounded reads | Object/value/evidence/membership/graph queries are bounded and do not load geometry blobs. Geometry requests resolve exact source selectors from the same Package. Declare scale and large-object limits from measured fixtures. |
-| P7: Interface independence | Two supported render conversions leave Model, bundle and Package unchanged. Camera/selection/cache changes stay outside canonical contents. Host schema push and migrations cannot modify published Packages. A quad conversion alone does not establish general BRep or native-app support. |
+| P7: Interface independence | Two supported render conversions leave Model, Geometry and Package unchanged. Camera/selection/cache changes stay outside canonical contents. Host schema push and migrations cannot modify published Packages. A quad conversion alone does not establish general BRep or native-app support. |
 | P8: Host consistency | Full browser, focused resources and deep links carry the exact Package and Model identity plus canonical selection/scope. Reject stale cross-Package requests. Verify the same mappings/evidence in each claimed host, actual ChatGPT tool/UI exchanges, and the separate Payload v4 procedure. |
 
 The existing test `test_content_digest_separates_geometry_from_legacy_model_id`
 records a legacy identity gap. It must not count as P2 acceptance. The existing
 SQLite proof, planar quad, local browser and older v4 results establish only their
-recorded scope. They do not accept the new schema, native bundle codec, ChatGPT,
+recorded scope. They do not accept the new schema, Speckle 2026.9 codec, ChatGPT,
 native iOS, general BRep conversion or production service.
 
 Before production adoption, also establish publication durability, migration and
