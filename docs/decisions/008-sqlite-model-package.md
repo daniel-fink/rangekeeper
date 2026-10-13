@@ -229,6 +229,10 @@ Primary references: [SQLite application files](https://www.sqlite.org/appfilefor
 
 ## Spike steps, turn bundles and review
 
+The published [Viewer spike plan](https://github.com/daniel-fink/whirlwind-viewer/blob/98e92ccd2bc2cc572628439ed072696e66710f7f/docs/decisions/001-viewer-plan.md)
+owns host sequencing and links its browsing, tree, ChatGPT and Payload v4 checks.
+This ADR owns the canonical Package contract and P1–P8 criteria.
+
 The Package contract is agreed. Do not ask for another approval of its one-to-one
 pin rule. Implement the following steps in dependency order; the earlier SQLite
 proof remains input evidence, not completion of step A.
