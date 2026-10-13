@@ -23,7 +23,9 @@ pairs one immutable Model with one exact Geometry dataset. The Model owns the
 Geometry pin and Entity-to-source-element mappings; changing either side or the
 mappings creates a new Model and Package. Geometry is provider-neutral; its first planned format is Speckle's
 2026.9 object-model/bundle schema, with an exact specification pin. Source data stays
-adjacent to schema-derived RK Parquet tables, queried through DuckDB. Entity
+adjacent to schema-derived RK Parquet tables. One Package access layer contains
+DuckDB and provider adapters and supplies queries, provenance, geometry and assets
+under shared identity and access rules. Entity
 associations support navigation and selection; property and relation evidence use
 the separate RK provenance structure. Rendering belongs to the interface. Payload
 keeps its own application database and any rebuildable native-control projections;
