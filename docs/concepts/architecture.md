@@ -20,10 +20,13 @@ See [the decision](../decisions/007-three-repository-refactor.md),
 
 The agreed [Model and Geometry Package contract](../decisions/008-sqlite-model-package.md)
 pairs one immutable Model with one exact Geometry dataset. The Model owns the
-Geometry pin and mappings; changing either side or the mappings creates a new Model
-and Package. Geometry is provider-neutral; its first planned format is Speckle's
+Geometry pin and Entity-to-source-element mappings; changing either side or the
+mappings creates a new Model and Package. Geometry is provider-neutral; its first planned format is Speckle's
 2026.9 object-model/bundle schema, with an exact specification pin. Source data stays
-adjacent to RK data, while rendering belongs to the interface. SQLite remains a
-candidate RK store, not a requirement that the entire Package be one database file.
+adjacent to schema-derived RK Parquet tables, queried through DuckDB. Entity
+associations support navigation and selection; property and relation evidence use
+the separate RK provenance structure. Rendering belongs to the interface. Payload
+keeps its own application database and any rebuildable native-control projections;
+it does not own canonical Package storage.
 The earlier development experiment is historical
 evidence; the installed IO API and public Model schema have not adopted this contract.
