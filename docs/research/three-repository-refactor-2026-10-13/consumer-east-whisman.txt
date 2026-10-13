@@ -1,0 +1,10 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.11, pytest-9.1.1, pluggy-1.6.0
+rootdir: /private/tmp/rk-three-repo-4uupdvk4/consumers/Projects/Whirlwind/projects/east-whisman
+configfile: pyproject.toml
+testpaths: tests
+collected 6 items
+
+tests/test_workflow.py ......                                            [100%]
+
+============================== 6 passed in 18.48s ==============================

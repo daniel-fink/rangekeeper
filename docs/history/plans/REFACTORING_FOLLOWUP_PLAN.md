@@ -214,7 +214,7 @@ IDs across implementations or substitute an old fingerprint to satisfy a test.
 | --- | --- |
 | [Execution](../../../src/rangekeeper/run/execution/implementation.py) | Remove `_coordinates.py`, `model/_scenario.py`, `model/formulation/traversal.py` and `execution/evaluator.py`; retain their final owners in the correct common/compiler/evaluator groups |
 | [Scenario](../../../src/rangekeeper/model/scenario/implementation.py) | Remove `model/_scenario.py`; keep `scenarios/contracts.py` and Flow behavior. Replace the four deterministic dynamics paths with `calculations/dynamics.py`. Moving the coordinate helper into Flow changes an already included file. Sampling remains outside replay mathematics |
-| [Workflow](../../../src/rangekeeper/workflow/implementation.py) | Remove stale `_artifacts.py` and adapter-error path rules; include moved provenance/computation. Preserve full installed-code audit separately from computation identity and presentation exclusions |
+| [Workflow](https://github.com/daniel-fink/rangekeeper/blob/7a0181774edcf29d363822b26cfb8739a467d11b/src/rangekeeper/workflow/implementation.py) | Remove stale `_artifacts.py` and adapter-error path rules; include moved provenance/computation. Preserve full installed-code audit separately from computation identity and presentation exclusions |
 
 Keep current-format historical results readable. Replay must report unavailable
 implementation identity when appropriate. Test inclusion of semantic sources,
@@ -366,7 +366,7 @@ fails independently when forged. Coordinate manifests with RF-026.
 
 ## RF-028 Workflow ownership
 
-**Problem and evidence.** [`workflow/_shared.py`](../../../src/rangekeeper/workflow/specification.py)
+**Problem and evidence.** [`workflow/_shared.py`](https://github.com/daniel-fink/rangekeeper/blob/7a0181774edcf29d363822b26cfb8739a467d11b/src/rangekeeper/workflow/specification.py)
 has one production consumer, specification loading. Validators are imported
 through composition. `implementation.py` combines fingerprint selection with
 provenance construction. Table operation declarations repeat mapping preparation
@@ -404,9 +404,9 @@ and lineage remains exact. Coordinate shared-file edits with RF-029/RF-030/RF-03
 
 ## RF-029 Evidence preparation for source checks
 
-**Problem and evidence.** [`workflow/source_checks.py`](../../../src/rangekeeper/workflow/source_checks.py)
+**Problem and evidence.** [`workflow/source_checks.py`](https://github.com/daniel-fink/rangekeeper/blob/7a0181774edcf29d363822b26cfb8739a467d11b/src/rangekeeper/workflow/source_checks.py)
 scans all Issues for each missing numeric cell through `tabular.issues_for`, despite
-the existing index in [`PreparedEvidence`](../../../src/rangekeeper/workflow/evidence/validation.py).
+the existing index in [`PreparedEvidence`](https://github.com/daniel-fink/rangekeeper/blob/7a0181774edcf29d363822b26cfb8739a467d11b/src/rangekeeper/workflow/evidence/validation.py).
 It also repeats missing-column branches after `require_columns`.
 
 **Implementation.** Prepare each exact Evidence object once per source-check
@@ -432,9 +432,9 @@ uses the shared index and all scope/order failures remain unchanged.
 
 ## RF-030 Atomic JSON publication
 
-**Problem and evidence.** [`workflow/_artifacts.py`](../../../src/rangekeeper/io/_atomic.py)
+**Problem and evidence.** [`workflow/_artifacts.py`](https://github.com/daniel-fink/rangekeeper/blob/7a0181774edcf29d363822b26cfb8739a467d11b/src/rangekeeper/io/_atomic.py)
 and the layout review controller duplicate the same JSON replacement wrapper.
-[`io/_atomic.py`](../../../src/rangekeeper/io/_atomic.py) already owns publication,
+[`io/_atomic.py`](https://github.com/daniel-fink/rangekeeper/blob/7a0181774edcf29d363822b26cfb8739a467d11b/src/rangekeeper/io/_atomic.py) already owns publication,
 durability, interruption and cleanup semantics.
 
 **Implementation.** Add `replace_json(path, value)` to that existing IO module,
@@ -459,7 +459,7 @@ durability and competing-writer regressions pass.
 
 ## RF-031 Adapter and layout preparation
 
-**Problem and evidence.** [`Cytoscape.project`](../../../src/rangekeeper/adapters/cytoscape/__init__.py)
+**Problem and evidence.** [`Cytoscape.project`](https://github.com/daniel-fink/rangekeeper/blob/7a0181774edcf29d363822b26cfb8739a467d11b/src/rangekeeper/adapters/cytoscape/__init__.py)
 repeatedly scans selected entities/relationships and rebuilds selected-ID sets
 inside membership tests. Layout `Problem.descendants` rebuilds its group index
 and revisits shared subgraphs. Layout `metrics` reruns the arithmetic checker

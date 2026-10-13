@@ -3,9 +3,9 @@
 from pathlib import Path
 from importlib import import_module
 
-from rangekeeper.schema.runtime import _json_copy
+from rangekeeper.schema.runtime import copy_json
 from rangekeeper.shared.errors import DecodeError
-from rangekeeper.io._atomic import write_new
+from rangekeeper.io.atomic import write_new
 from rangekeeper.io._document import restore, require_kind, snapshot
 from rangekeeper.io.store import Document, D
 
@@ -54,13 +54,13 @@ def loads(text: str, *, kind: type[D]) -> D:
             return result
 
     # This subclass has its own constructor table; SafeLoader's global behavior
-    # is unchanged for other callers, including legacy workflow adapters.
+    # is unchanged for other callers, including external source readers.
     Loader.add_constructor(
         "tag:yaml.org,2002:timestamp",
         lambda loader, node: loader.construct_scalar(node),
     )
     try:
-        data = _json_copy(yaml.load(text, Loader=Loader))
+        data = copy_json(yaml.load(text, Loader=Loader))
     except (yaml.YAMLError, ValueError, TypeError, KeyError) as error:
         raise DecodeError(str(error)) from error
     return restore(data, kind)

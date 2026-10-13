@@ -440,7 +440,7 @@ def test_account_overdraft_and_timing():
 
 
 def test_adapter_exports_are_detached():
-    from rangekeeper.adapters import polars as po
+    from rangekeeper.io import polars as po
 
     flow = annual([0, None, 2])
     frame = po.to_frame(flow)
@@ -536,7 +536,7 @@ def test_distinct_property_and_flow_roles_reject_malformed_content():
 
 def test_polars_preserves_explicit_null_and_omission():
     from rangekeeper.model.flux import Flow
-    from rangekeeper.adapters.polars import to_frame, from_frame
+    from rangekeeper.io.polars import to_frame, from_frame
 
     flow = Flow.from_data(
         {

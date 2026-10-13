@@ -9,7 +9,7 @@ See the [Grasshopper guide](../guides/grasshopper.md) for native authoring and t
 ## Canonical envelope
 
 The versioned envelope is `rk.speckle-model/v1`. Its fields are declared once in
-[`adapters/speckle/contract.json`](../../src/rangekeeper/adapters/speckle/contract.json)
+[`adapters/speckle/contract.json`](../../src/rangekeeper/io/speckle_contract.json)
 and also generate the C# constants.
 
 | Field | Contract |

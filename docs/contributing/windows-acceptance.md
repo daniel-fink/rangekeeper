@@ -3,7 +3,8 @@
 **Status: open.** This procedure owns the remaining official Windows connector
 publication/receive gate. Portable builds, macOS authoring, offline envelopes and
 an earlier pinned Python receive are separate evidence. They do not close this
-gate or authorize removal of the [held predecessor](legacy-retirement.md).
+gate. [ADR-007](../decisions/007-three-repository-refactor.md) now governs
+[predecessor removal](legacy-retirement.md) independently of this platform check.
 
 ## Prerequisites and open host work
 
@@ -55,8 +56,11 @@ a concrete destination and explicit authorization.
    authorized destination. Publication must be an explicit action, not a side
    effect of recomputation. Record the project/model/version/content identifiers
    after publication. Authentication and destination choice remain external to RK.
-5. Receive the pinned object through `rangekeeper.adapters.speckle.transport.receive`
-   and decode it with `decode_model`. Compare all Model content and the separate
+5. Receive the pinned object through the source transport for the accepted package
+   set and decode it with the canonical RK codec. Use
+   `whirlwind_mcp.sources.speckle.transport.receive` and
+   `rangekeeper.io.speckle.decode_model`. Record the actual API and both package
+   pins when testing the refactored set. Compare all Model content and the separate
    geometry associations. Check IDs, revision, omission/null, zero/false, shared
    membership, units and property order; counts or visual nesting are insufficient.
 6. Change the Model, recompute and publish it as a new revision within the
@@ -81,7 +85,7 @@ comparisons; notebook results; and any remaining differences. Exclude tokens,
 private URLs, account databases and unsanitized payloads.
 
 Close this gate only when the actual host and authorized publication/receive
-checks pass. Link the result from this page and
-[legacy retirement](legacy-retirement.md) before removing the held implementation.
+checks pass. Link the result from this page. Predecessor removal follows
+[legacy retirement](legacy-retirement.md) and does not close this gate.
 Preserve any failed attempts as dated evidence. A completed local code change
 cannot substitute for this external acceptance.

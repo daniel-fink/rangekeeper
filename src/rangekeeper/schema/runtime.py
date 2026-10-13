@@ -41,7 +41,7 @@ class Unset:
 UNSET = Unset()
 
 
-def _json_copy(value, active=None):
+def copy_json(value, active=None):
     """Copy strictly JSON-compatible data, rejecting cycles and non-finite numbers."""
     if value is None or type(value) in (str, bool, int):
         return value
@@ -58,9 +58,9 @@ def _json_copy(value, active=None):
         if isinstance(value, Mapping):
             if any(type(key) is not str for key in value):
                 raise TypeError("JSON object keys must be strings")
-            return {key: _json_copy(child, active) for key, child in value.items()}
+            return {key: copy_json(child, active) for key, child in value.items()}
         if isinstance(value, (list, tuple)):
-            return [_json_copy(child, active) for child in value]
+            return [copy_json(child, active) for child in value]
         raise TypeError(f"unsupported JSON value: {type(value).__name__}")
     finally:
         active.remove(id(value))
@@ -215,7 +215,7 @@ class Record:
                     for o in meta["options"]
                 ):
                     return item.isoformat()
-                return _json_copy(item)
+                return copy_json(item)
 
             data[name] = (
                 [encode(item) for item in value]
@@ -239,7 +239,7 @@ class Record:
 
         if hasattr(self, "_data"):
             raise AttributeError("records are already initialized")
-        data = _json_copy(data)
+        data = copy_json(data)
         _validate_json(self._kind, data).raise_if_invalid()
         object.__setattr__(self, "_data", _freeze(_normalize(self._kind, data)))
 
@@ -266,7 +266,7 @@ class Record:
 
     def to_data(self) -> dict[str, object]:
         """Export a detached JSON-compatible tree, retaining omitted/null/empty fields."""
-        return _json_copy(self._data)
+        return copy_json(self._data)
 
     def has_field(self, name: str) -> bool:
         from rangekeeper.schema.validation import _slot_map

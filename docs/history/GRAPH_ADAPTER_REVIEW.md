@@ -73,7 +73,7 @@ one package would hide those differences rather than reduce maintenance.
 [tabular.numbers](https://github.com/daniel-fink/rangekeeper/blob/6f7764ee9dd97c27373cb5881314b0f6674e5519/src/rangekeeper/workflow/ingestion/tabular.py) fingerprints
 the complete settings Claim lineage by making temporary one-cell Evidence.
 [transform](https://github.com/daniel-fink/rangekeeper/blob/6f7764ee9dd97c27373cb5881314b0f6674e5519/src/rangekeeper/workflow/ingestion/transform.py) and
-[classify_rows](../../src/rangekeeper/adapters/excel/classification.py) record only
+[classify_rows](https://github.com/daniel-fink/rangekeeper/blob/7a0181774edcf29d363822b26cfb8739a467d11b/src/rangekeeper/adapters/excel/classification.py) record only
 its ID. The latter operations also independently assemble derived Claim IDs and
 parents. Extract a small internal Claim-lineage fingerprint helper and shared
 Issue projection/merge support; keep numeric and label policies distinct.
@@ -98,7 +98,7 @@ identity recipes initially, or version any intentional change.
 
 ### 2. Give specification validation one owner per operation
 
-[StepSpec/schema](../../src/rangekeeper/workflow/specification.py) repeat
+[StepSpec/schema](https://github.com/daniel-fink/rangekeeper/blob/7a0181774edcf29d363822b26cfb8739a467d11b/src/rangekeeper/workflow/specification.py) repeat
 operation knowledge across request types, mapping conversion, dependency typing
 and handwritten schemas. Model and check validation use another family of mapping
 validators. A small static operation descriptor could connect parser, input kinds,
@@ -111,7 +111,7 @@ passes, but execution raises `KeyError('table')`. Required fields depend on oper
 kind and are not consistently checked. This violates the intended early-validation
 boundary even though the current Mandarin declarations pass.
 
-The [Excel YAML loader](../../src/rangekeeper/adapters/excel/specification.py) and
+The [Excel YAML loader](https://github.com/daniel-fink/rangekeeper/blob/7a0181774edcf29d363822b26cfb8739a467d11b/src/rangekeeper/adapters/excel/specification.py) and
 workflow loader also duplicate safe-loader/key handling with different alias and
 error policies. Share decoding support only after making those differences explicit.
 The published `schema()` currently covers steps only; decide whether to keep that
@@ -122,9 +122,9 @@ parser/schema agreement; no executable tags, arbitrary imports or expression eng
 
 ### 3. Move source and table policy out of the runner
 
-[runtime.run](../../src/rangekeeper/workflow/runtime.py) implements its own
+[runtime.run](https://github.com/daniel-fink/rangekeeper/blob/7a0181774edcf29d363822b26cfb8739a467d11b/src/rangekeeper/workflow/runtime.py) implements its own
 stopping-marker matcher and table `where` predicate. Excel extraction already owns
-[_matches/_last_row](../../src/rangekeeper/adapters/excel/extraction.py); workflow's
+[_matches/_last_row](https://github.com/daniel-fink/rangekeeper/blob/7a0181774edcf29d363822b26cfb8739a467d11b/src/rangekeeper/adapters/excel/extraction.py); workflow's
 matcher omits the native error/cache guards. Composition conditions and check
 filters independently repeat exact-type comparisons.
 
@@ -141,7 +141,7 @@ distinct; selected Claims and Issue scopes remain unchanged.
 
 ### 4. Decouple composition/checking from workflow and Excel helpers
 
-[composition](../../src/rangekeeper/workflow/composition.py) receives the
+[composition](https://github.com/daniel-fink/rangekeeper/blob/7a0181774edcf29d363822b26cfb8739a467d11b/src/rangekeeper/workflow/composition.py) receives the
 whole WorkflowSpec although it needs model/identity policy and Evidence. Checking
 and rendering import its binding or reference-formatting helpers. Generic Claim
 location traversal lives in `excel.classification`, so graph composition depends on
@@ -166,7 +166,7 @@ decision lineage, exact membership and unavailable comparisons remain intact.
 
 ### 5. Separate reproducibility metadata from semantic identity
 
-[runtime.run](../../src/rangekeeper/workflow/runtime.py) hashes every Python
+[runtime.run](https://github.com/daniel-fink/rangekeeper/blob/7a0181774edcf29d363822b26cfb8739a467d11b/src/rangekeeper/workflow/runtime.py) hashes every Python
 file beneath the installed `rangekeeper` package and feeds that aggregate into configuration and composition
 identities. A renderer-only or docstring edit therefore changes derived Claim IDs.
 It also records a workflow dispatch Operation plus the underlying native Operation

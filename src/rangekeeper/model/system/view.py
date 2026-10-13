@@ -38,7 +38,7 @@ class View:
     ) -> None:
         if not isinstance(model, Model):
             raise TypeError(
-                "model must be a Model; use graph.legacy.View for old Graphs"
+                "model must be a canonical Model"
             )
         if isinstance(entities, (str, bytes)) or isinstance(
             relationships, (str, bytes)
@@ -188,6 +188,23 @@ class View:
                     or edge.classification == relationship_classification
                 )
             ),
+        )
+
+    def quantities(self, key: str, *, units: str, measure: UUID | None = None):
+        """Collect recorded quantities and coverage from this exact Model scope.
+
+        Missing Values and unavailable quantities remain missing contributors.
+        Real zero remains a measured quantity. No completeness policy is applied.
+        """
+        from rangekeeper.model.system.selection import select_value
+        from rangekeeper.model.system.reduction import _collect_quantities
+        from rangekeeper.shared.units import default_units
+
+        select = select_value(key, measure=measure)
+        return _collect_quantities(
+            ((entity, select(self.model, entity)) for entity in self.entities),
+            units,
+            default_units,
         )
 
     def predecessors(self, id: UUID) -> tuple[Entity, ...]:

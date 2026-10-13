@@ -995,7 +995,7 @@ fall into an unrelated `else` branch.
 ### Other serialization and provenance boundaries
 
 Layout uses its own dataclasses and versioned documents. Its current
-[`Problem.document()`](../../../src/rangekeeper/adapters/cytoscape/layout/model.py)
+[`Problem.document()`](https://github.com/daniel-fink/rangekeeper/blob/7a0181774edcf29d363822b26cfb8739a467d11b/src/rangekeeper/adapters/cytoscape/layout/model.py)
 starts with `asdict()`, which will not convert plain enums into JSON strings.
 Add explicit field-aware conversion there and in `from_document()`, including
 the axis inside each order tuple. Preserve v2, v3 and v4 documents and their
@@ -2453,7 +2453,7 @@ Derive the catalogue source version from installed package metadata rather than
 repeating a version literal in runtime code. Retain the existing unit-algorithm
 identity separately from the catalogue dependency identity.
 
-[`workflow/implementation.py`](../../../src/rangekeeper/workflow/implementation.py)
+[`workflow/implementation.py`](https://github.com/daniel-fink/rangekeeper/blob/7a0181774edcf29d363822b26cfb8739a467d11b/src/rangekeeper/workflow/implementation.py)
 currently hashes `_currencies.json` into its implementation manifest. Replace
 that resource dependency with an explicit catalogue fingerprint that includes
 the installed py-moneyed version and a deterministic digest of the supported
@@ -3012,7 +3012,7 @@ for multiply invalid requests; make this ordering explicit in the tests.
 
 Update `graph/projection.py`, its exports, all direct imports/calls of
 `to_tree_table()`, and current examples and guides. Start with the tree projection
-case in [`test_model_consumers.py`](../../../src/tests/test_model_consumers.py), then
+case in [`test_model_consumers.py`](https://github.com/daniel-fink/rangekeeper/blob/7a0181774edcf29d363822b26cfb8739a467d11b/src/tests/test_model_consumers.py), then
 search active source, typing fixtures and notebooks for further callers. Preserve
 unrelated adapter functions also named `to_table()`; they have different input
 contracts and are outside this item.
@@ -5283,7 +5283,7 @@ explicit document-pair contract above; file-count reduction alone is not success
 Keep no forwarding alias or parallel comparison implementation.
 
 Update current domain, record and storage guides, typing/install checks and
-[`workflow/implementation.py`](../../../src/rangekeeper/workflow/implementation.py)'s
+[`workflow/implementation.py`](https://github.com/daniel-fink/rangekeeper/blob/7a0181774edcf29d363822b26cfb8739a467d11b/src/rangekeeper/workflow/implementation.py)'s
 module fingerprint inventory when paths change. Preserve data fingerprints and
 wire contracts; source implementation fingerprints may change. Keep schema
 version changes required by other intents separate from this behaviour-preserving

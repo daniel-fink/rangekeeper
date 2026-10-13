@@ -104,7 +104,7 @@ def main():
                     data = output.get("data", {})
                     if "text/html" in data:
                         data["text/html"] = re.sub(
-                            r'(src=")(resources/|design-output/)',
+                            r'(src=")(?:http://127\.0\.0\.1:[0-9]+/[A-Za-z0-9_-]+/)?(resources/|design-output/)',
                             r"\1../\2",
                             data["text/html"],
                         )

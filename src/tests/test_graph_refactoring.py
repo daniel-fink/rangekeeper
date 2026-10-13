@@ -133,16 +133,11 @@ def test_reduction_preserves_callback_interleaving_and_raw_contributor_order():
 
 
 def test_shared_population_keeps_flat_and_hierarchy_policies_distinct():
-    from rangekeeper.workflow._operands import operand
 
     model, *_ = fixture(amounts=(1e16, 1, -1e16))
-    request = {
-        "kind": "model_total",
-        "value_key": "net",
-        "units": "meter ** 2",
-        "classification": "room",
-    }
-    assert operand(request, None, None, model, {}, {}).value == 0
+    rooms = tuple(e.id for e in model.system.entities if e.classification)
+    population = View(model, entities=rooms).quantities("net", units="meter ** 2")
+    assert sum(q.magnitude for q in population.quantities) == 0
     assert View(model).aggregate(reduction()).root_value.magnitude == 1
 
 
@@ -208,7 +203,6 @@ def test_reducers_have_independent_finite_results_and_empty_errors(reduce):
 
 def test_canonical_classification_lookups_reuse_the_model_index(monkeypatch):
     from rangekeeper.schema.index import RecordIndex
-    from rangekeeper.workflow._operands import operand
 
     model, *_ = fixture()
     view = View(model)
@@ -220,20 +214,4 @@ def test_canonical_classification_lookups_reuse_the_model_index(monkeypatch):
     assert to_table(
         view, columns=(FieldColumn("kind", EntityField.CLASSIFICATION_CODE),)
     ).column("kind") == ("room", "room", "room", None)
-    assert (
-        operand(
-            {
-                "kind": "model_total",
-                "value_key": "net",
-                "units": "m**2",
-                "classification": "room",
-            },
-            None,
-            None,
-            model,
-            {},
-            {},
-            view=view,
-        ).value
-        == 30
-    )
+    assert all(model.classification(e.classification).code == "room" for e in view.entities if e.classification)

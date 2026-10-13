@@ -17,6 +17,11 @@ USE_COLORS = {
     "plant": "#EE6677",
 }
 SERIES_COLORS = ["#4477AA", "#CC6677", "#228833", "#AA3377", "#CCBB44", "#999999"]
+PACKAGE_COLORS = {
+    "Shared plinth": "#999999",
+    "Building A": "#4477AA",
+    "Building B": "#AA3377",
+}
 MODES = {
     "light": {"background": "#FFFFFF", "text": "#292524", "grid": "#E7E5E4"},
     "dark": {"background": "#1C1917", "text": "#D6D3D1", "grid": "#44403C"},

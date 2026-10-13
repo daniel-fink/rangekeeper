@@ -260,9 +260,36 @@ records the source verification scope. The separate
 independent financial reconciliation and local viewer/book review. Notebook 02 is
 now included in `myst.yml`.
 
+## Notebook 03 development assumptions
+
+[Notebook 03](../../examples/walkthrough/development_feasibility.ipynb) turns the
+same design into a fixed development proposal. Its separate
+[development inputs](../../examples/walkthrough/data/mixed_use_property/development.json)
+are teaching assumptions. They are not measurements from the source model or
+current market estimates. The source capture and its manifest remain unchanged.
+
+The base date is 1 January 2027. Construct the shared plinth in 2027, Building A
+in 2028–2029 and Building B in 2030–2031. Each package opens the following January.
+Construction rates apply once to the 33 floor areas and include cores and plant.
+Add soft costs and contingency separately. Periodic renewal CAPEX remains an
+operating-asset expense; it does not substitute for initial construction.
+
+Rebase the inherited rent and operating-cost rates to 2027 without an inflation
+adjustment. Growth follows one calendar, while opening dates gate operations and
+five operating years trigger each renewal. The holding period ends in 2036; sale
+proceeds capitalise forecast 2037 NACF. Land is paid at the base date. Dated project
+NPV excludes financing; the SFFA snapshot and construction funding include a
+separate, fixed finance allowance.
+
+The starting site is available for purchase and has no existing business. The
+baseline is to neither acquire nor build, with zero project cash flows and no
+retained asset. The fixed funding test ends in 2031, before permanent refinancing.
+It checks payment capacity and remaining commitments; it does not calculate
+post-refinance debt repayment or equity IRR. The permanent loan calculated by the
+SFFA snapshot is not construction cash.
+
 ## Decisions deferred to later notebooks
 
-Construction dates, costs and phase boundaries; initial site use; financing and
-funding limits; market drivers and correlations; alternative uses and their
-physical provisions; and decision rules remain explicit later work. Do not infer
-these from the source geometry or the operating-property assumptions above.
+Market drivers and correlations, feasible alternative phase boundaries, use
+changes and their physical provisions, and decision rules remain explicit later
+work. Do not infer them from geometry or the fixed base plan.

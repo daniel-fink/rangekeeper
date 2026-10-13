@@ -1,6 +1,4 @@
 """Canonical Model revisions and schema-derived nested records.
-
-The held Graph predecessor is isolated in rangekeeper.legacy.graph.
 """
 
 from rangekeeper.model.model import Model as Model

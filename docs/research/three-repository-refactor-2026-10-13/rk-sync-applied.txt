@@ -1,0 +1,14 @@
+Resolved 75 packages in 5ms
+   Building rangekeeper @ file:///Volumes/Data/Projects/Rangekeeper
+   Building rangekeeper-examples @ file:///Volumes/Data/Projects/Rangekeeper/examples
+      Built rangekeeper-examples @ file:///Volumes/Data/Projects/Rangekeeper/examples
+      Built rangekeeper @ file:///Volumes/Data/Projects/Rangekeeper
+Prepared 2 packages in 504ms
+Uninstalled 2 packages in 4ms
+warning: Failed to clone files; falling back to full copy. This may lead to degraded performance.
+         If the cache and target directories are on different filesystems, reflinking may not be supported.
+         If this is intentional, set `export UV_LINK_MODE=copy` or use `--link-mode=copy` to suppress this warning.
+Installed 2 packages in 5ms
+ - rangekeeper==0.8.71 (from file:///Volumes/Data/Projects/Rangekeeper)
+ + rangekeeper==0.9.0 (from file:///Volumes/Data/Projects/Rangekeeper)
+ ~ rangekeeper-examples==0.1.0 (from file:///Volumes/Data/Projects/Rangekeeper/examples)

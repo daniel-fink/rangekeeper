@@ -1,3 +1,4 @@
+from rangekeeper.visualisation import graph
 from dataclasses import FrozenInstanceError
 from uuid import uuid4
 
@@ -10,33 +11,12 @@ from rangekeeper.shared.errors import EncodingError
 
 import rangekeeper as rk
 
-adapter = rk.adapters
+from rangekeeper.io import polars
+from rangekeeper.visualisation import chart
 from rangekeeper.shared import table as table_module
 from rangekeeper.model import system
 
 
-def test_supported_adapter_and_table_surfaces_are_explicit():
-    assert adapter.__all__ == [
-        "csv",
-        "cytoscape",
-        "document",
-        "excel",
-        "polars",
-        "plotting",
-        "speckle",
-        "visualization",
-    ]
-    assert table_module.__all__ == ["Row", "Table", "TableError"]
-    for retired in ("json", "SpeckleImportError", "SpeckleConflictError"):
-        assert not hasattr(adapter, retired)
-    assert not hasattr(system, "materialization")
-    for retired in (
-        "MaterializationError",
-        "Snapshot",
-        "SnapshotError",
-        "UnsupportedValueError",
-    ):
-        assert not hasattr(table_module, retired)
 
 
 def test_table_normalizes_and_freezes_columns_and_rows():
@@ -86,8 +66,8 @@ def test_polars_table_round_trip_preserves_columns_rows_and_runtime_values():
         ),
     )
 
-    frame = adapter.polars.to_frame(table)
-    restored = adapter.polars.to_table(frame)
+    frame = polars.to_frame(table)
+    restored = polars.to_table(frame)
 
     assert tuple(frame.columns) == table.columns
     assert restored.columns == table.columns
@@ -98,100 +78,23 @@ def test_polars_table_round_trip_preserves_columns_rows_and_runtime_values():
 def test_polars_adapter_preserves_empty_columns():
     frame = pl.DataFrame(schema={"name": pl.String, "value": pl.Float64})
 
-    table = adapter.polars.to_table(frame)
+    table = polars.to_table(frame)
 
     assert table.columns == ("name", "value")
     assert table.rows == ()
-    assert tuple(adapter.polars.to_frame(table).columns) == table.columns
+    assert tuple(polars.to_frame(table).columns) == table.columns
 
 
-def test_csv_composes_table_and_dataframe_adapters_with_polars_inference(tmp_path):
-    table = table_module.Table(
-        columns=("name", "code", "status", "count", "active", "missing"),
-        rows=(
-            {
-                "name": "Office",
-                "code": "001",
-                "status": "NA",
-                "count": 3,
-                "active": True,
-                "missing": None,
-            },
-        ),
-    )
-    path = tmp_path / "table.csv"
-
-    adapter.csv.write(table, path)
-    restored = adapter.csv.read(path)
-
-    assert restored.columns == table.columns
-    row = restored.rows[0].values
-    assert row["name"] == "Office"
-    assert row["code"] == 1
-    assert row["status"] == "NA"
-    assert row["count"] == 3
-    assert row["active"]
-    assert row["missing"] is None
 
 
-def test_csv_rejects_rich_values_instead_of_stringifying_them(tmp_path):
-    table = table_module.Table(
-        columns=("labels",),
-        rows=({"labels": (("taxonomy", "code"),)},),
-    )
-
-    with pytest.raises(EncodingError, match="tuple"):
-        adapter.csv.write(table, tmp_path / "table.csv")
 
 
-def test_csv_preserves_empty_tables_and_single_column_none_rows(tmp_path):
-    empty = table_module.Table(columns=("name", "value"), rows=())
-    empty_path = tmp_path / "empty.csv"
-    adapter.csv.write(empty, empty_path)
-
-    missing = table_module.Table(columns=("value",), rows=({"value": None},))
-    missing_path = tmp_path / "missing.csv"
-    adapter.csv.write(missing, missing_path)
-
-    assert adapter.csv.read(empty_path) == empty
-    assert adapter.csv.read(missing_path).column("value")[0] is None
 
 
-def test_csv_rejects_non_finite_numbers(tmp_path):
-    table = table_module.Table(
-        columns=("value",),
-        rows=({"value": float("nan")},),
-    )
-
-    with pytest.raises(EncodingError, match="float"):
-        adapter.csv.write(table, tmp_path / "non-finite.csv")
 
 
-def test_csv_accepts_real_scalars_creates_parents_and_returns_path(tmp_path):
-    table = table_module.Table(
-        columns=("integer", "floating", "boolean", "text", "missing"),
-        rows=(
-            {
-                "integer": np.int64(3),
-                "floating": np.float32(1.5),
-                "boolean": False,
-                "text": "value",
-                "missing": None,
-            },
-        ),
-    )
-    target = tmp_path / "nested" / "data.csv"
-
-    assert adapter.csv.write(table, target) == target
-    assert target.read_bytes().endswith(b"\n")
 
 
-@pytest.mark.parametrize("value", (float("inf"), float("-inf"), [1]))
-def test_csv_rejects_unsupported_scalar_boundaries(tmp_path, value):
-    table = table_module.Table(columns=("value",), rows=({"value": value},))
-
-    with pytest.raises(EncodingError):
-        adapter.csv.write(table, tmp_path / "invalid.csv")
 
 
 def visualization_fixture():
@@ -249,7 +152,7 @@ def visualization_fixture():
 def test_graph_html_visualization_writes_the_selected_view(tmp_path):
     view, _ = visualization_fixture()
 
-    path = adapter.visualization.graph_html(view, tmp_path / "graph.html")
+    path = graph.graph_html(view, tmp_path / "graph.html")
 
     contents = path.read_text(encoding="utf-8")
     assert path == tmp_path / "graph.html"
@@ -264,7 +167,7 @@ def test_graph_html_wraps_invalid_json_options(tmp_path, options):
     view, _ = visualization_fixture()
 
     with pytest.raises(EncodingError, match="invalid PyVis options"):
-        adapter.visualization.graph_html(
+        graph.graph_html(
             view,
             tmp_path / "graph.html",
             options=options,
@@ -274,9 +177,9 @@ def test_graph_html_wraps_invalid_json_options(tmp_path, options):
 def test_arborescence_visualizations_return_plotly_traces():
     _, table = visualization_fixture()
 
-    sunburst = adapter.visualization.sunburst(table, value_column="total")
-    treemap = adapter.visualization.treemap(table, value_column="total")
-    icicle = adapter.visualization.icicle(table, value_column="total")
+    sunburst = chart.sunburst(table, value_column="total")
+    treemap = chart.treemap(table, value_column="total")
+    icicle = chart.icicle(table, value_column="total")
 
     assert tuple(sunburst.ids) == ("root", "child")
     assert tuple(sunburst.parents) == ("", "root")
@@ -303,9 +206,9 @@ def test_arborescence_visualization_rejects_rich_or_invalid_values():
     )
 
     with pytest.raises(EncodingError, match="finite"):
-        adapter.visualization.sunburst(rich, value_column="total")
+        chart.sunburst(rich, value_column="total")
     with pytest.raises(EncodingError, match="missing columns"):
-        adapter.visualization.treemap(
+        chart.treemap(
             table_module.Table(columns=("entity_id",), rows=()),
         )
 
@@ -318,7 +221,7 @@ def test_arborescence_visualization_label_fallback_and_validation():
             {"entity_id": "child", "parent_id": "root", "name": None},
         ),
     )
-    trace = adapter.visualization.icicle(table)
+    trace = chart.icicle(table)
     assert tuple(trace.labels) == ("root", "child")
 
     invalid = table_module.Table(
@@ -326,7 +229,7 @@ def test_arborescence_visualization_label_fallback_and_validation():
         rows=({"entity_id": "root", "parent_id": None, "name": 42},),
     )
     with pytest.raises(EncodingError, match="strings"):
-        adapter.visualization.icicle(invalid)
+        chart.icicle(invalid)
 
 
 @pytest.mark.parametrize(
@@ -365,7 +268,7 @@ def test_arborescence_visualization_rejects_invalid_topology(rows, message):
         rows=rows,
     )
     with pytest.raises(EncodingError, match=message):
-        adapter.visualization.treemap(table)
+        chart.treemap(table)
 
 
 @pytest.mark.parametrize("value", (True, -1, float("nan"), float("inf")))
@@ -382,7 +285,7 @@ def test_arborescence_visualization_rejects_invalid_numeric_values(value):
         ),
     )
     with pytest.raises(EncodingError, match="non-negative"):
-        adapter.visualization.sunburst(table, value_column="total")
+        chart.sunburst(table, value_column="total")
 
 
 def test_arborescence_visualization_rejects_child_totals_above_parent():
@@ -399,27 +302,11 @@ def test_arborescence_visualization_rejects_child_totals_above_parent():
         ),
     )
     with pytest.raises(EncodingError, match="below child total"):
-        adapter.visualization.icicle(table, value_column="total")
+        chart.icicle(table, value_column="total")
 
 
-def test_csv_projects_revision_and_entity_uuids_as_text(tmp_path):
-    from rangekeeper.model.system.projection import to_table
-
-    view, _ = visualization_fixture()
-    table = to_table(view)
-    path = adapter.csv.write(table, tmp_path / "model.csv")
-    restored = adapter.csv.read(path)
-    assert restored.column("model_id") == (str(view.model.id), str(view.model.id))
-    assert restored.column("entity_id") == tuple(str(e.id) for e in view.entities)
-    assert all(row.id is None for row in restored.rows)
 
 
-def test_csv_can_preserve_identifier_text(tmp_path):
-    path = tmp_path / "identifiers.csv"
-    path.write_text("code,status\n001,NA\n")
-    assert adapter.csv.read(path, schema_overrides={"code": pl.String}).column(
-        "code"
-    ) == ("001",)
 
 
 def test_polars_keeps_mixed_and_nested_table_cells():
@@ -430,7 +317,7 @@ def test_polars_keeps_mixed_and_nested_table_cells():
             {"mixed": "1", "nested": {"x": 1}},
         ),
     )
-    assert adapter.polars.to_table(adapter.polars.to_frame(table)) == table
+    assert polars.to_table(polars.to_frame(table)) == table
 
 
 def test_table_exports_preserve_large_integers(tmp_path):
@@ -438,9 +325,10 @@ def test_table_exports_preserve_large_integers(tmp_path):
     table = table_module.Table(
         columns=("value",), rows=({"value": integer}, {"value": 1.5})
     )
-    path = adapter.csv.write(table, tmp_path / "large.csv")
+    path = tmp_path / "large.csv"
+    polars.text_frame(table).write_csv(path)
     assert path.read_text().splitlines()[1] == str(integer)
-    restored = adapter.csv.read(path, schema_overrides={"value": pl.String})
+    restored = polars.to_table(pl.read_csv(path, schema_overrides={"value": pl.String}))
     assert restored.column("value") == (str(integer), "1.5")
     huge = table_module.Table(columns=("value",), rows=({"value": 10**40},))
-    assert adapter.polars.to_table(adapter.polars.to_frame(huge)) == huge
+    assert polars.to_table(polars.to_frame(huge)) == huge

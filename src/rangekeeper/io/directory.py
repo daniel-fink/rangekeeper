@@ -7,7 +7,7 @@ from uuid import UUID
 from rangekeeper.shared.errors import MissingReferenceError, DecodeError
 from rangekeeper.shared.arguments import require_uuid
 from rangekeeper.run.validation import validate as validate_run
-from rangekeeper.io._atomic import write_new
+from rangekeeper.io.atomic import write_new
 from rangekeeper.io._document import (
     snapshot,
     require_same,

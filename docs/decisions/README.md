@@ -11,7 +11,8 @@ current after its execution plan moves to history.
 | [ADR-003: computation and evidence](003-computation-and-evidence.md) | Implemented | Known-data calculations, passive formulations, source evidence and independent acceptance |
 | [ADR-004: package and project ownership](004-package-and-project-ownership.md) | Implemented | Domain packages, `src/grasshopper`, examples, tools, docs and local verification |
 | [ADR-005: Flux and Stream implementation](005-flux-and-stream-implementation.md) | Implemented; locally verified | Discoverable mathematical parameter names, Stream DX, `model.flux`, Span methods, Polars calculations, acausal formulations, hierarchy, Specification roles and acceptance |
-| [ADR-006: Walkthrough curriculum](006-walkthrough-curriculum.md) | Notebooks 01–02 locally accepted; later lessons planned | Six lessons combining the legacy property graph, SFFA inverse solving, Garden City uncertainty/flexibility and two-pad decision lessons |
+| [ADR-006: Walkthrough curriculum](006-walkthrough-curriculum.md) | Notebooks 01–03 locally accepted; later lessons planned | Six lessons combining the legacy property graph, SFFA inverse solving, Garden City uncertainty/flexibility and two-pad decision lessons |
+| [ADR-007: Three repository refactor](007-three-repository-refactor.md) | Implemented; local validation recorded | RK modelling and local display; MCP ingestion; Viewer advanced browsing; zero compatibility APIs and predecessor runtimes |
 
 The first three records summarize decisions already supported by the linked
 implementation history. They do not invent an earlier approval date. ADR-004 also
@@ -21,8 +22,10 @@ Relationships are explicit links; a decision can affect several owners.
 ADR-006 includes the [notebook 02 outline and visual requirements](006-notebook-02-outline.md).
 Its [project brief and pinned source package](../guides/mixed-use-project.md) are
 prepared. Notebook 02 is authored, executed and locally reviewed, including its
-geometry viewer, interactive graphs and themed Plotly charts. Later chapters
-still need authoring and acceptance.
+geometry viewer, interactive graphs and themed Plotly charts. The
+[notebook 03 outline](006-notebook-03-outline.md) is also implemented and locally
+verified: a dated development plan, SFFA role changes and construction funding
+checks. Notebooks 04–06 still need authoring and acceptance.
 
 ## Implementation history
 
@@ -35,10 +38,13 @@ still need authoring and acceptance.
 
 ## Work that remains explicit
 
-- The [first walkthrough migration](../research/basic-dcf-2026-10-08/README.md) follows the completed [Flux and Stream codebase acceptance](../research/flux-stream-2026-10-08/README.md). The [agreed curriculum](006-walkthrough-curriculum.md) consolidates the other six source notebooks into five further lessons. It owns the teaching sequence, preparation decisions and capability dependencies. Notebooks 01–02 have local acceptance; notebooks 03–06 still need execution and rendered acceptance.
-- [Windows/Rhino/connector acceptance](../contributing/windows-acceptance.md) remains
-  open. Follow [legacy retirement](../contributing/legacy-retirement.md) before
-  deleting any held predecessor code or tests.
+- The [first walkthrough migration](../research/basic-dcf-2026-10-08/README.md) follows the completed [Flux and Stream codebase acceptance](../research/flux-stream-2026-10-08/README.md). The [agreed curriculum](006-walkthrough-curriculum.md) consolidates the other six source notebooks into five further lessons. It owns the teaching sequence, preparation decisions and capability dependencies. Notebooks 01–03 have local acceptance; notebooks 04–06 still need execution and rendered acceptance.
+- [ADR-007](007-three-repository-refactor.md) records the implemented three-repository
+  split and the paused sessions' restart points. It replaces Windows-dependent
+  predecessor retention with a clean break. See the [validation record](../research/three-repository-refactor-2026-10-13/README.md)
+  and [retirement status](../contributing/legacy-retirement.md).
+  [Windows/Rhino/connector acceptance](../contributing/windows-acceptance.md) remains
+  open for the active canonical connector; removal does not establish platform support.
 - [Verification](../contributing/verification.md) is run explicitly by developers
   and agents. The GitHub workflows are removed; platform and service acceptance
   still require their own recorded results.

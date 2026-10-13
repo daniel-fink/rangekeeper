@@ -81,7 +81,7 @@ and cannot be read back as Models.
 
 ## Polars
 
-`rangekeeper.adapters.polars.to_frame(Table | Flow | Stream)` returns detached columns.
+`rangekeeper.io.polars.to_frame(Table | Flow | Stream)` returns detached columns.
 For Tables, row IDs and Claims remain separate metadata. Homogeneous supported
 scalars use native Polars columns; opaque or mixed cells use Object columns to
 avoid silent coercion. `to_table(frame)` copies frame cells into unidentified Rows.
@@ -97,58 +97,19 @@ A Period-only coordinate requires an explicit timing convention. A recorded paym
 date takes precedence, including when the Movement also has a Period. This projection omits
 movement IDs, matching keys, coverage and Claims; use `to_frame` for interchange.
 
-## CSV
+## Text and CSV projections
 
-`rangekeeper.adapters.csv.write(table, path)` writes a textual projection and
-creates parent directories. UUID cells become text. Unsupported rich cells and
-nonfinite numbers raise `EncodingError`; values are encoded before dataframe
-construction to avoid rounding large integers through inferred numeric columns.
-
-`csv.read(path, *, schema_overrides=None)` uses Polars inference. Empty fields
-become `None`, while `NA` remains text. Preserve leading-zero identifiers with an
-explicit string override:
+Use `rangekeeper.io.polars.text_frame(table)` before writing CSV. It converts supported
+scalar cells to text before Polars can infer a mixed numeric column. This preserves large
+integers. Rich cells and non-finite numbers require an explicit encoding and are rejected.
 
 ```python
 import polars as pl
-from rangekeeper.adapters import csv
-
-table = csv.read("areas.csv", schema_overrides={"code": pl.String})
+from rangekeeper.io import polars
+polars.text_frame(table).write_csv("areas.csv")
+restored = polars.to_table(pl.read_csv("areas.csv", schema_overrides={"code": pl.String}))
 ```
 
-CSV and ordinary dataframe round trips do not restore Row UUIDs, Claims or a Model.
-Export the required evidence separately under an explicit format contract.
-
-## Flow and Stream display
-
-`flow.display(name="Rent")` presents one Flow with the same renderer used by
-Stream. The name defaults to `Flow` and changes only the display label. Both Flow
-and Stream support notebook rich display. Rendering requires the `calculations`
-extra; constructing a display object does not import Polars or IPython.
-
-`Stream({"Rent": rent, "Expenses": expenses}).display()` returns a lazy display
-wrapper. It prepares a detached presentation DataFrame and delegates HTML and
-plain-text rendering to Polars. Notebook rich display uses the same projection.
-Labels and units are shown by default; UUIDs are not. `transpose=True` puts line
-items on rows. `precision=2` changes formatting only. Polars escapes HTML labels.
-`—` means an absent coordinate, `?` means an unknown amount, and a known zero is
-shown as `0.00`. These meanings are documented here and in the walkthrough rather
-than appended as a custom HTML footer.
-
-Display shows the full selection and full labels, with column types and DataFrame
-shape hidden. Its scoped Polars configuration restores the caller's settings on
-success or failure. The private presentation frame holds formatted strings in
-object columns so native HTML does not add literal quotation marks. This frame
-is only for display; it is not used in calculations or numeric exports. No extra
-table-rendering package is required.
-
-Display uses the Stream's alignment policy and does not resample or invent payment
-dates. Period labels describe coverage. Coordinate conflicts identify the lines
-that need explicit alignment or resampling. Use `join=AlignmentJoin.UNION` on the
-Stream to display gaps across compatible coordinates.
-
-`stream.to_frame()` and `polars.to_frame(stream)` return detached numeric line
-columns with `date`, `period_start`, `period_end` and `key` coordinates. Those four
-names are reserved in this projection. Line labels are the numeric column names;
-units remain on the Stream. Absence and unknown amounts both project to null in
-this numeric export; the display and source metadata distinguish them. This is
-not the lossless Flow interchange format described above.
+CSV has no canonical record identity, units or provenance contract. Retain those separately
+or use canonical Model IO. Configure input types explicitly when leading zeroes or text
+values such as `NA` matter.

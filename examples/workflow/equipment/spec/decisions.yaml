@@ -1,7 +1,0 @@
-version: 2
-decisions:
-- id: D1
-  status: accepted
-  text: Use explicit observations; unknown suffix remains unknown.
-  source: review
-  date: '2026-01-01'

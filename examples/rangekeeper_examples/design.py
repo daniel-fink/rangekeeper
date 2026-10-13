@@ -524,54 +524,9 @@ def specify(model: Model) -> Specification:
 
 def fixture() -> Model:
     """Construct a small public synthetic design; no private service data is copied."""
-    from rangekeeper.migration.speckle import MappingSpec, convert_speckle
-
-    namespace = UUID("bce1e752-588a-4c52-a22a-43d4f87cfc9b")
-    ids = {
-        key: str(uuid5(namespace, key))
-        for key in ("property", "space", "floor", "cores")
-    }
-    raw = []
-    for key, kind, fields, children in [
-        ("property", "property", {}, ["space", "cores"]),
-        ("space", "space", {"use": "hotel"}, ["floor"]),
-        ("floor", "floor", {"gfa": 1000, "perimeter": 120, "ftf": 3, "number": 1}, []),
-        ("cores", "utilities", {"volume": 20, "use": "cores"}, []),
-    ]:
-        fields = cast(dict[str, Any], fields)
-        item: dict[str, Any] = {
-            "entityId": ids[key],
-            "name": key,
-            "type": kind,
-            **fields,
-        }
-        item["speckle_type"] = (
-            "Objects.Rangekeeper.Assembly" if children else "Objects.Rangekeeper.Entity"
-        )
-        if children:
-            item["relationships"] = [
-                {"source": None, "target": ids[c], "type": "spatiallyContains"}
-                for c in children
-            ]
-        raw.append(item)
-    result = convert_speckle(
-        {"objects": raw},
-        mapping=MappingSpec(
-            classifications=("property", "space", "floor", "utilities"),
-            relationships=("spatiallyContains",),
-            measurements={
-                "gfa": "meter ** 2",
-                "perimeter": "meter",
-                "ftf": "meter",
-                "volume": "meter ** 3",
-            },
-            properties=("use", "number"),
-        ),
-        revision_id=namespace,
-    )
-    if result.model is None:
-        raise ValueError(result.issues)
-    return result.model
+    from importlib.resources import files
+    from rangekeeper.io import json as codec
+    return codec.loads(files("rangekeeper_examples").joinpath("data/design.json").read_text(), kind=Model)
 
 
 def _contributors(model: Model) -> tuple[UUID, ...]:

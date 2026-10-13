@@ -15,6 +15,7 @@ project:
       children:
         - file: basic_dcf.ipynb
         - file: design_to_value.ipynb
+        - file: development_feasibility.ipynb
 site:
   template: book-theme
   options:

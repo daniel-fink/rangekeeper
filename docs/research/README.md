@@ -21,3 +21,7 @@ The [MiniZinc evidence](full-migration/minizinc/README.md) and
 - [Notebook 02 condensation — 2026-10-13](notebook-02-2026-10-13/README.md): eight sections, shared presentation helpers, fewer repeated visuals, unchanged financial results and refreshed local-book review.
 
 - [Plotly walkthrough style — 2026-10-13](plotly-walkthrough-2026-10-13/README.md): shared light/dark chart style, editable Plotly adapters, responsive local embeds and notebook/book validation.
+
+- [Notebook 03 acceptance — 2026-10-13](notebook-03-2026-10-13/README.md): fixed development plan, SFFA forward/inverse solves, independent cash-flow and funding checks, and a four-page local book.
+
+- [Three-repository refactor — 2026-10-13](three-repository-refactor-2026-10-13/README.md): owner boundaries, installed-package tests, walkthroughs, Rhino checks and required consumer migration.

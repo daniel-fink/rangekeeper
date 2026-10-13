@@ -130,7 +130,7 @@ such as summation or integration express the intended quantity.
 
 `Flow.display()` and notebook rich display use the shared Stream table renderer.
 The optional `name` labels the table only; it does not add a field to the Flow.
-See [table display](tables.md#flow-and-stream-display) for formatting and missing states.
+See [table display](tables.md) for formatting and missing states.
 
 `Distribution.cdf` is the cumulative distribution function. `mass` returns interval
 probabilities. Samples use the declared units and advance only the supplied NumPy

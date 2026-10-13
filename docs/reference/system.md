@@ -159,10 +159,10 @@ an index. See [the consumer guide](tables.md) for examples and errors.
 Graph inputs. New records come from `rangekeeper.model`. See [tables](tables.md) and [source workflows](workflow.md)
 for consumers of these views.
 
-The old Graph domain, its View, table projection and JSON codec are isolated in
-`rangekeeper.legacy.graph` for the Windows migration/retirement gate.
-They do not sit behind the new constructors. No implicit Graph-to-Model conversion
-exists. The new adapters and source workflows do not import the old domain.
+The old Graph domain, its View, table projection and JSON codec were removed under
+[ADR-007](../decisions/007-three-repository-refactor.md). No implicit Graph-to-Model
+conversion or compatibility constructors remain. Source ingestion belongs to
+Whirlwind MCP; it produces the canonical Model through public RK APIs.
 
 ## Flow hierarchy reduction
 

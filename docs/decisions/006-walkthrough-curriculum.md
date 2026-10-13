@@ -1,6 +1,6 @@
 # ADR-006 Walkthrough curriculum and implementation plan
 
-Status: agreed curriculum; notebooks 01–02 accepted locally; later lessons planned. Recorded 2026-10-12.
+Status: agreed curriculum; notebooks 01–03 accepted locally; later lessons planned. Updated 2026-10-13.
 
 Retain the accepted Basic DCF notebook and build five further lessons around one
 continuing project. Use the legacy Rangekeeper mixed-use property for its objects,
@@ -128,12 +128,19 @@ Let the reader change one use assumption and trace its effect while geometry sta
 
 ### 03 A development plan and its financial limits
 
+The [chapter outline](006-notebook-03-outline.md) records the section sequence,
+code and visual aids. [Notebook 03](../../examples/walkthrough/development_feasibility.ipynb)
+is authored, executed and locally reviewed; its [acceptance record](../research/notebook-03-2026-10-13/README.md)
+includes independent arithmetic and forward/inverse checks. The separate
+[development inputs](../../examples/walkthrough/data/mixed_use_property/development.json)
+resolve dates, costs, the starting state, funding and valuation conventions.
+
 Turn the proposed completed property into a development problem. Begin with fixed
 construction and opening dates for the shared works and the two buildings.
 
 **Worked problems.** Build the base plan and dated base-case cash flows. Then ask
-the SFFA-style forward question: given costs, finance assumptions and required
-returns, what income is required? Reverse it: given market-supported income, what
+the SFFA-style forward question: given costs, loan terms and debt-coverage
+requirements, what income is required? Reverse it: given market-supported income, what
 cost or land price is supportable? Finally, examine too many unknowns and
 incompatible requirements.
 
@@ -308,8 +315,6 @@ references again before implementation because these limits can change.
 
 | Decision | Required before |
 | --- | --- |
-| Base dates, construction and opening sequence, quantities and cost assumptions | Authoring notebook 03 |
-| Starting site condition, interim use, wait baseline, funding and valuation conventions | Authoring notebook 03 |
 | Selected market drivers, correlations, calibration and shared scenario set | Authoring notebook 04 |
 | Feasible phase boundaries, shared infrastructure requirements and commitment rules | Authoring notebook 05 |
 | Building B alternative use, required provisions, premium and conversion constraints | Authoring notebook 06 |
@@ -344,7 +349,8 @@ Record each resolved assumption beside its source and propagate it consistently.
 | Notebook 02 detailed outline and visual requirements | Agreed; recorded in the linked chapter outline |
 | Project brief and complete pinned source model | Prepared and locally verified on 2026-10-12; source and geometry-summary checks recorded |
 | Notebook 02 | Authored, executed and locally reviewed; evidence linked above |
-| Notebooks 03–04 | Planned; detailed outlines, authoring and acceptance pending |
+| Notebook 03 | Authored, executed and locally reviewed on 2026-10-13; evidence linked above |
+| Notebook 04 | Planned; detailed outline, authoring and acceptance pending |
 | Sequential and structural capability work | Design and acceptance pending |
 | Notebooks 05–06 | Planned; dependent on capability work |
 | Complete local book | Pending chapter-by-chapter acceptance |

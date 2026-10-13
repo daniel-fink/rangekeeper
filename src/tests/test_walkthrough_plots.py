@@ -28,7 +28,10 @@ def test_walkthrough_export_preserves_figure_and_packages_theme(monkeypatch, tmp
         assert styled.data[0].line.color == "#AA3377"
         assert styled.layout.xaxis.title.text == "Year"
     frame = show_plot(figure, path=tmp_path / "cash.html")
-    assert frame.src == (tmp_path / "cash.html").as_posix()
+    from urllib.request import urlopen
+
+    assert frame.src.startswith("http://127.0.0.1:")
+    assert urlopen(frame.src).read() == (tmp_path / "cash.html").read_bytes()
     assert figure.to_json() == source
     assert pio.templates.default == default
     html = (tmp_path / "cash.html").read_text()

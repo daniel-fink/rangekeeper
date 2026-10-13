@@ -82,7 +82,7 @@ def generate():
             ]
         lines += ["}", ""]
     contract = json.loads(
-        (ROOT / "src/rangekeeper/adapters/speckle/contract.json").read_text()
+        (ROOT / "src/rangekeeper/io/speckle_contract.json").read_text()
     )
     constants = [
         "// Generated from the shared Speckle envelope contract.",
@@ -113,7 +113,7 @@ def generate():
             SOURCE / "slots.json",
             SOURCE / "schema.json",
             Path(__file__),
-            ROOT / "src/rangekeeper/adapters/speckle/contract.json",
+            ROOT / "src/rangekeeper/io/speckle_contract.json",
         ]
     }
     result["manifest.json"] = (
