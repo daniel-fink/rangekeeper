@@ -53,6 +53,13 @@ That release label does not replace its exact specification version/hash or sour
 content digest. Future providers must fit the same Geometry boundary; unsupported
 formats require an explicit result, not an implicit Speckle fallback.
 
+The [Entity mapping contract](../decisions/008-sqlite-model-package.md#entity-to-source-element-mappings)
+limits RK endpoints to Entities, including Assemblies, and source endpoints to
+objects or permitted structural groups. Keep property/relation evidence in the
+existing provenance structure. The new Parquet mapping must derive from this
+schema and preserve complete Model content; DuckDB and Payload do not define a
+second canonical schema. Step A must provide shared reconstruction/query fixtures.
+
 The current LinkML Model has no Geometry or Speckle-specific Package fields.
 Implementing this extension, its generated artifacts and its migration remains
 ADR-008 step A. A terminology update does not establish new wire-format support.
