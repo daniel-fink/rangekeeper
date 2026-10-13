@@ -21,6 +21,7 @@ from rangekeeper.schema.records import (
     Formulation,
     Claim,
     Source,
+    Classification,
 )
 from rangekeeper.schema.validation import document_version
 from rangekeeper.shared.errors import UnsupportedVersionError
@@ -136,6 +137,10 @@ class Model:
 
     def __repr__(self) -> str:
         return f"Model(id={self.id!r}, declarations={len(self._index.records) - 1})"
+
+    def classification(self, id: UUID) -> Classification:
+        """Resolve a Classification in this exact Model revision."""
+        return self._index.get(id, Classification)
 
     def entity(self, id: UUID) -> Entity:
         """Resolve an Entity or canonical Assembly; no code/name or history fallback."""

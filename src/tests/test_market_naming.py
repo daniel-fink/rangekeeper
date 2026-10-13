@@ -15,7 +15,6 @@ from rangekeeper.model import Model, Metadata, Binding
 
 from rangekeeper.model.duration import make_periods, Frequency
 from rangekeeper.model.scenario import market, Market, replay, ReplayUnavailableError
-from rangekeeper.migration import upgrade_scenario_names
 
 FIXTURE = Path(__file__).parent / "fixtures/scenarios/market-v1.json"
 RENAMES = {
@@ -104,68 +103,3 @@ def test_market_view_is_revision_pinned_and_has_named_values():
     assert [m.magnitude for m in rents] == pytest.approx(
         [(1 + c.magnitude) * v.magnitude for c, v in zip(cycle, levels)]
     )
-
-
-def test_upgrade_and_seeded_generation_preserve_original_paths():
-    before = json.loads(FIXTURE.read_text())
-    original = deepcopy(before)
-    upgraded = upgrade_scenario_names(before, revision_id=UUID(int=999))
-    assert before == original
-    assert str(upgraded.metadata.previous) == before["metadata"]["id"]
-
-    def current_periods(value):
-        result = deepcopy(value)
-        for movement in (result.get("flow") or {}).get("movements", ()):
-            if movement.get("period") is not None:
-                period = movement["period"]
-                period["start_inclusive"] = period.pop("start")
-                period["end_exclusive"] = period.pop("end")
-        return result
-
-    old_values = {
-        v["id"]: current_periods(v)
-        for f in before["system"]["formulations"]
-        for v in f["values"]
-    }
-    for identity, value in old_values.items():
-        after = upgraded.value(UUID(identity)).to_data()
-        if after.get("flow") is not None:
-            for movement in after["flow"]["movements"]:
-                UUID(movement.pop("id"))
-        assert {k: v for k, v in after.items() if k != "key"} == {
-            k: v for k, v in value.items() if k != "key"
-        }
-    with pytest.raises(ReplayUnavailableError):
-        replay(upgraded)
-    replayed = Market(upgraded, upgraded.provenance.scenarios[0])
-    old_record = before["provenance"]["scenarios"][0]
-    assert [s.identifier for s in replayed.realization.streams] == [
-        s["identifier"] for s in old_record["streams"]
-    ]
-    fresh = market.generate(
-        root(),
-        plan(
-            parameters={
-                "volatility_per_period": Distribution.uniform(lower=0.02, upper=0.05)
-            }
-        ),
-        scenario_keys=["naming-reference"],
-    )[0]
-    for binding in old_record["outputs"]:
-        generated = fresh.resolve_output(
-            RENAMES.get(binding["name"], binding["name"])
-        ).flow
-        stored = old_values[binding["value"]]["flow"]
-        assert [
-            {k: v for k, v in m.to_data().items() if k != "id"}
-            for m in generated.movements
-        ] == [{k: v for k, v in m.items() if k != "id"} for m in stored["movements"]]
-        assert generated.units == stored["units"]
-    assert (
-        fresh.resolve_input("volatility_per_period").quantity
-        == replayed.resolve_input("volatility_per_period").quantity
-    )
-    with pytest.raises(ValueError, match="new revision"):
-        upgrade_scenario_names(before, revision_id=UUID(before["metadata"]["id"]))
-    with pytest.raises(ValueError, match="v1"):
-        upgrade_scenario_names(upgraded.to_data())

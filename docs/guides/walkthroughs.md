@@ -18,11 +18,17 @@ records the eight-section revision and presentation helpers. The six legacy sour
 stored outputs do not establish current API acceptance.
 The [Plotly style acceptance](../research/plotly-walkthrough-2026-10-13/README.md)
 records the shared chart theme, updated adapters and light/dark book review.
+[Notebook 03](../../examples/walkthrough/development_feasibility.ipynb) adds a fixed
+development plan, SFFA forward/inverse solving and construction funding checks.
+Its [acceptance record](../research/notebook-03-2026-10-13/README.md) includes
+independent cash-flow arithmetic, actual solver diagnostics and rendered charts.
 
 The [agreed walkthrough curriculum](../decisions/006-walkthrough-curriculum.md)
 retains notebook 01 and consolidates the other six sources into five further
 lessons. It records the teaching objectives, continuing property example, source
-references, open assumptions and library capability dependencies. The later lessons remain planned; the book configuration below remains the chapter acceptance list.
+references, open assumptions and library capability dependencies. Notebooks
+04–06 remain planned; the book configuration below remains the chapter acceptance
+list.
 
 For notebook 02 preparation, use the [detailed outline](../decisions/006-notebook-02-outline.md)
 and [mixed-use project brief](mixed-use-project.md). The complete legacy source
@@ -68,13 +74,13 @@ repository root, with the candidate-wheel environment active:
 
 ```sh
 mkdir /tmp/rk-notebooks-001
-cp examples/walkthrough/basic_dcf.ipynb examples/walkthrough/design_to_value.ipynb /tmp/rk-notebooks-001/
+cp examples/walkthrough/basic_dcf.ipynb examples/walkthrough/design_to_value.ipynb examples/walkthrough/development_feasibility.ipynb /tmp/rk-notebooks-001/
 cp -R examples/walkthrough/data /tmp/rk-notebooks-001/data
 cp -R examples/walkthrough/resources /tmp/rk-notebooks-001/resources
 cp -R examples/walkthrough/_static /tmp/rk-notebooks-001/_static
 cp -R examples/walkthrough/helpers /tmp/rk-notebooks-001/helpers
 cd /tmp/rk-notebooks-001
-MPLBACKEND=Agg RK_SCENARIO_COUNT=4 RK_DESIGN_MODE=fixture python -m nbconvert --execute --to notebook --inplace --ExecutePreprocessor.timeout=6000 basic_dcf.ipynb design_to_value.ipynb
+MPLBACKEND=Agg RK_SCENARIO_COUNT=4 RK_DESIGN_MODE=fixture python -m nbconvert --execute --to notebook --inplace --ExecutePreprocessor.timeout=6000 basic_dcf.ipynb design_to_value.ipynb development_feasibility.ipynb
 ```
 
 Use a registered kernel for that environment, or supply its name through
@@ -83,8 +89,9 @@ name selects the candidate-wheel environment. Inspect execution errors, tables,
 figures, mode declarations and expected financial results. Preserve the outputs
 with the acceptance result.
 
-Execute `basic_dcf.ipynb` and `design_to_value.ipynb` by name instead of using
-`*.ipynb`. Expand acceptance to later chapters after their migration.
+Execute `basic_dcf.ipynb`, `design_to_value.ipynb` and
+`development_feasibility.ipynb` by name instead of using `*.ipynb`. Expand
+acceptance to later chapters after their migration.
 
 ## Design example conventions
 
@@ -108,8 +115,9 @@ book theme and web dependencies. The current acceptance used Node.js 24.
 
 [`myst.yml`](../../examples/walkthrough/myst.yml) is the single book configuration
 and chapter acceptance list. It currently includes the introduction,
-`basic_dcf.ipynb` and `design_to_value.ipynb`. Add a later chapter only after updating its code and teaching
-content, executing it in a fresh kernel and reviewing its rendered output.
+`basic_dcf.ipynb`, `design_to_value.ipynb` and `development_feasibility.ipynb`.
+Add a later chapter only after updating its code and teaching content, executing
+it in a fresh kernel and reviewing its rendered output.
 The other six sources and the historical tracked v1 site remain available.
 
 Build from the freshly executed notebook directory. With the locked book
@@ -151,8 +159,10 @@ Rangekeeper Plotly adapters; financial selection and calculations remain in the
 notebook. Copy `helpers/` with the notebooks when executing in a separate directory.
 The build compares all helper sources, including JavaScript, with the executed copy and includes them in
 the staged and served book. Notebook 02 writes interactive figures to
-`design-output/notebook-02/`. The build copies those artifacts, the source `data/`
-and geometry resources into the static site. It adjusts local output iframe paths
+`design-output/notebook-02/`. Notebook 03 writes its figures, result tables and
+canonical records to `design-output/notebook-03/`; each run uses a new Model
+revision directory for immutable record exports. The build copies those artifacts,
+the source `data/` and geometry resources into the static site. It adjusts local output iframe paths
 only in the staged notebook; authored code and native Polars HTML remain unchanged.
 The source notebook keeps its executed outputs and generated figures for local
 inspection without a kernel. Re-execution recreates the graph and chart files.
@@ -167,7 +177,10 @@ in a cell or pass it to `display()`. Assignment alone does not display the chart
 
 [`helpers/theme.py`](../../examples/walkthrough/helpers/theme.py) defines the
 shared `plotly_white`/`plotly_dark` styles, fonts, controls and colour palettes.
-Use colours remain fixed across the hierarchy charts. Line charts also use
+Use colours remain fixed across the hierarchy charts. Package colours remain
+fixed in the development timeline. `show_timeline()` displays supplied dates;
+`show_relations()` derives its edges from the actual equations and lets the reader
+switch Specification roles without changing the relationships. Line charts also use
 different dashes and markers. Helpers apply the style to a copy of the Figure.
 
 The local HTML embeds share a Plotly bundle in their output directory. A small
@@ -188,7 +201,7 @@ To review a candidate without adding it to the accepted TOC, pass
 execution-count and error checks. Add the source to `myst.yml` only after review.
 
 The local geometry view uses the official Speckle SDK with pinned in-memory source
-records. Its [small host and build procedure](../../tools/docs/property_viewer/README.md)
+records. Its [small host and build procedure](https://github.com/daniel-fink/whirlwind-viewer/blob/main/local/geometry/README.md)
 keep the viewer bundle local. The chapter uses interactive geometry without repeated
 static mesh images. `tools/docs/render_property.py` remains available to recreate
 the reference images. Graph, chart and geometry selections are independent. The original
@@ -199,3 +212,12 @@ localhost and does not update GitHub Pages.
 
 See [examples](examples.md), [upgrading](upgrading.md) and
 [verification](../contributing/verification.md) for related procedures.
+
+## Live notebook display
+
+The walkthrough helpers start `visualisation.local.LocalDisplay` for the explicit working
+directory. It serves read-only files on loopback with a random URL prefix and no directory
+listing. It stops when the kernel closes. This avoids JupyterLab's file-URL query rewriting
+and HTML sandbox restrictions. The saved notebook's display links work while its kernel
+runs; execute the cells again after restarting it. The book builder converts only these
+local resource/output URLs to relative links, so the published book needs no Python server.

@@ -3,9 +3,9 @@
 import json as _json
 from pathlib import Path
 
-from rangekeeper.schema.runtime import _json_copy
+from rangekeeper.schema.runtime import copy_json
 from rangekeeper.shared.errors import DecodeError
-from rangekeeper.io._atomic import write_new
+from rangekeeper.io.atomic import write_new
 from rangekeeper.io._document import restore, require_kind, snapshot
 from rangekeeper.io.store import Document, D
 
@@ -27,7 +27,7 @@ def _parse(text: str) -> object:
         raise DecodeError(f"non-JSON number: {value}")
 
     try:
-        return _json_copy(
+        return copy_json(
             _json.loads(text, object_pairs_hook=unique, parse_constant=constant)
         )
     except (ValueError, TypeError) as error:

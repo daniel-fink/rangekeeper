@@ -391,58 +391,6 @@ def test_preparation_deadline_and_constraint_limit_prevent_backend_call(monkeypa
     assert any(d.code == "attempt_deadline" for d in run.report.diagnostics)
 
 
-def test_explicit_draft_upgrade_preserves_order_and_requires_new_pins():
-    import copy
-    from rangekeeper.migration import upgrade_model, upgrade_specification
-
-    model, ids = oracle()
-    old = model.to_data()
-    old["metadata"]["schema_version"] = "0.4.0"
-
-    def unwrap(node):
-        if isinstance(node, dict):
-            if "start_inclusive" in node and "end_exclusive" in node:
-                node["start"] = node.pop("start_inclusive")
-                node["end"] = node.pop("end_exclusive")
-            if node.get("kind") == "reference":
-                node["target"] = node["target"]["target"]
-            for value in node.values():
-                unwrap(value)
-        elif isinstance(node, list):
-            for value in node:
-                unwrap(value)
-
-    # A pre-Flow-expression document: remove equations rather than inventing an
-    # old scalar encoding for references that never existed in that contract.
-    old["system"]["formulations"] = []
-    unwrap(old)
-    before = copy.deepcopy(old)
-    upgraded = upgrade_model(old)
-    assert old == before and upgraded.metadata.previous == model.id
-    assert upgraded.value(ids["cash"]).flow == model.value(ids["cash"]).flow
-    scalar_spec = dict(
-        metadata=dict(id=str(uuid4()), schema_version="0.4.0"),
-        model=old["metadata"]["id"],
-        assignments=[
-            dict(
-                value=str(ids["rate"]),
-                quantity=dict(magnitude=0.1, units="dimensionless"),
-            )
-        ],
-        unknowns=[str(ids["initial"])],
-    )
-    with pytest.raises(ValueError, match="explicitly"):
-        upgrade_specification(scalar_spec)
-    spec = upgrade_specification(scalar_spec, model=upgraded.id)
-    assert spec.record.assignments[0].target == Reference(target=ids["rate"])
-    assert spec.record.unknowns == (Reference(target=ids["initial"]),)
-    assert spec.record.model == upgraded.id
-    assert (
-        spec.metadata.previous == scalar_spec["metadata"]["id"]
-        or str(spec.metadata.previous) == scalar_spec["metadata"]["id"]
-    )
-    with pytest.raises(ValueError, match="new revision"):
-        upgrade_model(old, revision_id=model.id)
 
 
 def test_finite_balance_interest_scaling_sum_and_explicit_reversion_mapping():

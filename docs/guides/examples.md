@@ -4,7 +4,7 @@ Maintained examples live in [`examples/`](../../examples). Install the library
 and the example builders from the same checkout. From the repository root:
 
 ```sh
-python -m pip install '.[calculations,execution,visualization,workflow]' ./examples
+python -m pip install '.[calculations,execution,visualisation]' ./examples
 ```
 
 The `rangekeeper-examples` distribution supplies `rangekeeper_examples`. It is a
@@ -23,23 +23,28 @@ Install the matching library and the extras each example needs.
 | Directory | Contents |
 | --- | --- |
 | [`walkthrough/`](../../examples/walkthrough) | Seven notebook sources, book configuration and teaching resources; see [walkthroughs](walkthroughs.md) |
-| [`rangekeeper_examples/`](../../examples/rangekeeper_examples) | Shared design and investment builders, plus synthetic layout cases |
+| [`rangekeeper_examples/`](../../examples/rangekeeper_examples) | Shared design and investment builders |
 | [`schema/`](../../examples/schema) | Complete wire documents and smaller syntax fragments, described below |
-| [`workflow/`](../../examples/workflow) | Synthetic equipment/accommodation configurations and source-to-solver example; see [source workflows](source-workflows.md) |
-| [`ingestion/`](../../examples/ingestion) | Synthetic Excel extraction and source Evidence examples |
+| [`workflow/`](https://github.com/daniel-fink/whirlwind-mcp/tree/main/examples/workflow) | Synthetic equipment/accommodation configurations and source-to-solver example; see [source workflows](source-workflows.md) |
+| [Whirlwind ingestion examples](https://github.com/daniel-fink/whirlwind-mcp/tree/main/examples/ingestion) | Synthetic Excel extraction and source Evidence examples |
 | [`execution/`](../../examples/execution) | Forward and inverse valuation using the wire documents |
 | [`grasshopper/`](../../examples/grasshopper) | Rhino source and Grasshopper definitions; see [Grasshopper](grasshopper.md) |
 
 ## Run standalone examples
 
-Run from the repository root. Output directories must be fresh. The Excel example
-creates a temporary synthetic workbook by default.
+Run the modelling example from the RK repository root with a fresh output directory:
 
 ```sh
-python examples/ingestion/ingestion_evidence.py
-python examples/ingestion/excel_ingestion.py
 python examples/execution/valuation.py --examples examples/schema --output /tmp/rk-valuation
-python examples/workflow/scalar.py --output /tmp/rk-source-solve
+```
+
+Run source examples from the Whirlwind MCP checkout. The Excel example creates a
+synthetic workbook in a temporary directory:
+
+```sh
+uv run python examples/ingestion/ingestion_evidence.py
+uv run python examples/ingestion/excel_ingestion.py
+uv run python examples/workflow/scalar.py --output /tmp/rk-source-solve
 ```
 
 ## Wire examples and fixtures

@@ -7,8 +7,7 @@ presence-preserving serialization, authoring, composition and diagnostics. The
 Components project uses the installed RhinoCommon, Grasshopper and GH_IO
 assemblies. Dependencies are pinned in project files and lockfiles.
 
-This independent source project is outside the Python package. Python adapters
-remain under `src/rangekeeper/adapters/`. See the
+This independent source project is outside the Python package. Canonical IO and simple local display remain in `io` and `visualisation`. See the
 [architecture](../concepts/architecture.md) for the repository map and
 [design transport](../reference/design-transport.md) for the shared envelope.
 
@@ -46,34 +45,21 @@ separate collections, immutable access and ordered mathematics through both
 language boundaries. Use a fresh output directory and record the source and
 runtime versions.
 
-## Check the Rhino example
+## Check generic authoring in Rhino
 
-The macOS Debug build produces
-`src/grasshopper/Components/bin/Debug/net8.0/Rangekeeper.Components.gha` and its
-adjacent dependencies. Load the current build into a fresh Rhino 8 process.
-After replacing an assembly, fully close Rhino and restart it to avoid checking
-an already loaded binary.
+Set `RK_COMPONENTS` to the current RK component assembly and `RK_ACCEPTANCE_OUTPUT`
+to a new output directory. Run [the generic driver](../../src/grasshopper/Tests/accept_rhino.py)
+inside a fresh Rhino 8 process. It checks stable identity, changed revisions, previous
+revision links and save/reopen behaviour. It loads no source reader or Whirlwind assembly.
 
-Run [`Tests/accept_rhino.py`](../../src/grasshopper/Tests/accept_rhino.py) with Rhino's
-`RunPythonScript`. It builds, saves, reopens and recomputes
-[`exampleDesignCanonical.ghx`](../../examples/grasshopper/exampleDesignCanonical.ghx).
-It reads the original [`exampleDesign.3dm`](../../examples/grasshopper/exampleDesign.3dm)
-without changing it. The current driver loads the Debug assembly and writes
-acceptance artifacts under `/private/tmp`; those paths are macOS-specific.
-Windows needs explicit local output paths before using this driver.
+The source-specific `DesignExampleComponent` belongs to the optional `integrations/rhino`
+project in Whirlwind MCP. Its separate driver takes explicit source and output paths and
+loads both current assemblies. The original `.3dm` and GHX files here remain source evidence.
+Generate a new executable definition with the MCP driver; do not treat the retained old
+GHX assembly metadata as an installed compatibility contract. Windows host checks remain pending.
 
-The canonical definition contains two input panels and three new RK components.
-It needs no EleFront, old RK component, SDK object or service account. The example
-interprets only the reviewed `complex::*` geometry and explicit floor elevations
-in metres. It retains all 33 floor slices, three utility objects, nine space
-volumes and the shared service scope. Context geometry stays external.
-
-Compare canonical content and geometry associations against the retained
-[design comparison](../research/full-migration/turn3/rhino-comparison.json), not
-counts alone. New UUIDs derive from stable Rhino identities and coordinates.
-Historical transport conversion retains its original domain UUIDs, so acceptance
-must record their explicit correspondence. The old comparison scripts belong to
-their captured checkpoint; do not treat them as current API examples.
+The current [generic authoring definition](../../examples/grasshopper/genericAuthoring.ghx)
+uses only RK 0.9.0 components. The source definition is in MCP.
 
 ## Authoring and identity
 

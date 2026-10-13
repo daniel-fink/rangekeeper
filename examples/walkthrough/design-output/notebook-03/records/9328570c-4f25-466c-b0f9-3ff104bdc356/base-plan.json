@@ -1,0 +1,115 @@
+{
+  "name": "Mixed-use development base plan",
+  "status": "Illustrative teaching inputs, not market estimates or source geometry facts",
+  "version": 1,
+  "currency": "AUD",
+  "base_date": "2027-01-01",
+  "horizon_end_exclusive": "2037-01-01",
+  "stabilised_year": 2032,
+  "starting_state": "Undeveloped site available for purchase; no site control, interim income or existing business",
+  "wait_baseline": "Do not acquire or build: zero project cash flows and no retained asset",
+  "operating_inputs": "assumptions.json; retained numerical rates rebased to 2027, without a market or inflation adjustment",
+  "growth_convention": "One calendar from 2027; operating income and OPEX start only when each package opens",
+  "land_cost_AUD": 20000000,
+  "construction_AUD_per_m2": {
+    "hotel": 3000,
+    "residential": 2600,
+    "retail": 2400,
+    "parking": 1000
+  },
+  "construction_scope": "Floor-area rates include the building cores and shared plant. No additional utility-volume construction charge. Each of the 33 floor UUIDs contributes once.",
+  "soft_cost_fraction_of_hard_cost": 0.1,
+  "contingency_fraction_of_hard_cost": 0.1,
+  "cost_escalation": 0,
+  "construction_finance_allowance_AUD": 4000000,
+  "construction_finance_payment_date": "2031-12-31",
+  "finance_allowance_scope": "Fixed teaching allowance for construction finance charges; not a calculated interest schedule. Included in SFFA cost and funding, excluded from unlevered project NPV.",
+  "renewal_interval_years": 5,
+  "renewal_convention": "First renewal at end of fifth operating year, then every five years. Legacy 3.5% growth per payment interval, not annual compounding.",
+  "valuation": {
+    "annual_discount_rate": 0.07,
+    "exit_capitalization_rate": 0.05,
+    "sale_date": "2036-12-31",
+    "sale_basis": "2037 net after-capital cash flow, including renewal expenditure due in that year"
+  },
+  "lending": {
+    "leverage": 0.65,
+    "coverage": 1.25,
+    "nominal_annual_mortgage_rate": 0.06,
+    "payments_per_year": 12,
+    "amortization_years": 20,
+    "basis": "SFFA threshold: total development cost is a proxy for completed value"
+  },
+  "funding": {
+    "equity_AUD": 50000000,
+    "bridge_limit_AUD": 65000000,
+    "draws_AUD_by_year": {
+      "2027": 20000000,
+      "2028": 15000000,
+      "2029": 15000000,
+      "2030": 15000000,
+      "2031": 0
+    },
+    "draw_timing": "Start of year, before construction payments at year end",
+    "test_through_year": 2031,
+    "permanent_finance_earliest_date": "2032-01-01",
+    "scope": "Construction-period cash diagnostic; no equity IRR, permanent loan repayment or interest optimisation"
+  },
+  "phases": [
+    {
+      "name": "Shared plinth",
+      "object_id": "0a0a97ef-431d-471d-bc33-ace7e7df5fcb",
+      "start": "2027-01-01",
+      "open": "2028-01-01",
+      "payment_years": [
+        2027
+      ],
+      "payment_weights": [
+        1.0
+      ],
+      "requires": []
+    },
+    {
+      "name": "Building A",
+      "object_id": "5ebb9736-5f18-4103-a5a4-040cd2e9b019",
+      "start": "2028-01-01",
+      "open": "2030-01-01",
+      "payment_years": [
+        2028,
+        2029
+      ],
+      "payment_weights": [
+        0.5,
+        0.5
+      ],
+      "requires": [
+        "Shared plinth"
+      ]
+    },
+    {
+      "name": "Building B",
+      "object_id": "a1e00481-e51e-47c5-b629-8b214c0900bd",
+      "start": "2030-01-01",
+      "open": "2032-01-01",
+      "payment_years": [
+        2030,
+        2031
+      ],
+      "payment_weights": [
+        0.5,
+        0.5
+      ],
+      "requires": [
+        "Shared plinth"
+      ]
+    }
+  ],
+  "exclusions": [
+    "Tax and transaction costs",
+    "Land holding expenses before opening",
+    "Lease-up beyond the opening gate",
+    "Cost escalation",
+    "Explicit equity return requirement",
+    "Endogenous timing or design choices"
+  ]
+}

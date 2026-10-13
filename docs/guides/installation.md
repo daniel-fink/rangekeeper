@@ -1,7 +1,6 @@
 # Install Rangekeeper
 
-Rangekeeper provides immutable `Model`, `Specification` and `Run` records, source
-workflows, Model-backed graph operations, numerical calculations and Pyomo/HiGHS
+Rangekeeper provides immutable `Model`, `Specification` and `Run` records, Model-backed graph operations, numerical calculations and Pyomo/HiGHS
 execution. This guide installs the checked-out source. The current architecture
 must not be assumed to match an earlier published PyPI release.
 
@@ -16,31 +15,25 @@ python -m pip install .
 | Extra | Capability |
 | --- | --- |
 | `yaml` | Strict YAML codecs |
-| `workflow` | Source workflows, Excel reading, workbench and HTML review |
 | `calculations` | Financial valuation, Flow operations, distributions, scenario kernels, Polars and CSV |
 | `execution` | Pyomo/HiGHS numerical execution |
-| `visualization` | Matplotlib and Plotly plots, plus PyVis graph presentation |
-| `speckle` | Explicit Speckle receive operations |
-| `layout` | Optional Z3 presentation layout solver |
-| `legacy` | Held predecessor Graph/Measure/Speckle group; see [retirement](../contributing/legacy-retirement.md) |
+| `visualisation` | Matplotlib and Plotly plots, plus PyVis graph presentation |
 
 Extras describe installation choices. They do not change the module hierarchy.
-See [upgrading](upgrading.md#installation-extra-migration) for retired extra names.
+See [upgrading](upgrading.md) for retired extra names.
 
 For the numerical and design examples, run from the repository root:
 
 ```sh
-python -m pip install '.[calculations,execution,visualization,workflow]' ./examples
+python -m pip install '.[calculations,execution,visualisation]' ./examples
 ```
 
 The separate example distribution supplies `rangekeeper_examples`. Install it from
 the same checkout as the library. The Python runtime wheel does not include it.
 
-The bundled Cytoscape viewer and constructive layouts need no Node.js or solver
-at runtime. MiniZinc requires a separately installed executable; the `layout`
-extra does not install it. See [layout acceptance](../contributing/layout-acceptance.md)
-for the pinned toolchain. Core imports do not load dataframe, plotting, service
-SDK or solver dependencies.
+The local geometry renderer is packaged with RK. Installing or using it does not run Node
+or start a Whirlwind service. Advanced graph browsing and layout belong to Whirlwind Viewer.
+Source acquisition belongs to Whirlwind MCP. Core imports load neither owner.
 
 ## Use the installed library
 

@@ -1,0 +1,251 @@
+{
+  "metadata": {
+    "id": "b839f90c-9788-4934-aa46-7d7c7502de61",
+    "schema_version": "0.4.0"
+  },
+  "specification": "f5d2a4b2-b8fb-4bb7-94a0-507a3b417189",
+  "outputs": [
+    "54dc3d49-1a52-4517-85b1-9bd2b6ec2acf"
+  ],
+  "report": {
+    "status": {
+      "completion": "completed",
+      "solution": "feasible"
+    },
+    "runtime": {
+      "started_at": "2026-10-12T23:49:08.352043+00:00",
+      "finished_at": "2026-10-12T23:49:10.332926+00:00",
+      "implementations": [
+        {
+          "kind": "compiler",
+          "name": "rangekeeper.scalar",
+          "version": "execution-implementation/v1:712b659d52b1121e9ac1171ddaf153bb9a17c16dcc67d802be62c0b3d3c7c255"
+        },
+        {
+          "kind": "compiler",
+          "name": "Pyomo",
+          "version": "6.10.1"
+        },
+        {
+          "kind": "solver",
+          "name": "HiGHS",
+          "version": "1.15.1"
+        },
+        {
+          "kind": "evaluator",
+          "name": "rangekeeper.scalar.original_expressions",
+          "version": "execution-implementation/v1:6757d295cc8606f46ce9fd84276053d81fae3005bb72339b46ede4de607e5ebe"
+        }
+      ],
+      "settings": {
+        "iteration_limit": 100000,
+        "time_limit": 30.0,
+        "symbol_limit": 10000,
+        "constraint_limit": 20000
+      }
+    },
+    "diagnostics": [
+      {
+        "severity": "info",
+        "code": "solver_scaling",
+        "message": "[{\"constraint\": \"75df1729-ffb2-5331-80cf-16b0f363b14b\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"b05b5d3d-09f6-51ea-bf3b-aa6bc32ede2e\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"edc8d718-4eea-56bf-8743-57fc795bcd84\", \"divisor\": 1.0, \"residual_units\": \"AUD/year\"}, {\"constraint\": \"a46e4f47-2e31-5fb8-a0e4-48a11d77b2ca\", \"divisor\": 1.25, \"residual_units\": \"AUD/year\"}, {\"constraint\": \"29904e84-64db-5c39-a6ee-1a4bdcaba019\", \"divisor\": 1.0, \"residual_units\": \"AUD/year\"}, {\"constraint\": \"358bfeb3-f068-5681-ad13-1c0ba1847c71\", \"divisor\": 18193426.66415286, \"residual_units\": \"AUD/year\"}]"
+      },
+      {
+        "severity": "info",
+        "code": "solver_termination",
+        "message": "{\"termination\": \"convergenceCriteriaSatisfied\", \"solution_status\": \"optimal\", \"simplex_iterations\": 0, \"highs_seconds\": 0.0029856250039301813, \"worker_seconds\": 0.320606334018521, \"solver_time_limit\": 29.581091042025946, \"solver_options\": {\"solver\": \"simplex\", \"presolve\": \"on\", \"parallel\": \"off\", \"random_seed\": 0, \"simplex_iteration_limit\": 100000, \"small_matrix_value\": 1e-12, \"primal_feasibility_tolerance\": 1e-07, \"dual_feasibility_tolerance\": 1e-07, \"output_flag\": false}, \"threads\": 1, \"equality_rank\": 6, \"unknown_count\": 6, \"has_bounds\": false, \"unconstrained_values_initialized_to_zero\": []}"
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "9328570c-4f25-466c-b0f9-3ff104bdc356",
+        "target": "75df1729-ffb2-5331-80cf-16b0f363b14b",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 0.13377633813642778,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "45781f33-a3a4-4d30-86fb-836576b502e0"
+          },
+          {
+            "target": "29f5e4de-4d85-408b-b519-e983f1ff795b"
+          },
+          {
+            "target": "61d93f25-ddcb-4d1a-a080-a495e2c4f821"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "9328570c-4f25-466c-b0f9-3ff104bdc356",
+        "target": "b05b5d3d-09f6-51ea-bf3b-aa6bc32ede2e",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 0.08695462328867806,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "target": "f32f1637-bf2f-4c13-b683-f77c6f9db16f"
+          },
+          {
+            "target": "e5c53ba8-163e-4f8f-90c7-cbd5cc75e7fd"
+          },
+          {
+            "target": "45781f33-a3a4-4d30-86fb-836576b502e0"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "9328570c-4f25-466c-b0f9-3ff104bdc356",
+        "target": "edc8d718-4eea-56bf-8743-57fc795bcd84",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD/year"
+        },
+        "tolerance": {
+          "magnitude": 0.007475648276556139,
+          "units": "AUD/year"
+        },
+        "references": [
+          {
+            "target": "82906305-068e-464a-8705-409fef621a50"
+          },
+          {
+            "target": "68935941-f43c-438a-90c9-70f83442297a"
+          },
+          {
+            "target": "f32f1637-bf2f-4c13-b683-f77c6f9db16f"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "9328570c-4f25-466c-b0f9-3ff104bdc356",
+        "target": "a46e4f47-2e31-5fb8-a0e4-48a11d77b2ca",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD/year"
+        },
+        "tolerance": {
+          "magnitude": 0.009344557845695172,
+          "units": "AUD/year"
+        },
+        "references": [
+          {
+            "target": "1d6cc4a6-1c41-4c57-9c59-8e25aca8602b"
+          },
+          {
+            "target": "ac1350a6-bff1-49e7-baa2-e972409a36a5"
+          },
+          {
+            "target": "82906305-068e-464a-8705-409fef621a50"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "9328570c-4f25-466c-b0f9-3ff104bdc356",
+        "target": "29904e84-64db-5c39-a6ee-1a4bdcaba019",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD/year"
+        },
+        "tolerance": {
+          "magnitude": 0.01678916286434032,
+          "units": "AUD/year"
+        },
+        "references": [
+          {
+            "target": "687c58fc-68c8-4d33-ae09-545d48ac65b5"
+          },
+          {
+            "target": "1d6cc4a6-1c41-4c57-9c59-8e25aca8602b"
+          },
+          {
+            "target": "05ddf458-839f-43e9-a7c5-22e2eed545e4"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean and fixed strict predicates: exact). Accepted=True.",
+        "document": "9328570c-4f25-466c-b0f9-3ff104bdc356",
+        "target": "358bfeb3-f068-5681-ad13-1c0ba1847c71",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD/year"
+        },
+        "tolerance": {
+          "magnitude": 0.01678916286434032,
+          "units": "AUD/year"
+        },
+        "references": [
+          {
+            "target": "687c58fc-68c8-4d33-ae09-545d48ac65b5"
+          },
+          {
+            "target": "b3bfeba1-c9b4-4550-b125-1fd5018cd3d7"
+          },
+          {
+            "target": "999841fd-896c-4130-9798-5065c4dd7464"
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "feasible_candidate",
+        "message": "Original expressions, assignments and bounds accepted. No uniqueness or optimization claim is made."
+      },
+      {
+        "severity": "info",
+        "code": "attempt_timing",
+        "message": "Elapsed monotonic time before persistence: 1.979398583 seconds."
+      }
+    ],
+    "trace": [
+      {
+        "kind": "validation",
+        "at": "2026-10-12T23:49:08.487093+00:00",
+        "message": "Validated additive composition, exact Model pin, scalar roles and recorded units.",
+        "document": "f5d2a4b2-b8fb-4bb7-94a0-507a3b417189"
+      },
+      {
+        "kind": "formulation",
+        "at": "2026-10-12T23:49:08.490496+00:00",
+        "message": "Expanded 13 scalar/Movement symbols and 6 affine constraints; limits 10000/20000."
+      },
+      {
+        "kind": "solve",
+        "at": "2026-10-12T23:49:09.656699+00:00",
+        "message": "Backend returned convergenceCriteriaSatisfied; independent acceptance follows when a candidate exists."
+      },
+      {
+        "kind": "publication",
+        "at": "2026-10-12T23:49:10.331296+00:00",
+        "message": "Accepted serialized immutable Model; store output before finalized Run.",
+        "document": "54dc3d49-1a52-4517-85b1-9bd2b6ec2acf"
+      }
+    ],
+    "outcomes": []
+  }
+}

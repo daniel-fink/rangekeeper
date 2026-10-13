@@ -225,7 +225,7 @@ def _reduce_quantities(values, reducer, units, unit_system):
 
 
 @dataclass(frozen=True)
-class _Population:
+class QuantityPopulation:
     """Raw quantities, contributor coverage and selected identities for one scope."""
 
     quantities: tuple[Quantity, ...]
@@ -237,7 +237,7 @@ def _collect_quantities(
     selections: Iterable[tuple[Entity, Value | None]],
     units: str,
     unit_system: UnitSystem,
-) -> _Population:
+) -> QuantityPopulation:
     """Collect canonical selections; callers retain eligibility and reduction policy."""
     selected, measured, missing, quantities, value_ids = [], [], [], [], {}
     for entity, value in selections:
@@ -250,7 +250,7 @@ def _collect_quantities(
         else:
             measured.append(entity.id)
             quantities.append(quantity)
-    return _Population(
+    return QuantityPopulation(
         tuple(quantities),
         Coverage(tuple(selected), tuple(measured), tuple(missing)),
         MappingProxyType(value_ids),
@@ -338,7 +338,7 @@ class Reduction:
             )
         return Aggregation(hierarchy, entries, value_ids, self.require_complete)
 
-    def _contribution(self, model, entity, *, leaf=True) -> _Population:
+    def _contribution(self, model, entity, *, leaf=True) -> QuantityPopulation:
         assert self.units is not None
         if not self._eligible(entity, leaf=leaf):
             return _collect_quantities((), self.units, self.unit_system)

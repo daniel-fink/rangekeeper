@@ -14,11 +14,8 @@ _LAZY_MODULES = frozenset(
         "specification",
         "run",
         "calculations",
-        "workflow",
-        "adapters",
         "io",
-        "migration",
-        "legacy",
+        "visualisation",
     }
 )
 __all__ = ["Model", "Specification", "Run", *sorted(_LAZY_MODULES)]

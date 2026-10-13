@@ -26,10 +26,6 @@ parser.add_argument(
     help="Also verify the optional solver extra, copying its dependencies from this interpreter",
 )
 parser.add_argument(
-    "--workflow-python",
-    help="Verify source workflows; copy openpyxl dependencies from this interpreter",
-)
-parser.add_argument(
     "--financial-python",
     help="Verify the PyXIRR financial wrapper without SciPy or dataframe dependencies",
 )
@@ -54,7 +50,7 @@ with tempfile.TemporaryDirectory(prefix="rk-installed-records-") as directory:
     if args.wheel is None:
         stage = temp / "stage"
         stage.mkdir()
-        for name in ("pyproject.toml", "README.md", "LICENSE"):
+        for name in ("pyproject.toml", "README.md", "LICENSE", "setup.py", "MANIFEST.in"):
             shutil.copy2(ROOT / name, stage / name)
         shutil.copytree(
             ROOT / "src/rangekeeper",
@@ -192,9 +188,11 @@ for name in ('api', 'measure', 'flux', '_legacy_duration', 'distribution', 'extr
     assert not hasattr(rangekeeper, name), name
 assert not hasattr(rangekeeper, 'update_class')
 assert not hasattr(rangekeeper, 'rgba_from_cmap')
-for resource in ('workflow/workbench.py', 'adapters/cytoscape/layout/review.py', 'adapters/cytoscape/assets/viewer.js', 'adapters/cytoscape/layout/assembly.mzn', 'adapters/speckle/contract.json', 'migration/layout.py', 'migration/speckle.py'):
+for name in ('adapters', 'workflow', 'migration', 'legacy'):
+    assert importlib.util.find_spec('rangekeeper.' + name) is None
+for resource in ('io/speckle_contract.json', 'visualisation/assets/geometry/manifest.json'):
     assert files('rangekeeper').joinpath(resource).is_file(), resource
-from rangekeeper.adapters.speckle import decode_model, encode_model
+from rangekeeper.io.speckle import decode_model, encode_model
 assert 'specklepy' not in sys.modules
 for name in ('schema.json', 'slots.json', 'manifest.json', 'native.py'):
     assert files('rangekeeper.schema').joinpath(name).is_file()
@@ -264,15 +262,11 @@ for prefix in ('pint', 'numpy', 'networkx', 'pandas', 'pyomo', 'highspy', 'range
     assert not any(name == prefix or name.startswith(prefix + '.') for name in sys.modules), prefix
 from rangekeeper.model.system.projection import to_table
 from rangekeeper.shared.table import Table
-from rangekeeper.adapters.cytoscape import project, write_viewer
 assert to_table(view).column('model_id') == (domain.id,)
 assert to_table(Hierarchy.from_relationships(view)).column('parent_id') == (None,)
-with TemporaryDirectory() as destination:
-    exported = write_viewer([project(domain, 'Installed Model')], Path(destination) / 'viewer.html')
-    assert exported.is_file() and 'cytoscape' in exported.read_text()
 for prefix in ('pint', 'numpy', 'networkx', 'pandas', 'pyomo', 'highspy', 'rangekeeper.legacy', 'rangekeeper.graph'):
     assert not any(name == prefix or name.startswith(prefix + '.') for name in sys.modules), prefix
-print('Installed wheel: Model graph, tables and offline viewer assets passed without legacy or numerical imports')
+print('Installed wheel: Model graph, tables and projections passed without legacy or numerical imports')
 """
     subprocess.run([str(python), "-I", "-c", script], cwd=temp, check=True)
     # Exercise unit-bearing fixtures and the optional YAML extra in the same isolated
@@ -418,34 +412,6 @@ for prefix in ('pyomo', 'highspy', 'rangekeeper.model.system.view', 'rangekeeper
 print('Installed wheel: actual process-isolated forward/inverse solves, output reuse, acceptance and disk publication passed')
 """
         subprocess.run([str(python), "-I", "-c", script], cwd=temp, check=True)
-    if args.workflow_python:
-        workflow_dependencies = copy_dependencies.replace(
-            "('Pint', 'flexcache', 'flexparser', 'platformdirs', 'PyYAML')",
-            "('openpyxl', 'et_xmlfile')",
-        )
-        subprocess.run(
-            [args.workflow_python, "-c", workflow_dependencies, str(site)],
-            cwd=temp,
-            check=True,
-        )
-        if not args.execution_python:
-            raise ValueError(
-                "--workflow-python requires --execution-python for the full acceptance example"
-            )
-        shutil.copy2(ROOT / "examples/workflow/scalar.py", temp / "source-example.py")
-        script = """
-import importlib.metadata, json, runpy, sys
-from pathlib import Path
-summary = runpy.run_path('source-example.py')['run_example'](Path('source-example'))
-metadata = json.loads(Path('source-example/workflow/manifest.json').read_text())
-assert metadata['dependencies']['jsonschema'] == importlib.metadata.version('jsonschema')
-assert summary['forward_gross']['magnitude'] == 20
-assert summary['inverse_net']['magnitude'] == 25
-for prefix in ('rangekeeper.legacy', 'rangekeeper.graph', 'rangekeeper.model.entity', 'rangekeeper.measure', 'networkx', 'pandas', 'pyomo', 'highspy'):
-    assert not any(name == prefix or name.startswith(prefix + '.') for name in sys.modules), prefix
-print('Installed wheel: XLSX workflow, Model provenance, YAML/JSON, stores and real forward/inverse execution passed')
-"""
-        subprocess.run([str(python), "-I", "-c", script], cwd=temp, check=True)
     if args.tables_python:
         table_dependencies = copy_dependencies.replace(
             "('Pint', 'flexcache', 'flexparser', 'platformdirs', 'PyYAML')",
@@ -464,9 +430,9 @@ from uuid import uuid4
 import polars as pl
 from rangekeeper.model.flux import Flow
 from rangekeeper.shared.table import Table
-from rangekeeper.adapters import csv, polars
+from rangekeeper.io import polars
 assert importlib.util.find_spec('pandas') is None
-assert importlib.util.find_spec('rangekeeper.adapters.pandas') is None
+assert importlib.util.find_spec('rangekeeper.adapters') is None
 flow = Flow.from_events([date(2026, 1, 1)], [0], units='AUD')
 assert polars.from_frame(polars.to_frame(flow), units='AUD') == flow
 assert polars.dates(flow)['date'].to_list() == [date(2026, 1, 1)]
@@ -494,8 +460,9 @@ assert [m.number for m in projection.extrapolate(initial=Quantity(magnitude=100,
 assert projection.distribute(quantity=Quantity(magnitude=100, units='AUD'), periods=periods, weights=(0.25, 0.75)).total().magnitude == 100
 table = Table(columns=('code', 'status', 'value'), rows=({'code': '001', 'status': 'NA', 'value': None},))
 assert polars.to_table(polars.to_frame(table)) == table
-path = csv.write(table, Path('table.csv'))
-assert csv.read(path, schema_overrides={'code': pl.String}) == table
+path = Path('table.csv')
+polars.text_frame(table).write_csv(path)
+assert polars.to_table(pl.read_csv(path, schema_overrides={'code': pl.String})) == table
 mixed = Table(columns=('value',), rows=({'value': uuid4()}, {'value': {'x': (1, 2)}}))
 assert polars.to_table(polars.to_frame(mixed)) == mixed
 print('Installed wheel: native Polars Flow/Stream display, projection verbs, Polars Flow/Table and CSV passed with pandas absent')

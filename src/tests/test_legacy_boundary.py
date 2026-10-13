@@ -66,7 +66,7 @@ def test_canonical_sources_do_not_import_the_predecessor():
     root = Path(rangekeeper.__file__).parent
     for path in root.rglob("*.py"):
         relative = path.relative_to(root)
-        if relative.parts[0] == "legacy":
+        if ".sync-conflict-" in path.name:
             continue
         module = "rangekeeper." + ".".join(relative.with_suffix("").parts)
         package = module.rsplit(".", 1)[0]
@@ -86,21 +86,3 @@ def test_canonical_sources_do_not_import_the_predecessor():
                 name == "rangekeeper.legacy" or name.startswith("rangekeeper.legacy.")
                 for name in names
             ), path
-
-
-def test_wire_conversion_remains_available_without_legacy():
-    """An old wire document needs its converter, not the predecessor classes."""
-    fixture = Path(__file__).parent / "fixtures/migration/graph-v1.json"
-    script = """
-from pathlib import Path
-import sys
-from rangekeeper.migration import convert_graph
-from rangekeeper.model.system import View
-result = convert_graph(Path(sys.argv[1]).read_text())
-assert result.model is not None and not result.issues
-assert len(View(result.model).entities) == 2
-assert not any(name == 'rangekeeper.legacy' or name.startswith('rangekeeper.legacy.') for name in sys.modules)
-"""
-    subprocess.run(
-        [sys.executable, "-c", script, str(fixture)], check=True, capture_output=True
-    )

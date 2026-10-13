@@ -339,7 +339,7 @@ def test_slot_lookup_cache_is_immutable_and_public_metadata_is_detached():
 def test_construction_copies_once_and_keeps_boundary_failures(monkeypatch):
     from rangekeeper.schema import runtime
 
-    original = runtime._json_copy
+    original = runtime.copy_json
     roots = []
 
     def counted(value, active=None):
@@ -347,7 +347,7 @@ def test_construction_copies_once_and_keeps_boundary_failures(monkeypatch):
             roots.append(value)
         return original(value, active)
 
-    monkeypatch.setattr(runtime, "_json_copy", counted)
+    monkeypatch.setattr(runtime, "copy_json", counted)
     data = {
         "id": str(uuid4()),
         "kind": "asserted",

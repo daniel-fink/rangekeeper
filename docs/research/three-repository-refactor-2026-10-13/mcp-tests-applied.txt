@@ -1,0 +1,30 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.10.19, pytest-8.4.2, pluggy-1.6.0
+rootdir: /Volumes/Data/Projects/Whirlwind/whirlwind-mcp
+configfile: pyproject.toml
+testpaths: tests
+plugins: platformdirs-4.12.4, anyio-4.15.1
+collected 316 items
+
+tests/ingestion/test_document_operations.py .................            [  5%]
+tests/ingestion/test_excel_ingestion.py ...............................  [ 15%]
+tests/ingestion/test_ingestion_evidence.py ............................. [ 24%]
+...................                                                      [ 30%]
+tests/ingestion/test_model_consumers.py .............                    [ 34%]
+tests/ingestion/test_review_publication_regressions.py ................. [ 39%]
+..                                                                       [ 40%]
+tests/ingestion/test_speckle_sources.py ...............                  [ 45%]
+tests/ingestion/test_tabular_operations.py .............                 [ 49%]
+tests/ingestion/test_unresolved_measurements.py .                        [ 49%]
+tests/ingestion/test_workbench.py .............                          [ 53%]
+tests/ingestion/test_workflow.py ........................                [ 61%]
+tests/ingestion/test_workflow_boundaries.py ............................ [ 70%]
+.........................                                                [ 78%]
+tests/ingestion/test_workflow_followup.py .............                  [ 82%]
+tests/ingestion/test_workflow_formats.py ............                    [ 86%]
+tests/ingestion/test_workflow_shared.py ....................             [ 92%]
+tests/test_desktop_trial.py ...                                          [ 93%]
+tests/test_mcp.py ....                                                   [ 94%]
+tests/test_workspace.py .................                                [100%]
+
+======================= 316 passed in 100.75s (0:01:40) ========================

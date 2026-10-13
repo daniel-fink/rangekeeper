@@ -1,0 +1,7 @@
+Using Python 3.12.12 environment at: /var/folders/sk/cjq5zjks7gx_3tf9m67y43xr0000gn/T/rk-book-v2-k_5bzlbs/env
+Resolved 1 package in 2ms
+Prepared 1 package in 57ms
+Uninstalled 1 package in 32ms
+Installed 1 package in 5ms
+ - rangekeeper==0.8.71 (from file:///private/tmp/rk-plotly-theme/dist/rangekeeper-0.8.71-py3-none-any.whl)
+ + rangekeeper==0.8.71 (from file:///private/tmp/rk-notebook-03/dist/rangekeeper-0.8.71-py3-none-any.whl)

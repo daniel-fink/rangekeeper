@@ -1,0 +1,11 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.11, pytest-9.1.1, pluggy-1.6.0
+rootdir: /private/tmp/rk-three-repo-4uupdvk4/consumers/Projects/Whirlwind/projects/mandarin
+configfile: pyproject.toml
+testpaths: tests
+plugins: platformdirs-4.12.4, anyio-4.15.1
+collected 8 items
+
+tests/test_source_model.py ........                                      [100%]
+
+============================== 8 passed in 8.46s ===============================

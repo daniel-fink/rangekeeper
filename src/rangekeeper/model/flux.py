@@ -392,13 +392,13 @@ class Stream:
 
     def to_frame(self) -> DataFrame:
         """Return a detached numeric projection; canonical interchange is Flow-specific."""
-        from rangekeeper.adapters.polars import stream_frame
+        from rangekeeper.io.polars import stream_frame
 
         return stream_frame(self)
 
     def display(self, *, transpose: bool = False, precision: int = 2):
         """Return an HTML/text table with line labels, units and explicit missing states."""
-        from rangekeeper.adapters.presentation import StreamTable
+        from rangekeeper.visualisation.table import StreamTable
 
         return StreamTable(self, transpose=transpose, precision=precision)
 

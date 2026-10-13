@@ -166,7 +166,7 @@ def test_collapse_requires_a_date_or_convention():
 
 
 def test_polars_date_projection():
-    from rangekeeper.adapters.polars import dates
+    from rangekeeper.io.polars import dates
 
     flow = Flow.from_periods([JANUARY], [100], units="AUD")
     with pytest.raises(ValueError, match="explicit timing"):
@@ -177,7 +177,7 @@ def test_polars_date_projection():
 
 
 def test_date_and_period_null_presence_survives_frames():
-    from rangekeeper.adapters import polars as module
+    from rangekeeper.io import polars as module
 
     flow = Flow.from_data(
         {

@@ -120,7 +120,7 @@ execution depends on them. A production database is outside this checkpoint.
 Step 5 must produce forward capital value of 11,000,000 AUD and inverse annual
 rent of 27,500 AUD/dwelling/year from declared mathematics. It must reuse a real
 forward output, independently check candidate quantities, and preserve immutable
-inputs and provenance. The [full acceptance boundary](../concepts/architecture.md#validation-and-execution)
+inputs and provenance. The [full acceptance boundary](../concepts/architecture.md)
 also governs failures, settings, units, limits, and batch accounting. Synthetic
 fixtures remain expectations; observed outputs are stored separately.
 

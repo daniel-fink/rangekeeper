@@ -16,7 +16,6 @@ from rangekeeper.shared.errors import (
 )
 from rangekeeper.model.scope import target_value, target_units
 from rangekeeper.io import MemoryStore
-from rangekeeper.migration import upgrade_model, upgrade_specification
 from rangekeeper.model import (
     Characteristics,
     Definitions,
@@ -181,48 +180,6 @@ def test_alignment_uses_coordinates_while_results_have_independent_ids():
     assert union.flows[0].movements[0].id == left.movements[0].id
 
 
-def test_old_owner_key_migrates_consistently_without_changing_source():
-    model, value = example(
-        Flow.from_events([date(2027, 1, 1)], [30_000], units="AUD", keys=["rent"])
-    )
-    old = model.to_data()
-    old["metadata"]["schema_version"] = "0.5.0"
-    old["system"]["entities"][0]["characteristics"]["values"][0]["flow"]["movements"][
-        0
-    ].pop("id")
-    old["provenance"] = {
-        "claims": [
-            {
-                "id": str(uuid4()),
-                "kind": "asserted",
-                "method": {"code": "manual"},
-                "content": {"value": str(value.id), "movement": "rent"},
-            }
-        ]
-    }
-    original = deepcopy(old)
-    spec = {
-        "metadata": {"id": str(uuid4()), "schema_version": "0.5.0"},
-        "model": str(model.id),
-        "unknowns": [{"value": str(value.id), "movement": "rent"}],
-    }
-    upgraded = upgrade_model(old)
-    again = upgrade_model(old)
-    question = upgrade_specification(spec, model=upgraded.id)
-    target = upgraded.value(value.id).flow.movements[0].id
-    assert (
-        target
-        == again.value(value.id).flow.movements[0].id
-        == question.record.unknowns[0].target
-    )
-    assert old == original
-    assert (
-        upgraded.provenance.claims[0].to_data()["content"]
-        == original["provenance"]["claims"][0]["content"]
-    )
-    store = MemoryStore()
-    store.put(upgraded)
-    question.compose(resolver=store).validate(resolver=store).raise_if_invalid()
 
 
 def test_diagnostic_participants_use_input_model_even_for_a_specification_subject():
@@ -312,23 +269,3 @@ def test_constraint_subject_and_participant_scope_are_separate():
     assert validate_run(Run.from_data(data), resolver=store).valid
     diagnostic["references"] = [{"target": str(local)}]
     assert not validate_run(Run.from_data(data), resolver=store).valid
-
-
-def test_draft_conversion_preserves_source_address_entries():
-    data = {"metadata": {"id": str(uuid4()), "schema_version": "0.5.0"}}
-    source = str(uuid4())
-    data["provenance"] = {
-        "sources": [{"id": source, "name": "Source", "checksum": "abc"}],
-        "claims": [
-            {
-                "id": str(uuid4()),
-                "kind": "sourced",
-                "content": {"value": "original"},
-                "sources": [{"source": source, "address": {"cell": {"value": "A1"}}}],
-            }
-        ],
-    }
-    before = deepcopy(data)
-    upgraded = upgrade_model(data)
-    assert data == before
-    assert upgraded.provenance.to_data() == before["provenance"]

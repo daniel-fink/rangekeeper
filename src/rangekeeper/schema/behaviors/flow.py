@@ -10,7 +10,7 @@ from rangekeeper.schema.runtime import UNSET
 from enum import Enum, unique
 
 if TYPE_CHECKING:
-    from rangekeeper.adapters.presentation import StreamTable
+    from rangekeeper.visualisation.table import StreamTable
     from rangekeeper.schema.records import Flow, Movement, Period, Quantity
     from rangekeeper.model.duration.period import PeriodTiming
     from rangekeeper.shared.units import UnitSystem

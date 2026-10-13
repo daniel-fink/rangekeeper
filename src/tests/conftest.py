@@ -1,7 +1,7 @@
 import matplotlib
 import pytest
 
-pytest_plugins = ["tests.layout_support"]
+
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:
@@ -34,3 +34,5 @@ def configure_matplotlib_for_tests(
         yield
     finally:
         plt.close("all")
+
+collect_ignore_glob = ["*.sync-conflict-*.py"]

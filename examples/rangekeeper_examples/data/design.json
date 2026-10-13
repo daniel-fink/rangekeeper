@@ -1,0 +1,558 @@
+{
+  "metadata": {
+    "id": "bce1e752-588a-4c52-a22a-43d4f87cfc9b",
+    "schema_version": "0.7.0"
+  },
+  "definitions": {
+    "taxonomies": [
+      {
+        "id": "88147baf-e776-56f5-b9e9-a27f53ba30b7",
+        "code": "design",
+        "name": "Design",
+        "classifications": [
+          {
+            "id": "c6b5d90d-48c8-5ec6-99be-bfa95d729448",
+            "code": "rk-design-object",
+            "name": "RK design object"
+          },
+          {
+            "id": "3c1ebb15-016d-505c-a717-750f45707b84",
+            "code": "property",
+            "name": "property",
+            "parent": "c6b5d90d-48c8-5ec6-99be-bfa95d729448"
+          },
+          {
+            "id": "a3849bce-9642-53be-a274-bbc6b43770b1",
+            "code": "space",
+            "name": "space",
+            "parent": "c6b5d90d-48c8-5ec6-99be-bfa95d729448"
+          },
+          {
+            "id": "a2e9e5f3-8f2f-5d7b-84f4-690f62b29e4f",
+            "code": "floor",
+            "name": "floor",
+            "parent": "c6b5d90d-48c8-5ec6-99be-bfa95d729448"
+          },
+          {
+            "id": "1bac6d09-46e5-59dd-b4f5-d5712a83d24e",
+            "code": "utilities",
+            "name": "utilities",
+            "parent": "c6b5d90d-48c8-5ec6-99be-bfa95d729448"
+          },
+          {
+            "id": "240a759a-2e1a-5fed-b23a-98ebbbe0d037",
+            "code": "spatiallyContains",
+            "name": "spatiallyContains",
+            "parent": "c6b5d90d-48c8-5ec6-99be-bfa95d729448"
+          }
+        ]
+      }
+    ],
+    "measures": [
+      {
+        "id": "6d939624-3cdf-55a5-8e52-ddd4cd238f8a",
+        "code": "gfa",
+        "name": "gfa",
+        "units": "meter ** 2"
+      },
+      {
+        "id": "8ef88559-31cd-58bc-8327-d3549c942673",
+        "code": "perimeter",
+        "name": "perimeter",
+        "units": "meter"
+      },
+      {
+        "id": "e3ad3b17-5a48-55ad-9fc1-a12c32545626",
+        "code": "ftf",
+        "name": "ftf",
+        "units": "meter"
+      },
+      {
+        "id": "04b58b69-022f-5041-accc-d3265e0114c1",
+        "code": "volume",
+        "name": "volume",
+        "units": "meter ** 3"
+      }
+    ]
+  },
+  "system": {
+    "entities": [
+      {
+        "id": "68bb7529-541f-5dc4-9742-57398a8cacff",
+        "name": "floor",
+        "classification": "a2e9e5f3-8f2f-5d7b-84f4-690f62b29e4f",
+        "characteristics": {
+          "values": [
+            {
+              "id": "4145e68a-4da4-5bfe-8594-94beed75e8db",
+              "key": "gfa",
+              "kind": "measurement",
+              "measure": "6d939624-3cdf-55a5-8e52-ddd4cd238f8a",
+              "quantity": {
+                "magnitude": 1000,
+                "units": "meter ** 2"
+              }
+            },
+            {
+              "id": "f593e1c8-d6cc-54a4-a5e2-44b207b1233c",
+              "key": "perimeter",
+              "kind": "measurement",
+              "measure": "8ef88559-31cd-58bc-8327-d3549c942673",
+              "quantity": {
+                "magnitude": 120,
+                "units": "meter"
+              }
+            },
+            {
+              "id": "f5f7ba9b-cd6c-5e0e-9747-0c8935da1c9d",
+              "key": "ftf",
+              "kind": "measurement",
+              "measure": "e3ad3b17-5a48-55ad-9fc1-a12c32545626",
+              "quantity": {
+                "magnitude": 3,
+                "units": "meter"
+              }
+            },
+            {
+              "id": "73acfe6f-3521-53ab-972d-bf1258c15933",
+              "key": "number",
+              "kind": "property",
+              "content": {
+                "kind": "integer",
+                "text": "1"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "e98fc2e9-a2f2-560f-a4c4-140d695b0e85",
+        "name": "cores",
+        "classification": "1bac6d09-46e5-59dd-b4f5-d5712a83d24e",
+        "characteristics": {
+          "values": [
+            {
+              "id": "cd7e5bc5-4a84-5a50-8b2f-39d0e6040239",
+              "key": "volume",
+              "kind": "measurement",
+              "measure": "04b58b69-022f-5041-accc-d3265e0114c1",
+              "quantity": {
+                "magnitude": 20,
+                "units": "meter ** 3"
+              }
+            },
+            {
+              "id": "fb2477bb-6c00-549f-8820-18da5809e051",
+              "key": "use",
+              "kind": "property",
+              "content": {
+                "kind": "string",
+                "text": "cores"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "assemblies": [
+      {
+        "id": "26987824-5607-5f51-88e0-fc041bb02609",
+        "name": "space",
+        "classification": "a3849bce-9642-53be-a274-bbc6b43770b1",
+        "characteristics": {
+          "values": [
+            {
+              "id": "b6d785a8-a256-5f60-b5c5-853da367c42b",
+              "key": "use",
+              "kind": "property",
+              "content": {
+                "kind": "string",
+                "text": "hotel"
+              }
+            }
+          ]
+        },
+        "entities": [
+          "68bb7529-541f-5dc4-9742-57398a8cacff"
+        ],
+        "relationships": [
+          "7b671fed-8e49-5969-943c-69f9f408f3d1"
+        ]
+      },
+      {
+        "id": "3912b85d-46e4-5e98-af3f-593bca6886b5",
+        "name": "property",
+        "classification": "3c1ebb15-016d-505c-a717-750f45707b84",
+        "characteristics": {
+          "values": []
+        },
+        "entities": [
+          "26987824-5607-5f51-88e0-fc041bb02609",
+          "e98fc2e9-a2f2-560f-a4c4-140d695b0e85"
+        ],
+        "relationships": [
+          "110ef1a9-04b8-5a3f-be48-646866908fa2",
+          "5da3469b-2dae-5fb5-9bf8-943c1b76d4ef"
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "110ef1a9-04b8-5a3f-be48-646866908fa2",
+        "source": "3912b85d-46e4-5e98-af3f-593bca6886b5",
+        "target": "e98fc2e9-a2f2-560f-a4c4-140d695b0e85",
+        "classification": "240a759a-2e1a-5fed-b23a-98ebbbe0d037"
+      },
+      {
+        "id": "5da3469b-2dae-5fb5-9bf8-943c1b76d4ef",
+        "source": "3912b85d-46e4-5e98-af3f-593bca6886b5",
+        "target": "26987824-5607-5f51-88e0-fc041bb02609",
+        "classification": "240a759a-2e1a-5fed-b23a-98ebbbe0d037"
+      },
+      {
+        "id": "7b671fed-8e49-5969-943c-69f9f408f3d1",
+        "source": "26987824-5607-5f51-88e0-fc041bb02609",
+        "target": "68bb7529-541f-5dc4-9742-57398a8cacff",
+        "classification": "240a759a-2e1a-5fed-b23a-98ebbbe0d037"
+      }
+    ]
+  },
+  "provenance": {
+    "sources": [
+      {
+        "id": "38300df1-ef0c-5bff-9377-5adecb69dc05",
+        "name": "Historical RK Speckle payload",
+        "checksum": "823f5094d451a2ffc095c96b9eca1a9e8f2073827fb9476fc45900cc83439e83"
+      }
+    ],
+    "claims": [
+      {
+        "id": "bb0e5643-edd5-554c-ac74-8ec0bc0336f0",
+        "kind": "sourced",
+        "content": {
+          "source_field": "use",
+          "value": "hotel"
+        },
+        "sources": [
+          {
+            "source": "38300df1-ef0c-5bff-9377-5adecb69dc05",
+            "address": {
+              "path": "/objects/1/use"
+            }
+          }
+        ]
+      },
+      {
+        "id": "3b3038c3-a26d-54ca-b5ef-1ad3b2b68b65",
+        "kind": "sourced",
+        "content": {
+          "entityId": "26987824-5607-5f51-88e0-fc041bb02609",
+          "name": "space",
+          "type": "space",
+          "use": "hotel"
+        },
+        "sources": [
+          {
+            "source": "38300df1-ef0c-5bff-9377-5adecb69dc05",
+            "address": {
+              "path": "/objects/1"
+            }
+          }
+        ]
+      },
+      {
+        "id": "6a38580e-e269-53e4-8a74-b70eac9341d4",
+        "kind": "sourced",
+        "content": {
+          "entityId": "3912b85d-46e4-5e98-af3f-593bca6886b5",
+          "name": "property",
+          "type": "property"
+        },
+        "sources": [
+          {
+            "source": "38300df1-ef0c-5bff-9377-5adecb69dc05",
+            "address": {
+              "path": "/objects/0"
+            }
+          }
+        ]
+      },
+      {
+        "id": "96575da9-e4f8-5d0a-8d80-56d746cd5d3e",
+        "kind": "sourced",
+        "content": {
+          "source_field": "gfa",
+          "value": 1000
+        },
+        "sources": [
+          {
+            "source": "38300df1-ef0c-5bff-9377-5adecb69dc05",
+            "address": {
+              "path": "/objects/2/gfa"
+            }
+          }
+        ]
+      },
+      {
+        "id": "47bd0e06-3f04-5f0f-a942-a7b62d797f90",
+        "kind": "sourced",
+        "content": {
+          "source_field": "perimeter",
+          "value": 120
+        },
+        "sources": [
+          {
+            "source": "38300df1-ef0c-5bff-9377-5adecb69dc05",
+            "address": {
+              "path": "/objects/2/perimeter"
+            }
+          }
+        ]
+      },
+      {
+        "id": "cbffa2b8-c724-5bd0-9a5e-2d30051bb3ee",
+        "kind": "sourced",
+        "content": {
+          "source_field": "ftf",
+          "value": 3
+        },
+        "sources": [
+          {
+            "source": "38300df1-ef0c-5bff-9377-5adecb69dc05",
+            "address": {
+              "path": "/objects/2/ftf"
+            }
+          }
+        ]
+      },
+      {
+        "id": "b2c6c887-2339-54fd-87f2-3a51fc0047f5",
+        "kind": "sourced",
+        "content": {
+          "source_field": "number",
+          "value": 1
+        },
+        "sources": [
+          {
+            "source": "38300df1-ef0c-5bff-9377-5adecb69dc05",
+            "address": {
+              "path": "/objects/2/number"
+            }
+          }
+        ]
+      },
+      {
+        "id": "4de1a06c-5b11-5187-9fa7-1c8bf3128a4b",
+        "kind": "sourced",
+        "content": {
+          "entityId": "68bb7529-541f-5dc4-9742-57398a8cacff",
+          "name": "floor",
+          "type": "floor",
+          "gfa": 1000,
+          "perimeter": 120,
+          "ftf": 3,
+          "number": 1
+        },
+        "sources": [
+          {
+            "source": "38300df1-ef0c-5bff-9377-5adecb69dc05",
+            "address": {
+              "path": "/objects/2"
+            }
+          }
+        ]
+      },
+      {
+        "id": "b7536ce5-94f5-54da-9b79-3e6d153262d5",
+        "kind": "sourced",
+        "content": {
+          "source_field": "volume",
+          "value": 20
+        },
+        "sources": [
+          {
+            "source": "38300df1-ef0c-5bff-9377-5adecb69dc05",
+            "address": {
+              "path": "/objects/3/volume"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bb96014c-6d69-5f0e-91b9-6ec9c5916d58",
+        "kind": "sourced",
+        "content": {
+          "source_field": "use",
+          "value": "cores"
+        },
+        "sources": [
+          {
+            "source": "38300df1-ef0c-5bff-9377-5adecb69dc05",
+            "address": {
+              "path": "/objects/3/use"
+            }
+          }
+        ]
+      },
+      {
+        "id": "c78c794b-14a0-5838-b47a-cd0be7112151",
+        "kind": "sourced",
+        "content": {
+          "entityId": "e98fc2e9-a2f2-560f-a4c4-140d695b0e85",
+          "name": "cores",
+          "type": "utilities",
+          "volume": 20,
+          "use": "cores"
+        },
+        "sources": [
+          {
+            "source": "38300df1-ef0c-5bff-9377-5adecb69dc05",
+            "address": {
+              "path": "/objects/3"
+            }
+          }
+        ]
+      },
+      {
+        "id": "c0904b2b-cda2-5b5d-a3c2-7326c7f41fa6",
+        "kind": "sourced",
+        "content": {
+          "id": "110ef1a9-04b8-5a3f-be48-646866908fa2",
+          "source": "3912b85d-46e4-5e98-af3f-593bca6886b5",
+          "target": "e98fc2e9-a2f2-560f-a4c4-140d695b0e85",
+          "classification": "240a759a-2e1a-5fed-b23a-98ebbbe0d037"
+        },
+        "sources": [
+          {
+            "source": "38300df1-ef0c-5bff-9377-5adecb69dc05",
+            "address": {
+              "path": "/objects/0/relationships/1"
+            }
+          }
+        ]
+      },
+      {
+        "id": "be8d513e-a446-5ffd-8f0c-6a2aa3b40101",
+        "kind": "sourced",
+        "content": {
+          "id": "5da3469b-2dae-5fb5-9bf8-943c1b76d4ef",
+          "source": "3912b85d-46e4-5e98-af3f-593bca6886b5",
+          "target": "26987824-5607-5f51-88e0-fc041bb02609",
+          "classification": "240a759a-2e1a-5fed-b23a-98ebbbe0d037"
+        },
+        "sources": [
+          {
+            "source": "38300df1-ef0c-5bff-9377-5adecb69dc05",
+            "address": {
+              "path": "/objects/0/relationships/0"
+            }
+          }
+        ]
+      },
+      {
+        "id": "afeb15e9-a344-5842-8eaf-70a6d533d3ab",
+        "kind": "sourced",
+        "content": {
+          "id": "7b671fed-8e49-5969-943c-69f9f408f3d1",
+          "source": "26987824-5607-5f51-88e0-fc041bb02609",
+          "target": "68bb7529-541f-5dc4-9742-57398a8cacff",
+          "classification": "240a759a-2e1a-5fed-b23a-98ebbbe0d037"
+        },
+        "sources": [
+          {
+            "source": "38300df1-ef0c-5bff-9377-5adecb69dc05",
+            "address": {
+              "path": "/objects/1/relationships/0"
+            }
+          }
+        ]
+      }
+    ],
+    "facts": [
+      {
+        "target": "b6d785a8-a256-5f60-b5c5-853da367c42b",
+        "claims": [
+          "bb0e5643-edd5-554c-ac74-8ec0bc0336f0"
+        ]
+      },
+      {
+        "target": "26987824-5607-5f51-88e0-fc041bb02609",
+        "claims": [
+          "3b3038c3-a26d-54ca-b5ef-1ad3b2b68b65"
+        ]
+      },
+      {
+        "target": "3912b85d-46e4-5e98-af3f-593bca6886b5",
+        "claims": [
+          "6a38580e-e269-53e4-8a74-b70eac9341d4"
+        ]
+      },
+      {
+        "target": "4145e68a-4da4-5bfe-8594-94beed75e8db",
+        "claims": [
+          "96575da9-e4f8-5d0a-8d80-56d746cd5d3e"
+        ]
+      },
+      {
+        "target": "f593e1c8-d6cc-54a4-a5e2-44b207b1233c",
+        "claims": [
+          "47bd0e06-3f04-5f0f-a942-a7b62d797f90"
+        ]
+      },
+      {
+        "target": "f5f7ba9b-cd6c-5e0e-9747-0c8935da1c9d",
+        "claims": [
+          "cbffa2b8-c724-5bd0-9a5e-2d30051bb3ee"
+        ]
+      },
+      {
+        "target": "73acfe6f-3521-53ab-972d-bf1258c15933",
+        "claims": [
+          "b2c6c887-2339-54fd-87f2-3a51fc0047f5"
+        ]
+      },
+      {
+        "target": "68bb7529-541f-5dc4-9742-57398a8cacff",
+        "claims": [
+          "4de1a06c-5b11-5187-9fa7-1c8bf3128a4b"
+        ]
+      },
+      {
+        "target": "cd7e5bc5-4a84-5a50-8b2f-39d0e6040239",
+        "claims": [
+          "b7536ce5-94f5-54da-9b79-3e6d153262d5"
+        ]
+      },
+      {
+        "target": "fb2477bb-6c00-549f-8820-18da5809e051",
+        "claims": [
+          "bb96014c-6d69-5f0e-91b9-6ec9c5916d58"
+        ]
+      },
+      {
+        "target": "e98fc2e9-a2f2-560f-a4c4-140d695b0e85",
+        "claims": [
+          "c78c794b-14a0-5838-b47a-cd0be7112151"
+        ]
+      },
+      {
+        "target": "110ef1a9-04b8-5a3f-be48-646866908fa2",
+        "claims": [
+          "c0904b2b-cda2-5b5d-a3c2-7326c7f41fa6"
+        ]
+      },
+      {
+        "target": "5da3469b-2dae-5fb5-9bf8-943c1b76d4ef",
+        "claims": [
+          "be8d513e-a446-5ffd-8f0c-6a2aa3b40101"
+        ]
+      },
+      {
+        "target": "7b671fed-8e49-5969-943c-69f9f408f3d1",
+        "claims": [
+          "afeb15e9-a344-5842-8eaf-70a6d533d3ab"
+        ]
+      }
+    ]
+  }
+}

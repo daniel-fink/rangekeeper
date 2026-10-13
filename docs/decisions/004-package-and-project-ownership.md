@@ -95,7 +95,7 @@ behavior. This subsequent decision retires the four narrower names without
 aliases. Users who selected only financial or table operations now install the
 combined calculation dependencies. Visualization also installs Matplotlib.
 All former capability dependencies remain available and their version ranges
-are retained. The [upgrade mapping](../guides/upgrading.md#installation-extra-migration)
+are retained. The [upgrade mapping](../guides/upgrading.md)
 and [installation guide](../guides/installation.md#choose-capabilities) own the
 current user instructions. Narrow import checks remain useful independently of
 how packages are installed.

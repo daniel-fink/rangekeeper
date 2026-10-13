@@ -9,6 +9,18 @@
   const originalHeight = plot._fullLayout.height;
   const partition = plot.data.every(trace => ['sunburst', 'treemap'].includes(trace.type));
   const preference = window.matchMedia('(prefers-color-scheme: dark)');
+  // Plotly uses a fixed pale fill for active menu items. Keep controls legible
+  // in both host themes, including their open and hover states.
+  const controls = document.createElement('style');
+  controls.textContent = `
+    .updatemenu-item-rect { fill: var(--rk-menu-background) !important; }
+    .updatemenu-header:hover .updatemenu-item-rect,
+    .updatemenu-dropdown-button:hover .updatemenu-item-rect {
+      fill: var(--rk-menu-hover) !important;
+    }
+    .updatemenu-container text { fill: var(--rk-menu-text) !important; }
+  `;
+  document.head.appendChild(controls);
   let host = window;
   try {
     if (window.parent !== window && window.parent.document.body) host = window.parent;
@@ -46,6 +58,9 @@
     document.body.style.margin = '0';
     document.body.style.backgroundColor = paper;
     document.documentElement.style.colorScheme = mode();
+    document.documentElement.style.setProperty('--rk-menu-background', paper);
+    document.documentElement.style.setProperty('--rk-menu-hover', colors.grid);
+    document.documentElement.style.setProperty('--rk-menu-text', text);
     const layout = {
       width,
       paper_bgcolor: paper, plot_bgcolor: paper,
@@ -78,6 +93,13 @@
       layout[axis + '.linecolor'] = colors.grid;
       layout[axis + '.zerolinecolor'] = colors.grid;
       layout[axis + '.color'] = text;
+    }
+    for (let index = 0; index < (plot.layout.updatemenus || []).length; index++) {
+      const menu = 'updatemenus[' + index + ']';
+      layout[menu + '.bgcolor'] = paper;
+      layout[menu + '.bordercolor'] = colors.grid;
+      layout[menu + '.font.color'] = text;
+      layout[menu + '.font.family'] = font;
     }
     Plotly.relayout(plot, layout);
   }

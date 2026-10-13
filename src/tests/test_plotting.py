@@ -6,7 +6,7 @@ import pytest
 import plotly.graph_objects as go
 import plotly.io as pio
 
-from rangekeeper.adapters.plotting import plot_distribution, plot_flows, plot_pairs
+from rangekeeper.visualisation.chart import plot_distribution, plot_flows, plot_pairs
 from rangekeeper.model.duration import Frequency, PeriodTiming, make_periods
 from rangekeeper.model.flux import Flow
 

@@ -1,0 +1,17 @@
+Resolved 79 packages in 4ms
+   Building whirlwind-mcp @ file:///Volumes/Data/Projects/Whirlwind/whirlwind-mcp
+      Built whirlwind-mcp @ file:///Volumes/Data/Projects/Whirlwind/whirlwind-mcp
+Prepared 1 package in 468ms
+Uninstalled 3 packages in 62ms
+warning: Failed to clone files; falling back to full copy. This may lead to degraded performance.
+         If the cache and target directories are on different filesystems, reflinking may not be supported.
+         If this is intentional, set `export UV_LINK_MODE=copy` or use `--link-mode=copy` to suppress this warning.
+Installed 6 packages in 1.16s
+ + highspy==1.15.1
+ + numpy==2.2.6
+ - polars==2.0.0
+ + polars==1.44.2
+ - polars-runtime-32==2.0.0
+ + polars-runtime-32==1.44.2
+ + pyomo==6.10.1
+ ~ whirlwind-mcp==0.2.0 (from file:///Volumes/Data/Projects/Whirlwind/whirlwind-mcp)

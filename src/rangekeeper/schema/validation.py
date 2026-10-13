@@ -56,10 +56,10 @@ def _validator(kind: str):
 
 def validate(kind: str, data: object) -> ValidationReport:
     """Validate a detached JSON-compatible value without mutating it."""
-    from rangekeeper.schema.runtime import _json_copy
+    from rangekeeper.schema.runtime import copy_json
 
     try:
-        data = _json_copy(data)
+        data = copy_json(data)
     except (TypeError, ValueError) as error:
         return ValidationReport((Issue("structure.json", str(error)),))
     return _validate_json(kind, data)

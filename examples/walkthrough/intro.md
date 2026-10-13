@@ -14,15 +14,17 @@ The current notebooks use the pre-1.0 canonical API; a plain installation of the
 published PyPI package may not supply that API. Tables use Polars. Canonical
 records retain their units and provenance independently of display tables.
 
-This local book includes two accepted chapters. Notebook 01 introduces the numerical
+This local book includes three accepted chapters. Notebook 01 introduces the numerical
 tools through a small DCF. Notebook 02 introduces the continuing mixed-use property:
 its actual geometry, graph, use mix, shared services and completed-property economics.
+Notebook 03 adds a development plan, forward and inverse financial questions, and
+a check of whether committed funding can meet the payments.
 The six legacy sources remain available as references while later lessons are
 consolidated and updated.
 
 The continuing example uses the legacy Rangekeeper design, the Garden City framework
 for development flexibility, and SFFA for forward and inverse financial questions.
-Later chapters will add these ideas in steps:
+These terms connect the chapters:
 
 | Term | Meaning |
 | --- | --- |
@@ -39,6 +41,7 @@ No live receive, account or upload is needed to run the accepted chapters.
 ## Table of Contents
 - [A Basic Discounted Cash Flow Valuation](basic_dcf.ipynb)
 - [From design to property economics](design_to_value.ipynb)
+- [A development plan and its financial limits](development_feasibility.ipynb)
 
 ## Acknowledgements
 For Andrea, who keeps reminding me it is possible.
