@@ -17,3 +17,11 @@ source-specific Grasshopper component is in MCP and consumes the pinned RK assem
 
 See [the decision](../decisions/007-three-repository-refactor.md),
 [upgrade paths](../guides/upgrading.md), and [Grasshopper](../guides/grasshopper.md).
+
+The agreed [Model and Speckle Package contract](../decisions/008-sqlite-model-package.md)
+pairs one immutable Model with one exact native Speckle bundle. The Model owns the
+bundle pin and mappings; changing either side or the mappings creates a new Model
+and Package. Source data stays adjacent to RK data, while rendering belongs to the
+interface. SQLite remains a candidate RK store, not a requirement that the entire
+Package be one database file. The earlier development experiment is historical
+evidence; the installed IO API and public Model schema have not adopted this contract.
