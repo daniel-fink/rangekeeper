@@ -13,7 +13,7 @@ current after its execution plan moves to history.
 | [ADR-005: Flux and Stream implementation](005-flux-and-stream-implementation.md) | Implemented; locally verified | Discoverable mathematical parameter names, Stream DX, `model.flux`, Span methods, Polars calculations, acausal formulations, hierarchy, Specification roles and acceptance |
 | [ADR-006: Walkthrough curriculum](006-walkthrough-curriculum.md) | Notebooks 01–03 locally accepted; later lessons planned | Six lessons combining the legacy property graph, SFFA inverse solving, Garden City uncertainty/flexibility and two-pad decision lessons |
 | [ADR-007: Three repository refactor](007-three-repository-refactor.md) | Implemented; local validation recorded | RK modelling and local display; MCP ingestion; Viewer advanced browsing; zero compatibility APIs and predecessor runtimes |
-| [ADR-008: Model and Speckle Package contract](008-sqlite-model-package.md) | Contract agreed; implementation pending | One Model owns one exact bundle pin and mappings; changes create a new Model and Package; earlier SQLite proof retained |
+| [ADR-008: Model and Geometry Package contract](008-sqlite-model-package.md) | Contract agreed; implementation pending | One Model owns one exact Geometry pin and mappings; Speckle 2026.9 is the first provider format; changes create a new Model and Package; earlier SQLite proof retained |
 
 The first three records summarize decisions already supported by the linked
 implementation history. They do not invent an earlier approval date. ADR-004 also
