@@ -88,6 +88,42 @@ if a.mode == "prepare":
         }
     )
     model = model.revise(Update(system=System.from_data(data)))
+    from rangekeeper.model import Geometry
+    from rangekeeper.io.migration import model_07_to_08
+
+    if model.metadata.schema_version == "0.7.0":
+        model = model_07_to_08(model)
+    from rangekeeper.model.geometry import inventory_digest
+
+    native_files = [{"path": "synthetic.dat", "sha256": "0" * 64, "size": 0}]
+    model = model.revise(
+        Update(
+            geometry=Geometry.from_data(
+                {
+                    "pin": {
+                        "provider": "synthetic",
+                        "format": "cross-language-fixture",
+                        "format_version": "1",
+                        "specification": "urn:synthetic:cross-language:1",
+                        "specification_digest": "1" * 64,
+                        "content_digest": inventory_digest(native_files),
+                        "files": native_files,
+                    },
+                    "mappings": [
+                        {
+                            "entity": str(root),
+                            "element": {
+                                "kind": "object",
+                                "namespace": "synthetic",
+                                "key": "object-1",
+                                "placement": ["outer", "inner"],
+                            },
+                        }
+                    ],
+                }
+            )
+        )
+    )
     a.directory.mkdir(parents=True, exist_ok=True)
     codec.write(model, a.directory / "python.json")
 else:

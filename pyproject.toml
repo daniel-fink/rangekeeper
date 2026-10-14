@@ -1,6 +1,6 @@
 [project]
 name = "Rangekeeper"
-version = "0.9.0"
+version = "0.10.0.dev1"
 description = "Algorithmic modelling for project finance"
 authors = [
     { name = "Daniel Fink", email = "danfink@mit.edu" }
@@ -24,6 +24,7 @@ Documentation = "https://github.com/daniel-fink/rangekeeper#readme"
 Issues = "https://github.com/daniel-fink/rangekeeper/issues"
 
 [project.optional-dependencies]
+bundle = ["pyarrow==23.0.1", "duckdb==1.4.3"]
 calculations = [
     "polars>=1.44,<2",
     "numpy>=1.24",
