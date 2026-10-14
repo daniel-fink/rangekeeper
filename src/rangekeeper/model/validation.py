@@ -30,7 +30,6 @@ from rangekeeper.model.system.validation import check_system
 from rangekeeper.model.provenance import check_provenance
 from rangekeeper.model.formulation.preparation import prepare_formulations
 
-
 if TYPE_CHECKING:
     from rangekeeper.model.model import Model
 
@@ -145,7 +144,17 @@ def recorded_unit_issues(
 def check_model(model, schema_version, history=(), *, index=None):
     """Check Model domains and optional revision history without reconstruction."""
     metadata = model["metadata"]
-    require(metadata["schema_version"] == schema_version, "unsupported schema version")
+    require(
+        metadata["schema_version"] in ("0.7.0", schema_version),
+        "unsupported schema version",
+    )
+    require(
+        metadata["schema_version"] != "0.7.0" or "geometry" not in model,
+        "Geometry requires Model schema 0.8.0",
+    )
+    from rangekeeper.model.geometry import check_geometry
+
+    check_geometry(model)
     if index is None:
         internal_ids = require_declarations((("Model", model),))
         locations = {

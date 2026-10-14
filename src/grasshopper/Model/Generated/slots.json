@@ -1634,6 +1634,289 @@
       "required": true
     }
   },
+  "Geometry": {
+    "mappings": {
+      "many": true,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "record",
+          "kind": "GeometryMapping"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    },
+    "pin": {
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "record",
+          "kind": "GeometryPin"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    }
+  },
+  "GeometryElement": {
+    "key": {
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "string"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "kind": {
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "Code"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "namespace": {
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "Code"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "placement": {
+      "many": true,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "string"
+        }
+      ],
+      "ordered": true,
+      "required": false
+    },
+    "scope": {
+      "many": false,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "string"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    }
+  },
+  "GeometryFile": {
+    "path": {
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "string"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "sha256": {
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "string"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "size": {
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "integer"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    }
+  },
+  "GeometryMapping": {
+    "element": {
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "record",
+          "kind": "GeometryElement"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "entity": {
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "uuid",
+          "kind": "Entity"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    }
+  },
+  "GeometryPin": {
+    "content_digest": {
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "string"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "files": {
+      "many": true,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "record",
+          "kind": "GeometryFile"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "format": {
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "Code"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "format_version": {
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "Code"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "provider": {
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "Code"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "source_address": {
+      "many": false,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "string"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    },
+    "source_version": {
+      "many": false,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "string"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    },
+    "specification": {
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "string"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    },
+    "specification_digest": {
+      "many": false,
+      "mapping": false,
+      "nullable": false,
+      "options": [
+        {
+          "category": "primitive",
+          "kind": "string"
+        }
+      ],
+      "ordered": false,
+      "required": true
+    }
+  },
   "Implementation": {
     "kind": {
       "many": false,
@@ -2014,6 +2297,19 @@
         {
           "category": "record",
           "kind": "Definitions"
+        }
+      ],
+      "ordered": false,
+      "required": false
+    },
+    "geometry": {
+      "many": false,
+      "mapping": false,
+      "nullable": true,
+      "options": [
+        {
+          "category": "record",
+          "kind": "Geometry"
         }
       ],
       "ordered": false,

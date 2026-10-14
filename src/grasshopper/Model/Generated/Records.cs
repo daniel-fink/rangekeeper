@@ -947,6 +947,172 @@ public sealed class Function : WireRecord
     }
 }
 
+/// <summary>Schema-derived Geometry wire record. Exports and nested reads are detached.</summary>
+public sealed class Geometry : WireRecord
+{
+    public Geometry() { }
+    public Geometry(JsonObject data) : base(data) { }
+
+    /// <summary>Wire field mappings; missing and null remain distinct.</summary>
+    public Optional<IReadOnlyList<GeometryMapping>> Mappings
+    {
+        get => ReadOptional<IReadOnlyList<GeometryMapping>>("mappings");
+        init => WriteOptional("mappings", value);
+    }
+    /// <summary>Wire field pin; missing and null remain distinct.</summary>
+    public GeometryPin Pin
+    {
+        get => Read<GeometryPin>("pin");
+        init => Write("pin", value);
+    }
+}
+
+/// <summary>Schema-derived GeometryElement wire record. Exports and nested reads are detached.</summary>
+public sealed class GeometryElement : WireRecord
+{
+    public GeometryElement() { }
+    public GeometryElement(JsonObject data) : base(data) { }
+
+    /// <summary>Wire field key; missing and null remain distinct.</summary>
+    public string Key
+    {
+        get => Read<string>("key");
+        init => Write("key", value);
+    }
+    /// <summary>Wire field kind; missing and null remain distinct.</summary>
+    public string Kind
+    {
+        get => Read<string>("kind");
+        init => Write("kind", value);
+    }
+    /// <summary>Wire field namespace; missing and null remain distinct.</summary>
+    public string Namespace
+    {
+        get => Read<string>("namespace");
+        init => Write("namespace", value);
+    }
+    /// <summary>Wire field placement; missing and null remain distinct.</summary>
+    public Optional<IReadOnlyList<string>> Placement
+    {
+        get => ReadOptional<IReadOnlyList<string>>("placement");
+        init => WriteOptional("placement", value);
+    }
+    /// <summary>Wire field scope; missing and null remain distinct.</summary>
+    public Optional<string> Scope
+    {
+        get => ReadOptional<string>("scope");
+        init => WriteOptional("scope", value);
+    }
+}
+
+/// <summary>Schema-derived GeometryFile wire record. Exports and nested reads are detached.</summary>
+public sealed class GeometryFile : WireRecord
+{
+    public GeometryFile() { }
+    public GeometryFile(JsonObject data) : base(data) { }
+
+    /// <summary>Wire field path; missing and null remain distinct.</summary>
+    public string Path
+    {
+        get => Read<string>("path");
+        init => Write("path", value);
+    }
+    /// <summary>Wire field sha256; missing and null remain distinct.</summary>
+    public string Sha256
+    {
+        get => Read<string>("sha256");
+        init => Write("sha256", value);
+    }
+    /// <summary>Wire field size; missing and null remain distinct.</summary>
+    public global::System.Numerics.BigInteger Size
+    {
+        get => Read<global::System.Numerics.BigInteger>("size");
+        init => Write("size", value);
+    }
+}
+
+/// <summary>Schema-derived GeometryMapping wire record. Exports and nested reads are detached.</summary>
+public sealed class GeometryMapping : WireRecord
+{
+    public GeometryMapping() { }
+    public GeometryMapping(JsonObject data) : base(data) { }
+
+    /// <summary>Wire field element; missing and null remain distinct.</summary>
+    public GeometryElement Element
+    {
+        get => Read<GeometryElement>("element");
+        init => Write("element", value);
+    }
+    /// <summary>Wire field entity; missing and null remain distinct.</summary>
+    public Guid Entity
+    {
+        get => Read<Guid>("entity");
+        init => Write("entity", value);
+    }
+}
+
+/// <summary>Schema-derived GeometryPin wire record. Exports and nested reads are detached.</summary>
+public sealed class GeometryPin : WireRecord
+{
+    public GeometryPin() { }
+    public GeometryPin(JsonObject data) : base(data) { }
+
+    /// <summary>Wire field content_digest; missing and null remain distinct.</summary>
+    public string ContentDigest
+    {
+        get => Read<string>("content_digest");
+        init => Write("content_digest", value);
+    }
+    /// <summary>Wire field files; missing and null remain distinct.</summary>
+    public IReadOnlyList<GeometryFile> Files
+    {
+        get => Read<IReadOnlyList<GeometryFile>>("files");
+        init => Write("files", value);
+    }
+    /// <summary>Wire field format; missing and null remain distinct.</summary>
+    public string Format
+    {
+        get => Read<string>("format");
+        init => Write("format", value);
+    }
+    /// <summary>Wire field format_version; missing and null remain distinct.</summary>
+    public string FormatVersion
+    {
+        get => Read<string>("format_version");
+        init => Write("format_version", value);
+    }
+    /// <summary>Wire field provider; missing and null remain distinct.</summary>
+    public string Provider
+    {
+        get => Read<string>("provider");
+        init => Write("provider", value);
+    }
+    /// <summary>Wire field source_address; missing and null remain distinct.</summary>
+    public Optional<string> SourceAddress
+    {
+        get => ReadOptional<string>("source_address");
+        init => WriteOptional("source_address", value);
+    }
+    /// <summary>Wire field source_version; missing and null remain distinct.</summary>
+    public Optional<string> SourceVersion
+    {
+        get => ReadOptional<string>("source_version");
+        init => WriteOptional("source_version", value);
+    }
+    /// <summary>Wire field specification; missing and null remain distinct.</summary>
+    public string Specification
+    {
+        get => Read<string>("specification");
+        init => Write("specification", value);
+    }
+    /// <summary>Wire field specification_digest; missing and null remain distinct.</summary>
+    public string SpecificationDigest
+    {
+        get => Read<string>("specification_digest");
+        init => Write("specification_digest", value);
+    }
+}
+
 /// <summary>Schema-derived Implementation wire record. Exports and nested reads are detached.</summary>
 public sealed class Implementation : WireRecord
 {
@@ -1184,6 +1350,12 @@ public sealed class Model : WireRecord
     {
         get => ReadOptional<Definitions>("definitions");
         init => WriteOptional("definitions", value);
+    }
+    /// <summary>Wire field geometry; missing and null remain distinct.</summary>
+    public Optional<Geometry> Geometry
+    {
+        get => ReadOptional<Geometry>("geometry");
+        init => WriteOptional("geometry", value);
     }
     /// <summary>Wire field metadata; missing and null remain distinct.</summary>
     public Metadata Metadata

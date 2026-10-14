@@ -1579,6 +1579,280 @@ class Function(Record):
         return cast('EmptyHandling | None', self._field('empty_collection'))
 
 
+class Geometry(Record):
+    'One exact provider dataset and explicit Entity associations, owned by this Model.'
+    __slots__ = ()
+    _kind = 'Geometry'
+
+    def __init__(self, *,
+        pin: GeometryPin,
+        mappings: tuple[GeometryMapping, ...] | None | Unset = UNSET,
+    ) -> None:
+        self._initialize({
+            'pin': pin,
+            'mappings': mappings,
+        })
+
+    def replace(self, *,
+        pin: GeometryPin | Unset = UNSET,
+        mappings: tuple[GeometryMapping, ...] | None | Unset = UNSET,
+    ) -> Geometry:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'pin': pin,
+            'mappings': mappings,
+        })
+
+    @property
+    def pin(self) -> GeometryPin:
+        'Pin.'
+        return cast('GeometryPin', self._field('pin'))
+
+    @property
+    def mappings(self) -> tuple[GeometryMapping, ...] | None:
+        'Mappings.'
+        return cast('tuple[GeometryMapping, ...] | None', self._field('mappings'))
+
+
+class GeometryElement(Record):
+    'A typed identity in the pinned provider dataset. Namespace and scope remain explicit; mesh IDs are not source-object identities.'
+    __slots__ = ()
+    _kind = 'GeometryElement'
+
+    def __init__(self, *,
+        namespace: str,
+        kind: str,
+        key: str,
+        scope: str | None | Unset = UNSET,
+        placement: tuple[str, ...] | None | Unset = UNSET,
+    ) -> None:
+        self._initialize({
+            'namespace': namespace,
+            'kind': kind,
+            'key': key,
+            'scope': scope,
+            'placement': placement,
+        })
+
+    def replace(self, *,
+        namespace: str | Unset = UNSET,
+        kind: str | Unset = UNSET,
+        key: str | Unset = UNSET,
+        scope: str | None | Unset = UNSET,
+        placement: tuple[str, ...] | None | Unset = UNSET,
+    ) -> GeometryElement:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'namespace': namespace,
+            'kind': kind,
+            'key': key,
+            'scope': scope,
+            'placement': placement,
+        })
+
+    @property
+    def namespace(self) -> str:
+        'Namespace.'
+        return cast('str', self._field('namespace'))
+
+    @property
+    def kind(self) -> str:
+        'Kind.'
+        return cast('str', self._field('kind'))
+
+    @property
+    def key(self) -> str:
+        'Key.'
+        return cast('str', self._field('key'))
+
+    @property
+    def scope(self) -> str | None:
+        'Scope.'
+        return cast('str | None', self._field('scope'))
+
+    @property
+    def placement(self) -> tuple[str, ...] | None:
+        'Placement.'
+        return cast('tuple[str, ...] | None', self._field('placement'))
+
+
+class GeometryFile(Record):
+    'One retained native file, addressed relative to the Geometry root.'
+    __slots__ = ()
+    _kind = 'GeometryFile'
+
+    def __init__(self, *,
+        path: str,
+        sha256: str,
+        size: int,
+    ) -> None:
+        self._initialize({
+            'path': path,
+            'sha256': sha256,
+            'size': size,
+        })
+
+    def replace(self, *,
+        path: str | Unset = UNSET,
+        sha256: str | Unset = UNSET,
+        size: int | Unset = UNSET,
+    ) -> GeometryFile:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'path': path,
+            'sha256': sha256,
+            'size': size,
+        })
+
+    @property
+    def path(self) -> str:
+        'Path.'
+        return cast('str', self._field('path'))
+
+    @property
+    def sha256(self) -> str:
+        'Sha256.'
+        return cast('str', self._field('sha256'))
+
+    @property
+    def size(self) -> int:
+        'Size.'
+        return cast('int', self._field('size'))
+
+
+class GeometryMapping(Record):
+    'One Entity or Assembly corresponds to one exact typed source element. This is not provenance.'
+    __slots__ = ()
+    _kind = 'GeometryMapping'
+
+    def __init__(self, *,
+        entity: UUID,
+        element: GeometryElement,
+    ) -> None:
+        self._initialize({
+            'entity': entity,
+            'element': element,
+        })
+
+    def replace(self, *,
+        entity: UUID | Unset = UNSET,
+        element: GeometryElement | Unset = UNSET,
+    ) -> GeometryMapping:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'entity': entity,
+            'element': element,
+        })
+
+    @property
+    def entity(self) -> UUID:
+        'Entity.'
+        return cast('UUID', self._field('entity'))
+
+    @property
+    def element(self) -> GeometryElement:
+        'Element.'
+        return cast('GeometryElement', self._field('element'))
+
+
+class GeometryPin(Record):
+    'Exact native content and its source contract. Paths and source addresses do not replace integrity.'
+    __slots__ = ()
+    _kind = 'GeometryPin'
+
+    def __init__(self, *,
+        provider: str,
+        format: str,
+        format_version: str,
+        specification: str,
+        specification_digest: str,
+        content_digest: str,
+        files: tuple[GeometryFile, ...],
+        source_address: str | None | Unset = UNSET,
+        source_version: str | None | Unset = UNSET,
+    ) -> None:
+        self._initialize({
+            'provider': provider,
+            'format': format,
+            'format_version': format_version,
+            'specification': specification,
+            'specification_digest': specification_digest,
+            'content_digest': content_digest,
+            'files': files,
+            'source_address': source_address,
+            'source_version': source_version,
+        })
+
+    def replace(self, *,
+        provider: str | Unset = UNSET,
+        format: str | Unset = UNSET,
+        format_version: str | Unset = UNSET,
+        specification: str | Unset = UNSET,
+        specification_digest: str | Unset = UNSET,
+        content_digest: str | Unset = UNSET,
+        files: tuple[GeometryFile, ...] | Unset = UNSET,
+        source_address: str | None | Unset = UNSET,
+        source_version: str | None | Unset = UNSET,
+    ) -> GeometryPin:
+        """Return a validated copy; omitted arguments preserve field presence and value."""
+        return self._replace({
+            'provider': provider,
+            'format': format,
+            'format_version': format_version,
+            'specification': specification,
+            'specification_digest': specification_digest,
+            'content_digest': content_digest,
+            'files': files,
+            'source_address': source_address,
+            'source_version': source_version,
+        })
+
+    @property
+    def provider(self) -> str:
+        'Provider.'
+        return cast('str', self._field('provider'))
+
+    @property
+    def format(self) -> str:
+        'Format.'
+        return cast('str', self._field('format'))
+
+    @property
+    def format_version(self) -> str:
+        'Format version.'
+        return cast('str', self._field('format_version'))
+
+    @property
+    def specification(self) -> str:
+        'Immutable upstream specification identifier, such as a full commit URL.'
+        return cast('str', self._field('specification'))
+
+    @property
+    def specification_digest(self) -> str:
+        'Specification digest.'
+        return cast('str', self._field('specification_digest'))
+
+    @property
+    def content_digest(self) -> str:
+        'Content digest.'
+        return cast('str', self._field('content_digest'))
+
+    @property
+    def files(self) -> tuple[GeometryFile, ...]:
+        'Files.'
+        return cast('tuple[GeometryFile, ...]', self._field('files'))
+
+    @property
+    def source_address(self) -> str | None:
+        'Source address.'
+        return cast('str | None', self._field('source_address'))
+
+    @property
+    def source_version(self) -> str | None:
+        'Source version.'
+        return cast('str | None', self._field('source_version'))
+
+
 class Implementation(Record):
     'An implementation role and its reproducible software identity as reported for this execution.'
     __slots__ = ()
@@ -1968,12 +2242,14 @@ class Model(Record):
         definitions: Definitions | Unset = UNSET,
         system: System | Unset = UNSET,
         provenance: Provenance | Unset = UNSET,
+        geometry: Geometry | None | Unset = UNSET,
     ) -> None:
         self._initialize({
             'metadata': metadata,
             'definitions': definitions,
             'system': system,
             'provenance': provenance,
+            'geometry': geometry,
         })
 
     def replace(self, *,
@@ -1981,6 +2257,7 @@ class Model(Record):
         definitions: Definitions | Unset = UNSET,
         system: System | Unset = UNSET,
         provenance: Provenance | Unset = UNSET,
+        geometry: Geometry | None | Unset = UNSET,
     ) -> Model:
         """Return a validated copy; omitted arguments preserve field presence and value."""
         return self._replace({
@@ -1988,6 +2265,7 @@ class Model(Record):
             'definitions': definitions,
             'system': system,
             'provenance': provenance,
+            'geometry': geometry,
         })
 
     @property
@@ -2009,6 +2287,11 @@ class Model(Record):
     def provenance(self) -> Provenance | None:
         'Evidence and reasoning supporting recorded domain and Value content in this snapshot.'
         return cast('Provenance | None', self._field('provenance'))
+
+    @property
+    def geometry(self) -> Geometry | None:
+        'Optional exact Geometry pin and Entity mappings. Requires Model schema 0.8.0.'
+        return cast('Geometry | None', self._field('geometry'))
 
 
 class Movement(MovementBehavior, Record):
@@ -3993,6 +4276,11 @@ _TYPES = {
     'Flow': Flow,
     'Formulation': Formulation,
     'Function': Function,
+    'Geometry': Geometry,
+    'GeometryElement': GeometryElement,
+    'GeometryFile': GeometryFile,
+    'GeometryMapping': GeometryMapping,
+    'GeometryPin': GeometryPin,
     'Implementation': Implementation,
     'Label': Label,
     'LibraryVersion': LibraryVersion,
@@ -4039,4 +4327,4 @@ _TYPES = {
     'Value': Value,
 }
 
-__all__ = ['Action', 'ActionKind', 'Argument', 'Assembly', 'Assignment', 'Binding', 'CalculationProvenance', 'Call', 'Cardinality', 'Characteristics', 'Claim', 'ClaimKind', 'Classification', 'CollectionKind', 'CompletionStatus', 'Constraint', 'Content', 'ContentEntry', 'ContentKind', 'Criterion', 'Decision', 'DecisionOutcome', 'Definitions', 'Depth', 'Diagnostic', 'Direction', 'Distribution', 'DistributionFamily', 'Domain', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'Entity', 'Entry', 'Expression', 'ExpressionKind', 'Fact', 'Filter', 'Flow', 'Formulation', 'Function', 'Implementation', 'ImplementationKind', 'Label', 'LibraryVersion', 'Location', 'Measure', 'Measurement', 'Metadata', 'Method', 'MissingHandling', 'Model', 'Movement', 'Objective', 'ObjectiveKind', 'ObservationAvailability', 'ObservationBinding', 'ObservedQuantity', 'Operator', 'Parameter', 'ParameterKind', 'Period', 'Policy', 'Projection', 'ProjectionKind', 'PropertyContent', 'Provenance', 'Quantity', 'Query', 'RandomStream', 'Reconciliation', 'ReconciliationStatus', 'Reference', 'Relationship', 'Report', 'Rule', 'Run', 'Runtime', 'ScenarioParameter', 'ScenarioPlan', 'ScenarioRealization', 'Selection', 'SelectionKind', 'Settings', 'Severity', 'SolutionStatus', 'Source', 'Span', 'Specification', 'Status', 'Step', 'StepKind', 'System', 'Taxonomy', 'Traversal', 'TraversalKind', 'Value', 'ValueKind']
+__all__ = ['Action', 'ActionKind', 'Argument', 'Assembly', 'Assignment', 'Binding', 'CalculationProvenance', 'Call', 'Cardinality', 'Characteristics', 'Claim', 'ClaimKind', 'Classification', 'CollectionKind', 'CompletionStatus', 'Constraint', 'Content', 'ContentEntry', 'ContentKind', 'Criterion', 'Decision', 'DecisionOutcome', 'Definitions', 'Depth', 'Diagnostic', 'Direction', 'Distribution', 'DistributionFamily', 'Domain', 'DomainKind', 'DuplicateHandling', 'EmptyHandling', 'Entity', 'Entry', 'Expression', 'ExpressionKind', 'Fact', 'Filter', 'Flow', 'Formulation', 'Function', 'Geometry', 'GeometryElement', 'GeometryFile', 'GeometryMapping', 'GeometryPin', 'Implementation', 'ImplementationKind', 'Label', 'LibraryVersion', 'Location', 'Measure', 'Measurement', 'Metadata', 'Method', 'MissingHandling', 'Model', 'Movement', 'Objective', 'ObjectiveKind', 'ObservationAvailability', 'ObservationBinding', 'ObservedQuantity', 'Operator', 'Parameter', 'ParameterKind', 'Period', 'Policy', 'Projection', 'ProjectionKind', 'PropertyContent', 'Provenance', 'Quantity', 'Query', 'RandomStream', 'Reconciliation', 'ReconciliationStatus', 'Reference', 'Relationship', 'Report', 'Rule', 'Run', 'Runtime', 'ScenarioParameter', 'ScenarioPlan', 'ScenarioRealization', 'Selection', 'SelectionKind', 'Settings', 'Severity', 'SolutionStatus', 'Source', 'Span', 'Specification', 'Status', 'Step', 'StepKind', 'System', 'Taxonomy', 'Traversal', 'TraversalKind', 'Value', 'ValueKind']
