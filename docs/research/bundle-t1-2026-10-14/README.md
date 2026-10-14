@@ -57,3 +57,31 @@ prevented their checks from running; both tools were installed before the passin
 runs. No remote harness, Windows, Rhino or Projects acceptance is claimed. The
 subsequent consolidation record must identify the merged revision and the exact
 wheel used for combined and notebook validation.
+
+## Combined draft validation
+
+The draft branch merged develop through `6837b9a` after the candidate merge
+`3b59671`. The walkthrough lock now selects local RK `0.10.0.dev1`. Fresh kernels
+used Python 3.12.12 and the clean candidate wheel built from `3b59671`, SHA-256
+`534ca425f25cbeb5e6c2c6530b94516091e1811aada0d788939153c9cfe03467`.
+
+All 81 code cells passed: 26 in `basic_dcf`, 28 in `design_to_value`, and 27 in
+`development_feasibility`. The independent Notebook 03 audit passed and retained
+its prior numerical results. Three walkthrough helper tests passed. Jupyter Book
+2.1.7 built the introduction and three chapters with `--strict`. Browser review
+confirmed local navigation, cash-flow tables, rendered source geometry and object
+selection, and the development cash-flow chart. No browser console errors were
+observed in those checks. This does not establish every chart interaction or host.
+
+Authored notebooks and shared source data were not changed. Executed copies,
+the financial audit, wheel, source archive and local HTML are retained under
+`whirlwind-core/.runtime/rk-consolidation-20261014/`. This ignored evidence must be
+backed up separately from Git. The local preview does not publish the book.
+Its repository edit links and other public publication details remain deferred.
+
+The combined check also found the historical SQLite experiment reading the new
+live slot schema. Its internal path column collided with GeometryFile.path.
+Commit `6837b9a` pins the experiment to its exact original Model 0.7 slot metadata
+and rejects newer Models before writing. All 27 SQLite checks pass, and a prior
+retained database reopens with network and original source access blocked.
+The library's 858 tests and the installed-wheel slices also pass.
