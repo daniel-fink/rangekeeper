@@ -12,9 +12,16 @@ their presence does not establish compatibility with the current library.
 
 The updated book lives on
 [`codex/walkthrough-acausal`](https://github.com/daniel-fink/rangekeeper/tree/codex/walkthrough-acausal).
-Use a separate worktree for that branch. Run the notebook and book commands below
-there. Commit and push draft work to that branch, and merge `develop` into it to
-receive library updates. The shared source capture lives at
+Use `/Volumes/Data/Projects/Rangekeeper` as the single local working folder.
+Keep `develop` checked out for library work. Before changing branches, inspect
+`git status --short --branch` and save any unfinished work on its owning branch.
+Switch to `codex/walkthrough-acausal` in the same folder for notebook and book
+work, then run the commands below. Commit and push drafts on that branch. Merge
+`develop` into it to receive library updates; refresh and check its environment
+lock when dependencies change. Return to `develop` when draft work is saved.
+Do not create another RK worktree for this routine workflow. The
+[single-folder consolidation record](../history/handoffs/2026-10-14-single-folder-consolidation.md)
+records the saved commits, retained files and open acceptance work. The shared source capture lives at
 [`examples/data/mixed_use_property`](../../examples/data/mixed_use_property).
 Keep its retained source bytes and provenance unchanged.
 
@@ -103,7 +110,7 @@ repository root, with the candidate-wheel environment active:
 ```sh
 mkdir -p /tmp/rk-notebooks-001/walkthrough
 cp examples/walkthrough/basic_dcf.ipynb examples/walkthrough/design_to_value.ipynb examples/walkthrough/development_feasibility.ipynb /tmp/rk-notebooks-001/walkthrough/
-cp -R examples/walkthrough/data /tmp/rk-notebooks-001/data
+cp -R examples/data /tmp/rk-notebooks-001/data
 cp -R examples/walkthrough/resources /tmp/rk-notebooks-001/walkthrough/resources
 cp -R examples/walkthrough/_static /tmp/rk-notebooks-001/walkthrough/_static
 cp -R examples/walkthrough/helpers /tmp/rk-notebooks-001/walkthrough/helpers
