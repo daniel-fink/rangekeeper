@@ -1616,7 +1616,7 @@ wheels = [
 
 [[package]]
 name = "rangekeeper"
-version = "0.9.0"
+version = "0.10.0.dev1"
 source = { directory = "../../" }
 dependencies = [
     { name = "ipykernel" },
@@ -1647,6 +1647,7 @@ visualisation = [
 
 [package.metadata]
 requires-dist = [
+    { name = "duckdb", marker = "extra == 'bundle'", specifier = "==1.4.3" },
     { name = "highspy", marker = "extra == 'execution'", specifier = "==1.15.1" },
     { name = "ipykernel", specifier = ">=7.3.0" },
     { name = "jsonschema", specifier = ">=4.26,<5" },
@@ -1658,6 +1659,7 @@ requires-dist = [
     { name = "plotly", marker = "extra == 'visualisation'", specifier = ">=6.0" },
     { name = "polars", marker = "extra == 'calculations'", specifier = ">=1.44,<2" },
     { name = "py-moneyed", specifier = "==3.0" },
+    { name = "pyarrow", marker = "extra == 'bundle'", specifier = "==23.0.1" },
     { name = "pyomo", marker = "extra == 'execution'", specifier = "==6.10.1" },
     { name = "pyvis", marker = "extra == 'visualisation'", specifier = ">=0.3.2" },
     { name = "pyxirr", marker = "extra == 'calculations'", specifier = ">=0.10.7,<0.11" },
@@ -1665,7 +1667,7 @@ requires-dist = [
     { name = "rfc3339-validator", specifier = ">=0.1.4,<0.2" },
     { name = "scipy", marker = "extra == 'calculations'", specifier = ">=1.12" },
 ]
-provides-extras = ["calculations", "visualisation", "execution", "yaml"]
+provides-extras = ["bundle", "calculations", "visualisation", "execution", "yaml"]
 
 [package.metadata.requires-dev]
 dev = [
