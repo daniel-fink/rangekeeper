@@ -12,6 +12,7 @@ from rangekeeper.schema.records import (
     Definitions,
     System,
     Provenance,
+    Geometry,
     Entity,
     Assembly,
     Relationship,
@@ -60,7 +61,7 @@ class Model:
             raise TypeError("record must be a generated Model record")
         if not isinstance(units, UnitSystem):
             raise TypeError("units must be a UnitSystem")
-        if record.metadata.schema_version != document_version("Model"):
+        if record.metadata.schema_version not in ("0.7.0", document_version("Model")):
             raise UnsupportedVersionError(record.metadata.schema_version)
         index = RecordIndex.build(record)
         from rangekeeper.model.validation import _validate
@@ -93,6 +94,7 @@ class Model:
         definitions: Definitions | Unset = UNSET,
         system: System | Unset = UNSET,
         provenance: Provenance | Unset = UNSET,
+        geometry: Geometry | Unset = UNSET,
         units: UnitSystem = default_units,
     ) -> "Model":
         """Author a complete Model with typed sections and the same validation path."""
@@ -102,6 +104,7 @@ class Model:
                 definitions=definitions,
                 system=system,
                 provenance=provenance,
+                geometry=geometry,
             ),
             units=units,
         )
@@ -130,6 +133,11 @@ class Model:
     def provenance(self) -> Provenance | None:
         """Recorded evidence; opaque Claim content is never indexed as declarations."""
         return self._record.provenance
+
+    @property
+    def geometry(self) -> Geometry | None:
+        """Optional exact native dataset and Model-owned Entity associations."""
+        return self._record.geometry
 
     def to_data(self) -> dict[str, object]:
         """Export detached data, preserving presence and original collection order."""
@@ -231,6 +239,7 @@ class Model:
             definitions=update.definitions,
             system=update.system,
             provenance=update.provenance,
+            geometry=update.geometry,
         )
         check_revision(self._record, candidate)
         return type(self)(candidate, units=self._units)

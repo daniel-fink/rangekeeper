@@ -186,3 +186,13 @@ def test_formulations_without_geometry(tmp_path, name):
 def test_page_bounds(package, limit, offset):
     with Reader(package) as reader, pytest.raises(ValueError):
         reader.objects(limit=limit, offset=offset)
+
+
+def test_new_model_schema_is_rejected_before_publication(tmp_path):
+    model = json.loads(fixture()[0])
+    model["metadata"]["schema_version"] = "0.8.0"
+    target = tmp_path / "new-model.rk.sqlite"
+    with pytest.raises(ValueError, match="requires Model schema 0.7.0"):
+        build(target, json.dumps(model))
+    assert not target.exists()
+    assert not list(tmp_path.glob(".rk-sqlite-*"))

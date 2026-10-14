@@ -3,7 +3,13 @@
 from dataclasses import dataclass
 
 from rangekeeper.schema.runtime import UNSET, Unset
-from rangekeeper.schema.records import Definitions, Metadata, Provenance, System
+from rangekeeper.schema.records import (
+    Definitions,
+    Metadata,
+    Provenance,
+    System,
+    Geometry,
+)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -18,6 +24,7 @@ class Update:
     definitions: Definitions | Unset = UNSET
     system: System | Unset = UNSET
     provenance: Provenance | Unset = UNSET
+    geometry: Geometry | Unset = UNSET
     metadata: Metadata | Unset = UNSET
 
     def __post_init__(self) -> None:
@@ -26,6 +33,7 @@ class Update:
             ("system", System),
             ("provenance", Provenance),
             ("metadata", Metadata),
+            ("geometry", Geometry),
         ):
             value = getattr(self, name)
             if value is not UNSET and not isinstance(value, kind):

@@ -39,16 +39,16 @@ When a change affects wire compatibility, update its explicit migration,
 version policy, fixtures and reference documentation together. Source-history
 files are evidence; do not regenerate them to conceal a version change.
 
-## Geometry vocabulary for the planned Package extension
+## Geometry vocabulary and Bundle candidate
 
 [ADR-008](../decisions/008-sqlite-model-package.md#provider-neutral-schema-vocabulary)
-owns the agreed Model/Geometry Package contract. Use **Geometry** as the canonical
+owns the agreed Rangekeeper Bundle contract. Use **Geometry** as the canonical
 concept and provider-neutral type and field names for its descriptor, pin and
 mappings. Keep provider, format/schema version, exact specification pin and source
 address in metadata. Do not introduce a canonical `SpeckleBundle` type or
 `speckle_*` fields. Provider-specific names belong in the corresponding adapter.
 
-The first planned implementation uses Speckle's 2026.9 object-model/bundle schema.
+Core's first provider profile uses Speckle's 2026.9 object-model/bundle schema.
 That release label does not replace its exact specification version/hash or source
 content digest. Future providers must fit the same Geometry boundary; unsupported
 formats require an explicit result, not an implicit Speckle fallback.
@@ -57,12 +57,19 @@ The [Entity mapping contract](../decisions/008-sqlite-model-package.md#entity-to
 limits RK endpoints to Entities, including Assemblies, and source endpoints to
 objects or permitted structural groups. Keep property/relation evidence in the
 existing provenance structure. The new Parquet mapping must derive from this
-schema and preserve complete Model content; DuckDB and Payload do not define a
-second canonical schema. Step A must provide shared reconstruction/query fixtures.
+schema and preserve complete Model content; query engines and user interfaces do
+not define a second canonical schema. Shared reconstruction/query fixtures belong
+with the reader contract.
 
-The current LinkML Model has no Geometry or Speckle-specific Package fields.
-Implementing this extension, its generated artifacts and its migration remains
-ADR-008 step A. A terminology update does not establish new wire-format support.
+The development candidate adds optional provider-neutral Geometry to Model 0.8.0
+and generates Python/C# records from `schema/geometry.yaml`. Specification and Run
+remain at 0.7.0. The explicit 0.7-to-0.8 Model migration creates a new identity and
+retains its predecessor. The [Bundle reference](../reference/bundle.md) defines
+the candidate Parquet mapping and publication marker.
+
+The [T1 evidence](../research/bundle-t1-2026-10-14/README.md) records the tests and
+remaining conformance gaps. Development integration does not approve this format
+for release or adoption in Projects.
 
 ## Conformance
 

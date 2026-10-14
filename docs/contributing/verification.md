@@ -59,8 +59,7 @@ python tools/schema/verify_install.py
 ```
 
 Use `--wheel /absolute/path/to/candidate.whl` to check an already built artifact.
-Supply `--runtime-python`, `--financial-python`, `--execution-python` and
-`--workflow-python` with interpreters that have the required dependencies.
+Supply `--runtime-python`, `--financial-python` and `--execution-python` with interpreters that have the required dependencies.
 `--tables-python` adds Polars/CSV checks in an isolated environment without pandas.
 These interpreter options select verification slices, not installation extra
 names. The financial and table slices still check narrow import boundaries within
@@ -125,3 +124,11 @@ wheel across the required installed-package and notebook checks when accepting a
 release or a large refactor. A passing subset is evidence for that subset. Record
 unrun platforms, native hosts and service checks explicitly. Older records of
 GitHub checks remain historical evidence; their workflows have been removed.
+
+## Bundle candidate verification
+
+With the `bundle` extra installed, run `python -m pytest -q src/tests/test_bundle.py`
+from the root. Full schema generation and C# checks also apply because Model schema
+changed. See [T1 evidence](../research/bundle-t1-2026-10-14/README.md) and the
+[Bundle contract](../reference/bundle.md). Do not infer provider or host acceptance
+from canonical Parquet tests.

@@ -11,10 +11,13 @@ a published verification checkpoint.
 
 Status: Bundle contract, Entity-to-source-element mappings, separate provenance
 and Parquet/DuckDB architecture agreed on 13 October 2026. Application/transport
-ownership and the greenfield Interface were clarified on 14 October 2026. Implementation is
-pending. The SQLite development experiment is retained as earlier evidence.
+ownership and the greenfield Interface were clarified on 14 October 2026. A
+[concrete local candidate](../reference/bundle.md) is implemented in 0.10.0.dev1.
+[Evidence and remaining gates](../research/bundle-t1-2026-10-14/README.md) do not
+close the full P1–P8 matrix. The SQLite development experiment is retained as earlier evidence.
 It does not implement this contract.
-No installed API or public Model schema changes here.
+The candidate adds Model schema 0.8.0 and optional Bundle IO. Public-format
+adoption remains subject to the concrete review and conformance gates.
 
 ## Intention
 
@@ -30,7 +33,7 @@ exactly one Geometry dataset. The Model owns the Geometry pin and mappings.**
 
 | Term | Meaning |
 | --- | --- |
-| Model | The canonical RK Model, including its Geometry pin and mappings under the future schema. Use “new Model” when this content changes; no separate “RK revision” object is introduced. |
+| Model | The canonical RK Model, including its Geometry pin and mappings under candidate schema 0.8.0. Use “new Model” when this content changes; no separate “RK revision” object is introduced. |
 | Geometry | The retained spatial source dataset, in its declared provider format. This includes source objects, properties, relations, geometric representations and required assets. The term does not restrict its content to meshes or flatten it into RK entities. |
 | Rangekeeper Bundle (Bundle) | The immutable delivery unit containing one exact Model, a manifest and optional Geometry. The manifest records identities, format pins and integrity information. |
 
