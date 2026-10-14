@@ -1,6 +1,15 @@
-# ADR-008: Model and Geometry Package contract
+# ADR-008: Rangekeeper Bundle contract
 
-Status: Package contract, Entity-to-source-element mappings, separate provenance
+Terminology and scope update, 14 October 2026: use **Rangekeeper Bundle**,
+shortened to **Bundle**, for the outer immutable deliverable. Model remains the
+canonical object. Speckle Bundle names native provider content. Model-only Bundles
+are included in the target. Existing format/API names and the historical SQLite
+record remain unchanged. Core's [coordinated plan](https://github.com/daniel-fink/whirlwind-core/blob/main/docs/decisions/004-core-lifecycle-refactor.md)
+groups implementation into three turns while preserving the concrete format
+review after step A and UI review after B/C. Its new working-document link is not
+a published verification checkpoint.
+
+Status: Bundle contract, Entity-to-source-element mappings, separate provenance
 and Parquet/DuckDB architecture agreed on 13 October 2026. Application/transport
 ownership and the greenfield Interface were clarified on 14 October 2026. Implementation is
 pending. The SQLite development experiment is retained as earlier evidence.
@@ -11,23 +20,26 @@ No installed API or public Model schema changes here.
 
 Support source files → informed user decisions → a reproducible RK Model →
 inspection. Keep Geometry beside the Model, with explicit, verifiable links
-between them. The same Package must support independent browser, ChatGPT and
+between them. The same Bundle must support independent browser, ChatGPT and
 future native interfaces without making a renderer part of RK semantics.
 
 ## Contract and terms
 
-**One Package with Geometry contains exactly one immutable Model, pinned to
+**One Bundle with Geometry contains exactly one immutable Model, pinned to
 exactly one Geometry dataset. The Model owns the Geometry pin and mappings.**
 
 | Term | Meaning |
 | --- | --- |
 | Model | The canonical RK Model, including its Geometry pin and mappings under the future schema. Use “new Model” when this content changes; no separate “RK revision” object is introduced. |
 | Geometry | The retained spatial source dataset, in its declared provider format. This includes source objects, properties, relations, geometric representations and required assets. The term does not restrict its content to meshes or flatten it into RK entities. |
-| Package | The immutable delivery unit that identifies and contains that Model and its exact Geometry. A manifest records their identities and integrity information. |
+| Rangekeeper Bundle (Bundle) | The immutable delivery unit containing one exact Model, a manifest and optional Geometry. The manifest records identities, format pins and integrity information. |
 
-These cardinality rules apply to **Packages with Geometry**. Ordinary RK Models
-without Geometry remain valid. They do not require a fabricated empty dataset.
-The schema extension, migration and concrete field names remain implementation work.
+Every Rangekeeper Bundle contains one exact Model and its manifest. Geometry is
+optional: a Model-only Bundle is valid, including for workbook ingestion. When
+Geometry is present, exactly one pinned dataset and the Model-owned mappings apply.
+Do not fabricate an empty dataset. Specifications and Runs remain separate exact
+records unless a later version explicitly includes them. The schema extension,
+migration and concrete field names remain implementation work.
 
 The Model's pin must identify exact Geometry content by a digest, its provider and
 format/schema identity, and its source version/address when available. A mutable
@@ -77,7 +89,7 @@ through the same mechanism. Derived Claims retain their inputs and method. These
 references do not become Entity mapping endpoints, and an Entity mapping does not
 automatically accept any source property or relation into RK.
 
-When evidence addresses the Package's Geometry, resolve it against the same exact
+When evidence addresses the Bundle's Geometry, resolve it against the same exact
 Geometry pin. Other evidence sources remain valid; provenance does not require a
 Geometry association. Concrete Location address keys and their validation belong
 to step A and must preserve the provider's identity and property/relation scope.
@@ -103,7 +115,7 @@ The field layout and validation types belong to step A. Provider identifiers mus
 be extensible; the first planned adapter targets Speckle. An unsupported provider or
 schema must produce an explicit unsupported-format result, not a fallback to the
 Speckle decoder. Replacing the provider or changing the pinned format/schema is a
-pin change and therefore creates a new Model and Package. This boundary permits
+pin change and therefore creates a new Model and Bundle. This boundary permits
 future providers; it does not imply automatic or lossless format conversion.
 
 ### First Geometry implementation: Speckle 2026.9
@@ -111,7 +123,7 @@ future providers; it does not imply automatic or lossless format conversion.
 The first planned provider is **Speckle**, using its **2026.9 object-model/bundle
 schema**. Geometry is stored as the native Speckle bundle in that profile. Keep
 “Speckle bundle” for descriptions of that concrete encoding, not as the canonical
-RK type or the name of the second Package component.
+RK type or the name of the second Bundle component.
 
 The 2026.9 release label is not the bundle specification's own `schema_version`
 or `specHash`. Pin the exact specification commit/lockfile and decoder versions
@@ -126,25 +138,25 @@ or its recorded evidence as 2026.9 data.
 
 ### Change rules
 
-| Change | Model | Geometry | Package |
+| Change | Model | Geometry | Bundle |
 | --- | --- | --- | --- |
-| RK domain content changes | New Model | Same Geometry may be reused | New Package |
-| Geometry content changes | New Model, because its pin changes | New Geometry content | New Package |
-| Pinned source version changes | New Model, even if source bytes match | Retain exact content and new version address | New Package |
-| Geometry provider or pinned format/schema changes | New Model, because its pin changes | New descriptor and exact content pin | New Package |
-| Mapping or canonical association changes | New Model | Same Geometry may be reused | New Package |
-| Model pin or other canonical Package content changes | New Model if Model content changes | Exact content remains pinned | New Package |
-| Camera, selection, renderer conversion or render cache changes outside canonical contents | Same Model | Same Geometry | Same Package |
-| Copy, archive compression, RK Parquet layout or derived index changes, with identical canonical contents and format pins | Same Model | Same Geometry | Same Package; delivery file hash may differ |
+| RK domain content changes | New Model | Same Geometry may be reused | New Bundle |
+| Geometry content changes | New Model, because its pin changes | New Geometry content | New Bundle |
+| Pinned source version changes | New Model, even if source bytes match | Retain exact content and new version address | New Bundle |
+| Geometry provider or pinned format/schema changes | New Model, because its pin changes | New descriptor and exact content pin | New Bundle |
+| Mapping or canonical association changes | New Model | Same Geometry may be reused | New Bundle |
+| Model pin or other canonical Bundle content changes | New Model if Model content changes | Exact content remains pinned | New Bundle |
+| Camera, selection, renderer conversion or render cache changes outside canonical contents | Same Model | Same Geometry | Same Bundle |
+| Copy, archive compression, RK Parquet layout or derived index changes, with identical canonical contents and format pins | Same Model | Same Geometry | Same Bundle; delivery file hash may differ |
 
 Stable Entity and Value UUIDs can persist across Models. The Model identity must
 change when its canonical content changes. Reject any attempt to publish one
 Model identity with a different Geometry pin or mappings. Never silently update
-Geometry under an existing Package. Retaining unchanged Geometry in several
-Packages is valid; each Package must resolve its exact content independently.
+Geometry under an existing Bundle. Retaining unchanged Geometry in several
+Bundles is valid; each Bundle must resolve its exact content independently.
 
-This rule applies when a Package is built or published. Editing can use a mutable
-workspace before publication; it does not mutate an already published Package.
+This rule applies when a Bundle is built or published. Editing can use a mutable
+workspace before publication; it does not mutate an already published Bundle.
 
 ### Integrity and physical storage
 
@@ -152,44 +164,44 @@ Use **RK schema-derived Parquet tables, adjacent native Geometry files, and Duck
 for queries** as the agreed spike architecture. This supersedes both the earlier
 “one Model = one physical SQLite file” proposal and SQLite as the target canonical
 RK store. A portable container can hold a manifest, RK Parquet files and the
-original Geometry files. Parquet is a table format, not the outer Package archive.
+original Geometry files. Parquet is a table format, not the outer Bundle archive.
 The archive, concrete table layout, compression settings and canonical digest
 algorithm still require step A proof and review. Native Geometry bytes must survive
 packaging unchanged, including the provider's own compression and file layout.
 
-Separate logical Model/Package identity from a delivery file's byte hash. The
+Separate logical Model/Bundle identity from a delivery file's byte hash. The
 Geometry content digest must cover a defined, complete source file inventory.
-The Package manifest binds the Model and Geometry and their required format/schema
+The Bundle manifest binds the Model and Geometry and their required format/schema
 versions. There must be no circular hash: the Model pins Geometry; the outer
-Package identifies the Model and Geometry. The Model must not contain its enclosing
-Package digest. Derived database indexes and rendering caches cannot become new
+Bundle identifies the Model and Geometry. The Model must not contain its enclosing
+Bundle digest. Derived database indexes and rendering caches cannot become new
 authorities for mappings or source content.
 
 Validate the pin, contents, source selectors, RK targets and required asset closure
-before accepting a Package. A valid package does not prove that a user's source
+before accepting a Bundle. A valid package does not prove that a user's source
 interpretation is correct. Source acceptance remains an explicit ingestion step.
 There is no automatic bidirectional synchronisation between Model and Geometry.
 
 ## Reader, application and interface ownership
 
-RK owns canonical records, Package identity/validation, the schema-derived RK table
+RK owns canonical records, Bundle identity/validation, the schema-derived RK table
 mapping and its lossless reader/writer. Keep DuckDB in optional IO implementation
 code; RK domain imports need no database, Whirlwind, transport SDK or Interface.
 The canonical RK reader is distinct from provider-specific native Geometry decoders.
 
 Whirlwind application operations compose the RK reader with Geometry interfaces,
-registered Package storage and common access policy. This module lives initially
+registered Bundle storage and common access policy. This module lives initially
 in `whirlwind-core`, separately from ingestion and transport handlers. That location
 is a repository choice, not a requirement to use the MCP protocol. Direct Python
 calls work in process; HTTP/MCP adapters establish caller identity, validate and
 encode requests, and invoke the same operations. Shared policy owns authorization.
-Opening a complete retained Package needs no ingestion workspace, source credentials,
+Opening a complete retained Bundle needs no ingestion workspace, source credentials,
 source network, chat or LLM. Keep acquisition separate from native decoding.
 
 Interface owns bounded client projections and reusable React/TypeScript/Vite components
 with Mantine, AG Grid Community, Cytoscape and Speckle rendering. Payload/Next are
 excluded from its target; existing Python exports/layouts do not justify a second
-Package service. Future native/browser readers can implement the same semantics
+Bundle service. Future native/browser readers can implement the same semantics
 after conformance tests. One access layer does not require a single network server.
 
 Core's `docs/reference/package-access.md` owns application/wire semantics and its
@@ -200,10 +212,10 @@ MCP/HTTP absent, transport parity, offline reopening and fixture-to-real UI pari
 
 ## Parquet storage and DuckDB queries
 
-Expose **one Package access layer** for Model queries, source queries, Entity
+Expose **one Bundle access layer** for Model queries, source queries, Entity
 associations, provenance, geometry representations, placement and assets. DuckDB
 and provider adapters are internal tools of that layer. They are not separate
-public services. All operations share exact Package/Model identity, authorisation,
+public services. All operations share exact Bundle/Model identity, authorisation,
 source resolution and cache scoping. HTTP, MCP and local callers use the same
 operation semantics through their host adapters.
 
@@ -211,7 +223,7 @@ operation semantics through their host adapters.
 flowchart LR
     R[RK Model in Parquet] --> Q
     G[Pinned native Geometry] --> A
-    subgraph Access[Package access layer]
+    subgraph Access[Bundle access layer]
         Q[DuckDB queries] --> I[One bounded access interface]
         A[Provider adapters] --> Q
         A --> I
@@ -237,19 +249,19 @@ untyped EAV store. EAV can serve source-variable properties where appropriate.
 | RK LinkML schema and generated contract | Authority for RK records, fields, references and semantic validation. Drives the versioned Parquet mapping; do not maintain a second handwritten domain schema. |
 | RK Parquet tables | Lossless serialization of Model content, including Entity associations and separate provenance. Preserve presence versus null, scalar/union types, units, ordered and empty collections, ownership and UUID references. |
 | Native Geometry dataset | Retained provider data, including its properties, relations and assets. The Speckle adapter reads its native Parquet tables; other providers can use other formats. |
-| DuckDB reader inside Package access | Queries RK tables and supported Geometry tables, joins through explicit Entity mappings, and supplies bounded results. An embedded query engine, not the Model's identity or a required `.duckdb` delivery file. |
-| Provider adapters inside Package access | Interpret source identities, properties, relations, geometry encodings, representation roles, placement and assets under the shared identity/access rules. |
-| Package access contract and projections | One meaning for object, Value, evidence, membership, graph, source-selection and asset operations across hosts. Interface owns presentation projections; Core owns authorised service access. |
-| Application registry and policy | Whirlwind owns registered Package access, caller scope, sessions and disposable indexes outside canonical storage. The greenfield Interface has no Payload/Next dependency. |
+| DuckDB reader inside Bundle access | Queries RK tables and supported Geometry tables, joins through explicit Entity mappings, and supplies bounded results. An embedded query engine, not the Model's identity or a required `.duckdb` delivery file. |
+| Provider adapters inside Bundle access | Interpret source identities, properties, relations, geometry encodings, representation roles, placement and assets under the shared identity/access rules. |
+| Bundle access contract and projections | One meaning for object, Value, evidence, membership, graph, source-selection and asset operations across hosts. Interface owns presentation projections; Core owns authorised service access. |
+| Application registry and policy | Whirlwind owns registered Bundle access, caller scope, sessions and disposable indexes outside canonical storage. The greenfield Interface has no Payload/Next dependency. |
 
-The first service path exposes Package access with DuckDB and provider adapters
+The first service path exposes Bundle access with DuckDB and provider adapters
 behind its authorised operations. Standalone
 and focused clients request bounded data through their host adapters; they do not
-need to download the whole Package, execute arbitrary SQL or run DuckDB-Wasm.
+need to download the whole Bundle, execute arbitrary SQL or run DuckDB-Wasm.
 Offline local readers can use the same query contract. Browser-local engines and
 future native implementations need their own conformance and performance evidence.
 
-Queries carry exact Package/Model identity, validated scope and canonical IDs.
+Queries carry exact Bundle/Model identity, validated scope and canonical IDs.
 Use stable ordering, pagination and explicit incomplete/error results. Separate
 object/value/evidence/graph reads from geometry-blob loading. Bound output size and
 query work; a row limit alone does not bound scanning or memory. Measure cold/warm
@@ -260,8 +272,8 @@ indexed point-lookup behaviour or that joins are fast enough without measurement
 Use one reusable conformance fixture set for reconstruction and query results.
 Compare the DuckDB reader with a validated in-memory Model and source-adapter
 oracle. Apply the same cases to any Payload projection or future reader. A projection
-must carry Package/Model identity, publish only when complete, reject stale content,
-and be removable and rebuildable without changing the Package. Preserve all
+must carry Bundle/Model identity, publish only when complete, reject stale content,
+and be removable and rebuildable without changing the Bundle. Preserve all
 Entity candidates for a reverse source lookup and keep evidence retrieval separate.
 
 The storage mapping must reconstruct the complete Model from the Parquet tables;
@@ -275,7 +287,7 @@ Payload's native list/drawer controls still require Payload collections. Use a
 rebuildable projection where those controls are retained; custom shared components
 can use the query service directly. No DuckDB/Parquet Payload database adapter is
 assumed. Keep Payload schema push, migrations and operational authorship/version
-fields outside the published Package and canonical provenance. Repeat the Interface
+fields outside the published Bundle and canonical provenance. Repeat the Interface
 v4 procedure when implementing this host integration.
 
 Primary references: [Speckle columnar property store](https://docs.speckle.systems/next/developers/object-model/overview#columnar-property-store),
@@ -290,12 +302,12 @@ These support the architecture choice; they do not establish local acceptance.
 | --- | --- |
 | Rangekeeper | Canonical Model schema, Entity mapping and provenance contracts, Model identity, schema-derived Parquet serialization, reusable storage/query conformance and semantic validation |
 | Geometry provider specification and adapter | Native source format and semantics; format-specific decoding and source integrity checks. Speckle 2026.9 is the first planned implementation. |
-| Whirlwind Core | Source acquisition, user decisions, builds, Package assembly/publication and authorised service access |
+| Whirlwind Core | Source acquisition, user decisions, builds, Bundle assembly/publication and authorised service access |
 | Whirlwind Interface | Bounded projections, component queries, geometry conversion, rendering and host adapters |
-| Hosting application | Package/Model catalogue, users, permissions and session state |
+| Hosting application | Bundle/Model catalogue, users, permissions and session state |
 
 Specification and Run retain their separate meanings. Preserve provenance without
-requiring every original source-workspace file to be a Package asset. The chosen
+requiring every original source-workspace file to be a Bundle asset. The chosen
 Geometry profile declares what it contains and what is required for offline use.
 
 Use the Entity mapping contract above; do not introduce a geometry Value kind or
@@ -312,9 +324,9 @@ Provider-defined roles have distinct meanings: for example, Speckle's DISPLAY,
 SOLID and CENTERLINE. Source containment and hosting relations must not automatically
 become RK membership. Keep authored geometry and source appearance in Geometry.
 An interface owns triangulation, level of detail, display-only overrides, camera
-and caches. A different web or native renderer can display the same Package
+and caches. A different web or native renderer can display the same Bundle
 differently without changing it. An edit to retained source geometry or placement
-creates a new Model and Package.
+creates a new Model and Bundle.
 
 Use format-specific adapters. In the Speckle implementation, native 2026.9 bundles
 and legacy object graphs have different contracts. Do not require legacy root
@@ -431,24 +443,24 @@ Primary references: [SQLite application files](https://www.sqlite.org/appfilefor
 [Payload SQLite](https://payloadcms.com/docs/database/sqlite), and
 [Speckle object encoding](https://docs.speckle.systems/developers/sdks/python/concepts/objects).
 
-## Spike steps, turn bundles and review
+## Spike steps, grouped turns and review
 
 The published [Interface spike plan](https://github.com/daniel-fink/whirlwind-interface/blob/5ef206aa3a525a0f4c1910512b6fa2c8b1e6f145/docs/decisions/001-viewer-plan.md)
 owns greenfield Vite host sequencing and its browsing/component and ChatGPT checks.
 Core owns PA0–PA5 application delivery and transport parity. Payload v4 is historical
 legacy evidence, not a new-browser acceptance requirement.
-This ADR owns the canonical Package contract and P1–P8 criteria.
+This ADR owns the canonical Bundle contract and P1–P8 criteria.
 
-The Package contract, Entity mapping boundary, separate provenance and
+The Bundle contract, Entity mapping boundary, separate provenance and
 Parquet/DuckDB direction are agreed. Implement the following steps in dependency
 order; the earlier SQLite proof remains input evidence, not completion of step A.
 
 | Step | Work and concrete result | Acceptance and user review |
 | --- | --- | --- |
-| A: Schema, Parquet and Package lifecycle | Specify provider-neutral Geometry types, Model-owned Entity mappings, separate provenance addresses, identity rules and migration. Derive Parquet tables from the RK schema; prove complete reconstruction and a DuckDB query prototype. Pin Speckle 2026.9 and its exact specification; build a native fixture, validator, shared conformance cases and offline reopen proof. Preserve the legacy reader boundary. | Pass P1–P5 below and measure representative P6 reads before storage adoption. Review the concrete schema, manifest, associations, provenance, table mapping, query costs, change cases and reopened artifact before adopting the public format and wiring hosts to it. |
-| B: Package access and host adapter | Implement independent application operations for bounded Model/source/evidence and geometry/asset queries. Compose RK IO and provider interfaces; expose thin HTTP/MCP adapters and connect Interface. | Pass P6–P7 and standalone P8. Prove direct Python with transports absent, equivalent authorized transport results and offline reads without ingestion/source state. Measure query costs and verify client projections. Payload/Next are excluded. |
+| A: Schema, Parquet and Bundle lifecycle | Specify provider-neutral Geometry types, Model-owned Entity mappings, separate provenance addresses, identity rules and migration. Derive Parquet tables from the RK schema; prove complete reconstruction and a DuckDB query prototype. Pin Speckle 2026.9 and its exact specification; build a native fixture, validator, shared conformance cases and offline reopen proof. Preserve the legacy reader boundary. | Pass P1–P5 below and measure representative P6 reads before storage adoption. Review the concrete schema, manifest, associations, provenance, table mapping, query costs, change cases and reopened artifact before adopting the public format and wiring hosts to it. |
+| B: Bundle access and host adapter | Implement independent application operations for bounded Model/source/evidence and geometry/asset queries. Compose RK IO and provider interfaces; expose thin HTTP/MCP adapters and connect Interface. | Pass P6–P7 and standalone P8. Prove direct Python with transports absent, equivalent authorized transport results and offline reads without ingestion/source state. Measure query costs and verify client projections. Payload/Next are excluded. |
 | C: Navigation and inspector | Use the selected Mantine Tree and AG Grid Community; finish occurrence, browse/inspect and restore rules; share the inspector and components between standalone and focused shells. | Use Interface's browsing matrix. Review the actual tree, selection and inspector behaviour after automated and browser checks. |
-| D: Focused resources and workflow | Connect MCP Package access and component dispatch; verify real ChatGPT tree/inspector then graph/3D, standalone deep links, and build/reopen workflow. | Pass P8 in actual hosts. Review focused UI beside the full browser; test full-browser embedding separately if claimed. |
+| D: Focused resources and workflow | Connect MCP Bundle access and component dispatch; verify real ChatGPT tree/inspector then graph/3D, standalone deep links, and build/reopen workflow. | Pass P8 in actual hosts. Review focused UI beside the full browser; test full-browser embedding separately if claimed. |
 
 Each step can include implementation, fixtures, checks and a reviewable result in
 one turn. B and C can share a turn. D can share a later turn with workflow checks
@@ -458,23 +470,23 @@ checkpoints. User interpretation review belongs inside the ingestion workflow.
 Routine reversible fixes and verification do not need separate permission stops.
 
 Interface U0 and Core PA0 can run first: a clean Vite/Mantine/Community browser over
-labelled synthetic Package projections and a direct-call fixture application
-contract. Show UI promptly. A remains the gate for new Package integration; repeat
+labelled synthetic Bundle projections and a direct-call fixture application
+contract. Show UI promptly. A remains the gate for new Bundle integration; repeat
 the same interactions with real access in B. Preserve earlier JSON/SQLite and
-legacy Geometry evidence without treating it as native Package or ChatGPT acceptance.
+legacy Geometry evidence without treating it as native Bundle or ChatGPT acceptance.
 
-### Package acceptance criteria
+### Bundle acceptance criteria
 
 | ID | Required evidence |
 | --- | --- |
-| P1: Cardinality and identity | A valid Package with Geometry contains one Model and one pinned Geometry dataset. Reject missing/extra datasets, mismatched pins, and reuse of a Model identity with changed canonical content. Geometry-free Models remain valid outside this profile. |
-| P2: Change matrix | RK-only, Geometry-only, source-version-only, provider/format/schema-only and mapping-only changes each produce a new Model and Package. Geometry-only changes cannot retain the old Model identity. Stable Entity/Value UUIDs and reuse of unchanged Geometry work. |
-| P3: Integrity and reopening | Reopen a copied Package offline without the source server or original capture. Reject tampered/missing source files, wrong digests/versions and invalid mappings before publication. Preserve native Geometry bytes; verify all declared required assets. |
+| P1: Cardinality and identity | A valid Bundle with Geometry contains one Model and one pinned Geometry dataset. Reject missing/extra datasets, mismatched pins, and reuse of a Model identity with changed canonical content. Also prove Model-only Bundles with no fabricated Geometry; reject a declared Geometry profile with missing data. |
+| P2: Change matrix | RK-only, Geometry-only, source-version-only, provider/format/schema-only and mapping-only changes each produce a new Model and Bundle. Geometry-only changes cannot retain the old Model identity. Stable Entity/Value UUIDs and reuse of unchanged Geometry work. |
+| P3: Integrity and reopening | Reopen a copied Bundle offline without the source server or original capture. Reject tampered/missing source files, wrong digests/versions and invalid mappings before publication. Preserve native Geometry bytes; verify all declared required assets. |
 | P4: Source semantics and provenance | Test Entity/Assembly mappings to objects and allowed groups, many-to-many and absent mappings, ambiguous and namespace-colliding selectors, and all-candidate reverse lookup. Reject Value/Relationship/mesh endpoints and unsupported node kinds. Verify property/relation evidence through Source/Location/Claim/Fact independently of mappings. Test explicit source-group expansion, units, nested instances and transforms without inferring RK membership, placement or accepted content. |
 | P5: Schema and storage | Reconstruct the complete Model from schema-derived Parquet tables under the new schema. Preserve field presence, scalar/union types, units, order, empty containers, ownership, references and provenance. Verify migration, neutral names, provider metadata and unsupported-format results. Test repacking without logical identity changes, exact Geometry-byte integrity, file hashes and no circular digests. A retained JSON-only read is insufficient. |
-| P6: Bounded reads and conformance | Run object/value/evidence/membership/graph/source queries against the validated Model/source oracle and DuckDB, then each host projection. Check ordering, pagination, scope, all-candidate joins without accidental value multiplication, and explicit incomplete results. Ordinary reads must not load geometry blobs. Record cold/warm latency, bytes read, peak memory, rebuild cost and declared scale limits; test rejection of stale/incomplete projections and their rebuild without Package mutation. |
-| P7: Interface independence | Two supported render conversions leave Model, Geometry and Package unchanged. Camera/selection/cache changes stay outside canonical contents. Host schema push and migrations cannot modify published Packages. A quad conversion alone does not establish general BRep or native-app support. |
-| P8: Host consistency | Full browser, focused resources and deep links carry the exact Package and Model identity plus canonical selection/scope. Reject stale cross-Package requests. Verify the same mappings/evidence in each claimed host, actual ChatGPT tool/UI exchanges, and standalone use without Payload, Next or ChatGPT. The v4 probe is legacy evidence only. |
+| P6: Bounded reads and conformance | Run object/value/evidence/membership/graph/source queries against the validated Model/source oracle and DuckDB, then each host projection. Check ordering, pagination, scope, all-candidate joins without accidental value multiplication, and explicit incomplete results. Ordinary reads must not load geometry blobs. Record cold/warm latency, bytes read, peak memory, rebuild cost and declared scale limits; test rejection of stale/incomplete projections and their rebuild without Bundle mutation. |
+| P7: Interface independence | Two supported render conversions leave Model, Geometry and Bundle unchanged. Camera/selection/cache changes stay outside canonical contents. Host schema push and migrations cannot modify published Bundles. A quad conversion alone does not establish general BRep or native-app support. |
+| P8: Host consistency | Full browser, focused resources and deep links carry the exact Bundle and Model identity plus canonical selection/scope. Reject stale cross-Bundle requests. Verify the same mappings/evidence in each claimed host, actual ChatGPT tool/UI exchanges, and standalone use without Payload, Next or ChatGPT. The v4 probe is legacy evidence only. |
 
 The existing test `test_content_digest_separates_geometry_from_legacy_model_id`
 records a legacy identity gap. It must not count as P2 acceptance. The existing
@@ -484,5 +496,5 @@ native iOS, general BRep conversion or production service.
 
 Before production adoption, also establish publication durability, migration and
 codec support policy, access isolation, hostile-file handling and declared scale
-limits. Cross-Package search belongs to a separate catalogue/index. Core ingestion
+limits. Cross-Bundle search belongs to a separate catalogue/index. Core ingestion
 must remain usable without a viewer.

@@ -39,10 +39,10 @@ open; the isolated predecessor trees remain until that gate closes.
 | Section | Repository | Responsibility |
 | --- | --- | --- |
 | Engine | Rangekeeper | Canonical models, schemas, validation, calculations, execution, native IO and simple local display. |
-| Core | [Whirlwind Core](https://github.com/daniel-fink/whirlwind-core) | Ingestion and application operations, including planned Package access, queries, storage integration and access policy through Python, HTTP and MCP. |
+| Core | [Whirlwind Core](https://github.com/daniel-fink/whirlwind-core) | Ingestion and application operations, including planned Bundle access, queries, storage integration and access policy through Python, HTTP and MCP. |
 | Interface | [Whirlwind Interface](https://github.com/daniel-fink/whirlwind-interface) | User interaction, shared UI components and hosts; current inspection and future editing and authoring. |
 
 The full role names are **Modelling engine**, **Application core** and **User interface**.
-The repository rename does not implement Package access or editing.
+The repository rename does not implement Bundle access or editing.
 See the [breaking upgrade guide](docs/guides/upgrading.md). The walkthroughs use prepared data
 and local assets; they do not require either Whirlwind service.
