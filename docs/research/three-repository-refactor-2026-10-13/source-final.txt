@@ -1,0 +1,2 @@
+{"status": "built", "path": "/private/tmp/rk-three-repo-4uupdvk4/rebuilt-property-final", "bytes": 2793308}
+Verified hashes, complete transport closure, exact offline rebuild, legacy graph, values, geometry summaries and codec round trips

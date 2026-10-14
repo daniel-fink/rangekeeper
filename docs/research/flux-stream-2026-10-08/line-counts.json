@@ -1,0 +1,32 @@
+{
+  "examples": {
+    "before": 1213,
+    "after": 1399,
+    "delta": 186
+  },
+  "runtime": {
+    "before": 2862,
+    "after": 4497,
+    "delta": 1635
+  },
+  "generated": {
+    "before": 4170,
+    "after": 4171,
+    "delta": 1
+  },
+  "tests": {
+    "before": 6414,
+    "after": 6853,
+    "delta": 439
+  },
+  "tools": {
+    "before": 1072,
+    "after": 1313,
+    "delta": 241
+  },
+  "documentation": {
+    "before": 2733,
+    "after": 3169,
+    "delta": 436
+  }
+}

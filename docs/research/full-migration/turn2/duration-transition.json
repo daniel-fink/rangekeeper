@@ -1,0 +1,27 @@
+{
+  "changed_python": [
+    "tools/schema/verify_install.py"
+  ],
+  "retained_legacy_callers": [
+    "src/rangekeeper/projection.py",
+    "src/rangekeeper/flux.py",
+    "src/rangekeeper/dynamics/market.py",
+    "src/rangekeeper/dynamics/black_swan.py",
+    "src/rangekeeper/dynamics/noise.py",
+    "src/rangekeeper/dynamics/cyclicality.py",
+    "src/rangekeeper/dynamics/volatility.py",
+    "src/rangekeeper/formula/financial.py",
+    "src/tests/test_projections.py",
+    "src/tests/test_dynamics.py",
+    "src/tests/test_models.py",
+    "src/tests/test_modules.py",
+    "src/tests/models/deterministic.py",
+    "src/tests/models/flexible.py",
+    "src/tests/models/probabilistic.py",
+    "walkthrough/market_dynamics.ipynb",
+    "walkthrough/drive_model_from_design.ipynb",
+    "walkthrough/flexibility_under_uncertainty.ipynb",
+    "walkthrough/deterministic_scenarios.ipynb",
+    "walkthrough/flexibility_intro.ipynb"
+  ]
+}

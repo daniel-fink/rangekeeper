@@ -1,0 +1,1 @@
+{"scanned_files": 1402, "held_references": 1172, "removed_imports": 0, "symbols_assigned": 671}

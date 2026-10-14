@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/Volumes/Data/Projects/Rangekeeper/docs/research/full-migration/legacy-isolation/verify_final.py", line 68, in <module>
+    assert digest(ROOT / name) == expected, name
+AssertionError: grasshopper/WINDOWS_DEVELOPMENT.md

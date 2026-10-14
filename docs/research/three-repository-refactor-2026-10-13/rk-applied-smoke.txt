@@ -1,0 +1,14 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.10.19, pytest-8.4.2, pluggy-1.6.0
+rootdir: /Volumes/Data/Projects/Rangekeeper
+configfile: pyproject.toml
+plugins: anyio-4.11.0
+collected 51 items
+
+src/tests/test_owner_boundaries.py ...                                   [  5%]
+src/tests/test_local_display.py .                                        [  7%]
+src/tests/test_walkthrough_plots.py ..                                   [ 11%]
+src/tests/test_retirement.py ........................................... [ 96%]
+..                                                                       [100%]
+
+============================== 51 passed in 2.36s ==============================

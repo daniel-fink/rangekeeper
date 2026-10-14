@@ -1,0 +1,8 @@
+  Model -> /Volumes/Data/Projects/Rangekeeper/grasshopper/Model/bin/Debug/net8.0/Rangekeeper.Model.dll
+  Components -> /Volumes/Data/Projects/Rangekeeper/grasshopper/Components/bin/Debug/net8.0/Rangekeeper.Components.gha
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:21.93

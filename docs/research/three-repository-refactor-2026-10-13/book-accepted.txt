@@ -1,0 +1,47 @@
+building myst-cli session with API URL: https://api.mystmd.org
+(node:72156) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+🌎 Building Jupyter Book (via myst) site
+🔍 Querying template metadata from https://api.mystmd.org/templates/site/myst/book-theme
+🐕 Fetching template from https://github.com/myst-templates/book-theme/archive/refs/heads/main.zip
+💾 Saved template to path _build/templates/site/myst/book-theme
+Building the base site.
+To set a baseurl (e.g. GitHub pages) use "BASE_URL" environment variable.
+⤵️  Installing web libraries (can take up to 60 s)
+📦 Installed web libraries in 1.86 s
+📖 Built intro.md in 96 ms.
+📖 Built development_feasibility.ipynb in 132 ms.
+📖 Built design_to_value.ipynb in 144 ms.
+📖 Built basic_dcf.ipynb in 161 ms.
+⚠️  _build/site/public/devModelGraph-b3bb7c45d7a819fba12aef5ed58a8e41.jpg Image is too large (3.23 MB) to convert to webp (build will be slow).
+⚠️  _build/site/public/devModelGraph-b3bb7c45d7a819fba12aef5ed58a8e41.jpg Image is too large (3.23 MB) to convert to webp (build will be slow).
+📚 Built 4 pages for project in 294 ms.
+
+
+	✨✨✨  Starting Book Theme  ✨✨✨
+
+
+
+🔌 Server started on port 3000!  🥳 🎉
+
+
+	👉  http://localhost:3000  👈
+
+
+(node:72282) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+
+💌 GET  / 200 - - 46.090 ms
+GET /basic-dcf 200 - - 63.654 ms
+GET /development-feasibility 200 - - 75.625 ms
+GET /design-to-value 200 - - 86.420 ms
+💌 GET  /index.json 200 - - 89.822 ms
+💌 GET  /robots.txt 200 - - 0.667 ms
+GET /basic-dcf.json 200 - - 11.505 ms
+💌 GET  /myst-theme.css 200 - - 8.313 ms
+GET /design-to-value.json 200 - - 15.655 ms
+GET /development-feasibility.json 200 - - 15.308 ms
+GET /sitemap_style.xsl 200 - - 0.457 ms
+GET /sitemap.xml 200 - - 2.083 ms
+💌 GET  /favicon.ico 200 - - 128.939 ms
+Built /private/tmp/rk-three-repo-4uupdvk4/book-accepted/_build/html
+Chapters: ["intro.md", "basic_dcf.ipynb", "design_to_value.ipynb", "development_feasibility.ipynb"]

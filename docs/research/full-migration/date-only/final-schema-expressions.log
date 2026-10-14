@@ -1,0 +1,3 @@
+Passed 9 generated schemas, 71 valid records, 103 structural rejections,
+31 bounded semantic rejections, and native Python round trips.
+Constraint satisfaction, query execution, rich Value payloads, dimensional checking, and solving remain unimplemented.

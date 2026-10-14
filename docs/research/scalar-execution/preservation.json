@@ -1,0 +1,37 @@
+{
+  "head": "53f5d3e72f97b7099bcc7973386ba47ccb4b7784",
+  "changed_existing_files": [
+    ".github/workflows/schema-records.yml",
+    "README.md",
+    "docs/DOMAIN_MIGRATION_MAP.md",
+    "docs/DOMAIN_MIGRATION_PLAN.md",
+    "docs/LIBRARY_ARCHITECTURE.md",
+    "docs/MODEL_SPECIFICATION_RUN.md",
+    "docs/README.md",
+    "docs/RUN_AND_STORAGE.md",
+    "docs/handoffs/2026-10-02-acausal-modelling.md",
+    "schema/README.md",
+    "src/README.md",
+    "src/pyproject.toml",
+    "src/rangekeeper/__init__.py",
+    "src/rangekeeper/run/_validation.py",
+    "src/rangekeeper/run/validation.py",
+    "src/uv.lock",
+    "tools/schema/typecheck.py",
+    "tools/schema/verify_install.py"
+  ],
+  "protected_existing_files": 201,
+  "verified_source_fingerprints": 259,
+  "stale_verified_sources": [],
+  "lock_existing_versions_unchanged": 113,
+  "lock_additions": {
+    "highspy": "1.15.1",
+    "pyomo": "6.10.1"
+  },
+  "notes": [
+    "Unrelated .gitignore bytes match the initial snapshot.",
+    "Authoritative schema YAML, generated artifacts, existing fixtures/checks/tests and legacy graph code match initial fingerprints.",
+    "New execution files were observed staged during the session; this task issued no git add/reset/commit/push and did not modify that index state."
+  ],
+  "lock_total_packages": 115
+}

@@ -1,0 +1,904 @@
+WARN Skipping file for psutil: psutil-0.2.0.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-0.2.0.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-0.2.0.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-0.2.0.win32-py2.5.exe
+WARN Skipping file for psutil: psutil-0.2.0.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-0.2.0.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-0.2.0.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-0.2.0.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-0.2.1.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-0.2.1.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-0.2.1.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-0.2.1.win32-py2.5.exe
+WARN Skipping file for psutil: psutil-0.2.1.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-0.2.1.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-0.2.1.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-0.2.1.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-0.3.0.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-0.3.0.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-0.3.0.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-0.3.0.win32-py2.5.exe
+WARN Skipping file for psutil: psutil-0.3.0.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-0.3.0.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-0.3.0.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-0.3.0.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-0.4.0.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-0.4.0.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-0.4.0.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-0.4.0.win32-py2.5.exe
+WARN Skipping file for psutil: psutil-0.4.0.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-0.4.0.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-0.4.0.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-0.4.0.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-0.4.1.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-0.4.1.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-0.4.1.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-0.4.1.win32-py2.5.exe
+WARN Skipping file for psutil: psutil-0.4.1.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-0.4.1.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-0.4.1.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-0.4.1.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-0.5.0.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-0.5.0.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-0.5.0.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-0.5.0.win32-py2.5.exe
+WARN Skipping file for psutil: psutil-0.5.0.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-0.5.0.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-0.5.0.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-0.5.0.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-0.5.1.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-0.5.1.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-0.5.1.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-0.5.1.win32-py2.5.exe
+WARN Skipping file for psutil: psutil-0.5.1.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-0.5.1.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-0.5.1.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-0.5.1.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-0.6.0.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-0.6.0.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-0.6.0.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-0.6.0.win32-py2.5.exe
+WARN Skipping file for psutil: psutil-0.6.0.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-0.6.0.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-0.6.0.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-0.6.0.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-0.6.1.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-0.6.1.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-0.6.1.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-0.6.1.win32-py2.5.exe
+WARN Skipping file for psutil: psutil-0.6.1.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-0.6.1.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-0.6.1.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-0.6.1.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-0.7.0.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-0.7.0.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-0.7.0.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-0.7.0.win32-py2.5.exe
+WARN Skipping file for psutil: psutil-0.7.0.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-0.7.0.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-0.7.0.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-0.7.0.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-0.7.1.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-0.7.1.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-0.7.1.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-0.7.1.win32-py2.5.exe
+WARN Skipping file for psutil: psutil-0.7.1.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-0.7.1.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-0.7.1.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-0.7.1.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-1.0.0.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-1.0.0.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-1.0.0.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-1.0.0.win32-py2.5.exe
+WARN Skipping file for psutil: psutil-1.0.0.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-1.0.0.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-1.0.0.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-1.0.0.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-1.0.1.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-1.0.1.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-1.0.1.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-1.0.1.win32-py2.5.exe
+WARN Skipping file for psutil: psutil-1.0.1.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-1.0.1.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-1.0.1.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-1.0.1.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-1.1.0.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-1.1.0.win-amd64-py3.2.exe
+WARN Skipping file for psutil: psutil-1.1.0.win32-py2.4.exe
+WARN Skipping file for psutil: psutil-1.1.0.win32-py2.5.exe
+WARN Skipping file for psutil: psutil-1.1.0.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-1.1.0.win32-py3.2.exe
+WARN Skipping file for psutil: psutil-1.1.0.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-1.1.1.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-1.1.1.win-amd64-py3.2.exe
+WARN Skipping file for psutil: psutil-1.1.1.win32-py2.4.exe
+WARN Skipping file for psutil: psutil-1.1.1.win32-py2.5.exe
+WARN Skipping file for psutil: psutil-1.1.1.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-1.1.1.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-1.1.1.win32-py3.2.exe
+WARN Skipping file for psutil: psutil-1.1.1.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-1.1.2.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-1.1.2.win-amd64-py3.2.exe
+WARN Skipping file for psutil: psutil-1.1.2.win32-py2.4.exe
+WARN Skipping file for psutil: psutil-1.1.2.win32-py2.5.exe
+WARN Skipping file for psutil: psutil-1.1.2.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-1.1.2.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-1.1.2.win32-py3.2.exe
+WARN Skipping file for psutil: psutil-1.1.2.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-1.1.3.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-1.1.3.win32-py2.4.exe
+WARN Skipping file for psutil: psutil-1.1.3.win32-py2.5.exe
+WARN Skipping file for psutil: psutil-1.1.3.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-1.1.3.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-1.1.3.win32-py3.2.exe
+WARN Skipping file for psutil: psutil-1.1.3.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-1.2.0.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-1.2.0.win32-py2.4.exe
+WARN Skipping file for psutil: psutil-1.2.0.win32-py2.5.exe
+WARN Skipping file for psutil: psutil-1.2.0.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-1.2.0.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-1.2.0.win32-py3.2.exe
+WARN Skipping file for psutil: psutil-1.2.0.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-1.2.1.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-1.2.1.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-1.2.1.win32-py2.4.exe
+WARN Skipping file for psutil: psutil-1.2.1.win32-py2.5.exe
+WARN Skipping file for psutil: psutil-1.2.1.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-1.2.1.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-1.2.1.win32-py3.2.exe
+WARN Skipping file for psutil: psutil-1.2.1.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-2.0.0.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-2.0.0.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-2.0.0.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-2.0.0.win32-py2.4.exe
+WARN Skipping file for psutil: psutil-2.0.0.win32-py2.5.exe
+WARN Skipping file for psutil: psutil-2.0.0.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-2.0.0.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-2.0.0.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-2.0.0.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-2.1.0.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-2.1.0.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-2.1.0.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-2.1.0.win32-py2.4.exe
+WARN Skipping file for psutil: psutil-2.1.0.win32-py2.5.exe
+WARN Skipping file for psutil: psutil-2.1.0.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-2.1.0.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-2.1.0.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-2.1.0.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-2.1.1.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-2.1.1.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-2.1.1.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-2.1.1.win32-py2.4.exe
+WARN Skipping file for psutil: psutil-2.1.1.win32-py2.5.exe
+WARN Skipping file for psutil: psutil-2.1.1.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-2.1.1.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-2.1.1.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-2.1.1.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-2.1.2.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-2.1.2.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-2.1.2.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-2.1.2.win32-py2.4.exe
+WARN Skipping file for psutil: psutil-2.1.2.win32-py2.5.exe
+WARN Skipping file for psutil: psutil-2.1.2.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-2.1.2.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-2.1.2.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-2.1.2.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-2.1.3.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-2.1.3.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-2.1.3.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-2.1.3.win32-py2.4.exe
+WARN Skipping file for psutil: psutil-2.1.3.win32-py2.5.exe
+WARN Skipping file for psutil: psutil-2.1.3.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-2.1.3.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-2.1.3.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-2.1.3.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-2.2.0.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-2.2.0.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-2.2.0.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-2.2.0.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-2.2.0.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-2.2.0.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-2.2.0.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-2.2.1.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-2.2.1.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-2.2.1.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-2.2.1.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-2.2.1.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-2.2.1.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-2.2.1.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-3.0.0.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-3.0.0.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-3.0.0.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-3.0.0.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-3.0.0.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-3.0.0.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-3.0.0.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-3.0.1.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-3.0.1.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-3.0.1.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-3.0.1.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-3.0.1.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-3.0.1.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-3.0.1.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-3.1.0.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-3.1.0.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-3.1.0.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-3.1.0.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-3.1.0.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-3.1.0.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-3.1.0.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-3.1.1.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-3.1.1.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-3.1.1.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-3.1.1.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-3.1.1.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-3.1.1.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-3.1.1.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-3.2.0.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-3.2.0.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-3.2.0.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-3.2.0.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-3.2.1.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-3.2.1.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-3.2.1.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-3.2.1.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-3.2.1.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-3.2.1.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-3.2.1.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-3.2.2.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-3.2.2.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-3.2.2.win-amd64-py3.5.exe
+WARN Skipping file for psutil: psutil-3.2.2.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-3.2.2.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-3.2.2.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-3.2.2.win32-py3.5.exe
+WARN Skipping file for psutil: psutil-3.3.0.win-amd64-py2.6.exe
+WARN Skipping file for psutil: psutil-3.3.0.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-3.3.0.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-3.3.0.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-3.3.0.win-amd64-py3.5.exe
+WARN Skipping file for psutil: psutil-3.3.0.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-3.3.0.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-3.3.0.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-3.3.0.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-3.3.0.win32-py3.5.exe
+WARN Skipping file for psutil: psutil-3.4.1.win-amd64-py2.6.exe
+WARN Skipping file for psutil: psutil-3.4.1.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-3.4.1.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-3.4.1.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-3.4.1.win-amd64-py3.5.exe
+WARN Skipping file for psutil: psutil-3.4.1.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-3.4.1.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-3.4.1.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-3.4.1.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-3.4.1.win32-py3.5.exe
+WARN Skipping file for psutil: psutil-3.4.2.win-amd64-py2.6.exe
+WARN Skipping file for psutil: psutil-3.4.2.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-3.4.2.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-3.4.2.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-3.4.2.win-amd64-py3.5.exe
+WARN Skipping file for psutil: psutil-3.4.2.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-3.4.2.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-3.4.2.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-3.4.2.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-3.4.2.win32-py3.5.exe
+WARN Skipping file for psutil: psutil-4.0.0.win-amd64-py2.6.exe
+WARN Skipping file for psutil: psutil-4.0.0.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-4.0.0.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-4.0.0.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-4.0.0.win-amd64-py3.5.exe
+WARN Skipping file for psutil: psutil-4.0.0.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-4.0.0.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-4.0.0.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-4.0.0.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-4.0.0.win32-py3.5.exe
+WARN Skipping file for psutil: psutil-4.1.0.win-amd64-py2.6.exe
+WARN Skipping file for psutil: psutil-4.1.0.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-4.1.0.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-4.1.0.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-4.1.0.win-amd64-py3.5.exe
+WARN Skipping file for psutil: psutil-4.1.0.win32-py2.6.exe
+WARN Skipping file for psutil: psutil-4.1.0.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-4.1.0.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-4.1.0.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-4.1.0.win32-py3.5.exe
+WARN Skipping file for psutil: psutil-4.2.0.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-4.2.0.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-4.2.0.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-4.2.0.win-amd64-py3.5.exe
+WARN Skipping file for psutil: psutil-4.2.0.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-4.2.0.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-4.2.0.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-4.2.0.win32-py3.5.exe
+WARN Skipping file for psutil: psutil-4.3.0.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-4.3.0.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-4.3.0.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-4.3.0.win-amd64-py3.5.exe
+WARN Skipping file for psutil: psutil-4.3.0.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-4.3.0.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-4.3.0.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-4.3.0.win32-py3.5.exe
+WARN Skipping file for psutil: psutil-4.3.1.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-4.3.1.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-4.3.1.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-4.3.1.win-amd64-py3.5.exe
+WARN Skipping file for psutil: psutil-4.3.1.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-4.3.1.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-4.3.1.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-4.3.1.win32-py3.5.exe
+WARN Skipping file for psutil: psutil-4.4.0.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-4.4.0.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-4.4.0.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-4.4.0.win-amd64-py3.5.exe
+WARN Skipping file for psutil: psutil-4.4.0.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-4.4.0.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-4.4.0.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-4.4.0.win32-py3.5.exe
+WARN Skipping file for psutil: psutil-4.4.1.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-4.4.1.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-4.4.1.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-4.4.1.win-amd64-py3.5.exe
+WARN Skipping file for psutil: psutil-4.4.1.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-4.4.1.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-4.4.1.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-4.4.1.win32-py3.5.exe
+WARN Skipping file for psutil: psutil-4.4.2.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-4.4.2.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-4.4.2.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-4.4.2.win-amd64-py3.5.exe
+WARN Skipping file for psutil: psutil-4.4.2.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-4.4.2.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-4.4.2.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-4.4.2.win32-py3.5.exe
+WARN Skipping file for psutil: psutil-5.0.0.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-5.0.0.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-5.0.0.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-5.0.0.win-amd64-py3.5.exe
+WARN Skipping file for psutil: psutil-5.0.0.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-5.0.0.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-5.0.0.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-5.0.0.win32-py3.5.exe
+WARN Skipping file for psutil: psutil-5.0.1.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-5.0.1.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-5.0.1.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-5.0.1.win-amd64-py3.5.exe
+WARN Skipping file for psutil: psutil-5.0.1.win-amd64-py3.6.exe
+WARN Skipping file for psutil: psutil-5.0.1.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-5.0.1.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-5.0.1.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-5.0.1.win32-py3.5.exe
+WARN Skipping file for psutil: psutil-5.0.1.win32-py3.6.exe
+WARN Skipping file for psutil: psutil-5.1.0.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-5.1.0.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-5.1.0.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-5.1.0.win-amd64-py3.5.exe
+WARN Skipping file for psutil: psutil-5.1.0.win-amd64-py3.6.exe
+WARN Skipping file for psutil: psutil-5.1.0.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-5.1.0.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-5.1.0.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-5.1.0.win32-py3.5.exe
+WARN Skipping file for psutil: psutil-5.1.0.win32-py3.6.exe
+WARN Skipping file for psutil: psutil-5.1.1.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-5.1.1.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-5.1.1.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-5.1.1.win-amd64-py3.5.exe
+WARN Skipping file for psutil: psutil-5.1.1.win-amd64-py3.6.exe
+WARN Skipping file for psutil: psutil-5.1.1.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-5.1.1.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-5.1.1.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-5.1.1.win32-py3.5.exe
+WARN Skipping file for psutil: psutil-5.1.1.win32-py3.6.exe
+WARN Skipping file for psutil: psutil-5.1.2.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-5.1.2.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-5.1.2.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-5.1.2.win-amd64-py3.5.exe
+WARN Skipping file for psutil: psutil-5.1.2.win-amd64-py3.6.exe
+WARN Skipping file for psutil: psutil-5.1.2.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-5.1.2.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-5.1.2.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-5.1.2.win32-py3.5.exe
+WARN Skipping file for psutil: psutil-5.1.2.win32-py3.6.exe
+WARN Skipping file for psutil: psutil-5.1.3.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-5.1.3.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-5.1.3.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-5.1.3.win-amd64-py3.5.exe
+WARN Skipping file for psutil: psutil-5.1.3.win-amd64-py3.6.exe
+WARN Skipping file for psutil: psutil-5.1.3.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-5.1.3.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-5.1.3.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-5.1.3.win32-py3.5.exe
+WARN Skipping file for psutil: psutil-5.1.3.win32-py3.6.exe
+WARN Skipping file for psutil: psutil-5.2.0.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-5.2.0.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-5.2.0.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-5.2.0.win-amd64-py3.5.exe
+WARN Skipping file for psutil: psutil-5.2.0.win-amd64-py3.6.exe
+WARN Skipping file for psutil: psutil-5.2.0.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-5.2.0.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-5.2.0.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-5.2.0.win32-py3.5.exe
+WARN Skipping file for psutil: psutil-5.2.0.win32-py3.6.exe
+WARN Skipping file for psutil: psutil-5.2.1.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-5.2.1.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-5.2.1.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-5.2.1.win-amd64-py3.5.exe
+WARN Skipping file for psutil: psutil-5.2.1.win-amd64-py3.6.exe
+WARN Skipping file for psutil: psutil-5.2.1.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-5.2.1.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-5.2.1.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-5.2.1.win32-py3.5.exe
+WARN Skipping file for psutil: psutil-5.2.1.win32-py3.6.exe
+WARN Skipping file for psutil: psutil-5.2.2.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-5.2.2.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-5.2.2.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-5.2.2.win-amd64-py3.5.exe
+WARN Skipping file for psutil: psutil-5.2.2.win-amd64-py3.6.exe
+WARN Skipping file for psutil: psutil-5.2.2.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-5.2.2.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-5.2.2.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-5.2.2.win32-py3.5.exe
+WARN Skipping file for psutil: psutil-5.2.2.win32-py3.6.exe
+WARN Skipping file for psutil: psutil-5.3.0.win-amd64-py2.7.exe
+WARN Skipping file for psutil: psutil-5.3.0.win-amd64-py3.3.exe
+WARN Skipping file for psutil: psutil-5.3.0.win-amd64-py3.4.exe
+WARN Skipping file for psutil: psutil-5.3.0.win-amd64-py3.5.exe
+WARN Skipping file for psutil: psutil-5.3.0.win-amd64-py3.6.exe
+WARN Skipping file for psutil: psutil-5.3.0.win32-py2.7.exe
+WARN Skipping file for psutil: psutil-5.3.0.win32-py3.3.exe
+WARN Skipping file for psutil: psutil-5.3.0.win32-py3.4.exe
+WARN Skipping file for psutil: psutil-5.3.0.win32-py3.5.exe
+WARN Skipping file for psutil: psutil-5.3.0.win32-py3.6.exe
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Fixing invalid version specifier by inserting missing dot (before: `>=2.7,!=3.0*,!=3.1*,!=3.2*`; after: `>=2.7,!=3.0.*,!=3.1.*,!=3.2.*`)
+WARN Skipping file for pyzmq: pyzmq-13.0.0-py2.7-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-13.0.0-py2.7-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-13.0.0-py2.7-win32.egg
+WARN Skipping file for pyzmq: pyzmq-13.0.0-py3.3-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-13.0.0-py3.3-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-13.0.0-py3.3-win32.egg
+WARN Skipping file for pyzmq: pyzmq-13.0.0.win-amd64-py2.7.msi
+WARN Skipping file for pyzmq: pyzmq-13.0.0.win-amd64-py3.3.msi
+WARN Skipping file for pyzmq: pyzmq-13.0.0.win32-py2.7.msi
+WARN Skipping file for pyzmq: pyzmq-13.0.0.win32-py3.3.msi
+WARN Skipping file for pyzmq: pyzmq-13.0.1-py2.7-macosx-10.8-intel.egg
+WARN Skipping file for pyzmq: pyzmq-13.0.1-py3.3-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-13.0.2-py2.7-macosx-10.8-intel.egg
+WARN Skipping file for pyzmq: pyzmq-13.0.2-py2.7-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-13.0.2-py2.7-win32.egg
+WARN Skipping file for pyzmq: pyzmq-13.0.2-py3.3-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-13.0.2-py3.3-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-13.0.2-py3.3-win32.egg
+WARN Skipping file for pyzmq: pyzmq-13.1.0-py2.7-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-13.1.0-py2.7-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-13.1.0-py2.7-win32.egg
+WARN Skipping file for pyzmq: pyzmq-13.1.0-py3.3-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-13.1.0-py3.3-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-13.1.0-py3.3-win32.egg
+WARN Skipping file for pyzmq: pyzmq-14.0.0-py2.7-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-14.0.0-py2.7-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-14.0.0-py2.7-win32.egg
+WARN Skipping file for pyzmq: pyzmq-14.0.0-py3.3-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-14.0.0-py3.3-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-14.0.0-py3.3-win32.egg
+WARN Skipping file for pyzmq: pyzmq-14.0.1-py2.7-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-14.0.1-py2.7-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-14.0.1-py2.7-win32.egg
+WARN Skipping file for pyzmq: pyzmq-14.0.1-py3.3-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-14.0.1-py3.3-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-14.0.1-py3.3-win32.egg
+WARN Skipping file for pyzmq: pyzmq-14.1.0-py2.7-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-14.1.0-py2.7-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-14.1.0-py2.7-win32.egg
+WARN Skipping file for pyzmq: pyzmq-14.1.0-py3.3-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-14.1.0-py3.3-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-14.1.0-py3.3-win32.egg
+WARN Skipping file for pyzmq: pyzmq-14.1.1-py2.7-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-14.1.1-py2.7-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-14.1.1-py2.7-win32.egg
+WARN Skipping file for pyzmq: pyzmq-14.1.1-py3.3-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-14.1.1-py3.3-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-14.1.1-py3.3-win32.egg
+WARN Skipping file for pyzmq: pyzmq-14.2.0-py2.7-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-14.2.0-py2.7-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-14.2.0-py2.7-win32.egg
+WARN Skipping file for pyzmq: pyzmq-14.2.0-py3.3-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-14.2.0-py3.3-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-14.2.0-py3.3-win32.egg
+WARN Skipping file for pyzmq: pyzmq-14.3.0-py2.7-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-14.3.0-py2.7-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-14.3.0-py2.7-win32.egg
+WARN Skipping file for pyzmq: pyzmq-14.3.0-py3.3-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-14.3.0-py3.3-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-14.3.0-py3.3-win32.egg
+WARN Skipping file for pyzmq: pyzmq-14.3.1-py2.7-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-14.3.1-py2.7-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-14.3.1-py2.7-win32.egg
+WARN Skipping file for pyzmq: pyzmq-14.3.1-py3.3-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-14.3.1-py3.3-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-14.3.1-py3.3-win32.egg
+WARN Skipping file for pyzmq: pyzmq-14.4.0-py2.7-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-14.4.0-py2.7-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-14.4.0-py2.7-win32.egg
+WARN Skipping file for pyzmq: pyzmq-14.4.1-py2.7-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-14.4.1-py2.7-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-14.4.1-py2.7-win32.egg
+WARN Skipping file for pyzmq: pyzmq-14.5.0-py2.7-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-14.5.0-py2.7-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-14.5.0-py2.7-win32.egg
+WARN Skipping file for pyzmq: pyzmq-14.6.0-py2.7-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-14.6.0-py2.7-win32.egg
+WARN Skipping file for pyzmq: pyzmq-14.6.00-py2.7-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-14.7.0-py2.7-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-14.7.0-py2.7-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-14.7.0-py2.7-win32.egg
+WARN Skipping file for pyzmq: pyzmq-15.0.0-py2.7-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-15.0.0-py2.7-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-15.0.0-py2.7-win32.egg
+WARN Skipping file for pyzmq: pyzmq-15.1.0-py2.7-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-15.1.0-py2.7-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-15.1.0-py2.7-win32.egg
+WARN Skipping file for pyzmq: pyzmq-15.2.0-py2.7-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-15.2.0-py2.7-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-15.2.0-py2.7-win32.egg
+WARN Skipping file for pyzmq: pyzmq-15.3.0-py2.7-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-15.4.0-py2.7-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-2.1.10-py2.7-macosx-10.7-intel.egg
+WARN Skipping file for pyzmq: pyzmq-2.1.10-py2.7-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-2.1.10-py2.7-win32.egg
+WARN Skipping file for pyzmq: pyzmq-2.1.10-py3.2-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-2.1.10-py3.2-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-2.1.10-py3.2-win32.egg
+WARN Skipping file for pyzmq: pyzmq-2.1.11-py2.6-macosx-10.6-universal.egg
+WARN Skipping file for pyzmq: pyzmq-2.1.11-py2.7-macosx-10.7-intel.egg
+WARN Skipping file for pyzmq: pyzmq-2.1.11-py2.7-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-2.1.11-py2.7-win32.egg
+WARN Skipping file for pyzmq: pyzmq-2.1.11-py3.2-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-2.1.11-py3.2-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-2.1.11-py3.2-win32.egg
+WARN Skipping file for pyzmq: pyzmq-2.1.4-py2.5-macosx-10.6-i386.egg
+WARN Skipping file for pyzmq: pyzmq-2.1.4-py2.6-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-2.1.4-py2.6-win32.egg
+WARN Skipping file for pyzmq: pyzmq-2.1.4-py2.7-macosx-10.5-intel.egg
+WARN Skipping file for pyzmq: pyzmq-2.1.4-py2.7-win32.egg
+WARN Skipping file for pyzmq: pyzmq-2.1.4-py3.1-macosx-10.4-intel.egg
+WARN Skipping file for pyzmq: pyzmq-2.1.4-py3.1-win32.egg
+WARN Skipping file for pyzmq: pyzmq-2.1.4-py3.2-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-2.1.4-py3.2-win32.egg
+WARN Skipping file for pyzmq: pyzmq-2.1.7-py2.6-macosx-10.6-universal.egg
+WARN Skipping file for pyzmq: pyzmq-2.1.7-py2.7-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-2.1.7-py2.7-win32.egg
+WARN Skipping file for pyzmq: pyzmq-2.1.7-py3.2-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-2.1.7-py3.2-win32.egg
+WARN Skipping file for pyzmq: pyzmq-2.1.7.1-py2.7-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-2.1.7.1-py3.2-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-2.1.9-py2.6-macosx-10.6-universal.egg
+WARN Skipping file for pyzmq: pyzmq-2.1.9-py2.7-macosx-10.7-intel.egg
+WARN Skipping file for pyzmq: pyzmq-2.1.9-py2.7-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-2.1.9-py2.7-win32.egg
+WARN Skipping file for pyzmq: pyzmq-2.1.9-py3.2-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-2.1.9-py3.2-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-2.1.9-py3.2-win32.egg
+WARN Skipping file for pyzmq: pyzmq-2.2.0-py2.6-macosx-10.6-universal.egg
+WARN Skipping file for pyzmq: pyzmq-2.2.0-py2.7-macosx-10.7-intel.egg
+WARN Skipping file for pyzmq: pyzmq-2.2.0-py2.7-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-2.2.0-py2.7-win32.egg
+WARN Skipping file for pyzmq: pyzmq-2.2.0-py3.2-macosx-10.6-intel.egg
+WARN Skipping file for pyzmq: pyzmq-2.2.0-py3.2-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-2.2.0-py3.2-win32.egg
+WARN Skipping file for pyzmq: pyzmq-2.2.0.1-py2.7-macosx-10.8-intel.egg
+WARN Skipping file for pyzmq: pyzmq-2.2.0.1-py2.7-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-2.2.0.1-py2.7-win32.egg
+WARN Skipping file for pyzmq: pyzmq-2.2.0.1-py3.2-macosx-10.8-intel.egg
+WARN Skipping file for pyzmq: pyzmq-2.2.0.1-py3.2-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-2.2.0.1-py3.2-win32.egg
+WARN Skipping file for pyzmq: pyzmq-2.2.0.1-py3.3-win-amd64.egg
+WARN Skipping file for pyzmq: pyzmq-2.2.0.1-py3.3-win32.egg
+WARN Skipping file for pyzmq: pyzmq-2.2.0.1.win-amd64-py3.3.msi
+WARN Skipping file for pyzmq: pyzmq-2.2.0.1.win32-py3.3.msi
+WARN Skipping file for bleach: bleach-0.2.1-py2.5.egg
+WARN Skipping file for bleach: bleach-0.2.1-py2.6.egg
+WARN Skipping file for bleach: bleach-0.2.2-py2.6.egg
+WARN Skipping file for bleach: bleach-0.3-py2.6.egg
+WARN Skipping file for bleach: bleach-0.3.1-py2.6.egg
+WARN Skipping file for bleach: bleach-3.1.0-py3.8.egg
+WARN Skipping file for beautifulsoup4: beautifulsoup4-4.6.1-py2.7.egg
+WARN Skipping file for beautifulsoup4: beautifulsoup4-4.6.1-py3.5.egg
+WARN Skipping file for fqdn: fqdn-1.3.0-py3.7.egg
+WARN Fixing invalid version specifier by removing trailing comma (before: `>=3.5,`; after: `>=3.5`)
+WARN Fixing invalid version specifier by removing trailing comma (before: `>=3.5,`; after: `>=3.5`)
+WARN Fixing invalid version specifier by removing trailing comma (before: `>=3.5,`; after: `>=3.5`)
+WARN Fixing invalid version specifier by removing trailing comma (before: `>=3.5,`; after: `>=3.5`)
+Resolved 105 packages in 660ms
+Removed aenum v3.1.17
+Removed annotated-types v0.8.0
+Removed appdirs v1.4.4
+Removed backoff v2.2.1
+Removed black v26.5.1
+Removed click v8.4.2
+Removed contourpy v1.3.3
+Removed cycler v0.12.1
+Removed deprecated v1.3.1
+Removed dill v0.4.1
+Removed fonttools v4.63.0
+Removed gql v3.5.3
+Removed graphql-core v3.2.6
+Removed jsonpickle v4.1.2
+Removed kiwisolver v1.5.0
+Removed llvmlite v0.48.0
+Removed matplotlib v3.11.1
+Removed multidict v6.7.1
+Removed multiprocess v0.70.19
+Removed mypy-extensions v1.1.0
+Removed narwhals v2.24.0
+Removed networkx v3.6.1
+Removed numba v0.66.0
+Removed numpy v2.4.6
+Removed numpy-financial v1.0.0
+Removed pandas v3.0.5
+Removed pandas-stubs v2.3.3.260113
+Removed pathspec v1.1.1
+Removed pillow v12.3.0
+Removed plotly v6.9.0
+Removed propcache v0.5.2
+Removed py-moneyed v3.0
+Removed pydantic v2.13.4
+Removed pydantic-core v2.46.4
+Removed pydantic-settings v2.14.2
+Removed pyparsing v3.3.2
+Removed python-dotenv v1.2.2
+Removed pytokens v0.4.1
+Removed pyvis v0.3.2
+Removed pyxirr v0.10.8
+Removed requests-toolbelt v1.0.0
+Removed scipy v1.18.0
+Removed seaborn v0.13.2
+Removed specklepy v2026.6.0
+Removed tabulate v0.10.0
+Removed types-pytz v2026.3.1.20260727
+Removed typing-inspection v0.4.2
+Removed ujson v5.13.0
+Removed websockets v11.0.3
+Removed wrapt v2.3.0
+Removed yarl v1.24.5

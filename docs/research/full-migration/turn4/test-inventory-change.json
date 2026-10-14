@@ -1,0 +1,184 @@
+{
+  "before": {
+    "tests.test_adapters": 33,
+    "tests.test_calculation_equivalence": 21,
+    "tests.test_calculations": 53,
+    "tests.test_cytoscape_adapter": 2,
+    "tests.test_design_example": 2,
+    "tests.test_document_operations": 17,
+    "tests.test_domain_io": 83,
+    "tests.test_domain_model": 20,
+    "tests.test_domain_run": 23,
+    "tests.test_domain_specification": 21,
+    "tests.test_dynamics.TestDynamics": 8,
+    "tests.test_excel_ingestion": 31,
+    "tests.test_execution": 44,
+    "tests.test_financial_library": 30,
+    "tests.test_flow_dates": 15,
+    "tests.test_flow_operations": 17,
+    "tests.test_formulas.TestFinancial": 6,
+    "tests.test_formulas.TestSolver": 1,
+    "tests.test_graph_json": 20,
+    "tests.test_immutable_graph": 72,
+    "tests.test_ingestion_evidence": 46,
+    "tests.test_layout_arrangement": 13,
+    "tests.test_layout_minizinc": 18,
+    "tests.test_layout_preferences": 13,
+    "tests.test_layout_presentation": 1,
+    "tests.test_layout_prototype": 19,
+    "tests.test_layout_reduction": 3,
+    "tests.test_layout_saved": 6,
+    "tests.test_layout_workbench": 9,
+    "tests.test_legacy_table": 6,
+    "tests.test_market_naming": 4,
+    "tests.test_measures.TestMeasures": 7,
+    "tests.test_migration_foundations": 10,
+    "tests.test_model_consumers": 14,
+    "tests.test_model_graph": 37,
+    "tests.test_models": 5,
+    "tests.test_modules.TestDistribution": 3,
+    "tests.test_modules.TestDuration": 1,
+    "tests.test_modules.TestPeriod": 1,
+    "tests.test_modules.TestUnits": 3,
+    "tests.test_modules.TestFlow": 12,
+    "tests.test_modules.TestStream": 4,
+    "tests.test_modules.TestSpan": 2,
+    "tests.test_modules.TestSegmentation": 2,
+    "tests.test_modules.TestType": 1,
+    "tests.test_projections.TestProjection": 4,
+    "tests.test_records": 42,
+    "tests.test_scenarios_policies": 12,
+    "tests.test_schema_graph_contract": 58,
+    "tests.test_scoped_codes": 37,
+    "tests.test_speckle_mapping": 15,
+    "tests.test_tabular_operations": 13,
+    "tests.test_temporal_execution": 8,
+    "tests.test_unresolved_measurements": 4,
+    "tests.test_validate": 5,
+    "tests.test_validation_composition": 24,
+    "tests.test_workbench": 13,
+    "tests.test_workflow": 22,
+    "tests.test_workflow_boundaries": 37,
+    "tests.test_workflow_formats": 12,
+    "tests.test_workflow_shared": 20
+  },
+  "after": {
+    "tests.test_adapters": 33,
+    "tests.test_calculation_equivalence": 21,
+    "tests.test_calculations": 53,
+    "tests.test_cytoscape_adapter": 2,
+    "tests.test_design_example": 2,
+    "tests.test_document_operations": 17,
+    "tests.test_domain_io": 83,
+    "tests.test_domain_model": 20,
+    "tests.test_domain_run": 23,
+    "tests.test_domain_specification": 21,
+    "tests.test_dynamics": 4,
+    "tests.test_excel_ingestion": 31,
+    "tests.test_execution": 44,
+    "tests.test_financial_library": 30,
+    "tests.test_flow_dates": 15,
+    "tests.test_flow_operations": 17,
+    "tests.test_formulas.TestFinancial": 6,
+    "tests.test_formulas.TestSolver": 1,
+    "tests.test_graph_json": 20,
+    "tests.test_immutable_graph": 72,
+    "tests.test_ingestion_evidence": 46,
+    "tests.test_layout_arrangement": 13,
+    "tests.test_layout_minizinc": 18,
+    "tests.test_layout_preferences": 13,
+    "tests.test_layout_presentation": 1,
+    "tests.test_layout_prototype": 19,
+    "tests.test_layout_reduction": 3,
+    "tests.test_layout_saved": 6,
+    "tests.test_layout_workbench": 9,
+    "tests.test_legacy_table": 6,
+    "tests.test_market_naming": 4,
+    "tests.test_measures.TestMeasures": 7,
+    "tests.test_migration_foundations": 10,
+    "tests.test_model_consumers": 14,
+    "tests.test_model_graph": 37,
+    "tests.test_models": 5,
+    "tests.test_modules": 16,
+    "tests.test_projections": 4,
+    "tests.test_records": 42,
+    "tests.test_retirement": 14,
+    "tests.test_scenarios_policies": 12,
+    "tests.test_schema_graph_contract": 58,
+    "tests.test_scoped_codes": 37,
+    "tests.test_speckle_mapping": 15,
+    "tests.test_tabular_operations": 13,
+    "tests.test_temporal_execution": 8,
+    "tests.test_unresolved_measurements": 4,
+    "tests.test_validate": 5,
+    "tests.test_validation_composition": 24,
+    "tests.test_workbench": 13,
+    "tests.test_workflow": 22,
+    "tests.test_workflow_boundaries": 37,
+    "tests.test_workflow_formats": 12,
+    "tests.test_workflow_shared": 20
+  },
+  "changed": {
+    "tests.test_dynamics": {
+      "before": 0,
+      "after": 4
+    },
+    "tests.test_dynamics.TestDynamics": {
+      "before": 8,
+      "after": 0
+    },
+    "tests.test_modules": {
+      "before": 0,
+      "after": 16
+    },
+    "tests.test_modules.TestDistribution": {
+      "before": 3,
+      "after": 0
+    },
+    "tests.test_modules.TestDuration": {
+      "before": 1,
+      "after": 0
+    },
+    "tests.test_modules.TestFlow": {
+      "before": 12,
+      "after": 0
+    },
+    "tests.test_modules.TestPeriod": {
+      "before": 1,
+      "after": 0
+    },
+    "tests.test_modules.TestSegmentation": {
+      "before": 2,
+      "after": 0
+    },
+    "tests.test_modules.TestSpan": {
+      "before": 2,
+      "after": 0
+    },
+    "tests.test_modules.TestStream": {
+      "before": 4,
+      "after": 0
+    },
+    "tests.test_modules.TestType": {
+      "before": 1,
+      "after": 0
+    },
+    "tests.test_modules.TestUnits": {
+      "before": 3,
+      "after": 0
+    },
+    "tests.test_projections": {
+      "before": 0,
+      "after": 4
+    },
+    "tests.test_projections.TestProjection": {
+      "before": 4,
+      "after": 0
+    },
+    "tests.test_retirement": {
+      "before": 0,
+      "after": 14
+    }
+  },
+  "note": "Replacement checks consolidate old display-only and container-specific tests; retained account/cycle checks use captured reference data."
+}

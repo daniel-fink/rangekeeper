@@ -1,0 +1,469 @@
+running bdist_wheel
+running build
+running build_py
+creating build/lib/rangekeeper
+copying rangekeeper/measure.py -> build/lib/rangekeeper
+copying rangekeeper/_records.py -> build/lib/rangekeeper
+copying rangekeeper/diagnostics.py -> build/lib/rangekeeper
+copying rangekeeper/duration.py -> build/lib/rangekeeper
+copying rangekeeper/policy.py -> build/lib/rangekeeper
+copying rangekeeper/__init__.py -> build/lib/rangekeeper
+copying rangekeeper/format.py -> build/lib/rangekeeper
+copying rangekeeper/distribution.py -> build/lib/rangekeeper
+copying rangekeeper/api.py -> build/lib/rangekeeper
+copying rangekeeper/validate.py -> build/lib/rangekeeper
+copying rangekeeper/_validation.py -> build/lib/rangekeeper
+copying rangekeeper/errors.py -> build/lib/rangekeeper
+copying rangekeeper/space.py -> build/lib/rangekeeper
+copying rangekeeper/projection.py -> build/lib/rangekeeper
+copying rangekeeper/flux.py -> build/lib/rangekeeper
+copying rangekeeper/extrapolation.py -> build/lib/rangekeeper
+copying rangekeeper/segmentation.py -> build/lib/rangekeeper
+creating build/lib/rangekeeper/dynamics
+copying rangekeeper/dynamics/market.py -> build/lib/rangekeeper/dynamics
+copying rangekeeper/dynamics/trend.py -> build/lib/rangekeeper/dynamics
+copying rangekeeper/dynamics/black_swan.py -> build/lib/rangekeeper/dynamics
+copying rangekeeper/dynamics/__init__.py -> build/lib/rangekeeper/dynamics
+copying rangekeeper/dynamics/noise.py -> build/lib/rangekeeper/dynamics
+copying rangekeeper/dynamics/cyclicality.py -> build/lib/rangekeeper/dynamics
+copying rangekeeper/dynamics/volatility.py -> build/lib/rangekeeper/dynamics
+creating build/lib/rangekeeper/_schema
+copying rangekeeper/_schema/records.py -> build/lib/rangekeeper/_schema
+copying rangekeeper/_schema/__init__.py -> build/lib/rangekeeper/_schema
+copying rangekeeper/_schema/native.py -> build/lib/rangekeeper/_schema
+copying rangekeeper/_schema/validation.py -> build/lib/rangekeeper/_schema
+creating build/lib/rangekeeper/graph
+copying rangekeeper/graph/update.py -> build/lib/rangekeeper/graph
+copying rangekeeper/graph/_catalog.py -> build/lib/rangekeeper/graph
+copying rangekeeper/graph/_encoding.py -> build/lib/rangekeeper/graph
+copying rangekeeper/graph/characteristics.py -> build/lib/rangekeeper/graph
+copying rangekeeper/graph/definitions.py -> build/lib/rangekeeper/graph
+copying rangekeeper/graph/relationship.py -> build/lib/rangekeeper/graph
+copying rangekeeper/graph/reduction.py -> build/lib/rangekeeper/graph
+copying rangekeeper/graph/classification.py -> build/lib/rangekeeper/graph
+copying rangekeeper/graph/graph.py -> build/lib/rangekeeper/graph
+copying rangekeeper/graph/__init__.py -> build/lib/rangekeeper/graph
+copying rangekeeper/graph/_yaml.py -> build/lib/rangekeeper/graph
+copying rangekeeper/graph/operation.py -> build/lib/rangekeeper/graph
+copying rangekeeper/graph/view.py -> build/lib/rangekeeper/graph
+copying rangekeeper/graph/assembly.py -> build/lib/rangekeeper/graph
+copying rangekeeper/graph/taxonomy.py -> build/lib/rangekeeper/graph
+copying rangekeeper/graph/revision.py -> build/lib/rangekeeper/graph
+copying rangekeeper/graph/entity.py -> build/lib/rangekeeper/graph
+copying rangekeeper/graph/table.py -> build/lib/rangekeeper/graph
+copying rangekeeper/graph/errors.py -> build/lib/rangekeeper/graph
+copying rangekeeper/graph/provenance.py -> build/lib/rangekeeper/graph
+copying rangekeeper/graph/_structured.py -> build/lib/rangekeeper/graph
+creating build/lib/rangekeeper/specification
+copying rangekeeper/specification/__init__.py -> build/lib/rangekeeper/specification
+copying rangekeeper/specification/_validation.py -> build/lib/rangekeeper/specification
+copying rangekeeper/specification/_composition.py -> build/lib/rangekeeper/specification
+copying rangekeeper/specification/validation.py -> build/lib/rangekeeper/specification
+creating build/lib/rangekeeper/formula
+copying rangekeeper/formula/__init__.py -> build/lib/rangekeeper/formula
+copying rangekeeper/formula/financial.py -> build/lib/rangekeeper/formula
+creating build/lib/rangekeeper/model
+copying rangekeeper/model/__init__.py -> build/lib/rangekeeper/model
+copying rangekeeper/model/_expression.py -> build/lib/rangekeeper/model
+copying rangekeeper/model/_validation.py -> build/lib/rangekeeper/model
+copying rangekeeper/model/_formulation.py -> build/lib/rangekeeper/model
+copying rangekeeper/model/validation.py -> build/lib/rangekeeper/model
+creating build/lib/rangekeeper/run
+copying rangekeeper/run/__init__.py -> build/lib/rangekeeper/run
+copying rangekeeper/run/_validation.py -> build/lib/rangekeeper/run
+copying rangekeeper/run/validation.py -> build/lib/rangekeeper/run
+creating build/lib/rangekeeper/graph/adapter
+copying rangekeeper/graph/adapter/pandas.py -> build/lib/rangekeeper/graph/adapter
+copying rangekeeper/graph/adapter/__init__.py -> build/lib/rangekeeper/graph/adapter
+copying rangekeeper/graph/adapter/visualization.py -> build/lib/rangekeeper/graph/adapter
+copying rangekeeper/graph/adapter/csv.py -> build/lib/rangekeeper/graph/adapter
+copying rangekeeper/graph/adapter/document.py -> build/lib/rangekeeper/graph/adapter
+copying rangekeeper/graph/adapter/errors.py -> build/lib/rangekeeper/graph/adapter
+copying rangekeeper/graph/adapter/json.py -> build/lib/rangekeeper/graph/adapter
+creating build/lib/rangekeeper/graph/workflow
+copying rangekeeper/graph/workflow/catalog.py -> build/lib/rangekeeper/graph/workflow
+copying rangekeeper/graph/workflow/_schema.py -> build/lib/rangekeeper/graph/workflow
+copying rangekeeper/graph/workflow/references.py -> build/lib/rangekeeper/graph/workflow
+copying rangekeeper/graph/workflow/_audit.py -> build/lib/rangekeeper/graph/workflow
+copying rangekeeper/graph/workflow/_declarations.py -> build/lib/rangekeeper/graph/workflow
+copying rangekeeper/graph/workflow/_operands.py -> build/lib/rangekeeper/graph/workflow
+copying rangekeeper/graph/workflow/__init__.py -> build/lib/rangekeeper/graph/workflow
+copying rangekeeper/graph/workflow/_execution.py -> build/lib/rangekeeper/graph/workflow
+copying rangekeeper/graph/workflow/_shared.py -> build/lib/rangekeeper/graph/workflow
+copying rangekeeper/graph/workflow/review.py -> build/lib/rangekeeper/graph/workflow
+copying rangekeeper/graph/workflow/runtime.py -> build/lib/rangekeeper/graph/workflow
+copying rangekeeper/graph/workflow/checking.py -> build/lib/rangekeeper/graph/workflow
+copying rangekeeper/graph/workflow/sources.py -> build/lib/rangekeeper/graph/workflow
+copying rangekeeper/graph/workflow/_table_operations.py -> build/lib/rangekeeper/graph/workflow
+copying rangekeeper/graph/workflow/specification.py -> build/lib/rangekeeper/graph/workflow
+copying rangekeeper/graph/workflow/implementation.py -> build/lib/rangekeeper/graph/workflow
+copying rangekeeper/graph/workflow/source_checks.py -> build/lib/rangekeeper/graph/workflow
+copying rangekeeper/graph/workflow/bindings.py -> build/lib/rangekeeper/graph/workflow
+copying rangekeeper/graph/workflow/composition.py -> build/lib/rangekeeper/graph/workflow
+copying rangekeeper/graph/workflow/_contracts.py -> build/lib/rangekeeper/graph/workflow
+copying rangekeeper/graph/workflow/__main__.py -> build/lib/rangekeeper/graph/workflow
+copying rangekeeper/graph/workflow/_model_validation.py -> build/lib/rangekeeper/graph/workflow
+creating build/lib/rangekeeper/graph/adapter/cytoscape
+copying rangekeeper/graph/adapter/cytoscape/__init__.py -> build/lib/rangekeeper/graph/adapter/cytoscape
+copying rangekeeper/graph/adapter/cytoscape/document.py -> build/lib/rangekeeper/graph/adapter/cytoscape
+creating build/lib/rangekeeper/graph/adapter/excel
+copying rangekeeper/graph/adapter/excel/classification.py -> build/lib/rangekeeper/graph/adapter/excel
+copying rangekeeper/graph/adapter/excel/__init__.py -> build/lib/rangekeeper/graph/adapter/excel
+copying rangekeeper/graph/adapter/excel/inspection.py -> build/lib/rangekeeper/graph/adapter/excel
+copying rangekeeper/graph/adapter/excel/reader.py -> build/lib/rangekeeper/graph/adapter/excel
+copying rangekeeper/graph/adapter/excel/extraction.py -> build/lib/rangekeeper/graph/adapter/excel
+copying rangekeeper/graph/adapter/excel/specification.py -> build/lib/rangekeeper/graph/adapter/excel
+copying rangekeeper/graph/adapter/excel/workflow.py -> build/lib/rangekeeper/graph/adapter/excel
+copying rangekeeper/graph/adapter/excel/_coordinates.py -> build/lib/rangekeeper/graph/adapter/excel
+copying rangekeeper/graph/adapter/excel/snapshot.py -> build/lib/rangekeeper/graph/adapter/excel
+creating build/lib/rangekeeper/graph/workflow/ingestion
+copying rangekeeper/graph/workflow/ingestion/_encoding.py -> build/lib/rangekeeper/graph/workflow/ingestion
+copying rangekeeper/graph/workflow/ingestion/predicates.py -> build/lib/rangekeeper/graph/workflow/ingestion
+copying rangekeeper/graph/workflow/ingestion/_derivation.py -> build/lib/rangekeeper/graph/workflow/ingestion
+copying rangekeeper/graph/workflow/ingestion/tabular.py -> build/lib/rangekeeper/graph/workflow/ingestion
+copying rangekeeper/graph/workflow/ingestion/fingerprint.py -> build/lib/rangekeeper/graph/workflow/ingestion
+copying rangekeeper/graph/workflow/ingestion/__init__.py -> build/lib/rangekeeper/graph/workflow/ingestion
+copying rangekeeper/graph/workflow/ingestion/transform.py -> build/lib/rangekeeper/graph/workflow/ingestion
+copying rangekeeper/graph/workflow/ingestion/errors.py -> build/lib/rangekeeper/graph/workflow/ingestion
+copying rangekeeper/graph/workflow/ingestion/evidence.py -> build/lib/rangekeeper/graph/workflow/ingestion
+copying rangekeeper/graph/workflow/ingestion/validation.py -> build/lib/rangekeeper/graph/workflow/ingestion
+running egg_info
+creating Rangekeeper.egg-info
+writing Rangekeeper.egg-info/PKG-INFO
+writing dependency_links to Rangekeeper.egg-info/dependency_links.txt
+writing requirements to Rangekeeper.egg-info/requires.txt
+writing top-level names to Rangekeeper.egg-info/top_level.txt
+writing manifest file 'Rangekeeper.egg-info/SOURCES.txt'
+reading manifest file 'Rangekeeper.egg-info/SOURCES.txt'
+writing manifest file 'Rangekeeper.egg-info/SOURCES.txt'
+copying rangekeeper/py.typed -> build/lib/rangekeeper
+copying rangekeeper/_schema/manifest.json -> build/lib/rangekeeper/_schema
+copying rangekeeper/_schema/schema.json -> build/lib/rangekeeper/_schema
+copying rangekeeper/_schema/slots.json -> build/lib/rangekeeper/_schema
+creating build/lib/rangekeeper/graph/adapter/cytoscape/assets
+copying rangekeeper/graph/adapter/cytoscape/assets/viewer.js -> build/lib/rangekeeper/graph/adapter/cytoscape/assets
+copying rangekeeper/graph/adapter/cytoscape/assets/projection.js -> build/lib/rangekeeper/graph/adapter/cytoscape/assets
+copying rangekeeper/graph/adapter/cytoscape/assets/routing.js -> build/lib/rangekeeper/graph/adapter/cytoscape/assets
+copying rangekeeper/graph/adapter/cytoscape/assets/viewer.css -> build/lib/rangekeeper/graph/adapter/cytoscape/assets
+copying rangekeeper/graph/adapter/cytoscape/assets/viewer.html -> build/lib/rangekeeper/graph/adapter/cytoscape/assets
+creating build/lib/rangekeeper/graph/adapter/cytoscape/assets/vendor
+copying rangekeeper/graph/adapter/cytoscape/assets/vendor/layout-base.js -> build/lib/rangekeeper/graph/adapter/cytoscape/assets/vendor
+copying rangekeeper/graph/adapter/cytoscape/assets/vendor/cytoscape.js -> build/lib/rangekeeper/graph/adapter/cytoscape/assets/vendor
+copying rangekeeper/graph/adapter/cytoscape/assets/vendor/cose-base.js -> build/lib/rangekeeper/graph/adapter/cytoscape/assets/vendor
+copying rangekeeper/graph/adapter/cytoscape/assets/vendor/cytoscape-fcose.js -> build/lib/rangekeeper/graph/adapter/cytoscape/assets/vendor
+copying rangekeeper/graph/adapter/cytoscape/assets/vendor/layout-base.LICENSE -> build/lib/rangekeeper/graph/adapter/cytoscape/assets/vendor
+copying rangekeeper/graph/adapter/cytoscape/assets/vendor/cytoscape-fcose.LICENSE -> build/lib/rangekeeper/graph/adapter/cytoscape/assets/vendor
+copying rangekeeper/graph/adapter/cytoscape/assets/vendor/cytoscape.LICENSE -> build/lib/rangekeeper/graph/adapter/cytoscape/assets/vendor
+copying rangekeeper/graph/adapter/cytoscape/assets/vendor/cose-base.LICENSE -> build/lib/rangekeeper/graph/adapter/cytoscape/assets/vendor
+copying rangekeeper/graph/adapter/cytoscape/assets/vendor/manifest.json -> build/lib/rangekeeper/graph/adapter/cytoscape/assets/vendor
+copying rangekeeper/graph/adapter/cytoscape/assets/projection.js -> build/lib/rangekeeper/graph/adapter/cytoscape/assets
+copying rangekeeper/graph/adapter/cytoscape/assets/routing.js -> build/lib/rangekeeper/graph/adapter/cytoscape/assets
+copying rangekeeper/graph/adapter/cytoscape/assets/viewer.css -> build/lib/rangekeeper/graph/adapter/cytoscape/assets
+copying rangekeeper/graph/adapter/cytoscape/assets/viewer.html -> build/lib/rangekeeper/graph/adapter/cytoscape/assets
+copying rangekeeper/graph/adapter/cytoscape/assets/viewer.js -> build/lib/rangekeeper/graph/adapter/cytoscape/assets
+copying rangekeeper/graph/adapter/cytoscape/assets/vendor/cose-base.LICENSE -> build/lib/rangekeeper/graph/adapter/cytoscape/assets/vendor
+copying rangekeeper/graph/adapter/cytoscape/assets/vendor/cose-base.js -> build/lib/rangekeeper/graph/adapter/cytoscape/assets/vendor
+copying rangekeeper/graph/adapter/cytoscape/assets/vendor/cytoscape-fcose.LICENSE -> build/lib/rangekeeper/graph/adapter/cytoscape/assets/vendor
+copying rangekeeper/graph/adapter/cytoscape/assets/vendor/cytoscape-fcose.js -> build/lib/rangekeeper/graph/adapter/cytoscape/assets/vendor
+copying rangekeeper/graph/adapter/cytoscape/assets/vendor/cytoscape.LICENSE -> build/lib/rangekeeper/graph/adapter/cytoscape/assets/vendor
+copying rangekeeper/graph/adapter/cytoscape/assets/vendor/cytoscape.js -> build/lib/rangekeeper/graph/adapter/cytoscape/assets/vendor
+copying rangekeeper/graph/adapter/cytoscape/assets/vendor/layout-base.LICENSE -> build/lib/rangekeeper/graph/adapter/cytoscape/assets/vendor
+copying rangekeeper/graph/adapter/cytoscape/assets/vendor/layout-base.js -> build/lib/rangekeeper/graph/adapter/cytoscape/assets/vendor
+copying rangekeeper/graph/adapter/cytoscape/assets/vendor/manifest.json -> build/lib/rangekeeper/graph/adapter/cytoscape/assets/vendor
+installing to build/bdist.macosx-11.0-arm64/wheel
+running install
+running install_lib
+creating build/bdist.macosx-11.0-arm64/wheel
+creating build/bdist.macosx-11.0-arm64/wheel/rangekeeper
+copying build/lib/rangekeeper/measure.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper
+creating build/bdist.macosx-11.0-arm64/wheel/rangekeeper/dynamics
+copying build/lib/rangekeeper/dynamics/market.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/dynamics
+copying build/lib/rangekeeper/dynamics/trend.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/dynamics
+copying build/lib/rangekeeper/dynamics/black_swan.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/dynamics
+copying build/lib/rangekeeper/dynamics/__init__.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/dynamics
+copying build/lib/rangekeeper/dynamics/noise.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/dynamics
+copying build/lib/rangekeeper/dynamics/cyclicality.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/dynamics
+copying build/lib/rangekeeper/dynamics/volatility.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/dynamics
+creating build/bdist.macosx-11.0-arm64/wheel/rangekeeper/_schema
+copying build/lib/rangekeeper/_schema/slots.json -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/_schema
+copying build/lib/rangekeeper/_schema/records.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/_schema
+copying build/lib/rangekeeper/_schema/__init__.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/_schema
+copying build/lib/rangekeeper/_schema/native.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/_schema
+copying build/lib/rangekeeper/_schema/manifest.json -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/_schema
+copying build/lib/rangekeeper/_schema/schema.json -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/_schema
+copying build/lib/rangekeeper/_schema/validation.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/_schema
+copying build/lib/rangekeeper/_records.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper
+copying build/lib/rangekeeper/diagnostics.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper
+creating build/bdist.macosx-11.0-arm64/wheel/rangekeeper/graph
+copying build/lib/rangekeeper/graph/update.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph
+copying build/lib/rangekeeper/graph/_catalog.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph
+copying build/lib/rangekeeper/graph/_encoding.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph
+copying build/lib/rangekeeper/graph/characteristics.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph
+copying build/lib/rangekeeper/graph/definitions.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph
+copying build/lib/rangekeeper/graph/relationship.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph
+copying build/lib/rangekeeper/graph/reduction.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph
+copying build/lib/rangekeeper/graph/classification.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph
+copying build/lib/rangekeeper/graph/graph.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph
+copying build/lib/rangekeeper/graph/__init__.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph
+copying build/lib/rangekeeper/graph/_yaml.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph
+creating build/bdist.macosx-11.0-arm64/wheel/rangekeeper/graph/adapter
+copying build/lib/rangekeeper/graph/adapter/pandas.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/adapter
+creating build/bdist.macosx-11.0-arm64/wheel/rangekeeper/graph/adapter/cytoscape
+copying build/lib/rangekeeper/graph/adapter/cytoscape/__init__.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/adapter/cytoscape
+copying build/lib/rangekeeper/graph/adapter/cytoscape/document.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/adapter/cytoscape
+creating build/bdist.macosx-11.0-arm64/wheel/rangekeeper/graph/adapter/cytoscape/assets
+copying build/lib/rangekeeper/graph/adapter/cytoscape/assets/viewer.js -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/adapter/cytoscape/assets
+copying build/lib/rangekeeper/graph/adapter/cytoscape/assets/projection.js -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/adapter/cytoscape/assets
+copying build/lib/rangekeeper/graph/adapter/cytoscape/assets/viewer.html -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/adapter/cytoscape/assets
+copying build/lib/rangekeeper/graph/adapter/cytoscape/assets/viewer.css -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/adapter/cytoscape/assets
+creating build/bdist.macosx-11.0-arm64/wheel/rangekeeper/graph/adapter/cytoscape/assets/vendor
+copying build/lib/rangekeeper/graph/adapter/cytoscape/assets/vendor/layout-base.LICENSE -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/adapter/cytoscape/assets/vendor
+copying build/lib/rangekeeper/graph/adapter/cytoscape/assets/vendor/layout-base.js -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/adapter/cytoscape/assets/vendor
+copying build/lib/rangekeeper/graph/adapter/cytoscape/assets/vendor/cytoscape-fcose.LICENSE -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/adapter/cytoscape/assets/vendor
+copying build/lib/rangekeeper/graph/adapter/cytoscape/assets/vendor/cytoscape.js -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/adapter/cytoscape/assets/vendor
+copying build/lib/rangekeeper/graph/adapter/cytoscape/assets/vendor/cytoscape.LICENSE -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/adapter/cytoscape/assets/vendor
+copying build/lib/rangekeeper/graph/adapter/cytoscape/assets/vendor/manifest.json -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/adapter/cytoscape/assets/vendor
+copying build/lib/rangekeeper/graph/adapter/cytoscape/assets/vendor/cose-base.js -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/adapter/cytoscape/assets/vendor
+copying build/lib/rangekeeper/graph/adapter/cytoscape/assets/vendor/cytoscape-fcose.js -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/adapter/cytoscape/assets/vendor
+copying build/lib/rangekeeper/graph/adapter/cytoscape/assets/vendor/cose-base.LICENSE -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/adapter/cytoscape/assets/vendor
+copying build/lib/rangekeeper/graph/adapter/cytoscape/assets/routing.js -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/adapter/cytoscape/assets
+creating build/bdist.macosx-11.0-arm64/wheel/rangekeeper/graph/adapter/excel
+copying build/lib/rangekeeper/graph/adapter/excel/classification.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/adapter/excel
+copying build/lib/rangekeeper/graph/adapter/excel/__init__.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/adapter/excel
+copying build/lib/rangekeeper/graph/adapter/excel/inspection.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/adapter/excel
+copying build/lib/rangekeeper/graph/adapter/excel/reader.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/adapter/excel
+copying build/lib/rangekeeper/graph/adapter/excel/extraction.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/adapter/excel
+copying build/lib/rangekeeper/graph/adapter/excel/specification.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/adapter/excel
+copying build/lib/rangekeeper/graph/adapter/excel/workflow.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/adapter/excel
+copying build/lib/rangekeeper/graph/adapter/excel/_coordinates.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/adapter/excel
+copying build/lib/rangekeeper/graph/adapter/excel/snapshot.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/adapter/excel
+copying build/lib/rangekeeper/graph/adapter/__init__.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/adapter
+copying build/lib/rangekeeper/graph/adapter/visualization.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/adapter
+copying build/lib/rangekeeper/graph/adapter/csv.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/adapter
+copying build/lib/rangekeeper/graph/adapter/document.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/adapter
+copying build/lib/rangekeeper/graph/adapter/errors.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/adapter
+copying build/lib/rangekeeper/graph/adapter/json.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/adapter
+copying build/lib/rangekeeper/graph/operation.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph
+copying build/lib/rangekeeper/graph/view.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph
+copying build/lib/rangekeeper/graph/assembly.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph
+copying build/lib/rangekeeper/graph/taxonomy.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph
+creating build/bdist.macosx-11.0-arm64/wheel/rangekeeper/graph/workflow
+copying build/lib/rangekeeper/graph/workflow/catalog.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/workflow
+copying build/lib/rangekeeper/graph/workflow/_schema.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/workflow
+creating build/bdist.macosx-11.0-arm64/wheel/rangekeeper/graph/workflow/ingestion
+copying build/lib/rangekeeper/graph/workflow/ingestion/_encoding.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/workflow/ingestion
+copying build/lib/rangekeeper/graph/workflow/ingestion/predicates.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/workflow/ingestion
+copying build/lib/rangekeeper/graph/workflow/ingestion/_derivation.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/workflow/ingestion
+copying build/lib/rangekeeper/graph/workflow/ingestion/tabular.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/workflow/ingestion
+copying build/lib/rangekeeper/graph/workflow/ingestion/fingerprint.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/workflow/ingestion
+copying build/lib/rangekeeper/graph/workflow/ingestion/__init__.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/workflow/ingestion
+copying build/lib/rangekeeper/graph/workflow/ingestion/transform.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/workflow/ingestion
+copying build/lib/rangekeeper/graph/workflow/ingestion/errors.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/workflow/ingestion
+copying build/lib/rangekeeper/graph/workflow/ingestion/evidence.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/workflow/ingestion
+copying build/lib/rangekeeper/graph/workflow/ingestion/validation.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/workflow/ingestion
+copying build/lib/rangekeeper/graph/workflow/references.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/workflow
+copying build/lib/rangekeeper/graph/workflow/_audit.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/workflow
+copying build/lib/rangekeeper/graph/workflow/_declarations.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/workflow
+copying build/lib/rangekeeper/graph/workflow/_operands.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/workflow
+copying build/lib/rangekeeper/graph/workflow/__init__.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/workflow
+copying build/lib/rangekeeper/graph/workflow/_execution.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/workflow
+copying build/lib/rangekeeper/graph/workflow/_shared.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/workflow
+copying build/lib/rangekeeper/graph/workflow/review.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/workflow
+copying build/lib/rangekeeper/graph/workflow/runtime.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/workflow
+copying build/lib/rangekeeper/graph/workflow/checking.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/workflow
+copying build/lib/rangekeeper/graph/workflow/sources.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/workflow
+copying build/lib/rangekeeper/graph/workflow/_table_operations.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/workflow
+copying build/lib/rangekeeper/graph/workflow/specification.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/workflow
+copying build/lib/rangekeeper/graph/workflow/implementation.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/workflow
+copying build/lib/rangekeeper/graph/workflow/source_checks.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/workflow
+copying build/lib/rangekeeper/graph/workflow/bindings.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/workflow
+copying build/lib/rangekeeper/graph/workflow/composition.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/workflow
+copying build/lib/rangekeeper/graph/workflow/_contracts.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/workflow
+copying build/lib/rangekeeper/graph/workflow/__main__.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/workflow
+copying build/lib/rangekeeper/graph/workflow/_model_validation.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph/workflow
+copying build/lib/rangekeeper/graph/revision.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph
+copying build/lib/rangekeeper/graph/entity.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph
+copying build/lib/rangekeeper/graph/table.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph
+copying build/lib/rangekeeper/graph/errors.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph
+copying build/lib/rangekeeper/graph/provenance.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph
+copying build/lib/rangekeeper/graph/_structured.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/graph
+copying build/lib/rangekeeper/duration.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper
+copying build/lib/rangekeeper/policy.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper
+copying build/lib/rangekeeper/__init__.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper
+copying build/lib/rangekeeper/format.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper
+creating build/bdist.macosx-11.0-arm64/wheel/rangekeeper/specification
+copying build/lib/rangekeeper/specification/__init__.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/specification
+copying build/lib/rangekeeper/specification/_validation.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/specification
+copying build/lib/rangekeeper/specification/_composition.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/specification
+copying build/lib/rangekeeper/specification/validation.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/specification
+copying build/lib/rangekeeper/distribution.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper
+copying build/lib/rangekeeper/api.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper
+copying build/lib/rangekeeper/validate.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper
+copying build/lib/rangekeeper/_validation.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper
+creating build/bdist.macosx-11.0-arm64/wheel/rangekeeper/formula
+copying build/lib/rangekeeper/formula/__init__.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/formula
+copying build/lib/rangekeeper/formula/financial.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/formula
+creating build/bdist.macosx-11.0-arm64/wheel/rangekeeper/model
+copying build/lib/rangekeeper/model/__init__.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/model
+copying build/lib/rangekeeper/model/_expression.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/model
+copying build/lib/rangekeeper/model/_validation.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/model
+copying build/lib/rangekeeper/model/_formulation.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/model
+copying build/lib/rangekeeper/model/validation.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/model
+copying build/lib/rangekeeper/py.typed -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper
+copying build/lib/rangekeeper/errors.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper
+copying build/lib/rangekeeper/space.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper
+creating build/bdist.macosx-11.0-arm64/wheel/rangekeeper/run
+copying build/lib/rangekeeper/run/__init__.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/run
+copying build/lib/rangekeeper/run/_validation.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/run
+copying build/lib/rangekeeper/run/validation.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper/run
+copying build/lib/rangekeeper/projection.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper
+copying build/lib/rangekeeper/flux.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper
+copying build/lib/rangekeeper/extrapolation.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper
+copying build/lib/rangekeeper/segmentation.py -> build/bdist.macosx-11.0-arm64/wheel/./rangekeeper
+running install_egg_info
+Copying Rangekeeper.egg-info to build/bdist.macosx-11.0-arm64/wheel/./Rangekeeper-0.8.71-py3.10.egg-info
+running install_scripts
+creating build/bdist.macosx-11.0-arm64/wheel/rangekeeper-0.8.71.dist-info/WHEEL
+creating '/var/folders/sk/cjq5zjks7gx_3tf9m67y43xr0000gn/T/rk-installed-records-_50cov93/wheel/.tmp-5f75_pn0/rangekeeper-0.8.71-py3-none-any.whl' and adding 'build/bdist.macosx-11.0-arm64/wheel' to it
+adding 'rangekeeper/__init__.py'
+adding 'rangekeeper/_records.py'
+adding 'rangekeeper/_validation.py'
+adding 'rangekeeper/api.py'
+adding 'rangekeeper/diagnostics.py'
+adding 'rangekeeper/distribution.py'
+adding 'rangekeeper/duration.py'
+adding 'rangekeeper/errors.py'
+adding 'rangekeeper/extrapolation.py'
+adding 'rangekeeper/flux.py'
+adding 'rangekeeper/format.py'
+adding 'rangekeeper/measure.py'
+adding 'rangekeeper/policy.py'
+adding 'rangekeeper/projection.py'
+adding 'rangekeeper/py.typed'
+adding 'rangekeeper/segmentation.py'
+adding 'rangekeeper/space.py'
+adding 'rangekeeper/validate.py'
+adding 'rangekeeper/_schema/__init__.py'
+adding 'rangekeeper/_schema/manifest.json'
+adding 'rangekeeper/_schema/native.py'
+adding 'rangekeeper/_schema/records.py'
+adding 'rangekeeper/_schema/schema.json'
+adding 'rangekeeper/_schema/slots.json'
+adding 'rangekeeper/_schema/validation.py'
+adding 'rangekeeper/dynamics/__init__.py'
+adding 'rangekeeper/dynamics/black_swan.py'
+adding 'rangekeeper/dynamics/cyclicality.py'
+adding 'rangekeeper/dynamics/market.py'
+adding 'rangekeeper/dynamics/noise.py'
+adding 'rangekeeper/dynamics/trend.py'
+adding 'rangekeeper/dynamics/volatility.py'
+adding 'rangekeeper/formula/__init__.py'
+adding 'rangekeeper/formula/financial.py'
+adding 'rangekeeper/graph/__init__.py'
+adding 'rangekeeper/graph/_catalog.py'
+adding 'rangekeeper/graph/_encoding.py'
+adding 'rangekeeper/graph/_structured.py'
+adding 'rangekeeper/graph/_yaml.py'
+adding 'rangekeeper/graph/assembly.py'
+adding 'rangekeeper/graph/characteristics.py'
+adding 'rangekeeper/graph/classification.py'
+adding 'rangekeeper/graph/definitions.py'
+adding 'rangekeeper/graph/entity.py'
+adding 'rangekeeper/graph/errors.py'
+adding 'rangekeeper/graph/graph.py'
+adding 'rangekeeper/graph/operation.py'
+adding 'rangekeeper/graph/provenance.py'
+adding 'rangekeeper/graph/reduction.py'
+adding 'rangekeeper/graph/relationship.py'
+adding 'rangekeeper/graph/revision.py'
+adding 'rangekeeper/graph/table.py'
+adding 'rangekeeper/graph/taxonomy.py'
+adding 'rangekeeper/graph/update.py'
+adding 'rangekeeper/graph/view.py'
+adding 'rangekeeper/graph/adapter/__init__.py'
+adding 'rangekeeper/graph/adapter/csv.py'
+adding 'rangekeeper/graph/adapter/document.py'
+adding 'rangekeeper/graph/adapter/errors.py'
+adding 'rangekeeper/graph/adapter/json.py'
+adding 'rangekeeper/graph/adapter/pandas.py'
+adding 'rangekeeper/graph/adapter/visualization.py'
+adding 'rangekeeper/graph/adapter/cytoscape/__init__.py'
+adding 'rangekeeper/graph/adapter/cytoscape/document.py'
+adding 'rangekeeper/graph/adapter/cytoscape/assets/projection.js'
+adding 'rangekeeper/graph/adapter/cytoscape/assets/routing.js'
+adding 'rangekeeper/graph/adapter/cytoscape/assets/viewer.css'
+adding 'rangekeeper/graph/adapter/cytoscape/assets/viewer.html'
+adding 'rangekeeper/graph/adapter/cytoscape/assets/viewer.js'
+adding 'rangekeeper/graph/adapter/cytoscape/assets/vendor/cose-base.LICENSE'
+adding 'rangekeeper/graph/adapter/cytoscape/assets/vendor/cose-base.js'
+adding 'rangekeeper/graph/adapter/cytoscape/assets/vendor/cytoscape-fcose.LICENSE'
+adding 'rangekeeper/graph/adapter/cytoscape/assets/vendor/cytoscape-fcose.js'
+adding 'rangekeeper/graph/adapter/cytoscape/assets/vendor/cytoscape.LICENSE'
+adding 'rangekeeper/graph/adapter/cytoscape/assets/vendor/cytoscape.js'
+adding 'rangekeeper/graph/adapter/cytoscape/assets/vendor/layout-base.LICENSE'
+adding 'rangekeeper/graph/adapter/cytoscape/assets/vendor/layout-base.js'
+adding 'rangekeeper/graph/adapter/cytoscape/assets/vendor/manifest.json'
+adding 'rangekeeper/graph/adapter/excel/__init__.py'
+adding 'rangekeeper/graph/adapter/excel/_coordinates.py'
+adding 'rangekeeper/graph/adapter/excel/classification.py'
+adding 'rangekeeper/graph/adapter/excel/extraction.py'
+adding 'rangekeeper/graph/adapter/excel/inspection.py'
+adding 'rangekeeper/graph/adapter/excel/reader.py'
+adding 'rangekeeper/graph/adapter/excel/snapshot.py'
+adding 'rangekeeper/graph/adapter/excel/specification.py'
+adding 'rangekeeper/graph/adapter/excel/workflow.py'
+adding 'rangekeeper/graph/workflow/__init__.py'
+adding 'rangekeeper/graph/workflow/__main__.py'
+adding 'rangekeeper/graph/workflow/_audit.py'
+adding 'rangekeeper/graph/workflow/_contracts.py'
+adding 'rangekeeper/graph/workflow/_declarations.py'
+adding 'rangekeeper/graph/workflow/_execution.py'
+adding 'rangekeeper/graph/workflow/_model_validation.py'
+adding 'rangekeeper/graph/workflow/_operands.py'
+adding 'rangekeeper/graph/workflow/_schema.py'
+adding 'rangekeeper/graph/workflow/_shared.py'
+adding 'rangekeeper/graph/workflow/_table_operations.py'
+adding 'rangekeeper/graph/workflow/bindings.py'
+adding 'rangekeeper/graph/workflow/catalog.py'
+adding 'rangekeeper/graph/workflow/checking.py'
+adding 'rangekeeper/graph/workflow/composition.py'
+adding 'rangekeeper/graph/workflow/implementation.py'
+adding 'rangekeeper/graph/workflow/references.py'
+adding 'rangekeeper/graph/workflow/review.py'
+adding 'rangekeeper/graph/workflow/runtime.py'
+adding 'rangekeeper/graph/workflow/source_checks.py'
+adding 'rangekeeper/graph/workflow/sources.py'
+adding 'rangekeeper/graph/workflow/specification.py'
+adding 'rangekeeper/graph/workflow/ingestion/__init__.py'
+adding 'rangekeeper/graph/workflow/ingestion/_derivation.py'
+adding 'rangekeeper/graph/workflow/ingestion/_encoding.py'
+adding 'rangekeeper/graph/workflow/ingestion/errors.py'
+adding 'rangekeeper/graph/workflow/ingestion/evidence.py'
+adding 'rangekeeper/graph/workflow/ingestion/fingerprint.py'
+adding 'rangekeeper/graph/workflow/ingestion/predicates.py'
+adding 'rangekeeper/graph/workflow/ingestion/tabular.py'
+adding 'rangekeeper/graph/workflow/ingestion/transform.py'
+adding 'rangekeeper/graph/workflow/ingestion/validation.py'
+adding 'rangekeeper/model/__init__.py'
+adding 'rangekeeper/model/_expression.py'
+adding 'rangekeeper/model/_formulation.py'
+adding 'rangekeeper/model/_validation.py'
+adding 'rangekeeper/model/validation.py'
+adding 'rangekeeper/run/__init__.py'
+adding 'rangekeeper/run/_validation.py'
+adding 'rangekeeper/run/validation.py'
+adding 'rangekeeper/specification/__init__.py'
+adding 'rangekeeper/specification/_composition.py'
+adding 'rangekeeper/specification/_validation.py'
+adding 'rangekeeper/specification/validation.py'
+adding 'rangekeeper-0.8.71.dist-info/METADATA'
+adding 'rangekeeper-0.8.71.dist-info/WHEEL'
+adding 'rangekeeper-0.8.71.dist-info/top_level.txt'
+adding 'rangekeeper-0.8.71.dist-info/RECORD'
+removing build/bdist.macosx-11.0-arm64/wheel
+WARNING: The directory '/Users/daniel/Library/Caches/pip' or its parent directory is not owned or is not writable by the current user. The cache has been disabled. Check the permissions and owner of that directory. If executing pip with sudo, you should use sudo's -H flag.
+Processing /var/folders/sk/cjq5zjks7gx_3tf9m67y43xr0000gn/T/rk-installed-records-_50cov93/wheel/rangekeeper-0.8.71-py3-none-any.whl
+Installing collected packages: rangekeeper
+Successfully installed rangekeeper-0.8.71
+Installed wheel: records, packaged artifacts, validation, timestamps and lightweight imports passed
+{"attrs": "26.1.0", "jsonschema": "4.26.0", "jsonschema-specifications": "2025.9.1", "referencing": "0.37.0", "rfc3339-validator": "0.1.4", "rpds-py": "0.30.0", "six": "1.17.0", "typing-extensions": "4.16.0"}

@@ -1,0 +1,6 @@
+{
+  "format": "rk.speckle-model/v1",
+  "fields": {"format": "rk_format", "model": "rk_model", "associations": "rk_associations"},
+  "association_fields": ["model_revision", "domain_id", "rhino_id", "application_id", "content_id"],
+  "required_association_fields": ["model_revision", "domain_id"]
+}

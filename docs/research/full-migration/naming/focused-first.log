@@ -1,0 +1,15 @@
+.....................................................................F   [100%]
+=================================== FAILURES ===================================
+_________ test_probabilistic_and_flexible_use_identical_captured_paths _________
+tests/test_models.py:69: in test_probabilistic_and_flexible_use_identical_captured_paths
+    plan = make_plan(
+rangekeeper/scenarios/plan.py:85: in make_plan
+    else Quantity(magnitude=value, units="dimensionless")
+rangekeeper/model/_scenario.py:15: in validate_plan
+    require(
+rangekeeper/_validation.py:25: in require
+    raise ContractError(message, code=code, path=path)
+E   rangekeeper.errors.ContractError: unsupported scenario method/version
+=========================== short test summary info ============================
+FAILED tests/test_models.py::test_probabilistic_and_flexible_use_identical_captured_paths
+1 failed, 69 passed in 126.33s (0:02:06)

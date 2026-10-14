@@ -1,0 +1,3 @@
+# Interface
+
+This capability belongs to whirlwind-interface. See its [current documentation](https://github.com/daniel-fink/whirlwind-interface/blob/98e92ccd2bc2cc572628439ed072696e66710f7f/docs/guides/python-viewer.md). RK retains canonical modelling and simple local display.

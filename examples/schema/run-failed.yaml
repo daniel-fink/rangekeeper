@@ -1,0 +1,17 @@
+metadata:
+  id: bfd86c02-77a9-54d4-b1f4-6081d6d6eb5e
+  schema_version: 0.4.0
+  name: Synthetic failed attempt
+  description: New synthetic 0.3.0 conformance fixture. No evaluator or solver produced
+    this record; historical Runs are unchanged.
+specification: 695e2d3b-fd66-5e67-8720-1f50d68adea1
+report:
+  status:
+    completion: failed
+    solution: not_assessed
+  diagnostics:
+  - severity: error
+    code: unsupported_capability
+    message: 'Synthetic failure before numerical execution: the selected implementation
+      cannot evaluate the requested formulation.'
+    document: 695e2d3b-fd66-5e67-8720-1f50d68adea1

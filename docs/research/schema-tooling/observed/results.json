@@ -1,0 +1,192 @@
+{
+  "versions": {
+    "linkml": "1.11.1",
+    "linkml-runtime": "1.11.1",
+    "jsonschema": "4.26.0",
+    "pydantic": "2.13.5"
+  },
+  "python": "3.11.16 (main, Aug 12 2026, 23:03:19) [Clang 17.0.0 (clang-1700.6.4.2)]",
+  "results": {
+    "valid": {
+      "linkml_json_schema": "accept",
+      "linkml_pydantic_default": "accept",
+      "linkml_pydantic_strict": "accept",
+      "pydantic_strict": "accept",
+      "pydantic_json_schema": "accept",
+      "pydantic_with_semantics": "accept",
+      "pydantic_semantic_export": "accept"
+    },
+    "missing_literal_value": {
+      "linkml_json_schema": "reject",
+      "linkml_pydantic_default": "reject",
+      "linkml_pydantic_strict": "reject",
+      "pydantic_strict": "reject",
+      "pydantic_json_schema": "reject",
+      "pydantic_with_semantics": "reject",
+      "pydantic_semantic_export": "reject"
+    },
+    "string_as_number": {
+      "linkml_json_schema": "reject",
+      "linkml_pydantic_default": "accept",
+      "linkml_pydantic_strict": "reject",
+      "pydantic_strict": "reject",
+      "pydantic_json_schema": "reject",
+      "pydantic_with_semantics": "reject",
+      "pydantic_semantic_export": "reject"
+    },
+    "bool_as_number": {
+      "linkml_json_schema": "reject",
+      "linkml_pydantic_default": "accept",
+      "linkml_pydantic_strict": "reject",
+      "pydantic_strict": "reject",
+      "pydantic_json_schema": "reject",
+      "pydantic_with_semantics": "reject",
+      "pydantic_semantic_export": "reject"
+    },
+    "null_as_number": {
+      "linkml_json_schema": "reject",
+      "linkml_pydantic_default": "reject",
+      "linkml_pydantic_strict": "reject",
+      "pydantic_strict": "reject",
+      "pydantic_json_schema": "reject",
+      "pydantic_with_semantics": "reject",
+      "pydantic_semantic_export": "reject"
+    },
+    "unknown_expression_kind": {
+      "linkml_json_schema": "reject",
+      "linkml_pydantic_default": "reject",
+      "linkml_pydantic_strict": "reject",
+      "pydantic_strict": "reject",
+      "pydantic_json_schema": "reject",
+      "pydantic_with_semantics": "reject",
+      "pydantic_semantic_export": "reject"
+    },
+    "missing_expression_kind": {
+      "linkml_json_schema": "reject",
+      "linkml_pydantic_default": "accept",
+      "linkml_pydantic_strict": "accept",
+      "pydantic_strict": "reject",
+      "pydantic_json_schema": "reject",
+      "pydantic_with_semantics": "reject",
+      "pydantic_semantic_export": "reject"
+    },
+    "missing_declaration_kind": {
+      "linkml_json_schema": "reject",
+      "linkml_pydantic_default": "accept",
+      "linkml_pydantic_strict": "accept",
+      "pydantic_strict": "reject",
+      "pydantic_json_schema": "reject",
+      "pydantic_with_semantics": "reject",
+      "pydantic_semantic_export": "reject"
+    },
+    "abstract_expression": {
+      "linkml_json_schema": "reject",
+      "linkml_pydantic_default": "accept",
+      "linkml_pydantic_strict": "accept",
+      "pydantic_strict": "reject",
+      "pydantic_json_schema": "reject",
+      "pydantic_with_semantics": "reject",
+      "pydantic_semantic_export": "reject"
+    },
+    "extra_literal_field": {
+      "linkml_json_schema": "reject",
+      "linkml_pydantic_default": "reject",
+      "linkml_pydantic_strict": "reject",
+      "pydantic_strict": "reject",
+      "pydantic_json_schema": "reject",
+      "pydantic_with_semantics": "reject",
+      "pydantic_semantic_export": "reject"
+    },
+    "missing_operand": {
+      "linkml_json_schema": "reject",
+      "linkml_pydantic_default": "reject",
+      "linkml_pydantic_strict": "reject",
+      "pydantic_strict": "reject",
+      "pydantic_json_schema": "reject",
+      "pydantic_with_semantics": "reject",
+      "pydantic_semantic_export": "reject"
+    },
+    "dangling_reference": {
+      "linkml_json_schema": "accept",
+      "linkml_pydantic_default": "accept",
+      "linkml_pydantic_strict": "accept",
+      "pydantic_strict": "accept",
+      "pydantic_json_schema": "accept",
+      "pydantic_with_semantics": "reject",
+      "pydantic_semantic_export": "accept"
+    },
+    "wrong_reference_kind": {
+      "linkml_json_schema": "accept",
+      "linkml_pydantic_default": "accept",
+      "linkml_pydantic_strict": "accept",
+      "pydantic_strict": "accept",
+      "pydantic_json_schema": "accept",
+      "pydantic_with_semantics": "reject",
+      "pydantic_semantic_export": "accept"
+    },
+    "numeric_constraint": {
+      "linkml_json_schema": "accept",
+      "linkml_pydantic_default": "accept",
+      "linkml_pydantic_strict": "accept",
+      "pydantic_strict": "accept",
+      "pydantic_json_schema": "accept",
+      "pydantic_with_semantics": "reject",
+      "pydantic_semantic_export": "accept"
+    },
+    "wrong_units": {
+      "linkml_json_schema": "accept",
+      "linkml_pydantic_default": "accept",
+      "linkml_pydantic_strict": "accept",
+      "pydantic_strict": "accept",
+      "pydantic_json_schema": "accept",
+      "pydantic_with_semantics": "reject",
+      "pydantic_semantic_export": "accept"
+    },
+    "duplicate_identity": {
+      "linkml_json_schema": "accept",
+      "linkml_pydantic_default": "accept",
+      "linkml_pydantic_strict": "accept",
+      "pydantic_strict": "accept",
+      "pydantic_json_schema": "accept",
+      "pydantic_with_semantics": "reject",
+      "pydantic_semantic_export": "accept"
+    },
+    "empty_constraints": {
+      "linkml_json_schema": "accept",
+      "linkml_pydantic_default": "accept",
+      "linkml_pydantic_strict": "accept",
+      "pydantic_strict": "accept",
+      "pydantic_json_schema": "accept",
+      "pydantic_with_semantics": "accept",
+      "pydantic_semantic_export": "accept"
+    },
+    "omitted_constraints": {
+      "linkml_json_schema": "reject",
+      "linkml_pydantic_default": "reject",
+      "linkml_pydantic_strict": "reject",
+      "pydantic_strict": "reject",
+      "pydantic_json_schema": "reject",
+      "pydantic_with_semantics": "reject",
+      "pydantic_semantic_export": "reject"
+    },
+    "null_constraints": {
+      "linkml_json_schema": "reject",
+      "linkml_pydantic_default": "reject",
+      "linkml_pydantic_strict": "reject",
+      "pydantic_strict": "reject",
+      "pydantic_json_schema": "reject",
+      "pydantic_with_semantics": "reject",
+      "pydantic_semantic_export": "reject"
+    },
+    "extra_model_field": {
+      "linkml_json_schema": "reject",
+      "linkml_pydantic_default": "reject",
+      "linkml_pydantic_strict": "reject",
+      "pydantic_strict": "reject",
+      "pydantic_json_schema": "reject",
+      "pydantic_with_semantics": "reject",
+      "pydantic_semantic_export": "reject"
+    }
+  },
+  "scope": "Generated schema/object validation and one explicit semantic checker; not execution, inversion, migration or broad framework conformance."
+}

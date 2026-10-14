@@ -1,0 +1,2222 @@
+{
+  "metadata": {
+    "id": "83527e6b-5206-40d2-aada-42cde8c20a61",
+    "schema_version": "0.2.0"
+  },
+  "specification": "918d8c86-4bdd-4330-ab3d-ae8df5476679",
+  "outputs": [
+    "123a8527-4f07-4d11-82e9-a359bf510bc7"
+  ],
+  "report": {
+    "status": {
+      "completion": "completed",
+      "solution": "feasible"
+    },
+    "runtime": {
+      "started_at": "2026-10-06T00:34:57.958476+00:00",
+      "finished_at": "2026-10-06T00:35:04.911340+00:00",
+      "implementations": [
+        {
+          "kind": "compiler",
+          "name": "rangekeeper.scalar",
+          "version": "1"
+        },
+        {
+          "kind": "compiler",
+          "name": "Pyomo",
+          "version": "6.10.1"
+        },
+        {
+          "kind": "solver",
+          "name": "HiGHS",
+          "version": "1.15.1"
+        },
+        {
+          "kind": "evaluator",
+          "name": "rangekeeper.scalar.original_expressions",
+          "version": "1"
+        }
+      ],
+      "settings": {
+        "iteration_limit": 100000,
+        "time_limit": 30.0,
+        "symbol_limit": 10000,
+        "constraint_limit": 20000
+      }
+    },
+    "diagnostics": [
+      {
+        "severity": "info",
+        "code": "solver_scaling",
+        "message": "[{\"constraint\": \"da933078-c369-532f-a23f-22ab06b1475b\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"8a02b040-0081-5afe-b6d6-735c5e2771c7\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"b582b2b1-0cf6-5933-bb0e-6aa8a563252f\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"94ccdd94-b95e-543a-9ba3-8a3ce1ed6917\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"cf985561-2b3f-5565-b8d0-0268375ffd6a\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"b8a472c8-537b-517d-91c0-fbd05b815933\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"29ec5f67-27c1-5409-ae69-7cea8ecf64a2\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"059f2980-e0bb-51b7-af04-af9bae9720b3\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"56c31c3e-df6e-5bbd-bb40-e17067aafe6e\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"4bbcef50-7134-53d5-99e6-0d0ad71621f4\", \"divisor\": 1.0679253398247313, \"residual_units\": \"AUD\"}, {\"constraint\": \"deb31c14-44b2-536b-9e54-0c99a1e1a22e\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"748af491-f67e-503f-ab4d-74039229c7e5\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"f14e2b26-498a-5020-bcd0-ef08aff22928\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"18126774-2c23-5823-ad7f-9498d7b1cdc8\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"1fa797a0-e969-5153-8016-c758d511a985\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"481520c1-a6b1-58cd-871f-76728bcde199\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"18975e19-27fd-5bf7-875a-5fc95bb2acf5\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"c8eec735-d823-509b-bb7f-5fa57f367990\", \"divisor\": 1.0843952303448146, \"residual_units\": \"AUD\"}, {\"constraint\": \"d5a1c9b0-85e6-5cdc-98ac-727cb656684c\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"99b7d297-d0b7-539c-a3a2-295a98b30d6e\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"eeadab89-a3cc-528d-89e0-4b92bd009ef8\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"79b1cedf-caa3-5985-a6ef-b256c8903e51\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"9e86edeb-98ed-55ef-810a-127af4180f5b\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"b0e5b984-5764-5329-8a7f-36981b90dc8b\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"90698bcf-6e00-5ae5-9b0c-d8241e59cf68\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"d6019db9-aede-561b-a834-09ceba717989\", \"divisor\": 1.151900241793467, \"residual_units\": \"AUD\"}, {\"constraint\": \"d0f56255-9156-5749-ac44-e82bc3e3371e\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"c0dfdbdc-faad-525f-8a2a-30e900444a67\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"ab659179-349e-5587-a1f7-e72b178ba2e2\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"815881ae-3a31-5244-a178-623c7f5ac82d\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"22c684a3-0ea9-5866-972d-43ae46262566\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"fb897b4c-a483-514c-a29e-6359b8936eb7\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"38b6eff5-afde-5c77-9a3f-a762e46fc2c9\", \"divisor\": 16.92028356032097, \"residual_units\": \"AUD\"}, {\"constraint\": \"ee6b5b8c-73a2-55f2-a91e-32430cb2c86c\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"e84942ec-8ffa-5b65-af19-2c6edbd86ab3\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"5c58e1af-13ed-5d07-b627-0836d0c7f153\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"8f2760c7-6fa9-55da-9369-652315585ed1\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"eff2d22f-68a0-50dc-aa4a-6ea70db6932d\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"4a92a284-4974-53e0-b36d-15e3f9b7d566\", \"divisor\": 18.588285028568567, \"residual_units\": \"AUD\"}, {\"constraint\": \"8ca77a97-4214-5eee-8e20-106d8414054b\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"3c9e1a90-4a77-5161-ad56-ddaaf49e7a69\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"a4869b75-1faa-5744-991a-f76f719895f6\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"e0dc91fd-f9f8-5938-969a-029def61eac8\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"ddbdedd4-2cea-50bc-ad42-779b1d219573\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"ca5f47ef-7186-5253-a294-86eb462793ae\", \"divisor\": 18.699878001890827, \"residual_units\": \"AUD\"}, {\"constraint\": \"be0020df-4137-5ed3-b850-be1f7b97e809\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"3d372b67-be90-51e9-934b-bb225577fb67\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"85edb6af-d7f9-5b51-8a00-0bbf4e95fa4a\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"ae723e4a-02d0-5970-bb73-7aa9dfd86b91\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"5fd0fb3e-d6f2-51a1-9418-68f64f79e90b\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}, {\"constraint\": \"ff8991ed-df4b-5e30-9ddf-3fc0826da489\", \"divisor\": 1.0, \"residual_units\": \"AUD\"}]"
+      },
+      {
+        "severity": "info",
+        "code": "solver_termination",
+        "message": "{\"termination\": \"convergenceCriteriaSatisfied\", \"solution_status\": \"optimal\", \"simplex_iterations\": 0, \"highs_seconds\": 0.0002955410163849592, \"worker_seconds\": 0.1709790409076959, \"solver_time_limit\": 27.080092376098037, \"solver_options\": {\"solver\": \"simplex\", \"presolve\": \"on\", \"parallel\": \"off\", \"random_seed\": 0, \"simplex_iteration_limit\": 100000, \"small_matrix_value\": 1e-12, \"primal_feasibility_tolerance\": 1e-07, \"dual_feasibility_tolerance\": 1e-07, \"output_flag\": false}, \"threads\": 1, \"equality_rank\": 51, \"unknown_count\": 51, \"has_bounds\": false, \"unconstrained_values_initialized_to_zero\": []}"
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "da933078-c369-532f-a23f-22ab06b1475b",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.1e-07,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "66a8f8c2-1fc3-43fe-a21c-e2a1b1ce3984",
+              "movement": "p1"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "444bae8f-5f4f-47e2-8bc3-ff733866f400"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "3c259bcc-8c90-4f10-bb74-d8633ede5524"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "4cc5464e-9a94-4dd6-b0ac-31422d1d05db"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "8a02b040-0081-5afe-b6d6-735c5e2771c7",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.1e-07,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "45899ce9-4112-4d5a-89fc-44e75456a51f",
+              "movement": "p1"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "66a8f8c2-1fc3-43fe-a21c-e2a1b1ce3984",
+              "movement": "p1"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "8e7a9533-8b5d-52d0-a8a6-b9cd4a2f0193",
+              "movement": "p1"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "b582b2b1-0cf6-5933-bb0e-6aa8a563252f",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.5000000000000002e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "66833b39-0aa0-4abf-96fc-0eeb9e0d2e5c",
+              "movement": "p1"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "345a0cdc-4ac5-4fce-9ec9-9a287de558eb"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "45899ce9-4112-4d5a-89fc-44e75456a51f",
+              "movement": "p1"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "94ccdd94-b95e-543a-9ba3-8a3ce1ed6917",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 4.5000000000000006e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "9ce6ea52-500d-460e-8315-13dfaca05324",
+              "movement": "p1"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "420a120c-75c5-4209-9e40-a66394e09854"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "45899ce9-4112-4d5a-89fc-44e75456a51f",
+              "movement": "p1"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "cf985561-2b3f-5565-b8d0-0268375ffd6a",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 2e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "01b3df2e-0b0e-4333-9950-992397e6439c",
+              "movement": "p1"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "a1bcd495-982d-4c9c-a350-70e57f13cc02"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "45899ce9-4112-4d5a-89fc-44e75456a51f",
+              "movement": "p1"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "b8a472c8-537b-517d-91c0-fbd05b815933",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.05e-07,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "e8bda6ab-b781-468e-ab67-5170dd273074",
+              "movement": "p1"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "45899ce9-4112-4d5a-89fc-44e75456a51f",
+              "movement": "p1"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "66833b39-0aa0-4abf-96fc-0eeb9e0d2e5c",
+              "movement": "p1"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "29ec5f67-27c1-5409-ae69-7cea8ecf64a2",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 7e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "86bf9d62-2b4d-47e2-8fb3-512edc8af09a",
+              "movement": "p1"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "e8bda6ab-b781-468e-ab67-5170dd273074",
+              "movement": "p1"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "9ce6ea52-500d-460e-8315-13dfaca05324",
+              "movement": "p1"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "059f2980-e0bb-51b7-af04-af9bae9720b3",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 6.000000000000001e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "079ddde4-9dc2-42b1-a050-3065da3a859a",
+              "movement": "p1"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "86bf9d62-2b4d-47e2-8fb3-512edc8af09a",
+              "movement": "p1"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "01b3df2e-0b0e-4333-9950-992397e6439c",
+              "movement": "p1"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "56c31c3e-df6e-5bbd-bb40-e17067aafe6e",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.1e-07,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "66a8f8c2-1fc3-43fe-a21c-e2a1b1ce3984",
+              "movement": "p2"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "444bae8f-5f4f-47e2-8bc3-ff733866f400"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "3c259bcc-8c90-4f10-bb74-d8633ede5524"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "4cc5464e-9a94-4dd6-b0ac-31422d1d05db"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "4bbcef50-7134-53d5-99e6-0d0ad71621f4",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.1679253398247314e-07,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "45899ce9-4112-4d5a-89fc-44e75456a51f",
+              "movement": "p2"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "66a8f8c2-1fc3-43fe-a21c-e2a1b1ce3984",
+              "movement": "p2"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "8e7a9533-8b5d-52d0-a8a6-b9cd4a2f0193",
+              "movement": "p2"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "deb31c14-44b2-536b-9e54-0c99a1e1a22e",
+        "residual": {
+          "magnitude": 8.881784197001252e-16,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.5339626699123657e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "66833b39-0aa0-4abf-96fc-0eeb9e0d2e5c",
+              "movement": "p2"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "345a0cdc-4ac5-4fce-9ec9-9a287de558eb"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "45899ce9-4112-4d5a-89fc-44e75456a51f",
+              "movement": "p2"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "748af491-f67e-503f-ab4d-74039229c7e5",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 4.7377386893865596e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "9ce6ea52-500d-460e-8315-13dfaca05324",
+              "movement": "p2"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "420a120c-75c5-4209-9e40-a66394e09854"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "45899ce9-4112-4d5a-89fc-44e75456a51f",
+              "movement": "p2"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "f14e2b26-498a-5020-bcd0-ef08aff22928",
+        "residual": {
+          "magnitude": 1.7763568394002505e-15,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 2.0679253398247314e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "01b3df2e-0b0e-4333-9950-992397e6439c",
+              "movement": "p2"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "a1bcd495-982d-4c9c-a350-70e57f13cc02"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "45899ce9-4112-4d5a-89fc-44e75456a51f",
+              "movement": "p2"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "18126774-2c23-5823-ad7f-9498d7b1cdc8",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.1145290728334948e-07,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "e8bda6ab-b781-468e-ab67-5170dd273074",
+              "movement": "p2"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "45899ce9-4112-4d5a-89fc-44e75456a51f",
+              "movement": "p2"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "66833b39-0aa0-4abf-96fc-0eeb9e0d2e5c",
+              "movement": "p2"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "1fa797a0-e969-5153-8016-c758d511a985",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 7.407552038948388e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "86bf9d62-2b4d-47e2-8fb3-512edc8af09a",
+              "movement": "p2"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "e8bda6ab-b781-468e-ab67-5170dd273074",
+              "movement": "p2"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "9ce6ea52-500d-460e-8315-13dfaca05324",
+              "movement": "p2"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "481520c1-a6b1-58cd-871f-76728bcde199",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 6.339626699123658e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "079ddde4-9dc2-42b1-a050-3065da3a859a",
+              "movement": "p2"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "86bf9d62-2b4d-47e2-8fb3-512edc8af09a",
+              "movement": "p2"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "01b3df2e-0b0e-4333-9950-992397e6439c",
+              "movement": "p2"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "18975e19-27fd-5bf7-875a-5fc95bb2acf5",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.1e-07,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "66a8f8c2-1fc3-43fe-a21c-e2a1b1ce3984",
+              "movement": "p3"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "444bae8f-5f4f-47e2-8bc3-ff733866f400"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "3c259bcc-8c90-4f10-bb74-d8633ede5524"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "4cc5464e-9a94-4dd6-b0ac-31422d1d05db"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "c8eec735-d823-509b-bb7f-5fa57f367990",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.1843952303448145e-07,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "45899ce9-4112-4d5a-89fc-44e75456a51f",
+              "movement": "p3"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "66a8f8c2-1fc3-43fe-a21c-e2a1b1ce3984",
+              "movement": "p3"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "8e7a9533-8b5d-52d0-a8a6-b9cd4a2f0193",
+              "movement": "p3"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "d5a1c9b0-85e6-5cdc-98ac-727cb656684c",
+        "residual": {
+          "magnitude": 8.881784197001252e-16,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.5421976151724075e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "66833b39-0aa0-4abf-96fc-0eeb9e0d2e5c",
+              "movement": "p3"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "345a0cdc-4ac5-4fce-9ec9-9a287de558eb"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "45899ce9-4112-4d5a-89fc-44e75456a51f",
+              "movement": "p3"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "99b7d297-d0b7-539c-a3a2-295a98b30d6e",
+        "residual": {
+          "magnitude": -7.105427357601002e-15,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 4.795383306206852e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "9ce6ea52-500d-460e-8315-13dfaca05324",
+              "movement": "p3"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "420a120c-75c5-4209-9e40-a66394e09854"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "45899ce9-4112-4d5a-89fc-44e75456a51f",
+              "movement": "p3"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "eeadab89-a3cc-528d-89e0-4b92bd009ef8",
+        "residual": {
+          "magnitude": 1.7763568394002505e-15,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 2.0843952303448146e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "01b3df2e-0b0e-4333-9950-992397e6439c",
+              "movement": "p3"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "a1bcd495-982d-4c9c-a350-70e57f13cc02"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "45899ce9-4112-4d5a-89fc-44e75456a51f",
+              "movement": "p3"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "79b1cedf-caa3-5985-a6ef-b256c8903e51",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.1301754688275739e-07,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "e8bda6ab-b781-468e-ab67-5170dd273074",
+              "movement": "p3"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "45899ce9-4112-4d5a-89fc-44e75456a51f",
+              "movement": "p3"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "66833b39-0aa0-4abf-96fc-0eeb9e0d2e5c",
+              "movement": "p3"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "9e86edeb-98ed-55ef-810a-127af4180f5b",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 7.506371382068888e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "86bf9d62-2b4d-47e2-8fb3-512edc8af09a",
+              "movement": "p3"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "e8bda6ab-b781-468e-ab67-5170dd273074",
+              "movement": "p3"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "9ce6ea52-500d-460e-8315-13dfaca05324",
+              "movement": "p3"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "b0e5b984-5764-5329-8a7f-36981b90dc8b",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 6.421976151724073e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "079ddde4-9dc2-42b1-a050-3065da3a859a",
+              "movement": "p3"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "86bf9d62-2b4d-47e2-8fb3-512edc8af09a",
+              "movement": "p3"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "01b3df2e-0b0e-4333-9950-992397e6439c",
+              "movement": "p3"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "90698bcf-6e00-5ae5-9b0c-d8241e59cf68",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.1e-07,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "66a8f8c2-1fc3-43fe-a21c-e2a1b1ce3984",
+              "movement": "p4"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "444bae8f-5f4f-47e2-8bc3-ff733866f400"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "3c259bcc-8c90-4f10-bb74-d8633ede5524"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "4cc5464e-9a94-4dd6-b0ac-31422d1d05db"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "d6019db9-aede-561b-a834-09ceba717989",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.251900241793467e-07,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "45899ce9-4112-4d5a-89fc-44e75456a51f",
+              "movement": "p4"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "66a8f8c2-1fc3-43fe-a21c-e2a1b1ce3984",
+              "movement": "p4"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "8e7a9533-8b5d-52d0-a8a6-b9cd4a2f0193",
+              "movement": "p4"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "d0f56255-9156-5749-ac44-e82bc3e3371e",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.5759501208967336e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "66833b39-0aa0-4abf-96fc-0eeb9e0d2e5c",
+              "movement": "p4"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "345a0cdc-4ac5-4fce-9ec9-9a287de558eb"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "45899ce9-4112-4d5a-89fc-44e75456a51f",
+              "movement": "p4"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "c0dfdbdc-faad-525f-8a2a-30e900444a67",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 5.0316508462771344e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "9ce6ea52-500d-460e-8315-13dfaca05324",
+              "movement": "p4"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "420a120c-75c5-4209-9e40-a66394e09854"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "45899ce9-4112-4d5a-89fc-44e75456a51f",
+              "movement": "p4"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "ab659179-349e-5587-a1f7-e72b178ba2e2",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 2.1519002417934672e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "01b3df2e-0b0e-4333-9950-992397e6439c",
+              "movement": "p4"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "a1bcd495-982d-4c9c-a350-70e57f13cc02"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "45899ce9-4112-4d5a-89fc-44e75456a51f",
+              "movement": "p4"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "815881ae-3a31-5244-a178-623c7f5ac82d",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.1943052297037936e-07,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "e8bda6ab-b781-468e-ab67-5170dd273074",
+              "movement": "p4"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "45899ce9-4112-4d5a-89fc-44e75456a51f",
+              "movement": "p4"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "66833b39-0aa0-4abf-96fc-0eeb9e0d2e5c",
+              "movement": "p4"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "22c684a3-0ea9-5866-972d-43ae46262566",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 7.911401450760803e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "86bf9d62-2b4d-47e2-8fb3-512edc8af09a",
+              "movement": "p4"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "e8bda6ab-b781-468e-ab67-5170dd273074",
+              "movement": "p4"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "9ce6ea52-500d-460e-8315-13dfaca05324",
+              "movement": "p4"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "fb897b4c-a483-514c-a29e-6359b8936eb7",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 6.759501208967335e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "079ddde4-9dc2-42b1-a050-3065da3a859a",
+              "movement": "p4"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "86bf9d62-2b4d-47e2-8fb3-512edc8af09a",
+              "movement": "p4"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "01b3df2e-0b0e-4333-9950-992397e6439c",
+              "movement": "p4"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "38b6eff5-afde-5c77-9a3f-a762e46fc2c9",
+        "residual": {
+          "magnitude": -1.1368683772161603e-13,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 9.134799785543296e-07,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "dcc7d313-fc82-47f7-9cfb-b451ef54615a",
+              "movement": "p1"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "079ddde4-9dc2-42b1-a050-3065da3a859a",
+              "movement": "p2"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "fe0bd77b-6228-551f-8a65-485ab2a500ed",
+              "movement": "p1"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "ee6b5b8c-73a2-55f2-a91e-32430cb2c86c",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 6.000000000000001e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "bd801dfd-7d47-424a-a0a9-2837d5b548ce",
+              "movement": "p1"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "079ddde4-9dc2-42b1-a050-3065da3a859a",
+              "movement": "p1"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "f5c5ad35-2603-4d72-9775-98fa8ecf0886",
+              "movement": "p1"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "e84942ec-8ffa-5b65-af19-2c6edbd86ab3",
+        "residual": {
+          "magnitude": -0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "de3668d7-c59d-4cb0-85ad-9eb006015aee",
+              "movement": "p1"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "dcc7d313-fc82-47f7-9cfb-b451ef54615a",
+              "movement": "p1"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "6f6a5c5a-5536-4513-9a22-8ad3954caa65",
+              "movement": "p1"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "5c58e1af-13ed-5d07-b627-0836d0c7f153",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 6.000000000000001e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "70c8c81f-7327-4c66-bc75-6153455855b2",
+              "movement": "p1"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "bd801dfd-7d47-424a-a0a9-2837d5b548ce",
+              "movement": "p1"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "de3668d7-c59d-4cb0-85ad-9eb006015aee",
+              "movement": "p1"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "8f2760c7-6fa9-55da-9369-652315585ed1",
+        "residual": {
+          "magnitude": 7.105427357601002e-15,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 5.672897196261683e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "71058c00-a60b-4c60-99ca-782d10312133",
+              "movement": "p1"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "70c8c81f-7327-4c66-bc75-6153455855b2",
+              "movement": "p1"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "f17e78ea-436f-489a-ad32-5e17f9663934"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "eff2d22f-68a0-50dc-aa4a-6ea70db6932d",
+        "residual": {
+          "magnitude": 1.1368683772161603e-13,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 9.011027836956351e-07,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "7f31d085-cc38-4f3d-8b12-93d463383f8c",
+              "movement": "p1"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "079ddde4-9dc2-42b1-a050-3065da3a859a",
+              "movement": "p1"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "f17e78ea-436f-489a-ad32-5e17f9663934"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "dcc7d313-fc82-47f7-9cfb-b451ef54615a",
+              "movement": "p1"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "f17e78ea-436f-489a-ad32-5e17f9663934"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "4a92a284-4974-53e0-b36d-15e3f9b7d566",
+        "residual": {
+          "magnitude": -1.1368683772161603e-13,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.017852381263484e-06,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "dcc7d313-fc82-47f7-9cfb-b451ef54615a",
+              "movement": "p2"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "079ddde4-9dc2-42b1-a050-3065da3a859a",
+              "movement": "p3"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "fe0bd77b-6228-551f-8a65-485ab2a500ed",
+              "movement": "p2"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "8ca77a97-4214-5eee-8e20-106d8414054b",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 6.339626699123658e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "bd801dfd-7d47-424a-a0a9-2837d5b548ce",
+              "movement": "p2"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "079ddde4-9dc2-42b1-a050-3065da3a859a",
+              "movement": "p2"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "f5c5ad35-2603-4d72-9775-98fa8ecf0886",
+              "movement": "p2"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "3c9e1a90-4a77-5161-ad56-ddaaf49e7a69",
+        "residual": {
+          "magnitude": 1.1368683772161603e-13,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.017852381263484e-06,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "de3668d7-c59d-4cb0-85ad-9eb006015aee",
+              "movement": "p2"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "dcc7d313-fc82-47f7-9cfb-b451ef54615a",
+              "movement": "p2"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "6f6a5c5a-5536-4513-9a22-8ad3954caa65",
+              "movement": "p2"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "a4869b75-1faa-5744-991a-f76f719895f6",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.0712486482547205e-06,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "70c8c81f-7327-4c66-bc75-6153455855b2",
+              "movement": "p2"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "bd801dfd-7d47-424a-a0a9-2837d5b548ce",
+              "movement": "p2"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "de3668d7-c59d-4cb0-85ad-9eb006015aee",
+              "movement": "p2"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "e0dc91fd-f9f8-5938-969a-029def61eac8",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 9.369356697132681e-07,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "71058c00-a60b-4c60-99ca-782d10312133",
+              "movement": "p2"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "70c8c81f-7327-4c66-bc75-6153455855b2",
+              "movement": "p2"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "f17e78ea-436f-489a-ad32-5e17f9663934"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "ddbdedd4-2cea-50bc-ad42-779b1d219573",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 9.836646416758846e-07,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "7f31d085-cc38-4f3d-8b12-93d463383f8c",
+              "movement": "p2"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "079ddde4-9dc2-42b1-a050-3065da3a859a",
+              "movement": "p1"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "f17e78ea-436f-489a-ad32-5e17f9663934"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "079ddde4-9dc2-42b1-a050-3065da3a859a",
+              "movement": "p2"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "f17e78ea-436f-489a-ad32-5e17f9663934"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "dcc7d313-fc82-47f7-9cfb-b451ef54615a",
+              "movement": "p2"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "f17e78ea-436f-489a-ad32-5e17f9663934"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "ca5f47ef-7186-5253-a294-86eb462793ae",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.0870196995943187e-06,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "dcc7d313-fc82-47f7-9cfb-b451ef54615a",
+              "movement": "p3"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "079ddde4-9dc2-42b1-a050-3065da3a859a",
+              "movement": "p4"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "fe0bd77b-6228-551f-8a65-485ab2a500ed",
+              "movement": "p3"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "be0020df-4137-5ed3-b850-be1f7b97e809",
+        "residual": {
+          "magnitude": -0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "bd801dfd-7d47-424a-a0a9-2837d5b548ce",
+              "movement": "p3"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "079ddde4-9dc2-42b1-a050-3065da3a859a",
+              "movement": "p3"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "f5c5ad35-2603-4d72-9775-98fa8ecf0886",
+              "movement": "p3"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "3d372b67-be90-51e9-934b-bb225577fb67",
+        "residual": {
+          "magnitude": -0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "de3668d7-c59d-4cb0-85ad-9eb006015aee",
+              "movement": "p3"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "dcc7d313-fc82-47f7-9cfb-b451ef54615a",
+              "movement": "p3"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "6f6a5c5a-5536-4513-9a22-8ad3954caa65",
+              "movement": "p3"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "85edb6af-d7f9-5b51-8a00-0bbf4e95fa4a",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "70c8c81f-7327-4c66-bc75-6153455855b2",
+              "movement": "p3"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "bd801dfd-7d47-424a-a0a9-2837d5b548ce",
+              "movement": "p3"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "de3668d7-c59d-4cb0-85ad-9eb006015aee",
+              "movement": "p3"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "ae723e4a-02d0-5970-bb73-7aa9dfd86b91",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1e-08,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "71058c00-a60b-4c60-99ca-782d10312133",
+              "movement": "p3"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "70c8c81f-7327-4c66-bc75-6153455855b2",
+              "movement": "p3"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "f17e78ea-436f-489a-ad32-5e17f9663934"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "5fd0fb3e-d6f2-51a1-9418-68f64f79e90b",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 1.0267957098584968e-06,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "7f31d085-cc38-4f3d-8b12-93d463383f8c",
+              "movement": "p3"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "079ddde4-9dc2-42b1-a050-3065da3a859a",
+              "movement": "p1"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "f17e78ea-436f-489a-ad32-5e17f9663934"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "079ddde4-9dc2-42b1-a050-3065da3a859a",
+              "movement": "p2"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "f17e78ea-436f-489a-ad32-5e17f9663934"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "079ddde4-9dc2-42b1-a050-3065da3a859a",
+              "movement": "p3"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "f17e78ea-436f-489a-ad32-5e17f9663934"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "dcc7d313-fc82-47f7-9cfb-b451ef54615a",
+              "movement": "p3"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "f17e78ea-436f-489a-ad32-5e17f9663934"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "constraint_residual",
+        "message": "Independent original-expression check: equal; signed residual left-right, unscaled in left-side units; tolerance = 1e-08 + 1e-09 * max(abs(left), abs(right)) (Boolean: exact). Accepted=True.",
+        "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+        "target": "ff8991ed-df4b-5e30-9ddf-3fc0826da489",
+        "residual": {
+          "magnitude": 0.0,
+          "units": "AUD"
+        },
+        "tolerance": {
+          "magnitude": 9.836646416758848e-07,
+          "units": "AUD"
+        },
+        "references": [
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "4f6761ab-9539-4273-8944-cf1f04dc0732"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "71058c00-a60b-4c60-99ca-782d10312133",
+              "movement": "p1"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "71058c00-a60b-4c60-99ca-782d10312133",
+              "movement": "p2"
+            }
+          },
+          {
+            "document": "83d4381e-e163-42f1-99b1-aefc56f437e0",
+            "reference": {
+              "value": "71058c00-a60b-4c60-99ca-782d10312133",
+              "movement": "p3"
+            }
+          }
+        ]
+      },
+      {
+        "severity": "info",
+        "code": "feasible_candidate",
+        "message": "Original expressions, assignments and bounds accepted. No uniqueness or optimization claim is made."
+      },
+      {
+        "severity": "info",
+        "code": "attempt_timing",
+        "message": "Elapsed monotonic time before persistence: 6.952335916 seconds."
+      }
+    ],
+    "trace": [
+      {
+        "kind": "validation",
+        "at": "2026-10-06T00:35:00.539634+00:00",
+        "message": "Validated additive composition, exact Model pin, scalar roles and recorded units.",
+        "document": "918d8c86-4bdd-4330-ab3d-ae8df5476679"
+      },
+      {
+        "kind": "formulation",
+        "at": "2026-10-06T00:35:00.717918+00:00",
+        "message": "Expanded 73 scalar/Movement symbols and 51 affine constraints; limits 10000/20000."
+      },
+      {
+        "kind": "solve",
+        "at": "2026-10-06T00:35:01.033104+00:00",
+        "message": "Backend returned convergenceCriteriaSatisfied; independent acceptance follows when a candidate exists."
+      },
+      {
+        "kind": "publication",
+        "at": "2026-10-06T00:35:04.910561+00:00",
+        "message": "Accepted serialized immutable Model; store output before finalized Run.",
+        "document": "123a8527-4f07-4d11-82e9-a359bf510bc7"
+      }
+    ],
+    "decisions": [
+      {
+        "point": "2fde3b36-722f-5d1c-a8ce-a8c0dbcec0a9",
+        "at": "2021-12-31",
+        "rule": null,
+        "observations": [
+          {
+            "name": "pricing_factor",
+            "target": {
+              "value": "8e7a9533-8b5d-52d0-a8a6-b9cd4a2f0193",
+              "movement": "p1"
+            },
+            "quantity": {
+              "magnitude": 1.0,
+              "units": "dimensionless"
+            },
+            "available_at": "2021-12-31"
+          }
+        ],
+        "assignments": [
+          {
+            "target": {
+              "value": "f5c5ad35-2603-4d72-9775-98fa8ecf0886",
+              "movement": "p1"
+            },
+            "quantity": {
+              "magnitude": 1,
+              "units": "dimensionless"
+            }
+          },
+          {
+            "target": {
+              "value": "6f6a5c5a-5536-4513-9a22-8ad3954caa65",
+              "movement": "p1"
+            },
+            "quantity": {
+              "magnitude": 0,
+              "units": "dimensionless"
+            }
+          }
+        ],
+        "terminated": false,
+        "termination_reason": null
+      },
+      {
+        "point": "4e5d388b-8504-5257-a5a3-55ede87066d2",
+        "at": "2022-12-31",
+        "rule": "e93630e5-0035-5c9a-ae3d-7ca188058a25",
+        "observations": [
+          {
+            "name": "pricing_factor",
+            "target": {
+              "value": "8e7a9533-8b5d-52d0-a8a6-b9cd4a2f0193",
+              "movement": "p2"
+            },
+            "quantity": {
+              "magnitude": 1.0679253398247313,
+              "units": "dimensionless"
+            },
+            "available_at": "2022-12-31"
+          }
+        ],
+        "assignments": [
+          {
+            "target": {
+              "value": "f5c5ad35-2603-4d72-9775-98fa8ecf0886",
+              "movement": "p2"
+            },
+            "quantity": {
+              "magnitude": 1,
+              "units": "dimensionless"
+            }
+          },
+          {
+            "target": {
+              "value": "6f6a5c5a-5536-4513-9a22-8ad3954caa65",
+              "movement": "p2"
+            },
+            "quantity": {
+              "magnitude": 1,
+              "units": "dimensionless"
+            }
+          },
+          {
+            "target": {
+              "value": "f5c5ad35-2603-4d72-9775-98fa8ecf0886",
+              "movement": "p3"
+            },
+            "quantity": {
+              "magnitude": 0,
+              "units": "dimensionless"
+            }
+          },
+          {
+            "target": {
+              "value": "6f6a5c5a-5536-4513-9a22-8ad3954caa65",
+              "movement": "p3"
+            },
+            "quantity": {
+              "magnitude": 0,
+              "units": "dimensionless"
+            }
+          }
+        ],
+        "terminated": true,
+        "termination_reason": "rule_matched"
+      }
+    ]
+  }
+}

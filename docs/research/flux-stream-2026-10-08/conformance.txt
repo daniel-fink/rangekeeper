@@ -1,0 +1,51 @@
+validate
+13 schemas generated; both examples and 80 rejection cases passed.
+Reference existence and empty Claim support still require semantic validation.
+native_roundtrip
+/Volumes/Data/Projects/Rangekeeper/src/.venv/lib/python3.10/site-packages/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.6.0)/charset_normalizer (3.4.3) doesn't match a supported version!
+  warnings.warn(
+/Volumes/Data/Projects/Rangekeeper/src/.venv/lib/python3.10/site-packages/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.6.0)/charset_normalizer (3.4.3) doesn't match a supported version!
+  warnings.warn(
+Native identifiers, typed reference fields, and generated Python round trips passed for both examples.
+expressions
+/Volumes/Data/Projects/Rangekeeper/src/.venv/lib/python3.10/site-packages/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.6.0)/charset_normalizer (3.4.3) doesn't match a supported version!
+  warnings.warn(
+/Volumes/Data/Projects/Rangekeeper/src/.venv/lib/python3.10/site-packages/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.6.0)/charset_normalizer (3.4.3) doesn't match a supported version!
+  warnings.warn(
+Passed 9 generated schemas, 71 valid records, 103 structural rejections,
+31 bounded semantic rejections, and native Python round trips.
+Constraint satisfaction, query execution, rich Value payloads, dimensional checking, and solving remain unimplemented.
+formulations
+/Volumes/Data/Projects/Rangekeeper/src/.venv/lib/python3.10/site-packages/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.6.0)/charset_normalizer (3.4.3) doesn't match a supported version!
+  warnings.warn(
+/Volumes/Data/Projects/Rangekeeper/src/.venv/lib/python3.10/site-packages/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.6.0)/charset_normalizer (3.4.3) doesn't match a supported version!
+  warnings.warn(
+Passed 6 generated schemas, 10 valid fixture scopes, 32 structural rejections,
+20 bounded semantic rejections, and 10 native Formulation round trips.
+Formulation compilation, constraint satisfaction, unit inference, and solving remain unimplemented.
+models
+/Volumes/Data/Projects/Rangekeeper/src/.venv/lib/python3.10/site-packages/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.6.0)/charset_normalizer (3.4.3) doesn't match a supported version!
+  warnings.warn(
+/Volumes/Data/Projects/Rangekeeper/src/.venv/lib/python3.10/site-packages/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.6.0)/charset_normalizer (3.4.3) doesn't match a supported version!
+  warnings.warn(
+Passed 3 generated schemas, 6 valid Models, 26 structural rejections,
+24 bounded semantic rejections, and 6 native Model round trips.
+Storage immutability, generic Fact/content agreement, unit inference, and execution remain outside this check.
+specifications
+/Volumes/Data/Projects/Rangekeeper/src/.venv/lib/python3.10/site-packages/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.6.0)/charset_normalizer (3.4.3) doesn't match a supported version!
+  warnings.warn(
+/Volumes/Data/Projects/Rangekeeper/src/.venv/lib/python3.10/site-packages/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.6.0)/charset_normalizer (3.4.3) doesn't match a supported version!
+  warnings.warn(
+Passed 13 composition/batch acceptance checks, 35 composition rejections,
+and 4 additional native round trips; no inputs mutated or solver executed.
+Passed 6 generated schemas, 17 valid Specifications, 46 structural rejections,
+37 bounded semantic rejections, and 17 native Specification round trips.
+No solver executed. Unit conversion, imposed query dependency resolution, and Run publication require adapters.
+runs
+/Volumes/Data/Projects/Rangekeeper/src/.venv/lib/python3.10/site-packages/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.6.0)/charset_normalizer (3.4.3) doesn't match a supported version!
+  warnings.warn(
+/Volumes/Data/Projects/Rangekeeper/src/.venv/lib/python3.10/site-packages/requests/__init__.py:113: RequestsDependencyWarning: urllib3 (2.5.0) or chardet (7.6.0)/charset_normalizer (3.4.3) doesn't match a supported version!
+  warnings.warn(
+Passed 10 generated schemas, 19 valid Run/tree cases, 28 structural rejections,
+45 bounded semantic rejections, and 32 native Run round trips.
+Synthetic records only. No scheduler or solver executed; full residual/optimality verification and structural publication require adapters.

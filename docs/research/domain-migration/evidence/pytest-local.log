@@ -1,0 +1,70 @@
+
+==================================== ERRORS ====================================
+___________________ ERROR collecting tests/test_workflow.py ____________________
+ImportError while importing test module '/Volumes/Data/Projects/Rangekeeper/src/tests/test_workflow.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Users/daniel/.local/share/uv/python/cpython-3.10.19-macos-aarch64-none/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_workflow.py:4: in <module>
+    import yaml
+E   ModuleNotFoundError: No module named 'yaml'
+_______________ ERROR collecting tests/test_workflow_formats.py ________________
+ImportError while importing test module '/Volumes/Data/Projects/Rangekeeper/src/tests/test_workflow_formats.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Users/daniel/.local/share/uv/python/cpython-3.10.19-macos-aarch64-none/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_workflow_formats.py:12: in <module>
+    from .test_workflow import example
+tests/test_workflow.py:4: in <module>
+    import yaml
+E   ModuleNotFoundError: No module named 'yaml'
+________________ ERROR collecting tests/test_workflow_shared.py ________________
+ImportError while importing test module '/Volumes/Data/Projects/Rangekeeper/src/tests/test_workflow_shared.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Users/daniel/.local/share/uv/python/cpython-3.10.19-macos-aarch64-none/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_workflow_shared.py:14: in <module>
+    from .test_workflow import example, rewrite
+tests/test_workflow.py:4: in <module>
+    import yaml
+E   ModuleNotFoundError: No module named 'yaml'
+=============================== warnings summary ===============================
+rangekeeper/duration.py:27
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/duration.py:27: FutureWarning: 'Y' is deprecated and will be removed in a future version, please use 'YE' instead.
+    if value in ("10Y", "10Y-DEC"):
+
+rangekeeper/duration.py:27
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/duration.py:27: FutureWarning: 'Y-DEC' is deprecated and will be removed in a future version, please use 'YE-DEC' instead.
+    if value in ("10Y", "10Y-DEC"):
+
+rangekeeper/duration.py:29
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/duration.py:29: FutureWarning: 'Y' is deprecated and will be removed in a future version, please use 'YE' instead.
+    if value in ("5Y", "5Y-DEC"):
+
+rangekeeper/duration.py:29
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/duration.py:29: FutureWarning: 'Y-DEC' is deprecated and will be removed in a future version, please use 'YE-DEC' instead.
+    if value in ("5Y", "5Y-DEC"):
+
+rangekeeper/duration.py:31
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/duration.py:31: FutureWarning: 'Y' is deprecated and will be removed in a future version, please use 'YE' instead.
+    if value in ("2Y", "2Y-DEC"):
+
+rangekeeper/duration.py:31
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/duration.py:31: FutureWarning: 'Y-DEC' is deprecated and will be removed in a future version, please use 'YE-DEC' instead.
+    if value in ("2Y", "2Y-DEC"):
+
+rangekeeper/duration.py:33
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/duration.py:33: FutureWarning: 'Y' is deprecated and will be removed in a future version, please use 'YE' instead.
+    if value in ("Y", "YE", "YE-DEC", "Y-DEC", "A-DEC"):
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: /Volumes/Data/Projects/Rangekeeper/docs/research/domain-migration/evidence/pytest-local.xml -
+=========================== short test summary info ============================
+ERROR tests/test_workflow.py
+ERROR tests/test_workflow_formats.py
+ERROR tests/test_workflow_shared.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 3 errors during collection !!!!!!!!!!!!!!!!!!!!
+7 warnings, 3 errors in 14.17s

@@ -1,0 +1,9 @@
+{
+  "status": "passed",
+  "entities": 36,
+  "assemblies": 14,
+  "relationships": 63,
+  "associations": 45,
+  "absolute_tolerance": 1e-07,
+  "relative_tolerance": 1e-10
+}

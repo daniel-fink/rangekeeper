@@ -1,164 +1,65 @@
-import rangekeeper as rk
+"""Readable known-data DCF composition using canonical Flow content."""
+
+from rangekeeper.model.flux import Flow, MissingValueHandling
+
+from dataclasses import dataclass
+from datetime import timedelta
+
+from rangekeeper.model.measure import Quantity
+from rangekeeper.model.duration import Frequency, PeriodTiming, make_periods, offset
+from rangekeeper.calculations import series, projection, financial
 
 
-# Base Model:
 class Model:
+    """Consumer calculation example; this is not the canonical rk.Model class."""
+
     def __init__(self, params: dict):
-        # Phasing:
-        self.acquisition_span = rk.duration.Span.from_duration(
-            name="Acquisition",
-            date=params["start_date"],
-            duration=rk.duration.Type.YEAR,
-            amount=1,
+        units = params["units"]
+        frequency = Frequency(params["frequency"])
+        periods = make_periods(
+            offset(params["start_date"], frequency=Frequency.YEAR),
+            frequency=frequency,
+            count=params["num_periods"] + 1,
         )
-
-        self.operation_span = rk.duration.Span.from_duration(
-            name="Operation",
-            date=rk.duration.offset(
-                date=self.acquisition_span.end_date,
-                duration=rk.duration.Type.DAY,
-                amount=1,
-            ),
-            duration=rk.duration.Type.YEAR,
-            amount=params["num_periods"],
+        self.pgi = projection.extrapolate(
+            Quantity(magnitude=params["initial_pgi"], units=units),
+            periods=periods,
+            method=projection.ProjectionMethod.COMPOUND,
+            rate=params["growth_rate"],
         )
-
-        self.disposition_span = rk.duration.Span.from_duration(
-            name="Disposition",
-            date=rk.duration.offset(
-                date=self.acquisition_span.start_date,
-                duration=rk.duration.Type.YEAR,
-                amount=params["num_periods"],
-            ),
-            duration=rk.duration.Type.YEAR,
-            amount=1,
+        self.vacancy = self.pgi.scale(-params["vacancy_rate"])
+        self.egi = series.aggregate((self.pgi, self.vacancy)).flow
+        self.opex = self.pgi.scale(-params["opex_pgi_ratio"])
+        self.noi = series.aggregate((self.egi, self.opex)).flow
+        self.capex = self.pgi.scale(-params["capex_pgi_ratio"])
+        projected_ncf = series.aggregate((self.noi, self.capex)).flow
+        self.ncf = Flow(units=units, movements=projected_ncf.movements[:-1])
+        self.disposition = Flow.from_periods(
+            periods[-2:-1],
+            (projected_ncf.movements[-1].magnitude / params["cap_rate"],),
+            units=units,
         )
-
-        self.projection_span = rk.duration.Span.from_duration(
-            name="Projection",
-            date=rk.duration.offset(
-                date=self.operation_span.end_date,
-                duration=rk.duration.Type.DAY,
-                amount=1,
-            ),
-            duration=rk.duration.Type.YEAR,
-            amount=1,
+        self.ncf_disposition = series.aggregate(
+            (self.ncf, self.disposition),
+            join=series.AlignmentJoin.UNION,
+            missing=MissingValueHandling.ZERO,
+        ).flow
+        # All proceeds share one valuation origin; terminal proceeds are discounted
+        # over the full holding period instead of restarting at their first sample.
+        self.pv_sums = financial.calculate_pv(
+            self.ncf_disposition, rate=params["discount_rate"]
         )
-
-        self.noi_calc_span = rk.duration.Span.merge(
-            name="NOI Calculation Span",
-            spans=[self.operation_span, self.projection_span],
+        acquisition_period = make_periods(
+            params["start_date"], frequency=Frequency.YEAR, count=1
         )
-
-        # Factors:
-        self.escalation = rk.extrapolation.Compounding(rate=params["growth_rate"])
-
-        # Cashflows:
-        # Potential Gross Income
-        self.pgi = rk.flux.Flow.from_projection(
-            name="Potential Gross Income",
-            value=params["initial_pgi"],
-            proj=rk.projection.Extrapolation(
-                form=self.escalation,
-                sequence=self.noi_calc_span.to_sequence(frequency=params["frequency"]),
-            ),
-            units=params["units"],
+        self.acquisition = Flow.from_periods(
+            acquisition_period, (-abs(params["acquisition_price"]),), units=units
         )
-
-        # Vacancy Allowance
-        # This should be displayed as a row in a table with xxxx, xxx,....
-        self.vacancy = rk.flux.Flow.from_sequence(
-            name="Vacancy Allowance",
-            sequence=self.noi_calc_span.to_sequence(frequency=params["frequency"]),
-            data=self.pgi.movements * params["vacancy_rate"],
-            units=params["units"],
-        ).negate()
-
-        # Effective Gross Income:
-        self.egi = rk.flux.Stream(
-            name="Effective Gross Income",
-            flows=[self.pgi, self.vacancy],
-            frequency=params["frequency"],
+        self.investment_cashflows = series.aggregate(
+            (self.acquisition, self.ncf_disposition),
+            join=series.AlignmentJoin.UNION,
+            missing=MissingValueHandling.ZERO,
+        ).flow
+        self.irr = financial.calculate_irr(
+            self.investment_cashflows, timing=PeriodTiming.LAST
         )
-
-        # Operating Expenses:
-        self.opex = rk.flux.Flow.from_sequence(
-            name="Operating Expenses",
-            sequence=self.noi_calc_span.to_sequence(frequency=params["frequency"]),
-            data=self.pgi.movements * params["opex_pgi_ratio"],
-            units=params["units"],
-        ).negate()
-
-        # Net Operating Income:
-        self.noi = rk.flux.Stream(
-            name="Net Operating Income",
-            flows=[self.egi.sum("Effective Gross Income"), self.opex],
-            frequency=params["frequency"],
-        )
-
-        # Capital Expenses:
-        self.capex = rk.flux.Flow.from_sequence(
-            name="Capital Expenditures",
-            sequence=self.noi_calc_span.to_sequence(frequency=params["frequency"]),
-            data=self.pgi.movements * params["capex_pgi_ratio"],
-            units=params["units"],
-        ).negate()
-
-        # Net Cashflows:
-        self.ncf = rk.flux.Stream(
-            name="Net Cashflows",
-            flows=[self.noi.sum(), self.capex],
-            frequency=params["frequency"],
-        )
-
-        # Disposition (Reversion):
-        sale_value = self.ncf.sum().movements.tail(1).item() / params["cap_rate"]
-        self.disposition = rk.flux.Flow.from_sequence(
-            name="Disposition",
-            sequence=self.disposition_span.to_sequence(frequency=params["frequency"]),
-            data=[sale_value],
-            units=params["units"],
-        )
-
-        # Net Cash Flows with Disposition:
-        self.ncf_disposition = self.ncf.duplicate().trim_to_span(
-            span=self.operation_span
-        )
-        self.ncf_disposition.extend(flows=[self.disposition])
-
-        # Calculate the Present Value of the NCFs:
-        self.pv_ncf = self.ncf.sum().pv(
-            frequency=params["frequency"], rate=params["discount_rate"]
-        )
-
-        # Calculate the Present Value of Disposition CFs:
-        self.pv_disposition = self.disposition.pv(
-            frequency=params["frequency"], rate=params["discount_rate"]
-        )
-
-        self.pv_ncf_agg = rk.flux.Stream(
-            name="Discounted Net Cashflows",
-            flows=[self.pv_ncf, self.pv_disposition],
-            frequency=params["frequency"],
-        )
-
-        self.pv_sums = self.pv_ncf_agg.sum()
-        self.pv_sums.movements = self.pv_sums.movements[:-1]
-
-        self.acquisition = rk.flux.Flow.from_sequence(
-            sequence=self.acquisition_span.to_sequence(frequency=rk.duration.Type.YEAR),
-            data=[-abs(params["acquisition_price"])],
-            units=params["units"],
-            name="Acquisition Price",
-        )
-
-        self.investment_cashflows = rk.flux.Stream(
-            name="Investment Cashflows",
-            flows=[self.ncf.sum(), self.disposition, self.acquisition],
-            frequency=params["frequency"],
-        )
-
-        self.investment_cashflows.frame = self.investment_cashflows.frame[:-1]
-
-        # IRR is displayed in the right hand panel...
-        self.irr = self.investment_cashflows.sum().irr()

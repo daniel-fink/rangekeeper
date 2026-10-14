@@ -1,0 +1,16 @@
+{
+  "python": "3.10.19 (main, Jan 14 2026, 23:38:29) [Clang 21.1.4 ]",
+  "executable": "/Volumes/Data/Projects/Rangekeeper/src/.venv/bin/python",
+  "platform": "macOS-15.7.9-arm64-arm-64bit",
+  "machine": "arm64",
+  "processors": 20,
+  "dependencies": {
+    "polars": "1.44.2",
+    "numpy": "2.2.6",
+    "pint": "0.24.4",
+    "py-moneyed": "3.0",
+    "pyomo": "6.10.1",
+    "highspy": "1.15.1",
+    "pytest": "8.4.2"
+  }
+}

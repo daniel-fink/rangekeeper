@@ -1,0 +1,10 @@
+{
+  "src/rangekeeper/adapters/plotting.py": "58e5969380a9247d1f1f4cb97bbeeba729d4c02c0a9a2db8bc52b1d061f0eb16",
+  "examples/walkthrough/design_to_value.ipynb": "0728a8801f6341c3224373b6611ee548a801277917eb52ab1ae80049d68880fb",
+  "tools/docs/build_book.py": "91827de06c7a88a995e3a5cf54de013b96a5bc7cb1a206f860ee1e42b1bbe02c",
+  "examples/walkthrough/helpers/plot.py": "4891dba7b6c3f21d0532de7faedec2e2c0a43695075a1d70185dbba0b0fa7c01",
+  "examples/walkthrough/helpers/theme.py": "cc1ae0495e31e726271ff88c1ee69245ccf1c40573053433f4ff30e086aa7339",
+  "examples/walkthrough/helpers/__init__.py": "51e0d2729e7e2aec0471d85fa9ebc7d6d248465e623b56de92886c4a3a1f9d62",
+  "examples/walkthrough/helpers/theme.js": "273f4b5eee520f124bf50ecbcd36b9adfc909893ba7431ce03f9769ee150fe57",
+  "candidate_wheel_sha256": "2bbd2955b7f0a43fba1f778fb0da01fadf2ca425a9b8756cdcfe21e53fa4df27"
+}

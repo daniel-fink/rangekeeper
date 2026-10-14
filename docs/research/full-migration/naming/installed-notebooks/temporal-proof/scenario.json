@@ -1,0 +1,1884 @@
+{
+  "metadata": {
+    "id": "f713f34c-2f18-577d-b2d1-a6579a8a68c8",
+    "schema_version": "0.5.0",
+    "previous": "0598dad0-ed60-4dd9-b0ec-5f7b052b63fc"
+  },
+  "definitions": {
+    "measures": [
+      {
+        "id": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+        "code": "scenario_2efeeb1c4d3c590fab698c0df4a2bdfe",
+        "name": "Normalized scenario quantity",
+        "units": "dimensionless"
+      }
+    ]
+  },
+  "system": {
+    "formulations": [
+      {
+        "id": "207d8e73-402f-59b1-b740-1f9f7a6b5eeb",
+        "name": "Scenario installed-proof",
+        "values": [
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "quantity": {
+              "magnitude": 0.005,
+              "units": "dimensionless"
+            },
+            "id": "aa11487c-c1f0-501f-bcbd-09134339c818",
+            "key": "input_asset_amplitude",
+            "kind": "measurement"
+          },
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "quantity": {
+              "magnitude": 0.0,
+              "units": "dimensionless"
+            },
+            "id": "cf9651c7-9eaa-597e-8c70-e124bf2c3504",
+            "key": "input_asset_asymmetry",
+            "kind": "measurement"
+          },
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "quantity": {
+              "magnitude": 10.0,
+              "units": "dimensionless"
+            },
+            "id": "4089c1f1-5297-5225-8de8-300b364fa9b1",
+            "key": "input_asset_period",
+            "kind": "measurement"
+          },
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "quantity": {
+              "magnitude": 2.0,
+              "units": "dimensionless"
+            },
+            "id": "36526913-89b0-528a-914e-fd7e9196d102",
+            "key": "input_asset_phase",
+            "kind": "measurement"
+          },
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "quantity": {
+              "magnitude": 0.2,
+              "units": "dimensionless"
+            },
+            "id": "f18c4725-d218-5473-9b13-f909f8472987",
+            "key": "input_autoregression",
+            "kind": "measurement"
+          },
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "quantity": {
+              "magnitude": 0.05,
+              "units": "dimensionless"
+            },
+            "id": "234c731f-b155-5a82-bc22-5d002ad07005",
+            "key": "input_cap_rate",
+            "kind": "measurement"
+          },
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "quantity": {
+              "magnitude": 0.02,
+              "units": "dimensionless"
+            },
+            "id": "c4f85ac2-260d-59cb-a47e-f5fe00787b4b",
+            "key": "input_growth_rate",
+            "kind": "measurement"
+          },
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "quantity": {
+              "magnitude": 0.05,
+              "units": "dimensionless"
+            },
+            "id": "8bf220bf-8f97-5d39-a92c-f80f3d1104e5",
+            "key": "input_initial_value",
+            "kind": "measurement"
+          },
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "quantity": {
+              "magnitude": 0.1,
+              "units": "dimensionless"
+            },
+            "id": "87ba42fc-e864-5611-b43c-f2ac776f769e",
+            "key": "input_mean_reversion",
+            "kind": "measurement"
+          },
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "quantity": {
+              "magnitude": -0.02,
+              "units": "dimensionless"
+            },
+            "id": "1fb60099-fa5c-51e0-bb63-fc009b98128b",
+            "key": "input_noise_lower",
+            "kind": "measurement"
+          },
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "quantity": {
+              "magnitude": 0.02,
+              "units": "dimensionless"
+            },
+            "id": "0a4554e8-c291-5ae9-956b-76e3106df78e",
+            "key": "input_noise_upper",
+            "kind": "measurement"
+          },
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "quantity": {
+              "magnitude": 0.5,
+              "units": "dimensionless"
+            },
+            "id": "e129bb55-34f0-56be-9815-f34664fa3e66",
+            "key": "input_shock_dissipation",
+            "kind": "measurement"
+          },
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "quantity": {
+              "magnitude": -0.2,
+              "units": "dimensionless"
+            },
+            "id": "d2ac37ab-969f-5fb6-a67f-9da3c11e4549",
+            "key": "input_shock_impact",
+            "kind": "measurement"
+          },
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "quantity": {
+              "magnitude": 0.02,
+              "units": "dimensionless"
+            },
+            "id": "b09fb46e-3692-5c39-9543-62d7f89a7777",
+            "key": "input_shock_likelihood",
+            "kind": "measurement"
+          },
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "quantity": {
+              "magnitude": 0.1,
+              "units": "dimensionless"
+            },
+            "id": "bea07b31-fa9d-575e-96fb-416f37d88ea2",
+            "key": "input_space_amplitude",
+            "kind": "measurement"
+          },
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "quantity": {
+              "magnitude": 0.0,
+              "units": "dimensionless"
+            },
+            "id": "92cc9e3d-792b-52f0-bb11-4c86606e4abc",
+            "key": "input_space_asymmetry",
+            "kind": "measurement"
+          },
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "quantity": {
+              "magnitude": 10.0,
+              "units": "dimensionless"
+            },
+            "id": "fc41dc71-958a-564c-9b52-c9f9675a9955",
+            "key": "input_space_period",
+            "kind": "measurement"
+          },
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "quantity": {
+              "magnitude": 0.0,
+              "units": "dimensionless"
+            },
+            "id": "22f11a88-14b4-5afe-a93a-44dfc9b45d07",
+            "key": "input_space_phase",
+            "kind": "measurement"
+          },
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "quantity": {
+              "magnitude": 0.03,
+              "units": "dimensionless"
+            },
+            "id": "d19711c6-661d-5863-a6d3-9421b1b8bd84",
+            "key": "input_volatility_per_period",
+            "kind": "measurement"
+          },
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "id": "692a36fc-d908-5c41-bc3e-ebcce00e9a44",
+            "key": "input_innovations",
+            "kind": "flow",
+            "flow": {
+              "units": "dimensionless",
+              "movements": [
+                {
+                  "key": "p1",
+                  "date": "2021-12-31",
+                  "period": {
+                    "start": "2021-01-01",
+                    "end": "2022-01-01"
+                  },
+                  "magnitude": 0.016094848857429546
+                },
+                {
+                  "key": "p2",
+                  "date": "2022-12-31",
+                  "period": {
+                    "start": "2022-01-01",
+                    "end": "2023-01-01"
+                  },
+                  "magnitude": -0.014579944349712153
+                },
+                {
+                  "key": "p3",
+                  "date": "2023-12-31",
+                  "period": {
+                    "start": "2023-01-01",
+                    "end": "2024-01-01"
+                  },
+                  "magnitude": -0.03711569845927721
+                },
+                {
+                  "key": "p4",
+                  "date": "2024-12-31",
+                  "period": {
+                    "start": "2024-01-01",
+                    "end": "2025-01-01"
+                  },
+                  "magnitude": 0.045061288776587466
+                }
+              ]
+            }
+          },
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "id": "96df7104-b5f2-5b9a-849b-00ebe2c73769",
+            "key": "input_noise",
+            "kind": "flow",
+            "flow": {
+              "units": "dimensionless",
+              "movements": [
+                {
+                  "key": "p1",
+                  "date": "2021-12-31",
+                  "period": {
+                    "start": "2021-01-01",
+                    "end": "2022-01-01"
+                  },
+                  "magnitude": -0.010593969351040507
+                },
+                {
+                  "key": "p2",
+                  "date": "2022-12-31",
+                  "period": {
+                    "start": "2022-01-01",
+                    "end": "2023-01-01"
+                  },
+                  "magnitude": -0.0007799065259854033
+                },
+                {
+                  "key": "p3",
+                  "date": "2023-12-31",
+                  "period": {
+                    "start": "2023-01-01",
+                    "end": "2024-01-01"
+                  },
+                  "magnitude": -0.0068015153000538665
+                },
+                {
+                  "key": "p4",
+                  "date": "2024-12-31",
+                  "period": {
+                    "start": "2024-01-01",
+                    "end": "2025-01-01"
+                  },
+                  "magnitude": 0.002098538707447699
+                }
+              ]
+            }
+          },
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "id": "85d99657-72e4-5936-83a2-7d8af45ace03",
+            "key": "input_events",
+            "kind": "flow",
+            "flow": {
+              "units": "dimensionless",
+              "movements": [
+                {
+                  "key": "p1",
+                  "date": "2021-12-31",
+                  "period": {
+                    "start": "2021-01-01",
+                    "end": "2022-01-01"
+                  },
+                  "magnitude": 0.44662481019024436
+                },
+                {
+                  "key": "p2",
+                  "date": "2022-12-31",
+                  "period": {
+                    "start": "2022-01-01",
+                    "end": "2023-01-01"
+                  },
+                  "magnitude": 0.8116642880228375
+                },
+                {
+                  "key": "p3",
+                  "date": "2023-12-31",
+                  "period": {
+                    "start": "2023-01-01",
+                    "end": "2024-01-01"
+                  },
+                  "magnitude": 0.7304661328533072
+                },
+                {
+                  "key": "p4",
+                  "date": "2024-12-31",
+                  "period": {
+                    "start": "2024-01-01",
+                    "end": "2025-01-01"
+                  },
+                  "magnitude": 0.30957261572389694
+                }
+              ]
+            }
+          },
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "id": "0bfd5663-1919-5312-a754-8157bbf851f7",
+            "key": "trend",
+            "kind": "flow",
+            "flow": {
+              "units": "dimensionless",
+              "movements": [
+                {
+                  "key": "p1",
+                  "date": "2021-12-31",
+                  "period": {
+                    "start": "2021-01-01",
+                    "end": "2022-01-01"
+                  },
+                  "magnitude": 0.05
+                },
+                {
+                  "key": "p2",
+                  "date": "2022-12-31",
+                  "period": {
+                    "start": "2022-01-01",
+                    "end": "2023-01-01"
+                  },
+                  "magnitude": 0.051000000000000004
+                },
+                {
+                  "key": "p3",
+                  "date": "2023-12-31",
+                  "period": {
+                    "start": "2023-01-01",
+                    "end": "2024-01-01"
+                  },
+                  "magnitude": 0.052020000000000004
+                },
+                {
+                  "key": "p4",
+                  "date": "2024-12-31",
+                  "period": {
+                    "start": "2024-01-01",
+                    "end": "2025-01-01"
+                  },
+                  "magnitude": 0.05306040000000001
+                }
+              ]
+            }
+          },
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "id": "d24c776e-d3a3-535c-9a8d-d43d00e9246a",
+            "key": "autoregressive_returns",
+            "kind": "flow",
+            "flow": {
+              "units": "dimensionless",
+              "movements": [
+                {
+                  "key": "p1",
+                  "date": "2021-12-31",
+                  "period": {
+                    "start": "2021-01-01",
+                    "end": "2022-01-01"
+                  },
+                  "magnitude": 0.016094848857429546
+                },
+                {
+                  "key": "p2",
+                  "date": "2022-12-31",
+                  "period": {
+                    "start": "2022-01-01",
+                    "end": "2023-01-01"
+                  },
+                  "magnitude": -0.011360974578226244
+                },
+                {
+                  "key": "p3",
+                  "date": "2023-12-31",
+                  "period": {
+                    "start": "2023-01-01",
+                    "end": "2024-01-01"
+                  },
+                  "magnitude": -0.03938789337492246
+                },
+                {
+                  "key": "p4",
+                  "date": "2024-12-31",
+                  "period": {
+                    "start": "2024-01-01",
+                    "end": "2025-01-01"
+                  },
+                  "magnitude": 0.03718371010160297
+                }
+              ]
+            }
+          },
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "id": "46d7a590-7485-58f7-af4d-21d37ee77245",
+            "key": "cumulative_volatility",
+            "kind": "flow",
+            "flow": {
+              "units": "dimensionless",
+              "movements": [
+                {
+                  "key": "p1",
+                  "date": "2021-12-31",
+                  "period": {
+                    "start": "2021-01-01",
+                    "end": "2022-01-01"
+                  },
+                  "magnitude": 0.05
+                },
+                {
+                  "key": "p2",
+                  "date": "2022-12-31",
+                  "period": {
+                    "start": "2022-01-01",
+                    "end": "2023-01-01"
+                  },
+                  "magnitude": 0.050431951271088696
+                },
+                {
+                  "key": "p3",
+                  "date": "2023-12-31",
+                  "period": {
+                    "start": "2023-01-01",
+                    "end": "2024-01-01"
+                  },
+                  "magnitude": 0.04951098685004667
+                },
+                {
+                  "key": "p4",
+                  "date": "2024-12-31",
+                  "period": {
+                    "start": "2024-01-01",
+                    "end": "2025-01-01"
+                  },
+                  "magnitude": 0.052593110083919356
+                }
+              ]
+            }
+          },
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "id": "7ba5b5f0-77a5-5c77-9e62-29d9756407bc",
+            "key": "space_cycle",
+            "kind": "flow",
+            "flow": {
+              "units": "dimensionless",
+              "movements": [
+                {
+                  "key": "p1",
+                  "date": "2021-12-31",
+                  "period": {
+                    "start": "2021-01-01",
+                    "end": "2022-01-01"
+                  },
+                  "magnitude": 0.0
+                },
+                {
+                  "key": "p2",
+                  "date": "2022-12-31",
+                  "period": {
+                    "start": "2022-01-01",
+                    "end": "2023-01-01"
+                  },
+                  "magnitude": 0.058778525229247314
+                },
+                {
+                  "key": "p3",
+                  "date": "2023-12-31",
+                  "period": {
+                    "start": "2023-01-01",
+                    "end": "2024-01-01"
+                  },
+                  "magnitude": 0.09510565162951536
+                },
+                {
+                  "key": "p4",
+                  "date": "2024-12-31",
+                  "period": {
+                    "start": "2024-01-01",
+                    "end": "2025-01-01"
+                  },
+                  "magnitude": 0.09510565162951537
+                }
+              ]
+            }
+          },
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "id": "34574b92-8653-542e-abbf-176730622407",
+            "key": "asset_cycle",
+            "kind": "flow",
+            "flow": {
+              "units": "dimensionless",
+              "movements": [
+                {
+                  "key": "p1",
+                  "date": "2021-12-31",
+                  "period": {
+                    "start": "2021-01-01",
+                    "end": "2022-01-01"
+                  },
+                  "magnitude": -0.004755282581475768
+                },
+                {
+                  "key": "p2",
+                  "date": "2022-12-31",
+                  "period": {
+                    "start": "2022-01-01",
+                    "end": "2023-01-01"
+                  },
+                  "magnitude": -0.0029389262614623658
+                },
+                {
+                  "key": "p3",
+                  "date": "2023-12-31",
+                  "period": {
+                    "start": "2023-01-01",
+                    "end": "2024-01-01"
+                  },
+                  "magnitude": 0.0
+                },
+                {
+                  "key": "p4",
+                  "date": "2024-12-31",
+                  "period": {
+                    "start": "2024-01-01",
+                    "end": "2025-01-01"
+                  },
+                  "magnitude": 0.0029389262614623658
+                }
+              ]
+            }
+          },
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "id": "83a841a6-ad3c-5762-ad10-eca70bc28948",
+            "key": "space_market",
+            "kind": "flow",
+            "flow": {
+              "units": "dimensionless",
+              "movements": [
+                {
+                  "key": "p1",
+                  "date": "2021-12-31",
+                  "period": {
+                    "start": "2021-01-01",
+                    "end": "2022-01-01"
+                  },
+                  "magnitude": 0.05
+                },
+                {
+                  "key": "p2",
+                  "date": "2022-12-31",
+                  "period": {
+                    "start": "2022-01-01",
+                    "end": "2023-01-01"
+                  },
+                  "magnitude": 0.05339626699123656
+                },
+                {
+                  "key": "p3",
+                  "date": "2023-12-31",
+                  "period": {
+                    "start": "2023-01-01",
+                    "end": "2024-01-01"
+                  },
+                  "magnitude": 0.054219761517240735
+                },
+                {
+                  "key": "p4",
+                  "date": "2024-12-31",
+                  "period": {
+                    "start": "2024-01-01",
+                    "end": "2025-01-01"
+                  },
+                  "magnitude": 0.057595012089673346
+                }
+              ]
+            }
+          },
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "id": "f43b2b96-b1ba-59e9-ae31-63ba0ce10f03",
+            "key": "asset_market",
+            "kind": "flow",
+            "flow": {
+              "units": "dimensionless",
+              "movements": [
+                {
+                  "key": "p1",
+                  "date": "2021-12-31",
+                  "period": {
+                    "start": "2021-01-01",
+                    "end": "2022-01-01"
+                  },
+                  "magnitude": 0.05475528258147577
+                },
+                {
+                  "key": "p2",
+                  "date": "2022-12-31",
+                  "period": {
+                    "start": "2022-01-01",
+                    "end": "2023-01-01"
+                  },
+                  "magnitude": 0.05293892626146237
+                },
+                {
+                  "key": "p3",
+                  "date": "2023-12-31",
+                  "period": {
+                    "start": "2023-01-01",
+                    "end": "2024-01-01"
+                  },
+                  "magnitude": 0.05
+                },
+                {
+                  "key": "p4",
+                  "date": "2024-12-31",
+                  "period": {
+                    "start": "2024-01-01",
+                    "end": "2025-01-01"
+                  },
+                  "magnitude": 0.047061073738537636
+                }
+              ]
+            }
+          },
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "id": "3d1bea13-2cc0-502c-af54-c7c354021181",
+            "key": "asset_true_value",
+            "kind": "flow",
+            "flow": {
+              "units": "dimensionless",
+              "movements": [
+                {
+                  "key": "p1",
+                  "date": "2021-12-31",
+                  "period": {
+                    "start": "2021-01-01",
+                    "end": "2022-01-01"
+                  },
+                  "magnitude": 0.9131539030156604
+                },
+                {
+                  "key": "p2",
+                  "date": "2022-12-31",
+                  "period": {
+                    "start": "2022-01-01",
+                    "end": "2023-01-01"
+                  },
+                  "magnitude": 1.008639025421774
+                },
+                {
+                  "key": "p3",
+                  "date": "2023-12-31",
+                  "period": {
+                    "start": "2023-01-01",
+                    "end": "2024-01-01"
+                  },
+                  "magnitude": 1.0843952303448146
+                },
+                {
+                  "key": "p4",
+                  "date": "2024-12-31",
+                  "period": {
+                    "start": "2024-01-01",
+                    "end": "2025-01-01"
+                  },
+                  "magnitude": 1.2238354868327117
+                }
+              ]
+            }
+          },
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "id": "1214be64-59e1-5448-a178-c3b85cda6279",
+            "key": "space_market_price_factors",
+            "kind": "flow",
+            "flow": {
+              "units": "dimensionless",
+              "movements": [
+                {
+                  "key": "p1",
+                  "date": "2021-12-31",
+                  "period": {
+                    "start": "2021-01-01",
+                    "end": "2022-01-01"
+                  },
+                  "magnitude": 1.0
+                },
+                {
+                  "key": "p2",
+                  "date": "2022-12-31",
+                  "period": {
+                    "start": "2022-01-01",
+                    "end": "2023-01-01"
+                  },
+                  "magnitude": 1.0679253398247313
+                },
+                {
+                  "key": "p3",
+                  "date": "2023-12-31",
+                  "period": {
+                    "start": "2023-01-01",
+                    "end": "2024-01-01"
+                  },
+                  "magnitude": 1.0843952303448146
+                },
+                {
+                  "key": "p4",
+                  "date": "2024-12-31",
+                  "period": {
+                    "start": "2024-01-01",
+                    "end": "2025-01-01"
+                  },
+                  "magnitude": 1.151900241793467
+                }
+              ]
+            }
+          },
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "id": "d27bfc63-a72c-520c-8a44-913617a75a1a",
+            "key": "noise_effect",
+            "kind": "flow",
+            "flow": {
+              "units": "dimensionless",
+              "movements": [
+                {
+                  "key": "p1",
+                  "date": "2021-12-31",
+                  "period": {
+                    "start": "2021-01-01",
+                    "end": "2022-01-01"
+                  },
+                  "magnitude": -0.010593969351040507
+                },
+                {
+                  "key": "p2",
+                  "date": "2022-12-31",
+                  "period": {
+                    "start": "2022-01-01",
+                    "end": "2023-01-01"
+                  },
+                  "magnitude": -0.0007799065259854033
+                },
+                {
+                  "key": "p3",
+                  "date": "2023-12-31",
+                  "period": {
+                    "start": "2023-01-01",
+                    "end": "2024-01-01"
+                  },
+                  "magnitude": -0.0068015153000538665
+                },
+                {
+                  "key": "p4",
+                  "date": "2024-12-31",
+                  "period": {
+                    "start": "2024-01-01",
+                    "end": "2025-01-01"
+                  },
+                  "magnitude": 0.002098538707447699
+                }
+              ]
+            }
+          },
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "id": "37223e60-fa55-5067-ac1c-c2db84f1e046",
+            "key": "shock_effect",
+            "kind": "flow",
+            "flow": {
+              "units": "dimensionless",
+              "movements": [
+                {
+                  "key": "p1",
+                  "date": "2021-12-31",
+                  "period": {
+                    "start": "2021-01-01",
+                    "end": "2022-01-01"
+                  },
+                  "magnitude": 0.0
+                },
+                {
+                  "key": "p2",
+                  "date": "2022-12-31",
+                  "period": {
+                    "start": "2022-01-01",
+                    "end": "2023-01-01"
+                  },
+                  "magnitude": 0.0
+                },
+                {
+                  "key": "p3",
+                  "date": "2023-12-31",
+                  "period": {
+                    "start": "2023-01-01",
+                    "end": "2024-01-01"
+                  },
+                  "magnitude": 0.0
+                },
+                {
+                  "key": "p4",
+                  "date": "2024-12-31",
+                  "period": {
+                    "start": "2024-01-01",
+                    "end": "2025-01-01"
+                  },
+                  "magnitude": 0.0
+                }
+              ]
+            }
+          },
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "id": "aada0a62-02c1-55b9-b176-d2b08f1932e1",
+            "key": "noisy_value",
+            "kind": "flow",
+            "flow": {
+              "units": "dimensionless",
+              "movements": [
+                {
+                  "key": "p1",
+                  "date": "2021-12-31",
+                  "period": {
+                    "start": "2021-01-01",
+                    "end": "2022-01-01"
+                  },
+                  "magnitude": 0.9034799785543294
+                },
+                {
+                  "key": "p2",
+                  "date": "2022-12-31",
+                  "period": {
+                    "start": "2022-01-01",
+                    "end": "2023-01-01"
+                  },
+                  "magnitude": 1.007852381263484
+                },
+                {
+                  "key": "p3",
+                  "date": "2023-12-31",
+                  "period": {
+                    "start": "2023-01-01",
+                    "end": "2024-01-01"
+                  },
+                  "magnitude": 1.0770196995943189
+                },
+                {
+                  "key": "p4",
+                  "date": "2024-12-31",
+                  "period": {
+                    "start": "2024-01-01",
+                    "end": "2025-01-01"
+                  },
+                  "magnitude": 1.2264037529733782
+                }
+              ]
+            }
+          },
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "id": "85565499-eaef-5135-b5ee-c4f61fb55787",
+            "key": "historical_value",
+            "kind": "flow",
+            "flow": {
+              "units": "dimensionless",
+              "movements": [
+                {
+                  "key": "p1",
+                  "date": "2021-12-31",
+                  "period": {
+                    "start": "2021-01-01",
+                    "end": "2022-01-01"
+                  },
+                  "magnitude": 0.9034799785543294
+                },
+                {
+                  "key": "p2",
+                  "date": "2022-12-31",
+                  "period": {
+                    "start": "2022-01-01",
+                    "end": "2023-01-01"
+                  },
+                  "magnitude": 1.007852381263484
+                },
+                {
+                  "key": "p3",
+                  "date": "2023-12-31",
+                  "period": {
+                    "start": "2023-01-01",
+                    "end": "2024-01-01"
+                  },
+                  "magnitude": 1.0770196995943189
+                },
+                {
+                  "key": "p4",
+                  "date": "2024-12-31",
+                  "period": {
+                    "start": "2024-01-01",
+                    "end": "2025-01-01"
+                  },
+                  "magnitude": 1.2264037529733782
+                }
+              ]
+            }
+          },
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "id": "b6897bcc-f69e-5e40-8fa3-e69462300cbd",
+            "key": "implied_reversion_cap_rates",
+            "kind": "flow",
+            "flow": {
+              "units": "dimensionless",
+              "movements": [
+                {
+                  "key": "p1",
+                  "date": "2021-12-31",
+                  "period": {
+                    "start": "2021-01-01",
+                    "end": "2022-01-01"
+                  },
+                  "magnitude": 0.059100664385144046
+                },
+                {
+                  "key": "p2",
+                  "date": "2022-12-31",
+                  "period": {
+                    "start": "2022-01-01",
+                    "end": "2023-01-01"
+                  },
+                  "magnitude": 0.053797324414978975
+                },
+                {
+                  "key": "p3",
+                  "date": "2023-12-31",
+                  "period": {
+                    "start": "2023-01-01",
+                    "end": "2024-01-01"
+                  },
+                  "magnitude": 0.053476284706182875
+                }
+              ]
+            }
+          },
+          {
+            "measure": "1b5e24fe-7b94-5522-a8ae-61c3ee7a850a",
+            "id": "5536355a-0a1b-51da-a5c4-da48ff960743",
+            "key": "returns",
+            "kind": "flow",
+            "flow": {
+              "units": "dimensionless",
+              "movements": [
+                {
+                  "key": "p1",
+                  "date": "2021-12-31",
+                  "period": {
+                    "start": "2021-01-01",
+                    "end": "2022-01-01"
+                  },
+                  "magnitude": 0.11552265151039909
+                },
+                {
+                  "key": "p2",
+                  "date": "2022-12-31",
+                  "period": {
+                    "start": "2022-01-01",
+                    "end": "2023-01-01"
+                  },
+                  "magnitude": 0.06862842179737072
+                },
+                {
+                  "key": "p3",
+                  "date": "2023-12-31",
+                  "period": {
+                    "start": "2023-01-01",
+                    "end": "2024-01-01"
+                  },
+                  "magnitude": 0.13870131942370967
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "provenance": {
+    "scenarios": [
+      {
+        "id": "2efeeb1c-4d3c-590f-ab69-8c0df4a2bdfe",
+        "plan": {
+          "id": "4ff26ee1-f872-43be-9874-5b7d9c7ff1c5",
+          "method": "market.v2",
+          "seed": 23,
+          "periods": [
+            {
+              "start": "2021-01-01",
+              "end": "2022-01-01"
+            },
+            {
+              "start": "2022-01-01",
+              "end": "2023-01-01"
+            },
+            {
+              "start": "2023-01-01",
+              "end": "2024-01-01"
+            },
+            {
+              "start": "2024-01-01",
+              "end": "2025-01-01"
+            }
+          ],
+          "parameters": [
+            {
+              "name": "asset_amplitude",
+              "quantity": {
+                "magnitude": 0.005,
+                "units": "dimensionless"
+              }
+            },
+            {
+              "name": "asset_asymmetry",
+              "quantity": {
+                "magnitude": 0.0,
+                "units": "dimensionless"
+              }
+            },
+            {
+              "name": "asset_period",
+              "quantity": {
+                "magnitude": 10.0,
+                "units": "dimensionless"
+              }
+            },
+            {
+              "name": "asset_phase",
+              "quantity": {
+                "magnitude": 2.0,
+                "units": "dimensionless"
+              }
+            },
+            {
+              "name": "autoregression",
+              "quantity": {
+                "magnitude": 0.2,
+                "units": "dimensionless"
+              }
+            },
+            {
+              "name": "cap_rate",
+              "quantity": {
+                "magnitude": 0.05,
+                "units": "dimensionless"
+              }
+            },
+            {
+              "name": "growth_rate",
+              "quantity": {
+                "magnitude": 0.02,
+                "units": "dimensionless"
+              }
+            },
+            {
+              "name": "initial_value",
+              "quantity": {
+                "magnitude": 0.05,
+                "units": "dimensionless"
+              }
+            },
+            {
+              "name": "mean_reversion",
+              "quantity": {
+                "magnitude": 0.1,
+                "units": "dimensionless"
+              }
+            },
+            {
+              "name": "noise_lower",
+              "quantity": {
+                "magnitude": -0.02,
+                "units": "dimensionless"
+              }
+            },
+            {
+              "name": "noise_upper",
+              "quantity": {
+                "magnitude": 0.02,
+                "units": "dimensionless"
+              }
+            },
+            {
+              "name": "shock_dissipation",
+              "quantity": {
+                "magnitude": 0.5,
+                "units": "dimensionless"
+              }
+            },
+            {
+              "name": "shock_impact",
+              "quantity": {
+                "magnitude": -0.2,
+                "units": "dimensionless"
+              }
+            },
+            {
+              "name": "shock_likelihood",
+              "quantity": {
+                "magnitude": 0.02,
+                "units": "dimensionless"
+              }
+            },
+            {
+              "name": "space_amplitude",
+              "quantity": {
+                "magnitude": 0.1,
+                "units": "dimensionless"
+              }
+            },
+            {
+              "name": "space_asymmetry",
+              "quantity": {
+                "magnitude": 0.0,
+                "units": "dimensionless"
+              }
+            },
+            {
+              "name": "space_period",
+              "quantity": {
+                "magnitude": 10.0,
+                "units": "dimensionless"
+              }
+            },
+            {
+              "name": "space_phase",
+              "quantity": {
+                "magnitude": 0.0,
+                "units": "dimensionless"
+              }
+            },
+            {
+              "name": "volatility_per_period",
+              "quantity": {
+                "magnitude": 0.03,
+                "units": "dimensionless"
+              }
+            }
+          ]
+        },
+        "key": "installed-proof",
+        "generator": "numpy.SeedSequence/PCG64",
+        "versions": [
+          {
+            "name": "python",
+            "version": "3.10.19"
+          },
+          {
+            "name": "numpy",
+            "version": "2.2.6"
+          },
+          {
+            "name": "scipy",
+            "version": "1.15.3"
+          }
+        ],
+        "streams": [
+          {
+            "name": "innovations",
+            "identifier": "66a78f110e3177ce41206177e228ef7b5b0e9214ac92dbdf8d6e5d9f25123606"
+          },
+          {
+            "name": "noise",
+            "identifier": "390079d708a87150bedb4e01e5fb49107deb0965e1b85ade40ff46a4ec33e353"
+          },
+          {
+            "name": "events",
+            "identifier": "211c8bea48dab0266c7bd530d53e68a4c6ab75d60003747a80c012f1942913ee"
+          }
+        ],
+        "inputs": [
+          {
+            "name": "asset_amplitude",
+            "value": "aa11487c-c1f0-501f-bcbd-09134339c818"
+          },
+          {
+            "name": "asset_asymmetry",
+            "value": "cf9651c7-9eaa-597e-8c70-e124bf2c3504"
+          },
+          {
+            "name": "asset_period",
+            "value": "4089c1f1-5297-5225-8de8-300b364fa9b1"
+          },
+          {
+            "name": "asset_phase",
+            "value": "36526913-89b0-528a-914e-fd7e9196d102"
+          },
+          {
+            "name": "autoregression",
+            "value": "f18c4725-d218-5473-9b13-f909f8472987"
+          },
+          {
+            "name": "cap_rate",
+            "value": "234c731f-b155-5a82-bc22-5d002ad07005"
+          },
+          {
+            "name": "growth_rate",
+            "value": "c4f85ac2-260d-59cb-a47e-f5fe00787b4b"
+          },
+          {
+            "name": "initial_value",
+            "value": "8bf220bf-8f97-5d39-a92c-f80f3d1104e5"
+          },
+          {
+            "name": "mean_reversion",
+            "value": "87ba42fc-e864-5611-b43c-f2ac776f769e"
+          },
+          {
+            "name": "noise_lower",
+            "value": "1fb60099-fa5c-51e0-bb63-fc009b98128b"
+          },
+          {
+            "name": "noise_upper",
+            "value": "0a4554e8-c291-5ae9-956b-76e3106df78e"
+          },
+          {
+            "name": "shock_dissipation",
+            "value": "e129bb55-34f0-56be-9815-f34664fa3e66"
+          },
+          {
+            "name": "shock_impact",
+            "value": "d2ac37ab-969f-5fb6-a67f-9da3c11e4549"
+          },
+          {
+            "name": "shock_likelihood",
+            "value": "b09fb46e-3692-5c39-9543-62d7f89a7777"
+          },
+          {
+            "name": "space_amplitude",
+            "value": "bea07b31-fa9d-575e-96fb-416f37d88ea2"
+          },
+          {
+            "name": "space_asymmetry",
+            "value": "92cc9e3d-792b-52f0-bb11-4c86606e4abc"
+          },
+          {
+            "name": "space_period",
+            "value": "fc41dc71-958a-564c-9b52-c9f9675a9955"
+          },
+          {
+            "name": "space_phase",
+            "value": "22f11a88-14b4-5afe-a93a-44dfc9b45d07"
+          },
+          {
+            "name": "volatility_per_period",
+            "value": "d19711c6-661d-5863-a6d3-9421b1b8bd84"
+          },
+          {
+            "name": "innovations",
+            "value": "692a36fc-d908-5c41-bc3e-ebcce00e9a44"
+          },
+          {
+            "name": "noise",
+            "value": "96df7104-b5f2-5b9a-849b-00ebe2c73769"
+          },
+          {
+            "name": "events",
+            "value": "85d99657-72e4-5936-83a2-7d8af45ace03"
+          }
+        ],
+        "outputs": [
+          {
+            "name": "trend",
+            "value": "0bfd5663-1919-5312-a754-8157bbf851f7"
+          },
+          {
+            "name": "autoregressive_returns",
+            "value": "d24c776e-d3a3-535c-9a8d-d43d00e9246a"
+          },
+          {
+            "name": "cumulative_volatility",
+            "value": "46d7a590-7485-58f7-af4d-21d37ee77245"
+          },
+          {
+            "name": "space_cycle",
+            "value": "7ba5b5f0-77a5-5c77-9e62-29d9756407bc"
+          },
+          {
+            "name": "asset_cycle",
+            "value": "34574b92-8653-542e-abbf-176730622407"
+          },
+          {
+            "name": "space_market",
+            "value": "83a841a6-ad3c-5762-ad10-eca70bc28948"
+          },
+          {
+            "name": "asset_market",
+            "value": "f43b2b96-b1ba-59e9-ae31-63ba0ce10f03"
+          },
+          {
+            "name": "asset_true_value",
+            "value": "3d1bea13-2cc0-502c-af54-c7c354021181"
+          },
+          {
+            "name": "space_market_price_factors",
+            "value": "1214be64-59e1-5448-a178-c3b85cda6279"
+          },
+          {
+            "name": "noise_effect",
+            "value": "d27bfc63-a72c-520c-8a44-913617a75a1a"
+          },
+          {
+            "name": "shock_effect",
+            "value": "37223e60-fa55-5067-ac1c-c2db84f1e046"
+          },
+          {
+            "name": "noisy_value",
+            "value": "aada0a62-02c1-55b9-b176-d2b08f1932e1"
+          },
+          {
+            "name": "historical_value",
+            "value": "85565499-eaef-5135-b5ee-c4f61fb55787"
+          },
+          {
+            "name": "implied_reversion_cap_rates",
+            "value": "b6897bcc-f69e-5e40-8fa3-e69462300cbd"
+          },
+          {
+            "name": "returns",
+            "value": "5536355a-0a1b-51da-a5c4-da48ff960743"
+          }
+        ],
+        "availability": [
+          {
+            "target": {
+              "value": "692a36fc-d908-5c41-bc3e-ebcce00e9a44",
+              "movement": "p1"
+            },
+            "available_at": "2021-12-31"
+          },
+          {
+            "target": {
+              "value": "692a36fc-d908-5c41-bc3e-ebcce00e9a44",
+              "movement": "p2"
+            },
+            "available_at": "2022-12-31"
+          },
+          {
+            "target": {
+              "value": "692a36fc-d908-5c41-bc3e-ebcce00e9a44",
+              "movement": "p3"
+            },
+            "available_at": "2023-12-31"
+          },
+          {
+            "target": {
+              "value": "692a36fc-d908-5c41-bc3e-ebcce00e9a44",
+              "movement": "p4"
+            },
+            "available_at": "2024-12-31"
+          },
+          {
+            "target": {
+              "value": "96df7104-b5f2-5b9a-849b-00ebe2c73769",
+              "movement": "p1"
+            },
+            "available_at": "2021-12-31"
+          },
+          {
+            "target": {
+              "value": "96df7104-b5f2-5b9a-849b-00ebe2c73769",
+              "movement": "p2"
+            },
+            "available_at": "2022-12-31"
+          },
+          {
+            "target": {
+              "value": "96df7104-b5f2-5b9a-849b-00ebe2c73769",
+              "movement": "p3"
+            },
+            "available_at": "2023-12-31"
+          },
+          {
+            "target": {
+              "value": "96df7104-b5f2-5b9a-849b-00ebe2c73769",
+              "movement": "p4"
+            },
+            "available_at": "2024-12-31"
+          },
+          {
+            "target": {
+              "value": "85d99657-72e4-5936-83a2-7d8af45ace03",
+              "movement": "p1"
+            },
+            "available_at": "2021-12-31"
+          },
+          {
+            "target": {
+              "value": "85d99657-72e4-5936-83a2-7d8af45ace03",
+              "movement": "p2"
+            },
+            "available_at": "2022-12-31"
+          },
+          {
+            "target": {
+              "value": "85d99657-72e4-5936-83a2-7d8af45ace03",
+              "movement": "p3"
+            },
+            "available_at": "2023-12-31"
+          },
+          {
+            "target": {
+              "value": "85d99657-72e4-5936-83a2-7d8af45ace03",
+              "movement": "p4"
+            },
+            "available_at": "2024-12-31"
+          },
+          {
+            "target": {
+              "value": "0bfd5663-1919-5312-a754-8157bbf851f7",
+              "movement": "p1"
+            },
+            "available_at": "2021-12-31"
+          },
+          {
+            "target": {
+              "value": "0bfd5663-1919-5312-a754-8157bbf851f7",
+              "movement": "p2"
+            },
+            "available_at": "2022-12-31"
+          },
+          {
+            "target": {
+              "value": "0bfd5663-1919-5312-a754-8157bbf851f7",
+              "movement": "p3"
+            },
+            "available_at": "2023-12-31"
+          },
+          {
+            "target": {
+              "value": "0bfd5663-1919-5312-a754-8157bbf851f7",
+              "movement": "p4"
+            },
+            "available_at": "2024-12-31"
+          },
+          {
+            "target": {
+              "value": "d24c776e-d3a3-535c-9a8d-d43d00e9246a",
+              "movement": "p1"
+            },
+            "available_at": "2021-12-31"
+          },
+          {
+            "target": {
+              "value": "d24c776e-d3a3-535c-9a8d-d43d00e9246a",
+              "movement": "p2"
+            },
+            "available_at": "2022-12-31"
+          },
+          {
+            "target": {
+              "value": "d24c776e-d3a3-535c-9a8d-d43d00e9246a",
+              "movement": "p3"
+            },
+            "available_at": "2023-12-31"
+          },
+          {
+            "target": {
+              "value": "d24c776e-d3a3-535c-9a8d-d43d00e9246a",
+              "movement": "p4"
+            },
+            "available_at": "2024-12-31"
+          },
+          {
+            "target": {
+              "value": "46d7a590-7485-58f7-af4d-21d37ee77245",
+              "movement": "p1"
+            },
+            "available_at": "2021-12-31"
+          },
+          {
+            "target": {
+              "value": "46d7a590-7485-58f7-af4d-21d37ee77245",
+              "movement": "p2"
+            },
+            "available_at": "2022-12-31"
+          },
+          {
+            "target": {
+              "value": "46d7a590-7485-58f7-af4d-21d37ee77245",
+              "movement": "p3"
+            },
+            "available_at": "2023-12-31"
+          },
+          {
+            "target": {
+              "value": "46d7a590-7485-58f7-af4d-21d37ee77245",
+              "movement": "p4"
+            },
+            "available_at": "2024-12-31"
+          },
+          {
+            "target": {
+              "value": "7ba5b5f0-77a5-5c77-9e62-29d9756407bc",
+              "movement": "p1"
+            },
+            "available_at": "2021-12-31"
+          },
+          {
+            "target": {
+              "value": "7ba5b5f0-77a5-5c77-9e62-29d9756407bc",
+              "movement": "p2"
+            },
+            "available_at": "2022-12-31"
+          },
+          {
+            "target": {
+              "value": "7ba5b5f0-77a5-5c77-9e62-29d9756407bc",
+              "movement": "p3"
+            },
+            "available_at": "2023-12-31"
+          },
+          {
+            "target": {
+              "value": "7ba5b5f0-77a5-5c77-9e62-29d9756407bc",
+              "movement": "p4"
+            },
+            "available_at": "2024-12-31"
+          },
+          {
+            "target": {
+              "value": "34574b92-8653-542e-abbf-176730622407",
+              "movement": "p1"
+            },
+            "available_at": "2021-12-31"
+          },
+          {
+            "target": {
+              "value": "34574b92-8653-542e-abbf-176730622407",
+              "movement": "p2"
+            },
+            "available_at": "2022-12-31"
+          },
+          {
+            "target": {
+              "value": "34574b92-8653-542e-abbf-176730622407",
+              "movement": "p3"
+            },
+            "available_at": "2023-12-31"
+          },
+          {
+            "target": {
+              "value": "34574b92-8653-542e-abbf-176730622407",
+              "movement": "p4"
+            },
+            "available_at": "2024-12-31"
+          },
+          {
+            "target": {
+              "value": "83a841a6-ad3c-5762-ad10-eca70bc28948",
+              "movement": "p1"
+            },
+            "available_at": "2021-12-31"
+          },
+          {
+            "target": {
+              "value": "83a841a6-ad3c-5762-ad10-eca70bc28948",
+              "movement": "p2"
+            },
+            "available_at": "2022-12-31"
+          },
+          {
+            "target": {
+              "value": "83a841a6-ad3c-5762-ad10-eca70bc28948",
+              "movement": "p3"
+            },
+            "available_at": "2023-12-31"
+          },
+          {
+            "target": {
+              "value": "83a841a6-ad3c-5762-ad10-eca70bc28948",
+              "movement": "p4"
+            },
+            "available_at": "2024-12-31"
+          },
+          {
+            "target": {
+              "value": "f43b2b96-b1ba-59e9-ae31-63ba0ce10f03",
+              "movement": "p1"
+            },
+            "available_at": "2021-12-31"
+          },
+          {
+            "target": {
+              "value": "f43b2b96-b1ba-59e9-ae31-63ba0ce10f03",
+              "movement": "p2"
+            },
+            "available_at": "2022-12-31"
+          },
+          {
+            "target": {
+              "value": "f43b2b96-b1ba-59e9-ae31-63ba0ce10f03",
+              "movement": "p3"
+            },
+            "available_at": "2023-12-31"
+          },
+          {
+            "target": {
+              "value": "f43b2b96-b1ba-59e9-ae31-63ba0ce10f03",
+              "movement": "p4"
+            },
+            "available_at": "2024-12-31"
+          },
+          {
+            "target": {
+              "value": "3d1bea13-2cc0-502c-af54-c7c354021181",
+              "movement": "p1"
+            },
+            "available_at": "2021-12-31"
+          },
+          {
+            "target": {
+              "value": "3d1bea13-2cc0-502c-af54-c7c354021181",
+              "movement": "p2"
+            },
+            "available_at": "2022-12-31"
+          },
+          {
+            "target": {
+              "value": "3d1bea13-2cc0-502c-af54-c7c354021181",
+              "movement": "p3"
+            },
+            "available_at": "2023-12-31"
+          },
+          {
+            "target": {
+              "value": "3d1bea13-2cc0-502c-af54-c7c354021181",
+              "movement": "p4"
+            },
+            "available_at": "2024-12-31"
+          },
+          {
+            "target": {
+              "value": "1214be64-59e1-5448-a178-c3b85cda6279",
+              "movement": "p1"
+            },
+            "available_at": "2021-12-31"
+          },
+          {
+            "target": {
+              "value": "1214be64-59e1-5448-a178-c3b85cda6279",
+              "movement": "p2"
+            },
+            "available_at": "2022-12-31"
+          },
+          {
+            "target": {
+              "value": "1214be64-59e1-5448-a178-c3b85cda6279",
+              "movement": "p3"
+            },
+            "available_at": "2023-12-31"
+          },
+          {
+            "target": {
+              "value": "1214be64-59e1-5448-a178-c3b85cda6279",
+              "movement": "p4"
+            },
+            "available_at": "2024-12-31"
+          },
+          {
+            "target": {
+              "value": "d27bfc63-a72c-520c-8a44-913617a75a1a",
+              "movement": "p1"
+            },
+            "available_at": "2021-12-31"
+          },
+          {
+            "target": {
+              "value": "d27bfc63-a72c-520c-8a44-913617a75a1a",
+              "movement": "p2"
+            },
+            "available_at": "2022-12-31"
+          },
+          {
+            "target": {
+              "value": "d27bfc63-a72c-520c-8a44-913617a75a1a",
+              "movement": "p3"
+            },
+            "available_at": "2023-12-31"
+          },
+          {
+            "target": {
+              "value": "d27bfc63-a72c-520c-8a44-913617a75a1a",
+              "movement": "p4"
+            },
+            "available_at": "2024-12-31"
+          },
+          {
+            "target": {
+              "value": "37223e60-fa55-5067-ac1c-c2db84f1e046",
+              "movement": "p1"
+            },
+            "available_at": "2021-12-31"
+          },
+          {
+            "target": {
+              "value": "37223e60-fa55-5067-ac1c-c2db84f1e046",
+              "movement": "p2"
+            },
+            "available_at": "2022-12-31"
+          },
+          {
+            "target": {
+              "value": "37223e60-fa55-5067-ac1c-c2db84f1e046",
+              "movement": "p3"
+            },
+            "available_at": "2023-12-31"
+          },
+          {
+            "target": {
+              "value": "37223e60-fa55-5067-ac1c-c2db84f1e046",
+              "movement": "p4"
+            },
+            "available_at": "2024-12-31"
+          },
+          {
+            "target": {
+              "value": "aada0a62-02c1-55b9-b176-d2b08f1932e1",
+              "movement": "p1"
+            },
+            "available_at": "2021-12-31"
+          },
+          {
+            "target": {
+              "value": "aada0a62-02c1-55b9-b176-d2b08f1932e1",
+              "movement": "p2"
+            },
+            "available_at": "2022-12-31"
+          },
+          {
+            "target": {
+              "value": "aada0a62-02c1-55b9-b176-d2b08f1932e1",
+              "movement": "p3"
+            },
+            "available_at": "2023-12-31"
+          },
+          {
+            "target": {
+              "value": "aada0a62-02c1-55b9-b176-d2b08f1932e1",
+              "movement": "p4"
+            },
+            "available_at": "2024-12-31"
+          },
+          {
+            "target": {
+              "value": "85565499-eaef-5135-b5ee-c4f61fb55787",
+              "movement": "p1"
+            },
+            "available_at": "2021-12-31"
+          },
+          {
+            "target": {
+              "value": "85565499-eaef-5135-b5ee-c4f61fb55787",
+              "movement": "p2"
+            },
+            "available_at": "2022-12-31"
+          },
+          {
+            "target": {
+              "value": "85565499-eaef-5135-b5ee-c4f61fb55787",
+              "movement": "p3"
+            },
+            "available_at": "2023-12-31"
+          },
+          {
+            "target": {
+              "value": "85565499-eaef-5135-b5ee-c4f61fb55787",
+              "movement": "p4"
+            },
+            "available_at": "2024-12-31"
+          },
+          {
+            "target": {
+              "value": "b6897bcc-f69e-5e40-8fa3-e69462300cbd",
+              "movement": "p1"
+            },
+            "available_at": "2022-12-31"
+          },
+          {
+            "target": {
+              "value": "b6897bcc-f69e-5e40-8fa3-e69462300cbd",
+              "movement": "p2"
+            },
+            "available_at": "2023-12-31"
+          },
+          {
+            "target": {
+              "value": "b6897bcc-f69e-5e40-8fa3-e69462300cbd",
+              "movement": "p3"
+            },
+            "available_at": "2024-12-31"
+          },
+          {
+            "target": {
+              "value": "5536355a-0a1b-51da-a5c4-da48ff960743",
+              "movement": "p1"
+            },
+            "available_at": "2022-12-31"
+          },
+          {
+            "target": {
+              "value": "5536355a-0a1b-51da-a5c4-da48ff960743",
+              "movement": "p2"
+            },
+            "available_at": "2023-12-31"
+          },
+          {
+            "target": {
+              "value": "5536355a-0a1b-51da-a5c4-da48ff960743",
+              "movement": "p3"
+            },
+            "available_at": "2024-12-31"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,45 @@
+Traceback (most recent call last):
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/pystow/utils/__init__.py", line 776, in ensure_readme
+    readme_path = get_home(ensure_exists=True).joinpath("README.md")
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/pystow/utils/env.py", line 116, in get_home
+    return getenv_path(PYSTOW_HOME_ENVVAR, default, ensure_exists=ensure_exists)
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/pystow/utils/env.py", line 82, in getenv_path
+    mkdir(rv, ensure_exists=ensure_exists)
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/pystow/utils/env.py", line 38, in mkdir
+    path.mkdir(exist_ok=True, parents=True)
+  File "/Users/daniel/.local/share/uv/python/cpython-3.10.19-macos-aarch64-none/lib/python3.10/pathlib.py", line 1175, in mkdir
+    self._accessor.mkdir(self, mode)
+PermissionError: [Errno 1] Operation not permitted: '/Users/daniel/.data'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Volumes/Data/Projects/Rangekeeper/schema/checks/formulations.py", line 18, in <module>
+    from linkml_runtime.dumpers import json_dumper
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/linkml_runtime/__init__.py", line 6, in <module>
+    from linkml_runtime.utils.schemaview import SchemaView
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/linkml_runtime/utils/schemaview.py", line 22, in <module>
+    from linkml_runtime.linkml_model.meta import (
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/linkml_runtime/linkml_model/__init__.py", line 1, in <module>
+    from .annotations import Annotatable as Annotatable
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/linkml_runtime/linkml_model/annotations.py", line 15, in <module>
+    from linkml_runtime.utils.metamodelcore import empty_dict
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/linkml_runtime/utils/metamodelcore.py", line 14, in <module>
+    from linkml_runtime.utils.namespaces import Namespaces
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/linkml_runtime/utils/namespaces.py", line 5, in <module>
+    from prefixmaps.io.parser import load_context
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/prefixmaps/__init__.py", line 1, in <module>
+    from .datamodel.context import Context, PrefixExpansion, StatusType
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/prefixmaps/datamodel/context.py", line 10, in <module>
+    import curies
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/curies/__init__.py", line 45, in <module>
+    from .triples import Triple
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/curies/triples/__init__.py", line 151, in <module>
+    from .io import read_triples, write_triples
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/curies/triples/io.py", line 9, in <module>
+    from pystow.utils import safe_open_reader, safe_open_writer
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/pystow/__init__.py", line 113, in <module>
+    ensure_readme()
+  File "/private/tmp/rk-probe-audit-venv/lib/python3.10/site-packages/pystow/utils/__init__.py", line 778, in ensure_readme
+    raise PermissionError(
+PermissionError: PyStow was not able to create its home directory in due to a lack of permissions. This can happen, e.g., if you're working on a server where you don't have full rights. See https://pystow.readthedocs.io/en/latest/installation.html#configuration for instructions on choosing a different home folder location for PyStow to somewhere where you have write permissions.

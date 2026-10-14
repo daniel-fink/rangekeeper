@@ -1,0 +1,51 @@
+Success: no issues found in 145 source files
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_invalid.py:6: error: Missing named argument "id" for "Entity"  [call-arg]
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_invalid.py:7: error: Argument "id" to "Entity" has incompatible type "str"; expected "UUID"  [arg-type]
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_invalid.py:8: error: Unexpected keyword argument "unknown" for "Entity"  [call-arg]
+rangekeeper/_schema/records.py: note: "Entity" defined here
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_invalid.py:9: error: Argument "magnitude" to "Quantity" has incompatible type "str"; expected "int | float"  [arg-type]
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_invalid.py:10: error: Argument "kind" to "Expression" has incompatible type "Literal['unknown']"; expected "Literal['quantity', 'boolean', 'reference', 'unary', 'binary', 'call', 'selection', 'query']"  [arg-type]
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_invalid.py:11: error: Argument "quantity" to "Expression" has incompatible type "Entity"; expected "Quantity | Unset"  [arg-type]
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_invalid.py:12: error: Argument "address" to "Location" has incompatible type "tuple[str]"; expected "Mapping[str, Mapping[str, JSONValue] | str] | Unset | None"  [arg-type]
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_invalid.py:14: error: Property "name" defined in "Entity" is read-only  [misc]
+Found 8 errors in 1 file (checked 1 source file)
+
+Verified eight intended static rejections
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_domain_invalid.py:9: error: Argument 1 to "entity" of "Model" has incompatible type "str"; expected "UUID"  [arg-type]
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_domain_invalid.py:10: error: Argument "classification" to "find_entities" of "Model" has incompatible type "str"; expected "UUID | None"  [arg-type]
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_domain_invalid.py:11: error: Property "metadata" defined in "Model" is read-only  [misc]
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_domain_invalid.py:12: error: Argument "system" to "Update" has incompatible type "None"; expected "System | Unset"  [arg-type]
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_domain_invalid.py:13: error: Argument 1 to "Specification" has incompatible type "Model"; expected "Specification"  [arg-type]
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_domain_invalid.py:17: error: Argument 1 to "compose" has incompatible type "Model"; expected "Specification"  [arg-type]
+Found 6 errors in 1 file (checked 1 source file)
+
+Verified six intended domain API static rejections
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_io_invalid.py:6: error: Incompatible types in assignment (expression has type "Run", variable has type "Model")  [assignment]
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_io_invalid.py:7: error: Value of type variable "D" of "loads" cannot be "dict[Any, Any]"  [type-var]
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_io_invalid.py:8: error: Argument 1 to "put" of "MemoryStore" has incompatible type "dict[Never, Never]"; expected "Model | Specification | Run"  [arg-type]
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_io_invalid.py:9: error: Argument 1 to "load_run" of "MemoryStore" has incompatible type "str"; expected "UUID"  [arg-type]
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_io_invalid.py:10: error: Argument 1 to "validate" has incompatible type "Model"; expected "Run"  [arg-type]
+Found 5 errors in 1 file (checked 1 source file)
+
+Verified five intended Run/IO static rejections
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_execution_invalid.py:9: error: Argument 1 to "Executor" has incompatible type "dict[Never, Never]"; expected "RecordStore"  [arg-type]
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_execution_invalid.py:10: error: Argument 1 to "execute" of "Executor" has incompatible type "Model"; expected "Specification"  [arg-type]
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_execution_invalid.py:11: error: Incompatible types in assignment (expression has type "Run", variable has type "Model")  [assignment]
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_execution_invalid.py:12: error: Argument "absolute" to "Tolerances" has incompatible type "str"; expected "float"  [arg-type]
+Found 4 errors in 1 file (checked 1 source file)
+
+Verified four intended execution API static rejections
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_graph_invalid.py:10: error: Argument 1 to "View" has incompatible type "dict[Never, Never]"; expected "Model"  [arg-type]
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_graph_invalid.py:11: error: Argument 1 to "entity" of "View" has incompatible type "str"; expected "UUID"  [arg-type]
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_graph_invalid.py:12: error: Argument "measure" to "select_value" has incompatible type "str"; expected "UUID | None"  [arg-type]
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_graph_invalid.py:13: error: Argument "units" to "Reduction" has incompatible type "int"; expected "str"  [arg-type]
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_graph_invalid.py:14: error: Argument 1 to "aggregate" of "View" has incompatible type "Model"; expected "Reduction"  [arg-type]
+Found 5 errors in 1 file (checked 1 source file)
+
+Verified five intended graph API static rejections
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_consumers_invalid.py:10: error: Argument 1 to "to_table" has incompatible type "Model"; expected "View"  [arg-type]
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_consumers_invalid.py:11: error: Argument 3 to "ValueColumn" has incompatible type "int"; expected "str"  [arg-type]
+/Volumes/Data/Projects/Rangekeeper/tools/schema/typing_consumers_invalid.py:12: error: Argument 1 to "run" has incompatible type "Specification"; expected "WorkflowSpec"  [arg-type]
+Found 3 errors in 1 file (checked 1 source file)
+
+Verified three intended consumer API static rejections

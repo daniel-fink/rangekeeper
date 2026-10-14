@@ -1,0 +1,81 @@
+{
+  "python": "3.10.19 (main, Jan 14 2026, 23:38:29) [Clang 21.1.4 ]",
+  "executable": "/private/tmp/rk-full-runtime/bin/python",
+  "platform": "macOS-15.7.9-arm64-arm-64bit",
+  "pins": {
+    "minizinc": "2.10.1",
+    "cp-sat": "9.15",
+    "z3-solver": "5.1.0.0",
+    "release": "https://github.com/MiniZinc/MiniZincIDE/releases/tag/2.10.1",
+    "bundles": {
+      "Darwin-arm64": {
+        "url": "https://github.com/MiniZinc/MiniZincIDE/releases/download/2.10.1/MiniZincIDE-2.10.1-aarch64-apple-darwin.dmg",
+        "sha256": "6ab899c06a06bd7542f4df2b39e5afaa1658d6af30a65548a249048d1b3468bc"
+      },
+      "Darwin-x86_64": {
+        "url": "https://github.com/MiniZinc/MiniZincIDE/releases/download/2.10.1/MiniZincIDE-2.10.1-x86_64-apple-darwin.dmg",
+        "sha256": "c5b50d62ab493a354ae2caa5d7fb80ea51ae53a82942b3f358461e1a4a46a2c1"
+      },
+      "Linux-x86_64": {
+        "url": "https://github.com/MiniZinc/MiniZincIDE/releases/download/2.10.1/MiniZincIDE-2.10.1-x86_64-linux-gnu.tgz",
+        "sha256": "b63dd88491d47b05d0eb0ff4aa1112d1e6f77292c023800b20b98851458ce01c"
+      }
+    }
+  },
+  "head": "305f3ff6d460834ea803bae2fa6ad5c48a1627c9",
+  "toolchain": {
+    "minizinc": {
+      "executable": "/Users/daniel/Applications/rk-minizinc-2.10.1/MiniZincIDE.app/Contents/Resources/minizinc",
+      "compiler": "MiniZinc to FlatZinc converter, version 2.10.1, build 33348285743\nCopyright (C) 2014-2026 Monash University, NICTA, Data61",
+      "backend": "OR Tools CP-SAT",
+      "version": "9.15",
+      "threads": 1,
+      "random_seed": 0
+    },
+    "z3": {
+      "package": "5.1.0.0",
+      "native": "5.1.0"
+    }
+  },
+  "pytest": "8.4.2",
+  "command": [
+    "/private/tmp/rk-full-runtime/bin/python",
+    "-m",
+    "pytest",
+    "--require-layout-solvers",
+    "--strict-markers",
+    "-q",
+    "-rs",
+    "-p",
+    "no:cacheprovider",
+    "--junitxml=/Volumes/Data/Projects/Rangekeeper/docs/research/full-migration/minizinc/attempt-1/results.xml",
+    "/Volumes/Data/Projects/Rangekeeper/src/tests/test_layout_arrangement.py",
+    "/Volumes/Data/Projects/Rangekeeper/src/tests/test_layout_minizinc.py",
+    "/Volumes/Data/Projects/Rangekeeper/src/tests/test_layout_preferences.py",
+    "/Volumes/Data/Projects/Rangekeeper/src/tests/test_layout_presentation.py",
+    "/Volumes/Data/Projects/Rangekeeper/src/tests/test_layout_prototype.py",
+    "/Volumes/Data/Projects/Rangekeeper/src/tests/test_layout_reduction.py",
+    "/Volumes/Data/Projects/Rangekeeper/src/tests/test_layout_saved.py",
+    "/Volumes/Data/Projects/Rangekeeper/src/tests/test_layout_workbench.py"
+  ],
+  "cwd": "/Volumes/Data/Projects/Rangekeeper/src",
+  "tests": [
+    "test_layout_arrangement.py",
+    "test_layout_minizinc.py",
+    "test_layout_preferences.py",
+    "test_layout_presentation.py",
+    "test_layout_prototype.py",
+    "test_layout_reduction.py",
+    "test_layout_saved.py",
+    "test_layout_workbench.py"
+  ],
+  "exit_code": 0,
+  "seconds": 49.22602745797485,
+  "counts": {
+    "tests": 82,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0
+  },
+  "accepted": true
+}

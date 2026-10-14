@@ -1,0 +1,49 @@
+id: https://daniel-fink.github.io/rangekeeper/schema/flow
+name: rangekeeper_flow
+title: Rangekeeper Flow
+version: 0.2.0
+prefixes:
+  linkml: https://w3id.org/linkml/
+  rk: https://daniel-fink.github.io/rangekeeper/schema/
+imports:
+- duration
+default_prefix: rk
+default_range: string
+classes:
+  Flow:
+    description: Ordered temporal quantities owned by one Value. Dates are coordinates, not units. Empty, unresolved and zero movements are distinct. The overall model logic defines the meaning of the quantities and selects their calculations; a Flow carries no semantic kind or basis.
+    attributes:
+      units:
+        range: string
+        pattern: \S
+        required: true
+      movements:
+        range: Movement
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+        list_elements_ordered: true
+        required: true
+  Movement:
+    description: One numerical entry in a Flow, associated with a date or period. The overall model logic determines its meaning. At least one of date or period is required. With a period, date records an independent payment or observation date and need not lie inside the period. Derived boundary dates are calculated, not stored. UUID identifies the Movement independently of dates and optional matching keys. Repeated event dates require distinct nonblank keys; keys are not reference identity. Magnitude omission/null means unresolved. Claims retain source or derivation evidence.
+    attributes:
+      id:
+        description: Stable Movement identity across Model revisions. Derived numerical results receive fresh identities.
+        range: UUID
+        required: true
+        identifier: true
+      key:
+        description: Optional event matching key and readable label; never reference identity.
+        range: string
+        pattern: \S
+      date:
+        range: date
+      period:
+        range: Period
+        inlined: true
+      magnitude:
+        range: decimal
+      claims:
+        range: UUID
+        multivalued: true
+        list_elements_unique: true

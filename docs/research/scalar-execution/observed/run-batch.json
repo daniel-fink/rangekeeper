@@ -1,0 +1,28 @@
+{
+  "metadata": {
+    "id": "c1a937d6-bf74-478a-b1f7-f8b5fcf94029",
+    "schema_version": "0.1.0"
+  },
+  "specification": "5316eccb-7f94-4a4d-86bc-ae083ef897ad",
+  "spawns": [
+    "3b42658b-b68b-4dca-89a1-7c9b798554d9",
+    "ae8be4ca-15e5-4b34-a4d9-0b54caa0c65e"
+  ],
+  "outputs": [
+    "cc9578b2-3764-4a72-87a5-626aa7b1968b",
+    "149647e3-e9ba-47d9-b223-27865d536fe2"
+  ],
+  "report": {
+    "status": {
+      "completion": "completed",
+      "solution": "not_applicable"
+    },
+    "diagnostics": [
+      {
+        "severity": "info",
+        "code": "batch_accounting",
+        "message": "Sequential batch accounted for all 2 direct cases; outputs are their unique accepted union."
+      }
+    ]
+  }
+}

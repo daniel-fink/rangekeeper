@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/Volumes/Data/Projects/Rangekeeper/docs/research/full-migration/turn4/verify_final.py", line 73, in <module>
+    assert not git(ROOT, "diff", "--name-only", "HEAD", "--", "grasshopper", "schema", "walkthrough/*.ipynb")
+AssertionError

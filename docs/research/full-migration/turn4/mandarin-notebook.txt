@@ -1,0 +1,3 @@
+[IPKernelApp] WARNING | Kernel is running over TCP without encryption. All communication (including code and outputs) is sent in plain text and is susceptible to eavesdropping. Use IPC transport or launch with kernel manager-provisioned CurveZMQ keys to enable transport encryption.
+{"source": "/private/tmp/rk-turn4-project-bootstrap/mandarin/notebooks/01_workflow_review.ipynb", "output": "/private/tmp/rk-turn4-project-bootstrap/mandarin-review.ipynb", "python": "/private/tmp/rk-turn4-project-venv/bin/python", "cells": 11, "executed": 5}
+[IPKernelApp] WARNING | Parent appears to have exited, shutting down.
