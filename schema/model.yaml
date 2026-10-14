@@ -1,7 +1,7 @@
 id: https://daniel-fink.github.io/rangekeeper/schema/model
 name: rangekeeper_model
 title: Rangekeeper Model
-version: 0.7.0
+version: 0.8.0
 description: An immutable revision containing metadata, reusable definitions, a represented system, and
   provenance for its recorded content.
 prefixes:
@@ -11,6 +11,7 @@ imports:
 - definitions
 - formulation
 - provenance
+- geometry
 default_prefix: rk
 default_range: string
 classes:
@@ -65,6 +66,10 @@ classes:
         all_of:
         - range: Provenance
           inlined: true
+      geometry:
+        range: Geometry
+        inlined: true
+        description: Optional exact Geometry pin and Entity mappings. Requires Model schema 0.8.0.
   System:
     description: The Entities, Relationships, Assemblies, and mathematical formulations of a Model.
     notes:

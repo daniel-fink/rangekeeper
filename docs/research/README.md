@@ -31,3 +31,5 @@ The [MiniZinc evidence](full-migration/minizinc/README.md) and
 - [Independent notebook Geometry viewer, 14 October 2026](independent-geometry-2026-10-14/README.md): RK-owned source/build and unchanged packaged renderer.
 
 - [Walkthrough branch split — 14 October 2026](walkthrough-branch-split-2026-10-14/README.md): frozen legacy sources, retained draft, shared data and integration checks.
+
+- [Bundle T1 candidate](bundle-t1-2026-10-14/README.md): schema, IO and verification boundaries.

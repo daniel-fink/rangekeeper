@@ -33,7 +33,8 @@ load an ingestion engine, source reader, browser or service client.
 
 Whirlwind Core owns acquisition, source interpretation, transient Evidence, recipes,
 workspace decisions, ingestion builds and optional Rhino source extraction. It
-also owns the planned Bundle application module and thin HTTP/MCP adapters. Whirlwind
+also owns the local Bundle application proof and thin HTTP/MCP adapters as each
+is implemented. The full access contract remains open. Whirlwind
 Interface owns advanced browsers and graph layout. RK owns and builds its notebook
 Geometry viewer in `tools/geometry`; it has no build or runtime dependency on
 Whirlwind. RK imports neither Whirlwind Python package.
@@ -61,5 +62,13 @@ RK owns the lossless RK Parquet mapping/reader, with storage dependencies in opt
 IO modules. Whirlwind composes it with provider interfaces and access policy. Direct
 Python, HTTP and MCP share application semantics; reading a complete retained
 Bundle requires neither ingestion state, a chat nor source-server access.
-The earlier development experiment is historical
-evidence; the installed IO API and public Model schema have not adopted this contract.
+The earlier SQLite experiment remains historical evidence. The development
+candidate described below adds schema and IO support; stable format acceptance
+remains open.
+
+## Bundle implementation boundary
+
+The [Bundle candidate](../reference/bundle.md) adds `model.geometry` and optional
+`io.bundle`/`io.migration`. Schema YAML remains authoritative; Python/C#/JSON and
+slot metadata are generated. Provider decoding, acquisition, registration and
+access policy belong to Core. No engine domain import loads Arrow or DuckDB.
