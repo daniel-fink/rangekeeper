@@ -137,7 +137,11 @@ def test_shared_population_keeps_flat_and_hierarchy_policies_distinct():
     model, *_ = fixture(amounts=(1e16, 1, -1e16))
     rooms = tuple(e.id for e in model.system.entities if e.classification)
     population = View(model, entities=rooms).quantities("net", units="meter ** 2")
-    assert sum(q.magnitude for q in population.quantities) == 0
+    # Python 3.12+ sum compensates floating-point error; model a naive fold explicitly.
+    from functools import reduce
+    from operator import add
+
+    assert reduce(add, (q.magnitude for q in population.quantities), 0.0) == 0
     assert View(model).aggregate(reduction()).root_value.magnitude == 1
 
 
@@ -214,4 +218,8 @@ def test_canonical_classification_lookups_reuse_the_model_index(monkeypatch):
     assert to_table(
         view, columns=(FieldColumn("kind", EntityField.CLASSIFICATION_CODE),)
     ).column("kind") == ("room", "room", "room", None)
-    assert all(model.classification(e.classification).code == "room" for e in view.entities if e.classification)
+    assert all(
+        model.classification(e.classification).code == "room"
+        for e in view.entities
+        if e.classification
+    )

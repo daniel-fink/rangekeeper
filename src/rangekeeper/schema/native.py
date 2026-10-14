@@ -147,6 +147,14 @@ class ScenarioRealizationId(UUID):
     pass
 
 
+class EntityId(UUID):
+    pass
+
+
+class AssemblyId(EntityId):
+    pass
+
+
 class LabelId(UUID):
     pass
 
@@ -167,14 +175,6 @@ class MovementId(UUID):
     pass
 
 
-class EntityId(UUID):
-    pass
-
-
-class AssemblyId(EntityId):
-    pass
-
-
 @dataclass(repr=False)
 class Model(YAMLRoot):
     """
@@ -192,6 +192,7 @@ class Model(YAMLRoot):
     definitions: Optional[Union[dict, "Definitions"]] = None
     system: Optional[Union[dict, "System"]] = None
     provenance: Optional[Union[dict, "Provenance"]] = None
+    geometry: Optional[Union[dict, "Geometry"]] = None
 
     def __post_init__(self, *_: str, **kwargs: Any):
         if self._is_empty(self.metadata):
@@ -207,6 +208,9 @@ class Model(YAMLRoot):
 
         if self.provenance is not None and not isinstance(self.provenance, Provenance):
             self.provenance = Provenance(**as_dict(self.provenance))
+
+        if self.geometry is not None and not isinstance(self.geometry, Geometry):
+            self.geometry = Geometry(**as_dict(self.geometry))
 
         super().__post_init__(**kwargs)
 
@@ -939,6 +943,209 @@ class Reconciliation(YAMLRoot):
 
         if self.method is not None and not isinstance(self.method, Method):
             self.method = Method(**as_dict(self.method))
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class Geometry(YAMLRoot):
+    """
+    One exact provider dataset and explicit Entity associations, owned by this Model.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["Geometry"]
+    class_class_curie: ClassVar[str] = "rk:Geometry"
+    class_name: ClassVar[str] = "Geometry"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Geometry")
+
+    pin: Union[dict, "GeometryPin"] = None
+    mappings: Optional[Union[Union[dict, "GeometryMapping"], list[Union[dict, "GeometryMapping"]]]] = empty_list()
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.pin):
+            self.MissingRequiredField("pin")
+        if not isinstance(self.pin, GeometryPin):
+            self.pin = GeometryPin(**as_dict(self.pin))
+
+        if not isinstance(self.mappings, list):
+            self.mappings = [self.mappings] if self.mappings is not None else []
+        self.mappings = [v if isinstance(v, GeometryMapping) else GeometryMapping(**as_dict(v)) for v in self.mappings]
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class GeometryPin(YAMLRoot):
+    """
+    Exact native content and its source contract. Paths and source addresses do not replace integrity.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["GeometryPin"]
+    class_class_curie: ClassVar[str] = "rk:GeometryPin"
+    class_name: ClassVar[str] = "GeometryPin"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/GeometryPin")
+
+    provider: Union[str, Code] = None
+    format: Union[str, Code] = None
+    format_version: Union[str, Code] = None
+    specification: str = None
+    specification_digest: str = None
+    content_digest: str = None
+    files: Union[Union[dict, "GeometryFile"], list[Union[dict, "GeometryFile"]]] = None
+    source_address: Optional[str] = None
+    source_version: Optional[str] = None
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.provider):
+            self.MissingRequiredField("provider")
+        if not isinstance(self.provider, Code):
+            self.provider = Code(self.provider)
+
+        if self._is_empty(self.format):
+            self.MissingRequiredField("format")
+        if not isinstance(self.format, Code):
+            self.format = Code(self.format)
+
+        if self._is_empty(self.format_version):
+            self.MissingRequiredField("format_version")
+        if not isinstance(self.format_version, Code):
+            self.format_version = Code(self.format_version)
+
+        if self._is_empty(self.specification):
+            self.MissingRequiredField("specification")
+        if not isinstance(self.specification, str):
+            self.specification = str(self.specification)
+
+        if self._is_empty(self.specification_digest):
+            self.MissingRequiredField("specification_digest")
+        if not isinstance(self.specification_digest, str):
+            self.specification_digest = str(self.specification_digest)
+
+        if self._is_empty(self.content_digest):
+            self.MissingRequiredField("content_digest")
+        if not isinstance(self.content_digest, str):
+            self.content_digest = str(self.content_digest)
+
+        if self._is_empty(self.files):
+            self.MissingRequiredField("files")
+        self._normalize_inlined_as_list(slot_name="files", slot_type=GeometryFile, key_name="path", keyed=False)
+
+        if self.source_address is not None and not isinstance(self.source_address, str):
+            self.source_address = str(self.source_address)
+
+        if self.source_version is not None and not isinstance(self.source_version, str):
+            self.source_version = str(self.source_version)
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class GeometryFile(YAMLRoot):
+    """
+    One retained native file, addressed relative to the Geometry root.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["GeometryFile"]
+    class_class_curie: ClassVar[str] = "rk:GeometryFile"
+    class_name: ClassVar[str] = "GeometryFile"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/GeometryFile")
+
+    path: str = None
+    sha256: str = None
+    size: int = None
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.path):
+            self.MissingRequiredField("path")
+        if not isinstance(self.path, str):
+            self.path = str(self.path)
+
+        if self._is_empty(self.sha256):
+            self.MissingRequiredField("sha256")
+        if not isinstance(self.sha256, str):
+            self.sha256 = str(self.sha256)
+
+        if self._is_empty(self.size):
+            self.MissingRequiredField("size")
+        if not isinstance(self.size, int):
+            self.size = int(self.size)
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class GeometryMapping(YAMLRoot):
+    """
+    One Entity or Assembly corresponds to one exact typed source element. This is not provenance.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["GeometryMapping"]
+    class_class_curie: ClassVar[str] = "rk:GeometryMapping"
+    class_name: ClassVar[str] = "GeometryMapping"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/GeometryMapping")
+
+    entity: Union[str, EntityId] = None
+    element: Union[dict, "GeometryElement"] = None
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.entity):
+            self.MissingRequiredField("entity")
+        if not isinstance(self.entity, EntityId):
+            self.entity = EntityId(self.entity)
+
+        if self._is_empty(self.element):
+            self.MissingRequiredField("element")
+        if not isinstance(self.element, GeometryElement):
+            self.element = GeometryElement(**as_dict(self.element))
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class GeometryElement(YAMLRoot):
+    """
+    A typed identity in the pinned provider dataset. Namespace and scope remain explicit; mesh IDs are not
+    source-object identities.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["GeometryElement"]
+    class_class_curie: ClassVar[str] = "rk:GeometryElement"
+    class_name: ClassVar[str] = "GeometryElement"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/GeometryElement")
+
+    namespace: Union[str, Code] = None
+    kind: Union[str, Code] = None
+    key: str = None
+    scope: Optional[str] = None
+    placement: Optional[Union[str, list[str]]] = empty_list()
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.namespace):
+            self.MissingRequiredField("namespace")
+        if not isinstance(self.namespace, Code):
+            self.namespace = Code(self.namespace)
+
+        if self._is_empty(self.kind):
+            self.MissingRequiredField("kind")
+        if not isinstance(self.kind, Code):
+            self.kind = Code(self.kind)
+
+        if self._is_empty(self.key):
+            self.MissingRequiredField("key")
+        if not isinstance(self.key, str):
+            self.key = str(self.key)
+
+        if self.scope is not None and not isinstance(self.scope, str):
+            self.scope = str(self.scope)
+
+        if not isinstance(self.placement, list):
+            self.placement = [self.placement] if self.placement is not None else []
+        self.placement = [v if isinstance(v, str) else str(v) for v in self.placement]
 
         super().__post_init__(**kwargs)
 
@@ -2032,6 +2239,80 @@ class ScenarioRealization(YAMLRoot):
 
 
 @dataclass(repr=False)
+class Entity(YAMLRoot):
+    """
+    An identifiable domain object, such as an apartment, building, or actor. Its identity persists across immutable
+    Model revisions. Loading its definition does not execute calculations.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["Entity"]
+    class_class_curie: ClassVar[str] = "rk:Entity"
+    class_name: ClassVar[str] = "Entity"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Entity")
+
+    id: Union[str, EntityId] = None
+    classification: Optional[Union[str, ClassificationId]] = None
+    code: Optional[Union[str, Code]] = None
+    name: Optional[str] = None
+    characteristics: Optional[Union[dict, "Characteristics"]] = None
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.id):
+            self.MissingRequiredField("id")
+        if not isinstance(self.id, EntityId):
+            self.id = EntityId(self.id)
+
+        if self.classification is not None and not isinstance(self.classification, ClassificationId):
+            self.classification = ClassificationId(self.classification)
+
+        if self.code is not None and not isinstance(self.code, Code):
+            self.code = Code(self.code)
+
+        if self.name is not None and not isinstance(self.name, str):
+            self.name = str(self.name)
+
+        if self.characteristics is not None and not isinstance(self.characteristics, Characteristics):
+            self.characteristics = Characteristics(**as_dict(self.characteristics))
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
+class Assembly(Entity):
+    """
+    An Entity identifying a collection of Entities and Relationships. Members are referenced by identity and may
+    belong to more than one Assembly. Membership does not imply spatial containment or duplicate its members.
+    """
+    _inherited_slots: ClassVar[list[str]] = []
+
+    class_class_uri: ClassVar[URIRef] = RK["Assembly"]
+    class_class_curie: ClassVar[str] = "rk:Assembly"
+    class_name: ClassVar[str] = "Assembly"
+    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Assembly")
+
+    id: Union[str, AssemblyId] = None
+    entities: Optional[Union[Union[str, EntityId], list[Union[str, EntityId]]]] = empty_list()
+    relationships: Optional[Union[Union[str, RelationshipId], list[Union[str, RelationshipId]]]] = empty_list()
+
+    def __post_init__(self, *_: str, **kwargs: Any):
+        if self._is_empty(self.id):
+            self.MissingRequiredField("id")
+        if not isinstance(self.id, AssemblyId):
+            self.id = AssemblyId(self.id)
+
+        if not isinstance(self.entities, list):
+            self.entities = [self.entities] if self.entities is not None else []
+        self.entities = [v if isinstance(v, EntityId) else EntityId(v) for v in self.entities]
+
+        if not isinstance(self.relationships, list):
+            self.relationships = [self.relationships] if self.relationships is not None else []
+        self.relationships = [v if isinstance(v, RelationshipId) else RelationshipId(v) for v in self.relationships]
+
+        super().__post_init__(**kwargs)
+
+
+@dataclass(repr=False)
 class Characteristics(YAMLRoot):
     """
     A collection of Labels and Values belonging to an Entity or Relationship. Each Label or Value has a stable UUID
@@ -2725,80 +3006,6 @@ class Query(YAMLRoot):
 
 
 @dataclass(repr=False)
-class Entity(YAMLRoot):
-    """
-    An identifiable domain object, such as an apartment, building, or actor. Its identity persists across immutable
-    Model revisions. Loading its definition does not execute calculations.
-    """
-    _inherited_slots: ClassVar[list[str]] = []
-
-    class_class_uri: ClassVar[URIRef] = RK["Entity"]
-    class_class_curie: ClassVar[str] = "rk:Entity"
-    class_name: ClassVar[str] = "Entity"
-    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Entity")
-
-    id: Union[str, EntityId] = None
-    classification: Optional[Union[str, ClassificationId]] = None
-    code: Optional[Union[str, Code]] = None
-    name: Optional[str] = None
-    characteristics: Optional[Union[dict, Characteristics]] = None
-
-    def __post_init__(self, *_: str, **kwargs: Any):
-        if self._is_empty(self.id):
-            self.MissingRequiredField("id")
-        if not isinstance(self.id, EntityId):
-            self.id = EntityId(self.id)
-
-        if self.classification is not None and not isinstance(self.classification, ClassificationId):
-            self.classification = ClassificationId(self.classification)
-
-        if self.code is not None and not isinstance(self.code, Code):
-            self.code = Code(self.code)
-
-        if self.name is not None and not isinstance(self.name, str):
-            self.name = str(self.name)
-
-        if self.characteristics is not None and not isinstance(self.characteristics, Characteristics):
-            self.characteristics = Characteristics(**as_dict(self.characteristics))
-
-        super().__post_init__(**kwargs)
-
-
-@dataclass(repr=False)
-class Assembly(Entity):
-    """
-    An Entity identifying a collection of Entities and Relationships. Members are referenced by identity and may
-    belong to more than one Assembly. Membership does not imply spatial containment or duplicate its members.
-    """
-    _inherited_slots: ClassVar[list[str]] = []
-
-    class_class_uri: ClassVar[URIRef] = RK["Assembly"]
-    class_class_curie: ClassVar[str] = "rk:Assembly"
-    class_name: ClassVar[str] = "Assembly"
-    class_model_uri: ClassVar[URIRef] = URIRef("https://daniel-fink.github.io/rangekeeper/schema/bundle/Assembly")
-
-    id: Union[str, AssemblyId] = None
-    entities: Optional[Union[Union[str, EntityId], list[Union[str, EntityId]]]] = empty_list()
-    relationships: Optional[Union[Union[str, RelationshipId], list[Union[str, RelationshipId]]]] = empty_list()
-
-    def __post_init__(self, *_: str, **kwargs: Any):
-        if self._is_empty(self.id):
-            self.MissingRequiredField("id")
-        if not isinstance(self.id, AssemblyId):
-            self.id = AssemblyId(self.id)
-
-        if not isinstance(self.entities, list):
-            self.entities = [self.entities] if self.entities is not None else []
-        self.entities = [v if isinstance(v, EntityId) else EntityId(v) for v in self.entities]
-
-        if not isinstance(self.relationships, list):
-            self.relationships = [self.relationships] if self.relationships is not None else []
-        self.relationships = [v if isinstance(v, RelationshipId) else RelationshipId(v) for v in self.relationships]
-
-        super().__post_init__(**kwargs)
-
-
-@dataclass(repr=False)
 class Period(YAMLRoot):
     """
     Half-open interval [start_inclusive, end_exclusive). Date boundaries use the Gregorian calendar; start must
@@ -3355,6 +3562,9 @@ slots.model__system = Slot(uri=RK.system, name="model__system", curie=RK.curie('
 slots.model__provenance = Slot(uri=RK.provenance, name="model__provenance", curie=RK.curie('provenance'),
                    model_uri=DEFAULT_.model__provenance, domain=None, range=Optional[Union[dict, Provenance]])
 
+slots.model__geometry = Slot(uri=RK.geometry, name="model__geometry", curie=RK.curie('geometry'),
+                   model_uri=DEFAULT_.model__geometry, domain=None, range=Optional[Union[dict, Geometry]])
+
 slots.system__entities = Slot(uri=RK.entities, name="system__entities", curie=RK.curie('entities'),
                    model_uri=DEFAULT_.system__entities, domain=None, range=Optional[Union[dict[Union[str, EntityId], Union[dict, Entity]], list[Union[dict, Entity]]]])
 
@@ -3648,6 +3858,72 @@ slots.reconciliation__status = Slot(uri=RK.status, name="reconciliation__status"
 
 slots.reconciliation__method = Slot(uri=RK.method, name="reconciliation__method", curie=RK.curie('method'),
                    model_uri=DEFAULT_.reconciliation__method, domain=None, range=Optional[Union[dict, Method]])
+
+slots.geometry__pin = Slot(uri=RK.pin, name="geometry__pin", curie=RK.curie('pin'),
+                   model_uri=DEFAULT_.geometry__pin, domain=None, range=Union[dict, GeometryPin])
+
+slots.geometry__mappings = Slot(uri=RK.mappings, name="geometry__mappings", curie=RK.curie('mappings'),
+                   model_uri=DEFAULT_.geometry__mappings, domain=None, range=Optional[Union[Union[dict, GeometryMapping], list[Union[dict, GeometryMapping]]]])
+
+slots.geometryPin__provider = Slot(uri=RK.provider, name="geometryPin__provider", curie=RK.curie('provider'),
+                   model_uri=DEFAULT_.geometryPin__provider, domain=None, range=Union[str, Code])
+
+slots.geometryPin__format = Slot(uri=RK.format, name="geometryPin__format", curie=RK.curie('format'),
+                   model_uri=DEFAULT_.geometryPin__format, domain=None, range=Union[str, Code])
+
+slots.geometryPin__format_version = Slot(uri=RK.format_version, name="geometryPin__format_version", curie=RK.curie('format_version'),
+                   model_uri=DEFAULT_.geometryPin__format_version, domain=None, range=Union[str, Code])
+
+slots.geometryPin__specification = Slot(uri=RK.specification, name="geometryPin__specification", curie=RK.curie('specification'),
+                   model_uri=DEFAULT_.geometryPin__specification, domain=None, range=str)
+
+slots.geometryPin__specification_digest = Slot(uri=RK.specification_digest, name="geometryPin__specification_digest", curie=RK.curie('specification_digest'),
+                   model_uri=DEFAULT_.geometryPin__specification_digest, domain=None, range=str,
+                   pattern=re.compile(r'^[0-9a-f]{64}$'))
+
+slots.geometryPin__content_digest = Slot(uri=RK.content_digest, name="geometryPin__content_digest", curie=RK.curie('content_digest'),
+                   model_uri=DEFAULT_.geometryPin__content_digest, domain=None, range=str,
+                   pattern=re.compile(r'^[0-9a-f]{64}$'))
+
+slots.geometryPin__files = Slot(uri=RK.files, name="geometryPin__files", curie=RK.curie('files'),
+                   model_uri=DEFAULT_.geometryPin__files, domain=None, range=Union[Union[dict, GeometryFile], list[Union[dict, GeometryFile]]])
+
+slots.geometryPin__source_address = Slot(uri=RK.source_address, name="geometryPin__source_address", curie=RK.curie('source_address'),
+                   model_uri=DEFAULT_.geometryPin__source_address, domain=None, range=Optional[str])
+
+slots.geometryPin__source_version = Slot(uri=RK.source_version, name="geometryPin__source_version", curie=RK.curie('source_version'),
+                   model_uri=DEFAULT_.geometryPin__source_version, domain=None, range=Optional[str])
+
+slots.geometryFile__path = Slot(uri=RK.path, name="geometryFile__path", curie=RK.curie('path'),
+                   model_uri=DEFAULT_.geometryFile__path, domain=None, range=str)
+
+slots.geometryFile__sha256 = Slot(uri=RK.sha256, name="geometryFile__sha256", curie=RK.curie('sha256'),
+                   model_uri=DEFAULT_.geometryFile__sha256, domain=None, range=str,
+                   pattern=re.compile(r'^[0-9a-f]{64}$'))
+
+slots.geometryFile__size = Slot(uri=RK.size, name="geometryFile__size", curie=RK.curie('size'),
+                   model_uri=DEFAULT_.geometryFile__size, domain=None, range=int)
+
+slots.geometryMapping__entity = Slot(uri=RK.entity, name="geometryMapping__entity", curie=RK.curie('entity'),
+                   model_uri=DEFAULT_.geometryMapping__entity, domain=None, range=Union[str, EntityId])
+
+slots.geometryMapping__element = Slot(uri=RK.element, name="geometryMapping__element", curie=RK.curie('element'),
+                   model_uri=DEFAULT_.geometryMapping__element, domain=None, range=Union[dict, GeometryElement])
+
+slots.geometryElement__namespace = Slot(uri=RK.namespace, name="geometryElement__namespace", curie=RK.curie('namespace'),
+                   model_uri=DEFAULT_.geometryElement__namespace, domain=None, range=Union[str, Code])
+
+slots.geometryElement__kind = Slot(uri=RK.kind, name="geometryElement__kind", curie=RK.curie('kind'),
+                   model_uri=DEFAULT_.geometryElement__kind, domain=None, range=Union[str, Code])
+
+slots.geometryElement__key = Slot(uri=RK.key, name="geometryElement__key", curie=RK.curie('key'),
+                   model_uri=DEFAULT_.geometryElement__key, domain=None, range=str)
+
+slots.geometryElement__scope = Slot(uri=RK.scope, name="geometryElement__scope", curie=RK.curie('scope'),
+                   model_uri=DEFAULT_.geometryElement__scope, domain=None, range=Optional[str])
+
+slots.geometryElement__placement = Slot(uri=RK.placement, name="geometryElement__placement", curie=RK.curie('placement'),
+                   model_uri=DEFAULT_.geometryElement__placement, domain=None, range=Optional[Union[str, list[str]]])
 
 slots.metadata__id = Slot(uri=RK.id, name="metadata__id", curie=RK.curie('id'),
                    model_uri=DEFAULT_.metadata__id, domain=None, range=URIRef)
@@ -4010,6 +4286,19 @@ slots.scenarioRealization__outputs = Slot(uri=RK.outputs, name="scenarioRealizat
 slots.scenarioRealization__availability = Slot(uri=RK.availability, name="scenarioRealization__availability", curie=RK.curie('availability'),
                    model_uri=DEFAULT_.scenarioRealization__availability, domain=None, range=Union[Union[dict, ObservationAvailability], list[Union[dict, ObservationAvailability]]])
 
+slots.entity__id = Slot(uri=RK.id, name="entity__id", curie=RK.curie('id'),
+                   model_uri=DEFAULT_.entity__id, domain=None, range=URIRef)
+
+slots.entity__code = Slot(uri=RK.code, name="entity__code", curie=RK.curie('code'),
+                   model_uri=DEFAULT_.entity__code, domain=None, range=Optional[Union[str, Code]])
+
+slots.entity__name = Slot(uri=RK.name, name="entity__name", curie=RK.curie('name'),
+                   model_uri=DEFAULT_.entity__name, domain=None, range=Optional[str],
+                   pattern=re.compile(r'\S'))
+
+slots.entity__characteristics = Slot(uri=RK.characteristics, name="entity__characteristics", curie=RK.curie('characteristics'),
+                   model_uri=DEFAULT_.entity__characteristics, domain=None, range=Optional[Union[dict, Characteristics]])
+
 slots.characteristics__labels = Slot(uri=RK.labels, name="characteristics__labels", curie=RK.curie('labels'),
                    model_uri=DEFAULT_.characteristics__labels, domain=None, range=Optional[Union[dict[Union[str, LabelId], Union[dict, Label]], list[Union[dict, Label]]]])
 
@@ -4249,19 +4538,6 @@ slots.query__projection = Slot(uri=RK.projection, name="query__projection", curi
 
 slots.query__duplicates = Slot(uri=RK.duplicates, name="query__duplicates", curie=RK.curie('duplicates'),
                    model_uri=DEFAULT_.query__duplicates, domain=None, range=Union[str, "DuplicateHandling"])
-
-slots.entity__id = Slot(uri=RK.id, name="entity__id", curie=RK.curie('id'),
-                   model_uri=DEFAULT_.entity__id, domain=None, range=URIRef)
-
-slots.entity__code = Slot(uri=RK.code, name="entity__code", curie=RK.curie('code'),
-                   model_uri=DEFAULT_.entity__code, domain=None, range=Optional[Union[str, Code]])
-
-slots.entity__name = Slot(uri=RK.name, name="entity__name", curie=RK.curie('name'),
-                   model_uri=DEFAULT_.entity__name, domain=None, range=Optional[str],
-                   pattern=re.compile(r'\S'))
-
-slots.entity__characteristics = Slot(uri=RK.characteristics, name="entity__characteristics", curie=RK.curie('characteristics'),
-                   model_uri=DEFAULT_.entity__characteristics, domain=None, range=Optional[Union[dict, Characteristics]])
 
 slots.period__start_inclusive = Slot(uri=RK.start_inclusive, name="period__start_inclusive", curie=RK.curie('start_inclusive'),
                    model_uri=DEFAULT_.period__start_inclusive, domain=None, range=Union[str, XSDDate])

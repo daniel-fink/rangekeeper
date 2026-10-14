@@ -1,0 +1,103 @@
+id: https://daniel-fink.github.io/rangekeeper/schema/geometry
+name: rangekeeper_geometry
+title: Rangekeeper Geometry
+version: 0.1.0
+prefixes:
+  linkml: https://w3id.org/linkml/
+  rk: https://daniel-fink.github.io/rangekeeper/schema/
+imports:
+- entity
+default_prefix: rk
+default_range: string
+classes:
+  Geometry:
+    description: One exact provider dataset and explicit Entity associations, owned by this Model.
+    attributes:
+      pin:
+        range: GeometryPin
+        required: true
+        inlined: true
+      mappings:
+        range: GeometryMapping
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+  GeometryPin:
+    description: Exact native content and its source contract. Paths and source addresses do not replace
+      integrity.
+    attributes:
+      provider:
+        range: Code
+        required: true
+      format:
+        range: Code
+        required: true
+      format_version:
+        range: Code
+        required: true
+      specification:
+        range: string
+        required: true
+        description: Immutable upstream specification identifier, such as a full commit URL.
+      specification_digest:
+        range: string
+        required: true
+        pattern: ^[0-9a-f]{64}$
+      content_digest:
+        range: string
+        required: true
+        pattern: ^[0-9a-f]{64}$
+      files:
+        range: GeometryFile
+        required: true
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      source_address:
+        range: string
+      source_version:
+        range: string
+  GeometryFile:
+    description: One retained native file, addressed relative to the Geometry root.
+    attributes:
+      path:
+        range: string
+        required: true
+      sha256:
+        range: string
+        required: true
+        pattern: ^[0-9a-f]{64}$
+      size:
+        range: integer
+        required: true
+        minimum_value: 0
+  GeometryMapping:
+    description: One Entity or Assembly corresponds to one exact typed source element. This is not provenance.
+    attributes:
+      entity:
+        range: Entity
+        required: true
+        inlined: false
+      element:
+        range: GeometryElement
+        required: true
+        inlined: true
+  GeometryElement:
+    description: A typed identity in the pinned provider dataset. Namespace and scope remain explicit;
+      mesh IDs are not source-object identities.
+    attributes:
+      namespace:
+        range: Code
+        required: true
+      kind:
+        range: Code
+        required: true
+      key:
+        range: string
+        required: true
+      scope:
+        range: string
+      placement:
+        range: string
+        multivalued: true
+        list_elements_ordered: true

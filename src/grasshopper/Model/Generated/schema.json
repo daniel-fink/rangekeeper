@@ -1924,6 +1924,169 @@
       "title": "Function",
       "type": "object"
     },
+    "Geometry": {
+      "additionalProperties": false,
+      "description": "One exact provider dataset and explicit Entity associations, owned by this Model.",
+      "properties": {
+        "mappings": {
+          "items": {
+            "$ref": "#/$defs/GeometryMapping"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "pin": {
+          "$ref": "#/$defs/GeometryPin"
+        }
+      },
+      "required": [
+        "pin"
+      ],
+      "title": "Geometry",
+      "type": "object"
+    },
+    "GeometryElement": {
+      "additionalProperties": false,
+      "description": "A typed identity in the pinned provider dataset. Namespace and scope remain explicit; mesh IDs are not source-object identities.",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "kind": {
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
+          "type": "string"
+        },
+        "namespace": {
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
+          "type": "string"
+        },
+        "placement": {
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "scope": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "namespace",
+        "kind",
+        "key"
+      ],
+      "title": "GeometryElement",
+      "type": "object"
+    },
+    "GeometryFile": {
+      "additionalProperties": false,
+      "description": "One retained native file, addressed relative to the Geometry root.",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "size": {
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "path",
+        "sha256",
+        "size"
+      ],
+      "title": "GeometryFile",
+      "type": "object"
+    },
+    "GeometryMapping": {
+      "additionalProperties": false,
+      "description": "One Entity or Assembly corresponds to one exact typed source element. This is not provenance.",
+      "properties": {
+        "element": {
+          "$ref": "#/$defs/GeometryElement"
+        },
+        "entity": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "entity",
+        "element"
+      ],
+      "title": "GeometryMapping",
+      "type": "object"
+    },
+    "GeometryPin": {
+      "additionalProperties": false,
+      "description": "Exact native content and its source contract. Paths and source addresses do not replace integrity.",
+      "properties": {
+        "content_digest": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "files": {
+          "items": {
+            "$ref": "#/$defs/GeometryFile"
+          },
+          "type": "array"
+        },
+        "format": {
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
+          "type": "string"
+        },
+        "format_version": {
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
+          "type": "string"
+        },
+        "provider": {
+          "pattern": "^\\S(?:[\\s\\S]*\\S)?$(?![\\s\\S])",
+          "type": "string"
+        },
+        "source_address": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "specification": {
+          "description": "Immutable upstream specification identifier, such as a full commit URL.",
+          "type": "string"
+        },
+        "specification_digest": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "provider",
+        "format",
+        "format_version",
+        "specification",
+        "specification_digest",
+        "content_digest",
+        "files"
+      ],
+      "title": "GeometryPin",
+      "type": "object"
+    },
     "Implementation": {
       "additionalProperties": false,
       "description": "An implementation role and its reproducible software identity as reported for this execution.",
@@ -2230,6 +2393,17 @@
             }
           ],
           "description": "Canonical Taxonomy, Measure, and Function definitions referenced by this snapshot."
+        },
+        "geometry": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Geometry"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Optional exact Geometry pin and Entity mappings. Requires Model schema 0.8.0."
         },
         "metadata": {
           "$ref": "#/$defs/Metadata",
