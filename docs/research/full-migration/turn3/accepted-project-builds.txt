@@ -1,0 +1,4 @@
+Installed import: /private/tmp/rk-turn3-project-venv/lib/python3.13/site-packages/rangekeeper/__init__.py
+{"name": "mandarin", "directory": "/private/tmp/rk-turn3-final-project-bootstrap/results/mandarin/runs/2565b5fa-527a-4e36-b118-f389db31c295", "entities": 377, "relationships": 376, "checks": {"agree": 776, "unavailable": 14, "difference": 28}}
+{"name": "december", "directory": "/private/tmp/rk-turn3-final-project-bootstrap/results/december/runs/a534e3c8-0130-4efd-b41e-ebd38769216c", "entities": 73, "relationships": 72, "checks": {"agree": 368, "unavailable": 6}}
+{"name": "november-r2", "directory": "/private/tmp/rk-turn3-final-project-bootstrap/results/november-r2/runs/74ca1b41-b19a-4ba3-8828-f6fe71f514b3", "entities": 37, "relationships": 36, "checks": {"agree": 144, "unavailable": 45}}

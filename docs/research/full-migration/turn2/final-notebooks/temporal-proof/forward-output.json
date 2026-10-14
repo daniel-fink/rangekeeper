@@ -1,0 +1,921 @@
+{
+  "metadata": {
+    "id": "3a5c1238-0056-40bf-9129-fae41e62cac6",
+    "schema_version": "0.5.0",
+    "previous": "dbcbfb31-a082-4689-aa7f-207c00f71e61"
+  },
+  "definitions": {
+    "measures": [
+      {
+        "id": "5d91a694-6cf6-4c8a-bba7-19862ad64000",
+        "code": "money",
+        "name": "Money",
+        "units": "AUD"
+      },
+      {
+        "id": "0180aa64-07a4-495a-a7a1-0ea443a02486",
+        "code": "ratio",
+        "name": "Ratio",
+        "units": "dimensionless"
+      }
+    ]
+  },
+  "system": {
+    "entities": [
+      {
+        "id": "fa3fdb79-bfc2-479a-bc5d-e4a4e29a19e6",
+        "characteristics": {
+          "values": [
+            {
+              "measure": "5d91a694-6cf6-4c8a-bba7-19862ad64000",
+              "id": "9cdd5e16-778a-40e0-be09-ba8e6cccc252",
+              "key": "initial",
+              "kind": "measurement",
+              "quantity": {
+                "magnitude": 100.0,
+                "units": "AUD"
+              }
+            },
+            {
+              "measure": "0180aa64-07a4-495a-a7a1-0ea443a02486",
+              "id": "8b4634ba-56bb-43db-8097-b2e994437590",
+              "key": "rate",
+              "kind": "measurement",
+              "quantity": {
+                "magnitude": 0.1,
+                "units": "dimensionless"
+              }
+            },
+            {
+              "measure": "5d91a694-6cf6-4c8a-bba7-19862ad64000",
+              "id": "496e8183-be69-4930-ada4-79287808e46d",
+              "key": "pv",
+              "kind": "measurement",
+              "quantity": {
+                "magnitude": 272.72727272727275,
+                "units": "AUD"
+              }
+            },
+            {
+              "measure": "5d91a694-6cf6-4c8a-bba7-19862ad64000",
+              "id": "54fd1b2d-11e9-4823-9850-ce8c828014f9",
+              "key": "cash",
+              "kind": "flow",
+              "flow": {
+                "units": "AUD",
+                "movements": [
+                  {
+                    "key": "y1",
+                    "period": {
+                      "start": "2027-01-01",
+                      "end": "2028-01-01"
+                    },
+                    "magnitude": 100.0,
+                    "claims": [
+                      "a61acff3-86e3-4bf8-8108-b20752dc0007"
+                    ]
+                  },
+                  {
+                    "key": "y2",
+                    "period": {
+                      "start": "2028-01-01",
+                      "end": "2029-01-01"
+                    },
+                    "magnitude": 110.0,
+                    "claims": [
+                      "c34622c6-c481-45ba-b3d1-463a25b876de"
+                    ]
+                  },
+                  {
+                    "key": "y3",
+                    "period": {
+                      "start": "2029-01-01",
+                      "end": "2030-01-01"
+                    },
+                    "magnitude": 121.00000000000001,
+                    "claims": [
+                      "bbf4803c-d9fe-42e8-986e-52ce79f01fa1"
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "measure": "5d91a694-6cf6-4c8a-bba7-19862ad64000",
+              "id": "55e26f0e-b72f-43f5-a604-bc08da301e21",
+              "key": "discounted",
+              "kind": "flow",
+              "flow": {
+                "units": "AUD",
+                "movements": [
+                  {
+                    "key": "y1",
+                    "period": {
+                      "start": "2027-01-01",
+                      "end": "2028-01-01"
+                    },
+                    "magnitude": 90.9090909090909,
+                    "claims": [
+                      "aa0c5357-3e40-4eac-b02d-ec69735611aa"
+                    ]
+                  },
+                  {
+                    "key": "y2",
+                    "period": {
+                      "start": "2028-01-01",
+                      "end": "2029-01-01"
+                    },
+                    "magnitude": 90.9090909090909,
+                    "claims": [
+                      "fb9ce502-9bff-4ffd-8cf2-08a64e79e208"
+                    ]
+                  },
+                  {
+                    "key": "y3",
+                    "period": {
+                      "start": "2029-01-01",
+                      "end": "2030-01-01"
+                    },
+                    "magnitude": 90.90909090909089,
+                    "claims": [
+                      "b9924b84-6ece-4a19-8c01-eb8a0a258ce1"
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "formulations": [
+      {
+        "id": "631038f3-d6aa-47fa-be34-4d0b89c478a7",
+        "name": "compound",
+        "bindings": [
+          {
+            "name": "value_0",
+            "value": "9cdd5e16-778a-40e0-be09-ba8e6cccc252"
+          },
+          {
+            "name": "value_1",
+            "value": "8b4634ba-56bb-43db-8097-b2e994437590"
+          },
+          {
+            "name": "value_2",
+            "value": "54fd1b2d-11e9-4823-9850-ce8c828014f9"
+          }
+        ],
+        "expressions": [
+          {
+            "id": "a4ea0c89-8fc3-582c-af36-dd0db9590055",
+            "kind": "binary",
+            "operator": "equal",
+            "operands": [
+              {
+                "id": "3509cbf6-fae6-51d9-87d1-42ba51466ea6",
+                "kind": "reference",
+                "target": {
+                  "value": "54fd1b2d-11e9-4823-9850-ce8c828014f9",
+                  "movement": "y1"
+                }
+              },
+              {
+                "id": "febf0fb5-d72d-56b3-95db-d97e8bd20543",
+                "kind": "reference",
+                "target": {
+                  "value": "9cdd5e16-778a-40e0-be09-ba8e6cccc252"
+                }
+              }
+            ]
+          },
+          {
+            "id": "624f957e-1a0c-534d-974b-f6f9164bf40b",
+            "kind": "binary",
+            "operator": "equal",
+            "operands": [
+              {
+                "id": "f35dcfea-d336-518b-9375-76d69c09ab3a",
+                "kind": "reference",
+                "target": {
+                  "value": "54fd1b2d-11e9-4823-9850-ce8c828014f9",
+                  "movement": "y2"
+                }
+              },
+              {
+                "id": "732dac66-4f7f-5b7d-b939-774e5666184f",
+                "kind": "binary",
+                "operator": "multiply",
+                "operands": [
+                  {
+                    "id": "9eae6d42-6c44-51b8-825e-21c90874b831",
+                    "kind": "reference",
+                    "target": {
+                      "value": "54fd1b2d-11e9-4823-9850-ce8c828014f9",
+                      "movement": "y1"
+                    }
+                  },
+                  {
+                    "id": "a071b65f-e360-5f87-b0ef-86957aee022c",
+                    "kind": "binary",
+                    "operator": "add",
+                    "operands": [
+                      {
+                        "id": "7acd0f64-a7d9-593b-a5a1-9b745820f4ff",
+                        "kind": "quantity",
+                        "quantity": {
+                          "magnitude": 1,
+                          "units": "dimensionless"
+                        }
+                      },
+                      {
+                        "id": "ff74d88e-faba-51b5-a327-e9aeec3a4719",
+                        "kind": "reference",
+                        "target": {
+                          "value": "8b4634ba-56bb-43db-8097-b2e994437590"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "77b01cf4-d9d8-5dee-8447-33db02f10c34",
+            "kind": "binary",
+            "operator": "equal",
+            "operands": [
+              {
+                "id": "e4acd640-310a-5c21-8e5f-b8f20bc89def",
+                "kind": "reference",
+                "target": {
+                  "value": "54fd1b2d-11e9-4823-9850-ce8c828014f9",
+                  "movement": "y3"
+                }
+              },
+              {
+                "id": "63513948-6821-5450-9368-921f58652851",
+                "kind": "binary",
+                "operator": "multiply",
+                "operands": [
+                  {
+                    "id": "cab0d23d-83bf-58f7-8bb4-d57baa8f5d29",
+                    "kind": "reference",
+                    "target": {
+                      "value": "54fd1b2d-11e9-4823-9850-ce8c828014f9",
+                      "movement": "y2"
+                    }
+                  },
+                  {
+                    "id": "f58c18e2-0fd7-5089-b99e-a427dd2b35ef",
+                    "kind": "binary",
+                    "operator": "add",
+                    "operands": [
+                      {
+                        "id": "27468545-0885-562b-977f-42e81fe055f5",
+                        "kind": "quantity",
+                        "quantity": {
+                          "magnitude": 1,
+                          "units": "dimensionless"
+                        }
+                      },
+                      {
+                        "id": "a5a37b05-5f15-5896-a218-ca88e8576dcf",
+                        "kind": "reference",
+                        "target": {
+                          "value": "8b4634ba-56bb-43db-8097-b2e994437590"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "constraints": [
+          {
+            "id": "7fbfe4e7-e1b4-54ef-9a18-a56ae0c2cef3",
+            "predicate": "a4ea0c89-8fc3-582c-af36-dd0db9590055"
+          },
+          {
+            "id": "c1e6f258-0cf5-5102-b67f-d83560925444",
+            "predicate": "624f957e-1a0c-534d-974b-f6f9164bf40b"
+          },
+          {
+            "id": "888a65f8-2dfe-55bb-a20f-a4e62b20a72a",
+            "predicate": "77b01cf4-d9d8-5dee-8447-33db02f10c34"
+          }
+        ]
+      },
+      {
+        "id": "b1d463b4-c14a-492b-90a0-69c9c969fb5a",
+        "name": "discount",
+        "bindings": [
+          {
+            "name": "value_0",
+            "value": "54fd1b2d-11e9-4823-9850-ce8c828014f9"
+          },
+          {
+            "name": "value_1",
+            "value": "8b4634ba-56bb-43db-8097-b2e994437590"
+          },
+          {
+            "name": "value_2",
+            "value": "55e26f0e-b72f-43f5-a604-bc08da301e21"
+          }
+        ],
+        "expressions": [
+          {
+            "id": "0e872a69-af4d-5668-86fe-e7313a753f18",
+            "kind": "binary",
+            "operator": "equal",
+            "operands": [
+              {
+                "id": "4fdb427e-75a4-5e65-ba4a-855f7902bbb6",
+                "kind": "reference",
+                "target": {
+                  "value": "55e26f0e-b72f-43f5-a604-bc08da301e21",
+                  "movement": "y1"
+                }
+              },
+              {
+                "id": "4705ee79-b180-57dd-a242-9b6cd1c6eaba",
+                "kind": "binary",
+                "operator": "divide",
+                "operands": [
+                  {
+                    "id": "593d9dc6-2888-59c6-a292-e78d811f6251",
+                    "kind": "reference",
+                    "target": {
+                      "value": "54fd1b2d-11e9-4823-9850-ce8c828014f9",
+                      "movement": "y1"
+                    }
+                  },
+                  {
+                    "id": "21990d56-d992-53db-97a5-b63c77bf31db",
+                    "kind": "binary",
+                    "operator": "power",
+                    "operands": [
+                      {
+                        "id": "58df6c54-a619-50d3-ac07-9a317d633a4c",
+                        "kind": "binary",
+                        "operator": "add",
+                        "operands": [
+                          {
+                            "id": "a5af6087-43c1-5acb-91fa-bcebfa40d448",
+                            "kind": "quantity",
+                            "quantity": {
+                              "magnitude": 1,
+                              "units": "dimensionless"
+                            }
+                          },
+                          {
+                            "id": "a3342ff1-5891-568e-b3fb-8d09d7ab4bbc",
+                            "kind": "reference",
+                            "target": {
+                              "value": "8b4634ba-56bb-43db-8097-b2e994437590"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "81a2d893-6877-5b3a-ba3d-fa3bda1de98f",
+                        "kind": "quantity",
+                        "quantity": {
+                          "magnitude": 1,
+                          "units": "dimensionless"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "878f064b-8474-541e-813d-de9dac3e158f",
+            "kind": "binary",
+            "operator": "equal",
+            "operands": [
+              {
+                "id": "74ff5603-8271-5f30-91b2-aa4387d288df",
+                "kind": "reference",
+                "target": {
+                  "value": "55e26f0e-b72f-43f5-a604-bc08da301e21",
+                  "movement": "y2"
+                }
+              },
+              {
+                "id": "efb5f1a2-3960-5cf3-a645-f03c72f2a7c4",
+                "kind": "binary",
+                "operator": "divide",
+                "operands": [
+                  {
+                    "id": "7bc9e483-8b09-5d6e-b6f5-4b52481c5804",
+                    "kind": "reference",
+                    "target": {
+                      "value": "54fd1b2d-11e9-4823-9850-ce8c828014f9",
+                      "movement": "y2"
+                    }
+                  },
+                  {
+                    "id": "0ddc2879-34a4-50bf-8208-0fb3139c6ee7",
+                    "kind": "binary",
+                    "operator": "power",
+                    "operands": [
+                      {
+                        "id": "1cba2bf3-a360-587d-87a9-34fc60b6bc30",
+                        "kind": "binary",
+                        "operator": "add",
+                        "operands": [
+                          {
+                            "id": "15fa5f33-84c8-5a28-a751-3baede5635ab",
+                            "kind": "quantity",
+                            "quantity": {
+                              "magnitude": 1,
+                              "units": "dimensionless"
+                            }
+                          },
+                          {
+                            "id": "4dcd481a-f31d-5bec-821f-9c7ef982f174",
+                            "kind": "reference",
+                            "target": {
+                              "value": "8b4634ba-56bb-43db-8097-b2e994437590"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "b0a32585-d4d5-5e72-89cf-e52d5415fb4b",
+                        "kind": "quantity",
+                        "quantity": {
+                          "magnitude": 2,
+                          "units": "dimensionless"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "5b82728b-259f-5225-9773-11926bb72b9a",
+            "kind": "binary",
+            "operator": "equal",
+            "operands": [
+              {
+                "id": "b54d4e9b-1e08-5261-afe5-c50d9d2c5d86",
+                "kind": "reference",
+                "target": {
+                  "value": "55e26f0e-b72f-43f5-a604-bc08da301e21",
+                  "movement": "y3"
+                }
+              },
+              {
+                "id": "b110e400-b393-5043-9f5b-605e8e48bc9f",
+                "kind": "binary",
+                "operator": "divide",
+                "operands": [
+                  {
+                    "id": "7ecbbaf9-63e0-5c50-a2be-a9f73df395c0",
+                    "kind": "reference",
+                    "target": {
+                      "value": "54fd1b2d-11e9-4823-9850-ce8c828014f9",
+                      "movement": "y3"
+                    }
+                  },
+                  {
+                    "id": "bf961731-d0a1-5c4b-ba80-c8b882801305",
+                    "kind": "binary",
+                    "operator": "power",
+                    "operands": [
+                      {
+                        "id": "a433270a-ddf5-58b9-9226-a35279996fe5",
+                        "kind": "binary",
+                        "operator": "add",
+                        "operands": [
+                          {
+                            "id": "9264c312-8f9f-5c04-8481-181333b2f510",
+                            "kind": "quantity",
+                            "quantity": {
+                              "magnitude": 1,
+                              "units": "dimensionless"
+                            }
+                          },
+                          {
+                            "id": "533d4ce2-71ba-5e2a-b065-38b2c30a2967",
+                            "kind": "reference",
+                            "target": {
+                              "value": "8b4634ba-56bb-43db-8097-b2e994437590"
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "5f95e76a-992f-502d-9796-d72316ad73a4",
+                        "kind": "quantity",
+                        "quantity": {
+                          "magnitude": 3,
+                          "units": "dimensionless"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "constraints": [
+          {
+            "id": "c8617d18-fc95-58c9-bbde-289dfb6757b7",
+            "predicate": "0e872a69-af4d-5668-86fe-e7313a753f18"
+          },
+          {
+            "id": "4a081c27-c8bd-553f-91b9-1f5e0d962728",
+            "predicate": "878f064b-8474-541e-813d-de9dac3e158f"
+          },
+          {
+            "id": "e06f2962-8fe5-5f52-9914-2626897912b7",
+            "predicate": "5b82728b-259f-5225-9773-11926bb72b9a"
+          }
+        ]
+      },
+      {
+        "id": "fbf09f5f-08fb-4e8c-b383-09149afdfb71",
+        "name": "present_value",
+        "bindings": [
+          {
+            "name": "value_0",
+            "value": "55e26f0e-b72f-43f5-a604-bc08da301e21"
+          },
+          {
+            "name": "value_1",
+            "value": "496e8183-be69-4930-ada4-79287808e46d"
+          }
+        ],
+        "expressions": [
+          {
+            "id": "3bdf3570-44ca-5f64-b712-b378ae6f8174",
+            "kind": "binary",
+            "operator": "equal",
+            "operands": [
+              {
+                "id": "fc6f0c52-b021-563e-b2c6-e719aa680838",
+                "kind": "reference",
+                "target": {
+                  "value": "496e8183-be69-4930-ada4-79287808e46d"
+                }
+              },
+              {
+                "id": "e38279f6-1987-5122-9f13-107fe284afa1",
+                "kind": "binary",
+                "operator": "add",
+                "operands": [
+                  {
+                    "id": "f841a3d1-1ebb-55b0-a568-9f353d336409",
+                    "kind": "binary",
+                    "operator": "add",
+                    "operands": [
+                      {
+                        "id": "009bb150-4213-5234-a4e0-cda902c40b10",
+                        "kind": "reference",
+                        "target": {
+                          "value": "55e26f0e-b72f-43f5-a604-bc08da301e21",
+                          "movement": "y1"
+                        }
+                      },
+                      {
+                        "id": "c2d29281-8a00-546b-b399-40aecc6f3e7c",
+                        "kind": "reference",
+                        "target": {
+                          "value": "55e26f0e-b72f-43f5-a604-bc08da301e21",
+                          "movement": "y2"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "c8b063b5-378d-5019-a41b-7a988f7eae61",
+                    "kind": "reference",
+                    "target": {
+                      "value": "55e26f0e-b72f-43f5-a604-bc08da301e21",
+                      "movement": "y3"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "constraints": [
+          {
+            "id": "217d01a9-cd04-5d72-8952-1ab2ff5c2767",
+            "predicate": "3bdf3570-44ca-5f64-b712-b378ae6f8174"
+          }
+        ]
+      }
+    ]
+  },
+  "provenance": {
+    "claims": [
+      {
+        "id": "aa7afa7a-973b-4bc8-9d23-54c5299d092b",
+        "kind": "asserted",
+        "content": {
+          "measure": "5d91a694-6cf6-4c8a-bba7-19862ad64000",
+          "quantity": {
+            "magnitude": 100.0,
+            "units": "AUD"
+          }
+        },
+        "method": {
+          "code": "rangekeeper.value.publication",
+          "version": "2",
+          "description": "Run 60115207-cb8b-4098-8d68-98770b4a2bac; Specification 4e0064b8-690d-4ced-ad17-4a1f23dc12e0; independently checked publication."
+        }
+      },
+      {
+        "id": "94ba8780-5484-4dc9-8a0a-4ad956b67e53",
+        "kind": "asserted",
+        "content": {
+          "measure": "0180aa64-07a4-495a-a7a1-0ea443a02486",
+          "quantity": {
+            "magnitude": 0.1,
+            "units": "dimensionless"
+          }
+        },
+        "method": {
+          "code": "rangekeeper.value.publication",
+          "version": "2",
+          "description": "Run 60115207-cb8b-4098-8d68-98770b4a2bac; Specification 4e0064b8-690d-4ced-ad17-4a1f23dc12e0; independently checked publication."
+        }
+      },
+      {
+        "id": "c56f2cdf-b963-4477-81c2-95ad77223c23",
+        "kind": "asserted",
+        "content": {
+          "measure": "5d91a694-6cf6-4c8a-bba7-19862ad64000",
+          "quantity": {
+            "magnitude": 272.72727272727275,
+            "units": "AUD"
+          }
+        },
+        "method": {
+          "code": "rangekeeper.value.publication",
+          "version": "2",
+          "description": "Run 60115207-cb8b-4098-8d68-98770b4a2bac; Specification 4e0064b8-690d-4ced-ad17-4a1f23dc12e0; independently checked publication."
+        }
+      },
+      {
+        "id": "a61acff3-86e3-4bf8-8108-b20752dc0007",
+        "kind": "asserted",
+        "content": {
+          "target": {
+            "value": "54fd1b2d-11e9-4823-9850-ce8c828014f9",
+            "movement": "y1"
+          },
+          "quantity": {
+            "magnitude": 100.0,
+            "units": "AUD"
+          }
+        },
+        "method": {
+          "code": "rangekeeper.movement.solution",
+          "version": "2",
+          "description": "Run 60115207-cb8b-4098-8d68-98770b4a2bac; Specification 4e0064b8-690d-4ced-ad17-4a1f23dc12e0; independently checked publication."
+        }
+      },
+      {
+        "id": "c34622c6-c481-45ba-b3d1-463a25b876de",
+        "kind": "asserted",
+        "content": {
+          "target": {
+            "value": "54fd1b2d-11e9-4823-9850-ce8c828014f9",
+            "movement": "y2"
+          },
+          "quantity": {
+            "magnitude": 110.0,
+            "units": "AUD"
+          }
+        },
+        "method": {
+          "code": "rangekeeper.movement.solution",
+          "version": "2",
+          "description": "Run 60115207-cb8b-4098-8d68-98770b4a2bac; Specification 4e0064b8-690d-4ced-ad17-4a1f23dc12e0; independently checked publication."
+        }
+      },
+      {
+        "id": "bbf4803c-d9fe-42e8-986e-52ce79f01fa1",
+        "kind": "asserted",
+        "content": {
+          "target": {
+            "value": "54fd1b2d-11e9-4823-9850-ce8c828014f9",
+            "movement": "y3"
+          },
+          "quantity": {
+            "magnitude": 121.00000000000001,
+            "units": "AUD"
+          }
+        },
+        "method": {
+          "code": "rangekeeper.movement.solution",
+          "version": "2",
+          "description": "Run 60115207-cb8b-4098-8d68-98770b4a2bac; Specification 4e0064b8-690d-4ced-ad17-4a1f23dc12e0; independently checked publication."
+        }
+      },
+      {
+        "id": "64bd5ded-6b5d-4a10-9245-6a332ebb610a",
+        "kind": "asserted",
+        "content": {
+          "measure": "5d91a694-6cf6-4c8a-bba7-19862ad64000",
+          "flow": {
+            "units": "AUD",
+            "movements": [
+              {
+                "key": "y1",
+                "period": {
+                  "start": "2027-01-01",
+                  "end": "2028-01-01"
+                },
+                "magnitude": 100.0,
+                "claims": [
+                  "a61acff3-86e3-4bf8-8108-b20752dc0007"
+                ]
+              },
+              {
+                "key": "y2",
+                "period": {
+                  "start": "2028-01-01",
+                  "end": "2029-01-01"
+                },
+                "magnitude": 110.0,
+                "claims": [
+                  "c34622c6-c481-45ba-b3d1-463a25b876de"
+                ]
+              },
+              {
+                "key": "y3",
+                "period": {
+                  "start": "2029-01-01",
+                  "end": "2030-01-01"
+                },
+                "magnitude": 121.00000000000001,
+                "claims": [
+                  "bbf4803c-d9fe-42e8-986e-52ce79f01fa1"
+                ]
+              }
+            ]
+          }
+        },
+        "method": {
+          "code": "rangekeeper.value.publication",
+          "version": "2",
+          "description": "Run 60115207-cb8b-4098-8d68-98770b4a2bac; Specification 4e0064b8-690d-4ced-ad17-4a1f23dc12e0; independently checked publication."
+        }
+      },
+      {
+        "id": "aa0c5357-3e40-4eac-b02d-ec69735611aa",
+        "kind": "asserted",
+        "content": {
+          "target": {
+            "value": "55e26f0e-b72f-43f5-a604-bc08da301e21",
+            "movement": "y1"
+          },
+          "quantity": {
+            "magnitude": 90.9090909090909,
+            "units": "AUD"
+          }
+        },
+        "method": {
+          "code": "rangekeeper.movement.solution",
+          "version": "2",
+          "description": "Run 60115207-cb8b-4098-8d68-98770b4a2bac; Specification 4e0064b8-690d-4ced-ad17-4a1f23dc12e0; independently checked publication."
+        }
+      },
+      {
+        "id": "fb9ce502-9bff-4ffd-8cf2-08a64e79e208",
+        "kind": "asserted",
+        "content": {
+          "target": {
+            "value": "55e26f0e-b72f-43f5-a604-bc08da301e21",
+            "movement": "y2"
+          },
+          "quantity": {
+            "magnitude": 90.9090909090909,
+            "units": "AUD"
+          }
+        },
+        "method": {
+          "code": "rangekeeper.movement.solution",
+          "version": "2",
+          "description": "Run 60115207-cb8b-4098-8d68-98770b4a2bac; Specification 4e0064b8-690d-4ced-ad17-4a1f23dc12e0; independently checked publication."
+        }
+      },
+      {
+        "id": "b9924b84-6ece-4a19-8c01-eb8a0a258ce1",
+        "kind": "asserted",
+        "content": {
+          "target": {
+            "value": "55e26f0e-b72f-43f5-a604-bc08da301e21",
+            "movement": "y3"
+          },
+          "quantity": {
+            "magnitude": 90.90909090909089,
+            "units": "AUD"
+          }
+        },
+        "method": {
+          "code": "rangekeeper.movement.solution",
+          "version": "2",
+          "description": "Run 60115207-cb8b-4098-8d68-98770b4a2bac; Specification 4e0064b8-690d-4ced-ad17-4a1f23dc12e0; independently checked publication."
+        }
+      },
+      {
+        "id": "107fa7dd-e38e-4c40-b707-230685e0c72b",
+        "kind": "asserted",
+        "content": {
+          "measure": "5d91a694-6cf6-4c8a-bba7-19862ad64000",
+          "flow": {
+            "units": "AUD",
+            "movements": [
+              {
+                "key": "y1",
+                "period": {
+                  "start": "2027-01-01",
+                  "end": "2028-01-01"
+                },
+                "magnitude": 90.9090909090909,
+                "claims": [
+                  "aa0c5357-3e40-4eac-b02d-ec69735611aa"
+                ]
+              },
+              {
+                "key": "y2",
+                "period": {
+                  "start": "2028-01-01",
+                  "end": "2029-01-01"
+                },
+                "magnitude": 90.9090909090909,
+                "claims": [
+                  "fb9ce502-9bff-4ffd-8cf2-08a64e79e208"
+                ]
+              },
+              {
+                "key": "y3",
+                "period": {
+                  "start": "2029-01-01",
+                  "end": "2030-01-01"
+                },
+                "magnitude": 90.90909090909089,
+                "claims": [
+                  "b9924b84-6ece-4a19-8c01-eb8a0a258ce1"
+                ]
+              }
+            ]
+          }
+        },
+        "method": {
+          "code": "rangekeeper.value.publication",
+          "version": "2",
+          "description": "Run 60115207-cb8b-4098-8d68-98770b4a2bac; Specification 4e0064b8-690d-4ced-ad17-4a1f23dc12e0; independently checked publication."
+        }
+      }
+    ],
+    "facts": [
+      {
+        "target": "9cdd5e16-778a-40e0-be09-ba8e6cccc252",
+        "claims": [
+          "aa7afa7a-973b-4bc8-9d23-54c5299d092b"
+        ]
+      },
+      {
+        "target": "8b4634ba-56bb-43db-8097-b2e994437590",
+        "claims": [
+          "94ba8780-5484-4dc9-8a0a-4ad956b67e53"
+        ]
+      },
+      {
+        "target": "496e8183-be69-4930-ada4-79287808e46d",
+        "claims": [
+          "c56f2cdf-b963-4477-81c2-95ad77223c23"
+        ]
+      },
+      {
+        "target": "54fd1b2d-11e9-4823-9850-ce8c828014f9",
+        "claims": [
+          "64bd5ded-6b5d-4a10-9245-6a332ebb610a"
+        ]
+      },
+      {
+        "target": "55e26f0e-b72f-43f5-a604-bc08da301e21",
+        "claims": [
+          "107fa7dd-e38e-4c40-b707-230685e0c72b"
+        ]
+      }
+    ]
+  }
+}

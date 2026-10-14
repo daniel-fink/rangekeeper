@@ -1,0 +1,54 @@
+{
+  "id": "00000000-0000-0000-0000-000000000190",
+  "name": "fixture",
+  "bindings": [
+    {
+      "name": "value_0",
+      "value": "00000000-0000-0000-0000-000000000001"
+    }
+  ],
+  "expressions": [
+    {
+      "id": "cdab43f9-26f5-5109-b00f-23cd1fcb29f9",
+      "kind": "binary",
+      "operator": "equal",
+      "operands": [
+        {
+          "id": "ba83edb0-a664-58fb-8902-2f05da610483",
+          "kind": "reference",
+          "target": {
+            "target": "00000000-0000-0000-0000-000000000001"
+          }
+        },
+        {
+          "id": "90ee4622-b69f-5b8d-921e-cd4aeeb24052",
+          "kind": "binary",
+          "operator": "add",
+          "operands": [
+            {
+              "id": "d41677d7-f6ab-5207-a8c0-a328dbd5a298",
+              "kind": "reference",
+              "target": {
+                "target": "00000000-0000-0000-0000-000000000001"
+              }
+            },
+            {
+              "id": "4368de4c-9aac-5451-925a-44880c087383",
+              "kind": "quantity",
+              "quantity": {
+                "magnitude": 1,
+                "units": "AUD"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "constraints": [
+    {
+      "id": "0b45d1e8-1857-56f4-bcaf-5435a92bde7b",
+      "predicate": "cdab43f9-26f5-5109-b00f-23cd1fcb29f9"
+    }
+  ]
+}

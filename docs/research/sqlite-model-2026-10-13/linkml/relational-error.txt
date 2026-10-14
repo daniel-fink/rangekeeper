@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/Volumes/Data/Projects/Rangekeeper/tools/sqlite_spike/probe_linkml.py", line 45, in main
+    db.executescript(ddl)
+sqlite3.OperationalError: duplicate column name: call_id

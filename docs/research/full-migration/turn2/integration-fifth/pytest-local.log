@@ -1,0 +1,79 @@
+........................................................................ [  7%]
+........................................................................ [ 14%]
+........................................................................ [ 22%]
+........................................................................ [ 29%]
+.......................................F................................ [ 37%]
+........................................................................ [ 44%]
+........................................................................ [ 52%]
+........................................................................ [ 59%]
+....................F................................................... [ 67%]
+...................................................................F.... [ 74%]
+........................................................................ [ 82%]
+........................................................................ [ 89%]
+........................................................................ [ 97%]
+.........................                                                [100%]
+=================================== FAILURES ===================================
+__ test_independent_acceptance_rejects_solver_claim_and_serialized_tampering ___
+tests/test_execution.py:341: in test_independent_acceptance_rejects_solver_claim_and_serialized_tampering
+    proposed = publication.candidate(
+rangekeeper/execution/publication.py:24: in candidate
+    raise NumericalError('backend candidate does not contain exactly the unknown symbols')
+E   rangekeeper.execution.errors.NumericalError: backend candidate does not contain exactly the unknown symbols
+____________________ test_workflow_to_real_scalar_executor _____________________
+tests/test_model_consumers.py:233: in test_workflow_to_real_scalar_executor
+    summary = runpy.run_path(str(script))["run_example"](tmp_path / "example")
+../tools/workflow/scalar.py:112: in run_example
+    Expression(id=uuid4(), kind="reference", target=gross.id),
+rangekeeper/_schema/records.py:763: in __init__
+    self._initialize({
+rangekeeper/_records.py:152: in _initialize
+    else encode(value)
+rangekeeper/_records.py:147: in encode
+    return _json_copy(item)
+rangekeeper/_records.py:64: in _json_copy
+    raise TypeError(f"unsupported JSON value: {type(value).__name__}")
+E   TypeError: unsupported JSON value: UUID
+_______________________ test_parallel_streams_and_replay _______________________
+tests/test_scenarios_policies.py:25: in test_parallel_streams_and_replay
+    assert [r.model.to_data() for r in first] == [r.model.to_data() for r in reversed(other)]
+E   AssertionError: assert [{'definition.....}, ...]}]}}] == [{'definition.....}, ...]}]}}]
+E     
+E     At index 0 diff: {'metadata': {'id': 'bfd5682f-6eb1-58b3-9cf6-07dae2e8bbba', 'schema_version': '0.5.0', 'previous': '03eb2f0a-ceed-4bb3-b72d-9b4476ba44d3'}, 'definitions': {'measures': [{'id': 'b44e4172-0841-5fb8-8b50-a624450d7275', 'code': 'scenario_b1a02fa7f02b551abfc555d8f19a50d3', 'name': 'Normalized scenario quantity', 'units': 'dimensionless'}]}, 'system': {'formulations': [{'id': '0612abae-3345-51fd-a167-d614a948bf13', 'name': 'Scenario one', 'values': [{'measure': 'b44e4172-0841-5fb8-8b50-a624450d7275', 'quantity': {'magnitude': 0.005, 'units': 'dimensionless'},...
+E     
+E     ...Full output truncated (2 lines hidden), use '-vv' to show
+=============================== warnings summary ===============================
+rangekeeper/_legacy_duration.py:27
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/_legacy_duration.py:27: FutureWarning: 'Y' is deprecated and will be removed in a future version, please use 'YE' instead.
+    if value in ("10Y", "10Y-DEC"):
+
+rangekeeper/_legacy_duration.py:27
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/_legacy_duration.py:27: FutureWarning: 'Y-DEC' is deprecated and will be removed in a future version, please use 'YE-DEC' instead.
+    if value in ("10Y", "10Y-DEC"):
+
+rangekeeper/_legacy_duration.py:29
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/_legacy_duration.py:29: FutureWarning: 'Y' is deprecated and will be removed in a future version, please use 'YE' instead.
+    if value in ("5Y", "5Y-DEC"):
+
+rangekeeper/_legacy_duration.py:29
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/_legacy_duration.py:29: FutureWarning: 'Y-DEC' is deprecated and will be removed in a future version, please use 'YE-DEC' instead.
+    if value in ("5Y", "5Y-DEC"):
+
+rangekeeper/_legacy_duration.py:31
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/_legacy_duration.py:31: FutureWarning: 'Y' is deprecated and will be removed in a future version, please use 'YE' instead.
+    if value in ("2Y", "2Y-DEC"):
+
+rangekeeper/_legacy_duration.py:31
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/_legacy_duration.py:31: FutureWarning: 'Y-DEC' is deprecated and will be removed in a future version, please use 'YE-DEC' instead.
+    if value in ("2Y", "2Y-DEC"):
+
+rangekeeper/_legacy_duration.py:33
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/_legacy_duration.py:33: FutureWarning: 'Y' is deprecated and will be removed in a future version, please use 'YE' instead.
+    if value in ("Y", "YE", "YE-DEC", "Y-DEC", "A-DEC"):
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: /Volumes/Data/Projects/Rangekeeper/docs/research/full-migration/turn2/integration-fifth/pytest-local.xml -
+=========================== short test summary info ============================
+FAILED tests/test_execution.py::test_independent_acceptance_rejects_solver_claim_and_serialized_tampering
+FAILED tests/test_model_consumers.py::test_workflow_to_real_scalar_executor
+FAILED tests/test_scenarios_policies.py::test_parallel_streams_and_replay - A...
+3 failed, 958 passed, 7 warnings in 228.93s (0:03:48)

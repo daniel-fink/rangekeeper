@@ -1,0 +1,15 @@
+reformatted /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/scenarios/components.py
+reformatted /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/scenarios/plan.py
+reformatted /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/scenarios/_paths.py
+reformatted src/rangekeeper/calculations/distribution.py
+reformatted /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/scenarios/view.py
+reformatted src/rangekeeper/migration/scenarios.py
+reformatted src/rangekeeper/model/distribution.py
+reformatted src/tests/test_models.py
+reformatted src/tests/test_market_naming.py
+reformatted src/rangekeeper/model/_scenario.py
+reformatted /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/scenarios/market.py
+reformatted src/tests/test_calculations.py
+
+All done! ✨ 🍰 ✨
+12 files reformatted, 5 files left unchanged.

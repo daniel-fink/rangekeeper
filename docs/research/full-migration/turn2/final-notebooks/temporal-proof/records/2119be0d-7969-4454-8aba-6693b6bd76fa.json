@@ -1,0 +1,59 @@
+{
+  "kind": "Specification",
+  "document": {
+    "metadata": {
+      "id": "2119be0d-7969-4454-8aba-6693b6bd76fa",
+      "schema_version": "0.5.0"
+    },
+    "model": "3a5c1238-0056-40bf-9129-fae41e62cac6",
+    "assignments": [
+      {
+        "target": {
+          "value": "496e8183-be69-4930-ada4-79287808e46d"
+        },
+        "quantity": {
+          "magnitude": 300,
+          "units": "AUD"
+        }
+      },
+      {
+        "target": {
+          "value": "8b4634ba-56bb-43db-8097-b2e994437590"
+        },
+        "quantity": {
+          "magnitude": 0.1,
+          "units": "dimensionless"
+        }
+      }
+    ],
+    "unknowns": [
+      {
+        "value": "9cdd5e16-778a-40e0-be09-ba8e6cccc252"
+      },
+      {
+        "value": "54fd1b2d-11e9-4823-9850-ce8c828014f9",
+        "movement": "y1"
+      },
+      {
+        "value": "54fd1b2d-11e9-4823-9850-ce8c828014f9",
+        "movement": "y2"
+      },
+      {
+        "value": "54fd1b2d-11e9-4823-9850-ce8c828014f9",
+        "movement": "y3"
+      },
+      {
+        "value": "55e26f0e-b72f-43f5-a604-bc08da301e21",
+        "movement": "y1"
+      },
+      {
+        "value": "55e26f0e-b72f-43f5-a604-bc08da301e21",
+        "movement": "y2"
+      },
+      {
+        "value": "55e26f0e-b72f-43f5-a604-bc08da301e21",
+        "movement": "y3"
+      }
+    ]
+  }
+}

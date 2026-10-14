@@ -1,0 +1,48 @@
+{
+  "total_tests": 599,
+  "passed": 597,
+  "failures": [
+    [
+      "tests.test_adapters",
+      "test_supported_adapter_and_table_surfaces_are_explicit"
+    ],
+    [
+      "tests.test_formulas.TestSolver",
+      "test_residual"
+    ]
+  ],
+  "boundary_tests": 106,
+  "changed_existing_files": [
+    "src/rangekeeper/validate.py",
+    "src/rangekeeper/_validation.py",
+    "src/rangekeeper/errors.py",
+    "src/rangekeeper/specification/_validation.py",
+    "src/rangekeeper/specification/specification.py",
+    "src/rangekeeper/specification/_composition.py",
+    "src/rangekeeper/model/_expression.py",
+    "src/rangekeeper/model/_validation.py",
+    "src/rangekeeper/model/_formulation.py",
+    "src/rangekeeper/run/_validation.py",
+    "schema/checks/specification_composition_cases.py",
+    "schema/checks/models.py",
+    "schema/checks/expressions.py",
+    "schema/checks/formulations.py",
+    "schema/checks/runs.py",
+    "schema/checks/specifications.py",
+    "tools/schema/typecheck.py",
+    "docs/DOMAIN_MIGRATION_PLAN.md",
+    "docs/LIBRARY_ARCHITECTURE.md",
+    "docs/README.md",
+    "docs/RECORD_BOUNDARY.md",
+    "docs/DOMAIN_CORE.md",
+    "docs/DOMAIN_MIGRATION_MAP.md",
+    "docs/handoffs/2026-10-02-acausal-modelling.md",
+    ".github/workflows/schema-records.yml"
+  ],
+  "unchanged_initial_files": 285,
+  "head": "c91a76c941bac0a26fa18ad5a3105ab4641f22f0",
+  "index_changed_externally": [
+    "src/tests/test_validation_composition.py"
+  ],
+  "git_mutation_commands_run": false
+}

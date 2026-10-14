@@ -1,0 +1,78 @@
+"""Finite periodic growth equations; rates are per declared step, not inferred annual rates."""
+
+from uuid import UUID
+from rangekeeper.model import Model
+from rangekeeper.schema.records import Formulation, Reference
+from rangekeeper.model.formulation.flow import aligned, shape
+from rangekeeper.model.formulation.authoring import declare
+from rangekeeper.model.scope import target_value
+from rangekeeper.model.expression.authoring import (
+    reference,
+    literal,
+    equal,
+    add,
+    multiply,
+)
+
+
+def compound(
+    model: Model,
+    *,
+    id: UUID,
+    initial: Reference,
+    rate: Reference,
+    series: UUID,
+) -> Formulation:
+    """Declare first amount = initial, then prior amount * (1 + periodic rate).
+
+    Initial and rate are scalar References; series is a Flow Value UUID.
+    Initial uses series units; rate is dimensionless. All amounts can remain unresolved. A fixed dimensionless rate makes the
+    equations affine; an unknown rate generally does not. No amounts are read.
+    """
+    equations, prior = [], initial
+    for index, item in enumerate(shape(model, series).movements):
+        current = Reference(target=item.id)
+        rhs = (
+            reference(prior)
+            if index == 0
+            else multiply(reference(prior), add(literal(1), reference(rate)))
+        )
+        equations.append((str(item.id), equal(reference(current), rhs)))
+        prior = current
+    return declare(
+        id,
+        "compound",
+        equations,
+        (target_value(model, initial).id, target_value(model, rate).id, series),
+    )
+
+
+def linear(
+    model: Model,
+    *,
+    id: UUID,
+    initial: Reference,
+    increment: Reference,
+    series: UUID,
+) -> Formulation:
+    """Declare initial + step index * increment; first index is zero.
+
+    Initial and increment are scalar References in the series Flow units.
+    Series is a Flow Value UUID. Increment is an amount, not a proportional rate.
+    """
+    equations = [
+        (
+            str(m.id),
+            equal(
+                reference(Reference(target=m.id)),
+                add(reference(initial), multiply(literal(i), reference(increment))),
+            ),
+        )
+        for i, m in enumerate(shape(model, series).movements)
+    ]
+    return declare(
+        id,
+        "linear",
+        equations,
+        (target_value(model, initial).id, target_value(model, increment).id, series),
+    )

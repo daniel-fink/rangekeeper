@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-14",
+  "checkpoint": "097a26e68ce2926f6323f0873346b36537550219",
+  "protected_refs": {
+    "develop": "2c514cbc0e8c5436d65c142166e5bf3d56609f88",
+    "main": "6732e83d277c8de81f3dec2906e06d0e75d3b6fa",
+    "gh-pages": "06c085aa5d4d5a7fd213d913d9ab3138d54de02b"
+  },
+  "legacy_walkthrough_tree": "f9259ab9edc03062dd2f611e63a2e26dcfc125ab",
+  "legacy_files_identical": 177,
+  "shared_capture_files_identical": 10,
+  "pages_source": {
+    "branch": "gh-pages",
+    "path": "/"
+  },
+  "wheel_sha256": "ef480a0b63f79a52ee4f6b6d10b4209d7ec004059df7a69b2bdbbff8d735c26c",
+  "checks": {
+    "library_tests": 852,
+    "sqlite_tests": 26,
+    "schema_artifacts": 6,
+    "schema_classes": 72,
+    "native_round_trips": 16,
+    "typing_sources": 142,
+    "installed_wheel": "passed",
+    "source_archive_and_wheel": "passed",
+    "documentation_links": "passed",
+    "preexisting_whitespace_files_unchanged": 42,
+    "sqlite_offline_reopen": "passed"
+  }
+}

@@ -1,0 +1,48 @@
+........................................................................ [  6%]
+........................................................................ [ 13%]
+........................................................................ [ 19%]
+........................................................................ [ 26%]
+........................................................................ [ 33%]
+........................................................................ [ 39%]
+........................................................................ [ 46%]
+.....................................................................sss [ 53%]
+.sssssssssssssssssss......................................ss............ [ 59%]
+........................................................................ [ 66%]
+........................................................................ [ 72%]
+........................................................................ [ 79%]
+........................................................................ [ 86%]
+........................................................................ [ 92%]
+........................................................................ [ 99%]
+.....                                                                    [100%]
+=============================== warnings summary ===============================
+rangekeeper/_legacy_duration.py:27
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/_legacy_duration.py:27: FutureWarning: 'Y' is deprecated and will be removed in a future version, please use 'YE' instead.
+    if value in ("10Y", "10Y-DEC"):
+
+rangekeeper/_legacy_duration.py:27
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/_legacy_duration.py:27: FutureWarning: 'Y-DEC' is deprecated and will be removed in a future version, please use 'YE-DEC' instead.
+    if value in ("10Y", "10Y-DEC"):
+
+rangekeeper/_legacy_duration.py:29
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/_legacy_duration.py:29: FutureWarning: 'Y' is deprecated and will be removed in a future version, please use 'YE' instead.
+    if value in ("5Y", "5Y-DEC"):
+
+rangekeeper/_legacy_duration.py:29
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/_legacy_duration.py:29: FutureWarning: 'Y-DEC' is deprecated and will be removed in a future version, please use 'YE-DEC' instead.
+    if value in ("5Y", "5Y-DEC"):
+
+rangekeeper/_legacy_duration.py:31
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/_legacy_duration.py:31: FutureWarning: 'Y' is deprecated and will be removed in a future version, please use 'YE' instead.
+    if value in ("2Y", "2Y-DEC"):
+
+rangekeeper/_legacy_duration.py:31
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/_legacy_duration.py:31: FutureWarning: 'Y-DEC' is deprecated and will be removed in a future version, please use 'YE-DEC' instead.
+    if value in ("2Y", "2Y-DEC"):
+
+rangekeeper/_legacy_duration.py:33
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/_legacy_duration.py:33: FutureWarning: 'Y' is deprecated and will be removed in a future version, please use 'YE' instead.
+    if value in ("Y", "YE", "YE-DEC", "Y-DEC", "A-DEC"):
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: /Volumes/Data/Projects/Rangekeeper/docs/research/full-migration/turn3/complete-suite.xml -
+1061 passed, 24 skipped, 7 warnings in 222.40s (0:03:42)

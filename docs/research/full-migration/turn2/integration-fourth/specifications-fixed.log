@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/Volumes/Data/Projects/Rangekeeper/schema/checks/specifications.py", line 501, in <module>
+    assert all(isinstance(ref, module.ValueId) for ref in record.unknowns)
+AssertionError

@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/Volumes/Data/Projects/Rangekeeper/docs/research/full-migration/turn4/verify_final.py", line 37, in <module>
+    assert digest(ROOT / name) == expected, name
+AssertionError: src/tests/test_immutable_graph.py

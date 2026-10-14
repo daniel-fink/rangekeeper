@@ -1,0 +1,63 @@
+............FF......F................F...............FF................. [ 55%]
+.........................................................                [100%]
+=================================== FAILURES ===================================
+_ test_complete_composed_investigations_pin_the_model[specification-composed-forward] _
+tests/test_domain_specification.py:169: in test_complete_composed_investigations_pin_the_model
+    assert {a.target.value for a in composition.requirements.assignments} == {
+tests/test_domain_specification.py:169: in <setcomp>
+    assert {a.target.value for a in composition.requirements.assignments} == {
+E   TypeError: unhashable type: 'ValueReference'
+_ test_complete_composed_investigations_pin_the_model[specification-composed-inverse] _
+tests/test_domain_specification.py:169: in test_complete_composed_investigations_pin_the_model
+    assert {a.target.value for a in composition.requirements.assignments} == {
+tests/test_domain_specification.py:169: in <setcomp>
+    assert {a.target.value for a in composition.requirements.assignments} == {
+E   TypeError: unhashable type: 'ValueReference'
+__________ test_locally_known_role_target_cannot_masquerade_as_value ___________
+tests/test_domain_specification.py:270: in test_locally_known_role_target_cannot_masquerade_as_value
+    with pytest.raises(ReferenceTypeError, match="wrong local record kind"):
+E   Failed: DID NOT RAISE <class 'rangekeeper.errors.ReferenceTypeError'>
+__ test_independent_acceptance_rejects_solver_claim_and_serialized_tampering ___
+tests/test_execution.py:331: in test_independent_acceptance_rejects_solver_claim_and_serialized_tampering
+    run = Executor(store, backend=WrongCandidate()).execute(specification)
+rangekeeper/execution/executor.py:82: in execute
+    return self._execute(specification, documents)
+rangekeeper/execution/executor.py:192: in _execute
+    return self._scalar(specification)
+rangekeeper/execution/executor.py:258: in _scalar
+    result = self.backend.solve(
+tests/test_execution.py:323: in solve
+    values[CAPITAL] += 1000000
+E   KeyError: UUID('a947d40b-d9b0-54cb-a2a4-f8f598405ac2')
+___________ test_unconstrained_unknown_has_explicit_choice_evidence ____________
+tests/test_execution.py:522: in test_unconstrained_unknown_has_explicit_choice_evidence
+    investigation = Specification.from_data(
+rangekeeper/specification/specification.py:86: in from_data
+    return cls(SpecificationRecord.from_data(data))
+rangekeeper/_records.py:169: in from_data
+    record._set_data(data)
+rangekeeper/_records.py:162: in _set_data
+    validate(self._kind, data).raise_if_invalid()
+rangekeeper/diagnostics.py:30: in raise_if_invalid
+    raise ValidationError(self)
+E   rangekeeper.errors.ValidationError: /unknowns/0: '9d86011c-1658-5c10-87c1-94d281b74e96' is not of type 'object'
+_________ test_real_simplex_iteration_limit_has_no_infeasibility_claim _________
+tests/test_execution.py:616: in test_real_simplex_iteration_limit_has_no_infeasibility_claim
+    specification = Specification.from_data(
+rangekeeper/specification/specification.py:86: in from_data
+    return cls(SpecificationRecord.from_data(data))
+rangekeeper/_records.py:169: in from_data
+    record._set_data(data)
+rangekeeper/_records.py:162: in _set_data
+    validate(self._kind, data).raise_if_invalid()
+rangekeeper/diagnostics.py:30: in raise_if_invalid
+    raise ValidationError(self)
+E   rangekeeper.errors.ValidationError: /unknowns/0: '6dbcaf4b-3454-4c30-aa1d-57f38e470a3f' is not of type 'object'; /unknowns/1: 'ead93b70-53ad-4764-a154-63a41ed0d483' is not of type 'object'
+=========================== short test summary info ============================
+FAILED tests/test_domain_specification.py::test_complete_composed_investigations_pin_the_model[specification-composed-forward]
+FAILED tests/test_domain_specification.py::test_complete_composed_investigations_pin_the_model[specification-composed-inverse]
+FAILED tests/test_domain_specification.py::test_locally_known_role_target_cannot_masquerade_as_value
+FAILED tests/test_execution.py::test_independent_acceptance_rejects_solver_claim_and_serialized_tampering
+FAILED tests/test_execution.py::test_unconstrained_unknown_has_explicit_choice_evidence
+FAILED tests/test_execution.py::test_real_simplex_iteration_limit_has_no_infeasibility_claim
+6 failed, 123 passed in 88.53s (0:01:28)

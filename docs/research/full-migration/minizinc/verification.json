@@ -1,0 +1,29 @@
+{
+  "full_suite": {
+    "tests": 1097,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0
+  },
+  "full_suite_environment": {
+    "python": "3.10.19 (main, Jan 14 2026, 23:38:29) [Clang 21.1.4 ]",
+    "pytest": "8.4.2",
+    "z3-solver": "5.1.0.0",
+    "jsonschema": "4.26.0",
+    "pint": "0.24.4",
+    "matplotlib": "3.10.6"
+  },
+  "protected_unchanged": {
+    ".gitignore": true,
+    "src/uv.sync-conflict-20261005-170953-H3RQGJU.lock": true,
+    "src/pyproject.toml": true
+  },
+  "accepted_input_hashes_unchanged": true,
+  "checked_document_links": 128,
+  "excluded": [
+    "src/tests/legacy/test_api.py (three live service tests)"
+  ],
+  "remote_ci": "not run; requires a push",
+  "linux_native_execution": "not run on macOS",
+  "commit_push_publication": false
+}

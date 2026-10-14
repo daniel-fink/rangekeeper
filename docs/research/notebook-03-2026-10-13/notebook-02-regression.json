@@ -1,0 +1,91 @@
+{
+  "python": "3.12.12 (main, Jan 14 2026, 23:36:32) [Clang 21.1.4 ]",
+  "rangekeeper_file": "/var/folders/sk/cjq5zjks7gx_3tf9m67y43xr0000gn/T/rk-book-v2-k_5bzlbs/env/lib/python3.12/site-packages/rangekeeper/__init__.py",
+  "versions": {
+    "rangekeeper": "0.8.71",
+    "polars": "1.44.2",
+    "plotly": "6.5.0",
+    "pyvis": "0.3.2",
+    "nbclient": "0.10.2",
+    "jupyter-book": "2.1.7"
+  },
+  "counts": {
+    "objects": 50,
+    "relationships": 63,
+    "floors": 33,
+    "physical_utilities": 3,
+    "capex_contributors": 36,
+    "changed_residential_floors": 12
+  },
+  "gfa_m2": 42786.25911463894,
+  "first_egi": 14402849.551660916,
+  "first_opex": -6268157.663559518,
+  "first_capex_payment": -5919092.605691434,
+  "sale_value": 284674637.70791095,
+  "reference_asset_value": 209491758.69565037,
+  "independent_asset_value": 209491758.69565034,
+  "variant_asset_value": 225427188.0771188,
+  "comparison": [
+    {
+      "Component": "Building A",
+      "Affected floors": 4,
+      "EGI change, 2001 (AUD)": 102316.38899587216,
+      "Reference value (AUD)": 131984205.3041169,
+      "Variant value (AUD)": 134659207.14337608,
+      "Change (AUD)": 2675001.8392591774
+    },
+    {
+      "Component": "Building B",
+      "Affected floors": 8,
+      "EGI change, 2001 (AUD)": 507199.3008558058,
+      "Reference value (AUD)": 98893428.65024567,
+      "Variant value (AUD)": 112153856.19245493,
+      "Change (AUD)": 13260427.542209268
+    },
+    {
+      "Component": "Shared plinth",
+      "Affected floors": 0,
+      "EGI change, 2001 (AUD)": 0.0,
+      "Reference value (AUD)": -21385875.258712173,
+      "Variant value (AUD)": -21385875.258712173,
+      "Change (AUD)": 0.0
+    },
+    {
+      "Component": "Property",
+      "Affected floors": 12,
+      "EGI change, 2001 (AUD)": 609515.689851678,
+      "Reference value (AUD)": 209491758.69565037,
+      "Variant value (AUD)": 225427188.0771188,
+      "Change (AUD)": 15935429.381468445
+    }
+  ],
+  "sunburst_checks": {
+    "gfa-sunburst.html": {
+      "root_total": 42786.25911463893,
+      "unique_ids": 50
+    },
+    "income-sunburst.html": {
+      "root_total": 14402849.551660916,
+      "unique_ids": 50
+    },
+    "opex-sunburst.html": {
+      "root_total": 6268157.663559519,
+      "unique_ids": 50
+    },
+    "capex-sunburst.html": {
+      "root_total": 5919092.605691433,
+      "unique_ids": 50
+    }
+  },
+  "source_model_unchanged": true,
+  "checks": [
+    "independent CSV arithmetic for all 11 annual EGI/OPEX/CAPEX values",
+    "36 unique contributors",
+    "NOI + CAPEX = NACF each year",
+    "branch-to-property cash flows and value",
+    "12 affected residential floors",
+    "immutable source Model",
+    "year-end discounting and 2010 sale"
+  ],
+  "elapsed_seconds": 5.476
+}

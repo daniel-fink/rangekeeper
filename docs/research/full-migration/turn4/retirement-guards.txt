@@ -1,0 +1,6 @@
+ImportError while loading conftest '/Volumes/Data/Projects/Rangekeeper/src/tests/conftest.py'.
+tests/__init__.py:1: in <module>
+    from . import models as models
+tests/models/__init__.py:4: in <module>
+    from . import linear_graph as linear_graph
+E   ImportError: cannot import name 'linear_graph' from partially initialized module 'tests.models' (most likely due to a circular import) (/Volumes/Data/Projects/Rangekeeper/src/tests/models/__init__.py)

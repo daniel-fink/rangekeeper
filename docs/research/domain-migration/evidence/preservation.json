@@ -1,0 +1,9 @@
+{
+  "changed_tracked_paths": [
+    "docs/MODEL_SPECIFICATION_RUN.md",
+    "docs/PROJECT_DEFINITION_AND_POLICY_EXAMPLE.md",
+    "schema/README.md"
+  ],
+  "changed_protected_paths": [],
+  "tracked_paths_checked": 488
+}

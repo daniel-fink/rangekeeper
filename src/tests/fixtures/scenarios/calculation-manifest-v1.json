@@ -1,0 +1,22 @@
+{
+  "manifest": {
+    "format": "scenario-calculation/v1",
+    "name": "rangekeeper.scenarios.market",
+    "sources": {
+      "scenarios/_paths.py": "abababababababababababababababababababababababababababababababab"
+    },
+    "resources": {
+      "_schema/schema.json": "1212121212121212121212121212121212121212121212121212121212121212"
+    },
+    "versions": [
+      {
+        "name": "python",
+        "version": "fixture"
+      }
+    ],
+    "currencies": [
+      "AUD"
+    ]
+  },
+  "fingerprint": "6d97398fff0e0261fc77f899c18aa55982377c7dc96f6c9ae9a18130b8f51669"
+}

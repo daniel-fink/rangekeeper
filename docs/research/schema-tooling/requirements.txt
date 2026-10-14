@@ -1,0 +1,4 @@
+linkml==1.11.1
+linkml-runtime==1.11.1
+pydantic==2.13.5
+jsonschema==4.26.0

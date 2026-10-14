@@ -1,0 +1,9 @@
+  Determining projects to restore...
+  Restored /Volumes/Data/Projects/Whirlwind/whirlwind-mcp/integrations/rhino/Whirlwind.Rhino.csproj (in 184 ms).
+  Whirlwind.Rhino -> /Volumes/Data/Projects/Whirlwind/whirlwind-mcp/integrations/rhino/bin/Debug/net8.0/Whirlwind.Rhino.gha
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.29

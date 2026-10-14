@@ -1,0 +1,192 @@
+{
+  "checked_at": "2026-10-06T04:33:32.037576+00:00",
+  "repositories": {
+    "rk": {
+      "head": "305f3ff6d460834ea803bae2fa6ad5c48a1627c9",
+      "branch": "acausal-modelling",
+      "status": "M .gitignore\n M README.md\n M docs/CONSUMER_MIGRATION.md\n M docs/DOMAIN_MIGRATION_MAP.md\n M docs/DOMAIN_MIGRATION_PLAN.md\n M docs/FULL_MIGRATION_REVIEW.md\n M docs/GRAPH_MODEL.md\n M docs/LEGACY_UPGRADE_GUIDE.md\n M docs/LIBRARY_ARCHITECTURE.md\n M docs/README.md\n M docs/handoffs/2026-10-02-acausal-modelling.md\n M src/README.md\n M src/docs/examples/excel_ingestion.py\n M src/docs/examples/ingestion_evidence.py\n M src/pyproject.toml\n M src/rangekeeper/__init__.py\n D src/rangekeeper/_legacy_duration.py\n D src/rangekeeper/distribution.py\n D src/rangekeeper/dynamics/__init__.py\n D src/rangekeeper/dynamics/black_swan.py\n D src/rangekeeper/dynamics/cyclicality.py\n D src/rangekeeper/dynamics/market.py\n D src/rangekeeper/dynamics/noise.py\n D src/rangekeeper/dynamics/trend.py\n D src/rangekeeper/dynamics/volatility.py\n D src/rangekeeper/extrapolation.py\n D src/rangekeeper/flux.py\n D src/rangekeeper/format.py\n D src/rangekeeper/formula/__init__.py\n D src/rangekeeper/formula/financial.py\n D src/rangekeeper/policy.py\n D src/rangekeeper/projection.py\n D src/rangekeeper/segmentation.py\n D src/rangekeeper/space.py\n M src/tests/models/__init__.py\n D src/tests/models/linear_graph.py\n M src/tests/test_calculation_equivalence.py\n M src/tests/test_dynamics.py\n M src/tests/test_immutable_graph.py\n M src/tests/test_modules.py\n M src/tests/test_projections.py\n M src/uv.lock\n M tools/schema/verify_install.py\n M walkthrough/README.md\n D walkthrough/_build/.doctrees/basic_dcf.doctree\n D walkthrough/_build/.doctrees/deterministic_scenarios.doctree\n D walkthrough/_build/.doctrees/drive_model_from_design.doctree\n D walkthrough/_build/.doctrees/environment.pickle\n D walkthrough/_build/.doctrees/flexibility_intro.doctree\n D walkthrough/_build/.doctrees/flexibility_under_uncertainty.doctree\n D walkthrough/_build/.doctrees/intro.doctree\n D walkthrough/_build/.doctrees/load_design.doctree\n D walkthrough/_build/.doctrees/market_dynamics.doctree\n D walkthrough/_build/.jupyter_cache/__version__.txt\n D walkthrough/_build/.jupyter_cache/global.db\n M walkthrough/_build/html/_sources/basic_dcf.ipynb\n M walkthrough/_build/html/_sources/deterministic_scenarios.ipynb\n M walkthrough/_build/html/_sources/drive_model_from_design.ipynb\n M walkthrough/_build/html/_sources/flexibility_intro.ipynb\n M walkthrough/_build/html/_sources/flexibility_under_uncertainty.ipynb\n M walkthrough/_build/html/_sources/load_design.ipynb\n M walkthrough/_build/html/_sources/market_dynamics.ipynb\n M walkthrough/_build/html/basic_dcf.html\n M walkthrough/_build/html/design-output/accepted-model.json\n M walkthrough/_build/html/design-output/capex-sunburst.html\n M walkthrough/_build/html/design-output/capex-treemap.html\n M walkthrough/_build/html/design-output/egi-sunburst.html\n M walkthrough/_build/html/design-output/egi-treemap.html\n M walkthrough/_build/html/design-output/gfa-sunburst.html\n M walkthrough/_build/html/design-output/gfa-treemap.html\n M walkthrough/_build/html/design-output/opex-sunburst.html\n M walkthrough/_build/html/design-output/opex-treemap.html\n M walkthrough/_build/html/deterministic_scenarios.html\n M walkthrough/_build/html/drive_model_from_design.html\n M walkthrough/_build/html/flexibility_intro.html\n M walkthrough/_build/html/flexibility_under_uncertainty.html\n M walkthrough/_build/html/market_dynamics.html\n M walkthrough/_build/html/searchindex.js\n M walkthrough/_build/jupyter_execute/basic_dcf.ipynb\n M walkthrough/_build/jupyter_execute/deterministic_scenarios.ipynb\n M walkthrough/_build/jupyter_execute/drive_model_from_design.ipynb\n M walkthrough/_build/jupyter_execute/flexibility_intro.ipynb\n M walkthrough/_build/jupyter_execute/flexibility_under_uncertainty.ipynb\n M walkthrough/_build/jupyter_execute/load_design.ipynb\n M walkthrough/_build/jupyter_execute/market_dynamics.ipynb\n?? docs/FULL_MIGRATION_TURN4.md\n?? docs/research/full-migration/turn4/\n?? src/tests/fixtures/numerical/\n?? src/tests/test_retirement.py\n?? src/uv.sync-conflict-20261005-170953-H3RQGJU.lock",
+      "index_empty": true
+    },
+    "projects": {
+      "head": "6146ad2039278db773f3bdc2c159d82149d5abc1",
+      "branch": "feature/mandarin-assembly-layout",
+      "status": "M .gitignore\n M east-whisman/docs/canonical-migration.md\n M east-whisman/uv.lock\n M mandarin/docs/canonical-migration.md\n M mandarin/docs/yaml-rebuild.md\n M mandarin/uv.lock",
+      "index_empty": true
+    },
+    "layout": {
+      "head": "4e5aec42f16a18c4d715f5a2a1b879d98e0f71e3",
+      "branch": "feature/assembly-layout-constraints",
+      "status": "",
+      "index_empty": true
+    }
+  },
+  "protected_files_unchanged": 91,
+  "verification_inputs_unchanged": 377,
+  "intentionally_changed_verification_inputs": {
+    "src/tests/test_immutable_graph.py": {
+      "before": "a5e463f142c1a9fc57a97c4e759b8c861be9965d6ba38e014e630c9f0ee2fd95",
+      "after": "cb24849cacad3eda1d4233c7a85c4b990da71ed85e5f7e15933dfb5f34bf8b37"
+    },
+    "src/tests/test_calculation_equivalence.py": {
+      "before": "5563180b0a42d5e72d91a58442ee13a9c77877edf75feff27252ab5d0637fa5d",
+      "after": "e29c6f54d779780da94e3cc9d8c968ad60891dfcc08ab2cedad4c648d3f6bc60"
+    },
+    "src/tests/test_projections.py": {
+      "before": "ddb1aef2085777ef6a369753087a814f1ef1fe7c3a79dea402f78a49b51d973a",
+      "after": "b07466466db8b859082074171af32ab6fd5777143ee107af75fc15e723898397"
+    },
+    "src/tests/test_dynamics.py": {
+      "before": "777b939274c6b9f70a34f1105ccb9c994363800500877784d3bba8f368b7c173",
+      "after": "1f257cc36b620a5ba54254023fc437575de60b60051a3fce0846922af5fef254"
+    },
+    "src/tests/test_modules.py": {
+      "before": "f4937560953a2d4b670539ce727691d7049addd0e4fdc3f3e5c4c12009112d26",
+      "after": "eac15e8150aba7dd68a9fe960cf8ebcd93a6411efc2a22cbb3ae621368c0f21c"
+    },
+    "src/tests/models/__init__.py": {
+      "before": "829d650a9c9fdb5c11b901aa35b69712aabd53df8c88171aff99b77957465403",
+      "after": "bc1859c6222dc492a7ec692e5b1280e66443f33e3c4867e07fbda609f7d51873"
+    },
+    "src/tests/models/linear_graph.py": {
+      "before": "3655b9782ca5d0c811af6fc6ecbf0f3ffa4db63758f6e629aea170e2eb1a8d0f",
+      "after": null
+    },
+    "src/rangekeeper/policy.py": {
+      "before": "f29fac97b4a9704fc54f0a7047ac11f023a8b4d212cc3e1b72a66a3c7a090902",
+      "after": null
+    },
+    "src/rangekeeper/__init__.py": {
+      "before": "dc869dad0d0b12c1e9d7a93f0e9ff4ea24b6f5fc6f2bd45a193645f673892eb7",
+      "after": "e1cab764d561b611149acdbd1b5051aa162867090e238bad1499ad7effe5cb46"
+    },
+    "src/rangekeeper/format.py": {
+      "before": "c06c83887133117071ccd718f2b9781dff9dab73f4f33d6470e6e05c83c96a8e",
+      "after": null
+    },
+    "src/rangekeeper/_legacy_duration.py": {
+      "before": "7a861f4f4a9475e20af70532cd99da546b172196f0799bdc02435fe706d5f531",
+      "after": null
+    },
+    "src/rangekeeper/distribution.py": {
+      "before": "d82de3862d6b2c952cd2c781ced7506f5f7a84d85cd34b0a24418c905883a58b",
+      "after": null
+    },
+    "src/rangekeeper/space.py": {
+      "before": "8a5909be4c612d3e1fbcb712b6250585ab1015488f9cff9978006cba7c216ce6",
+      "after": null
+    },
+    "src/rangekeeper/projection.py": {
+      "before": "5c3b7960221366f13d2f19cf9db7db7ddbd368b7c50ed728d890ccb31b13f654",
+      "after": null
+    },
+    "src/rangekeeper/flux.py": {
+      "before": "146619124dd0f70ea7a79d2842b0c2a09c798684852cf8d8c87ebb05fe00fb65",
+      "after": null
+    },
+    "src/rangekeeper/extrapolation.py": {
+      "before": "65fb33d8ac24226c4430c08d65a17c469890c652207a64b57509129e3962614e",
+      "after": null
+    },
+    "src/rangekeeper/segmentation.py": {
+      "before": "faa6645d0ec96d22a9fe9b0e4688374c83fcc9a83aa287bd8460fdbaeca57129",
+      "after": null
+    },
+    "src/rangekeeper/dynamics/market.py": {
+      "before": "133167e7b1bc74ec387760cd363b47104c9f2db844aeafc700fdf8590480d3c6",
+      "after": null
+    },
+    "src/rangekeeper/dynamics/trend.py": {
+      "before": "f96aab46f9a64e3da6136e0fcfe0e5e655c4a4b5e70d432781a7d4fff7a6fda7",
+      "after": null
+    },
+    "src/rangekeeper/dynamics/black_swan.py": {
+      "before": "879fdfa7afadb23929c40f34e6d058f4ac22fee85aa629dadde3b2957e6746e9",
+      "after": null
+    },
+    "src/rangekeeper/dynamics/__init__.py": {
+      "before": "3e49e82de1cf09768d57f5d585691f248e640d115c223712e23d5f71b4256a45",
+      "after": null
+    },
+    "src/rangekeeper/dynamics/noise.py": {
+      "before": "852617b4c4fda2452853b9928d2a0e41e03792511cd395842f436bd3cde51598",
+      "after": null
+    },
+    "src/rangekeeper/dynamics/cyclicality.py": {
+      "before": "4067bad54d1cc8e1d126e428b709216c0ba4593b22e5c1c5619969719462b26e",
+      "after": null
+    },
+    "src/rangekeeper/dynamics/volatility.py": {
+      "before": "45898395b5a957ee2a271297e2728eb5a4e5217de28afd76a692b0815344682b",
+      "after": null
+    },
+    "src/rangekeeper/formula/__init__.py": {
+      "before": "e0e5f37490180c1c5078e3332d1e4c66f223c7121f14e4c4f5a36ef7316bc801",
+      "after": null
+    },
+    "src/rangekeeper/formula/financial.py": {
+      "before": "75d0f48e18ad9a7f2f18d5b7fd8efc1178135650b3a6b47ba2f55edee3b42a14",
+      "after": null
+    },
+    "tools/schema/verify_install.py": {
+      "before": "daba0fb4e2ed95923bafc57e538db5991c3a65bf21ef449f02e445d29a11d7e9",
+      "after": "2be157b0d75f5e2787a2eef9ff56114544ce7b759c5b62310a666fad1b1aea4c"
+    }
+  },
+  "wheel": "/private/tmp/rk-turn4-wheel/wheel/rangekeeper-0.8.71-py3-none-any.whl",
+  "wheel_sha256": "027a4cd6727a43f30de7b0ddf0cd6adf06355c73e91da5f866157d2c1dcfac14",
+  "packaged_files_equal_to_source": 260,
+  "canonical_runtime_csharp_and_source_notebooks_unchanged": true,
+  "removed_files": 30,
+  "notebooks": [
+    {
+      "name": "basic_dcf.ipynb",
+      "source_sha256": "c05ff5b8afa3d79455f56f857c7647849b2e23c9c35d0f4a56348027eceb5620",
+      "executed_sha256": "59672a424745a916284ab8019b5a8328b2f6d3c311f10feed6d685c874c40d4b"
+    },
+    {
+      "name": "deterministic_scenarios.ipynb",
+      "source_sha256": "4122aa195de36fc65459107a856e045aab14cec6ababdaebc9a7bd4a43343e57",
+      "executed_sha256": "de6974345a6cda020e85b256e56c3b951e9f4a0fe54f1422b2b7e79c35ed8186"
+    },
+    {
+      "name": "drive_model_from_design.ipynb",
+      "source_sha256": "b06be36c4c734e832795256b5065fd3aa946f3d6d423dd0855aac33c28760869",
+      "executed_sha256": "1beabb5cd46b6a6a3320c7ff1b9e2014f586ae86d70e31e37cc81b8269a3c482"
+    },
+    {
+      "name": "flexibility_intro.ipynb",
+      "source_sha256": "a129daed6effec90b2138ce2d81e037e3656550a67c58c400b4705acab558f2f",
+      "executed_sha256": "29f3b4f2e5d3135d6bbce15a494ee7300df94c29957379dbb432d4738f9209e6"
+    },
+    {
+      "name": "flexibility_under_uncertainty.ipynb",
+      "source_sha256": "be5441aa058e001a1eb5f00f135ee804ec0cb4a5bd4a53bc1c5bfab1f0e9d586",
+      "executed_sha256": "84ce9ccde2694b30433331e552766b05873e4aa63d3f381e94c1dff93e9a40c8"
+    },
+    {
+      "name": "load_design.ipynb",
+      "source_sha256": "055ddd566587ae2c734613fc5c8219797426445955522c371ddd50ad653f3830",
+      "executed_sha256": "53799ea232d7cd1d0f33799be9dfefe763c59b6dce934f73f0ab6dcc536df402"
+    },
+    {
+      "name": "market_dynamics.ipynb",
+      "source_sha256": "8662b13eb45e71a4d8984e122610c0e7229f3a705eb72ef630e1240168b4c075",
+      "executed_sha256": "9c88c527b8aa1e051e2bc3aa53f653890ce6c96ed56049566c4a36cb0d040c8a"
+    }
+  ],
+  "mandarin_code_cells_executed": 5,
+  "suite": {
+    "tests": 1082,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 24
+  },
+  "symbols": {
+    "held-windows": 386,
+    "removed": 283,
+    "retained": 2
+  },
+  "consumers": 95,
+  "open_gate": "Official Windows connector acceptance; predecessor dependency group retained",
+  "publication": "Only the earlier authorised paired Turn 3 checkpoint was committed and pushed; Turn 4 is uncommitted"
+}

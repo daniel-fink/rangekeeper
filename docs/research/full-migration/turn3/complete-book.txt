@@ -1,0 +1,90 @@
+Running Jupyter-Book v1.0.4.post1
+Source Folder: /private/tmp/rk-turn3-complete-book
+Config Path: /private/tmp/rk-turn3-complete-book/_config.yml
+Output Path: /private/tmp/rk-turn3-complete-book/_build/html
+[01mRunning Sphinx v7.4.7[39;49;00m
+[01mloading translations [en]... [39;49;00mdone
+[01mmaking output directory... [39;49;00mdone
+[etoc] Changing master_doc to 'intro'
+[01mmyst v3.0.1:[39;49;00m MdParserConfig(commonmark_only=False, gfm_only=False, enable_extensions={'dollarmath', 'tasklist', 'linkify', 'substitution', 'colon_fence'}, disable_syntax=[], all_links_external=False, links_external_new_tab=False, url_schemes=('mailto', 'http', 'https'), ref_domains=None, fence_as_directive=set(), number_code_blocks=[], title_to_header=False, heading_anchors=0, heading_slug_func=None, html_meta={}, footnote_transition=True, words_per_minute=200, substitutions={}, linkify_fuzzy_links=True, dmath_allow_labels=True, dmath_allow_space=True, dmath_allow_digits=True, dmath_double_inline=False, update_mathjax=True, mathjax_classes='tex2jax_process|mathjax_process|math|output_area', enable_checkboxes=False, suppress_warnings=[], highlight_code_blocks=True)
+[01mmyst-nb v1.4.0:[39;49;00m NbParserConfig(custom_formats={}, metadata_key='mystnb', cell_metadata_key='mystnb', kernel_rgx_aliases={}, eval_name_regex='^[a-zA-Z_][a-zA-Z0-9_]*$', execution_mode='off', execution_cache_path='', execution_excludepatterns=[], execution_timeout=6000, execution_in_temp=False, execution_allow_errors=False, execution_raise_on_error=False, execution_show_tb=False, merge_streams=False, render_plugin='default', remove_code_source=False, remove_code_outputs=False, scroll_outputs=False, code_prompt_show='Show code cell {type}', code_prompt_hide='Hide code cell {type}', number_source_lines=False, output_stderr='show', render_text_lexer='myst-ansi', render_error_lexer='ipythontb', render_image_options={}, render_figure_options={}, render_markdown_format='commonmark', output_folder='build', append_css=True, metadata_to_fm=False)
+Using jupyter-cache at: /private/tmp/rk-turn3-complete-book/_build/.jupyter_cache
+[01msphinx-multitoc-numbering v0.1.3:[39;49;00m Loaded
+checking bibtex cache... out of date
+parsing bibtex file /private/tmp/rk-turn3-complete-book/references.bib... parsed 1 entries
+[01mbuilding [mo]: [39;49;00mtargets for 0 po files that are out of date
+[01mwriting output... [39;49;00m
+[01mbuilding [html]: [39;49;00mtargets for 8 source files that are out of date
+[01mupdating environment: [39;49;00m[new config] 8 added, 0 changed, 0 removed
+[01mreading sources... [39;49;00m[ 12%] [35mbasic_dcf[39;49;00m
+[01mreading sources... [39;49;00m[ 25%] [35mdeterministic_scenarios[39;49;00m
+[01mreading sources... [39;49;00m[ 38%] [35mdrive_model_from_design[39;49;00m
+[01mreading sources... [39;49;00m[ 50%] [35mflexibility_intro[39;49;00m
+[01mreading sources... [39;49;00m[ 62%] [35mflexibility_under_uncertainty[39;49;00m
+[01mreading sources... [39;49;00m[ 75%] [35mintro[39;49;00m
+[01mreading sources... [39;49;00m[ 88%] [35mload_design[39;49;00m
+[01mreading sources... [39;49;00m[100%] [35mmarket_dynamics[39;49;00m
+
+[01mlooking for now-outdated files... [39;49;00mnone found
+[01mpickling environment... [39;49;00mdone
+[01mchecking consistency... [39;49;00mdone
+[01mpreparing documents... [39;49;00mdone
+[01mcopying assets... [39;49;00m
+[01mcopying static files... [39;49;00mdone
+[01mcopying extra files... [39;49;00mdone
+[01mcopying assets: [39;49;00mdone
+[01mwriting output... [39;49;00m[ 12%] [32mbasic_dcf[39;49;00m
+[01mwriting output... [39;49;00m[ 25%] [32mdeterministic_scenarios[39;49;00m
+[01mwriting output... [39;49;00m[ 38%] [32mdrive_model_from_design[39;49;00m
+[01mwriting output... [39;49;00m[ 50%] [32mflexibility_intro[39;49;00m
+[01mwriting output... [39;49;00m[ 62%] [32mflexibility_under_uncertainty[39;49;00m
+[01mwriting output... [39;49;00m[ 75%] [32mintro[39;49;00m
+[01mwriting output... [39;49;00m[ 88%] [32mload_design[39;49;00m
+[01mwriting output... [39;49;00m[100%] [32mmarket_dynamics[39;49;00m
+
+[01mgenerating indices... [39;49;00mgenindex done
+[01mwriting additional pages... [39;49;00msearch done
+[01mcopying images... [39;49;00m[  4%] [33mresources/FaREVuU-table1.1.jpg[39;49;00m
+[01mcopying images... [39;49;00m[  9%] [33m_build/jupyter_execute/56f654710331d25b3a4ff9f60b7c9fbd0868d3457749899ca47960a6638a5434.png[39;49;00m
+[01mcopying images... [39;49;00m[ 13%] [33m_build/jupyter_execute/88d9e608b9678de3c06ff346ead4e3280e06146b3ef42cdb0ffcb0cc57b49843.png[39;49;00m
+[01mcopying images... [39;49;00m[ 17%] [33m_build/jupyter_execute/8bbaa9c8f67e2142199d684ed3744349e425635c97b6d479645dbb2bbae372c5.png[39;49;00m
+[01mcopying images... [39;49;00m[ 22%] [33m_build/jupyter_execute/4e77bb10b40099bbaca1d0836055ebd8b6f0975e724328ce9cd5d30df4fcc69a.png[39;49;00m
+[01mcopying images... [39;49;00m[ 26%] [33m_build/jupyter_execute/da5a8287332ead837af27d83051e667e40e3d691799c34d134048f88a4642f62.png[39;49;00m
+[01mcopying images... [39;49;00m[ 30%] [33m_build/jupyter_execute/58b0a0d111824596a9521405e6c0ecfc16273685c1e3566d3465500bd1355687.png[39;49;00m
+[01mcopying images... [39;49;00m[ 35%] [33m_build/jupyter_execute/31c5fd1ebdb14d69642e382682871c156e343771d152a11d2e6872f369e9b0d2.png[39;49;00m
+[01mcopying images... [39;49;00m[ 39%] [33m_build/jupyter_execute/168f1e9f19721635c3c875a194cae7022737f58b23f8eab19816d25b59f3c1a4.png[39;49;00m
+[01mcopying images... [39;49;00m[ 43%] [33m_build/jupyter_execute/b28a05a99a3cbbe4e83ec89fa5dc3a80f4a628b8434902e6c94e234f43dfaa0b.png[39;49;00m
+[01mcopying images... [39;49;00m[ 48%] [33m_build/jupyter_execute/642a59175961d3e93e90b792d4060f7dd870a202a14db933037fcdee6dc3a5ae.png[39;49;00m
+[01mcopying images... [39;49;00m[ 52%] [33m_build/jupyter_execute/8cf25d7b07febdb062237ab0aaf97b867fbc426e2bf535d8b7601dc4d6667b3a.png[39;49;00m
+[01mcopying images... [39;49;00m[ 57%] [33m_build/jupyter_execute/b6d93f6fa4226a17267f475a8cf899377d2a93d5c05c6bf74ae9ab8468bc8fd1.png[39;49;00m
+[01mcopying images... [39;49;00m[ 61%] [33m_build/jupyter_execute/ff08584a8e98a6ccd3a017e350ad9321166026814eee95f32aa20655607f5f2d.png[39;49;00m
+[01mcopying images... [39;49;00m[ 65%] [33m_build/jupyter_execute/76ca13bdbc43354f898a6fdd7a2405cab55bf2aa11d4b98daa3db31b07fed459.png[39;49;00m
+[01mcopying images... [39;49;00m[ 70%] [33m_build/jupyter_execute/89b61f8ba66c50ca1b5299562281660a116f53c4ced3b0340fba55be66ad3273.png[39;49;00m
+[01mcopying images... [39;49;00m[ 74%] [33m_build/jupyter_execute/3a5b0b2ef4ddb789d48e184e62de18273651116bedb1bcae4c8d6d287c391efd.png[39;49;00m
+[01mcopying images... [39;49;00m[ 78%] [33mresources/rocket.png[39;49;00m
+[01mcopying images... [39;49;00m[ 83%] [33m_build/jupyter_execute/37fd49f7a20ca9b413afc28c8908ad9981e664d1111b14fa34b0d52386333d4e.png[39;49;00m
+[01mcopying images... [39;49;00m[ 87%] [33m_build/jupyter_execute/c7c54e2efd2e8f63365a39d624e1c2b44fbe440b38ba35e041f02b0b2983a636.png[39;49;00m
+[01mcopying images... [39;49;00m[ 91%] [33m_build/jupyter_execute/42ac2941f75c19a4fe1b8f7bf8b8bbbc5b25c3af5439e0b30e16b275c6ed99aa.png[39;49;00m
+[01mcopying images... [39;49;00m[ 96%] [33m_build/jupyter_execute/faafb3ca59c08769700549786adfbd8c2b21dad937b12fbef47dcb008896eda7.png[39;49;00m
+[01mcopying images... [39;49;00m[100%] [33m_build/jupyter_execute/6371f05e491c9fa40b37f3b6875bc41c6bca03c46d4903103361fecc730eed54.png[39;49;00m
+
+[01mdumping search index in English (code: en)... [39;49;00mdone
+[01mdumping object inventory... [39;49;00mdone
+[etoc] missing index.html written as redirect to 'intro.html'
+[01mbuild succeeded.[39;49;00m
+
+The HTML pages are in ../../../../private/tmp/rk-turn3-complete-book/_build/html.
+
+[92m===============================================================================[0m
+
+Finished generating HTML for book.
+Your book's HTML pages are here:
+    ../../../../private/tmp/rk-turn3-complete-book/_build/html/
+You can look at your book by opening this file in a browser:
+    ../../../../private/tmp/rk-turn3-complete-book/_build/html/index.html
+Or paste this line directly into your browser bar:
+    file:///private/tmp/rk-turn3-complete-book/_build/html/index.html            
+
+[92m===============================================================================[0m
+
+Built /private/tmp/rk-turn3-complete-book/_build/html

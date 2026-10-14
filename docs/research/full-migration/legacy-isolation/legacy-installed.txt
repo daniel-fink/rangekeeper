@@ -1,0 +1,2 @@
+Installed canonical conversion, explicit legacy Graph/Measure/API import, old wire roundtrip and table passed
+No service call or Windows connector acceptance was performed

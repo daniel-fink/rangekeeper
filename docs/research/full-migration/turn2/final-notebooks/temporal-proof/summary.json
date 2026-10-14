@@ -1,0 +1,14 @@
+{
+  "import_path": "/private/tmp/rk-turn2-final-wheel/site/rangekeeper/__init__.py",
+  "forward_pv": 272.72727272727275,
+  "inverse_initial": 110.00000000000001,
+  "ids": {
+    "initial": "9cdd5e16-778a-40e0-be09-ba8e6cccc252",
+    "rate": "8b4634ba-56bb-43db-8097-b2e994437590",
+    "cash": "54fd1b2d-11e9-4823-9850-ce8c828014f9",
+    "discounted": "55e26f0e-b72f-43f5-a604-bc08da301e21",
+    "pv": "496e8183-be69-4930-ada4-79287808e46d"
+  },
+  "policy_decisions": 2,
+  "policy_sale_date": "2022-12-31"
+}

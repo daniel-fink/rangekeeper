@@ -1,0 +1,14 @@
+{
+  "previous_wheel_matches_starting_hashes": true,
+  "python_syntax_matches_after_naming_substitution": [
+    "model/flow.py",
+    "model/_validation.py",
+    "calculations/_flow.py",
+    "calculations/series.py",
+    "calculations/financial.py",
+    "calculations/account.py",
+    "adapters/pandas.py",
+    "adapters/polars.py"
+  ],
+  "generated_slot_contract_matches_after_naming_substitution": true
+}

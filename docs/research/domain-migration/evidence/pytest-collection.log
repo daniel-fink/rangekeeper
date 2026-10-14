@@ -1,0 +1,508 @@
+tests/test_adapters.py::test_supported_adapter_and_table_surfaces_are_explicit
+tests/test_adapters.py::test_table_normalizes_and_freezes_columns_and_rows
+tests/test_adapters.py::test_table_rejects_invalid_columns_and_rows[columns0-rows0-non-empty strings]
+tests/test_adapters.py::test_table_rejects_invalid_columns_and_rows[columns1-rows1-duplicates]
+tests/test_adapters.py::test_table_rejects_invalid_columns_and_rows[columns2-rows2-extra]
+tests/test_adapters.py::test_table_rejects_invalid_columns_and_rows[columns3-rows3-missing]
+tests/test_adapters.py::test_table_rejects_string_columns_and_non_mapping_rows
+tests/test_adapters.py::test_pandas_table_round_trip_preserves_columns_rows_and_runtime_values
+tests/test_adapters.py::test_pandas_adapter_ignores_index_and_preserves_empty_columns
+tests/test_adapters.py::test_csv_composes_table_and_dataframe_adapters_with_pandas_inference
+tests/test_adapters.py::test_csv_rejects_rich_values_instead_of_stringifying_them
+tests/test_adapters.py::test_csv_preserves_empty_tables_and_single_column_none_rows
+tests/test_adapters.py::test_csv_rejects_non_finite_numbers
+tests/test_adapters.py::test_csv_accepts_real_scalars_creates_parents_and_returns_path
+tests/test_adapters.py::test_csv_rejects_unsupported_scalar_boundaries[inf]
+tests/test_adapters.py::test_csv_rejects_unsupported_scalar_boundaries[-inf]
+tests/test_adapters.py::test_csv_rejects_unsupported_scalar_boundaries[value2]
+tests/test_adapters.py::test_csv_rejects_unsupported_scalar_boundaries[value3]
+tests/test_adapters.py::test_graph_html_visualization_writes_the_selected_view
+tests/test_adapters.py::test_graph_html_wraps_invalid_json_options[options0]
+tests/test_adapters.py::test_graph_html_wraps_invalid_json_options[options1]
+tests/test_adapters.py::test_view_table_includes_taxonomy_code
+tests/test_adapters.py::test_view_table_default_schema_uses_qualified_domain_fields
+tests/test_adapters.py::test_view_table_projects_qualified_labels_features_and_missing_values
+tests/test_adapters.py::test_view_table_converts_measure_units_and_rejects_incompatible_units
+tests/test_adapters.py::test_arborescence_table_preserves_relationship_insertion_order
+tests/test_adapters.py::test_arborescence_table_rejects_invalid_views_and_missing_entity_id
+tests/test_adapters.py::test_arborescence_visualizations_return_plotly_traces
+tests/test_adapters.py::test_arborescence_visualization_rejects_rich_or_invalid_values
+tests/test_adapters.py::test_arborescence_visualization_label_fallback_and_validation
+tests/test_adapters.py::test_arborescence_visualization_rejects_invalid_topology[rows0-unique]
+tests/test_adapters.py::test_arborescence_visualization_rejects_invalid_topology[rows1-reference a row]
+tests/test_adapters.py::test_arborescence_visualization_rejects_invalid_topology[rows2-one arborescence]
+tests/test_adapters.py::test_arborescence_visualization_rejects_invalid_topology[rows3-one arborescence]
+tests/test_adapters.py::test_arborescence_visualization_rejects_invalid_numeric_values[True]
+tests/test_adapters.py::test_arborescence_visualization_rejects_invalid_numeric_values[-1]
+tests/test_adapters.py::test_arborescence_visualization_rejects_invalid_numeric_values[nan]
+tests/test_adapters.py::test_arborescence_visualization_rejects_invalid_numeric_values[inf]
+tests/test_adapters.py::test_arborescence_visualization_rejects_child_totals_above_parent
+tests/test_cytoscape_adapter.py::test_projection_uses_uuids_preserves_membership_and_exports_view
+tests/test_cytoscape_adapter.py::test_invalid_display_documents_fail_before_export
+tests/test_document_operations.py::test_nested_normalization_and_independent_copies
+tests/test_document_operations.py::test_reject_unsupported_specification_values[value0]
+tests/test_document_operations.py::test_reject_unsupported_specification_values[<lambda>]
+tests/test_document_operations.py::test_reject_unsupported_specification_values[nan]
+tests/test_document_operations.py::test_reject_unsupported_specification_values[inf]
+tests/test_document_operations.py::test_reject_unsupported_specification_values[value4]
+tests/test_document_operations.py::test_cycles_rejected_and_shared_containers_allowed
+tests/test_document_operations.py::test_fingerprint_type_and_order_semantics
+tests/test_document_operations.py::test_outcomes_and_method_version
+tests/test_document_operations.py::test_inspection_and_pagination_are_recorded
+tests/test_document_operations.py::test_cursor_snapshot_query_binding_and_empty_search
+tests/test_document_operations.py::test_bad_limits_are_api_errors[0]
+tests/test_document_operations.py::test_bad_limits_are_api_errors[501]
+tests/test_document_operations.py::test_bad_limits_are_api_errors[True]
+tests/test_document_operations.py::test_bad_limits_are_api_errors[50]
+tests/test_document_operations.py::test_foreign_location_and_unsupported_capability
+tests/test_document_operations.py::test_unexpected_backend_failure_is_not_a_diagnostic
+tests/test_dynamics.py::TestDynamics::test_trend
+tests/test_dynamics.py::TestDynamics::test_volatility
+tests/test_dynamics.py::TestDynamics::test_cyclicality
+tests/test_dynamics.py::TestDynamics::test_noise
+tests/test_dynamics.py::TestDynamics::test_black_swan
+tests/test_dynamics.py::TestDynamics::test_likelihoods
+tests/test_dynamics.py::TestDynamics::test_dynamic_modelling
+tests/test_dynamics.py::TestDynamics::test_policy
+tests/test_excel_ingestion.py::test_snapshot_fidelity_and_no_source_mutation
+tests/test_excel_ingestion.py::test_physical_extraction_keeps_blank_rows_and_issues
+tests/test_excel_ingestion.py::test_formula_lineage_and_distinct_missing_states
+tests/test_excel_ingestion.py::test_identities_repeated_reads_paths_columns_and_source_editions
+tests/test_excel_ingestion.py::test_snapshot_fingerprint_includes_observations
+tests/test_excel_ingestion.py::test_source_failures_have_diagnostics_without_fabricated_sources
+tests/test_excel_ingestion.py::test_extraction_mismatch_diagnostics[changes0-missing_sheet]
+tests/test_excel_ingestion.py::test_extraction_mismatch_diagnostics[changes1-layout_mismatch]
+tests/test_excel_ingestion.py::test_extraction_mismatch_diagnostics[changes2-missing_stop_marker]
+tests/test_excel_ingestion.py::test_empty_range_and_exact_typed_guards
+tests/test_excel_ingestion.py::test_navigation_inspection_truncation_and_literal_search
+tests/test_excel_ingestion.py::test_invalid_declarations_raise[changes0]
+tests/test_excel_ingestion.py::test_invalid_declarations_raise[changes1]
+tests/test_excel_ingestion.py::test_invalid_declarations_raise[changes2]
+tests/test_excel_ingestion.py::test_invalid_declarations_raise[changes3]
+tests/test_excel_ingestion.py::test_invalid_declarations_raise[changes4]
+tests/test_excel_ingestion.py::test_invalid_declarations_raise[changes5]
+tests/test_excel_ingestion.py::test_invalid_declarations_raise[changes6]
+tests/test_excel_ingestion.py::test_invalid_declarations_raise[changes7]
+tests/test_excel_ingestion.py::test_invalid_declarations_raise[changes8]
+tests/test_excel_ingestion.py::test_invalid_declarations_raise[changes9]
+tests/test_excel_ingestion.py::test_invalid_declarations_raise[changes10]
+tests/test_excel_ingestion.py::test_yaml_decoder_defaults_order_and_rejections
+tests/test_excel_ingestion.py::test_fresh_process_determinism_and_optional_import_isolation
+tests/test_excel_ingestion.py::test_reader_uses_one_captured_byte_sequence
+tests/test_excel_ingestion.py::test_missing_optional_reader_dependency_is_explicit
+tests/test_excel_ingestion.py::test_canonical_coordinates_and_single_cell_merge
+tests/test_excel_ingestion.py::test_missing_inspection_sheet_uses_actual_workbook_root
+tests/test_excel_ingestion.py::test_resolved_defaults_and_yaml_mapping_order_have_identical_operations
+tests/test_excel_ingestion.py::test_snapshot_construction_defects_propagate
+tests/test_excel_ingestion.py::test_inspection_and_extraction_share_missing_sheet_diagnostics
+tests/test_formulas.py::TestFinancial::test_simple_interest
+tests/test_formulas.py::TestFinancial::test_compounded_interest
+tests/test_formulas.py::TestFinancial::test_amortized_loan
+tests/test_formulas.py::TestFinancial::test_capitalized_interest
+tests/test_formulas.py::TestFinancial::test_balance
+tests/test_formulas.py::TestFinancial::test_balances
+tests/test_formulas.py::TestSolver::test_residual
+tests/test_graph_json.py::test_roundtrip_preserves_canonical_references_and_types
+tests/test_graph_json.py::test_invalid_documents_fail[<lambda>0]
+tests/test_graph_json.py::test_invalid_documents_fail[<lambda>1]
+tests/test_graph_json.py::test_invalid_documents_fail[<lambda>2]
+tests/test_graph_json.py::test_invalid_documents_fail[<lambda>3]
+tests/test_graph_json.py::test_invalid_documents_fail[<lambda>4]
+tests/test_graph_json.py::test_unknown_payload_and_cycles_do_not_overwrite
+tests/test_graph_json.py::test_duplicate_json_keys_and_unregistered_types
+tests/test_graph_json.py::test_named_timezone_ambiguous_fold
+tests/test_graph_json.py::test_malformed_payload_tags_fail[payload0]
+tests/test_graph_json.py::test_malformed_payload_tags_fail[payload1]
+tests/test_graph_json.py::test_malformed_payload_tags_fail[payload2]
+tests/test_graph_json.py::test_malformed_payload_tags_fail[payload3]
+tests/test_graph_json.py::test_malformed_payload_tags_fail[payload4]
+tests/test_graph_json.py::test_malformed_payload_tags_fail[payload5]
+tests/test_graph_json.py::test_malformed_payload_tags_fail[payload6]
+tests/test_graph_json.py::test_malformed_payload_tags_fail[payload7]
+tests/test_graph_json.py::test_malformed_payload_tags_fail[payload8]
+tests/test_graph_json.py::test_malformed_payload_tags_fail[payload9]
+tests/test_graph_json.py::test_conflicting_facts_and_all_temporal_scalars
+tests/test_immutable_graph.py::test_uuid_defaults_and_deterministic_uuid5
+tests/test_immutable_graph.py::test_entity_and_assembly_reject_blank_optional_text[-code]
+tests/test_immutable_graph.py::test_entity_and_assembly_reject_blank_optional_text[-name]
+tests/test_immutable_graph.py::test_entity_and_assembly_reject_blank_optional_text[   -code]
+tests/test_immutable_graph.py::test_entity_and_assembly_reject_blank_optional_text[   -name]
+tests/test_immutable_graph.py::test_entity_and_assembly_reject_non_text_optional_text[code]
+tests/test_immutable_graph.py::test_entity_and_assembly_reject_non_text_optional_text[name]
+tests/test_immutable_graph.py::test_retired_mutable_and_embedded_provenance_apis_are_absent
+tests/test_immutable_graph.py::test_graph_namespace_exports_are_exact_and_adapters_load_lazily
+tests/test_immutable_graph.py::test_reduction_factories_validate_requests
+tests/test_immutable_graph.py::test_aggregation_requires_exact_view_entity_keys
+tests/test_immutable_graph.py::test_taxonomy_is_frozen_single_root_and_acyclic
+tests/test_immutable_graph.py::test_definitions_and_measure_validation
+tests/test_immutable_graph.py::test_catalog_inputs_normalize_from_iterables_and_mappings
+tests/test_immutable_graph.py::test_classification_codes_are_unique_within_a_taxonomy
+tests/test_immutable_graph.py::test_identifiable_characteristics_and_keyed_views
+tests/test_immutable_graph.py::test_feature_values_may_be_arbitrary_and_are_shallowly_immutable
+tests/test_immutable_graph.py::test_characteristic_uuid_uniqueness_is_enforced_by_graph
+tests/test_immutable_graph.py::test_graph_requires_registered_definition_instances
+tests/test_immutable_graph.py::test_catalog_normalizes_validates_and_preserves_mapping_semantics
+tests/test_immutable_graph.py::test_semantic_definition_and_entity_lookup
+tests/test_immutable_graph.py::test_classification_codes_are_scoped_to_taxonomy
+tests/test_immutable_graph.py::test_definitions_return_the_taxonomy_owning_a_classification
+tests/test_immutable_graph.py::test_redundant_definition_lookup_facades_are_absent
+tests/test_immutable_graph.py::test_definition_lookup_errors_include_kind_and_scope
+tests/test_immutable_graph.py::test_taxonomy_hierarchy_requires_registered_classifications
+tests/test_immutable_graph.py::test_relationship_and_assembly_validation
+tests/test_immutable_graph.py::test_assembly_factory_retains_uuid_membership
+tests/test_immutable_graph.py::test_claim_kind_requirements_and_direct_dependencies
+tests/test_immutable_graph.py::test_location_references_are_generic_and_immutable
+tests/test_immutable_graph.py::test_claim_and_state_factories
+tests/test_immutable_graph.py::test_claim_uuid_uniqueness_is_global_in_graph
+tests/test_immutable_graph.py::test_graph_registers_one_fact_per_target_instance
+tests/test_immutable_graph.py::test_source_uuid_references_are_registered_instances
+tests/test_immutable_graph.py::test_provenance_discovers_claims_and_sources_in_dependency_order
+tests/test_immutable_graph.py::test_claim_dependency_cycles_are_rejected
+tests/test_immutable_graph.py::test_fact_states_and_reconciliation
+tests/test_immutable_graph.py::test_measurement_claims_compare_compatible_units
+tests/test_immutable_graph.py::test_measurement_and_entity_state_facts
+tests/test_immutable_graph.py::test_update_normalizes_and_validates_fields
+tests/test_immutable_graph.py::test_update_rejects_duplicate_and_conflicting_operations
+tests/test_immutable_graph.py::test_apply_rejects_invalid_graph_operations
+tests/test_immutable_graph.py::test_apply_is_atomic_and_requires_fact_replacement
+tests/test_immutable_graph.py::test_entity_removal_rejects_dependencies_then_cascades
+tests/test_immutable_graph.py::test_cascade_rejects_new_relationships_to_removed_entities
+tests/test_immutable_graph.py::test_view_traversal_and_pure_aggregation
+tests/test_immutable_graph.py::test_feature_aggregation_collects_raw_subtree_values
+tests/test_immutable_graph.py::test_distinct_uses_normal_python_equality
+tests/test_immutable_graph.py::test_feature_mode_rejects_ties_and_missing_subtrees_are_none
+tests/test_immutable_graph.py::test_view_infers_subgraph_and_aggregates_measurements
+tests/test_immutable_graph.py::test_view_filters_membership_and_relationship_endpoints
+tests/test_immutable_graph.py::test_assembly_view_is_exact_then_filters_normally
+tests/test_immutable_graph.py::test_measurement_aggregation_rules[AggregationRule.SUM-30]
+tests/test_immutable_graph.py::test_measurement_aggregation_rules[AggregationRule.MEAN-15]
+tests/test_immutable_graph.py::test_measurement_aggregation_rules[AggregationRule.MEDIAN-15]
+tests/test_immutable_graph.py::test_measurement_aggregation_rules[AggregationRule.MINIMUM-10]
+tests/test_immutable_graph.py::test_measurement_aggregation_rules[AggregationRule.MAXIMUM-20]
+tests/test_immutable_graph.py::test_measurement_aggregation_normalizes_canonical_units
+tests/test_immutable_graph.py::test_measurement_without_aggregation_rule_is_rejected
+tests/test_immutable_graph.py::test_feature_aggregation_supports_rich_values_without_mutating_them
+tests/test_immutable_graph.py::test_aggregation_rejects_empty_and_non_arborescent_views
+tests/test_immutable_graph.py::test_revision_diff_infers_deletions_and_provenance_changes
+tests/test_immutable_graph.py::test_revision_requires_aware_timestamp_and_non_empty_metadata
+tests/test_immutable_graph.py::test_revision_diff_requires_parent_and_reports_no_changes
+tests/test_immutable_graph.py::test_diff_reports_changed_claims_and_reconciliation
+tests/test_immutable_graph.py::test_definition_replacement_is_validated_and_diffed
+tests/test_immutable_graph.py::test_batch_addition_is_one_atomic_change
+tests/test_immutable_graph.py::test_tabular_and_icicle_projection_use_uuid_graph
+tests/test_immutable_graph.py::test_selected_measurement_coverage_excludes_inapplicable_children
+tests/test_immutable_graph.py::test_recursive_membership_preserves_direct_scope_and_shared_identity
+tests/test_immutable_graph.py::test_contributor_selection_does_not_bypass_tree_requirement
+tests/test_ingestion_evidence.py::test_public_surface
+tests/test_ingestion_evidence.py::test_optional_row_ids_and_normalization
+tests/test_ingestion_evidence.py::test_invalid_row_ids_and_duplicate_identified_rows
+tests/test_ingestion_evidence.py::test_reorder_and_filter_bundle_identity_with_values
+tests/test_ingestion_evidence.py::test_graph_projection_identity_and_arborescence_order
+tests/test_ingestion_evidence.py::test_exports_do_not_invent_metadata_columns
+tests/test_ingestion_evidence.py::test_supported_values[0]
+tests/test_ingestion_evidence.py::test_supported_values[False]
+tests/test_ingestion_evidence.py::test_supported_values[103]
+tests/test_ingestion_evidence.py::test_supported_values[1.25]
+tests/test_ingestion_evidence.py::test_supported_values[04.01]
+tests/test_ingestion_evidence.py::test_supported_values[value5]
+tests/test_ingestion_evidence.py::test_supported_values[value6]
+tests/test_ingestion_evidence.py::test_supported_values[value7]
+tests/test_ingestion_evidence.py::test_supported_values[value8]
+tests/test_ingestion_evidence.py::test_supported_values[value9]
+tests/test_ingestion_evidence.py::test_supported_values[value10]
+tests/test_ingestion_evidence.py::test_supported_values[value11]
+tests/test_ingestion_evidence.py::test_mutable_and_unsupported_payloads_rejected[value0]
+tests/test_ingestion_evidence.py::test_mutable_and_unsupported_payloads_rejected[value1]
+tests/test_ingestion_evidence.py::test_mutable_and_unsupported_payloads_rejected[value2]
+tests/test_ingestion_evidence.py::test_mutable_and_unsupported_payloads_rejected[nan]
+tests/test_ingestion_evidence.py::test_mutable_and_unsupported_payloads_rejected[inf]
+tests/test_ingestion_evidence.py::test_mutable_and_unsupported_payloads_rejected[value5]
+tests/test_ingestion_evidence.py::test_live_pint_rejected_without_changing_ordinary_table
+tests/test_ingestion_evidence.py::test_area_preserves_raw_and_unit_rule_evidence
+tests/test_ingestion_evidence.py::test_missing_formula_result_and_policy_separation
+tests/test_ingestion_evidence.py::test_conflict_and_explicit_resolution_keep_history
+tests/test_ingestion_evidence.py::test_reorder_filter_and_derived_column_keep_addresses
+tests/test_ingestion_evidence.py::test_missing_and_empty_total_fixtures_have_no_complete_zero
+tests/test_ingestion_evidence.py::test_empty_identified_evidence_and_no_unidentified_evidence
+tests/test_ingestion_evidence.py::test_claim_coverage_and_typed_value_agreement
+tests/test_ingestion_evidence.py::test_issue_scopes_lookup_and_frozen_collections
+tests/test_ingestion_evidence.py::test_issue_identity_excludes_prose_severity_details
+tests/test_ingestion_evidence.py::test_upstream_identity_conflicts_and_cycles
+tests/test_ingestion_evidence.py::test_fingerprint_determinism_and_changed_rule_source_value
+tests/test_ingestion_evidence.py::test_mapping_insertion_order_not_content_order
+tests/test_ingestion_evidence.py::test_native_source_property_to_table
+tests/test_ingestion_evidence.py::test_unsupported_content_including_table_subclasses[data0]
+tests/test_ingestion_evidence.py::test_unsupported_content_including_table_subclasses[data1]
+tests/test_ingestion_evidence.py::test_table_row_lookup_and_reordered_filtered_tables
+tests/test_ingestion_evidence.py::test_fingerprint_and_issue_identity_match_before_refactor
+tests/test_ingestion_evidence.py::test_public_imports_and_constructor_validation_in_fresh_process[evidence]
+tests/test_ingestion_evidence.py::test_public_imports_and_constructor_validation_in_fresh_process[validation]
+tests/test_ingestion_evidence.py::test_public_imports_and_constructor_validation_in_fresh_process[fingerprint]
+tests/test_ingestion_evidence.py::test_public_imports_and_constructor_validation_in_fresh_process[tabular]
+tests/test_measures.py::TestMeasures::test_currency
+tests/test_measures.py::TestMeasures::test_identity_is_uuid_based
+tests/test_measures.py::TestMeasures::test_measure_is_immutable
+tests/test_measures.py::TestMeasures::test_duplicate_measure_codes_are_rejected_by_definitions
+tests/test_measures.py::TestMeasures::test_quantity_validation
+tests/test_measures.py::TestMeasures::test_custom_derivative
+tests/test_measures.py::TestMeasures::test_eval_units
+tests/test_models.py::TestLinear::test_linear_model
+tests/test_models.py::TestDeterministic::test_deterministic_model
+tests/test_models.py::TestProbabilistic::test_probabilistic_model
+tests/test_models.py::TestFlexible::test_flexible_model
+tests/test_modules.py::TestDistribution::test_uniform_distribution_has_density_of_1
+tests/test_modules.py::TestDistribution::test_exponential_distribution_total_and_initial_match
+tests/test_modules.py::TestDistribution::test_PERT_distribution_sums_to_1
+tests/test_modules.py::TestDuration::test_offset
+tests/test_modules.py::TestPeriod::test_period_index_validity
+tests/test_modules.py::TestUnits::test_series_units
+tests/test_modules.py::TestUnits::test_remove_dim
+tests/test_modules.py::TestUnits::test_multiply_units
+tests/test_modules.py::TestFlow::test_flow_validity
+tests/test_modules.py::TestFlow::test_flow_duplication
+tests/test_modules.py::TestFlow::test_flow_summation
+tests/test_modules.py::TestFlow::test_flow_inversion
+tests/test_modules.py::TestFlow::test_resampling
+tests/test_modules.py::TestFlow::test_resample_origin_only_for_tick_offsets[Type.DAY-epoch]
+tests/test_modules.py::TestFlow::test_resample_origin_only_for_tick_offsets[Type.MONTH-None]
+tests/test_modules.py::TestFlow::test_resample_origin_only_for_tick_offsets[Type.QUARTER-None]
+tests/test_modules.py::TestFlow::test_resample_origin_only_for_tick_offsets[Type.YEAR-None]
+tests/test_modules.py::TestFlow::test_conversion_to_period_index
+tests/test_modules.py::TestFlow::test_distribution_as_input
+tests/test_modules.py::TestFlow::test_total
+tests/test_modules.py::TestStream::test_stream_validity
+tests/test_modules.py::TestStream::test_stream_aggregation
+tests/test_modules.py::TestStream::test_stream_duplication
+tests/test_modules.py::TestStream::test_stream_stream
+tests/test_modules.py::TestSpan::test_correct_span
+tests/test_modules.py::TestSpan::test_correct_spans
+tests/test_modules.py::TestSegmentation::test_interval
+tests/test_modules.py::TestSegmentation::test_division
+tests/test_modules.py::TestType::test_heritage
+tests/test_projections.py::TestProjection::test_rangeindex
+tests/test_projections.py::TestProjection::test_form
+tests/test_projections.py::TestProjection::test_extrapolation
+tests/test_projections.py::TestProjection::test_distribution
+tests/test_schema_graph_contract.py::test_shared_example_identity_membership_and_provenance
+tests/test_schema_graph_contract.py::test_semantic_rejections[dangling_endpoint]
+tests/test_schema_graph_contract.py::test_semantic_rejections[wrong_kind_endpoint]
+tests/test_schema_graph_contract.py::test_semantic_rejections[self_membership]
+tests/test_schema_graph_contract.py::test_semantic_rejections[cycle]
+tests/test_schema_graph_contract.py::test_semantic_rejections[missing_member]
+tests/test_schema_graph_contract.py::test_semantic_rejections[missing_member_endpoint]
+tests/test_schema_graph_contract.py::test_semantic_rejections[duplicate_member]
+tests/test_schema_graph_contract.py::test_semantic_rejections[duplicate_id]
+tests/test_schema_graph_contract.py::test_semantic_rejections[blank_key]
+tests/test_schema_graph_contract.py::test_semantic_rejections[duplicate_local_key]
+tests/test_schema_graph_contract.py::test_semantic_rejections[wrong_target]
+tests/test_schema_graph_contract.py::test_semantic_rejections[dangling_target]
+tests/test_schema_graph_contract.py::test_semantic_rejections[duplicate_fact]
+tests/test_schema_graph_contract.py::test_semantic_rejections[mismatched_claim]
+tests/test_schema_graph_contract.py::test_semantic_rejections[claim_cycle]
+tests/test_schema_graph_contract.py::test_semantic_rejections[wrong_source_kind]
+tests/test_schema_graph_contract.py::test_semantic_rejections[missing_method]
+tests/test_schema_graph_contract.py::test_semantic_rejections[duplicate_label_class]
+tests/test_schema_graph_contract.py::test_semantic_rejections[nonfinite_amount]
+tests/test_schema_graph_contract.py::test_semantic_rejections[wrong_reconciliation]
+tests/test_schema_graph_contract.py::test_semantic_rejections[empty_source]
+tests/test_schema_graph_contract.py::test_semantic_rejections[duplicate_entity_code]
+tests/test_schema_graph_contract.py::test_semantic_rejections[duplicate_measure_code]
+tests/test_schema_graph_contract.py::test_semantic_rejections[blank_taxonomy_code]
+tests/test_schema_graph_contract.py::test_semantic_rejections[unknown_classification]
+tests/test_schema_graph_contract.py::test_semantic_rejections[unknown_measure]
+tests/test_schema_graph_contract.py::test_semantic_rejections[wrong_kind_classification]
+tests/test_schema_graph_contract.py::test_semantic_rejections[wrong_kind_measure]
+tests/test_schema_graph_contract.py::test_semantic_rejections[parent_cycle]
+tests/test_schema_graph_contract.py::test_semantic_rejections[missing_parent]
+tests/test_schema_graph_contract.py::test_semantic_rejections[duplicate_definition_id]
+tests/test_schema_graph_contract.py::test_semantic_rejections[duplicate_classification_code]
+tests/test_schema_graph_contract.py::test_duplicate_record_fields_rejected_before_overwrite
+tests/test_schema_graph_contract.py::test_serialized_references_require_uuids[entity-apartment]
+tests/test_schema_graph_contract.py::test_serialized_references_require_uuids[entity-example.apartment]
+tests/test_schema_graph_contract.py::test_serialized_references_require_uuids[entity-reference2]
+tests/test_schema_graph_contract.py::test_serialized_references_require_uuids[label-apartment]
+tests/test_schema_graph_contract.py::test_serialized_references_require_uuids[label-example.apartment]
+tests/test_schema_graph_contract.py::test_serialized_references_require_uuids[label-reference2]
+tests/test_schema_graph_contract.py::test_serialized_references_require_uuids[measure-apartment]
+tests/test_schema_graph_contract.py::test_serialized_references_require_uuids[measure-example.apartment]
+tests/test_schema_graph_contract.py::test_serialized_references_require_uuids[measure-reference2]
+tests/test_schema_graph_contract.py::test_serialized_references_require_uuids[parent-apartment]
+tests/test_schema_graph_contract.py::test_serialized_references_require_uuids[parent-example.apartment]
+tests/test_schema_graph_contract.py::test_serialized_references_require_uuids[parent-reference2]
+tests/test_schema_graph_contract.py::test_serialized_references_require_uuids[claim-apartment]
+tests/test_schema_graph_contract.py::test_serialized_references_require_uuids[claim-example.apartment]
+tests/test_schema_graph_contract.py::test_serialized_references_require_uuids[claim-reference2]
+tests/test_schema_graph_contract.py::test_definition_renames_preserve_uuid_references_and_provenance
+tests/test_schema_graph_contract.py::test_parent_references_do_not_depend_on_list_order
+tests/test_schema_graph_contract.py::test_claim_measure_identity_cannot_be_replaced_by_matching_units
+tests/test_schema_graph_contract.py::test_quantity_units_can_differ_from_measure_canonical_units
+tests/test_schema_graph_contract.py::test_quantity_incompatible_units_rejected[value]
+tests/test_schema_graph_contract.py::test_quantity_incompatible_units_rejected[claim]
+tests/test_schema_graph_contract.py::test_quantity_unresolved_and_zero_remain_distinct[None]
+tests/test_schema_graph_contract.py::test_quantity_unresolved_and_zero_remain_distinct[content1]
+tests/test_schema_graph_contract.py::test_parent_must_belong_to_the_same_taxonomy
+tests/test_scoped_codes.py::test_codes_reject_blank_or_surrounding_whitespace[entity- A]
+tests/test_scoped_codes.py::test_codes_reject_blank_or_surrounding_whitespace[entity-A ]
+tests/test_scoped_codes.py::test_codes_reject_blank_or_surrounding_whitespace[entity-A\n]
+tests/test_scoped_codes.py::test_codes_reject_blank_or_surrounding_whitespace[entity-\tA]
+tests/test_scoped_codes.py::test_codes_reject_blank_or_surrounding_whitespace[entity-]
+tests/test_scoped_codes.py::test_codes_reject_blank_or_surrounding_whitespace[entity- ]
+tests/test_scoped_codes.py::test_codes_reject_blank_or_surrounding_whitespace[assembly- A]
+tests/test_scoped_codes.py::test_codes_reject_blank_or_surrounding_whitespace[assembly-A ]
+tests/test_scoped_codes.py::test_codes_reject_blank_or_surrounding_whitespace[assembly-A\n]
+tests/test_scoped_codes.py::test_codes_reject_blank_or_surrounding_whitespace[assembly-\tA]
+tests/test_scoped_codes.py::test_codes_reject_blank_or_surrounding_whitespace[assembly-]
+tests/test_scoped_codes.py::test_codes_reject_blank_or_surrounding_whitespace[assembly- ]
+tests/test_scoped_codes.py::test_codes_reject_blank_or_surrounding_whitespace[classification- A]
+tests/test_scoped_codes.py::test_codes_reject_blank_or_surrounding_whitespace[classification-A ]
+tests/test_scoped_codes.py::test_codes_reject_blank_or_surrounding_whitespace[classification-A\n]
+tests/test_scoped_codes.py::test_codes_reject_blank_or_surrounding_whitespace[classification-\tA]
+tests/test_scoped_codes.py::test_codes_reject_blank_or_surrounding_whitespace[classification-]
+tests/test_scoped_codes.py::test_codes_reject_blank_or_surrounding_whitespace[classification- ]
+tests/test_scoped_codes.py::test_codes_reject_blank_or_surrounding_whitespace[taxonomy- A]
+tests/test_scoped_codes.py::test_codes_reject_blank_or_surrounding_whitespace[taxonomy-A ]
+tests/test_scoped_codes.py::test_codes_reject_blank_or_surrounding_whitespace[taxonomy-A\n]
+tests/test_scoped_codes.py::test_codes_reject_blank_or_surrounding_whitespace[taxonomy-\tA]
+tests/test_scoped_codes.py::test_codes_reject_blank_or_surrounding_whitespace[taxonomy-]
+tests/test_scoped_codes.py::test_codes_reject_blank_or_surrounding_whitespace[taxonomy- ]
+tests/test_scoped_codes.py::test_codes_reject_blank_or_surrounding_whitespace[measure- A]
+tests/test_scoped_codes.py::test_codes_reject_blank_or_surrounding_whitespace[measure-A ]
+tests/test_scoped_codes.py::test_codes_reject_blank_or_surrounding_whitespace[measure-A\n]
+tests/test_scoped_codes.py::test_codes_reject_blank_or_surrounding_whitespace[measure-\tA]
+tests/test_scoped_codes.py::test_codes_reject_blank_or_surrounding_whitespace[measure-]
+tests/test_scoped_codes.py::test_codes_reject_blank_or_surrounding_whitespace[measure- ]
+tests/test_scoped_codes.py::test_entity_scope_includes_assemblies_and_allows_missing_codes
+tests/test_scoped_codes.py::test_uuid_resolution_ignores_duplicate_codes_across_taxonomies
+tests/test_scoped_codes.py::test_taxonomy_and_classification_codes_allow_literal_dots
+tests/test_scoped_codes.py::test_measure_and_entity_codes_still_allow_literal_dots
+tests/test_scoped_codes.py::test_uuid_shaped_code_does_not_override_identifier_resolution
+tests/test_scoped_codes.py::test_definition_scopes_collisions_and_key_mismatches
+tests/test_scoped_codes.py::test_code_rename_preserves_uuid_reference_and_changes_only_code_lookup
+tests/test_tabular_operations.py::test_spec_strict_and_immutable
+tests/test_tabular_operations.py::test_numbers_meanings_lineage_and_replay
+tests/test_tabular_operations.py::test_spec_and_order_affect_identity
+tests/test_tabular_operations.py::test_numeric_incompatibilities_and_empty
+tests/test_tabular_operations.py::test_select_order_partial_scopes_and_empty
+tests/test_tabular_operations.py::test_concat_scopes_order_empty_and_diagnostics
+tests/test_tabular_operations.py::test_concat_conflicting_claim_identity_is_diagnostic
+tests/test_tabular_operations.py::test_global_missing_issue_propagates_without_duplicates
+tests/test_tabular_operations.py::test_settings_lineage_and_policy_change_affect_claim_ids
+tests/test_tabular_operations.py::test_propagation_deduplicates_identical_projected_issues
+tests/test_tabular_operations.py::test_warnings_do_not_decide_numeric_availability
+tests/test_tabular_operations.py::test_concat_preserves_input_order_and_replay
+tests/test_tabular_operations.py::test_selection_preserves_global_and_row_issues
+tests/test_unresolved_measurements.py::test_unresolved_and_resolved_snapshots_preserve_identity_and_provenance
+tests/test_unresolved_measurements.py::test_zero_is_resolved_and_validation_still_applies
+tests/test_unresolved_measurements.py::test_unresolved_reduction_reports_missing_not_zero
+tests/test_unresolved_measurements.py::test_workflow_operands_preserve_unresolved_and_zero
+tests/test_validate.py::test_is_text_accepts_strings_and_optionally_rejects_empty_text
+tests/test_validate.py::test_is_text_rejects_non_strings_without_restricting_characters
+tests/test_validate.py::test_require_uuid_returns_uuids_and_reports_the_field
+tests/test_validate.py::test_require_text_rejects_non_strings_and_empty_text
+tests/test_validate.py::test_optional_text_supports_none_and_an_explicit_empty_policy
+tests/test_workflow_boundaries.py::test_settings_content_and_ancestors_affect_identity[numbers]
+tests/test_workflow_boundaries.py::test_settings_content_and_ancestors_affect_identity[transform]
+tests/test_workflow_boundaries.py::test_settings_content_and_ancestors_affect_identity[classify]
+tests/test_workflow_boundaries.py::test_colliding_projected_explanations_are_never_discarded[numbers]
+tests/test_workflow_boundaries.py::test_colliding_projected_explanations_are_never_discarded[transform]
+tests/test_workflow_boundaries.py::test_source_check_required_fields_fail_at_validation[workbook_health]
+tests/test_workflow_boundaries.py::test_source_check_required_fields_fail_at_validation[identities]
+tests/test_workflow_boundaries.py::test_source_check_required_fields_fail_at_validation[occupied_rows]
+tests/test_workflow_boundaries.py::test_source_check_required_fields_fail_at_validation[numeric_issues]
+tests/test_workflow_boundaries.py::test_source_check_required_fields_fail_at_validation[deferred]
+tests/test_workflow_boundaries.py::test_operand_required_fields_fail_at_validation[value]
+tests/test_workflow_boundaries.py::test_operand_required_fields_fail_at_validation[column]
+tests/test_workflow_boundaries.py::test_operand_required_fields_fail_at_validation[evidence]
+tests/test_workflow_boundaries.py::test_operand_required_fields_fail_at_validation[table_count]
+tests/test_workflow_boundaries.py::test_operand_required_fields_fail_at_validation[table_keys]
+tests/test_workflow_boundaries.py::test_operand_required_fields_fail_at_validation[table_total]
+tests/test_workflow_boundaries.py::test_operand_required_fields_fail_at_validation[graph_total]
+tests/test_workflow_boundaries.py::test_operand_required_fields_fail_at_validation[graph_measurement]
+tests/test_workflow_boundaries.py::test_operand_required_fields_fail_at_validation[membership_keys]
+tests/test_workflow_boundaries.py::test_step_required_fields_have_declaration_path[read]
+tests/test_workflow_boundaries.py::test_step_required_fields_have_declaration_path[extract]
+tests/test_workflow_boundaries.py::test_step_required_fields_have_declaration_path[classify_rows]
+tests/test_workflow_boundaries.py::test_step_required_fields_have_declaration_path[numbers]
+tests/test_workflow_boundaries.py::test_step_required_fields_have_declaration_path[transform]
+tests/test_workflow_boundaries.py::test_step_required_fields_have_declaration_path[select]
+tests/test_workflow_boundaries.py::test_step_required_fields_have_declaration_path[concat]
+tests/test_workflow_boundaries.py::test_predicates_preserve_zero_and_claim_identity
+tests/test_workflow_boundaries.py::test_uniqueness_uses_native_error_and_cache_rules[extra0]
+tests/test_workflow_boundaries.py::test_uniqueness_uses_native_error_and_cache_rules[extra1]
+tests/test_workflow_boundaries.py::test_uniqueness_covers_column_before_extraction_start
+tests/test_workflow_boundaries.py::test_both_yaml_entrypoints_reject_unsafe_or_ambiguous_content[a: &a 1\nb: *a]
+tests/test_workflow_boundaries.py::test_both_yaml_entrypoints_reject_unsafe_or_ambiguous_content[a: 1\na: 2]
+tests/test_workflow_boundaries.py::test_both_yaml_entrypoints_reject_unsafe_or_ambiguous_content[a: !!python/name:os.system '']
+tests/test_workflow_boundaries.py::test_semantic_identity_ignores_prose_but_tracks_executable_changes
+tests/test_workflow_boundaries.py::test_excel_import_does_not_load_workflow_runner
+tests/test_workflow_boundaries.py::test_direct_composition_and_checking_without_workflow_spec
+tests/test_workflow_boundaries.py::test_generic_locations_preserve_shared_ancestors
+
+==================================== ERRORS ====================================
+___________________ ERROR collecting tests/test_workflow.py ____________________
+ImportError while importing test module '/Volumes/Data/Projects/Rangekeeper/src/tests/test_workflow.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Users/daniel/.local/share/uv/python/cpython-3.10.19-macos-aarch64-none/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_workflow.py:4: in <module>
+    import yaml
+E   ModuleNotFoundError: No module named 'yaml'
+_______________ ERROR collecting tests/test_workflow_formats.py ________________
+ImportError while importing test module '/Volumes/Data/Projects/Rangekeeper/src/tests/test_workflow_formats.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Users/daniel/.local/share/uv/python/cpython-3.10.19-macos-aarch64-none/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_workflow_formats.py:12: in <module>
+    from .test_workflow import example
+tests/test_workflow.py:4: in <module>
+    import yaml
+E   ModuleNotFoundError: No module named 'yaml'
+________________ ERROR collecting tests/test_workflow_shared.py ________________
+ImportError while importing test module '/Volumes/Data/Projects/Rangekeeper/src/tests/test_workflow_shared.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Users/daniel/.local/share/uv/python/cpython-3.10.19-macos-aarch64-none/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_workflow_shared.py:14: in <module>
+    from .test_workflow import example, rewrite
+tests/test_workflow.py:4: in <module>
+    import yaml
+E   ModuleNotFoundError: No module named 'yaml'
+=============================== warnings summary ===============================
+rangekeeper/duration.py:27
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/duration.py:27: FutureWarning: 'Y' is deprecated and will be removed in a future version, please use 'YE' instead.
+    if value in ("10Y", "10Y-DEC"):
+
+rangekeeper/duration.py:27
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/duration.py:27: FutureWarning: 'Y-DEC' is deprecated and will be removed in a future version, please use 'YE-DEC' instead.
+    if value in ("10Y", "10Y-DEC"):
+
+rangekeeper/duration.py:29
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/duration.py:29: FutureWarning: 'Y' is deprecated and will be removed in a future version, please use 'YE' instead.
+    if value in ("5Y", "5Y-DEC"):
+
+rangekeeper/duration.py:29
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/duration.py:29: FutureWarning: 'Y-DEC' is deprecated and will be removed in a future version, please use 'YE-DEC' instead.
+    if value in ("5Y", "5Y-DEC"):
+
+rangekeeper/duration.py:31
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/duration.py:31: FutureWarning: 'Y' is deprecated and will be removed in a future version, please use 'YE' instead.
+    if value in ("2Y", "2Y-DEC"):
+
+rangekeeper/duration.py:31
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/duration.py:31: FutureWarning: 'Y-DEC' is deprecated and will be removed in a future version, please use 'YE-DEC' instead.
+    if value in ("2Y", "2Y-DEC"):
+
+rangekeeper/duration.py:33
+  /Volumes/Data/Projects/Rangekeeper/src/rangekeeper/duration.py:33: FutureWarning: 'Y' is deprecated and will be removed in a future version, please use 'YE' instead.
+    if value in ("Y", "YE", "YE-DEC", "Y-DEC", "A-DEC"):
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+ERROR tests/test_workflow.py
+ERROR tests/test_workflow_formats.py
+ERROR tests/test_workflow_shared.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 3 errors during collection !!!!!!!!!!!!!!!!!!!!
+439 tests collected, 3 errors in 18.15s
