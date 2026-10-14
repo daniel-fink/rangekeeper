@@ -1,5 +1,4 @@
-"""Canonical Model revisions and schema-derived nested records.
-"""
+"""Canonical Model revisions and schema-derived nested records."""
 
 from rangekeeper.model.model import Model as Model
 from rangekeeper.model.update import Update as Update
@@ -25,6 +24,11 @@ from rangekeeper.schema.records import (
     Expression as Expression,
     Constraint as Constraint,
     Provenance as Provenance,
+    Geometry as Geometry,
+    GeometryPin as GeometryPin,
+    GeometryFile as GeometryFile,
+    GeometryMapping as GeometryMapping,
+    GeometryElement as GeometryElement,
     Source as Source,
     Claim as Claim,
     Fact as Fact,
@@ -54,6 +58,11 @@ __all__ = [
     "Expression",
     "Constraint",
     "Provenance",
+    "Geometry",
+    "GeometryPin",
+    "GeometryFile",
+    "GeometryMapping",
+    "GeometryElement",
     "Source",
     "Claim",
     "Fact",

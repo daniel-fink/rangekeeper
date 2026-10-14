@@ -1,0 +1,67 @@
+[
+  {
+    "command": [
+      "tools/schema/generate.py",
+      "--check"
+    ],
+    "exit": 0,
+    "output": "Verified 6 artifacts, 77 schema classes\nDuplicate tree_root: Specification with Model\nDuplicate tree_root: Run with Model\n"
+  },
+  {
+    "command": [
+      "tools/schema/generate_csharp.py",
+      "--check"
+    ],
+    "exit": 0,
+    "output": "C# artifacts are current\n"
+  },
+  {
+    "command": [
+      "schema/checks/validate.py"
+    ],
+    "exit": 0,
+    "output": "13 schemas generated; both examples and 80 rejection cases passed.\nReference existence and empty Claim support still require semantic validation.\n"
+  },
+  {
+    "command": [
+      "schema/checks/native_roundtrip.py"
+    ],
+    "exit": 0,
+    "output": "Native identifiers, typed reference fields, and generated Python round trips passed for both examples.\n"
+  },
+  {
+    "command": [
+      "schema/checks/expressions.py"
+    ],
+    "exit": 0,
+    "output": "Passed 9 generated schemas, 71 valid records, 103 structural rejections,\n31 bounded semantic rejections, and native Python round trips.\nConstraint satisfaction, query execution, rich Value payloads, dimensional checking, and solving remain unimplemented.\n"
+  },
+  {
+    "command": [
+      "schema/checks/formulations.py"
+    ],
+    "exit": 0,
+    "output": "Passed 6 generated schemas, 10 valid fixture scopes, 32 structural rejections,\n20 bounded semantic rejections, and 10 native Formulation round trips.\nFormulation compilation, constraint satisfaction, unit inference, and solving remain unimplemented.\n"
+  },
+  {
+    "command": [
+      "schema/checks/models.py"
+    ],
+    "exit": 0,
+    "output": "Passed 3 generated schemas, 6 valid Models, 26 structural rejections,\n24 bounded semantic rejections, and 6 native Model round trips.\nStorage immutability, generic Fact/content agreement, unit inference, and execution remain outside this check.\n"
+  },
+  {
+    "command": [
+      "schema/checks/specifications.py"
+    ],
+    "exit": 0,
+    "output": "Passed 13 composition/batch acceptance checks, 35 composition rejections,\nand 4 additional native round trips; no inputs mutated or solver executed.\nPassed 6 generated schemas, 17 valid Specifications, 46 structural rejections,\n37 bounded semantic rejections, and 17 native Specification round trips.\nNo solver executed. Unit conversion, imposed query dependency resolution, and Run publication require adapters.\n"
+  },
+  {
+    "command": [
+      "schema/checks/runs.py"
+    ],
+    "exit": 0,
+    "output": "Passed 10 generated schemas, 19 valid Run/tree cases, 28 structural rejections,\n45 bounded semantic rejections, and 32 native Run round trips.\nSynthetic records only. No scheduler or solver executed; full residual/optimality verification and structural publication require adapters.\n"
+  }
+]

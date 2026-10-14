@@ -1,10 +1,10 @@
 {
   "artifacts": {
     "enums.py": "0a22d743e6f8b569cead5e704cbd450c5191316e596857205f17855a0f4c2703",
-    "native.py": "2d90536f4850d15ed2bfd364f388972a107e8d1f7af9879664b3a9f44875c0db",
-    "records.py": "d9045d88f05fec52f00e61f8a7d68eb1a96cc48dc114a553f1bcfd9cf6aae7e0",
-    "schema.json": "459bce9b199b92cfcfec6a37c4594fbbd56e84d01d1d49f5f80e021059c1f559",
-    "slots.json": "ff99c2200f446092aa786ecf50560eade8f425478fada9f9f8ee499c3eb2643b"
+    "native.py": "7954526db60a51cec06a1c80f98cc7b4d305c1c1ed6121c5e74cb54dc041b31a",
+    "records.py": "1534a3b3d2e5bb3b2e07026e77069a44ac25540c6406742cc46034dd22388f5c",
+    "schema.json": "0556785eeb9feb50dec695034ac40240ad925cd9747a2b76875c42a3e3b8f53f",
+    "slots.json": "3498c18d14eb13d24a2f0bbac667605096b7af1b41edcc14846602096d75b308"
   },
   "classes": [
     "Action",
@@ -35,6 +35,11 @@
     "Flow",
     "Formulation",
     "Function",
+    "Geometry",
+    "GeometryElement",
+    "GeometryFile",
+    "GeometryMapping",
+    "GeometryPin",
     "Implementation",
     "Label",
     "LibraryVersion",
@@ -87,7 +92,7 @@
     "linkml-runtime": "1.11.1"
   },
   "document_versions": {
-    "Model": "0.7.0",
+    "Model": "0.8.0",
     "Run": "0.4.0",
     "Specification": "0.7.0"
   },
@@ -111,8 +116,9 @@
     "schema/flow.yaml": "a5db35c095d4e723d8bd11e6db157a9f88d534cb29ca46435aca62f7818b0261",
     "schema/formulation.yaml": "c5a2cc0adbbdb20c673635ce9d220f1799b46e9b59c1b859dd525856b28c0cd0",
     "schema/function.yaml": "334bf0ff3faac228a0e7a7739980373e5503c8f9662a40492889c57b358437aa",
+    "schema/geometry.yaml": "45f117ca4977f1657980102e9717c9f089524d56123753c000df86478ef84630",
     "schema/measure.yaml": "6f438b7731824cbbc7115a2225af442c162692b32b6b897302fd4beb2e80c996",
-    "schema/model.yaml": "2c38a7611f7780e560d6a9a525ca03f540e86216a7683e4946b1d9a3286b2a1a",
+    "schema/model.yaml": "2fb942afeb05ac6146e097b37e29b0d345d90104aced257b6738bbd8c04075d8",
     "schema/policy.yaml": "70c6b88ba25174ab3a077e9d4d61b3512d24121d5e3eb366b46d4e2ee156ff30",
     "schema/provenance.yaml": "c15a16cf5c5c90725efb9590adf086ec26532ff56f1ddf7989560c138fa75a67",
     "schema/query.yaml": "d63026f3082110e141872a7fcb628388faf3fff0dc47b42c55522a91b4944747",
