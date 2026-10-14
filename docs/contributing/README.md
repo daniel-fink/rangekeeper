@@ -11,8 +11,14 @@ Use the single RK folder on `develop` for current library development. Keep
 unfinished teaching work on `codex/walkthrough-acausal`, switching branches in
 that folder only after saving current changes. Follow the
 [walkthrough branch procedure](../guides/walkthroughs.md#branches-and-publication).
-A development merge does not approve the Bundle format for release or Projects
-adoption. No walkthrough publication is part of this workflow.
+The candidate is approved for local T2 Projects adoption. A development merge
+does not approve the Bundle format for stable release. No walkthrough publication is part of this workflow.
+
+The coordinated refactor must finish T3 with reviewed work merged and pushed to
+`develop` in all four repositories. Follow Core's [T3 repository integration gate](https://github.com/daniel-fink/whirlwind-core/blob/develop/docs/decisions/004-core-lifecycle-refactor.md#t3-repository-integration-gate)
+and record fresh local/remote equality for RK. Keep the primary folder clean on
+`develop` and preserve the separate unfinished walkthrough branch. This working
+plan link records the requirement; it is not evidence of completed integration.
 
 ## Development environment
 
