@@ -1,5 +1,5 @@
 {
-  "format": "whirlwind.local-geometry/v1",
+  "format": "rangekeeper.local-geometry/v1",
   "version": "0.1.0",
   "files": {
     "viewer.js": "c452edbfa739aa407d20b2b6340d36c15cfac1c0114ca3b153a58fcb2f9a1c05",
@@ -10,7 +10,7 @@
   "sources": {
     "viewer.js": "aa6be5285480edc1ff9d7ce299e229edd70cd18a6980cb602740b1325573aac9",
     "viewer.html": "311a7eb3a29a17f88df09c161c170cd7e3512f10a070b2e132420551345f0dca",
-    "build.mjs": "05b9c29e0b0541f7f68ee00d14d6e8c273e19c4d6fc65abf7773b7c423ebfea5",
+    "build.mjs": "901459db0e0bb1284f29e33d18ce69c6ac3d81960f0d9012dd9cfc00eeb00081",
     "package.json": "c822f9c50c1361d384be9bd99ff9109d9a9222041aad60bad63f7b45f2ac463b",
     "package-lock.json": "f91ad21a1cce9bc830e3110a35d0f871ad1678943672bd602ac6577923deb269",
     "SPECKLE-LICENSE": "87f24ea3751107c898723a6c6aac917fb394cd8c8a3bc53df49e7adb89f76813"

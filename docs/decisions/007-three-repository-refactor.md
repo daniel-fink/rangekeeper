@@ -23,9 +23,11 @@ external service writes.
 The recorded refactor implementation/evidence below remains a historical checkpoint.
 Its retained Payload/Next host and collection-import strategy is superseded for new
 Interface work. The agreed target is React/TypeScript/Vite with Mantine Tree, AG Grid
-Community, Cytoscape and Speckle Viewer. Preserve the old spike through Git/history;
-inventory Python export/layout and RK geometry-asset consumers before removing
-their build paths. This amendment has not migrated or deleted runtime code.
+Community, Cytoscape and Speckle Viewer. The clean Vite/Mantine shell now replaces
+the old runtime; data components and Package integration remain pending. The old
+spike and its evidence remain in Git/history. Interface retains layout algorithms
+and JSON/SVG review output; the HTML browser exporter is retired. RK now owns
+its notebook Geometry source/build independently in `tools/geometry`.
 
 RK owns canonical Package/schema rules and its Parquet mapping/reader, with optional
 storage adapters. Whirlwind Package application operations live initially in the
@@ -35,8 +37,8 @@ them directly; thin HTTP/MCP adapters expose them. No MCP SDK, Interface or inge
 workspace is required by the core. A complete retained Package needs no original
 source connection or credentials. One interface does not imply one remote service.
 
-The active owners are Interface's [greenfield decision](https://github.com/daniel-fink/whirlwind-interface/blob/5ef206aa3a525a0f4c1910512b6fa2c8b1e6f145/docs/decisions/005-greenfield-browser.md)
-and [UI plan](https://github.com/daniel-fink/whirlwind-interface/blob/5ef206aa3a525a0f4c1910512b6fa2c8b1e6f145/docs/decisions/001-viewer-plan.md),
+The active owners are Interface's [greenfield decision](https://github.com/daniel-fink/whirlwind-interface/blob/dba8ada6d61ded378f09df0e83ddc9ae5e00f824/docs/decisions/005-greenfield-browser.md)
+and [UI plan](https://github.com/daniel-fink/whirlwind-interface/blob/dba8ada6d61ded378f09df0e83ddc9ae5e00f824/docs/decisions/001-viewer-plan.md),
 and Core's [Package access plan](https://github.com/daniel-fink/whirlwind-core/blob/66a0cea637b5186010459834f7962591fb62e338/docs/decisions/003-package-access.md)
 and [application contract](https://github.com/daniel-fink/whirlwind-core/blob/66a0cea637b5186010459834f7962591fb62e338/docs/reference/package-access.md).
 RK [ADR-008](008-sqlite-model-package.md) owns canonical conformance.
@@ -80,7 +82,7 @@ gates. A repository rename completes none of those gates.
 | --- | --- | --- |
 | Rangekeeper | Canonical Model, Specification and Run; schemas; units; validation; calculations; execution; canonical provenance records; native IO; simple local charts, tables, graphs and geometry display; portable C# model library and generic Grasshopper modelling components | No ingestion workspaces, source interpretation engine, Rhino source reader, MCP server, application browser or predecessor runtime |
 | Whirlwind Core | Application operations; planned Package access, queries, storage integration and access policy; source acquisition and inspection; interpretation rules and decisions; transient Evidence; recipes; deterministic ingestion builds; workspace lifecycle; Python API; MCP tools and resources; plugin packaging; service access and authorisation; optional Rhino/Grasshopper source integration | Calls public RK APIs. Core ingestion runs without Rhino, Grasshopper, an LLM, MCP transport, Node, Payload or Interface process |
-| Whirlwind Interface | Shared tree, graph, 3D, inspector and table components; full standalone browser; focused ChatGPT resources; browser host adapters; projections and browsing indexes; advanced graph layouts; buildable static display assets | Consumes exact canonical artifacts. It cannot change source decisions or canonical records through a projection |
+| Whirlwind Interface | Shared tree, graph, 3D, inspector and table components; full standalone browser; focused ChatGPT resources; browser host adapters; projections and browsing indexes; advanced graph layouts; its own browser build assets | Consumes exact canonical artifacts. It cannot change source decisions or canonical records through a projection |
 
 Repository roots are:
 
@@ -93,10 +95,10 @@ contract and, when connected, the Core service contract. RK imports neither
 Whirlwind package. Core does not require Interface to inspect, build or export a
 Model. Interface can open a retained artifact without a live MCP session.
 
-There is one build-time exception: Interface produces a versioned static geometry
-bundle that RK packages for local display. RK consumes the built files and their
-manifest. Building or installing RK must not clone Interface, run npm, or fetch an
-unpinned bundle. This is asset distribution, not a Python runtime dependency.
+RK owns the source, locked npm build and packaged assets for its standalone
+notebook Geometry viewer. The earlier Interface build-time exception is removed.
+Python installation uses the prepared RK assets; it does not clone Whirlwind, run
+npm or fetch an unpinned bundle. See [the build guide](../../tools/geometry/README.md).
 
 ## Current baseline
 
@@ -288,6 +290,14 @@ decision invalidation, restart/resumption, bounded resources and failure
 behaviour. A failed build must not return a previous successful Model as the
 new result. Do not add selective decision invalidation, source replacement or
 remote hosting as part of this extraction.
+
+## Notebook Geometry ownership — 14 October 2026
+
+RK owns the standalone Speckle viewer used by its walkthrough notebooks, including
+source, npm build, third-party notices and packaged assets. Source now lives in
+`tools/geometry`. There is no RK build or runtime dependency on Whirlwind. This
+amends earlier asset-build ownership below; advanced browsing and graph layout
+remain Interface responsibilities. See [the build procedure](../../tools/geometry/README.md).
 
 ## Whirlwind Interface structure
 

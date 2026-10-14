@@ -27,3 +27,5 @@ The [MiniZinc evidence](full-migration/minizinc/README.md) and
 - [Three-repository refactor — 2026-10-13](three-repository-refactor-2026-10-13/README.md): owner boundaries, installed-package tests, walkthroughs, Rhino checks and required consumer migration.
 
 - [Earlier SQLite Model proof — 2026-10-13](sqlite-model-2026-10-13/README.md): schema-driven storage, retained legacy geometry and generator evidence; predates the agreed Model/Geometry Package contract and does not establish its conformance.
+
+- [Independent notebook Geometry viewer, 14 October 2026](independent-geometry-2026-10-14/README.md): RK-owned source/build and unchanged packaged renderer.
