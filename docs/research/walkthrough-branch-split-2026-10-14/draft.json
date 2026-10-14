@@ -1,0 +1,18 @@
+{
+  "base_develop": "3d70ece757a2ce7ff6a329b7b3cfcb6ef0835363",
+  "restored_from": "097a26e68ce2926f6323f0873346b36537550219",
+  "notebook_code_cells": 81,
+  "helper_tests": 3,
+  "financial_audit": "passed",
+  "book_build": "strict, four pages, passed",
+  "browser_checks": [
+    "Notebook 02 navigation, tables and embedded outputs",
+    "Retained 3D geometry rendered",
+    "Selected buildingAhotelFloor1, GFA 1697.452 m2",
+    "Notebook 03 navigation and development cash-flow chart rendered",
+    "No browser console errors observed"
+  ],
+  "saved_notebook_outputs": "preserved from checkpoint; fresh executions saved separately",
+  "shared_data": "byte-identical to checkpoint",
+  "library_source": "unchanged from develop"
+}

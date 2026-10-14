@@ -1,0 +1,93 @@
+{
+  "metadata": {
+    "id": "f5d2a4b2-b8fb-4bb7-94a0-507a3b417189",
+    "schema_version": "0.7.0",
+    "name": "Front door: required rent"
+  },
+  "model": "9328570c-4f25-466c-b0f9-3ff104bdc356",
+  "assignments": [
+    {
+      "target": {
+        "target": "29f5e4de-4d85-408b-b519-e983f1ff795b"
+      },
+      "quantity": {
+        "magnitude": 20000000.0,
+        "units": "AUD"
+      }
+    },
+    {
+      "target": {
+        "target": "61d93f25-ddcb-4d1a-a080-a495e2c4f821"
+      },
+      "quantity": {
+        "magnitude": 113776328.13642779,
+        "units": "AUD"
+      }
+    },
+    {
+      "target": {
+        "target": "e5c53ba8-163e-4f8f-90c7-cbd5cc75e7fd"
+      },
+      "quantity": {
+        "magnitude": 0.65,
+        "units": "dimensionless"
+      }
+    },
+    {
+      "target": {
+        "target": "68935941-f43c-438a-90c9-70f83442297a"
+      },
+      "quantity": {
+        "magnitude": 0.08597172701738073,
+        "units": "1/year"
+      }
+    },
+    {
+      "target": {
+        "target": "ac1350a6-bff1-49e7-baa2-e972409a36a5"
+      },
+      "quantity": {
+        "magnitude": 1.25,
+        "units": "dimensionless"
+      }
+    },
+    {
+      "target": {
+        "target": "05ddf458-839f-43e9-a7c5-22e2eed545e4"
+      },
+      "quantity": {
+        "magnitude": 7444605.018645148,
+        "units": "AUD/year"
+      }
+    },
+    {
+      "target": {
+        "target": "999841fd-896c-4130-9798-5065c4dd7464"
+      },
+      "quantity": {
+        "magnitude": 18193426.66415286,
+        "units": "AUD/year"
+      }
+    }
+  ],
+  "unknowns": [
+    {
+      "target": "45781f33-a3a4-4d30-86fb-836576b502e0"
+    },
+    {
+      "target": "f32f1637-bf2f-4c13-b683-f77c6f9db16f"
+    },
+    {
+      "target": "82906305-068e-464a-8705-409fef621a50"
+    },
+    {
+      "target": "1d6cc4a6-1c41-4c57-9c59-8e25aca8602b"
+    },
+    {
+      "target": "687c58fc-68c8-4d33-ae09-545d48ac65b5"
+    },
+    {
+      "target": "b3bfeba1-c9b4-4550-b125-1fd5018cd3d7"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "modelId": "37565d7c-f2fb-5ddd-9c4d-e5faacd5c2e0",
+  "rootId": "e7acaac21ae7e9369339900a4aaeb827",
+  "data": "../../../data/mixed_use_property",
+  "files": {
+    "model.json": "a59ac9522d2c16aede7cdc1a77c0a7efe34ec978f5b307e29d87100ba954f200",
+    "associations.json": "8b0e9c0f2914d9dc54d077cdfac3114d73b68b685d9e5cad20fc400540804411",
+    "transport.json.gz": "90545f7d86192f7f0522e6a2e9e883253a5695ea5fa547bcbb57be72dde2a1ac"
+  },
+  "bundle": "0.1.0"
+}

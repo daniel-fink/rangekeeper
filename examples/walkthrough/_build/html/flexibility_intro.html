@@ -1,0 +1,803 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Introduction to Modeling Flexibility &#8212; Rangekeeper</title>
+
+
+
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+
+  <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=9c3e77be" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js?v=b8b12719"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'flexibility_intro';</script>
+    <script src="_static/plotly.min.js?v=7a1ec768"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Flexibility under Uncertainty" href="flexibility_under_uncertainty.html" />
+    <link rel="prev" title="Real Estate Pricing Factor Dynamics" href="market_dynamics.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+
+
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+
+
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  <div id="pst-scroll-pixel-helper"></div>
+
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+
+
+
+      <div class="bd-sidebar-primary bd-sidebar">
+
+
+
+  <div class="sidebar-header-items sidebar-primary__section">
+
+
+
+
+  </div>
+
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+
+
+
+
+<a class="navbar-brand logo" href="intro.html">
+
+
+
+
+
+
+
+
+
+
+    <img src="_static/rangekeeper.jpg" class="logo__image only-light" alt="Rangekeeper - Home"/>
+    <script>document.write(`<img src="_static/rangekeeper.jpg" class="logo__image only-dark" alt="Rangekeeper - Home"/>`);</script>
+
+
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="intro.html">
+                    Rangekeeper
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Real Estate Flexibility and Valuation under Uncertainty</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="basic_dcf.html">A Basic Discounted Cash Flow Valuation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deterministic_scenarios.html">Deterministic Scenario Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="market_dynamics.html">Real Estate Pricing Factor Dynamics</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Introduction to Modeling Flexibility</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flexibility_under_uncertainty.html">Flexibility under Uncertainty</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Using Rangekeeper in Examples</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="load_design.html">Load design into a canonical Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="drive_model_from_design.html">Drive financial equations from design</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+
+
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+
+      <main id="main-content" class="bd-main" role="main">
+
+
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+
+    <div class="header-article-items__start">
+
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+
+    </div>
+
+
+    <div class="header-article-items__end">
+
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-launch-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Launch interactive content">
+    <i class="fas fa-rocket"></i>
+  </button>
+  <ul class="dropdown-menu">
+
+
+
+      <li><a href="https://colab.research.google.com/github/daniel-fink/rangekeeper/blob/main/walkthrough/flexibility_intro.ipynb" target="_blank"
+   class="btn btn-sm dropdown-item"
+   title="Launch on Colab"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+
+
+<span class="btn__icon-container">
+
+    <img alt="Colab logo" src="_static/images/logo_colab.png">
+  </span>
+<span class="btn__text-container">Colab</span>
+</a>
+</li>
+
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+
+
+
+      <li><a href="https://github.com/daniel-fink/rangekeeper" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+
+
+
+
+      <li><a href="https://github.com/daniel-fink/rangekeeper/issues/new?title=Issue%20on%20page%20%2Fflexibility_intro.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+
+
+
+      <li><a href="_sources/flexibility_intro.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+
+
+
+
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+
+    </div>
+
+</div>
+</div>
+
+
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Introduction to Modeling Flexibility</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#goal">Goal</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setup">Setup</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#steps">Steps</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#solve-the-traditional-dcf">1. Solve the traditional DCF</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#realize-one-market-path">2. Realize one market path</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#declare-and-solve-the-fixed-horizon-investment">3. Declare and solve the fixed-horizon investment</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#declare-a-policy">4. Declare a policy</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inspect-decision-evidence">5. Inspect decision evidence</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#compare-cashflows-and-results">6. Compare cashflows and results</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#checks">Checks</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#next-steps">Next Steps</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+
+
+<div id="searchbox"></div>
+                <article class="bd-article">
+
+  <section class="tex2jax_ignore mathjax_ignore" id="introduction-to-modeling-flexibility">
+<h1>Introduction to Modeling Flexibility<a class="headerlink" href="#introduction-to-modeling-flexibility" title="Link to this heading">#</a></h1>
+<p>Compare a traditional DCF, a realized market path with a fixed horizon, and a stop-gain resale policy. This continues the resale timing example in Chapter 9 of <span class="bibtex-citation" id="id1">[<a class="reference internal" href="intro.html#id2" title="R. de Neufville and D. Geltner. Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers. John Wiley &amp; Sons, Ltd, 2018. ISBN 9781119106470. URL: https://onlinelibrary.wiley.com/doi/abs/10.1002/9781119106470, arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119106470, doi:https://doi.org/10.1002/9781119106470.">dNG18</a>]</span>.</p>
+<section id="goal">
+<h2>Goal<a class="headerlink" href="#goal" title="Link to this heading">#</a></h2>
+<p>Keep market history intact while a declared policy controls investment cashflows. Rules are evaluated at period end. A sale includes that period’s operating cashflow and sale proceeds; later investment cashflows are zero.</p>
+</section>
+<section id="setup">
+<h2>Setup<a class="headerlink" href="#setup" title="Link to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">matplotlib</span> inline
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">date</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">uuid</span><span class="w"> </span><span class="kn">import</span> <span class="n">uuid4</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span><span class="o">,</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">polars</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pl</span>  <span class="c1"># Detached tables for presentation only.</span>
+<span class="n">pl</span><span class="o">.</span><span class="n">Config</span><span class="o">.</span><span class="n">set_tbl_cols</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">rangekeeper</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">rk</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.examples</span><span class="w"> </span><span class="kn">import</span> <span class="n">investment</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">MemoryStore</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.execution</span><span class="w"> </span><span class="kn">import</span> <span class="n">Executor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.run</span><span class="w"> </span><span class="kn">import</span> <span class="n">validate</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.adapters.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_flows</span><span class="p">,</span> <span class="n">plot_distribution</span><span class="p">,</span> <span class="n">plot_pairs</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.calculations</span><span class="w"> </span><span class="kn">import</span> <span class="n">series</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.model</span><span class="w"> </span><span class="kn">import</span> <span class="n">Model</span><span class="p">,</span> <span class="n">Metadata</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.model.flow</span><span class="w"> </span><span class="kn">import</span> <span class="n">Flow</span><span class="p">,</span> <span class="n">Movement</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.duration</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_periods</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.model.distribution</span><span class="w"> </span><span class="kn">import</span> <span class="n">Distribution</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rangekeeper.scenarios</span><span class="w"> </span><span class="kn">import</span> <span class="n">market</span><span class="p">,</span> <span class="n">replay</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">'figure.dpi'</span><span class="p">:</span> <span class="mi">110</span><span class="p">,</span> <span class="s1">'font.size'</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">'axes.prop_cycle'</span><span class="p">:</span> <span class="n">plt</span><span class="o">.</span><span class="n">cycler</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="p">[</span><span class="s1">'#285f8f'</span><span class="p">,</span><span class="s1">'#cf8b2e'</span><span class="p">,</span><span class="s1">'#9c557a'</span><span class="p">,</span><span class="s1">'#627c49'</span><span class="p">,</span><span class="s1">'#737373'</span><span class="p">])})</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'Installed package:'</span><span class="p">,</span> <span class="n">rk</span><span class="o">.</span><span class="vm">__file__</span><span class="p">)</span>
+<span class="k">assert</span> <span class="ow">not</span> <span class="p">{</span><span class="s1">'rangekeeper.flux'</span><span class="p">,</span><span class="s1">'rangekeeper.dynamics'</span><span class="p">,</span><span class="s1">'rangekeeper.policy'</span><span class="p">,</span><span class="s1">'rangekeeper._legacy_duration'</span><span class="p">}</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Installed package: /private/tmp/rk-identities-notebook-site-final/rangekeeper/__init__.py
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">execute</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">specification</span><span class="p">):</span>
+    <span class="n">store</span> <span class="o">=</span> <span class="n">MemoryStore</span><span class="p">()</span>
+    <span class="n">store</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="n">run</span> <span class="o">=</span> <span class="n">Executor</span><span class="p">(</span><span class="n">store</span><span class="p">)</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">specification</span><span class="p">)</span>
+    <span class="n">validate</span><span class="p">(</span><span class="n">run</span><span class="p">,</span> <span class="n">resolver</span><span class="o">=</span><span class="n">store</span><span class="p">)</span><span class="o">.</span><span class="n">raise_if_invalid</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="n">run</span><span class="o">.</span><span class="n">report</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">solution</span> <span class="o">==</span> <span class="s1">'feasible'</span><span class="p">,</span> <span class="p">[(</span><span class="n">d</span><span class="o">.</span><span class="n">code</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">message</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">run</span><span class="o">.</span><span class="n">report</span><span class="o">.</span><span class="n">diagnostics</span><span class="p">]</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">run</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">outputs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">investment</span><span class="o">.</span><span class="n">report</span><span class="p">(</span><span class="n">output</span><span class="p">),</span> <span class="n">run</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">metrics</span><span class="p">(</span><span class="n">result</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s1">'PV (AUD)'</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">pv</span><span class="o">.</span><span class="n">magnitude</span><span class="p">,</span> <span class="s1">'NPV (AUD)'</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">npv</span><span class="o">.</span><span class="n">magnitude</span><span class="p">,</span>
+            <span class="s1">'Dated IRR (%)'</span><span class="p">:</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">result</span><span class="o">.</span><span class="n">irr</span><span class="o">.</span><span class="n">rate</span><span class="p">,</span> <span class="s1">'Sale date'</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">sale_date</span><span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="steps">
+<h2>Steps<a class="headerlink" href="#steps" title="Link to this heading">#</a></h2>
+<section id="solve-the-traditional-dcf">
+<h3>1. Solve the traditional DCF<a class="headerlink" href="#solve-the-traditional-dcf" title="Link to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">traditional_model</span> <span class="o">=</span> <span class="n">investment</span><span class="o">.</span><span class="n">formulate</span><span class="p">(</span><span class="n">investment</span><span class="o">.</span><span class="n">author</span><span class="p">())</span>
+<span class="n">traditional</span><span class="p">,</span> <span class="n">traditional_run</span> <span class="o">=</span> <span class="n">execute</span><span class="p">(</span><span class="n">traditional_model</span><span class="p">,</span> <span class="n">investment</span><span class="o">.</span><span class="n">specify</span><span class="p">(</span><span class="n">traditional_model</span><span class="p">))</span>
+<span class="n">metrics</span><span class="p">(</span><span class="n">traditional</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{'PV (AUD)': 999.9999999999997,
+ 'NPV (AUD)': -3.410605131648481e-13,
+ 'Dated IRR (%)': 6.996147845629787,
+ 'Sale date': datetime.date(2030, 12, 31)}
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="realize-one-market-path">
+<h3>2. Realize one market path<a class="headerlink" href="#realize-one-market-path" title="Link to this heading">#</a></h3>
+<p>Market pricing factors already include market growth, so this example sets the separate investment growth rate to zero.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'num_periods'</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">'growth_rate'</span><span class="p">:</span> <span class="mf">0.</span><span class="p">}</span>
+<span class="n">periods</span> <span class="o">=</span> <span class="n">make_periods</span><span class="p">(</span><span class="n">date</span><span class="p">(</span><span class="mi">2021</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">frequency</span><span class="o">=</span><span class="s1">'year'</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="mi">11</span><span class="p">)</span>
+<span class="n">base_model</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">metadata</span><span class="o">=</span><span class="n">Metadata</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">uuid4</span><span class="p">(),</span> <span class="n">schema_version</span><span class="o">=</span><span class="s1">'0.6.0'</span><span class="p">))</span>
+<span class="n">plan</span> <span class="o">=</span> <span class="n">market</span><span class="o">.</span><span class="n">make_plan</span><span class="p">(</span><span class="n">periods</span><span class="o">=</span><span class="n">periods</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">20261006</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="p">{</span>
+    <span class="s1">'volatility_per_period'</span><span class="p">:</span> <span class="mf">.025</span><span class="p">,</span> <span class="s1">'space_amplitude'</span><span class="p">:</span> <span class="mf">.25</span><span class="p">,</span> <span class="s1">'space_period'</span><span class="p">:</span> <span class="mf">10.</span><span class="p">,</span>
+    <span class="s1">'space_phase'</span><span class="p">:</span> <span class="mf">0.</span><span class="p">,</span> <span class="s1">'growth_rate'</span><span class="p">:</span> <span class="mf">.02</span><span class="p">,</span> <span class="s1">'shock_likelihood'</span><span class="p">:</span> <span class="mf">.02</span><span class="p">})</span>
+<span class="n">scenario</span> <span class="o">=</span> <span class="n">market</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">base_model</span><span class="p">,</span> <span class="n">plan</span><span class="p">,</span> <span class="n">scenario_keys</span><span class="o">=</span><span class="p">[</span><span class="s1">'shared-example'</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot_flows</span><span class="p">({</span><span class="n">name</span><span class="p">:</span> <span class="n">scenario</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">flow</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">'space_market_price_factors'</span><span class="p">,</span><span class="s1">'historical_value'</span><span class="p">)},</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Shared realized market path'</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/da5a8287332ead837af27d83051e667e40e3d691799c34d134048f88a4642f62.png" src="_images/da5a8287332ead837af27d83051e667e40e3d691799c34d134048f88a4642f62.png" />
+</div>
+</div>
+</section>
+<section id="declare-and-solve-the-fixed-horizon-investment">
+<h3>3. Declare and solve the fixed-horizon investment<a class="headerlink" href="#declare-and-solve-the-fixed-horizon-investment" title="Link to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">investment</span><span class="o">.</span><span class="n">formulate</span><span class="p">(</span><span class="n">investment</span><span class="o">.</span><span class="n">author</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">scenario</span><span class="o">=</span><span class="n">scenario</span><span class="p">))</span>
+<span class="n">fixed</span><span class="p">,</span> <span class="n">fixed_run</span> <span class="o">=</span> <span class="n">execute</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">investment</span><span class="o">.</span><span class="n">specify</span><span class="p">(</span><span class="n">model</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="declare-a-policy">
+<h3>4. Declare a policy<a class="headerlink" href="#declare-a-policy" title="Link to this heading">#</a></h3>
+<p>Hold for at least three periods. Then sell at the first period end where the observed pricing factor is strictly greater than 1.2. Equality does not trigger. If no earlier rule triggers, sell at the final horizon.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">policy</span> <span class="o">=</span> <span class="n">investment</span><span class="o">.</span><span class="n">build_stop_gain_resale_policy</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span> <span class="n">minimum_holding_periods</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">flexible_specification</span> <span class="o">=</span> <span class="n">investment</span><span class="o">.</span><span class="n">specify</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">policy</span><span class="o">=</span><span class="n">policy</span><span class="p">)</span>
+<span class="n">flexible</span><span class="p">,</span> <span class="n">flexible_run</span> <span class="o">=</span> <span class="n">execute</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">flexible_specification</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="inspect-decision-evidence">
+<h3>5. Inspect decision evidence<a class="headerlink" href="#inspect-decision-evidence" title="Link to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([{</span><span class="s1">'Date'</span><span class="p">:</span> <span class="n">d</span><span class="o">.</span><span class="n">at</span><span class="p">,</span> <span class="s1">'Pricing factor'</span><span class="p">:</span> <span class="n">d</span><span class="o">.</span><span class="n">observations</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">quantity</span><span class="o">.</span><span class="n">magnitude</span><span class="p">,</span> <span class="s1">'Rule'</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">rule</span><span class="p">)</span> <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">rule</span> <span class="k">else</span> <span class="s1">'fallback'</span><span class="p">,</span> <span class="s1">'Terminated'</span><span class="p">:</span> <span class="n">d</span><span class="o">.</span><span class="n">terminated</span><span class="p">,</span> <span class="s1">'Reason'</span><span class="p">:</span> <span class="n">d</span><span class="o">.</span><span class="n">termination_reason</span><span class="p">}</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">flexible_run</span><span class="o">.</span><span class="n">report</span><span class="o">.</span><span class="n">decisions</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (3, 5)</small><table border="1" class="dataframe"><thead><tr><th>Date</th><th>Pricing factor</th><th>Rule</th><th>Terminated</th><th>Reason</th></tr><tr><td>date</td><td>f64</td><td>str</td><td>bool</td><td>str</td></tr></thead><tbody><tr><td>2021-12-31</td><td>1.0</td><td>&quot;fallback&quot;</td><td>false</td><td>null</td></tr><tr><td>2022-12-31</td><td>1.153078</td><td>&quot;fallback&quot;</td><td>false</td><td>null</td></tr><tr><td>2023-12-31</td><td>1.218242</td><td>&quot;45155e3a-9eaa-5751-9b1d-41544f…</td><td>true</td><td>&quot;rule_matched&quot;</td></tr></tbody></table></div></div></div>
+</div>
+</section>
+<section id="compare-cashflows-and-results">
+<h3>6. Compare cashflows and results<a class="headerlink" href="#compare-cashflows-and-results" title="Link to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot_flows</span><span class="p">({</span><span class="s1">'Fixed investment'</span><span class="p">:</span> <span class="n">fixed</span><span class="o">.</span><span class="n">cashflows</span><span class="p">,</span> <span class="s1">'Policy investment'</span><span class="p">:</span> <span class="n">flexible</span><span class="o">.</span><span class="n">cashflows</span><span class="p">},</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Investment cashflows on the same scenario'</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/58b0a0d111824596a9521405e6c0ecfc16273685c1e3566d3465500bd1355687.png" src="_images/58b0a0d111824596a9521405e6c0ecfc16273685c1e3566d3465500bd1355687.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([{</span><span class="s1">'Case'</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">metrics</span><span class="p">(</span><span class="n">result</span><span class="p">)}</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="p">[(</span><span class="s1">'Traditional'</span><span class="p">,</span> <span class="n">traditional</span><span class="p">),</span> <span class="p">(</span><span class="s1">'Fixed horizon'</span><span class="p">,</span> <span class="n">fixed</span><span class="p">),</span> <span class="p">(</span><span class="s1">'Policy'</span><span class="p">,</span> <span class="n">flexible</span><span class="p">)]])</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div><style>
+.dataframe > thead > tr,
+.dataframe > tbody > tr {
+  text-align: right;
+  white-space: pre-wrap;
+}
+</style>
+<small>shape: (3, 5)</small><table border="1" class="dataframe"><thead><tr><th>Case</th><th>PV (AUD)</th><th>NPV (AUD)</th><th>Dated IRR (%)</th><th>Sale date</th></tr><tr><td>str</td><td>f64</td><td>f64</td><td>f64</td><td>date</td></tr></thead><tbody><tr><td>&quot;Traditional&quot;</td><td>1000.0</td><td>-3.4106e-13</td><td>6.996148</td><td>2030-12-31</td></tr><tr><td>&quot;Fixed horizon&quot;</td><td>807.982737</td><td>-192.017263</td><td>4.081749</td><td>2030-12-31</td></tr><tr><td>&quot;Policy&quot;</td><td>1140.27799</td><td>140.27799</td><td>12.008884</td><td>2023-12-31</td></tr></tbody></table></div></div></div>
+</div>
+<p>The policy may improve or reduce realized value. It observes a threshold, not the future peak. The full market path remains in both accepted Models. The horizon curve below is a hindsight comparison only.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plot_flows</span><span class="p">({</span><span class="s1">'Hindsight PV by sale date'</span><span class="p">:</span> <span class="n">investment</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="n">fixed</span><span class="o">.</span><span class="n">model</span><span class="p">)[</span><span class="s1">'horizon_pv'</span><span class="p">]</span><span class="o">.</span><span class="n">flow</span><span class="p">},</span> <span class="n">title</span><span class="o">=</span><span class="s1">'Hindsight sale alternatives, not a policy'</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/31c5fd1ebdb14d69642e382682871c156e343771d152a11d2e6872f369e9b0d2.png" src="_images/31c5fd1ebdb14d69642e382682871c156e343771d152a11d2e6872f369e9b0d2.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="checks">
+<h2>Checks<a class="headerlink" href="#checks" title="Link to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">controlled</span> <span class="o">=</span> <span class="n">investment</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="n">flexible</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">sum</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">magnitude</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">controlled</span><span class="p">[</span><span class="s1">'sale'</span><span class="p">]</span><span class="o">.</span><span class="n">flow</span><span class="o">.</span><span class="n">movements</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+<span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">magnitude</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">controlled</span><span class="p">[</span><span class="s1">'total'</span><span class="p">]</span><span class="o">.</span><span class="n">flow</span><span class="o">.</span><span class="n">movements</span> <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">date</span> <span class="o">&gt;</span> <span class="n">flexible</span><span class="o">.</span><span class="n">sale_date</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">scenario</span><span class="o">.</span><span class="n">historical_value</span><span class="o">.</span><span class="n">flow</span><span class="o">.</span><span class="n">movements</span><span class="p">)</span> <span class="o">==</span> <span class="mi">11</span>
+<span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">observations</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">available_at</span> <span class="o">&lt;=</span> <span class="n">d</span><span class="o">.</span><span class="n">at</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">flexible_run</span><span class="o">.</span><span class="n">report</span><span class="o">.</span><span class="n">decisions</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">assert</span> <span class="ow">not</span> <span class="p">{</span><span class="s1">'rangekeeper.flux'</span><span class="p">,</span><span class="s1">'rangekeeper.dynamics'</span><span class="p">,</span><span class="s1">'rangekeeper.policy'</span><span class="p">,</span><span class="s1">'rangekeeper._legacy_duration'</span><span class="p">}</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'Canonical records, explicit roles and installed consumer checks passed.'</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Canonical records, explicit roles and installed consumer checks passed.
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="next-steps">
+<h2>Next Steps<a class="headerlink" href="#next-steps" title="Link to this heading">#</a></h2>
+<p>Compare policies across many common realizations. A single scenario cannot establish expected policy performance.</p>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+
+
+
+
+
+
+                <footer class="prev-next-footer d-print-none">
+
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="market_dynamics.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Real Estate Pricing Factor Dynamics</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="flexibility_under_uncertainty.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Flexibility under Uncertainty</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+
+            </div>
+
+
+
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#goal">Goal</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setup">Setup</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#steps">Steps</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#solve-the-traditional-dcf">1. Solve the traditional DCF</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#realize-one-market-path">2. Realize one market path</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#declare-and-solve-the-fixed-horizon-investment">3. Declare and solve the fixed-horizon investment</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#declare-a-policy">4. Declare a policy</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inspect-decision-evidence">5. Inspect decision evidence</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#compare-cashflows-and-results">6. Compare cashflows and results</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#checks">Checks</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#next-steps">Next Steps</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+
+
+          </div>
+          <footer class="bd-footer-content">
+
+<div class="bd-footer-content__inner container">
+
+  <div class="footer-item">
+
+<p class="component-author">
+By Daniel Fink
+</p>
+
+  </div>
+
+  <div class="footer-item">
+
+
+  <p class="copyright">
+
+      © Copyright 2025.
+      <br/>
+
+  </p>
+
+  </div>
+
+  <div class="footer-item">
+
+  </div>
+
+  <div class="footer-item">
+
+  </div>
+
+</div>
+          </footer>
+
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
