@@ -1,0 +1,9 @@
+/* Keep native Polars tables readable; wide proformas scroll within the page. */
+.jp-RenderedHTML:has(table.dataframe) {
+  overflow-x: auto;
+}
+
+.jp-RenderedHTML table.dataframe th,
+.jp-RenderedHTML table.dataframe td {
+  white-space: nowrap;
+}

@@ -1,4 +1,4 @@
-<img src="walkthrough/resources/rangekeeper.jpg" width="300">
+<img src="examples/walkthrough/resources/rangekeeper.jpg" width="300">
 
 # Rangekeeper
 
