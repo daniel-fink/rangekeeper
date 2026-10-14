@@ -1,5 +1,12 @@
 # Architecture after the 0.9 ownership split
 
+The coordinated target adds Core-owned persistent modelling work and general
+Workflows. An ingestion Workflow is one application composition; RK Specification
+and Run remain distinct canonical contracts. Projects retains authored work in
+the existing `whirlwind-projects` repository. See the
+[Core refactor plan](https://github.com/daniel-fink/whirlwind-core/blob/main/docs/decisions/004-core-lifecycle-refactor.md).
+Broader Core lifecycle and native Rangekeeper Bundle implementation are pending.
+
 ## Engine, Core and Interface
 
 The three repositories have distinct roles:
@@ -14,7 +21,7 @@ Core owns Whirlwind application APIs. Rangekeeper retains its public modelling
 APIs and canonical readers. MCP is a transport adapter within Core. Interface
 covers browsing and inspection now, with editing and authoring anticipated.
 Future user edits go through Core application operations and Rangekeeper rules;
-published Packages remain immutable. The rename does not add editing capability.
+published Bundles remain immutable. The rename does not add editing capability.
 
 ## Ownership
 
@@ -26,7 +33,7 @@ load an ingestion engine, source reader, browser or service client.
 
 Whirlwind Core owns acquisition, source interpretation, transient Evidence, recipes,
 workspace decisions, ingestion builds and optional Rhino source extraction. It
-also owns the planned Package application module and thin HTTP/MCP adapters. Whirlwind
+also owns the planned Bundle application module and thin HTTP/MCP adapters. Whirlwind
 Interface owns advanced browsers and graph layout. RK owns and builds its notebook
 Geometry viewer in `tools/geometry`; it has no build or runtime dependency on
 Whirlwind. RK imports neither Whirlwind Python package.
@@ -38,12 +45,13 @@ source-specific Grasshopper component is in Core and consumes the pinned RK asse
 See [the decision](../decisions/007-three-repository-refactor.md),
 [upgrade paths](../guides/upgrading.md), and [Grasshopper](../guides/grasshopper.md).
 
-The agreed [Model and Geometry Package contract](../decisions/008-sqlite-model-package.md)
-pairs one immutable Model with one exact Geometry dataset. The Model owns the
+The agreed [Model and Geometry Bundle contract](../decisions/008-sqlite-model-package.md)
+contains one immutable Model and optional Geometry. When Geometry is present,
+it is one exact pinned dataset. The Model owns the
 Geometry pin and Entity-to-source-element mappings; changing either side or the
-mappings creates a new Model and Package. Geometry is provider-neutral; its first planned format is Speckle's
+mappings creates a new Model and Bundle. Geometry is provider-neutral; its first planned format is Speckle's
 2026.9 object-model/bundle schema, with an exact specification pin. Source data stays
-adjacent to schema-derived RK Parquet tables. One Package access layer contains
+adjacent to schema-derived RK Parquet tables. One Bundle access layer contains
 DuckDB and provider adapters and supplies queries, provenance, geometry and assets
 under shared identity and access rules. Entity
 associations support navigation and selection; property and relation evidence use
@@ -52,6 +60,6 @@ Vite, Mantine Tree, AG Grid Community, Cytoscape and Speckle; Payload/Next are e
 RK owns the lossless RK Parquet mapping/reader, with storage dependencies in optional
 IO modules. Whirlwind composes it with provider interfaces and access policy. Direct
 Python, HTTP and MCP share application semantics; reading a complete retained
-Package requires neither ingestion state, a chat nor source-server access.
+Bundle requires neither ingestion state, a chat nor source-server access.
 The earlier development experiment is historical
 evidence; the installed IO API and public Model schema have not adopted this contract.

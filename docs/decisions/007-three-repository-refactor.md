@@ -1,5 +1,13 @@
 # Three repository refactor
 
+Coordination update, 14 October 2026: this record retains the implemented ownership
+split. The [Core lifecycle refactor](https://github.com/daniel-fink/whirlwind-core/blob/main/docs/decisions/004-core-lifecycle-refactor.md)
+owns the subsequent namespace/lifecycle migration and general Workflows. Use
+Rangekeeper Bundle (short: Bundle) for the immutable deliverable described by the
+older Package terminology here. The existing Projects repository owns authored
+work; it is a consumer, not a fourth product service. This update does not mark
+the subsequent implementation complete or change installed identifiers.
+
 **Status: implemented; local validation and open gates are recorded below.**
 
 **Decision date: 13 October 2026.** Rangekeeper owns modelling and simple local
