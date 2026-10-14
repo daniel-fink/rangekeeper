@@ -1,7 +1,7 @@
 """Experimental RK SQLite package. This module is not an installed RK API.
 
-The published Model schema is unchanged. Geometry is an experimental package
-extension, pinned by the package content digest until its domain contract is reviewed.
+This historical format uses the frozen Model 0.7 slot contract. Its geometry
+extension is separate from the current canonical Geometry/Bundle candidate.
 """
 
 from __future__ import annotations
@@ -9,7 +9,6 @@ from __future__ import annotations
 from contextlib import AbstractContextManager, closing
 import gzip
 import hashlib
-from importlib.resources import files
 import json
 import os
 from pathlib import Path
@@ -25,7 +24,7 @@ from rangekeeper.model import Model
 FORMAT = "rk.sqlite-experiment/1"
 GEOMETRY_FORMAT = "speckle-object-transport/1"
 APPLICATION_ID = 0x524B5350  # RKSP; experimental, not a registered file format.
-SCHEMA_BYTES = files("rangekeeper.schema").joinpath("slots.json").read_bytes()
+SCHEMA_BYTES = Path(__file__).with_name("slots-model-0.7.json").read_bytes()
 SLOTS = json.loads(SCHEMA_BYTES)
 
 
@@ -234,6 +233,8 @@ def build(destination, model_text, transport=None, associations=(), descriptor=N
     destination = Path(destination)
     transport = {} if transport is None else transport
     model = codec.loads(model_text, kind=Model)
+    if model.metadata.schema_version != "0.7.0":
+        raise ValueError("The SQLite experiment requires Model schema 0.7.0")
     associations, dependencies = check_geometry(
         model, transport, associations, descriptor
     )
