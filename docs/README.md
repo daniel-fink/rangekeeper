@@ -64,3 +64,6 @@ lessons and their preparation and capability dependencies. [History](history/REA
 completed plans and dated narratives. [Research](research/README.md) retains
 captured experiments and verification evidence. A local result does not establish
 remote CI, Windows host or service acceptance.
+
+Use the [single-folder workflow and consolidation record](history/handoffs/2026-10-14-single-folder-consolidation.md)
+for the current branch roles, saved checkpoints and remaining work.

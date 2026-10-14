@@ -5,6 +5,15 @@ Start with [installation](../guides/installation.md) and the
 [documentation upkeep](documentation.md) during every change. Use
 [verification](verification.md) to select checks for the affected contracts.
 
+## Working folder and branches
+
+Use the single RK folder on `develop` for current library development. Keep
+unfinished teaching work on `codex/walkthrough-acausal`, switching branches in
+that folder only after saving current changes. Follow the
+[walkthrough branch procedure](../guides/walkthroughs.md#branches-and-publication).
+A development merge does not approve the Bundle format for release or Projects
+adoption. No walkthrough publication is part of this workflow.
+
 ## Development environment
 
 Use Python 3.10–3.13. From the repository root, install the locked development
