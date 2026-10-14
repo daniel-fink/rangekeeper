@@ -1,5 +1,9 @@
 # Research and verification evidence
 
+- [T3 RK integration](t3-integration-2026-10-15/README.md).
+
+- [Technical T2 selective reads](t2-technical-2026-10-14/README.md).
+
 Subdirectories retain experiments, migration baselines, captured commands and
 acceptance results. Each result applies to the source and environment recorded
 with it. Old paths and dependency names in logs are evidence, not current APIs.
@@ -33,3 +37,6 @@ The [MiniZinc evidence](full-migration/minizinc/README.md) and
 - [Walkthrough branch split — 14 October 2026](walkthrough-branch-split-2026-10-14/README.md): frozen legacy sources, retained draft, shared data and integration checks.
 
 - [Bundle T1 candidate](bundle-t1-2026-10-14/README.md): schema, IO and verification boundaries.
+
+The [investigation Bundle candidate](investigation-bundle-t1-2026-10-14/README.md) records
+the expanded T1 producer checks and remaining format/adoption gates.

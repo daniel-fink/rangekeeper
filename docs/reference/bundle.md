@@ -1,8 +1,8 @@
 # Rangekeeper Bundle candidate
 
-This is an implemented review candidate in RK `0.10.0.dev1`, not a stable public
+This is an implemented review candidate in RK `0.10.0.dev3`, not a stable public
 interchange release. [ADR-008](../decisions/008-sqlite-model-package.md) retains the
-full acceptance matrix. The [T1 record](../research/bundle-t1-2026-10-14/README.md)
+full acceptance matrix. The [expanded T1 record](../research/investigation-bundle-t1-2026-10-14/README.md)
 separates this implementation from remaining provider, query and host work.
 
 ## Canonical Geometry
@@ -29,6 +29,20 @@ creates a new Model UUID, retains `previous`, and changes the schema version. It
 does not modify the old artifact. Changing Geometry, mappings or canonical content
 requires a new Model. DirectoryStore rejects changed content under an existing UUID.
 
+## Investigation contents and dependency closure
+
+A Bundle has one main Model and may select additional Models, Specifications and
+finalized Runs. The reader retains the exact input Models, included/case
+Specifications, child Runs, outputs and scoped report documents needed to interpret
+those selections. Historical predecessors are not followed automatically. A root
+may select earlier history explicitly. Unrelated extra records are rejected.
+
+The main Model is the initial inspection target, not an acceptance decision.
+A Model-only Bundle remains valid. Saved partial Specifications and failed Runs can
+be retained; their inclusion does not claim numerical validity or execution support.
+Resolved Run validation checks retained references and evidence. Reading never
+executes a Specification. Core owns live operations, workspace state and acceptance.
+
 ## Directory format and identity
 
 ```text
@@ -37,64 +51,91 @@ requires a new Model. DirectoryStore rejects changed content under an existing U
   model/<schema class>.parquet
   model/records.parquet
   model/references.parquet
-  geometry/<native files>        # absent for a Model-only Bundle
+  documents/<UUID>/<schema class>.parquet
+  documents/<UUID>/records.parquet
+  documents/<UUID>/references.parquet
+  geometry/<native files>             # main Model's pin, if present
+  assets/<pin digest>/<native files>  # other distinct pins
 ```
 
-The format identifiers are `rangekeeper.bundle/1-proposal` and
-`rangekeeper.parquet/1-proposal`. The manifest pins Model UUID/schema/digest,
-slot-schema digest, table inventory and every file's relative path, byte size and
-SHA-256. Its Geometry declaration must exactly match the canonical Model pin.
+Use `rangekeeper.bundle/2-proposal` with `rangekeeper.parquet/1-proposal`.
+The table mapping is unchanged and now applied to all three canonical root kinds.
+The main Model descriptor is `model`, with its `tables` and `geometry` fields.
+`documents` contains descriptors, table inventories and Geometry pins for the other
+roots. `roots` lists the explicitly selected typed UUIDs beyond the main Model.
+`geometry_paths` maps spatial Model UUIDs to their dataset directory. Equal complete
+Geometry pins share bytes; each Model keeps its own canonical pin and mappings.
 
-Bundle identity is SHA-256 of canonical JSON containing format, mapping and the
-canonical Model digest. The Model digest uses RK schema-aware comparison data.
-Unordered record collections are normalized for identity; ordered mathematical
-collections retain order. Repacking RK Parquet compression or row groups preserves
-logical identity. Geometry's exact byte inventory is already Model content, so
-changing native bytes changes the logical content. The manifest does not hash itself.
+Bundle identity hashes format, mapping, main Model UUID, selected roots and the
+sorted complete set of typed document UUIDs/canonical digests. Canonical record
+identity and Bundle identity are distinct. Adding a Run changes the Bundle ID;
+unchanged Models/Specifications keep their identities. Parquet repacking preserves
+logical identity. Byte changes to Geometry require new canonical pins. The manifest
+records every retained file's size and SHA-256; it does not hash itself.
 
-A table is derived for each encountered schema class. Field state is absent,
-explicit null or present. Typed tagged columns retain scalar and record union
-branches; integers use exact decimal text and floats remain binary64. Lists and
-keyed collections retain presence, order and empty containers. Embedded records
-are linked by ownership paths. `records.parquet` and `references.parquet` are
-validated derived indexes, not a second canonical authority. Opaque Claim Content
-is inert JSON because the RK schema declares it opaque; the Model is never a
-single JSON fallback file.
+Schema-derived columns retain absent/null/present states, typed unions, exact
+integers, floating representations, collection order and opaque schema content.
+Record/reference indexes are checked against reconstruction. No canonical root is
+stored as an opaque JSON fallback.
 
-## Optional IO
+## Public optional IO
 
-Install `rangekeeper[bundle]` or `pip install '.[bundle]'` from this checkout.
-The extra pins PyArrow 23.0.1 and DuckDB 1.4.3. Model imports require neither.
-Use the explicit public module:
+Install `rangekeeper[bundle]`. Domain imports still require neither Arrow nor DuckDB.
+Use the explicit `rangekeeper.io.bundle` module:
 
 ```python
 from rangekeeper.io.bundle import write, Reader
 
-manifest = write(new_directory, model)  # Model-only
-restored = Reader(new_directory).model()
-assert restored.to_data() == model.to_data()
+manifest = write(new_directory, result_model, documents=[run, next_specification],
+                 resolver=record_store)
+reader = Reader(new_directory)
+result = reader.model()                 # main Model
+inputs = reader.load_model(input_uuid)  # exact retained Model
+spec = reader.load_specification(spec_uuid)
+run = reader.load_run(run_uuid)
+records = reader.documents()            # immutable roots, UUID order
+reader.copy_to(new_record_store)        # no execution or acceptance
 ```
 
-For Geometry, pass its exact native directory and a provider implementing
-`validate(root, geometry)` to `write`. No provider is selected from source text.
-The writer validates the complete reconstruction and native bytes before publishing
-the manifest. Existing destinations are never overwritten. Failed writes can leave
-an unpublished directory for diagnosis. Core separately owns registered storage,
-access control, catalogue updates and workspace acceptance.
+`documents=` selects root facades. `resolver=` supplies dependencies through the
+public typed resolver. Missing/wrong-kind/wrong-identity records and Specification
+dependency cycles fail. Run validation uses the complete retained resolver.
+The writer checks round trips and publishes the manifest last. Existing destinations
+are never overwritten; a failed write can leave an unpublished directory.
 
-`Reader(root, provider=...)` checks the manifest, supported pins, closed inventory,
-file paths, Model file hashes, typed table shape, reconstruction and derived indexes.
-`verify_geometry()` checks native bytes/semantics through the explicit provider.
-Ordinary RK record queries do not read Geometry blobs. A reader for a changed or
-untrusted delivery must verify Geometry before accepting native content.
+For the main Model, `geometry=` and `provider=` remain convenient single-source
+arguments. `geometries={model_uuid: directory}` supplies native directories;
+`providers={(provider, format, format_version): adapter}` supplies trusted decoders.
+A source for one Model can serve another with the same complete pin. Unknown or
+undeclared sources fail. `geometry_path(model_uuid)` locates its retained dataset.
+`verify_geometry()` checks every distinct pin, including supporting Models when the
+main Model has no Geometry. Ordinary canonical reads do not decode Geometry blobs.
 
-`records(kind=None, offset=0, limit=100)` returns stable path-ordered summaries and
-an optional `next_offset`. Limits are 1–1,000 returned rows. The reader rejects more
-than 10,000 files, 4 GiB total retained bytes, 256 MiB compressed Model data,
-512 MiB expanded Model table data or one million Model rows by default. These are
-proof bounds, not validated production capacity. The reference reader reconstructs
-at mount and registers Arrow data with a bounded DuckDB connection for projections.
-It does not provide the full proposed evidence/graph/asset catalogue.
+`records(document=uuid, kind=None, canonical_id=None, path=None, offset=0, limit=100)` projects
+one exact root; omission selects the main Model. Rows are ordered by their local
+record path. Optional `path` is an exact canonical record path, never a filesystem path.
+The query reads the verified Parquet index through parameterised DuckDB with
+predicate/limit pushdown and 128 MB working memory; no full Arrow index copy precedes
+the query. Opening still reconstructs and verifies all retained documents.
+Offsets are scoped to that root and query. Limits are 1–1,000 rows.
+The reader limits the Bundle to 1,000 documents, 10,000 files, 4 GiB retained bytes,
+256 MiB compressed canonical tables, 512 MiB declared expanded table bytes and one
+million physical canonical/index rows by default. These are proof bounds, not
+validated production capacity or a hard native-call deadline.
+
+`copy_to(store)` preflights identity conflicts and publication order, then publishes
+complete records before dependent Runs. A cyclic Run publication dependency fails
+before writes. This is idempotent but not a multi-document transaction; storage IO
+failure can leave complete records. Further work explicitly creates revised
+Specifications and new Runs/Models. The original Bundle remains unchanged.
+
+## Earlier candidate preservation
+
+The dev1 wheel and captured `1-proposal` artifacts remain preserved by Core.
+The dev2 reader rejects that older Bundle version. Use the matching old reader and
+an explicit reviewed export to move records; no in-place or automatic conversion
+is supplied. Model/Specification/Run canonical schema versions are unchanged by
+this Bundle expansion. The user approved development adoption in Projects. Stable release remains unapproved.
 
 ## Remaining acceptance
 
@@ -104,4 +145,6 @@ instance transform chains. A tested subset is not all native formats or general
 BRep support. Full scalar/presence/union adversarial coverage, all source evidence
 and change cases, large-scale hostile-file handling, complete query projections,
 render conversions and real-host consistency remain in P1–P8. Preserve the
-concrete format review before project adoption.
+remaining provider/host gates before broader or stable-format adoption.
+Core now supplies supervised access and complete application result schemas; see
+[technical T2 evidence](../research/t2-technical-2026-10-14/README.md).

@@ -4,15 +4,17 @@ Terminology and scope update, 14 October 2026: use **Rangekeeper Bundle**,
 shortened to **Bundle**, for the outer immutable deliverable. Model remains the
 canonical object. Speckle Bundle names native provider content. Model-only Bundles
 are included in the target. Existing format/API names and the historical SQLite
-record remain unchanged. Core's [coordinated plan](https://github.com/daniel-fink/whirlwind-core/blob/main/docs/decisions/004-core-lifecycle-refactor.md)
+record remain unchanged. Core's [coordinated plan](https://github.com/daniel-fink/whirlwind-core/blob/develop/docs/decisions/004-core-lifecycle-refactor.md)
 groups implementation into three turns while preserving the concrete format
-review after step A and UI review after B/C. Its new working-document link is not
+review after step A and UI/UX review after T3. Its new working-document link is not
 a published verification checkpoint.
+The [contributor branch instructions](../contributing/README.md#working-folder-and-branches)
+include the required T3 merge and sync to `develop` across all four repositories.
 
 Status: Bundle contract, Entity-to-source-element mappings, separate provenance
 and Parquet/DuckDB architecture agreed on 13 October 2026. Application/transport
 ownership and the greenfield Interface were clarified on 14 October 2026. A
-[concrete local candidate](../reference/bundle.md) is implemented in 0.10.0.dev1.
+[concrete local candidate](../reference/bundle.md) is implemented in 0.10.0.dev3.
 [Evidence and remaining gates](../research/bundle-t1-2026-10-14/README.md) do not
 close the full P1–P8 matrix. The SQLite development experiment is retained as earlier evidence.
 It does not implement this contract.
@@ -28,21 +30,25 @@ future native interfaces without making a renderer part of RK semantics.
 
 ## Contract and terms
 
-**One Bundle with Geometry contains exactly one immutable Model, pinned to
-exactly one Geometry dataset. The Model owns the Geometry pin and mappings.**
+**A Bundle contains a main Model and selected investigation records with their
+interpretation dependencies. Each spatial Model owns one exact Geometry pin and
+its mappings. Equal pins can share retained native bytes.**
 
 | Term | Meaning |
 | --- | --- |
 | Model | The canonical RK Model, including its Geometry pin and mappings under candidate schema 0.8.0. Use “new Model” when this content changes; no separate “RK revision” object is introduced. |
 | Geometry | The retained spatial source dataset, in its declared provider format. This includes source objects, properties, relations, geometric representations and required assets. The term does not restrict its content to meshes or flatten it into RK entities. |
-| Rangekeeper Bundle (Bundle) | The immutable delivery unit containing one exact Model, a manifest and optional Geometry. The manifest records identities, format pins and integrity information. |
+| Rangekeeper Bundle (Bundle) | The immutable delivery unit containing a main Model, selected Models/Specifications/finalized Runs, exact dependencies, a manifest and declared Geometry. The manifest records identities, format pins and integrity information. |
 
-Every Rangekeeper Bundle contains one exact Model and its manifest. Geometry is
-optional: a Model-only Bundle is valid, including for workbook ingestion. When
-Geometry is present, exactly one pinned dataset and the Model-owned mappings apply.
-Do not fabricate an empty dataset. Specifications and Runs remain separate exact
-records unless a later version explicitly includes them. The schema extension,
-migration and concrete field names remain implementation work.
+The user agreed the investigation handover scope on 14 October 2026. The expanded
+`2-proposal` candidate retains input/output Models, composed Specifications, selected
+Runs and their exact dependencies. It preserves Model-only delivery. Historical
+predecessors and workspace state are not copied automatically. The public reader
+acts as a read-only resolver; Core manages export/import and further operations.
+See the [current format reference](../reference/bundle.md). This supersedes the
+one-Model restriction; earlier proof and P1–P8 acceptance records remain dated.
+The user approved the concrete candidate for T2 development and local Projects
+adoption. Stable release and the remaining acceptance matrix are separate gates.
 
 The Model's pin must identify exact Geometry content by a digest, its provider and
 format/schema identity, and its source version/address when available. A mutable
@@ -482,7 +488,7 @@ legacy Geometry evidence without treating it as native Bundle or ChatGPT accepta
 
 | ID | Required evidence |
 | --- | --- |
-| P1: Cardinality and identity | A valid Bundle with Geometry contains one Model and one pinned Geometry dataset. Reject missing/extra datasets, mismatched pins, and reuse of a Model identity with changed canonical content. Also prove Model-only Bundles with no fabricated Geometry; reject a declared Geometry profile with missing data. |
+| P1: Cardinality and identity | A valid Bundle contains a main Model, selected canonical roots and their exact interpretation dependencies. Reject missing/unselected records, wrong-kind references, mismatched pins, and reuse of a record identity with changed canonical content. Each spatial Model has one pinned Geometry dataset; equal pins can share native bytes. Also prove Model-only Bundles with no fabricated Geometry; reject a declared Geometry profile with missing data. |
 | P2: Change matrix | RK-only, Geometry-only, source-version-only, provider/format/schema-only and mapping-only changes each produce a new Model and Bundle. Geometry-only changes cannot retain the old Model identity. Stable Entity/Value UUIDs and reuse of unchanged Geometry work. |
 | P3: Integrity and reopening | Reopen a copied Bundle offline without the source server or original capture. Reject tampered/missing source files, wrong digests/versions and invalid mappings before publication. Preserve native Geometry bytes; verify all declared required assets. |
 | P4: Source semantics and provenance | Test Entity/Assembly mappings to objects and allowed groups, many-to-many and absent mappings, ambiguous and namespace-colliding selectors, and all-candidate reverse lookup. Reject Value/Relationship/mesh endpoints and unsupported node kinds. Verify property/relation evidence through Source/Location/Claim/Fact independently of mappings. Test explicit source-group expansion, units, nested instances and transforms without inferring RK membership, placement or accepted content. |

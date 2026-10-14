@@ -15,6 +15,43 @@ from rangekeeper.schema.runtime import exact_equal
 ROOT = Path(__file__).parents[2]
 
 
+def test_record_query_filters_in_parquet_without_arrow_materialization(
+    tmp_path, monkeypatch
+):
+    import pyarrow.parquet as pq
+
+    model = Model.from_data(
+        dict(
+            metadata=dict(id=str(UUID(int=1)), schema_version="0.8.0"),
+            system=dict(
+                entities=[
+                    dict(id=str(UUID(int=i)), name=f"Entity {i}")
+                    for i in range(2, 1002)
+                ]
+            ),
+        )
+    )
+    write(tmp_path / "bundle", model, row_group_size=64)
+    reader = Reader(tmp_path / "bundle")
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("Record queries must not materialize an Arrow table")
+
+    monkeypatch.setattr(pq, "read_table", forbidden)
+    first = reader.records(kind="Entity", limit=3)
+    second = reader.records(kind="Entity", offset=first["next_offset"], limit=3)
+    assert len(first["items"]) == len(second["items"]) == 3
+    assert not {r["path"] for r in first["items"]} & {
+        r["path"] for r in second["items"]
+    }
+    exact = reader.records(canonical_id=str(UUID(int=555)), limit=1)
+    assert len(exact["items"]) == 1 and exact["next_offset"] is None
+    assert reader.records(path=exact["items"][0]["path"]) == exact
+    assert reader.records(path="' OR 1=1 --")["items"] == []
+    with pytest.raises(ValueError):
+        reader.records(path=[])
+
+
 @pytest.mark.parametrize(
     "filename", ["model.yaml", "model-forward-output.yaml", "model-inverse-output.yaml"]
 )

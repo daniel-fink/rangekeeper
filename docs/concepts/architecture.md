@@ -47,10 +47,11 @@ See [the decision](../decisions/007-three-repository-refactor.md),
 [upgrade paths](../guides/upgrading.md), and [Grasshopper](../guides/grasshopper.md).
 
 The agreed [Model and Geometry Bundle contract](../decisions/008-sqlite-model-package.md)
-contains one immutable Model and optional Geometry. When Geometry is present,
-it is one exact pinned dataset. The Model owns the
-Geometry pin and Entity-to-source-element mappings; changing either side or the
-mappings creates a new Model and Bundle. Geometry is provider-neutral; its first planned format is Speckle's
+contains a main Model plus selected Models, Specifications and finalized Runs,
+with their interpretation dependencies. Each spatial Model owns its exact Geometry
+pin and Entity-to-source-element mappings. Equal pins share retained native bytes.
+Model changes create a new Model; changing the delivered selection creates a new
+Bundle without changing unchanged record identities. Geometry is provider-neutral; its first planned format is Speckle's
 2026.9 object-model/bundle schema, with an exact specification pin. Source data stays
 adjacent to schema-derived RK Parquet tables. One Bundle access layer contains
 DuckDB and provider adapters and supplies queries, provenance, geometry and assets
