@@ -36,6 +36,12 @@ API. Historical records retain the contracts and results from their recorded dat
 | Source interpretation | [Workflow](reference/workflow.md), [evidence](reference/evidence.md), [Excel](reference/excel.md) |
 | External presentation and transport | [Interface and layout](reference/viewer.md), [design transport](reference/design-transport.md) |
 
+## Repository and walkthrough checkpoint
+
+The [14 October 2026 state record](history/handoffs/2026-10-14-repository-and-walkthrough.md)
+records the code merge, preserved walkthrough, separate draft branch, local
+worktrees, verification results and remaining publication work.
+
 ## Contribute a change
 
 Start with [development and conventions](contributing/README.md). Agents and
