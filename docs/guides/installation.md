@@ -32,8 +32,8 @@ The separate example distribution supplies `rangekeeper_examples`. Install it fr
 the same checkout as the library. The Python runtime wheel does not include it.
 
 The local geometry renderer is packaged with RK. Installing or using it does not run Node
-or start a Whirlwind service. Advanced graph browsing and layout belong to Whirlwind Viewer.
-Source acquisition belongs to Whirlwind MCP. Core imports load neither owner.
+or start a Whirlwind service. Advanced graph browsing and layout belong to Whirlwind Interface.
+Source acquisition belongs to Whirlwind Core. Core imports load neither owner.
 
 ## Use the installed library
 

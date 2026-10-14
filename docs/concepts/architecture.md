@@ -1,19 +1,38 @@
 # Architecture after the 0.9 ownership split
 
+## Engine, Core and Interface
+
+The three repositories have distinct roles:
+
+| Section | Role | Repository |
+| --- | --- | --- |
+| Engine | Modelling engine | `rangekeeper` |
+| Core | Application core | `whirlwind-core` |
+| Interface | User interface | `whirlwind-interface` |
+
+Core owns Whirlwind application APIs. Rangekeeper retains its public modelling
+APIs and canonical readers. MCP is a transport adapter within Core. Interface
+covers browsing and inspection now, with editing and authoring anticipated.
+Future user edits go through Core application operations and Rangekeeper rules;
+published Packages remain immutable. The rename does not add editing capability.
+
+## Ownership
+
 Rangekeeper owns immutable canonical Model, Specification and Run contracts, identity,
 provenance, validation, units, calculations and execution. `io` owns native serialization,
 stores, Polars conversion and the canonical Speckle envelope. `visualisation` owns simple
 local chart, table, PyVis graph and retained geometry display. Importing RK core does not
 load an ingestion engine, source reader, browser or service client.
 
-Whirlwind MCP owns acquisition, source interpretation, transient Evidence, recipes,
-workspace decisions, ingestion builds and optional Rhino source extraction. Whirlwind
-Viewer owns advanced browsers and graph layout, and builds the pinned local geometry
+Whirlwind Core owns acquisition, source interpretation, transient Evidence, recipes,
+workspace decisions, ingestion builds and optional Rhino source extraction. It
+also owns the planned Package application module and thin HTTP/MCP adapters. Whirlwind
+Interface owns advanced browsers and graph layout, and builds the pinned local geometry
 asset distributed with RK. RK imports neither Whirlwind Python package.
 
 The portable C# Model library and generic Grasshopper authoring components stay in RK.
 Generated canonical record and envelope definitions have one authority in RK. The
-source-specific Grasshopper component is in MCP and consumes the pinned RK assemblies.
+source-specific Grasshopper component is in Core and consumes the pinned RK assemblies.
 
 See [the decision](../decisions/007-three-repository-refactor.md),
 [upgrade paths](../guides/upgrading.md), and [Grasshopper](../guides/grasshopper.md).
@@ -27,8 +46,11 @@ adjacent to schema-derived RK Parquet tables. One Package access layer contains
 DuckDB and provider adapters and supplies queries, provenance, geometry and assets
 under shared identity and access rules. Entity
 associations support navigation and selection; property and relation evidence use
-the separate RK provenance structure. Rendering belongs to the interface. Payload
-keeps its own application database and any rebuildable native-control projections;
-it does not own canonical Package storage.
+the separate RK provenance structure. Rendering belongs to the interface. The greenfield Interface uses React/TypeScript/
+Vite, Mantine Tree, AG Grid Community, Cytoscape and Speckle; Payload/Next are excluded.
+RK owns the lossless RK Parquet mapping/reader, with storage dependencies in optional
+IO modules. Whirlwind composes it with provider interfaces and access policy. Direct
+Python, HTTP and MCP share application semantics; reading a complete retained
+Package requires neither ingestion state, a chat nor source-server access.
 The earlier development experiment is historical
 evidence; the installed IO API and public Model schema have not adopted this contract.

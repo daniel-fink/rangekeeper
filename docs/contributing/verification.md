@@ -74,7 +74,7 @@ cache aside first: setuptools can retain removed modules in that cache.
 Check that required assets are present and that examples, native
 projects and build caches have not entered the Python runtime package.
 
-## Viewer and native projects
+## Interface and native projects
 
 From `src/rangekeeper/adapters/cytoscape/client/`:
 
