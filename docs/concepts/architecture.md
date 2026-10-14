@@ -27,8 +27,9 @@ load an ingestion engine, source reader, browser or service client.
 Whirlwind Core owns acquisition, source interpretation, transient Evidence, recipes,
 workspace decisions, ingestion builds and optional Rhino source extraction. It
 also owns the planned Package application module and thin HTTP/MCP adapters. Whirlwind
-Interface owns advanced browsers and graph layout, and builds the pinned local geometry
-asset distributed with RK. RK imports neither Whirlwind Python package.
+Interface owns advanced browsers and graph layout. RK owns and builds its notebook
+Geometry viewer in `tools/geometry`; it has no build or runtime dependency on
+Whirlwind. RK imports neither Whirlwind Python package.
 
 The portable C# Model library and generic Grasshopper authoring components stay in RK.
 Generated canonical record and envelope definitions have one authority in RK. The
