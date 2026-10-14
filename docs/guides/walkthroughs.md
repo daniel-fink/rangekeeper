@@ -2,6 +2,9 @@
 
 ## Branches and publication
 
+The [14 October 2026 state record](../history/handoffs/2026-10-14-repository-and-walkthrough.md)
+pins the completed split, local worktrees, verification results and remaining work.
+
 `develop` contains the current library and preserves the original `walkthrough/`
 sources, configuration and tracked outputs from commit
 `2c514cbc0e8c5436d65c142166e5bf3d56609f88`. These are historical teaching material;
