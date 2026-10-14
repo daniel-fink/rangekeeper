@@ -7,6 +7,14 @@ its implementation steps and the historical mapping. The prototype still allows
 different geometry under one legacy Model UUID. The new contract forbids this.
 No public RK schema fields are changed here.
 
+The experiment retains its original Model 0.7 mapping in
+[`slots-model-0.7.json`](slots-model-0.7.json), copied byte-for-byte from generated
+slot metadata at `f5f4b286cd451f274288ab1f0aa46adfa5d59b80`. Its SHA-256 is
+`ff99c2200f446092aa786ecf50560eade8f425478fada9f9f8ee499c3eb2643b`.
+Do not regenerate it from the current schema. This pin keeps existing experimental
+files readable when the library adds new fields or classes. The writer rejects
+newer Model versions; use the separate Bundle candidate for its defined scope.
+
 From the Rangekeeper repository root, use its development environment. The core
 prototype uses RK and Python's standard library. Tests also use pytest and PyYAML.
 
