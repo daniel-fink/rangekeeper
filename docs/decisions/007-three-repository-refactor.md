@@ -3,7 +3,7 @@
 **Status: implemented; local validation and open gates are recorded below.**
 
 **Decision date: 13 October 2026.** Rangekeeper owns modelling and simple local
-display. Whirlwind MCP owns ingestion. Whirlwind Viewer owns advanced browsing
+display. Whirlwind Core owns ingestion. Whirlwind Interface owns advanced browsing
 and visualisation. The target is zero legacy APIs, runtimes, aliases or automatic
 fallbacks in the supported packages.
 
@@ -18,28 +18,84 @@ implemented. Their next steps are retained below. This document does not start
 those sessions or authorize publication, source interpretation decisions, or
 external service writes.
 
+## 14 October 2026 amendment — Package access and greenfield Interface
+
+The recorded refactor implementation/evidence below remains a historical checkpoint.
+Its retained Payload/Next host and collection-import strategy is superseded for new
+Interface work. The agreed target is React/TypeScript/Vite with Mantine Tree, AG Grid
+Community, Cytoscape and Speckle Viewer. Preserve the old spike through Git/history;
+inventory Python export/layout and RK geometry-asset consumers before removing
+their build paths. This amendment has not migrated or deleted runtime code.
+
+RK owns canonical Package/schema rules and its Parquet mapping/reader, with optional
+storage adapters. Whirlwind Package application operations live initially in the
+Core repository, separate from ingestion and transport handlers. They compose RK
+IO, Geometry providers, registered storage and common access policy. Python calls
+them directly; thin HTTP/MCP adapters expose them. No MCP SDK, Interface or ingestion
+workspace is required by the core. A complete retained Package needs no original
+source connection or credentials. One interface does not imply one remote service.
+
+The active owners are Interface's [greenfield decision](https://github.com/daniel-fink/whirlwind-interface/blob/5ef206aa3a525a0f4c1910512b6fa2c8b1e6f145/docs/decisions/005-greenfield-browser.md)
+and [UI plan](https://github.com/daniel-fink/whirlwind-interface/blob/5ef206aa3a525a0f4c1910512b6fa2c8b1e6f145/docs/decisions/001-viewer-plan.md),
+and Core's [Package access plan](https://github.com/daniel-fink/whirlwind-core/blob/66a0cea637b5186010459834f7962591fb62e338/docs/decisions/003-package-access.md)
+and [application contract](https://github.com/daniel-fink/whirlwind-core/blob/66a0cea637b5186010459834f7962591fb62e338/docs/reference/package-access.md).
+RK [ADR-008](008-sqlite-model-package.md) owns canonical conformance.
+New application/reader and host acceptance remain pending. The initial UI and
+fixture contract can precede native Package implementation. No fourth repository
+or duplicate Interface Package service is needed.
+
+## 14 October 2026 amendment — Repository names and roles
+
+Use **Engine / Core / Interface** as short section labels, and **Modelling engine /
+Application core / User interface** as the full role descriptions.
+
+| Repository | Name before this amendment | Role |
+| --- | --- | --- |
+| `rangekeeper` | Unchanged | Modelling engine: canonical models, schemas, validation, calculations, execution and native IO. |
+| `whirlwind-core` | `whirlwind-mcp` | Application core: ingestion, application operations, Package access, queries, storage integration and access policy; Python, HTTP and MCP adapters. |
+| `whirlwind-interface` | `whirlwind-viewer` | User interface: browsing, inspection, selection, shared components and application hosts; future editing and authoring. |
+
+Rename both Whirlwind GitHub repositories and local checkout folders. Keep
+Rangekeeper's name. The Core name describes application ownership; it does not
+move canonical modelling APIs or readers out of Rangekeeper. MCP remains one
+transport adapter. Interface describes the user interface, including anticipated
+editing, rather than every programmatic API in the system.
+
+This rename preserves installed distribution names, Python imports, CLI commands,
+versions and lockfile identities. Core still installs `whirlwind-mcp` and imports
+`whirlwind_mcp`; Interface's existing Python distribution/import remain
+`whirlwind-viewer`/`whirlwind_viewer`, and its npm package keeps `whirlwind-viewer`.
+A package/API rename requires its own coordinated migration. Stable decision
+filenames and captured historical evidence retain their original names.
+
+Current Interface behaviour remains read-only. Future edits must pass through
+Core application operations and Rangekeeper validation. A change to canonical
+content produces a new Model and Package; published Packages stay immutable.
+Package access and the new UI retain their existing implementation and acceptance
+gates. A repository rename completes none of those gates.
+
 ## Owners and dependencies
 
 | Repository | Owns | Boundary |
 | --- | --- | --- |
 | Rangekeeper | Canonical Model, Specification and Run; schemas; units; validation; calculations; execution; canonical provenance records; native IO; simple local charts, tables, graphs and geometry display; portable C# model library and generic Grasshopper modelling components | No ingestion workspaces, source interpretation engine, Rhino source reader, MCP server, application browser or predecessor runtime |
-| Whirlwind MCP | Source acquisition and inspection; interpretation rules and decisions; transient Evidence; recipes; deterministic ingestion builds; workspace lifecycle; Python API; MCP tools and resources; plugin packaging; service access and authorisation; optional Rhino/Grasshopper source integration | Calls public RK APIs. Core ingestion runs without Rhino, Grasshopper, an LLM, MCP transport, Node, Payload or Viewer process |
-| Whirlwind Viewer | Shared tree, graph, 3D, inspector and table components; full standalone browser; focused ChatGPT resources; browser host adapters; projections and browsing indexes; advanced graph layouts; buildable static display assets | Consumes exact canonical artifacts. It cannot change source decisions or canonical records through a projection |
+| Whirlwind Core | Application operations; planned Package access, queries, storage integration and access policy; source acquisition and inspection; interpretation rules and decisions; transient Evidence; recipes; deterministic ingestion builds; workspace lifecycle; Python API; MCP tools and resources; plugin packaging; service access and authorisation; optional Rhino/Grasshopper source integration | Calls public RK APIs. Core ingestion runs without Rhino, Grasshopper, an LLM, MCP transport, Node, Payload or Interface process |
+| Whirlwind Interface | Shared tree, graph, 3D, inspector and table components; full standalone browser; focused ChatGPT resources; browser host adapters; projections and browsing indexes; advanced graph layouts; buildable static display assets | Consumes exact canonical artifacts. It cannot change source decisions or canonical records through a projection |
 
 Repository roots are:
 
 - Rangekeeper: `/Volumes/Data/Projects/Rangekeeper`
-- Whirlwind MCP: `/Volumes/Data/Projects/Whirlwind/whirlwind-mcp`
-- Whirlwind Viewer: `/Volumes/Data/Projects/Whirlwind/whirlwind-viewer`
+- Whirlwind Core: `/Volumes/Data/Projects/Whirlwind/whirlwind-core`
+- Whirlwind Interface: `/Volumes/Data/Projects/Whirlwind/whirlwind-interface`
 
-The runtime direction is Whirlwind MCP to RK. Viewer consumes the RK artifact
-contract and, when connected, the MCP service contract. RK imports neither
-Whirlwind package. MCP does not require Viewer to inspect, build or export a
-Model. Viewer can open a retained artifact without a live MCP session.
+The runtime direction is Whirlwind Core to RK. Interface consumes the RK artifact
+contract and, when connected, the Core service contract. RK imports neither
+Whirlwind package. Core does not require Interface to inspect, build or export a
+Model. Interface can open a retained artifact without a live MCP session.
 
-There is one build-time exception: Viewer produces a versioned static geometry
+There is one build-time exception: Interface produces a versioned static geometry
 bundle that RK packages for local display. RK consumes the built files and their
-manifest. Building or installing RK must not clone Viewer, run npm, or fetch an
+manifest. Building or installing RK must not clone Interface, run npm, or fetch an
 unpinned bundle. This is asset distribution, not a Python runtime dependency.
 
 ## Current baseline
@@ -49,14 +105,14 @@ These are starting points, not acceptance evidence for the refactor.
 | Repository | Inspected revision | Current work to preserve |
 | --- | --- | --- |
 | Rangekeeper | `7a0181774edcf29d363822b26cfb8739a467d11b` | Notebook 02 and themed Plotly book work are committed. Notebook 03 and related book changes are implemented and locally reviewed but uncommitted. The working tree also contains unrelated conflict files and other untracked material |
-| Whirlwind MCP | `1490552fcd221622e490d12abe47589e00ecba53` | Clean checkout. Python API, optional stdio server and macOS Codex desktop trial kit exist. The package still pins RK with the `workflow` extra |
-| Whirlwind Viewer | `c1322a078f9700c9cb90ed59b3c0fcead390da70` | Clean checkout. Local Payload browser with tree, native list/drawer, Cytoscape and Speckle exists. Portable component extraction and ChatGPT integration remain pending |
+| Whirlwind Core | `1490552fcd221622e490d12abe47589e00ecba53` | Clean checkout. Python API, optional stdio server and macOS Codex desktop trial kit exist. The package still pins RK with the `workflow` extra |
+| Whirlwind Interface | `c1322a078f9700c9cb90ed59b3c0fcead390da70` | Clean checkout. Local Payload browser with tree, native list/drawer, Cytoscape and Speckle exists. Portable component extraction and ChatGPT integration remain pending |
 
-MCP has Python, protocol, installed-package and Codex CLI evidence, including
+Core has Python, protocol, installed-package and Codex CLI evidence, including
 resumption. The second-computer Codex desktop trial with live user answers is
-still pending. Viewer has local browser evidence on retained fixtures; that does
+still pending. Interface has local browser evidence on retained fixtures; that does
 not establish ChatGPT operation, large-model performance or production adoption
-of Payload. Correct the stale Viewer plan statement that the MCP adapter itself
+of Payload. Correct the stale Interface plan statement that the MCP adapter itself
 is pending when the repository plans are aligned.
 
 The walkthrough baseline is the current three-notebook book. Preserve its teaching
@@ -104,23 +160,23 @@ that package.
 | Hierarchy charts in `adapters/visualization.py` | `visualisation/chart.py`; retain sunburst, treemap and icicle behaviour used by callers |
 | `adapters/presentation.py` | `visualisation/table.py`; preserve useful Stream and modelling table display |
 | Simple notebook graph helper | `visualisation/graph.py`, using PyVis; keep pedagogical labels, direction and selection appropriate to a local graph |
-| Local notebook geometry display | `visualisation/geometry.py`, a small Python interface over Viewer-built static assets |
+| Local notebook geometry display | `visualisation/geometry.py`, a small Python interface over Interface-built static assets |
 | `adapters/polars.py` | `io/polars.py`; preserve typed conversion, identity, missingness and provenance references |
 | `adapters/csv.py` | Delete the wrapper. Use explicit Polars export for suitable tables. Keep any required precision or value-encoding safeguards with the conversion that needs them |
 | Pure canonical Speckle envelope mapping | `io/speckle.py` plus its contract resource |
 | Model, Specification and Run IO and stores | Remain in `io` |
 | Portable C# Model library and generic Grasshopper record, composition, validation and export components | Remain under `src/grasshopper`, with their contract and authoring tests |
-| `DesignExampleComponent` source reading, geometry extraction and interpretation | Move to the optional Rhino/Grasshopper integration in MCP, with its ingestion component and source-specific tests |
+| `DesignExampleComponent` source reading, geometry extraction and interpretation | Move to the optional Rhino/Grasshopper integration in Core, with its ingestion component and source-specific tests |
 
 The canonical table representation stays with the modelling owner. Formatted
 display belongs in `visualisation.table`; transformation of source evidence
-belongs in MCP. CSV is a projection format, not a lossless substitute for a
+belongs in Core. CSV is a projection format, not a lossless substitute for a
 canonical Model document.
 
 Update lazy imports from `model.flux`, display methods and other active callers.
 Importing RK core must not import plotting, Speckle SDK, spreadsheet readers or
 browser packages. Keep numerical solvers required by modelling and execution in
-RK. Move solvers used only for graph presentation to Viewer.
+RK. Move solvers used only for graph presentation to Interface.
 
 Remove `adapters`, `workflow`, `migration` and `legacy` from the installed RK
 package after their supported responsibilities have moved or been retired. Do
@@ -139,42 +195,42 @@ library remains independent of Rhino and Speckle. RK also retains the generic
 components in `RecordComponents.cs` and their `RecordGoo` bridge. A user can author,
 validate and export a Model in Grasshopper without installing Whirlwind. Export
 returns canonical data; acquisition, service authentication and ingestion
-workspace operations belong in MCP.
+workspace operations belong in Core.
 
 Move the current `DesignExampleComponent.cs` implementation into an optional
-Rhino/Grasshopper integration owned by MCP. It reads a `.3dm` file, interprets
+Rhino/Grasshopper integration owned by Core. It reads a `.3dm` file, interprets
 `complex::` layer names and object attributes, slices geometry at declared floor
 elevations, calculates measurements and records source evidence. These are
 ingestion responsibilities even though the component emits a canonical Model.
 Move any Grasshopper component that invokes this ingestion with it. Do not leave
-an RK wrapper that imports or launches MCP.
+an RK wrapper that imports or launches Core.
 
-The MCP repository can hold this integration as a separate source project, for
+The Core repository can hold this integration as a separate source project, for
 example `integrations/rhino/`, with extraction, host components and tests. Keep
 Rhino-dependent geometry operations in their supported runtime; this move does
 not require a Python rewrite of Brep operations. Define explicit invocation,
 input, output and failure contracts before connecting it to the workspace API.
 The integration must be usable without an LLM or a running MCP server. Ordinary
-MCP installation and non-Rhino source workflows must not require Rhino,
+Core installation and non-Rhino source workflows must not require Rhino,
 Grasshopper or the .NET toolchain.
 
-The dependency is the MCP-owned integration to the public RK C# library and,
+The dependency is the Core-owned integration to the public RK C# library and,
 where needed, its generic Grasshopper record bridge. Pin the compatible RK
 assemblies or packages and canonical schema. Do not copy generated record classes
 into a separately maintained model library or use build references to another
-developer checkout. RK must have no dependency on the MCP integration.
+developer checkout. RK must have no dependency on the Core integration.
 
 Keep canonical C# contract and generic authoring tests in RK. Transfer source
-interpretation and geometry-extraction assertions to MCP. Split the current Rhino
+interpretation and geometry-extraction assertions to Core. Split the current Rhino
 acceptance driver and example definition so the generic RK host check can run
-alone, while the source-to-Model example exercises the optional MCP integration.
+alone, while the source-to-Model example exercises the optional Core integration.
 Update executable definitions and assembly references together. Preserve original
 Rhino/GHX source evidence and accepted semantic comparisons. Delete predecessor
 components; do not create compatibility assemblies or duplicate component
 registrations. Current canonical component identities need not change merely
 because an implementation changes repositories.
 
-## Whirlwind MCP structure
+## Whirlwind Core structure
 
 Keep the existing `whirlwind_mcp` package and workspace API. Add the ingestion
 implementation below it; do not create a second workflow service.
@@ -209,22 +265,22 @@ contract. It must not become an independent interpretation workflow hidden insid
 a Grasshopper component.
 
 Transient ingestion Evidence and canonical provenance are different owners.
-MCP owns observations, interpretation rules and the builder that translates them.
+Core owns observations, interpretation rules and the builder that translates them.
 RK owns the Source, Location, Claim, Method and other canonical records that are
 part of the saved Model contract. Do not create a second Model or provenance
-schema in MCP. Preserve claim links, stable source locations, uncertainty,
+schema in Core. Preserve claim links, stable source locations, uncertainty,
 conflicts, missing values, real zero and `False`.
 
 Replace every cross-repository private import. In particular, audit workflow
 operand handling, structured encoding, JSON copying and atomic file operations.
 Expose a small public RK operation only where it expresses a modelling concern.
-Place workspace file writes and ingestion-only helpers in MCP. Do not make all
+Place workspace file writes and ingestion-only helpers in Core. Do not make all
 RK internals public to make the move compile.
 
 The current review/workbench code imports Cytoscape assets and writes viewer
-HTML. Split this dependency. MCP must always export the canonical Model, checks,
+HTML. Split this dependency. Core must always export the canonical Model, checks,
 manifest and a usable interpretation report with exact target references.
-An optional Viewer adapter can add a browser or static advanced report. Core
+An optional Interface adapter can add a browser or static advanced report. Core
 builds must not fail because a renderer is absent.
 
 Preserve workspace isolation, source hashes, retained decisions and rationale,
@@ -233,7 +289,11 @@ behaviour. A failed build must not return a previous successful Model as the
 new result. Do not add selective decision invalidation, source replacement or
 remote hosting as part of this extraction.
 
-## Whirlwind Viewer structure
+## Whirlwind Interface structure
+
+The following records the 13 October refactor target. The 14 October amendment
+above supersedes its Payload/Next and collection-import choices for future work;
+layout/export ownership and the recorded evidence remain applicable.
 
 Retain the existing app as the working browser. Extract a reusable component
 package inside this repository, for example `packages/viewer`, with components,
@@ -241,25 +301,25 @@ projections and browser contracts. Keep Payload/Next and ChatGPT adapters outsid
 the shared components. Keep any Python graph layout tooling in a separate
 installable subproject, for example `python/src/whirlwind_viewer`.
 
-Loading a canonical artifact into Payload remains Viewer work. This builds a
+Loading a canonical artifact into Payload remains Interface work. This builds a
 derived browsing index from an existing Model. Preserve the original bytes and
 their identity; keep projections rebuildable and user access read-only. Source
-interpretation and construction of that Model remain MCP work. Viewer must not
+interpretation and construction of that Model remain Core work. Interface must not
 add another interpretation engine under its importer.
 
-Viewer owns the advanced Cytoscape client, projection/routing code, graph document
+Interface owns the advanced Cytoscape client, projection/routing code, graph document
 generation, layout profiles, reduction, layout solvers and layout review tools
 that now live under RK's Cytoscape adapter. It also owns their fixtures, tests,
 bundled assets and third-party notices. This does not move mathematical
 formulations or RK's execution solvers.
 
 Do not install two maintained graph browsers in the same repository. Compare the
-RK browser with the existing Viewer components. Transfer useful projection,
+RK browser with the existing Interface components. Transfer useful projection,
 layout, provenance and selection behaviour into the shared implementation, then
 delete redundant renderer code. Retire an old surface explicitly if its behaviour
 is no longer in scope; do not silently lose it during a file move.
 
-The product direction from the Viewer session remains:
+The product direction from the Interface session remains:
 
 1. Shared tree, graph, 3D, inspector and table components.
 2. A full standalone browser that composes those components and works without
@@ -290,19 +350,19 @@ lifecycle and scale until new evidence closes them.
 
 | Contract | Authority | Consumers |
 | --- | --- | --- |
-| Canonical Model, Specification, Run, identity and provenance semantics | RK | MCP, Viewer and Grasshopper |
-| Ingestion recipes, source evidence and decision records | MCP | Python callers, harnesses and ingestion review surfaces |
-| Tool/resource messages, artifact access and viewer service requests | MCP | MCP clients and Viewer host adapters |
-| Component data, rendering events and local presentation state | Viewer | Standalone browser, focused resource shell and local static renderer |
-| Canonical Speckle envelope and geometry associations | RK | Python codec, generated C# constants, source adapters and Viewer |
+| Canonical Model, Specification, Run, identity and provenance semantics | RK | Core, Interface and Grasshopper |
+| Ingestion recipes, source evidence and decision records | Core | Python callers, harnesses and ingestion review surfaces |
+| Tool/resource messages, artifact access and viewer service requests | Core | MCP clients and Interface host adapters |
+| Component data, rendering events and local presentation state | Interface | Standalone browser, focused resource shell and local static renderer |
+| Canonical Speckle envelope and geometry associations | RK | Python codec, generated C# constants, source adapters and Interface |
 
 Pin canonical schemas or generate consumer types from them. Do not copy and
-independently edit their meaning. Keep the server-facing contract in MCP and the
-component-facing contract in Viewer, with a tested adapter between them. This
+independently edit their meaning. Keep the server-facing contract in Core and the
+component-facing contract in Interface, with a tested adapter between them. This
 plan requires no fourth repository or generic integration framework.
 
 Selections and evidence requests must identify one exact Model revision/artifact
-and canonical target. Add scope and an occurrence path where relevant. Viewer
+and canonical target. Add scope and an occurrence path where relevant. Interface
 database IDs and visual occurrence IDs must never replace canonical identity.
 Reject stale or inaccessible artifacts explicitly. Do not fall back to the most
 recent Model. Unknown geometry and absent associations remain visible states.
@@ -331,8 +391,8 @@ and association validation as acceptance checks.
 
 The current implementation fingerprint assumes that workflow, adapters and model
 code share one RK package. Replace it with inventories for the relevant RK and
-MCP code, schemas and dependencies. Record both package revisions and installed
-artifacts. Record Viewer assets separately from computation inputs unless a
+Core code, schemas and dependencies. Record both package revisions and installed
+artifacts. Record Interface assets separately from computation inputs unless a
 specific rendering operation actually affects the model build.
 
 For Rhino ingestion, also record the integration build, RK C# assembly/schema
@@ -356,18 +416,18 @@ Model revision.
 
 RK remains the owner of the walkthrough curriculum and book. A normal walkthrough
 run loads the prepared canonical Model and retained geometry, models the problem,
-and displays the result. It must not require a running MCP server, Viewer app,
+and displays the result. It must not require a running MCP server, Interface app,
 Payload database or ChatGPT session.
 
-Move source preparation and interpretation into MCP. Keep a documented preparation
+Move source preparation and interpretation into Core. Keep a documented preparation
 command or recipe that rebuilds the RK teaching fixture from retained source.
-The examples preparation environment may use the MCP Python package. The RK
+The examples preparation environment may use the Core Python package. The RK
 runtime and prepared-data lessons must not acquire that dependency through an
 import. Rewrite synthetic example builders that use the old Speckle converter
 to construct canonical records directly where source interpretation is not the
 lesson.
 
-The Rhino source-preparation example uses the optional MCP integration. Generic
+The Rhino source-preparation example uses the optional Core integration. Generic
 RK Grasshopper modelling examples remain independent. Preserve their separate
 setup instructions and acceptance checks; running the prepared-data book must
 not require either Rhino or Grasshopper.
@@ -420,7 +480,7 @@ Delete the following from supported packages and active commands:
 
 Update all known active callers together. If a retained project needs an obsolete
 format, convert it once with a pinned old tool before deletion, or declare an
-explicit current source reader in MCP. Do not import a converter on the assumption
+explicit current source reader in Core. Do not import a converter on the assumption
 that some unknown downstream user might need it. Publish clear breaking-change
 instructions when this refactor is released.
 
@@ -436,8 +496,8 @@ The following material must remain, with the indicated owner:
 | --- | --- |
 | Current canonical schemas, IO, identity and provenance rules | Active RK contract; required by all three repositories |
 | Portable C# model library, generic Grasshopper authoring, C# generation and canonical envelope fixtures | Current RK modelling implementation and cross-language verification |
-| Active Rhino source extraction, interpretation and its Grasshopper entry component | Reproducible geometry ingestion in the optional MCP integration; retain its source-specific assertions and evidence |
-| Reader for the retained historical Speckle source used by the walkthrough | Required for reproducible source-to-Model preparation; explicit source support in MCP, without the old runtime |
+| Active Rhino source extraction, interpretation and its Grasshopper entry component | Reproducible geometry ingestion in the optional Core integration; retain its source-specific assertions and evidence |
+| Reader for the retained historical Speckle source used by the walkthrough | Required for reproducible source-to-Model preparation; explicit source support in Core, without the old runtime |
 | Original Rhino/GHX files, source archives, hashes and canonical fixture data | Evidence for the teaching model and independent comparisons |
 | Useful semantic assertions from predecessor/migration tests | Rewrite as current canonical or source-reader tests before deleting their old harness |
 | Git history, schema history and dated acceptance records | Historical evidence, not executable compatibility |
@@ -466,13 +526,13 @@ The existing sessions are the intended implementation owners when work is releas
 | Session | Repository and work | Hold and restart point |
 | --- | --- | --- |
 | [Whirlwind Walkthroughs](codex://threads/01a118ff-697e-7161-bbfe-c56b55f0cecd?hostId=remote-control%3Aenv_e_6a067b397c28832ca54b3ab6a28ee817) | RK: preserve the current Notebook 03 work; make package, display, IO and portable C# changes; separate generic Grasshopper modelling from source ingestion; run model, authoring and book acceptance | No Notebook 04–06 authoring during the refactor. Resume the curriculum only after coordinated acceptance |
-| [Whirlwind MCP](codex://threads/01a13247-832f-77a1-8f80-1153ba712e84?hostId=remote-control%3Aenv_e_6a067b397c28832ca54b3ab6a28ee817) | MCP: extract ingestion, including the optional Rhino/Grasshopper source integration; remove the RK workflow dependency; revise manifests, tests, docs and the desktop trial kit | Defer the second-Mac trial until new package pins are accepted. Then resume at setup and a successful empty `workspace_list`, before live interpretation answers |
-| [Model Browser Spike](codex://threads/01a1328c-ef42-7073-882e-619c6a1847d6?hostId=remote-control%3Aenv_e_6a067b397c28832ca54b3ab6a28ee817) | Viewer: define shared component contracts; consolidate advanced renderers/layouts; extract tree/inspector; produce the local geometry bundle | Preserve the working standalone browser. After refactor acceptance, resume actual focused ChatGPT integration and its host checks |
+| [Whirlwind Core](codex://threads/01a13247-832f-77a1-8f80-1153ba712e84?hostId=remote-control%3Aenv_e_6a067b397c28832ca54b3ab6a28ee817) | Core: extract ingestion, including the optional Rhino/Grasshopper source integration; remove the RK workflow dependency; revise manifests, tests, docs and the desktop trial kit | Defer the second-Mac trial until new package pins are accepted. Then resume at setup and a successful empty `workspace_list`, before live interpretation answers |
+| [Model Browser Spike](codex://threads/01a1328c-ef42-7073-882e-619c6a1847d6?hostId=remote-control%3Aenv_e_6a067b397c28832ca54b3ab6a28ee817) | Interface: define shared component contracts; consolidate advanced renderers/layouts; extract tree/inspector; produce the local geometry bundle | Preserve the working standalone browser. After refactor acceptance, resume actual focused ChatGPT integration and its host checks |
 
 These are assignments, not dispatched prompts. All three sessions remain held
 until the user starts implementation under this plan. Their recorded working
 directory can still be RK, regardless of title. Every implementation handoff must
-state the exact repository root and allowed files. Do not let a Viewer or MCP
+state the exact repository root and allowed files. Do not let a Interface or Core
 session edit RK implicitly.
 
 Before a phase starts, record its baseline commits and approved working-tree
@@ -493,13 +553,13 @@ partially completed phases.
 | --- | --- | --- |
 | 0 Preserve baseline | Snapshot reviewed dirty work; inventory active imports, extras, commands, fixtures and assets across all three repos and known example/project consumers; record the current outputs | Recoverable Notebook 03 baseline, caller/move/delete manifest and retained artifact hashes |
 | 1 Fix contracts | Agree public RK Python/C# operations, optional Rhino integration invocation and artifact pins, provenance boundary, artifact/selection contracts, Speckle resource path, fingerprints and static geometry distribution; align each repo's PLAN/AGENTS/current docs | One owner per contract; no reverse runtime dependency; exact candidate schema and contract versions |
-| 2 Transfer ingestion | Move workflow, source readers and `DesignExampleComponent` extraction/interpretation to MCP; adapt its existing workspace API; split renderer-independent reports; rewrite synthetic example builders; repoint source preparation | Python ingestion and MCP produce equivalent substantive outputs; optional Rhino example preserves geometry, identity and evidence; deterministic clean rebuild; no private RK or old workflow imports |
+| 2 Transfer ingestion | Move workflow, source readers and `DesignExampleComponent` extraction/interpretation to Core; adapt its existing workspace API; split renderer-independent reports; rewrite synthetic example builders; repoint source preparation | Python ingestion and MCP produce equivalent substantive outputs; optional Rhino example preserves geometry, identity and evidence; deterministic clean rebuild; no private RK or old workflow imports |
 | 3 Transfer advanced display | Extract/reuse shared components, migrate useful Cytoscape/layout behaviour, remove duplicate renderer ownership and build the portable local geometry assets | Shared tree/inspector mount outside host providers; standalone browser still works; real graph/3D render with canonical selection; static bundle has provenance and notices |
-| 4 Complete RK boundary | Add `visualisation` and native IO paths; use PyVis for simple graph display; package static geometry; retain generic Grasshopper authoring and split host checks; update C# generator paths, executable definitions, notebooks, examples and extras | Installed RK core and generic Grasshopper modelling are independent of MCP; simple local display and canonical envelope round trips work; active notebooks use new paths |
-| 5 Delete predecessors | Remove obsolete runtimes, migrations, imports, extras, test exclusions and duplicate code after current semantic tests have moved | Installed-package and source scans show no forbidden compatibility paths; retained sources rebuild through the explicit MCP reader |
+| 4 Complete RK boundary | Add `visualisation` and native IO paths; use PyVis for simple graph display; package static geometry; retain generic Grasshopper authoring and split host checks; update C# generator paths, executable definitions, notebooks, examples and extras | Installed RK core and generic Grasshopper modelling are independent of Core; simple local display and canonical envelope round trips work; active notebooks use new paths |
+| 5 Delete predecessors | Remove obsolete runtimes, migrations, imports, extras, test exclusions and duplicate code after current semantic tests have moved | Installed-package and source scans show no forbidden compatibility paths; retained sources rebuild through the explicit Core reader |
 | 6 Accept and release control | Install matched candidate artifacts, run per-repo and integrated checks, record deviations and update active docs/locks | One acceptance manifest names all commits, wheel hashes, schema/service/UI versions, geometry asset hash and pending external checks |
 
-Prepare interdependent phases as coordinated changes. In particular, MCP may need
+Prepare interdependent phases as coordinated changes. In particular, Core may need
 a candidate RK wheel containing the agreed public API before RK removes workflow.
 Use exact artifacts during staging. Do not merge or publish a consumer that points
 at deleted producer code, a mutable branch tip, or an unpublished dependency.
@@ -507,7 +567,7 @@ No temporary compatibility shim may remain at phase 6.
 
 Coordinate the Rhino integration transfer with the RK C# package/assembly build,
 updated Grasshopper definitions and split acceptance drivers. Record the exact
-host binaries in the acceptance manifest alongside Python wheels and Viewer
+host binaries in the acceptance manifest alongside Python wheels and Interface
 assets. Do not remove the working source example before its replacement passes
 the retained source and geometry comparisons.
 
@@ -518,14 +578,14 @@ the retained source and geometry comparisons.
 | RK core | Installed core import, schema suites, canonical validation, calculations and execution; no ingestion/UI dependencies loaded; absent old modules and extras |
 | RK display | Chart/table/PyVis smoke checks and rendered inspection; real local geometry from the prepared source; lazy optional dependency behaviour |
 | Python and C# contract | Fresh generated files; canonical envelope fixture round trips; exact associations, IDs, zero/false/missing and error handling |
-| Generic Grasshopper modelling | Create, compose, validate, export, save, reopen and recompute with RK components alone; stable canonical identity; no MCP dependency or ingestion component registration |
+| Generic Grasshopper modelling | Create, compose, validate, export, save, reopen and recompute with RK components alone; stable canonical identity; no Core dependency or ingestion component registration |
 | Optional Rhino ingestion | Retained `.3dm` source is unchanged; explicit layer/attribute and elevation rules; matching geometry measurements, domain identities, associations and evidence; recorded runtime/build inputs; clear failures; runs without an LLM or MCP server |
-| MCP engine | Source immutability, source-change detection, interpretation questions, decisions/rationale, invalidation, provenance, failed-build isolation, workspace resumption and independent expected results |
-| MCP interface | Installed Python package plus real stdio SDK tests, versioned tools/resources and bounded responses; ordinary ingestion works without Rhino, Grasshopper, .NET, Viewer, Node or LLM |
-| Viewer | Exact artifact/scope/selection; shared occurrences, cycles, isolates and empty scopes; graph direction and membership distinction; source evidence; invalid/stale selections; real graph/3D, manual node drag, canvas pan and keyboard interaction; user writes denied |
+| Core ingestion engine | Source immutability, source-change detection, interpretation questions, decisions/rationale, invalidation, provenance, failed-build isolation, workspace resumption and independent expected results |
+| MCP interface | Installed Python package plus real stdio SDK tests, versioned tools/resources and bounded responses; ordinary ingestion works without Rhino, Grasshopper, .NET, Interface, Node or LLM |
+| Interface | Exact artifact/scope/selection; shared occurrences, cycles, isolates and empty scopes; graph direction and membership distinction; source evidence; invalid/stale selections; real graph/3D, manual node drag, canvas pan and keyboard interaction; user writes denied |
 | Advanced layout | Transferred model/solver/validation tests and explicitly recorded solver availability; no claim that a missing optional solver passed |
 | Walkthroughs | All cells in Notebooks 01–03 executed from candidate wheels; independent financial comparisons; four-page book and actual display interactions inspected |
-| Integrated flow | Retained source → MCP Python build → RK load/validate/model → Viewer open/select/evidence → changed recorded rule → new Model; old Model remains intact; repeat build without chat |
+| Integrated flow | Retained source → Core Python build → RK load/validate/model → Interface open/select/evidence → changed recorded rule → new Model; old Model remains intact; repeat build without chat |
 | Packaging and documentation | Fresh installs, licenses/assets included, known consumers updated, no absolute developer-path dependency, current docs and locks consistent, documentation checks pass |
 
 Keep separate completion states for refactor acceptance and external/product
@@ -534,14 +594,14 @@ full-browser embedding E1, deployment choice, production Payload adoption, large
 model/concurrency work and canonical Windows connector acceptance are not proved
 by this refactor. Preserve their open status and named owners.
 
-The MCP repository's `docs/chatgpt-plugin.md` remains the authority for C1–C7 and
+The Core repository's `docs/chatgpt-plugin.md` remains the authority for C1–C7 and
 E1. Shared component extraction provides a foundation; actual ChatGPT tool/UI
 round trips, graph/3D rendering, artifact isolation, evidence exchange and
 standalone parity must still be verified in the claimed hosts. E1 is additional
 to the first focused resource.
 
 After phase 6, release the paused workstreams against the recorded package pins.
-MCP resumes the staged desktop trial, Viewer resumes focused ChatGPT integration,
+Core resumes the staged desktop trial, Interface resumes focused ChatGPT integration,
 and RK resumes the walkthrough curriculum. Commit, push and release publication
 remain explicit delivery actions. No runtime or platform acceptance is claimed
 by approval of this plan alone.
@@ -555,9 +615,9 @@ by approval of this plan alone.
 - [Windows acceptance](../contributing/windows-acceptance.md)
 - [Documentation lifecycle](../contributing/documentation.md)
 
-Use the MCP repository's `PLAN.md`, `docs/architecture.md`, `docs/python-api.md`,
+Use the Core repository's `PLAN.md`, `docs/architecture.md`, `docs/python-api.md`,
 `docs/mcp.md`, `docs/developer-trial.md` and `docs/chatgpt-plugin.md` for its current
-service contracts and pending host checks. Use the Viewer repository's `PLAN.md`,
+service contracts and pending host checks. Use the Interface repository's `PLAN.md`,
 `docs/ARCHITECTURE.md`, `docs/CHATGPT.md` and `docs/FINDINGS.md` for its shared
 component direction and measured local limits. Preserve dated evidence; update
 current plans when implementation changes their state.

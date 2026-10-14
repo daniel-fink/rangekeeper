@@ -201,7 +201,7 @@ To review a candidate without adding it to the accepted TOC, pass
 execution-count and error checks. Add the source to `myst.yml` only after review.
 
 The local geometry view uses the official Speckle SDK with pinned in-memory source
-records. Its [small host and build procedure](https://github.com/daniel-fink/whirlwind-viewer/blob/main/local/geometry/README.md)
+records. Its [small host and build procedure](https://github.com/daniel-fink/whirlwind-interface/blob/5ef206aa3a525a0f4c1910512b6fa2c8b1e6f145/local/geometry/README.md)
 keep the viewer bundle local. The chapter uses interactive geometry without repeated
 static mesh images. `tools/docs/render_property.py` remains available to recreate
 the reference images. Graph, chart and geometry selections are independent. The original

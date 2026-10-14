@@ -53,7 +53,7 @@ inside a fresh Rhino 8 process. It checks stable identity, changed revisions, pr
 revision links and save/reopen behaviour. It loads no source reader or Whirlwind assembly.
 
 The source-specific `DesignExampleComponent` belongs to the optional `integrations/rhino`
-project in Whirlwind MCP. Its separate driver takes explicit source and output paths and
+project in Whirlwind Core. Its separate driver takes explicit source and output paths and
 loads both current assemblies. The original `.3dm` and GHX files here remain source evidence.
 Generate a new executable definition with the MCP driver; do not treat the retained old
 GHX assembly metadata as an installed compatibility contract. Windows host checks remain pending.

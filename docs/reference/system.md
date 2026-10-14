@@ -162,7 +162,7 @@ for consumers of these views.
 The old Graph domain, its View, table projection and JSON codec were removed under
 [ADR-007](../decisions/007-three-repository-refactor.md). No implicit Graph-to-Model
 conversion or compatibility constructors remain. Source ingestion belongs to
-Whirlwind MCP; it produces the canonical Model through public RK APIs.
+Whirlwind Core; it produces the canonical Model through public RK APIs.
 
 ## Flow hierarchy reduction
 

@@ -2,8 +2,8 @@
 
 # Rangekeeper
 
-Rangekeeper is a Python library for real estate financial modelling, cashflow
-forecasting and scenario analysis. It separates project facts and equations in a
+Rangekeeper is the modelling engine: a Python library for real estate financial
+modelling, cashflow forecasting and scenario analysis. It separates project facts and equations in a
 `Model`, investigation choices in a `Specification`, and finalized evidence in a
 `Run`. Immutable revisions retain units, identity and provenance.
 
@@ -36,8 +36,13 @@ open; the isolated predecessor trees remain until that gate closes.
 
 ### Repository ownership in 0.9
 
-RK owns modelling, native IO and simple `rangekeeper.visualisation` display.
-[Whirlwind MCP](https://github.com/daniel-fink/whirlwind-mcp) owns ingestion and source integrations.
-[Whirlwind Viewer](https://github.com/daniel-fink/whirlwind-viewer) owns advanced browsing and layout.
+| Section | Repository | Responsibility |
+| --- | --- | --- |
+| Engine | Rangekeeper | Canonical models, schemas, validation, calculations, execution, native IO and simple local display. |
+| Core | [Whirlwind Core](https://github.com/daniel-fink/whirlwind-core) | Ingestion and application operations, including planned Package access, queries, storage integration and access policy through Python, HTTP and MCP. |
+| Interface | [Whirlwind Interface](https://github.com/daniel-fink/whirlwind-interface) | User interaction, shared UI components and hosts; current inspection and future editing and authoring. |
+
+The full role names are **Modelling engine**, **Application core** and **User interface**.
+The repository rename does not implement Package access or editing.
 See the [breaking upgrade guide](docs/guides/upgrading.md). The walkthroughs use prepared data
 and local assets; they do not require either Whirlwind service.

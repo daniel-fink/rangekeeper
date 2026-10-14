@@ -1,7 +1,8 @@
 # ADR-008: Model and Geometry Package contract
 
 Status: Package contract, Entity-to-source-element mappings, separate provenance
-and Parquet/DuckDB architecture agreed on 13 October 2026. Implementation is
+and Parquet/DuckDB architecture agreed on 13 October 2026. Application/transport
+ownership and the greenfield Interface were clarified on 14 October 2026. Implementation is
 pending. The SQLite development experiment is retained as earlier evidence.
 It does not implement this contract.
 No installed API or public Model schema changes here.
@@ -169,6 +170,34 @@ before accepting a Package. A valid package does not prove that a user's source
 interpretation is correct. Source acceptance remains an explicit ingestion step.
 There is no automatic bidirectional synchronisation between Model and Geometry.
 
+## Reader, application and interface ownership
+
+RK owns canonical records, Package identity/validation, the schema-derived RK table
+mapping and its lossless reader/writer. Keep DuckDB in optional IO implementation
+code; RK domain imports need no database, Whirlwind, transport SDK or Interface.
+The canonical RK reader is distinct from provider-specific native Geometry decoders.
+
+Whirlwind application operations compose the RK reader with Geometry interfaces,
+registered Package storage and common access policy. This module lives initially
+in `whirlwind-core`, separately from ingestion and transport handlers. That location
+is a repository choice, not a requirement to use the MCP protocol. Direct Python
+calls work in process; HTTP/MCP adapters establish caller identity, validate and
+encode requests, and invoke the same operations. Shared policy owns authorization.
+Opening a complete retained Package needs no ingestion workspace, source credentials,
+source network, chat or LLM. Keep acquisition separate from native decoding.
+
+Interface owns bounded client projections and reusable React/TypeScript/Vite components
+with Mantine, AG Grid Community, Cytoscape and Speckle rendering. Payload/Next are
+excluded from its target; existing Python exports/layouts do not justify a second
+Package service. Future native/browser readers can implement the same semantics
+after conformance tests. One access layer does not require a single network server.
+
+Core's `docs/reference/package-access.md` owns application/wire semantics and its
+`docs/decisions/003-package-access.md` owns PA0–PA5 delivery. Interface owns its client
+and component contracts. These are coordinated working documents, not implemented
+APIs. Prove canonical reconstruction independently, then direct Python access with
+MCP/HTTP absent, transport parity, offline reopening and fixture-to-real UI parity.
+
 ## Parquet storage and DuckDB queries
 
 Expose **one Package access layer** for Model queries, source queries, Entity
@@ -188,7 +217,8 @@ flowchart LR
         A --> I
     end
     I --> V[Shared viewer components]
-    I --> P[Rebuildable Payload collections]
+    I --> H[HTTP and MCP adapters]
+    I --> L[Direct Python callers]
 ```
 
 Structured results and streamed assets can use different response forms within
@@ -209,8 +239,8 @@ untyped EAV store. EAV can serve source-variable properties where appropriate.
 | Native Geometry dataset | Retained provider data, including its properties, relations and assets. The Speckle adapter reads its native Parquet tables; other providers can use other formats. |
 | DuckDB reader inside Package access | Queries RK tables and supported Geometry tables, joins through explicit Entity mappings, and supplies bounded results. An embedded query engine, not the Model's identity or a required `.duckdb` delivery file. |
 | Provider adapters inside Package access | Interpret source identities, properties, relations, geometry encodings, representation roles, placement and assets under the shared identity/access rules. |
-| Package access contract and projections | One meaning for object, Value, evidence, membership, graph, source-selection and asset operations across hosts. Viewer owns presentation projections; MCP owns authorised service access. |
-| Payload application database | Users, permissions, sessions, catalogue and optional rebuildable collection projections for native controls. The current host uses SQLite. It is not canonical Model or Geometry storage. |
+| Package access contract and projections | One meaning for object, Value, evidence, membership, graph, source-selection and asset operations across hosts. Interface owns presentation projections; Core owns authorised service access. |
+| Application registry and policy | Whirlwind owns registered Package access, caller scope, sessions and disposable indexes outside canonical storage. The greenfield Interface has no Payload/Next dependency. |
 
 The first service path exposes Package access with DuckDB and provider adapters
 behind its authorised operations. Standalone
@@ -245,7 +275,7 @@ Payload's native list/drawer controls still require Payload collections. Use a
 rebuildable projection where those controls are retained; custom shared components
 can use the query service directly. No DuckDB/Parquet Payload database adapter is
 assumed. Keep Payload schema push, migrations and operational authorship/version
-fields outside the published Package and canonical provenance. Repeat the Viewer
+fields outside the published Package and canonical provenance. Repeat the Interface
 v4 procedure when implementing this host integration.
 
 Primary references: [Speckle columnar property store](https://docs.speckle.systems/next/developers/object-model/overview#columnar-property-store),
@@ -260,8 +290,8 @@ These support the architecture choice; they do not establish local acceptance.
 | --- | --- |
 | Rangekeeper | Canonical Model schema, Entity mapping and provenance contracts, Model identity, schema-derived Parquet serialization, reusable storage/query conformance and semantic validation |
 | Geometry provider specification and adapter | Native source format and semantics; format-specific decoding and source integrity checks. Speckle 2026.9 is the first planned implementation. |
-| Whirlwind MCP | Source acquisition, user decisions, builds, Package assembly/publication and authorised service access |
-| Whirlwind Viewer | Bounded projections, component queries, geometry conversion, rendering and host adapters |
+| Whirlwind Core | Source acquisition, user decisions, builds, Package assembly/publication and authorised service access |
+| Whirlwind Interface | Bounded projections, component queries, geometry conversion, rendering and host adapters |
 | Hosting application | Package/Model catalogue, users, permissions and session state |
 
 Specification and Run retain their separate meanings. Preserve provenance without
@@ -394,7 +424,7 @@ or host migrations to modify a published RK package.
 The [Payload v4 migration guide](https://payloadcms.com/docs/beta/migration-guide/v4)
 was checked during this work. This experiment imports no Payload API and changes no
 Payload configuration. It establishes an independent boundary, not a v4 integration
-pass. Repeat the Viewer v4 procedure when implementing its adapter.
+pass. Repeat the Interface v4 procedure when implementing its adapter.
 
 Primary references: [SQLite application files](https://www.sqlite.org/appfileformat.html),
 [LinkML SQL generation](https://linkml.io/linkml/generators/sqltable.html),
@@ -403,8 +433,10 @@ Primary references: [SQLite application files](https://www.sqlite.org/appfilefor
 
 ## Spike steps, turn bundles and review
 
-The published [Viewer spike plan](https://github.com/daniel-fink/whirlwind-viewer/blob/685bf2da4d307f34efeb817f6396af71763755de/docs/decisions/001-viewer-plan.md)
-owns host sequencing and links its browsing, tree, ChatGPT and Payload v4 checks.
+The published [Interface spike plan](https://github.com/daniel-fink/whirlwind-interface/blob/5ef206aa3a525a0f4c1910512b6fa2c8b1e6f145/docs/decisions/001-viewer-plan.md)
+owns greenfield Vite host sequencing and its browsing/component and ChatGPT checks.
+Core owns PA0–PA5 application delivery and transport parity. Payload v4 is historical
+legacy evidence, not a new-browser acceptance requirement.
 This ADR owns the canonical Package contract and P1–P8 criteria.
 
 The Package contract, Entity mapping boundary, separate provenance and
@@ -414,8 +446,8 @@ order; the earlier SQLite proof remains input evidence, not completion of step A
 | Step | Work and concrete result | Acceptance and user review |
 | --- | --- | --- |
 | A: Schema, Parquet and Package lifecycle | Specify provider-neutral Geometry types, Model-owned Entity mappings, separate provenance addresses, identity rules and migration. Derive Parquet tables from the RK schema; prove complete reconstruction and a DuckDB query prototype. Pin Speckle 2026.9 and its exact specification; build a native fixture, validator, shared conformance cases and offline reopen proof. Preserve the legacy reader boundary. | Pass P1–P5 below and measure representative P6 reads before storage adoption. Review the concrete schema, manifest, associations, provenance, table mapping, query costs, change cases and reopened artifact before adopting the public format and wiring hosts to it. |
-| B: Package access and host adapter | Implement one Package access interface for bounded Model/source/provenance queries and geometry/asset operations, with DuckDB and provider adapters inside it. Connect shared components and any rebuildable Payload projections required by native controls. | Pass P6–P7 and the full-browser portion of P8 against the same conformance fixtures, including shared access and identity checks across structured and asset responses. Measure direct-service and projected reads, including rebuild cost. Keep Payload's application database separate from the Package. Repeat v4 host checks. |
-| C: Navigation and inspector | Trial the tree library; finish occurrence, browse/inspect and restore rules; compose the same inspector and tree in the full browser and independent shell. | Use Viewer's browsing matrix. Review the actual tree, selection and inspector behaviour after automated and browser checks. |
+| B: Package access and host adapter | Implement independent application operations for bounded Model/source/evidence and geometry/asset queries. Compose RK IO and provider interfaces; expose thin HTTP/MCP adapters and connect Interface. | Pass P6–P7 and standalone P8. Prove direct Python with transports absent, equivalent authorized transport results and offline reads without ingestion/source state. Measure query costs and verify client projections. Payload/Next are excluded. |
+| C: Navigation and inspector | Use the selected Mantine Tree and AG Grid Community; finish occurrence, browse/inspect and restore rules; share the inspector and components between standalone and focused shells. | Use Interface's browsing matrix. Review the actual tree, selection and inspector behaviour after automated and browser checks. |
 | D: Focused resources and workflow | Connect MCP Package access and component dispatch; verify real ChatGPT tree/inspector then graph/3D, standalone deep links, and build/reopen workflow. | Pass P8 in actual hosts. Review focused UI beside the full browser; test full-browser embedding separately if claimed. |
 
 Each step can include implementation, fixtures, checks and a reviewable result in
@@ -425,11 +457,11 @@ turn: schema/artifact review after A and product review after B/C remain deliber
 checkpoints. User interpretation review belongs inside the ingestion workflow.
 Routine reversible fixes and verification do not need separate permission stops.
 
-Review and test the existing local UI now, using its current JSON/SQLite and legacy
-Geometry fixtures. This brings product feedback forward without adopting the new
-Package format. A remains the gate for new Package integration; repeat the UI cases
-through the Package access layer when B is ready. Keep this baseline evidence
-separate from Parquet, native Speckle 2026.9 and ChatGPT acceptance.
+Interface U0 and Core PA0 can run first: a clean Vite/Mantine/Community browser over
+labelled synthetic Package projections and a direct-call fixture application
+contract. Show UI promptly. A remains the gate for new Package integration; repeat
+the same interactions with real access in B. Preserve earlier JSON/SQLite and
+legacy Geometry evidence without treating it as native Package or ChatGPT acceptance.
 
 ### Package acceptance criteria
 
@@ -442,7 +474,7 @@ separate from Parquet, native Speckle 2026.9 and ChatGPT acceptance.
 | P5: Schema and storage | Reconstruct the complete Model from schema-derived Parquet tables under the new schema. Preserve field presence, scalar/union types, units, order, empty containers, ownership, references and provenance. Verify migration, neutral names, provider metadata and unsupported-format results. Test repacking without logical identity changes, exact Geometry-byte integrity, file hashes and no circular digests. A retained JSON-only read is insufficient. |
 | P6: Bounded reads and conformance | Run object/value/evidence/membership/graph/source queries against the validated Model/source oracle and DuckDB, then each host projection. Check ordering, pagination, scope, all-candidate joins without accidental value multiplication, and explicit incomplete results. Ordinary reads must not load geometry blobs. Record cold/warm latency, bytes read, peak memory, rebuild cost and declared scale limits; test rejection of stale/incomplete projections and their rebuild without Package mutation. |
 | P7: Interface independence | Two supported render conversions leave Model, Geometry and Package unchanged. Camera/selection/cache changes stay outside canonical contents. Host schema push and migrations cannot modify published Packages. A quad conversion alone does not establish general BRep or native-app support. |
-| P8: Host consistency | Full browser, focused resources and deep links carry the exact Package and Model identity plus canonical selection/scope. Reject stale cross-Package requests. Verify the same mappings/evidence in each claimed host, actual ChatGPT tool/UI exchanges, and the separate Payload v4 procedure. |
+| P8: Host consistency | Full browser, focused resources and deep links carry the exact Package and Model identity plus canonical selection/scope. Reject stale cross-Package requests. Verify the same mappings/evidence in each claimed host, actual ChatGPT tool/UI exchanges, and standalone use without Payload, Next or ChatGPT. The v4 probe is legacy evidence only. |
 
 The existing test `test_content_digest_separates_geometry_from_legacy_model_id`
 records a legacy identity gap. It must not count as P2 acceptance. The existing

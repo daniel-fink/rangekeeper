@@ -34,7 +34,7 @@ API. Historical records retain the contracts and results from their recorded dat
 | Futures and choices | [Scenarios and policies](reference/scenarios-and-policies.md) |
 | Structure and projection | [System views and reductions](reference/system.md), [tables](reference/tables.md) |
 | Source interpretation | [Workflow](reference/workflow.md), [evidence](reference/evidence.md), [Excel](reference/excel.md) |
-| External presentation and transport | [Viewer and layout](reference/viewer.md), [design transport](reference/design-transport.md) |
+| External presentation and transport | [Interface and layout](reference/viewer.md), [design transport](reference/design-transport.md) |
 
 ## Contribute a change
 
