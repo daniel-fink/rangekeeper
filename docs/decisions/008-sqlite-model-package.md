@@ -109,7 +109,8 @@ Use **Geometry** for the canonical concept in documentation, schema types and
 public APIs. Use provider-neutral field names for its pin, descriptor and mappings;
 do not introduce a canonical `SpeckleBundle` type or `speckle_*` fields. Keep
 provider-specific names in adapter implementations and provider metadata. This is
-a naming requirement for the pending schema extension, not a new installed record.
+the naming rule implemented in candidate schema 0.8.0; its installed fields are
+documented in the [Bundle reference](../reference/bundle.md).
 
 The Geometry descriptor must distinguish:
 
@@ -121,7 +122,7 @@ The Geometry descriptor must distinguish:
 | Source address and version, when available | Preserve provenance in the provider's own namespace. These values do not replace the content digest. |
 
 The field layout and validation types belong to step A. Provider identifiers must
-be extensible; the first planned adapter targets Speckle. An unsupported provider or
+be extensible; Core implements a narrow pinned Speckle profile. An unsupported provider or
 schema must produce an explicit unsupported-format result, not a fallback to the
 Speckle decoder. Replacing the provider or changing the pinned format/schema is a
 pin change and therefore creates a new Model and Bundle. This boundary permits
@@ -129,8 +130,9 @@ future providers; it does not imply automatic or lossless format conversion.
 
 ### First Geometry implementation: Speckle 2026.9
 
-The first planned provider is **Speckle**, using its **2026.9 object-model/bundle
-schema**. Geometry is stored as the native Speckle bundle in that profile. Keep
+The first provider target is **Speckle**, using its **2026.9 object-model/bundle
+schema**. Core implements a narrow pinned profile; broader native formats and
+live producer compatibility remain separate acceptance work. Geometry is stored as the native Speckle bundle in that profile. Keep
 “Speckle bundle” for descriptions of that concrete encoding, not as the canonical
 RK type or the name of the second Bundle component.
 
@@ -215,9 +217,10 @@ after conformance tests. One access layer does not require a single network serv
 
 Core's `docs/reference/package-access.md` owns application/wire semantics and its
 `docs/decisions/003-package-access.md` owns PA0–PA5 delivery. Interface owns its client
-and component contracts. These are coordinated working documents, not implemented
-APIs. Prove canonical reconstruction independently, then direct Python access with
-MCP/HTTP absent, transport parity, offline reopening and fixture-to-real UI parity.
+and component contracts. The bounded T1/T2 implementation has canonical
+reconstruction, direct Python, HTTP/MCP parity, offline reopen and local UI
+evidence. Those results do not close every P1–P8 criterion. Use each reference
+for its installed profile and each dated record for its exact verification scope.
 
 ## Parquet storage and DuckDB queries
 
@@ -280,7 +283,7 @@ indexed point-lookup behaviour or that joins are fast enough without measurement
 
 Use one reusable conformance fixture set for reconstruction and query results.
 Compare the DuckDB reader with a validated in-memory Model and source-adapter
-oracle. Apply the same cases to any Payload projection or future reader. A projection
+oracle. Apply the same cases to each supported host projection or future reader. A projection
 must carry Bundle/Model identity, publish only when complete, reject stale content,
 and be removable and rebuildable without changing the Bundle. Preserve all
 Entity candidates for a reverse source lookup and keep evidence retrieval separate.
@@ -292,12 +295,11 @@ ordering where non-semantic, and compression changes must not change logical
 identity. Re-encoding retained Geometry changes its exact-content pin under this
 contract. Step A must define and test this distinction before format adoption.
 
-Payload's native list/drawer controls still require Payload collections. Use a
-rebuildable projection where those controls are retained; custom shared components
-can use the query service directly. No DuckDB/Parquet Payload database adapter is
-assumed. Keep Payload schema push, migrations and operational authorship/version
-fields outside the published Bundle and canonical provenance. Repeat the Interface
-v4 procedure when implementing this host integration.
+The current Interface uses shared components and the Core query service.
+Payload/Next and their collections are excluded from that runtime. Derived host
+projections, operational authorship and caches remain outside published Bundles
+and canonical provenance. The historical Payload experiment below retains its
+original scope; it is not a current integration task.
 
 Primary references: [Speckle columnar property store](https://docs.speckle.systems/next/developers/object-model/overview#columnar-property-store),
 [Speckle object/node definitions](https://github.com/specklesystems/speckle-bundle-spec/blob/main/GLOSSARY.md),
@@ -310,7 +312,7 @@ These support the architecture choice; they do not establish local acceptance.
 | Owner | Responsibility |
 | --- | --- |
 | Rangekeeper | Canonical Model schema, Entity mapping and provenance contracts, Model identity, schema-derived Parquet serialization, reusable storage/query conformance and semantic validation |
-| Geometry provider specification and adapter | Native source format and semantics; format-specific decoding and source integrity checks. Speckle 2026.9 is the first planned implementation. |
+| Geometry provider specification and adapter | Native source format and semantics; format-specific decoding and source integrity checks. Core supplies a narrow pinned native Speckle profile; broader support remains open. |
 | Whirlwind Core | Source acquisition, user decisions, builds, Bundle assembly/publication and authorised service access |
 | Whirlwind Interface | Bounded projections, component queries, geometry conversion, rendering and host adapters |
 | Hosting application | Bundle/Model catalogue, users, permissions and session state |
@@ -507,3 +509,31 @@ Before production adoption, also establish publication durability, migration and
 codec support policy, access isolation, hostile-file handling and declared scale
 limits. Cross-Bundle search belongs to a separate catalogue/index. Core ingestion
 must remain usable without a viewer.
+
+## Current status and coordinated dependencies
+
+Reconciled on 15 October 2026. Implementation: the expanded Bundle candidate and
+selective post-open record reads are installed in RK 0.10.0.dev3. Verification:
+[T1](../research/bundle-t1-2026-10-14/README.md),
+[investigation handover](../research/investigation-bundle-t1-2026-10-14/README.md),
+[T2 selective reads](../research/t2-technical-2026-10-14/README.md) and
+[T3 integration](../research/t3-integration-2026-10-15/README.md) retain their exact
+scope. Acceptance: approved for T2 development and local Projects adoption, with
+full P1–P8 conformance still open. Release: no stable-format approval follows from
+a development merge or that bounded approval.
+
+The earlier step A/B/C/D sequence remains the requirement structure. Match each
+case to current evidence before treating it as unimplemented or complete. Keep
+provider coverage, hostile-file/durability limits, schema edge cases, render
+conversions and actual hosts explicit. Existing evidence is not erased by a
+later status update.
+
+Core's [overall dependency map](https://github.com/daniel-fink/whirlwind-core/blob/develop/docs/decisions/development-roadmap.md#parallel-work-and-dependencies)
+coordinates the remaining work. P6 scale work joins Core 006 S4; avoid a duplicate
+reader project. Corpus and conformance work can run alongside T3, Interface
+review and Core storage work. Public RK API/schema changes must be verified and
+pinned before Core and Interface consume them, then Projects revalidates affected
+contracts. Cold opening still reconstructs retained documents. Shared capacity
+acceptance uses the integrated runtime, not isolated reader timings.
+Walkthrough and native-host gates remain separate; all release/publication
+choices retain their own scope.
