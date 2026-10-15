@@ -13,7 +13,7 @@ current after its execution plan moves to history.
 | [ADR-005: Flux and Stream implementation](005-flux-and-stream-implementation.md) | Implemented; locally verified | Discoverable mathematical parameter names, Stream DX, `model.flux`, Span methods, Polars calculations, acausal formulations, hierarchy, Specification roles and acceptance |
 | [ADR-006: Walkthrough curriculum](006-walkthrough-curriculum.md) | Notebooks 01–03 locally accepted; later lessons planned | Six lessons combining the legacy property graph, SFFA inverse solving, Garden City uncertainty/flexibility and two-pad decision lessons |
 | [ADR-007: Three repository refactor](007-three-repository-refactor.md) | Implemented; local validation recorded | RK modelling and local display; MCP ingestion; Interface advanced browsing; zero compatibility APIs and predecessor runtimes |
-| [ADR-008: Rangekeeper Bundle contract](008-sqlite-model-package.md) | Contract and Parquet/DuckDB architecture agreed; implementation pending | One Model, optional pinned Geometry; Entity mappings and provenance; RK Parquet IO; independent Whirlwind application operations and HTTP/MCP adapters; greenfield Interface; earlier SQLite proof retained |
+| [ADR-008: Rangekeeper Bundle contract](008-sqlite-model-package.md) | Expanded Bundle candidate implemented and approved for local development; bounded verification recorded; full conformance and stable release open | Main Model plus selected Models/Specifications/finalized Runs and exact dependencies; Model-owned Geometry; Parquet IO; independent Core access; earlier SQLite proof retained |
 
 The first three records summarize decisions already supported by the linked
 implementation history. They do not invent an earlier approval date. ADR-004 also
@@ -55,3 +55,10 @@ checks. Notebooks 04–06 still need authoring and acceptance.
 Apply the [documentation lifecycle](../contributing/documentation.md) when a plan
 is implemented or superseded. Transfer unfinished work, retain identifiers and
 rationale, and update both navigation and successor links in the same change.
+
+The [overall product roadmap](https://github.com/daniel-fink/whirlwind-core/blob/develop/docs/decisions/development-roadmap.md) separates implementation, verification,
+acceptance and release, and maps independent work and dependencies. Bundle
+conformance and 006 S4 reader work share RK ownership. Public reader/schema
+changes require a verified pinned wheel before Core and other consumers integrate
+them. Walkthrough authoring and native-host acceptance are separate tracks;
+they do not require 006, and development integration does not publish either.

@@ -3,6 +3,11 @@
 Start with the task below. Current instructions describe this checkout's pre-1.0
 API. Historical records retain the contracts and results from their recorded date.
 
+The [coordinated development roadmap](https://github.com/daniel-fink/whirlwind-core/blob/develop/docs/decisions/development-roadmap.md)
+records cross-repository status, parallel work and dependencies. RK owns Bundle
+conformance and public reader changes; Core owns shared application state and
+access. Walkthrough and native-host work retain their separate acceptance gates.
+
 ## Understand the framework
 
 - [Model, Specification and Run](concepts/model-specification-run.md): facts and
