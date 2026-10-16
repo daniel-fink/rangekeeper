@@ -7,9 +7,14 @@ Start with [installation](../guides/installation.md) and the
 
 ## Working folder and branches
 
-Use the single RK folder on `develop` for current library development. Keep
-unfinished teaching work on `codex/walkthrough-acausal`, switching branches in
-that folder only after saving current changes. Follow the
+Follow [the shared Git workflow](https://github.com/daniel-fink/whirlwind-core/blob/develop/docs/contributing/git-workflow.md) and [agent instructions](../../AGENTS.md).
+Use the single RK folder. Start new `feature/<name>` branches from `develop`
+and integrate reviewed work into `develop`; `main` holds releases. Create
+worktrees only on an explicit user request. Coordinate branch changes,
+staging, commits, merges and shared environments with active chats. Keep
+the existing unfinished teaching work on `codex/walkthrough-acausal`; retain
+that recovery reference until its own agreed transition. Switch branches
+only after saving current changes and coordinating the handoff. Follow the
 [walkthrough branch procedure](../guides/walkthroughs.md#branches-and-publication).
 The candidate is approved for local T2 Projects adoption. A development merge
 does not approve the Bundle format for stable release. No walkthrough publication is part of this workflow.
