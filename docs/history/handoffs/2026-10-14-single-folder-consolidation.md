@@ -1,5 +1,8 @@
 # Single-folder consolidation — 14 October 2026
 
+> Edited extract, 17 October 2026: external application references were removed.
+> Retained RK results keep their original scope; this is not an unchanged capture.
+
 Status: current development code, including the Bundle candidate, is on `develop`.
 The unfinished walkthrough remains on `codex/walkthrough-acausal`. The sole RK
 working folder is `/Volumes/Data/Projects/Rangekeeper`, with `develop` checked out.
@@ -55,7 +58,7 @@ were removed without force after their clean branches matched their upstreams.
 Branches and recovery commits were retained. No uncommitted work was discarded.
 
 Local recovery material is retained outside the RK working folder under
-`/Volumes/Data/Projects/Whirlwind/whirlwind-core/.runtime/rk-consolidation-20261014/`:
+`[external path omitted]`:
 
 - `recovery.gitbundle`: verified complete history for the five development,
   walkthrough and recovery refs listed above.

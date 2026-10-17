@@ -10511,12 +10511,12 @@
     }
   ],
   "external": {
-    "root": "/Volumes/Data/Projects/Whirlwind/projects",
+    "root": "[external path omitted]",
     "head": "5725cc02748ace15e390c8dcea2c5d69185d67c9",
     "branch": "feature/mandarin-assembly-layout",
     "files": [
       {
-        "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/tests/test_equivalence.py",
+        "path": "[external path omitted]",
         "sha256": "7c84f682ebe995c2a9192594c087a6d74d7f5a2461f37e957c0502b5920219f0",
         "references": [
           {
@@ -10594,7 +10594,7 @@
         ]
       },
       {
-        "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/tests/test_workflow.py",
+        "path": "[external path omitted]",
         "sha256": "361e8c6b5f0a9fd2855fe8e5e00960fdcbda74bb3230ced85a422d72b082d986",
         "references": [
           {
@@ -10624,7 +10624,7 @@
         ]
       },
       {
-        "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/spec/decisions.yaml",
+        "path": "[external path omitted]",
         "sha256": "45b8416d6a67ed592bd59098db7dbb6f827eec3d3113b0c2e6065f134809eb12",
         "references": [
           {
@@ -10650,7 +10650,7 @@
         ]
       },
       {
-        "path": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/spec/model.yaml",
+        "path": "[external path omitted]",
         "sha256": "e02ecc3cb19ead1ba46ac167faf424ec44c7fbccd78a9be736bcbb8852f535ab",
         "references": [
           {
@@ -10956,7 +10956,7 @@
         ]
       },
       {
-        "path": "/Volumes/Data/Projects/Whirlwind/projects/east-whisman/tests/test_workflow.py",
+        "path": "[external path omitted]",
         "sha256": "0924447139b2b18f0cf3e58339bda9c4463d04a966c9952d2f8a6f6862372df8",
         "references": [
           {
@@ -11006,7 +11006,7 @@
         ]
       },
       {
-        "path": "/Volumes/Data/Projects/Whirlwind/projects/east-whisman/spec/december/model.yaml",
+        "path": "[external path omitted]",
         "sha256": "cd5268343246fb2686b7e86de9bef2914d350c39e6193d2ef74b6197389d7c42",
         "references": [
           {
@@ -11200,7 +11200,7 @@
         ]
       },
       {
-        "path": "/Volumes/Data/Projects/Whirlwind/projects/east-whisman/spec/november-r2/model.yaml",
+        "path": "[external path omitted]",
         "sha256": "d437b8eb4e532ee727510ba28ee8b4442cc1c11bddb40611c3559c711469256e",
         "references": [
           {

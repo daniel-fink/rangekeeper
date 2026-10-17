@@ -2,9 +2,9 @@
 
 `rangekeeper.shared.table` owns `Row`, `Table` and `TableError`. Tables provide
 ordered, domain-independent data for inspection and interchange. They are not
-Model persistence or a general dataframe API. Use [Evidence](evidence.md) when
-cells must retain source support, and [canonical codecs](run-and-storage.md) to
-save or reload a Model.
+Model persistence or a general dataframe API. Preserve source support through
+the [canonical provenance records](../../schema/provenance.yaml). Use
+[canonical codecs](run-and-storage.md) to save or reload a Model.
 
 ## Row and Table
 

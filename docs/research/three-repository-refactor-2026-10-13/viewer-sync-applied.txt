@@ -1,6 +1,8 @@
+Edited historical extract, 17 October 2026: external application identifiers and paths were omitted. This is not an unchanged capture or a new RK verification run.
+
 Resolved 30 packages in 4ms
-   Building whirlwind-viewer @ file:///Volumes/Data/Projects/Whirlwind/whirlwind-viewer/python
-      Built whirlwind-viewer @ file:///Volumes/Data/Projects/Whirlwind/whirlwind-viewer/python
+   Building [external identifier omitted] @ fil[external path omitted]
+      Built [external identifier omitted] @ fil[external path omitted]
 Prepared 2 packages in 497ms
 warning: Failed to clone files; falling back to full copy. This may lead to degraded performance.
          If the cache and target directories are on different filesystems, reflinking may not be supported.
@@ -21,11 +23,11 @@ Installed 23 packages in 938ms
  + pygments==2.21.0
  + pytest==8.4.2
  + pyyaml==6.0.3
- + rangekeeper==0.9.0 (from file:///Volumes/Data/Projects/Whirlwind/whirlwind-viewer/python/vendor/rangekeeper-0.9.0-py3-none-any.whl)
+ + rangekeeper==0.9.0 (from fil[external path omitted]
  + referencing==0.37.0
  + rfc3339-validator==0.1.4
  + rpds-py==2026.9.1
  + six==1.17.0
  + typing-extensions==4.16.0
- + whirlwind-viewer==0.1.0 (from file:///Volumes/Data/Projects/Whirlwind/whirlwind-viewer/python)
+ + [external identifier omitted]==0.1.0 (from fil[external path omitted]
  + z3-solver==5.1.0.0

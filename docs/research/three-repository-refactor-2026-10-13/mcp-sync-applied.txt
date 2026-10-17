@@ -1,6 +1,8 @@
+Edited historical extract, 17 October 2026: external application identifiers and paths were omitted. This is not an unchanged capture or a new RK verification run.
+
 Resolved 79 packages in 4ms
-   Building whirlwind-mcp @ file:///Volumes/Data/Projects/Whirlwind/whirlwind-mcp
-      Built whirlwind-mcp @ file:///Volumes/Data/Projects/Whirlwind/whirlwind-mcp
+   Building [external identifier omitted] @ fil[external path omitted]
+      Built [external identifier omitted] @ fil[external path omitted]
 Prepared 1 package in 468ms
 Uninstalled 3 packages in 62ms
 warning: Failed to clone files; falling back to full copy. This may lead to degraded performance.
@@ -14,4 +16,4 @@ Installed 6 packages in 1.16s
  - polars-runtime-32==2.0.0
  + polars-runtime-32==1.44.2
  + pyomo==6.10.1
- ~ whirlwind-mcp==0.2.0 (from file:///Volumes/Data/Projects/Whirlwind/whirlwind-mcp)
+ ~ [external identifier omitted]==0.2.0 (from fil[external path omitted]

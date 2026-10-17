@@ -501,7 +501,7 @@
     },
     "mandarin-original": {
       "python": "3.13.11 (main, Jan 14 2026, 23:14:53) [Clang 21.1.4 ]",
-      "executable": "/Volumes/Data/Projects/Whirlwind/projects/mandarin/.venv/bin/python",
+      "executable": "[external path omitted]",
       "rangekeeper": "/Volumes/Data/Projects/Rangekeeper/src/rangekeeper/__init__.py",
       "packages": {
         "pandas-stubs": "2.3.3.260113",
@@ -661,7 +661,7 @@
     },
     "east-whisman-original": {
       "python": "3.13.11 (main, Jan 14 2026, 23:14:53) [Clang 21.1.4 ]",
-      "executable": "/Volumes/Data/Projects/Whirlwind/projects/east-whisman/.venv/bin/python",
+      "executable": "[external path omitted]",
       "rangekeeper": "/Volumes/Data/Projects/Rangekeeper/src/rangekeeper/__init__.py",
       "packages": {
         "pandas-stubs": "2.3.3.260113",

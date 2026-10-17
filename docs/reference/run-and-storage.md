@@ -193,4 +193,4 @@ See [verification](../contributing/verification.md) for current commands and the
 between local report checks, resolver-backed validation and real execution.
 The [executor](execution.md) uses these interfaces to persist accepted
 outputs before their finalized Runs. [Graph consumers](system.md) and
-[source workflows](workflow.md) use the same canonical records.
+source applications use the same canonical records.

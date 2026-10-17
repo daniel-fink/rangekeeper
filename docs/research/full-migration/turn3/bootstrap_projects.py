@@ -1,3 +1,4 @@
+# Historical script extract: external paths and namespaces now require explicit inputs.
 """Copy current project inputs only; run a preinstalled candidate wheel in isolation.
 
 The environment is created separately from the recorded dependency list and exact
@@ -8,7 +9,7 @@ Outputs contain private source evidence and remain in the temporary workspace.
 from pathlib import Path
 import argparse, hashlib, json, os, shutil, subprocess, sys
 
-P = Path("/Volumes/Data/Projects/Whirlwind/projects")
+P = Path(os.environ["RK_PROJECTS_ROOT"])
 ROOT = Path(__file__).resolve().parents[4]
 p = argparse.ArgumentParser()
 p.add_argument("phase", choices=["prepare", "build", "tests", "notebook"])

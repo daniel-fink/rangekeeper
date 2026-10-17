@@ -138,7 +138,7 @@ Run, including failures; parent outputs are exactly the unique union of child ou
 
 ## Related boundaries
 
-[Graph views and reductions](system.md), [tables](tables.md) and [source workflows](workflow.md)
+[Graph views and reductions](system.md), [tables](tables.md) and source applications
 consume canonical Models independently of numerical execution. Nonlinear solving,
 optimization and structural interventions require separate capability and acceptance
 contracts. See [verification](../contributing/verification.md) for current checks.

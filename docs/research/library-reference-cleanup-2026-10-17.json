@@ -1,0 +1,180 @@
+{
+  "date": "2026-10-17",
+  "scope": "User-requested removal of external application references; RK material retained.",
+  "evidence_status": "Edited historical extracts. Retained results are original observations, not new checks. Pre-cleanup source hashes remain historical identifiers and do not assert equality with edited files.",
+  "scripts": "Affected historical scripts require explicit RK_PROJECTS_ROOT, RK_LAYOUT_ROOT or project namespace environment values where applicable. They were syntax-checked, not executed.",
+  "extracts": [
+    {
+      "path": "docs/history/handoffs/2026-10-02-acausal-modelling.md",
+      "original_sha256": "f34e3a62d251a642ddf53b65d45945e7eef6ec6e610eb41609c1ad98464c3147"
+    },
+    {
+      "path": "docs/history/handoffs/2026-10-14-single-folder-consolidation.md",
+      "original_sha256": "413d060024dd3ca1bf5d2a52bedaa87eb7c8c33e7b5a00958eece09383e12100"
+    },
+    {
+      "path": "docs/research/bundle-t1-2026-10-14/README.md",
+      "original_sha256": "c0cb5ab308a2e540d0e6144096c26e456a0faefbbd25e5034c6b9726a226bc6c"
+    },
+    {
+      "path": "docs/research/domain-migration/evidence/inventory.json",
+      "original_sha256": "f39f7b260136fd95aa426c20ccc0d760c6d0e1348b17d003d3194e3bd38c17d7"
+    },
+    {
+      "path": "docs/research/domain-migration/evidence/inventory.py",
+      "original_sha256": "b7b6882936f2104318baf5c9323ad7625cef189aec6a74ec67050bc84915b514"
+    },
+    {
+      "path": "docs/research/full-migration/inventory.json",
+      "original_sha256": "97578b5b60c1bde40162164a302af9839afedcaa66237c63152205c3b81012ff"
+    },
+    {
+      "path": "docs/research/full-migration/inventory.py",
+      "original_sha256": "851039c5ab76c8de63d300cc3b241d968955fa84bad26c1c41ff2edc39bcb044"
+    },
+    {
+      "path": "docs/research/full-migration/legacy-isolation/baseline.json",
+      "original_sha256": "daaaa5e72884c24a34c38148c737bf80c901f8041c0c1f64c6f7394d8b14d59a"
+    },
+    {
+      "path": "docs/research/full-migration/turn3/COMMANDS.md",
+      "original_sha256": "b064d78001f25a6151b09b611ec30c9d5aee9cfd8b5bd0f6c71fb30c318049ce"
+    },
+    {
+      "path": "docs/research/full-migration/turn3/baseline.json",
+      "original_sha256": "3ff426091b706709c46c9900cd61a87b52cb2b51447cbea3e9800a5d8ae7ffbf"
+    },
+    {
+      "path": "docs/research/full-migration/turn3/bootstrap_projects.py",
+      "original_sha256": "0aedc444bfa6fcf65b539a185137e43fd152b1a1eb9b2d17ae865f361af5df54"
+    },
+    {
+      "path": "docs/research/full-migration/turn3/compare_bootstrap.py",
+      "original_sha256": "e46b3377a8f5d49d3e8d6d0cdfcdfd7a4c4f18edd247553febfd802061dd6d78"
+    },
+    {
+      "path": "docs/research/full-migration/turn3/environment-final.json",
+      "original_sha256": "a42f75d2c33f138683dd9d56c292388d0d082efefa4f8e3bcff62656d4b4657a"
+    },
+    {
+      "path": "docs/research/full-migration/turn3/preservation-final.json",
+      "original_sha256": "63667b308a3b9ef62aaac3bff65ad224c609a38a0b96107da04ea7e7d903472d"
+    },
+    {
+      "path": "docs/research/full-migration/turn3/project_candidate.py",
+      "original_sha256": "0a1d48ec225874c7ffcae434c582f21791a52ade29623a8028bafdfb1da7057f"
+    },
+    {
+      "path": "docs/research/full-migration/turn4/audit_retirement.py",
+      "original_sha256": "562c14f139151327bcaca1fdb00be349287aac847f69985b5151e2450c77f648"
+    },
+    {
+      "path": "docs/research/full-migration/turn4/baseline.json",
+      "original_sha256": "539d89a31dbc7cbb3da8aa46c685a88e410d9e873c5f9ef7d54afa38d6897908"
+    },
+    {
+      "path": "docs/research/full-migration/turn4/commands.jsonl",
+      "original_sha256": "11022cdb66fcdf339600767b4e271a1b090635f983b0383197b9fe5e9d3b3639"
+    },
+    {
+      "path": "docs/research/full-migration/turn4/verify_projects.py",
+      "original_sha256": "e140cc42b5873c0490a92ed27eb782dfb89e6fd7627cdde03e33cbf4e8bc6835"
+    },
+    {
+      "path": "docs/research/independent-geometry-2026-10-14/README.md",
+      "original_sha256": "7e0a194e883f31ea267a4ad284c99978bfc949551c289785c4c0b82684a9fac1"
+    },
+    {
+      "path": "docs/research/investigation-bundle-t1-2026-10-14/README.md",
+      "original_sha256": "3f3905340d27d057be48b686cfbdea8956f1ce3a6b8f79a1a0e45c580bbcdd9b"
+    },
+    {
+      "path": "docs/research/investigation-bundle-t1-2026-10-14/checks.json",
+      "original_sha256": "1665f08f4da71c0e3f9c1928434733460c2a6a74007aa381eda1e54434309895"
+    },
+    {
+      "path": "docs/research/t2-technical-2026-10-14/README.md",
+      "original_sha256": "8aa3198446ef940f733219518a98dbaf55c29856964f54f501c61f5e557f0fa0"
+    },
+    {
+      "path": "docs/research/three-repository-refactor-2026-10-13/README.md",
+      "original_sha256": "83b7d0ea5f47361373caf81578ff42bd626b72f52da95cda7cf8c7fd36461900"
+    },
+    {
+      "path": "docs/research/three-repository-refactor-2026-10-13/consumer-east-whisman.txt",
+      "original_sha256": "360562ad21cd4a19ad03f9787f87bcab48946a8123f3f768ce56e53452185c0e"
+    },
+    {
+      "path": "docs/research/three-repository-refactor-2026-10-13/consumer-mandarin.txt",
+      "original_sha256": "2fb21ab38325b36268c70f063d8666a1994985ced34d9683fd07ffa80f62bb5f"
+    },
+    {
+      "path": "docs/research/three-repository-refactor-2026-10-13/east-whisman-tests-applied.txt",
+      "original_sha256": "895f474d915b2b82391205dad68945021cd8b8260033e69e1802ea5b43d9c089"
+    },
+    {
+      "path": "docs/research/three-repository-refactor-2026-10-13/layout-js-final.txt",
+      "original_sha256": "e96f9455b4ed7b6af0837c77a3513e6f23f7da18a90b27b0baa7844e7318ef5c"
+    },
+    {
+      "path": "docs/research/three-repository-refactor-2026-10-13/mandarin-tests-applied.txt",
+      "original_sha256": "b13329ee1cfc7f089cc79ce926ab8db72777a4317461a6d7638caba1711c0029"
+    },
+    {
+      "path": "docs/research/three-repository-refactor-2026-10-13/manifest.json",
+      "original_sha256": "5217650f7a12ab4d267c626b4419471bc3cab98a33eab6ada51e515451697918"
+    },
+    {
+      "path": "docs/research/three-repository-refactor-2026-10-13/mcp-sync-applied.txt",
+      "original_sha256": "bf584c6addbf559e419b7c7f040e66eabc36468cdbb185d2aeaa45d9714f1fda"
+    },
+    {
+      "path": "docs/research/three-repository-refactor-2026-10-13/mcp-tests-applied.txt",
+      "original_sha256": "48fac2d52f3c7b3be9e3ffb4b5fc3a119f2e3d68f1340a8f3b1997d5f61f6f13"
+    },
+    {
+      "path": "docs/research/three-repository-refactor-2026-10-13/retired-test-manifest.json",
+      "original_sha256": "697c9d7a08ba8ca91b3d43b7b518aee17d1d4ba5eabc0efdef94b906f693ed86"
+    },
+    {
+      "path": "docs/research/three-repository-refactor-2026-10-13/rhino-applied.txt",
+      "original_sha256": "f73be04af14cdcf3531c81932d1f825b059aba48b89771aa66c2c329cc3db3fe"
+    },
+    {
+      "path": "docs/research/three-repository-refactor-2026-10-13/rhino-build.txt",
+      "original_sha256": "db00bf0870fce32fc87899c7383a1cb7232803ddb5a102782b5edbef8a138603"
+    },
+    {
+      "path": "docs/research/three-repository-refactor-2026-10-13/typecheck-final.txt",
+      "original_sha256": "4dc0887d8cf1ad588a7ca31da84dbbff6ed2076f3f0abb46d51cb53474c9f145"
+    },
+    {
+      "path": "docs/research/three-repository-refactor-2026-10-13/viewer-layout-js-applied.txt",
+      "original_sha256": "441bcfa65bbf9ca12632ee597743a0e45c9ffee541b14a2c6c8c2ac8705b2ee3"
+    },
+    {
+      "path": "docs/research/three-repository-refactor-2026-10-13/viewer-node-final.txt",
+      "original_sha256": "3ca98f558116516ebfb6b781b6f1f04e4fab070e3031a0f64a650dcc4fe22c01"
+    },
+    {
+      "path": "docs/research/three-repository-refactor-2026-10-13/viewer-python-applied.txt",
+      "original_sha256": "1dbb8f0da16ff93ecd091a3ad6a5b42068f40b0ed97377f6e878a7f850f21821"
+    },
+    {
+      "path": "docs/research/three-repository-refactor-2026-10-13/viewer-sync-applied.txt",
+      "original_sha256": "b468f94458b2572e73fd6ef7350d46940d898587ce6714096d4680ba464caeb6"
+    },
+    {
+      "path": "docs/research/three-repository-refactor-2026-10-13/viewer-tests-applied.txt",
+      "original_sha256": "85241a73f7839f9a6c993427cd091d999830fa480c015f740b9c3d04758b4b7d"
+    },
+    {
+      "path": "docs/research/three-repository-refactor-2026-10-13/viewer-typecheck-applied.txt",
+      "original_sha256": "4dc0887d8cf1ad588a7ca31da84dbbff6ed2076f3f0abb46d51cb53474c9f145"
+    },
+    {
+      "path": "docs/decisions/007-three-repository-refactor.md",
+      "original_sha256": "0c941863bf5b49735bc38665044f9af4808b383f5c7c7f7b72060a07b676329a"
+    }
+  ]
+}

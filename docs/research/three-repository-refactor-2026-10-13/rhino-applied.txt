@@ -1,6 +1,8 @@
+Edited historical extract, 17 October 2026: external application identifiers and paths were omitted. This is not an unchanged capture or a new RK verification run.
+
   Determining projects to restore...
-  Restored /Volumes/Data/Projects/Whirlwind/whirlwind-mcp/integrations/rhino/Whirlwind.Rhino.csproj (in 184 ms).
-  Whirlwind.Rhino -> /Volumes/Data/Projects/Whirlwind/whirlwind-mcp/integrations/rhino/bin/Debug/net8.0/Whirlwind.Rhino.gha
+  Restored [external path omitted] (in 184 ms).
+  [external identifier omitted] -> [external path omitted]
 
 Build succeeded.
     0 Warning(s)

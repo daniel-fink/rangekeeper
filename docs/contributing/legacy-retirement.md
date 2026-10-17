@@ -6,4 +6,4 @@ Current canonical schema and Speckle wire names remain authoritative contracts.
 Historical evidence, source archives and unrelated local conflict files are preserved.
 
 Windows Rhino acceptance remains a platform support gate. It does not require keeping the
-predecessor runtime. See [the refactor decision](../decisions/007-three-repository-refactor.md).
+predecessor runtime. See the [upgrade guide](../guides/upgrading.md).

@@ -4,19 +4,16 @@ Terminology and scope update, 14 October 2026: use **Rangekeeper Bundle**,
 shortened to **Bundle**, for the outer immutable deliverable. Model remains the
 canonical object. Speckle Bundle names native provider content. Model-only Bundles
 are included in the target. Existing format/API names and the historical SQLite
-record remain unchanged. Core's [coordinated plan](https://github.com/daniel-fink/whirlwind-core/blob/develop/docs/decisions/004-core-lifecycle-refactor.md)
-groups implementation into three turns while preserving the concrete format
-review after step A and UI/UX review after T3. Its new working-document link is not
-a published verification checkpoint.
-The [contributor branch instructions](../contributing/README.md#working-folder-and-branches)
-include the required T3 merge and sync to `develop` across all four repositories.
+record remain unchanged. Follow the
+[contributor branch instructions](../contributing/README.md#working-folder-and-branches)
+for reviewed integration into `develop`. Development integration is separate from
+format approval and publication.
 
 Status: Bundle contract, Entity-to-source-element mappings, separate provenance
 and Parquet/DuckDB architecture agreed on 13 October 2026. Application/transport
 ownership and the greenfield Interface were clarified on 14 October 2026. A
 [concrete local candidate](../reference/bundle.md) is implemented in 0.10.0.dev3.
-[Evidence and remaining gates](../research/bundle-t1-2026-10-14/README.md) do not
-close the full P1–P8 matrix. The SQLite development experiment is retained as earlier evidence.
+Implementation does not close the full P1–P8 acceptance matrix below. The SQLite development experiment is retained as earlier evidence.
 It does not implement this contract.
 The candidate adds Model schema 0.8.0 and optional Bundle IO. Public-format
 adoption remains subject to the concrete review and conformance gates.
@@ -193,34 +190,19 @@ before accepting a Bundle. A valid package does not prove that a user's source
 interpretation is correct. Source acceptance remains an explicit ingestion step.
 There is no automatic bidirectional synchronisation between Model and Geometry.
 
-## Reader, application and interface ownership
+## Reader and application boundaries
 
-RK owns canonical records, Bundle identity/validation, the schema-derived RK table
-mapping and its lossless reader/writer. Keep DuckDB in optional IO implementation
-code; RK domain imports need no database, Whirlwind, transport SDK or Interface.
-The canonical RK reader is distinct from provider-specific native Geometry decoders.
+RK owns canonical records, Bundle identity and validation, the schema-derived
+table mapping and its lossless reader/writer. DuckDB stays in optional IO code;
+domain imports need no database, transport SDK or application interface.
+Canonical reconstruction is distinct from native Geometry decoding.
 
-Whirlwind application operations compose the RK reader with Geometry interfaces,
-registered Bundle storage and common access policy. This module lives initially
-in `whirlwind-core`, separately from ingestion and transport handlers. That location
-is a repository choice, not a requirement to use the MCP protocol. Direct Python
-calls work in process; HTTP/MCP adapters establish caller identity, validate and
-encode requests, and invoke the same operations. Shared policy owns authorization.
-Opening a complete retained Bundle needs no ingestion workspace, source credentials,
-source network, chat or LLM. Keep acquisition separate from native decoding.
-
-Interface owns bounded client projections and reusable React/TypeScript/Vite components
-with Mantine, AG Grid Community, Cytoscape and Speckle rendering. Payload/Next are
-excluded from its target; existing Python exports/layouts do not justify a second
-Bundle service. Future native/browser readers can implement the same semantics
-after conformance tests. One access layer does not require a single network server.
-
-Core's `docs/reference/package-access.md` owns application/wire semantics and its
-`docs/decisions/003-package-access.md` owns PA0–PA5 delivery. Interface owns its client
-and component contracts. The bounded T1/T2 implementation has canonical
-reconstruction, direct Python, HTTP/MCP parity, offline reopen and local UI
-evidence. Those results do not close every P1–P8 criterion. Use each reference
-for its installed profile and each dated record for its exact verification scope.
+Consumers compose the reader with provider adapters, registered storage, access
+policy and rendering. Their Python, HTTP or other transports must preserve the
+same exact identities and validation rules. A retained Bundle can be read without
+an ingestion workspace, source credentials, source network, chat or LLM. Keep
+acquisition separate from decoding. The [public reader reference](../reference/bundle.md)
+defines the installed RK API; application integration requires its own evidence.
 
 ## Parquet storage and DuckDB queries
 
@@ -264,7 +246,7 @@ untyped EAV store. EAV can serve source-variable properties where appropriate.
 | DuckDB reader inside Bundle access | Queries RK tables and supported Geometry tables, joins through explicit Entity mappings, and supplies bounded results. An embedded query engine, not the Model's identity or a required `.duckdb` delivery file. |
 | Provider adapters inside Bundle access | Interpret source identities, properties, relations, geometry encodings, representation roles, placement and assets under the shared identity/access rules. |
 | Bundle access contract and projections | One meaning for object, Value, evidence, membership, graph, source-selection and asset operations across hosts. Interface owns presentation projections; Core owns authorised service access. |
-| Application registry and policy | Whirlwind owns registered Bundle access, caller scope, sessions and disposable indexes outside canonical storage. The greenfield Interface has no Payload/Next dependency. |
+| Application registry and policy | Consumers own registered Bundle access, caller scope, sessions and disposable indexes outside canonical storage. |
 
 The first service path exposes Bundle access with DuckDB and provider adapters
 behind its authorised operations. Standalone
@@ -313,8 +295,8 @@ These support the architecture choice; they do not establish local acceptance.
 | --- | --- |
 | Rangekeeper | Canonical Model schema, Entity mapping and provenance contracts, Model identity, schema-derived Parquet serialization, reusable storage/query conformance and semantic validation |
 | Geometry provider specification and adapter | Native source format and semantics; format-specific decoding and source integrity checks. Core supplies a narrow pinned native Speckle profile; broader support remains open. |
-| Whirlwind Core | Source acquisition, user decisions, builds, Bundle assembly/publication and authorised service access |
-| Whirlwind Interface | Bounded projections, component queries, geometry conversion, rendering and host adapters |
+| Application services | Source acquisition, user decisions, builds, Bundle assembly/publication and authorised service access |
+| User interfaces | Bounded projections, component queries, geometry conversion, rendering and host adapters |
 | Hosting application | Bundle/Model catalogue, users, permissions and session state |
 
 Specification and Run retain their separate meanings. Preserve provenance without
@@ -456,11 +438,9 @@ Primary references: [SQLite application files](https://www.sqlite.org/appfilefor
 
 ## Spike steps, grouped turns and review
 
-The published [Interface spike plan](https://github.com/daniel-fink/whirlwind-interface/blob/5ef206aa3a525a0f4c1910512b6fa2c8b1e6f145/docs/decisions/001-viewer-plan.md)
-owns greenfield Vite host sequencing and its browsing/component and ChatGPT checks.
-Core owns PA0–PA5 application delivery and transport parity. Payload v4 is historical
-legacy evidence, not a new-browser acceptance requirement.
-This ADR owns the canonical Bundle contract and P1–P8 criteria.
+This ADR owns the canonical Bundle contract and P1–P8 criteria. Application
+transports, browser components and hosted integrations have separate delivery and
+acceptance procedures. Their results do not establish canonical conformance.
 
 The Bundle contract, Entity mapping boundary, separate provenance and
 Parquet/DuckDB direction are agreed. Implement the following steps in dependency
@@ -510,30 +490,22 @@ codec support policy, access isolation, hostile-file handling and declared scale
 limits. Cross-Bundle search belongs to a separate catalogue/index. Core ingestion
 must remain usable without a viewer.
 
-## Current status and coordinated dependencies
+## Current status and consumer checks
 
 Reconciled on 15 October 2026. Implementation: the expanded Bundle candidate and
 selective post-open record reads are installed in RK 0.10.0.dev3. Verification:
 [T1](../research/bundle-t1-2026-10-14/README.md),
 [investigation handover](../research/investigation-bundle-t1-2026-10-14/README.md),
 [T2 selective reads](../research/t2-technical-2026-10-14/README.md) and
-[T3 integration](../research/t3-integration-2026-10-15/README.md) retain their exact
-scope. Acceptance: approved for T2 development and local Projects adoption, with
-full P1–P8 conformance still open. Release: no stable-format approval follows from
-a development merge or that bounded approval.
+[T3 integration](../research/t3-integration-2026-10-15/README.md) retain their recorded
+scope. Acceptance: approved for T2 development and bounded local consumer adoption,
+with full P1–P8 conformance still open. Release: no stable-format approval follows
+from a development merge or that bounded approval. Edited historical extracts do
+not supply new verification evidence.
 
-The earlier step A/B/C/D sequence remains the requirement structure. Match each
-case to current evidence before treating it as unimplemented or complete. Keep
-provider coverage, hostile-file/durability limits, schema edge cases, render
-conversions and actual hosts explicit. Existing evidence is not erased by a
-later status update.
-
-Core's [overall dependency map](https://github.com/daniel-fink/whirlwind-core/blob/develop/docs/decisions/development-roadmap.md#parallel-work-and-dependencies)
-coordinates the remaining work. P6 scale work joins Core 006 S4; avoid a duplicate
-reader project. Corpus and conformance work can run alongside T3, Interface
-review and Core storage work. Public RK API/schema changes must be verified and
-pinned before Core and Interface consume them, then Projects revalidates affected
-contracts. Cold opening still reconstructs retained documents. Shared capacity
-acceptance uses the integrated runtime, not isolated reader timings.
-Walkthrough and native-host gates remain separate; all release/publication
-choices retain their own scope.
+Match each acceptance case to its evidence. Keep provider coverage, hostile-file
+and durability limits, schema edge cases, render conversions and actual hosts
+explicit. Public API or schema changes need a verified distribution and exact
+consumer pins. Cold opening still reconstructs retained documents; isolated
+reader timings do not establish service capacity. Walkthrough and native-host
+checks, release approval and publication remain separate.

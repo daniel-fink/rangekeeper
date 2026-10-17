@@ -2,8 +2,8 @@
 
 This is an implemented review candidate in RK `0.10.0.dev3`, not a stable public
 interchange release. [ADR-008](../decisions/008-sqlite-model-package.md) retains the
-full acceptance matrix. The [expanded T1 record](../research/investigation-bundle-t1-2026-10-14/README.md)
-separates this implementation from remaining provider, query and host work.
+full acceptance matrix. Provider, query and host acceptance remain separate from
+the implemented canonical reader and writer.
 
 ## Canonical Geometry
 
@@ -139,12 +139,8 @@ this Bundle expansion. The user approved development adoption in Projects. Stabl
 
 ## Remaining acceptance
 
-The current native adapter in Core covers a pinned subset of Speckle spec 1.4.1:
-unquantized SGEO v1 meshes and lines, explicit object/group mappings and nested
-instance transform chains. A tested subset is not all native formats or general
-BRep support. Full scalar/presence/union adversarial coverage, all source evidence
-and change cases, large-scale hostile-file handling, complete query projections,
-render conversions and real-host consistency remain in P1–P8. Preserve the
-remaining provider/host gates before broader or stable-format adoption.
-Core now supplies supervised access and complete application result schemas; see
-[technical T2 evidence](../research/t2-technical-2026-10-14/README.md).
+Full scalar, presence and union adversarial coverage, all source evidence and
+change cases, large-scale hostile-file handling, provider queries, rendering
+conversions and real-host consistency remain in P1–P8. Canonical Parquet checks
+do not establish native provider, application service or browser acceptance.
+Preserve these gates before broader adoption or stable-format release.

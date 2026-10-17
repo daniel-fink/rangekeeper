@@ -1,3 +1,5 @@
+import os
+# Historical script extract: external paths and namespaces now require explicit inputs.
 """Run all three strict comparisons in a process separate from source construction."""
 
 from pathlib import Path
@@ -7,9 +9,9 @@ from compare_projects import compare
 BASE = Path("/private/tmp/rk-turn3-private/baseline")
 NEW = Path("/private/tmp/rk-turn3-complete-project-bootstrap/results")
 for name, namespace in [
-    ("mandarin", "urn:whirlwind:project:mandarin"),
-    ("december", "urn:whirlwind:project:east-whisman"),
-    ("november-r2", "urn:whirlwind:project:east-whisman"),
+    ("mandarin", os.environ["RK_MANDARIN_NAMESPACE"]),
+    ("december", os.environ["RK_EAST_WHISMAN_NAMESPACE"]),
+    ("november-r2", os.environ["RK_EAST_WHISMAN_NAMESPACE"]),
 ]:
     latest = json.loads((NEW / name / "latest.json").read_text())
     print(name, latest, flush=True)

@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="An offline, source-backed presentation of the Rangekeeper LinkML schema.">
+  <title>Rangekeeper · Schema</title>
+  <style><!-- STYLE --></style>
+</head>
+<body>
+  <a class="skip" href="#diagram">Skip to diagram</a>
+  <header class="masthead">
+    <div class="brand"><span class="monogram" aria-hidden="true">rk</span><div><strong>Rangekeeper</strong><span class="brand-caption">Schema presentation</span></div></div>
+    <div class="head-actions"><span id="version" class="version"></span><button id="browse" type="button">Browse schema <kbd>/</kbd></button><button id="present" type="button" class="primary">Full screen</button></div>
+  </header>
+  <nav id="scene-nav" aria-label="Presentation views"></nav>
+  <main class="workspace">
+    <section class="stage" aria-labelledby="scene-title">
+      <header class="scene-heading"><div class="eyebrow" id="scene-index"></div><h1 id="scene-title"></h1><p id="scene-intro"></p></header>
+      <div id="example-controls" hidden><span>Choose the investigation</span><div class="segmented"><button type="button" id="forward" aria-pressed="true">Find cost</button><button type="button" id="inverse" aria-pressed="false">Find area</button></div><span class="example-caption">Illustrative arithmetic · no solver is running</span></div>
+      <div class="diagram-wrap" id="diagram" tabindex="-1"><svg id="schema-graph" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="Interactive schema diagram"></svg><div id="compact-graph"></div></div>
+      <div class="legend" aria-label="Diagram legend"><span><i class="legend-stack" aria-hidden="true"></i>Collection</span><span><i class="legend-optional" aria-hidden="true"></i>Optional field</span><span><b aria-hidden="true">◆—</b>Embedded record</span><span><b aria-hidden="true">—→</b>UUID reference</span><button id="notation" type="button">How to read this</button></div>
+      <div class="takeaway"><span class="takeaway-label">Keep in mind</span><p id="takeaway"></p></div>
+      <footer class="stage-footer"><span id="snapshot"></span><div><button type="button" id="previous" aria-label="Previous view">←</button><span id="step-count"></span><button type="button" id="next" aria-label="Next view">→</button></div></footer>
+    </section>
+    <aside id="inspector" class="inspector" aria-label="Schema details">
+      <header class="inspector-header"><span class="eyebrow" id="detail-category"></span><h2 id="detail-title"></h2><div id="detail-context"></div></header>
+      <div class="detail-tabs" role="tablist" aria-label="Detail view"><button type="button" role="tab" id="tab-explain" aria-controls="detail-content" aria-selected="true" data-tab="explain">Explain</button><button type="button" role="tab" id="tab-fields" aria-controls="detail-content" aria-selected="false" data-tab="fields">Fields</button><button type="button" role="tab" id="tab-source" aria-controls="detail-content" aria-selected="false" data-tab="source">Source</button></div>
+      <div id="detail-content" class="detail-content" role="tabpanel" aria-labelledby="tab-explain"></div>
+      <footer class="inspector-footer" id="detail-source"></footer>
+    </aside>
+  </main>
+  <dialog id="catalogue"><form method="dialog" class="dialog-head"><h2>Explore the schema</h2><button aria-label="Close schema browser">Close</button></form><label class="search-label" for="schema-search">Find a record, enum, type or description</label><input type="search" id="schema-search" autocomplete="off" placeholder="Try Value, geometry, or units…"><div id="search-count" role="status"></div><div id="search-results"></div><p class="dialog-note">All definitions and source text are embedded in this file.</p></dialog>
+  <dialog id="notation-dialog"><form method="dialog" class="dialog-head"><h2>How to read this</h2><button>Close</button></form><div class="notation-content"><p>These are focused schema views. Select a record for its definition or a connection for its field contract. Use <kbd>←</kbd> and <kbd>→</kbd> to change views when focus is outside a control.</p><dl><dt>Stacked records</dt><dd>The field accepts a collection. The stack does not specify an exact count, order, or ownership.</dd><dt>Dashed card border</dt><dd>The field can be absent in its base declaration. Conditional requirements are marked on the card and shown in the details.</dd><dt>Filled diamond</dt><dd>The field embeds a record. It shows ownership within this document snapshot.</dd><dt>Arrow</dt><dd>The field refers to another record by UUID. For document pins, the diagram names the document kind; the declared range is Metadata.</dd><dt>Hollow triangle</dt><dd>Inheritance: Assembly is an Entity.</dd></dl><p>Field presence and item count are separate. The detail panel shows explicit cardinality constraints. It also preserves conditional rules and the distinction between missing, empty, unresolved, and zero where the schema specifies it.</p><p>Captions and view introductions are presentation summaries. Definitions, notes, fields, and source text come from LinkML. Schema declarations do not establish that an executor supports or has solved the mathematics.</p></div></dialog>
+  <div class="sr-only" id="announcement" role="status" aria-live="polite"></div>
+  <noscript>This presentation needs JavaScript to show its embedded schema and diagrams. It makes no network requests.</noscript>
+  <script id="schema-data" type="application/json"><!-- DATA --></script>
+  <script><!-- SCRIPT --></script>
+</body>
+</html>

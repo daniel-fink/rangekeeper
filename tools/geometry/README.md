@@ -1,8 +1,8 @@
 # Walkthrough Geometry viewer
 
 Rangekeeper owns this standalone Speckle viewer for walkthrough notebooks.
-It has no build or runtime dependency on any Whirlwind repository or package.
-It reads retained source records; it is not the Whirlwind Package browser.
+Its source and build are contained in this repository. It reads retained source
+records and provides local notebook display.
 
 From the Rangekeeper repository root, with Node 24.15.0:
 

@@ -19,9 +19,7 @@ Switch to `codex/walkthrough-acausal` in the same folder for notebook and book
 work, then run the commands below. Commit and push drafts on that branch. Merge
 `develop` into it to receive library updates; refresh and check its environment
 lock when dependencies change. Return to `develop` when draft work is saved.
-Do not create another RK worktree for this routine workflow. The
-[single-folder consolidation record](../history/handoffs/2026-10-14-single-folder-consolidation.md)
-records the saved commits, retained files and open acceptance work. The shared source capture lives at
+Do not create another RK worktree for this routine workflow. The shared source capture lives at
 [`examples/data/mixed_use_property`](../../examples/data/mixed_use_property).
 Keep its retained source bytes and provenance unchanged.
 
@@ -238,7 +236,7 @@ execution-count and error checks. Add the source to `myst.yml` only after review
 The local geometry view uses the official Speckle SDK with pinned in-memory source
 records. Its [small host and build procedure](../../tools/geometry/README.md)
 keep the viewer bundle local and independently owned by RK. Building or running
-this notebook viewer requires no Whirlwind repository or package. The chapter uses interactive geometry without repeated
+this notebook viewer uses the local RK source and packaged assets. The chapter uses interactive geometry without repeated
 static mesh images. `tools/docs/render_property.py` remains available to recreate
 the reference images. Graph, chart and geometry selections are independent. The original
 hosted model currently reports an expired version; it is not the runtime source.

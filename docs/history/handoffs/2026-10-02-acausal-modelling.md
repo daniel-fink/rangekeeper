@@ -1,5 +1,8 @@
 # Rangekeeper acausal modelling handoff
 
+> Edited extract, 17 October 2026: external application references were removed.
+> Retained RK results keep their original scope; this is not an unchanged capture.
+
 Archived on 2026-10-08. This handoff describes its 2026-10-02 checkpoint. Its
 continuation instructions and checkout state are historical. Use the
 [current guides](../../README.md), [decision index](../../decisions/README.md) and
@@ -11,7 +14,7 @@ continuation instructions and checkout state are historical. Use the
 are configured for local layout acceptance. All **92 layout tests pass with zero
 skips**, including the previous 24 skipped cases. Full local regression passes
 **1,097 tests with zero skips**, excluding the three live predecessor service tests. Use the
-[strict acceptance guide](../../contributing/layout-acceptance.md) and
+strict acceptance guide (retired external procedure) and
 [retained evidence](../../research/full-migration/minizinc/README.md). The new CI job
 has not run remotely; commit and push remain separate actions.
 
@@ -231,11 +234,11 @@ Verified on the source machine at handoff preparation:
 - The branch was created from `feature/graph` as `feature/model-execution`, then renamed at Daniel's request.
 - Session work is uncommitted and unpushed. No schema source or library runtime implementation has changed in this session.
 - Source chat: **Rangekeeper executable checkpoint**, ID `01a0f62f-8838-7dc2-afe8-9a67a935a3e7`.
-- The chat's attached working directory is `/Volumes/Data/Projects/Whirlwind`, a non-Git workspace. The actual task is in the separate Rangekeeper checkout.
+- The chat's attached working directory is `[external path omitted]`, a non-Git workspace. The actual task is in the separate Rangekeeper checkout.
 
 The connected host is **Daniel's Mac Studio**, host ID
 `remote-control:env_e_6a067b397c28832ca54b3ab6a28ee817`. The app currently lists a
-Mac Studio project rooted at `/Volumes/Data/Projects/Whirlwind`, but no saved
+Mac Studio project rooted at `[external path omitted]`, but no saved
 Rangekeeper project. Destination checkout contents and synchronization have not
 been verified. Open Rangekeeper directly for the continuation.
 

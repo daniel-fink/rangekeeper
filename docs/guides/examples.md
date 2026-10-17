@@ -25,8 +25,6 @@ Install the matching library and the extras each example needs.
 | [Draft walkthrough on `codex/walkthrough-acausal`](https://github.com/daniel-fink/rangekeeper/tree/codex/walkthrough-acausal/examples/walkthrough) | Draft notebook sources, book configuration and teaching resources; see [walkthroughs](walkthroughs.md) |
 | [`rangekeeper_examples/`](../../examples/rangekeeper_examples) | Shared design and investment builders |
 | [`schema/`](../../examples/schema) | Complete wire documents and smaller syntax fragments, described below |
-| [`workflow/`](https://github.com/daniel-fink/whirlwind-core/tree/66a0cea637b5186010459834f7962591fb62e338/examples/workflow) | Synthetic equipment/accommodation configurations and source-to-solver example; see [source workflows](source-workflows.md) |
-| [Whirlwind ingestion examples](https://github.com/daniel-fink/whirlwind-core/tree/66a0cea637b5186010459834f7962591fb62e338/examples/ingestion) | Synthetic Excel extraction and source Evidence examples |
 | [`execution/`](../../examples/execution) | Forward and inverse valuation using the wire documents |
 | [`grasshopper/`](../../examples/grasshopper) | Rhino source and Grasshopper definitions; see [Grasshopper](grasshopper.md) |
 
@@ -36,15 +34,6 @@ Run the modelling example from the RK repository root with a fresh output direct
 
 ```sh
 python examples/execution/valuation.py --examples examples/schema --output /tmp/rk-valuation
-```
-
-Run source examples from the Whirlwind Core checkout. The Excel example creates a
-synthetic workbook in a temporary directory:
-
-```sh
-uv run python examples/ingestion/ingestion_evidence.py
-uv run python examples/ingestion/excel_ingestion.py
-uv run python examples/workflow/scalar.py --output /tmp/rk-source-solve
 ```
 
 ## Wire examples and fixtures

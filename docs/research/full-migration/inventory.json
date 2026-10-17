@@ -14,13 +14,13 @@
       "status": "M .gitignore\n M docs/CONSUMER_MIGRATION.md\n M docs/DOMAIN_MIGRATION_MAP.md\n M docs/DOMAIN_MIGRATION_PLAN.md\n M docs/GRAPH_MODEL.md\n M docs/LIBRARY_ARCHITECTURE.md\n M docs/README.md\n M docs/handoffs/2026-10-02-acausal-modelling.md\n?? docs/FULL_MIGRATION_REVIEW.md\n?? docs/research/full-migration/"
     },
     "projects": {
-      "path": "/Volumes/Data/Projects/Whirlwind/projects",
+      "path": "[external path omitted]",
       "head": "5725cc02748ace15e390c8dcea2c5d69185d67c9",
       "branch": "feature/mandarin-assembly-layout",
       "status": "M .gitignore"
     },
     "layout": {
-      "path": "/Volumes/Data/Projects/Whirlwind/.worktrees/rk-assembly-layout",
+      "path": "[external path omitted]",
       "head": "4e5aec42f16a18c4d715f5a2a1b879d98e0f71e3",
       "branch": "feature/assembly-layout-constraints",
       "status": ""

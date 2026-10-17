@@ -156,13 +156,12 @@ an index. See [the consumer guide](tables.md) for examples and errors.
 ## Legacy boundary
 
 `model.system.View` and `model.system.reduction` are Model-backed operations and reject old
-Graph inputs. New records come from `rangekeeper.model`. See [tables](tables.md) and [source workflows](workflow.md)
-for consumers of these views.
+Graph inputs. New records come from `rangekeeper.model`. See [tables](tables.md)
+for projections of these views.
 
-The old Graph domain, its View, table projection and JSON codec were removed under
-[ADR-007](../decisions/007-three-repository-refactor.md). No implicit Graph-to-Model
-conversion or compatibility constructors remain. Source ingestion belongs to
-Whirlwind Core; it produces the canonical Model through public RK APIs.
+The old Graph domain, its View, table projection and JSON codec are removed.
+No implicit Graph-to-Model conversion or compatibility constructors remain.
+Consumers interpret their source data and create Models through public RK APIs.
 
 ## Flow hierarchy reduction
 

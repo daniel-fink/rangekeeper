@@ -6,7 +6,7 @@ observations, not a new execution or current external acceptance. The former pag
 did not assign a separate date to every observation. Host and service behavior
 must be checked through the current [Windows acceptance procedure](../../contributing/windows-acceptance.md).
 
-Current contracts: [source workflows](../../reference/workflow.md),
+Current contracts: source workflows (retired external procedure),
 [design transport](../../reference/design-transport.md) and
 [Grasshopper](../../guides/grasshopper.md).
 
@@ -46,6 +46,6 @@ checks source values, graph identities, topology, characteristics and review
 meanings, while handoff tests check the intentionally richer Claim lineage.
 The reviewed `NumberSpec`, `tabular.numbers`, `tabular.select` and `tabular.concat`
 operations now provide reusable table transformations; see
-[their API contract](../../reference/evidence.md). Project interpretation remains local.
+their API contract (retired external procedure). Project interpretation remains local.
 Further promotions require explicit user review of the contract, existing
 ownership and demonstrated reuse.

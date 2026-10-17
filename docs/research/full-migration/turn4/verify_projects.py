@@ -1,3 +1,4 @@
+# Historical script extract: external paths and namespaces now require explicit inputs.
 """Rebuild and check copied current sources using the normally installed wheel.
 
 Private source payloads remain in the temporary workspace. Reports retain only
@@ -55,9 +56,9 @@ else:
     spec = importlib.util.spec_from_file_location("comparison", ROOT / "docs/research/full-migration/turn3/compare_projects.py")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    for name, namespace in (("mandarin", "urn:whirlwind:project:mandarin"),
-                            ("december", "urn:whirlwind:project:east-whisman"),
-                            ("november-r2", "urn:whirlwind:project:east-whisman")):
+    for name, namespace in (("mandarin", os.environ["RK_MANDARIN_NAMESPACE"]),
+                            ("december", os.environ["RK_EAST_WHISMAN_NAMESPACE"]),
+                            ("november-r2", os.environ["RK_EAST_WHISMAN_NAMESPACE"])):
         latest = json.loads((base / "results" / name / "latest.json").read_text())
         result = module.compare(Path("/private/tmp/rk-turn3-private/baseline") / name,
                                 base / "results" / name / latest["directory"], namespace)
