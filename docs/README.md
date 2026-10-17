@@ -38,11 +38,20 @@ API. Historical records retain the contracts and results from their recorded dat
 | Structure and projection | [System views and reductions](reference/system.md), [tables](reference/tables.md) |
 | Design transport | [Canonical envelope](reference/design-transport.md) |
 
-## Repository and walkthrough checkpoint
+## Repository and walkthrough status
 
-The [14 October 2026 state record](history/handoffs/2026-10-14-repository-and-walkthrough.md)
-records the code merge, preserved walkthrough, separate draft branch, local
-worktrees, verification results and remaining publication work.
+Use the single RK working folder and the
+[contributor branch procedure](contributing/README.md#working-folder-and-branches).
+Reviewed library and documentation work is on `develop`. The
+[17 October delivery](https://github.com/daniel-fink/rangekeeper/commit/ae51f11485fbc3ae3061406cbcba94b03aab4430)
+includes the standalone documentation cleanup and schema presentation. The
+unfinished walkthrough remains on `codex/walkthrough-acausal`; publication is
+separate.
+
+The [single-folder consolidation record](history/handoffs/2026-10-14-single-folder-consolidation.md)
+records preservation and verification. The earlier
+[branch-split record](history/handoffs/2026-10-14-repository-and-walkthrough.md)
+retains the former worktree layout as history, not the current working procedure.
 
 ## Contribute a change
 
@@ -64,6 +73,3 @@ lessons and their preparation and capability dependencies. [History](history/REA
 completed plans and dated narratives. [Research](research/README.md) retains
 captured experiments and verification evidence. A local result does not establish
 remote CI, Windows host or service acceptance.
-
-Use the [contributor branch procedure](contributing/README.md#working-folder-and-branches)
-for the current branch roles and delivery checks.
