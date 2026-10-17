@@ -1,3 +1,5 @@
+import os
+# Historical script extract: external paths and namespaces now require explicit inputs.
 """Static inventory; imports and notebook code are evidence, not compatibility tests."""
 import ast, hashlib, json, re, subprocess
 from pathlib import Path
@@ -19,7 +21,7 @@ for p in sorted((ROOT/'walkthrough').glob('*.ipynb')):
     cells=json.loads(p.read_text()).get('cells',[])
     uses=[dict(cell=i,source_sha256=hashlib.sha256(''.join(c.get('source',[])).encode()).hexdigest(),api_references=sorted(set(re.findall(r'(?:rk|rangekeeper)\.[A-Za-z_][A-Za-z_.]*',''.join(c.get('source',[])))))) for i,c in enumerate(cells) if c.get('cell_type')=='code' and any(k in ''.join(c.get('source',[])) for k in ['rk.','rangekeeper','Speckle'])]
     notebooks.append(dict(path=str(p.relative_to(ROOT)),sha256=hashlib.sha256(p.read_bytes()).hexdigest(),usage=uses))
-external=Path('/Volumes/Data/Projects/Whirlwind/projects')
+external=Path(os.environ["RK_PROJECTS_ROOT"])
 external_files=[]
 for project in ['mandarin','east-whisman']:
     for prefix in ['tests','spec']:

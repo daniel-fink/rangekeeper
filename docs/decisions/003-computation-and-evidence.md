@@ -30,7 +30,7 @@ not establish acceptance of external hosts or services.
 ## Sources and related decisions
 
 - [Execution](../reference/execution.md), [calculations](../reference/calculations.md),
-  [source workflows](../concepts/source-workflows.md) and [Evidence](../reference/evidence.md).
+  [source interpretation](../concepts/source-workflows.md).
 - [RF integration contracts](../history/plans/REFACTORING_PLAN.md#agreed-integration-decisions).
 - [RF-032 acceptance ownership](../history/plans/REFACTORING_FOLLOWUP_PLAN.md#rf-032-execution-acceptance-ownership).
 - [ADR-001: document roots](001-document-roots.md).

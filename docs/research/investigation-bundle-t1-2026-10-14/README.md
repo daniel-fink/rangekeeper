@@ -1,5 +1,8 @@
 # Investigation Bundle candidate, 14 October 2026
 
+> Edited extract, 17 October 2026: external application references were removed.
+> Retained RK results keep their original scope; this is not an unchanged capture.
+
 The user agreed to deliver a Model with sufficient investigation context to understand
 it and perform further investigations. The [current Bundle reference](../../reference/bundle.md)
 owns `rangekeeper.bundle/2-proposal` in RK 0.10.0.dev2. Canonical record schemas and
@@ -21,7 +24,7 @@ Model), exact query scope and conflicting supporting identities. Core passed 470
 Core pins the new wheel and verifies all 145 packaged RK files against the source
 snapshot. Its installed-wheel handover repeated successfully with no originating
 workspace and no source-tree imports for either product package. See
-[Core's review](https://github.com/daniel-fink/whirlwind-core/blob/develop/docs/guides/review-bundle-format.md)
+Core's review (external link omitted)
 for the working review packet; this link is navigation, not a published checkpoint.
 
 RK remains in its single checkout on develop. Existing walkthrough/data and

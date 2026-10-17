@@ -13,7 +13,7 @@ current domain replacement and migration sequence. Historical recommendations
 below are not additional prerequisites for the scalar executor.
 
 For the subsequent format-independent execution review and implementation, see
-[GRAPH_WORKFLOW_FORMATS.md](../reference/workflow.md). The dated findings below
+GRAPH_WORKFLOW_FORMATS.md (retired external procedure). The dated findings below
 remain a historical record. The initial refactor was subsequently committed as
 `7f7098c`; the format-independent follow-up is committed as `588b5b4`.
 

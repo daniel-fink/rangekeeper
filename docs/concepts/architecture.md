@@ -1,75 +1,69 @@
-# Architecture after the 0.9 ownership split
+# Architecture
 
-The coordinated target adds Core-owned persistent modelling work and general
-Workflows. An ingestion Workflow is one application composition; RK Specification
-and Run remain distinct canonical contracts. Projects retains authored work in
-the existing `whirlwind-projects` repository. See the
-[Core refactor plan](https://github.com/daniel-fink/whirlwind-core/blob/main/docs/decisions/004-core-lifecycle-refactor.md).
-Broader Core lifecycle and native Rangekeeper Bundle implementation are pending.
+Rangekeeper is a standalone modelling library. Its public APIs define canonical
+records, identity, provenance, validation, calculations, execution and optional IO
+and local display. Applications use these APIs to compose their own services and
+interfaces.
 
-## Engine, Core and Interface
+## Package responsibilities
 
-The three repositories have distinct roles:
+| Package | Responsibility |
+| --- | --- |
+| `model` | Immutable Model records, Geometry pins, provenance, equations and graph operations. |
+| `specification` | Investigation choices over exact document revisions. |
+| `run` | Finalized execution evidence, storage and numerical execution. |
+| `calculations` | Known-data financial and time-series calculations. |
+| `io` | Native serialization, stores, Polars conversion, canonical Speckle envelopes and optional Bundle IO. |
+| `visualisation` | Local charts, tables, PyVis graphs and retained geometry display. |
+| `shared` | Shared record, identity, unit and table support. |
 
-| Section | Role | Repository |
-| --- | --- | --- |
-| Engine | Modelling engine | `rangekeeper` |
-| Core | Application core | `whirlwind-core` |
-| Interface | User interface | `whirlwind-interface` |
+LinkML YAML in `schema/` owns persistent fields. Python, C# and JSON Schema
+definitions are generated from it. Handwritten behaviour preserves identity,
+missingness, immutable revisions and complete provenance. See the
+[record reference](../reference/records.md) and
+[schema guide](../contributing/schema.md).
 
-Core owns Whirlwind application APIs. Rangekeeper retains its public modelling
-APIs and canonical readers. MCP is a transport adapter within Core. Interface
-covers browsing and inspection now, with editing and authoring anticipated.
-Future user edits go through Core application operations and Rangekeeper rules;
-published Bundles remain immutable. The rename does not add editing capability.
+## Application boundary
 
-## Ownership
+Source acquisition, interpretation workflows, authentication, access policy,
+service transports and application navigation belong to callers. They are not
+required to import or use RK. A caller creates Models through public RK APIs and
+retains the source context needed to explain its decisions. See
+[source interpretation](source-workflows.md).
 
-Rangekeeper owns immutable canonical Model, Specification and Run contracts, identity,
-provenance, validation, units, calculations and execution. `io` owns native serialization,
-stores, Polars conversion and the canonical Speckle envelope. `visualisation` owns simple
-local chart, table, PyVis graph and retained geometry display. Importing RK core does not
-load an ingestion engine, source reader, browser or service client.
+Domain imports do not load database engines, plotting libraries, source clients
+or solver backends. Optional dependencies load at their capability boundary.
+Use [installation extras](../guides/installation.md#choose-capabilities) to select
+the required capabilities.
 
-Whirlwind Core owns acquisition, source interpretation, transient Evidence, recipes,
-workspace decisions, ingestion builds and optional Rhino source extraction. It
-also owns the local Bundle application proof and thin HTTP/MCP adapters as each
-is implemented. The full access contract remains open. Whirlwind
-Interface owns advanced browsers and graph layout. RK owns and builds its notebook
-Geometry viewer in `tools/geometry`; it has no build or runtime dependency on
-Whirlwind. RK imports neither Whirlwind Python package.
+## Local display
 
-The portable C# Model library and generic Grasshopper authoring components stay in RK.
-Generated canonical record and envelope definitions have one authority in RK. The
-source-specific Grasshopper component is in Core and consumes the pinned RK assemblies.
+The notebook Geometry viewer is built in `tools/geometry` and packaged as static
+assets. Python installation does not run Node. It renders retained source content
+without a live source account. See its [build guide](../../tools/geometry/README.md).
+Application browsers and interactive layout services are outside the RK library.
 
-See [the decision](../decisions/007-three-repository-refactor.md),
-[upgrade paths](../guides/upgrading.md), and [Grasshopper](../guides/grasshopper.md).
+## Native authoring
 
-The agreed [Model and Geometry Bundle contract](../decisions/008-sqlite-model-package.md)
-contains a main Model plus selected Models, Specifications and finalized Runs,
-with their interpretation dependencies. Each spatial Model owns its exact Geometry
-pin and Entity-to-source-element mappings. Equal pins share retained native bytes.
-Model changes create a new Model; changing the delivered selection creates a new
-Bundle without changing unchanged record identities. Geometry is provider-neutral; its first planned format is Speckle's
-2026.9 object-model/bundle schema, with an exact specification pin. Source data stays
-adjacent to schema-derived RK Parquet tables. One Bundle access layer contains
-DuckDB and provider adapters and supplies queries, provenance, geometry and assets
-under shared identity and access rules. Entity
-associations support navigation and selection; property and relation evidence use
-the separate RK provenance structure. Rendering belongs to the interface. The greenfield Interface uses React/TypeScript/
-Vite, Mantine Tree, AG Grid Community, Cytoscape and Speckle; Payload/Next are excluded.
-RK owns the lossless RK Parquet mapping/reader, with storage dependencies in optional
-IO modules. Whirlwind composes it with provider interfaces and access policy. Direct
-Python, HTTP and MCP share application semantics; reading a complete retained
-Bundle requires neither ingestion state, a chat nor source-server access.
-The earlier SQLite experiment remains historical evidence. The development
-candidate described below adds schema and IO support; stable format acceptance
-remains open.
+The portable C# Model library and generic Grasshopper components live in
+`src/grasshopper`. The Model project needs neither Rhino nor a source SDK.
+Component host loading and connector acceptance require their own checks; a
+portable build cannot establish them. See [Grasshopper](../guides/grasshopper.md).
 
 ## Bundle implementation boundary
 
-The [Bundle candidate](../reference/bundle.md) adds `model.geometry` and optional
-`io.bundle`/`io.migration`. Schema YAML remains authoritative; Python/C#/JSON and
-slot metadata are generated. Provider decoding, acquisition, registration and
-access policy belong to Core. No engine domain import loads Arrow or DuckDB.
+The [Bundle candidate](../reference/bundle.md) contains a main Model, selected
+Models, Specifications and finalized Runs, with their exact interpretation
+dependencies. Each spatial Model owns its Geometry pin and Entity mappings.
+Equal pins can share retained native bytes. Changed Model content creates a new
+Model; changed delivery selection creates a new Bundle.
+
+RK owns canonical Bundle validation, the lossless schema-derived Parquet mapping
+and its reader/writer. Arrow and DuckDB remain optional IO dependencies. Provider
+decoding, acquisition, registration, access policy and rendering are application
+responsibilities. Reading a complete retained Bundle needs no chat, ingestion
+workspace or source-server connection. The
+[format decision](../decisions/008-sqlite-model-package.md) retains the acceptance
+criteria; the development candidate is not a stable-format release.
+
+See [upgrading](../guides/upgrading.md) for removed APIs and explicit migrations.

@@ -126,8 +126,8 @@ The alternative was to retain automatic checks on pushes and pull requests in a
 fresh Linux environment. Removing them reduces hosted automation and its setup
 maintenance. It also removes automatic check execution and artifact uploads.
 Local macOS results do not establish Linux, Windows, Rhino or service acceptance.
-The [verification guide](../contributing/verification.md) owns current commands;
-[layout acceptance](../contributing/layout-acceptance.md) owns strict solver checks.
+The [verification guide](../contributing/verification.md) owns current commands
+and the [execution reference](../reference/execution.md) defines solver acceptance.
 
 GitHub reported no protected branches or repository rulesets when checked on
 2026-10-08. No repository settings needed adjustment. Removal takes effect on a

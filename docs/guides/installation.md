@@ -32,9 +32,9 @@ python -m pip install '.[calculations,execution,visualisation]' ./examples
 The separate example distribution supplies `rangekeeper_examples`. Install it from
 the same checkout as the library. The Python runtime wheel does not include it.
 
-The local geometry renderer is packaged with RK. Installing or using it does not run Node
-or start a Whirlwind service. Advanced graph browsing and layout belong to Whirlwind Interface.
-Source acquisition belongs to Whirlwind Core. Core imports load neither owner.
+The local geometry renderer is packaged with RK. Installing or using it does not
+run Node or start a service. Source acquisition and application browsing are
+consumer responsibilities; the library does not load them.
 
 ## Use the installed library
 
@@ -54,5 +54,5 @@ operations, the [examples guide](examples.md) for runnable sources, and
 [upgrading](upgrading.md) for removed imports and explicit wire conversion.
 
 For development, use the [contributor environment](../contributing/README.md#development-environment)
-and [verification procedures](../contributing/verification.md). For reviewed
-source configurations, use [source workflows](source-workflows.md).
+and [verification procedures](../contributing/verification.md). For source
+interpretation principles, read [source interpretation](../concepts/source-workflows.md).

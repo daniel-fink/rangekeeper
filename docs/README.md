@@ -3,18 +3,16 @@
 Start with the task below. Current instructions describe this checkout's pre-1.0
 API. Historical records retain the contracts and results from their recorded date.
 
-The [coordinated development roadmap](https://github.com/daniel-fink/whirlwind-core/blob/develop/docs/decisions/development-roadmap.md)
-records cross-repository status, parallel work and dependencies. RK owns Bundle
-conformance and public reader changes; Core owns shared application state and
-access. Walkthrough and native-host work retain their separate acceptance gates.
-
 ## Understand the framework
 
+- [Schema presentation](schema-presentation.html): interactive diagrams, original
+  LinkML explanations, and a searchable reference. See the
+  [presentation guide](guides/schema-presentation.md) for use and rebuilding.
 - [Model, Specification and Run](concepts/model-specification-run.md): facts and
   equations, investigation choices, and finalized evidence.
 - [Architecture](concepts/architecture.md): package ownership, imports, repository
   structure and dependency boundaries.
-- [Source workflows](concepts/source-workflows.md): source interpretation,
+- [Source interpretation](concepts/source-workflows.md): source decisions,
   provenance and reproducible builds.
 
 ## Use a capability
@@ -25,7 +23,6 @@ access. Walkthrough and native-host work retain their separate acceptance gates.
 | Run an example or inspect a wire fixture | [Examples](guides/examples.md) |
 | Execute the notebooks or build their site | [Walkthroughs](guides/walkthroughs.md) |
 | Inspect the continuing walkthrough project and its source package | [Mixed-use project brief](guides/mixed-use-project.md) |
-| Build and review a source workflow | [Source workflows](guides/source-workflows.md) |
 | Build the native components and check a Rhino model | [Grasshopper](guides/grasshopper.md) |
 | Migrate an earlier consumer or document | [Upgrading](guides/upgrading.md) |
 
@@ -39,8 +36,7 @@ access. Walkthrough and native-host work retain their separate acceptance gates.
 | Mathematics | [Expressions](reference/expressions.md), [calculations](reference/calculations.md), [execution](reference/execution.md) |
 | Futures and choices | [Scenarios and policies](reference/scenarios-and-policies.md) |
 | Structure and projection | [System views and reductions](reference/system.md), [tables](reference/tables.md) |
-| Source interpretation | [Workflow](reference/workflow.md), [evidence](reference/evidence.md), [Excel](reference/excel.md) |
-| External presentation and transport | [Interface and layout](reference/viewer.md), [design transport](reference/design-transport.md) |
+| Design transport | [Canonical envelope](reference/design-transport.md) |
 
 ## Repository and walkthrough checkpoint
 
@@ -56,7 +52,6 @@ same change, including plan status, archiving and navigation.
 
 - [Verification](contributing/verification.md): test, build and evidence boundaries.
 - [Schema development](contributing/schema.md): generation, typing and conformance.
-- [Layout acceptance](contributing/layout-acceptance.md): pinned engines and strict checks.
 - [Windows acceptance](contributing/windows-acceptance.md): the open Rhino/connector gate.
 - [Legacy retirement](contributing/legacy-retirement.md): held source and removal requirements.
 
@@ -70,5 +65,5 @@ completed plans and dated narratives. [Research](research/README.md) retains
 captured experiments and verification evidence. A local result does not establish
 remote CI, Windows host or service acceptance.
 
-Use the [single-folder workflow and consolidation record](history/handoffs/2026-10-14-single-folder-consolidation.md)
-for the current branch roles, saved checkpoints and remaining work.
+Use the [contributor branch procedure](contributing/README.md#working-folder-and-branches)
+for the current branch roles and delivery checks.

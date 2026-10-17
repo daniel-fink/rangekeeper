@@ -1,0 +1,172 @@
+[
+  {
+    "id":"documents", "label":"Documents", "title":"Describe. Investigate. Record.",
+    "intro":"A Model declares a system. A Specification sets the question. A Run records the attempt and its accepted results.",
+    "takeaway":"Each document has an exact revision identity. A Run keeps the Specification pin that gives its results meaning.",
+    "height":530,
+    "nodes":[
+      {"id":"model","type":"Model","x":30,"y":90,"caption":"Declarations and recorded content"},
+      {"id":"spec","type":"Specification","x":360,"y":90,"caption":"Requirements for an investigation"},
+      {"id":"run","type":"Run","x":690,"y":90,"caption":"Evidence of a finalized attempt"},
+      {"id":"output","type":"Model","label":"Output Model","via":"Run.outputs","x":690,"y":340,"caption":"Accepted result revisions"},
+      {"id":"report","type":"Report","via":"Run.report","x":360,"y":340,"caption":"Status, diagnostics and trace"}
+    ],
+    "edges":[
+      {"from":"spec","to":"model","field":"model","semantic":"Model revision via Metadata.id","side":"left"},
+      {"from":"run","to":"spec","field":"specification","semantic":"Specification revision via Metadata.id","side":"left"},
+      {"from":"run","to":"output","field":"outputs","semantic":"Model revisions via Metadata.id","side":"bottom"},
+      {"from":"run","to":"report","field":"report","path":[[690,160],[640,160],[640,394],[570,394]],"labelAt":[590,275]}
+    ]
+  },
+  {
+    "id":"model", "label":"Model", "title":"One snapshot, five sections.",
+    "intro":"Metadata identifies the revision. The other sections hold reusable definitions, the represented system, its evidence, and optional geometry.",
+    "takeaway":"System is a container. UUID references resolve across the containing Model, including between its sections.",
+    "height":560,
+    "nodes":[
+      {"id":"root","type":"Model","x":370,"y":24,"caption":"A complete immutable snapshot"},
+      {"id":"meta","type":"Metadata","via":"Model.metadata","x":40,"y":230,"caption":"Identity and revision lineage"},
+      {"id":"defs","type":"Definitions","via":"Model.definitions","x":370,"y":230,"caption":"Taxonomies, Measures, Functions"},
+      {"id":"system","type":"System","via":"Model.system","x":700,"y":230,"caption":"Objects and mathematics"},
+      {"id":"proof","type":"Provenance","via":"Model.provenance","x":205,"y":430,"caption":"Sources, Claims and Facts"},
+      {"id":"geo","type":"Geometry","via":"Model.geometry","x":535,"y":430,"caption":"An exact pin and Entity mappings"}
+    ],
+    "edges":[
+      {"from":"root","to":"meta","field":"metadata","path":[[370,78],[145,78],[145,230]],"labelAt":[230,63]},
+      {"from":"root","to":"defs","field":"definitions","side":"bottom"},
+      {"from":"root","to":"system","field":"system","path":[[580,78],[805,78],[805,230]],"labelAt":[700,63]},
+      {"from":"root","to":"proof","field":"provenance","path":[[400,132],[305,180],[305,404],[310,430]],"labelAt":[253,370]},
+      {"from":"root","to":"geo","field":"geometry","path":[[550,132],[640,180],[640,430]],"labelAt":[691,370]}
+    ]
+  },
+  {
+    "id":"system", "label":"System", "title":"Objects, connections and membership.",
+    "intro":"Entities represent domain objects. Relationships connect them. An Assembly is an Entity whose members are shared by reference.",
+    "takeaway":"Assembly membership does not imply spatial containment. A member can participate in more than one Assembly without being copied.",
+    "height":550,
+    "nodes":[
+      {"id":"root","type":"System","x":370,"y":24,"caption":"The represented domain"},
+      {"id":"assembly","type":"Assembly","via":"System.assemblies","x":40,"y":250,"caption":"A collection with Entity identity"},
+      {"id":"entity","type":"Entity","via":"System.entities","x":370,"y":250,"caption":"A building, apartment or actor"},
+      {"id":"rel","type":"Relationship","via":"System.relationships","x":700,"y":250,"caption":"A classified, directed connection"}
+    ],
+    "edges":[
+      {"from":"root","to":"assembly","field":"assemblies","path":[[370,78],[145,78],[145,250]],"labelAt":[230,63]},
+      {"from":"root","to":"entity","field":"entities","side":"bottom"},
+      {"from":"root","to":"rel","field":"relationships","path":[[580,78],[805,78],[805,250]],"labelAt":[705,63]},
+      {"from":"assembly","to":"entity","field":"entities","side":"right","label":"member Entities"},
+      {"from":"assembly","to":"rel","field":"relationships","path":[[145,358],[145,462],[805,462],[805,358]],"labelAt":[475,448]},
+      {"from":"rel","to":"entity","field":"source","path":[[700,280],[580,280]],"labelAt":[640,267]},
+      {"from":"rel","to":"entity","field":"target","path":[[700,330],[580,330]],"labelAt":[640,350]},
+      {"from":"assembly","to":"entity","kind":"inheritance","label":"is an Entity","path":[[200,358],[200,410],[420,410],[420,358]],"labelAt":[310,398]}
+    ]
+  },
+  {
+    "id":"values", "label":"Values", "title":"Give each value a name and meaning.",
+    "intro":"Characteristics contain Labels and Values. A Value can hold a measurement, a temporal Flow, or typed property content.",
+    "takeaway":"A Value has one canonical owner. An absent or null Quantity is unresolved; a recorded amount does not fix a later investigation.",
+    "height":600,
+    "nodes":[
+      {"id":"owner","type":"Entity","x":25,"y":20,"caption":"Relationships have Characteristics too"},
+      {"id":"chars","type":"Characteristics","via":"Entity.characteristics","x":370,"y":20,"caption":"Labels and named Values"},
+      {"id":"label","type":"Label","via":"Characteristics.labels","x":710,"y":20,"caption":"Named classifications"},
+      {"id":"value","type":"Value","via":"Characteristics.values","x":370,"y":240,"caption":"One identity, one local key"},
+      {"id":"measure","type":"Measure","via":"Value.measure","x":25,"y":240,"caption":"Meaning and canonical units"},
+      {"id":"quantity","type":"Quantity","via":"Value.quantity","x":710,"y":240,"caption":"Magnitude and explicit units"},
+      {"id":"flow","type":"Flow","via":"Value.flow","x":370,"y":460,"caption":"Ordered temporal quantities"},
+      {"id":"movement","type":"Movement","via":"Flow.movements","x":710,"y":460,"caption":"A dated or period-based entry"}
+    ],
+    "edges":[
+      {"from":"owner","to":"chars","field":"characteristics","side":"right"},
+      {"from":"chars","to":"label","field":"labels","side":"right"},
+      {"from":"chars","to":"value","field":"values","side":"bottom"},
+      {"from":"value","to":"measure","field":"measure","side":"left"},
+      {"from":"value","to":"quantity","field":"quantity","side":"right"},
+      {"from":"value","to":"flow","field":"flow","side":"bottom"},
+      {"from":"flow","to":"movement","field":"movements","side":"right"}
+    ]
+  },
+  {
+    "id":"mathematics", "label":"Mathematics", "title":"Declare relationships between values.",
+    "intro":"A Formulation owns mathematical declarations. Expressions describe mathematics; Constraints assert that Boolean expressions must hold.",
+    "takeaway":"A Binding gives a shared Value a local name. Fixed and unknown roles belong to the Specification, not the equation.",
+    "height":590,
+    "nodes":[
+      {"id":"form","type":"Formulation","x":365,"y":20,"caption":"Local declarations and constraints"},
+      {"id":"binding","type":"Binding","via":"Formulation.bindings","x":35,"y":240,"caption":"A name for an existing Value"},
+      {"id":"expr","type":"Expression","via":"Formulation.expressions","x":365,"y":240,"caption":"Symbolic mathematical content"},
+      {"id":"constraint","type":"Constraint","via":"Formulation.constraints","x":695,"y":240,"caption":"An assertion that must hold"},
+      {"id":"value","type":"Value","via":"Binding.value","x":35,"y":460,"caption":"A shared mathematical symbol"},
+      {"id":"ref","type":"Reference","via":"Expression.target","x":365,"y":460,"caption":"An exact Value or Movement UUID"}
+    ],
+    "edges":[
+      {"from":"form","to":"binding","field":"bindings","path":[[365,74],[140,74],[140,240]],"labelAt":[235,60]},
+      {"from":"form","to":"expr","field":"expressions","side":"bottom"},
+      {"from":"form","to":"constraint","field":"constraints","path":[[575,74],[800,74],[800,240]],"labelAt":[700,60]},
+      {"from":"binding","to":"value","field":"value","side":"bottom"},
+      {"from":"constraint","to":"expr","field":"predicate","side":"left"},
+      {"from":"expr","to":"ref","field":"target","side":"bottom"},
+      {"from":"ref","to":"value","field":"target","semantic":"Value or Movement UUID; Value shown","side":"left"}
+    ]
+  },
+  {
+    "id":"evidence", "label":"Evidence", "title":"Follow a recorded fact to its source.",
+    "intro":"A Fact links recorded content to supporting Claims. Claims can cite Source Locations or other Claims, with methods for assertion and derivation.",
+    "takeaway":"Evidence supports recorded content. Conflicting Claims require reconciliation before a Fact can be accepted.",
+    "height":560,
+    "nodes":[
+      {"id":"proof","type":"Provenance","x":365,"y":20,"caption":"The evidence collection"},
+      {"id":"fact","type":"Fact","via":"Provenance.facts","x":35,"y":240,"caption":"Support for one recorded target"},
+      {"id":"claim","type":"Claim","via":"Provenance.claims","x":365,"y":240,"caption":"Candidate content and lineage"},
+      {"id":"source","type":"Source","via":"Provenance.sources","x":695,"y":240,"caption":"An exact evidence edition"},
+      {"id":"value","type":"Value","via":"Fact.target","x":35,"y":430,"caption":"One eligible Fact target"},
+      {"id":"location","type":"Location","via":"Claim.sources","x":365,"y":430,"caption":"An address within a Source"}
+    ],
+    "edges":[
+      {"from":"proof","to":"fact","field":"facts","path":[[365,74],[140,74],[140,240]],"labelAt":[235,60]},
+      {"from":"proof","to":"claim","field":"claims","side":"bottom"},
+      {"from":"proof","to":"source","field":"sources","path":[[575,74],[800,74],[800,240]],"labelAt":[700,60]},
+      {"from":"fact","to":"claim","field":"claims","side":"right"},
+      {"from":"fact","to":"value","field":"target","semantic":"Value is one of the eligible target kinds","side":"bottom"},
+      {"from":"claim","to":"location","field":"sources","variant":"Location","side":"bottom","label":"sources · Location"},
+      {"from":"location","to":"source","field":"source","path":[[575,484],[800,484],[800,348]],"labelAt":[690,470]}
+    ]
+  },
+  {
+    "id":"geometry", "label":"Geometry", "title":"Connect the model to exact geometry.",
+    "intro":"Geometry records one exact provider dataset and explicit Entity mappings. Its pin identifies the format, specification, files, and content digests.",
+    "takeaway":"Geometry mappings support navigation and selection. Property and relationship evidence stays in Provenance.",
+    "height":560,
+    "nodes":[
+      {"id":"geo","type":"Geometry","via":"Model.geometry","x":365,"y":20,"caption":"An optional section of a Model"},
+      {"id":"pin","type":"GeometryPin","via":"Geometry.pin","x":35,"y":230,"caption":"Exact content and source contract"},
+      {"id":"map","type":"GeometryMapping","via":"Geometry.mappings","x":695,"y":230,"caption":"One Entity to one source element"},
+      {"id":"file","type":"GeometryFile","via":"GeometryPin.files","x":35,"y":430,"caption":"A retained file and its digest"},
+      {"id":"entity","type":"Entity","via":"GeometryMapping.entity","x":365,"y":430,"caption":"Entities include Assemblies"},
+      {"id":"element","type":"GeometryElement","via":"GeometryMapping.element","x":695,"y":430,"caption":"A typed source identity"}
+    ],
+    "edges":[
+      {"from":"geo","to":"pin","field":"pin","path":[[365,74],[140,74],[140,230]],"labelAt":[235,60]},
+      {"from":"geo","to":"map","field":"mappings","path":[[575,74],[800,74],[800,230]],"labelAt":[700,60]},
+      {"from":"pin","to":"file","field":"files","side":"bottom"},
+      {"from":"map","to":"entity","field":"entity","path":[[695,284],[470,284],[470,430]],"labelAt":[590,270]},
+      {"from":"map","to":"element","field":"element","side":"bottom"}
+    ]
+  },
+  {
+    "id":"example", "label":"Example", "title":"One equation. Two investigations.",
+    "intro":"Illustrative Building A: cost = area × rate. The Model keeps the relationship; each Specification chooses the fixed and unknown Values.",
+    "takeaway":"Changing the question does not require reversing the Model. A new Run records each attempt and any accepted output revision.",
+    "height":470,
+    "nodes":[
+      {"id":"area","type":"Value","label":"area","x":35,"y":60,"caption":"1,000 m²"},
+      {"id":"rate","type":"Value","label":"rate","x":365,"y":60,"caption":"2,000 AUD / m²"},
+      {"id":"cost","type":"Value","label":"cost","x":695,"y":60,"caption":"2,000,000 AUD"},
+      {"id":"spec","type":"Specification","x":200,"y":310,"caption":"Select assignments and unknowns"},
+      {"id":"run","type":"Run","x":530,"y":310,"caption":"Record the attempt and its result"}
+    ],
+    "edges":[
+      {"from":"run","to":"spec","field":"specification","semantic":"Specification revision via Metadata.id","side":"left"}
+    ]
+  }
+]

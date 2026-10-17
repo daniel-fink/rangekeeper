@@ -1,7 +1,10 @@
 # Three-repository refactor — 13 October 2026
 
+> Edited extract, 17 October 2026: external application references were removed.
+> Retained RK results keep their original scope; this is not an unchanged capture.
+
 The implementation assigns modelling and simple local display to Rangekeeper, ingestion
-to Whirlwind MCP, and advanced browsing and layout to Whirlwind Viewer. Runtime aliases,
+to [external application omitted], and advanced browsing and layout to [external application omitted]. Runtime aliases,
 predecessor implementations and old layout-format upgrades are removed. The canonical
 schema stays at 0.7.0; current wire field names and semantic method identities stay intact.
 
@@ -60,7 +63,7 @@ the old compound-box controls, route overlays and fCoSE control are retired. The
 rectangle, routing and conflict algorithms and their tests remain in Viewer. Do not claim
 complete parity with that old browser's controls.
 
-Generic Grasshopper authoring remains in RK. The new MCP source definition uses Whirlwind
+Generic Grasshopper authoring remains in RK. The new MCP source definition uses [external application omitted]
 0.2.0 and RK 0.9.0 assembly identities and requires an explicit source path. Original GHX
 files remain source evidence, with no compatibility assembly installed beside the new one.
 
@@ -110,7 +113,7 @@ Only generated caches remained under retired RK namespaces. Those directories, i
 an empty older `dynamics` directory, were moved intact to the recoverable task backup so
 editable imports cannot discover empty predecessor namespaces. No runtime shim was added.
 
-The applied generic RK and moved Whirlwind Rhino assemblies also build with zero warnings
+The applied generic RK and moved [external application omitted] Rhino assemblies also build with zero warnings
 and zero errors. Their hashes are recorded separately from the assemblies used in the
 macOS host acceptance run. Final preservation checks found no unrelated baseline changes
 beyond the 17 externally removed conflict files. Consumer source mappings remain unchanged.

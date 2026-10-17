@@ -1,8 +1,11 @@
 # Bundle T1 evidence — 14 October 2026
 
+> Edited extract, 17 October 2026: external application references were removed.
+> Retained RK results keep their original scope; this is not an unchanged capture.
+
 This development checkpoint is retained on `codex/core-lifecycle-bundles`, based on develop
 `3d70ece757a2ce7ff6a329b7b3cfcb6ef0835363`. It is in the isolated checkout
-`Whirlwind/.worktrees/rk-core-lifecycle`. The preserved walkthrough is included in the base. This record captures the
+`[external application omitted]/.worktrees/rk-core-lifecycle`. The preserved walkthrough is included in the base. This record captures the
 candidate before consolidation into the newer develop branch. Integration does
 not approve Bundle release or adoption in Projects.
 
@@ -75,7 +78,7 @@ observed in those checks. This does not establish every chart interaction or hos
 
 Authored notebooks and shared source data were not changed. Executed copies,
 the financial audit, wheel, source archive and local HTML are retained under
-`whirlwind-core/.runtime/rk-consolidation-20261014/`. This ignored evidence must be
+`[external identifier omitted]/.runtime/rk-consolidation-20261014/`. This ignored evidence must be
 backed up separately from Git. The local preview does not publish the book.
 Its repository edit links and other public publication details remain deferred.
 

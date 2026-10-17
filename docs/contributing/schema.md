@@ -67,9 +67,24 @@ remain at 0.7.0. The explicit 0.7-to-0.8 Model migration creates a new identity 
 retains its predecessor. The [Bundle reference](../reference/bundle.md) defines
 the candidate Parquet mapping and publication marker.
 
-The [T1 evidence](../research/bundle-t1-2026-10-14/README.md) records the tests and
-remaining conformance gaps. Development integration does not approve this format
-for release or adoption in Projects.
+The [Bundle acceptance matrix](../decisions/008-sqlite-model-package.md#bundle-acceptance-criteria)
+records the required conformance checks. Development integration does not approve
+this format for stable release or consumer adoption.
+
+## Schema presentation
+
+The [offline schema presentation](../schema-presentation.html) uses the same
+resolved LinkML imports, with original descriptions, notes, rules, and source
+text. Rebuild it after changing the schema:
+
+```sh
+python tools/schema/presentation.py
+python tools/schema/presentation.py --check
+```
+
+The [presentation guide](../guides/schema-presentation.md) explains its notation,
+focused views, and source files. Presentation captions and layouts are curated;
+field requirements, collection shapes, and reference modes come from LinkML.
 
 ## Conformance
 

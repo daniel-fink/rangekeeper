@@ -1,3 +1,5 @@
+import os
+# Historical script extract: external paths and namespaces now require explicit inputs.
 """Rebuild reviewed sources as canonical Models, without reading prior outputs."""
 
 from pathlib import Path
@@ -5,7 +7,7 @@ from collections import Counter
 import json
 from rangekeeper.workflow.workbench import build
 
-P = Path("/Volumes/Data/Projects/Whirlwind/projects")
+P = Path(os.environ["RK_PROJECTS_ROOT"])
 O = Path("/private/tmp/rk-turn3-private/candidate")
 for project, spec, name in [
     ("mandarin", "spec", "mandarin"),

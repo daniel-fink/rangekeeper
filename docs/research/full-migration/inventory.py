@@ -1,3 +1,5 @@
+import os
+# Historical script extract: external paths and namespaces now require explicit inputs.
 """Capture static migration evidence without importing or executing consumer code.
 
 Run from any directory with Python 3.10+. Outputs contain source locations,
@@ -15,8 +17,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 OUT = Path(__file__).resolve().parent
-PROJECTS = ROOT.parent / "Whirlwind/projects"
-LAYOUT = ROOT.parent / "Whirlwind/.worktrees/rk-assembly-layout"
+PROJECTS = Path(os.environ["RK_PROJECTS_ROOT"])
+LAYOUT = Path(os.environ["RK_LAYOUT_ROOT"])
 
 # Each group has a disposition in FULL_MIGRATION_REVIEW.md. New support modules
 # are captured separately so that age/root placement does not imply retirement.

@@ -1,4 +1,4 @@
-"""Standalone schema/Parquet conformance without Whirlwind or a source service."""
+"""Standalone schema/Parquet conformance without a source service."""
 
 from copy import deepcopy
 from pathlib import Path

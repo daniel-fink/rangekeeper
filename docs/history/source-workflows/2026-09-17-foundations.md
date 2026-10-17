@@ -6,8 +6,8 @@ limits and migration state below describe those original runs. They do not prove
 acceptance of the current checkout or current external projects. Later refinement
 notes did not state a separate date; their original sequence is retained.
 
-Current contracts: [Evidence](../../reference/evidence.md),
-[Excel](../../reference/excel.md) and [source workflows](../../reference/workflow.md).
+Current contracts: Evidence (retired external procedure),
+Excel (retired external procedure) and source workflows (retired external procedure).
 Current procedures: [verification](../../contributing/verification.md).
 
 ## Foundation validation — 17 September 2026

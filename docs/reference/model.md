@@ -155,7 +155,8 @@ Supported recorded units are checked in Model and Specification-local mathematic
 Equation unit inference, generic Fact/Claim-content agreement, imposed graph-query
 evaluation, numerical feasibility and independent solution acceptance remain outside
 the bounded validators. See [execution](execution.md) for numerical acceptance
-and [workflow evidence](evidence.md) for source cell-to-Claim agreement.
+and [source interpretation](../concepts/source-workflows.md) for source-to-Claim
+responsibilities.
 
 ## Geometry in schema 0.8.0
 

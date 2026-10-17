@@ -21,11 +21,10 @@
   },
   "handover": "passed in a fresh process after removing the proof origin; repeated with installed wheels",
   "wheel_files_verified": {
-    "rangekeeper": 145,
-    "whirlwind_core": 88
+    "rangekeeper": 145
   },
   "dependency_check": "uv pip check passed; existing locked dependency distributions copied because offline cache lacked wheels",
-  "current_implementation_pin": "whirlwind-core/0.3.0.dev1;rangekeeper/0.10.0.dev2;sha256/9b3bdf4f2de6c240cd11cd770e6aa497758d767549ea80d55ffca004844de9f9",
+  "current_implementation_pin": "[external identifier omitted]/0.3.0.dev1;rangekeeper/0.10.0.dev2;sha256/9b3bdf4f2de6c240cd11cd770e6aa497758d767549ea80d55ffca004844de9f9",
   "format_review": "pending",
   "projects_migration": "deferred",
   "t2": "technical entry proof complete; full integration pending",

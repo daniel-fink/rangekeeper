@@ -50,16 +50,12 @@ runtime versions.
 Set `RK_COMPONENTS` to the current RK component assembly and `RK_ACCEPTANCE_OUTPUT`
 to a new output directory. Run [the generic driver](../../src/grasshopper/Tests/accept_rhino.py)
 inside a fresh Rhino 8 process. It checks stable identity, changed revisions, previous
-revision links and save/reopen behaviour. It loads no source reader or Whirlwind assembly.
-
-The source-specific `DesignExampleComponent` belongs to the optional `integrations/rhino`
-project in Whirlwind Core. Its separate driver takes explicit source and output paths and
-loads both current assemblies. The original `.3dm` and GHX files here remain source evidence.
-Generate a new executable definition with the MCP driver; do not treat the retained old
-GHX assembly metadata as an installed compatibility contract. Windows host checks remain pending.
+revision links and save/reopen behaviour. It loads the RK authoring assembly.
 
 The current [generic authoring definition](../../examples/grasshopper/genericAuthoring.ghx)
-uses only RK 0.9.0 components. The source definition is in MCP.
+uses only RK 0.9.0 components. Source-specific extraction is a consumer concern.
+The original `.3dm` and GHX files here remain source evidence; their old assembly
+metadata is not an installed compatibility contract. Windows host checks remain open.
 
 ## Authoring and identity
 

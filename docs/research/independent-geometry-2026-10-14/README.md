@@ -1,10 +1,13 @@
 # Independent notebook Geometry viewer — 14 October 2026
 
+> Edited extract, 17 October 2026: external application references were removed.
+> Retained RK results keep their original scope; this is not an unchanged capture.
+
 Local changes based on `497b1e5a2ab9c1c1049a577792d7e06f38203bba`.
 RK now owns the viewer source, locked dependencies and build in `tools/geometry`.
 The [build guide](../../../tools/geometry/README.md) describes the complete output.
-No Whirlwind repository or Python package is required to build or use this viewer.
-The earlier source location was Whirlwind Interface; this record changes ownership,
+No [external application omitted] repository or Python package is required to build or use this viewer.
+The earlier source location was [external application omitted]; this record changes ownership,
 not the viewer behaviour or the advanced Package browser scope.
 
 ## Verification
@@ -17,7 +20,7 @@ not the viewer behaviour or the advanced Package browser scope.
 - Viewer JS SHA-256: `c452edbfa739aa407d20b2b6340d36c15cfac1c0114ca3b153a58fcb2f9a1c05`.
 - `rangekeeper.visualisation.geometry.write` passed with
   `examples/walkthrough/data/mixed_use_property` and a temporary output directory.
-  The output used the independent asset manifest; no Whirlwind module was imported.
+  The output used the independent asset manifest; no [external application omitted] module was imported.
 - `PYTHONPATH=src .venv/bin/python -m pytest -q src/tests/test_owner_boundaries.py
   -p no:cacheprovider`: 3 passed.
 - `python3 tools/docs/check.py`: passed after recording this result; 71 pages

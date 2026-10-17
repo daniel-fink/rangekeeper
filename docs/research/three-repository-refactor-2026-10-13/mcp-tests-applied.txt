@@ -1,6 +1,8 @@
+Edited historical extract, 17 October 2026: external application identifiers and paths were omitted. This is not an unchanged capture or a new RK verification run.
+
 ============================= test session starts ==============================
 platform darwin -- Python 3.10.19, pytest-8.4.2, pluggy-1.6.0
-rootdir: /Volumes/Data/Projects/Whirlwind/whirlwind-mcp
+rootdir: [external path omitted]
 configfile: pyproject.toml
 testpaths: tests
 plugins: platformdirs-4.12.4, anyio-4.15.1

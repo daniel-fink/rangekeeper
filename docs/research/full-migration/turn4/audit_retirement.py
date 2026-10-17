@@ -1,3 +1,5 @@
+import os
+# Historical script extract: external paths and namespaces now require explicit inputs.
 """Audit current imports and overlay dispositions on the frozen 671-symbol ledger.
 
 Static discovery covers Python sources and notebook code cells. Import-absence
@@ -145,7 +147,7 @@ for module in old["modules"]:
 
 # Preserve the original evidence under an explicit historical key. Current
 # dispositions use the current file bytes and acceptance, not the old imports.
-projects = ROOT.parent / "Whirlwind/projects"
+projects = Path(os.environ["RK_PROJECTS_ROOT"])
 held_test_paths = {row["path"] for row in rows if row["disposition"] == "held-windows-test"}
 for consumer in old["consumers"]:
     path = consumer["path"]

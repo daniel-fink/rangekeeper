@@ -1,6 +1,8 @@
+Edited historical extract, 17 October 2026: external application identifiers and paths were omitted. This is not an unchanged capture or a new RK verification run.
+
 ============================= test session starts ==============================
 platform darwin -- Python 3.13.11, pytest-9.1.1, pluggy-1.6.0
-rootdir: /Volumes/Data/Projects/Whirlwind/projects/mandarin
+rootdir: [external path omitted]
 configfile: pyproject.toml
 testpaths: tests
 plugins: platformdirs-4.12.4, anyio-4.15.1

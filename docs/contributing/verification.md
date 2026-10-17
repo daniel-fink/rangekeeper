@@ -17,15 +17,12 @@ Install the [development environment](README.md#development-environment). From
 the repository root:
 
 ```sh
-MPLBACKEND=Agg uv run --locked pytest -q --ignore=src/tests/legacy/test_api.py
+MPLBACKEND=Agg uv run --locked pytest -q
 ```
 
-The excluded module contains three predecessor live-service tests. Their exclusion
-does not close the [Windows gate](windows-acceptance.md). Tests with missing
-optional engines can skip. For layout acceptance, use the
-[strict runner](layout-acceptance.md); it requires the pinned MiniZinc/CP-SAT and
-Z3 engines and fails on skips. Mathematical execution uses the separately pinned
-Pyomo/HiGHS backend.
+Record optional dependency skips separately from passed checks. Mathematical
+execution uses the pinned Pyomo/HiGHS backend. Local tests do not close the
+[Windows gate](windows-acceptance.md).
 
 Do not edit package source while a workflow verification run is active.
 Implementation fingerprints read the source; a concurrent edit can change the
@@ -73,19 +70,12 @@ cache aside first: setuptools can retain removed modules in that cache.
 Check that required assets are present and that examples, native
 projects and build caches have not entered the Python runtime package.
 
-## Interface and native projects
+## Local display and native projects
 
-From `src/rangekeeper/adapters/cytoscape/client/`:
-
-```sh
-npm ci
-npm run typecheck
-npm run build
-npm test
-```
-
-Generated viewer assets ship in the wheel. Browser smoke checks need a local
-browser runtime; geometry tests alone do not establish rendered interaction.
+For changes to the notebook Geometry viewer, follow the
+[viewer build procedure](../../tools/geometry/README.md). Inspect the generated
+assets and their manifest. Browser smoke checks need a local browser runtime;
+geometry tests alone do not establish rendered interaction.
 
 Follow [Grasshopper](../guides/grasshopper.md#build-and-round-trip) for .NET builds
 and Python/C# fixture round trips. Follow [Windows acceptance](windows-acceptance.md)
@@ -129,6 +119,6 @@ GitHub checks remain historical evidence; their workflows have been removed.
 
 With the `bundle` extra installed, run `python -m pytest -q src/tests/test_bundle.py`
 from the root. Full schema generation and C# checks also apply because Model schema
-changed. See [T1 evidence](../research/bundle-t1-2026-10-14/README.md) and the
-[Bundle contract](../reference/bundle.md). Do not infer provider or host acceptance
+changed. See the [Bundle contract](../reference/bundle.md) and the acceptance
+matrix in [ADR-008](../decisions/008-sqlite-model-package.md). Do not infer provider or host acceptance
 from canonical Parquet tests.

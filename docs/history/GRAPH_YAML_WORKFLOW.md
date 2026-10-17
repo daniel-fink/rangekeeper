@@ -9,7 +9,7 @@
 
 For the purpose of each API, read [Why the adapter APIs exist](../concepts/source-workflows.md).
 The [boundary review](GRAPH_ADAPTER_REVIEW.md) records historical findings and
-implemented resolutions. The [format-independent follow-up](../reference/workflow.md)
+implemented resolutions. The format-independent follow-up (retired external procedure)
 records the later delivery.
 
 **Scope, 2026-10-02:** these are the existing graph persistence and source-building
@@ -275,7 +275,7 @@ editions. Repeated runs of identical inputs produce identical graph/Claim bytes.
 Environment/checkpoint manifests should additionally pin repository revisions or
 an exact uncommitted patch overlay; an editable dependency alone is not a pin.
 
-See [the synthetic examples](../guides/source-workflows.md). The contract suite
+See the synthetic examples (retired external procedure). The contract suite
 covers canonical serialization, unsafe/malformed specs, cache/error/missingness
 handling, conflicting interpretations, identity stability, wrong equal-count joins,
 cycles, shared memberships, coverage and incomplete totals.
@@ -306,7 +306,7 @@ change within the declared computation set invalidates derived identities.
 The existing operation names and YAML shape are unchanged by the format-boundary
 refactor. Operations are explicitly registered by RK code; their native input and
 output kinds are validated before execution. YAML cannot install a handler or
-select an import. See [ownership and extension guidance](../reference/workflow.md).
+select an import. See ownership and extension guidance (retired external procedure).
 
 Check results now retain both operands' missing contributors and known subtotals.
 The older `missing` and `known_subtotal` fields retain their left-side meaning.

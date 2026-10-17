@@ -7,7 +7,7 @@ Start with [installation](../guides/installation.md) and the
 
 ## Working folder and branches
 
-Follow [the shared Git workflow](https://github.com/daniel-fink/whirlwind-core/blob/develop/docs/contributing/git-workflow.md) and [agent instructions](../../AGENTS.md).
+Follow the [agent instructions](../../AGENTS.md) and the branch procedure below.
 Use the single RK folder. Start new `feature/<name>` branches from `develop`
 and integrate reviewed work into `develop`; `main` holds releases. Create
 worktrees only on an explicit user request. Coordinate branch changes,
@@ -16,14 +16,12 @@ the existing unfinished teaching work on `codex/walkthrough-acausal`; retain
 that recovery reference until its own agreed transition. Switch branches
 only after saving current changes and coordinating the handoff. Follow the
 [walkthrough branch procedure](../guides/walkthroughs.md#branches-and-publication).
-The candidate is approved for local T2 Projects adoption. A development merge
-does not approve the Bundle format for stable release. No walkthrough publication is part of this workflow.
-
-The coordinated refactor must finish T3 with reviewed work merged and pushed to
-`develop` in all four repositories. Follow Core's [T3 repository integration gate](https://github.com/daniel-fink/whirlwind-core/blob/develop/docs/decisions/004-core-lifecycle-refactor.md#t3-repository-integration-gate)
-and record fresh local/remote equality for RK. Keep the primary folder clean on
-`develop` and preserve the separate unfinished walkthrough branch. This working
-plan link records the requirement; it is not evidence of completed integration.
+A development merge does not approve a stable Bundle format or publish the
+walkthroughs. Verify the reviewed diff, run the applicable checks and stage only
+the intended files. Follow branch protections and the authorized delivery scope.
+After delivery, verify that local `develop` matches a fresh remote query and keep
+the primary checkout clean. Preserve the separate unfinished walkthrough branch
+and ignored source data.
 
 ## Development environment
 
@@ -32,14 +30,12 @@ group and runtime extras:
 
 ```sh
 uv sync --all-extras --group dev --locked
-uv run pytest --ignore=src/tests/legacy/test_api.py
+uv run pytest
 ```
 
-The development group includes the example builders from this checkout. Three
-predecessor live-service tests remain excluded from local acceptance. Missing
-optional layout engines can produce skips in ordinary tests. Use
-[strict layout acceptance](layout-acceptance.md) when verifying layout support.
-Use `--show-plots` only for an interactive Matplotlib test session.
+The development group includes the example builders from this checkout. Record
+optional dependency skips separately from passed checks. Use `--show-plots` only
+for an interactive Matplotlib test session.
 
 Schema tooling uses a separate pinned environment. Follow
 [schema development](schema.md) for generation and conformance checks.

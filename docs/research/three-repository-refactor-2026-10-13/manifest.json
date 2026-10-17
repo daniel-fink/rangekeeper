@@ -3,27 +3,16 @@
     "rangekeeper": {
       "revision": "7a0181774edcf29d363822b26cfb8739a467d11b",
       "root": "/Volumes/Data/Projects/Rangekeeper"
-    },
-    "whirlwind-mcp": {
-      "revision": "1490552fcd221622e490d12abe47589e00ecba53",
-      "root": "/Volumes/Data/Projects/Whirlwind/whirlwind-mcp"
-    },
-    "whirlwind-viewer": {
-      "revision": "c1322a078f9700c9cb90ed59b3c0fcead390da70",
-      "root": "/Volumes/Data/Projects/Whirlwind/whirlwind-viewer"
     }
   },
   "canonical_schema": "0.7.0",
-  "view_contract": "whirlwind-view/v1",
+  "view_contract": "[external identifier omitted]/v1",
   "wheels": {
-    "whirlwind_mcp-0.2.0-py3-none-any.whl": "992a95e066c1f09f096c048a9797a9645f3d4aea8970d92165564cb76163fb77",
-    "whirlwind_viewer-0.1.0-py3-none-any.whl": "7a309c83441eb438e40b7a62fb8b72d01a453e5779ffd7f7452d0124a9769476",
     "rangekeeper-0.9.0-py3-none-any.whl": "a7451019e9ff0495a3d556a983638f206a4f8a0995da35292ee70bc6ed4103ae"
   },
   "assemblies": {
     "Rangekeeper.Model.dll": "d6ab4d655ea87dce5011db6004d146b84c0dbde86e6e62a795c140b364a0b272",
-    "Rangekeeper.Components.gha": "d20d8ffa7c4dc5ace74ab17d8028d8ba7a62d85e7af863f817c20c5e043097a1",
-    "Whirlwind.Rhino.gha": "c5dc474b0638814520412ce9f5029192dee5427e0034c3bc4d35040be49189ac"
+    "Rangekeeper.Components.gha": "d20d8ffa7c4dc5ace74ab17d8028d8ba7a62d85e7af863f817c20c5e043097a1"
   },
   "source_artifacts": {
     "mixed_use_property/model.json": "a59ac9522d2c16aede7cdc1a77c0a7efe34ec978f5b307e29d87100ba954f200",
@@ -39,7 +28,7 @@
     "exampleDesign.3dm": "039acb95ea519a60c63c4d116c091c655b9c5fcde864ae1a7933d2e3dcf7b335"
   },
   "geometry_bundle": {
-    "format": "whirlwind.local-geometry/v1",
+    "format": "[external identifier omitted]/v1",
     "version": "0.1.0",
     "files": {
       "viewer.js": "c452edbfa739aa407d20b2b6340d36c15cfac1c0114ca3b153a58fcb2f9a1c05",
@@ -58,9 +47,6 @@
   },
   "tests": {
     "rangekeeper": 854,
-    "whirlwind_mcp": 316,
-    "whirlwind_viewer_python_strict": 108,
-    "whirlwind_viewer_node": 15,
     "rangekeeper_notebook_code_cells": 81,
     "mandarin_tests": 8,
     "mandarin_notebooks": 5,
@@ -80,7 +66,7 @@
     "Fresh narrow-viewport UI acceptance"
   ],
   "consumer_migration": {
-    "root": "/Volumes/Data/Projects/Whirlwind/projects",
+    "root": "[external path omitted]",
     "files": [
       {
         "path": "mandarin/notebooks/01_sources.ipynb",
@@ -173,33 +159,12 @@
         "path": "src/tests/test_reference_identity.py",
         "after": "7700d524eaae5586a7708d4bc98422d9eb800f241ad57666b27ba7cb637edb72"
       }
-    ],
-    "whirlwind-mcp": [
-      {
-        "path": "tests/ingestion/test_speckle_sources.py",
-        "after": "1c3e79c9999db4ec241a349fb7a349d37df8e863588b44053d19badae693822f"
-      },
-      {
-        "path": "pyproject.toml",
-        "after": "86a720ff5b50d34c034e1b1bcfc95bca324dc01b779b60d53093fe9a8f4a9c13"
-      },
-      {
-        "path": "uv.lock",
-        "after": "88e06686cb47d41b76dbe5ffc8422c6afbca19d08c4abae1552db59ddfc701a9"
-      }
-    ],
-    "whirlwind-viewer": [
-      {
-        "path": "python/uv.lock",
-        "after": "3af55769a1975ab5eb508df7990cbf5a68a7b5bc510a80d535d5528ffbb2d62c"
-      }
     ]
   },
   "verification_stage": "Applied checkouts checked; exact wheel tests and host reports retained separately.",
   "applied_assemblies": {
     "/Volumes/Data/Projects/Rangekeeper/src/grasshopper/Components/bin/Debug/net8.0/Rangekeeper.Model.dll": "61b5b99c907e3620671c74d1f3e1f95f11689efe6a6b98f97dd0d5f5f75b3f8c",
-    "/Volumes/Data/Projects/Rangekeeper/src/grasshopper/Components/bin/Debug/net8.0/Rangekeeper.Components.gha": "3c83be375ba2a6321f2c677ae0b101c51fe21548818e5d580d908135ae41b5f8",
-    "/Volumes/Data/Projects/Whirlwind/whirlwind-mcp/integrations/rhino/bin/Debug/net8.0/Whirlwind.Rhino.gha": "fdb1730293d797c81964b8af1431d040b1a8e3ed38fbaae473e19970cc176042"
+    "/Volumes/Data/Projects/Rangekeeper/src/grasshopper/Components/bin/Debug/net8.0/Rangekeeper.Components.gha": "3c83be375ba2a6321f2c677ae0b101c51fe21548818e5d580d908135ae41b5f8"
   },
   "preservation": {
     "unrelated_tracked_and_untracked_baseline_files": "unchanged except 17 externally removed sync-conflict files",

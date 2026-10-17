@@ -27,7 +27,7 @@ evaluation on saved futures, committed decisions across those futures, and then
 adaptive policies. Algebraic inversion of market generation is a separate capability.
 It is a design reference, not documentation of an implemented RK API.
 The current bounded ingestion workflow is documented separately in
-[Format-independent workflow execution](../reference/workflow.md).
+Format-independent workflow execution (retired external procedure).
 
 ## Purpose and sequence
 

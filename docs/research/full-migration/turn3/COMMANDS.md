@@ -1,5 +1,8 @@
 # Turn 3 reproduction commands
 
+> Edited extract, 17 October 2026: external application references were removed.
+> Retained RK results keep their original scope; this is not an unchanged capture.
+
 Use the recorded environment versions in [environment-final.json](environment-final.json).
 Run from `/Volumes/Data/Projects/Rangekeeper` unless a different directory is shown.
 Temporary directory names are execution locations, not required public APIs. Use
@@ -64,7 +67,7 @@ private historical bundles under `/private/tmp/rk-turn3-private/baseline`.
 The older Mandarin SOM test is separate. From the copied Mandarin directory:
 
 ```sh
-MANDARIN_REFERENCE=/Volumes/Data/Projects/Whirlwind/projects/mandarin/artifacts/yaml-rebuild/reference MANDARIN_CANDIDATE=/private/tmp/rk-turn3-complete-project-bootstrap/results/mandarin/runs/5400730b-c910-43ff-a8a8-e5e529555f1d /private/tmp/rk-turn3-project-venv/bin/python -m pytest tests/test_equivalence.py -q
+MANDARIN_REFERENCE=[external path omitted] MANDARIN_CANDIDATE=/private/tmp/rk-turn3-complete-project-bootstrap/results/mandarin/runs/5400730b-c910-43ff-a8a8-e5e529555f1d /private/tmp/rk-turn3-project-venv/bin/python -m pytest tests/test_equivalence.py -q
 ```
 
 Select the new successful attempt directory when reproducing the check. The ordinary suite skips this

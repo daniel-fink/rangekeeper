@@ -9,7 +9,7 @@ modelling, cashflow forecasting and scenario analysis. It separates project fact
 
 Known-data calculations support DCF analysis. The execution layer solves declared
 finite affine equations with Pyomo/HiGHS and independently checks candidate outputs.
-Source workflows and C# Grasshopper components connect reviewed source data and
+Public authoring APIs and C# Grasshopper components connect reviewed data and
 design models to canonical records. Polars serves detached tables and CSV.
 
 This checkout contains a pre-1.0 redesign that is not yet the published PyPI API.
@@ -32,18 +32,15 @@ The walkthroughs follow Geltner and de Neufville's
 [Flexibility and Real Estate Valuation under Uncertainty](https://doi.org/10.1002/9781119106470).
 Historical plans and captured acceptance results are linked from the documentation
 index. The [Windows connector gate](docs/contributing/windows-acceptance.md) remains
-open; the isolated predecessor trees remain until that gate closes.
+open. The [retirement guide](docs/contributing/legacy-retirement.md) records the
+removed predecessor runtime.
 
-### Repository ownership in 0.9
+### Library boundary
 
-| Section | Repository | Responsibility |
-| --- | --- | --- |
-| Engine | Rangekeeper | Canonical models, schemas, validation, calculations, execution, native IO and simple local display. |
-| Core | [Whirlwind Core](https://github.com/daniel-fink/whirlwind-core) | Ingestion and application operations, including planned Bundle access, queries, storage integration and access policy through Python, HTTP and MCP. |
-| Interface | [Whirlwind Interface](https://github.com/daniel-fink/whirlwind-interface) | User interaction, shared UI components and hosts; current inspection and future editing and authoring. |
+Rangekeeper provides canonical models, schemas, validation, calculations,
+execution, native IO and local display. Source ingestion services, access policy
+and application interfaces are separate consumer responsibilities.
 
-The full role names are **Modelling engine**, **Application core** and **User interface**.
-The repository rename does not implement Bundle access or editing.
 See the [breaking upgrade guide](docs/guides/upgrading.md). The acausal walkthrough is maintained on
 [`codex/walkthrough-acausal`](https://github.com/daniel-fink/rangekeeper/tree/codex/walkthrough-acausal/examples/walkthrough).
 `develop` preserves the original `walkthrough/` sources. See the

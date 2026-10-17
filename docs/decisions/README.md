@@ -12,8 +12,8 @@ current after its execution plan moves to history.
 | [ADR-004: package and project ownership](004-package-and-project-ownership.md) | Implemented | Domain packages, `src/grasshopper`, examples, tools, docs and local verification |
 | [ADR-005: Flux and Stream implementation](005-flux-and-stream-implementation.md) | Implemented; locally verified | Discoverable mathematical parameter names, Stream DX, `model.flux`, Span methods, Polars calculations, acausal formulations, hierarchy, Specification roles and acceptance |
 | [ADR-006: Walkthrough curriculum](006-walkthrough-curriculum.md) | Notebooks 01–03 locally accepted; later lessons planned | Six lessons combining the legacy property graph, SFFA inverse solving, Garden City uncertainty/flexibility and two-pad decision lessons |
-| [ADR-007: Three repository refactor](007-three-repository-refactor.md) | Implemented; local validation recorded | RK modelling and local display; MCP ingestion; Interface advanced browsing; zero compatibility APIs and predecessor runtimes |
-| [ADR-008: Rangekeeper Bundle contract](008-sqlite-model-package.md) | Expanded Bundle candidate implemented and approved for local development; bounded verification recorded; full conformance and stable release open | Main Model plus selected Models/Specifications/finalized Runs and exact dependencies; Model-owned Geometry; Parquet IO; independent Core access; earlier SQLite proof retained |
+| [ADR-007: Library boundary](007-three-repository-refactor.md) | Implemented; RK extract retained | Public API moves, native authoring, walkthrough preservation and runtime retirement |
+| [ADR-008: Rangekeeper Bundle contract](008-sqlite-model-package.md) | Expanded Bundle candidate implemented and approved for local development; bounded verification recorded; full conformance and stable release open | Main Model plus selected Models/Specifications/finalized Runs and exact dependencies; Model-owned Geometry; Parquet IO; standalone canonical IO; earlier SQLite proof retained |
 
 The first three records summarize decisions already supported by the linked
 implementation history. They do not invent an earlier approval date. ADR-004 also
@@ -40,12 +40,9 @@ checks. Notebooks 04–06 still need authoring and acceptance.
 ## Work that remains explicit
 
 - The [first walkthrough migration](../research/basic-dcf-2026-10-08/README.md) follows the completed [Flux and Stream codebase acceptance](../research/flux-stream-2026-10-08/README.md). The [agreed curriculum](006-walkthrough-curriculum.md) consolidates the other six source notebooks into five further lessons. It owns the teaching sequence, preparation decisions and capability dependencies. Notebooks 01–03 have local acceptance; notebooks 04–06 still need execution and rendered acceptance.
-- [ADR-007](007-three-repository-refactor.md) records the implemented three-repository
-  split and the paused sessions' restart points. It replaces Windows-dependent
-  predecessor retention with a clean break. See the [validation record](../research/three-repository-refactor-2026-10-13/README.md)
-  and [retirement status](../contributing/legacy-retirement.md).
-  [Windows/Rhino/connector acceptance](../contributing/windows-acceptance.md) remains
-  open for the active canonical connector; removal does not establish platform support.
+- [Windows/Rhino/connector acceptance](../contributing/windows-acceptance.md) remains
+  open. The [retirement guide](../contributing/legacy-retirement.md) records removed
+  APIs; their removal does not establish platform support.
 - [Verification](../contributing/verification.md) is run explicitly by developers
   and agents. The GitHub workflows are removed; platform and service acceptance
   still require their own recorded results.
@@ -56,9 +53,6 @@ Apply the [documentation lifecycle](../contributing/documentation.md) when a pla
 is implemented or superseded. Transfer unfinished work, retain identifiers and
 rationale, and update both navigation and successor links in the same change.
 
-The [overall product roadmap](https://github.com/daniel-fink/whirlwind-core/blob/develop/docs/decisions/development-roadmap.md) separates implementation, verification,
-acceptance and release, and maps independent work and dependencies. Bundle
-conformance and 006 S4 reader work share RK ownership. Public reader/schema
-changes require a verified pinned wheel before Core and other consumers integrate
-them. Walkthrough authoring and native-host acceptance are separate tracks;
-they do not require 006, and development integration does not publish either.
+Bundle conformance, walkthrough authoring and native-host acceptance are separate
+tracks. Public reader or schema changes require a verified distribution before
+consumers adopt them. A development merge does not publish a package or site.

@@ -1,5 +1,7 @@
+Edited historical extract, 17 October 2026: external application identifiers and paths were omitted. This is not an unchanged capture or a new RK verification run.
 
-> whirlwind-viewer@0.0.1 test:layout
+
+> [external identifier omitted]@0.0.1 test:layout
 > node --test packages/layout/test/*.cjs
 
 ✔ collapsed ancestor hides private descendants but preserves another open membership path (8.907166ms)

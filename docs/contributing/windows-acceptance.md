@@ -3,8 +3,8 @@
 **Status: open.** This procedure owns the remaining official Windows connector
 publication/receive gate. Portable builds, macOS authoring, offline envelopes and
 an earlier pinned Python receive are separate evidence. They do not close this
-gate. [ADR-007](../decisions/007-three-repository-refactor.md) now governs
-[predecessor removal](legacy-retirement.md) independently of this platform check.
+gate. [Predecessor removal](legacy-retirement.md) is independent of this
+platform check.
 
 ## Prerequisites and open host work
 
@@ -56,11 +56,10 @@ a concrete destination and explicit authorization.
    authorized destination. Publication must be an explicit action, not a side
    effect of recomputation. Record the project/model/version/content identifiers
    after publication. Authentication and destination choice remain external to RK.
-5. Receive the pinned object through the source transport for the accepted package
-   set and decode it with the canonical RK codec. Use
-   `whirlwind_mcp.sources.speckle.transport.receive` and
-   `rangekeeper.io.speckle.decode_model`. Record the actual API and both package
-   pins when testing the refactored set. Compare all Model content and the separate
+5. Obtain the pinned object through the connector's supported receive API and
+   decode the retained envelope with `rangekeeper.io.speckle.decode_model`.
+   Record the actual transport API, its version and the RK version. Transport
+   acquisition is outside the library. Compare all Model content and the separate
    geometry associations. Check IDs, revision, omission/null, zero/false, shared
    membership, units and property order; counts or visual nesting are insufficient.
 6. Change the Model, recompute and publish it as a new revision within the
