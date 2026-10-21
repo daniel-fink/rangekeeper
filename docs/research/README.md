@@ -1,5 +1,7 @@
 # Research and verification evidence
 
+- [Guarded semantic export experiment](graph-semantic-export-2026-10-21/README.md): bounded WW-51 copy-elimination experiment; no delivery clearance.
+
 - [Graph read cost and exact record lookup](graph-read-cost-2026-10-21/README.md): bounded WW-51 repair and retained performance limits.
 
 - [T3 RK integration](t3-integration-2026-10-15/README.md).

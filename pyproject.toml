@@ -1,6 +1,6 @@
 [project]
 name = "Rangekeeper"
-version = "0.10.0.dev4"
+version = "0.10.0.dev5"
 description = "Algorithmic modelling for project finance"
 authors = [
     { name = "Daniel Fink", email = "danfink@mit.edu" }
