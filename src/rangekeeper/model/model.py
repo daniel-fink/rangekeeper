@@ -28,7 +28,7 @@ from rangekeeper.schema.validation import document_version
 from rangekeeper.shared.errors import UnsupportedVersionError
 from rangekeeper.shared.units import UnitSystem, default_units
 from rangekeeper.shared.arguments import require_uuid, optional_text
-from rangekeeper.schema.index import RecordIndex
+from rangekeeper.schema.index import RecordIndex, RecordLocation, record_at
 from rangekeeper.model.update import Update
 
 
@@ -142,6 +142,24 @@ class Model:
     def to_data(self) -> dict[str, object]:
         """Export detached data, preserving presence and original collection order."""
         return self._record.to_data()
+
+    def record_at(self, path: str) -> RecordLocation:
+        """Locate one embedded record by its original canonical JSON pointer.
+
+        The empty path selects the root. Scalar, absent and opaque locations raise
+        MissingReferenceError. Malformed pointers and index aliases raise ValueError;
+        a non-string raises TypeError. No references or history are followed.
+        """
+        return record_at(self._record, path)
+
+    def record_by_id(self, id: UUID) -> RecordLocation:
+        """Locate one declaration in this revision with constant index lookup.
+
+        Require an actual UUID and raise MissingReferenceError when it is absent.
+        The revision UUID selects Metadata, not the anonymous Model root.
+        """
+        record = self._index.get(id, Record)
+        return RecordLocation(record, self._index.owners[id], self._index.paths[id])
 
     def __repr__(self) -> str:
         return f"Model(id={self.id!r}, declarations={len(self._index.records) - 1})"

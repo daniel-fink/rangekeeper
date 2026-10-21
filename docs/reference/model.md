@@ -107,6 +107,52 @@ order, while exports retain supplied order. Only schema-unordered collections ar
 sorted for comparison; mathematical order and every opaque-content list remain intact.
 Missing/null/empty, bool/numeric and integer/float representations remain distinct.
 
+## Exact record inspection
+
+`Model.record_at(path: str)` and `Model.record_by_id(id: UUID)` return a frozen
+`RecordLocation` from `rangekeeper.schema.index`. It contains `record`,
+`owner_id` and `path`. The record is an immutable generated `Record`; its existing
+`to_data()`, `field_names()` and `has_field()` APIs retain detached export and
+field-presence behavior. `owner_id` is the nearest identified containing record,
+or `None`. `path` is the original encounter-order path from the schema walker,
+not a path in the sorted comparison representation.
+
+```python
+from rangekeeper.schema.index import RecordLocation
+
+location: RecordLocation = model.record_at("/system/entities/0/characteristics")
+assert location.owner_id == model.system.entities[0].id
+assert model.record_by_id(model.id).path == "/metadata"
+assert model.record_at("").owner_id is None
+```
+
+The empty path selects the generated Model root. The revision UUID selects its
+Metadata record; it does not identify the anonymous root. Path lookup also selects
+anonymous records such as Characteristics, Quantity, Location and Method. It
+follows only schema-declared embedded record slots. UUID links, scalar fields,
+keyed Location addresses and opaque Claim content are not traversed. Nested
+PropertyContent records remain selectable through their declared embedded slots.
+
+Use the exact walker path and canonical decimal collection indexes (`0`, `1`,
+and so on). Non-string paths and non-UUID identities raise `TypeError`. A nonempty
+path without an initial slash, malformed JSON Pointer escapes, or a noncanonical
+array index raises `ValueError`. Negative indexes, leading zeros, signs, whitespace,
+non-ASCII digits and the append token `-` are not aliases. Missing identities,
+fields or indexes and paths into scalar, null, empty, keyed or opaque values raise
+`MissingReferenceError`. A collection itself is not a record. An omitted or null
+record field is not synthesized; an existing empty record can be selected.
+
+These methods operate on an already fully validated immutable Model. Identity
+lookup uses its existing revision-local index with constant lookup work. Path
+lookup parses the supplied pointer in work proportional to its length and visits
+only the selected embedded chain. It creates at most one borrowed record wrapper
+per selected step, without wrapping siblings, walking unrelated records, building
+another index or exporting a Model copy. Returning a location does not serialize
+its subtree. A later `to_data()` call copies the selected subtree, which can still
+be large. Applications retain responsibility for request and response limits.
+Locations from an earlier Model keep that earlier revision's content after
+`revise`; no lookup loads history or crosses into another Model.
+
 ## Property content
 
 `model.content.encode` and `decode` retain typed property data separately from

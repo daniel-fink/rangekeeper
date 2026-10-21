@@ -3,6 +3,8 @@
 from uuid import UUID, uuid4
 
 from rangekeeper.schema import Metadata
+from rangekeeper.schema.index import RecordLocation
+from rangekeeper.schema.runtime import Record
 from rangekeeper.model import Model, Entity, System, Update
 from rangekeeper.shared.references import DocumentResolver
 from rangekeeper.specification import Specification, SpecificationRecord
@@ -13,6 +15,10 @@ model = Model.create(
     system=System(entities=(entity,)),
 )
 identity: UUID = model.entity(entity.id).id
+location: RecordLocation = model.record_at("/system/entities/0")
+record: Record = model.record_by_id(entity.id).record
+owner: UUID | None = location.owner_id
+path: str = location.path
 revision: Model = model.revise(Update(system=System()))
 specification = Specification(
     SpecificationRecord(
