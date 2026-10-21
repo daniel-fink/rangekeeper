@@ -1,7 +1,8 @@
 from __future__ import annotations
 import os
 
-from typing import Generator
+from typing import Generator, Optional, Sequence
+import numpy as np
 import pandas as pd
 import scipy as sp
 from numba import jit
@@ -18,7 +19,8 @@ class Volatility(rk.flux.Flow):
             volatility_per_period: float,
             autoregression_param: float,
             mean_reversion_param: float,
-            sequence: pd.PeriodIndex):
+            sequence: pd.PeriodIndex,
+            generator: Optional[np.random.Generator] = None):
         """
         This is a normal (Gaussian) distribution.
         Note that volatility is realized (new random increment is generated) in EACH period,
@@ -26,10 +28,16 @@ class Volatility(rk.flux.Flow):
         But this is just the volatility in the innovations; if there is autoregression then that will also affect the annual volatility.
         Cycles will also affect the average volatility observed empirically across the scenario.
         volatility_per_period = .08
+
+        generator: an optional numpy random Generator that draws the innovations (one draw per period, in order).
+        Pass a seeded generator (for example np.random.default_rng(42)) to make the volatility, and so a Market
+        built from it, reproducible. If None (the default), each draw uses a fresh unseeded generator, as before.
         """
 
         volatilities = pd.Series(
-            data=[sp.special.ndtri(rk.distribution.Uniform(lower=0, range=1).sample()[0]) * volatility_per_period
+            data=[sp.special.ndtri(
+                      rk.distribution.Uniform(lower=0, range=1, generator=generator).sample()[0]
+                  ) * volatility_per_period
                   for x in range(sequence.size)],
             # the ndtri() function replicates excel's NORMSINV().
             # See https://stackoverflow.com/questions/20626994/how-to-calculate-the-inverse-of-the-normal-cumulative-distribution-function-in-p/20627638
@@ -75,13 +83,14 @@ class Volatility(rk.flux.Flow):
     def _from_args(
             cls,
             args: tuple) -> Volatility:
-        trend, volatility_per_period, autoregression_param, mean_reversion_param, sequence = args
+        trend, volatility_per_period, autoregression_param, mean_reversion_param, sequence, generator = args
         return cls(
             trend=trend,
             volatility_per_period=volatility_per_period,
             autoregression_param=autoregression_param,
             mean_reversion_param=mean_reversion_param,
-            sequence=sequence)
+            sequence=sequence,
+            generator=generator)
 
     @classmethod
     def from_trends(
@@ -90,17 +99,28 @@ class Volatility(rk.flux.Flow):
             volatility_per_period: float,
             autoregression_param: float,
             mean_reversion_param: float,
-            sequence: pd.PeriodIndex) -> [Volatility]:
+            sequence: pd.PeriodIndex,
+            seed: Optional[int] = None) -> [Volatility]:
+        """
+        seed: if given, each Volatility gets its own independent generator spawned from this seed
+        (np.random.SeedSequence), so the result is reproducible and the worker processes do not share a stream.
+        If None (the default), the draws are unseeded, as before.
+        """
 
         pool = multiprocess.Pool(os.cpu_count())
+
+        generators: Sequence[Optional[np.random.Generator]] = (
+            [None] * len(trends) if seed is None
+            else [np.random.default_rng(child) for child in np.random.SeedSequence(seed).spawn(len(trends))])
 
         args = [
             (trend,
              volatility_per_period,
              autoregression_param,
              mean_reversion_param,
-             sequence)
-            for trend in trends]
+             sequence,
+             generator)
+            for trend, generator in zip(trends, generators)]
 
         return pool.map(cls._from_args, args)
 
