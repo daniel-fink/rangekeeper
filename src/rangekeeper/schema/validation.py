@@ -1,11 +1,15 @@
 """Structural validation against packaged, closed LinkML-derived schemas."""
 
+from collections.abc import Mapping
 from copy import deepcopy
 from functools import lru_cache
 from importlib.resources import files
 import json
+from types import MappingProxyType
 
 from jsonschema import Draft202012Validator, FormatChecker
+from jsonschema.protocols import Validator
+from jsonschema.validators import extend
 
 from rangekeeper.shared.diagnostics import Issue, ValidationReport
 
@@ -47,8 +51,83 @@ def document_version(kind: str) -> str:
     return str(_artifacts()[2]["document_versions"][kind])
 
 
+def _prepare_local_validators(schema: dict):
+    """Prepare the packaged single-scope reference graph, or decline it.
+
+    Only the reference dispatch changes. All assertion keywords, error creation,
+    and format checks remain with jsonschema. A future resource scope, reference
+    form, or root assertion uses the unmodified validator instead.
+    """
+    if set(schema) - {"$defs", "$id", "$schema"}:
+        return None
+    definitions = schema.get("$defs")
+    if not isinstance(definitions, dict) or not all(
+        isinstance(name, str)
+        and name
+        and not any(char in name for char in "/~%")
+        and isinstance(definition, dict)
+        for name, definition in definitions.items()
+    ):
+        return None
+    references = {f"#/$defs/{name}" for name in definitions}
+    pending = list(definitions.values())
+    while pending:
+        value = pending.pop()
+        if isinstance(value, dict):
+            for key, child in value.items():
+                if key == "$ref":
+                    if not isinstance(child, str) or child not in references:
+                        return None
+                elif key.startswith("$"):
+                    # This deliberately also declines such keys in annotations.
+                    # Never reinterpret another resource or dialect as this root.
+                    return None
+                pending.append(child)
+        elif isinstance(value, list):
+            pending.extend(value)
+
+    # Keep our schema copy private; schema_for still returns independent copies.
+    schema = deepcopy(schema)
+    prepared: Mapping[str, Validator] = {}
+    original_ref = Draft202012Validator.VALIDATORS["$ref"]
+
+    def local_ref(validator, reference, instance, subschema):
+        target = prepared.get(reference)
+        if target is None:
+            yield from original_ref(validator, reference, instance, subschema)
+        else:
+            yield from target.iter_errors(instance)
+
+    prepared_class = extend(Draft202012Validator, {"$ref": local_ref})
+    root = prepared_class(
+        schema, format_checker=FormatChecker(formats=["date", "date-time"])
+    )
+    # Public evolve retains the root's resolution scope. No definition has its
+    # own scope or dialect, as checked above. Populate all targets before use so
+    # recursive definitions share validators without recursive schema expansion.
+    prepared = MappingProxyType(
+        {
+            f"#/$defs/{name}": root.evolve(schema=definition)
+            for name, definition in schema["$defs"].items()
+        }
+    )
+    return MappingProxyType(
+        {name: prepared[f"#/$defs/{name}"] for name in schema["$defs"]}
+    )
+
+
+@lru_cache(maxsize=1)
+def _prepared_validators():
+    return _prepare_local_validators(_artifacts()[0])
+
+
 @lru_cache(maxsize=None)
 def _validator(kind: str):
+    if kind not in _artifacts()[0]["$defs"]:
+        raise KeyError(kind)
+    prepared = _prepared_validators()
+    if prepared is not None:
+        return prepared[kind]
     return Draft202012Validator(
         schema_for(kind), format_checker=FormatChecker(formats=["date", "date-time"])
     )

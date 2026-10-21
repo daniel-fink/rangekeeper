@@ -1,5 +1,7 @@
 # Research and verification evidence
 
+- [Graph read cost and exact record lookup](graph-read-cost-2026-10-21/README.md): bounded WW-51 repair and retained performance limits.
+
 - [T3 RK integration](t3-integration-2026-10-15/README.md).
 
 - [Technical T2 selective reads](t2-technical-2026-10-14/README.md).
