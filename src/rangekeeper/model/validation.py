@@ -80,7 +80,11 @@ def _validate(
     if issues:
         return ValidationReport(tuple(issues))
     assert record is not None
-    data = record.to_data()
+    data = (
+        record._data
+        if type(record) is ModelRecord and "geometry" not in record._data
+        else record.to_data()
+    )
     report = bounded(
         issues,
         lambda: check_model(data, document_version("Model"), prior, index=index),
