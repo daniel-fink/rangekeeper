@@ -1752,7 +1752,7 @@ wheels = [
 
 [[package]]
 name = "rangekeeper"
-version = "0.10.0.dev4"
+version = "0.10.0.dev5"
 source = { editable = "." }
 dependencies = [
     { name = "ipykernel", version = "7.3.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
