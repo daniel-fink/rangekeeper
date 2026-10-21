@@ -85,7 +85,8 @@ def to_currency(
     :param decimals:
     :return:
     """
-    number = to_decimal(value, 2)
+    # Round to whole units first when decimals are not wanted, so the value is rounded, not truncated
+    number = to_decimal(value, 2 if decimals or compact else 0)
     if compact:
         return numbers.format_compact_currency(
             number=number,
@@ -100,7 +101,9 @@ def to_currency(
         decimal_quantization=False,
     )
     if not decimals:
-        return result.split(".")[0]
+        # Remove the zero fraction the currency pattern adds, using the locale's own decimal symbol
+        zero_fraction = numbers.get_decimal_symbol(locale) + "00"
+        return result.replace(zero_fraction, "", 1)
     return result
 
 
