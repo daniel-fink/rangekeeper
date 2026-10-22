@@ -52,6 +52,32 @@ def test_record_query_filters_in_parquet_without_arrow_materialization(
         reader.records(path=[])
 
 
+def test_records_page_in_numeric_path_order(tmp_path):
+    model = Model.from_data(
+        dict(
+            metadata=dict(id=str(UUID(int=1)), schema_version="0.8.0"),
+            system=dict(
+                entities=[
+                    dict(id=str(UUID(int=i)), name=f"Entity {i}") for i in range(2, 14)
+                ]
+            ),
+        )
+    )
+    write(tmp_path / "bundle", model)
+    reader = Reader(tmp_path / "bundle")
+
+    paths, offset = [], 0
+    while offset is not None:
+        page = reader.records(kind="Entity", offset=offset, limit=5)
+        paths += [r["path"] for r in page["items"]]
+        offset = page["next_offset"]
+    assert paths == [f"/system/entities/{i}" for i in range(12)]
+
+    listed = [r["path"] for r in reader.records(limit=1000)["items"]]
+    assert listed[0] == ""
+    assert listed.index("/system/entities/2") < listed.index("/system/entities/10")
+
+
 def test_opening_validates_each_retained_document_once(tmp_path, monkeypatch):
     model = Model.from_data(
         yaml.safe_load((ROOT / "examples/schema/model.yaml").read_text())

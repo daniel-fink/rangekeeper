@@ -351,6 +351,14 @@ RECORD_SCHEMA = pa.schema(
 REF_SCHEMA = pa.schema(
     [(k, pa.string()) for k in ("path", "slot", "target", "locator")]
 )
+# Compares record paths segment by segment. Array indices compare as numbers
+# and before names, so /x/2 precedes /x/10 and a record precedes its children.
+PATH_ORDER = (
+    "list_transform(string_split(path, '/'), s -> CASE"
+    " WHEN regexp_full_match(s, '0|[1-9][0-9]*')"
+    " THEN {'name': false, 'width': length(s), 'segment': s}"
+    " ELSE {'name': true, 'width': 0, 'segment': s} END)"
+)
 
 
 def inventory(root, paths):
@@ -963,7 +971,8 @@ class Reader(_Documents):
             connection.execute("SET allowed_paths = ?", [[index]])
             connection.execute("SET enable_external_access = false")
             result = connection.execute(
-                "SELECT path, kind, canonical_id, owner_id FROM read_parquet(?) WHERE (? IS NULL OR kind=?) AND (? IS NULL OR canonical_id=?) AND (? IS NULL OR path=?) ORDER BY path LIMIT ? OFFSET ?",
+                "SELECT path, kind, canonical_id, owner_id FROM read_parquet(?) WHERE (? IS NULL OR kind=?) AND (? IS NULL OR canonical_id=?) AND (? IS NULL OR path=?) "
+                f"ORDER BY {PATH_ORDER} LIMIT ? OFFSET ?",
                 [
                     index,
                     kind,
