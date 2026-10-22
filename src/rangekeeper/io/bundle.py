@@ -102,10 +102,16 @@ def _dependencies(document):
 
 
 class _Documents:
-    def __init__(self, documents):
+    def __init__(self, documents, *, validated=False):
+        """Hold immutable documents by UUID.
+
+        Caller-owned documents are validated again as detached snapshots.
+        ``validated`` documents were just reconstructed and validated by this
+        module, and no caller holds them, so they are kept without a snapshot.
+        """
         self._documents = {}
         for value in documents:
-            document = snapshot(value)
+            document = value if validated else snapshot(value)
             if document.id in self._documents:
                 require_same(self._documents[document.id], document)
             else:
@@ -151,8 +157,8 @@ def _resolve(resolver, identifier, kind):
     raise MissingReferenceError(str(identifier))
 
 
-def _collect(model, documents, resolver, max_documents=1000):
-    found = _Documents((model, *documents))
+def _collect(model, documents, resolver, max_documents=1000, *, validated=False):
+    found = _Documents((model, *documents), validated=validated)
     pending = list(found.documents())
     while pending:
         document = pending.pop()
@@ -552,8 +558,8 @@ class _DocumentReader:
         if {n for n in names if n.startswith(prefix + "/")} != expected:
             raise ValueError("Unexpected canonical files")
 
-    def _reconstruct(self):
-        rows = {}
+    def _reconstruct(self, check_index=True):
+        rows, slots = {}, {}
         for kind, path in self.tables.items():
             for row in pq.read_table(path).to_pylist():
                 if row["_path"] in rows:
@@ -569,7 +575,10 @@ class _DocumentReader:
             if kind != expected_kind:
                 raise ValueError("Embedded record kind mismatch")
             data = {}
-            for name, meta in slots_for(kind).items():
+            # slots_for returns a copy; reuse one per kind for this read only.
+            if kind not in slots:
+                slots[kind] = slots_for(kind)
+            for name, meta in slots[kind].items():
                 state, physical = row[name + "__state"], row[name]
                 if (
                     state not in (0, 1, 2)
@@ -645,6 +654,15 @@ class _DocumentReader:
         model = self.kind.from_data(visit("", self.kind.__name__))
         if visited != set(rows):
             raise ValueError("Orphan embedded records")
+        if not check_index:
+            for name, schema in (
+                ("records", RECORD_SCHEMA),
+                ("references", REF_SCHEMA),
+            ):
+                path = self.root / f"{self.prefix}/{name}.parquet"
+                if not pq.ParquetFile(path).schema_arrow.equals(schema):
+                    raise ValueError("Derived index schema mismatch")
+            return model
         _, records, references = _shred(model)
         for name, expected, schema in (
             ("records", records, RECORD_SCHEMA),
@@ -665,6 +683,11 @@ class Reader(_Documents):
 
     Opening validates canonical records and their required references. It never
     executes Specifications. Native Geometry verification is explicit.
+
+    ``check_index=False`` skips comparing the derived record and reference index
+    with the reconstructed documents; their schemas and file hashes are still
+    checked. Use it only for a Bundle whose index a full open already verified
+    and whose files are unchanged since.
     """
 
     def __init__(
@@ -676,6 +699,7 @@ class Reader(_Documents):
         max_bytes=4 * 1024**3,
         max_rows=1_000_000,
         max_documents=1000,
+        check_index=True,
         _manifest=None,
     ):
         self.root = Path(root).resolve(strict=True)
@@ -786,7 +810,7 @@ class Reader(_Documents):
             prefix = self._prefix(identifier)
             document = _DocumentReader(
                 self.root, descriptor, prefix, names
-            )._reconstruct()
+            )._reconstruct(check_index)
             if _descriptor(document) != {
                 k: v for k, v in descriptor.items() if k not in ("tables", "geometry")
             }:
@@ -809,7 +833,8 @@ class Reader(_Documents):
                     expected_files.add(declared["path"])
         if set(names) != expected_files or m["geometry_paths"] != expected_geometry:
             raise ValueError("Unexpected Bundle files or Geometry paths")
-        super().__init__(documents)
+        # Each document was validated once by _reconstruct.
+        super().__init__(documents, validated=True)
         roots = m["roots"]
         if (
             type(roots) is not list
@@ -826,7 +851,7 @@ class Reader(_Documents):
         selected = [self._load(UUID(r["id"]), KINDS[r["kind"]]) for r in roots]
         if any(d.id == self._primary for d in selected):
             raise ValueError("Primary Model is already selected")
-        closed = _collect(self.model(), selected, self, max_documents)
+        closed = _collect(self.model(), selected, self, max_documents, validated=True)
         if set(closed._documents) != set(self._documents):
             raise ValueError("Unselected document outside dependency closure")
         if identity(self.model(), documents=self.documents(), roots=roots) != m["id"]:

@@ -1,5 +1,7 @@
 # Research and verification evidence
 
+- [Bundle opening cost](bundle-open-cost-2026-10-22/README.md): the Reader validates each retained document once; measured on the WW-51 growth fixture.
+
 - [Guarded semantic export experiment](graph-semantic-export-2026-10-21/README.md): bounded WW-51 copy-elimination experiment; no delivery clearance.
 
 - [Graph read cost and exact record lookup](graph-read-cost-2026-10-21/README.md): bounded WW-51 repair and retained performance limits.
