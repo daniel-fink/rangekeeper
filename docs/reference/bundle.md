@@ -116,7 +116,13 @@ one exact root; omission selects the main Model. Rows are ordered by their local
 record path. Optional `path` is an exact canonical record path, never a filesystem path.
 The query reads the verified Parquet index through parameterised DuckDB with
 predicate/limit pushdown and 128 MB working memory; no full Arrow index copy precedes
-the query. Opening still reconstructs and verifies all retained documents.
+the query. Opening still reconstructs and verifies all retained documents. It
+validates each document once; caller-owned documents given to `write` are
+validated again as detached snapshots.
+`Reader(path, check_index=False)` skips comparing the derived record and
+reference index with the reconstructed documents; it still checks their schemas
+and file hashes. Use it only for a Bundle whose index a full open already
+verified, with files unchanged since.
 Offsets are scoped to that root and query. Limits are 1–1,000 rows.
 The reader limits the Bundle to 1,000 documents, 10,000 files, 4 GiB retained bytes,
 256 MiB compressed canonical tables, 512 MiB declared expanded table bytes and one

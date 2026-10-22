@@ -52,6 +52,55 @@ def test_record_query_filters_in_parquet_without_arrow_materialization(
         reader.records(path=[])
 
 
+def test_opening_validates_each_retained_document_once(tmp_path, monkeypatch):
+    model = Model.from_data(
+        yaml.safe_load((ROOT / "examples/schema/model.yaml").read_text())
+    )
+    write(tmp_path / "bundle", model)
+    original = Model.from_data.__func__
+    calls = []
+
+    def counted(cls, data, **kwargs):
+        calls.append(data["metadata"]["id"])
+        return original(cls, data, **kwargs)
+
+    monkeypatch.setattr(Model, "from_data", classmethod(counted))
+    reader = Reader(tmp_path / "bundle")
+    assert calls == [str(model.id)]
+    assert exact_equal(reader.model().to_data(), model.to_data())
+
+
+def test_index_check_rejects_a_rehashed_index_unless_it_is_skipped(tmp_path):
+    import json
+    import pyarrow.parquet as pq
+    from rangekeeper.io.bundle import inventory
+
+    model = Model.from_data(
+        yaml.safe_load((ROOT / "examples/schema/model.yaml").read_text())
+    )
+    root = tmp_path / "bundle"
+    write(root, model)
+    index = root / "model/records.parquet"
+    table = pq.read_table(index)
+    pq.write_table(table.slice(1), index)
+    marker = root / "manifest.json"
+    manifest = json.loads(marker.read_text())
+    manifest["files"] = [
+        inventory(root, [e["path"]])[0] if e["path"] == "model/records.parquet" else e
+        for e in manifest["files"]
+    ]
+    marker.write_text(json.dumps(manifest))
+    with pytest.raises(ValueError, match="Derived reference index"):
+        Reader(root)
+    # Skipping trusts an index verified earlier; the files still match their hashes.
+    reader = Reader(root, check_index=False)
+    assert exact_equal(reader.model().to_data(), model.to_data())
+    damaged = index.read_bytes()
+    index.write_bytes(damaged[:-1] + bytes([damaged[-1] ^ 1]))
+    with pytest.raises(ValueError):
+        Reader(root, check_index=False)
+
+
 @pytest.mark.parametrize(
     "filename", ["model.yaml", "model-forward-output.yaml", "model-inverse-output.yaml"]
 )
