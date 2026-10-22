@@ -113,7 +113,9 @@ main Model has no Geometry. Ordinary canonical reads do not decode Geometry blob
 
 `records(document=uuid, kind=None, canonical_id=None, path=None, offset=0, limit=100)` projects
 one exact root; omission selects the main Model. Rows are ordered by their local
-record path. Optional `path` is an exact canonical record path, never a filesystem path.
+record path, compared segment by segment: array indices compare as numbers and
+before names, so `/system/entities/2` precedes `/system/entities/10` and a record
+precedes its children. Optional `path` is an exact canonical record path, never a filesystem path.
 The query reads the verified Parquet index through parameterised DuckDB with
 predicate/limit pushdown and 128 MB working memory; no full Arrow index copy precedes
 the query. Opening still reconstructs and verifies all retained documents. It
