@@ -139,9 +139,9 @@ at the preceding committed checkpoint.
 
 ### Test workflow on pull requests
 
-On 2026-10-25, the user agreed that reviewed pull requests can merge into
-`develop` when a hosted check passes. This replaces the removal above for the
-Python test suite only. The [Tests workflow](../contributing/README.md#continuous-integration)
+On 2026-10-25, the user chose to keep a hosted test check. An agent's pull
+request into `develop` can merge when this check passes, without a separate
+review. This replaces the removal above for the Python test suite only. The [Tests workflow](../contributing/README.md#continuous-integration)
 runs `uv sync --locked` and `pytest` in a fresh Ubuntu environment on each pull
 request and push to `develop` or `main`. Schema, packaging, layout, native and
 documentation checks remain local procedures. A passing hosted check does not
