@@ -25,6 +25,7 @@ from rangekeeper.shared.units import UnitSystem, default_units
 from rangekeeper.model.system.errors import AggregationError, SelectionError
 from rangekeeper.model.system.hierarchy import Hierarchy
 from rangekeeper.model.system.selection import ValueSelector, _recorded_quantity
+from rangekeeper.model.system import reducers
 
 
 @unique
@@ -245,7 +246,7 @@ def _reduce_quantities(values, reducer, units, unit_system):
     result = reducer(values)
     if not isinstance(result, Quantity):
         raise TypeError("reducer must return a schema Quantity")
-    return unit_system.convert(result, to=units)
+    return result if units is None else unit_system.convert(result, to=units)
 
 
 @dataclass(frozen=True)
@@ -294,6 +295,8 @@ class Reduction:
     """Choose one Value per eligible Entity, normalize units, then combine explicitly.
 
     The default includes every selected Entity with complete coverage required.
+    ``reducers.count`` takes no ``units``: it counts measured contributors and
+    returns a dimensionless Quantity.
     Supply contributors to select leaves or a classification when parent values
     represent totals. Nothing infers physical population or additive semantics.
     Callbacks must be pure; all records supplied to them are immutable.
@@ -324,7 +327,10 @@ class Reduction:
             raise TypeError("require_complete must be a bool")
         if not isinstance(self.unit_system, UnitSystem):
             raise TypeError("unit_system must be a UnitSystem")
-        if self.units is not None:
+        if self.reducer is reducers.count:
+            if self.units is not None:
+                raise TypeError("count reductions take no units")
+        elif self.units is not None:
             self.unit_system.validate_units(self.units)
         elif self._flow is None:
             raise TypeError("scalar reductions require units")
@@ -363,7 +369,6 @@ class Reduction:
         return Aggregation(hierarchy, entries, value_ids, self.require_complete)
 
     def _contribution(self, model, entity, *, leaf=True) -> QuantityPopulation:
-        assert self.units is not None
         if not self._eligible(entity, leaf=leaf):
             return _collect_quantities((), self.units, self.unit_system)
         selected = self._selection(model, entity)

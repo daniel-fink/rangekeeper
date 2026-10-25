@@ -53,4 +53,17 @@ def max(values: tuple[Quantity, ...]) -> Quantity:
     return _reduce(values, builtins.max)
 
 
-__all__ = ["sum", "mean", "min", "max"]
+def count(values: tuple[Quantity, ...]) -> Quantity:
+    """Count measured contributors as a dimensionless whole number.
+
+    Magnitudes and units do not affect the count, so inputs need no normalization.
+    Empty input is an error, as for the other reducers.
+    """
+    if not values:
+        raise AggregationError("cannot reduce an empty population")
+    if any(not isinstance(value, Quantity) for value in values):
+        raise TypeError("reducers require schema Quantities")
+    return Quantity(magnitude=len(values), units="dimensionless")
+
+
+__all__ = ["sum", "mean", "min", "max", "count"]

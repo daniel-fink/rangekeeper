@@ -466,6 +466,55 @@ def test_reducers_reject_empty_mixed_and_overflow_quantities():
         )
 
 
+def count(**kw):
+    return reduction(reducer=reducers.count, units=None, **kw)
+
+
+def test_count_reducer_counts_measured_contributors_without_units():
+    model, root, a, b, c, edges, _ = fixture()
+    result = View(model).aggregate(count())
+    assert result.root_value == Quantity(magnitude=3, units="dimensionless")
+    assert result.coverage(root.id).status is CoverageStatus.COMPLETE
+    # A recorded zero is a value, so it is counted.
+    assert result.value(c.id) == Quantity(magnitude=1, units="dimensionless")
+
+
+def test_count_reducer_skips_missing_values():
+    model, root, a, b, c, edges, _ = fixture(missing=True)
+    result = View(model).aggregate(count())
+    assert result.root_value is None
+    assert result.available_value(root.id) == Quantity(
+        magnitude=2, units="dimensionless"
+    )
+    assert result.coverage(root.id).status is CoverageStatus.INCOMPLETE
+    assert result.coverage(root.id).missing == (b.id,)
+    assert result.available_value(b.id) is None
+    assert View(model).aggregate(count(require_complete=False)).root_value == Quantity(
+        magnitude=2, units="dimensionless"
+    )
+
+
+def test_count_reducer_over_empty_coverage_is_unavailable():
+    model, root, a, b, c, edges, _ = fixture()
+    result = View(model).aggregate(count(contributors=lambda entity: False))
+    assert result.root_value is None and result.available_value(root.id) is None
+    assert result.coverage(root.id).status is CoverageStatus.EMPTY
+    with pytest.raises(AggregationError):
+        reducers.count(())
+
+
+def test_count_reducer_ignores_units_and_rejects_requested_units():
+    assert reducers.count(
+        (Quantity(magnitude=1, units="m"), Quantity(magnitude=5, units="AUD"))
+    ) == Quantity(magnitude=2, units="dimensionless")
+    with pytest.raises(TypeError):
+        reducers.count((1,))
+    with pytest.raises(TypeError):
+        reduction(reducer=reducers.count, units="dimensionless")
+    with pytest.raises(TypeError):
+        reduction(reducer=reducers.sum, units=None)
+
+
 def test_imports_are_lightweight():
     script = """
 import sys

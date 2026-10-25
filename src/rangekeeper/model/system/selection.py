@@ -21,9 +21,14 @@ def _local_value(entity: Entity, key: str, measure: UUID | None) -> Value | None
 
 
 def _recorded_quantity(selected, units, unit_system):
-    """Convert an available recorded quantity; caller retains kind eligibility."""
+    """Convert an available recorded quantity; caller retains kind eligibility.
+
+    ``units=None`` keeps the recorded units, for reducers that ignore them.
+    """
     if selected is None or selected.quantity is None:
         return None
+    if units is None:
+        return selected.quantity
     return unit_system.convert(selected.quantity, to=units)
 
 
