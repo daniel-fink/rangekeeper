@@ -699,3 +699,7 @@ FodyWeavers.xsd
 # Rhino3D
 *.3dm.rhl
 *.3dmbak
+
+# Git worktrees: the shared folder, and Claude Code's default
+.worktrees/
+.claude/worktrees/
