@@ -329,6 +329,20 @@ def test_forward_reverse_hierarchy_and_numeric_parity():
     assert "Portfolio" in str(results.display())
 
 
+def test_flow_reductions_pivot_with_the_same_cells_as_execute():
+    solved, ids = solve_example()
+    hierarchy = Hierarchy(View(solved), membership_root=ids["root"])
+    rollup = Reduction.flows(key="annual")
+    pivot = rollup.pivot(hierarchy)
+    expected = rollup.execute(hierarchy)
+    for node in hierarchy.preorder():
+        assert pivot.coverage(node) == expected.coverage(node)
+        assert [m.number for m in pivot.value(node).movements] == [
+            m.number for m in expected.value(node).movements
+        ]
+    assert pivot.value(ids["root"]).movements[0].number == 2880
+
+
 def test_underdetermined_and_inconsistent_reverse_cases():
     model, ids = hierarchy_model()
     store = MemoryStore()
