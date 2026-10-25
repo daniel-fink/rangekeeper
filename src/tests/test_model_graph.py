@@ -481,17 +481,20 @@ assert graph.View(model).entities==()
     subprocess.run([sys.executable, "-c", script], check=True)
 
 
-def test_exact_classification_filters_do_not_expand_descendants():
+def test_classification_filters_include_sub_types_unless_exclusive():
     model, root, a, b, c, edges, _ = fixture()
     view = View(model)
-    assert view.filter(entity_classification=a.classification).entities == (
-        model.entity(a.id),
-        model.entity(b.id),
-        model.entity(c.id),
-    )
+    rooms = (model.entity(a.id), model.entity(b.id), model.entity(c.id))
+    assert view.filter(entity_classification=a.classification).entities == rooms
     assert view.filter(entity_classification=a.classification).relationships == ()
     parent = model.definitions.taxonomies[0].classifications[0]
-    assert view.filter(entity_classification=parent.id).entities == ()
+    assert view.filter(entity_classification=parent.id).entities == rooms
+    assert view.filter(entity_classification=parent.id, exclusive=True).entities == ()
+    assert view.filter(relationship_classification=parent.id).relationships == edges
+    assert (
+        view.filter(relationship_classification=parent.id, exclusive=True).relationships
+        == ()
+    )
     assert (
         view.filter(relationship_classification=edges[0].classification).relationships
         == edges
