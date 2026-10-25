@@ -15,6 +15,11 @@ if TYPE_CHECKING:
         CoverageStatus as CoverageStatus,
         classified as classified,
     )
+    from .pivot import (
+        Pivot as Pivot,
+        PivotColumn as PivotColumn,
+        Partition as Partition,
+    )
     from .errors import (
         SelectionError as SelectionError,
         HierarchyError as HierarchyError,
@@ -31,11 +36,14 @@ _EXPORTS = {
     "Coverage": "reduction",
     "CoverageStatus": "reduction",
     "classified": "reduction",
+    "Pivot": "pivot",
+    "PivotColumn": "pivot",
+    "Partition": "pivot",
     "SelectionError": "errors",
     "HierarchyError": "errors",
     "AggregationError": "errors",
 }
-_MODULES = {"reduction", "projection", "membership", "selection", "reducers"}
+_MODULES = {"reduction", "projection", "membership", "selection", "reducers", "pivot"}
 __all__ = ["System", "Entity", "Assembly", "Relationship", *_EXPORTS, *sorted(_MODULES)]
 
 

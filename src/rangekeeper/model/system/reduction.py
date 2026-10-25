@@ -7,6 +7,7 @@ from collections.abc import Callable, Iterable, Mapping, Sequence
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from rangekeeper.model.system.pivot import Pivot
     from rangekeeper.model.duration import Period
     from rangekeeper.model.flux import MissingValueHandling
     from rangekeeper.calculations.series import (
@@ -367,6 +368,29 @@ class Reduction:
                 coverage,
             )
         return Aggregation(hierarchy, entries, value_ids, self.require_complete)
+
+    def pivot(
+        self,
+        hierarchy: Hierarchy,
+        *,
+        by: UUID | None = None,
+        depth: int = 1,
+        only: UUID | None = None,
+        exclusive: bool = False,
+    ) -> "Pivot":
+        """Reduce over ``hierarchy`` once per column of a Taxonomy below ``by``.
+
+        The "All" column uses this Reduction's contributors, narrowed by ``only``.
+        Each further column also requires the column's Classification. Columns are
+        the Classifications up to ``depth`` levels below ``by``, in Taxonomy order.
+        Classifications include their sub-types unless ``exclusive``. Each cell is
+        an ``AggregateEntry`` from ``execute``, so means stay correctly weighted.
+        """
+        from rangekeeper.model.system.pivot import pivot
+
+        return pivot(
+            self, hierarchy, by=by, depth=depth, only=only, exclusive=exclusive
+        )
 
     def _contribution(self, model, entity, *, leaf=True) -> QuantityPopulation:
         if not self._eligible(entity, leaf=leaf):

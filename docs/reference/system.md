@@ -6,7 +6,8 @@ Views select canonical Model objects. Membership and hierarchy are explicit proj
 
 The [architecture map](../concepts/architecture.md) places these operations under
 `rangekeeper.model.system`. `View` owns selection, `Hierarchy` owns explicit tree
-projection, and `Reduction` owns recorded-Value aggregation. `membership` provides
+projection, `Reduction` owns recorded-Value aggregation, and `Pivot` holds one
+Reduction per column of a Taxonomy. `membership` provides
 Assembly traversal; `selection` provides owner-local Value selection. None of
 these operations owns canonical field declarations.
 
@@ -186,6 +187,76 @@ A fully missing population has no available result. These operations do not revi
 create provenance claims, assign solve roles, add governing mathematics, invoke a
 solver or persist anything. Use `Model.revise` explicitly for authoring and the
 scalar executor for mathematical investigation.
+
+## Pivot over a Taxonomy
+
+```python
+from rangekeeper.model.system import Contributor, Reduction, reducers
+from rangekeeper.model.system.selection import select_value
+
+launch_price = Reduction(
+    select=select_value("launch_price"),
+    reducer=reducers.sum,
+    units="AUD",
+    contributors=Contributor.LEAVES,
+)
+pivot = launch_price.pivot(levels, by=apartment_id, depth=1, only=None)
+
+pivot.value(level_id)               # the "All" column
+pivot.value(level_id, two_bed_id)   # 2B, with its sub-types
+pivot.cell(level_id, two_bed_id)    # AggregateEntry(available, coverage)
+pivot.partition(level_id)           # do the 2B, 3B ... columns add up to All?
+pivot.display()
+```
+
+`Reduction.pivot(hierarchy, *, by=None, depth=1, only=None, exclusive=False)`
+returns a detached `Pivot` from `rangekeeper.model.system.pivot`. It runs
+`Reduction.execute` once per column, so every cell is an `AggregateEntry` and the
+pivot adds no arithmetic. Means stay correctly weighted: each cell reduces the raw
+contributors of its subtree.
+
+- The "All" column (`classification=None`) uses the Reduction's own contributors.
+  With `only`, it also requires that Classification.
+- `by` is a Classification. Its descendants down to `depth` levels become further
+  columns, in Taxonomy preorder. `by` itself is not a column. Each column requires
+  the Reduction's contributors, `only` and its own Classification.
+- A Classification includes its sub-types, as in
+  [`View.filter`](#selection-and-traversal). `exclusive=True` applies to `only` and
+  to every column: each then matches only that Classification.
+- `by=None`, or a `by` with no sub-types, gives the "All" column alone. Its
+  Aggregation equals `execute(hierarchy)` when `only` is None.
+
+An Entity has one Classification. When `only` and `by` come from different
+Taxonomies, no Entity matches both, so the class columns are empty. Labels are not
+read.
+
+`PivotColumn(classification, parent, depth, aggregation)` describes one column.
+The "All" column has depth 0 and no parent. A `parent` of None on a depth-1 column
+means "All". `Pivot(rows, columns)` keeps column order and requires one "All"
+column, unique Classifications, a parent column one level up for each column, and
+Aggregations over `rows`. Unknown Classification UUIDs raise
+`MissingReferenceError`; a malformed column set raises `AggregationError`.
+
+A `Pivot` exposes:
+
+- `columns`, `column(id)` and `children(id)`. `None` names the "All" column.
+- `cell(row, column=None)`: the column's `AggregateEntry` for that row.
+- `value`, `coverage` and `available_value`, as on `Aggregation`, for one column.
+- `partition(row, column=None)`: a `Partition(complete, overlap, uncovered,
+  outside)` that compares the column's `Coverage.selected` with its sub-columns'.
+  `overlap` lists records in more than one sub-column, `uncovered` lists records
+  in no sub-column, such as unclassified records, and `outside` lists sub-column
+  records that the column does not select (possible with `exclusive=True`).
+  `complete` is true when all three are empty. A partition compares populations,
+  not values: a complete partition means sub-column sums add up to the column, and
+  a missing Value does not change the partition. A column without sub-columns has
+  every record uncovered.
+- `to_table()`: a [Table](tables.md) in row preorder, with `name`, `parent_id`,
+  `All` and one column per Classification code. Cells hold `value` results:
+  a Quantity, a Flow or None. Row IDs are Entity UUIDs.
+- `display(precision=2)`: a Polars table of scalar cells with rows indented by
+  depth. "—" marks a cell with no contributor; "?" marks a cell with no value
+  under its coverage policy. It needs the `calculations` extra.
 
 ## Table projection
 
