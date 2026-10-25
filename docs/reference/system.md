@@ -128,6 +128,25 @@ operate on nonempty tuples already normalized to identical unit spellings. Means
 use raw contributors, avoiding the incorrect mean-of-subtree-means result. Overflow
 is rejected. Empty populations remain unavailable rather than becoming zero.
 
+`reducers.count` counts the contributors that have a value. It returns a
+`Quantity` with `units="dimensionless"` and a whole-number magnitude. A count
+`Reduction` takes no `units`; supplying them raises `TypeError`. Selected
+quantities are not converted, so contributors can record different units.
+Missing keys and unresolved quantities are missing contributors and are not
+counted; a recorded zero is counted. Under `require_complete=True` an incomplete
+population has no `value`, and `available_value` gives the count of measured
+contributors. A population with no measured contributor has no count, as for the
+other reducers; its `Coverage` still lists the selected and missing owners.
+
+```python
+units_with_price = Reduction(
+    select=select_value("launch_price"),
+    reducer=reducers.count,
+    units=None,
+    contributors=classified(model, two_bed_id),
+)
+```
+
 `classified(model, classification_id, exclusive=False)` returns a contributor rule
 for Entities in a Classification. It uses the same sub-type rule as `View.filter`:
 
