@@ -5,8 +5,9 @@ Use separate environments for runtime extras and the pinned schema tools. Histor
 record fresh results for the checkout under review.
 
 Developers and agents run these checks explicitly before delivering a change.
-This checkout defines no GitHub Actions workflows. A push or pull request does
-not run these repository checks automatically. Follow
+The [Tests workflow](README.md#continuous-integration) runs only the Python test
+suite on pull requests and pushes to `develop` and `main`. It does not run the
+other checks on this page. Follow
 [the verification decision](../decisions/004-package-and-project-ownership.md#verification-ownership)
 and record the actual environment: local acceptance does not establish Linux,
 Windows or service acceptance on a different host.
@@ -114,6 +115,7 @@ wheel across the required installed-package and notebook checks when accepting a
 release or a large refactor. A passing subset is evidence for that subset. Record
 unrun platforms, native hosts and service checks explicitly. Older records of
 GitHub checks remain historical evidence; their workflows have been removed.
+The current Tests workflow is described in [continuous integration](README.md#continuous-integration).
 
 ## Bundle candidate verification
 
