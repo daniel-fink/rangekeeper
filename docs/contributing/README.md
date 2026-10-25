@@ -73,8 +73,29 @@ uv run --locked black --check path/to/file.py
 
 Apply the convention when adding or changing handwritten Python. Keep unrelated
 formatting outside the task's scope. Run formatting and verification locally
-before delivery; this checkout defines no GitHub Actions workflows.
-Update generators instead of editing generated outputs by hand.
+before delivery. Update generators instead of editing generated outputs by hand.
+
+## Continuous integration
+
+The [Tests workflow](../../.github/workflows/tests.yml) runs on each pull request
+to `develop` or `main` and on each push to them. On Ubuntu with Python 3.13, it
+runs:
+
+```sh
+uv sync --locked --all-extras
+MPLBACKEND=Agg uv run --locked pytest -q -rs
+```
+
+`--locked` fails the run when `uv.lock` does not match `pyproject.toml`. The
+workflow installs all extras because the suite imports Matplotlib, Polars, the
+Pyomo/HiGHS backend and Bundle IO. It skips no tests: Matplotlib uses the
+off-screen `Agg` backend, and no test needs a display or network access.
+The `-rs` option lists any optional-dependency skips in the log.
+
+A pull request merges only after its `pytest` check passes. The workflow does not
+run Black, schema generation, C# builds, wheel checks, notebooks or the
+documentation link check. Run those [verification](verification.md) procedures
+locally when the change affects them.
 
 ## Naming and ownership
 

@@ -137,6 +137,16 @@ remain historical, including the
 and [layout workflow](https://github.com/daniel-fink/rangekeeper/blob/08aac85973429da8eaf4ad73b1e5b055506e2775/.github/workflows/layout.yml)
 at the preceding committed checkpoint.
 
+### Test workflow on pull requests
+
+On 2026-10-25, the user agreed that reviewed pull requests can merge into
+`develop` when a hosted check passes. This replaces the removal above for the
+Python test suite only. The [Tests workflow](../contributing/README.md#continuous-integration)
+runs `uv sync --locked` and `pytest` in a fresh Ubuntu environment on each pull
+request and push to `develop` or `main`. Schema, packaging, layout, native and
+documentation checks remain local procedures. A passing hosted check does not
+establish macOS, Windows, Rhino or service acceptance.
+
 ## Sources and related decisions
 
 - [Architecture and import map](../concepts/architecture.md).

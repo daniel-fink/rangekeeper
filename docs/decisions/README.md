@@ -44,7 +44,8 @@ checks. Notebooks 04–06 still need authoring and acceptance.
   open. The [retirement guide](../contributing/legacy-retirement.md) records removed
   APIs; their removal does not establish platform support.
 - [Verification](../contributing/verification.md) is run explicitly by developers
-  and agents. The GitHub workflows are removed; platform and service acceptance
+  and agents. The [Tests workflow](../contributing/README.md#continuous-integration)
+  runs only the Python test suite on pull requests; platform and service acceptance
   still require their own recorded results.
 - Building a walkthrough does not publish it. Follow the
   [walkthrough procedure](../guides/walkthroughs.md) for the local build boundary.
