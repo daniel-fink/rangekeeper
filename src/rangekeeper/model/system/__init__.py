@@ -13,6 +13,7 @@ if TYPE_CHECKING:
         Aggregation as Aggregation,
         Coverage as Coverage,
         CoverageStatus as CoverageStatus,
+        classified as classified,
     )
     from .errors import (
         SelectionError as SelectionError,
@@ -29,6 +30,7 @@ _EXPORTS = {
     "Aggregation": "reduction",
     "Coverage": "reduction",
     "CoverageStatus": "reduction",
+    "classified": "reduction",
     "SelectionError": "errors",
     "HierarchyError": "errors",
     "AggregationError": "errors",

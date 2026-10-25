@@ -168,6 +168,16 @@ class Model:
         """Resolve a Classification in this exact Model revision."""
         return self._index.get(id, Classification)
 
+    def descendants(self, classification: UUID) -> tuple[Classification, ...]:
+        """Return the sub-types of a Classification in its Taxonomy, at any depth.
+
+        The result is in declaration order and excludes the Classification itself.
+        """
+        from rangekeeper.model.definitions import _descendants
+
+        self.classification(classification)
+        return _descendants(self.definitions, classification)
+
     def entity(self, id: UUID) -> Entity:
         """Resolve an Entity or canonical Assembly; no code/name or history fallback."""
         return self._index.get(id, Entity)
@@ -223,7 +233,8 @@ class Model:
     ) -> tuple[Entity, ...]:
         """AND exact selectors in encounter order, including separately stored Assemblies.
 
-        Classification descendants are not implicitly included. Empty results are
+        Classification descendants are not implicitly included; use ``descendants``
+        or ``View.filter`` to include sub-types. Empty results are
         valid; unlike UUID lookup this is a search and never selects a unique result.
         """
         optional_text(code, "code")

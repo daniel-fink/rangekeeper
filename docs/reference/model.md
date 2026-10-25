@@ -85,7 +85,9 @@ to Entities, Relationships, Assemblies or nested Formulations. `owner_of` return
 nearest identified container, or `None` for anonymous root ownership.
 
 `find_entities` ANDs exact code/name/classification selectors and returns a tuple in
-document encounter order. It does not expand classification descendants. Local
+document encounter order. It does not expand classification descendants; use
+`Model.descendants(id)` for the sub-types of a Classification, or the inclusive
+[View filter](system.md#selection-and-traversal). Local
 Characteristics lookup is case-sensitive and returns `None` for an absent key/container.
 Catalogue helpers similarly separate UUID lookup from `find_*` searches. They reject duplicate declaration UUIDs across the entire supplied catalogue, even when the requested UUID is unrelated. `Model.assembly` rejects an ordinary Entity. Multiple
 Values may share a Measure; Measure identity never chooses a unique Value implicitly.
