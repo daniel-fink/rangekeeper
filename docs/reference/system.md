@@ -32,7 +32,8 @@ children = view.successors(parent_id)   # selected Relationships only
 members = entities_in(model, assembly_id, recursive=True)
 parents = containing_assemblies(model, entity_id, recursive=True)
 
-filtered = view.filter(entity_classification=classification_id)
+two_bed = view.filter(entity_classification=two_bed_id)  # includes sub-types
+exactly = view.filter(entity_classification=two_bed_id, exclusive=True)
 relationship_tree = Hierarchy.from_relationships(view)
 
 membership_view = View(
@@ -62,9 +63,19 @@ selected nodes; explicitly include transitive members when that is intended.
 
 All lookups take UUIDs. `view.entity(id)` and `view.relationship(id)` distinguish
 missing/wrong-kind Model references from known-but-unselected objects. The latter
-raise `SelectionError`. `filter()` ANDs exact classification selectors and an
-optional Boolean predicate; descendants are not implicitly included. Classification
-UUIDs must exist. Code/name searching remains explicit through `Model.find_entities`.
+raise `SelectionError`. `filter()` ANDs classification selectors and an optional
+Boolean predicate. A classification selector matches that Classification and its
+sub-types in its Taxonomy, at any depth. `exclusive=True` matches only that
+Classification, for both the Entity and Relationship selectors. Classification
+UUIDs must exist; an unknown UUID raises `MissingReferenceError`. Code/name
+searching remains explicit through `Model.find_entities`, which matches
+classifications exactly.
+
+`Model.descendants(classification_id)` and
+`rangekeeper.model.definitions.descendants(definitions, classification_id)` return
+the sub-types of a Classification. They follow each Classification's `parent`,
+exclude the Classification itself and keep Taxonomy declaration order. A leaf
+Classification has no descendants. Traversal is iterative.
 
 `entities`, `relationships`, `roots` and `leaves` are immutable tuples.
 `predecessors(id)` and `successors(id)` return unique direct neighbors. Presentation
@@ -116,6 +127,22 @@ Built-in `reducers.sum`, `reducers.mean`, `reducers.min` and `reducers.max`
 operate on nonempty tuples already normalized to identical unit spellings. Means
 use raw contributors, avoiding the incorrect mean-of-subtree-means result. Overflow
 is rejected. Empty populations remain unavailable rather than becoming zero.
+
+`classified(model, classification_id, exclusive=False)` returns a contributor rule
+for Entities in a Classification. It uses the same sub-type rule as `View.filter`:
+
+```python
+from rangekeeper.model.system import classified
+
+two_bed_price = Reduction(
+    select=select_value("launch_price"),
+    reducer=reducers.sum,
+    units="AUD",
+    contributors=classified(model, two_bed_id),  # 2B, 2B+S, 2B Courtyard ...
+)
+```
+
+Unclassified Entities never match. The UUID must exist in the Model.
 
 The default contributor policy includes every selected Entity, including Assemblies.
 The default requires complete coverage. If parents already record totals, select

@@ -19,7 +19,7 @@ from dataclasses import dataclass
 from enum import Enum, unique
 from types import MappingProxyType
 from uuid import UUID
-from rangekeeper.model import Entity, Value, Quantity, ValueKind
+from rangekeeper.model import Model, Entity, Value, Quantity, ValueKind
 from rangekeeper.schema.records import Flow
 from rangekeeper.shared.units import UnitSystem, default_units
 from rangekeeper.model.system.errors import AggregationError, SelectionError
@@ -213,6 +213,30 @@ class Aggregation:
                 label = f"{label} ({index+1})"
             flows[label] = value
         return Stream(flows).display(transpose=transpose, precision=precision)
+
+
+def classified(
+    model: Model,
+    classification: UUID,
+    *,
+    exclusive: bool = False,
+) -> Callable[[Entity], bool]:
+    """Return a contributor rule that selects Entities in a Classification.
+
+    The rule includes the Classification's sub-types in its Taxonomy, as
+    ``View.filter`` does. ``exclusive=True`` selects only that Classification.
+    The UUID must exist in the Model. Unclassified Entities never match.
+    """
+    from rangekeeper.model.definitions import _classes
+
+    if not isinstance(model, Model):
+        raise TypeError("model must be a canonical Model")
+    classes = _classes(model.definitions, classification, exclusive=exclusive)
+
+    def contributes(entity: Entity) -> bool:
+        return entity.classification in classes
+
+    return contributes
 
 
 def _reduce_quantities(values, reducer, units, unit_system):
@@ -535,4 +559,5 @@ __all__ = [
     "CoverageStatus",
     "Contributor",
     "Reduction",
+    "classified",
 ]

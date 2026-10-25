@@ -35,6 +35,47 @@ def classification(items: Definitions | None, id: UUID) -> Classification:
     return _lookup(items, id, Classification)
 
 
+def descendants(items: Definitions | None, id: UUID) -> tuple[Classification, ...]:
+    """Return a Classification's sub-types in its Taxonomy, in declaration order.
+
+    The result follows each Classification's ``parent`` to any depth and excludes
+    the Classification itself. A leaf Classification has no descendants. A missing
+    or wrong-kind UUID raises, as for ``classification``.
+    """
+    classification(items, id)
+    return _descendants(items, id)
+
+
+def _descendants(items, id):
+    # The caller has resolved the UUID. Each Classification UUID is unique in the catalogue.
+    for record in items.taxonomies or ():
+        records = record.classifications
+        if not any(item.id == id for item in records):
+            continue
+        children: dict[UUID, list[UUID]] = {}
+        for item in records:
+            if item.parent is not None:
+                children.setdefault(item.parent, []).append(item.id)
+        found, pending = set(), [id]
+        while pending:
+            for child in children.get(pending.pop(), ()):
+                if child not in found:
+                    found.add(child)
+                    pending.append(child)
+        return tuple(item for item in records if item.id in found)
+    return ()
+
+
+def _classes(items, id, *, exclusive):
+    """UUIDs that match a classification selector, with sub-types unless exclusive."""
+    if type(exclusive) is not bool:
+        raise TypeError("exclusive must be bool")
+    classification(items, id)
+    if exclusive:
+        return frozenset((id,))
+    return frozenset((id, *(item.id for item in _descendants(items, id))))
+
+
 def function(items: Definitions | None, id: UUID) -> Function:
     """Resolve a declared Function signature, not an executable callback."""
     return _lookup(items, id, Function)
@@ -98,6 +139,7 @@ __all__ = [
     "measure",
     "taxonomy",
     "classification",
+    "descendants",
     "function",
     "find_measures",
     "find_taxonomies",

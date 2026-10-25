@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 from uuid import UUID
 from rangekeeper.model import Model, Entity, Relationship
-from rangekeeper.model.definitions import classification
+from rangekeeper.model.definitions import _classes
 from rangekeeper.model.system.errors import SelectionError, HierarchyError
 from rangekeeper.model.system.membership import _assembly
 
@@ -37,9 +37,7 @@ class View:
         assembly: UUID | None = None,
     ) -> None:
         if not isinstance(model, Model):
-            raise TypeError(
-                "model must be a canonical Model"
-            )
+            raise TypeError("model must be a canonical Model")
         if isinstance(entities, (str, bytes)) or isinstance(
             relationships, (str, bytes)
         ):
@@ -152,22 +150,32 @@ class View:
         entity_classification: UUID | None = None,
         relationship_classification: UUID | None = None,
         predicate: Callable[[Entity], bool] | None = None,
+        exclusive: bool = False,
     ) -> "View":
-        """AND exact filters, then retain selected edges between surviving endpoints.
+        """AND filters, then retain selected edges between surviving endpoints.
 
+        A classification filter matches the Classification and its sub-types in
+        its Taxonomy. ``exclusive=True`` matches only that Classification.
         Classification UUIDs must exist. Predicates return bool and remain transient
         caller operations, never serialized Model mathematics.
         """
-        for id in (entity_classification, relationship_classification):
-            if id is not None:
-                classification(self.model.definitions, id)
+        if type(exclusive) is not bool:
+            raise TypeError("exclusive must be bool")
+        entity_classes, relationship_classes = (
+            (
+                None
+                if id is None
+                else _classes(self.model.definitions, id, exclusive=exclusive)
+            )
+            for id in (entity_classification, relationship_classification)
+        )
         if predicate is not None and not callable(predicate):
             raise TypeError("predicate must be callable")
         nodes = set()
         for entity in self.entities:
             if (
-                entity_classification is not None
-                and entity.classification != entity_classification
+                entity_classes is not None
+                and entity.classification not in entity_classes
             ):
                 continue
             matches = True if predicate is None else predicate(entity)
@@ -184,8 +192,8 @@ class View:
                 if edge.source in nodes
                 and edge.target in nodes
                 and (
-                    relationship_classification is None
-                    or edge.classification == relationship_classification
+                    relationship_classes is None
+                    or edge.classification in relationship_classes
                 )
             ),
         )

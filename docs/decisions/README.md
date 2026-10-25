@@ -13,6 +13,7 @@ current after its execution plan moves to history.
 | [ADR-005: Flux and Stream implementation](005-flux-and-stream-implementation.md) | Implemented; locally verified | Discoverable mathematical parameter names, Stream DX, `model.flux`, Span methods, Polars calculations, acausal formulations, hierarchy, Specification roles and acceptance |
 | [ADR-006: Walkthrough curriculum](006-walkthrough-curriculum.md) | Notebooks 01–03 locally accepted; later lessons planned | Six lessons combining the legacy property graph, SFFA inverse solving, Garden City uncertainty/flexibility and two-pad decision lessons |
 | [ADR-007: Library boundary](007-three-repository-refactor.md) | Implemented; RK extract retained | Public API moves, native authoring, walkthrough preservation and runtime retirement |
+| [ADR-009: Classification filters include sub-types](009-classification-sub-types.md) | Implemented | `View.filter` and the `classified` contributor rule match a Classification and its descendants; `exclusive=True` matches exactly |
 | [ADR-008: Rangekeeper Bundle contract](008-sqlite-model-package.md) | Expanded Bundle candidate implemented and approved for local development; bounded verification recorded; full conformance and stable release open | Main Model plus selected Models/Specifications/finalized Runs and exact dependencies; Model-owned Geometry; Parquet IO; standalone canonical IO; earlier SQLite proof retained |
 
 The first three records summarize decisions already supported by the linked
