@@ -1,9 +1,9 @@
-# Rangekeeper Bundle candidate
+# Rangekeeper Bundle
 
-This is an implemented review candidate in RK `0.10.0.dev3`, not a stable public
-interchange release. [ADR-008](../decisions/008-rangekeeper-bundle-contract.md) retains the
-full acceptance matrix. Provider, query and host acceptance remain separate from
-the implemented canonical reader and writer.
+The Bundle format is not yet stable. [ADR-008](../decisions/008-rangekeeper-bundle-contract.md)
+holds the full acceptance matrix. [ADR-017](../decisions/017-api-and-formats.md)
+makes format 1 stable at milestone 1.0.0b1. Provider, query and host acceptance
+remain separate from the implemented canonical reader and writer.
 
 ## Canonical Geometry
 
@@ -41,7 +41,7 @@ The main Model is the initial inspection target, not an acceptance decision.
 A Model-only Bundle remains valid. Saved partial Specifications and failed Runs can
 be retained; their inclusion does not claim numerical validity or execution support.
 Resolved Run validation checks retained references and evidence. Reading never
-executes a Specification. Core owns live operations, workspace state and acceptance.
+executes a Specification. The consumer application owns live operations, workspace state and acceptance.
 
 ## Directory format and identity
 
@@ -58,7 +58,9 @@ executes a Specification. Core owns live operations, workspace state and accepta
   assets/<pin digest>/<native files>  # other distinct pins
 ```
 
-Use `rangekeeper.bundle/2-proposal` with `rangekeeper.parquet/1-proposal`.
+The writer uses the format identifier `rangekeeper.bundle/2-proposal` with the mapping
+identifier `rangekeeper.parquet/1-proposal`. ADR-017 replaces them with
+`rangekeeper.bundle/1` and `rangekeeper.parquet/1`.
 The table mapping is unchanged and now applied to all three canonical root kinds.
 The main Model descriptor is `model`, with its `tables` and `geometry` fields.
 `documents` contains descriptors, table inventories and Geometry pins for the other
@@ -137,13 +139,12 @@ before writes. This is idempotent but not a multi-document transaction; storage 
 failure can leave complete records. Further work explicitly creates revised
 Specifications and new Runs/Models. The original Bundle remains unchanged.
 
-## Earlier candidate preservation
+## Earlier Bundle versions
 
-The dev1 wheel and captured `1-proposal` artifacts remain preserved by Core.
-The dev2 reader rejects that older Bundle version. Use the matching old reader and
-an explicit reviewed export to move records; no in-place or automatic conversion
-is supplied. Model/Specification/Run canonical schema versions are unchanged by
-this Bundle expansion. The user approved development adoption in Projects. Stable release remains unapproved.
+The reader rejects the earlier `rangekeeper.bundle/1-proposal` version. To move its
+records, use the matching earlier reader and an explicit reviewed export. No
+in-place or automatic conversion is supplied. The Bundle expansion did not change
+the Model, Specification or Run schema versions.
 
 ## Remaining acceptance
 

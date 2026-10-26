@@ -12,8 +12,8 @@ finite affine equations with Pyomo/HiGHS and independently checks candidate outp
 Public authoring APIs and C# Grasshopper components connect reviewed data and
 design models to canonical records. Polars serves detached tables and CSV.
 
-This checkout contains a pre-1.0 redesign that is not yet the published PyPI API.
-Use the source installation instructions and the upgrade guide together.
+The `develop` branch can differ from the latest PyPI release. Install from source
+with the installation guide, and use the upgrade guide to move from an earlier release.
 The [package ownership and import guide](docs/concepts/architecture.md)
 lists the current namespaces; `Model`, `Specification` and `Run` remain root imports.
 

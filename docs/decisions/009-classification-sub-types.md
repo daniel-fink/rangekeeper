@@ -32,7 +32,7 @@ search by code, name and classification. No record, schema or wire format change
 ## Sources and related decisions
 
 - [System views and reductions](../reference/system.md#selection-and-traversal).
-- [Upgrading](../guides/upgrading.md#candidate-010-classification-filters).
+- [Upgrading](../guides/upgrading.md#classification-filters-include-sub-types).
 - [Model lookup](../reference/model.md).
 
 Supersedes: the exact-match filter rule in the system reference. Superseded by: none.
