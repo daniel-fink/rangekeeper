@@ -10,9 +10,9 @@ import json
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
-ASSETS = ROOT / "src/rangekeeper/visualisation/assets/geometry"
-SOURCES = ROOT / "tools/geometry"
+ROOT = Path(__file__).resolve().parents[3]
+ASSETS = ROOT / "examples/walkthrough/helpers/assets/geometry"
+SOURCES = ROOT / "examples/walkthrough/viewer"
 
 
 def mismatches(folder: Path, expected: dict[str, str]) -> list[str]:

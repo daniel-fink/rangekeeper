@@ -11,6 +11,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "src/rangekeeper/schema"
+# The walkthrough helpers own the Speckle envelope and its contract (ADR-010).
+CONTRACT = ROOT / "examples/walkthrough/helpers/speckle_contract.json"
 DEST = ROOT / "src/grasshopper/Model/Generated"
 
 
@@ -81,9 +83,7 @@ def generate():
                 "    }",
             ]
         lines += ["}", ""]
-    contract = json.loads(
-        (ROOT / "src/rangekeeper/io/speckle_contract.json").read_text()
-    )
+    contract = json.loads((CONTRACT).read_text())
     constants = [
         "// Generated from the shared Speckle envelope contract.",
         "namespace Rangekeeper.Serialization;",
@@ -113,7 +113,7 @@ def generate():
             SOURCE / "slots.json",
             SOURCE / "schema.json",
             Path(__file__),
-            ROOT / "src/rangekeeper/io/speckle_contract.json",
+            CONTRACT,
         ]
     }
     result["manifest.json"] = (

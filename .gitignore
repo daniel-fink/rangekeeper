@@ -29,8 +29,9 @@ htmlcov/
 _build/
 site/
 
-# Node (tools/geometry)
+# Node (examples/walkthrough/viewer)
 node_modules/
+examples/walkthrough/viewer/dist/
 
 # .NET (src/grasshopper)
 bin/

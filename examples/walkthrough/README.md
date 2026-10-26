@@ -10,7 +10,8 @@ check the lessons.
 | Path | Contents |
 | --- | --- |
 | `NN_slug.ipynb` | The lessons, in reading order. Lessons have no outputs in git |
-| [`helpers/`](helpers) | Presentation helpers: chart style, chart, graph and geometry display |
+| [`helpers/`](helpers) | Presentation helpers: chart style and charts (`theme`, `chart`, `plot`), graph display (`graph`), local display (`local`), the canonical Speckle envelope (`speckle`) and the geometry viewer (`geometry` and its assets) |
+| [`viewer/`](viewer/README.md) | The source and build of the geometry viewer |
 | [`resources/`](resources/README.md) | Images that the lessons show, with their rights |
 | [`tests/`](tests) | Helper tests, lesson checks and the fresh-kernel run of each lesson |
 | [`pyproject.toml`](pyproject.toml), `uv.lock` | The locked walkthrough environment |

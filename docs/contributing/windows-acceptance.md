@@ -57,7 +57,7 @@ a concrete destination and explicit authorization.
    effect of recomputation. Record the project/model/version/content identifiers
    after publication. Authentication and destination choice remain external to RK.
 5. Obtain the pinned object through the connector's supported receive API and
-   decode the retained envelope with `rangekeeper.io.speckle.decode_model`.
+   decode the retained envelope with the walkthrough helper `helpers.speckle.decode_model`.
    Record the actual transport API, its version and the RK version. Transport
    acquisition is outside the library. Compare all Model content and the separate
    geometry associations. Check IDs, revision, omission/null, zero/false, shared

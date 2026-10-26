@@ -1,6 +1,6 @@
 # Canonical design transport
 
-`rangekeeper.io.speckle` encodes and decodes the canonical design envelope. It is
+The walkthrough helper `helpers.speckle` encodes and decodes the canonical design envelope. It is
 a pure codec. It does no authentication, network access, storage, conversion or
 solving. Geometry remains outside the Model. The codec does not infer domain
 membership from a service collection hierarchy.
@@ -14,7 +14,7 @@ the [upgrade guide](../guides/upgrading.md) for the removed APIs and the
 ## Canonical envelope
 
 The versioned envelope is `rk.speckle-model/v1`. Its fields are declared once in
-[`speckle_contract.json`](../../src/rangekeeper/io/speckle_contract.json). The same
+[`speckle_contract.json`](../../examples/walkthrough/helpers/speckle_contract.json). The same
 file generates the C# constants and drives the cross-language fixtures.
 
 | Field | Contract |
@@ -37,7 +37,7 @@ associations fail.
 | --- | --- |
 | `encode_model(model, *, associations=())` | A detached envelope dictionary. It validates association scope. It creates no SDK object, network request, store write or publication. |
 | `decode_model(payload)` | An immutable canonical `Model`. It strictly decodes the envelope and validates its associations. It does not convert a legacy payload. |
-| `validate_associations(model, associations)` | A copied list of valid associations, with duplicates removed. The [geometry display](../../src/rangekeeper/visualisation/geometry.py) uses it to check retained associations. |
+| `validate_associations(model, associations)` | A copied list of valid associations, with duplicates removed. The [geometry display](../../examples/walkthrough/helpers/geometry.py) uses it to check retained associations. |
 
 Each operation raises `MappingError` for invalid content. The error carries the
 envelope `path` and, where available, the domain `identity`. A payload without the

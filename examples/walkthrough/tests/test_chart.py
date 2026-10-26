@@ -5,10 +5,10 @@ from datetime import date
 import plotly.graph_objects as go
 import plotly.io as pio
 import pytest
+from helpers.chart import plot_distribution, plot_flows, plot_pairs
 
 from rangekeeper.model.duration import Frequency, PeriodTiming, make_periods
 from rangekeeper.model.flux import Flow
-from rangekeeper.visualisation.chart import plot_distribution, plot_flows, plot_pairs
 
 
 def test_flow_panels_preserve_dates_units_signs_and_inputs():

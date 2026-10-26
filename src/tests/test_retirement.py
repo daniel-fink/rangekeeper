@@ -77,7 +77,6 @@ from rangekeeper import calculations
 from rangekeeper.model import duration, formulation, scenario
 from rangekeeper.specification import policy
 from rangekeeper.model.system import View
-from rangekeeper.io.speckle import decode_model
 for name in ('rangekeeper.api', 'rangekeeper.measure', 'rangekeeper.model.system.graph',
              'rangekeeper.legacy', 'specklepy', 'matplotlib', 'plotly',
              'pandas', 'numpy', 'scipy', 'pyomo', 'highspy', 'numba', 'multiprocess'):

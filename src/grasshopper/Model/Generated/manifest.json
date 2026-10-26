@@ -1,9 +1,9 @@
 {
   "inputs": {
-    "src/rangekeeper/io/speckle_contract.json": "92292288d4581851ecb6e298b510959c67efb17a279afced005a7af60a1f733a",
+    "examples/walkthrough/helpers/speckle_contract.json": "92292288d4581851ecb6e298b510959c67efb17a279afced005a7af60a1f733a",
     "src/rangekeeper/schema/schema.json": "0556785eeb9feb50dec695034ac40240ad925cd9747a2b76875c42a3e3b8f53f",
     "src/rangekeeper/schema/slots.json": "3498c18d14eb13d24a2f0bbac667605096b7af1b41edcc14846602096d75b308",
-    "tools/schema/generate_csharp.py": "d545922acd58ae9a31f61168b1f1953657b6e4a4f603802ba66f04619a633962"
+    "tools/schema/generate_csharp.py": "f61a08726c1a8d66acfb00ec7f469ed8b3ddea9b8854e45b5e8e88279c69f8bb"
   },
   "outputs": {
     "Records.cs": "181c5e91b7b082410dd9979374d782d246e8e6b874bd804e13d1e8e3505e30d5",
