@@ -422,7 +422,7 @@ Regardless of framework, the following decisions remain ours:
    operator/compiler version, and solver/runtime identity are separate. A change
    can preserve its JSON shape while changing its mathematical answer.
 
-No schema framework automatically makes mappings to Twenty records, a property
+No schema framework automatically makes mappings to the consumer's CRM records, a property
 graph, RDF, Python runtime objects, and algebraic solver objects lossless.
 Specify the intended information preserved by each adapter and test that claim.
 

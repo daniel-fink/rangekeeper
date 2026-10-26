@@ -46,11 +46,11 @@ canonical core directly in the library. The agreed sequence is:
    implement progressively richer tests, culminating in the two-pad policy example.
 3. Validate the policy example with readable scenarios before evaluating and
    optimizing policies across larger scenario ensembles.
-4. Subsequently connect the approach to EstateMaster reconstruction and Twenty
-   browsing. Neither integration is a prerequisite for specifying the example.
+4. Subsequently connect the approach to EstateMaster reconstruction and browsing
+   in the consumer's CRM. Neither integration is a prerequisite for specifying the example.
 
 Backwards compatibility is not a binding constraint on this design. Existing RK
-and Mark8 work can supply useful concepts and implementations without determining
+and legacy consumer work can supply useful concepts and implementations without determining
 the new boundaries.
 
 ## Agreed architectural direction
@@ -383,9 +383,9 @@ Different policies or scenarios can produce different Models without changing th
 input Model or other evaluations. Recorded resolutions do not
 become permanent constraints in subsequent Specifications.
 
-For eventual Twenty publication, each upload creates an entirely new project.
+For eventual publication to the consumer's CRM, each upload creates an entirely new project.
 Exported snapshots are independent; there is no merge or synchronization back into
-the originating CRM project. Twenty is expected to serve primarily as a viewer of
+the originating CRM project. The consumer's CRM is expected to serve primarily as a viewer of
 the published definition and selected run outcomes.
 
 ## Questions to settle in the schema and test specification
