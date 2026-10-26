@@ -14,7 +14,7 @@ the sections and the Status line; the Status column below uses the same words.
 | [ADR-003: computation and evidence](003-computation-and-evidence.md) | Implemented | Known-data calculations, passive formulations, source evidence and independent acceptance |
 | [ADR-004: package and project ownership](004-package-and-project-ownership.md) | Implemented | Domain packages, `src/grasshopper`, examples, tools, docs and local verification |
 | [ADR-005: Flux and Stream implementation](005-flux-and-stream-implementation.md) | Implemented | Stream as the flow interface, `model.flux`, Polars calculations, role-named equation builders and the two collection routes; the [implementation plan](../history/plans/005-flux-and-stream-implementation.md) is archived |
-| [ADR-006: Walkthrough curriculum](006-walkthrough-curriculum.md) | Notebooks 01–03 locally accepted; later lessons planned | Six lessons combining the legacy property graph, SFFA inverse solving, Garden City uncertainty/flexibility and two-pad decision lessons |
+| [ADR-006: Walkthrough curriculum](006-walkthrough-curriculum.md) | Superseded by ADR-020 | Six lessons combining the legacy property graph, SFFA inverse solving, Garden City uncertainty/flexibility and two-pad decision lessons |
 | [ADR-007: Library boundary and API retirement](007-library-boundary-and-api-retirement.md) | Implemented; external host acceptance remains separate | Public API moves, native authoring, walkthrough preservation and runtime retirement |
 | [ADR-008: Rangekeeper Bundle contract](008-rangekeeper-bundle-contract.md) | Accepted; candidate implemented, full conformance open; amended by ADR-017 | Main Model plus selected Models/Specifications/finalized Runs and exact dependencies; Model-owned Geometry; Parquet IO; standalone canonical IO; earlier SQLite proof retained |
 | [ADR-009: Classification filters include sub-types](009-classification-sub-types.md) | Implemented | `View.filter` and the `classified` contributor rule match a Classification and its descendants; `exclusive=True` matches exactly |
@@ -39,20 +39,20 @@ blocked-by links. The
 | [ADR-016: Safety defaults](016-safety-defaults.md) | Accepted for 1.0; implementation pending | Curated units, dimensional checks, the underdetermined outcome, structured diagnostics and errors |
 | [ADR-017: Public API, stability and data formats](017-api-and-formats.md) | Accepted for 1.0; implementation pending | Semantic versioning, the 1.0.0 format reset, format changes before the freeze, Bundle format 1 and money |
 | [ADR-018: Release lines, versioning and engineering practice](018-release-and-engineering.md) | Accepted for 1.0; implementation pending | `support/0.8`, pre-releases, versions, changelog, Python support, tooling, CI, tests and the docs site |
-| [ADR-019: Walkthrough direction for 1.0](019-walkthrough-direction.md) | Accepted for 1.0; walkthrough plan v2 pending | All lessons for 1.0, ideal cells first, helpers, CI execution and sources |
+| [ADR-019: Walkthrough direction for 1.0](019-walkthrough-direction.md) | Accepted for 1.0; walkthrough plan v2 is ADR-020 | All lessons for 1.0, ideal cells first, helpers, CI execution and sources |
+| [ADR-020: Walkthrough plan v2](020-walkthrough-plan-v2.md) | Accepted for 1.0; ideal cells and authoring pending | Seven lessons by principle, reader types, book outcomes, developer-experience principles, teaching conventions and source rights; supersedes ADR-006 |
 
 The first three records summarize decisions already supported by the linked
 implementation history. They do not invent an earlier approval date. ADR-004 also
 records the source-project placement selected during this documentation pass.
 Relationships are explicit links; a decision can affect several owners.
 
-ADR-006 includes the [notebook 02 outline and visual requirements](006-notebook-02-outline.md).
-Its [project brief and pinned source package](../guides/mixed-use-project.md) are
-prepared. Notebook 02 is authored, executed and locally reviewed, including its
-geometry viewer, interactive graphs and themed Plotly charts. The
-[notebook 03 outline](006-notebook-03-outline.md) is also implemented and locally
-verified: a dated development plan, SFFA role changes and construction funding
-checks. Notebooks 04–06 still need authoring and acceptance.
+[ADR-020](020-walkthrough-plan-v2.md) defines the seven lessons for 1.0. The
+[project brief and pinned source package](../guides/mixed-use-project.md) stay
+current. ADR-006's [notebook 02 outline](../history/plans/006-notebook-02-outline.md)
+and [notebook 03 outline](../history/plans/006-notebook-03-outline.md) are archived
+as source material. Notebooks 02 and 03 were authored and locally reviewed on the
+interim API; all lessons are rebuilt for 1.x.
 
 ## Implementation history
 
@@ -67,7 +67,7 @@ checks. Notebooks 04–06 still need authoring and acceptance.
 
 ## Work that remains explicit
 
-- The [first walkthrough migration](../research/basic-dcf-2026-10-08/README.md) follows the completed [Flux and Stream codebase acceptance](../research/flux-stream-2026-10-08/README.md). The [agreed curriculum](006-walkthrough-curriculum.md) consolidates the other six source notebooks into five further lessons. It owns the teaching sequence, preparation decisions and capability dependencies. Notebooks 01–03 have local acceptance; notebooks 04–06 still need execution and rendered acceptance.
+- The [first walkthrough migration](../research/basic-dcf-2026-10-08/README.md) follows the completed [Flux and Stream codebase acceptance](../research/flux-stream-2026-10-08/README.md). [Walkthrough plan v2](020-walkthrough-plan-v2.md) replaces the earlier curriculum with seven lessons. It owns the teaching sequence, preparation decisions and capability dependencies. All lessons need ideal cells, authoring and CI execution on the 1.x API.
 - [Windows/Rhino/connector acceptance](../contributing/windows-acceptance.md) remains
   open. The [retirement guide](../contributing/legacy-retirement.md) records removed
   APIs; their removal does not establish platform support.

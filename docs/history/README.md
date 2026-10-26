@@ -22,6 +22,7 @@ Keep remaining work visible before moving a plan out of the current index.
 - [RF-001–RF-023](plans/REFACTORING_PLAN.md): coordinated domain refactoring.
 - [RF-024–RF-034](plans/REFACTORING_FOLLOWUP_PLAN.md): ownership and module consolidation.
 - [Documentation structure](plans/DOCUMENTATION_PLAN.md): consolidation and native project placement.
+- [Notebook 02 outline](plans/006-notebook-02-outline.md) and [notebook 03 outline](plans/006-notebook-03-outline.md): interim chapter plans under ADR-006, superseded by [ADR-020](../decisions/020-walkthrough-plan-v2.md).
 - [Integration record](source-workflows/2026-10-08-integration-record.md): recorded integration scope and limits.
 - [Windows provisioning](windows-provisioning.md): superseded Rhino 7 setup.
 

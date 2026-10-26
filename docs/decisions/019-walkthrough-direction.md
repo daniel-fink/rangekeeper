@@ -1,6 +1,6 @@
 # ADR-019: Walkthrough direction for 1.0
 
-Status: accepted for 1.0; walkthrough plan v2 pending. Recorded: 2026-10-26.
+Status: accepted for 1.0; walkthrough plan v2 is ADR-020. Recorded: 2026-10-26.
 
 ## Problem
 
@@ -17,7 +17,8 @@ Status: accepted for 1.0; walkthrough plan v2 pending. Recorded: 2026-10-26.
 
 - **Scope.** All lessons are rebuilt for 1.x: lessons 01 to 06, and any further
   lessons that plan v2 adds. The [ADR-006 curriculum](006-walkthrough-curriculum.md)
-  stays the base. Plan v2 revises it.
+  stays the base. Plan v2 revises it. [ADR-020](020-walkthrough-plan-v2.md)
+  records plan v2 and supersedes ADR-006.
 - **Release.** Version 1.0.0 waits for the full walkthrough. This includes the
   sequential-decision and design-variant capabilities that lessons 05 and 06
   need ([ADR-013](013-execution-and-extensions.md) and [ADR-014](014-market-paths.md)).

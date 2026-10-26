@@ -1,9 +1,14 @@
 # Notebook 03 A development plan and its financial limits
 
+Archived 2026-10-26: superseded by [ADR-020: walkthrough plan v2](../../decisions/020-walkthrough-plan-v2.md).
+Its content is source material for lessons 02 (front door, back door) and 03
+(cases, debt and equity). The original outline below is unchanged except for
+relative links.
+
 Status: implemented and locally accepted on 2026-10-13 under
-[ADR-006](006-walkthrough-curriculum.md). This outline records the agreed teaching
+[ADR-006](../../decisions/006-walkthrough-curriculum.md). This outline records the agreed teaching
 structure. See the [executed notebook](https://github.com/daniel-fink/rangekeeper/blob/codex/walkthrough-acausal/examples/walkthrough/development_feasibility.ipynb)
-and [acceptance evidence](../research/notebook-03-2026-10-13/README.md).
+and [acceptance evidence](../../research/notebook-03-2026-10-13/README.md).
 
 ## Purpose
 
@@ -39,7 +44,7 @@ works once. State whether unit rates include cores and plant before adding them.
 
 The following teaching assumptions were adopted; they are not facts from the
 design. Exact rates and funding amounts are recorded in
-[development.json](../../examples/data/mixed_use_property/development.json).
+[development.json](../../../examples/data/mixed_use_property/development.json).
 
 | Item | Proposed treatment |
 | --- | --- |
@@ -338,7 +343,7 @@ flexibility provisions enter notebooks 05–06.
    and build with `--preview-chapter` before adding the chapter to `myst.yml`.
 
 Current API review uses `model.expression.authoring`, `model.formulation.authoring`,
-`Specification.lock()`/`unlock()` and the [execution contract](../reference/execution.md).
+`Specification.lock()`/`unlock()` and the [execution contract](../../reference/execution.md).
 An isolated API check on 2026-10-13 passed all six relations, forward/inverse and
 round-trip solving, annual units, source immutability and sparse Flow resampling.
 It used synthetic amounts solely to check the APIs, not the mixed-use development

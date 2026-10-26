@@ -1,6 +1,6 @@
 # Mixed use property project brief
 
-This is the continuing project for walkthrough notebooks 02–06. Notebook 02 asks
+This is the continuing project for walkthrough lessons 02–07. Notebook 02 asks
 how its spaces, buildings and shared systems produce income, costs and value.
 Later lessons add a development plan, inverse financial questions, uncertain
 markets and flexibility strategies.
@@ -9,10 +9,9 @@ The reference is the actual legacy Rangekeeper design. Its complete pinned sourc
 was captured on 2026-10-12 and converted to the current canonical Model. The
 [source package](../../examples/data/mixed_use_property) contains the
 original transport records, external geometry associations, canonical Model and
-an independently reconciled inventory. The
-[chapter outline](../decisions/006-notebook-02-outline.md) owns the teaching sequence
-and required visual aids; [ADR-006](../decisions/006-walkthrough-curriculum.md) owns
-the complete curriculum.
+an independently reconciled inventory. [ADR-020](../decisions/020-walkthrough-plan-v2.md) owns the complete walkthrough
+plan. The archived [notebook 02 outline](../history/plans/006-notebook-02-outline.md)
+records the interim chapter's sequence and visual aids.
 
 ## The property
 
@@ -180,7 +179,7 @@ It then loads the Model and displays the full interactive graph. The relationshi
 section explains overlapping assemblies. The spatial graph precedes GFA aggregation. Income and cost
 charts reuse that hierarchy, and the 3D plant/core view sits beside utility costs.
 
-The [detailed visual inventory](../decisions/006-notebook-02-outline.md#visual-requirements)
+The [detailed visual inventory](../history/plans/006-notebook-02-outline.md#visual-requirements)
 specifies the required images, PyVis graphs and Plotly charts. A current record
 diagram replaces the legacy object-model diagram. The original hosted viewer reports an expired model. Notebook 02 therefore uses
 Speckle's viewer SDK locally, reading the complete archive. It supplies context,
