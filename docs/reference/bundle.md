@@ -1,13 +1,13 @@
 # Rangekeeper Bundle candidate
 
 This is an implemented review candidate in RK `0.10.0.dev3`, not a stable public
-interchange release. [ADR-008](../decisions/008-sqlite-model-package.md) retains the
+interchange release. [ADR-008](../decisions/008-rangekeeper-bundle-contract.md) retains the
 full acceptance matrix. Provider, query and host acceptance remain separate from
 the implemented canonical reader and writer.
 
 ## Canonical Geometry
 
-Model schema `0.8.0` adds optional `Geometry`; Specification and Run remain `0.7.0`.
+Model schema `0.8.0` adds optional `Geometry`. Specification remains `0.7.0` and Run remains `0.4.0`.
 The authority is [geometry.yaml](../../schema/geometry.yaml), imported by
 [model.yaml](../../schema/model.yaml). Python/C#/JSON Schema and slot metadata are
 generated from that authority. Geometry contains one exact pin and zero or more

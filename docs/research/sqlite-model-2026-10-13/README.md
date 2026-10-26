@@ -1,13 +1,13 @@
 # Portable SQLite Model proof — 13 October 2026
 
 Update, 13 October 2026: this record predates the agreed
-[Model and Geometry Package contract](../../decisions/008-sqlite-model-package.md).
+[Model and Geometry Package contract](../../decisions/008-rangekeeper-bundle-contract.md).
 Its one-file experiment and legacy identity gap are retained as historical evidence.
 They do not implement or validate the new Model-owned Geometry pin and mappings.
 The original results and status below are unchanged; ADR-008 owns the current plan.
 
 Status: bundle 1 locally verified; storage adoption review pending.
-[ADR-008](../../decisions/008-sqlite-model-package.md) owns the decision and limits.
+[ADR-008](../../decisions/008-rangekeeper-bundle-contract.md) owns the decision and limits.
 [Commands](../../../tools/sqlite_spike/README.md) reproduce the experiment.
 
 ## Result

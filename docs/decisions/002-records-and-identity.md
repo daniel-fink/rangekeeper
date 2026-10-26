@@ -1,6 +1,8 @@
 # ADR-002: Generate immutable records and pin exact revisions
 
-Status: implemented. Recorded: 2026-10-08 from the accepted source records below.
+Status: implemented. Recorded: 2026-10-08.
+
+This record summarizes the accepted source records below.
 
 ## Problem and choice
 

@@ -68,8 +68,9 @@ package is captured and reconciled. Notebook and viewer acceptance are recorded
 separately in the evidence linked above.
 
 Shared builders live in `examples/rangekeeper_examples/`. Install both packages
-from the same checkout. Live design receive also needs the `speckle` extra;
-fixture mode needs no service SDK.
+from the same checkout. RK has no `speckle` extra and no service transport. A live
+design receive needs a consumer-supplied service client; fixture mode needs no
+service SDK.
 
 ## Explore the notebooks
 

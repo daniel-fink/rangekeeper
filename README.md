@@ -27,6 +27,7 @@ lists the current namespaces; `Model`, `Specification` and `Run` remain root imp
 | Rhino/Grasshopper | [C# authoring and host checks](docs/guides/grasshopper.md) |
 | Older consumers | [Upgrade guide](docs/guides/upgrading.md) |
 | Verification | [Checks and limits](docs/contributing/verification.md) |
+| Conduct and citation | [Code of conduct](CODE_OF_CONDUCT.md), [citation metadata](CITATION.cff) |
 
 The walkthroughs follow Geltner and de Neufville's
 [Flexibility and Real Estate Valuation under Uncertainty](https://doi.org/10.1002/9781119106470).

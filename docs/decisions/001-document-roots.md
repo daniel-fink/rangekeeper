@@ -1,7 +1,9 @@
 # ADR-001: Separate Model, Specification and Run
 
-Status: implemented. Recorded: 2026-10-08 from the accepted design and implementation
-records below. This date records the summary; it does not replace their chronology.
+Status: implemented. Recorded: 2026-10-08.
+
+This record summarizes the accepted design and implementation records below. Its
+date records the summary; it does not replace their chronology.
 
 ## Problem and choice
 

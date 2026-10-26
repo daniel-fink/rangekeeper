@@ -41,7 +41,7 @@ files are evidence; do not regenerate them to conceal a version change.
 
 ## Geometry vocabulary and Bundle candidate
 
-[ADR-008](../decisions/008-sqlite-model-package.md#provider-neutral-schema-vocabulary)
+[ADR-008](../decisions/008-rangekeeper-bundle-contract.md#provider-neutral-schema-vocabulary)
 owns the agreed Rangekeeper Bundle contract. Use **Geometry** as the canonical
 concept and provider-neutral type and field names for its descriptor, pin and
 mappings. Keep provider, format/schema version, exact specification pin and source
@@ -53,7 +53,7 @@ That release label does not replace its exact specification version/hash or sour
 content digest. Future providers must fit the same Geometry boundary; unsupported
 formats require an explicit result, not an implicit Speckle fallback.
 
-The [Entity mapping contract](../decisions/008-sqlite-model-package.md#entity-to-source-element-mappings)
+The [Entity mapping contract](../decisions/008-rangekeeper-bundle-contract.md#entity-to-source-element-mappings)
 limits RK endpoints to Entities, including Assemblies, and source endpoints to
 objects or permitted structural groups. Keep property/relation evidence in the
 existing provenance structure. The new Parquet mapping must derive from this
@@ -62,12 +62,12 @@ not define a second canonical schema. Shared reconstruction/query fixtures belon
 with the reader contract.
 
 The development candidate adds optional provider-neutral Geometry to Model 0.8.0
-and generates Python/C# records from `schema/geometry.yaml`. Specification and Run
-remain at 0.7.0. The explicit 0.7-to-0.8 Model migration creates a new identity and
+and generates Python/C# records from `schema/geometry.yaml`. Specification remains
+at 0.7.0 and Run remains at 0.4.0. The explicit 0.7-to-0.8 Model migration creates a new identity and
 retains its predecessor. The [Bundle reference](../reference/bundle.md) defines
 the candidate Parquet mapping and publication marker.
 
-The [Bundle acceptance matrix](../decisions/008-sqlite-model-package.md#bundle-acceptance-criteria)
+The [Bundle acceptance matrix](../decisions/008-rangekeeper-bundle-contract.md#bundle-acceptance-criteria)
 records the required conformance checks. Development integration does not approve
 this format for stable release or consumer adoption.
 
