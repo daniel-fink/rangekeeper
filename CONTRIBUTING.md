@@ -1,5 +1,6 @@
 # Contributing
 
+Follow the [code of conduct](CODE_OF_CONDUCT.md).
 See [the contributor guide](docs/contributing/README.md) for setup, code style, verification and documentation rules.
 
 Agents and developers must apply the
