@@ -7,21 +7,16 @@ Start with [installation](../guides/installation.md) and the
 
 ## Working folder and branches
 
-Follow the [agent instructions](../../AGENTS.md) and the branch procedure below.
-Use the single RK folder. Start new `feature/<name>` branches from `develop`
-and integrate reviewed work into `develop`; `main` holds releases. Create
-worktrees only on an explicit user request. Coordinate branch changes,
-staging, commits, merges and shared environments with active chats. Keep
-the existing unfinished teaching work on `codex/walkthrough-acausal`; retain
-that recovery reference until its own agreed transition. Switch branches
-only after saving current changes and coordinating the handoff. Follow the
-[walkthrough branch procedure](../guides/walkthroughs.md#branches-and-publication).
-A development merge does not approve a stable Bundle format or publish the
-walkthroughs. Verify the reviewed diff, run the applicable checks and stage only
-the intended files. Follow branch protections and the authorized delivery scope.
-After delivery, verify that local `develop` matches a fresh remote query and keep
-the primary checkout clean. Preserve the separate unfinished walkthrough branch
-and ignored source data.
+Follow the [agent instructions](../../AGENTS.md). Start new `feature/<name>`
+branches from `develop` and integrate reviewed work into `develop` through pull
+requests; `main` holds releases. Keep the unfinished teaching work on
+`codex/walkthrough-acausal` and follow the
+[walkthrough branch procedure](walkthrough-branch.md). A merge into `develop` does
+not make the Bundle format stable or publish the walkthroughs.
+
+Verify the reviewed diff, run the applicable checks and stage only the intended
+files. Follow branch protections and the authorized delivery scope. Preserve the
+walkthrough branch and ignored source data.
 
 ## Release lines
 
