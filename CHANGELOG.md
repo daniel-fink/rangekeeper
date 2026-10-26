@@ -3,7 +3,7 @@
 This file records changes on the 0.8 maintenance line (`support/0.8`).
 The 1.x line keeps its own changelog on `develop`.
 
-## 0.8.72 (unreleased)
+## 0.8.72 (2026-10-26)
 
 First release from `support/0.8` through the tag-triggered release workflow.
 The package code is the same as 0.8.71.
