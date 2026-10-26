@@ -5,7 +5,7 @@
 
 Status: current development code, including the Bundle candidate, is on `develop`.
 The unfinished walkthrough remains on `codex/walkthrough-acausal`. The sole RK
-working folder is `/Volumes/Data/Projects/Rangekeeper`, with `develop` checked out.
+working folder was the primary local checkout, with `develop` checked out.
 This integration does not approve the Bundle format for release or Projects adoption.
 No walkthrough publication or Projects migration was performed.
 

@@ -718,7 +718,7 @@ remain separate from solver formulations.
 ### Local acceptance evidence
 
 The final full suite passes: **1,478 tests, zero skips**. Logs, preserved input baselines, executed
-notebooks and accounting scripts are in `/private/tmp/rk-followup-20261008`.
+notebooks and accounting scripts were in a temporary local directory.
 
 | Check | Result |
 | --- | --- |

@@ -1,1 +1,0 @@
-{"kind": "add", "left": {"kind": "literal", "value": 2}, "right": {"kind": "add", "left": {"kind": "literal", "value": 3}, "right": {"kind": "literal", "value": 4}}}

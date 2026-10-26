@@ -1,4 +1,0 @@
-Command: .venv/bin/python -m pytest tools/sqlite_spike/test_package.py -q --confcutdir=tools/sqlite_spike
-Working directory: /Volumes/Data/Projects/Rangekeeper
-Result: 26 passed in 5.60s
-Source hashes: result.json

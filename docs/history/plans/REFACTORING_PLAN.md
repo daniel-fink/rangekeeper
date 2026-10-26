@@ -374,8 +374,8 @@ publication review also extended its checks to interruptions and competing write
 | Incomplete selected policy outcomes escaped evaluation | Translate the final outcome contract failure to PolicyCapabilityError; persist the failed Run without invoking a solver |
 
 Regressions first reproduced the defects. Separate reviewers rechecked the fixes,
-including valid controls and rejection boundaries. Review logs and probes are at
-`/private/tmp/rk-refactor-review-20261007-hp0frw5q`. They supplement the earlier
+including valid controls and rejection boundaries. Review logs and probes were in a temporary
+local directory. They supplement the earlier
 acceptance evidence; temporary probes are not package inputs.
 
 ### Acceptance evidence
@@ -402,8 +402,8 @@ examples/walkthrough lockfile and README. No site was published.
 Reproduction commands are in [Verification](../../contributing/verification.md), the
 [schema guide](../../contributing/schema.md), [C# guide](../../guides/grasshopper.md) and
 [walkthrough guide](../../guides/walkthroughs.md). The local baseline, logs, source
-hashes, notebook outputs and size accounting are retained at
-`/private/tmp/rk-refactor-20261007-tuzea054`; these are evidence, not package inputs.
+hashes, notebook outputs and size accounting were retained in a temporary local
+directory; these are evidence, not package inputs.
 
 ### Size and deletion accounting
 

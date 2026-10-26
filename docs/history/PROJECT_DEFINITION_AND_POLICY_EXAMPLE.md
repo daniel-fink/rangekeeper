@@ -40,7 +40,7 @@ to their anticipated markets, site, permitted uses, design constraints, and obje
 The current [library plan](../concepts/architecture.md) retains LinkML and builds the
 canonical core directly in the library. The agreed sequence is:
 
-1. Use the completed [domain migration map](DOMAIN_MIGRATION_MAP.md), then implement the minimal
+1. Use the completed [domain migration map](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/history/DOMAIN_MIGRATION_MAP.md), then implement the minimal
    schema-backed records, validation, and immutable storage in the library.
 2. Execute the scalar forward/inverse model with Pyomo/HiGHS, then formulate and
    implement progressively richer tests, culminating in the two-pad policy example.
