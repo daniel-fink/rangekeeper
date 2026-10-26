@@ -18,6 +18,7 @@ Keep remaining work visible before moving a plan out of the current index.
 - [Single-folder consolidation](handoffs/2026-10-14-single-folder-consolidation.md): Bundle candidate integration, preserved trees, branch workflow and validation.
 
 - [Repository and walkthrough split](handoffs/2026-10-14-repository-and-walkthrough.md): the 14 October branch, worktree and publication checkpoint.
+- [ADR-005 implementation plan](plans/005-flux-and-stream-implementation.md): Flux and Stream design, naming inventory and acceptance.
 - [RF-001–RF-023](plans/REFACTORING_PLAN.md): coordinated domain refactoring.
 - [RF-024–RF-034](plans/REFACTORING_FOLLOWUP_PLAN.md): ownership and module consolidation.
 - [Documentation structure](plans/DOCUMENTATION_PLAN.md): consolidation and native project placement.

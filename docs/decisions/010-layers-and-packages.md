@@ -110,7 +110,7 @@ keeps the present package map until the pass lands.
 - [ADR-003: computation and evidence](003-computation-and-evidence.md) and
   [ADR-004: package and project ownership](004-package-and-project-ownership.md),
   amended by this record.
-- [ADR-007: library boundary](007-three-repository-refactor.md), amended by this
+- [ADR-007: library boundary](007-library-boundary-and-api-retirement.md), amended by this
   record for adapters and native authoring.
 - [Architecture](../concepts/architecture.md) and [glossary](../concepts/glossary.md).
 

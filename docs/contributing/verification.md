@@ -122,5 +122,5 @@ The current Tests workflow is described in [continuous integration](README.md#co
 With the `bundle` extra installed, run `python -m pytest -q src/tests/test_bundle.py`
 from the root. Full schema generation and C# checks also apply because Model schema
 changed. See the [Bundle contract](../reference/bundle.md) and the acceptance
-matrix in [ADR-008](../decisions/008-sqlite-model-package.md). Do not infer provider or host acceptance
+matrix in [ADR-008](../decisions/008-rangekeeper-bundle-contract.md). Do not infer provider or host acceptance
 from canonical Parquet tests.

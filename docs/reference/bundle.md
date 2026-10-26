@@ -1,7 +1,7 @@
 # Rangekeeper Bundle candidate
 
 This is an implemented review candidate in RK `0.10.0.dev3`, not a stable public
-interchange release. [ADR-008](../decisions/008-sqlite-model-package.md) retains the
+interchange release. [ADR-008](../decisions/008-rangekeeper-bundle-contract.md) retains the
 full acceptance matrix. Provider, query and host acceptance remain separate from
 the implemented canonical reader and writer.
 

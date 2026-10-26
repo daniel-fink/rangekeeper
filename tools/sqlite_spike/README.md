@@ -2,7 +2,7 @@
 
 This is the earlier development experiment, not an installed RK API or a
 conforming implementation of the agreed Model/Geometry Package contract. Read
-[ADR-008](../../docs/decisions/008-sqlite-model-package.md) for that contract,
+[ADR-008](../../docs/decisions/008-rangekeeper-bundle-contract.md) for that contract,
 its implementation steps and the historical mapping. The prototype still allows
 different geometry under one legacy Model UUID. The new contract forbids this.
 No public RK schema fields are changed here.
