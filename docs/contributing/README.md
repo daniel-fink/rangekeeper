@@ -23,6 +23,16 @@ After delivery, verify that local `develop` matches a fresh remote query and kee
 the primary checkout clean. Preserve the separate unfinished walkthrough branch
 and ignored source data.
 
+## Release lines
+
+`develop` and `main` carry 1.x. `support/0.8` carries the 0.8.x maintenance
+line: bug and security fixes only, until an announced end of life. Start a 0.8
+fix from `support/0.8` and open its pull request into `support/0.8`; do not
+merge between `support/0.8` and `develop`. A pushed version tag starts the
+release workflow. The [release guide](releasing.md) gives the tags, the procedure
+and the one-time PyPI setup. [SECURITY.md](../../SECURITY.md) shows the supported
+versions.
+
 ## Development environment
 
 Use Python 3.10–3.13. From the repository root, install the locked development
