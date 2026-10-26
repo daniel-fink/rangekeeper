@@ -3,7 +3,7 @@
 [From design to property economics](../../../examples/walkthrough/design_to_value.ipynb)
 is authored and executed against the complete pinned legacy property. This follows
 [source preparation](../notebook-02-source-2026-10-12/README.md) and the
-[agreed outline](../../decisions/006-notebook-02-outline.md). The local book includes
+[agreed outline](../../history/plans/006-notebook-02-outline.md). The local book includes
 this chapter, notebook 01 and the introduction. Public publication remains deferred.
 
 ## Calculation acceptance

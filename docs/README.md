@@ -71,7 +71,7 @@ Use the [decision index](decisions/README.md) for accepted choices, their ration
 implementation records and remaining work. The
 [decisions accepted for 1.0](decisions/README.md#accepted-for-10) define the target
 architecture and release plan. The active
-[walkthrough curriculum](decisions/006-walkthrough-curriculum.md) defines the six
+[walkthrough plan](decisions/020-walkthrough-plan-v2.md) defines the seven
 lessons and their preparation and capability dependencies. [History](history/README.md) contains
 completed plans and dated narratives. [Research](research/README.md) retains
 captured experiments and verification evidence. A local result does not establish

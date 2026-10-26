@@ -1,7 +1,7 @@
 # Notebook 02 source preparation on 12 October 2026
 
 The [project brief](../../guides/mixed-use-project.md) and
-[detailed chapter outline](../../decisions/006-notebook-02-outline.md) are prepared.
+[detailed chapter outline](../../history/plans/006-notebook-02-outline.md) are prepared.
 The [source package](../../../examples/walkthrough/data/mixed_use_property) is a
 complete capture of the original pinned Speckle object, with a canonical conversion
 and separate financial assumptions. This is source-preparation evidence, not

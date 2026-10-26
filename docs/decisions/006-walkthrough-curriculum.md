@@ -1,6 +1,11 @@
 # ADR-006 Walkthrough curriculum and implementation plan
 
-Status: agreed curriculum; notebooks 01–03 accepted locally; later lessons planned. Updated 2026-10-13.
+Status: superseded by [ADR-020: walkthrough plan v2](020-walkthrough-plan-v2.md) on 2026-10-26.
+Earlier status: agreed curriculum; notebooks 01–03 accepted locally; later lessons planned. Updated 2026-10-13.
+
+ADR-020 owns the lessons, readers, conventions and source rights for 1.0. This
+record keeps the earlier rationale. Its two chapter outlines are archived in
+[history](../history/plans/006-notebook-02-outline.md).
 
 Retain the accepted Basic DCF notebook and build five further lessons around one
 continuing project. Use the legacy Rangekeeper mixed-use property for its objects,
@@ -96,7 +101,7 @@ and [local book evidence](../research/jupyter-book-2-2026-10-08/README.md).
 
 ### 02 From design to property economics
 
-The [detailed chapter outline](006-notebook-02-outline.md), condensed to eight
+The [detailed chapter outline](../history/plans/006-notebook-02-outline.md), condensed to eight
 sections on 2026-10-13, records the agreed
 section sequence, narrative, code tasks and required visual aids. The
 [project brief](../guides/mixed-use-project.md) separates verified source facts
@@ -128,7 +133,7 @@ Let the reader change one use assumption and trace its effect while geometry sta
 
 ### 03 A development plan and its financial limits
 
-The [chapter outline](006-notebook-03-outline.md) records the section sequence,
+The [chapter outline](../history/plans/006-notebook-03-outline.md) records the section sequence,
 code and visual aids. [Notebook 03](https://github.com/daniel-fink/rangekeeper/blob/codex/walkthrough-acausal/examples/walkthrough/development_feasibility.ipynb)
 is authored, executed and locally reviewed; its [acceptance record](../research/notebook-03-2026-10-13/README.md)
 includes independent arithmetic and forward/inverse checks. The separate
@@ -356,4 +361,5 @@ Record each resolved assumption beside its source and propagate it consistently.
 | Complete local book | Pending chapter-by-chapter acceptance |
 | Public publication | Outside this delivery scope |
 
-Amended by: [ADR-019](019-walkthrough-direction.md), accepted 2026-10-26. All lessons are rebuilt for 1.0; walkthrough plan v2 revises this curriculum.
+Amended by: [ADR-019](019-walkthrough-direction.md), accepted 2026-10-26. All lessons are rebuilt for 1.0.
+Superseded by: [ADR-020](020-walkthrough-plan-v2.md), walkthrough plan v2, 2026-10-26.

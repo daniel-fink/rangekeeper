@@ -1,9 +1,13 @@
 # Notebook 02 From design to property economics
 
+Archived 2026-10-26: superseded by [ADR-020: walkthrough plan v2](../../decisions/020-walkthrough-plan-v2.md).
+Its content is source material for lesson 06 (project structure). The original
+outline below is unchanged except for relative links.
+
 Status: condensed outline agreed and applied on 2026-10-13. This replaces the
-12-section sequence of 2026-10-12 under [ADR-006](006-walkthrough-curriculum.md).
-See the [initial acceptance](../research/notebook-02-2026-10-12/README.md) and
-[condensation acceptance](../research/notebook-02-2026-10-13/README.md).
+12-section sequence of 2026-10-12 under [ADR-006](../../decisions/006-walkthrough-curriculum.md).
+See the [initial acceptance](../../research/notebook-02-2026-10-12/README.md) and
+[condensation acceptance](../../research/notebook-02-2026-10-13/README.md).
 
 ## Purpose and boundaries
 

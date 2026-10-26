@@ -55,14 +55,13 @@ development plan, SFFA forward/inverse solving and construction funding checks.
 Its [acceptance record](../research/notebook-03-2026-10-13/README.md) includes
 independent cash-flow arithmetic, actual solver diagnostics and rendered charts.
 
-The [agreed walkthrough curriculum](../decisions/006-walkthrough-curriculum.md)
-retains notebook 01 and consolidates the other six sources into five further
-lessons. It records the teaching objectives, continuing property example, source
-references, open assumptions and library capability dependencies. Notebooks
-04–06 remain planned; the book configuration below remains the chapter acceptance
-list.
+[Walkthrough plan v2](../decisions/020-walkthrough-plan-v2.md) defines seven
+lessons for 1.0 and supersedes the earlier six-lesson curriculum. It records the
+reader types, teaching objectives, continuing property example, source rights,
+open assumptions and library capability dependencies. The interim notebooks
+below remain until their replacements are accepted.
 
-For notebook 02 preparation, use the [detailed outline](../decisions/006-notebook-02-outline.md)
+For notebook 02 preparation, use the archived [detailed outline](../history/plans/006-notebook-02-outline.md)
 and [mixed-use project brief](mixed-use-project.md). The complete legacy source
 package is captured and reconciled. Notebook and viewer acceptance are recorded
 separately in the evidence linked above.

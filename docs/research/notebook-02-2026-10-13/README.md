@@ -1,7 +1,7 @@
 # Notebook 02 condensation — 13 October 2026
 
 The [chapter](../../../examples/walkthrough/design_to_value.ipynb) follows the
-[revised eight-section outline](../../decisions/006-notebook-02-outline.md).
+[revised eight-section outline](../../history/plans/006-notebook-02-outline.md).
 This is a presentation and teaching revision of the
 [12 October acceptance](../notebook-02-2026-10-12/README.md); the library,
 source Model and financial assumptions are unchanged.
