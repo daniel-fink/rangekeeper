@@ -273,7 +273,7 @@ class QuantityPopulation:
 
 def _collect_quantities(
     selections: Iterable[tuple[Entity, Value | None]],
-    units: str,
+    units: str | None,
     unit_system: UnitSystem,
 ) -> QuantityPopulation:
     """Collect canonical selections; callers retain eligibility and reduction policy."""

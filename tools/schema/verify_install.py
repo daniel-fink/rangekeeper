@@ -1,7 +1,7 @@
 """Build an isolated wheel and test its record boundary outside the checkout.
 
-Run in the schema tool environment (pip, setuptools>=77 and setuptools-scm>=9
-required, unless --wheel is given). Only the
+Run in the schema tool environment. Without --wheel, it needs pip,
+setuptools>=77 and setuptools-scm>=9. Only the
 record boundary's dependencies are copied into a fresh venv; this is intentionally
 not acceptance of the rest of the distribution or its service integrations.
 """

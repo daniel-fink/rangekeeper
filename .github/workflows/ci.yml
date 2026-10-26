@@ -1,0 +1,192 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [develop, main, support/0.8]
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+  push:
+    branches: [develop, main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # Plots render off screen; no test needs a display.
+  MPLBACKEND: Agg
+  UV_PYTHON_PREFERENCE: only-managed
+
+jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          python-version: "3.13"
+      - run: uv run --locked --only-group lint ruff check --output-format github .
+      - run: uv run --locked --only-group lint ruff format --check .
+
+  types:
+    name: types
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          python-version: "3.12"
+          enable-cache: true
+      # The extras provide the third-party types that mypy reads.
+      - run: uv sync --locked --all-extras --no-default-groups --group types
+      - run: uv run --locked --no-sync mypy
+
+  changelog:
+    name: changelog
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          python-version: "3.13"
+      - name: Check for a changelog fragment
+        if: ${{ !contains(github.event.pull_request.labels.*.name, 'no-changelog') }}
+        env:
+          BASE: ${{ github.base_ref }}
+        run: uv run --locked --only-group changelog towncrier check --compare-with "origin/$BASE"
+      - name: Check that the changelog renders
+        run: uv run --locked --only-group changelog towncrier build --draft --version check > /dev/null
+
+  generated:
+    name: generated files
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          python-version: "3.13"
+      # The pinned schema environment, plus the runtime imports of the native
+      # round trip and the typing conformance check.
+      - run: |
+          uv venv .schema-env
+          uv pip install --python .schema-env -r tools/schema/requirements.txt \
+            "mypy==1.18.2" "py-moneyed>=3,<4" "pint>=0.24"
+      - run: .schema-env/bin/python tools/schema/generate.py --check
+      - run: .schema-env/bin/python tools/schema/generate_csharp.py --check
+      - run: .schema-env/bin/python tools/schema/verify_native.py
+      - run: .schema-env/bin/python tools/schema/typecheck.py
+      - run: python3 tools/geometry/check_manifest.py
+      # TODO(#90): build and test the .NET example after src/grasshopper moves:
+      #   dotnet build -p:Version=$(python tools/version.py --dotnet)
+
+  docs:
+    name: docs
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: python3 tools/docs/check.py
+      # TODO: build the Zensical site here when it exists (ADR-018).
+
+  test:
+    name: test (${{ matrix.os }}, ${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python: ["3.12", "3.13"]
+        include:
+          - os: windows-latest
+            python: "3.13"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          python-version: ${{ matrix.python }}
+          enable-cache: true
+      # All extras: the suite imports Matplotlib, Polars, Pyomo/HiGHS and Bundle IO.
+      - run: uv sync --locked --all-extras
+      - run: uv run --locked pytest -q -rs
+
+  extras:
+    name: extra (${{ matrix.extra }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        extra: [core, bundle, calculations, execution, visualisation, yaml]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          python-version: "3.12"
+      # Install the wheel with one extra and no lock file: the newest versions in
+      # the declared ranges.
+      - name: Install the wheel with one extra
+        env:
+          EXTRA: ${{ matrix.extra }}
+        run: |
+          uv build --wheel --out-dir dist
+          wheel=$(ls "$PWD"/dist/*.whl)
+          uv venv "$RUNNER_TEMP/venv"
+          if [ "$EXTRA" = core ]; then spec="rangekeeper @ file://$wheel"
+          else spec="rangekeeper[$EXTRA] @ file://$wheel"; fi
+          uv pip install --python "$RUNNER_TEMP/venv" "$spec"
+      - name: Check the extra outside the checkout
+        working-directory: ${{ runner.temp }}
+        env:
+          EXTRA: ${{ matrix.extra }}
+        run: venv/bin/python "$GITHUB_WORKSPACE/tools/ci/check_extra.py" "$EXTRA"
+
+  wheel:
+    name: wheel
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # setuptools-scm reads the tags and the distance from them.
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          python-version: "3.13"
+          enable-cache: true
+      - run: uv build
+      - run: uvx twine check --strict dist/*
+      - run: uvx check-wheel-contents dist/*.whl
+      - name: Verify the installed record boundary and optional slices
+        run: |
+          uv sync --locked --all-extras --no-default-groups
+          python=$(uv run --locked --no-sync python -c "import sys; print(sys.executable)")
+          uv run --locked --no-sync --with pip python tools/schema/verify_install.py \
+            --wheel dist/*.whl --execution-python "$python" \
+            --financial-python "$python" --tables-python "$python"
+      - name: Run the tests against the installed wheel
+        run: |
+          wheel=$(ls "$PWD"/dist/*.whl)
+          extras=bundle,calculations,execution,visualisation,yaml
+          uv venv "$RUNNER_TEMP/venv"
+          uv pip install --python "$RUNNER_TEMP/venv" "rangekeeper[$extras] @ file://$wheel" \
+            pytest numpy-financial ./examples
+          # Outside the checkout, the tests import the installed package, not src/.
+          mkdir -p "$RUNNER_TEMP/wheel-tests/src"
+          cp -R src/tests "$RUNNER_TEMP/wheel-tests/src/tests"
+          cp -R examples "$RUNNER_TEMP/wheel-tests/examples"
+          cd "$RUNNER_TEMP/wheel-tests"
+          "$RUNNER_TEMP/venv/bin/python" -c "import rangekeeper, sys; assert 'site-packages' in rangekeeper.__file__, rangekeeper.__file__"
+          "$RUNNER_TEMP/venv/bin/python" -m pytest -q -rs -p no:cacheprovider src/tests

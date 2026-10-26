@@ -64,13 +64,17 @@ yaml = ["PyYAML>=6.0.2,<7"]
 
 [dependency-groups]
 dev = [
+    { include-group = "changelog" },
     { include-group = "lint" },
+    { include-group = "types" },
     { include-group = "notebook" },
     "pytest>=8.0",
     "numpy-financial>=1.0",
     "rangekeeper-examples",
 ]
 lint = ["ruff>=0.17.2,<0.18"]
+changelog = ["towncrier>=26.9,<27"]
+types = ["mypy>=2.4,<3", "types-PyYAML>=6.0.12", "types-jsonschema>=4.26"]
 notebook = ["ipykernel>=7.3.0"]
 
 [tool.uv]
@@ -130,6 +134,71 @@ known-third-party = ["Grasshopper"]
 # Adapters leave the core package before 1.0 (ADR-010); format only.
 "src/rangekeeper/visualisation/**" = ["F", "B", "UP", "D"]
 "src/rangekeeper/io/speckle.py" = ["F", "B", "UP", "D"]
+
+[tool.towncrier]
+name = "Rangekeeper"
+directory = "changelog.d"
+filename = "CHANGELOG.md"
+start_string = "<!-- towncrier release notes start -->\n"
+title_format = "## {version} ({project_date})"
+issue_format = "[#{issue}](https://github.com/daniel-fink/rangekeeper/issues/{issue})"
+underlines = ["", "", ""]
+ignore = ["README.md"]
+
+[[tool.towncrier.type]]
+directory = "breaking"
+name = "Breaking changes"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "deprecation"
+name = "Deprecations"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "removal"
+name = "Removals"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "feature"
+name = "Features"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "bugfix"
+name = "Fixes"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "packaging"
+name = "Packaging"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "doc"
+name = "Documentation"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "misc"
+name = "Engineering"
+showcontent = true
+
+[tool.mypy]
+# A passing baseline; strict mode for rangekeeper.* follows the typed public
+# API (ADR-018).
+python_version = "3.12"
+files = ["src/rangekeeper"]
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+# Dependencies without type information.
+module = ["networkx.*", "plotly.*", "pyarrow.*", "pyomo.*", "pyvis.*", "scipy.*"]
+ignore_missing_imports = true
 
 [build-system]
 requires = ["setuptools>=77.0.3", "setuptools-scm>=9"]

@@ -14,7 +14,8 @@ npm run build --prefix tools/geometry
 The build writes `tools/geometry/dist/`. To update the Python distribution, copy
 all five output files into `src/rangekeeper/visualisation/assets/geometry/`:
 `viewer.js`, `viewer.js.LEGAL.txt`, `viewer.html`, `SPECKLE-LICENSE`, and
-`manifest.json`. Preserve the hashes and third-party notices. Python installation
+`manifest.json`. Preserve the hashes and third-party notices. Check them with
+`python tools/geometry/check_manifest.py`; CI runs the same check. Python installation
 uses these packaged assets and does not run npm.
 
 `rangekeeper.visualisation.geometry.write` checks source and asset hashes and
