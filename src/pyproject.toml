@@ -1,11 +1,12 @@
 [build-system]
 # Pinned to the setuptools release that built 0.8.70 and 0.8.71 on PyPI.
-requires = ["setuptools==82.0.1"]
+# setuptools-scm and its vcs-versioning backend are pinned for the same reason.
+requires = ["setuptools==82.0.1", "setuptools-scm==10.3.4", "vcs-versioning==2.6.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "Rangekeeper"
-version = "0.8.72"
+dynamic = ["version"]
 description = "A Python library assisting financial modelling in real estate asset & development planning, decision-making, cashflow forecasting, and scenario analysis."
 authors = [
     { name = "Daniel Fink", email = "danfink@mit.edu" }
@@ -35,6 +36,14 @@ dependencies = [
     "black>=25.0",
     "pandas-stubs>=2.3",
 ]
+
+[tool.setuptools_scm]
+# The git root is the parent of this package directory. Only v0.8.* tags count
+# on this line: a v0.8.N tag builds exactly 0.8.N.
+root = ".."
+
+[tool.setuptools_scm.scm.git]
+describe_command = ["git", "describe", "--dirty", "--tags", "--long", "--match", "v0.8.*"]
 
 [tool.ruff.format]
 preview = true  # Uses Black's experimental formatting rules

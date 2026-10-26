@@ -1,0 +1,4 @@
+# setuptools-scm adds every tracked file to the sdist. Keep the sdist contents
+# of earlier releases: the package, README and the top-level test modules.
+exclude .gitignore uv.lock tests/__init__.py tests/property.html
+prune tests/models

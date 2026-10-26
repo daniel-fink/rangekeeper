@@ -19,11 +19,11 @@ Do not merge `develop` into `support/0.8`, or `support/0.8` into `develop`.
 The [release workflow](.github/workflows/release.yml) publishes a version when
 a `v0.8.N` tag is pushed. The tag must point to a commit on `support/0.8`.
 
-1. In a pull request into `support/0.8`:
-   - set `version` in [`src/pyproject.toml`](src/pyproject.toml) to `0.8.N`;
-   - run `uv lock` in `src/`;
-   - replace `(unreleased)` with the date in the `0.8.N` heading of
-     [CHANGELOG.md](CHANGELOG.md).
+1. In a pull request into `support/0.8`, replace `(unreleased)` with the date
+   in the `0.8.N` heading of [CHANGELOG.md](CHANGELOG.md). Do not set a
+   version: setuptools-scm derives it from the tag. Only `v0.8.*` tags count
+   on this branch, so the tagged commit builds exactly `0.8.N`; other commits
+   build as `0.8.(N+1).devM`.
 2. Merge the pull request.
 3. Tag the merge commit and push the tag:
 
@@ -39,8 +39,9 @@ a `v0.8.N` tag is pushed. The tag must point to a commit on `support/0.8`.
    PyPI and creates the GitHub Release with the changelog section, the files and
    the attestation bundle.
 
-If the tag does not match the package version, or the commit is not on
-`support/0.8`, the workflow stops before it publishes.
+If the built files do not have the tag's version, or the commit is not on
+`support/0.8`, the workflow stops before it publishes. The build needs the
+tags: a checkout without them fails instead of guessing a version.
 
 The one-time PyPI and GitHub environment setup is in the
 [release guide on `develop`](https://github.com/daniel-fink/rangekeeper/blob/develop/docs/contributing/releasing.md).
@@ -53,8 +54,10 @@ uv build --out-dir ../dist
 uvx twine check --strict ../dist/*
 ```
 
-`src/pyproject.toml` pins setuptools 82.0.1, so a local build and a workflow
-build give the same package files.
+`src/pyproject.toml` pins setuptools 82.0.1, setuptools-scm and its
+vcs-versioning backend, so a local build and a workflow build give the same
+package files. [`src/MANIFEST.in`](src/MANIFEST.in) keeps the sdist contents of
+earlier releases; setuptools-scm would otherwise add every tracked file.
 
 ## Provenance of earlier releases
 

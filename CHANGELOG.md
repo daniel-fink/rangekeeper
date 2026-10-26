@@ -3,6 +3,13 @@
 This file records changes on the 0.8 maintenance line (`support/0.8`).
 The 1.x line keeps its own changelog on `develop`.
 
+## 0.8.73 (unreleased)
+
+- Derive the version from the `v0.8.N` git tag with setuptools-scm, pinned
+  with setuptools 82.0.1. A release no longer needs a version change. The
+  wheel contents do not change; the sdist also has `MANIFEST.in` and the
+  setuptools-scm file list.
+
 ## 0.8.72 (2026-10-26)
 
 First release from `support/0.8` through the tag-triggered release workflow.
