@@ -3,6 +3,7 @@
 import math
 import subprocess
 import sys
+import textwrap
 from datetime import date
 from uuid import uuid4
 
@@ -61,6 +62,29 @@ def test_minimal_import_and_immutable_stream():
     stream = Stream({})
     with pytest.raises(AttributeError):
         stream.labels = ("edited",)
+
+
+def test_display_needs_no_chart_or_graph_dependency():
+    code = textwrap.dedent(
+        """
+        import importlib.abc, sys
+        from datetime import date
+
+        class Block(importlib.abc.MetaPathFinder):
+            def find_spec(self, name, path=None, target=None):
+                if name.partition(".")[0] in {"matplotlib", "networkx", "plotly", "pyvis"}:
+                    raise ModuleNotFoundError(name, name=name)
+
+        sys.meta_path.insert(0, Block())
+        from rangekeeper.model.flux import Flow, Stream
+
+        flow = Flow.from_events([date(2027, 1, 1)], [12.5], units="AUD")
+        assert "12.50" in flow._repr_html_() and "12.50" in str(flow.display())
+        assert "Rent [AUD]" in Stream({"Rent": flow})._repr_html_()
+        assert "rangekeeper.visualisation" not in sys.modules
+        """
+    )
+    subprocess.run([sys.executable, "-c", code], check=True)
 
 
 @pytest.mark.parametrize("period_content", [False, True])

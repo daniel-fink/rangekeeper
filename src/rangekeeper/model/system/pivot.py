@@ -217,7 +217,7 @@ class Pivot:
 
     def display(self, *, precision: int = 2):
         """Return an HTML/text table of scalar cells, with rows indented by depth."""
-        from rangekeeper.visualisation.table import PivotTable
+        from rangekeeper.model.display import PivotTable
 
         return PivotTable(self, precision=precision)
 

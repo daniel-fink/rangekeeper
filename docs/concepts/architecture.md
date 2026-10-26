@@ -128,12 +128,12 @@ This map applies until the 1.0.0a2 rename pass.
 
 | Package | Responsibility |
 | --- | --- |
-| `model` | Immutable Model records, Geometry pins, provenance, equations, graph operations, Flow and Stream, calendar rules and captured scenarios. |
+| `model` | Immutable Model records, Geometry pins, provenance, equations, graph operations, Flow and Stream with their table display, calendar rules and captured scenarios. |
 | `specification` | Investigation choices over exact document revisions, and policy declarations and evaluation. |
 | `run` | Finalized execution evidence, storage and numerical execution. |
 | `calculations` | Known-data financial and time-series calculations. |
 | `io` | Native serialization, stores, Polars conversion, canonical Speckle envelopes and optional Bundle IO. |
-| `visualisation` | Local charts, tables, PyVis graphs and retained geometry display. |
+| `visualisation` | Local charts, PyVis graphs and retained geometry display. |
 | `shared` | Shared record, identity, unit and table support. |
 | `schema` | Generated records, enums, the record runtime and structural validation. |
 

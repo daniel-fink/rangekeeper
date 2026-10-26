@@ -1,4 +1,8 @@
-"""Native Polars display over a detached, formatted Stream projection."""
+"""Table display for Streams and pivots, rendered by native Polars.
+
+The display needs the ``calculations`` extra (Polars) and no chart or graph
+dependency. ``Stream.display()`` and ``Pivot.display()`` return these tables.
+"""
 
 from dataclasses import dataclass
 from datetime import date
@@ -25,8 +29,39 @@ def _coordinate_label(coordinate):
     return label
 
 
+def _render(headers, rows, *, html: bool):
+    from rangekeeper.calculations._batch import polars
+
+    pl = polars()
+    frame = pl.DataFrame(
+        rows,
+        # Object cells let Polars display the prepared strings without the
+        # literal quotation marks its HTML renderer adds to String columns.
+        schema=[(header, pl.Object) for header in headers],
+        orient="row",
+    )
+    # Display strings preserve missing states and precision without changing
+    # numeric exports. Scope the native renderer's settings to this call.
+    with pl.Config(
+        tbl_hide_column_names=False,
+        tbl_hide_column_data_types=True,
+        tbl_hide_dataframe_shape=True,
+        tbl_rows=-1,
+        tbl_cols=-1,
+        tbl_width_chars=-1,
+        fmt_str_lengths=max(len(cell) for row in [headers, *rows] for cell in row),
+    ):
+        return frame._repr_html_() if html else str(frame)
+
+
 @dataclass(frozen=True)
 class StreamTable:
+    """Rows by period or event date, one column per line item, with units.
+
+    "—" marks a cell with no Movement. "?" marks a Movement with no magnitude.
+    ``transpose`` puts the line items in rows.
+    """
+
     stream: object
     transpose: bool = False
     precision: int = 2
@@ -43,7 +78,8 @@ class StreamTable:
         batch, grid, amounts, present = stream_projection(self.stream)
         periods = [_coordinate_label(batch.coordinates[c]) for c in grid]
         lines = [
-            f"{label} [{unit}]" for label, unit in zip(self.stream.labels, batch.units)
+            f"{label} [{unit}]"
+            for label, unit in zip(self.stream.labels, batch.units, strict=True)
         ]
         values = []
         for line in range(len(lines)):
@@ -63,7 +99,7 @@ class StreamTable:
             )
         if self.transpose:
             return ["Line item", *periods], [
-                [label, *row] for label, row in zip(lines, values)
+                [label, *row] for label, row in zip(lines, values, strict=True)
             ]
         return ["Period / date", *lines], [
             [period, *(values[line][i] for line in range(len(lines)))]
@@ -71,29 +107,7 @@ class StreamTable:
         ]
 
     def _render(self, *, html: bool):
-        from rangekeeper.calculations._batch import polars
-
-        pl = polars()
-        headers, rows = self._cells()
-        frame = pl.DataFrame(
-            rows,
-            # Object cells let Polars display the prepared strings without the
-            # literal quotation marks its HTML renderer adds to String columns.
-            schema=[(header, pl.Object) for header in headers],
-            orient="row",
-        )
-        # Display strings preserve missing states and precision without changing
-        # numeric exports. Scope the native renderer's settings to this call.
-        with pl.Config(
-            tbl_hide_column_names=False,
-            tbl_hide_column_data_types=True,
-            tbl_hide_dataframe_shape=True,
-            tbl_rows=-1,
-            tbl_cols=-1,
-            tbl_width_chars=-1,
-            fmt_str_lengths=max(len(cell) for row in [headers, *rows] for cell in row),
-        ):
-            return frame._repr_html_() if html else str(frame)
+        return _render(*self._cells(), html=html)
 
     def _repr_html_(self):
         return self._render(html=True)
@@ -126,7 +140,7 @@ class PivotTable:
         pivot = self.pivot
         rows = pivot.rows
         headers = ["Row"]
-        for item, label in zip(pivot.columns, pivot._labels()):
+        for item, label in zip(pivot.columns, pivot._labels(), strict=True):
             units = next(
                 (
                     entry.available.units
@@ -157,25 +171,7 @@ class PivotTable:
         return headers, body
 
     def _render(self, *, html: bool):
-        from rangekeeper.calculations._batch import polars
-
-        pl = polars()
-        headers, rows = self._cells()
-        frame = pl.DataFrame(
-            rows,
-            schema=[(header, pl.Object) for header in headers],
-            orient="row",
-        )
-        with pl.Config(
-            tbl_hide_column_names=False,
-            tbl_hide_column_data_types=True,
-            tbl_hide_dataframe_shape=True,
-            tbl_rows=-1,
-            tbl_cols=-1,
-            tbl_width_chars=-1,
-            fmt_str_lengths=max(len(cell) for row in [headers, *rows] for cell in row),
-        ):
-            return frame._repr_html_() if html else str(frame)
+        return _render(*self._cells(), html=html)
 
     def _repr_html_(self):
         return self._render(html=True)
