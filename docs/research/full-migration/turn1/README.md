@@ -149,7 +149,7 @@ import locations, table markup and final values were inspected programmatically;
 MyST citations/directives remain for the walkthrough build. Old tracked book build
 outputs were not silently replaced; rebuilding the complete walkthrough is Turn 4.
 
-This turn did not execute external Projects, Speckle, Rhino/Grasshopper, Hypar,
+This turn did not execute external primary consumer, Speckle, Rhino/Grasshopper, Hypar,
 parallel workbench/layout features, or the remaining six source notebooks.
 Scenario/policy consumers, temporal solve roles and indexed formulations remain
 Turn 2. Segmentation domain/presentation and other consumers remain Turn 3.

@@ -6,8 +6,8 @@
 Status: current development code, including the Bundle candidate, is on `develop`.
 The unfinished walkthrough remains on `codex/walkthrough-acausal`. The sole RK
 working folder is `/Volumes/Data/Projects/Rangekeeper`, with `develop` checked out.
-This integration does not approve the Bundle format for release or Projects adoption.
-No walkthrough publication or Projects migration was performed.
+This integration does not approve the Bundle format for release or adoption by the primary consumer.
+No walkthrough publication or primary consumer migration was performed.
 
 ## Saved commits and branch roles
 
@@ -100,14 +100,14 @@ SQLite repair changes only the historical tool, not installed RK source. Its
 SHA-256 is `534ca425f25cbeb5e6c2c6530b94516091e1811aada0d788939153c9cfe03467`.
 The final documentation update does not change that runtime artifact.
 
-Continue the Core refactor against this exact committed engine and wheel. Keep
+Continue the primary consumer refactor against this exact committed engine and wheel. Keep
 format review and unclosed ADR-008 P1–P8 cases visible: exhaustive presence/union
 coverage, native formats/assets, change cases, scale and hostile-file bounds,
 complete queries, render conversions and real-host evidence remain incomplete.
-Core's full PA0–PA5 contract and required remote ingestion acceptance also remain
+The primary consumer's full PA0–PA5 contract and required remote ingestion acceptance also remain
 open. Development integration is not format approval.
 
 Notebooks 04–06, complete-book acceptance, public edit/source links, redirects
 and publication remain separate walkthrough work. Continue it on the draft branch.
 Do not change `main`, `gh-pages`, Pages settings, the saved acausal checkpoint or
-Projects as a consequence of this consolidation.
+the primary consumer as a consequence of this consolidation.

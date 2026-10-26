@@ -37,10 +37,10 @@ source hashes. Do not restore retired modules into the candidate to run tests.
 /private/tmp/rk-full-runtime/bin/python tools/schema/verify_install.py --wheel /private/tmp/rk-turn4-wheel/wheel/rangekeeper-0.8.71-py3-none-any.whl --runtime-python /private/tmp/rk-full-runtime/bin/python --execution-python /private/tmp/rk-full-runtime/bin/python --workflow-python /private/tmp/rk-full-runtime/bin/python --financial-python /private/tmp/rk-full-runtime/bin/python
 ```
 
-Create an empty Python 3.10 venv for core checks and a Python 3.13 venv for Projects.
+Create an empty Python 3.10 venv for core checks and a Python 3.13 venv for the primary consumer.
 Install the wheel normally, not with `--no-deps`. The executed install commands
 and pinned test/notebook tool versions are in `commands.jsonl`. For the core use
-no extras; for Projects use `[workflow,excel]`. Clear `PYTHONPATH` for both.
+no extras; for the primary consumer use `[workflow,excel]`. Clear `PYTHONPATH` for both.
 `verify_core.py` checks real model/unit/store operations and optional-library absence.
 
 ## Seven walkthroughs, guide and documentation
@@ -54,7 +54,7 @@ PYTHONPATH=/private/tmp/rk-turn4-wheel/site /private/tmp/rk-full-runtime/bin/pyt
 The walkthrough runner checks wheel import paths in every fresh kernel, uses
 explicit fixture mode, declares four scenarios and one worker, and saves outputs
 and PNGs. It uses a shared temporary kernel specification: finish it before
-running the Mandarin notebook with a different interpreter. Execute both
+running the proving project A notebook with a different interpreter. Execute both
 `src/docs/examples/ingestion_evidence.py` and `excel_ingestion.py` with the same
 wheel-first environment from `/private/tmp`. They use synthetic workbook data.
 
@@ -82,13 +82,13 @@ units, dates, signs, capital-payment timing and policy/hindsight labels.
 Each project command runs from its copied project directory. The strict comparator
 reads the frozen baseline under `/private/tmp/rk-turn3-private/baseline` only after
 new builds finish. It never supplies build inputs. `source-hashes.json` records
-copied originals. Run the separate SOM comparison with `MANDARIN_REFERENCE` set
-to its historical reference bundle and `MANDARIN_CANDIDATE` set to the new successful
-Mandarin attempt directory. Exact paths for this run are in `commands.jsonl`.
+copied originals. Run the separate architecture-practice comparison with `PROVING_A_REFERENCE` set
+to its historical reference bundle and `PROVING_A_CANDIDATE` set to the new successful
+proving project A attempt directory. Exact paths for this run are in `commands.jsonl`.
 
 ```sh
-# cwd: /private/tmp/rk-turn4-project-bootstrap/mandarin
-/private/tmp/rk-turn4-project-venv/bin/python /Volumes/Data/Projects/Rangekeeper/docs/research/full-migration/turn2/run_notebook.py notebooks/01_workflow_review.ipynb /private/tmp/rk-turn4-project-bootstrap/mandarin-review.ipynb --cwd /private/tmp/rk-turn4-project-bootstrap/mandarin
+# cwd: /private/tmp/rk-turn4-project-bootstrap/proving-a
+/private/tmp/rk-turn4-project-venv/bin/python /Volumes/Data/Projects/Rangekeeper/docs/research/full-migration/turn2/run_notebook.py notebooks/01_workflow_review.ipynb /private/tmp/rk-turn4-project-bootstrap/proving-a-review.ipynb --cwd /private/tmp/rk-turn4-project-bootstrap/proving-a
 ```
 
 Both independent project locks and RK's lock must pass `uv lock --check --offline`

@@ -48,7 +48,7 @@ mappings. Keep provider, format/schema version, exact specification pin and sour
 address in metadata. Do not introduce a canonical `SpeckleBundle` type or
 `speckle_*` fields. Provider-specific names belong in the corresponding adapter.
 
-Core's first provider profile uses Speckle's 2026.9 object-model/bundle schema.
+The primary consumer's first provider profile uses Speckle's 2026.9 object-model/bundle schema.
 That release label does not replace its exact specification version/hash or source
 content digest. Future providers must fit the same Geometry boundary; unsupported
 formats require an explicit result, not an implicit Speckle fallback.

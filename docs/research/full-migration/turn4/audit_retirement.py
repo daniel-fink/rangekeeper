@@ -156,7 +156,7 @@ for consumer in old["consumers"]:
     consumer["current_sha256"] = hashlib.sha256(actual.read_bytes()).hexdigest() if actual.is_file() else None
     if consumer["scope"] == "external":
         consumer.update(status="canonical; rebuilt and compared from isolated installed wheel",
-                        acceptance="project-builds.txt; project-comparisons.txt; project-tests.txt; mandarin-notebook.txt")
+                        acceptance="project-builds.txt; project-comparisons.txt; project-tests.txt; proving-a-notebook.txt")
         if actual.suffix in {".py", ".ipynb"}:
             sources = [actual.read_text()] if actual.suffix == ".py" else [
                 "".join(cell["source"]) for cell in json.loads(actual.read_text())["cells"]

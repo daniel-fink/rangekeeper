@@ -1,9 +1,9 @@
 # Guarded internal semantic export experiment
 
 Status: experiment retained; dev5 wheel built and locally verified. Final artifact
-review and coordinator readback precede Git delivery. Core adoption remains separate.
+review and coordinator readback precede Git delivery. Primary consumer adoption remains separate.
 Base: RK develop 8c50e06bd045b1298da15be5be296a1150d2d339.
-Owner: WW-51. Branch: feature/semantic-validation-read-cost.
+Owner: a legacy consumer ticket. Branch: feature/semantic-validation-read-cost.
 
 ## Original experiment scope
 
@@ -21,7 +21,7 @@ Geometry needs plain JSON for digest checks, so it must retain the export path.
 
 Add only `src/tests/test_model_validation_equivalence.py`, this evidence page and
 the research index. No semantic helper, runtime, index, generator, schema,
-dependency, version, Core or Interface changes. Preserve prior evidence,
+dependency, version, primary consumer or the consumer interface changes. Preserve prior evidence,
 environments, wheels, refs and previews. Stop for a newly required production path.
 
 ## Original experiment procedure and limits
@@ -41,7 +41,7 @@ Record first and subsequent fully validating public codec reads, imports, exact
 source/input hashes, memory and all failures. Do not edit measured snapshots.
 The original export subtree is 0.312426 seconds cumulative, 4.4 percent of a
 7.119-second profiled run; this is an attribution bound, not measured savings.
-Growth codec time is 7.459 seconds and still exceeds Core's five-second budget.
+Growth codec time is 7.459 seconds and still exceeds the primary consumer's five-second budget.
 No deadline increase, fixture reduction, prewarming or capacity claim is allowed.
 Omit the candidate if gain is not stable and material. Retention requires
 independent review and a separately released version/wheel/delivery packet.
@@ -100,21 +100,21 @@ source pins, commands and outputs are in `measure-1`.
 The candidate has a consistent modest gain in these unchanged full fixtures.
 Independent experiment review cleared it, and the coordinator released the exact
 [packaging amendment](packaging-proposal.md). Packaging results follow below.
-Git staging, commit, push and Core adoption still require separate clearance.
+Git staging, commit, push and the primary consumer adoption still require separate clearance.
 
 Growth direct RK first-read median remains 7.224215 seconds. The last delivered
-Core baseline failed its first supervised full-growth read at 5.016142 seconds
+primary consumer baseline failed its first supervised full-growth read at 5.016142 seconds
 under the former five-second rule; that failure is preserved. On 21 October the
 user accepted a longer finite initial load while requiring responsive graph
 interactions. Five seconds is no longer an initial-load acceptance blocker.
-The full 1024/1024, matched Core/HTML, private-state reopen, interaction and
+The full 1024/1024, matched primary consumer/HTML, private-state reopen, interaction and
 actual-host checks remain open. No deployment or live result is established here.
 
 The immutable `snapshot.json` pins baseline and candidate packages plus the test
 and helpers (SHA256 `60a689c2951eaf7450c27d43e145e2a27154969ed1a96c0c22b68abe92a1c0cd`).
 `final-manifest.json` records final owned-file hashes, receipts, protected-file
 verification and unchanged original references. All older experiments, failures,
-environments, wheels, recovery references and Interface previews remain protected.
+environments, wheels, recovery references and the consumer interface previews remain protected.
 
 
 ## Dev5 packaging verification
@@ -158,5 +158,5 @@ The earlier 1,248 source passes retain identical source/test pins.
 The packaging manifest is a new artifact under `packaging-1`; it does not replace
 the experimental manifest. It freezes the seven delivery paths, artifact, helpers,
 failures, receipts and protection results for independent review. No staging,
-commit, merge, push, Core installation or service change occurred in packaging.
+commit, merge, push, primary consumer installation or service change occurred in packaging.
 Further cold-load experiments are deferred under the user's new requirement.

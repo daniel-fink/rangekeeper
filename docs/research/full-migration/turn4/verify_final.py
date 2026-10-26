@@ -92,9 +92,9 @@ for source in sorted((ROOT / "walkthrough").glob("*.ipynb")):
 bootstrap = Path("/private/tmp/rk-turn4-project-bootstrap")
 for name, expected in json.loads((bootstrap / "source-hashes.json").read_text()).items():
     assert digest(bootstrap / name) == expected, name
-mandarin = json.loads((bootstrap / "mandarin-review.ipynb").read_text())
-assert not any(o.get("output_type") == "error" for c in mandarin["cells"] for o in c.get("outputs", []))
-assert sum(c["cell_type"] == "code" and c.get("execution_count") is not None for c in mandarin["cells"]) == 5
+proving-a = json.loads((bootstrap / "proving-a-review.ipynb").read_text())
+assert not any(o.get("output_type") == "error" for c in proving-a["cells"] for o in c.get("outputs", []))
+assert sum(c["cell_type"] == "code" and c.get("execution_count") is not None for c in proving-a["cells"]) == 5
 
 ledger = json.loads((OUT / "ledger.json").read_text())
 for consumer in ledger["consumers"]:
@@ -143,7 +143,7 @@ report = {
     "packaged_files_equal_to_source": len(packaged),
     "canonical_runtime_csharp_and_source_notebooks_unchanged": True,
     "removed_files": len(removed), "notebooks": notebooks,
-    "mandarin_code_cells_executed": 5,
+    "proving_a_code_cells_executed": 5,
     "suite": counts,
     "symbols": dict(Counter(row["status"] for row in ledger["symbols"])),
     "consumers": len(ledger["consumers"]),

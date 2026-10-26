@@ -7,7 +7,7 @@ The user agreed to deliver a Model with sufficient investigation context to unde
 it and perform further investigations. The [current Bundle reference](../../reference/bundle.md)
 owns `rangekeeper.bundle/2-proposal` in RK 0.10.0.dev2. Canonical record schemas and
 the Parquet mapping remain unchanged. This is a local, uncommitted candidate on
-develop base ffda9b8; no stable release or Projects adoption is approved.
+develop base ffda9b8; no stable release or adoption by the primary consumer is approved.
 
 The [check record](checks.json) reports 870 RK tests covered. In the
 [full suite](rk-full.log), 869 passed and one local-display test was blocked by the
@@ -17,17 +17,17 @@ with the required permission. No product-code workaround was used.
 Twelve new investigation tests cover actual execution and further investigation,
 composed Specifications, unexecuted definitions, successful/failed batch children,
 copy conflict preflight, required references, identity, corruption, budgets,
-explicit history selection and repacking. Core's four added cases cover the
+explicit history selection and repacking. The primary consumer's four added cases cover the
 fresh-process handover, Geometry shared across Models (including a nonspatial main
-Model), exact query scope and conflicting supporting identities. Core passed 470 tests.
+Model), exact query scope and conflicting supporting identities. The primary consumer passed 470 tests.
 
-Core pins the new wheel and verifies all 145 packaged RK files against the source
+The primary consumer pins the new wheel and verifies all 145 packaged RK files against the source
 snapshot. Its installed-wheel handover repeated successfully with no originating
 workspace and no source-tree imports for either product package. See
-Core's review (external link omitted)
+the primary consumer's review (external link omitted)
 for the working review packet; this link is navigation, not a published checkpoint.
 
 RK remains in its single checkout on develop. Existing walkthrough/data and
 repository-state changes are preserved. The old dev1 wheel and 1-proposal evidence
-remain in Core. Expanded format review precedes T2 adoption. Wider provider, policy,
+remain in the primary consumer. Expanded format review precedes T2 adoption. Wider provider, policy,
 scale, transport/UI and real-host conformance remain within their existing gates.

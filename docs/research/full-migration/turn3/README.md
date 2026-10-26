@@ -17,11 +17,11 @@ and what the unresolved Windows connector gate still holds.
 | Upgrade-guide examples | Pass outside the checkout | [script](guide_example.py), [captured output](complete-guide.txt) (empty on success) |
 | Viewer | 35 unit checks pass; browser-only case then passes in actual Chrome | [unit](viewer-tests.txt), [browser](viewer-browser.txt) |
 | Workbench, layouts and transport | Included in full suite; 86 scoped tests pass, 24 MiniZinc skips | [JUnit](complete-suite.xml), [scoped result](complete-layout.txt) |
-| Three source builds | Mandarin, December and November R2 pass | [result](complete-project-builds.txt) |
+| Three source builds | Proving project A, December and November R2 pass | [result](complete-project-builds.txt) |
 | Exact historical comparisons | Domain, lineage and checks agree under named representation mappings | [result](complete-project-comparisons.txt), [comparator](compare_projects.py) |
-| Project tests and tooling | Mandarin 8 pass/1 separate-reference skip; East Whisman 6 pass; Ruff and ty pass | [result](complete-project-tests.txt) |
-| Older Mandarin SOM comparison | All 3 tests pass in a separate process | [result](complete-mandarin-history.txt) |
-| Mandarin review | Fresh kernel executes all 5 code cells from wheel-only Python 3.13 | [result](complete-mandarin-notebook.txt) |
+| Project tests and tooling | Proving project A 8 pass/1 separate-reference skip; proving project B 6 pass; Ruff and ty pass | [result](complete-project-tests.txt) |
+| Older proving project A architecture-practice comparison | All 3 tests pass in a separate process | [result](complete-proving-a-history.txt) |
+| Proving project A review | Fresh kernel executes all 5 code cells from wheel-only Python 3.13 | [result](complete-proving-a-notebook.txt) |
 | Full-size design on Python 3.10 and 3.13 | 36 contributors, 4,541 unknowns, 302 source Claims preserved; normal validation/export pass | [summary](large-design-summary.json), [3.10](accepted-design-310.txt), [3.13](accepted-design-313.txt) |
 | Independent real-design arithmetic | All 4,541 quantities, dates, components, reversion and PV agree | [3.10](complete-design-oracle-310.txt), [3.13](complete-design-oracle-313.txt), [oracle](design_oracle.py) |
 | New pinned Speckle read | Pass; 36 Entities, 14 Assemblies, 63 relationships | [result](complete-live-read.txt) |
@@ -29,7 +29,7 @@ and what the unresolved Windows connector gate still holds.
 | C# semantics and cross-language | Presence, identity, detachment, duplicate checks and full rich/ordered round trip pass | [pure checks](csharp-tests.txt), [Python check](accepted-cross-language.txt) |
 | Rhino 8 host | Recompute and reopen pass; identity stable and revision predecessor retained | [host](rk-ghx-report.json), [components](rk-ghx-state.json), [semantic comparison](rhino-comparison.json) |
 | Documentation | Rebuilt from accepted outputs; captured Plotly rendered offline; no build warnings | [build](complete-book.txt), [retention](complete-book-retention.txt) |
-| Consumer dependency scan | 0 runtime legacy references in migrated RK consumers and 17 active project sources | [RK](legacy-dependencies.json), [Projects](project-dependencies.json) |
+| Consumer dependency scan | 0 runtime legacy references in migrated RK consumers and 17 active project sources | [RK](legacy-dependencies.json), [primary consumer](project-dependencies.json) |
 | Preservation | 91 protected files unchanged; wheel matches source; HEADs unchanged and indexes empty | [result](accepted-preservation.txt), [hashes](preservation-final.json), [closing state](closing-state.json) |
 
 One additional profiled Python 3.10 process hit a native allocator crash after

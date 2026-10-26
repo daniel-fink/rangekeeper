@@ -9,7 +9,7 @@ The Windows gate remains open; earlier Turn 4 results below describe the precedi
 
 **Turn 4 update, 2026-10-06:** [Permitted legacy retirement](FULL_MIGRATION_TURN4.md)
 removes the superseded numerical/presentation modules and narrows optional
-dependencies. The paired Turn 3 checkpoint is pushed: RK `305f3ff`, Projects
+dependencies. The paired Turn 3 checkpoint is pushed: RK `305f3ff`, primary consumer
 `6146ad2`. Turn 4 is uncommitted. [Current acceptance](../research/full-migration/turn4/BASELINE.md)
 records 1,058 passing local tests, seven walkthroughs and all three real source
 builds. The [remaining retirement register](../research/full-migration/turn4/RETIREMENT.md)

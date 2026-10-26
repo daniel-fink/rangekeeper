@@ -10,7 +10,7 @@
     "projects": {
       "root": "[external path omitted]",
       "head": "6146ad2039278db773f3bdc2c159d82149d5abc1",
-      "branch": "feature/mandarin-assembly-layout",
+      "branch": "feature/proving-a-assembly-layout",
       "status": "M .gitignore",
       "remotes": "origin\tgit@github.com:daniel-fink[external path omitted] (fetch)\norigin\tgit@github.com:daniel-fink[external path omitted] (push)"
     },

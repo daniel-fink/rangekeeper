@@ -127,7 +127,7 @@ def main():
     external = {}
     for rel in (git(PROJECTS, "ls-files") or "").splitlines():
         parts = Path(rel).parts
-        if not parts or parts[0] not in {"mandarin", "east-whisman"}:
+        if not parts or parts[0] not in {"proving-a", "proving-b"}:
             continue
         if any(p in {"archive", "artifacts", "inputs"} for p in parts):
             continue

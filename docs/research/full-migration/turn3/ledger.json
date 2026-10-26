@@ -14526,7 +14526,7 @@
     },
     {
       "scope": "external",
-      "path": "east-whisman/pyproject.toml",
+      "path": "proving-b/pyproject.toml",
       "turn": 3,
       "status": "see named environment and acceptance in CONSUMERS.md; Windows connector remains open",
       "evidence": {
@@ -14548,7 +14548,7 @@
     },
     {
       "scope": "external",
-      "path": "east-whisman/spec/december/checks.yaml",
+      "path": "proving-b/spec/december/checks.yaml",
       "turn": 3,
       "status": "see named environment and acceptance in CONSUMERS.md; Windows connector remains open",
       "evidence": {
@@ -14559,7 +14559,7 @@
     },
     {
       "scope": "external",
-      "path": "east-whisman/spec/december/decisions.yaml",
+      "path": "proving-b/spec/december/decisions.yaml",
       "turn": 3,
       "status": "see named environment and acceptance in CONSUMERS.md; Windows connector remains open",
       "evidence": {
@@ -14570,7 +14570,7 @@
     },
     {
       "scope": "external",
-      "path": "east-whisman/spec/december/model.yaml",
+      "path": "proving-b/spec/december/model.yaml",
       "turn": 3,
       "status": "see named environment and acceptance in CONSUMERS.md; Windows connector remains open",
       "evidence": {
@@ -14581,7 +14581,7 @@
     },
     {
       "scope": "external",
-      "path": "east-whisman/spec/december/sources.yaml",
+      "path": "proving-b/spec/december/sources.yaml",
       "turn": 3,
       "status": "see named environment and acceptance in CONSUMERS.md; Windows connector remains open",
       "evidence": {
@@ -14592,7 +14592,7 @@
     },
     {
       "scope": "external",
-      "path": "east-whisman/spec/november-r2/checks.yaml",
+      "path": "proving-b/spec/november-r2/checks.yaml",
       "turn": 3,
       "status": "see named environment and acceptance in CONSUMERS.md; Windows connector remains open",
       "evidence": {
@@ -14603,7 +14603,7 @@
     },
     {
       "scope": "external",
-      "path": "east-whisman/spec/november-r2/decisions.yaml",
+      "path": "proving-b/spec/november-r2/decisions.yaml",
       "turn": 3,
       "status": "see named environment and acceptance in CONSUMERS.md; Windows connector remains open",
       "evidence": {
@@ -14614,7 +14614,7 @@
     },
     {
       "scope": "external",
-      "path": "east-whisman/spec/november-r2/model.yaml",
+      "path": "proving-b/spec/november-r2/model.yaml",
       "turn": 3,
       "status": "see named environment and acceptance in CONSUMERS.md; Windows connector remains open",
       "evidence": {
@@ -14625,7 +14625,7 @@
     },
     {
       "scope": "external",
-      "path": "east-whisman/spec/november-r2/sources.yaml",
+      "path": "proving-b/spec/november-r2/sources.yaml",
       "turn": 3,
       "status": "see named environment and acceptance in CONSUMERS.md; Windows connector remains open",
       "evidence": {
@@ -14636,7 +14636,7 @@
     },
     {
       "scope": "external",
-      "path": "east-whisman/tests/test_workflow.py",
+      "path": "proving-b/tests/test_workflow.py",
       "turn": 3,
       "status": "see named environment and acceptance in CONSUMERS.md; Windows connector remains open",
       "evidence": {
@@ -14668,7 +14668,7 @@
     },
     {
       "scope": "external",
-      "path": "mandarin/notebooks/01_workflow_review.ipynb",
+      "path": "proving-a/notebooks/01_workflow_review.ipynb",
       "turn": 3,
       "status": "see named environment and acceptance in CONSUMERS.md; Windows connector remains open",
       "evidence": {
@@ -14690,7 +14690,7 @@
     },
     {
       "scope": "external",
-      "path": "mandarin/presentation/layout.yaml",
+      "path": "proving-a/presentation/layout.yaml",
       "turn": 3,
       "status": "see named environment and acceptance in CONSUMERS.md; Windows connector remains open",
       "evidence": {
@@ -14707,7 +14707,7 @@
     },
     {
       "scope": "external",
-      "path": "mandarin/pyproject.toml",
+      "path": "proving-a/pyproject.toml",
       "turn": 3,
       "status": "see named environment and acceptance in CONSUMERS.md; Windows connector remains open",
       "evidence": {
@@ -14729,7 +14729,7 @@
     },
     {
       "scope": "external",
-      "path": "mandarin/spec/checks.yaml",
+      "path": "proving-a/spec/checks.yaml",
       "turn": 3,
       "status": "see named environment and acceptance in CONSUMERS.md; Windows connector remains open",
       "evidence": {
@@ -14740,7 +14740,7 @@
     },
     {
       "scope": "external",
-      "path": "mandarin/spec/decisions.yaml",
+      "path": "proving-a/spec/decisions.yaml",
       "turn": 3,
       "status": "see named environment and acceptance in CONSUMERS.md; Windows connector remains open",
       "evidence": {
@@ -14751,7 +14751,7 @@
     },
     {
       "scope": "external",
-      "path": "mandarin/spec/model.yaml",
+      "path": "proving-a/spec/model.yaml",
       "turn": 3,
       "status": "see named environment and acceptance in CONSUMERS.md; Windows connector remains open",
       "evidence": {
@@ -14762,7 +14762,7 @@
     },
     {
       "scope": "external",
-      "path": "mandarin/spec/sources.yaml",
+      "path": "proving-a/spec/sources.yaml",
       "turn": 3,
       "status": "see named environment and acceptance in CONSUMERS.md; Windows connector remains open",
       "evidence": {
@@ -14773,7 +14773,7 @@
     },
     {
       "scope": "external",
-      "path": "mandarin/tests/test_equivalence.py",
+      "path": "proving-a/tests/test_equivalence.py",
       "turn": 3,
       "status": "see named environment and acceptance in CONSUMERS.md; Windows connector remains open",
       "evidence": {
@@ -14815,7 +14815,7 @@
     },
     {
       "scope": "external",
-      "path": "mandarin/tests/test_workflow.py",
+      "path": "proving-a/tests/test_workflow.py",
       "turn": 3,
       "status": "see named environment and acceptance in CONSUMERS.md; Windows connector remains open",
       "evidence": {

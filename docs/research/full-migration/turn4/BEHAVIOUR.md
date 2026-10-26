@@ -42,9 +42,9 @@ and container tests; it does not count removed tests as passed.
   The routine scenario count is visibly four; 2,000 remains selectable.
 - Deterministic, probabilistic, flexible and linear financial test models use the
   canonical implementation and pass in the full suite.
-- Mandarin and both East Whisman scenarios use a normal Python 3.13 wheel install
+- Proving project A and both proving project B scenarios use a normal Python 3.13 wheel install
   without numerical, dataframe, service or plotting libraries. Builds, strict
-  comparisons and project checks pass. Mandarin also runs its review notebook.
+  comparisons and project checks pass. Proving project A also runs its review notebook.
 - The two documentation examples now import Evidence records from `evidence`
   and `operation` from the root public export. Both execute outside the checkout.
 - Old graph/Measure/Speckle regression tests remain attached to the Windows hold.

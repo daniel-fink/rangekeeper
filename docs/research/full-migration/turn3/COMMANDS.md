@@ -42,7 +42,7 @@ wheel-first imports, and isolated plotting/cache directories. Each notebook star
 its own fresh kernel. The historical 2,000-scenario option remains available but
 is not a routine acceptance run.
 
-## Projects
+## Primary consumer
 
 The new project environment was created with Python 3.13.11 and the original
 project dependencies, then installed with the exact wheel and no editable RK.
@@ -60,14 +60,14 @@ UV_CACHE_DIR=/private/tmp/rk-turn3-uv-cache /Users/daniel/.local/bin/uv pip inst
 
 `prepare` requires a fresh destination and reads original inputs. It copies no
 archives, environments or prior build outputs. `build` creates all three Models;
-`tests` runs pytest, Ruff and ty for each project. `notebook` runs Mandarin's thin
+`tests` runs pytest, Ruff and ty for each project. `notebook` runs proving project A's thin
 review in a new kernel and checks source hashes. The separate comparator uses
 private historical bundles under `/private/tmp/rk-turn3-private/baseline`.
 
-The older Mandarin SOM test is separate. From the copied Mandarin directory:
+The older proving project A architecture-practice test is separate. From the copied proving project A directory:
 
 ```sh
-MANDARIN_REFERENCE=[external path omitted] MANDARIN_CANDIDATE=/private/tmp/rk-turn3-complete-project-bootstrap/results/mandarin/runs/5400730b-c910-43ff-a8a8-e5e529555f1d /private/tmp/rk-turn3-project-venv/bin/python -m pytest tests/test_equivalence.py -q
+PROVING_A_REFERENCE=[external path omitted] PROVING_A_CANDIDATE=/private/tmp/rk-turn3-complete-project-bootstrap/results/proving-a/runs/5400730b-c910-43ff-a8a8-e5e529555f1d /private/tmp/rk-turn3-project-venv/bin/python -m pytest tests/test_equivalence.py -q
 ```
 
 Select the new successful attempt directory when reproducing the check. The ordinary suite skips this

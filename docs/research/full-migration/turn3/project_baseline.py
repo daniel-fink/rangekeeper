@@ -16,9 +16,9 @@ parser.add_argument("--projects", type=Path, required=True)
 parser.add_argument("--output", type=Path, required=True)
 args = parser.parse_args()
 for project, spec, name in [
-    ("mandarin", "spec", "mandarin"),
-    ("east-whisman", "spec/december", "december"),
-    ("east-whisman", "spec/november-r2", "november-r2"),
+    ("proving-a", "spec", "proving-a"),
+    ("proving-b", "spec/december", "december"),
+    ("proving-b", "spec/november-r2", "november-r2"),
 ]:
     root = args.projects / project
     outcome = run(load(root / spec), input_root=root / "inputs")

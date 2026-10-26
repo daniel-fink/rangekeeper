@@ -9,7 +9,7 @@ The Windows gate remains open; earlier Turn 4 results below describe the precedi
 
 **Turn 4 update, 2026-10-06:** [Permitted legacy retirement](FULL_MIGRATION_TURN4.md)
 removes the superseded numerical/presentation modules and narrows optional
-dependencies. The paired Turn 3 checkpoint is pushed: RK `305f3ff`, Projects
+dependencies. The paired Turn 3 checkpoint is pushed: RK `305f3ff`, primary consumer
 `6146ad2`. Turn 4 is uncommitted. [Current acceptance](../research/full-migration/turn4/BASELINE.md)
 records 1,058 passing local tests, seven walkthroughs and all three real source
 builds. The [remaining retirement register](../research/full-migration/turn4/RETIREMENT.md)
@@ -68,7 +68,7 @@ record current APIs; remaining consumer interfaces below are migration contracts
 [the observed baseline](../research/domain-migration/BASELINE.md), the
 [work plan](DOMAIN_MIGRATION_PLAN.md), and [architecture](../concepts/architecture.md).
 The baseline inspected 93 Python modules, seven walkthrough notebooks, and the
-available Mandarin/East Whisman consumer references. Live services, external
+available proving project A/proving project B consumer references. Live services, external
 project execution, and Rhino/Grasshopper remain unverified.
 
 ## Decisions
@@ -115,7 +115,7 @@ symbol locations, imports, notebook code references, and inspected consumer hash
 | `graph/definitions.py`, `taxonomy.py`, `classification.py` | Current reference resolution uses live instances; new Definitions also contains Functions. | **Replace** fields; **adapt** catalogue lookup/hierarchy checks into `model/definitions.py` and validation. | Entity/Label validation, query/filtering. Retire instance-check contract after UUID scope tests pass. |
 | `measure.py: Measure, QuantityKind, AggregationRule, Index` | Schema Measure has unit text, no implicit aggregation rule; Quantity is explicit magnitude/units. Existing count/currency conventions need separation. | **Replace** domain shape in `model/measure.py`; **adapt** numerical unit operations in `units.py`; **retain** legacy unit API until numerical consumers migrate. | Numerical modules/notebooks, graph reductions. New core must not import old Measure. Test incompatible currencies/count dimensions and explicit reducers. |
 | `graph/provenance.py: Source, Claim, Fact, Provenance, locations` | Current Facts target object instances; provenance derives catalogues from live references. New records have UUID references and canonical collections. | **Replace** fields; **adapt** Fact/Claim checks and source-location traversal into `model/provenance.py`. | Ingestion, workflow reviews, output publication. Verify typed Fact targets, claim cycles, selected-content agreement for supported targets. |
-| `graph/revision.py: Revision, Diff, Delta`; `update.py: Update, _Candidate` | Separate graph revision envelope and enumerated legacy collections omit mathematics. | **Replace** revision envelope; **retain/adapt** atomic candidate pattern and UUID comparison. New `model/update.py`, `model/diff.py`. | Mandarin equivalence and Graph tests. Require complete-document validation and preserved input before retirement. |
+| `graph/revision.py: Revision, Diff, Delta`; `update.py: Update, _Candidate` | Separate graph revision envelope and enumerated legacy collections omit mathematics. | **Replace** revision envelope; **retain/adapt** atomic candidate pattern and UUID comparison. New `model/update.py`, `model/diff.py`. | Proving project A equivalence and Graph tests. Require complete-document validation and preserved input before retirement. |
 | `graph/adapter/json.py` | Registered-class `rk.graph` persistence is not Model interchange; supports payloads outside current schema. | **Replace** new-document codec in `io`; **retain** old codec for old consumers during migration. | Graph JSON tests, workflow exports, external comparisons. No auto-detection as Model and no implicit conversion. |
 | `graph/view.py` | Useful selection/filter/traversal API, but tied to Graph and its instance checks. | **Adapt** to Model; retain selection-by-ID and immutable results. | Table, visualization, reductions. Verify membership, roots/leaves, direction and filtered endpoints. |
 | `graph/reduction.py` | Good Reduction/Aggregation/Coverage separation; `by_measure` implies reducer from Measure and unique measurement. | **Adapt** to explicit Value selector and reducer; retain coverage distinction. | Tables, project totals. Verify missing data/known subtotal and no implicit zero or arbitrary Measure selection. |
@@ -125,7 +125,7 @@ symbol locations, imports, notebook code references, and inspected consumer hash
 | Root `__init__.py`, `validate.py` | Root eagerly imports measure/graph; includes plotting helper and class-patching decorator. | **Adapt** explicit lightweight domain exports and lazy optional modules; **retain** legacy helpers until actual consumers move. | Import smoke tests and notebooks using `update_class`. New core depends on neither helper. |
 | `api.py: Speckle` | V2 service integration in generically named module; old domain conversion. | **Defer/adapt** to `adapters/speckle` after scalar core. | Live API tests, design notebooks, Grasshopper. Unverified until service/host acceptance. |
 | `graph/adapter/{excel,document,csv,pandas,cytoscape,visualization}` | Format parsing useful; domain exporters/projectors reference Graph. | **Retain** format readers; **adapt** projections/construction, later move to `adapters`. | Existing adapter tests. Do not move directories before interfaces are exercised. |
-| `graph/workflow/{catalog,runtime,composition,...}` | Closed operation catalogue and explicit wiring are useful; composition builds Graph measurements/features. | **Retain** operation wiring/Evidence; **adapt** Model construction in Step 6. | Mandarin/East Whisman, workflow suites. Feature-rich inputs require explicit later contract work. |
+| `graph/workflow/{catalog,runtime,composition,...}` | Closed operation catalogue and explicit wiring are useful; composition builds Graph measurements/features. | **Retain** operation wiring/Evidence; **adapt** Model construction in Step 6. | Proving project A/proving project B, workflow suites. Feature-rich inputs require explicit later contract work. |
 | `flux`, `duration`, `distribution`, `extrapolation`, `projection`, `formula`, `dynamics`, `segmentation`, `space`, `policy` | Numerical/presentation behavior is not schema record shape; pandas Flow coerces numeric content; Policy contains callbacks. | **Retain** numerical algorithms; **defer** rich payload and symbolic bridges. | Numerical tests and seven notebooks. Do not convert callbacks into serialized mathematics. |
 
 ## Factoring and naming contract
@@ -453,14 +453,14 @@ children = view.successors(parent_id)
 | JSON/CSV/pandas/viewer adapters | **After core**: separate canonical document persistence from projections. | 20 existing Graph JSON tests, 39 adapter cases (one current failure), two Cytoscape cases; new Model round trips and projection tests. Old JSON codec stays for old consumers. |
 | Document/Excel/ingestion capabilities | **Retain reading**, migrate domain binding later. | 17 document, 31 Excel, 46 ingestion, 13 tabular cases. Preserve source fingerprints and evidence addresses. |
 | Source workflows and closed catalog | **Step 6**: Model construction, UUID references, explicit Value keys, new output codec; keep workflow-specific specification and invocation results. | 91 current workflow-family tests plus project fixtures. Retire old composition after explicit Feature policy is accepted. |
-| Mandarin and East Whisman | **Step 6 / richer-content gate**. Imports Graph JSON, provenance, workflow; Mandarin also Diff and Feature. Shared project repo inspected at `5725cc02748ace15e390c8dcea2c5d69185d67c9`, requires Python 3.13 for Mandarin. | Project test/equivalence suites and reviewed exports in their own environment. Not executed here. Migrate persisted comparisons intentionally; do not assert byte equality across different interchange formats. |
+| Proving project A and proving project B | **Step 6 / richer-content gate**. Imports Graph JSON, provenance, workflow; proving project A also Diff and Feature. Shared project repo inspected at `5725cc02748ace15e390c8dcea2c5d69185d67c9`, requires Python 3.13 for proving project A. | Project test/equivalence suites and reviewed exports in their own environment. Not executed here. Migrate persisted comparisons intentionally; do not assert byte equality across different interchange formats. |
 | Seven walkthrough notebooks | **After relevant consumers/numerics**. Two use Speckle, others use Flux/duration/units; several use root `update_class` and obsolete distribution/graph calls. | Clean-kernel runs with declared data/services; compare numerical outputs. Inspection only; no notebook has been certified by this step. |
 | Grasshopper C# | **Later integration**. Entity inherits Speckle Base; model references Speckle 2.18.0. | Pure cross-language Model fixture tests plus Rhino/Windows authoring acceptance. Current README's Snapshot/Phase 6 description is historical; new Model contract supersedes it. No host verification here. |
 | Hypar directory | **Retired and removed**. No Git-tracked source existed; ignored build/editor residue was removed at the user's request. | No migration or acceptance task. Preserve the [removal record](../research/full-migration/hypar-removal/README.md) and earlier research. |
 | Root Speckle API | **Later integration**; legacy conversions used by design notebooks. | Three live tests excluded from baseline. Require available service fixtures and explicit transport environment. |
 | Numerical modules, formula examples, Policy | **Retain initially**; bridge later. | 58 numerical/unit/module cases passed, one residual expectation failed. Root class-patching helper remains until notebooks/examples are migrated; no new core use. |
 
-The external inventory excludes archived Mandarin implementations from the active
+The external inventory excludes archived proving project A implementations from the active
 migration queue. Their existence does not require reviving those APIs. Downstream
 inspection is bounded to the available projects, not a claim of exhaustive private
 consumer discovery.

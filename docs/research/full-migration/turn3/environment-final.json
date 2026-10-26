@@ -499,7 +499,7 @@
         "comm": "0.2.3"
       }
     },
-    "mandarin-original": {
+    "proving-a-original": {
       "python": "3.13.11 (main, Jan 14 2026, 23:14:53) [Clang 21.1.4 ]",
       "executable": "[external path omitted]",
       "rangekeeper": "/Volumes/Data/Projects/Rangekeeper/src/rangekeeper/__init__.py",
@@ -659,7 +659,7 @@
         "comm": "0.2.3"
       }
     },
-    "east-whisman-original": {
+    "proving-b-original": {
       "python": "3.13.11 (main, Jan 14 2026, 23:14:53) [Clang 21.1.4 ]",
       "executable": "[external path omitted]",
       "rangekeeper": "/Volumes/Data/Projects/Rangekeeper/src/rangekeeper/__init__.py",

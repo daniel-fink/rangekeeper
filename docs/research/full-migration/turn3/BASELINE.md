@@ -10,14 +10,14 @@ scope and remaining obligations.
 ## Starting state and preservation
 
 [baseline.json](baseline.json) records branch, HEAD, dirty paths and tracked-file
-hashes for RK `b9de7fc5781ffb0c8f427968d92fcb600fc438c5`, Projects
+hashes for RK `b9de7fc5781ffb0c8f427968d92fcb600fc438c5`, primary consumer
 `5725cc02748ace15e390c8dcea2c5d69185d67c9`, and the read-only layout reference
 `4e5aec42f16a18c4d715f5a2a1b879d98e0f71e3`. Fresh baseline results were 971 RK
-local tests, six Mandarin tests and six East Whisman tests. These are starting
+local tests, six proving project A tests and six proving project B tests. These are starting
 results, not final acceptance counts.
 
 The user supplied ASD-STE100 reply guidance and the approved implementation plan.
-Projects root, Mandarin and East Whisman `AGENTS.md` files also apply. Their
+The primary consumer root, proving project A and proving project B `AGENTS.md` files also apply. Their
 source-preservation and environment-only boundaries were followed: interpretation
 stays in YAML, reusable operations live in RK, and archives are not executed.
 
@@ -40,7 +40,7 @@ checkout, with a declared fixture mode and four routine uncertainty scenarios.
 | RK tests and notebooks | Python 3.10.19, `/private/tmp/rk-full-runtime/bin/python`; NumPy 2.2.6, SciPy 1.15.3, pandas 2.3.2, Polars 1.44.2, Pint 0.24.4, PyXIRR 0.10.7, Pyomo 6.10.1, HiGHS 1.15.1 |
 | Schema | `/private/tmp/rk-probe-audit-venv/bin/python`; LinkML 1.11.1, linkml-runtime 1.11.1, jsonschema 4.26.0 |
 | Typing | Runtime Python with mypy 1.18.2 via `/private/tmp/rk-record-typecheck` |
-| Projects | Python 3.13.11; original independent project environments plus a new isolated `/private/tmp/rk-turn3-project-venv` |
+| Primary consumer | Python 3.13.11; original independent project environments plus a new isolated `/private/tmp/rk-turn3-project-venv` |
 | Viewer | Node 24.15.0, bundled TypeScript/esbuild tests, real Chrome interaction check |
 | C# | SDK 10.0.401 builds `net8.0`; Rhino 8.35.26251.13002 supplies .NET runtime 8.0.14 on arm64 Mac |
 | Documentation | Jupyter Book 1.0.4.post1, offline HTML and captured notebook outputs |
@@ -66,16 +66,16 @@ retained seven warnings concern old pandas frequency aliases in `_legacy_duratio
 
 The three real source builds and strict separate comparisons preserve quantities,
 units, source cells, relationship endpoints, membership and reviewed decisions.
-Named changes are explicit unresolved measurements (Mandarin 6, December 2,
+Named changes are explicit unresolved measurements (proving project A 6, December 2,
 November R2 34), Feature-to-property Values, deterministic new Value IDs, enum
 wire spelling and canonical unit spelling. No broad category of difference is
-ignored. Mandarin's older SOM comparison remains a separate test process.
+ignored. Proving project A's older architecture-practice comparison remains a separate test process.
 
 | Build | Canonical objects (Entities and Assemblies) | Relationships | Source checks |
 |---|---:|---:|---|
-| Mandarin | 377 | 376 | 776 agree, 14 unavailable, 28 difference |
-| East Whisman December | 73 | 72 | 368 agree, 6 unavailable |
-| East Whisman November R2 | 37 | 36 | 144 agree, 45 unavailable |
+| Proving project A | 377 | 376 | 776 agree, 14 unavailable, 28 difference |
+| Proving project B December | 73 | 72 | 368 agree, 6 unavailable |
+| Proving project B November R2 | 37 | 36 | 144 agree, 45 unavailable |
 
 These source-check differences are retained business evidence, not new test
 failures. The project bootstrap copies only current specifications, tests,

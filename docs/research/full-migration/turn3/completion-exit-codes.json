@@ -35,7 +35,7 @@
     "still_running": false
   },
   {
-    "name": "mandarin_notebook",
+    "name": "proving_a_notebook",
     "exit_code": 0,
     "still_running": false
   },
@@ -45,7 +45,7 @@
     "still_running": false
   },
   {
-    "name": "mandarin_history",
+    "name": "proving_a_history",
     "exit_code": 0,
     "still_running": false
   },

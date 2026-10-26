@@ -76,7 +76,7 @@ output counts, import path, table markup and numerical assertions were inspected
 No visual browser review is claimed.
 
 Three live-service tests in `tests/test_api.py` remain excluded and unverified.
-External Projects, host integrations, indexed formulations, scenario/policy work
+External primary consumer, host integrations, indexed formulations, scenario/policy work
 and final legacy retirement retain their existing acceptance gates. No commit,
 push, release or dependency update occurred.
 
