@@ -33,7 +33,7 @@ site/
 node_modules/
 examples/walkthrough/viewer/dist/
 
-# .NET (src/grasshopper)
+# .NET (examples/grasshopper)
 bin/
 obj/
 *.user

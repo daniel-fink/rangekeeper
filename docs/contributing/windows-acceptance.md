@@ -42,7 +42,7 @@ a concrete destination and explicit authorization.
    with verified Rhino reference paths. Do not load the excluded predecessor
    components. Close all Rhino processes before replacing an assembly; then load
    it in a fresh process and verify its version/hash.
-2. Use [`connector-envelope.json`](../../src/grasshopper/Tests/Fixtures/connector-envelope.json)
+2. Use [`connector-envelope.json`](../../examples/grasshopper/Tests/Fixtures/connector-envelope.json)
    as the small public boundary fixture. It includes membership and property
    null/false/zero/ordered content. Create simple native Rhino geometry and record
    its actual Rhino UUID separately in the association. Preserve the Model
