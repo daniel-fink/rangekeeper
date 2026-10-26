@@ -500,14 +500,15 @@ against them. Each break of a rule goes onto the gap list, not into a helper.
 Third-party sources are cited by link and not copied
 ([ADR-019](019-walkthrough-direction.md)). Lessons use the books' methods with
 the property's own numbers. Lesson 01 reproduces the small Table 1.1 example,
-with a citation.
+with a citation. The publisher gave permission to reuse the four figures below
+with attribution.
 
 | Source | Owner | Use | Treatment |
 | --- | --- | --- | --- |
-| Table 1.1, de Neufville and Geltner (2018) | Publisher | Lesson 01 | Original kept with attribution while [#76](https://github.com/daniel-fink/rangekeeper/issues/76) is open. Fallback: the table that lesson 01 computes |
-| Table 4.1, same book | Publisher | Lesson 03 | Original kept while #76 is open. Fallback: lesson 03's computed case table |
-| Figure 7.2, same book | Publisher | Lesson 04 | Original kept while #76 is open. Fallback: a chart of lesson 04's own path components |
-| Figure 9.1, same book | Publisher | Lesson 05 | Original kept while #76 is open. Fallback: a new diagram |
+| Table 1.1, de Neufville and Geltner (2018) | Publisher | Lesson 01 | Original used with the publisher's permission and with attribution ([#76](https://github.com/daniel-fink/rangekeeper/issues/76)) |
+| Table 4.1, same book | Publisher | Lesson 03 | Original used with the publisher's permission and with attribution (#76) |
+| Figure 7.2, same book | Publisher | Lesson 04 | Original used with the publisher's permission and with attribution (#76) |
+| Figure 9.1, same book | Publisher | Lesson 05 | Original used with the publisher's permission and with attribution (#76) |
 | Text and Garden City chapters, same book | Publisher | Lessons 04, 05, 07 | Cite chapter and section by [DOI](https://doi.org/10.1002/9781119106470). The PDF is not in the repository and is not linked as a file |
 | Chapter spreadsheets (`ch16.xlsx` to `ch23.xlsx`) and slides | Book authors | Method checks during preparation | Not committed and not redistributed. Cite the chapter and exhibit |
 | Geltner et al. (2007), section 28.4.1, Exhibits 28-4 and 28-5 | Publisher | Lesson 02 | Cite edition, section and page. Do not reproduce the exhibits |
@@ -560,9 +561,8 @@ a sub-issue of #209 tracks lesson 07.
   to eight lessons. Lesson 03's cases carry leverage naturally.
 - **An integration lesson for developers.** It was rejected. Under the hood
   asides keep one path through the book.
-- **Redraw all four figures now.** It was rejected for the moment. The
-  originals stay while #76 asks for permission. Each figure has a planned
-  fallback.
+- **Redraw all four figures.** It was rejected. The publisher gave permission
+  to reuse the originals with attribution (#76).
 
 The order puts the solve before the graph. Lessons 02–05 therefore need the
 property's totals as data before lesson 06 derives them. Lesson 06 must show
