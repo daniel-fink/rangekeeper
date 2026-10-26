@@ -81,5 +81,6 @@ def graph_html(
 
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
-    network.write_html(str(target), open_browser=False, notebook=False)
+    # PyVis writes with the platform encoding; the inline page needs UTF-8.
+    target.write_text(network.generate_html(notebook=False), encoding="utf-8")
     return target

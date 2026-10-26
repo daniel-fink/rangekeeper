@@ -458,8 +458,19 @@ def test_deadline_kills_and_reaps_a_stalled_worker(monkeypatch, tmp_path):
     assert time.monotonic() - started < 5
     assert run.report.status.completion == CompletionStatus.LIMITED
     assert run.report.status.solution == SolutionStatus.UNKNOWN
-    with pytest.raises(ProcessLookupError):
-        os.kill(int(pid_file.read_text()), 0)
+    pid = int(pid_file.read_text())
+    if os.name == "nt":
+        # Signal 0 does not test a process on Windows.
+        listing = subprocess.run(
+            ["tasklist", "/FI", f"PID eq {pid}", "/NH"],
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout
+        assert str(pid) not in listing
+    else:
+        with pytest.raises(ProcessLookupError):
+            os.kill(pid, 0)
 
 
 @pytest.mark.parametrize(
