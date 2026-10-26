@@ -49,14 +49,14 @@ The split adds no public library API changes.
 
 ## Local worktrees
 
-These paths identify the worktrees on the machine used for this split. They are
-local locations, not requirements for another clone.
+This table identified the worktrees on the machine used for this split. Local
+paths were removed on 2026-10-26; they were not requirements for another clone.
 
 | Use | Branch | Local path |
 | --- | --- | --- |
-| Code development | `develop` | `/Users/daniel/.codex/worktrees/integrate-acausal/Rangekeeper` |
-| Walkthrough writing and preview | `codex/walkthrough-acausal` | `/Users/daniel/.codex/worktrees/walkthrough-acausal/Rangekeeper` |
-| Saved checkpoint checkout | `acausal-modelling` | `/Volumes/Data/Projects/Rangekeeper` |
+| Code development | `develop` | Separate local worktree |
+| Walkthrough writing and preview | `codex/walkthrough-acausal` | Separate local worktree |
+| Saved checkpoint checkout | `acausal-modelling` | Primary local checkout |
 
 Use `git status --short --branch` before changing branches or committing work.
 The code and draft worktrees were clean after the split. Further code and schema

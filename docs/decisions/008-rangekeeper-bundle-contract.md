@@ -336,7 +336,7 @@ These define source formats and adapter options, not local implementation accept
 
 ## Earlier SQLite experiment — not Package conformance
 
-The [prototype](../../tools/sqlite_spike/package.py) derives record tables and
+The [prototype](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/tools/sqlite_spike/package.py) derives record tables and
 columns from the generated `src/rangekeeper/schema/slots.json` contract. That
 contract comes from the authoritative LinkML schema. There is no second handwritten
 list of domain fields and no dependency on the consumer CMS's physical database structure.
@@ -410,7 +410,7 @@ trusting a received artifact. The reader is an experiment for trusted local file
 not a hostile-file parser or an externally exposed SQL service.
 
 See [the local evidence](../research/sqlite-model-2026-10-13/README.md) and
-[repeatable commands](../../tools/sqlite_spike/README.md).
+[repeatable commands](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/tools/sqlite_spike/README.md).
 
 ### Generator and host assessment
 

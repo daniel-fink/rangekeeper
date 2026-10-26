@@ -18,7 +18,7 @@ with navigation links updated.
 This runbook provisions and operates the dedicated Windows host used to build
 and accept Rangekeeper's Rhino 8/Grasshopper/Speckle v3 authoring path. It is the
 operational companion to Phase 6 of
-[`GRAPH_REFACTOR_IMPLEMENTATION_PLAN.md`](GRAPH_REFACTOR_IMPLEMENTATION_PLAN.md).
+[`GRAPH_REFACTOR_IMPLEMENTATION_PLAN.md`](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/history/GRAPH_REFACTOR_IMPLEMENTATION_PLAN.md).
 
 The provisioning notes below originated before the Rhino 8/.NET 8 migration.
 They retain historical assumptions and target commands. Use the current gate at

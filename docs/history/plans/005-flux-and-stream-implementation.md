@@ -1002,7 +1002,7 @@ rich notebook display through the shared Stream renderer. The agreed projection
 verbs are `extrapolate(initial=..., periods=...)` and
 `distribute(quantity=..., periods=..., distribution=...)`, replacing `project`
 and `allocate` without aliases. `Distribution`, `negate()` and `collapse()` retain
-their meanings. See the [API acceptance](../../research/basic-dcf-2026-10-08/api.md).
+their meanings. See the [API acceptance](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/research/basic-dcf-2026-10-08/api.md).
 
 The first walkthrough is migrated from its legacy teaching baseline, with its
 guidance, intermediate inspections and financial example retained. Its 26 code

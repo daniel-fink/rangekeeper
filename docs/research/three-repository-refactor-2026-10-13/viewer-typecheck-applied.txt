@@ -1,5 +1,0 @@
-Edited historical extract, 17 October 2026: external application identifiers and paths were omitted. This is not an unchanged capture or a new RK verification run.
-
-
-> [external identifier omitted]@0.0.1 typecheck
-> tsc --noEmit

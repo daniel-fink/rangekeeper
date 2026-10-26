@@ -22,23 +22,29 @@ Keep remaining work visible before moving a plan out of the current index.
 - [RF-001–RF-023](plans/REFACTORING_PLAN.md): coordinated domain refactoring.
 - [RF-024–RF-034](plans/REFACTORING_FOLLOWUP_PLAN.md): ownership and module consolidation.
 - [Documentation structure](plans/DOCUMENTATION_PLAN.md): consolidation and native project placement.
-- [Acausal modelling handoff](handoffs/2026-10-02-acausal-modelling.md): the 2 October checkpoint.
-- [Source-workflow foundations](source-workflows/2026-09-17-foundations.md): earlier APIs and validation results.
 - [Integration record](source-workflows/2026-10-08-integration-record.md): recorded integration scope and limits.
 - [Windows provisioning](windows-provisioning.md): superseded Rhino 7 setup.
-- [Graph coverage](graph-coverage.md): the earlier feature inventory.
 
 ## Earlier design and migration records
 
-- [Domain Migration Map](DOMAIN_MIGRATION_MAP.md)
 - [Domain Migration Plan](DOMAIN_MIGRATION_PLAN.md)
-- [Graph Refactor Implementation Plan](GRAPH_REFACTOR_IMPLEMENTATION_PLAN.md)
-- [Graph Adapter Review](GRAPH_ADAPTER_REVIEW.md)
-- [Graph Yaml Workflow](GRAPH_YAML_WORKFLOW.md)
 - [Schema Tooling Evaluation](SCHEMA_TOOLING_EVALUATION.md)
-- [Full Migration Review](FULL_MIGRATION_REVIEW.md)
-- [Full Migration Turn1](FULL_MIGRATION_TURN1.md)
-- [Full Migration Turn2](FULL_MIGRATION_TURN2.md)
-- [Full Migration Turn3](FULL_MIGRATION_TURN3.md)
-- [Full Migration Turn4](FULL_MIGRATION_TURN4.md)
 - [Redevelopment and policy proposal](PROJECT_DEFINITION_AND_POLICY_EXAMPLE.md)
+
+## Archived records
+
+These records are at tag `archive/pre-1.0-evidence`. No current page depends on
+them. They remain unchanged at the tag.
+
+- [Acausal modelling handoff](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/history/handoffs/2026-10-02-acausal-modelling.md): the 2 October checkpoint.
+- [Source-workflow foundations](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/history/source-workflows/2026-09-17-foundations.md): earlier APIs and validation results.
+- [Graph coverage](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/history/graph-coverage.md): the earlier feature inventory.
+- [Domain migration map](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/history/DOMAIN_MIGRATION_MAP.md): the Step 1 design for the domain migration.
+- [Graph refactor implementation plan](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/history/GRAPH_REFACTOR_IMPLEMENTATION_PLAN.md)
+- [Graph adapter review](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/history/GRAPH_ADAPTER_REVIEW.md)
+- [Graph YAML workflow](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/history/GRAPH_YAML_WORKFLOW.md)
+- [Full migration review](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/history/FULL_MIGRATION_REVIEW.md)
+- [Full migration turn 1](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/history/FULL_MIGRATION_TURN1.md)
+- [Full migration turn 2](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/history/FULL_MIGRATION_TURN2.md)
+- [Full migration turn 3](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/history/FULL_MIGRATION_TURN3.md)
+- [Full migration turn 4](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/history/FULL_MIGRATION_TURN4.md)

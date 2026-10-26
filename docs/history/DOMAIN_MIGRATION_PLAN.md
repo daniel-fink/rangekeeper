@@ -7,47 +7,47 @@ predecessor tests in `src/tests/legacy`, and excluded C# code in `grasshopper/le
 Old public paths have no aliases. See [the boundary and current checks](../contributing/legacy-retirement.md).
 The Windows gate remains open; earlier Turn 4 results below describe the preceding wheel.
 
-**Turn 4 update, 2026-10-06:** [Permitted legacy retirement](FULL_MIGRATION_TURN4.md)
+**Turn 4 update, 2026-10-06:** [Permitted legacy retirement](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/history/FULL_MIGRATION_TURN4.md)
 removes the superseded numerical/presentation modules and narrows optional
 dependencies. The paired Turn 3 checkpoint is pushed: RK `305f3ff`, primary consumer
-`6146ad2`. Turn 4 is uncommitted. [Current acceptance](../research/full-migration/turn4/BASELINE.md)
+`6146ad2`. Turn 4 is uncommitted. [Current acceptance](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/research/full-migration/turn4/BASELINE.md)
 records 1,058 passing local tests, seven walkthroughs and all three real source
-builds. The [remaining retirement register](../research/full-migration/turn4/RETIREMENT.md)
+builds. The [remaining retirement register](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/research/full-migration/turn4/RETIREMENT.md)
 holds old graph/Measure/Speckle API and excluded C# code for the Windows connector
 gate. Full retirement is not complete. Hypar is retired; Browser/outliner is on hold.
 Dated checkpoints below remain historical and do not override this current state.
 
 
-**Turn 2 update, 2026-10-06:** [Temporal equations, scenarios and policies](FULL_MIGRATION_TURN2.md)
+**Turn 2 update, 2026-10-06:** [Temporal equations, scenarios and policies](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/history/FULL_MIGRATION_TURN2.md)
 now use Model/Specification 0.5.0 and Run 0.2.0. `ValueReference` addresses scalar
 Values or owner-local Movement keys. The canonical calendar package is `duration/`;
 `temporal` has no public alias. Finite Flow formulations, captured scenario replay,
 exogenous declarative policies and the four numerical walkthroughs are implemented.
-See [verification](../research/full-migration/turn2/README.md) and the
+See [verification](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/research/full-migration/turn2/README.md) and the
 [upgrade guide](../guides/upgrading.md). Turn 3 completes remaining consumers and
 integrations; Turn 4 retires obsolete code after their acceptance gates.
 The dated checkpoint descriptions below remain historical context.
 
 **Movement naming, 2026-10-06:** the current API uses `Movement` and
-`Flow.movements`. See the [naming contract](FULL_MIGRATION_TURN1.md#movement-naming)
+`Flow.movements`. See the [naming contract](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/history/FULL_MIGRATION_TURN1.md#movement-naming)
 for the Python/wire-format change and upgrade requirements.
 
 **Flow semantics update, 2026-10-06:** Flows no longer carry semantic kinds or
 basis. The overall model logic owns their meaning and selects operations; units,
 dates, alignment and missingness remain checked. See the
-[current contract](FULL_MIGRATION_TURN1.md#flow-semantics-and-explicit-operations)
-and [verification](../research/full-migration/flow-semantics/README.md).
+[current contract](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/history/FULL_MIGRATION_TURN1.md#flow-semantics-and-explicit-operations)
+and [verification](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/research/full-migration/flow-semantics/README.md).
 
-**Full migration update, 2026-10-04:** [Turn 1 foundations](FULL_MIGRATION_TURN1.md)
+**Full migration update, 2026-10-04:** [Turn 1 foundations](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/history/FULL_MIGRATION_TURN1.md)
 implements Model 0.4.0 rich properties and Flow Values, `model.duration`,
 `temporal`, `calculations`, detached dataframe adapters, and explicit Graph conversion.
 The basic DCF notebook, financial test model and synthetic source workflows migrated.
-Read the [upgrade guide](../guides/upgrading.md) and [verification](../research/full-migration/turn1/README.md).
-The [date-only correction](../research/full-migration/date-only/README.md) removes
+Read the [upgrade guide](../guides/upgrading.md) and [verification](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/research/full-migration/turn1/README.md).
+The [date-only correction](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/research/full-migration/date-only/README.md) removes
 TimePoint. Period movements store coverage; a separate date is optional and records
 an independent payment or observation. Dated valuation requires explicit timing
 when the movement has no recorded date.
-[Financial-library integration](../research/full-migration/financial-library/README.md)
+[Financial-library integration](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/research/full-migration/financial-library/README.md)
 now delegates PV, XNPV, IRR and day counts to PyXIRR. The draft mandatory IRR
 bracket is replaced by an optional initial guess.
 Turn 2 is implemented; see the current contract and verification linked above.
@@ -56,23 +56,23 @@ history below remains the scalar/core work record; full migration is not complet
 
 **Scope update, 2026-10-03:** the full refactor now includes numerical and temporal
 redesign, every supported consumer, and guidance for later legacy upgrades.
-The [full migration proposal](FULL_MIGRATION_REVIEW.md) supplies the engineering
+The [full migration proposal](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/history/FULL_MIGRATION_REVIEW.md) supplies the engineering
 work needed for 6E. It extends the work below with behavior contracts and acceptance
 checks. Daniel selected `model.duration` and `formulations/flow.py`; other new
 schema/API details need technical design, not blanket user approval. No unanswered
 user question currently blocks that design work.
 6E/6F alone must not be reported as completion of the numerical/temporal redesign.
 
-Status: Step 1 completed 2026-10-02. The [migration map](DOMAIN_MIGRATION_MAP.md)
+Status: Step 1 completed 2026-10-02. The [migration map](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/history/DOMAIN_MIGRATION_MAP.md)
 records the concrete interface design and consumer sequence; the
-[baseline](../research/domain-migration/BASELINE.md) records current checks and limits.
+[baseline](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/research/domain-migration/BASELINE.md) records current checks and limits.
 The detailed work queue below is retained for traceability. Step 2 (work units 2A/2B)
 is now implemented: see the [record boundary](../reference/records.md) and
-[Turn 1 verification](../research/domain-migration/turn1/README.md). Work units 3A/3B
+[Turn 1 verification](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/research/domain-migration/turn1/README.md). Work units 3A/3B
 are also implemented: [Model/Specification APIs](../reference/model.md) and
-[Turn 2 verification](../research/domain-migration/turn2/README.md). Work units 3C/4
+[Turn 2 verification](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/research/domain-migration/turn2/README.md). Work units 3C/4
 are now implemented: [Run and storage](../reference/run-and-storage.md) and
-[Turn 3 evidence](../research/domain-migration/turn3/README.md). Step 5 is now implemented:
+[Turn 3 evidence](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/research/domain-migration/turn3/README.md). Step 5 is now implemented:
 [scalar execution](../reference/execution.md) and [observed evidence](../research/scalar-execution/README.md).
 Step 6A/6B are now implemented: [Model-backed graph operations](../reference/system.md).
 [Step 6C/6D](../reference/tables.md) now implements shared tables, presentation
@@ -222,7 +222,7 @@ Text search is a starting point, not proof of complete coverage.
 
 Start with `src/rangekeeper/adapters/`, `graph/workflow/`, root `api.py`,
 `src/tests/`, `walkthrough/`, and `grasshopper/`. Hypar was inspected, then retired;
-its ignored local residue is now [removed](../research/full-migration/hypar-removal/README.md).
+its ignored local residue is now [removed](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/research/full-migration/hypar-removal/README.md).
 It requires no migration. Check which remaining integrations
 are active, stale, generated, or independently versioned before assigning work.
 Known downstream project references should be listed with revision/availability
@@ -310,8 +310,8 @@ their impact on ordering. Keep rich temporal payloads and policy behavior deferr
 - The architecture, documentation index, and handoff agree with the resulting map.
 
 The resulting inventory, interfaces, and ordered work units are in
-[DOMAIN_MIGRATION_MAP.md](DOMAIN_MIGRATION_MAP.md), with observed run evidence in
-[BASELINE.md](../research/domain-migration/BASELINE.md). All 1A–F deliverables are covered.
+[DOMAIN_MIGRATION_MAP.md](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/history/DOMAIN_MIGRATION_MAP.md), with observed run evidence in
+[BASELINE.md](https://github.com/daniel-fink/rangekeeper/blob/archive/pre-1.0-evidence/docs/research/domain-migration/BASELINE.md). All 1A–F deliverables are covered.
 Work units 2A/2B, 3A/3B, and 3C/4 are now implemented. Review the
 [Model/Specification APIs](../reference/model.md) and [Run/storage APIs](../reference/run-and-storage.md),
 and the implemented [scalar executor](../reference/execution.md), then continue with [Step 6E](../reference/system.md).
