@@ -2,40 +2,39 @@
 
 from collections.abc import Mapping
 from typing import TYPE_CHECKING
-from rangekeeper.schema.runtime import Record, exact_equal
-from rangekeeper.schema.validation import document_version
-from rangekeeper.shared.validation import bounded, checked
-from rangekeeper.shared.diagnostics import Issue, ValidationReport
-from rangekeeper.shared.units import UnitSystem, default_units
-from rangekeeper.schema.records import Quantity, Diagnostic, Step
-from rangekeeper.shared.errors import (
-    UnitError,
-    MissingReferenceError,
-    ReferenceTypeError,
-    IdentityConflictError,
-)
 from uuid import UUID
+
 from rangekeeper.model.model import Model
-from rangekeeper.specification.specification import Specification
-from rangekeeper.shared.references import DocumentResolver
 from rangekeeper.model.scope import resolve_reference
-from rangekeeper.shared.errors import ContractError
-from rangekeeper.shared.validation import require, require_acyclic
 from rangekeeper.model.validation import check_model
-from rangekeeper.specification.composition import (
-    compose_specification,
-    specification_catalogue,
-)
-from rangekeeper.specification.validation import validate_specification
+from rangekeeper.run.outputs import validate_outputs
 from rangekeeper.run.report import (
     completion_for,
     validate_non_batch_status,
     validate_report,
 )
-from rangekeeper.run.outputs import validate_outputs
-from rangekeeper.schema.index import walk_data
 from rangekeeper.schema.enums import CompletionStatus
-
+from rangekeeper.schema.index import walk_data
+from rangekeeper.schema.records import Diagnostic, Quantity, Step
+from rangekeeper.schema.runtime import Record, exact_equal
+from rangekeeper.schema.validation import document_version
+from rangekeeper.shared.diagnostics import Issue, ValidationReport
+from rangekeeper.shared.errors import (
+    ContractError,
+    IdentityConflictError,
+    MissingReferenceError,
+    ReferenceTypeError,
+    UnitError,
+)
+from rangekeeper.shared.references import DocumentResolver
+from rangekeeper.shared.units import UnitSystem, default_units
+from rangekeeper.shared.validation import bounded, checked, require, require_acyclic
+from rangekeeper.specification.composition import (
+    compose_specification,
+    specification_catalogue,
+)
+from rangekeeper.specification.specification import Specification
+from rangekeeper.specification.validation import validate_specification
 
 if TYPE_CHECKING:
     from rangekeeper.run.run import Run
@@ -94,10 +93,12 @@ def validate_records(
             quantities_equal=(
                 None
                 if units is None
-                else lambda actual, requested: actual
-                == units.convert(
-                    Quantity.from_data(requested), to=actual["units"]
-                ).to_data()
+                else lambda actual, requested: (
+                    actual
+                    == units.convert(
+                        Quantity.from_data(requested), to=actual["units"]
+                    ).to_data()
+                )
             ),
         ).check(),
         document=root,
@@ -121,9 +122,9 @@ def validate(
     """
     from rangekeeper.run.run import Run
     from rangekeeper.shared.errors import (
+        IdentityConflictError,
         MissingReferenceError,
         ReferenceTypeError,
-        IdentityConflictError,
     )
 
     if not isinstance(run, Run):

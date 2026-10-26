@@ -1,13 +1,13 @@
 """Check the shared stock LinkML bundle, separate from immutable runtime records."""
 
-from datetime import datetime
 import json
-from pathlib import Path
 import sys
+from datetime import datetime
+from pathlib import Path
 
 import yaml
-from linkml_runtime.loaders import json_loader
 from linkml_runtime.dumpers import json_dumper
+from linkml_runtime.loaders import json_loader
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))

@@ -1,16 +1,14 @@
 """Lossless storage, incomplete assets, identity and read-boundary checks."""
 
 import json
-from pathlib import Path
 import sqlite3
+from pathlib import Path
 
 import pytest
 import yaml
-
-from package import build, capture_inputs, encoded, Reader, sha
-from render_probe import area, triangulate
 from fixtures import fixture, uid
-
+from package import Reader, build, capture_inputs, encoded, sha
+from render_probe import area, triangulate
 
 ROOT = Path(__file__).resolve().parents[2]
 

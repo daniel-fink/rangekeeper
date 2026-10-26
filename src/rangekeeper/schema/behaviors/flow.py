@@ -1,23 +1,27 @@
 """Intrinsic Flow and Movement operations; multi-Flow alignment lives in calculations."""
 
 from __future__ import annotations
+
+import math
 from collections.abc import Sequence
 from datetime import date
-from uuid import UUID, uuid4
-import math
-from typing import TYPE_CHECKING, cast
-from rangekeeper.schema.runtime import UNSET
 from enum import Enum, unique
+from typing import TYPE_CHECKING, cast
+from uuid import UUID, uuid4
+
+from rangekeeper.schema.runtime import UNSET
 
 if TYPE_CHECKING:
-    from rangekeeper.visualisation.table import StreamTable
-    from rangekeeper.schema.records import Flow, Movement, Period, Quantity
     from rangekeeper.model.duration.period import PeriodTiming
+    from rangekeeper.schema.records import Flow, Movement, Period, Quantity
     from rangekeeper.shared.units import UnitSystem
+    from rangekeeper.visualisation.table import StreamTable
 
 
 @unique
 class MissingValueHandling(Enum):
+    """Treatment of unresolved magnitudes: raise, propagate None, skip or use zero."""
+
     ERROR = "error"
     PROPAGATE = "propagate"
     SKIP = "skip"
@@ -60,7 +64,7 @@ class MovementBehavior:
         changed, and payment outside its coverage period is permitted.
         """
         movement = cast("Movement", self)
-        from rangekeeper.model.duration.calendar import require_date, PeriodTiming
+        from rangekeeper.model.duration.calendar import PeriodTiming, require_date
 
         if timing is not None and not isinstance(timing, PeriodTiming):
             raise TypeError("timing must be a PeriodTiming")
@@ -172,7 +176,7 @@ class FlowBehavior:
                 raise ValueError("duplicate movement Claim")
         if resolved:
             for movement in flow.movements:
-                movement.number
+                _ = movement.number  # Raises for a Movement without a resolved number.
         return flow
 
     @classmethod
@@ -187,8 +191,8 @@ class FlowBehavior:
     ) -> Flow:
         """Construct dated entries with supplied or fresh IDs; repeated dates need distinct keys."""
         factory = cast("type[Flow]", cls)
-        from rangekeeper.schema.records import Movement
         from rangekeeper.model.duration.calendar import require_date
+        from rangekeeper.schema.records import Movement
 
         if (
             len(dates) != len(magnitudes)
@@ -215,6 +219,7 @@ class FlowBehavior:
                     selected_keys,
                     magnitudes,
                     tuple(ids) if ids is not None else tuple(uuid4() for _ in dates),
+                    strict=True,
                 )
             ),
         )
@@ -239,8 +244,8 @@ class FlowBehavior:
         Omitted IDs are generated. Omitted matching keys remain absent.
         """
         factory = cast("type[Flow]", cls)
-        from rangekeeper.schema.records import Movement
         from rangekeeper.model.duration.calendar import require_date
+        from rangekeeper.schema.records import Movement
 
         if (
             len(periods) != len(magnitudes)
@@ -255,7 +260,7 @@ class FlowBehavior:
                 "periods, magnitudes, dates, keys and IDs must have equal lengths"
             )
         movements = []
-        for i, (period, magnitude) in enumerate(zip(periods, magnitudes)):
+        for i, (period, magnitude) in enumerate(zip(periods, magnitudes, strict=True)):
             period.check()
             day = dates[i] if dates is not None else None
             movements.append(
@@ -428,10 +433,8 @@ class FlowBehavior:
         the source Flow. Empty input is returned unchanged.
         """
         flow = cast("Flow", self)
+        from rangekeeper.model.duration.calendar import PeriodTiming, require_date
         from rangekeeper.schema.records import Movement
-        from rangekeeper.model.duration.calendar import require_date
-
-        from rangekeeper.model.duration.calendar import PeriodTiming
 
         if timing is not None and not isinstance(timing, PeriodTiming):
             raise TypeError("timing must be a PeriodTiming")

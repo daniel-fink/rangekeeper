@@ -1,22 +1,20 @@
 """Compare prepared reference dispatch with the unchanged jsonschema oracle."""
 
-from copy import deepcopy
-from functools import lru_cache
 import json
+from copy import deepcopy
+from functools import cache
 from pathlib import Path
 from uuid import UUID
 
-from jsonschema import Draft201909Validator, Draft202012Validator, FormatChecker
 import pytest
 import yaml
+from jsonschema import Draft201909Validator, Draft202012Validator, FormatChecker
 
 from rangekeeper import Model
 from rangekeeper.io import json as codec
-from rangekeeper.schema import records
-from rangekeeper.schema import validation
+from rangekeeper.schema import records, validation
 from rangekeeper.shared.diagnostics import Issue
 from rangekeeper.shared.errors import DecodeError
-
 
 EXAMPLES = Path(__file__).resolve().parents[2] / "examples/schema"
 FIXTURES = sorted(
@@ -28,7 +26,7 @@ KINDS = sorted(validation.schema_for("Model")["$defs"])
 IDENTITY = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
 
 
-@lru_cache(maxsize=None)
+@cache
 def oracle(kind):
     # This uses the original entry point, without RK's prepared validator class.
     return Draft202012Validator(

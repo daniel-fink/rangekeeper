@@ -4,32 +4,34 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from uuid import UUID, uuid4
 
-from rangekeeper.schema.revision import check_revision
-from rangekeeper.schema.runtime import Record, UNSET, Unset
+from rangekeeper.model.update import Update
+from rangekeeper.schema.index import RecordIndex, RecordLocation, record_at
+from rangekeeper.schema.records import (
+    Assembly,
+    Claim,
+    Classification,
+    Definitions,
+    Entity,
+    Formulation,
+    Geometry,
+    Metadata,
+    Movement,
+    Provenance,
+    Reference,
+    Relationship,
+    Source,
+    System,
+    Value,
+)
 from rangekeeper.schema.records import (
     Model as ModelRecord,
-    Metadata,
-    Definitions,
-    System,
-    Provenance,
-    Geometry,
-    Entity,
-    Assembly,
-    Relationship,
-    Value,
-    Movement,
-    Reference,
-    Formulation,
-    Claim,
-    Source,
-    Classification,
 )
+from rangekeeper.schema.revision import check_revision
+from rangekeeper.schema.runtime import UNSET, Record, Unset
 from rangekeeper.schema.validation import document_version
+from rangekeeper.shared.arguments import optional_text, require_uuid
 from rangekeeper.shared.errors import UnsupportedVersionError
 from rangekeeper.shared.units import UnitSystem, default_units
-from rangekeeper.shared.arguments import require_uuid, optional_text
-from rangekeeper.schema.index import RecordIndex, RecordLocation, record_at
-from rangekeeper.model.update import Update
 
 
 @dataclass(frozen=True, init=False, eq=False)
@@ -97,7 +99,7 @@ class Model:
         geometry: Geometry | Unset = UNSET,
         units: UnitSystem = default_units,
     ) -> "Model":
-        """Author a complete Model with typed sections and the same validation path."""
+        """Build a complete Model from typed sections through the same validation path."""
         return cls(
             ModelRecord(
                 metadata=metadata,

@@ -2,17 +2,17 @@
 
 import json
 import os
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 from types import MappingProxyType
 from uuid import UUID
 
-from rangekeeper.schema.records import Implementation
-from rangekeeper.run.execution.compiler import Compiled
-from rangekeeper.run.execution.settings import Limits
-from rangekeeper.run.execution.errors import BackendUnavailable, NumericalError
 from rangekeeper.run.execution.backends.base import Result
+from rangekeeper.run.execution.compiler import Compiled
+from rangekeeper.run.execution.errors import BackendUnavailable, NumericalError
+from rangekeeper.run.execution.settings import Limits
+from rangekeeper.schema.records import Implementation
 
 
 class PyomoHighs:
@@ -24,6 +24,7 @@ class PyomoHighs:
     """
 
     def solve(self, problem: Compiled, *, limits: Limits, remaining: float) -> Result:
+        """Solve a compiled problem in a child process and return its Result."""
         if remaining <= 0:
             return Result("worker_deadline", evidence={"remaining_seconds": 0})
         ids = problem.prepared.unknowns

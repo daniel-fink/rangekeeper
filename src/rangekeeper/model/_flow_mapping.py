@@ -5,9 +5,11 @@ symbolic consumers use these exact coordinate and interval rules.
 """
 
 from __future__ import annotations
+
 from bisect import bisect_right
 from collections.abc import Sequence
 from datetime import date
+
 from rangekeeper.schema.records import Flow, Movement, Period
 
 

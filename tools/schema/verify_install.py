@@ -6,13 +6,12 @@ not acceptance of the rest of the distribution or its service integrations.
 """
 
 import argparse
-import importlib.metadata
 import json
-from pathlib import Path
 import shutil
 import subprocess
 import sys
 import tempfile
+from pathlib import Path
 from zipfile import ZipFile
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -50,7 +49,13 @@ with tempfile.TemporaryDirectory(prefix="rk-installed-records-") as directory:
     if args.wheel is None:
         stage = temp / "stage"
         stage.mkdir()
-        for name in ("pyproject.toml", "README.md", "LICENSE", "setup.py", "MANIFEST.in"):
+        for name in (
+            "pyproject.toml",
+            "README.md",
+            "LICENSE",
+            "setup.py",
+            "MANIFEST.in",
+        ):
             shutil.copy2(ROOT / name, stage / name)
         shutil.copytree(
             ROOT / "src/rangekeeper",

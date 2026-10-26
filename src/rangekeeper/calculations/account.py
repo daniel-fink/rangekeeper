@@ -2,32 +2,36 @@
 
 from __future__ import annotations
 
-from uuid import uuid4
-from dataclasses import dataclass
 import math
+from dataclasses import dataclass
+from enum import Enum, unique
+from uuid import uuid4
 
 from rangekeeper.model.flux import Flow
 from rangekeeper.model.measure import Quantity
 from rangekeeper.shared.units import default_units
 
 
-from enum import Enum, unique
-
-
 @unique
 class Balance(Enum):
+    """Select the interest base: the balance before or after the period transactions."""
+
     OPENING = "opening"
     CLOSING = "closing"
 
 
 @unique
 class CurrentInterest(Enum):
+    """Select whether the current interest charge is part of its own base."""
+
     EXCLUDED = "excluded"
     INCLUDED = "included"
 
 
 @unique
 class InterestTreatment(Enum):
+    """Select whether interest is kept separate or added to the balance."""
+
     SEPARATE = "separate"
     FINANCED = "financed"
 
@@ -80,7 +84,9 @@ class Account:
         return self.closing.replace(
             movements=tuple(
                 c.replace(id=uuid4(), magnitude=c.number - o.number)
-                for o, c in zip(self.opening.movements, self.closing.movements)
+                for o, c in zip(
+                    self.opening.movements, self.closing.movements, strict=True
+                )
             )
         ).check()
 

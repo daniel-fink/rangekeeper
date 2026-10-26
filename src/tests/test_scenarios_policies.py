@@ -1,30 +1,34 @@
 """Determinism, captured-input replay and finite policy information boundaries."""
 
-from rangekeeper.model import ValueKind
-
-from rangekeeper.schema.enums import DistributionFamily, SolutionStatus
 from datetime import date
 from uuid import uuid4
+
 import pytest
+
 from rangekeeper.model import (
-    Model,
-    Metadata,
-    Update,
-    System,
-    Formulation,
-    Value,
     Definitions,
+    Formulation,
     Measure,
+    Metadata,
+    Model,
+    Reference,
+    System,
+    Update,
+    Value,
+    ValueKind,
 )
+from rangekeeper.model.duration import Frequency, make_periods
 from rangekeeper.model.flux import Flow, Movement
-from rangekeeper.model.scenario import Distribution
-from rangekeeper.model.duration import make_periods, Frequency
-from rangekeeper.model.scenario.market import make_plan, generate
-from rangekeeper.model.scenario import replay
-from rangekeeper.specification.policy import evaluate, observe, PolicyCapabilityError
-from rangekeeper.specification.policy import ObservationBinding
+from rangekeeper.model.scenario import Distribution, replay
+from rangekeeper.model.scenario.market import generate, make_plan
+from rangekeeper.schema.enums import DistributionFamily, SolutionStatus
+from rangekeeper.specification.policy import (
+    ObservationBinding,
+    PolicyCapabilityError,
+    evaluate,
+    observe,
+)
 from rangekeeper_examples.investment import build_stop_gain_resale_policy
-from rangekeeper.model import Reference
 
 
 def base():
@@ -117,7 +121,7 @@ def policy_model(factors):
                     movements=tuple(
                         Movement(
                             id=uuid4(),
-                            key=f"p{i+1}",
+                            key=f"p{i + 1}",
                             period=p,
                             magnitude=factors[i] if name == "pricing" else None,
                         )
@@ -262,10 +266,10 @@ def test_supplied_innovations_realize_without_randomness(monkeypatch):
 
 
 def test_policy_run_rejects_forged_information_timing_and_actions():
-    from rangekeeper_examples import investment
-    from rangekeeper.run.execution import Executor
     from rangekeeper.io import MemoryStore
     from rangekeeper.run import Run, validate
+    from rangekeeper.run.execution import Executor
+    from rangekeeper_examples import investment
 
     model = investment.formulate(investment.author(dict(num_periods=2)))
     policy = investment.build_stop_gain_resale_policy(model, minimum_holding_periods=1)
@@ -290,11 +294,11 @@ def test_policy_run_rejects_forged_information_timing_and_actions():
 
 
 def test_control_roles_conflict_across_contributors_and_endogenous_observation_fails():
-    from rangekeeper_examples import investment
-    from rangekeeper.run.execution import Executor
     from rangekeeper.io import MemoryStore
-    from rangekeeper.specification import Specification, SpecificationRecord
+    from rangekeeper.run.execution import Executor
     from rangekeeper.shared.errors import ValidationError
+    from rangekeeper.specification import Specification, SpecificationRecord
+    from rangekeeper_examples import investment
 
     model = investment.formulate(investment.author(dict(num_periods=2)))
     policy = investment.build_stop_gain_resale_policy(model, minimum_holding_periods=1)

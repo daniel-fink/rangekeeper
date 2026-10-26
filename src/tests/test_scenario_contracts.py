@@ -1,21 +1,21 @@
 """Scenario contracts, content identities and replay capability are independent."""
 
-from copy import deepcopy
-from datetime import date
 import hashlib
 import json
+from copy import deepcopy
+from datetime import date
 from pathlib import Path
 from uuid import UUID, uuid5
 
 import pytest
 
+from rangekeeper.model import Metadata, Model, Provenance, Update
 from rangekeeper.model.duration import Frequency, make_periods
-from rangekeeper.model import Model, Metadata, Update, Provenance, Quantity
-from rangekeeper.model.scenario import market, replay, ReplayUnavailableError
+from rangekeeper.model.scenario import ReplayUnavailableError, market, replay
 from rangekeeper.model.scenario.implementation import (
-    calculation_manifest,
-    SOURCE_PATHS,
     RESOURCE_PATHS,
+    SOURCE_PATHS,
+    calculation_manifest,
 )
 from rangekeeper.shared.fingerprints import manifest_digest
 
@@ -116,9 +116,9 @@ def test_realized_revision_hash_covers_complete_content(monkeypatch):
 def test_replay_unavailable_does_not_prevent_current_model_reading():
     result = market.generate(base(), plan(), scenario_keys=["readable"])[0]
     provenance = result.model.provenance.to_data()
-    provenance["scenarios"][0]["calculation"][
-        "fingerprint"
-    ] = "scenario-calculation/v99:future"
+    provenance["scenarios"][0]["calculation"]["fingerprint"] = (
+        "scenario-calculation/v99:future"
+    )
     changed = result.model.revise(Update(provenance=Provenance.from_data(provenance)))
     assert Model.from_data(changed.to_data()).to_data() == changed.to_data()
     with pytest.raises(ReplayUnavailableError, match="unavailable"):
@@ -239,7 +239,7 @@ def test_capture_and_model_loading_reject_draws_outside_support(
         for v in wire["system"]["formulations"][0]["values"]
         if v["key"] == "input_" + field
     )
-    for movement, value in zip(target["flow"]["movements"], values):
+    for movement, value in zip(target["flow"]["movements"], values, strict=True):
         movement["magnitude"] = value
     with pytest.raises(ValueError, match=message):
         Model.from_data(wire)

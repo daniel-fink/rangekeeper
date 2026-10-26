@@ -7,24 +7,23 @@ they do not execute a solver or produce Run/output Model artifacts.
 import copy
 import importlib.util
 import json
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 from tempfile import TemporaryDirectory
-from uuid import UUID, NAMESPACE_URL, uuid5
+from uuid import NAMESPACE_URL, UUID, uuid5
 
+import _library
+import yaml
 from jsonschema import FormatChecker
 from jsonschema.validators import validator_for
 from linkml_runtime.dumpers import json_dumper
 from linkml_runtime.loaders import json_loader
 from linkml_runtime.utils.schemaview import SchemaView
-import yaml
 
-import _library
-
+from rangekeeper.schema.index import walk_data
 from rangekeeper.shared.errors import ContractError
 from rangekeeper.specification.validation import validate_specification
-from rangekeeper.schema.index import walk_data
 
 
 def records(system):
@@ -87,7 +86,9 @@ assert objectives_slot.list_elements_ordered
 
 model = yaml.safe_load((SCHEMA.parent / "examples/schema/model.yaml").read_text())
 forward, inverse, optimization, multiple = [
-    yaml.safe_load((SCHEMA.parent / f"examples/schema/specification-{name}.yaml").read_text())
+    yaml.safe_load(
+        (SCHEMA.parent / f"examples/schema/specification-{name}.yaml").read_text()
+    )
     for name in ("forward", "inverse", "optimization", "objectives")
 ]
 model_before = copy.deepcopy(model)

@@ -1,9 +1,9 @@
 """Compare frozen Model semantics with the original detached-export boundary."""
 
-from copy import deepcopy
-from datetime import date
 import hashlib
 import json
+from copy import deepcopy
+from datetime import date
 from pathlib import Path
 from types import MappingProxyType
 from uuid import UUID
@@ -14,13 +14,13 @@ import yaml
 from rangekeeper import Model
 from rangekeeper.model import validation
 from rangekeeper.schema.index import RecordIndex
-from rangekeeper.schema.records import Model as ModelRecord, Measure, Entity
+from rangekeeper.schema.records import Entity, Measure
+from rangekeeper.schema.records import Model as ModelRecord
 from rangekeeper.schema.validation import document_version
 from rangekeeper.shared.diagnostics import Issue, ValidationReport
 from rangekeeper.shared.errors import ValidationError
 from rangekeeper.shared.units import default_units
 from rangekeeper.shared.validation import bounded, checked
-
 
 EXAMPLES = Path(__file__).resolve().parents[2] / "examples/schema"
 MISSING = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"

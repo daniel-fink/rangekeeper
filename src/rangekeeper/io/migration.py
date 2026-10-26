@@ -1,6 +1,7 @@
 """Explicit canonical format migration; never alter an old artifact in place."""
 
 from uuid import UUID, uuid4
+
 from rangekeeper import Model
 from rangekeeper.schema.validation import document_version
 

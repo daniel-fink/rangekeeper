@@ -5,21 +5,23 @@ implementation, so a regression cannot silently change its own expected values.
 Cycle residuals also check the defining equation independently of that fixture.
 """
 
-from rangekeeper.calculations.account import Account
-from rangekeeper.model.flux import Flow
-
-from datetime import date
 import json
 import math
+from datetime import date
 from pathlib import Path
+
 import pytest
 
-from rangekeeper.model.measure import Quantity
-from rangekeeper.model.duration import Frequency, make_periods
-from rangekeeper.calculations.account import Balance, CurrentInterest, InterestTreatment
-
+from rangekeeper.calculations.account import (
+    Account,
+    Balance,
+    CurrentInterest,
+    InterestTreatment,
+)
 from rangekeeper.calculations.dynamics import calculate_cycle
-
+from rangekeeper.model.duration import Frequency, make_periods
+from rangekeeper.model.flux import Flow
+from rangekeeper.model.measure import Quantity
 
 REFERENCE = json.loads(
     (Path(__file__).parent / "fixtures/numerical/turn3-reference.json").read_text()
@@ -57,6 +59,7 @@ def test_account_numeric_recurrence_matches_reference(case):
     for flow, values in zip(
         (actual.opening, actual.closing, actual.overdraft_balance, actual.interest),
         case["outputs"],
+        strict=True,
     ):
         assert [s.magnitude for s in flow.movements] == pytest.approx(
             list(values), abs=1e-10
