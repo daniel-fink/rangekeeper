@@ -156,10 +156,11 @@ Stream and pivot table display. The viewer is built in
 
 ### Native authoring
 
-The portable C# Model library and generic Grasshopper components live in
-`src/grasshopper`. The Model project needs neither Rhino nor a source SDK. See
-[Grasshopper](../guides/grasshopper.md). Under the 1.0 target, the solution
-moves to `examples/grasshopper`.
+The portable C# Model library and generic Grasshopper components are an
+unsupported example in `examples/grasshopper`. The Model project needs neither
+Rhino nor a source SDK. CI generates its C# records, builds it and round-trips the
+cross-language fixtures, so it cannot drift from the schema. See
+[Grasshopper](../guides/grasshopper.md).
 
 ### Bundle implementation boundary
 

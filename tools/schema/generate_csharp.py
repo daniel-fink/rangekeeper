@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "src/rangekeeper/schema"
 # The walkthrough helpers own the Speckle envelope and its contract (ADR-010).
 CONTRACT = ROOT / "examples/walkthrough/helpers/speckle_contract.json"
-DEST = ROOT / "src/grasshopper/Model/Generated"
+DEST = ROOT / "examples/grasshopper/Model/Generated"
 
 
 def name(value):

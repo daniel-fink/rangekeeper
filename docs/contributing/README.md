@@ -152,6 +152,7 @@ The [CI workflow](../../.github/workflows/ci.yml) runs on each pull request to
 | `types` | mypy, with all extras for their types |
 | `changelog` | A fragment in `changelog.d/` and a draft changelog build, in the separate [Changelog workflow](../../.github/workflows/changelog.yml) on pull requests. The `no-changelog` label skips the fragment check; adding or removing a label reruns only this check |
 | `generated files` | `tools/schema/generate.py --check`, `generate_csharp.py --check`, `verify_native.py` and `typecheck.py` in the pinned schema environment |
+| `dotnet` | Restores and builds the C# Model library and fixture runner in `examples/grasshopper` with the package version, then round-trips the cross-language fixtures through C# |
 | `docs` | `tools/docs/check.py` |
 | `test` | The full suite with all extras, on Linux and macOS with Python 3.12 and 3.13, and on Windows with Python 3.13 |
 | `extra` | The wheel with no extra, then with each extra alone, on Python 3.12 without the lock file. `tools/ci/check_extra.py` imports every module, requires an installation hint for each failure, and runs a small operation of the extra |
@@ -160,8 +161,8 @@ The [CI workflow](../../.github/workflows/ci.yml) runs on each pull request to
 
 The test jobs skip no tests, and no test needs a display or network access. `-rs` lists any skips in the log.
 
-CI does not build the .NET example yet: that job waits for the C# example to
-move out of `src/`. It does not build the documentation site. Run those
+CI does not build the Grasshopper components, which need the Rhino assemblies,
+or the documentation site. Run those
 [verification](verification.md) procedures locally when the change affects them.
 
 ## Naming and ownership

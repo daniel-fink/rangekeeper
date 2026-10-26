@@ -19,7 +19,7 @@ generator attaches those behaviors to selected records and generates typed
 | Persistent field and enum definitions | `schema/*.yaml` |
 | Resolved bundle and Python/C# generators | `tools/schema/` |
 | Generated Python records, JSON Schemas, slots and manifest | `src/rangekeeper/schema/` |
-| Generated C# records, transport metadata and manifest | `src/grasshopper/Model/Generated/` |
+| Generated C# records, transport metadata and manifest | `examples/grasshopper/Model/Generated/` |
 | Reusable wire examples | `examples/schema/` |
 | Positive/negative conformance procedures | `schema/checks/` |
 

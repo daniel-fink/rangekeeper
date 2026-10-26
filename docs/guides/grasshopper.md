@@ -1,6 +1,6 @@
 # Author Models in Grasshopper
 
-The .NET solution lives at [`src/grasshopper/`](../../src/grasshopper). The active
+The .NET solution is an unsupported example at [`examples/grasshopper/`](../../examples/grasshopper). The active
 projects target `net8.0` and Rhino 8. The Model project has no Rhino or Speckle
 reference. LinkML generation owns persistent fields; handwritten code owns
 presence-preserving serialization, authoring, composition and diagnostics. The
@@ -18,10 +18,10 @@ files. Build with a .NET 8 SDK:
 
 ```sh
 python tools/schema/generate_csharp.py --check
-dotnet restore src/grasshopper/Tests/Tests.csproj --locked-mode
-dotnet build src/grasshopper/Tests/Tests.csproj --no-restore
-dotnet restore src/grasshopper/Components/Components.csproj --locked-mode
-dotnet build src/grasshopper/Components/Components.csproj --no-restore
+dotnet restore examples/grasshopper/Tests/Tests.csproj --locked-mode
+dotnet build examples/grasshopper/Tests/Tests.csproj --no-restore
+dotnet restore examples/grasshopper/Components/Components.csproj --locked-mode
+dotnet build examples/grasshopper/Components/Components.csproj --no-restore
 ```
 
 The Tests project is a console fixture runner, not a `dotnet test` test project.
@@ -36,7 +36,7 @@ execution dependencies. From the repository root:
 
 ```sh
 python tools/schema/cross_language.py prepare /tmp/rk-cross-language-001
-dotnet src/grasshopper/Tests/bin/Debug/net8.0/Tests.dll /tmp/rk-cross-language-001/python.json /tmp/rk-cross-language-001/csharp.json
+dotnet examples/grasshopper/Tests/bin/Debug/net8.0/Tests.dll /tmp/rk-cross-language-001/python.json /tmp/rk-cross-language-001/csharp.json
 python tools/schema/cross_language.py check /tmp/rk-cross-language-001
 ```
 
@@ -48,7 +48,7 @@ runtime versions.
 ## Check generic authoring in Rhino
 
 Set `RK_COMPONENTS` to the current RK component assembly and `RK_ACCEPTANCE_OUTPUT`
-to a new output directory. Run [the generic driver](../../src/grasshopper/Tests/accept_rhino.py)
+to a new output directory. Run [the generic driver](../../examples/grasshopper/Tests/accept_rhino.py)
 inside a fresh Rhino 8 process. It checks stable identity, changed revisions, previous
 revision links and save/reopen behaviour. It loads the RK authoring assembly.
 
@@ -83,7 +83,7 @@ connector's [Windows gate](../contributing/windows-acceptance.md) remains open;
 a macOS authoring pass or offline envelope test cannot close it.
 
 Old .NET Framework/Speckle-inherited source and resources remain in
-`src/grasshopper/legacy/`, outside active compile/resource items. Follow
+`examples/grasshopper/legacy/`, outside active compile/resource items. Follow
 [legacy retirement](../contributing/legacy-retirement.md) before removing them.
 The original [`exampleDesignConfig.ghx`](../../examples/grasshopper/exampleDesignConfig.ghx)
 and Rhino source stay as evidence after that implementation is retired.

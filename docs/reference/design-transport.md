@@ -50,7 +50,7 @@ works.
 Do not use first-match conflict resolution or infer membership from collection
 nesting. Publish only after full Model validation and the required adapter/host
 acceptance. C# structural/local validation does not replace Python units,
-mathematical or provenance validation. The C# solution is at `src/grasshopper`;
+mathematical or provenance validation. The C# solution is at `examples/grasshopper`;
 its build and external gate are in the [Grasshopper guide](../guides/grasshopper.md)
 and the [Windows acceptance procedure](../contributing/windows-acceptance.md).
 

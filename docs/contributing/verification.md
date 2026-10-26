@@ -6,9 +6,9 @@ record fresh results for the checkout under review.
 
 Developers and agents run these checks explicitly before delivering a change.
 The [CI workflow](README.md#continuous-integration) runs the lint, type,
-changelog, generated-file, documentation, test, extra and wheel checks on pull
-requests. It does not build the .NET example, execute notebooks or build the
-book; run those procedures locally. Follow
+changelog, generated-file, .NET, documentation, walkthrough, test, extra and
+wheel checks on pull requests. It does not build the Grasshopper components or
+the docs site; run those procedures locally. Follow
 [the verification decision](../decisions/004-package-and-project-ownership.md#verification-ownership)
 and record the actual environment: local acceptance does not establish Linux,
 Windows or service acceptance on a different host.
