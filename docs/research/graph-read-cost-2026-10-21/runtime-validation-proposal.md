@@ -36,7 +36,7 @@ UUID construction (0.191757), and built-in `isinstance` across the entire proces
 
 Scope A's same-environment growth cold codec read remains 7.576713541 seconds,
 with a 7.206845458-second warm read. These supported leads do not establish a
-further reduction sufficient to meet Core's unchanged five-second request limit.
+further reduction sufficient to meet the primary consumer's unchanged five-second request limit.
 
 ## Validator preparation: what the supported API can and cannot do
 
@@ -132,7 +132,7 @@ validation, normalisation and freezing. That single call costs 0.312426 seconds
 cumulative in the retained profile. This is distinct from the public export
 contract; the public `to_data()` must continue to return a detached mutable copy.
 A narrow experiment could let RK's internal, nonmutating `check_model` consume
-the record's existing immutable mapping. No Core code gains private access.
+the record's existing immutable mapping. No primary consumer code gains private access.
 
 This is not a one-line safe assumption. Every reached semantic helper must accept
 Mapping/tuple representations and preserve its original diagnostics and order.
@@ -200,7 +200,7 @@ The codec also has two strict-copy passes: `io/json.py:_parse` and
 `Record._set_data`. Their copy subtrees cost 0.255890 and 0.279653 seconds
 cumulatively. The parse pass catches nonfinite results such as `1e999` and produces
 DecodeError before Model construction. Deleting it would change the boundary.
-Do not add a prepared/trusted flag or an alternate Core loader. A future
+Do not add a prepared/trusted flag or an alternate primary consumer loader. A future
 allocation-only parser experiment would need a shared strict JSON traversal that
 checks without allocating, while retaining all parse errors and the ordinary
 record constructor. Its exact scope would be `io/json.py:_parse`, a private
@@ -231,7 +231,7 @@ For each selected experiment, require independent exact acceptance, diagnostic,
 identity, presence, provenance and nonmutation comparisons, then the repository's
 applicable conformance, typing and installed-wheel checks. Keep all validation
 stages and their order. A material isolated gain still needs a reviewed new wheel
-and separate matched Core/browser verification under existing deadlines.
+and separate matched primary consumer/browser verification under existing deadlines.
 
 There is no demonstrated supported change that removes the main stock descent
 cost while retaining its mechanics unchanged. If the small preparation options

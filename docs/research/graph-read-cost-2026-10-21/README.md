@@ -4,11 +4,11 @@ Status: reviewed A+B repair cleared for scoped integration. This page records th
 implementation and verification checkpoint. Git delivery is recorded separately
 in `.runtime/graph-read-cost-2026-10-21/delivery.json` and the coordinator handoff.
 C was measured and omitted because it showed no material gain.
-This work supports Whirlwind WW-51's 1,024-node/1,024-Relationship target.
+This work supports a legacy consumer's 1,024-node/1,024-Relationship target.
 The primary checkout started from clean `develop`
 `0c0d25521a717c5ea6f487ae3cebfdd859b2f9b5` and uses
 `feature/graph-read-cost`. The coordinator released two separate scopes from
-Interface's proposal SHA-256
+the consumer interface's proposal SHA-256
 `bf9ba38e91f46ee98706dcda06a7c59a0e7022bc5c2276ccff155401e3a2c877`.
 Activation retains 1,823 tracked hashes, 1,870 protected evidence files and the
 existing walkthrough and `gh-pages` refs. No publication is included.
@@ -43,9 +43,9 @@ The growth fixture retains 1,024 nodes, 1,024 Relationships, 10,240 Values and
 30,720 Claims. Export equality and canonical digests pass. The primary is the
 representative 377-node/376-Relationship synthetic topology. Neither fixture is
 reduced. The first read occurs after imports in a fresh process; repeats still
-perform full validation. These are direct RK measurements, not Core or browser
-results. The growth read remains above Core's unchanged five-second deadline
-before Core adds authorization, digest and projection work. A is insufficient
+perform full validation. These are direct RK measurements, not the primary consumer or browser
+results. The growth read remains above the primary consumer's unchanged five-second deadline
+before the primary consumer adds authorization, digest and projection work. A is insufficient
 for the target and needs a further reviewed scope. The
 [further generator review](further-validation-proposal.md) identifies limited
 redundancies and their diagnostic tradeoffs; it does not establish a solution.
@@ -65,7 +65,7 @@ The exhaustive walker oracle and prohibited-work tests cover exact types, owner
 identity, paths, opaque content, immutability and error boundaries. Dense fixture
 checks select seven record kinds from 34,334 primary and 93,212 growth records.
 The late growth Value lookup has a 0.010 ms median; its late Claim has a 0.005 ms
-median. These calls occur after full Model validation and are not Core transport
+median. These calls occur after full Model validation and are not the primary consumer transport
 or browser measurements.
 
 The original test guard patched the base record allocator. Its restoration left
@@ -114,13 +114,13 @@ receipts, the complete original package source, both equivalence logs,
 `validation-measure-1` raw timings/source hashes, the separate profile and
 `a-checkpoint/manifest.json`. The A checkpoint SHA-256 is
 `3d55b9171d291c539827be594fa5d867f36ae22c89bdafb34b14bf1af15d54d2`.
-The original Core dev3 dependency and all failed evidence remain unchanged.
+The original primary consumer dev3 dependency and all failed evidence remain unchanged.
 
 Runtime dependencies come from the unchanged lock in a new environment. Offline
 setup lacked one locked Python 3.12 wheel; the network retry retained exact lock
 versions. A separate schema environment uses the pinned requirements and mypy
 1.18.2, plus packaging tools; it can read the isolated locked runtime dependencies.
-No shared environment or Core dependency was changed.
+No shared environment or the primary consumer dependency was changed.
 
 The candidate has the distinct development version `0.10.0.dev4`; only its own
 local package lock entry changes. Its wheel SHA-256 is
@@ -150,6 +150,6 @@ official .NET 8.0.426 SDK with its downloaded SHA-512 verified, in the ignored
 runtime. The earlier .NET 10 build and missing-.NET-8-runtime failure remain.
 No Rhino component loading or Windows acceptance is established.
 
-Core dependency and exact Inspect consumption need a separate reviewed window.
-Matched Interface browser/state checks, the remaining layout target, supported
+Primary consumer dependency and exact Inspect consumption need a separate reviewed window.
+Matched consumer interface browser/state checks, the remaining layout target, supported
 capacity, actual hosts and release are separate gates.

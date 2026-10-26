@@ -9,7 +9,7 @@ The Windows gate remains open; earlier Turn 4 results below describe the precedi
 
 **Turn 4 update, 2026-10-06:** [Permitted legacy retirement](FULL_MIGRATION_TURN4.md)
 removes the superseded numerical/presentation modules and narrows optional
-dependencies. The paired Turn 3 checkpoint is pushed: RK `305f3ff`, Projects
+dependencies. The paired Turn 3 checkpoint is pushed: RK `305f3ff`, primary consumer
 `6146ad2`. Turn 4 is uncommitted. [Current acceptance](../research/full-migration/turn4/BASELINE.md)
 records 1,058 passing local tests, seven walkthroughs and all three real source
 builds. The [remaining retirement register](../research/full-migration/turn4/RETIREMENT.md)
@@ -115,11 +115,11 @@ In addition to the old Graph and numerical modules:
 - `src/tests/models/{linear,linear_graph,deterministic,probabilistic,flexible}.py`
   also contains consumer implementations. Passing a top-level import scan does
   not establish that their instance-method use has migrated.
-- The Projects checkout is `feature/mandarin-assembly-layout` at
+- The primary consumer checkout is `feature/proving-a-assembly-layout` at
   `5725cc02748ace15e390c8dcea2c5d69185d67c9`. Both projects are environment-only
   YAML consumers, not project runtime packages. Their current tests and YAML
   still use old Graph/workflow contracts and Features.
-- Mandarin's current notebook calls `graph.workflow.workbench` and
+- Proving project A's current notebook calls `graph.workflow.workbench` and
   `layout_review`. Those capabilities live in the separate RK worktree at
   `4e5aec42f16a18c4d715f5a2a1b879d98e0f71e3`, branch
   `feature/assembly-layout-constraints`. That branch also contains checked layout,
@@ -480,8 +480,8 @@ generation/policy evaluation requires Run extensions is an explicit schema revie
 | Consumer | Prerequisites and migration | Proof required |
 | --- | --- | --- |
 | Accommodation/equipment workflow examples; documentation examples; CLI | Feature decisions, workflow v2, explicit Value keys, current adapters/codecs | Build from synthetic inputs in a clean install; inspect checks and serialized Models; documentation commands execute |
-| Mandarin YAML, tests and review notebook | Rich source Features, UUID/key mapping, comparisons, workbench and saved-layout feature port | Build independent of reference/archive; separate semantic comparator; fresh-kernel review; source hashes, business identity, Claims/decisions/findings and layout intent preserved |
-| East Whisman December and November R2 | Same source mapping capabilities, distinct scenario scopes and current workflow APIs | Both builds and separate scope comparisons in project environment; no invented tower crosswalk, physical basement allocation or apartments |
+| Proving project A YAML, tests and review notebook | Rich source Features, UUID/key mapping, comparisons, workbench and saved-layout feature port | Build independent of reference/archive; separate semantic comparator; fresh-kernel review; source hashes, business identity, Claims/decisions/findings and layout intent preserved |
+| Proving project B December and November R2 | Same source mapping capabilities, distinct scenario scopes and current workflow APIs | Both builds and separate scope comparisons in project environment; no invented tower crosswalk, physical basement allocation or apartments |
 | `basic_dcf.ipynb` | Units, time, projections, distributions, Flow/Stream and financial metrics | Dates, units, every cashflow, totals, PV/IRR and presentation verified; clean kernel and installed library |
 | `deterministic_scenarios.ipynb` | Above plus explicit builders/composition replacing `update_class` | Baseline/optimistic/pessimistic scenarios and weighted comparisons; no hidden class patching or prior cells |
 | `market_dynamics.ipynb` | Seeded dynamics/scenario contracts | Fixed-innovation paths plus stochastic property checks; explicit aligned market outputs |
@@ -496,7 +496,7 @@ generation/policy evaluation requires Run extensions is an explicit schema revie
 | Other consumers discovered during repository/import/data-format searches | Add to this register and classify current version/capabilities | A named owner, environment, migration recipe, evidence and removal gate |
 
 The installed-package requirement matters: the walkthrough currently declares
-`rangekeeper>=0.8`, while Projects uses an editable sibling. Pin the actual artifact
+`rangekeeper>=0.8`, while the primary consumer uses an editable sibling. Pin the actual artifact
 under test and record import locations. A passing notebook against an unrelated
 installed release does not prove this migration.
 

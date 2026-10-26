@@ -17243,7 +17243,7 @@
     },
     {
       "scope": "external",
-      "path": "east-whisman/pyproject.toml",
+      "path": "proving-b/pyproject.toml",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
       "acceptance": "../turn4/project-builds.txt; ../turn4/project-comparisons.txt; ../turn4/project-tests.txt",
@@ -17263,11 +17263,11 @@
         ]
       },
       "current_sha256": "0fbb1cb7568fd3e7d68c5186dcb13dd2def4c58f19d7e3a0c3cfea7f3f08841f",
-      "current_path": "east-whisman/pyproject.toml"
+      "current_path": "proving-b/pyproject.toml"
     },
     {
       "scope": "external",
-      "path": "east-whisman/spec/december/checks.yaml",
+      "path": "proving-b/spec/december/checks.yaml",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
       "acceptance": "../turn4/project-builds.txt; ../turn4/project-comparisons.txt; ../turn4/project-tests.txt",
@@ -17276,11 +17276,11 @@
         "references": []
       },
       "current_sha256": "5304760b81e7f026ba66939a7a764315b98d576633283a82b39bfde0e44ae7b2",
-      "current_path": "east-whisman/spec/december/checks.yaml"
+      "current_path": "proving-b/spec/december/checks.yaml"
     },
     {
       "scope": "external",
-      "path": "east-whisman/spec/december/decisions.yaml",
+      "path": "proving-b/spec/december/decisions.yaml",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
       "acceptance": "../turn4/project-builds.txt; ../turn4/project-comparisons.txt; ../turn4/project-tests.txt",
@@ -17289,11 +17289,11 @@
         "references": []
       },
       "current_sha256": "744f0d0d35562ea0870650268610f745b87015ef7c9379b138b16fc03b61ba40",
-      "current_path": "east-whisman/spec/december/decisions.yaml"
+      "current_path": "proving-b/spec/december/decisions.yaml"
     },
     {
       "scope": "external",
-      "path": "east-whisman/spec/december/model.yaml",
+      "path": "proving-b/spec/december/model.yaml",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
       "acceptance": "../turn4/project-builds.txt; ../turn4/project-comparisons.txt; ../turn4/project-tests.txt",
@@ -17302,11 +17302,11 @@
         "references": []
       },
       "current_sha256": "a5821f8a76574597e4a4e42bc1153a862e2e4c463c35f0856b3d0e3cb974d662",
-      "current_path": "east-whisman/spec/december/model.yaml"
+      "current_path": "proving-b/spec/december/model.yaml"
     },
     {
       "scope": "external",
-      "path": "east-whisman/spec/december/sources.yaml",
+      "path": "proving-b/spec/december/sources.yaml",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
       "acceptance": "../turn4/project-builds.txt; ../turn4/project-comparisons.txt; ../turn4/project-tests.txt",
@@ -17315,11 +17315,11 @@
         "references": []
       },
       "current_sha256": "acae9ffe13cfc5c7772850eb06a0c535c0ffefcdd08eadc5aceb5a6961d5bb98",
-      "current_path": "east-whisman/spec/december/sources.yaml"
+      "current_path": "proving-b/spec/december/sources.yaml"
     },
     {
       "scope": "external",
-      "path": "east-whisman/spec/november-r2/checks.yaml",
+      "path": "proving-b/spec/november-r2/checks.yaml",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
       "acceptance": "../turn4/project-builds.txt; ../turn4/project-comparisons.txt; ../turn4/project-tests.txt",
@@ -17328,11 +17328,11 @@
         "references": []
       },
       "current_sha256": "469b2a74f04e4aecbb43c225f70747b71aad482e85db5448111f14a4cfc47427",
-      "current_path": "east-whisman/spec/november-r2/checks.yaml"
+      "current_path": "proving-b/spec/november-r2/checks.yaml"
     },
     {
       "scope": "external",
-      "path": "east-whisman/spec/november-r2/decisions.yaml",
+      "path": "proving-b/spec/november-r2/decisions.yaml",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
       "acceptance": "../turn4/project-builds.txt; ../turn4/project-comparisons.txt; ../turn4/project-tests.txt",
@@ -17341,11 +17341,11 @@
         "references": []
       },
       "current_sha256": "744f0d0d35562ea0870650268610f745b87015ef7c9379b138b16fc03b61ba40",
-      "current_path": "east-whisman/spec/november-r2/decisions.yaml"
+      "current_path": "proving-b/spec/november-r2/decisions.yaml"
     },
     {
       "scope": "external",
-      "path": "east-whisman/spec/november-r2/model.yaml",
+      "path": "proving-b/spec/november-r2/model.yaml",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
       "acceptance": "../turn4/project-builds.txt; ../turn4/project-comparisons.txt; ../turn4/project-tests.txt",
@@ -17354,11 +17354,11 @@
         "references": []
       },
       "current_sha256": "e20d688b234a35ccbcde92765cf6b00cf219789c304a599b81550fa8e37664ec",
-      "current_path": "east-whisman/spec/november-r2/model.yaml"
+      "current_path": "proving-b/spec/november-r2/model.yaml"
     },
     {
       "scope": "external",
-      "path": "east-whisman/spec/november-r2/sources.yaml",
+      "path": "proving-b/spec/november-r2/sources.yaml",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
       "acceptance": "../turn4/project-builds.txt; ../turn4/project-comparisons.txt; ../turn4/project-tests.txt",
@@ -17367,11 +17367,11 @@
         "references": []
       },
       "current_sha256": "7387be1488684684ff1fdb8bda5bfd953a639d3eef9dbd25a8f4d8576f0751aa",
-      "current_path": "east-whisman/spec/november-r2/sources.yaml"
+      "current_path": "proving-b/spec/november-r2/sources.yaml"
     },
     {
       "scope": "external",
-      "path": "east-whisman/tests/test_workflow.py",
+      "path": "proving-b/tests/test_workflow.py",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
       "acceptance": "../turn4/project-builds.txt; ../turn4/project-comparisons.txt; ../turn4/project-tests.txt",
@@ -17401,11 +17401,11 @@
         ]
       },
       "current_sha256": "2eb63118581a34c85cccfbe8477425e52373f447549009cbf31b3e40f9ef23ee",
-      "current_path": "east-whisman/tests/test_workflow.py"
+      "current_path": "proving-b/tests/test_workflow.py"
     },
     {
       "scope": "external",
-      "path": "mandarin/notebooks/01_workflow_review.ipynb",
+      "path": "proving-a/notebooks/01_workflow_review.ipynb",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
       "acceptance": "../turn4/project-builds.txt; ../turn4/project-comparisons.txt; ../turn4/project-tests.txt",
@@ -17425,11 +17425,11 @@
         ]
       },
       "current_sha256": "29d7fc7f57112a39489009d532045289ce99a435a6097cddbef6b75b91455d6b",
-      "current_path": "mandarin/notebooks/01_workflow_review.ipynb"
+      "current_path": "proving-a/notebooks/01_workflow_review.ipynb"
     },
     {
       "scope": "external",
-      "path": "mandarin/presentation/layout.yaml",
+      "path": "proving-a/presentation/layout.yaml",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
       "acceptance": "../turn4/project-builds.txt; ../turn4/project-comparisons.txt; ../turn4/project-tests.txt",
@@ -17444,11 +17444,11 @@
         ]
       },
       "current_sha256": "b090ae44ba45500a59fa73ac4856f3ffc529171c6c648f8ebaf0183111fa80d6",
-      "current_path": "mandarin/presentation/layout.yaml"
+      "current_path": "proving-a/presentation/layout.yaml"
     },
     {
       "scope": "external",
-      "path": "mandarin/pyproject.toml",
+      "path": "proving-a/pyproject.toml",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
       "acceptance": "../turn4/project-builds.txt; ../turn4/project-comparisons.txt; ../turn4/project-tests.txt",
@@ -17468,11 +17468,11 @@
         ]
       },
       "current_sha256": "91d9d5611a546e637198e881314186dbdb36beaad4659539a4734a963542b0eb",
-      "current_path": "mandarin/pyproject.toml"
+      "current_path": "proving-a/pyproject.toml"
     },
     {
       "scope": "external",
-      "path": "mandarin/spec/checks.yaml",
+      "path": "proving-a/spec/checks.yaml",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
       "acceptance": "../turn4/project-builds.txt; ../turn4/project-comparisons.txt; ../turn4/project-tests.txt",
@@ -17481,11 +17481,11 @@
         "references": []
       },
       "current_sha256": "f2843d9e17db4da14ccda68afe3d28336a3f1a91e02df58d7336e336073e2697",
-      "current_path": "mandarin/spec/checks.yaml"
+      "current_path": "proving-a/spec/checks.yaml"
     },
     {
       "scope": "external",
-      "path": "mandarin/spec/decisions.yaml",
+      "path": "proving-a/spec/decisions.yaml",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
       "acceptance": "../turn4/project-builds.txt; ../turn4/project-comparisons.txt; ../turn4/project-tests.txt",
@@ -17494,11 +17494,11 @@
         "references": []
       },
       "current_sha256": "b2bc12ff0138626b729d8c4bc67fecf081dd15f5259064a740c3849681424b69",
-      "current_path": "mandarin/spec/decisions.yaml"
+      "current_path": "proving-a/spec/decisions.yaml"
     },
     {
       "scope": "external",
-      "path": "mandarin/spec/model.yaml",
+      "path": "proving-a/spec/model.yaml",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
       "acceptance": "../turn4/project-builds.txt; ../turn4/project-comparisons.txt; ../turn4/project-tests.txt",
@@ -17507,11 +17507,11 @@
         "references": []
       },
       "current_sha256": "ce38d92815b3c722f527e8baca6cb4280590071a4311f2f35c69588f297fb53a",
-      "current_path": "mandarin/spec/model.yaml"
+      "current_path": "proving-a/spec/model.yaml"
     },
     {
       "scope": "external",
-      "path": "mandarin/spec/sources.yaml",
+      "path": "proving-a/spec/sources.yaml",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
       "acceptance": "../turn4/project-builds.txt; ../turn4/project-comparisons.txt; ../turn4/project-tests.txt",
@@ -17520,11 +17520,11 @@
         "references": []
       },
       "current_sha256": "e3d97e83a01299eebfcb509acc2ad0c97436a888200b05e9ee544c403f186471",
-      "current_path": "mandarin/spec/sources.yaml"
+      "current_path": "proving-a/spec/sources.yaml"
     },
     {
       "scope": "external",
-      "path": "mandarin/tests/test_equivalence.py",
+      "path": "proving-a/tests/test_equivalence.py",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
       "acceptance": "../turn4/project-builds.txt; ../turn4/project-comparisons.txt; ../turn4/project-tests.txt",
@@ -17564,11 +17564,11 @@
         ]
       },
       "current_sha256": "5b262265547401d36158260d345862f9f50f14ee5f810593126d3c723154eb29",
-      "current_path": "mandarin/tests/test_equivalence.py"
+      "current_path": "proving-a/tests/test_equivalence.py"
     },
     {
       "scope": "external",
-      "path": "mandarin/tests/test_workflow.py",
+      "path": "proving-a/tests/test_workflow.py",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
       "acceptance": "../turn4/project-builds.txt; ../turn4/project-comparisons.txt; ../turn4/project-tests.txt",
@@ -17598,7 +17598,7 @@
         ]
       },
       "current_sha256": "9eb643aaea26a561d6c2074310cccc5a6928b025de3cce3474a5398101279c81",
-      "current_path": "mandarin/tests/test_workflow.py"
+      "current_path": "proving-a/tests/test_workflow.py"
     }
   ],
   "parallel_branch_features": {

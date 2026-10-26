@@ -18,7 +18,7 @@ remain a historical record. The initial refactor was subsequently committed as
 `7f7098c`; the format-independent follow-up is committed as `588b5b4`.
 
 Reviewed and refactored 18 September 2026 on the uncommitted
-`feature/mandarin-yaml-rebuild` implementation. The findings below describe the
+`feature/proving-a-yaml-rebuild` implementation. The findings below describe the
 pre-refactor code. Their resolution is recorded here; Dagster remains outside scope.
 
 ## Implemented resolution
@@ -40,13 +40,13 @@ pre-refactor code. Their resolution is recorded here; Dagster remains outside sc
 - Separated exact byte manifests from version-2 semantic AST identity and linked
   dispatch/native records by step. Business UUID recipes remain unchanged.
 
-Validation is recorded in Mandarin `docs/yaml-rebuild.md` and local
+Validation is recorded in proving project A `docs/yaml-rebuild.md` and local
 `artifacts/adapter-refactor/`; the earlier checkpoint remains preserved separately.
 
 ## Validation result
 
 The refactored candidate passes 186 RK contract tests (37 added boundary cases),
-five Mandarin build tests, the separate complete reference comparison, Ruff and
+five proving project A build tests, the separate complete reference comparison, Ruff and
 focused ty checks. An isolated checkout with a newly synchronized locked environment
 repeats those checks and runs the thin notebook in a fresh kernel. Graph JSON,
 checks, manifest, review HTML and viewer HTML are byte-identical to the working
@@ -109,7 +109,7 @@ annotations at their callable boundaries before introducing more abstractions.
 **Confirmed:** `source_checks.validate([{"id": "bad", "operation": "identities"}], {})`
 passes, but execution raises `KeyError('table')`. Required fields depend on operation
 kind and are not consistently checked. This violates the intended early-validation
-boundary even though the current Mandarin declarations pass.
+boundary even though the current proving project A declarations pass.
 
 The [Excel YAML loader](https://github.com/daniel-fink/rangekeeper/blob/7a0181774edcf29d363822b26cfb8739a467d11b/src/rangekeeper/adapters/excel/specification.py) and
 workflow loader also duplicate safe-loader/key handling with different alias and
@@ -204,7 +204,7 @@ First make items 1–2 small correctness changes with regression tests. Then ext
 shared boundary helpers and independent composition/check APIs, retaining public
 imports where practical. Finally tighten fingerprints/operation history as an
 explicitly versioned change. After each semantic change, run the relevant synthetic
-contracts and Mandarin's separate full equivalence comparison; rerun clean bootstrap
+contracts and proving project A's separate full equivalence comparison; rerun clean bootstrap
 when the refactored candidate is stable.
 
 This review used source/call-site inspection and three isolated synthetic probes:

@@ -76,23 +76,23 @@ that package.
 | Hierarchy charts in `adapters/visualization.py` | `visualisation/chart.py`; retain sunburst, treemap and icicle behaviour used by callers |
 | `adapters/presentation.py` | `visualisation/table.py`; preserve useful Stream and modelling table display |
 | Simple notebook graph helper | `visualisation/graph.py`, using PyVis; keep pedagogical labels, direction and selection appropriate to a local graph |
-| Local notebook geometry display | `visualisation/geometry.py`, a small Python interface over Interface-built static assets |
+| Local notebook geometry display | `visualisation/geometry.py`, a small Python interface over consumer-interface-built static assets |
 | `adapters/polars.py` | `io/polars.py`; preserve typed conversion, identity, missingness and provenance references |
 | `adapters/csv.py` | Delete the wrapper. Use explicit Polars export for suitable tables. Keep any required precision or value-encoding safeguards with the conversion that needs them |
 | Pure canonical Speckle envelope mapping | `io/speckle.py` plus its contract resource |
 | Model, Specification and Run IO and stores | Remain in `io` |
 | Portable C# Model library and generic Grasshopper record, composition, validation and export components | Remain under `src/grasshopper`, with their contract and authoring tests |
-| `DesignExampleComponent` source reading, geometry extraction and interpretation | Move to the optional Rhino/Grasshopper integration in Core, with its ingestion component and source-specific tests |
+| `DesignExampleComponent` source reading, geometry extraction and interpretation | Move to the optional Rhino/Grasshopper integration in the primary consumer, with its ingestion component and source-specific tests |
 
 The canonical table representation stays with the modelling owner. Formatted
 display belongs in `visualisation.table`; transformation of source evidence
-belongs in Core. CSV is a projection format, not a lossless substitute for a
+belongs in the primary consumer. CSV is a projection format, not a lossless substitute for a
 canonical Model document.
 
 Update lazy imports from `model.flux`, display methods and other active callers.
 Importing RK core must not import plotting, Speckle SDK, spreadsheet readers or
 browser packages. Keep numerical solvers required by modelling and execution in
-RK. Move solvers used only for graph presentation to Interface.
+RK. Move solvers used only for graph presentation to the consumer interface.
 
 Remove `adapters`, `workflow`, `migration` and `legacy` from the installed RK
 package after their supported responsibilities have moved or been retired. Do
@@ -111,35 +111,35 @@ library remains independent of Rhino and Speckle. RK also retains the generic
 components in `RecordComponents.cs` and their `RecordGoo` bridge. A user can author,
 validate and export a Model in Grasshopper without installing [external application omitted]. Export
 returns canonical data; acquisition, service authentication and ingestion
-workspace operations belong in Core.
+workspace operations belong in the primary consumer.
 
 Move the current `DesignExampleComponent.cs` implementation into an optional
-Rhino/Grasshopper integration owned by Core. It reads a `.3dm` file, interprets
+Rhino/Grasshopper integration owned by the primary consumer. It reads a `.3dm` file, interprets
 `complex::` layer names and object attributes, slices geometry at declared floor
 elevations, calculates measurements and records source evidence. These are
 ingestion responsibilities even though the component emits a canonical Model.
 Move any Grasshopper component that invokes this ingestion with it. Do not leave
-an RK wrapper that imports or launches Core.
+an RK wrapper that imports or launches the primary consumer.
 
-The Core repository can hold this integration as a separate source project, for
+The primary consumer repository can hold this integration as a separate source project, for
 example `integrations/rhino/`, with extraction, host components and tests. Keep
 Rhino-dependent geometry operations in their supported runtime; this move does
 not require a Python rewrite of Brep operations. Define explicit invocation,
 input, output and failure contracts before connecting it to the workspace API.
 The integration must be usable without an LLM or a running MCP server. Ordinary
-Core installation and non-Rhino source workflows must not require Rhino,
+primary consumer installation and non-Rhino source workflows must not require Rhino,
 Grasshopper or the .NET toolchain.
 
-The dependency is the Core-owned integration to the public RK C# library and,
+The dependency is the primary-consumer-owned integration to the public RK C# library and,
 where needed, its generic Grasshopper record bridge. Pin the compatible RK
 assemblies or packages and canonical schema. Do not copy generated record classes
 into a separately maintained model library or use build references to another
-developer checkout. RK must have no dependency on the Core integration.
+developer checkout. RK must have no dependency on the primary consumer integration.
 
 Keep canonical C# contract and generic authoring tests in RK. Transfer source
-interpretation and geometry-extraction assertions to Core. Split the current Rhino
+interpretation and geometry-extraction assertions to the primary consumer. Split the current Rhino
 acceptance driver and example definition so the generic RK host check can run
-alone, while the source-to-Model example exercises the optional Core integration.
+alone, while the source-to-Model example exercises the optional primary consumer integration.
 Update executable definitions and assembly references together. Preserve original
 Rhino/GHX source evidence and accepted semantic comparisons. Delete predecessor
 components; do not create compatibility assemblies or duplicate component
@@ -163,19 +163,19 @@ needs no original source connection or credentials.
 
 | Contract | Authority | Consumers |
 | --- | --- | --- |
-| Canonical Model, Specification, Run, identity and provenance semantics | RK | Core, Interface and Grasshopper |
-| Ingestion recipes, source evidence and decision records | Core | Python callers, harnesses and ingestion review surfaces |
-| Tool/resource messages, artifact access and viewer service requests | Core | MCP clients and Interface host adapters |
-| Component data, rendering events and local presentation state | Interface | Standalone browser, focused resource shell and local static renderer |
-| Canonical Speckle envelope and geometry associations | RK | Python codec, generated C# constants, source adapters and Interface |
+| Canonical Model, Specification, Run, identity and provenance semantics | RK | Primary consumer, consumer interface and Grasshopper |
+| Ingestion recipes, source evidence and decision records | Primary consumer | Python callers, harnesses and ingestion review surfaces |
+| Tool/resource messages, artifact access and viewer service requests | Primary consumer | MCP clients and the consumer interface host adapters |
+| Component data, rendering events and local presentation state | Consumer interface | Standalone browser, focused resource shell and local static renderer |
+| Canonical Speckle envelope and geometry associations | RK | Python codec, generated C# constants, source adapters and the consumer interface |
 
 Pin canonical schemas or generate consumer types from them. Do not copy and
-independently edit their meaning. Keep the server-facing contract in Core and the
-component-facing contract in Interface, with a tested adapter between them. This
+independently edit their meaning. Keep the server-facing contract in the primary consumer and the
+component-facing contract in the consumer interface, with a tested adapter between them. This
 plan requires no fourth repository or generic integration framework.
 
 Selections and evidence requests must identify one exact Model revision/artifact
-and canonical target. Add scope and an occurrence path where relevant. Interface
+and canonical target. Add scope and an occurrence path where relevant. Consumer interface
 database IDs and visual occurrence IDs must never replace canonical identity.
 Reject stale or inaccessible artifacts explicitly. Do not fall back to the most
 recent Model. Unknown geometry and absent associations remain visible states.
@@ -204,8 +204,8 @@ and association validation as acceptance checks.
 
 The current implementation fingerprint assumes that workflow, adapters and model
 code share one RK package. Replace it with inventories for the relevant RK and
-Core code, schemas and dependencies. Record both package revisions and installed
-artifacts. Record Interface assets separately from computation inputs unless a
+primary consumer code, schemas and dependencies. Record both package revisions and installed
+artifacts. Record consumer interface assets separately from computation inputs unless a
 specific rendering operation actually affects the model build.
 
 For Rhino ingestion, also record the integration build, RK C# assembly/schema
@@ -229,18 +229,18 @@ Model revision.
 
 RK remains the owner of the walkthrough curriculum and book. A normal walkthrough
 run loads the prepared canonical Model and retained geometry, models the problem,
-and displays the result. It must not require a running MCP server, Interface app,
-Payload database or ChatGPT session.
+and displays the result. It must not require a running MCP server, consumer interface app,
+consumer CMS database or ChatGPT session.
 
-Move source preparation and interpretation into Core. Keep a documented preparation
+Move source preparation and interpretation into the primary consumer. Keep a documented preparation
 command or recipe that rebuilds the RK teaching fixture from retained source.
-The examples preparation environment may use the Core Python package. The RK
+The examples preparation environment may use the primary consumer's Python package. The RK
 runtime and prepared-data lessons must not acquire that dependency through an
 import. Rewrite synthetic example builders that use the old Speckle converter
 to construct canonical records directly where source interpretation is not the
 lesson.
 
-The Rhino source-preparation example uses the optional Core integration. Generic
+The Rhino source-preparation example uses the optional primary consumer integration. Generic
 RK Grasshopper modelling examples remain independent. Preserve their separate
 setup instructions and acceptance checks; running the prepared-data book must
 not require either Rhino or Grasshopper.
@@ -293,7 +293,7 @@ Delete the following from supported packages and active commands:
 
 Update all known active callers together. If a retained project needs an obsolete
 format, convert it once with a pinned old tool before deletion, or declare an
-explicit current source reader in Core. Do not import a converter on the assumption
+explicit current source reader in the primary consumer. Do not import a converter on the assumption
 that some unknown downstream user might need it. Publish clear breaking-change
 instructions when this refactor is released.
 
@@ -309,8 +309,8 @@ The following material must remain, with the indicated owner:
 | --- | --- |
 | Current canonical schemas, IO, identity and provenance rules | Active RK contract; required by all three repositories |
 | Portable C# model library, generic Grasshopper authoring, C# generation and canonical envelope fixtures | Current RK modelling implementation and cross-language verification |
-| Active Rhino source extraction, interpretation and its Grasshopper entry component | Reproducible geometry ingestion in the optional Core integration; retain its source-specific assertions and evidence |
-| Reader for the retained historical Speckle source used by the walkthrough | Required for reproducible source-to-Model preparation; explicit source support in Core, without the old runtime |
+| Active Rhino source extraction, interpretation and its Grasshopper entry component | Reproducible geometry ingestion in the optional primary consumer integration; retain its source-specific assertions and evidence |
+| Reader for the retained historical Speckle source used by the walkthrough | Required for reproducible source-to-Model preparation; explicit source support in the primary consumer, without the old runtime |
 | Original Rhino/GHX files, source archives, hashes and canonical fixture data | Evidence for the teaching model and independent comparisons |
 | Useful semantic assertions from predecessor/migration tests | Rewrite as current canonical or source-reader tests before deleting their old harness |
 | Git history, schema history and dated acceptance records | Historical evidence, not executable compatibility |
@@ -352,30 +352,30 @@ do not use a mutable branch tip as an artifact pin or retain temporary shims.
 | RK core | Installed core import, schema suites, canonical validation, calculations and execution; no ingestion/UI dependencies loaded; absent old modules and extras |
 | RK display | Chart/table/PyVis smoke checks and rendered inspection; real local geometry from the prepared source; lazy optional dependency behaviour |
 | Python and C# contract | Fresh generated files; canonical envelope fixture round trips; exact associations, IDs, zero/false/missing and error handling |
-| Generic Grasshopper modelling | Create, compose, validate, export, save, reopen and recompute with RK components alone; stable canonical identity; no Core dependency or ingestion component registration |
+| Generic Grasshopper modelling | Create, compose, validate, export, save, reopen and recompute with RK components alone; stable canonical identity; no primary consumer dependency or ingestion component registration |
 | Optional Rhino ingestion | Retained `.3dm` source is unchanged; explicit layer/attribute and elevation rules; matching geometry measurements, domain identities, associations and evidence; recorded runtime/build inputs; clear failures; runs without an LLM or MCP server |
-| Core ingestion engine | Source immutability, source-change detection, interpretation questions, decisions/rationale, invalidation, provenance, failed-build isolation, workspace resumption and independent expected results |
-| MCP interface | Installed Python package plus real stdio SDK tests, versioned tools/resources and bounded responses; ordinary ingestion works without Rhino, Grasshopper, .NET, Interface, Node or LLM |
-| Interface | Exact artifact/scope/selection; shared occurrences, cycles, isolates and empty scopes; graph direction and membership distinction; source evidence; invalid/stale selections; real graph/3D, manual node drag, canvas pan and keyboard interaction; user writes denied |
+| Primary consumer ingestion engine | Source immutability, source-change detection, interpretation questions, decisions/rationale, invalidation, provenance, failed-build isolation, workspace resumption and independent expected results |
+| MCP interface | Installed Python package plus real stdio SDK tests, versioned tools/resources and bounded responses; ordinary ingestion works without Rhino, Grasshopper, .NET, consumer interface, Node or LLM |
+| Consumer interface | Exact artifact/scope/selection; shared occurrences, cycles, isolates and empty scopes; graph direction and membership distinction; source evidence; invalid/stale selections; real graph/3D, manual node drag, canvas pan and keyboard interaction; user writes denied |
 | Advanced layout | Transferred model/solver/validation tests and explicitly recorded solver availability; no claim that a missing optional solver passed |
 | Walkthroughs | All cells in Notebooks 01–03 executed from candidate wheels; independent financial comparisons; four-page book and actual display interactions inspected |
-| Integrated flow | Retained source → Core Python build → RK load/validate/model → Interface open/select/evidence → changed recorded rule → new Model; old Model remains intact; repeat build without chat |
+| Integrated flow | Retained source → primary consumer Python build → RK load/validate/model → consumer interface open/select/evidence → changed recorded rule → new Model; old Model remains intact; repeat build without chat |
 | Packaging and documentation | Fresh installs, licenses/assets included, known consumers updated, no absolute developer-path dependency, current docs and locks consistent, documentation checks pass |
 
 Keep separate completion states for refactor acceptance and external/product
 acceptance. The second-Mac desktop trial, actual ChatGPT checkpoints C1–C7,
-full-browser embedding E1, deployment choice, production Payload adoption, large
+full-browser embedding E1, deployment choice, production consumer CMS adoption, large
 model/concurrency work and canonical Windows connector acceptance are not proved
 by this refactor. Preserve their open status and named owners.
 
-The Core repository's `docs/chatgpt-plugin.md` remains the authority for C1–C7 and
+The primary consumer repository's `docs/chatgpt-plugin.md` remains the authority for C1–C7 and
 E1. Shared component extraction provides a foundation; actual ChatGPT tool/UI
 round trips, graph/3D rendering, artifact isolation, evidence exchange and
 standalone parity must still be verified in the claimed hosts. E1 is additional
 to the first focused resource.
 
 After phase 6, release the paused workstreams against the recorded package pins.
-Core resumes the staged desktop trial, Interface resumes focused ChatGPT integration,
+The primary consumer resumes the staged desktop trial, the consumer interface resumes focused ChatGPT integration,
 and RK resumes the walkthrough curriculum. Commit, push and release publication
 remain explicit delivery actions. No runtime or platform acceptance is claimed
 by approval of this plan alone.

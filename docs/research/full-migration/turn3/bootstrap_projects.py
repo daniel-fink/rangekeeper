@@ -21,7 +21,7 @@ B = args.root
 if args.phase == "prepare":
     B.mkdir(parents=True, exist_ok=False)
     manifest = {}
-    for project in ("mandarin", "east-whisman"):
+    for project in ("proving-a", "proving-b"):
         dest = B / project
         dest.mkdir()
         for name in ("spec", "inputs", "tests", "notebooks", "presentation"):
@@ -65,9 +65,9 @@ else:
         from collections import Counter
 
         for project, spec, name in [
-            ("mandarin", "spec", "mandarin"),
-            ("east-whisman", "spec/december", "december"),
-            ("east-whisman", "spec/november-r2", "november-r2"),
+            ("proving-a", "spec", "proving-a"),
+            ("proving-b", "spec/december", "december"),
+            ("proving-b", "spec/november-r2", "november-r2"),
         ]:
             attempt = build(
                 B / project / spec,
@@ -90,7 +90,7 @@ else:
                 flush=True,
             )
     elif args.phase == "tests":
-        for project in ("mandarin", "east-whisman"):
+        for project in ("proving-a", "proving-b"):
             for command in (
                 [sys.executable, "-m", "pytest", "tests", "-q", "--tb=short"],
                 [str(Path(sys.executable).parent / "ruff"), "check", "tests"],
@@ -111,10 +111,10 @@ else:
             [
                 sys.executable,
                 str(ROOT / "docs/research/full-migration/turn2/run_notebook.py"),
-                str(B / "mandarin/notebooks/01_workflow_review.ipynb"),
-                str(B / "mandarin-review.ipynb"),
+                str(B / "proving-a/notebooks/01_workflow_review.ipynb"),
+                str(B / "proving-a-review.ipynb"),
                 "--cwd",
-                str(B / "mandarin"),
+                str(B / "proving-a"),
             ],
             cwd=B,
             check=True,

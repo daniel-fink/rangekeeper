@@ -104,6 +104,6 @@ earlier file-URL policy block. No alternate browser route was used. The executed
 notebook is copied back to `walkthrough/basic_dcf.ipynb`; old book build outputs
 remain historical.
 
-No commit, push or release occurred. External Projects, host/service consumers,
+No commit, push or release occurred. External primary consumer, host/service consumers,
 temporal governing equations, scenario/policy contracts and final legacy
 retirement retain their existing acceptance gates.

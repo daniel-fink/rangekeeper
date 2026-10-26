@@ -10,9 +10,9 @@ from rangekeeper.workflow.workbench import build
 P = Path(os.environ["RK_PROJECTS_ROOT"])
 O = Path("/private/tmp/rk-turn3-private/candidate")
 for project, spec, name in [
-    ("mandarin", "spec", "mandarin"),
-    ("east-whisman", "spec/december", "december"),
-    ("east-whisman", "spec/november-r2", "november-r2"),
+    ("proving-a", "spec", "proving-a"),
+    ("proving-b", "spec/december", "december"),
+    ("proving-b", "spec/november-r2", "november-r2"),
 ]:
     result = build(
         P / project / spec,

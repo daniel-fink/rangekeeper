@@ -16739,10 +16739,10 @@
     },
     {
       "scope": "external",
-      "path": "east-whisman/pyproject.toml",
+      "path": "proving-b/pyproject.toml",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
-      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; mandarin-notebook.txt",
+      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; proving-a-notebook.txt",
       "historical_evidence": {
         "sha256": "0fbb1cb7568fd3e7d68c5186dcb13dd2def4c58f19d7e3a0c3cfea7f3f08841f",
         "references": [
@@ -16762,10 +16762,10 @@
     },
     {
       "scope": "external",
-      "path": "east-whisman/spec/december/checks.yaml",
+      "path": "proving-b/spec/december/checks.yaml",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
-      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; mandarin-notebook.txt",
+      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; proving-a-notebook.txt",
       "historical_evidence": {
         "sha256": "9f4b2c137d2a728a471c1304f60669fe547cf03f6b350c1aa8731043d003c414",
         "references": []
@@ -16774,10 +16774,10 @@
     },
     {
       "scope": "external",
-      "path": "east-whisman/spec/december/decisions.yaml",
+      "path": "proving-b/spec/december/decisions.yaml",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
-      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; mandarin-notebook.txt",
+      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; proving-a-notebook.txt",
       "historical_evidence": {
         "sha256": "c7297cb450a0744f3af91272588219b5219f1819aba7dd44ec15cf57cf0dd2c1",
         "references": []
@@ -16786,10 +16786,10 @@
     },
     {
       "scope": "external",
-      "path": "east-whisman/spec/december/model.yaml",
+      "path": "proving-b/spec/december/model.yaml",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
-      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; mandarin-notebook.txt",
+      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; proving-a-notebook.txt",
       "historical_evidence": {
         "sha256": "cd5268343246fb2686b7e86de9bef2914d350c39e6193d2ef74b6197389d7c42",
         "references": []
@@ -16798,10 +16798,10 @@
     },
     {
       "scope": "external",
-      "path": "east-whisman/spec/december/sources.yaml",
+      "path": "proving-b/spec/december/sources.yaml",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
-      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; mandarin-notebook.txt",
+      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; proving-a-notebook.txt",
       "historical_evidence": {
         "sha256": "09e4af16ba63d9f84698df14d6593f37a7bf986e669fa03ff431fcef06fac0f6",
         "references": []
@@ -16810,10 +16810,10 @@
     },
     {
       "scope": "external",
-      "path": "east-whisman/spec/november-r2/checks.yaml",
+      "path": "proving-b/spec/november-r2/checks.yaml",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
-      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; mandarin-notebook.txt",
+      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; proving-a-notebook.txt",
       "historical_evidence": {
         "sha256": "f1939f45e3bbff3e6d6d26bba5f410b50b517483f99dc9a0deb8796e119c58e8",
         "references": []
@@ -16822,10 +16822,10 @@
     },
     {
       "scope": "external",
-      "path": "east-whisman/spec/november-r2/decisions.yaml",
+      "path": "proving-b/spec/november-r2/decisions.yaml",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
-      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; mandarin-notebook.txt",
+      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; proving-a-notebook.txt",
       "historical_evidence": {
         "sha256": "c7297cb450a0744f3af91272588219b5219f1819aba7dd44ec15cf57cf0dd2c1",
         "references": []
@@ -16834,10 +16834,10 @@
     },
     {
       "scope": "external",
-      "path": "east-whisman/spec/november-r2/model.yaml",
+      "path": "proving-b/spec/november-r2/model.yaml",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
-      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; mandarin-notebook.txt",
+      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; proving-a-notebook.txt",
       "historical_evidence": {
         "sha256": "d437b8eb4e532ee727510ba28ee8b4442cc1c11bddb40611c3559c711469256e",
         "references": []
@@ -16846,10 +16846,10 @@
     },
     {
       "scope": "external",
-      "path": "east-whisman/spec/november-r2/sources.yaml",
+      "path": "proving-b/spec/november-r2/sources.yaml",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
-      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; mandarin-notebook.txt",
+      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; proving-a-notebook.txt",
       "historical_evidence": {
         "sha256": "040c675155578015fa7a14c36c66f59de9bc06e39bb4604cb136586a121a5dfc",
         "references": []
@@ -16858,10 +16858,10 @@
     },
     {
       "scope": "external",
-      "path": "east-whisman/tests/test_workflow.py",
+      "path": "proving-b/tests/test_workflow.py",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
-      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; mandarin-notebook.txt",
+      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; proving-a-notebook.txt",
       "historical_evidence": {
         "sha256": "0924447139b2b18f0cf3e58339bda9c4463d04a966c9952d2f8a6f6862372df8",
         "references": [
@@ -16891,10 +16891,10 @@
     },
     {
       "scope": "external",
-      "path": "mandarin/notebooks/01_workflow_review.ipynb",
+      "path": "proving-a/notebooks/01_workflow_review.ipynb",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
-      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; mandarin-notebook.txt",
+      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; proving-a-notebook.txt",
       "historical_evidence": {
         "sha256": "70b4248c35fb2ae48a6abc30ccd78825f469cd89479981fff160385eb48fe4e3",
         "references": [
@@ -16914,10 +16914,10 @@
     },
     {
       "scope": "external",
-      "path": "mandarin/presentation/layout.yaml",
+      "path": "proving-a/presentation/layout.yaml",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
-      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; mandarin-notebook.txt",
+      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; proving-a-notebook.txt",
       "historical_evidence": {
         "sha256": "54991d308ed2d661dc59c259de4bb1999faf7e67169faab74e8aa1bcd80977a9",
         "references": [
@@ -16932,10 +16932,10 @@
     },
     {
       "scope": "external",
-      "path": "mandarin/pyproject.toml",
+      "path": "proving-a/pyproject.toml",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
-      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; mandarin-notebook.txt",
+      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; proving-a-notebook.txt",
       "historical_evidence": {
         "sha256": "91d9d5611a546e637198e881314186dbdb36beaad4659539a4734a963542b0eb",
         "references": [
@@ -16955,10 +16955,10 @@
     },
     {
       "scope": "external",
-      "path": "mandarin/spec/checks.yaml",
+      "path": "proving-a/spec/checks.yaml",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
-      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; mandarin-notebook.txt",
+      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; proving-a-notebook.txt",
       "historical_evidence": {
         "sha256": "e0aecb1e16bb1a805132b7786db5fda5250ee8cf0a55ee73d2fc1fed1d3a89f7",
         "references": []
@@ -16967,10 +16967,10 @@
     },
     {
       "scope": "external",
-      "path": "mandarin/spec/decisions.yaml",
+      "path": "proving-a/spec/decisions.yaml",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
-      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; mandarin-notebook.txt",
+      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; proving-a-notebook.txt",
       "historical_evidence": {
         "sha256": "45b8416d6a67ed592bd59098db7dbb6f827eec3d3113b0c2e6065f134809eb12",
         "references": []
@@ -16979,10 +16979,10 @@
     },
     {
       "scope": "external",
-      "path": "mandarin/spec/model.yaml",
+      "path": "proving-a/spec/model.yaml",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
-      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; mandarin-notebook.txt",
+      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; proving-a-notebook.txt",
       "historical_evidence": {
         "sha256": "e02ecc3cb19ead1ba46ac167faf424ec44c7fbccd78a9be736bcbb8852f535ab",
         "references": []
@@ -16991,10 +16991,10 @@
     },
     {
       "scope": "external",
-      "path": "mandarin/spec/sources.yaml",
+      "path": "proving-a/spec/sources.yaml",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
-      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; mandarin-notebook.txt",
+      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; proving-a-notebook.txt",
       "historical_evidence": {
         "sha256": "5493fe513afc7e94dc8f35121d418e6d2c040cf2e5e935e235f2d11494faddbc",
         "references": []
@@ -17003,10 +17003,10 @@
     },
     {
       "scope": "external",
-      "path": "mandarin/tests/test_equivalence.py",
+      "path": "proving-a/tests/test_equivalence.py",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
-      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; mandarin-notebook.txt",
+      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; proving-a-notebook.txt",
       "historical_evidence": {
         "sha256": "7c84f682ebe995c2a9192594c087a6d74d7f5a2461f37e957c0502b5920219f0",
         "references": [
@@ -17046,10 +17046,10 @@
     },
     {
       "scope": "external",
-      "path": "mandarin/tests/test_workflow.py",
+      "path": "proving-a/tests/test_workflow.py",
       "turn": 3,
       "status": "canonical; rebuilt and compared from isolated installed wheel",
-      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; mandarin-notebook.txt",
+      "acceptance": "project-builds.txt; project-comparisons.txt; project-tests.txt; proving-a-notebook.txt",
       "historical_evidence": {
         "sha256": "361e8c6b5f0a9fd2855fe8e5e00960fdcbda74bb3230ced85a422d72b082d986",
         "references": [

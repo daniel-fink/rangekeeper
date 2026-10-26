@@ -7,7 +7,7 @@ This development checkpoint is retained on `codex/core-lifecycle-bundles`, based
 `3d70ece757a2ce7ff6a329b7b3cfcb6ef0835363`. It is in the isolated checkout
 `[external application omitted]/.worktrees/rk-core-lifecycle`. The preserved walkthrough is included in the base. This record captures the
 candidate before consolidation into the newer develop branch. Integration does
-not approve Bundle release or adoption in Projects.
+not approve Bundle release or adoption in the primary consumer.
 
 ## Observed verification
 
@@ -23,12 +23,12 @@ not approve Bundle release or adoption in Projects.
   This does not establish execution on an installed .NET 8 runtime or Rhino host.
 - Three complete canonical YAML Models reconstruct from schema-derived Parquet;
   Model-only migration, invalid paths/formats, bounds and collection identity pass.
-  Core's paired tests add native inventory/decoder/selector checks, explicit source
+  the primary consumer's paired tests add native inventory/decoder/selector checks, explicit source
   evidence, reverse mapping and failure-before-publication checks.
 
 The library wheel was built from this isolated source and pinned by SHA-256 in
-Core's vendor manifest/lock. The [canonical contract](../../reference/bundle.md)
-is authoritative here. Core owns its exact native profile, synthetic proof
+the primary consumer's vendor manifest/lock. The [canonical contract](../../reference/bundle.md)
+is authoritative here. The primary consumer owns its exact native profile, synthetic proof
 artifacts, local registration tests and measured record-query results.
 
 ## Gate boundary
@@ -57,7 +57,7 @@ applied only to the changed handwritten files.
 
 These checks used local macOS environments. Missing mypy and pip initially
 prevented their checks from running; both tools were installed before the passing
-runs. No remote harness, Windows, Rhino or Projects acceptance is claimed. The
+runs. No remote harness, Windows, Rhino or the primary consumer acceptance is claimed. The
 subsequent consolidation record must identify the merged revision and the exact
 wheel used for combined and notebook validation.
 

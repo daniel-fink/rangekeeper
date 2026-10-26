@@ -1,10 +1,10 @@
 # Research and verification evidence
 
-- [Bundle opening cost](bundle-open-cost-2026-10-22/README.md): the Reader validates each retained document once; measured on the WW-51 growth fixture.
+- [Bundle opening cost](bundle-open-cost-2026-10-22/README.md): the Reader validates each retained document once; measured on the legacy consumer growth fixture.
 
-- [Guarded semantic export experiment](graph-semantic-export-2026-10-21/README.md): bounded WW-51 copy-elimination experiment; no delivery clearance.
+- [Guarded semantic export experiment](graph-semantic-export-2026-10-21/README.md): bounded legacy consumer copy-elimination experiment; no delivery clearance.
 
-- [Graph read cost and exact record lookup](graph-read-cost-2026-10-21/README.md): bounded WW-51 repair and retained performance limits.
+- [Graph read cost and exact record lookup](graph-read-cost-2026-10-21/README.md): bounded legacy consumer repair and retained performance limits.
 
 - [T3 RK integration](t3-integration-2026-10-15/README.md).
 

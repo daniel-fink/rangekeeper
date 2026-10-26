@@ -13,7 +13,7 @@ format approval and publication.
 
 Status history: Bundle contract, Entity-to-source-element mappings, separate provenance
 and Parquet/DuckDB architecture agreed on 13 October 2026. Application/transport
-ownership and the greenfield Interface were clarified on 14 October 2026. A
+ownership and the greenfield consumer interface were clarified on 14 October 2026. A
 [concrete local candidate](../reference/bundle.md) is implemented in 0.10.0.dev3.
 Implementation does not close the full P1–P8 acceptance matrix below. The SQLite development experiment is retained as earlier evidence.
 It does not implement this contract.
@@ -43,10 +43,10 @@ The user agreed the investigation handover scope on 14 October 2026. The expande
 `2-proposal` candidate retains input/output Models, composed Specifications, selected
 Runs and their exact dependencies. It preserves Model-only delivery. Historical
 predecessors and workspace state are not copied automatically. The public reader
-acts as a read-only resolver; Core manages export/import and further operations.
+acts as a read-only resolver; the primary consumer manages export/import and further operations.
 See the [current format reference](../reference/bundle.md). This supersedes the
 one-Model restriction; earlier proof and P1–P8 acceptance records remain dated.
-The user approved the concrete candidate for T2 development and local Projects
+The user approved the concrete candidate for T2 development and local primary consumer
 adoption. Stable release and the remaining acceptance matrix are separate gates.
 
 The Model's pin must identify exact Geometry content by a digest, its provider and
@@ -121,7 +121,7 @@ The Geometry descriptor must distinguish:
 | Source address and version, when available | Preserve provenance in the provider's own namespace. These values do not replace the content digest. |
 
 The field layout and validation types belong to step A. Provider identifiers must
-be extensible; Core implements a narrow pinned Speckle profile. An unsupported provider or
+be extensible; the primary consumer implements a narrow pinned Speckle profile. An unsupported provider or
 schema must produce an explicit unsupported-format result, not a fallback to the
 Speckle decoder. Replacing the provider or changing the pinned format/schema is a
 pin change and therefore creates a new Model and Bundle. This boundary permits
@@ -130,7 +130,7 @@ future providers; it does not imply automatic or lossless format conversion.
 ### First Geometry implementation: Speckle 2026.9
 
 The first provider target is **Speckle**, using its **2026.9 object-model/bundle
-schema**. Core implements a narrow pinned profile; broader native formats and
+schema**. The primary consumer implements a narrow pinned profile; broader native formats and
 live producer compatibility remain separate acceptance work. Geometry is stored as the native Speckle bundle in that profile. Keep
 “Speckle bundle” for descriptions of that concrete encoding, not as the canonical
 RK type or the name of the second Bundle component.
@@ -247,7 +247,7 @@ untyped EAV store. EAV can serve source-variable properties where appropriate.
 | Native Geometry dataset | Retained provider data, including its properties, relations and assets. The Speckle adapter reads its native Parquet tables; other providers can use other formats. |
 | DuckDB reader inside Bundle access | Queries RK tables and supported Geometry tables, joins through explicit Entity mappings, and supplies bounded results. An embedded query engine, not the Model's identity or a required `.duckdb` delivery file. |
 | Provider adapters inside Bundle access | Interpret source identities, properties, relations, geometry encodings, representation roles, placement and assets under the shared identity/access rules. |
-| Bundle access contract and projections | One meaning for object, Value, evidence, membership, graph, source-selection and asset operations across hosts. Interface owns presentation projections; Core owns authorised service access. |
+| Bundle access contract and projections | One meaning for object, Value, evidence, membership, graph, source-selection and asset operations across hosts. The consumer interface owns presentation projections; the primary consumer owns authorised service access. |
 | Application registry and policy | Consumers own registered Bundle access, caller scope, sessions and disposable indexes outside canonical storage. |
 
 The first service path exposes Bundle access with DuckDB and provider adapters
@@ -279,16 +279,16 @@ ordering where non-semantic, and compression changes must not change logical
 identity. Re-encoding retained Geometry changes its exact-content pin under this
 contract. Step A must define and test this distinction before format adoption.
 
-The current Interface uses shared components and the Core query service.
-Payload/Next and their collections are excluded from that runtime. Derived host
+The current consumer interface uses shared components and the primary consumer query service.
+Consumer CMS/Next and their collections are excluded from that runtime. Derived host
 projections, operational authorship and caches remain outside published Bundles
-and canonical provenance. The historical Payload experiment below retains its
+and canonical provenance. The historical consumer CMS experiment below retains its
 original scope; it is not a current integration task.
 
 Primary references: [Speckle columnar property store](https://docs.speckle.systems/next/developers/object-model/overview#columnar-property-store),
 [Speckle object/node definitions](https://github.com/specklesystems/speckle-bundle-spec/blob/main/GLOSSARY.md),
 [DuckDB Parquet support](https://duckdb.org/docs/current/data/parquet/overview.html), and
-[Payload v4 migration guide](https://payloadcms.com/docs/beta/migration-guide/v4).
+the consumer CMS v4 migration guide.
 These support the architecture choice; they do not establish local acceptance.
 
 ## Ownership and geometry boundary
@@ -296,7 +296,7 @@ These support the architecture choice; they do not establish local acceptance.
 | Owner | Responsibility |
 | --- | --- |
 | Rangekeeper | Canonical Model schema, Entity mapping and provenance contracts, Model identity, schema-derived Parquet serialization, reusable storage/query conformance and semantic validation |
-| Geometry provider specification and adapter | Native source format and semantics; format-specific decoding and source integrity checks. Core supplies a narrow pinned native Speckle profile; broader support remains open. |
+| Geometry provider specification and adapter | Native source format and semantics; format-specific decoding and source integrity checks. The primary consumer supplies a narrow pinned native Speckle profile; broader support remains open. |
 | Application services | Source acquisition, user decisions, builds, Bundle assembly/publication and authorised service access |
 | User interfaces | Bounded projections, component queries, geometry conversion, rendering and host adapters |
 | Hosting application | Bundle/Model catalogue, users, permissions and session state |
@@ -339,7 +339,7 @@ These define source formats and adapter options, not local implementation accept
 The [prototype](../../tools/sqlite_spike/package.py) derives record tables and
 columns from the generated `src/rangekeeper/schema/slots.json` contract. That
 contract comes from the authoritative LinkML schema. There is no second handwritten
-list of domain fields and no dependency on Payload's physical database structure.
+list of domain fields and no dependency on the consumer CMS's physical database structure.
 
 | Storage | Rule |
 | --- | --- |
@@ -422,20 +422,20 @@ versions and that input. It does not rule out fixing or configuring the upstream
 generator. Production mapping needs explicit decisions about unions, field
 presence, ordered collections, inheritance and local/external reference scope.
 
-Payload generates its physical schema from collection configuration. An RK-owned
-database does not automatically supply native Payload collection APIs or drawers.
-The shared read-adapter step must compare a read-service adapter, a Payload projection and
-the cost of retaining the native UI. Do not allow Payload development schema push
+Consumer CMS generates its physical schema from collection configuration. An RK-owned
+database does not automatically supply native consumer CMS collection APIs or drawers.
+The shared read-adapter step must compare a read-service adapter, a consumer CMS projection and
+the cost of retaining the native UI. Do not allow consumer CMS development schema push
 or host migrations to modify a published RK package.
 
-The [Payload v4 migration guide](https://payloadcms.com/docs/beta/migration-guide/v4)
-was checked during this work. This experiment imports no Payload API and changes no
-Payload configuration. It establishes an independent boundary, not a v4 integration
-pass. Repeat the Interface v4 procedure when implementing its adapter.
+The consumer CMS v4 migration guide
+was checked during this work. This experiment imports no consumer CMS API and changes no
+consumer CMS configuration. It establishes an independent boundary, not a v4 integration
+pass. Repeat the consumer interface v4 procedure when implementing its adapter.
 
 Primary references: [SQLite application files](https://www.sqlite.org/appfileformat.html),
 [LinkML SQL generation](https://linkml.io/linkml/generators/sqltable.html),
-[Payload SQLite](https://payloadcms.com/docs/database/sqlite), and
+the consumer CMS SQLite adapter documentation, and
 [Speckle object encoding](https://docs.speckle.systems/developers/sdks/python/concepts/objects).
 
 ## Spike steps, grouped turns and review
@@ -451,8 +451,8 @@ order; the earlier SQLite proof remains input evidence, not completion of step A
 | Step | Work and concrete result | Acceptance and user review |
 | --- | --- | --- |
 | A: Schema, Parquet and Bundle lifecycle | Specify provider-neutral Geometry types, Model-owned Entity mappings, separate provenance addresses, identity rules and migration. Derive Parquet tables from the RK schema; prove complete reconstruction and a DuckDB query prototype. Pin Speckle 2026.9 and its exact specification; build a native fixture, validator, shared conformance cases and offline reopen proof. Preserve the legacy reader boundary. | Pass P1–P5 below and measure representative P6 reads before storage adoption. Review the concrete schema, manifest, associations, provenance, table mapping, query costs, change cases and reopened artifact before adopting the public format and wiring hosts to it. |
-| B: Bundle access and host adapter | Implement independent application operations for bounded Model/source/evidence and geometry/asset queries. Compose RK IO and provider interfaces; expose thin HTTP/MCP adapters and connect Interface. | Pass P6–P7 and standalone P8. Prove direct Python with transports absent, equivalent authorized transport results and offline reads without ingestion/source state. Measure query costs and verify client projections. Payload/Next are excluded. |
-| C: Navigation and inspector | Use the selected Mantine Tree and AG Grid Community; finish occurrence, browse/inspect and restore rules; share the inspector and components between standalone and focused shells. | Use Interface's browsing matrix. Review the actual tree, selection and inspector behaviour after automated and browser checks. |
+| B: Bundle access and host adapter | Implement independent application operations for bounded Model/source/evidence and geometry/asset queries. Compose RK IO and provider interfaces; expose thin HTTP/MCP adapters and connect consumer interface. | Pass P6–P7 and standalone P8. Prove direct Python with transports absent, equivalent authorized transport results and offline reads without ingestion/source state. Measure query costs and verify client projections. Consumer CMS/Next are excluded. |
+| C: Navigation and inspector | Use the selected Mantine Tree and AG Grid Community; finish occurrence, browse/inspect and restore rules; share the inspector and components between standalone and focused shells. | Use the consumer interface's browsing matrix. Review the actual tree, selection and inspector behaviour after automated and browser checks. |
 | D: Focused resources and workflow | Connect MCP Bundle access and component dispatch; verify real ChatGPT tree/inspector then graph/3D, standalone deep links, and build/reopen workflow. | Pass P8 in actual hosts. Review focused UI beside the full browser; test full-browser embedding separately if claimed. |
 
 Each step can include implementation, fixtures, checks and a reviewable result in
@@ -462,7 +462,7 @@ turn: schema/artifact review after A and product review after B/C remain deliber
 checkpoints. User interpretation review belongs inside the ingestion workflow.
 Routine reversible fixes and verification do not need separate permission stops.
 
-Interface U0 and Core PA0 can run first: a clean Vite/Mantine/Community browser over
+Consumer interface U0 and primary consumer PA0 can run first: a clean Vite/Mantine/Community browser over
 labelled synthetic Bundle projections and a direct-call fixture application
 contract. Show UI promptly. A remains the gate for new Bundle integration; repeat
 the same interactions with real access in B. Preserve earlier JSON/SQLite and
@@ -478,8 +478,8 @@ legacy Geometry evidence without treating it as native Bundle or ChatGPT accepta
 | P4: Source semantics and provenance | Test Entity/Assembly mappings to objects and allowed groups, many-to-many and absent mappings, ambiguous and namespace-colliding selectors, and all-candidate reverse lookup. Reject Value/Relationship/mesh endpoints and unsupported node kinds. Verify property/relation evidence through Source/Location/Claim/Fact independently of mappings. Test explicit source-group expansion, units, nested instances and transforms without inferring RK membership, placement or accepted content. |
 | P5: Schema and storage | Reconstruct the complete Model from schema-derived Parquet tables under the new schema. Preserve field presence, scalar/union types, units, order, empty containers, ownership, references and provenance. Verify migration, neutral names, provider metadata and unsupported-format results. Test repacking without logical identity changes, exact Geometry-byte integrity, file hashes and no circular digests. A retained JSON-only read is insufficient. |
 | P6: Bounded reads and conformance | Run object/value/evidence/membership/graph/source queries against the validated Model/source oracle and DuckDB, then each host projection. Check ordering, pagination, scope, all-candidate joins without accidental value multiplication, and explicit incomplete results. Ordinary reads must not load geometry blobs. Record cold/warm latency, bytes read, peak memory, rebuild cost and declared scale limits; test rejection of stale/incomplete projections and their rebuild without Bundle mutation. |
-| P7: Interface independence | Two supported render conversions leave Model, Geometry and Bundle unchanged. Camera/selection/cache changes stay outside canonical contents. Host schema push and migrations cannot modify published Bundles. A quad conversion alone does not establish general BRep or native-app support. |
-| P8: Host consistency | Full browser, focused resources and deep links carry the exact Bundle and Model identity plus canonical selection/scope. Reject stale cross-Bundle requests. Verify the same mappings/evidence in each claimed host, actual ChatGPT tool/UI exchanges, and standalone use without Payload, Next or ChatGPT. The v4 probe is legacy evidence only. |
+| P7: Consumer interface independence | Two supported render conversions leave Model, Geometry and Bundle unchanged. Camera/selection/cache changes stay outside canonical contents. Host schema push and migrations cannot modify published Bundles. A quad conversion alone does not establish general BRep or native-app support. |
+| P8: Host consistency | Full browser, focused resources and deep links carry the exact Bundle and Model identity plus canonical selection/scope. Reject stale cross-Bundle requests. Verify the same mappings/evidence in each claimed host, actual ChatGPT tool/UI exchanges, and standalone use without consumer CMS, Next or ChatGPT. The v4 probe is legacy evidence only. |
 
 The existing test `test_content_digest_separates_geometry_from_legacy_model_id`
 records a legacy identity gap. It must not count as P2 acceptance. The existing
@@ -489,7 +489,7 @@ native iOS, general BRep conversion or production service.
 
 Before production adoption, also establish publication durability, migration and
 codec support policy, access isolation, hostile-file handling and declared scale
-limits. Cross-Bundle search belongs to a separate catalogue/index. Core ingestion
+limits. Cross-Bundle search belongs to a separate catalogue/index. Primary consumer ingestion
 must remain usable without a viewer.
 
 ## Current status and consumer checks

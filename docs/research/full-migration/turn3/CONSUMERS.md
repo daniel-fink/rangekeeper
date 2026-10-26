@@ -1,16 +1,16 @@
 # Turn 3 consumer register
 
-Starting points: RK `b9de7fc`, Projects `5725cc0`, layout reference `4e5aec4`.
+Starting points: RK `b9de7fc`, primary consumer `5725cc0`, layout reference `4e5aec4`.
 The source and preservation inventory is in `baseline.json`. Original source
 workbooks, archived files, and received design data remain outside this evidence
 folder. This register distinguishes planned replacements from accepted consumers.
 
 | Consumer | Existing dependency | Replacement and supported behavior | Environment and acceptance | Retirement gate |
 |---|---|---|---|---|
-| Mandarin source build | Workflow v1, Graph, Features, old codec and provenance | Workflow v2, canonical Model, property Values, explicit quantity keys; same source interpretations, decisions and findings | Project Python 3.13, original local workbooks, strict historical comparison | Real build, project tests and semantic comparison |
-| Mandarin review notebook | Reference-branch workbench and layout profile v2 | Canonical workbench, profile v3, separate failed attempts and saved-layout bundles | Fresh project kernel; wheel bootstrap; local browser | Notebook, integrity and interaction checks |
-| East Whisman December | Workflow v1 and Graph | Separate canonical December Model; original square-foot quantities and missingness | Python 3.13, original workbook, independent comparison | Build and source-scope tests |
-| East Whisman November R2 | Workflow v1 and Graph | Separate canonical November Model; only reviewed shared identities | Same environment; separate comparison | Build and source-scope tests |
+| Proving project A source build | Workflow v1, Graph, Features, old codec and provenance | Workflow v2, canonical Model, property Values, explicit quantity keys; same source interpretations, decisions and findings | Project Python 3.13, original local workbooks, strict historical comparison | Real build, project tests and semantic comparison |
+| Proving project A review notebook | Reference-branch workbench and layout profile v2 | Canonical workbench, profile v3, separate failed attempts and saved-layout bundles | Fresh project kernel; wheel bootstrap; local browser | Notebook, integrity and interaction checks |
+| Proving project B December | Workflow v1 and Graph | Separate canonical December Model; original square-foot quantities and missingness | Python 3.13, original workbook, independent comparison | Build and source-scope tests |
+| Proving project B November R2 | Workflow v1 and Graph | Separate canonical November Model; only reviewed shared identities | Same environment; separate comparison | Build and source-scope tests |
 | Layout reference branch | Old Graph objects, Features and Measure selection | Detached layout Problems from Models; explicit property and quantity selectors | Geometry, saved-layout, browser, optional Z3/MiniZinc checks | Feature-by-feature port acceptance; no old-domain merge |
 | Design loading walkthrough | `rk.api.Speckle`, mutable Entity/Assembly reconstruction | Explicit receive or fixture load, canonical envelope decode or named legacy conversion, Model-backed View | Installed wheel; explicit fixture/live mode; pinned live source | Offline and live read, identity and mapping tests |
 | Design financial walkthrough | Legacy numerical modules and class patching | Explicit financial declarations, Specification, execution and reporting | Installed wheel and independent component/timing/PV oracle | Full notebook and accepted output provenance |

@@ -101,15 +101,15 @@
       "original_sha256": "83b7d0ea5f47361373caf81578ff42bd626b72f52da95cda7cf8c7fd36461900"
     },
     {
-      "path": "docs/research/three-repository-refactor-2026-10-13/consumer-east-whisman.txt",
+      "path": "docs/research/three-repository-refactor-2026-10-13/consumer-proving-b.txt",
       "original_sha256": "360562ad21cd4a19ad03f9787f87bcab48946a8123f3f768ce56e53452185c0e"
     },
     {
-      "path": "docs/research/three-repository-refactor-2026-10-13/consumer-mandarin.txt",
+      "path": "docs/research/three-repository-refactor-2026-10-13/consumer-proving-a.txt",
       "original_sha256": "2fb21ab38325b36268c70f063d8666a1994985ced34d9683fd07ffa80f62bb5f"
     },
     {
-      "path": "docs/research/three-repository-refactor-2026-10-13/east-whisman-tests-applied.txt",
+      "path": "docs/research/three-repository-refactor-2026-10-13/proving-b-tests-applied.txt",
       "original_sha256": "895f474d915b2b82391205dad68945021cd8b8260033e69e1802ea5b43d9c089"
     },
     {
@@ -117,7 +117,7 @@
       "original_sha256": "e96f9455b4ed7b6af0837c77a3513e6f23f7da18a90b27b0baa7844e7318ef5c"
     },
     {
-      "path": "docs/research/three-repository-refactor-2026-10-13/mandarin-tests-applied.txt",
+      "path": "docs/research/three-repository-refactor-2026-10-13/proving-a-tests-applied.txt",
       "original_sha256": "b13329ee1cfc7f089cc79ce926ab8db72777a4317461a6d7638caba1711c0029"
     },
     {

@@ -9,8 +9,8 @@
     },
     "projects": {
       "head": "6146ad2039278db773f3bdc2c159d82149d5abc1",
-      "branch": "feature/mandarin-assembly-layout",
-      "status": "M .gitignore\n M east-whisman/docs/canonical-migration.md\n M east-whisman/uv.lock\n M mandarin/docs/canonical-migration.md\n M mandarin/docs/yaml-rebuild.md\n M mandarin/uv.lock",
+      "branch": "feature/proving-a-assembly-layout",
+      "status": "M .gitignore\n M proving-b/docs/canonical-migration.md\n M proving-b/uv.lock\n M proving-a/docs/canonical-migration.md\n M proving-a/docs/yaml-rebuild.md\n M proving-a/uv.lock",
       "index_empty": true
     },
     "layout": {
@@ -174,7 +174,7 @@
       "executed_sha256": "9c88c527b8aa1e051e2bc3aa53f653890ce6c96ed56049566c4a36cb0d040c8a"
     }
   ],
-  "mandarin_code_cells_executed": 5,
+  "proving_a_code_cells_executed": 5,
   "suite": {
     "tests": 1082,
     "failures": 0,

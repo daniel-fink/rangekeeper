@@ -191,7 +191,7 @@ def run(output):
                 "current Speckle object transport only",
                 "no external blob assets",
                 "headless quad conversion only",
-                "no Payload, ChatGPT or native iOS execution",
+                "no consumer CMS, ChatGPT or native iOS execution",
                 "no public geometry schema or revision enforcement yet",
             ],
         }
