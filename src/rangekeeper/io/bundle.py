@@ -512,7 +512,8 @@ def write(
         adapter.validate(root / path, spatial)
     payloads = [p.relative_to(root).as_posix() for p in root.rglob("*") if p.is_file()]
     for name in payloads:
-        with (root / name).open("rb") as stream:
+        # Windows flushes only a handle that has write access.
+        with (root / name).open("r+b") as stream:
             os.fsync(stream.fileno())
     manifest = dict(
         format=FORMAT,

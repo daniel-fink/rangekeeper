@@ -55,7 +55,7 @@ def record_at(root: Record, path: str) -> RecordLocation:
     while offset < len(tokens):
         fields = _slot_map(current._kind)
         if "id" in fields:
-            owner = current.id
+            owner = current.id  # type: ignore[attr-defined]  # an "id" slot
         name = tokens[offset]
         offset += 1
         # walk emits schema slot names verbatim. Do not introduce pointer aliases.
@@ -110,7 +110,7 @@ def walk(
     yield record, owner, path
     fields = _slot_map(record._kind)
     if "id" in fields:
-        owner = record.id
+        owner = record.id  # type: ignore[attr-defined]  # an "id" slot
     for name in record.field_names():
         field = fields[name]
         if not any(option["category"] == "record" for option in field["options"]):
@@ -139,7 +139,7 @@ class RecordIndex:
         for record, owner, path in walk(root):
             if "id" not in _slot_map(record._kind):
                 continue
-            identity = record.id
+            identity = record.id  # type: ignore[attr-defined]  # an "id" slot
             if identity in records:
                 raise IdentityConflictError(f"duplicate declaration UUID: {identity}")
             records[identity], owners[identity], paths[identity] = record, owner, path

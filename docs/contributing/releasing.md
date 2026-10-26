@@ -50,8 +50,12 @@ check and the approval of the `pypi` environment come before publication.
 1. setuptools-scm derives the package version from the tag, so no version
    change is necessary. On `develop` and `main`, only `v1.*` tags count; see
    [dependencies and versions](README.md#dependencies-and-versions).
-2. Make sure that the changelog has a section for the version. When towncrier
-   is in use, run it in the same pull request.
+2. In a pull request, write the changelog section from the fragments, then
+   merge it:
+
+   ```sh
+   uv run --locked towncrier build --version 1.0.0a1
+   ```
 3. Tag the merged commit and push the tag:
 
    ```sh

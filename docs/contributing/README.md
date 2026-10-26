@@ -123,28 +123,50 @@ the check alone does not enforce this convention.
 Keep a `# noqa` or a per-file ignore only with a comment that gives the reason.
 Update generators instead of editing generated outputs by hand.
 
-## Continuous integration
+## Local hooks and changelog
 
-The [Tests workflow](../../.github/workflows/tests.yml) runs on each pull request
-to `develop` or `main` and on each push to them. Its `lint` job runs
-`ruff check` and `ruff format --check` on the whole repository. Its `pytest` job
-runs on Ubuntu with Python 3.13:
+pre-commit runs ruff, mypy and nbstripout before each commit, and the
+changelog check before each push. Install the hooks once:
 
 ```sh
-uv sync --locked --all-extras
-MPLBACKEND=Agg uv run --locked pytest -q -rs
+uv run --locked pre-commit install
 ```
 
-`--locked` fails the run when `uv.lock` does not match `pyproject.toml`. The
-workflow installs all extras because the suite imports Matplotlib, Polars, the
-Pyomo/HiGHS backend and Bundle IO. It skips no tests: Matplotlib uses the
-off-screen `Agg` backend, and no test needs a display or network access.
-The `-rs` option lists any optional-dependency skips in the log.
+mypy uses the settings in `pyproject.toml`. It checks `src/rangekeeper` with a
+baseline that passes; strict mode follows when the public API is typed. Run it
+directly with `uv run --locked mypy`. nbstripout removes notebook outputs from
+committed notebooks.
 
-A pull request merges only after its checks pass. The workflow does not
-run schema generation, C# builds, wheel checks, notebooks or the
-documentation link check. Run those [verification](verification.md) procedures
-locally when the change affects them.
+Each pull request adds a changelog fragment in
+[`changelog.d/`](../../changelog.d/README.md), which gives the names and types.
+A pull request with no change for users can use the `no-changelog` label
+instead. towncrier writes [`CHANGELOG.md`](../../CHANGELOG.md) from the fragments
+at release time.
+
+## Continuous integration
+
+The [CI workflow](../../.github/workflows/ci.yml) runs on each pull request to
+`develop`, `main` or `support/0.8` and on each push to `develop` or `main`.
+`--locked` fails a job when `uv.lock` does not match `pyproject.toml`.
+
+| Job | Checks |
+| --- | --- |
+| `lint` | `ruff check` and `ruff format --check` |
+| `types` | mypy, with all extras for their types |
+| `changelog` | A fragment in `changelog.d/` (pull requests only; label `no-changelog` skips it) and a draft changelog build |
+| `generated files` | `tools/schema/generate.py --check`, `generate_csharp.py --check`, `verify_native.py` and `typecheck.py` in the pinned schema environment, and the Geometry asset manifest hashes |
+| `docs` | `tools/docs/check.py` |
+| `test` | The full suite with all extras, on Linux and macOS with Python 3.12 and 3.13, and on Windows with Python 3.13 |
+| `extra` | The wheel with no extra, then with each extra alone, on Python 3.12 without the lock file. `tools/ci/check_extra.py` imports every module, requires an installation hint for each failure, and runs a small operation of the extra |
+| `wheel` | `uv build`, `twine check --strict`, `check-wheel-contents`, `verify_install.py` with all optional slices, and the suite against the installed wheel |
+
+The test jobs skip no tests: Matplotlib uses the off-screen `Agg` backend, and
+no test needs a display or network access. `-rs` lists any skips in the log.
+
+CI does not build the .NET example yet: that job waits for the C# example to
+move out of `src/`. It does not execute notebooks or build the documentation
+site. Run those [verification](verification.md) procedures locally when the
+change affects them.
 
 ## Naming and ownership
 

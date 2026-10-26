@@ -1,0 +1,30 @@
+# Install once: uv run --locked pre-commit install --hook-type pre-commit --hook-type pre-push
+# The ruff and mypy versions match uv.lock; CI runs the same checks.
+default_install_hook_types: [pre-commit, pre-push]
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.2
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+      - id: ruff-format
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.9.1
+    hooks:
+      - id: nbstripout
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy
+        # The project environment provides the third-party types.
+        entry: uv run --locked mypy
+        language: system
+        types_or: [python, pyi]
+        pass_filenames: false
+      - id: towncrier-check
+        name: towncrier check
+        entry: uv run --locked towncrier check --compare-with origin/develop
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
