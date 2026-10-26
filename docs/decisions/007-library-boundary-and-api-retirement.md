@@ -1,6 +1,6 @@
 # ADR-007: Library boundary and API retirement
 
-Decision date: 13 October 2026. Status: implemented library boundary; external host acceptance remains separate.
+Status: implemented; external host acceptance remains separate. Recorded: 2026-10-13.
 
 > RK extract, 17 October 2026: application-specific plans and identifiers were removed.
 > The retained requirements describe the recorded refactor, not new verification.
@@ -155,7 +155,7 @@ npm or fetch an unpinned bundle. This amends the earlier asset-build ownership i
 the table above. See [the build procedure](../../tools/geometry/README.md).
 
 RK owns canonical Bundle/schema rules and its Parquet mapping/reader, with optional
-storage adapters. [ADR-008](008-sqlite-model-package.md) owns canonical conformance.
+storage adapters. [ADR-008](008-rangekeeper-bundle-contract.md) owns canonical conformance.
 Reader and external host acceptance remain separate. A complete retained Bundle
 needs no original source connection or credentials.
 
@@ -397,4 +397,5 @@ product acceptance gates remain separate.
 
 See the [current architecture](../concepts/architecture.md), [upgrade guide](../guides/upgrading.md), [verification guide](../contributing/verification.md) and [Windows acceptance](../contributing/windows-acceptance.md).
 
+Supersedes: none. Superseded by: none.
 Amended by: [ADR-010](010-layers-and-packages.md), accepted 2026-10-26. Local display adapters move to the walkthrough helpers; the Grasshopper solution moves to `examples/grasshopper`.
