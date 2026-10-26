@@ -1,16 +1,22 @@
 """Public roots, codecs and writable/read-only interfaces retain static types."""
 
-from rangekeeper.run import CompletionStatus
-from rangekeeper.run import Severity
-from rangekeeper.run import SolutionStatus
-
 from pathlib import Path
 from uuid import uuid4
+
 import rangekeeper as rk
-from rangekeeper.io import json, yaml, MemoryStore, DirectoryStore, RecordStore
-from rangekeeper.shared.references import DocumentResolver, SpecificationResolver
+from rangekeeper.io import DirectoryStore, MemoryStore, RecordStore, json, yaml
 from rangekeeper.model import Metadata
-from rangekeeper.run import RunRecord, Report, Status, Diagnostic, validate
+from rangekeeper.run import (
+    CompletionStatus,
+    Diagnostic,
+    Report,
+    RunRecord,
+    Severity,
+    SolutionStatus,
+    Status,
+    validate,
+)
+from rangekeeper.shared.references import DocumentResolver, SpecificationResolver
 
 model = rk.Model.create(metadata=Metadata(id=uuid4(), schema_version="0.7.0"))
 loaded: rk.Model = json.loads(json.dumps(model), kind=rk.Model)

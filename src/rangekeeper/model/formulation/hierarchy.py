@@ -1,16 +1,19 @@
 """Passive hierarchy equations over structurally selected original Flow Values."""
 
-from rangekeeper.model.formulation.flow import shape, _resampled_terms
-from rangekeeper.model.formulation.authoring import declare
 from rangekeeper.model.expression.authoring import (
-    reference,
     equal,
+    reference,
+)
+from rangekeeper.model.expression.authoring import (
     sum as expression_sum,
 )
+from rangekeeper.model.formulation.authoring import declare
+from rangekeeper.model.formulation.flow import _resampled_terms, shape
 from rangekeeper.schema.records import Reference
 
 
 def formulate(hierarchy, *, id, aggregates, selected, populations, rule):
+    """Declare one sum equation per aggregate movement over its selected contributors."""
     model = hierarchy.view.model
     if not aggregates:
         raise ValueError("declare at least one aggregate Flow")

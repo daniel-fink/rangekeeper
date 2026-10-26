@@ -1,29 +1,35 @@
 """Independent numeric, structural and acausal acceptance for ADR-005."""
 
-from datetime import date
-from uuid import uuid4
 import math
 import subprocess
 import sys
+from datetime import date
+from uuid import uuid4
+
 import pytest
-from rangekeeper.model.flux import Flow, Stream, MissingValueHandling as Missing
-from rangekeeper.model.duration import Span, Frequency, make_periods
+
 from rangekeeper.calculations.series import (
-    ResamplingMethod as R,
-    AggregationMethod as A,
     AlignmentJoin as Join,
+)
+from rangekeeper.calculations.series import (
     MeanWeighting as Weight,
 )
-from rangekeeper.model.formulation import flow
-from rangekeeper.model import Quantity, Update, Reference
-from rangekeeper.model.system import Reduction, Hierarchy, View, Contributor
+from rangekeeper.calculations.series import (
+    ResamplingMethod as R,
+)
 from rangekeeper.io import MemoryStore
+from rangekeeper.model import Quantity, Reference, Update
+from rangekeeper.model.duration import Frequency, Span, make_periods
+from rangekeeper.model.flux import Flow, Stream
+from rangekeeper.model.flux import MissingValueHandling as Missing
+from rangekeeper.model.formulation import flow
+from rangekeeper.model.system import Hierarchy, Reduction, View
 from rangekeeper.run.execution import Executor
 from rangekeeper.schema.enums import SolutionStatus
 from rangekeeper_examples.flux import (
     collection,
-    hierarchy_model,
     forward_specification,
+    hierarchy_model,
     solve_example,
 )
 
@@ -302,7 +308,7 @@ def test_model_selections_cannot_hide_numerical_transformations():
     with pytest.raises(ValueError, match="intermediate"):
         flow.sum(model, id=uuid4(), summands=detached, total=ids["A_annual"])
     with pytest.raises(ValueError, match="canonical"):
-        detached.values
+        _ = detached.values
     assert detached.source_values == selected.values
     revised = model.revise(
         Update(
@@ -382,8 +388,8 @@ def test_role_editing_is_explicit_atomic_and_revision_pinned():
     relocked = unlocked.lock(ids["A_rent"], recorded=True, id=uuid4(), model=model)
     assert not targets & {r.target for r in relocked.record.unknowns}
     assert len(base.record.assignments) == len(relocked.record.assignments)
-    from rangekeeper.specification import Specification, SpecificationRecord
     from rangekeeper.model import Metadata
+    from rangekeeper.specification import Specification, SpecificationRecord
 
     store = MemoryStore()
     store.put(model)
@@ -456,10 +462,10 @@ def test_selection_releases_unselected_coordinates_before_trim():
 
 @pytest.mark.parametrize("method", [R.MEAN, R.FIRST, R.LAST])
 def test_passive_weighted_and_selected_resampling_executes(method):
-    from rangekeeper.specification import Specification, SpecificationRecord
     from rangekeeper.model import Metadata
-    from rangekeeper.specification.targets import assign_flow, unknown_flow
     from rangekeeper.schema.records import System
+    from rangekeeper.specification import Specification, SpecificationRecord
+    from rangekeeper.specification.targets import assign_flow, unknown_flow
 
     model, ids = hierarchy_model()
     net = model.value(ids["A_net"])
@@ -470,7 +476,7 @@ def test_passive_weighted_and_selected_resampling_executes(method):
     for entity in data["entities"]:
         for value in entity["characteristics"]["values"]:
             if value["id"] == str(net.id):
-                for m, v in zip(value["flow"]["movements"], magnitudes):
+                for m, v in zip(value["flow"]["movements"], magnitudes, strict=True):
                     m["magnitude"] = v
     model = model.revise(Update(system=System.from_data(data)))
     relation = flow.resample(
@@ -508,7 +514,7 @@ def test_passive_weighted_and_selected_resampling_executes(method):
             if method is R.LAST
             else math.fsum(
                 v * (m.period.end_exclusive - m.period.start_inclusive).days
-                for v, m in zip(magnitudes, periods)
+                for v, m in zip(magnitudes, periods, strict=True)
             )
             / 365
         )
@@ -517,8 +523,8 @@ def test_passive_weighted_and_selected_resampling_executes(method):
 
 
 def test_policy_and_scalar_role_editing():
-    from .test_temporal_execution import oracle, investigate
-    from rangekeeper.schema.records import Policy
+
+    from .test_temporal_execution import investigate, oracle
 
     model, ids = oracle()
     base = investigate(model, ids)
@@ -544,9 +550,10 @@ def test_policy_and_scalar_role_editing():
 
 
 def test_role_edit_rejects_policy_control_without_changing_the_specification():
-    from .test_temporal_execution import oracle, investigate
     from rangekeeper.schema.records import Policy
     from rangekeeper.specification import Specification
+
+    from .test_temporal_execution import investigate, oracle
 
     model, ids = oracle()
     base = investigate(model, ids)

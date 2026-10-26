@@ -1,20 +1,20 @@
 """Independent arithmetic and truth oracles for shared evaluation boundaries."""
 
-from datetime import date
 import subprocess
 import sys
+from datetime import date
 from uuid import uuid4
 
 import pytest
 
-from rangekeeper.shared.errors import UnitError
 from rangekeeper.model import Quantity, Reference
 from rangekeeper.model.expression import Expression, ExpressionKind, Operator
 from rangekeeper.model.expression.evaluation import evaluate as numerical
-from rangekeeper.specification.policy.predicate import evaluate as predicate
 from rangekeeper.run.execution.acceptance import _comparisons
 from rangekeeper.run.execution.errors import NumericalError, UnsupportedProblem
+from rangekeeper.shared.errors import UnitError
 from rangekeeper.shared.units import default_units
+from rangekeeper.specification.policy.predicate import evaluate as predicate
 
 
 def literal(amount, units="dimensionless"):

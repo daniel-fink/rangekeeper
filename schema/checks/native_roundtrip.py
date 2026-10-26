@@ -6,10 +6,10 @@ Run in the same pinned LinkML environment as validate.py.
 
 import importlib.util
 import json
-from pathlib import Path
 import shutil
 import subprocess
 import sys
+from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import yaml
@@ -115,7 +115,9 @@ with TemporaryDirectory(prefix="rk-native-") as temp:
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
-    fixture = json.loads((SCHEMA.parent / "examples/schema/structural-graph.json").read_text())
+    fixture = json.loads(
+        (SCHEMA.parent / "examples/schema/structural-graph.json").read_text()
+    )
     for content in (
         None,
         {"magnitude": 0, "units": "m^2"},
@@ -159,7 +161,7 @@ with TemporaryDirectory(prefix="rk-native-") as temp:
                     supplied_fields_preserved(value, after[key])
             elif isinstance(before, list):
                 assert len(before) == len(after)
-                for a, b in zip(before, after):
+                for a, b in zip(before, after, strict=True):
                     supplied_fields_preserved(a, b)
             else:
                 assert before == after, (before, after)

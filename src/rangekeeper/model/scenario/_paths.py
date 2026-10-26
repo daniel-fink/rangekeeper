@@ -1,14 +1,16 @@
 """Known-input path construction using the characterized numerical kernels."""
 
 import math
-from rangekeeper.model.scenario.contracts import method as contract_for, check_inputs
+
 from rangekeeper.calculations.dynamics import (
-    calculate_trend,
-    calculate_cycle,
-    calculate_autoregression,
     accumulate_volatility,
+    calculate_autoregression,
+    calculate_cycle,
     calculate_shock,
+    calculate_trend,
 )
+from rangekeeper.model.scenario.contracts import check_inputs
+from rangekeeper.model.scenario.contracts import method as contract_for
 
 
 def construct_paths(method, parameters, draws):
@@ -20,7 +22,9 @@ def construct_paths(method, parameters, draws):
         return {
             "space_market_price_factors": factors,
             "asset_market": caps,
-            "historical_value": tuple(f / c for f, c in zip(factors, caps)),
+            "historical_value": tuple(
+                f / c for f, c in zip(factors, caps, strict=True)
+            ),
         }, {}
     p = dict(parameters)
     if method == "market.estimates":
@@ -56,11 +60,13 @@ def construct_paths(method, parameters, draws):
         amplitude=p["asset_amplitude"],
         asymmetry=p["asset_asymmetry"],
     )
-    space = tuple((1 + c) * level for c, level in zip(space_cycle, volatility))
+    space = tuple(
+        (1 + c) * level for c, level in zip(space_cycle, volatility, strict=True)
+    )
     asset = tuple(p["cap_rate"] - c for c in asset_cycle)
     if any(x <= 0 for x in asset):
         raise ValueError("market path has nonpositive capitalization")
-    true = tuple(s / a for s, a in zip(space, asset))
+    true = tuple(s / a for s, a in zip(space, asset, strict=True))
     noise = draws["noise"]
     shock = calculate_shock(
         draws["events"],
@@ -68,9 +74,9 @@ def construct_paths(method, parameters, draws):
         dissipation=p["shock_dissipation"],
         impact=p["shock_impact"],
     )
-    noisy = tuple((1 + n) * v for n, v in zip(noise, true))
+    noisy = tuple((1 + n) * v for n, v in zip(noise, true, strict=True))
     # The shock kernel has already applied amplitude. Apply the resulting factor once.
-    historical = tuple(v * (1 + s) for v, s in zip(noisy, shock))
+    historical = tuple(v * (1 + s) for v, s in zip(noisy, shock, strict=True))
     if any(v == 0 for v in historical):
         raise ValueError("zero historical value cannot define forward ratios")
     paths = dict(

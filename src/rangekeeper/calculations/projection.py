@@ -2,18 +2,20 @@
 
 from __future__ import annotations
 
-
-from collections.abc import Sequence
 import math
+from collections.abc import Sequence
 from enum import Enum, unique
-from rangekeeper.model.flux import Flow
-from rangekeeper.model.duration import Period
-from rangekeeper.model.measure import Quantity
+
 from rangekeeper.model.distribution import Distribution
+from rangekeeper.model.duration import Period
+from rangekeeper.model.flux import Flow
+from rangekeeper.model.measure import Quantity
 
 
 @unique
 class ProjectionMethod(Enum):
+    """Select how a projection grows the initial value at each index."""
+
     RECURRING = "recurring"
     LINEAR = "linear"
     COMPOUND = "compound"
@@ -22,6 +24,8 @@ class ProjectionMethod(Enum):
 
 @unique
 class PaddingMode(Enum):
+    """Select the value that fills padded rows: zero, one or the nearest endpoint."""
+
     NIL = "nil"
     UNITIZE = "unitize"
     EXTEND = "extend"

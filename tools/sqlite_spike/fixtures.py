@@ -3,7 +3,7 @@
 import json
 from uuid import NAMESPACE_URL, uuid5
 
-from package import encoded, GEOMETRY_FORMAT
+from package import GEOMETRY_FORMAT, encoded
 
 
 def uid(name):

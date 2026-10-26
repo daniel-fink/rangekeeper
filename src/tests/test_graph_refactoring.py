@@ -146,8 +146,8 @@ def test_shared_population_keeps_flat_and_hierarchy_policies_distinct():
 
 
 def test_projection_preflights_each_measure_once_and_reserved_name_first(monkeypatch):
-    from rangekeeper.schema.index import RecordIndex
     from rangekeeper.model import Measure
+    from rangekeeper.schema.index import RecordIndex
 
     model, _, _, _, _, _, measure = fixture()
     columns = (

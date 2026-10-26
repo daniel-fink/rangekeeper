@@ -1,16 +1,13 @@
 """Explicit projection origins, padding and mass allocation after API retirement."""
 
-from rangekeeper.model.duration import Frequency
-from rangekeeper.calculations.projection import ProjectionMethod
-from rangekeeper.calculations.projection import PaddingMode
-
-from rangekeeper.model.distribution import Distribution
-
 from datetime import date
-import pytest
-from rangekeeper.calculations import projection, series
-from rangekeeper.model.duration import make_periods
 
+import pytest
+
+from rangekeeper.calculations import projection
+from rangekeeper.calculations.projection import PaddingMode, ProjectionMethod
+from rangekeeper.model.distribution import Distribution
+from rangekeeper.model.duration import Frequency, make_periods
 from rangekeeper.model.measure import Quantity
 
 

@@ -1,18 +1,40 @@
 """Schema-derived expression records; fields and constructors are generated from LinkML."""
 
 from rangekeeper.schema.records import (
-    Expression as Expression,
-    Reference as Reference,
-    Constraint as Constraint,
-    Function as Function,
-    Domain as Domain,
-    Parameter as Parameter,
     Argument as Argument,
+)
+from rangekeeper.schema.records import (
     Call as Call,
-    Selection as Selection,
-    Query as Query,
-    Traversal as Traversal,
+)
+from rangekeeper.schema.records import (
+    Constraint as Constraint,
+)
+from rangekeeper.schema.records import (
     Criterion as Criterion,
+)
+from rangekeeper.schema.records import (
+    Domain as Domain,
+)
+from rangekeeper.schema.records import (
+    Expression as Expression,
+)
+from rangekeeper.schema.records import (
+    Function as Function,
+)
+from rangekeeper.schema.records import (
+    Parameter as Parameter,
+)
+from rangekeeper.schema.records import (
+    Query as Query,
+)
+from rangekeeper.schema.records import (
+    Reference as Reference,
+)
+from rangekeeper.schema.records import (
+    Selection as Selection,
+)
+from rangekeeper.schema.records import (
+    Traversal as Traversal,
 )
 
 __all__ = [

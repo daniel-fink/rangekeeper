@@ -1,30 +1,32 @@
 """Finite Flow equations. Shapes are read; recorded magnitudes remain passive."""
 
-from collections.abc import Sequence, Mapping
-from typing import TYPE_CHECKING
 import math
+from collections.abc import Mapping, Sequence
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from rangekeeper.calculations.series import ResamplingMethod, MeanWeighting
+    from rangekeeper.calculations.series import MeanWeighting, ResamplingMethod
 from uuid import UUID
+
 from rangekeeper.model import Model
-from rangekeeper.schema.records import Formulation, Reference
-from rangekeeper.model.formulation.authoring import declare
-from rangekeeper.model.scope import target_value
 from rangekeeper.model.expression.authoring import (
-    reference,
-    equal,
     add,
+    equal,
     multiply,
+    reference,
+)
+from rangekeeper.model.expression.authoring import (
     sum as expression_sum,
 )
-
-
+from rangekeeper.model.flux import Flow, MissingValueHandling, Movement, Stream
+from rangekeeper.model.formulation.authoring import declare
+from rangekeeper.model.scope import target_value
 from rangekeeper.schema.enums import ValueKind
-from rangekeeper.model.flux import Flow, Stream, Movement, MissingValueHandling
+from rangekeeper.schema.records import Formulation, Reference
 
 
 def shape(model: Model, value: UUID) -> Flow:
+    """Return the declared Flow shape of a Flow Value."""
     record = model.value(value)
     if record.kind is not ValueKind.FLOW or record.flow is None:
         raise ValueError("builder requires a declared Flow shape")
@@ -68,7 +70,7 @@ def sum(
             )
         if summands.model.id != model.id or summands.model._record != model._record:
             raise ValueError("Stream must pin the exact Model revision and content")
-        shapes = dict(zip(summands.value_ids, summands.flows))
+        shapes = dict(zip(summands.value_ids, summands.flows, strict=True))
         summands = summands.value_ids
     summands = tuple(summands)
     if len(set(summands)) != len(summands):
@@ -83,7 +85,7 @@ def sum(
                 expression_sum(
                     [
                         reference(Reference(target=s.id))
-                        for v, s in zip(summands, matches)
+                        for v, s in zip(summands, matches, strict=True)
                     ]
                 ),
             ),
@@ -104,7 +106,8 @@ def scale(
     """Declare multiplicand times multiplier equals product.
 
     Multiplicand and product identify Flow Values. Multiplier is a scalar
-    Reference or aligned Flow Value UUID; product units retain both factors."""
+    Reference or aligned Flow Value UUID; product units retain both factors.
+    """
     sources = (
         (multiplicand,)
         if isinstance(multiplier, Reference)
@@ -181,7 +184,7 @@ def accumulate(
 
 def _resampled_terms(sequence: Flow, periods, *, method, weighting, missing):
     """Use fixed structural membership, never known-only numerical masks."""
-    from rangekeeper.calculations.series import ResamplingMethod, MeanWeighting
+    from rangekeeper.calculations.series import MeanWeighting, ResamplingMethod
     from rangekeeper.model._flow_mapping import period_indices, weights
     from rangekeeper.model.expression.authoring import literal
 
@@ -205,7 +208,9 @@ def _resampled_terms(sequence: Flow, periods, *, method, weighting, missing):
     groups: list[list[tuple[Movement, float]]] = [[] for _ in periods]
     indices = period_indices(coordinates, periods)
     fixed = weights(coordinates, elapsed=weighting is MeanWeighting.ELAPSED)
-    for movement, group_index, weight in zip(sequence.movements, indices, fixed):
+    for movement, group_index, weight in zip(
+        sequence.movements, indices, fixed, strict=True
+    ):
         groups[group_index].append((movement, weight))
     expressions = []
     for group in groups:
@@ -256,6 +261,6 @@ def resample(
     )
     equations = [
         (str(m.id), equal(reference(Reference(target=m.id)), term))
-        for m, term in zip(grouped.movements, terms)
+        for m, term in zip(grouped.movements, terms, strict=True)
     ]
     return declare(id, "resample", equations, (sequence, resampled))

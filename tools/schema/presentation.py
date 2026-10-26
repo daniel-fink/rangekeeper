@@ -10,8 +10,8 @@ import argparse
 import hashlib
 import importlib.metadata
 import json
-from pathlib import Path
 import tempfile
+from pathlib import Path
 
 import yaml
 from linkml_runtime.dumpers import json_dumper
@@ -93,9 +93,9 @@ def build_data():
             assert node["type"] in definitions, node
             if node.get("via"):
                 owner, field = node["via"].split(".")
-                assert any(
-                    s["name"] == field for s in definitions[owner]["fields"]
-                ), node
+                assert any(s["name"] == field for s in definitions[owner]["fields"]), (
+                    node
+                )
         for edge in scene["edges"]:
             assert edge["from"] in ids and edge["to"] in ids, edge
             if edge.get("field"):

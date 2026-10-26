@@ -15,9 +15,9 @@ def solve(request):
             "unavailable": f"Expected pyomo==6.10.1 and highspy==1.15.1; found {versions}. Install rangekeeper[execution]."
         }
     import numpy as np
-    from pyomo.environ import ConcreteModel, Var, ConstraintList, Objective, value
-    from pyomo.contrib.solver.solvers.highs import Highs
     from pyomo.contrib.solver.common.results import SolutionStatus
+    from pyomo.contrib.solver.solvers.highs import Highs
+    from pyomo.environ import ConcreteModel, ConstraintList, Objective, Var, value
 
     size = len(request["unknowns"])
     model = ConcreteModel()

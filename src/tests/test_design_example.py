@@ -1,13 +1,14 @@
 """Independent arithmetic for the complete design teaching model."""
 
-from rangekeeper.run import SolutionStatus
-
 from uuid import uuid5
+
 import pytest
-from rangekeeper_examples import design
-from rangekeeper.run.execution import Executor
+
 from rangekeeper.io.memory import MemoryStore
-from rangekeeper.model import Update, System
+from rangekeeper.model import System, Update
+from rangekeeper.run import SolutionStatus
+from rangekeeper.run.execution import Executor
+from rangekeeper_examples import design
 
 
 def test_design_financial_components_and_provenance():

@@ -1,6 +1,5 @@
 """Three deliberate static rejections across the consumer boundary."""
 
-from pathlib import Path
 from rangekeeper import Model, Specification
 from rangekeeper.model.system.projection import ValueColumn, to_table
 

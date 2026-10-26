@@ -1,14 +1,15 @@
 """ADR-005 complete-operation timings. Run with PYTHONPATH=src from repository root."""
 
-from datetime import date
-from pathlib import Path
 import argparse
 import json
 import resource
 import time
-from rangekeeper.model.flux import Flow, Stream, MissingValueHandling
-from rangekeeper.model.duration import make_periods, Frequency
-from rangekeeper.calculations.series import ResamplingMethod, AlignmentJoin
+from datetime import date
+from pathlib import Path
+
+from rangekeeper.calculations.series import ResamplingMethod
+from rangekeeper.model.duration import Frequency, make_periods
+from rangekeeper.model.flux import Flow, Stream
 
 
 def run(count, months):
@@ -31,7 +32,7 @@ def run(count, months):
     grouped.sum()
     repeated = time.perf_counter() - start
     start = time.perf_counter()
-    grouped.flows
+    _ = grouped.flows
     materialize = time.perf_counter() - start
     assert result.movements[0].number == 12 * count * (count + 1) / 2
     return dict(

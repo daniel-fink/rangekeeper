@@ -5,18 +5,16 @@ fixtures; output Models and Runs are produced by the actual library executor.
 No fixture expected-output document is read or copied as an execution result.
 """
 
-from rangekeeper.run import CompletionStatus
-from rangekeeper.run import SolutionStatus
-
 import argparse
 import json
 from pathlib import Path
 from uuid import UUID, uuid4
 
 from rangekeeper import Model, Specification
+from rangekeeper.io import DirectoryStore, yaml
+from rangekeeper.io import json as codec
+from rangekeeper.run import CompletionStatus, SolutionStatus, validate
 from rangekeeper.run.execution import Executor
-from rangekeeper.io import DirectoryStore, yaml, json as codec
-from rangekeeper.run import validate
 from rangekeeper.specification import SpecificationRecord
 
 

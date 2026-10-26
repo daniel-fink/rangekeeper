@@ -7,10 +7,9 @@ No class name, pickle, import path, or callback is executed during decoding.
 
 from __future__ import annotations
 
-from collections.abc import Mapping
-from datetime import date, datetime, time, timedelta
 import json
 import math
+from datetime import date, datetime, time, timedelta
 from types import MappingProxyType
 from uuid import UUID
 from zoneinfo import ZoneInfo
@@ -169,4 +168,4 @@ def validate_content(content: PropertyContent) -> None:
     decode(content)
 
 
-from rangekeeper.schema.enums import ContentKind
+from rangekeeper.schema.enums import ContentKind as ContentKind

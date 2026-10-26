@@ -2,9 +2,10 @@
 
 from importlib import import_module
 from types import ModuleType
+
 from .model import Model
-from .specification import Specification
 from .run import Run
+from .specification import Specification
 
 _LAZY_MODULES = frozenset(
     {

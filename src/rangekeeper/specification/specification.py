@@ -5,29 +5,29 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from rangekeeper.model import Model
-    from rangekeeper.schema.records import Reference, Quantity
+    from rangekeeper.schema.records import Quantity, Reference
 from dataclasses import dataclass
-import math
 from uuid import UUID
 
+from rangekeeper.model.formulation.validation import validate_formulation_names
+from rangekeeper.schema.index import RecordIndex
+from rangekeeper.schema.records import Metadata
+from rangekeeper.schema.records import Specification as SpecificationRecord
 from rangekeeper.schema.revision import check_revision
-from rangekeeper.schema.records import Specification as SpecificationRecord, Metadata
 from rangekeeper.schema.validation import document_version
+from rangekeeper.shared.errors import UnsupportedVersionError
+from rangekeeper.shared.references import SpecificationResolver
 from rangekeeper.shared.validation import (
     bounded,
     require,
     validate_known_reference_types,
 )
-from rangekeeper.shared.errors import UnsupportedVersionError
-from rangekeeper.schema.index import RecordIndex
-from rangekeeper.model.formulation.validation import validate_formulation_names
 from rangekeeper.specification.composition import (
     Composition,
     validate_local_header,
-    validate_settings,
     validate_roles,
+    validate_settings,
 )
-from rangekeeper.shared.references import SpecificationResolver
 
 
 def _validate_local(record: SpecificationRecord) -> None:
@@ -146,10 +146,10 @@ class Specification:
         recorded amounts explicitly; it cannot be combined with quantity.
         Included roles and policy controls must be revised at their owner.
         """
-        from rangekeeper.schema.records import Assignment, Quantity
-        from rangekeeper.specification.targets import expand_targets
         from rangekeeper.model.scope import recorded_scalar, target_units
+        from rangekeeper.schema.records import Assignment, Quantity
         from rangekeeper.shared.units import default_units
+        from rangekeeper.specification.targets import expand_targets
 
         if type(recorded) is not bool:
             raise TypeError("recorded must be bool")
@@ -165,7 +165,9 @@ class Specification:
             q = (
                 recorded_scalar(model, ref)
                 if recorded
-                else quantity[ref.target] if isinstance(quantity, Mapping) else quantity
+                else quantity[ref.target]
+                if isinstance(quantity, Mapping)
+                else quantity
             )
             if q is None:
                 raise ValueError("cannot lock an unresolved recorded amount")

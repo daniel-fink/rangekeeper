@@ -36,6 +36,18 @@ index. The [Windows connector gate](docs/contributing/windows-acceptance.md) rem
 open. The [retirement guide](docs/contributing/legacy-retirement.md) records the
 removed predecessor runtime.
 
+### Versions
+
+| Line | Branch | Status |
+| --- | --- | --- |
+| 1.x | `develop` | In development. The API on this branch is not on PyPI yet. |
+| 0.8.x | [`support/0.8`](https://github.com/daniel-fink/rangekeeper/tree/support/0.8) | Bug and security fixes only, until an announced end of life. |
+
+Applications that use 0.8.x should declare `rangekeeper>=0.8.72,<0.9`. Then a
+1.0 release on PyPI does not replace their version. [SECURITY.md](SECURITY.md)
+lists the supported versions; the [release guide](docs/contributing/releasing.md)
+gives the release procedure.
+
 ### Library boundary
 
 Rangekeeper provides canonical models, schemas, validation, calculations,

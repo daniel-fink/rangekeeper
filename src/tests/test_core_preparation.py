@@ -6,6 +6,25 @@ from uuid import UUID, uuid4
 import pytest
 import yaml
 
+from rangekeeper.model import (
+    Assembly,
+    Definitions,
+    Entity,
+    Measure,
+    Metadata,
+    Model,
+    Quantity,
+)
+from rangekeeper.model.definitions import measure
+from rangekeeper.model.expression import Constraint, Expression, ExpressionKind
+from rangekeeper.model.expression.domains import DomainCompatibility, compare_domains
+from rangekeeper.model.expression.validation import (
+    analyze_expressions,
+    infer_query_domain,
+)
+from rangekeeper.model.formulation import Formulation
+from rangekeeper.model.formulation.preparation import prepare_formulations
+from rangekeeper.model.scope import build_scope
 from rangekeeper.schema.index import RecordIndex, walk_data
 from rangekeeper.schema.runtime import exact_equal
 from rangekeeper.shared.errors import (
@@ -13,25 +32,6 @@ from rangekeeper.shared.errors import (
     IdentityConflictError,
     ReferenceTypeError,
 )
-from rangekeeper.model import (
-    Model,
-    Definitions,
-    Measure,
-    Metadata,
-    Assembly,
-    Entity,
-    Quantity,
-)
-from rangekeeper.model.definitions import measure
-from rangekeeper.model.expression import Constraint, Expression, ExpressionKind
-from rangekeeper.model.expression.domains import DomainCompatibility, compare_domains
-from rangekeeper.model.expression.validation import (
-    infer_query_domain,
-    analyze_expressions,
-)
-from rangekeeper.model.formulation import Formulation
-from rangekeeper.model.formulation.preparation import prepare_formulations
-from rangekeeper.model.scope import build_scope
 from rangekeeper.specification import Specification, SpecificationRecord
 from rangekeeper.specification.validation import prepare
 
@@ -72,6 +72,7 @@ def test_batch_preparation_exports_and_resolves_each_revision_once(
     leaf_count,
 ):
     from collections import Counter
+
     from rangekeeper.run.execution.planning import Plan
 
     model = Model.create(metadata=Metadata(id=uuid4(), schema_version="0.7.0"))
@@ -427,8 +428,8 @@ def test_diff_reuses_existing_record_indexes_without_export(monkeypatch):
 def test_model_raw_preparation_checks_structure_once_and_preserves_history_errors(
     monkeypatch,
 ):
-    from rangekeeper.model.validation import validate
     import rangekeeper.schema.validation as structure
+    from rangekeeper.model.validation import validate
 
     original = structure._validate_json
     calls = []
@@ -498,10 +499,11 @@ def test_run_child_diagnostics_identify_the_child_and_report_field():
 def test_supplied_units_reach_policy_runtime_and_stored_run_outcomes(published):
     """Exercise real converted comparisons through both public entry points."""
     from copy import deepcopy
+
     from rangekeeper.io import MemoryStore
-    from rangekeeper.specification.policy import Policy, evaluate
     from rangekeeper.run import Run, validate
     from rangekeeper.shared.units import UnitSystem
+    from rangekeeper.specification.policy import Policy, evaluate
 
     conversions = []
 

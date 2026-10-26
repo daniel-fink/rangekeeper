@@ -8,10 +8,10 @@ from uuid import UUID, uuid4
 import pytest
 import yaml
 
-from rangekeeper.model import Entity, Metadata, Model, Quantity, System, Update
-from rangekeeper.model.content import encode
 import rangekeeper.schema.index as index_module
 import rangekeeper.schema.records as records_module
+from rangekeeper.model import Entity, Metadata, Model, Quantity, System, Update
+from rangekeeper.model.content import encode
 from rangekeeper.schema.index import RecordIndex, RecordLocation, walk
 from rangekeeper.schema.records import Model as ModelRecord
 from rangekeeper.schema.runtime import Record

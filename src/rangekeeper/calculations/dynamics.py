@@ -3,7 +3,7 @@
 import math
 from collections.abc import Sequence
 
-from rangekeeper.calculations.projection import project_values, ProjectionMethod
+from rangekeeper.calculations.projection import ProjectionMethod, project_values
 
 
 def calculate_trend(
@@ -70,6 +70,7 @@ def calculate_autoregression(
     *,
     parameter: float,
 ) -> tuple[float, ...]:
+    """Add each innovation to the parameter times the previous value (AR(1))."""
     if not math.isfinite(parameter) or any(not math.isfinite(x) for x in innovations):
         raise ValueError("autoregression inputs must be finite")
     values: list[float] = []

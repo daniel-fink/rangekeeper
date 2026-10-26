@@ -1,10 +1,10 @@
 """Structural validation against packaged, closed LinkML-derived schemas."""
 
+import json
 from collections.abc import Mapping
 from copy import deepcopy
-from functools import lru_cache
+from functools import cache, lru_cache
 from importlib.resources import files
-import json
 from types import MappingProxyType
 
 from jsonschema import Draft202012Validator, FormatChecker
@@ -31,7 +31,7 @@ def schema_for(kind: str) -> dict:
     return {**deepcopy(schema), "$ref": f"#/$defs/{kind}"}
 
 
-@lru_cache(maxsize=None)
+@cache
 def _slot_map(kind: str):
     """Share immutable generated slot metadata inside record access and traversal.
 
@@ -44,10 +44,12 @@ def _slot_map(kind: str):
 
 
 def slots_for(kind: str) -> dict:
+    """Return a detached, editable copy of a kind's generated slot metadata."""
     return deepcopy(_artifacts()[1][kind])
 
 
 def document_version(kind: str) -> str:
+    """Return the packaged document version for a record kind."""
     return str(_artifacts()[2]["document_versions"][kind])
 
 
@@ -121,7 +123,7 @@ def _prepared_validators():
     return _prepare_local_validators(_artifacts()[0])
 
 
-@lru_cache(maxsize=None)
+@cache
 def _validator(kind: str):
     if kind not in _artifacts()[0]["$defs"]:
         raise KeyError(kind)
