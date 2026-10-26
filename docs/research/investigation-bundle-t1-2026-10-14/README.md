@@ -7,7 +7,7 @@ The user agreed to deliver a Model with sufficient investigation context to unde
 it and perform further investigations. The [current Bundle reference](../../reference/bundle.md)
 owns `rangekeeper.bundle/2-proposal` in RK 0.10.0.dev2. Canonical record schemas and
 the Parquet mapping remain unchanged. This is a local, uncommitted candidate on
-develop base ffda9b8; no stable release or the primary consumer adoption is approved.
+develop base ffda9b8; no stable release or adoption by the primary consumer is approved.
 
 The [check record](checks.json) reports 870 RK tests covered. In the
 [full suite](rk-full.log), 869 passed and one local-display test was blocked by the

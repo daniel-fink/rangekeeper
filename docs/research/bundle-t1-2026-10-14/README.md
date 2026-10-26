@@ -57,7 +57,7 @@ applied only to the changed handwritten files.
 
 These checks used local macOS environments. Missing mypy and pip initially
 prevented their checks from running; both tools were installed before the passing
-runs. No remote harness, Windows, Rhino or the primary consumer acceptance is claimed. The
+runs. No remote harness, Windows, Rhino or primary consumer acceptance is claimed. The
 subsequent consolidation record must identify the merged revision and the exact
 wheel used for combined and notebook validation.
 
