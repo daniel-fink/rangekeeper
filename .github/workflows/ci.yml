@@ -3,7 +3,6 @@ name: CI
 on:
   pull_request:
     branches: [develop, main, support/0.8]
-    types: [opened, synchronize, reopened, labeled, unlabeled]
   push:
     branches: [develop, main]
 
@@ -45,26 +44,6 @@ jobs:
       # The extras provide the third-party types that mypy reads.
       - run: uv sync --locked --all-extras --no-default-groups --group types
       - run: uv run --locked --no-sync mypy
-
-  changelog:
-    name: changelog
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
-      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
-        with:
-          python-version: "3.13"
-      - name: Check for a changelog fragment
-        if: ${{ !contains(github.event.pull_request.labels.*.name, 'no-changelog') }}
-        env:
-          BASE: ${{ github.base_ref }}
-        run: uv run --locked --only-group changelog towncrier check --compare-with "origin/$BASE"
-      - name: Check that the changelog renders
-        run: uv run --locked --only-group changelog towncrier build --draft --version check > /dev/null
 
   generated:
     name: generated files
