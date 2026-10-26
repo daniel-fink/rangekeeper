@@ -62,8 +62,8 @@ not define a second canonical schema. Shared reconstruction/query fixtures belon
 with the reader contract.
 
 The development candidate adds optional provider-neutral Geometry to Model 0.8.0
-and generates Python/C# records from `schema/geometry.yaml`. Specification and Run
-remain at 0.7.0. The explicit 0.7-to-0.8 Model migration creates a new identity and
+and generates Python/C# records from `schema/geometry.yaml`. Specification remains
+at 0.7.0 and Run remains at 0.4.0. The explicit 0.7-to-0.8 Model migration creates a new identity and
 retains its predecessor. The [Bundle reference](../reference/bundle.md) defines
 the candidate Parquet mapping and publication marker.
 

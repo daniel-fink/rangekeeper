@@ -1,6 +1,6 @@
 # Temporal equations, scenarios and policies
 
-Model and Specification use schema **0.7.0**; Run uses **0.4.0**. LinkML owns
+Model uses schema **0.8.0**, Specification uses **0.7.0** and Run uses **0.4.0**. LinkML owns
 persistent fields. Generated Python and C# artifacts change together. Readers
 accept current versions. Explicit migration creates new revisions and remaps pins;
 it does not rewrite historical Runs or claim to reproduce old execution.
