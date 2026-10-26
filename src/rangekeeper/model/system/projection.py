@@ -8,16 +8,18 @@ from uuid import UUID
 from rangekeeper.model import Assembly, Classification, Measure, ValueKind
 from rangekeeper.model.characteristics import label, value
 from rangekeeper.model.content import decode
-from rangekeeper.shared.table import Row, Table, TableError, _validate_names
-from rangekeeper.shared.units import UnitSystem, default_units
-from rangekeeper.shared.arguments import require_text
 from rangekeeper.model.system.hierarchy import Hierarchy
 from rangekeeper.model.system.selection import _local_value, select_value
 from rangekeeper.model.system.view import View
+from rangekeeper.shared.arguments import require_text
+from rangekeeper.shared.table import Row, Table, TableError, _validate_names
+from rangekeeper.shared.units import UnitSystem, default_units
 
 
 @unique
 class EntityField(Enum):
+    """Public Entity field that a FieldColumn can project."""
+
     MODEL_ID = "model_id"
     ENTITY_ID = "entity_id"
     CODE = "code"

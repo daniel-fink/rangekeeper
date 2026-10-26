@@ -1,52 +1,53 @@
 """Model-backed graph behavior, independent of legacy Graph domain assumptions."""
 
-from rangekeeper.model import ValueKind
-
-from dataclasses import FrozenInstanceError
 import subprocess
 import sys
+from dataclasses import FrozenInstanceError
 from uuid import uuid4
 
 import pytest
 
+from rangekeeper.io import json as codec
 from rangekeeper.model import (
-    Model,
-    Metadata,
-    Definitions,
-    Classification,
-    Taxonomy,
-    System,
-    Entity,
     Assembly,
-    Relationship,
     Characteristics,
-    Value,
-    Measure,
-    Quantity,
+    Classification,
+    Definitions,
+    Entity,
     Formulation,
+    Measure,
+    Metadata,
+    Model,
+    Quantity,
+    Relationship,
+    System,
+    Taxonomy,
     Update,
+    Value,
+    ValueKind,
 )
 from rangekeeper.model.system import (
-    View,
+    AggregationError,
+    CoverageStatus,
     Hierarchy,
+    HierarchyError,
+    HierarchyKind,
     Reduction,
     SelectionError,
-    HierarchyError,
-    AggregationError,
+    View,
+    reducers,
 )
 from rangekeeper.model.system.membership import (
+    containing_assemblies,
     entities_in,
     relationships_in,
-    containing_assemblies,
 )
 from rangekeeper.model.system.selection import select_value
-from rangekeeper.model.system import reducers, HierarchyKind, CoverageStatus
 from rangekeeper.shared.errors import (
     MissingReferenceError,
     ReferenceTypeError,
     UnitError,
 )
-from rangekeeper.io import json as codec
 
 
 def fixture(*, missing=False, overlap=False, amounts=(10, 20, 0)):
@@ -65,7 +66,7 @@ def fixture(*, missing=False, overlap=False, amounts=(10, 20, 0)):
         classifications=(classification_root, link, node_class),
     )
     nodes = []
-    for code, magnitude in zip(("a", "b", "c"), amounts):
+    for code, magnitude in zip(("a", "b", "c"), amounts, strict=True):
         quantity = (
             {}
             if (missing and code == "b")

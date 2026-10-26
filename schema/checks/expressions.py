@@ -7,30 +7,29 @@ conformance fixtures, not a query executor, unit checker, evaluator, or solver.
 import copy
 import importlib.util
 import json
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 from tempfile import TemporaryDirectory
-from uuid import UUID, NAMESPACE_URL, uuid5
+from uuid import NAMESPACE_URL, UUID, uuid5
 
+import _library
+import yaml
 from jsonschema import FormatChecker
 from jsonschema.validators import validator_for
 from linkml_runtime.dumpers import json_dumper
 from linkml_runtime.loaders import json_loader
 from linkml_runtime.utils.schemaview import SchemaView
-import yaml
 
-import _library
-
-from rangekeeper.shared.errors import ContractError
-from rangekeeper.shared.validation import require_unique
-from rangekeeper.model.scope import build_scope as _build_scope
+from rangekeeper.model.expression.domains import DomainCompatibility, compare_domains
 from rangekeeper.model.expression.validation import (
     infer_expression_domain,
     validate_constraint_predicates,
     validate_function_signature,
 )
-from rangekeeper.model.expression.domains import compare_domains, DomainCompatibility
+from rangekeeper.model.scope import build_scope as _build_scope
+from rangekeeper.shared.errors import ContractError
+from rangekeeper.shared.validation import require_unique
 
 
 def matches_domain(actual, expected, *, scope):
@@ -75,7 +74,7 @@ def validate_fixture_constraints(constraints, expressions, *, scope):
 SCHEMA = Path(__file__).resolve().parents[1]
 BIN = Path(sys.executable).parent
 validators = {}
-for name, file in [
+for name, _file in [
     ("Expression", "expression"),
     ("Constraint", "constraint"),
     ("Function", "function"),
@@ -110,7 +109,9 @@ assert view.induced_slot("target", "Expression").inlined
 valid = []
 fixtures = []
 for name in ("valuation-expressions", "query-aggregation", "function-expressions"):
-    fixture = yaml.safe_load((SCHEMA.parent / f"examples/schema/{name}.yaml").read_text())
+    fixture = yaml.safe_load(
+        (SCHEMA.parent / f"examples/schema/{name}.yaml").read_text()
+    )
     fixtures.append(fixture)
     validators["Definitions"].validate(fixture["definitions"])
     for collection, cls in [
@@ -469,9 +470,9 @@ for field in ("id", "version", "semantics", "unit_rule", "result"):
 for cls, record in valid:
     validators[cls].validate(record)
 for cls, record in invalid:
-    assert not validators[cls].is_valid(
-        record
-    ), f"Unexpectedly accepted {cls}: {record}"
+    assert not validators[cls].is_valid(record), (
+        f"Unexpectedly accepted {cls}: {record}"
+    )
 
 # Cross-record and domain errors are deliberately distinct from structural checks.
 semantic = []
@@ -730,7 +731,7 @@ print(
     f"Passed {len(validators)} generated schemas, {len(valid)} valid records, {len(invalid)} structural rejections,"
 )
 print(
-    f"{len(semantic)+4+len(constraint_semantic)} bounded semantic rejections, and native Python round trips."
+    f"{len(semantic) + 4 + len(constraint_semantic)} bounded semantic rejections, and native Python round trips."
 )
 print(
     "Constraint satisfaction, query execution, rich Value payloads, dimensional checking, and solving remain unimplemented."

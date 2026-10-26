@@ -1,30 +1,25 @@
 """Sequential scalar attempts and batches over immutable revision stores."""
 
-from rangekeeper.run import Severity
-from rangekeeper.run import SolutionStatus
-
 from uuid import UUID, uuid4
 
+from rangekeeper.io.store import RecordStore
+from rangekeeper.run import Run, RunRecord, Severity, SolutionStatus
+from rangekeeper.run.execution import acceptance
+from rangekeeper.run.execution.attempt import Attempt
+from rangekeeper.run.execution.backends import Backend, PyomoHighs
+from rangekeeper.run.execution.planning import Plan
+from rangekeeper.run.report import completion_for
 from rangekeeper.schema.records import (
+    CompletionStatus,
     Diagnostic,
     Metadata,
     Report,
     Status,
-    CompletionStatus,
 )
 from rangekeeper.schema.validation import document_version
 from rangekeeper.shared.errors import ValidationError
-from rangekeeper.io.store import RecordStore
-from rangekeeper.run import Run, RunRecord
-from rangekeeper.run.report import completion_for
-from rangekeeper.specification import Composition, Specification
 from rangekeeper.shared.units import UnitSystem, default_units
-from rangekeeper.run.execution import acceptance
-from rangekeeper.run.execution.backends import Backend, PyomoHighs
-
-
-from rangekeeper.run.execution.attempt import Attempt
-from rangekeeper.run.execution.planning import Plan
+from rangekeeper.specification import Composition, Specification
 
 
 class Executor:

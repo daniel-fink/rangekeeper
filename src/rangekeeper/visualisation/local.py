@@ -1,10 +1,10 @@
 """Serve local notebook displays without a service or browser dependency."""
 
 import atexit
+import secrets
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-import secrets
 from threading import Thread
 from urllib.parse import quote, unquote, urlsplit
 

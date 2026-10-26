@@ -1,6 +1,7 @@
 """Typed Market access over canonical Values in one immutable Model revision."""
 
 from dataclasses import dataclass
+
 from rangekeeper.model import Model, Value
 from rangekeeper.model.scenario import ScenarioRealization
 

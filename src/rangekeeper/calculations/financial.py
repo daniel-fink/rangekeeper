@@ -8,20 +8,19 @@ is responsible for that interpretation; Flow records carry no semantic kinds.
 
 from __future__ import annotations
 
-from uuid import uuid4
-
+import math
 from dataclasses import dataclass
 from datetime import date
-import math
+from uuid import uuid4
 
-from rangekeeper.model.flux import Flow
-from rangekeeper.model.measure import Quantity
-from rangekeeper.model.duration.period import PeriodTiming
 from rangekeeper.model.duration.calendar import (
     DayCount,
     require_date,
     resolve_day_count,
 )
+from rangekeeper.model.duration.period import PeriodTiming
+from rangekeeper.model.flux import Flow
+from rangekeeper.model.measure import Quantity
 
 
 def _require_result(value: float | None, operation: str) -> float:

@@ -1,13 +1,19 @@
 """Immutable descriptive differences; never an executable patch or merge."""
 
-from dataclasses import dataclass
 from collections.abc import Mapping
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from rangekeeper.schema.runtime import comparison_data, exact_equal
-from rangekeeper.schema.runtime import FrozenJSONValue, UNSET, Unset, _freeze
 from rangekeeper.schema.records import Metadata
+from rangekeeper.schema.runtime import (
+    UNSET,
+    FrozenJSONValue,
+    Unset,
+    _freeze,
+    comparison_data,
+    exact_equal,
+)
 
 if TYPE_CHECKING:
     from rangekeeper.model.model import Model
@@ -39,7 +45,6 @@ def between(before: "Model", after: "Model") -> Diff:
     ``changes`` refer to canonical comparison order; interchange exports retain
     original order. Ordered mathematics and opaque content are never reordered.
     """
-
     left = before._index.records
     right = after._index.records
     left = {

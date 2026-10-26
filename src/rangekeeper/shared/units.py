@@ -4,12 +4,13 @@ The currency catalogue comes from pinned py-moneyed, including historical codes.
 only when an operation needs parsing; importing the new domain API stays lightweight.
 """
 
+import math
 from dataclasses import dataclass
 from functools import lru_cache
 from importlib.metadata import version
-from moneyed import list_all_currencies
-import math
 from typing import ClassVar
+
+from moneyed import list_all_currencies
 
 from rangekeeper.schema.records import Quantity
 from rangekeeper.shared.errors import UnitError

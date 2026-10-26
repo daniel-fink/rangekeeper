@@ -1,22 +1,33 @@
 """Evidence lookup within a pinned Model, without loading external source content."""
 
+from collections.abc import Mapping
 from typing import TYPE_CHECKING
 from uuid import UUID
+
+from rangekeeper.schema.enums import ClaimKind, ReconciliationStatus
+from rangekeeper.schema.records import (
+    Claim as Claim,
+)
+from rangekeeper.schema.records import (
+    Fact as Fact,
+)
+from rangekeeper.schema.records import (
+    Location as Location,
+)
+from rangekeeper.schema.records import (
+    Method as Method,
+)
 from rangekeeper.schema.records import (
     Provenance as Provenance,
-    Source as Source,
-    Claim as Claim,
-    Fact as Fact,
-    Location as Location,
-    Method as Method,
+)
+from rangekeeper.schema.records import (
     Reconciliation as Reconciliation,
 )
-from rangekeeper.shared.errors import MissingReferenceError, ReferenceTypeError
+from rangekeeper.schema.records import (
+    Source as Source,
+)
 from rangekeeper.shared.arguments import require_uuid
-from rangekeeper.schema.enums import ClaimKind, ReconciliationStatus
-from collections.abc import Mapping
 from rangekeeper.shared.validation import require, require_acyclic
-
 
 if TYPE_CHECKING:
     from rangekeeper.model.model import Model

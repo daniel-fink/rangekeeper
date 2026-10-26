@@ -4,15 +4,15 @@ Full market realization, replay, paired financial models and declarative policy
 behaviour are covered by test_scenarios_policies, test_models and test_market_naming.
 """
 
-from rangekeeper.model.distribution import DistributionFamily
-
-from rangekeeper.model.distribution import Distribution
-
 import numpy as np
 import pytest
-from rangekeeper.calculations.dynamics import calculate_trend
-from rangekeeper.calculations.dynamics import calculate_autoregression
-from rangekeeper.calculations.dynamics import calculate_shock
+
+from rangekeeper.calculations.dynamics import (
+    calculate_autoregression,
+    calculate_shock,
+    calculate_trend,
+)
+from rangekeeper.model.distribution import Distribution, DistributionFamily
 
 
 def test_trend_preserves_explicit_initial_value_and_default_price_factor():

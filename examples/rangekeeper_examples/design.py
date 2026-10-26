@@ -6,46 +6,46 @@ The annual amounts use AUD explicitly. Rates described as per-area/per-volume
 are amounts per payment, not rates with an implicit time dimension.
 """
 
-from rangekeeper.model import ValueKind
-
 from collections.abc import Mapping, Sequence
 from datetime import date
 from typing import Any, cast
 from uuid import UUID, uuid4, uuid5
 
 from rangekeeper.model import (
-    Model,
     Definitions,
+    Formulation,
+    Measure,
+    Metadata,
+    Model,
+    Quantity,
     System,
     Update,
-    Metadata,
-    Measure,
     Value,
-    Quantity,
-    Formulation,
+    ValueKind,
 )
 from rangekeeper.model.characteristics import value as local_value
 from rangekeeper.model.content import decode, encode
 from rangekeeper.model.definitions import find_classifications
-from rangekeeper.model.flux import Flow
-from rangekeeper.model.duration import make_periods
-
+from rangekeeper.model.duration import Frequency, PeriodTiming, make_periods
 from rangekeeper.model.expression import Reference
-from rangekeeper.model.formulation import declare
-from rangekeeper.model.duration import Frequency, PeriodTiming
 from rangekeeper.model.expression.authoring import (
-    reference,
-    literal,
-    equal,
     add,
-    multiply,
     divide,
+    equal,
+    literal,
+    multiply,
     power,
+    reference,
+)
+from rangekeeper.model.expression.authoring import (
     sum as expression_sum,
 )
+from rangekeeper.model.flux import Flow
+from rangekeeper.model.formulation import declare
+from rangekeeper.schema.records import Assignment
+from rangekeeper.schema.records import Specification as SpecificationRecord
 from rangekeeper.specification import Specification
 from rangekeeper.specification.targets import unknown_flow
-from rangekeeper.schema.records import Assignment, Specification as SpecificationRecord
 
 # Reviewed teaching assumptions from the original design walkthrough.
 EFFICIENCY = dict(hotel=0.8, retail=0.675, residential=0.75, parking=0.9)
@@ -150,7 +150,7 @@ def values(model: Model, owner: UUID | None = None) -> dict[str, Value]:
     matches = [f for f in model.system.formulations or () if f.name == name]
     if len(matches) != 1:
         raise ValueError(
-            f'expected one financial declaration for {owner or "aggregate"}'
+            f"expected one financial declaration for {owner or 'aggregate'}"
         )
     return {v.key: v for v in matches[0].values or ()}
 
@@ -355,7 +355,7 @@ def formulate(model: Model) -> Model:
                 ),
             )
         for i in range(11):
-            key = f"y{i+1}"
+            key = f"y{i + 1}"
             growth = power(add(literal(1), r(v["opex_growth"])), literal(i))
             capital = (
                 power(add(literal(1), r(v["capex_growth"])), literal((i + 1) // 5 - 1))
@@ -433,7 +433,7 @@ def formulate(model: Model) -> Model:
                 put(v[name], key, add(r(v[left], key), r(v[right], key)))
     for name in _COMPONENTS:
         for i in range(11):
-            key = f"y{i+1}"
+            key = f"y{i + 1}"
             put(
                 aggregate[name],
                 key,
@@ -442,7 +442,7 @@ def formulate(model: Model) -> Model:
                 ),
             )
     for i in range(10):
-        key = f"y{i+1}"
+        key = f"y{i + 1}"
         put(
             aggregate["reversion"],
             key,
@@ -468,7 +468,7 @@ def formulate(model: Model) -> Model:
     put(
         aggregate["pv"],
         None,
-        expression_sum([r(aggregate["discounted"], f"y{i+1}") for i in range(10)]),
+        expression_sum([r(aggregate["discounted"], f"y{i + 1}") for i in range(10)]),
     )
     declaration = declare(
         id=uuid4(),
@@ -490,7 +490,7 @@ def specify(model: Model) -> Specification:
     assert model.system is not None
     inputs: dict[UUID, Value] = {}
     unknowns: list = []
-    aggregate = values(model)
+    values(model)  # Raises unless one aggregate declaration exists.
     for uid in _contributors(model):
         for key in ("gfa", "perimeter", "ftf", "volume"):
             item = local_value(model.entity(uid).characteristics, key)
@@ -525,8 +525,13 @@ def specify(model: Model) -> Specification:
 def fixture() -> Model:
     """Construct a small public synthetic design; no private service data is copied."""
     from importlib.resources import files
+
     from rangekeeper.io import json as codec
-    return codec.loads(files("rangekeeper_examples").joinpath("data/design.json").read_text(), kind=Model)
+
+    return codec.loads(
+        files("rangekeeper_examples").joinpath("data/design.json").read_text(),
+        kind=Model,
+    )
 
 
 def _contributors(model: Model) -> tuple[UUID, ...]:

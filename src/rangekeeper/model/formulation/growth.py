@@ -1,18 +1,19 @@
 """Finite periodic growth equations; rates are per declared step, not inferred annual rates."""
 
 from uuid import UUID
+
 from rangekeeper.model import Model
-from rangekeeper.schema.records import Formulation, Reference
-from rangekeeper.model.formulation.flow import aligned, shape
-from rangekeeper.model.formulation.authoring import declare
-from rangekeeper.model.scope import target_value
 from rangekeeper.model.expression.authoring import (
-    reference,
-    literal,
-    equal,
     add,
+    equal,
+    literal,
     multiply,
+    reference,
 )
+from rangekeeper.model.formulation.authoring import declare
+from rangekeeper.model.formulation.flow import shape
+from rangekeeper.model.scope import target_value
+from rangekeeper.schema.records import Formulation, Reference
 
 
 def compound(

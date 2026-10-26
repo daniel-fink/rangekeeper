@@ -1,7 +1,7 @@
 """Provider-neutral Geometry checks. Native decoding belongs to the provider."""
 
-from hashlib import sha256
 import json
+from hashlib import sha256
 from pathlib import PurePosixPath
 
 from rangekeeper.shared.validation import require
@@ -22,6 +22,7 @@ def inventory_digest(files):
 
 
 def safe_path(path):
+    """Return True for a nonempty relative POSIX path with no empty, dot or parent segment."""
     return (
         isinstance(path, str)
         and bool(path)
@@ -32,6 +33,7 @@ def safe_path(path):
 
 
 def check_geometry(model):
+    """Check the Geometry pin inventory and the uniqueness and targets of its mappings."""
     geometry = model.get("geometry")
     if geometry is None:
         return

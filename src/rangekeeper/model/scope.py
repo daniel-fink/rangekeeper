@@ -4,6 +4,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from types import MappingProxyType
 from uuid import UUID
+
 from rangekeeper.shared.validation import require
 
 

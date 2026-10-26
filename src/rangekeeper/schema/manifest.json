@@ -129,7 +129,7 @@
     "schema/settings.yaml": "8c1534db9a5ca24f1e9f270d757cc9191c63233adcf16b9ce29826acd60d7dca",
     "schema/specification.yaml": "118b6d683ccfb08721b4daf11e8628231fafe17be56798c5c784d861ed980785",
     "tools/schema/bundle.yaml": "695423eb5d5fc898f39afd1bedda5c6ccb29711f67008ed0dd1e89f91436e25a",
-    "tools/schema/generate.py": "0b8ccee95208f1f3573e0b5215a6adacd3d45b15d16ae777dec0753c6ddd036a",
+    "tools/schema/generate.py": "ff23787d21d821cb5834d84d73092471dd7935c66d1d9c96916305a12efcc42b",
     "tools/schema/requirements.txt": "0c91623be27b28893b2e40813fd8d6b8467f68d6d68e6f09d1ba53af96507eae"
   }
 }

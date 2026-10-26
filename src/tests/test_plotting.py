@@ -2,13 +2,13 @@
 
 from datetime import date
 
-import pytest
 import plotly.graph_objects as go
 import plotly.io as pio
+import pytest
 
-from rangekeeper.visualisation.chart import plot_distribution, plot_flows, plot_pairs
 from rangekeeper.model.duration import Frequency, PeriodTiming, make_periods
 from rangekeeper.model.flux import Flow
+from rangekeeper.visualisation.chart import plot_distribution, plot_flows, plot_pairs
 
 
 def test_flow_panels_preserve_dates_units_signs_and_inputs():
@@ -68,7 +68,10 @@ def test_distribution_rejects_unusable_samples(values):
 
 def test_pairs_preserve_scenario_alignment_and_labels():
     figure = plot_pairs([3, 1], [-8, 4], x_label="Base (AUD)", y_label="Change (AUD)")
-    assert list(zip(figure.data[0].x, figure.data[0].y)) == [(3, -8), (1, 4)]
+    assert list(zip(figure.data[0].x, figure.data[0].y, strict=True)) == [
+        (3, -8),
+        (1, 4),
+    ]
     assert figure.layout.xaxis.title.text == "Base (AUD)"
     assert figure.layout.yaxis.title.text == "Change (AUD)"
     for x, y in [([], []), ([1], [1, 2]), ([float("nan")], [1])]:

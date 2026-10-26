@@ -1,24 +1,25 @@
 """Portable canonical investigations, independent of an originating workspace."""
 
-from pathlib import Path
-from uuid import UUID, uuid4
 import json
 from copy import deepcopy
+from pathlib import Path
+from uuid import uuid4
+
 import pytest
 
 pytest.importorskip("pyarrow")
-from rangekeeper import Model, Specification, Run
+from rangekeeper import Model, Run, Specification
 from rangekeeper.io import MemoryStore, yaml
-from rangekeeper.io.bundle import Reader, write, identity
-from rangekeeper.run.execution import Executor
+from rangekeeper.io.bundle import Reader, identity, write
 from rangekeeper.run import SolutionStatus
-from rangekeeper.shared.errors import (
-    MissingReferenceError,
-    RevisionConflictError,
-    IdentityConflictError,
-    ReferenceTypeError,
-)
+from rangekeeper.run.execution import Executor
 from rangekeeper.schema.runtime import exact_equal
+from rangekeeper.shared.errors import (
+    IdentityConflictError,
+    MissingReferenceError,
+    ReferenceTypeError,
+    RevisionConflictError,
+)
 
 FIXTURES = Path(__file__).parents[2] / "examples/schema"
 

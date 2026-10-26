@@ -1,14 +1,12 @@
 """Composition acceptance fixtures, invoked by specifications.py."""
 
-from copy import deepcopy
 import json
+from copy import deepcopy
 from uuid import NAMESPACE_URL, uuid5
 
+import yaml
 from linkml_runtime.dumpers import json_dumper
 from linkml_runtime.loaders import json_loader
-import yaml
-
-import _library
 
 from rangekeeper.shared.errors import ContractError
 from rangekeeper.specification.composition import (
