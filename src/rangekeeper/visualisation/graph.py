@@ -5,7 +5,10 @@ from collections.abc import Mapping
 from os import PathLike
 from pathlib import Path
 
-from pyvis.network import Network
+from rangekeeper.shared.optional import requires
+
+with requires("visualisation"):
+    from pyvis.network import Network
 
 from rangekeeper.model.definitions import classification as find_classification
 from rangekeeper.model.system import View
