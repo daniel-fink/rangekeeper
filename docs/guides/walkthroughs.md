@@ -128,14 +128,14 @@ or `apply_theme(figure, mode="dark")` from `helpers.theme`.
 `show_geometry(view)` writes the local geometry viewer for the data package and
 shows one view: `context`, `property`, `floors` or `utilities`. The viewer checks
 the data package hashes before it displays the geometry. Its
-[build procedure](../../tools/geometry/README.md) keeps the viewer bundle local.
+[build procedure](../../examples/walkthrough/viewer/README.md) keeps the viewer bundle local.
 
 See [examples](examples.md), [upgrading](upgrading.md) and
 [verification](../contributing/verification.md) for related procedures.
 
 ## Live notebook display
 
-The helpers start `visualisation.local.LocalDisplay` for the folder that holds the
+The helpers start `helpers.local.LocalDisplay` for the folder that holds the
 displayed file. It serves read-only files on loopback with a random URL prefix
 and no directory listing. It stops when the kernel closes. This avoids
 JupyterLab's file-URL query rewriting and HTML sandbox restrictions. The saved

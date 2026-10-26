@@ -7,8 +7,9 @@ from importlib.resources import files
 from pathlib import Path
 
 from rangekeeper.io import json as codec
-from rangekeeper.io.speckle import validate_associations
 from rangekeeper.model import Model
+
+from .speckle import validate_associations
 
 
 def write(source: str | Path, destination: str | Path) -> Path:

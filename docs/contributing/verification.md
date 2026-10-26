@@ -22,7 +22,7 @@ the repository root:
 uv run --locked ruff check .
 uv run --locked ruff format --check .
 uv run --locked mypy
-MPLBACKEND=Agg uv run --locked pytest -q
+uv run --locked pytest -q
 ```
 
 To check an installed wheel with no extra or with one extra, install it in a
@@ -32,7 +32,7 @@ separate environment and run, outside the checkout's `src` folder:
 python tools/ci/check_extra.py core
 ```
 
-Replace `core` with `bundle`, `calculations`, `execution`, `visualisation` or `yaml`.
+Replace `core` with `bundle`, `calculations`, `execution` or `yaml`.
 
 Record optional dependency skips separately from passed checks. Mathematical
 execution uses the Pyomo/HiGHS backend; Run evidence records the installed versions. Local tests do not close the
@@ -93,8 +93,8 @@ projects and build caches have not entered the Python runtime package.
 ## Local display and native projects
 
 For changes to the notebook Geometry viewer, follow the
-[viewer build procedure](../../tools/geometry/README.md). Inspect the generated
-assets and their manifest; `python tools/geometry/check_manifest.py` compares
+[viewer build procedure](../../examples/walkthrough/viewer/README.md). Inspect the generated
+assets and their manifest; `python examples/walkthrough/viewer/check_manifest.py` compares
 the packaged assets and the viewer sources with the manifest hashes. Browser smoke checks need a local browser runtime;
 geometry tests alone do not establish rendered interaction.
 

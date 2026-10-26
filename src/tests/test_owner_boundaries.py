@@ -1,4 +1,4 @@
-"""Canonical envelopes, quantity coverage and optional import boundaries."""
+"""Quantity coverage and optional import boundaries."""
 
 import subprocess
 import sys
@@ -6,33 +6,9 @@ from uuid import uuid4
 
 import pytest
 
-from rangekeeper.io.speckle import MappingError, decode_model, encode_model
-from rangekeeper.model import Entity, Metadata, Model, System, Update
 from rangekeeper.model.system import View
 
 from .test_model_graph import fixture
-
-
-def test_current_envelope_and_associations_bind_revision():
-    entity = Entity(id=uuid4(), name="Current")
-    model = Model.create(
-        metadata=Metadata(id=uuid4(), schema_version="0.7.0"),
-        system=System(entities=(entity,)),
-    )
-    associations = [
-        {
-            "model_revision": str(model.id),
-            "domain_id": str(entity.id),
-            "content_id": "retained",
-        }
-    ]
-    encoded = encode_model(model, associations=associations)
-    assert decode_model(encoded).to_data() == model.to_data()
-    revised = model.revise(
-        Update(system=System(entities=(Entity(id=entity.id, name="Changed"),)))
-    )
-    with pytest.raises(MappingError, match="revision"):
-        encode_model(revised, associations=associations)
 
 
 def test_quantity_population_preserves_zero_missing_and_scope():
@@ -53,7 +29,7 @@ def test_core_imports_do_not_load_optional_dependencies():
         [
             sys.executable,
             "-c",
-            "import sys; import rangekeeper; from rangekeeper.io import speckle; "
+            "import sys; import rangekeeper; from rangekeeper import io; "
             "assert not any(n.split('.')[0] in "
             "{'matplotlib', 'plotly', 'specklepy', 'openpyxl'} for n in sys.modules)",
         ],

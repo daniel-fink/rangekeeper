@@ -7,7 +7,7 @@ presence-preserving serialization, authoring, composition and diagnostics. The
 Components project uses the installed RhinoCommon, Grasshopper and GH_IO
 assemblies. Dependencies are pinned in project files and lockfiles.
 
-This independent source project is outside the Python package. Canonical IO and simple local display remain in `io` and `visualisation`. See the
+This independent source project is outside the Python package. Canonical IO remains in `io`; the design envelope is a walkthrough helper. See the
 [architecture](../concepts/architecture.md) for the repository map and
 [design transport](../reference/design-transport.md) for the shared envelope.
 

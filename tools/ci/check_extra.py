@@ -1,6 +1,6 @@
 """Check an installed Rangekeeper with no extra, or with exactly one extra.
 
-Usage: python tools/ci/check_extra.py core|bundle|calculations|execution|visualisation|yaml
+Usage: python tools/ci/check_extra.py core|bundle|calculations|execution|yaml
 
 Run it outside the checkout's `src` folder, against an installed distribution.
 It imports every module of the package. A module that fails must fail with the
@@ -17,7 +17,7 @@ from datetime import date
 
 import rangekeeper
 
-EXTRAS = ("core", "bundle", "calculations", "execution", "visualisation", "yaml")
+EXTRAS = ("core", "bundle", "calculations", "execution", "yaml")
 
 
 def import_all() -> dict[str, str]:
@@ -92,12 +92,6 @@ def check_execution() -> None:
     ).stdout
     response = json.loads(output)
     assert response.get("candidate") == {"x": 2.0}, response
-
-
-def check_visualisation() -> None:
-    """Check the plotting and graph modules."""
-    import rangekeeper.visualisation.chart  # noqa: F401
-    import rangekeeper.visualisation.graph  # noqa: F401
 
 
 def check_yaml() -> None:

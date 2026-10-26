@@ -2,8 +2,7 @@ from urllib.error import HTTPError
 from urllib.request import urlopen
 
 import pytest
-
-from rangekeeper.visualisation.local import LocalDisplay
+from helpers.local import LocalDisplay
 
 
 def test_display_reads_files_preserves_queries_and_blocks_escapes(tmp_path):

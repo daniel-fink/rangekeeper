@@ -1,22 +1,23 @@
+"""Plotly charts for Flows, hierarchies and distributions.
+
+The functions return editable Plotly figures. Callers choose styling, display
+and storage.
+"""
+
 from __future__ import annotations
 
-import json
 import math
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from enum import Enum, unique
 from numbers import Real
-from os import PathLike
-from pathlib import Path
 from typing import cast
 
-from rangekeeper.shared.optional import requires
+import networkx as nx
+import plotly.graph_objects as go
 
-with requires("visualisation"):
-    import networkx as nx
-    import plotly.graph_objects as go
-
-from rangekeeper.model.definitions import classification as find_classification
-from rangekeeper.model.system import View
+from rangekeeper.model.duration.period import PeriodTiming
+from rangekeeper.model.flux import Flow
 from rangekeeper.shared.errors import EncodingError
 from rangekeeper.shared.table import Table
 
@@ -148,14 +149,14 @@ def _tree_projection(
     graph.add_nodes_from(ids)
     graph.add_edges_from(
         (parent, entity_id)
-        for entity_id, parent in zip(ids, raw_parents)
+        for entity_id, parent in zip(ids, raw_parents, strict=True)
         if parent is not None
     )
     if not graph or not nx.is_arborescence(graph):
         raise EncodingError("Table rows must form one arborescence")
 
     labels = []
-    for entity_id, row in zip(ids, table.rows):
+    for entity_id, row in zip(ids, table.rows, strict=True):
         label = row.values[label_column]
         if label is None or isinstance(label, str) and not label.strip():
             labels.append(entity_id)
@@ -181,11 +182,11 @@ def _tree_projection(
                 "non-negative numbers"
             )
         values = tuple(float(cast(Real, item)) for item in selected_values)
-        values_by_id = dict(zip(ids, values))
+        values_by_id = dict(zip(ids, values, strict=True))
         for parent_id, parent_value in values_by_id.items():
             child_total = math.fsum(
                 child_value
-                for child_value, parent in zip(values, raw_parents)
+                for child_value, parent in zip(values, raw_parents, strict=True)
                 if parent == parent_id
             )
             if child_total > parent_value and not math.isclose(
@@ -207,21 +208,10 @@ def _tree_projection(
     )
 
 
-"""Detached Plotly adapters. Callers choose styling, display and storage."""
-
-from enum import Enum, unique
-
-
 @unique
 class PartitionKind(Enum):
     SUNBURST = "sunburst"
     TREEMAP = "treemap"
-
-
-from collections.abc import Mapping, Sequence
-
-from rangekeeper.model.duration.period import PeriodTiming
-from rangekeeper.model.flux import Flow
 
 
 def plot_flows(

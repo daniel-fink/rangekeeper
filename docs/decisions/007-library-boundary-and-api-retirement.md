@@ -152,7 +152,7 @@ RK owns the standalone Speckle viewer used by its walkthrough notebooks, includi
 source, npm build, third-party notices and packaged assets. Source lives in
 `tools/geometry`. Python installation uses the prepared RK assets; it does not run
 npm or fetch an unpinned bundle. This amends the earlier asset-build ownership in
-the table above. See [the build procedure](../../tools/geometry/README.md).
+the table above. See [the build procedure](../../examples/walkthrough/viewer/README.md).
 
 RK owns canonical Bundle/schema rules and its Parquet mapping/reader, with optional
 storage adapters. [ADR-008](008-rangekeeper-bundle-contract.md) owns canonical conformance.

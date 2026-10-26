@@ -64,8 +64,8 @@ def decode_model(payload: Mapping[str, object]) -> Model:
     """Validate a versioned envelope and return an immutable canonical Model.
 
     The canonical JSON property is a string, not a Speckle object hierarchy.
-    Invalid envelopes raise MappingError. Legacy payloads need convert_speckle;
-    this operation does not infer Model membership from collection nesting.
+    Invalid envelopes raise MappingError. Source payloads need an explicit source
+    reader; this operation does not infer Model membership from collection nesting.
     """
     if not isinstance(payload, Mapping) or payload.get(FIELDS["format"]) != FORMAT:
         raise MappingError(

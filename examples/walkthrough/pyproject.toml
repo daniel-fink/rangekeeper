@@ -8,11 +8,14 @@ requires-python = ">=3.12,<3.14"
 # The lessons and helpers use the Rangekeeper checkout two levels up, never a
 # published release. Helper dependencies are listed here, not in the library.
 dependencies = [
-    "rangekeeper[calculations,execution,visualisation]",
+    "rangekeeper[calculations,execution]",
     "rangekeeper-examples",
     "ipykernel>=7.3",
     "ipython>=8.18",
+    # Charts, graph display and the geometry viewer (ADR-010).
+    "networkx>=3.1",
     "plotly>=6.0",
+    "pyvis>=0.3.2",
 ]
 
 [dependency-groups]

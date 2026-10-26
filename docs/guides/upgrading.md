@@ -6,18 +6,19 @@ There are no forwarding modules, deprecated installation extras or automatic sch
 
 | Previous import | Current owner and import |
 | --- | --- |
-| `rangekeeper.adapters.plotting` | RK `rangekeeper.visualisation.chart` |
+| `rangekeeper.adapters.plotting` | Walkthrough helper `helpers.chart` |
 | `rangekeeper.adapters.presentation` | RK `Stream.display()` and `Pivot.display()`, in `rangekeeper.model.display` |
-| `rangekeeper.adapters.visualization.graph_html` | RK `rangekeeper.visualisation.graph.graph_html` |
-| `rangekeeper.adapters.visualization` hierarchy charts | RK `rangekeeper.visualisation.chart` |
+| `rangekeeper.adapters.visualization.graph_html` | Walkthrough helper `helpers.graph.graph_html` |
+| `rangekeeper.adapters.visualization` hierarchy charts | Walkthrough helper `helpers.chart` |
 | `rangekeeper.adapters.polars` | RK `rangekeeper.io.polars` |
-| Canonical Speckle envelope codec | RK `rangekeeper.io.speckle` |
+| Canonical Speckle envelope codec | Walkthrough helper `helpers.speckle` |
+| `rangekeeper.visualisation.*` and the `visualisation` extra (1.0) | Walkthrough helpers in [`examples/walkthrough/helpers`](../../examples/walkthrough/README.md); table display is `Stream.display()` |
 
 Source readers, workflow orchestration, transient extraction objects and advanced
 application browsing are no longer RK APIs. Consumers must supply those features
 separately and create canonical records through the public library API.
 
-Install `Rangekeeper[calculations,visualisation,execution,yaml]` for the walkthroughs.
+Use the [walkthrough environment](walkthroughs.md#explore-the-lessons) for the walkthroughs.
 For scalar CSV output, call `rangekeeper.io.polars.text_frame(table).write_csv(path)`.
 Supply read dtypes explicitly. CSV does not preserve a complete canonical Model.
 

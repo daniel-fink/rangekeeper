@@ -55,12 +55,6 @@ calculations = [
     "scipy>=1.12",
     "pyxirr>=0.10.7,<0.11",
 ]
-visualisation = [
-    "matplotlib>=3.10",
-    "plotly>=6.0",
-    "networkx>=3.1",
-    "pyvis>=0.3.2",
-]
 execution = ["numpy>=1.26", "pyomo>=6.10.1,<7", "highspy>=1.15.1,<2"]
 yaml = ["PyYAML>=6.0.2,<7"]
 
@@ -133,9 +127,6 @@ known-third-party = ["Grasshopper"]
 "schema/checks/specification_composition_cases.py" = ["B023"]
 # Typing fixtures bind values only so that mypy checks their types.
 "tools/schema/typing_*.py" = ["F841"]
-# Adapters leave the core package before 1.0 (ADR-010); format only.
-"src/rangekeeper/visualisation/**" = ["F", "B", "UP", "D"]
-"src/rangekeeper/io/speckle.py" = ["F", "B", "UP", "D"]
 
 [tool.towncrier]
 name = "Rangekeeper"
@@ -199,7 +190,7 @@ strict_equality = true
 
 [[tool.mypy.overrides]]
 # Dependencies without type information.
-module = ["networkx.*", "plotly.*", "pyarrow.*", "pyomo.*", "pyvis.*", "scipy.*"]
+module = ["pyarrow.*", "pyomo.*", "scipy.*"]
 ignore_missing_imports = true
 
 [build-system]
@@ -218,13 +209,10 @@ describe_command = ["git", "describe", "--dirty", "--tags", "--long", "--match",
 where = ["src"]
 include = ["rangekeeper", "rangekeeper.*"]
 namespaces = false
-exclude = ["*.node_modules*", "*.client*"]
 
 [tool.setuptools.package-data]
 "rangekeeper" = ["py.typed"]
 "rangekeeper.schema" = ["*.json"]
-"rangekeeper.io" = ["speckle_contract.json"]
-"rangekeeper.visualisation" = ["assets/*", "assets/**/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["src/tests"]

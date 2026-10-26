@@ -11,14 +11,10 @@ from rangekeeper.shared.optional import requires
 OPTIONAL = (
     "duckdb",
     "highspy",
-    "matplotlib",
-    "networkx",
     "numpy",
-    "plotly",
     "polars",
     "pyarrow",
     "pyomo",
-    "pyvis",
     "pyxirr",
     "scipy",
     "yaml",
@@ -52,10 +48,7 @@ def test_core_needs_no_optional_extra():
         assert year_fraction(
             date(2020, 1, 1), date(2021, 1, 1), convention=DayCount.ACTUAL_ACTUAL
         ) == 1.0
-        for module, extra in (
-            ("rangekeeper.io.bundle", "bundle"),
-            ("rangekeeper.visualisation.chart", "visualisation"),
-        ):
+        for module, extra in (("rangekeeper.io.bundle", "bundle"),):
             try:
                 __import__(module)
             except ImportError as error:

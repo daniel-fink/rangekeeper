@@ -18,7 +18,6 @@ python -m pip install .
 | `yaml` | Strict YAML codecs |
 | `calculations` | Financial valuation, Flow operations, distributions, scenario kernels, Polars and CSV |
 | `execution` | Pyomo/HiGHS numerical execution |
-| `visualisation` | Matplotlib and Plotly plots, plus PyVis graph presentation |
 
 Extras describe installation choices. They do not change the module hierarchy.
 Importing `rangekeeper` and its core modules needs no extra. When a feature needs
@@ -29,14 +28,15 @@ See [upgrading](upgrading.md) for retired extra names.
 For the numerical and design examples, run from the repository root:
 
 ```sh
-python -m pip install '.[calculations,execution,visualisation]' ./examples
+python -m pip install '.[calculations,execution]' ./examples
 ```
 
 The separate example distribution supplies `rangekeeper_examples`. Install it from
 the same checkout as the library. The Python runtime wheel does not include it.
 
-The local geometry renderer is packaged with RK. Installing or using it does not
-run Node or start a service. Source acquisition and application browsing are
+Charts, graph display and the local geometry viewer are walkthrough helpers, in
+the [walkthrough environment](walkthroughs.md#explore-the-lessons); no extra
+installs them. The viewer does not run Node or start a service. Source acquisition and application browsing are
 consumer responsibilities; the library does not load them.
 
 ## Use the installed library

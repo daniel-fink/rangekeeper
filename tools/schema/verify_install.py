@@ -85,6 +85,13 @@ with tempfile.TemporaryDirectory(prefix="rk-installed-records-") as directory:
         ]
         assert len(licenses) == 1, "wheel must contain the project license"
         assert archive.read(licenses[0]) == (ROOT / "LICENSE").read_bytes()
+        # The wheel ships no product adapter or viewer (ADR-010).
+        adapters = [
+            name
+            for name in archive.namelist()
+            if name.startswith("rangekeeper/visualisation/") or "speckle" in name
+        ]
+        assert not adapters, adapters
     venv = temp / "venv"
     subprocess.run(
         [args.runtime_python, "-m", "venv", "--without-pip", str(venv)], check=True
@@ -193,12 +200,11 @@ for name in ('api', 'measure', 'flux', '_legacy_duration', 'distribution', 'extr
     assert not hasattr(rangekeeper, name), name
 assert not hasattr(rangekeeper, 'update_class')
 assert not hasattr(rangekeeper, 'rgba_from_cmap')
-for name in ('adapters', 'workflow', 'migration', 'legacy'):
+for name in ('adapters', 'workflow', 'migration', 'legacy', 'visualisation'):
     assert importlib.util.find_spec('rangekeeper.' + name) is None
-for resource in ('io/speckle_contract.json', 'visualisation/assets/geometry/manifest.json'):
-    assert files('rangekeeper').joinpath(resource).is_file(), resource
-from rangekeeper.io.speckle import decode_model, encode_model
-assert 'specklepy' not in sys.modules
+# Product adapters are walkthrough helpers, not part of the wheel (ADR-010).
+assert importlib.util.find_spec('rangekeeper.io.speckle') is None
+assert not files('rangekeeper.io').joinpath('speckle_contract.json').is_file()
 for name in ('schema.json', 'slots.json', 'manifest.json'):
     assert files('rangekeeper.schema').joinpath(name).is_file()
 assert not files('rangekeeper.schema').joinpath('native.py').is_file()
