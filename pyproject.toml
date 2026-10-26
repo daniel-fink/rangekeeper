@@ -35,6 +35,8 @@ dependencies = [
     "jsonschema>=4.26,<5",
     "rfc3339-validator>=0.1.4,<0.2",
     "pint>=0.24",
+    # Windows has no system time zone database for zoneinfo.
+    "tzdata>=2024.1; sys_platform == 'win32'",
 ]
 
 [project.urls]
