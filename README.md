@@ -27,3 +27,13 @@ This repository is comprised of three separate, but inter-dependent projects:
 3. McNeel Rhinoceros 3D Grasshopper components (to assist the creation of Rangekeeper-compliant objects from 3D models, in C#)
 
 Each project has its own readme to assist setup and dependency resolution.
+## Versions
+
+This is the `support/0.8` branch. It holds the 0.8.x maintenance line, which
+gets bug and security fixes only, until an announced end of life. Rangekeeper
+1.x is developed on `develop` and has a new API. To stay on 0.8.x, use the
+requirement `rangekeeper>=0.8.72,<0.9`.
+
+- Supported versions and vulnerability reports: [SECURITY.md](SECURITY.md)
+- Changes: [CHANGELOG.md](CHANGELOG.md)
+- Release procedure: [RELEASING.md](RELEASING.md)
