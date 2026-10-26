@@ -153,15 +153,17 @@ rk.io.load(path), rk.io.save(document, path), rk.io.DirectoryStore(path)        
 
 Equations use value keys, dotted paths (`funding.headroom`), keyed members
 (`rent[use]`), quantity literals (`0 AUD`, `2 years`), the operators `+ - * /`, the
-comparisons `= >= <= > <` and the functions in G17. The functions use the same names
-and keywords as `rk.finance` and `rk.flow`. `grow` and `spread` are the two common
-profiles: `grow(x, rate=r)` is `Flow.from_profile(rk.profile.Compounding(rate=r),
-initial=x)`, and `spread(x, ...)` is `Flow.from_profile(rk.profile.Uniform(), total=x)`:
+comparisons `= >= <= > <` and the functions in G17. Each profile in `rk.profile` is
+also an equation function, under its own name in lower case: `Compounding` is
+`compounding(...)`, `SCurve` is `scurve(...)`. The first argument of a growth profile
+is the initial amount; the first argument of a distribution profile is the total. A
+profile registered through the extension point is an equation function too. The
+other functions use the same names and keywords as `rk.flow` and `rk.finance`:
 
 | Function | Meaning |
 | --- | --- |
-| `grow(amount, rate=, base=, start=, every=)` | Growth on the Model timeline from a base date; zero before `start`; `every` for periodic amounts |
-| `spread(amount, start=, years=)` | An amount divided evenly over the years from a start date |
+| `compounding(initial, rate=, base=, start=, every=)`, `linear(...)`, `constant(...)` | Growth profiles on the Model timeline from a base date; zero before `start`; `every` for periodic amounts |
+| `uniform(total, start=, years=)`, `scurve(total, start=, years=)` | Distribution profiles: a total divided over the years from a start date |
 | `event(amount, on=)` | One amount on one date |
 | `at(flow, date)` | The amount of the period that contains a date |
 | `trim(flow, start=, end=)` | The part of a Flow inside a span |
@@ -215,7 +217,7 @@ use. **Issue** is filled in when the issue is filed.
 | 31 | — | Rules that decide values: `decide`, traces, availability errors | G49, G51, G53, G55, G64, G65, G67 | `specification`, `execution` | 05·6–12; 07·7–8, 13 | #102, #139, #213, #215 |
 | 32 | — | Specification parameters, and cases across paths | G57 | `specification` | 05·17; 07·13, 15 | #138 |
 | 33 | — | Design options: `edit(name=)`, `relabel`, `include` and `Specification.alternatives` | G61, G63 | `specification`, `model` | 07·4, 7, 18 | #214, #216 |
-| 34 | — | `rk.profile` namespace, growth and distribution profiles, and `Flow.from_profile` | G70 | `profile`, `flow` | 01·6; 03·7 (`grow`, `spread`) | #168, #131 |
+| 34 | — | `rk.profile` namespace, growth and distribution profiles, and `Flow.from_profile` | G70 | `profile`, `flow` | 01·6; 03·7 (`compounding`, `uniform`) | #168, #131 |
 
 Not filed as gaps:
 

@@ -62,8 +62,8 @@ income relation. Fix rent growth at zero.
 e = model.edit()
 e.flows(rent_index="ratio")
 e.replace("income",
-          "income = rent_index * (grow(a_income, rate=rent_growth, base=base_date, start=a_open)"
-          " + grow(b_income, rate=rent_growth, base=base_date, start=b_open))")
+          "income = rent_index * (compounding(a_income, rate=rent_growth, base=base_date, start=a_open)"
+          " + compounding(b_income, rate=rent_growth, base=base_date, start=b_open))")
 model = e.commit()
 ```
 

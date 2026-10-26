@@ -241,8 +241,8 @@ extra = rk.model.Filter(classification="floor", labels={"phase": "expansion"})
 e.rollup("x_income", of="income", over="spatiallyContains", root="building_a", contributors=extra)
 e.rollup("x_cost", of="build_cost", over="spatiallyContains", root="building_a", contributors=extra)
 e.values(expansion_date="date")
-e.extend("works", "- spread(x_cost, start=expansion_date, years=1)")
-e.extend("income", "+ grow(x_income, rate=rent_growth, base=base_date, start=expansion_date + 1 year)")
+e.extend("works", "- uniform(x_cost, start=expansion_date, years=1)")
+e.extend("income", "+ compounding(x_income, rate=rent_growth, base=base_date, start=expansion_date + 1 year)")
 expanded = e.commit()
 ```
 

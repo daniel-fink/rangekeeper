@@ -98,7 +98,7 @@ b.values(
 Narrative: the plan's sequence is a relation too. The site is bought and the shared
 works start on the start date. Building A follows a year later, and each building
 takes two years to build. Building B cannot start before the shared works finish.
-Development payments are negative; `spread` divides an amount evenly over the years
+Development payments are negative; `uniform` divides an amount evenly over the years
 from a start date.
 
 ```python
@@ -110,9 +110,9 @@ b.equations(
     "b_open = b_start + 2 years",
     "b_start >= shared_start + 1 year",
     "land = -event(land_cost, on=start_date)",
-    "shared_works = -spread(shared_cost, start=shared_start, years=1)",
-    "a_works = -spread(a_cost, start=a_start, years=2)",
-    "b_works = -spread(b_cost, start=b_start, years=2)",
+    "shared_works = -uniform(shared_cost, start=shared_start, years=1)",
+    "a_works = -uniform(a_cost, start=a_start, years=2)",
+    "b_works = -uniform(b_cost, start=b_start, years=2)",
     "works = shared_works + a_works + b_works",
 )
 ```
@@ -123,12 +123,12 @@ earns nothing until it opens. Renewals come every five years after opening.
 ```python
 # cell 7
 b.equations(
-    "income = grow(a_income, rate=rent_growth, base=base_date, start=a_open)"
-    " + grow(b_income, rate=rent_growth, base=base_date, start=b_open)",
-    "opex = -grow(a_opex, rate=opex_growth, base=base_date, start=a_open)"
-    " - grow(b_opex, rate=opex_growth, base=base_date, start=b_open)",
-    "renewals = -grow(a_renewal, rate=opex_growth, base=base_date, start=a_open + 5 years, every=5 years)"
-    " - grow(b_renewal, rate=opex_growth, base=base_date, start=b_open + 5 years, every=5 years)",
+    "income = compounding(a_income, rate=rent_growth, base=base_date, start=a_open)"
+    " + compounding(b_income, rate=rent_growth, base=base_date, start=b_open)",
+    "opex = -compounding(a_opex, rate=opex_growth, base=base_date, start=a_open)"
+    " - compounding(b_opex, rate=opex_growth, base=base_date, start=b_open)",
+    "renewals = -compounding(a_renewal, rate=opex_growth, base=base_date, start=a_open + 5 years, every=5 years)"
+    " - compounding(b_renewal, rate=opex_growth, base=base_date, start=b_open + 5 years, every=5 years)",
     "operating = income + opex + renewals",
 )
 ```
@@ -405,8 +405,8 @@ Cell 7 has 9 lines and cell 13 has 13; no cell has more than 15.
 | 2–3 | 10 | G07: `load_base_plan`, `show_timeline` load and draw only |
 | 4 | 6 | By hand once; the budget then lives in the plan's inputs |
 | 5 | 2, 5 | G08 (`subject`, `timeline`); G15: date-valued Values; G16: infer units and shapes of other values |
-| 6–8 | 3, 6 | G17: Function catalogue for equations (`event`, `spread`, `grow`, `reversion`, `trim`, `npv`); G18: Flow-valued string equations; date arithmetic in G15 |
-| 7 | 6 | `grow` with `base`, `start` and `every`: the Compounding profile in an equation (G70, [#168](https://github.com/daniel-fink/rangekeeper/issues/168)) |
+| 6–8 | 3, 6 | G17: Function catalogue for equations (`event`, `uniform`, `compounding`, `reversion`, `trim`, `npv`); G18: Flow-valued string equations; date arithmetic in G15 |
+| 7 | 6 | `compounding` with `base`, `start` and `every`: the Compounding profile in an equation (G70, [#168](https://github.com/daniel-fink/rangekeeper/issues/168)) |
 | 9 | 2, 8 | G11, G12 |
 | 10, 12 | 8 | G19: `Outcome.stream` and Flow values in `Outcome` |
 | 11, 14 | 8 | Cases ([#144](https://github.com/daniel-fink/rangekeeper/issues/144)). G20: `cases(mapping)` overrides by key; `Outcome.case`, `Outcome.table` with a case column |
