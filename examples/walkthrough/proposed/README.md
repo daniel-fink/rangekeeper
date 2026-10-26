@@ -49,6 +49,7 @@ pass.
 | D10 | How is a design variant declared? | Each option is its own Model revision. The Specification lists the alternatives, and the choice between them is a decided value. A provision cost is a fixed value in the Specification | 07 |
 | D11 | Rates by use on each floor (lesson 06) | Keyed values (`by="use"`) and floor equations (`equations_for`). The reference income is a rollup of floor income, so income traces to floors | 06, 07 |
 | D12 | Where does growth live, and what replaces "projection"? | A **profile** says how an amount develops over Periods. Profiles live in a new public namespace, `rk.profile`: growth profiles (`Constant`, `Linear`, `Compounding`) take an `initial=` amount; distribution profiles (`Uniform`, `SCurve`) take a `total=` amount. `rk.flow.Flow.from_profile(profile, periods=, initial= or total=)` makes the Flow. Growth is series maths, not finance, so it is not in `rk.finance` | 01, 03 |
+| D13 | How does a reader make a Quantity? | `rk.Quantity("5 %")` or `rk.Quantity(0.05, "ratio")`, at the root beside the three documents: every layer uses it. The namespace that holds the unit system, the registry and `isclose` is `rk.quantity`, not `rk.units`, so "units" keeps one meaning: a unit string. `q()` and `Quantity.parse` are not added | 01–07 |
 
 Two choices in the cells are open for review. They do not change the API shape:
 
@@ -67,15 +68,15 @@ their issue. Names with a gap ID are new.
 
 ```python
 import rangekeeper as rk
-rk.Model, rk.Specification, rk.Run
-rk.duration, rk.profile, rk.flow, rk.finance, rk.model, rk.specification, rk.execution, rk.io, rk.errors, rk.units
+rk.Model, rk.Specification, rk.Run, rk.Quantity
+rk.quantity, rk.duration, rk.profile, rk.flow, rk.finance, rk.model, rk.specification, rk.execution, rk.io, rk.errors
 ```
 
 ### Values and time
 
 ```python
-rk.units.q("20e6 AUD"), rk.units.q("7 %/year"), rk.units.q("1200 USD pa")        # #148, #149
-rk.units.isclose(a, b, abs="1 AUD")                                                  # G06
+rk.Quantity("20e6 AUD"), rk.Quantity("7 %/year"), rk.Quantity(1697.45, "sqm")      # #148, #149, G71
+rk.quantity.isclose(a, b, abs="1 AUD")                                                  # G06
 span = rk.duration.Span.years(start=date(2001, 1, 1), count=10)                      # G01
 span.extend(years=1).periods("year")
 flow = rk.flow.Flow({period: 100, date(2001, 1, 1): -50}, units="USD")              # G02
@@ -185,13 +186,13 @@ use. **Issue** is filled in when the issue is filed.
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | — | Span conveniences: `years`, `extend`, `periods("year")` | G01 | `duration` | 01·4; 03·3 | #119 |
 | 2 | — | Flow and Stream construction, lookup and arithmetic | G02–G04 | `flow` | 01·5–13; 03·17 | #103, #162 |
-| 3 | — | Value equality and `rk.units.isclose` | G06 | `units`, `flow` | 01·11, 14, 20; 02·22 | #109, #117 |
+| 3 | — | Value equality and `rk.quantity.isclose` | G06 | `quantity`, `flow` | 01·12, 15, 21; 02·22 | #109, #117 |
 | 4 | — | `Flow.shift(periods=)` and `Flow.trim(period)` | G05 | `flow` | 01·11–12, 20; 05·8 | #103, #162 |
 | 5 | — | Staged solve: evaluate known blocks and non-affine Functions of determined values | G09 | `execution` | 02·6, 11; 03·13, 19 | #125, #129, #152 |
 | 6 | — | Inverse rewrites: fixed `irr` and bounds on `min` | G22 | `execution` | 03·16 | #164, #167 |
 | 7 | — | Function catalogue for equations, named as in `rk.profile`, `rk.flow` and `rk.finance` | G17 | `model`, `finance` | 03·6–8, 13; 05·10; 07·17 | #145, #163, #167, #168 |
 | 8 | — | Flow-valued string equations on the Model timeline | G18 | `model` | 03·6–8 | #145, #163 |
-| 9 | — | Date values, date arithmetic and `never` | G15, G50 | `units`, `model` | 03·5–6; 05·6–13 | #119 |
+| 9 | — | Date values, date arithmetic and `never` | G15, G50 | `quantity`, `model` | 03·5–6; 05·6–13 | #119 |
 | 10 | — | Builder: `subject`, `timeline`, `values(**units)`, `flows(**units)` | G08, G28 | `model` | 02·4; 03·5; 04·3 | #141, #142 |
 | 11 | — | Infer units and shapes from equations | G16 | `model` | 03·5–8 | #151 |
 | 12 | — | Equation keys, `replace`, `remove`, `extend`, `Equation.text`, `equations.involving` | G10, G27, G47 | `model` | 02 aside; 04·3; 05·2, 10; 06·24; 07·17 | #141, #145 |
@@ -217,6 +218,7 @@ use. **Issue** is filled in when the issue is filed.
 | 32 | — | Specification parameters, and cases across paths | G57 | `specification` | 05·17; 07·13, 15 | #138 |
 | 33 | — | Design options: `edit(name=)`, `relabel`, `include` and `Specification.alternatives` | G61, G63 | `specification`, `model` | 07·4, 7, 18 | #214, #216 |
 | 34 | — | `rk.profile` namespace, growth and distribution profiles, and `Flow.from_profile` | G70 | `profile`, `flow` | 01·6; 03·7 (`compounding`, `uniform`) | #168, #131 |
+| 35 | — | `rk.Quantity` at the root, text in the constructor, and the `rk.quantity` namespace | G71 | `quantity` | 01·2–3, 10, 17; 02·22; 03·24 | #148, #149, #150 |
 
 Not filed as gaps:
 
@@ -258,6 +260,8 @@ The sketches in ADR-020 were not binding. The cells differ from them here:
   [ADR-010](../../../docs/decisions/010-layers-and-packages.md) and
   [ADR-012](../../../docs/decisions/012-naming-and-glossary.md), which put growth in
   `finance`.
+- Quantities are `rk.Quantity("20e6 AUD")`, not `rk.units.q(...)`, and the namespace is
+  `rk.quantity` (D13).
 - Policies use `Specification.decide(key, ...)` (D9), not `base.policy(...).when(..., do=...)`.
 - Lesson 06 declares the rollup as a Value (D3), not `edit().fix_from(...)`.
 - Lesson 07 uses separate Model revisions for options (D10), not

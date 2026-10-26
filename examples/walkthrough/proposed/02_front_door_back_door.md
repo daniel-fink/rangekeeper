@@ -295,8 +295,8 @@ assert stronger > back_outcome["land_cost"]
 
 ```python
 # cell 22 (checks)
-assert rk.units.isclose(rk.execution.solve(round_trip)["land_cost"], rk.units.q("20e6 AUD"))
-assert rk.units.isclose(front_outcome["effective_income"],
+assert rk.quantity.isclose(rk.execution.solve(round_trip)["land_cost"], rk.Quantity("20e6 AUD"))
+assert rk.quantity.isclose(front_outcome["effective_income"],
                         factor * front_outcome["reference_income"])
 assert back.model_id == front.model_id == model.id
 ```

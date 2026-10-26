@@ -238,7 +238,7 @@ outcome["land_cost"]
 # cell 22
 lesson_02 = rk.io.load(helpers.data_path("02_feasibility.model.json"))
 before = rk.execution.solve(lesson_02.specify("Back door").fix(**data.inputs, **lending, rent_factor=1))
-assert rk.units.isclose(outcome["land_cost"], before["land_cost"])
+assert rk.quantity.isclose(outcome["land_cost"], before["land_cost"])
 ```
 
 ```python
@@ -282,7 +282,7 @@ by_use = {use: outcome.model.rollup("income", over="spatiallyContains", root="pr
                                     contributors=rk.model.Filter(classification="floor",
                                                                  labels={"use": use})).value
           for use in ("hotel", "residential", "retail")}
-assert rk.units.isclose(sum(by_use.values()), outcome["reference_income"])
+assert rk.quantity.isclose(sum(by_use.values()), outcome["reference_income"])
 ```
 
 **Try it 3: the rent that Building B needs.** Fix the land at 20 million AUD and free
@@ -299,7 +299,7 @@ rk.execution.solve(front).rollup("reference_income").trace("building_b")
 ```python
 # cell 25 (checks)
 assert len(floors) == 33 and gfa.coverage.complete
-assert rk.units.isclose(gfa.value, sum(gfa.pivot(rows="building").values()))
+assert rk.quantity.isclose(gfa.value, sum(gfa.pivot(rows="building").values()))
 assert served.coverage.shared == {"plinth_plant"}
 ```
 

@@ -54,7 +54,7 @@ contracts enforce the rule.
 | --- | --- | --- |
 | 1 | `shared` (internal) | Errors and diagnostics, resolver and store protocols, the extension registry, fingerprints |
 | 2 | `schema` (internal) | Data-only generated records, enums and JSON; the record runtime; the kind registry; structural validation |
-| — | `units` | `Quantity` and `UnitSystem`, with the curated unit registry |
+| — | `quantity` | `Quantity` (also at the root) and `UnitSystem`, with the curated unit registry |
 | 3 | `duration` | Frequency, Period, Span and calendar rules |
 | 4 | `profile` | Growth and distribution profiles: how an amount develops over Periods |
 | 5 | `flow` | Movement, Flow, Stream, their options and table display, and the private engine |
@@ -65,8 +65,8 @@ contracts enforce the rule.
 | 10 | `execution` | Case resolution, role binding, problem building, backends, verification, policy evaluation and publication |
 | 11 | `io` | JSON and YAML codecs, stores, Bundle and Polars export |
 
-`units` sits beside `shared`, below `duration`. Users import from `rangekeeper`,
-`units`, `duration`, `profile`, `flow`, `finance`, `model`, `specification`, `execution`,
+`quantity` sits beside `shared`, below `duration`. Users import from `rangekeeper`,
+`quantity`, `duration`, `profile`, `flow`, `finance`, `model`, `specification`, `execution`,
 `io` and `errors`. `schema` and `shared` are internal. Owners re-export the
 records that their users need. See [ADR-010](../decisions/010-layers-and-packages.md)
 and [ADR-017](../decisions/017-api-and-formats.md).

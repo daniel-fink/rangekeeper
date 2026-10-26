@@ -59,9 +59,11 @@ this mode.
 
 ### Quantities
 
-`Quantity(magnitude, units)` stays the canonical form. `Quantity.parse("1e6 AUD/year")`
-and a short `q(1e6, "AUD/year")` helper make notebook code shorter. APIs keep
-typed Quantity parameters.
+`Quantity(magnitude, units)` stays the canonical form. The constructor also accepts
+one text argument, `Quantity("1e6 AUD/year")`, and `Quantity` is at the root as
+`rk.Quantity`. There is no `q()` helper and no `Quantity.parse`: one constructor is
+enough. APIs keep typed Quantity parameters and also accept quantity text. Amended
+2026-10-26 by the walkthrough proposed cells (#201, decision D13).
 
 ### Scope
 

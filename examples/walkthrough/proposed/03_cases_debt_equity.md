@@ -73,7 +73,7 @@ the plan's total. The other packages follow the same rule.
 ```python
 # cell 4
 hard = sum(plan.areas["building_a"][use] * plan.rates[use] for use in plan.areas["building_a"])
-assert rk.units.isclose(hard * 1.2, plan.inputs["a_cost"])
+assert rk.quantity.isclose(hard * 1.2, plan.inputs["a_cost"])
 ```
 
 ## 3. The dated Model
@@ -376,9 +376,9 @@ later["funding.headroom"].argmin()
 # cell 24 (checks)
 weak, ref, strong = (outcomes.case(k)["unlevered_npv"] for k in ("weak", "reference", "strong"))
 assert weak < ref < strong
-assert rk.units.isclose(
+assert rk.quantity.isclose(
     rk.finance.npv(target_outcome["equity_cash_flow"], rate="15 %/year", on=date(2027, 1, 1)),
-    rk.units.q("0 AUD"), abs="1 AUD")
+    rk.Quantity("0 AUD"), abs="1 AUD")
 assert summary.case("reference")["funding.headroom"].at(date(2027, 1, 1)) == headroom_2027
 ```
 

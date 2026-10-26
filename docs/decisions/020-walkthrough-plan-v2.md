@@ -141,7 +141,7 @@ the real cells.
 - **Prerequisites.** None in the book. Spreadsheet DCF.
 - **Time.** 45 minutes core, 15 optional.
 - **Library shown.** `rk.duration` (Span, Frequency), `rk.flow` (Flow, Stream:
-  display, resample, trim, sum), growth, `rk.finance` NPV and PV, `rk.units.q`. Known
+  display, resample, trim, sum), growth, `rk.finance` NPV and PV, `rk.Quantity`. Known
   data only: no Model, equations or solve.
 - **Finance taught.** Potential and effective gross income, vacancy, operating
   expenses, NOI, capital expenditure, net annual cash flow, reversion, cap rate,
@@ -151,7 +151,7 @@ the real cells.
   PV plus collapse. Discounting and IRR use the same date basis.
 - **Depends on.** [#167](https://github.com/daniel-fink/rangekeeper/issues/167)
   (NPV), [#168](https://github.com/daniel-fink/rangekeeper/issues/168) (growth),
-  [#148](https://github.com/daniel-fink/rangekeeper/issues/148) (`q`),
+  [#148](https://github.com/daniel-fink/rangekeeper/issues/148) (`Quantity` from text),
   [#164](https://github.com/daniel-fink/rangekeeper/issues/164) (IRR), and the
   public namespaces of [#52](https://github.com/daniel-fink/rangekeeper/issues/52).
 
@@ -405,11 +405,11 @@ against them. Each break of a rule goes onto the gap list, not into a helper.
 
 1. **One import.** `import rangekeeper as rk`, plus `datetime` and the helpers.
    The root stays small ([ADR-010](010-layers-and-packages.md)): only `rk.Model`,
-   `rk.Specification` and `rk.Run`. Cells reach every other name through its
-   public namespace, for example `rk.execution.solve`, `rk.units.q`,
+   `rk.Specification`, `rk.Run` and `rk.Quantity`. Cells reach every other name through its
+   public namespace, for example `rk.execution.solve`, `rk.quantity.isclose`,
    `rk.flow.Flow` and `rk.finance.npv`. The namespaces are `rk.duration`,
    `rk.profile`, `rk.flow`, `rk.finance`, `rk.model`, `rk.specification`, `rk.execution`,
-   `rk.io`, `rk.errors` and `rk.units`. Cells never import `schema`, `shared`
+   `rk.io`, `rk.errors` and `rk.quantity`. Cells never import `schema`, `shared`
    or private modules.
 2. **Build, do not assemble.** Use `Model.build()`, `model.edit()`, `commit()`
    and the Specification builder. Cells never write Metadata, a format version,
@@ -420,7 +420,7 @@ against them. Each break of a rule goes onto the gap list, not into a helper.
    ([ADR-015](015-authoring.md#equations)).
 4. **Refer by key or code.** Cells never paste a UUID. Under the hood asides use
    a namespace for reproducible IDs.
-5. **Quantities, not unit strings.** Use `rk.units.q("20e6 AUD")` or a unit string as
+5. **Quantities, not unit strings.** Use `rk.Quantity("20e6 AUD")` or quantity text as
    an argument. Compare quantities and dimensions, never unit strings. Use the
    curated aliases (`pa`, `sqm`).
 6. **The library does the finance.** NPV, IRR and PV use the same date basis.

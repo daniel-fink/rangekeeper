@@ -43,25 +43,28 @@ import rangekeeper as rk
 
 ## 2. Amounts with units
 
-Narrative: a Quantity is a number with units. Rangekeeper checks units in every
-operation, so an annual rent cannot be added to a monthly rent by mistake. `pa`
-means per annum. `%` is a dimensionless ratio.
+Narrative: a Quantity is a number with units. Make one from text, or from a number
+and a unit string. Rangekeeper checks units in every operation, so an annual rent
+cannot be added to a monthly rent by mistake. `pa` means per annum. `%` is a
+dimensionless ratio.
 
 ```python
 # cell 2
-rent = rk.units.q("1200 USD pa")
+rent = rk.Quantity("1200 USD pa")
 rent.to("USD/month")
 ```
 
 ```python
 # cell 3
-rate = rk.units.q("2 %/year")
-rate * rk.units.q("1 year")          # 0.02, a dimensionless ratio
+rate = rk.Quantity("2 %/year")
+rate * rk.Quantity("1 year")          # 0.02, a dimensionless ratio
 ```
 
-> **Under the hood.** `rk.units.q` is short for `rk.units.Quantity.parse`. The unit
-> registry is curated: an unknown or misspelt unit fails with a suggestion. `"pa"`
-> never becomes a picoyear ([ADR-016](../../../docs/decisions/016-safety-defaults.md)).
+> **Under the hood.** `rk.Quantity("5 %")` and `rk.Quantity(0.05, "ratio")` make the
+> same Quantity. Most functions also accept the text directly, for example
+> `rate="2 %/year"`. The `rk.quantity` namespace holds the unit system and its
+> registry. The registry is curated: an unknown or misspelt unit fails with a
+> suggestion. `"pa"` never becomes a picoyear ([ADR-016](../../../docs/decisions/016-safety-defaults.md)).
 
 ## 3. Time: spans and periods
 
@@ -153,7 +156,7 @@ year of the sale.
 
 ```python
 # cell 10
-exit_cap_rate = rk.units.q("5 %")
+exit_cap_rate = rk.Quantity("5 %")
 nacf.at(date(2011, 1, 1)) / exit_cap_rate       # the price at the end of year 10, by hand
 ```
 
@@ -216,7 +219,7 @@ cash_flows.at(date(2001, 1, 1)) / 1.07
 
 ```python
 # cell 17
-discount_rate = rk.units.q("7 %/year")
+discount_rate = rk.Quantity("7 %/year")
 present_values = rk.finance.pv(cash_flows, rate=discount_rate, on=holding.start)
 present_values.display()
 ```
@@ -247,7 +250,7 @@ does the owner lose? Change one input, then explain the result.
 
 ```python
 # cell 20
-exit_6 = (nacf.shift(periods=-1) / rk.units.q("6 %")).trim(sale_year)
+exit_6 = (nacf.shift(periods=-1) / rk.Quantity("6 %")).trim(sale_year)
 flows_6 = (table | {"Terminal value": exit_6}).select("NACF", "Terminal value").sum()
 rk.finance.npv(flows_6, rate=discount_rate, on=holding.start) - value
 ```
@@ -301,7 +304,7 @@ assert rk.finance.irr(overpay) < discount_rate
 # cell 21 (checks)
 assert table["NOI"] == table["PGI"] + table["Vacancy"] + table["OPEX"]
 assert terminal_value.total() == exit_values.at(date(2010, 1, 1))
-assert rk.units.isclose(rk.finance.irr(investment), discount_rate)
+assert rk.quantity.isclose(rk.finance.irr(investment), discount_rate)
 ```
 
 **Recap.**
@@ -326,7 +329,7 @@ questions.
 | Cell | Rules | Result |
 | --- | --- | --- |
 | 1 | 1 | Pass |
-| 2–3 | 5 | Needs `q` with `pa` and `%/year` ([#148](https://github.com/daniel-fink/rangekeeper/issues/148), [#149](https://github.com/daniel-fink/rangekeeper/issues/149)) |
+| 2–3 | 1, 5 | G71: `rk.Quantity(text)` at the root and the `rk.quantity` namespace (D13); `pa` and `%/year` ([#148](https://github.com/daniel-fink/rangekeeper/issues/148), [#149](https://github.com/daniel-fink/rangekeeper/issues/149)) |
 | 4 | 1, 11 | G01: `Span.years`, `extend`, `periods("year")` |
 | 5, 19 | 11 | G02: Flow from a mapping of Periods or dates to amounts |
 | 6 | 1, 6 | G70: `rk.profile` and `Flow.from_profile` with `initial=` or `total=` (D12; absorbs [#168](https://github.com/daniel-fink/rangekeeper/issues/168)) |
@@ -335,4 +338,4 @@ questions.
 | 11–12, 20 | 6 | G05: `Flow.shift(periods=)` and `Flow.trim(period)`; no domain helper for the terminal value |
 | 15 | 6 | `resample` with `ResampleMethod` (rename pass, [#103](https://github.com/daniel-fink/rangekeeper/issues/103)) |
 | 17–19 | 6 | `pv`, `npv`, `irr` on dates ([#167](https://github.com/daniel-fink/rangekeeper/issues/167), [#164](https://github.com/daniel-fink/rangekeeper/issues/164)) |
-| 12, 15, 21 | 5, 8 | G06: Flow value equality and `rk.units.isclose` |
+| 12, 15, 21 | 5, 8 | G06: Flow value equality and `rk.quantity.isclose` |

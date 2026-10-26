@@ -50,7 +50,7 @@ contracts in the test suite enforce this rule.
 | 10 | `execution` | The solve pipeline, backends, independent verification, policy evaluation and publication ([ADR-013](013-execution-and-extensions.md)) |
 | 11 | `io` | JSON and YAML codecs, stores, Bundle and Polars export |
 
-`Quantity` and `UnitSystem` live in the public `units` namespace, below
+`Quantity` and `UnitSystem` live in the public `quantity` namespace, below
 `duration`. `errors` is a public namespace for the exception hierarchy
 ([ADR-016](016-safety-defaults.md)).
 
@@ -65,6 +65,9 @@ contracts in the test suite enforce this rule.
   `calculations.projection` to `profile`, and `Flow.from_profile` applies them.
   The word "projection" is not used ([ADR-012](012-naming-and-glossary.md)).
   Amended 2026-10-26 by the walkthrough proposed cells (#201, decision D12).
+- `Quantity` is at the root beside the three documents, because every layer uses
+  it. Its namespace is `quantity`, not `units`, so "units" means only a unit string
+  ([ADR-012](012-naming-and-glossary.md)). Amended 2026-10-26 (#201, decision D13).
 - Policy declarations stay in `specification`. Policy evaluation moves to `execution`.
 - The store and resolver protocols move to `shared`. This removes the `run` and
   `io` cycle.
@@ -72,8 +75,8 @@ contracts in the test suite enforce this rule.
 
 ### Public namespaces
 
-Users import from `rangekeeper` (Model, Specification, Run), `duration`, `profile`, `flow`,
-`finance`, `model`, `specification`, `execution`, `io`, `errors` and `units`.
+Users import from `rangekeeper` (Model, Specification, Run and Quantity), `duration`, `profile`, `flow`,
+`finance`, `model`, `specification`, `execution`, `io`, `errors` and `quantity`.
 `schema` and `shared` are internal. Each owner re-exports the records that its
 users need. For example, `flow` exports Flow, `model` exports Entity and
 `specification` exports Assignment. [ADR-017](017-api-and-formats.md) defines
@@ -85,7 +88,7 @@ the stability promise for these names.
 | --- | --- |
 | `model.duration` | `duration` |
 | `model.flux`, `model._flow_mapping`, `schema/behaviors/flow.py`, `calculations.series`, `calculations._batch` | `flow` |
-| `model.measure` (Quantity), `shared.units` | `units` |
+| `model.measure` (Quantity), `shared.units` | `quantity`; `Quantity` is also at the root |
 | `calculations` (financial, account, dynamics) | `finance` |
 | `calculations.projection` (growth and distribution) | `profile`, and `Flow.from_profile` in `flow` |
 | `model.scenario` | `finance` generators and the MarketPaths document ([ADR-014](014-market-paths.md)) |

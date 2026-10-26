@@ -45,9 +45,9 @@ pass ([ADR-012](../decisions/012-naming-and-glossary.md)).
 
 | Term | Meaning | Owner | Current name |
 | --- | --- | --- | --- |
-| Quantity | A magnitude with units | `units` | `model.measure.Quantity` |
-| Units | A unit string, such as `AUD/year` | `units` | — |
-| Unit system | The policy that parses, checks and converts units | `units` | Sometimes also called `units` |
+| Quantity | A magnitude with units; `rk.Quantity` at the root | `quantity` | `model.measure.Quantity` |
+| Units | A unit string, such as `AUD/year` | `quantity` | — |
+| Unit system | The policy that parses, checks and converts units | `quantity` | Sometimes also called `units` |
 | Frequency | A calendar step, such as a month or a year | `duration` | — |
 | Period | One half-open time interval with `start` and `end` | `duration` | `start_inclusive`, `end_exclusive` |
 | Span | A named half-open range of time | `duration` | — |
