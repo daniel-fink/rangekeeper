@@ -1,0 +1,32 @@
+cff-version: 1.2.0
+message: "If you use Rangekeeper in your work, please cite it as below."
+type: software
+title: Rangekeeper
+abstract: >-
+  A Python library for real estate financial modelling, cashflow forecasting
+  and scenario analysis. It separates project facts and equations in a Model,
+  investigation choices in a Specification, and finalized evidence in a Run.
+authors:
+  - family-names: Fink
+    given-names: Daniel
+license: MPL-2.0
+repository-code: "https://github.com/daniel-fink/rangekeeper"
+url: "https://daniel-fink.github.io/rangekeeper/"
+keywords:
+  - real estate
+  - financial modelling
+  - cashflow
+  - scenario analysis
+  - real options
+references:
+  - type: book
+    title: "Flexibility and Real Estate Valuation under Uncertainty: A Practical Guide for Developers"
+    authors:
+      - family-names: Geltner
+        given-names: David
+      - family-names: de Neufville
+        given-names: Richard
+    year: 2018
+    publisher:
+      name: Wiley-Blackwell
+    doi: 10.1002/9781119106470

@@ -4,7 +4,7 @@ Rangekeeper provides immutable `Model`, `Specification` and `Run` records, Model
 execution. This guide installs the checked-out source. The current architecture
 must not be assumed to match an earlier published PyPI release.
 
-Use Python 3.10–3.13. From the repository root:
+Use Python 3.12 or 3.13. From the repository root:
 
 ```sh
 python -m pip install .
@@ -14,13 +14,16 @@ python -m pip install .
 
 | Extra | Capability |
 | --- | --- |
-| `bundle` | Schema-derived Parquet IO, not yet a stable format; pinned PyArrow and DuckDB. |
+| `bundle` | Schema-derived Parquet IO, not yet a stable format, with PyArrow and DuckDB |
 | `yaml` | Strict YAML codecs |
 | `calculations` | Financial valuation, Flow operations, distributions, scenario kernels, Polars and CSV |
 | `execution` | Pyomo/HiGHS numerical execution |
 | `visualisation` | Matplotlib and Plotly plots, plus PyVis graph presentation |
 
 Extras describe installation choices. They do not change the module hierarchy.
+Importing `rangekeeper` and its core modules needs no extra. When a feature needs
+a missing extra, the `ImportError` names the extra to install, for example
+`pip install 'rangekeeper[bundle]'`.
 See [upgrading](upgrading.md) for retired extra names.
 
 For the numerical and design examples, run from the repository root:

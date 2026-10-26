@@ -5,19 +5,19 @@ import json
 import sys
 import time
 
+from rangekeeper.shared.optional import requires
+
 
 def solve(request):
     """Use public Pyomo interfaces and return observed versions, counts and status."""
     started = time.monotonic()
+    # Record the installed versions; the package metadata declares the ranges.
     versions = {name: importlib.metadata.version(name) for name in ("pyomo", "highspy")}
-    if versions != {"pyomo": "6.10.1", "highspy": "1.15.1"}:
-        return {
-            "unavailable": f"Expected pyomo==6.10.1 and highspy==1.15.1; found {versions}. Install rangekeeper[execution]."
-        }
-    import numpy as np
-    from pyomo.contrib.solver.common.results import SolutionStatus
-    from pyomo.contrib.solver.solvers.highs import Highs
-    from pyomo.environ import ConcreteModel, ConstraintList, Objective, Var, value
+    with requires("execution"):
+        import numpy as np
+        from pyomo.contrib.solver.common.results import SolutionStatus
+        from pyomo.contrib.solver.solvers.highs import Highs
+        from pyomo.environ import ConcreteModel, ConstraintList, Objective, Var, value
 
     size = len(request["unknowns"])
     model = ConcreteModel()
@@ -101,6 +101,7 @@ def solve(request):
             "solver_time_limit": remaining,
             "solver_options": options,
             "threads": 1,
+            "package_versions": versions,
             "equality_rank": rank,
             "unknown_count": size,
             "has_bounds": any(row["relation"] != "equal" for row in request["rows"]),
@@ -112,8 +113,13 @@ def solve(request):
 def main():
     try:
         response = solve(json.load(sys.stdin))
-    except (ImportError, importlib.metadata.PackageNotFoundError) as error:
-        response = {"unavailable": f"{error}; install rangekeeper[execution]"}
+    except ImportError as error:
+        response = {"unavailable": str(error)}
+    except importlib.metadata.PackageNotFoundError as error:
+        response = {
+            "unavailable": f"{error} is not installed. Install it with: "
+            "pip install 'rangekeeper[execution]'"
+        }
     except Exception as error:
         response = {"error": f"{type(error).__name__}: {error}"}
     print(json.dumps(response, allow_nan=False))

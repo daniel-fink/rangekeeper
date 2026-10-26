@@ -22,7 +22,7 @@ MPLBACKEND=Agg uv run --locked pytest -q
 ```
 
 Record optional dependency skips separately from passed checks. Mathematical
-execution uses the pinned Pyomo/HiGHS backend. Local tests do not close the
+execution uses the Pyomo/HiGHS backend; Run evidence records the installed versions. Local tests do not close the
 [Windows gate](windows-acceptance.md).
 
 Do not edit package source while a workflow verification run is active.

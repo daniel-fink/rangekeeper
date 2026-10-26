@@ -48,10 +48,9 @@ only, without publication.
 
 ## Release a 1.x version
 
-1. Make sure that the package version is the tag's version. Until
-   setuptools-scm derives the version from tags
-   ([#174](https://github.com/daniel-fink/rangekeeper/issues/174)), set `version` in
-   [`pyproject.toml`](../../pyproject.toml) and run `uv lock` in a pull request.
+1. setuptools-scm derives the package version from the tag, so no version
+   change is necessary. On `develop` and `main`, only `v1.*` tags count; see
+   [dependencies and versions](README.md#dependencies-and-versions).
 2. Make sure that the changelog has a section for the version. When towncrier
    is in use, run it in the same pull request.
 3. Tag the merged commit and push the tag:

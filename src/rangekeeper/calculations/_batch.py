@@ -11,16 +11,13 @@ from uuid import uuid4
 from rangekeeper.model._flow_mapping import period_indices, weights
 from rangekeeper.schema.behaviors.flow import MissingValueHandling as Missing
 from rangekeeper.schema.records import Flow, Movement, Period, Quantity
+from rangekeeper.shared.optional import requires
 from rangekeeper.shared.units import default_units
 
 
 def polars():
-    try:
+    with requires("calculations"):
         import polars as pl
-    except ImportError as error:
-        raise ImportError(
-            "Install rangekeeper[calculations] for Flow calculations"
-        ) from error
     return pl
 
 

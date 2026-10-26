@@ -451,7 +451,7 @@ These are intended acceptance properties, not reports of tests already performed
   on common market scenarios. It is a conceptual reference, not the implementation
   of the proposed two-pad example.
 - Geltner and de Neufville, [Flexibility and Real Estate Valuation under Uncertainty:
-  A Practical Guide for Developers](https://github.com/daniel-fink/rangekeeper/blob/codex/walkthrough-acausal/examples/walkthrough/resources/deNeufvilleGeltnerValuationUnderUncertainty.pdf)
+  A Practical Guide for Developers](https://doi.org/10.1002/9781119106470)
   (2018): Chapter 9, especially printed p. 65, for paired scenario comparisons;
   Chapters 18-19 and Box 18.1 on printed p. 133 for decision rules and information
   limits; Chapter 21, printed pp. 160-161, for product mix; Chapter 22, printed

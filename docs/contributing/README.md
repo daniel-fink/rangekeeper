@@ -35,7 +35,7 @@ versions.
 
 ## Development environment
 
-Use Python 3.10–3.13. From the repository root, install the locked development
+Use Python 3.12 or 3.13. From the repository root, install the locked development
 group and runtime extras:
 
 ```sh
@@ -51,6 +51,34 @@ Schema tooling uses a separate pinned environment. Follow
 [schema development](schema.md) for generation and conformance checks.
 [Grasshopper](../guides/grasshopper.md) covers the independent .NET build;
 [Windows acceptance](windows-acceptance.md) covers the external host gate.
+
+## Dependencies and versions
+
+`pyproject.toml` declares compatible version ranges. Exact versions appear only
+in `uv.lock`. The `dev` group includes the `lint` and `notebook` groups;
+`ipykernel` is a notebook dependency, not a runtime dependency.
+
+Import an optional dependency where the feature needs it, inside
+`rangekeeper.shared.optional.requires`. The resulting `ImportError` names the
+extra that installs it:
+
+```python
+from rangekeeper.shared.optional import requires
+
+with requires("bundle"):
+    import pyarrow as pa
+```
+
+setuptools-scm derives the version from git tags; `rangekeeper.__version__`
+reads it from the installed metadata. On `develop`, only `v1.*` tags count.
+Until the first such tag, `develop` builds as `1.0.0a1.devN`. Release tags use
+the PEP 440 form `vX.Y.Z`, with an optional `aN`, `bN` or `rcN` suffix. A CI
+checkout needs the full history (`fetch-depth: 0`) for the correct distance.
+The C# example takes the same version:
+
+```sh
+dotnet build -p:Version=$(python tools/version.py --dotnet)
+```
 
 ## Python formatting and linting
 

@@ -1,6 +1,5 @@
 """Optional safe YAML codec for the same JSON-compatible domain content."""
 
-from importlib import import_module
 from pathlib import Path
 
 from rangekeeper.io._document import require_kind, restore, snapshot
@@ -8,14 +7,13 @@ from rangekeeper.io.atomic import write_new
 from rangekeeper.io.store import D, Document
 from rangekeeper.schema.runtime import copy_json
 from rangekeeper.shared.errors import DecodeError
+from rangekeeper.shared.optional import requires
 
 
 def _implementation():
     """Import the optional dependency only when a YAML operation is requested."""
-    try:
-        yaml = import_module("yaml")
-    except ImportError as error:
-        raise ImportError("YAML IO requires rangekeeper[yaml]") from error
+    with requires("yaml"):
+        import yaml
     return yaml
 
 

@@ -1,6 +1,7 @@
 """Immutable Model, Specification and Run roots with explicit capability packages."""
 
 from importlib import import_module
+from importlib import metadata as _metadata
 from types import ModuleType
 
 from .model import Model
@@ -19,7 +20,12 @@ _LAZY_MODULES = frozenset(
         "visualisation",
     }
 )
-__all__ = ["Model", "Specification", "Run", *sorted(_LAZY_MODULES)]
+__all__ = ["Model", "Specification", "Run", "__version__", *sorted(_LAZY_MODULES)]
+
+try:
+    __version__ = _metadata.version("rangekeeper")
+except _metadata.PackageNotFoundError:  # A source tree that is not installed.
+    __version__ = "0+unknown"
 
 
 def __getattr__(name: str) -> ModuleType:
