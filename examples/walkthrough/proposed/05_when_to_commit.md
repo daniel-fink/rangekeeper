@@ -125,7 +125,7 @@ made, before any solve.
 ```python
 # cell 8
 try:
-    fixed.decide("start_date", when="next(rent_index) >= 1.05", review="year",
+    fixed.decide("start_date", when="shift(rent_index, periods=-1) >= 1.05", review="year",
                  window=(date(2027, 1, 1), date(2031, 1, 1)), otherwise="never")
 except rk.errors.AvailabilityError as error:
     print(error.code, error.value, error.available_on, error.decision_date)

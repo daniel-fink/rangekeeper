@@ -138,7 +138,7 @@ Narrative: the sale and the value. These are lesson 01's ideas, now as relations
 ```python
 # cell 8
 b.equations(
-    "sale = reversion(operating, cap_rate=exit_cap_rate, at=sale_date)",
+    "sale = event(at(operating, sale_date + 1 year) / exit_cap_rate, on=sale_date)",
     "net_cash_flow = trim(land + works + operating + sale, end=sale_date)",
     "unlevered_npv = npv(net_cash_flow, rate=discount_rate, on=base_date)",
 )
@@ -405,7 +405,7 @@ Cell 7 has 9 lines and cell 13 has 13; no cell has more than 15.
 | 2–3 | 10 | G07: `load_base_plan`, `show_timeline` load and draw only |
 | 4 | 6 | By hand once; the budget then lives in the plan's inputs |
 | 5 | 2, 5 | G08 (`subject`, `timeline`); G15: date-valued Values; G16: infer units and shapes of other values |
-| 6–8 | 3, 6 | G17: Function catalogue for equations (`event`, `uniform`, `compounding`, `reversion`, `trim`, `npv`); G18: Flow-valued string equations; date arithmetic in G15 |
+| 6–8 | 3, 6 | G17: Function catalogue for equations (`event`, `at`, `uniform`, `compounding`, `trim`, `npv`); G18: Flow-valued string equations; date arithmetic in G15 |
 | 7 | 6 | `compounding` with `base`, `start` and `every`: the Compounding profile in an equation (G70, [#168](https://github.com/daniel-fink/rangekeeper/issues/168)) |
 | 9 | 2, 8 | G11, G12 |
 | 10, 12 | 8 | G19: `Outcome.stream` and Flow values in `Outcome` |

@@ -16,7 +16,7 @@ rule check at the end names each gap from the [gap list](README.md#gap-list).
 > 1. make dated Flows with units over yearly periods;
 > 2. describe growth with a profile, and make a Flow from it;
 > 3. combine lines in a Stream, resample them and trim them to a holding span;
-> 4. capitalise the next year's net cash flow for the reversion;
+> 4. estimate the terminal value from the next year's net cash flow and an exit cap rate;
 > 5. calculate present value, NPV and IRR on one date basis.
 >
 > **Before you start.** No earlier lesson. You know a spreadsheet DCF.
@@ -142,25 +142,38 @@ nacf = noi + capex                     # net annual cash flow
 > income (NOI) is EGI less operating expenses. Net annual cash flow (NACF) also
 > subtracts capital expenditure, which keeps the building competitive.
 
-## 7. The reversion, by hand once
+## 7. The terminal value
 
 Narrative: at the end of year 10 the owner sells. A buyer pays for the income from
-year 11 onwards. Direct capitalisation divides year 11's net cash flow by the exit
-cap rate. Do it by hand, then with the library, and check that they agree.
+year 11 onwards. A common estimate divides year 11's net cash flow by an exit cap
+rate. Do it once by hand. Then do it for every year with two Flow operations: shift
+each year's next amount back by one period, and divide by the rate. The result is the
+sale price at the end of each year. **Predict:** why is the last year empty? Keep the
+year of the sale.
 
 ```python
 # cell 10
 exit_cap_rate = rk.units.q("5 %")
-year_11 = nacf.at(date(2011, 1, 1))
-by_hand = rk.flow.Flow({holding.periods("year")[-1]: year_11 / exit_cap_rate})
-by_hand.display()
+nacf.at(date(2011, 1, 1)) / exit_cap_rate       # the price at the end of year 10, by hand
 ```
 
 ```python
 # cell 11
-reversion = rk.finance.reversion(nacf, cap_rate=exit_cap_rate, at=holding)
-assert reversion == by_hand
+exit_values = nacf.shift(periods=-1) / exit_cap_rate   # each year: next year's NACF / cap rate
+exit_values.display()
 ```
+
+```python
+# cell 12
+sale_year = holding.periods("year")[-1]
+terminal_value = exit_values.trim(sale_year)
+assert terminal_value.total() == nacf.at(date(2011, 1, 1)) / exit_cap_rate
+```
+
+> **Finance note.** The terminal value has other names: the reversion (in US texts,
+> including Table 1.1 and Geltner et al.), the exit value, the residual value or the
+> sale price. Some analysts capitalise NOI in place of NACF. Here the choice is
+> visible in one line, so you can change it.
 
 ## 8. Trim to the holding span
 
@@ -168,15 +181,15 @@ Narrative: the forecast has 11 years, but the owner holds for 10. Add the lines 
 the Stream, trim it to the holding span and compare the table with Table 1.1.
 
 ```python
-# cell 12
-table = (operations | {"NOI": noi, "CAPEX": capex, "NACF": nacf, "Reversion": reversion})
+# cell 13
+table = (operations | {"NOI": noi, "CAPEX": capex, "NACF": nacf, "Terminal value": terminal_value})
 table = table.trim(holding)
 table.display()                        # compare with Table 1.1
 ```
 
 ```python
-# cell 13
-cash_flows = table.select("NACF", "Reversion").sum()
+# cell 14
+cash_flows = table.select("NACF", "Terminal value").sum()
 ```
 
 ## 9. Resample
@@ -185,7 +198,7 @@ Narrative: rent is paid quarterly. Split each year into quarters, then add the
 quarters back into years. The round trip gives the same Flow.
 
 ```python
-# cell 14
+# cell 15
 quarterly = pgi.resample("quarter", method=rk.flow.ResampleMethod.SPLIT)
 assert quarterly.resample("year", method=rk.flow.ResampleMethod.SUM) == pgi
 ```
@@ -197,12 +210,12 @@ year 1 by hand. Payments come at the end of each year, so year 1 is discounted o
 Then calculate the whole column.
 
 ```python
-# cell 15
+# cell 16
 cash_flows.at(date(2001, 1, 1)) / 1.07
 ```
 
 ```python
-# cell 16
+# cell 17
 discount_rate = rk.units.q("7 %/year")
 present_values = rk.finance.pv(cash_flows, rate=discount_rate, on=holding.start)
 present_values.display()
@@ -215,13 +228,13 @@ pays exactly that value on 1 January 2001, the investment earns exactly the disc
 rate. This shows that NPV and IRR use the same dates.
 
 ```python
-# cell 17
+# cell 18
 value = rk.finance.npv(cash_flows, rate=discount_rate, on=holding.start)
 value
 ```
 
 ```python
-# cell 18
+# cell 19
 purchase = rk.flow.Flow({holding.start: -value})
 investment = rk.flow.Stream({"Purchase": purchase, "Cash flows": cash_flows}).sum()
 rk.finance.irr(investment)             # 7 %/year
@@ -233,9 +246,9 @@ Narrative. **Predict:** if the exit cap rate rises from 5 % to 6 %, how much val
 does the owner lose? Change one input, then explain the result.
 
 ```python
-# cell 19
-higher_cap = rk.finance.reversion(nacf, cap_rate="6 %", at=holding)
-flows_6 = (table | {"Reversion": higher_cap}).select("NACF", "Reversion").sum()
+# cell 20
+exit_6 = (nacf.shift(periods=-1) / rk.units.q("6 %")).trim(sale_year)
+flows_6 = (table | {"Terminal value": exit_6}).select("NACF", "Terminal value").sum()
 rk.finance.npv(flows_6, rate=discount_rate, on=holding.start) - value
 ```
 
@@ -251,21 +264,21 @@ pgi_3 = rk.flow.Flow.from_profile(rk.profile.Compounding(rate="3 %/year"), perio
 nacf_3 = (0.95 * pgi_3 - 0.35 * pgi_3 - 0.10 * pgi_3)
 flows_3 = rk.flow.Stream({
     "NACF": nacf_3,
-    "Reversion": rk.finance.reversion(nacf_3, cap_rate=exit_cap_rate, at=holding),
+    "Terminal value": (nacf_3.shift(periods=-1) / exit_cap_rate).trim(sale_year),
 }).trim(holding).sum()
 value_3 = rk.finance.npv(flows_3, rate=discount_rate, on=holding.start)
 assert value_3 > value
 ```
 
-**Try it 2: a seven-year hold.** Sell at the end of year 7. The reversion now
-capitalises year 8.
+**Try it 2: a seven-year hold.** Sell at the end of year 7. The price is already in
+`exit_values`: it capitalises year 8.
 
 ```python
 # solution
 seven = rk.duration.Span.years(start=date(2001, 1, 1), count=7)
 flows_7 = rk.flow.Stream({
     "NACF": nacf,
-    "Reversion": rk.finance.reversion(nacf, cap_rate=exit_cap_rate, at=seven),
+    "Terminal value": exit_values.trim(seven.periods("year")[-1]),
 }).trim(seven).sum()
 value_7 = rk.finance.npv(flows_7, rate=discount_rate, on=seven.start)
 ```
@@ -285,9 +298,9 @@ assert rk.finance.irr(overpay) < discount_rate
 ## Checks and recap
 
 ```python
-# cell 20 (checks)
+# cell 21 (checks)
 assert table["NOI"] == table["PGI"] + table["Vacancy"] + table["OPEX"]
-assert reversion.total() == nacf.at(date(2011, 1, 1)) / exit_cap_rate
+assert terminal_value.total() == exit_values.at(date(2010, 1, 1))
 assert rk.units.isclose(rk.finance.irr(investment), discount_rate)
 ```
 
@@ -295,8 +308,8 @@ assert rk.units.isclose(rk.finance.irr(investment), discount_rate)
 
 1. A DCF is dated amounts with units. Grow them, combine them in a Stream and trim
    them to the holding span.
-2. The reversion capitalises the next year's cash flow, so the forecast is one year
-   longer than the hold.
+2. The terminal value capitalises the next year's cash flow, so the forecast is one
+   year longer than the hold. Shift, divide and trim give it for any sale year.
 3. PV, NPV and IRR use the same dates, so a price equal to the NPV earns the discount
    rate.
 
@@ -305,7 +318,7 @@ questions.
 
 ## Cell budget
 
-20 core code cells (budget 20–25) and 3 exercise solutions. The longest core cell has
+21 core code cells (budget 20–25) and 3 exercise solutions. The longest core cell has
 7 lines.
 
 ## Rule check
@@ -315,11 +328,11 @@ questions.
 | 1 | 1 | Pass |
 | 2–3 | 5 | Needs `q` with `pa` and `%/year` ([#148](https://github.com/daniel-fink/rangekeeper/issues/148), [#149](https://github.com/daniel-fink/rangekeeper/issues/149)) |
 | 4 | 1, 11 | G01: `Span.years`, `extend`, `periods("year")` |
-| 5, 10, 18 | 11 | G02: Flow from a mapping of Periods or dates to amounts |
+| 5, 19 | 11 | G02: Flow from a mapping of Periods or dates to amounts |
 | 6 | 1, 6 | G70: `rk.profile` and `Flow.from_profile` with `initial=` or `total=` (D12; absorbs [#168](https://github.com/daniel-fink/rangekeeper/issues/168)) |
-| 7, 10, 15 | 8 | G03: `Flow.at(date)` returns one Quantity |
-| 8–9, 12–13 | 11 | G04: Flow arithmetic, `Stream(mapping)`, `Stream | mapping`, `select`, `sum()` |
-| 11 | 6 | G05: `rk.finance.reversion` |
-| 14 | 6 | `resample` with `ResampleMethod` (rename pass, [#103](https://github.com/daniel-fink/rangekeeper/issues/103)) |
-| 16–18 | 6 | `pv`, `npv`, `irr` on dates ([#167](https://github.com/daniel-fink/rangekeeper/issues/167), [#164](https://github.com/daniel-fink/rangekeeper/issues/164)) |
-| 11, 14, 20 | 5, 8 | G06: Flow value equality and `rk.units.isclose` |
+| 7, 10, 12, 16 | 8 | G03: `Flow.at(date)` returns one Quantity |
+| 8–9, 13–14 | 11 | G04: Flow arithmetic, `Stream(mapping)`, `Stream | mapping`, `select`, `sum()` |
+| 11–12, 20 | 6 | G05: `Flow.shift(periods=)` and `Flow.trim(period)`; no domain helper for the terminal value |
+| 15 | 6 | `resample` with `ResampleMethod` (rename pass, [#103](https://github.com/daniel-fink/rangekeeper/issues/103)) |
+| 17–19 | 6 | `pv`, `npv`, `irr` on dates ([#167](https://github.com/daniel-fink/rangekeeper/issues/167), [#164](https://github.com/daniel-fink/rangekeeper/issues/164)) |
+| 12, 15, 21 | 5, 8 | G06: Flow value equality and `rk.units.isclose` |

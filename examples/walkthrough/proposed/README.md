@@ -37,7 +37,7 @@ pass.
 
 | ID | Question | Decision | Used in |
 | --- | --- | --- | --- |
-| D1 | Can lesson 03's cases reach the cash flows through the solve? | Yes. The Model declares the DCF as Flow relations: growth with a rate, reversion, NPV at a rate. A case fixes the rates, so the solve stays affine. One Model answers lessons 02–05 | 03, 04, 05 |
+| D1 | Can lesson 03's cases reach the cash flows through the solve? | Yes. The Model declares the DCF as Flow relations: growth with a rate, the terminal value, NPV at a rate. A case fixes the rates, so the solve stays affine. One Model answers lessons 02–05 | 03, 04, 05 |
 | D2 | Where do the funding account and the commitment check live? | Both places. `rk.finance.Account` calculates on known data (the "by hand once, then the library" cell). `ModelBuilder.account` declares the balance, headroom and committed payments as relations, so cases, paths and rules can use them | 03, 05 |
 | D3 | How does an equation refer to a rollup result? | A rollup declares a Value. Equations refer to it by key, as to any other value. The solve traces through the rollup to its contributors | 06, 07 |
 | D4 | How does a batch report IRR, peak shortfall and other non-affine results? | Staged evaluation. `irr`, `min` and `max` are Model relations. The solve evaluates them after the affine stage, and verification checks them | 03, 04 |
@@ -80,6 +80,7 @@ span = rk.duration.Span.years(start=date(2001, 1, 1), count=10)                 
 span.extend(years=1).periods("year")
 flow = rk.flow.Flow({period: 100, date(2001, 1, 1): -50}, units="USD")              # G02
 flow.at(date(2010, 1, 1)), flow.total(), -0.05 * flow + other_flow                  # G03, G04
+flow.shift(periods=-1), flow.trim(period)                                            # G05
 stream = rk.flow.Stream({"PGI": pgi, "OPEX": opex}) | {"NOI": noi}                   # G04
 stream.select("PGI", "OPEX").sum(), stream.trim(span), stream.display()
 flow.resample("quarter", method=rk.flow.ResampleMethod.SPLIT)                       # #103
@@ -91,7 +92,6 @@ fees = rk.flow.Flow.from_profile(rk.profile.SCurve(), periods=build, total="3e6 
 ### Finance on known data
 
 ```python
-rk.finance.reversion(nacf, cap_rate="5 %", at=holding)                              # G05
 rk.finance.pv(flow, rate="7 %/year", on=date), rk.finance.npv(...), rk.finance.irr(flow)        # #167, #164
 rk.finance.mortgage_constant(rate="6 %/year", term="20 years", payments_per_year=12) # #167
 rk.finance.Account(opening=..., limit=...).post(transactions)                       # G23
@@ -168,10 +168,9 @@ other functions use the same names and keywords as `rk.flow` and `rk.finance`:
 | `at(flow, date)` | The amount of the period that contains a date |
 | `trim(flow, start=, end=)` | The part of a Flow inside a span |
 | `cumulative(flow)`, `interest(balance, rate=)`, `settle(balance, on=)` | Balances, interest on the opening balance, and repayment of a balance |
-| `reversion(flow, cap_rate=, at=)` | Next period's amount divided by the cap rate, on a date |
 | `npv(flow, rate=, on=)`, `irr(flow)` | Valuation on one date basis (D4, D5 for `irr`) |
 | `min(flow)`, `max(a, b)` | Extremes (D4) |
-| `next(flow)` | The next period's amount; a rule cannot use it (G53) |
+| `shift(flow, periods=)` | Each period takes the amount `periods` away; `-1` gives the next period's amount. A rule cannot read a later amount (G53) |
 
 A Flow-valued equation applies period by period on the Model timeline. A scalar
 term applies to every period (G18).
@@ -187,7 +186,7 @@ use. **Issue** is filled in when the issue is filed.
 | 1 | — | Span conveniences: `years`, `extend`, `periods("year")` | G01 | `duration` | 01·4; 03·3 | #119 |
 | 2 | — | Flow and Stream construction, lookup and arithmetic | G02–G04 | `flow` | 01·5–13; 03·17 | #103, #162 |
 | 3 | — | Value equality and `rk.units.isclose` | G06 | `units`, `flow` | 01·11, 14, 20; 02·22 | #109, #117 |
-| 4 | — | `rk.finance.reversion` | G05 | `finance` | 01·11; 03·8 | #167 |
+| 4 | — | `Flow.shift(periods=)` and `Flow.trim(period)` | G05 | `flow` | 01·11–12, 20; 05·8 | #103, #162 |
 | 5 | — | Staged solve: evaluate known blocks and non-affine Functions of determined values | G09 | `execution` | 02·6, 11; 03·13, 19 | #125, #129, #152 |
 | 6 | — | Inverse rewrites: fixed `irr` and bounds on `min` | G22 | `execution` | 03·16 | #164, #167 |
 | 7 | — | Function catalogue for equations, named as in `rk.profile`, `rk.flow` and `rk.finance` | G17 | `model`, `finance` | 03·6–8, 13; 05·10; 07·17 | #145, #163, #167, #168 |
