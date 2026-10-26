@@ -1,7 +1,7 @@
 # Rangekeeper documentation
 
-Start with the task below. Current instructions describe this checkout's pre-1.0
-API. Historical records retain the contracts and results from their recorded date.
+Start with the task below. Current instructions describe the API in this checkout.
+Historical records retain the contracts and results from their recorded date.
 
 ## Understand the framework
 
@@ -32,27 +32,18 @@ API. Historical records retain the contracts and results from their recorded dat
 | Area | Reference |
 | --- | --- |
 | Common record rules | [Records](reference/records.md), [identity and revisions](reference/identity.md) |
-| Immutable Model and investigation delivery | [Bundle candidate](reference/bundle.md) |
+| Immutable Model and investigation delivery | [Bundle](reference/bundle.md) |
 | Document roots | [Model](reference/model.md), [Specification](reference/specification.md), [Run and storage](reference/run-and-storage.md) |
 | Mathematics | [Expressions](reference/expressions.md), [calculations](reference/calculations.md), [execution](reference/execution.md) |
 | Futures and choices | [Scenarios and policies](reference/scenarios-and-policies.md) |
 | Structure and projection | [System views and reductions](reference/system.md), [tables](reference/tables.md) |
 | Design transport | [Canonical envelope](reference/design-transport.md) |
 
-## Repository and walkthrough status
+## Branches
 
-Use the single RK working folder and the
-[contributor branch procedure](contributing/README.md#working-folder-and-branches).
-Reviewed library and documentation work is on `develop`. The
-[17 October delivery](https://github.com/daniel-fink/rangekeeper/commit/ae51f11485fbc3ae3061406cbcba94b03aab4430)
-includes the standalone documentation cleanup and schema presentation. The
-unfinished walkthrough remains on `codex/walkthrough-acausal`; publication is
-separate.
-
-The [single-folder consolidation record](history/handoffs/2026-10-14-single-folder-consolidation.md)
-records preservation and verification. The earlier
-[branch-split record](history/handoffs/2026-10-14-repository-and-walkthrough.md)
-retains the former worktree layout as history, not the current working procedure.
+Reviewed library and documentation work is on `develop`; `main` holds releases.
+The unfinished walkthrough is on `codex/walkthrough-acausal`. Building the book does
+not publish it. See the [walkthrough branch procedure](contributing/walkthrough-branch.md).
 
 ## Contribute a change
 
@@ -62,6 +53,7 @@ same change, including plan status, archiving and navigation.
 
 - [Verification](contributing/verification.md): test, build and evidence boundaries.
 - [Releasing](contributing/releasing.md): release lines, tags, the release workflow and its setup.
+- [Walkthrough branch](contributing/walkthrough-branch.md): draft work, library updates and publication.
 - [Schema development](contributing/schema.md): generation, typing and conformance.
 - [Windows acceptance](contributing/windows-acceptance.md): the open Rhino/connector gate.
 - [Legacy retirement](contributing/legacy-retirement.md): held source and removal requirements.

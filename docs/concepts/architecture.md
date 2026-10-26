@@ -167,7 +167,7 @@ Specifications and finalized Runs, with their exact interpretation dependencies.
 Each spatial Model owns its Geometry pin and Entity mappings. Rangekeeper owns
 canonical Bundle validation, the lossless schema-derived Parquet mapping and its
 reader and writer. Arrow and DuckDB stay optional IO dependencies. The current
-format is a development candidate. Format 1 becomes stable at milestone 1.0.0b1
+format is not yet stable. Format 1 becomes stable at milestone 1.0.0b1
 ([ADR-017](../decisions/017-api-and-formats.md)).
 
 See [upgrading](../guides/upgrading.md) for removed APIs and explicit migrations.

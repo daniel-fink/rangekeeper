@@ -29,16 +29,16 @@ remain in the repository. They do not restore removed APIs.
 Generic Grasshopper authoring stays in RK. Source-specific extraction belongs to
 the consumer. See [Grasshopper](grasshopper.md).
 
-## Candidate 0.10 classification filters
+## Classification filters include sub-types
 
 `View.filter(entity_classification=id)` and `relationship_classification=id` now
 include the Classification's sub-types. Pass `exclusive=True` to keep the earlier
 exact match. `Model.find_entities(classification=id)` still matches exactly. See
 [ADR-009](../decisions/009-classification-sub-types.md).
 
-## Candidate 0.10 Geometry and Bundle IO
+## Geometry and Bundle IO
 
 The [Bundle reference](../reference/bundle.md) defines the optional IO and Model
 schema 0.8.0. Existing 0.7.0 Models remain readable without implicit migration.
 Use `model_07_to_08` for an explicit new identity/predecessor; never rewrite the
-old artifact or substitute this candidate for a locked 0.9 environment.
+old artifact or substitute this version for a locked 0.9 environment.

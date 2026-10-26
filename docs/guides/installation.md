@@ -14,7 +14,7 @@ python -m pip install .
 
 | Extra | Capability |
 | --- | --- |
-| `bundle` | Candidate schema-derived Parquet IO with PyArrow and DuckDB |
+| `bundle` | Schema-derived Parquet IO, not yet a stable format, with PyArrow and DuckDB |
 | `yaml` | Strict YAML codecs |
 | `calculations` | Financial valuation, Flow operations, distributions, scenario kernels, Polars and CSV |
 | `execution` | Pyomo/HiGHS numerical execution |

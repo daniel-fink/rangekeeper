@@ -39,7 +39,7 @@ When a change affects wire compatibility, update its explicit migration,
 version policy, fixtures and reference documentation together. Source-history
 files are evidence; do not regenerate them to conceal a version change.
 
-## Geometry vocabulary and Bundle candidate
+## Geometry vocabulary and Bundle mapping
 
 [ADR-008](../decisions/008-rangekeeper-bundle-contract.md#provider-neutral-schema-vocabulary)
 owns the agreed Rangekeeper Bundle contract. Use **Geometry** as the canonical
@@ -48,7 +48,7 @@ mappings. Keep provider, format/schema version, exact specification pin and sour
 address in metadata. Do not introduce a canonical `SpeckleBundle` type or
 `speckle_*` fields. Provider-specific names belong in the corresponding adapter.
 
-The primary consumer's first provider profile uses Speckle's 2026.9 object-model/bundle schema.
+The first provider profile uses Speckle's 2026.9 object-model/bundle schema.
 That release label does not replace its exact specification version/hash or source
 content digest. Future providers must fit the same Geometry boundary; unsupported
 formats require an explicit result, not an implicit Speckle fallback.
@@ -61,15 +61,15 @@ schema and preserve complete Model content; query engines and user interfaces do
 not define a second canonical schema. Shared reconstruction/query fixtures belong
 with the reader contract.
 
-The development candidate adds optional provider-neutral Geometry to Model 0.8.0
+Model 0.8.0 adds optional provider-neutral Geometry
 and generates Python/C# records from `schema/geometry.yaml`. Specification remains
 at 0.7.0 and Run remains at 0.4.0. The explicit 0.7-to-0.8 Model migration creates a new identity and
 retains its predecessor. The [Bundle reference](../reference/bundle.md) defines
-the candidate Parquet mapping and publication marker.
+the Parquet mapping and publication marker.
 
 The [Bundle acceptance matrix](../decisions/008-rangekeeper-bundle-contract.md#bundle-acceptance-criteria)
-records the required conformance checks. Development integration does not approve
-this format for stable release or consumer adoption.
+records the required conformance checks. A merge into `develop` does not make the
+format stable; [ADR-017](../decisions/017-api-and-formats.md) sets that milestone.
 
 ## Schema presentation
 
