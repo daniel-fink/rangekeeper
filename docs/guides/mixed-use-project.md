@@ -201,7 +201,9 @@ The original property collection is `bed351126771f61e3d6255c18cd48aa5`.
 
 | File | Purpose |
 | --- | --- |
-| [manifest.json](../../examples/data/mixed_use_property/manifest.json) | Source pins, capture details, file sizes and SHA-256 hashes |
+| [README.md](../../examples/data/mixed_use_property/README.md) | Licence, attribution text and provenance rules |
+| [LICENSE](../../examples/data/mixed_use_property/LICENSE) | CC BY 4.0 for all files in the folder |
+| [manifest.json](../../examples/data/mixed_use_property/manifest.json) | Source pins, capture details and, for each file, its size, SHA-256 hash, origin, description and licence |
 | [transport.json.gz](../../examples/data/mixed_use_property/transport.json.gz) | All 3,007 original transport JSON records, including complete geometry and context |
 | [model.json](../../examples/data/mixed_use_property/model.json) | Current canonical domain Model with source provenance |
 | [mapping.json](../../examples/data/mixed_use_property/mapping.json) | Explicit classifications, units and property interpretation |
@@ -210,6 +212,8 @@ The original property collection is `bed351126771f61e3d6255c18cd48aa5`.
 | [relationships.csv](../../examples/data/mixed_use_property/relationships.csv) | Explicit relationship endpoints, labels and identities |
 | [audit.json](../../examples/data/mixed_use_property/audit.json) | Counts, exact graph reconciliation, quantity checks and geometry-summary checks |
 | [assumptions.json](../../examples/data/mixed_use_property/assumptions.json) | Separate legacy teaching assumptions and calculation conventions |
+| [development.json](../../examples/data/mixed_use_property/development.json) | Teaching inputs for the development plan |
+| [origins.json](../../examples/data/mixed_use_property/origins.json) | The origin of each teaching assumption: a legacy notebook cell, a book method or the author's choice |
 
 SDK reserialization changes content IDs for this historical payload. The package
 therefore retains original transport strings. The preparation tool expanded

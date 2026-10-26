@@ -1,1 +1,4 @@
 *.html linguist-detectable=false
+# These files are hashed byte for byte; keep their line endings.
+examples/data/** -text
+examples/walkthrough/helpers/assets/** -text

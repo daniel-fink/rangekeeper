@@ -30,7 +30,7 @@ To reuse draft material from `codex/walkthrough-acausal`, copy it onto your
 feature branch and bring it up to the current API. Do not merge that branch.
 
 Do not change the bytes of the shared source capture in
-[`examples/data/mixed_use_property`](../../examples/data/mixed_use_property).
+[`examples/data/mixed_use_property`](../../examples/data/mixed_use_property/README.md).
 A change to a teaching assumption needs a matching change to its manifest entry
 and its origin in `origins.json`.
 

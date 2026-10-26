@@ -14,7 +14,7 @@ check the lessons.
 | [`resources/`](resources/README.md) | Images that the lessons show, with their rights |
 | [`tests/`](tests) | Helper tests and lesson checks |
 | [`pyproject.toml`](pyproject.toml), `uv.lock` | The locked walkthrough environment |
-| [`../data/mixed_use_property`](../data/mixed_use_property) | The data package for lessons 02–07 |
+| [`../data/mixed_use_property`](../data/mixed_use_property/README.md) | The data package for lessons 02–07 |
 
 | Lesson | Title | Issue |
 | --- | --- | --- |

@@ -11,7 +11,7 @@ The walkthrough lives on `develop` under
 - the locked environment and the tests.
 
 The lessons use the data package
-[`examples/data/mixed_use_property`](../../examples/data/mixed_use_property).
+[`examples/data/mixed_use_property`](../../examples/data/mixed_use_property/README.md).
 [Walkthrough plan v2](../decisions/020-walkthrough-plan-v2.md) defines the seven
 lessons. Each lesson stays a skeleton until its issue is done.
 

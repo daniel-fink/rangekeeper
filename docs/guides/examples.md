@@ -23,7 +23,7 @@ Install the matching library and the extras each example needs.
 | Directory | Contents |
 | --- | --- |
 | [`walkthrough/`](../../examples/walkthrough/README.md) | Lessons, presentation helpers, resources and their tests; see [walkthroughs](walkthroughs.md) |
-| [`data/mixed_use_property/`](../../examples/data/mixed_use_property) | The data package for walkthrough lessons 02–07 |
+| [`data/mixed_use_property/`](../../examples/data/mixed_use_property/README.md) | The data package for walkthrough lessons 02–07, under CC BY 4.0 |
 | [`rangekeeper_examples/`](../../examples/rangekeeper_examples) | Shared design and investment builders |
 | [`schema/`](../../examples/schema) | Complete wire documents and smaller syntax fragments, described below |
 | [`execution/`](../../examples/execution) | Forward and inverse valuation using the wire documents |
