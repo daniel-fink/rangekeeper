@@ -24,7 +24,7 @@ lists the current namespaces; `Model`, `Specification` and `Run` remain root imp
 | Architecture and APIs | [Documentation index](docs/README.md) |
 | Executable examples | [Examples and walkthroughs](docs/guides/examples.md) |
 | Schema and generation | [Schema guide](docs/contributing/schema.md) |
-| Rhino/Grasshopper | [C# authoring and host checks](docs/guides/grasshopper.md) |
+| Rhino/Grasshopper | [Unsupported C# example](examples/grasshopper/README.md) |
 | Older consumers | [Upgrade guide](docs/guides/upgrading.md) |
 | Verification | [Checks and limits](docs/contributing/verification.md) |
 | Conduct and citation | [Code of conduct](CODE_OF_CONDUCT.md), [citation metadata](CITATION.cff) |
@@ -32,8 +32,7 @@ lists the current namespaces; `Model`, `Specification` and `Run` remain root imp
 The walkthroughs follow Geltner and de Neufville's
 [Flexibility and Real Estate Valuation under Uncertainty](https://doi.org/10.1002/9781119106470).
 Historical plans and captured acceptance results are linked from the documentation
-index. The [Windows connector gate](docs/contributing/windows-acceptance.md) remains
-open. The [retirement guide](docs/contributing/legacy-retirement.md) records the
+index. The [retirement guide](docs/contributing/legacy-retirement.md) records the
 removed predecessor runtime.
 
 ### Versions

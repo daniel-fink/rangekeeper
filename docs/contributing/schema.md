@@ -107,7 +107,7 @@ external-host execution. See [wire examples](../guides/examples.md#wire-examples
 for complete documents versus fragments.
 
 Run [typing and distribution checks](verification.md), and the
-[C# build and round trips](../guides/grasshopper.md#build-and-round-trip), when
+[C# build and round trips](../../examples/grasshopper/README.md#build-and-round-trip), when
 changing generated records or their boundaries. Valid typing fixtures must pass;
 deliberately invalid fixtures must retain their expected errors.
 

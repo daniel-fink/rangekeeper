@@ -1,9 +1,17 @@
 # Windows connector acceptance
 
-**Status: open.** This procedure owns the remaining official Windows connector
+**Historical, 2026-10-26.** This gate was retired when the Speckle envelope moved
+to the walkthrough helpers and the Grasshopper solution became an unsupported
+example ([ADR-010](../decisions/010-layers-and-packages.md),
+[#92](https://github.com/daniel-fink/rangekeeper/issues/92)). It is no longer a
+library or release gate. The procedure below is kept as it was, with its links
+updated. The [Grasshopper example](../../examples/grasshopper/README.md) has the
+current build.
+
+**Status before retirement: open.** This procedure owns the remaining official Windows connector
 publication/receive gate. Portable builds, macOS authoring, offline envelopes and
 an earlier pinned Python receive are separate evidence. They do not close this
-gate. [Predecessor removal](legacy-retirement.md) is independent of this
+gate. [Predecessor removal](../contributing/legacy-retirement.md) is independent of this
 platform check.
 
 ## Prerequisites and open host work
@@ -14,7 +22,7 @@ Python and Rangekeeper. Use a .NET 8 SDK for the current projects. Verify connec
 support and installation requirements against its official documentation during
 the host run; an old support statement is not an accepted environment manifest.
 
-The current [Grasshopper build](../guides/grasshopper.md#build-and-round-trip) has
+The current [Grasshopper build](../../examples/grasshopper/README.md#build-and-round-trip) has
 two host-specific details to resolve before Windows acceptance:
 
 - `Components.csproj` defaults to the macOS Rhino resource directory and its
@@ -28,7 +36,7 @@ two host-specific details to resolve before Windows acceptance:
 
 Do not reuse the superseded `dotnet test` instructions. The current Tests project
 is a console round-trip runner. The
-[historical provisioning notes](../history/windows-provisioning.md) retain older
+[historical provisioning notes](windows-provisioning.md) retain older
 setup assumptions and do not define current acceptance.
 
 Use a separate Windows checkout; do not share a working tree between operating
@@ -50,7 +58,7 @@ a concrete destination and explicit authorization.
 3. Pass `rk_format`, `rk_model` and `rk_associations` through the official
    connector's supported ordinary metadata/data-object route. Record actual
    component names and property types. Do not infer this route from older Speckle
-   v2 Goo. Use the [transport reference](../reference/design-transport.md) for
+   v2 Goo. Use the [transport reference](../../examples/walkthrough/helpers/README.md#canonical-design-transport) for
    envelope and identity rules.
 4. Before publication, confirm validation, the intended content and an explicitly
    authorized destination. Publication must be an explicit action, not a side
@@ -85,6 +93,6 @@ private URLs, account databases and unsanitized payloads.
 
 Close this gate only when the actual host and authorized publication/receive
 checks pass. Link the result from this page. Predecessor removal follows
-[legacy retirement](legacy-retirement.md) and does not close this gate.
+[legacy retirement](../contributing/legacy-retirement.md) and does not close this gate.
 Preserve any failed attempts as dated evidence. A completed local code change
 cannot substitute for this external acceptance.

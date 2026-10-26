@@ -1,15 +1,25 @@
-# Author Models in Grasshopper
+# Grasshopper example
 
-The .NET solution is an unsupported example at [`examples/grasshopper/`](../../examples/grasshopper). The active
-projects target `net8.0` and Rhino 8. The Model project has no Rhino or Speckle
-reference. LinkML generation owns persistent fields; handwritten code owns
-presence-preserving serialization, authoring, composition and diagnostics. The
-Components project uses the installed RhinoCommon, Grasshopper and GH_IO
-assemblies. Dependencies are pinned in project files and lockfiles.
+This folder is an unsupported example: a portable C# Model library and generic
+Grasshopper components for Rhino 8 ([ADR-010](../../docs/decisions/010-layers-and-packages.md)).
+It has no stability promise. CI generates its C# records, builds the Model library
+and the fixture runner, and round-trips the cross-language fixtures, so the
+example cannot drift from the schema.
 
-This independent source project is outside the Python package. Canonical IO remains in `io`; the design envelope is a walkthrough helper. See the
-[architecture](../concepts/architecture.md) for the repository map and
-[design transport](../reference/design-transport.md) for the shared envelope.
+| Path | Contents |
+| --- | --- |
+| `Rangekeeper.sln`, `Directory.Build.props` | The solution and its shared version |
+| `Model/` | Generated records, serialization, authoring and validation. No Rhino or Speckle reference |
+| `Components/` | Generic Grasshopper components. Needs the installed RhinoCommon, Grasshopper and GH_IO assemblies |
+| `Tests/` | The cross-language fixture runner, the Rhino driver and the connector fixture |
+| `*.3dm`, `*.ghx` | The original Rhino source and Grasshopper definitions |
+
+The projects target `net8.0`. LinkML generation owns persistent fields;
+handwritten code owns presence-preserving serialization, authoring, composition
+and diagnostics. Dependencies are pinned in project files and lockfiles. Canonical
+IO is in the Python package's `io`; the design envelope is a
+[walkthrough helper](../walkthrough/helpers/README.md#canonical-design-transport).
+See the [architecture](../../docs/concepts/architecture.md) for the repository map.
 
 ## Build and round-trip
 
@@ -19,7 +29,7 @@ files. Build with a .NET 8 SDK:
 ```sh
 python tools/schema/generate_csharp.py --check
 dotnet restore examples/grasshopper/Tests/Tests.csproj --locked-mode
-dotnet build examples/grasshopper/Tests/Tests.csproj --no-restore
+dotnet build examples/grasshopper/Tests/Tests.csproj --no-restore -p:Version=$(python tools/version.py --dotnet)
 dotnet restore examples/grasshopper/Components/Components.csproj --locked-mode
 dotnet build examples/grasshopper/Components/Components.csproj --no-restore
 ```
@@ -27,9 +37,8 @@ dotnet build examples/grasshopper/Components/Components.csproj --no-restore
 The Tests project is a console fixture runner, not a `dotnet test` test project.
 It and the Model project build without Rhino. The Components build needs the
 Rhino assemblies. Its default `RhinoResources` location and subordinate paths
-match the macOS Rhino 8 installation. Windows assembly-path configuration remains
-part of the [Windows acceptance work](../contributing/windows-acceptance.md#prerequisites-and-open-host-work).
-Do not interpret a portable Model/Tests build as a component-load pass.
+match the macOS Rhino 8 installation; on Windows, pass verified assembly
+locations with `-p:RhinoResources=...`. Do not interpret a portable Model/Tests build as a component-load pass.
 
 Install the matching Python library and `./examples` with their calculation and
 execution dependencies. From the repository root:
@@ -48,14 +57,14 @@ runtime versions.
 ## Check generic authoring in Rhino
 
 Set `RK_COMPONENTS` to the current RK component assembly and `RK_ACCEPTANCE_OUTPUT`
-to a new output directory. Run [the generic driver](../../examples/grasshopper/Tests/accept_rhino.py)
+to a new output directory. Run [the generic driver](Tests/accept_rhino.py)
 inside a fresh Rhino 8 process. It checks stable identity, changed revisions, previous
 revision links and save/reopen behaviour. It loads the RK authoring assembly.
 
-The current [generic authoring definition](../../examples/grasshopper/genericAuthoring.ghx)
+The current [generic authoring definition](genericAuthoring.ghx)
 uses only RK 0.9.0 components. Source-specific extraction is a consumer concern.
 The original `.3dm` and GHX files here remain source evidence; their old assembly
-metadata is not an installed compatibility contract. Windows host checks remain open.
+metadata is not an installed compatibility contract.
 
 ## Authoring and identity
 
@@ -75,15 +84,15 @@ not write, authenticate, solve or publish.
 Python remains the complete semantic acceptance boundary for units, expressions,
 composition and Run trees. C# does not duplicate those full validators.
 
-## External acceptance and retained source
+## Host acceptance and retained source
 
 Builds and record round trips are separate from host loading and connector
-acceptance. A later Rhino generation requires its own host check. The official
-connector's [Windows gate](../contributing/windows-acceptance.md) remains open;
-a macOS authoring pass or offline envelope test cannot close it.
+acceptance. A later Rhino generation needs its own host check. The Windows
+connector gate is retired with the move of this solution out of the package; its
+[procedure](../../docs/history/windows-acceptance.md) is kept as history. A macOS
+authoring pass or an offline envelope test is not a connector pass.
 
-Old .NET Framework/Speckle-inherited source and resources remain in
-`examples/grasshopper/legacy/`, outside active compile/resource items. Follow
-[legacy retirement](../contributing/legacy-retirement.md) before removing them.
-The original [`exampleDesignConfig.ghx`](../../examples/grasshopper/exampleDesignConfig.ghx)
-and Rhino source stay as evidence after that implementation is retired.
+The original [`exampleDesignConfig.ghx`](exampleDesignConfig.ghx), the other
+definitions and the Rhino source stay as evidence. Follow
+[legacy retirement](../../docs/contributing/legacy-retirement.md) before you
+remove them.

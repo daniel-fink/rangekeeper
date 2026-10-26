@@ -357,7 +357,7 @@ Runtime checks used Python 3.10.19. Schema tools used the pinned requirements in
 Python 3.12.12 environment. The native solution built for .NET 8; its console
 round trip ran with a .NET 8 runtime. The commands and prerequisites are maintained
 in [verification](../../contributing/verification.md),
-[schema](../../contributing/schema.md), [Grasshopper](../../guides/grasshopper.md)
+[schema](../../contributing/schema.md), [Grasshopper](../../../examples/grasshopper/README.md)
 and [walkthroughs](../../guides/walkthroughs.md).
 
 | Check | Observed result |
@@ -389,6 +389,6 @@ local directory; they are local diagnostic outputs,
 not a published or permanent evidence store. The complete Python test suite was
 not rerun during the content pass. No remote CI, new Rhino host session, Windows
 connector publication/receive check or site publication was performed. Follow
-[Windows acceptance](../../contributing/windows-acceptance.md) and
+[Windows acceptance](../windows-acceptance.md) and
 [legacy retirement](../../contributing/legacy-retirement.md) before closing their
 held gates. Changes remain uncommitted at this checkpoint.

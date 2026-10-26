@@ -386,7 +386,7 @@ by approval of this plan alone.
 - [Walkthrough curriculum](006-walkthrough-curriculum.md)
 - [Prepared property source](../guides/mixed-use-project.md)
 - [Notebook 03 local acceptance](../research/notebook-03-2026-10-13/README.md)
-- [Windows acceptance](../contributing/windows-acceptance.md)
+- [Windows acceptance](../history/windows-acceptance.md)
 - [Documentation lifecycle](../contributing/documentation.md)
 
 ## Implementation record
@@ -395,7 +395,7 @@ See [local validation and deviations](../research/three-repository-refactor-2026
 and its artifact manifest. These retain recorded local results; external host and
 product acceptance gates remain separate.
 
-See the [current architecture](../concepts/architecture.md), [upgrade guide](../guides/upgrading.md), [verification guide](../contributing/verification.md) and [Windows acceptance](../contributing/windows-acceptance.md).
+See the [current architecture](../concepts/architecture.md), [upgrade guide](../guides/upgrading.md), [verification guide](../contributing/verification.md) and [Windows acceptance](../history/windows-acceptance.md).
 
 Supersedes: none. Superseded by: none.
 Amended by: [ADR-010](010-layers-and-packages.md), accepted 2026-10-26. Local display adapters move to the walkthrough helpers; the Grasshopper solution moves to `examples/grasshopper`.

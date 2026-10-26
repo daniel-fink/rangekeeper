@@ -4,11 +4,11 @@ Status: historical extract. These statements came from the former
 `INTEGRATIONS.md` and `ingestion-workflow.md` pages. They record their authors'
 observations, not a new execution or current external acceptance. The former pages
 did not assign a separate date to every observation. Host and service behavior
-must be checked through the current [Windows acceptance procedure](../../contributing/windows-acceptance.md).
+must be checked through the current [Windows acceptance procedure](../windows-acceptance.md).
 
 Current contracts: source workflows (retired external procedure),
-[design transport](../../reference/design-transport.md) and
-[Grasshopper](../../guides/grasshopper.md).
+[design transport](../../../examples/walkthrough/helpers/README.md#canonical-design-transport) and
+[Grasshopper](../../../examples/grasshopper/README.md).
 
 ## Real source consumers
 

@@ -22,9 +22,9 @@ Historical records retain the contracts and results from their recorded date.
 | --- | --- |
 | Install this checkout and choose extras | [Installation](guides/installation.md) |
 | Run an example or inspect a wire fixture | [Examples](guides/examples.md) |
-| Execute the notebooks or build their site | [Walkthroughs](guides/walkthroughs.md) |
+| Execute the lessons, or use the chart, graph, geometry and design-transport helpers | [Walkthroughs](guides/walkthroughs.md), [helpers](../examples/walkthrough/helpers/README.md) |
 | Inspect the continuing walkthrough project and its source package | [Mixed-use project brief](guides/mixed-use-project.md) |
-| Build the native components and check a Rhino model | [Grasshopper](guides/grasshopper.md) |
+| Build the unsupported C# and Grasshopper example | [Grasshopper example](../examples/grasshopper/README.md) |
 | Migrate an earlier consumer or document | [Upgrading](guides/upgrading.md) |
 
 ## Look up a contract
@@ -37,7 +37,6 @@ Historical records retain the contracts and results from their recorded date.
 | Mathematics | [Expressions](reference/expressions.md), [calculations](reference/calculations.md), [execution](reference/execution.md) |
 | Futures and choices | [Scenarios and policies](reference/scenarios-and-policies.md) |
 | Structure and projection | [System views and reductions](reference/system.md), [tables](reference/tables.md) |
-| Design transport | [Canonical envelope](reference/design-transport.md) |
 
 ## Branches
 
@@ -56,7 +55,6 @@ same change, including plan status, archiving and navigation.
 - [Releasing](contributing/releasing.md): release lines, tags, the release workflow and its setup.
 - [Walkthrough branch](contributing/walkthrough-branch.md): draft work, library updates and publication.
 - [Schema development](contributing/schema.md): generation, typing and conformance.
-- [Windows acceptance](contributing/windows-acceptance.md): the open Rhino/connector gate.
 - [Legacy retirement](contributing/legacy-retirement.md): held source and removal requirements.
 
 ## Inspect a decision or historical result

@@ -2,8 +2,8 @@
 
 Archived on 8 October 2026 during documentation consolidation. **Status:
 superseded operational instructions.** Use
-[Windows acceptance](../contributing/windows-acceptance.md) for the current gate
-and [Grasshopper](../guides/grasshopper.md) for the current build.
+[Windows acceptance](windows-acceptance.md) for the current gate
+and [Grasshopper](../../examples/grasshopper/README.md) for the current build.
 
 The retained text below contains earlier source paths, branch names, Snapshot
 terminology, host assumptions and proposed setup commands. It is historical
@@ -22,7 +22,7 @@ operational companion to Phase 6 of
 
 The provisioning notes below originated before the Rhino 8/.NET 8 migration.
 They retain historical assumptions and target commands. Use the current gate at
-the start of this page and [current C# build commands](../guides/grasshopper.md). A build
+the start of this page and [current C# build commands](../../examples/grasshopper/README.md). A build
 does not close the external host and connector acceptance gate.
 
 ## Responsibilities by host
