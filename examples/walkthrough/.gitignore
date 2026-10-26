@@ -1,0 +1,7 @@
+# Execution and conversion outputs
+_build/
+output/
+.ipynb_checkpoints/
+
+# Local environments and caches
+.venv/

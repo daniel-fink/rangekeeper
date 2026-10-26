@@ -238,8 +238,8 @@ model = codec.read(Path("../data/mixed_use_property/model.json"), kind=Model)
 The source preparation [evidence](../research/notebook-02-source-2026-10-12/README.md)
 records the source verification scope. The separate
 [notebook acceptance](../research/notebook-02-2026-10-12/README.md) records execution,
-independent financial reconciliation and local viewer/book review. Notebook 02 is
-now included in `myst.yml`.
+independent financial reconciliation and local viewer/book review. Notebook 02 was
+part of the interim draft book on `codex/walkthrough-acausal`.
 
 ## Notebook 03 development assumptions
 

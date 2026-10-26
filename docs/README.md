@@ -41,9 +41,10 @@ Historical records retain the contracts and results from their recorded date.
 
 ## Branches
 
-Reviewed library and documentation work is on `develop`; `main` holds releases.
-The unfinished walkthrough is on `codex/walkthrough-acausal`. Building the book does
-not publish it. See the [walkthrough branch procedure](contributing/walkthrough-branch.md).
+Reviewed library, documentation and walkthrough work is on `develop`; `main` holds
+releases. The walkthrough lessons are in `examples/walkthrough`. Converting the
+lessons for the docs site does not publish them. See the
+[walkthrough procedure](contributing/walkthrough-branch.md).
 
 ## Contribute a change
 

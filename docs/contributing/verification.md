@@ -106,14 +106,14 @@ build or offline JSON pass cannot substitute for actual host acceptance.
 ## Examples and documentation
 
 Run the affected [standalone examples](../guides/examples.md#run-standalone-examples).
-For walkthrough changes, execute all affected notebooks in fresh kernels, inspect
-tables and figures, and [build the book](../guides/walkthroughs.md#build-the-site)
+For walkthrough changes, execute all affected lessons in fresh kernels, inspect
+tables and figures, and [convert them for the docs site](../guides/walkthroughs.md#convert-for-the-docs-site)
 from those executed notebooks. Routine design checks use explicit fixture mode.
 
 Apply [documentation upkeep](documentation.md) in the same change. Check incoming
 and outgoing relative links and headings after moves. Check example paths,
-working directories and current API names. Inspect built book navigation when
-book source or configuration changes. Do not rewrite captured evidence to make
+working directories and current API names. Inspect the converted pages when
+lesson conversion changes. Do not rewrite captured evidence to make
 historical commands appear current.
 
 From the repository root, check local Markdown links, section anchors and routes
