@@ -1,12 +1,12 @@
 # ADR-020: Walkthrough plan v2
 
-Status: accepted for 1.0; ideal cells recorded ([#201](https://github.com/daniel-fink/rangekeeper/issues/201)); authoring pending. Recorded: 2026-10-26.
+Status: accepted for 1.0; proposed cells recorded ([#201](https://github.com/daniel-fink/rangekeeper/issues/201)); authoring pending. Recorded: 2026-10-26.
 
 This record is the walkthrough plan for 1.0. It replaces the
 [ADR-006 curriculum](006-walkthrough-curriculum.md) and follows the direction in
 [ADR-019](019-walkthrough-direction.md). It defines the reader types, book
 outcomes, lessons, developer-experience principles, teaching conventions and
-source rights. The ideal cells ([#201](https://github.com/daniel-fink/rangekeeper/issues/201))
+source rights. The proposed cells ([#201](https://github.com/daniel-fink/rangekeeper/issues/201))
 and the lessons ([#203](https://github.com/daniel-fink/rangekeeper/issues/203)–[#209](https://github.com/daniel-fink/rangekeeper/issues/209))
 are separate work.
 
@@ -125,7 +125,7 @@ The core path takes 45–60 minutes, in about 20–25 code cells. Optional secti
 
 ### Lessons
 
-Each lesson lists its library dependencies by issue. The ideal-cells pass (#201)
+Each lesson lists its library dependencies by issue. The proposed-cells pass (#201)
 can add more dependencies to [#169](https://github.com/daniel-fink/rangekeeper/issues/169).
 The sketches are not binding. They show the intended shape only. #201 writes
 the real cells.
@@ -400,7 +400,7 @@ rk.execution.solve(strategy.across(paths, ...)).compare(fixed, "equity_npv", "co
 
 ### Developer-experience principles
 
-These rules apply to every cell that a reader types. #201 tests each ideal cell
+These rules apply to every cell that a reader types. #201 tests each proposed cell
 against them. Each break of a rule goes onto the gap list, not into a helper.
 
 1. **One import.** `import rangekeeper as rk`, plus `datetime` and the helpers.
@@ -530,15 +530,15 @@ The data package records its provenance (#210):
 
 | Decision | Needed before |
 | --- | --- |
-| Can lesson 03's cases reach the cash flows through the solve? Where do the funding account and commitment check live? | Resolved by #201: decisions D1 and D2 in the [ideal cells](../../examples/walkthrough/ideal/README.md#decisions) |
-| How an equation refers to a rollup result | Resolved by #201: decision D3 in the [ideal cells](../../examples/walkthrough/ideal/README.md#decisions) |
+| Can lesson 03's cases reach the cash flows through the solve? Where do the funding account and commitment check live? | Resolved by #201: decisions D1 and D2 in the [proposed cells](../../examples/walkthrough/proposed/README.md#decisions) |
+| How an equation refers to a rollup result | Resolved by #201: decision D3 in the [proposed cells](../../examples/walkthrough/proposed/README.md#decisions) |
 | Generator parameters and correlations for the property's markets | Authoring lesson 04 |
 | Thresholds, latest dates and the site sale price rule | Authoring lesson 05 |
 | The hotel provision for Building B (cores, services, costs) and the expansion floors and premium | #214 and authoring lesson 07 |
 
 ### Delivery
 
-1. #201 writes the ideal cells for every lesson and the gap list in #169.
+1. #201 writes the proposed cells for every lesson and the gap list in #169.
 2. The library work lands, and #213–#216 design and verify the executor
    features for lessons 05 and 07.
 3. Each lesson is authored, run by CI from a fresh kernel and reviewed in the

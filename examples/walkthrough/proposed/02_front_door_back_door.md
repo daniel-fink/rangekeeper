@@ -1,4 +1,4 @@
-# Lesson 02: Front door, back door (ideal cells)
+# Lesson 02: Front door, back door (proposed cells)
 
 Issue: [#204](https://github.com/daniel-fink/rangekeeper/issues/204). Plan:
 [ADR-020 §02](../../../docs/decisions/020-walkthrough-plan-v2.md#02-front-door-back-door).

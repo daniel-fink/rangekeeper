@@ -1,4 +1,4 @@
-# Lesson 05: When to commit (ideal cells)
+# Lesson 05: When to commit (proposed cells)
 
 Issue: [#207](https://github.com/daniel-fink/rangekeeper/issues/207). Plan:
 [ADR-020 §05](../../../docs/decisions/020-walkthrough-plan-v2.md#05-when-to-commit).

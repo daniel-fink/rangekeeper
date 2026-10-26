@@ -1,4 +1,4 @@
-# Lesson 07: Policies and the model graph (ideal cells)
+# Lesson 07: Policies and the model graph (proposed cells)
 
 Issue: [#244](https://github.com/daniel-fink/rangekeeper/issues/244). Plan:
 [ADR-020 §07](../../../docs/decisions/020-walkthrough-plan-v2.md#07-policies-and-the-model-graph).

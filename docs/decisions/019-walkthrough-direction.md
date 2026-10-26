@@ -26,7 +26,7 @@ Status: accepted for 1.0; walkthrough plan v2 is ADR-020. Recorded: 2026-10-26.
   - the reader types and book outcomes;
   - the goals, prerequisites and time estimate of each lesson;
   - the developer-experience principles.
-- **Ideal cells first.** Write the code a reader should type for each lesson.
+- **Proposed cells first.** Write the code a reader should type for each lesson.
   Each helper or plain-Python workaround that a common task needs goes onto the
   API gap list. Implement the gaps, then author the lessons. This pass settles
   the builder shape in [ADR-015](015-authoring.md).

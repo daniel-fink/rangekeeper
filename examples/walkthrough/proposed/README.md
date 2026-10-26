@@ -1,4 +1,4 @@
-# Walkthrough ideal cells
+# Walkthrough proposed cells
 
 Issue: [#201](https://github.com/daniel-fink/rangekeeper/issues/201). Plan:
 [ADR-020](../../../docs/decisions/020-walkthrough-plan-v2.md).
@@ -31,7 +31,7 @@ names the gaps.
 
 ## Decisions
 
-The maintainer made these choices during the ideal-cells pass. They resolve the open
+The maintainer made these choices during the proposed-cells pass. They resolve the open
 preparation decisions of ADR-020 and the builder shape that ADR-015 left to this
 pass.
 

@@ -1,4 +1,4 @@
-# Lesson 06: Project structure (ideal cells)
+# Lesson 06: Project structure (proposed cells)
 
 Issue: [#208](https://github.com/daniel-fink/rangekeeper/issues/208). Plan:
 [ADR-020 §06](../../../docs/decisions/020-walkthrough-plan-v2.md#06-project-structure).

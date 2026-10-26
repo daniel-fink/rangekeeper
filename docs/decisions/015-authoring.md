@@ -65,7 +65,7 @@ typed Quantity parameters.
 
 ### Scope
 
-This record fixes the direction. The walkthrough ideal-cells pass
+This record fixes the direction. The walkthrough proposed-cells pass
 ([ADR-019](019-walkthrough-direction.md)) settles the exact builder methods.
 
 ## Alternatives and consequences

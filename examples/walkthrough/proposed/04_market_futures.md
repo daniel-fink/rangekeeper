@@ -1,4 +1,4 @@
-# Lesson 04: Many market futures (ideal cells)
+# Lesson 04: Many market futures (proposed cells)
 
 Issue: [#206](https://github.com/daniel-fink/rangekeeper/issues/206). Plan:
 [ADR-020 §04](../../../docs/decisions/020-walkthrough-plan-v2.md#04-many-market-futures)

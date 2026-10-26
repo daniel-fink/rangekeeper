@@ -39,8 +39,8 @@ blocked-by links. The
 | [ADR-016: Safety defaults](016-safety-defaults.md) | Accepted for 1.0; implementation pending | Curated units, dimensional checks, the underdetermined outcome, structured diagnostics and errors |
 | [ADR-017: Public API, stability and data formats](017-api-and-formats.md) | Accepted for 1.0; implementation pending | Semantic versioning, the 1.0.0 format reset, format changes before the freeze, Bundle format 1 and money |
 | [ADR-018: Release lines, versioning and engineering practice](018-release-and-engineering.md) | Accepted for 1.0; implementation pending | `support/0.8`, pre-releases, versions, changelog, Python support, tooling, CI, tests and the docs site |
-| [ADR-019: Walkthrough direction for 1.0](019-walkthrough-direction.md) | Accepted for 1.0; walkthrough plan v2 is ADR-020 | All lessons for 1.0, ideal cells first, helpers, CI execution and sources |
-| [ADR-020: Walkthrough plan v2](020-walkthrough-plan-v2.md) | Accepted for 1.0; ideal cells and authoring pending | Seven lessons by principle, reader types, book outcomes, developer-experience principles, teaching conventions and source rights; supersedes ADR-006 |
+| [ADR-019: Walkthrough direction for 1.0](019-walkthrough-direction.md) | Accepted for 1.0; walkthrough plan v2 is ADR-020 | All lessons for 1.0, proposed cells first, helpers, CI execution and sources |
+| [ADR-020: Walkthrough plan v2](020-walkthrough-plan-v2.md) | Accepted for 1.0; proposed cells and authoring pending | Seven lessons by principle, reader types, book outcomes, developer-experience principles, teaching conventions and source rights; supersedes ADR-006 |
 
 The first three records summarize decisions already supported by the linked
 implementation history. They do not invent an earlier approval date. ADR-004 also
@@ -67,7 +67,7 @@ interim API; all lessons are rebuilt for 1.x.
 
 ## Work that remains explicit
 
-- The [first walkthrough migration](../research/basic-dcf-2026-10-08/README.md) follows the completed [Flux and Stream codebase acceptance](../research/flux-stream-2026-10-08/README.md). [Walkthrough plan v2](020-walkthrough-plan-v2.md) replaces the earlier curriculum with seven lessons. It owns the teaching sequence, preparation decisions and capability dependencies. All lessons need ideal cells, authoring and CI execution on the 1.x API.
+- The [first walkthrough migration](../research/basic-dcf-2026-10-08/README.md) follows the completed [Flux and Stream codebase acceptance](../research/flux-stream-2026-10-08/README.md). [Walkthrough plan v2](020-walkthrough-plan-v2.md) replaces the earlier curriculum with seven lessons. It owns the teaching sequence, preparation decisions and capability dependencies. All lessons need proposed cells, authoring and CI execution on the 1.x API.
 - [Windows/Rhino/connector acceptance](../contributing/windows-acceptance.md) remains
   open. The [retirement guide](../contributing/legacy-retirement.md) records removed
   APIs; their removal does not establish platform support.

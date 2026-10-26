@@ -1,4 +1,4 @@
-# Lesson 01: Basic discounted cash flow (ideal cells)
+# Lesson 01: Basic discounted cash flow (proposed cells)
 
 Issue: [#203](https://github.com/daniel-fink/rangekeeper/issues/203). Plan:
 [ADR-020 §01](../../../docs/decisions/020-walkthrough-plan-v2.md#01-basic-discounted-cash-flow).

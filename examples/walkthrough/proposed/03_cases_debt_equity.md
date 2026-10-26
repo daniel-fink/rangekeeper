@@ -1,4 +1,4 @@
-# Lesson 03: Cases, debt and equity (ideal cells)
+# Lesson 03: Cases, debt and equity (proposed cells)
 
 Issue: [#205](https://github.com/daniel-fink/rangekeeper/issues/205). Plan:
 [ADR-020 §03](../../../docs/decisions/020-walkthrough-plan-v2.md#03-cases-debt-and-equity).
