@@ -10,8 +10,9 @@ API. Historical records retain the contracts and results from their recorded dat
   [presentation guide](guides/schema-presentation.md) for use and rebuilding.
 - [Model, Specification and Run](concepts/model-specification-run.md): facts and
   equations, investigation choices, and finalized evidence.
-- [Architecture](concepts/architecture.md): package ownership, imports, repository
-  structure and dependency boundaries.
+- [Architecture](concepts/architecture.md): principles, the accepted 1.0 layers and
+  the current package map.
+- [Glossary](concepts/glossary.md): one meaning for each Rangekeeper term.
 - [Source interpretation](concepts/source-workflows.md): source decisions,
   provenance and reproducible builds.
 
@@ -67,7 +68,9 @@ same change, including plan status, archiving and navigation.
 ## Inspect a decision or historical result
 
 Use the [decision index](decisions/README.md) for accepted choices, their rationale,
-implementation records and remaining work. The active
+implementation records and remaining work. The
+[decisions accepted for 1.0](decisions/README.md#accepted-for-10) define the target
+architecture and release plan. The active
 [walkthrough curriculum](decisions/006-walkthrough-curriculum.md) defines the six
 lessons and their preparation and capability dependencies. [History](history/README.md) contains
 completed plans and dated narratives. [Research](research/README.md) retains

@@ -13,8 +13,30 @@ current after its execution plan moves to history.
 | [ADR-005: Flux and Stream implementation](005-flux-and-stream-implementation.md) | Implemented; locally verified | Discoverable mathematical parameter names, Stream DX, `model.flux`, Span methods, Polars calculations, acausal formulations, hierarchy, Specification roles and acceptance |
 | [ADR-006: Walkthrough curriculum](006-walkthrough-curriculum.md) | Notebooks 01–03 locally accepted; later lessons planned | Six lessons combining the legacy property graph, SFFA inverse solving, Garden City uncertainty/flexibility and two-pad decision lessons |
 | [ADR-007: Library boundary](007-three-repository-refactor.md) | Implemented; RK extract retained | Public API moves, native authoring, walkthrough preservation and runtime retirement |
+| [ADR-008: Rangekeeper Bundle contract](008-sqlite-model-package.md) | Expanded Bundle candidate implemented and approved for local development; bounded verification recorded; full conformance open; stable format 1 accepted by ADR-017 | Main Model plus selected Models/Specifications/finalized Runs and exact dependencies; Model-owned Geometry; Parquet IO; standalone canonical IO; earlier SQLite proof retained |
 | [ADR-009: Classification filters include sub-types](009-classification-sub-types.md) | Implemented | `View.filter` and the `classified` contributor rule match a Classification and its descendants; `exclusive=True` matches exactly |
-| [ADR-008: Rangekeeper Bundle contract](008-sqlite-model-package.md) | Expanded Bundle candidate implemented and approved for local development; bounded verification recorded; full conformance and stable release open | Main Model plus selected Models/Specifications/finalized Runs and exact dependencies; Model-owned Geometry; Parquet IO; standalone canonical IO; earlier SQLite proof retained |
+
+## Accepted for 1.0
+
+These records were accepted on 2026-10-26. Their implementation is pending. The
+[Rangekeeper project](https://github.com/users/daniel-fink/projects/8) tracks the
+implementation as epics with sub-issues, milestones 0.8.72 to 1.0.0 and
+blocked-by links. The
+[architecture](../concepts/architecture.md) shows the target, and the
+[glossary](../concepts/glossary.md) defines its terms.
+
+| Decision | Status | Scope |
+| --- | --- | --- |
+| [ADR-010: Layers, packages and public namespaces](010-layers-and-packages.md) | Accepted; pending | Library boundary, layer order, ownership rules, public namespaces and the move map |
+| [ADR-011: Records, behaviour and validation](011-records-and-validation.md) | Accepted; pending | Data-only generated records, owner subclasses, document facades, generated runtime and validation tiers |
+| [ADR-012: Naming convention, glossary and rename pass](012-naming-and-glossary.md) | Accepted; pending | Naming rules, agreed renames, initial rename map and the single 1.0.0a2 codemod pass |
+| [ADR-013: Execution pipeline and extension points](013-execution-and-extensions.md) | Accepted; pending | Pure `solve`, `execute`, `Outcome`, backend contract, worker, registry pattern and fingerprints |
+| [ADR-014: Market paths and path generators](014-market-paths.md) | Accepted; pending | Path generators, the MarketPaths document and `Specification.across` |
+| [ADR-015: Authoring with builders, equations and identities](015-authoring.md) | Accepted; pending | Document builders, operator and string equations, deterministic builds and quantity parsing |
+| [ADR-016: Safety defaults](016-safety-defaults.md) | Accepted; pending | Curated units, dimensional checks, the underdetermined outcome, structured diagnostics and errors |
+| [ADR-017: Public API, stability and data formats](017-api-and-formats.md) | Accepted; pending | Semantic versioning, the 1.0.0 format reset, format changes before the freeze, Bundle format 1 and money |
+| [ADR-018: Release lines, versioning and engineering practice](018-release-and-engineering.md) | Accepted; pending | `support/0.8`, pre-releases, versions, changelog, Python support, tooling, CI, tests and the docs site |
+| [ADR-019: Walkthrough direction for 1.0](019-walkthrough-direction.md) | Accepted; plan v2 pending | All lessons for 1.0, ideal cells first, helpers, CI execution and sources |
 
 The first three records summarize decisions already supported by the linked
 implementation history. They do not invent an earlier approval date. ADR-004 also

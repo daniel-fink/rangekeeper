@@ -157,4 +157,4 @@ establish macOS, Windows, Rhino or service acceptance.
 
 Supersedes: the temporary repository-level Grasshopper placement and the
 unimplemented Python-subpackage option recorded in the documentation plan.
-Those alternatives had no earlier ADR identifier. Superseded by: none.
+Those alternatives had no earlier ADR identifier. Superseded by: none. Amended by: [ADR-010](010-layers-and-packages.md) for packages and native authoring, and [ADR-018](018-release-and-engineering.md) for CI and tooling.

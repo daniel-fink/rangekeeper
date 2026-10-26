@@ -355,3 +355,5 @@ Record each resolved assumption beside its source and propagate it consistently.
 | Notebooks 05–06 | Planned; dependent on capability work |
 | Complete local book | Pending chapter-by-chapter acceptance |
 | Public publication | Outside this delivery scope |
+
+Amended by: [ADR-019](019-walkthrough-direction.md), accepted 2026-10-26. All lessons are rebuilt for 1.0; walkthrough plan v2 revises this curriculum.

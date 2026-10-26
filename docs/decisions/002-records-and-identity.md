@@ -34,4 +34,4 @@ semantic validation.
 - [RF-025 record construction](../history/plans/REFACTORING_FOLLOWUP_PLAN.md#rf-025-record-construction).
 - [ADR-001: document roots](001-document-roots.md).
 
-Supersedes: no earlier ADR identifier was assigned. Superseded by: none.
+Supersedes: no earlier ADR identifier was assigned. Superseded by: none. Amended by: [ADR-011](011-records-and-validation.md) for behaviour attachment and validation tiers.
