@@ -3,7 +3,7 @@ name = "rangekeeper-examples"
 version = "0.1.0"
 description = "Repository examples for the matching Rangekeeper checkout"
 readme = { text = "Install alongside the matching Rangekeeper checkout. See docs/guides/examples.md in the repository.", content-type = "text/plain" }
-requires-python = ">=3.10, <3.14"
+requires-python = ">=3.12"
 # The matching Rangekeeper build and its optional extras are installed explicitly.
 dependencies = []
 

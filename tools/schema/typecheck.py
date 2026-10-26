@@ -19,7 +19,7 @@ with tempfile.TemporaryDirectory(prefix="rk-mypy-") as cache:
     sources = [
         str(path.relative_to(ROOT / "src"))
         for path in sorted((ROOT / "src/rangekeeper").rglob("*.py"))
-        if "legacy" not in path.parts and path.name != "native.py"
+        if "legacy" not in path.parts
     ]
     subprocess.run(
         command

@@ -199,8 +199,9 @@ for resource in ('io/speckle_contract.json', 'visualisation/assets/geometry/mani
     assert files('rangekeeper').joinpath(resource).is_file(), resource
 from rangekeeper.io.speckle import decode_model, encode_model
 assert 'specklepy' not in sys.modules
-for name in ('schema.json', 'slots.json', 'manifest.json', 'native.py'):
+for name in ('schema.json', 'slots.json', 'manifest.json'):
     assert files('rangekeeper.schema').joinpath(name).is_file()
+assert not files('rangekeeper.schema').joinpath('native.py').is_file()
 data = {'implementations': [{'kind': 'evaluator', 'name': 'test', 'version': '1'}],
         'started_at': '2026-10-02T00:00:00Z'}
 Runtime.from_data(data)

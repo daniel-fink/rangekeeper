@@ -1,0 +1,10 @@
+<Project>
+  <!--
+    The C# example uses the Python package version. Builds pass it explicitly
+    with the Version property; tools/version.py prints it in SemVer 2 form.
+    This default applies only when no version is passed.
+  -->
+  <PropertyGroup>
+    <Version Condition="'$(Version)' == ''">1.0.0-alpha.1</Version>
+  </PropertyGroup>
+</Project>

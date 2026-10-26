@@ -233,3 +233,26 @@ def test_date_range_boundaries_and_anchor_preserving_extension():
         date(2026, 6, 30),
         date(2026, 7, 1),
     )
+
+
+def test_year_fraction_matches_pyxirr_day_counts():
+    pyxirr = pytest.importorskip("pyxirr")
+    from rangekeeper.calculations.financial import resolve_day_count
+    from rangekeeper.model.duration import DayCount, year_fraction
+
+    starts = [
+        date(2019, 12, 31),
+        date(2020, 2, 29),
+        date(2021, 1, 31),
+        date(2023, 7, 15),
+    ]
+    ends = [date(2020, 3, 1), date(2020, 12, 31), date(2024, 2, 29), date(2031, 5, 31)]
+    for start in starts:
+        for end in ends:
+            for convention in DayCount:
+                expected = pyxirr.year_fraction(
+                    start, end, resolve_day_count(convention)
+                )
+                assert year_fraction(
+                    start, end, convention=convention
+                ) == pytest.approx(expected, rel=1e-12, abs=1e-15)
