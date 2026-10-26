@@ -33,18 +33,17 @@ a tag that starts with `v` is pushed. The same file is on `develop` and
    version. It creates a GitHub build provenance attestation for each file.
 3. **Import.** It installs the wheel on Python 3.12 and 3.13 and imports
    `rangekeeper`.
-4. **TestPyPI.** It publishes to TestPyPI by trusted publishing, in the
-   `testpypi` environment.
-5. **PyPI.** It waits for approval of the `pypi` environment, then publishes
+4. **PyPI.** It waits for approval of the `pypi` environment, then publishes
    by trusted publishing. PyPI also gets PEP 740 attestations.
-6. **GitHub Release.** It creates the release with the files, the attestation
+5. **GitHub Release.** It creates the release with the files, the attestation
    bundle and the changelog section for the version
    ([`release_notes.py`](../../.github/scripts/release_notes.py)). If the
    changelog has no section, GitHub generates the notes. Pre-releases are
    marked as pre-releases.
 
 A pull request that changes the workflow or its notes script runs steps 1–3
-only, without publication.
+only, without publication. The workflow does not use TestPyPI; the import
+check and the approval of the `pypi` environment come before publication.
 
 ## Release a 1.x version
 
@@ -75,15 +74,15 @@ PyPI does not accept the same file name twice.
 ## One-time setup
 
 The maintainer does these steps once, for both release lines. The workflow
-cannot publish until they are done.
+cannot publish until they are done. The environments and the PyPI trusted
+publisher were set up on 2026-10-26.
 
 ### GitHub environments
 
 In **Settings → Environments** of `daniel-fink/rangekeeper`:
 
-1. Create the environment `testpypi`. Under **Deployment branches and tags**,
-   select **Selected branches and tags** and add the tag rule `v*`.
-2. Create the environment `pypi`. Add the same tag rule `v*`. Under
+1. Create the environment `pypi`. Under **Deployment branches and tags**,
+   select **Selected branches and tags** and add the tag rule `v*`. Under
    **Deployment protection rules**, select **Required reviewers** and add the
    maintainer. Do not select **Prevent self-review**; with one maintainer, the
    maintainer approves their own release.
@@ -100,25 +99,6 @@ In **Settings → Environments** of `daniel-fink/rangekeeper`:
    | Repository name | `rangekeeper` |
    | Workflow name | `release.yml` |
    | Environment name | `pypi` |
-
-4. Select **Add**.
-
-### TestPyPI trusted publisher
-
-TestPyPI has no `rangekeeper` project yet, so add a pending publisher. The
-first upload creates the project.
-
-1. Sign in to test.pypi.org. TestPyPI accounts are separate from PyPI accounts.
-2. Open <https://test.pypi.org/manage/account/publishing/>.
-3. Under **Add a new pending publisher**, select **GitHub** and enter:
-
-   | Field | Value |
-   | --- | --- |
-   | PyPI Project Name | `rangekeeper` |
-   | Owner | `daniel-fink` |
-   | Repository name | `rangekeeper` |
-   | Workflow name | `release.yml` |
-   | Environment name | `testpypi` |
 
 4. Select **Add**.
 
