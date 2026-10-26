@@ -124,13 +124,13 @@ The approach is feasible; its implementation and packaging remain Steps 2–4.
 
 [inventory.json](evidence/inventory.json) records 93 module inventories, seven
 notebook source inspections and available external references. The inspected shared
-projects repository was on branch `feature/mandarin-assembly-layout` at
+projects repository was on branch `feature/proving-a-assembly-layout` at
 `5725cc02748ace15e390c8dcea2c5d69185d67c9`; its current commit is recorded in the artifact.
-Mandarin and East Whisman tests were inspected, not executed. Their Python/data
+Proving project A and proving project B tests were inspected, not executed. Their Python/data
 requirements and expected migration acceptance are in the map. Grasshopper C# and
 its Speckle 2.18.0 references were inspected; no Rhino/.NET runtime acceptance ran.
 `git ls-files hypar` returned no source files; ignored artifacts are not a usable
-source baseline. Archived Mandarin code is not an active migration obligation.
+source baseline. Archived proving project A code is not an active migration obligation.
 
 [Test summary](evidence/test-summary.json) reports counts per Python module and the
 three live exclusions. Existing tests characterize old Graph semantics; passing

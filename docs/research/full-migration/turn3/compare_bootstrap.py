@@ -9,9 +9,9 @@ from compare_projects import compare
 BASE = Path("/private/tmp/rk-turn3-private/baseline")
 NEW = Path("/private/tmp/rk-turn3-complete-project-bootstrap/results")
 for name, namespace in [
-    ("mandarin", os.environ["RK_MANDARIN_NAMESPACE"]),
-    ("december", os.environ["RK_EAST_WHISMAN_NAMESPACE"]),
-    ("november-r2", os.environ["RK_EAST_WHISMAN_NAMESPACE"]),
+    ("proving-a", os.environ["RK_PROVING_A_NAMESPACE"]),
+    ("december", os.environ["RK_PROVING_B_NAMESPACE"]),
+    ("november-r2", os.environ["RK_PROVING_B_NAMESPACE"]),
 ]:
     latest = json.loads((NEW / name / "latest.json").read_text())
     print(name, latest, flush=True)

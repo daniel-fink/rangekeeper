@@ -29,7 +29,7 @@ outputs. `output/` is ignored. The build uses the checked-in
 [mixed-use capture](../../examples/data/mixed_use_property);
 it copies only the finished database to the review directory, removes its temporary
 capture/build location and verifies in a fresh process. That process blocks network
-access and reads of the original capture. No source service or Payload is started.
+access and reads of the original capture. No source service or consumer CMS is started.
 
 Outputs include the mixed-use database, a small planar-quad database, generated
 SQL, measured results and `review.html`. Open the HTML to compare two triangle
@@ -75,6 +75,6 @@ Geometry records are individually compressed and loaded only when requested.
 Renderer caches belong outside the immutable file. The prototype's content digest
 includes geometry; its legacy Model UUID alone does not yet identify that geometry.
 
-Do not point Payload's schema push/migrations at these files. There is no HTTP/MCP
+Do not point the consumer CMS's schema push/migrations at these files. There is no HTTP/MCP
 query service, public schema migration, permission model or native viewer adapter
 in this earlier experiment.

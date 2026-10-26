@@ -6,7 +6,7 @@ Edited historical extract, 17 October 2026: external application identifiers and
 
 [⣷] Pulling schema from database...
 [2K[1G[✓] Pulling schema from database...
-[15:18:07] [33mWARN[39m: [36mNo email adapter provided. Email will be written to console. More info at https://payloadcms.com/docs/email/overview.[39m
+[15:18:07] [33mWARN[39m: [36mNo email adapter provided. Email will be written to console. More info at <consumer CMS email documentation>.[39m
 ✔ interrupted import is hidden; retry publishes, reuse is exact, and writes fail (16096.990333ms)
 ✔ pinned RK schema matches its upstream manifest (0.903167ms)
 ✔ real RK export preserves zero, false, unresolved values, units and source support (5.259458ms)
@@ -20,7 +20,7 @@ Edited historical extract, 17 October 2026: external application identifiers and
 ✔ stale Model, unknown object, invalid scope and browser context fail closed (5.150375ms)
 ✔ invalid occurrence edge and unavailable 3D mode are rejected (5.80925ms)
 ✔ artifact hashes reject changed bytes and stale selections (11.05025ms)
-✔ tree and inspector mount without Payload or ChatGPT providers (6.958166ms)
+✔ tree and inspector mount without consumer CMS or ChatGPT providers (6.958166ms)
 ✔ shared selection is bound to exact artifact and canonical target (0.357792ms)
 ℹ tests 15
 ℹ suites 0

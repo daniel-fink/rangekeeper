@@ -18,7 +18,7 @@ use it for later opens. Version `0.10.0.dev6`.
 
 ## Measurement
 
-Fixture: the WW-51 growth Model, 1,024 nodes and 1,024 Relationships, 93,212
+Fixture: the legacy consumer growth Model, 1,024 nodes and 1,024 Relationships, 93,212
 records, 17.5 MB as JSON. Apple Silicon, Python 3.12, Arrow 23.0.1, DuckDB 1.4.3.
 One run each; times include no profiler.
 

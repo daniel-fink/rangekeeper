@@ -341,7 +341,7 @@ route. Empty/comment-only modules also have dispositions.
    remaining numerical/temporal notebooks and deterministic/probabilistic/flexible
    test models. A calculation function is not automatically a solver operator.
 3. **Remaining graph/source/service/host consumers** — migrate graph notebooks,
-   segmentation, Projects YAML/notebooks and required workbench/layout features.
+   segmentation, primary consumer YAML/notebooks and required workbench/layout features.
    Rehouse service and presentation code. Execute each supported consumer in its
    actual environment. Absent credentials/hosts remain named acceptance gaps.
 4. **Retirement and delivery verification** — remove superseded modules/exports
@@ -356,7 +356,7 @@ blanket permission. There are no unresolved Turn 1 domain decisions.
 ## Limits
 
 Temporal Flow unknowns, indexed equations, scenario records, policy execution,
-segment records, remaining notebooks, Projects, layout ports, and service/host
+segment records, remaining notebooks, primary consumer, layout ports, and service/host
 integration are **not delivered by Turn 1**. Scalar Specification roles remain
 measurement-only. The new core coexists with old runtime modules until their
 consumers move. Tracked old walkthrough build outputs remain historical until the

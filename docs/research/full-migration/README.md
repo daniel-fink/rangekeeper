@@ -20,7 +20,7 @@ The two named external locations are inspected only when available.
 - [SYMBOLS.md](SYMBOLS.md): readable symbol checklist, including fields/private
   methods, for assigning behavior contracts before old implementations retire.
 
-RK was at `90c2e00ba7b942a8830960e3df3f3ff616f30fa1`. Projects was at
+RK was at `90c2e00ba7b942a8830960e3df3f3ff616f30fa1`. The primary consumer was at
 `5725cc02748ace15e390c8dcea2c5d69185d67c9`; the separate RK assembly-layout worktree
 was at `4e5aec42f16a18c4d715f5a2a1b879d98e0f71e3`. The capture records dirty state;
 source hashes, not HEAD alone, identify the inspected content. Existing unrelated
@@ -34,7 +34,7 @@ notebook copies. Active project specifications/tests/notebooks are inspected;
 archived project code and generated results are excluded.
 
 New findings include unmigrated version-1 repository workflow examples and
-Mandarin's dependency on parallel workbench/layout APIs. Public symbols from that
+proving project A's dependency on parallel workbench/layout APIs. Public symbols from that
 worktree are captured, but their full behavior and backend requirements need the
 P1 contract review. No branch merge, source migration, notebook execution, solver
 probe, service request or host verification was performed here.

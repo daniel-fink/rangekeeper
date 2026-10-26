@@ -23,7 +23,7 @@ for p in sorted((ROOT/'walkthrough').glob('*.ipynb')):
     notebooks.append(dict(path=str(p.relative_to(ROOT)),sha256=hashlib.sha256(p.read_bytes()).hexdigest(),usage=uses))
 external=Path(os.environ["RK_PROJECTS_ROOT"])
 external_files=[]
-for project in ['mandarin','east-whisman']:
+for project in ['proving-a','proving-b']:
     for prefix in ['tests','spec']:
         for p in sorted((external/project/prefix).rglob('*')):
             if p.is_file() and p.suffix in ('.py','.yaml'):

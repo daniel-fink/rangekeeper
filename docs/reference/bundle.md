@@ -41,7 +41,7 @@ The main Model is the initial inspection target, not an acceptance decision.
 A Model-only Bundle remains valid. Saved partial Specifications and failed Runs can
 be retained; their inclusion does not claim numerical validity or execution support.
 Resolved Run validation checks retained references and evidence. Reading never
-executes a Specification. Core owns live operations, workspace state and acceptance.
+executes a Specification. The consumer application owns live operations, workspace state and acceptance.
 
 ## Directory format and identity
 
@@ -139,11 +139,11 @@ Specifications and new Runs/Models. The original Bundle remains unchanged.
 
 ## Earlier candidate preservation
 
-The dev1 wheel and captured `1-proposal` artifacts remain preserved by Core.
+The dev1 wheel and captured `1-proposal` artifacts remain preserved by the primary consumer.
 The dev2 reader rejects that older Bundle version. Use the matching old reader and
 an explicit reviewed export to move records; no in-place or automatic conversion
 is supplied. Model/Specification/Run canonical schema versions are unchanged by
-this Bundle expansion. The user approved development adoption in Projects. Stable release remains unapproved.
+this Bundle expansion. The user approved development adoption in the primary consumer. Stable release remains unapproved.
 
 ## Remaining acceptance
 

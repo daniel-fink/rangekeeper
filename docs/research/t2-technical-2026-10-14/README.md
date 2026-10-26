@@ -11,11 +11,11 @@ Cold opening still reconstructs/validates the retained documents.
 
 The two Bundle suites passed **19 tests**, including a 1,000-Entity test that
 forbids Arrow table reads after mounting, checks non-overlapping pages and exact
-UUID/path filtering, and treats SQL-shaped text as inert data. Core verifies the
+UUID/path filtering, and treats SQL-shaped text as inert data. The primary consumer verifies the
 clean wheel against an exact source inventory. Current checkout remains `develop`
 in the single Rangekeeper folder; no branch or worktree was created or removed.
 
-Core's coordinated evidence (external link omitted)
+The primary consumer's coordinated evidence (external link omitted)
 owns query/process/cache/client measurements and consumer checks. That link names
 the intended delivery path; this working-tree candidate is not yet committed or
 published. T3 integration/recovery and stable release remain separate gates.

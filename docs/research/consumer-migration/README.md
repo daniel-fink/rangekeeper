@@ -72,7 +72,7 @@ latest entries in `summary.json` for acceptance, not an earlier failed log.
 
 ## Limits
 
-Mandarin, East Whisman, notebooks, Speckle/Grasshopper, Hypar, and live services
+Proving project A, proving project B, notebooks, Speckle/Grasshopper, Hypar, and live services
 were not executed. They remain Step 6E. Workflow version 1, old import paths,
 Feature declarations, and Graph JSON need explicit consumer migration.
 

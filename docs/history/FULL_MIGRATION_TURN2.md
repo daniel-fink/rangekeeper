@@ -242,7 +242,7 @@ checks the resulting governing equations.
 | `flexibility_under_uncertainty.ipynb` | Paired fixed/policy comparisons for identical scenario realizations; visible count, PV/IRR distributions, differences and sale dates |
 | Deterministic/probabilistic/flexible test models | Canonical named operations; no old Flow, dynamics, callback policy or constructor calculations |
 | Basic DCF and source workflow regression | Current reference/schema shape and duration imports; original accepted results retained |
-| Service/design notebooks, Projects/workbench, integrations | Turn 3: source/service-specific acceptance remains required |
+| Service/design notebooks, primary consumer/workbench, integrations | Turn 3: source/service-specific acceptance remains required |
 | Old numerical/domain implementations and comparison tests | Turn 4 removal after remaining caller proof and retained behavior evidence |
 
 The uncertainty notebook keeps `FULL_SCENARIO_COUNT = 2000`. Routine acceptance

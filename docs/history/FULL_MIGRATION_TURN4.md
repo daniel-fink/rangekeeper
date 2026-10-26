@@ -12,7 +12,7 @@ retirement remains open** because the official Windows connector gate still hold
 the old graph/Measure/Speckle API and excluded C# dependency group.
 
 The accepted Turn 3 checkpoint was committed and pushed: RK `305f3ff` on
-`acausal-modelling`, Projects `6146ad2` on `feature/mandarin-assembly-layout`.
+`acausal-modelling`, primary consumer `6146ad2` on `feature/proving-a-assembly-layout`.
 The Turn 4 changes are a new, uncommitted working-tree change. No package release
 or external publication occurred.
 
@@ -35,7 +35,7 @@ or external publication occurred.
 - Reduced base dependencies to JSON validation and Pint. Financial, numerical,
   dataframe, plotting, viewer, service and execution capabilities have explicit
   extras. A temporary `legacy` extra serves the held predecessor group.
-  The source and both Projects locks were updated; reviewed project YAML was not changed.
+  The source and both primary consumer locks were updated; reviewed project YAML was not changed.
 
 ## Dependency and API boundaries
 
@@ -78,7 +78,7 @@ this work is unreleased; identify it by its hash and source state.
 - Core installation, optional financial/execution checks, scalar forward/inverse,
   output reuse, temporal/scenario/policy regressions and seven fresh walkthroughs passed.
 - All three real project builds, strict comparisons, project tests/lint/typing,
-  separate Mandarin SOM comparison and fresh Mandarin notebook passed on Python 3.13.
+  separate proving project A architecture-practice comparison and fresh proving project A notebook passed on Python 3.13.
 - Cross-language serialization passed; the captured Mac Rhino export was accepted
   by the new wheel. C# code is unchanged; no fresh Mac UI or Windows acceptance is claimed.
 - The AST audit assigns all 671 frozen symbols and 95 consumers. Remaining old

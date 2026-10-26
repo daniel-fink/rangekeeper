@@ -48,9 +48,9 @@
   "tests": {
     "rangekeeper": 854,
     "rangekeeper_notebook_code_cells": 81,
-    "mandarin_tests": 8,
-    "mandarin_notebooks": 5,
-    "east_whisman_tests": 6
+    "proving_a_tests": 8,
+    "proving_a_notebooks": 5,
+    "proving_b_tests": 6
   },
   "host": {
     "rhino": "8.35.26251.13002",
@@ -61,7 +61,7 @@
     "Windows Rhino/connector acceptance",
     "Second-computer Codex desktop trial with live answers",
     "ChatGPT C1-C7 and embedding E1",
-    "Production hosting and Payload adoption",
+    "Production hosting and consumer CMS adoption",
     "Large model and concurrent importer acceptance",
     "Fresh narrow-viewport UI acceptance"
   ],
@@ -69,77 +69,77 @@
     "root": "[external path omitted]",
     "files": [
       {
-        "path": "mandarin/notebooks/01_sources.ipynb",
+        "path": "proving-a/notebooks/01_sources.ipynb",
         "before": "b4833cbf6bc9e3c57d230aad5c4d3bb9cb130f6186c9ec6bf61066b5648a64ac",
         "after": "d68519aa03061ef688c080a5ea1b794d31bcb3a20d482fb490c18daf1657f6ef"
       },
       {
-        "path": "mandarin/notebooks/02_interpretation.ipynb",
+        "path": "proving-a/notebooks/02_interpretation.ipynb",
         "before": "1c3c0306a8b5748bbcf54b85fb9ea59f3da19aa9d1c281e026342d7be4475fe2",
         "after": "a2017ded53248b296ec644b90ac617ca7a31bcd86def341f53192590b683b5bc"
       },
       {
-        "path": "mandarin/notebooks/03_model.ipynb",
+        "path": "proving-a/notebooks/03_model.ipynb",
         "before": "66253500833b733157c74148897da645398ea9f6e7be50884515b45368ade499",
         "after": "eb1265d9058c7fb99f8d25b5670572f96eb64918ac836901eb5eee909b7c0a8b"
       },
       {
-        "path": "mandarin/notebooks/04_review.ipynb",
+        "path": "proving-a/notebooks/04_review.ipynb",
         "before": "f5efe8b5de570f4699fb95920708e1f94a192dd7bbeb0c979dffb93e3effed64",
         "after": "f50ebfeebcb25e39236616d92f25e2dca7b9527559a1af754438d1a8beb4c585"
       },
       {
-        "path": "mandarin/notebooks/05_twenty.ipynb",
+        "path": "proving-a/notebooks/05_twenty.ipynb",
         "before": "ce35c47f1cf141369d548c50b1fb6181144ebd10888b383d5c243240243f000c",
         "after": "a1b85e89e2bad4e10599cb5aa60ec63e14f53cb706e64d696b6ce2a7c929d40a"
       },
       {
-        "path": "mandarin/scripts/verify.py",
+        "path": "proving-a/scripts/verify.py",
         "before": "b722b558a6f59c269f6fe2ffdd317798e66d5f67c7f275e9e3b020f141b5fbe2",
         "after": "58b5121f0347463902dfff9a8debd80fa77842f2d9a7fe443f3d497dc00ab89f"
       },
       {
-        "path": "mandarin/tests/test_source_model.py",
+        "path": "proving-a/tests/test_source_model.py",
         "before": "0bea192dc14321dec4cd6187742933f79b3f53bb67a473b373db46347e3d863d",
         "after": "f5e4f2145acb355d93de8831fc88b60d3f243b90d6ffd66fd39a772b24e087d4"
       },
       {
-        "path": "east-whisman/README.md",
+        "path": "proving-b/README.md",
         "before": "6ed0cb088918a7d0d3bafaf10d5a36ad543718ef00ae1b735e5ca9d5ef36b60a",
         "after": "bd29f60cd5908756bac1323d3b45e337a40e5c69e00a3b608cd9838501c94d38"
       },
       {
-        "path": "east-whisman/docs/canonical-migration.md",
+        "path": "proving-b/docs/canonical-migration.md",
         "before": "e5d183dd6e9c2dc3bb1e30e9dd4607dd9c56985d0c0c7a0fe907e69b6bcded01",
         "after": "f37e73397ff362a45519d5eabc9b8c008e8a909614e99d92036a48eb9394fe17"
       },
       {
-        "path": "east-whisman/pyproject.toml",
+        "path": "proving-b/pyproject.toml",
         "before": "0fbb1cb7568fd3e7d68c5186dcb13dd2def4c58f19d7e3a0c3cfea7f3f08841f",
         "after": "6642e763d113a19d5dbc9876f20c0ba4bacc9f69e490437dc3a8cae9688466e7"
       },
       {
-        "path": "east-whisman/tests/test_workflow.py",
+        "path": "proving-b/tests/test_workflow.py",
         "before": "2eb63118581a34c85cccfbe8477425e52373f447549009cbf31b3e40f9ef23ee",
         "after": "cf0b18a1a05f42d33db801fa2355fe059ccb6c74f92f1eed95ef4ec58d85eb4c"
       },
       {
-        "path": "east-whisman/uv.lock",
+        "path": "proving-b/uv.lock",
         "before": "6e2f9aad72bd505e52705fa93d75ca820ddf94a4df5f189b6800f1efdb472a94",
         "after": "00485d6770430f9f44d7d7332e2ea51df30372b7f144c4718b7f7043e913e70d"
       },
       {
-        "path": "mandarin/README.md",
+        "path": "proving-a/README.md",
         "before": "75a009cb6bbf65604776329d87793090ad053d45be68c021b53f76f30ceefe28",
         "after": "08ce8c94df5f26e66c769384f4a3065a25dabcdb9cb2f3e07d620b638ef6a110"
       },
       {
-        "path": "mandarin/pyproject.toml",
+        "path": "proving-a/pyproject.toml",
         "before": "ddcc75fa1f39afc99bfd46f4860a54d7d4d2829b3d67933d26040d10dc1d64c7",
         "after": "35f2da2a8477a762f28c8fc4957f62595b04012dfb0c9eeac862aeb36622214b"
       },
       {
-        "path": "mandarin/uv.lock",
+        "path": "proving-a/uv.lock",
         "before": "599899c01a76577479fa84049410c37925078b55dabc8acbcf2dd35dda2f34d6",
         "after": "ac4ffa881163101e9090ea97a11cb3aa153573deeef2e5487a7fce974476a0cc"
       }

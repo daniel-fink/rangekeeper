@@ -31,9 +31,9 @@ print("Installed import:", rangekeeper.__file__, flush=True)
 if args.phase == "build":
     from rangekeeper.workflow.workbench import build
     for project, spec, name in (
-        ("mandarin", "spec", "mandarin"),
-        ("east-whisman", "spec/december", "december"),
-        ("east-whisman", "spec/november-r2", "november-r2"),
+        ("proving-a", "spec", "proving-a"),
+        ("proving-b", "spec/december", "december"),
+        ("proving-b", "spec/november-r2", "november-r2"),
     ):
         attempt = build(base / project / spec, input_root=base / project / "inputs",
                         output_root=base / "results" / name)
@@ -44,7 +44,7 @@ if args.phase == "build":
             "checks": dict(Counter(c.status for c in attempt.result.checks)),
         }), flush=True)
 elif args.phase == "tests":
-    for project in ("mandarin", "east-whisman"):
+    for project in ("proving-a", "proving-b"):
         for command in (
             [sys.executable, "-m", "pytest", "tests", "-q"],
             [str(Path(sys.executable).parent / "ruff"), "check", "tests"],
@@ -56,9 +56,9 @@ else:
     spec = importlib.util.spec_from_file_location("comparison", ROOT / "docs/research/full-migration/turn3/compare_projects.py")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    for name, namespace in (("mandarin", os.environ["RK_MANDARIN_NAMESPACE"]),
-                            ("december", os.environ["RK_EAST_WHISMAN_NAMESPACE"]),
-                            ("november-r2", os.environ["RK_EAST_WHISMAN_NAMESPACE"])):
+    for name, namespace in (("proving-a", os.environ["RK_PROVING_A_NAMESPACE"]),
+                            ("december", os.environ["RK_PROVING_B_NAMESPACE"]),
+                            ("november-r2", os.environ["RK_PROVING_B_NAMESPACE"])):
         latest = json.loads((base / "results" / name / "latest.json").read_text())
         result = module.compare(Path("/private/tmp/rk-turn3-private/baseline") / name,
                                 base / "results" / name / latest["directory"], namespace)

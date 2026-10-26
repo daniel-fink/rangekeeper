@@ -109,8 +109,8 @@ packages as the same complete future Model. Geometry fields and revision enforce
 need the agreed public-contract review.
 
 Bundle 2 is not implemented: bounded component queries, full browser integration,
-Payload's native-feature mapping and actual ChatGPT UI exchanges remain open.
-No Payload v4 host test was repeated because this bundle changes no host code.
+the consumer CMS's native-feature mapping and actual ChatGPT UI exchanges remain open.
+No consumer CMS v4 host test was repeated because this bundle changes no host code.
 The current v4 migration guide was reviewed; SQLite format independence does not
 itself establish integration compatibility. Native iOS, external textures, newer
 Speckle formats, hostile-file handling, concurrency and large-model limits are also

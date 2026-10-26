@@ -5,7 +5,7 @@ The accepted Turn 3 work was committed and pushed before deletion:
 | Repository | Branch | Checkpoint |
 |---|---|---|
 | Rangekeeper | `acausal-modelling` | `305f3ff6d460834ea803bae2fa6ad5c48a1627c9` |
-| Projects | `feature/mandarin-assembly-layout` | `6146ad2039278db773f3bdc2c159d82149d5abc1` |
+| Primary consumer | `feature/proving-a-assembly-layout` | `6146ad2039278db773f3bdc2c159d82149d5abc1` |
 | Layout reference, read only | `feature/assembly-layout-constraints` | `4e5aec42f16a18c4d715f5a2a1b879d98e0f71e3` |
 
 Remote branch SHAs matched the two checkpoint commits after pushing. The Turn 4
@@ -33,7 +33,7 @@ SHA-256 027a4cd6727a43f30de7b0ddf0cd6adf06355c73e91da5f866157d2c1dcfac14
 - Typing: mypy 1.18.2, 168 sources and explicit negative-call checks.
 - Clean core: normal wheel installation and dependency resolution; 13 packages
   including RK. No NumPy, pandas, Polars, plotting, service SDK or solver installed.
-- Clean Projects: Python 3.13.11, same wheel with `[workflow,excel]` and named
+- Clean primary consumer: Python 3.13.11, same wheel with `[workflow,excel]` and named
   test/notebook tools. No editable RK, old project package, archive or earlier
   output participates in a build. No NumPy/pandas/Polars/networkx/Speckle/Pyomo/Plotly.
 - Full-feature notebook checks put that wheel's unpacked package first in a
@@ -55,16 +55,16 @@ SHA-256 027a4cd6727a43f30de7b0ddf0cd6adf06355c73e91da5f866157d2c1dcfac14
 | Installed PyXIRR-only and process-isolated scalar forward/inverse, reuse and publication | Passed | `installed.txt` |
 | Seven walkthroughs, including both design fixtures | Passed in fresh kernels | `notebooks.txt` |
 | Three real source builds and strict historical comparisons | Passed | `project-builds.txt`, `project-comparisons.txt` |
-| Mandarin tests / East Whisman tests | 8 passed, 1 reference skip / 6 passed; lint and typing passed | `project-tests.txt` |
-| Separate older Mandarin SOM comparison | 3 passed | `mandarin-som-reference.txt` |
-| Mandarin fresh review notebook | Passed | `mandarin-notebook.txt` |
+| Proving project A tests / proving project B tests | 8 passed, 1 reference skip / 6 passed; lint and typing passed | `project-tests.txt` |
+| Separate older proving project A architecture-practice comparison | 3 passed | `proving-a-practice-reference.txt` |
+| Proving project A fresh review notebook | Passed | `proving-a-notebook.txt` |
 | Upgrade-guide and documentation examples outside checkout | Passed | `guide.txt`, `documentation-examples-final.txt` |
 | Python → C# → Python preservation | Passed | `cross-language-*.txt` |
 | Captured Mac Rhino export through candidate Python wheel | 50 objects, 63 relationships; envelope equality passed | `rhino-export-validation.txt` |
 | Rebuilt walkthrough site from accepted notebooks | Passed | `book-build-retry.txt`, `retain-book.txt` |
 | Dependency lock checks and normal minimal installation | Passed | `lock-check.txt`, project lock logs, install logs |
 
-Source outputs preserve the Turn 3 counts: Mandarin 377 objects/376 relationships
+Source outputs preserve the Turn 3 counts: proving project A 377 objects/376 relationships
 and checks 776 agree, 14 unavailable, 28 difference; December 73/72 and 368 agree,
 6 unavailable; November R2 37/36 and 144 agree, 45 unavailable. These retained
 business findings are not software failures. Strict comparisons preserve quantities,

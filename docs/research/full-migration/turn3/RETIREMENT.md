@@ -39,7 +39,7 @@ adds current consumer dispositions without rewriting that baseline.
 8. Narrow optional dependencies after import absence tests and all accepted
    consumer checks pass from a new wheel. Regenerate documentation and repeat
    the full regression, schema, typing, installed and host checks appropriate to
-   the actual removals. Record the paired RK/Projects state. Commit and push need
+   the actual removals. Record the paired RK/primary consumer state. Commit and push need
    a separate instruction.
 
 ## Gates
@@ -47,7 +47,7 @@ adds current consumer dispositions without rewriting that baseline.
 | Group | Replacement evidence | Removal condition |
 |---|---|---|
 | Numerical/temporal algorithms | Turn 1/2 kernels and financial library, seven Turn 3 installed walkthroughs, synthetic parity checks | Every preserved behavior has a canonical test; no active consumer import remains |
-| Source Graph consumers | Three real Model builds, exact comparisons, source lineage, Projects tests and fresh-kernel Mandarin review | Accepted source builds remain reproducible after removal; held transport group does not import these files |
+| Source Graph consumers | Three real Model builds, exact comparisons, source lineage, primary consumer tests and fresh-kernel proving project A review | Accepted source builds remain reproducible after removal; held transport group does not import these files |
 | Graph views/reduction/table | Model-backed operations, workbench, layout and browser tests | Keep canonical operation tests; remove only the superseded classes/exports |
 | Root presentation/class patching | All seven notebooks use explicit construction and detached adapters | Scan has no executable retained caller |
 | Speckle/C# host predecessor | Offline mapping and Mac Rhino accepted; pinned Python receive accepted | **Hold:** current official Windows connector publication/receive still requires an approved destination and host |

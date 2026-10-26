@@ -7,7 +7,7 @@
   "packaged_files_equal_to_source": 260,
   "canonical_runtime_csharp_and_source_notebooks_unchanged": true,
   "removed_files": 30,
-  "mandarin_code_cells_executed": 5,
+  "proving_a_code_cells_executed": 5,
   "suite": {
     "tests": 1082,
     "failures": 0,

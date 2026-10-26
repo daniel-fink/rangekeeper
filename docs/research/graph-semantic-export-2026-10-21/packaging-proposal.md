@@ -1,8 +1,8 @@
 # Semantic-export candidate: packaging amendment
 
 Status: exact packaging extension released and locally verified, 21 October 2026.
-The original proposal is preserved in packaging-1; Git delivery is not released. WW-51 remains the sole RK owner on
-`feature/semantic-validation-read-cost`. Core remains read-only.
+The original proposal is preserved in packaging-1; Git delivery is not released. The legacy consumer ticket remains the sole RK owner on
+`feature/semantic-validation-read-cost`. The primary consumer remains read-only.
 
 ## Inputs and exact scope
 
@@ -20,7 +20,7 @@ Propose **0.10.0.dev5**, replacing dev4 only in:
 - `uv.lock`: the `[[package]]` entry with `name = "rangekeeper"` and editable
   source `"."`; only its `version` field changes.
 
-Current local history, RK runtime/distribution artifact names and Core references
+Current local history, RK runtime/distribution artifact names and the primary consumer references
 contain no dev5 use. Fresh `git ls-remote --heads --tags origin` confirms remote
 `develop` is still `8c50e06bd045b1298da15be5be296a1150d2d339`, with no dev5 tag.
 This is a repository/local artifact uniqueness check, not a registry-publication
@@ -37,7 +37,7 @@ are confined to the new build/artifact area; they are not repository edits.
 Additional tracked paths are only the two version files above and this proposal.
 The existing experiment README and research index may receive bounded packaging,
 review and delivery notes after authorization. The new equivalence test remains
-unchanged. No schema, generated source, dependency constraint or Core change.
+unchanged. No schema, generated source, dependency constraint or the primary consumer change.
 
 ## New runtime and operation sequence
 
@@ -56,7 +56,7 @@ the executed helpers, environments, one runner correction and exact artifact.
    four experiment files and the original pyproject/lock under `packaging-1/preserved`.
    Pin those copies to the old experiment manifest and activation inventory, so
    its original README/index bytes remain verifiable after later packaging notes.
-   Preserve walkthrough and gh-pages refs and every Interface preview.
+   Preserve walkthrough and gh-pages refs and every consumer interface preview.
 2. Make exactly the two version substitutions. Require a byte diff of those two
    lines only. Parse both lock versions and prove the other **89 package entries**,
    RK requirements/markers/extras and all top-level lock metadata are identical.
@@ -93,7 +93,7 @@ the executed helpers, environments, one runner correction and exact artifact.
 7. Install that exact wheel only into the new runtime:
    `uv pip install --python <runtime-env>/bin/python --offline --no-deps --reinstall-package rangekeeper <absolute-wheel>`.
    Verify installed metadata version, wheel digest and every installed RK payload.
-   Recheck non-RK environment inventory. No Core adoption or shared installation.
+   Recheck non-RK environment inventory. No primary consumer adoption or shared installation.
 
 ## Exact-wheel checks and independent artifact review
 
@@ -118,7 +118,7 @@ MPLCONFIGDIR and PYSTOW_HOME paths. Preserve complete commands, exit codes and l
 - Through that installed wheel, read each unchanged full primary/growth fixture
   twice and verify both exports against the same compact oracle and input hashes.
   Record correctness and origin; do not reuse these checks as new paired timing
-  evidence or a Core five-second result.
+  evidence or a primary consumer five-second result.
 - Run Black check on the two changed Python files, documentation and `git diff
   --check`. The 140 equivalence/1,248 full source passes remain valid only if their
   source/test pins match. Version-only packaging does not require repeating
@@ -143,14 +143,14 @@ No force push, broad staging, cleanup, worktree or publication. Record source/me
 commits, tree equality, exact committed path/blob hashes, wheel/manifest hashes,
 fresh live remote equality, clean primary checkout on develop, unchanged protected
 refs/evidence and explicit ownership release. Preserve the wheel in ignored runtime
-for a later independently released Core vendor/lock/environment window.
+for a later independently released primary consumer vendor/lock/environment window.
 
 Packaging accepts neither capacity nor deployment. Growth RK first-read median
-remains 7.224 seconds; the latest delivered Core growth read failed at 5.016 seconds
+remains 7.224 seconds; the latest delivered primary consumer growth read failed at 5.016 seconds
 under the former rule. The user now permits a longer finite initial load and
 requires responsive graph interactions. The 1024/1024 target, full properties and
 provenance, matched browser/private-state reopen and actual-host gates remain.
-A separately reviewed Core/Interface opening-budget amendment will implement that
+A separately reviewed primary consumer/consumer interface opening-budget amendment will implement that
 new decision. Existing deployment/live approval gates still apply.
 
 ## Deferred validation repair leads: read-only ranking
@@ -165,7 +165,7 @@ exact lookup and the semantic-export candidate; its 7.119-second profiled primar
 run is an attribution guide, not a new timing or a saving prediction. Do not add
 parent cumulative times to their children, or scale profiled costs into an
 unprofiled 1024 result. The latest growth first-read gap is at least 2.224 seconds
-before Core overhead.
+before the primary consumer overhead.
 
 1. **Recommend selective recorded-unit traversal as the next bounded experiment.**
    The second full `walk` subtree costs 0.380974 seconds cumulatively in the retained

@@ -21,7 +21,7 @@ Machine-readable evidence:
 - `ledger.json`: current dispositions for all 671 frozen symbols and 95 consumers;
   original source evidence is marked historical.
 - `imports.json`: current AST import/attribute references. The audit also rejects
-  old imports in the registered active Projects Python and notebook consumers.
+  old imports in the registered active primary consumer Python and notebook consumers.
 - `full-suite.xml` and `test-inventory-change.json`: actual results and count changes.
 - `commands.jsonl`: exact commands, working directories, selected environment,
   exit status and duration. Failed setup attempts remain beside their successful retries.

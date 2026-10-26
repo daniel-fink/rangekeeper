@@ -38,7 +38,7 @@ preserved files. Keep the relocation evidence unchanged; record final removal se
 ## Current continuation — full migration Turn 4, 6 October 2026
 
 The accepted Turn 3 checkpoint is committed and pushed: RK `305f3ff` on
-`acausal-modelling`, Projects `6146ad2` on `feature/mandarin-assembly-layout`.
+`acausal-modelling`, primary consumer `6146ad2` on `feature/proving-a-assembly-layout`.
 The layout reference stays at `4e5aec4`, read only. The Turn 4 retirement slice
 is implemented and uncommitted. Start with [the current report](../FULL_MIGRATION_TURN4.md),
 [acceptance](../../research/full-migration/turn4/BASELINE.md), and
@@ -46,7 +46,7 @@ is implemented and uncommitted. Start with [the current report](../FULL_MIGRATIO
 
 Local acceptance: 1,058 passed, 24 optional MiniZinc skips, seven schema suites,
 typing/generation, all seven installed walkthroughs, all three source builds and
-strict comparisons, Projects checks and fresh Mandarin review. Clean core and
+strict comparisons, primary consumer checks and fresh proving project A review. Clean core and
 Python 3.13 source installations pass with the reduced dependencies. The new wheel
 also passes cross-language checks and validates the captured Mac Rhino export.
 No new Mac UI recomputation or live service publication is claimed.

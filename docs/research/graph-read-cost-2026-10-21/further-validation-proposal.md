@@ -16,7 +16,7 @@ new explicit diagnostic-contract decision before implementation.
 The parent measured scope A's growth codec read at 7.576713541 seconds cold and
 7.206845458 seconds warm, against approximately 9.491 and 9.232 seconds for the
 same-environment baseline. This is useful improvement of about 20–22%, while the
-initial read remains outside five seconds before Core's other request work. A
+initial read remains outside five seconds before the primary consumer's other request work. A
 further reduction of more than 34% of the measured cold codec time would be
 needed just to get that codec call below five seconds.
 
@@ -148,7 +148,7 @@ checks, C# checks and installed-wheel verification if the candidate proceeds.
 Measure the unchanged primary and growth cold codec reads serially against the
 frozen A checkpoint in the same environment. Keep failed and insufficient results.
 Only a material observed improvement can justify taking this candidate into a new
-reviewed wheel and the separate Core dependency handoff.
+reviewed wheel and the separate primary consumer dependency handoff.
 
 If exact ordered diagnostics are required without amendment, defer the redundant
 constraint removals. The small explicit-true cleanup alone has no measured basis

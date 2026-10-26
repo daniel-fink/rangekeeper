@@ -42,7 +42,7 @@ installed-package checks, source comparisons and observed UI behaviour.
   failed attempts, resumption, installed Python APIs and the real stdio MCP SDK.
 - Viewer: **108 strict Python tests and 15 Node tests pass**. Strict tests run both MiniZinc 2.10.1/CP-SAT 9.15 and Z3 5.1.0.0 without skips.
   Browser arithmetic, artifact identity, stale selection, publication failures and native
-  Payload lifecycle checks also run. TypeScript checking and production build pass.
+  consumer CMS lifecycle checks also run. TypeScript checking and production build pass.
 - All 81 executable cells in the three active notebooks run from installed candidate
   wheels. The strict four-page book builds. Notebook 03 passes the existing independent
   CSV/finance audit; its results remain unchanged. See [financial results](finance-audit.json).
@@ -51,7 +51,7 @@ installed-package checks, source comparisons and observed UI behaviour.
   The source comparison checks 36 entities, 14 assemblies, 63 relationships and 45 geometry
   associations at relative tolerance 1e-10 and absolute tolerance 1e-7.
 - Actual browser interaction confirms shared tree scope, node dragging, canvas panning,
-  canonical inspection and source evidence. The full Payload host renders retained 3D;
+  canonical inspection and source evidence. The full consumer CMS host renders retained 3D;
   clicking geometry selects its canonical RK object. The book renders charts, tables,
   PyVis graphs and local geometry. Its relation selector survives a light/dark theme change.
 
@@ -87,11 +87,11 @@ Geometry selection shows `buildingAhotelFloor1`, GFA 1,697.452 m² and its canon
 See [live Jupyter](live-jupyter.png) and [full Viewer host](viewer-host.png).
 A fresh narrow-viewport check was not established: the browser retained its normal viewport.
 
-The user authorized only the required consumer migration in the separate Projects repo.
-Fifteen files in Mandarin and East Whisman update imports, dependency pins, verification
+The user authorized only the required consumer migration in the separate primary consumer repo.
+Fifteen files in proving project A and proving project B update imports, dependency pins, verification
 metadata, current API assertions and generated-output documentation. Sources, YAML mappings,
 historical outputs and unrelated work remain unchanged. Both consume MCP's exact RK wheel.
-Mandarin's eight synthetic tests, all five notebooks, and East Whisman's six tests over the
+Proving project A's eight synthetic tests, all five notebooks, and proving project B's six tests over the
 two original workbook scenarios pass. Ruff and type checks pass for both projects. Old
 automatic `viewer.html` links were removed from their core-ingestion instructions; advanced
 export is a separate Viewer operation.
