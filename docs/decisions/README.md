@@ -19,7 +19,9 @@ current after its execution plan moves to history.
 ## Accepted for 1.0
 
 These records were accepted on 2026-10-26. Their implementation is pending. The
-v1.0 tracking project lists the implementation issues. The
+[Rangekeeper project](https://github.com/users/daniel-fink/projects/8) tracks the
+implementation as epics with sub-issues, milestones 0.8.72 to 1.0.0 and
+blocked-by links. The
 [architecture](../concepts/architecture.md) shows the target, and the
 [glossary](../concepts/glossary.md) defines its terms.
 
