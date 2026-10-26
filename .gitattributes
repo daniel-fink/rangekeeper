@@ -1,1 +1,3 @@
 *.html linguist-detectable=false
+# The data package is hashed byte for byte; keep its line endings.
+examples/data/** -text
