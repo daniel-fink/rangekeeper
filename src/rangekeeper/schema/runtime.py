@@ -2,33 +2,33 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 import json
 import math
-from types import MappingProxyType
-from typing import TypeAlias, TypeVar, Union
-from uuid import UUID
+from collections.abc import Mapping
 from datetime import date as Date
+from types import MappingProxyType
+from typing import TypeAlias, TypeVar
+from uuid import UUID
 
-FrozenJSONValue: TypeAlias = Union[
-    None,
-    bool,
-    int,
-    float,
-    str,
-    Mapping[str, "FrozenJSONValue"],
-    tuple["FrozenJSONValue", ...],
-]
-JSONValue: TypeAlias = Union[
-    None,
-    bool,
-    int,
-    float,
-    str,
-    Mapping[str, "JSONValue"],
-    list["JSONValue"],
-    tuple["JSONValue", ...],
-]
+FrozenJSONValue: TypeAlias = (
+    None
+    | bool
+    | int
+    | float
+    | str
+    | Mapping[str, "FrozenJSONValue"]
+    | tuple["FrozenJSONValue", ...]
+)
+JSONValue: TypeAlias = (
+    None
+    | bool
+    | int
+    | float
+    | str
+    | Mapping[str, "JSONValue"]
+    | list["JSONValue"]
+    | tuple["JSONValue", ...]
+)
 R = TypeVar("R", bound="Record")
 
 
@@ -110,7 +110,7 @@ def exact_equal(left, right) -> bool:
         )
     if isinstance(left, (tuple, list)) and isinstance(right, (tuple, list)):
         return len(left) == len(right) and all(
-            map(lambda pair: exact_equal(*pair), zip(left, right))
+            map(lambda pair: exact_equal(*pair), zip(left, right, strict=True))
         )
     if type(left) is not type(right):
         return False
@@ -269,6 +269,7 @@ class Record:
         return copy_json(self._data)
 
     def has_field(self, name: str) -> bool:
+        """Return whether a field is present; raise KeyError for an unknown field."""
         from rangekeeper.schema.validation import _slot_map
 
         if name not in _slot_map(self._kind):

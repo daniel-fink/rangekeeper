@@ -4,15 +4,15 @@ import math
 from datetime import date
 from uuid import UUID
 
-from rangekeeper.shared.validation import require
 from rangekeeper.model.expression.validation import analyze_expressions
 from rangekeeper.model.scope import (
-    reference_key,
     numerical_units,
     recorded_quantity,
+    reference_key,
     resolve_reference,
 )
 from rangekeeper.shared.units import default_units
+from rangekeeper.shared.validation import require
 from rangekeeper.specification.policy._availability import available_on, evidence_dates
 
 
@@ -111,7 +111,7 @@ def validate_outcomes(policy, outcomes, *, scope, provenance=None, units=default
     evidence = evidence_dates(provenance or {})
     assignments, prior = [], {}
     terminated = False
-    for decision, outcome in zip(policy["decisions"], outcomes):
+    for decision, outcome in zip(policy["decisions"], outcomes, strict=False):
         require(not terminated, "outcome after termination")
         require(
             outcome["decision"] == decision["id"] and outcome["at"] == decision["at"],
@@ -123,7 +123,9 @@ def validate_outcomes(policy, outcomes, *, scope, provenance=None, units=default
             == [item["name"] for item in decision["observations"]],
             "outcome observations mismatch",
         )
-        for binding, observed in zip(decision["observations"], observations):
+        for binding, observed in zip(
+            decision["observations"], observations, strict=True
+        ):
             require(
                 binding["target"] == observed["target"], "observed reference mismatch"
             )

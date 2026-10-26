@@ -2,28 +2,29 @@
 
 from datetime import date
 from uuid import uuid4
+
+from rangekeeper.calculations.series import ResamplingMethod
+from rangekeeper.io import MemoryStore
 from rangekeeper.model import (
-    Model,
-    Metadata,
-    Definitions,
-    System,
-    Entity,
     Assembly,
     Characteristics,
-    Value,
+    Definitions,
+    Entity,
     Measure,
+    Metadata,
+    Model,
+    System,
     Update,
+    Value,
 )
-from rangekeeper.schema.enums import ValueKind, SolutionStatus
+from rangekeeper.model.duration import Frequency, Span
 from rangekeeper.model.flux import Flow, Stream
-from rangekeeper.model.duration import Span, Frequency
 from rangekeeper.model.formulation import flow
-from rangekeeper.model.system import Hierarchy, View, Reduction
-from rangekeeper.calculations.series import ResamplingMethod
+from rangekeeper.model.system import Hierarchy, Reduction, View
+from rangekeeper.run.execution import Executor
+from rangekeeper.schema.enums import SolutionStatus, ValueKind
 from rangekeeper.specification import Specification, SpecificationRecord
 from rangekeeper.specification.targets import assign_flow, unknown_flow
-from rangekeeper.io import MemoryStore
-from rangekeeper.run.execution import Executor
 
 
 def collection():
@@ -147,9 +148,9 @@ def solve_example():
     store = MemoryStore()
     store.put(model)
     forward = Executor(store).execute(forward_specification(model, ids))
-    assert (
-        forward.report.status.solution is SolutionStatus.FEASIBLE
-    ), forward.report.to_data()
+    assert forward.report.status.solution is SolutionStatus.FEASIBLE, (
+        forward.report.to_data()
+    )
     solved = store.load_model(forward.record.outputs[0])
     assert solved.value(ids["portfolio"]).flow.movements[0].number == 2760
     reverse = forward_specification(solved, ids).lock(
@@ -165,9 +166,9 @@ def solve_example():
         model=solved,
     )
     inverse = Executor(store).execute(reverse)
-    assert (
-        inverse.report.status.solution is SolutionStatus.FEASIBLE
-    ), inverse.report.to_data()
+    assert inverse.report.status.solution is SolutionStatus.FEASIBLE, (
+        inverse.report.to_data()
+    )
     result = store.load_model(inverse.record.outputs[0])
     assert result.value(ids["A_rent"]).flow.movements[-1].number == 220
     assert result.value(ids["A_annual"]).flow.movements[0].number == 1080

@@ -4,9 +4,11 @@ import json
 from collections.abc import Mapping
 from os import PathLike
 from pathlib import Path
+
 from pyvis.network import Network
-from rangekeeper.model.system import View
+
 from rangekeeper.model.definitions import classification as find_classification
+from rangekeeper.model.system import View
 from rangekeeper.shared.errors import EncodingError
 
 

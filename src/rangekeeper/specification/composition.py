@@ -5,28 +5,32 @@ catalogue of Specification revisions; UUID shape does not establish document kin
 Derived views are internal check results, not revisions to serialize or publish.
 """
 
-from copy import deepcopy
-from types import MappingProxyType
-from uuid import UUID
 import math
-from typing import TYPE_CHECKING
 from collections.abc import Mapping
-from rangekeeper.shared.references import SpecificationResolver
-from rangekeeper.shared.units import UnitSystem, default_units
-from rangekeeper.shared.diagnostics import ValidationReport
+from copy import deepcopy
+from dataclasses import dataclass
+from types import MappingProxyType
+from typing import TYPE_CHECKING
+from uuid import UUID
+
+from rangekeeper.model.scope import reference_key
 from rangekeeper.schema.records import Specification as SpecificationRecord
 from rangekeeper.schema.validation import document_version
+from rangekeeper.shared.diagnostics import ValidationReport
 from rangekeeper.shared.errors import (
+    ContractError,
     IdentityConflictError,
     ReferenceTypeError,
     ValidationError,
-    ContractError,
 )
-from rangekeeper.shared.validation import bounded
-from rangekeeper.model.scope import reference_key
-from dataclasses import dataclass
-from rangekeeper.shared.validation import require, require_ownership, require_acyclic
-
+from rangekeeper.shared.references import SpecificationResolver
+from rangekeeper.shared.units import UnitSystem, default_units
+from rangekeeper.shared.validation import (
+    bounded,
+    require,
+    require_acyclic,
+    require_ownership,
+)
 
 if TYPE_CHECKING:
     from rangekeeper.specification.specification import Specification
@@ -67,6 +71,8 @@ def validate_local_header(doc, schema_version):
 
 @dataclass(frozen=True, slots=True)
 class Source:
+    """Original location of a composed declaration: document UUID and path."""
+
     document_id: UUID
     path: str
 
@@ -85,18 +91,22 @@ class Composition:
 
     @property
     def root_id(self) -> UUID:
+        """Return the UUID of the root Specification."""
         return self.requirements.metadata.id
 
     @property
     def model_id(self) -> UUID | None:
+        """Return the input Model UUID, or None when no Model is declared."""
         return self.requirements.model
 
     @property
     def contributor_ids(self) -> tuple[UUID, ...]:
+        """Return the contributing Specification UUIDs, in contributor order."""
         return tuple(document.id for document in self.contributors)
 
     @property
     def effective(self):
+        """Return the effective requirements as a detached JSON-compatible tree."""
         return self.requirements.to_data()
 
     def validate(
@@ -105,6 +115,7 @@ class Composition:
         resolver: SpecificationResolver,
         units: UnitSystem = default_units,
     ) -> ValidationReport:
+        """Validate this composition against its resolved input Model."""
         from rangekeeper.shared.units import default_units
         from rangekeeper.specification.validation import prepare
 
@@ -112,6 +123,7 @@ class Composition:
 
 
 def validate_settings(settings):
+    """Require positive, finite settings and a relative_tolerance below one."""
     for value in settings.values():
         require(
             value is None or math.isfinite(value) and value > 0,

@@ -1,15 +1,16 @@
 """Private reusable columnar Flow calculations; records are materialized at boundaries."""
 
 from __future__ import annotations
+
+import math
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date
-import math
 from uuid import uuid4
 
-from rangekeeper.schema.records import Flow, Movement, Period, Quantity
-from rangekeeper.schema.behaviors.flow import MissingValueHandling as Missing
 from rangekeeper.model._flow_mapping import period_indices, weights
+from rangekeeper.schema.behaviors.flow import MissingValueHandling as Missing
+from rangekeeper.schema.records import Flow, Movement, Period, Quantity
 from rangekeeper.shared.units import default_units
 
 
@@ -224,7 +225,7 @@ class Batch:
             result[line].append(movement)
         return tuple(
             Flow(units=unit, movements=tuple(movements)).check()
-            for unit, movements in zip(self.units, result)
+            for unit, movements in zip(self.units, result, strict=True)
         )
 
     def grid(self, join):
@@ -412,7 +413,7 @@ class Batch:
         return tuple(results)
 
     def resample(self, periods, *, methods, weightings, missing):
-        from rangekeeper.calculations.series import ResamplingMethod, MeanWeighting
+        from rangekeeper.calculations.series import MeanWeighting, ResamplingMethod
 
         if not isinstance(missing, Missing):
             raise TypeError("missing must be a MissingValueHandling")

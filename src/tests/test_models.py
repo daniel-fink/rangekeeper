@@ -1,21 +1,21 @@
 """Complete migrated teaching consumers, with independent deterministic expectations."""
 
-from rangekeeper.model.distribution import DistributionFamily
-
 import datetime
 import math
+from uuid import uuid4
+
 import pytest
-from rangekeeper.calculations import series
+
 from rangekeeper.io import MemoryStore
-from rangekeeper.run.execution import Executor
-from rangekeeper.run import validate
-from rangekeeper.model import Model, Metadata
-from rangekeeper.model.duration import make_periods, Frequency
-from rangekeeper.schema.enums import SolutionStatus
+from rangekeeper.model import Metadata, Model
+from rangekeeper.model.distribution import DistributionFamily
+from rangekeeper.model.duration import Frequency, make_periods
 from rangekeeper.model.scenario import Distribution
 from rangekeeper.model.scenario.market import generate, make_plan
-from uuid import uuid4
-from tests.models import linear, deterministic, probabilistic, flexible
+from rangekeeper.run import validate
+from rangekeeper.run.execution import Executor
+from rangekeeper.schema.enums import SolutionStatus
+from tests.models import deterministic, flexible, linear, probabilistic
 
 
 def execute(consumer, model, **requirements):

@@ -1,10 +1,9 @@
 """Account for requested settings without conflating solver and acceptance criteria."""
 
-from rangekeeper.run import Severity
-
 from dataclasses import dataclass
 
-from rangekeeper.schema.records import Settings, Diagnostic
+from rangekeeper.run import Severity
+from rangekeeper.schema.records import Diagnostic, Settings
 
 
 @dataclass(frozen=True)
@@ -17,6 +16,7 @@ class Limits:
     constraint_limit: int = 20000
 
     def record(self) -> Settings:
+        """Return these limits as a Settings record."""
         return Settings(
             time_limit=self.time_limit,
             iteration_limit=self.iteration_limit,

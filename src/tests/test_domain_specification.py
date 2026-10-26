@@ -1,8 +1,5 @@
 """Partial authoring, pinned composition, contributor traceability and conflicts."""
 
-from rangekeeper.model import ValueKind
-
-from rangekeeper.model.expression import Reference
 from dataclasses import FrozenInstanceError
 from pathlib import Path
 from uuid import uuid4
@@ -10,16 +7,17 @@ from uuid import uuid4
 import pytest
 import yaml
 
-from rangekeeper.model import Model, Metadata, Formulation, Value, Quantity
-from rangekeeper.specification import Specification, SpecificationRecord
+from rangekeeper.model import Formulation, Metadata, Model, Quantity, Value, ValueKind
+from rangekeeper.model.expression import Reference
 from rangekeeper.shared.errors import (
-    ValidationError,
+    IdentityConflictError,
     MissingReferenceError,
     ReferenceTypeError,
-    IdentityConflictError,
     RevisionConflictError,
     UnsupportedVersionError,
+    ValidationError,
 )
+from rangekeeper.specification import Specification, SpecificationRecord
 
 EXAMPLES = Path(__file__).resolve().parents[2] / "examples/schema"
 
@@ -98,8 +96,9 @@ def test_diamond_contributes_once_with_immutable_trace():
 
 def test_independent_duplicate_requirement_is_a_conflict():
     target = uuid4()
-    left, right = spec(unknowns=(Reference(target=target),)), spec(
-        unknowns=(Reference(target=target),)
+    left, right = (
+        spec(unknowns=(Reference(target=target),)),
+        spec(unknowns=(Reference(target=target),)),
     )
     root = spec(includes=(left.id, right.id))
     with pytest.raises(ValidationError, match="multiple contributors"):

@@ -4,12 +4,14 @@ These checks permit a report of failure without inferring mathematical success.
 Tree validation adds exact revision and publication checks after resolution.
 """
 
-from datetime import datetime
 import math
+from datetime import datetime
+
 from rangekeeper.shared.validation import require
 
 
 def instant(value):
+    """Parse an ISO 8601 timestamp that must have a timezone offset."""
     stamp = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
     require(stamp.utcoffset() is not None, "timestamp requires timezone")
     return stamp

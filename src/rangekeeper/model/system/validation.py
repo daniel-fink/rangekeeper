@@ -1,9 +1,9 @@
 """Schema-derived system records; fields and constructors are generated from LinkML."""
 
-from rangekeeper.schema.records import System as System
 from uuid import UUID
-from rangekeeper.shared.validation import require, require_acyclic
 
+from rangekeeper.schema.records import System as System
+from rangekeeper.shared.validation import require, require_acyclic
 
 __all__ = ["System"]
 
